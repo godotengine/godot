@@ -118,7 +118,7 @@
 			</description>
 		</method>
 		<method name="get_peers">
-			<return type="Array" />
+			<return type="ENetPacketPeer[]" />
 			<description>
 				Returns the list of peers associated with this host.
 				[b]Note:[/b] This list might include some peers that are not fully connected or are still being disconnected.

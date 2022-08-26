@@ -17,7 +17,7 @@
 			</description>
 		</method>
 		<method name="get_file_diff">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="file_path" type="String" />
 			<description>
 				Returns an [Array] of [Dictionary] objects containing the diff output from the VCS in use, if a VCS addon is initialized, else returns an empty [Array] object. The diff contents also consist of some contextual lines which provide context to the observed line change in the file.

@@ -82,7 +82,7 @@ void Shader::set_code(const String &p_code) {
 		// 1) Need to keep track of include dependencies at resource level
 		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, pp_code, nullptr, nullptr, &new_include_dependencies);
+		preprocessor.preprocess(p_code, "", pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
 	}
 
 	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)

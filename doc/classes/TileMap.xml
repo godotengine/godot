@@ -41,7 +41,7 @@
 			<return type="void" />
 			<param index="0" name="to_position" type="int" />
 			<description>
-				Adds a layer at the given position [param to_position] in the array. If [param to_position] is -1, adds it at the end of the array.
+				Adds a layer at the given position [param to_position] in the array. If [param to_position] is negative, the position is counted from the end, with [code]-1[/code] adding the layer at the end of the array.
 			</description>
 		</method>
 		<method name="clear">
@@ -77,14 +77,14 @@
 			<description>
 				Triggers an update of the TileMap. If [param layer] is provided, only updates the given layer.
 				[b]Note:[/b] The TileMap node updates automatically when one of its properties is modified. A manual update is only needed if runtime modifications (implemented in [method _tile_data_runtime_update]) need to be applied.
-				[b]Warning:[/b] Updating the TileMap is a performance demanding task. Limit occurrences of those updates to the minimum and limit the amount tiles they impact (by segregating tiles updated often to a dedicated layer for example).
+				[b]Warning:[/b] Updating the TileMap is computationally expensive and may impact performance. Try to limit the number of updates and the tiles they impact (by placing frequently updated tiles in a dedicated layer for example).
 			</description>
 		</method>
 		<method name="get_cell_alternative_tile" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="coords" type="Vector2i" />
-			<param index="2" name="use_proxies" type="bool" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the tile alternative ID of the cell on layer [param layer] at [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 			</description>
@@ -93,7 +93,7 @@
 			<return type="Vector2i" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="coords" type="Vector2i" />
-			<param index="2" name="use_proxies" type="bool" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the tile atlas coordinates ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 			</description>
@@ -102,9 +102,19 @@
 			<return type="int" />
 			<param index="0" name="layer" type="int" />
 			<param index="1" name="coords" type="Vector2i" />
-			<param index="2" name="use_proxies" type="bool" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
 			<description>
 				Returns the tile source ID of the cell on layer [param layer] at coordinates [param coords]. If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
+			</description>
+		</method>
+		<method name="get_cell_tile_data" qualifiers="const">
+			<return type="TileData" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="coords" type="Vector2i" />
+			<param index="2" name="use_proxies" type="bool" default="false" />
+			<description>
+				Returns the [TileData] object associated with the given cell, or [code]null[/code] if the cell is not a [TileSetAtlasSource].
+				If [param use_proxies] is [code]false[/code], ignores the [TileSet]'s tile proxies, returning the raw alternative identifier. See [method TileSet.map_tile_proxy].
 			</description>
 		</method>
 		<method name="get_coords_for_body_rid">
@@ -253,7 +263,6 @@
 			<description>
 				Update all the cells in the [param cells] coordinates array so that they use the given [param terrain] for the given [param terrain_set]. If an updated cell has the same terrain as one of its neighboring cells, this function tries to join the two. This function might update neighboring tiles if needed to create correct terrain transitions.
 				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
-				If [param ignore_empty_terrains] is true, empty terrains will be ignored when trying to find the best fitting tile for the given terrain constraints.
 				[b]Note:[/b] To work correctly, [code]set_cells_terrain_connect[/code] requires the TileMap's TileSet to have terrains set up with all required terrain combinations. Otherwise, it may produce unexpected results.
 			</description>
 		</method>
@@ -276,14 +285,16 @@
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				Enables or disables the layer [param layer]. A disabled layer is not processed at all (no rendering, no physics, etc...).
+				If [param layer] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_modulate">
 			<return type="void" />
 			<param index="0" name="layer" type="int" />
-			<param index="1" name="enabled" type="Color" />
+			<param index="1" name="modulate" type="Color" />
 			<description>
 				Sets a layer's color. It will be multiplied by tile's color and TileMap's modulate.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_name">
@@ -292,6 +303,7 @@
 			<param index="1" name="name" type="String" />
 			<description>
 				Sets a layer's name. This is mostly useful in the editor.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_y_sort_enabled">
@@ -301,6 +313,7 @@
 			<description>
 				Enables or disables a layer's Y-sorting. If a layer is Y-sorted, the layer will behave as a CanvasItem node where each of its tile gets Y-sorted.
 				Y-sorted layers should usually be on different Z-index values than not Y-sorted layers, otherwise, each of those layer will be Y-sorted as whole with the Y-sorted one. This is usually an undesired behvaior.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_y_sort_origin">
@@ -310,6 +323,7 @@
 			<description>
 				Sets a layer's Y-sort origin value. This Y-sort origin value is added to each tile's Y-sort origin value.
 				This allows, for example, to fake a different height level on each layer. This can be useful for top-down view games.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_layer_z_index">
@@ -318,6 +332,7 @@
 			<param index="1" name="z_index" type="int" />
 			<description>
 				Sets a layers Z-index value. This Z-index is added to each tile's Z-index value.
+				If [code]layer[/code] is negative, the layers are accessed from the last one.
 			</description>
 		</method>
 		<method name="set_pattern">

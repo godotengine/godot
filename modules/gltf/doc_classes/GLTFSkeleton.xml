@@ -29,7 +29,7 @@
 			</description>
 		</method>
 		<method name="get_unique_names">
-			<return type="Array" />
+			<return type="String[]" />
 			<description>
 			</description>
 		</method>
@@ -41,7 +41,7 @@
 		</method>
 		<method name="set_unique_names">
 			<return type="void" />
-			<param index="0" name="unique_names" type="Array" />
+			<param index="0" name="unique_names" type="String[]" />
 			<description>
 			</description>
 		</method>

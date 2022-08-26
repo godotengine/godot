@@ -44,7 +44,7 @@ void GodotBody2D::update_mass_properties() {
 	//update shapes and motions
 
 	switch (mode) {
-		case PhysicsServer2D::BODY_MODE_DYNAMIC: {
+		case PhysicsServer2D::BODY_MODE_RIGID: {
 			real_t total_area = 0;
 			for (int i = 0; i < get_shape_count(); i++) {
 				if (is_shape_disabled(i)) {
@@ -113,7 +113,7 @@ void GodotBody2D::update_mass_properties() {
 			_inv_inertia = 0;
 			_inv_mass = 0;
 		} break;
-		case PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR: {
+		case PhysicsServer2D::BODY_MODE_RIGID_LINEAR: {
 			_inv_inertia = 0;
 			_inv_mass = 1.0 / mass;
 
@@ -160,7 +160,7 @@ void GodotBody2D::set_param(PhysicsServer2D::BodyParameter p_param, const Varian
 			real_t mass_value = p_value;
 			ERR_FAIL_COND(mass_value <= 0);
 			mass = mass_value;
-			if (mode >= PhysicsServer2D::BODY_MODE_DYNAMIC) {
+			if (mode >= PhysicsServer2D::BODY_MODE_RIGID) {
 				_mass_properties_changed();
 			}
 		} break;
@@ -168,13 +168,13 @@ void GodotBody2D::set_param(PhysicsServer2D::BodyParameter p_param, const Varian
 			real_t inertia_value = p_value;
 			if (inertia_value <= 0.0) {
 				calculate_inertia = true;
-				if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+				if (mode == PhysicsServer2D::BODY_MODE_RIGID) {
 					_mass_properties_changed();
 				}
 			} else {
 				calculate_inertia = false;
 				inertia = inertia_value;
-				if (mode == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+				if (mode == PhysicsServer2D::BODY_MODE_RIGID) {
 					_inv_inertia = 1.0 / inertia;
 				}
 			}
@@ -267,7 +267,7 @@ void GodotBody2D::set_mode(PhysicsServer2D::BodyMode p_mode) {
 				first_time_kinematic = true;
 			}
 		} break;
-		case PhysicsServer2D::BODY_MODE_DYNAMIC: {
+		case PhysicsServer2D::BODY_MODE_RIGID: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			if (!calculate_inertia) {
 				_inv_inertia = 1.0 / inertia;
@@ -277,7 +277,7 @@ void GodotBody2D::set_mode(PhysicsServer2D::BodyMode p_mode) {
 			set_active(true);
 
 		} break;
-		case PhysicsServer2D::BODY_MODE_DYNAMIC_LINEAR: {
+		case PhysicsServer2D::BODY_MODE_RIGID_LINEAR: {
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_inv_inertia = 0;
 			angular_velocity = 0;
@@ -358,7 +358,7 @@ void GodotBody2D::set_state(PhysicsServer2D::BodyState p_state, const Variant &p
 		} break;
 		case PhysicsServer2D::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode >= PhysicsServer2D::BODY_MODE_DYNAMIC && !active && !can_sleep) {
+			if (mode >= PhysicsServer2D::BODY_MODE_RIGID && !active && !can_sleep) {
 				set_active(true);
 			}
 
@@ -661,7 +661,7 @@ void GodotBody2D::wakeup_neighbours() {
 				continue;
 			}
 			GodotBody2D *b = n[i];
-			if (b->mode < PhysicsServer2D::BODY_MODE_DYNAMIC) {
+			if (b->mode < PhysicsServer2D::BODY_MODE_RIGID) {
 				continue;
 			}
 

@@ -85,6 +85,7 @@ void EditorDebuggerRemoteObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_variant"), &EditorDebuggerRemoteObject::get_variant);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorDebuggerRemoteObject::clear);
 	ClassDB::bind_method(D_METHOD("get_remote_object_id"), &EditorDebuggerRemoteObject::get_remote_object_id);
+	ClassDB::bind_method(D_METHOD("_is_read_only"), &EditorDebuggerRemoteObject::_is_read_only);
 
 	ADD_SIGNAL(MethodInfo("value_edited", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value")));
 }

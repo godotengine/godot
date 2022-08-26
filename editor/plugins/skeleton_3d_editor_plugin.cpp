@@ -31,10 +31,10 @@
 #include "skeleton_3d_editor_plugin.h"
 
 #include "core/io/resource_saver.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
@@ -221,7 +221,7 @@ void Skeleton3DEditor::set_keyable(const bool p_keyable) {
 };
 
 void Skeleton3DEditor::set_bone_options_enabled(const bool p_bone_options_enabled) {
-	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_INIT_SELECTED_POSES, !p_bone_options_enabled);
+	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_RESET_SELECTED_POSES, !p_bone_options_enabled);
 	skeleton_options->get_popup()->set_item_disabled(SKELETON_OPTION_SELECTED_POSES_TO_RESTS, !p_bone_options_enabled);
 };
 
@@ -231,12 +231,12 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 	}
 
 	switch (p_skeleton_option) {
-		case SKELETON_OPTION_INIT_ALL_POSES: {
-			init_pose(true);
+		case SKELETON_OPTION_RESET_ALL_POSES: {
+			reset_pose(true);
 			break;
 		}
-		case SKELETON_OPTION_INIT_SELECTED_POSES: {
-			init_pose(false);
+		case SKELETON_OPTION_RESET_SELECTED_POSES: {
+			reset_pose(false);
 			break;
 		}
 		case SKELETON_OPTION_ALL_POSES_TO_RESTS: {
@@ -258,7 +258,7 @@ void Skeleton3DEditor::_on_click_skeleton_option(int p_skeleton_option) {
 	}
 }
 
-void Skeleton3DEditor::init_pose(const bool p_all_bones) {
+void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 	if (!skeleton) {
 		return;
 	}
@@ -267,31 +267,25 @@ void Skeleton3DEditor::init_pose(const bool p_all_bones) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
-			Transform3D rest = skeleton->get_bone_rest(i);
-			ur->add_do_method(skeleton, "set_bone_pose_position", i, rest.origin);
-			ur->add_do_method(skeleton, "set_bone_pose_rotation", i, rest.basis.get_rotation_quaternion());
-			ur->add_do_method(skeleton, "set_bone_pose_scale", i, rest.basis.get_scale());
 			ur->add_undo_method(skeleton, "set_bone_pose_position", i, skeleton->get_bone_pose_position(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_rotation", i, skeleton->get_bone_pose_rotation(i));
 			ur->add_undo_method(skeleton, "set_bone_pose_scale", i, skeleton->get_bone_pose_scale(i));
 		}
+		ur->add_do_method(skeleton, "reset_bone_poses");
 	} else {
 		// Todo: Do method with multiple bone selection.
 		if (selected_bone == -1) {
 			ur->commit_action();
 			return;
 		}
-		Transform3D rest = skeleton->get_bone_rest(selected_bone);
-		ur->add_do_method(skeleton, "set_bone_pose_position", selected_bone, rest.origin);
-		ur->add_do_method(skeleton, "set_bone_pose_rotation", selected_bone, rest.basis.get_rotation_quaternion());
-		ur->add_do_method(skeleton, "set_bone_pose_scale", selected_bone, rest.basis.get_scale());
 		ur->add_undo_method(skeleton, "set_bone_pose_position", selected_bone, skeleton->get_bone_pose_position(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_rotation", selected_bone, skeleton->get_bone_pose_rotation(selected_bone));
 		ur->add_undo_method(skeleton, "set_bone_pose_scale", selected_bone, skeleton->get_bone_pose_scale(selected_bone));
+		ur->add_do_method(skeleton, "reset_bone_pose", selected_bone);
 	}
 	ur->commit_action();
 }
@@ -340,7 +334,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Rest"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
@@ -360,7 +354,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::create_physical_skeleton() {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ERR_FAIL_COND(!get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
@@ -593,7 +587,7 @@ void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_se
 	Node *node = get_node_or_null(p_skeleton_path);
 	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 	ERR_FAIL_NULL(skeleton);
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Parentage"));
 	// If the target is a child of ourselves, we move only *us* and not our children.
 	if (skeleton->is_bone_parent_of(p_target_boneidx, p_selected_boneidx)) {
@@ -721,8 +715,8 @@ void Skeleton3DEditor::create_editors() {
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/init_all_poses", TTR("Init all Poses")), SKELETON_OPTION_INIT_ALL_POSES);
-	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/init_selected_poses", TTR("Init selected Poses")), SKELETON_OPTION_INIT_SELECTED_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_all_poses", TTR("Reset all bone Poses")), SKELETON_OPTION_RESET_ALL_POSES);
+	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/reset_selected_poses", TTR("Reset selected Poses")), SKELETON_OPTION_RESET_SELECTED_POSES);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/all_poses_to_rests", TTR("Apply all poses to rests")), SKELETON_OPTION_ALL_POSES_TO_RESTS);
 	p->add_shortcut(ED_SHORTCUT("skeleton_3d_editor/selected_poses_to_rests", TTR("Apply selected poses to rests")), SKELETON_OPTION_SELECTED_POSES_TO_RESTS);
 	p->add_item(TTR("Create physical skeleton"), SKELETON_OPTION_CREATE_PHYSICAL_SKELETON);
@@ -1315,7 +1309,7 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Transform"));
 	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		for (int i = 0; i < p_ids.size(); i++) {

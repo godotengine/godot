@@ -177,6 +177,7 @@
 		<method name="to_byte_array" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
+				Returns a [PackedByteArray] with each color encoded as bytes.
 			</description>
 		</method>
 	</methods>
@@ -185,24 +186,28 @@
 			<return type="bool" />
 			<param index="0" name="right" type="PackedColorArray" />
 			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="PackedColorArray" />
 			<param index="0" name="right" type="PackedColorArray" />
 			<description>
+				Returns a new [PackedColorArray] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="PackedColorArray" />
 			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal [Color]s at the corresponding indices.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="Color" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns the [Color] at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
 			</description>
 		</operator>
 	</operators>

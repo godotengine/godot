@@ -207,7 +207,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
-				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
+				Creates a copy of the dictionary, and returns it. The [param deep] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
 		<method name="erase">
@@ -296,7 +296,7 @@
 			<param index="0" name="dictionary" type="Dictionary" />
 			<param index="1" name="overwrite" type="bool" default="false" />
 			<description>
-				Adds elements from [code]dictionary[/code] to this [Dictionary]. By default, duplicate keys will not be copied over, unless [code]overwrite[/code] is [code]true[/code].
+				Adds elements from [param dictionary] to this [Dictionary]. By default, duplicate keys will not be copied over, unless [param overwrite] is [code]true[/code].
 			</description>
 		</method>
 		<method name="size" qualifiers="const">

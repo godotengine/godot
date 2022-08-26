@@ -553,7 +553,7 @@ int TileMap::get_layers_count() const {
 
 void TileMap::add_layer(int p_to_pos) {
 	if (p_to_pos < 0) {
-		p_to_pos = layers.size();
+		p_to_pos = layers.size() + p_to_pos + 1;
 	}
 
 	ERR_FAIL_INDEX(p_to_pos, (int)layers.size() + 1);
@@ -612,6 +612,9 @@ void TileMap::remove_layer(int p_layer) {
 }
 
 void TileMap::set_layer_name(int p_layer, String p_name) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].name = p_name;
 	emit_signal(SNAME("changed"));
@@ -623,6 +626,9 @@ String TileMap::get_layer_name(int p_layer) const {
 }
 
 void TileMap::set_layer_enabled(int p_layer, bool p_enabled) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].enabled = p_enabled;
 	_clear_layer_internals(p_layer);
@@ -638,6 +644,9 @@ bool TileMap::is_layer_enabled(int p_layer) const {
 }
 
 void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].modulate = p_modulate;
 	_clear_layer_internals(p_layer);
@@ -651,6 +660,9 @@ Color TileMap::get_layer_modulate(int p_layer) const {
 }
 
 void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
 	_clear_layer_internals(p_layer);
@@ -666,6 +678,9 @@ bool TileMap::is_layer_y_sort_enabled(int p_layer) const {
 }
 
 void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].y_sort_origin = p_y_sort_origin;
 	_clear_layer_internals(p_layer);
@@ -679,6 +694,9 @@ int TileMap::get_layer_y_sort_origin(int p_layer) const {
 }
 
 void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
+	if (p_layer < 0) {
+		p_layer = layers.size() + p_layer;
+	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].z_index = p_z_index;
 	_clear_layer_internals(p_layer);
@@ -2061,6 +2079,18 @@ int TileMap::get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bo
 	}
 
 	return E->value.alternative_tile;
+}
+
+TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
+	int source_id = get_cell_source_id(p_layer, p_coords, p_use_proxies);
+	ERR_FAIL_COND_V_MSG(source_id == TileSet::INVALID_SOURCE, nullptr, vformat("Invalid TileSetSource at cell %s. Make sure a tile exists at this cell.", p_coords));
+
+	Ref<TileSetAtlasSource> source = tile_set->get_source(source_id);
+	if (source.is_valid()) {
+		return source->get_tile_data(get_cell_atlas_coords(p_layer, p_coords, p_use_proxies), get_cell_alternative_tile(p_layer, p_coords, p_use_proxies));
+	}
+
+	return nullptr;
 }
 
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
@@ -3827,7 +3857,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_name", "layer"), &TileMap::get_layer_name);
 	ClassDB::bind_method(D_METHOD("set_layer_enabled", "layer", "enabled"), &TileMap::set_layer_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_enabled", "layer"), &TileMap::is_layer_enabled);
-	ClassDB::bind_method(D_METHOD("set_layer_modulate", "layer", "enabled"), &TileMap::set_layer_modulate);
+	ClassDB::bind_method(D_METHOD("set_layer_modulate", "layer", "modulate"), &TileMap::set_layer_modulate);
 	ClassDB::bind_method(D_METHOD("get_layer_modulate", "layer"), &TileMap::get_layer_modulate);
 	ClassDB::bind_method(D_METHOD("set_layer_y_sort_enabled", "layer", "y_sort_enabled"), &TileMap::set_layer_y_sort_enabled);
 	ClassDB::bind_method(D_METHOD("is_layer_y_sort_enabled", "layer"), &TileMap::is_layer_y_sort_enabled);
@@ -3846,9 +3876,10 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
-	ClassDB::bind_method(D_METHOD("get_cell_source_id", "layer", "coords", "use_proxies"), &TileMap::get_cell_source_id);
-	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "layer", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords);
-	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile);
+	ClassDB::bind_method(D_METHOD("get_cell_source_id", "layer", "coords", "use_proxies"), &TileMap::get_cell_source_id, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "layer", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 

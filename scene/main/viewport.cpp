@@ -798,6 +798,7 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 		RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 	}
 	_update_global_transform();
+	update_configuration_warnings();
 
 	update_canvas_items();
 
@@ -1103,7 +1104,7 @@ Vector2 Viewport::get_mouse_position() const {
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
 	Transform2D xform = get_screen_transform();
-	Vector2 gpos = xform.xform(p_position).round();
+	Vector2 gpos = xform.xform(p_position);
 	Input::get_singleton()->warp_mouse(gpos);
 }
 
@@ -1875,7 +1876,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		}
 	}
 
 	Ref<InputEventScreenTouch> touch_event = p_event;
@@ -2684,7 +2687,9 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					DisplayServer::CURSOR_FDIAGSIZE
 				};
 
-				DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
+				}
 
 				return true; // Reserved for showing the resize cursor.
 			}
@@ -2849,8 +2854,8 @@ Variant Viewport::gui_get_drag_data() const {
 TypedArray<String> Viewport::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (size.x == 0 || size.y == 0) {
-		warnings.push_back(RTR("Viewport size must be greater than 0 to render anything."));
+	if (size.x <= 1 || size.y <= 1) {
+		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));
 	}
 	return warnings;
 }
@@ -3953,9 +3958,9 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(VRS_MAX);
 }
 
-void Viewport::_validate_property(PropertyInfo &property) const {
-	if (vrs_mode != VRS_TEXTURE && (property.name == "vrs_texture")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Viewport::_validate_property(PropertyInfo &p_property) const {
+	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

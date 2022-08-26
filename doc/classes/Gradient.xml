@@ -22,14 +22,14 @@
 			<return type="Color" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Returns the color of the gradient color at index [code]point[/code].
+				Returns the color of the gradient color at index [param point].
 			</description>
 		</method>
 		<method name="get_offset">
 			<return type="float" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Returns the offset of the gradient color at index [code]point[/code].
+				Returns the offset of the gradient color at index [param point].
 			</description>
 		</method>
 		<method name="get_point_count" qualifiers="const">
@@ -42,14 +42,14 @@
 			<return type="Color" />
 			<param index="0" name="offset" type="float" />
 			<description>
-				Returns the interpolated color specified by [code]offset[/code].
+				Returns the interpolated color specified by [param offset].
 			</description>
 		</method>
 		<method name="remove_point">
 			<return type="void" />
 			<param index="0" name="point" type="int" />
 			<description>
-				Removes the color at the index [code]point[/code].
+				Removes the color at the index [param point].
 			</description>
 		</method>
 		<method name="reverse">
@@ -63,7 +63,7 @@
 			<param index="0" name="point" type="int" />
 			<param index="1" name="color" type="Color" />
 			<description>
-				Sets the color of the gradient color at index [code]point[/code].
+				Sets the color of the gradient color at index [param point].
 			</description>
 		</method>
 		<method name="set_offset">
@@ -71,7 +71,7 @@
 			<param index="0" name="point" type="int" />
 			<param index="1" name="offset" type="float" />
 			<description>
-				Sets the offset for the gradient color at index [code]point[/code].
+				Sets the offset for the gradient color at index [param point].
 			</description>
 		</method>
 	</methods>

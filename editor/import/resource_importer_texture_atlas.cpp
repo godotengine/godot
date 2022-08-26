@@ -382,7 +382,6 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			mesh_texture->set_mesh(mesh);
 
 			texture = mesh_texture;
-			//mesh
 		}
 
 		String save_path = p_base_paths[E.key] + ".res";

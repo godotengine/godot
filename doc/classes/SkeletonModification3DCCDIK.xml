@@ -121,7 +121,7 @@
 	</methods>
 	<members>
 		<member name="ccdik_data_chain_length" type="int" setter="set_ccdik_data_chain_length" getter="get_ccdik_data_chain_length" default="0">
-			The amount of CCDIK joints in the CCDIK modification.
+			The number of CCDIK joints in the CCDIK modification.
 		</member>
 		<member name="high_quality_solve" type="bool" setter="set_use_high_quality_solve" getter="get_use_high_quality_solve" default="true">
 			When true, the CCDIK algorithm will perform a higher quality solve that returns more natural results. A high quality solve requires more computation power to solve though, and therefore can be disabled to save performance.

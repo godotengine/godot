@@ -443,8 +443,8 @@ public:
 
 	void add_id(const RID &p_id) { base.append_id(p_id); }
 	void clear_ids() { base.clear_ids(); }
-	Array get_ids() const {
-		Array ids;
+	TypedArray<RID> get_ids() const {
+		TypedArray<RID> ids;
 		for (uint32_t i = 0; i < base.get_id_count(); i++) {
 			ids.push_back(base.get_id(i));
 		}
@@ -452,7 +452,7 @@ public:
 	}
 
 protected:
-	void _set_ids(const Array &p_ids) {
+	void _set_ids(const TypedArray<RID> &p_ids) {
 		base.clear_ids();
 		for (int i = 0; i < p_ids.size(); i++) {
 			RID id = p_ids[i];

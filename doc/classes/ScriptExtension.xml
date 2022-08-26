@@ -96,6 +96,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_has_property_default_value" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="_has_script_signal" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />

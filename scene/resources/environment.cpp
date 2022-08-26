@@ -1037,46 +1037,46 @@ void Environment::_update_adjustment() {
 
 // Private methods, constructor and destructor
 
-void Environment::_validate_property(PropertyInfo &property) const {
-	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
+void Environment::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sky" || p_property.name == "sky_custom_fov" || p_property.name == "sky_rotation" || p_property.name == "ambient_light_sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "fog_aerial_perspective") {
+	if (p_property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (p_property.name == "tonemap_white" && tone_mapper == TONE_MAPPER_LINEAR) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (p_property.name == "glow_intensity" && glow_blend_mode == GLOW_BLEND_MODE_MIX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+	if (p_property.name == "glow_mix" && glow_blend_mode != GLOW_BLEND_MODE_MIX) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "background_color") {
+	if (p_property.name == "background_color") {
 		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "background_canvas_max_layer") {
+	if (p_property.name == "background_canvas_max_layer") {
 		if (bg_mode != BG_CANVAS) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
-	if (property.name == "background_camera_feed_id") {
+	if (p_property.name == "background_camera_feed_id") {
 		if (bg_mode != BG_CAMERA_FEED) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR;
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
 
@@ -1107,8 +1107,8 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		String prefix = String(*prefixes);
 
 		String enabled = prefix + "enabled";
-		if (property.name.begins_with(prefix) && property.name != enabled && !bool(get(enabled))) {
-			property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+		if (p_property.name.begins_with(prefix) && p_property.name != enabled && !bool(get(enabled))) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 			return;
 		}
 
@@ -1120,8 +1120,8 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		while (*prefixes) {
 			String prefix = String(*prefixes);
 
-			if (property.name.begins_with(prefix)) {
-				property.usage = PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL;
+			if (p_property.name.begins_with(prefix)) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 				return;
 			}
 

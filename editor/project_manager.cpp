@@ -47,6 +47,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
 #include "editor/editor_vcs_interface.h"
+#include "main/main.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
@@ -483,12 +484,20 @@ private:
 					project_features.sort();
 					initial_settings["application/config/features"] = project_features;
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
-					initial_settings["application/config/icon"] = "res://icon.png";
+					initial_settings["application/config/icon"] = "res://icon.svg";
 
 					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
-						ResourceSaver::save(create_unscaled_default_project_icon(), dir.plus_file("icon.png"));
+						// Store default project icon in SVG format.
+						Error err;
+						Ref<FileAccess> fa_icon = FileAccess::open(dir.plus_file("icon.svg"), FileAccess::WRITE, &err);
+						fa_icon->store_string(get_default_project_icon());
+
+						if (err != OK) {
+							set_message(TTR("Couldn't create icon.svg in project path."), MESSAGE_ERROR);
+						}
+
 						EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), dir);
 					}
 				} else if (mode == MODE_INSTALL) {
@@ -1163,6 +1172,12 @@ void ProjectList::load_project_icon(int p_index) {
 	if (icon.is_null()) {
 		icon = default_icon;
 	}
+
+	// The default project icon is 128×128 to look crisp on hiDPI displays,
+	// but we want the actual displayed size to be 64×64 on loDPI displays.
+	item.control->icon->set_ignore_texture_size(true);
+	item.control->icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
+	item.control->icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 
 	item.control->icon->set_texture(icon);
 	item.control->icon_needs_reload = false;
@@ -2109,26 +2124,14 @@ void ProjectManager::_open_selected_projects() {
 
 		List<String> args;
 
+		for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
+			args.push_back(a);
+		}
+
 		args.push_back("--path");
 		args.push_back(path);
 
 		args.push_back("--editor");
-
-		if (OS::get_singleton()->is_stdout_debug_enabled()) {
-			args.push_back("--debug");
-		}
-
-		if (OS::get_singleton()->is_stdout_verbose()) {
-			args.push_back("--verbose");
-		}
-
-		if (OS::get_singleton()->is_disable_crash_handler()) {
-			args.push_back("--disable-crash-handler");
-		}
-
-		if (OS::get_singleton()->is_single_window()) {
-			args.push_back("--single-window");
-		}
 
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
@@ -2242,12 +2245,12 @@ void ProjectManager::_run_project_confirm() {
 
 		List<String> args;
 
+		for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_PROJECT)) {
+			args.push_back(a);
+		}
+
 		args.push_back("--path");
 		args.push_back(path);
-
-		if (OS::get_singleton()->is_disable_crash_handler()) {
-			args.push_back("--disable-crash-handler");
-		}
 
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);

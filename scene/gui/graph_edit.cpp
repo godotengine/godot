@@ -1591,10 +1591,10 @@ void GraphEdit::remove_valid_left_disconnect_type(int p_type) {
 	valid_left_disconnect_types.erase(p_type);
 }
 
-Array GraphEdit::_get_connection_list() const {
+TypedArray<Dictionary> GraphEdit::_get_connection_list() const {
 	List<Connection> conns;
 	get_connection_list(&conns);
-	Array arr;
+	TypedArray<Dictionary> arr;
 	for (const Connection &E : conns) {
 		Dictionary d;
 		d["from"] = E.from;
@@ -1640,6 +1640,9 @@ bool GraphEdit::is_valid_connection_type(int p_type, int p_with_type) const {
 }
 
 void GraphEdit::set_use_snap(bool p_enable) {
+	if (snap_button->is_pressed() == p_enable) {
+		return;
+	}
 	snap_button->set_pressed(p_enable);
 	update();
 }
@@ -1683,6 +1686,9 @@ Vector2 GraphEdit::get_minimap_size() const {
 }
 
 void GraphEdit::set_minimap_opacity(float p_opacity) {
+	if (minimap->get_modulate().a == p_opacity) {
+		return;
+	}
 	minimap->set_modulate(Color(1, 1, 1, p_opacity));
 	minimap->update();
 }
@@ -1693,6 +1699,9 @@ float GraphEdit::get_minimap_opacity() const {
 }
 
 void GraphEdit::set_minimap_enabled(bool p_enable) {
+	if (minimap_button->is_pressed() == p_enable) {
+		return;
+	}
 	minimap_button->set_pressed(p_enable);
 	_minimap_toggled();
 	minimap->update();
@@ -1721,6 +1730,9 @@ float GraphEdit::get_connection_lines_curvature() const {
 }
 
 void GraphEdit::set_connection_lines_thickness(float p_thickness) {
+	if (lines_thickness == p_thickness) {
+		return;
+	}
 	lines_thickness = p_thickness;
 	update();
 }
@@ -1730,6 +1742,9 @@ float GraphEdit::get_connection_lines_thickness() const {
 }
 
 void GraphEdit::set_connection_lines_antialiased(bool p_antialiased) {
+	if (lines_antialiased == p_antialiased) {
+		return;
+	}
 	lines_antialiased = p_antialiased;
 	update();
 }
@@ -2381,7 +2396,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);

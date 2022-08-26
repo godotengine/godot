@@ -17,7 +17,7 @@
 			<param index="2" name="path" type="String" />
 			<param index="3" name="flags" type="int" />
 			<description>
-				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. [code]features[/code] is the list of features for the export, [code]is_debug[/code] is [code]true[/code] for debug builds, [code]path[/code] is the target path for the exported project. [code]flags[/code] is only used when running a runnable profile, e.g. when using native run on Android.
+				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. [param features] is the list of features for the export, [param is_debug] is [code]true[/code] for debug builds, [param path] is the target path for the exported project. [param flags] is only used when running a runnable profile, e.g. when using native run on Android.
 			</description>
 		</method>
 		<method name="_export_end" qualifiers="virtual">
@@ -32,7 +32,7 @@
 			<param index="1" name="type" type="String" />
 			<param index="2" name="features" type="PackedStringArray" />
 			<description>
-				Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. [code]path[/code] is the path of the file, [code]type[/code] is the [Resource] represented by the file (e.g. [PackedScene]) and [code]features[/code] is the list of features for the export.
+				Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. [param path] is the path of the file, [param type] is the [Resource] represented by the file (e.g. [PackedScene]) and [param features] is the list of features for the export.
 				Calling [method skip] inside this callback will make the file not included in the export.
 			</description>
 		</method>
@@ -42,14 +42,14 @@
 			<param index="1" name="file" type="PackedByteArray" />
 			<param index="2" name="remap" type="bool" />
 			<description>
-				Adds a custom file to be exported. [code]path[/code] is the virtual path that can be used to load the file, [code]file[/code] is the binary data of the file. If [code]remap[/code] is [code]true[/code], file will not be exported, but instead remapped to the given [code]path[/code].
+				Adds a custom file to be exported. [param path] is the virtual path that can be used to load the file, [param file] is the binary data of the file. If [param remap] is [code]true[/code], file will not be exported, but instead remapped to the given [param path].
 			</description>
 		</method>
 		<method name="add_ios_bundle_file">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds an iOS bundle file from the given [code]path[/code] to the exported project.
+				Adds an iOS bundle file from the given [param path] to the exported project.
 			</description>
 		</method>
 		<method name="add_ios_cpp_code">
@@ -93,14 +93,14 @@
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds a static lib from the given [code]path[/code] to the iOS project.
+				Adds a static lib from the given [param path] to the iOS project.
 			</description>
 		</method>
 		<method name="add_macos_plugin_file">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Adds file or directory matching [code]path[/code] to [code]PlugIns[/code] directory of macOS app bundle.
+				Adds file or directory matching [param path] to [code]PlugIns[/code] directory of macOS app bundle.
 				[b]Note:[/b] This is useful only for macOS exports.
 			</description>
 		</method>
@@ -110,7 +110,7 @@
 			<param index="1" name="tags" type="PackedStringArray" />
 			<param index="2" name="target" type="String" />
 			<description>
-				Adds a shared object or a directory containing only shared objects with the given [code]tags[/code] and destination [code]path[/code].
+				Adds a shared object or a directory containing only shared objects with the given [param tags] and destination [param path].
 				[b]Note:[/b] In case of macOS exports, those shared objects will be added to [code]Frameworks[/code] directory of app bundle.
 				In case of a directory code-sign will error if you place non code object in directory.
 			</description>

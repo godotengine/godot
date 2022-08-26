@@ -77,7 +77,7 @@
 	</methods>
 	<members>
 		<member name="fabrik_data_chain_length" type="int" setter="set_fabrik_data_chain_length" getter="get_fabrik_data_chain_length" default="0">
-			The amount of FABRIK joints in the FABRIK modification.
+			The number of FABRIK joints in the FABRIK modification.
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the FABRIK modification. This node is what the FABRIK chain will attempt to rotate the bone chain to.

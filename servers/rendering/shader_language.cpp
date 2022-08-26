@@ -200,6 +200,9 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_ANISOTROPY_TEXTURE",
 	"HINT_RANGE",
 	"HINT_INSTANCE_INDEX",
+	"HINT_SCREEN_TEXTURE",
+	"HINT_NORMAL_ROUGHNESS_TEXTURE",
+	"HINT_DEPTH_TEXTURE",
 	"FILTER_NEAREST",
 	"FILTER_LINEAR",
 	"FILTER_NEAREST_MIPMAP",
@@ -363,6 +366,10 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_ROUGHNESS_A, "hint_roughness_a", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_NORMAL_TEXTURE, "hint_roughness_normal", CF_UNSPECIFIED, {}, {} },
 	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_SCREEN_TEXTURE, "hint_screen_texture", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_NORMAL_ROUGHNESS_TEXTURE, "hint_normal_roughness_texture", CF_UNSPECIFIED, {}, {} },
+	{ TK_HINT_DEPTH_TEXTURE, "hint_depth_texture", CF_UNSPECIFIED, {}, {} },
+
 	{ TK_FILTER_NEAREST, "filter_nearest", CF_UNSPECIFIED, {}, {} },
 	{ TK_FILTER_LINEAR, "filter_linear", CF_UNSPECIFIED, {}, {} },
 	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap", CF_UNSPECIFIED, {}, {} },
@@ -1095,6 +1102,15 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 		} break;
 		case ShaderNode::Uniform::HINT_ANISOTROPY: {
 			result = "hint_anisotropy";
+		} break;
+		case ShaderNode::Uniform::HINT_SCREEN_TEXTURE: {
+			result = "hint_screen_texture";
+		} break;
+		case ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE: {
+			result = "hint_normal_roughness_texture";
+		} break;
+		case ShaderNode::Uniform::HINT_DEPTH_TEXTURE: {
+			result = "hint_depth_texture";
 		} break;
 		default:
 			break;
@@ -5361,6 +5377,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						}
 						_set_tkpos(prev_pos);
 
+						ShaderNode::Varying &var = shader->varyings[identifier];
 						String error;
 						if (is_token_operator_assign(next_token.type)) {
 							if (!_validate_varying_assign(shader->varyings[identifier], &error)) {
@@ -5368,8 +5385,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								return nullptr;
 							}
 						} else {
-							ShaderNode::Varying &var = shader->varyings[identifier];
-
 							switch (var.stage) {
 								case ShaderNode::Varying::STAGE_VERTEX:
 									if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
@@ -5384,6 +5399,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								default:
 									break;
 							}
+						}
+
+						if ((var.stage != ShaderNode::Varying::STAGE_FRAGMENT && var.stage != ShaderNode::Varying::STAGE_FRAGMENT_TO_LIGHT) && var.type < TYPE_FLOAT && var.interpolation != INTERPOLATION_FLAT) {
+							_set_tkpos(var.tkpos);
+							_set_error(RTR("Varying with integer data type must be declared with `flat` interpolation qualifier."));
+							return nullptr;
 						}
 					}
 
@@ -8283,8 +8304,8 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					return ERR_PARSE_ERROR;
 				}
 
-				if (!is_uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
-					_set_error(RTR("Invalid type for varying, only 'float', 'vec2', 'vec3', 'vec4', 'mat2', 'mat3', 'mat4', or arrays of these types are allowed."));
+				if (!is_uniform && type > TYPE_MAT4) {
+					_set_error(RTR("Invalid data type for varying."));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -8605,6 +8626,15 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 										return ERR_PARSE_ERROR;
 									}
 								} break;
+								case TK_HINT_SCREEN_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_SCREEN_TEXTURE;
+								} break;
+								case TK_HINT_NORMAL_ROUGHNESS_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE;
+								} break;
+								case TK_HINT_DEPTH_TEXTURE: {
+									new_hint = ShaderNode::Uniform::HINT_DEPTH_TEXTURE;
+								} break;
 								case TK_FILTER_NEAREST: {
 									new_filter = FILTER_NEAREST;
 								} break;
@@ -8629,6 +8659,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								case TK_REPEAT_ENABLE: {
 									new_repeat = REPEAT_ENABLE;
 								} break;
+
 								default:
 									break;
 							}
@@ -8653,9 +8684,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							if (new_filter != FILTER_DEFAULT) {
 								if (uniform.filter != FILTER_DEFAULT) {
 									if (uniform.filter == new_filter) {
-										_set_error(vformat(RTR("Duplicated hint: '%s'."), get_texture_filter_name(new_filter)));
+										_set_error(vformat(RTR("Duplicated filter mode: '%s'."), get_texture_filter_name(new_filter)));
 									} else {
-										_set_error(vformat(RTR("Redefinition of hint: '%s'. The filter mode has already been set to '%s'."), get_texture_filter_name(new_filter), get_texture_filter_name(uniform.filter)));
+										_set_error(vformat(RTR("Redefinition of filter mode: '%s'. The filter mode has already been set to '%s'."), get_texture_filter_name(new_filter), get_texture_filter_name(uniform.filter)));
 									}
 									return ERR_PARSE_ERROR;
 								} else {
@@ -8666,9 +8697,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							if (new_repeat != REPEAT_DEFAULT) {
 								if (uniform.repeat != REPEAT_DEFAULT) {
 									if (uniform.repeat == new_repeat) {
-										_set_error(vformat(RTR("Duplicated hint: '%s'."), get_texture_repeat_name(new_repeat)));
+										_set_error(vformat(RTR("Duplicated repeat mode: '%s'."), get_texture_repeat_name(new_repeat)));
 									} else {
-										_set_error(vformat(RTR("Redefinition of hint: '%s'. The repeat mode has already been set to '%s'."), get_texture_repeat_name(new_repeat), get_texture_repeat_name(uniform.repeat)));
+										_set_error(vformat(RTR("Redefinition of repeat mode: '%s'. The repeat mode has already been set to '%s'."), get_texture_repeat_name(new_repeat), get_texture_repeat_name(uniform.repeat)));
 									}
 									return ERR_PARSE_ERROR;
 								} else {
@@ -10309,6 +10340,9 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					options.push_back("hint_roughness_gray");
 					options.push_back("hint_roughness_normal");
 					options.push_back("hint_roughness_r");
+					options.push_back("hint_screen_texture");
+					options.push_back("hint_normal_roughness_texture");
+					options.push_back("hint_depth_texture");
 					options.push_back("source_color");
 					options.push_back("repeat_enable");
 					options.push_back("repeat_disable");

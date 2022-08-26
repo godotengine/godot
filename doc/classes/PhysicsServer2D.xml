@@ -358,6 +358,13 @@
 				Returns the physics layer or layers a body can collide with.
 			</description>
 		</method>
+		<method name="body_get_collision_priority" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the body's collision priority.
+			</description>
+		</method>
 		<method name="body_get_constant_force" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="body" type="RID" />
@@ -509,6 +516,14 @@
 				Sets the physics layer or layers a body can collide with.
 			</description>
 		</method>
+		<method name="body_set_collision_priority">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="priority" type="float" />
+			<description>
+				Sets the body's collision priority.
+			</description>
+		</method>
 		<method name="body_set_constant_force">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -553,7 +568,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="amount" type="int" />
 			<description>
-				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies, this is enabled by setting the maximum amount of contacts reported to a number greater than 0.
+				Sets the maximum contacts to report. Bodies can keep a log of the contacts with other bodies. This is enabled by setting the maximum number of contacts reported to a number greater than 0.
 			</description>
 		</method>
 		<method name="body_set_mode">
@@ -882,7 +897,7 @@
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
 		</constant>
 		<constant name="SPACE_PARAM_SOLVER_ITERATIONS" value="8" enum="SpaceParameter">
-			Constant to set/get the number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance.
+			Constant to set/get the number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance.
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">
 			This is the constant for creating world boundary shapes. A world boundary shape is an [i]infinite[/i] line with an origin point, and a normal. Thus, it can be used for front/behind checks.
@@ -965,11 +980,11 @@
 		<constant name="BODY_MODE_KINEMATIC" value="1" enum="BodyMode">
 			Constant for kinematic bodies. In this mode, a body can be only moved by user code and collides with other bodies along its path.
 		</constant>
-		<constant name="BODY_MODE_DYNAMIC" value="2" enum="BodyMode">
-			Constant for dynamic bodies. In this mode, a body can be pushed by other bodies and has forces applied.
+		<constant name="BODY_MODE_RIGID" value="2" enum="BodyMode">
+			Constant for rigid bodies. In this mode, a body can be pushed by other bodies and has forces applied.
 		</constant>
-		<constant name="BODY_MODE_DYNAMIC_LINEAR" value="3" enum="BodyMode">
-			Constant for linear dynamic bodies. In this mode, a body is dynamic but can not rotate, and only its linear velocity is affected by external forces.
+		<constant name="BODY_MODE_RIGID_LINEAR" value="3" enum="BodyMode">
+			Constant for linear rigid bodies. In this mode, a body can not rotate, and only its linear velocity is affected by external forces.
 		</constant>
 		<constant name="BODY_PARAM_BOUNCE" value="0" enum="BodyParameter">
 			Constant to set/get a body's bounce factor.

@@ -86,6 +86,7 @@ private:
 	// void _camera_make_current(Node *p_camera);
 	friend class Viewport;
 	void _update_audio_listener_state();
+	TypedArray<Plane> _get_frustum() const;
 
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
@@ -99,7 +100,7 @@ protected:
 	void _update_camera_mode();
 
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &p_property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 

@@ -67,6 +67,7 @@ public:
 	void set_string_name(bool p_enabled);
 	virtual void update_property() override;
 	void set_placeholder(const String &p_string);
+	void set_secret(bool p_enabled);
 	EditorPropertyText();
 };
 
@@ -625,9 +626,26 @@ public:
 
 class EditorPropertyQuaternion : public EditorProperty {
 	GDCLASS(EditorPropertyQuaternion, EditorProperty);
+	BoxContainer *default_layout = nullptr;
 	EditorSpinSlider *spin[4];
 	bool setting = false;
+
+	Button *warning = nullptr;
+	AcceptDialog *warning_dialog = nullptr;
+
+	Label *euler_label = nullptr;
+	VBoxContainer *edit_custom_bc = nullptr;
+	EditorSpinSlider *euler[3];
+	Button *edit_button = nullptr;
+
+	Vector3 edit_euler = Vector3();
+
 	void _value_changed(double p_val, const String &p_name);
+	void _edit_custom_value();
+	void _custom_value_changed(double p_val);
+	void _warning_pressed();
+
+	bool is_grabbing_euler();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -636,7 +654,7 @@ protected:
 
 public:
 	virtual void update_property() override;
-	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String());
+	void setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix = String(), bool p_hide_editor = false);
 	EditorPropertyQuaternion();
 };
 
@@ -835,7 +853,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool updating_theme = false;
 	bool opened_editor = false;
 
-	void _resource_selected(const Ref<Resource> &p_resource, bool p_edit);
+	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
 
 	void _viewport_selected(const NodePath &p_path);

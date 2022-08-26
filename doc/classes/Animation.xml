@@ -44,7 +44,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the animation name at the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
+				Returns the animation name at the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_insert_key">
@@ -53,7 +53,7 @@
 			<param index="1" name="time" type="float" />
 			<param index="2" name="animation" type="StringName" />
 			<description>
-				Inserts a key with value [code]animation[/code] at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of an Animation Track.
+				Inserts a key with value [param animation] at the given [param time] (in seconds). The [param track_idx] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_set_key_animation">
@@ -62,7 +62,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="animation" type="StringName" />
 			<description>
-				Sets the key identified by [code]key_idx[/code] to value [code]animation[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
+				Sets the key identified by [param key_idx] to value [param animation]. The [param track_idx] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
@@ -70,7 +70,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the end offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Returns the end offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
 				End offset is the number of seconds cut off at the ending of the audio stream.
 			</description>
 		</method>
@@ -79,7 +79,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the start offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
 				Start offset is the number of seconds cut off at the beginning of the audio stream.
 			</description>
 		</method>
@@ -88,7 +88,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the audio stream of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Returns the audio stream of the key identified by [param key_idx]. The [param track_idx] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_insert_key">
@@ -99,8 +99,8 @@
 			<param index="3" name="start_offset" type="float" default="0" />
 			<param index="4" name="end_offset" type="float" default="0" />
 			<description>
-				Inserts an Audio Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of an Audio Track.
-				[code]stream[/code] is the [AudioStream] resource to play. [code]start_offset[/code] is the number of seconds cut off at the beginning of the audio stream, while [code]end_offset[/code] is at the ending.
+				Inserts an Audio Track key at the given [param time] in seconds. The [param track_idx] must be the index of an Audio Track.
+				[param stream] is the [AudioStream] resource to play. [param start_offset] is the number of seconds cut off at the beginning of the audio stream, while [param end_offset] is at the ending.
 			</description>
 		</method>
 		<method name="audio_track_set_key_end_offset">
@@ -109,7 +109,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="offset" type="float" />
 			<description>
-				Sets the end offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Sets the end offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_start_offset">
@@ -118,7 +118,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="offset" type="float" />
 			<description>
-				Sets the start offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_stream">
@@ -127,15 +127,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="stream" type="Resource" />
 			<description>
-				Sets the stream of the key identified by [code]key_idx[/code] to value [code]stream[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
-			</description>
-		</method>
-		<method name="bezier_track_get_key_handle_mode" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="key_idx" type="int" />
-			<description>
-				Returns the handle mode of the key identified by [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Sets the stream of the key identified by [param key_idx] to value [param stream]. The [param track_idx] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
@@ -143,7 +135,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the in handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Returns the in handle of the key identified by [param key_idx]. The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_out_handle" qualifiers="const">
@@ -151,7 +143,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the out handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Returns the out handle of the key identified by [param key_idx]. The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_value" qualifiers="const">
@@ -159,7 +151,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="key_idx" type="int" />
 			<description>
-				Returns the value of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Returns the value of the key identified by [param key_idx]. The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_insert_key">
@@ -169,10 +161,9 @@
 			<param index="2" name="value" type="float" />
 			<param index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)" />
 			<param index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)" />
-			<param index="5" name="handle_mode" type="int" enum="Animation.HandleMode" default="1" />
 			<description>
-				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.
-				[code]in_handle[/code] is the left-side weight of the added Bezier curve point, [code]out_handle[/code] is the right-side one, while [code]value[/code] is the actual value at this point.
+				Inserts a Bezier Track key at the given [param time] in seconds. The [param track_idx] must be the index of a Bezier Track.
+				[param in_handle] is the left-side weight of the added Bezier curve point, [param out_handle] is the right-side one, while [param value] is the actual value at this point.
 			</description>
 		</method>
 		<method name="bezier_track_interpolate" qualifiers="const">
@@ -180,17 +171,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time" type="float" />
 			<description>
-				Returns the interpolated value at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of a Bezier Track.
-			</description>
-		</method>
-		<method name="bezier_track_set_key_handle_mode">
-			<return type="void" />
-			<param index="0" name="track_idx" type="int" />
-			<param index="1" name="key_idx" type="int" />
-			<param index="2" name="key_handle_mode" type="int" enum="Animation.HandleMode" />
-			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
-			<description>
-				Changes the handle mode of the keyframe at the given [code]index[/code]. See [enum HandleMode] for possible values. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Returns the interpolated value at the given [param time] (in seconds). The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_in_handle">
@@ -200,7 +181,7 @@
 			<param index="2" name="in_handle" type="Vector2" />
 			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
-				Sets the in handle of the key identified by [code]key_idx[/code] to value [code]in_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Sets the in handle of the key identified by [param key_idx] to value [param in_handle]. The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_out_handle">
@@ -210,7 +191,7 @@
 			<param index="2" name="out_handle" type="Vector2" />
 			<param index="3" name="balanced_value_time_ratio" type="float" default="1.0" />
 			<description>
-				Sets the out handle of the key identified by [code]key_idx[/code] to value [code]out_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Sets the out handle of the key identified by [param key_idx] to value [param out_handle]. The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_value">
@@ -219,7 +200,7 @@
 			<param index="1" name="key_idx" type="int" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
+				Sets the value of the key identified by [param key_idx] to the given value. The [param track_idx] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="blend_shape_track_insert_key">
@@ -249,7 +230,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="to_animation" type="Animation" />
 			<description>
-				Adds a new track that is a copy of the given track from [code]to_animation[/code].
+				Adds a new track that is a copy of the given track from [param to_animation].
 			</description>
 		</method>
 		<method name="find_track" qualifiers="const">
@@ -335,7 +316,7 @@
 			<return type="bool" />
 			<param index="0" name="track_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the track at [code]idx[/code] wraps the interpolation loop. New tracks wrap the interpolation loop by default.
+				Returns [code]true[/code] if the track at [param track_idx] wraps the interpolation loop. New tracks wrap the interpolation loop by default.
 			</description>
 		</method>
 		<method name="track_get_interpolation_type" qualifiers="const">
@@ -349,7 +330,7 @@
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
 			<description>
-				Returns the amount of keys in a given track.
+				Returns the number of keys in a given track.
 			</description>
 		</method>
 		<method name="track_get_key_time" qualifiers="const">
@@ -410,7 +391,7 @@
 			<return type="bool" />
 			<param index="0" name="track_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the track at index [code]idx[/code] is enabled.
+				Returns [code]true[/code] if the track at index [param track_idx] is enabled.
 			</description>
 		</method>
 		<method name="track_is_imported" qualifiers="const">
@@ -432,7 +413,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="to_idx" type="int" />
 			<description>
-				Changes the index position of track [code]idx[/code] to the one defined in [code]to_idx[/code].
+				Changes the index position of track [param track_idx] to the one defined in [param to_idx].
 			</description>
 		</method>
 		<method name="track_move_up">
@@ -455,7 +436,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time" type="float" />
 			<description>
-				Removes a key at [code]time[/code] in a given track.
+				Removes a key at [param time] in a given track.
 			</description>
 		</method>
 		<method name="track_set_enabled">
@@ -479,7 +460,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="interpolation" type="bool" />
 			<description>
-				If [code]true[/code], the track at [code]idx[/code] wraps the interpolation loop.
+				If [code]true[/code], the track at [param track_idx] wraps the interpolation loop.
 			</description>
 		</method>
 		<method name="track_set_interpolation_type">
@@ -531,7 +512,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="with_idx" type="int" />
 			<description>
-				Swaps the track [code]idx[/code]'s index position with the track [code]with_idx[/code].
+				Swaps the track [param track_idx]'s index position with the track [param with_idx].
 			</description>
 		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
@@ -555,7 +536,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time_sec" type="float" />
 			<description>
-				Returns the interpolated value at the given time (in seconds). The [code]track_idx[/code] must be the index of a value track.
+				Returns the interpolated value at the given time (in seconds). The [param track_idx] must be the index of a value track.
 			</description>
 		</method>
 		<method name="value_track_set_update_mode">
@@ -639,12 +620,6 @@
 		</constant>
 		<constant name="LOOP_PINGPONG" value="2" enum="LoopMode">
 			Repeats playback and reverse playback at both ends of the animation.
-		</constant>
-		<constant name="HANDLE_MODE_FREE" value="0" enum="HandleMode">
-			Assigning the free handle mode to a Bezier Track's keyframe allows you to edit the keyframe's left and right handles independently from one another.
-		</constant>
-		<constant name="HANDLE_MODE_BALANCED" value="1" enum="HandleMode">
-			Assigning the balanced handle mode to a Bezier Track's keyframe makes it so the two handles of the keyframe always stay aligned when changing either the keyframe's left or right handle.
 		</constant>
 	</constants>
 </class>

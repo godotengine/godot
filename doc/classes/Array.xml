@@ -201,7 +201,7 @@
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="before" type="bool" default="true" />
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
@@ -211,7 +211,7 @@
 			<param index="1" name="func" type="Callable" />
 			<param index="2" name="before" type="bool" default="true" />
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [param before] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
 				[b]Note:[/b] Calling [method bsearch_custom] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
@@ -233,7 +233,7 @@
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
 				Returns a copy of the array.
-				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
+				If [param deep] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
 			</description>
 		</method>
 		<method name="erase">
@@ -399,7 +399,7 @@
 			<return type="Variant" />
 			<param index="0" name="position" type="int" />
 			<description>
-				Removes and returns the element of the array at index [code]position[/code]. If negative, [code]position[/code] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
+				Removes and returns the element of the array at index [param position]. If negative, [param position] is considered relative to the end of the array. Leaves the array untouched and returns [code]null[/code] if the array is empty or if it's accessed out of bounds. An error message is printed when the array is accessed out of bounds, but not when the array is empty.
 				[b]Note:[/b] On large arrays, this method can be slower than [method pop_back] as it will reindex the array's elements that are located after the removed element. The larger the array and the lower the index of the removed element, the slower [method pop_at] will be.
 			</description>
 		</method>
@@ -436,8 +436,8 @@
 			<param index="0" name="method" type="Callable" />
 			<param index="1" name="accum" type="Variant" default="null" />
 			<description>
-				Calls the provided [Callable] for each element in array and accumulates the result in [code]accum[/code].
-				The callable's method takes two arguments: the current value of [code]accum[/code] and the current array element. If [code]accum[/code] is [code]null[/code] (default value), the iteration will start from the second element, with the first one used as initial value of [code]accum[/code].
+				Calls the provided [Callable] for each element in array and accumulates the result in [param accum].
+				The callable's method takes two arguments: the current value of [param accum] and the current array element. If [param accum] is [code]null[/code] (default value), the iteration will start from the second element, with the first one used as initial value of [param accum].
 				[codeblock]
 				func _ready():
 				    print([1, 2, 3].reduce(sum, 10)) # Prints 16.
@@ -498,11 +498,11 @@
 			<param index="2" name="step" type="int" default="1" />
 			<param index="3" name="deep" type="bool" default="false" />
 			<description>
-				Returns the slice of the [Array], from [code]begin[/code] (inclusive) to [code]end[/code] (exclusive), as a new [Array].
-				The absolute value of [code]begin[/code] and [code]end[/code] will be clamped to the array size, so the default value for [code]end[/code] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
-				If either [code]begin[/code] or [code]end[/code] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
-				If specified, [code]step[/code] is the relative index between source elements. It can be negative, then [code]begin[/code] must be higher than [code]end[/code]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code]).
-				If [code]deep[/code] is true, each element will be copied by value rather than by reference.
+				Returns the slice of the [Array], from [param begin] (inclusive) to [param end] (exclusive), as a new [Array].
+				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
+				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
+				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code]).
+				If [param deep] is true, each element will be copied by value rather than by reference.
 			</description>
 		</method>
 		<method name="sort">
@@ -562,56 +562,56 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Compares the left operand [Array] against the [code]right[/code] [Array]. Returns [code]true[/code] if the sizes or contents of the arrays are [i]not[/i] equal, [code]false[/code] otherwise.
+				Compares the left operand [Array] against the [param right] [Array]. Returns [code]true[/code] if the sizes or contents of the arrays are [i]not[/i] equal, [code]false[/code] otherwise.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="Array" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Concatenates two [Array]s together, with the [code]right[/code] [Array] being added to the end of the [Array] specified in the left operand. For example, [code][1, 2] + [3, 4][/code] results in [code][1, 2, 3, 4][/code].
+				Concatenates two [Array]s together, with the [param right] [Array] being added to the end of the [Array] specified in the left operand. For example, [code][1, 2] + [3, 4][/code] results in [code][1, 2, 3, 4][/code].
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is less, or [code]false[/code] if the element is greater. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]false[/code] if the left operand [Array] has less elements, otherwise it returns [code]true[/code].
+				Performs a comparison for each index between the left operand [Array] and the [param right] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is less, or [code]false[/code] if the element is greater. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]false[/code] if the left operand [Array] has fewer elements, otherwise it returns [code]true[/code].
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is less, or [code]false[/code] if the element is greater. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the left operand [Array] has less or the same number of elements, otherwise it returns [code]false[/code].
+				Performs a comparison for each index between the left operand [Array] and the [param right] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is less, or [code]false[/code] if the element is greater. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the left operand [Array] has the same number of elements or fewer, otherwise it returns [code]false[/code].
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Compares the left operand [Array] against the [code]right[/code] [Array]. Returns [code]true[/code] if the sizes and contents of the arrays are equal, [code]false[/code] otherwise.
+				Compares the left operand [Array] against the [param right] [Array]. Returns [code]true[/code] if the sizes and contents of the arrays are equal, [code]false[/code] otherwise.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is greater, or [code]false[/code] if the element is less. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the [code]right[/code] [Array] has more elements, otherwise it returns [code]false[/code].
+				Performs a comparison for each index between the left operand [Array] and the [param right] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is greater, or [code]false[/code] if the element is less. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the [param right] [Array] has more elements, otherwise it returns [code]false[/code].
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="Array" />
 			<description>
-				Performs a comparison for each index between the left operand [Array] and the [code]right[/code] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is greater, or [code]false[/code] if the element is less. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the [code]right[/code] [Array] has more or the same number of elements, otherwise it returns [code]false[/code].
+				Performs a comparison for each index between the left operand [Array] and the [param right] [Array], considering the highest common index of both arrays for this comparison: Returns [code]true[/code] on the first occurrence of an element that is greater, or [code]false[/code] if the element is less. Note that depending on the type of data stored, this function may be recursive. If all elements are equal, it compares the length of both arrays and returns [code]true[/code] if the [param right] [Array] has more or the same number of elements, otherwise it returns [code]false[/code].
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns a reference to the element of type [Variant] at the specified location. Arrays start at index 0. [code]index[/code] can be a zero or positive value to start from the beginning, or a negative value to start from the end. Out-of-bounds array access causes a run-time error, which will result in an error being printed and the project execution pausing if run from the editor.
+				Returns a reference to the element of type [Variant] at the specified location. Arrays start at index 0. [param index] can be a zero or positive value to start from the beginning, or a negative value to start from the end. Out-of-bounds array access causes a run-time error, which will result in an error being printed and the project execution pausing if run from the editor.
 			</description>
 		</operator>
 	</operators>

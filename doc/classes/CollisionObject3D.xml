@@ -17,7 +17,7 @@
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Receives unhandled [InputEvent]s. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				Receives unhandled [InputEvent]s. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
 				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
@@ -32,14 +32,14 @@
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_layer] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_collision_mask_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
-				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -49,7 +49,7 @@
 			</description>
 		</method>
 		<method name="get_shape_owners">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Returns an [Array] of [code]owner_id[/code] identifiers. You can use these ids in other methods that take [code]owner_id[/code] as an argument.
 			</description>
@@ -73,7 +73,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_layer], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member collision_layer], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_collision_mask_value">
@@ -81,7 +81,7 @@
 			<param index="0" name="layer_number" type="int" />
 			<param index="1" name="value" type="bool" />
 			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
@@ -177,6 +177,9 @@
 			The physics layers this CollisionObject3D [b]scans[/b]. Collision objects can scan one or more of 32 different layers. See also [member collision_layer].
 			[b]Note:[/b] Object A can detect a contact with object B only if object B is in any of the layers that object A scans. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
 		<member name="disable_mode" type="int" setter="set_disable_mode" getter="get_disable_mode" enum="CollisionObject3D.DisableMode" default="0">
 			Defines the behavior in physics when [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED]. See [enum DisableMode] for more details about the different modes.
 		</member>
@@ -195,7 +198,7 @@
 			<param index="3" name="normal" type="Vector3" />
 			<param index="4" name="shape_idx" type="int" />
 			<description>
-				Emitted when the object receives an unhandled [InputEvent]. [code]position[/code] is the location in world space of the mouse pointer on the surface of the shape with index [code]shape_idx[/code] and [code]normal[/code] is the normal vector of the surface at that point.
+				Emitted when the object receives an unhandled [InputEvent]. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
 			</description>
 		</signal>
 		<signal name="mouse_entered">

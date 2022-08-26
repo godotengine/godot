@@ -1538,6 +1538,47 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 	}
 }
 
+bool GDScriptInstance::property_can_revert(const StringName &p_name) const {
+	Variant name = p_name;
+	const Variant *args[1] = { &name };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_can_revert);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+			if (err.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::BOOL && ret.operator bool()) {
+				return true;
+			}
+		}
+		sptr = sptr->_base;
+	}
+
+	return false;
+}
+
+bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_ret) const {
+	Variant name = p_name;
+	const Variant *args[1] = { &name };
+
+	const GDScript *sptr = script.ptr();
+	while (sptr) {
+		HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_get_revert);
+		if (E) {
+			Callable::CallError err;
+			Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
+			if (err.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
+				r_ret = ret;
+				return true;
+			}
+		}
+		sptr = sptr->_base;
+	}
+
+	return false;
+}
+
 void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
@@ -2248,6 +2289,8 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set = StaticCString::create("_set");
 	strings._get = StaticCString::create("_get");
 	strings._get_property_list = StaticCString::create("_get_property_list");
+	strings._property_can_revert = StaticCString::create("_property_can_revert");
+	strings._property_get_revert = StaticCString::create("_property_get_revert");
 	strings._script_source = StaticCString::create("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";

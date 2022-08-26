@@ -46,7 +46,9 @@
 		<member name="input_count" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
 			The number of available input ports for this node.
 		</member>
-		<member name="xfade_time" type="float" setter="set_cross_fade_time" getter="get_cross_fade_time" default="0.0">
+		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
+		</member>
+		<member name="xfade_time" type="float" setter="set_xfade_time" getter="get_xfade_time" default="0.0">
 			Cross-fading time (in seconds) between each animation connected to the inputs.
 		</member>
 	</members>

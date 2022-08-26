@@ -1,5 +1,5 @@
 using System;
-using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -10,20 +10,11 @@ namespace Godot
     /// Comparing them is much faster than with regular strings, because only the pointers are compared,
     /// not the whole strings.
     /// </summary>
-    public sealed partial class StringName : IDisposable
+    public sealed class StringName : IDisposable
     {
-        private IntPtr ptr;
+        internal godot_string_name.movable NativeValue;
 
-        internal static IntPtr GetPtr(StringName instance)
-        {
-            if (instance == null)
-                throw new NullReferenceException($"The instance of type {nameof(StringName)} is null.");
-
-            if (instance.ptr == IntPtr.Zero)
-                throw new ObjectDisposedException(instance.GetType().FullName);
-
-            return instance.ptr;
-        }
+        private WeakReference<IDisposable> _weakReferenceToSelf;
 
         ~StringName()
         {
@@ -39,35 +30,45 @@ namespace Godot
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        public void Dispose(bool disposing)
         {
-            if (ptr != IntPtr.Zero)
+            // Always dispose `NativeValue` even if disposing is true
+            NativeValue.DangerousSelfRef.Dispose();
+
+            if (_weakReferenceToSelf != null)
             {
-                godot_icall_StringName_Dtor(ptr);
-                ptr = IntPtr.Zero;
+                DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
             }
         }
 
-        internal StringName(IntPtr ptr)
+        private StringName(godot_string_name nativeValueToOwn)
         {
-            this.ptr = ptr;
+            NativeValue = (godot_string_name.movable)nativeValueToOwn;
+            _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
         }
+
+        // Explicit name to make it very clear
+        internal static StringName CreateTakingOwnershipOfDisposableValue(godot_string_name nativeValueToOwn)
+            => new StringName(nativeValueToOwn);
 
         /// <summary>
         /// Constructs an empty <see cref="StringName"/>.
         /// </summary>
         public StringName()
         {
-            ptr = IntPtr.Zero;
         }
 
         /// <summary>
-        /// Constructs a <see cref="StringName"/> from the given <paramref name="path"/> string.
+        /// Constructs a <see cref="StringName"/> from the given <paramref name="name"/> string.
         /// </summary>
-        /// <param name="path">String to construct the <see cref="StringName"/> from.</param>
-        public StringName(string path)
+        /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
+        public StringName(string name)
         {
-            ptr = path == null ? IntPtr.Zero : godot_icall_StringName_Ctor(path);
+            if (!string.IsNullOrEmpty(name))
+            {
+                NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
+                _weakReferenceToSelf = DisposablesTracker.RegisterDisposable(this);
+            }
         }
 
         /// <summary>
@@ -80,7 +81,7 @@ namespace Godot
         /// Converts a <see cref="StringName"/> to a string.
         /// </summary>
         /// <param name="from">The <see cref="StringName"/> to convert.</param>
-        public static implicit operator string(StringName from) => from.ToString();
+        public static implicit operator string(StringName from) => from?.ToString();
 
         /// <summary>
         /// Converts this <see cref="StringName"/> to a string.
@@ -88,28 +89,75 @@ namespace Godot
         /// <returns>A string representation of this <see cref="StringName"/>.</returns>
         public override string ToString()
         {
-            return ptr == IntPtr.Zero ? string.Empty : godot_icall_StringName_operator_String(GetPtr(this));
+            if (IsEmpty)
+                return string.Empty;
+
+            var src = (godot_string_name)NativeValue;
+            NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, src);
+            using (dest)
+                return Marshaling.ConvertStringToManaged(dest);
         }
 
         /// <summary>
         /// Check whether this <see cref="StringName"/> is empty.
         /// </summary>
         /// <returns>If the <see cref="StringName"/> is empty.</returns>
-        public bool IsEmpty()
+        public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
+
+        public static bool operator ==(StringName left, StringName right)
         {
-            return ptr == IntPtr.Zero || godot_icall_StringName_is_empty(GetPtr(this));
+            if (left is null)
+                return right is null;
+            return left.Equals(right);
         }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern IntPtr godot_icall_StringName_Ctor(string path);
+        public static bool operator !=(StringName left, StringName right)
+        {
+            return !(left == right);
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void godot_icall_StringName_Dtor(IntPtr ptr);
+        public bool Equals(StringName other)
+        {
+            if (other is null)
+                return false;
+            return NativeValue.DangerousSelfRef == other.NativeValue.DangerousSelfRef;
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string godot_icall_StringName_operator_String(IntPtr ptr);
+        public static bool operator ==(StringName left, in godot_string_name right)
+        {
+            if (left is null)
+                return right.IsEmpty;
+            return left.Equals(right);
+        }
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool godot_icall_StringName_is_empty(IntPtr ptr);
+        public static bool operator !=(StringName left, in godot_string_name right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator ==(in godot_string_name left, StringName right)
+        {
+            return right == left;
+        }
+
+        public static bool operator !=(in godot_string_name left, StringName right)
+        {
+            return !(right == left);
+        }
+
+        public bool Equals(in godot_string_name other)
+        {
+            return NativeValue.DangerousSelfRef == other;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || (obj is StringName other && Equals(other));
+        }
+
+        public override int GetHashCode()
+        {
+            return NativeValue.GetHashCode();
+        }
     }
 }

@@ -48,7 +48,7 @@
 			<param index="0" name="from_column" type="int" />
 			<param index="1" name="to_column" type="int" />
 			<description>
-				Deletes a section of the [member text] going from position [code]from_column[/code] to [code]to_column[/code]. Both parameters should be within the text's length.
+				Deletes a section of the [member text] going from position [param from_column] to [param to_column]. Both parameters should be within the text's length.
 			</description>
 		</method>
 		<method name="deselect">
@@ -65,7 +65,7 @@
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
-			<return type="int" />
+			<return type="float" />
 			<description>
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>
@@ -92,7 +92,7 @@
 			<return type="void" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Inserts [code]text[/code] at the caret. If the resulting value is longer than [member max_length], nothing happens.
+				Inserts [param text] at the caret. If the resulting value is longer than [member max_length], nothing happens.
 			</description>
 		</method>
 		<method name="is_menu_visible" qualifiers="const">
@@ -113,7 +113,7 @@
 			<param index="0" name="from" type="int" default="0" />
 			<param index="1" name="to" type="int" default="-1" />
 			<description>
-				Selects characters inside [LineEdit] between [code]from[/code] and [code]to[/code]. By default, [code]from[/code] is at the beginning and [code]to[/code] at the end.
+				Selects characters inside [LineEdit] between [param from] and [param to]. By default, [param from] is at the beginning and [param to] at the end.
 				[codeblocks]
 				[gdscript]
 				text = "Welcome"
@@ -183,7 +183,7 @@
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>
 		<member name="max_length" type="int" setter="set_max_length" getter="get_max_length" default="0">
-			Maximum amount of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
+			Maximum number of characters that can be entered inside the [LineEdit]. If [code]0[/code], there is no limit.
 			When a limit is defined, characters that would exceed [member max_length] are truncated. This happens both for existing [member text] contents when setting the max length, or for new text inserted in the [LineEdit], including pasting. If any input text is truncated, the [signal text_change_rejected] signal is emitted with the truncated substring as parameter.
 			[b]Example:[/b]
 			[codeblocks]
@@ -417,7 +417,7 @@
 			The caret's width in pixels. Greater values can be used to improve accessibility by ensuring the caret is easily visible, or to ensure consistency with a large font size.
 		</theme_item>
 		<theme_item name="minimum_character_width" data_type="constant" type="int" default="4">
-			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this amount of 'M' characters can be displayed without scrolling).
+			Minimum horizontal space for the text (not counting the clear button and content margins). This value is measured in count of 'M' characters (i.e. this number of 'M' characters can be displayed without scrolling).
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.

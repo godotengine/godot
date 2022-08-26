@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"

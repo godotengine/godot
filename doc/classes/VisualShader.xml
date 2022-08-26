@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="get_node_connections" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
 				Returns the list of connected nodes with the specified type.
@@ -206,17 +206,19 @@
 		</constant>
 		<constant name="VARYING_TYPE_FLOAT" value="0" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_2D" value="1" enum="VaryingType">
+		<constant name="VARYING_TYPE_INT" value="1" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_3D" value="2" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_2D" value="2" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_4D" value="3" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_3D" value="3" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_COLOR" value="4" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_4D" value="4" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_TRANSFORM" value="5" enum="VaryingType">
+		<constant name="VARYING_TYPE_BOOLEAN" value="5" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_MAX" value="6" enum="VaryingType">
+		<constant name="VARYING_TYPE_TRANSFORM" value="6" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_MAX" value="7" enum="VaryingType">
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
 		</constant>

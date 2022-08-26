@@ -242,7 +242,7 @@ void VersionControlEditorPlugin::_view_file_diff() {
 }
 
 void VersionControlEditorPlugin::_display_file_diff(String p_file_path) {
-	Array diff_content = EditorVCSInterface::get_singleton()->get_file_diff(p_file_path);
+	TypedArray<Dictionary> diff_content = EditorVCSInterface::get_singleton()->get_file_diff(p_file_path);
 
 	diff_file_name->set_text(p_file_path);
 

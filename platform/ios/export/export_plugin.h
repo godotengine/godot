@@ -57,8 +57,10 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 
 	// Plugins
 	SafeFlag plugins_changed;
+#ifndef ANDROID_ENABLED
 	Thread check_for_changes_thread;
 	SafeFlag quit_request;
+#endif
 	Mutex plugins_lock;
 	Vector<PluginConfigIOS> plugins;
 
@@ -139,6 +141,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		return true;
 	}
 
+#ifndef ANDROID_ENABLED
 	static void _check_for_changes_poll_thread(void *ud) {
 		EditorExportPlatformIOS *ea = static_cast<EditorExportPlatformIOS *>(ud);
 
@@ -172,6 +175,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 			}
 		}
 	}
+#endif
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
@@ -198,7 +202,8 @@ public:
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
 	virtual void get_platform_features(List<String> *r_features) const override {
 		r_features->push_back("mobile");

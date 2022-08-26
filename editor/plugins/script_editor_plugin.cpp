@@ -49,7 +49,6 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
-#include "modules/visual_script/editor/visual_script_editor.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
@@ -66,12 +65,12 @@ String EditorSyntaxHighlighter::_get_name() const {
 	return "Unnamed";
 }
 
-Array EditorSyntaxHighlighter::_get_supported_languages() const {
-	Array ret;
+PackedStringArray EditorSyntaxHighlighter::_get_supported_languages() const {
+	PackedStringArray ret;
 	if (GDVIRTUAL_CALL(_get_supported_languages, ret)) {
 		return ret;
 	}
-	return Array();
+	return PackedStringArray();
 }
 
 Ref<EditorSyntaxHighlighter> EditorSyntaxHighlighter::_create() const {
@@ -1156,8 +1155,8 @@ Ref<Script> ScriptEditor::_get_current_script() {
 	}
 }
 
-Array ScriptEditor::_get_open_scripts() const {
-	Array ret;
+TypedArray<Script> ScriptEditor::_get_open_scripts() const {
+	TypedArray<Script> ret;
 	Vector<Ref<Script>> scripts = get_open_scripts();
 	int scrits_amount = scripts.size();
 	for (int idx_script = 0; idx_script < scrits_amount; idx_script++) {
@@ -1408,8 +1407,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				es->set_editor(EditorNode::get_singleton());
 
 				es->_run();
-
-				EditorNode::get_undo_redo()->clear_history();
 			} break;
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
@@ -1734,7 +1731,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 			continue;
 		}
 
-		Array bpoints = se->get_breakpoints();
+		PackedInt32Array bpoints = se->get_breakpoints();
 		for (int j = 0; j < bpoints.size(); j++) {
 			p_breakpoints->push_back(base + ":" + itos((int)bpoints[j] + 1));
 		}
@@ -2382,8 +2379,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			se->add_syntax_highlighter(highlighter);
 
 			if (script != nullptr && !highlighter_set) {
-				Array languages = highlighter->_get_supported_languages();
-				if (languages.find(script->get_language()->get_name()) > -1) {
+				PackedStringArray languages = highlighter->_get_supported_languages();
+				if (languages.has(script->get_language()->get_name())) {
 					se->set_syntax_highlighter(highlighter);
 					highlighter_set = true;
 				}
@@ -3448,8 +3445,8 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	return out_scripts;
 }
 
-Array ScriptEditor::_get_open_script_editors() const {
-	Array script_editors;
+TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {
+	TypedArray<ScriptEditorBase> script_editors;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {

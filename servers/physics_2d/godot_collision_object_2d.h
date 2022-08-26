@@ -70,6 +70,7 @@ private:
 	Transform2D inv_transform;
 	uint32_t collision_mask = 1;
 	uint32_t collision_layer = 1;
+	real_t collision_priority = 1.0;
 	bool _static = true;
 
 	SelfList<GodotCollisionObject2D> pending_shape_update_list;
@@ -165,6 +166,13 @@ public:
 		_shape_changed();
 	}
 	_FORCE_INLINE_ uint32_t get_collision_layer() const { return collision_layer; }
+
+	_FORCE_INLINE_ void set_collision_priority(real_t p_priority) {
+		ERR_FAIL_COND_MSG(p_priority <= 0, "Priority must be greater than 0.");
+		collision_priority = p_priority;
+		_shape_changed();
+	}
+	_FORCE_INLINE_ real_t get_collision_priority() const { return collision_priority; }
 
 	void remove_shape(GodotShape2D *p_shape) override;
 	void remove_shape(int p_index);

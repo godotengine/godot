@@ -981,7 +981,7 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 			if (p_validator) {
 				// Making a copy as we may modify it.
 				PropertyInfo pi_mut = pi;
-				p_validator->_validate_property(pi_mut);
+				p_validator->validate_property(pi_mut);
 				p_list->push_back(pi_mut);
 			} else {
 				p_list->push_back(pi);
@@ -1022,7 +1022,7 @@ bool ClassDB::get_property_info(const StringName &p_class, const StringName &p_p
 		if (check->property_map.has(p_property)) {
 			PropertyInfo pinfo = check->property_map[p_property];
 			if (p_validator) {
-				p_validator->_validate_property(pinfo);
+				p_validator->validate_property(pinfo);
 			}
 			if (r_info) {
 				*r_info = pinfo;

@@ -32,11 +32,10 @@
 
 #include "core/math/convex_hull.h"
 #include "core/templates/pair.h"
+#include "scene/resources/surface_tool.h"
+
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
-#include "surface_tool.h"
-
-#include <stdlib.h>
 
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
 
@@ -72,13 +71,13 @@ Array Mesh::surface_get_arrays(int p_surface) const {
 	return Array();
 }
 
-Array Mesh::surface_get_blend_shape_arrays(int p_surface) const {
-	Array ret;
+TypedArray<Array> Mesh::surface_get_blend_shape_arrays(int p_surface) const {
+	TypedArray<Array> ret;
 	if (GDVIRTUAL_REQUIRED_CALL(_surface_get_blend_shape_arrays, p_surface, ret)) {
 		return ret;
 	}
 
-	return Array();
+	return TypedArray<Array>();
 }
 
 Dictionary Mesh::surface_get_lods(int p_surface) const {
@@ -201,7 +200,9 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 			continue;
 		}
 		int len = (surface_get_format(i) & ARRAY_FORMAT_INDEX) ? surface_get_array_index_len(i) : surface_get_array_len(i);
-		if ((primitive == PRIMITIVE_TRIANGLES && (len == 0 || (len % 3) != 0)) || (primitive == PRIMITIVE_TRIANGLE_STRIP && len < 3)) {
+		if ((primitive == PRIMITIVE_TRIANGLES && (len == 0 || (len % 3) != 0)) ||
+				(primitive == PRIMITIVE_TRIANGLE_STRIP && len < 3) ||
+				(surface_get_format(i) & ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY)) {
 			// Error was already shown, just skip (including zero).
 			continue;
 		}
@@ -211,6 +212,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 		int vc = surface_get_array_len(i);
 		Vector<Vector3> vertices = a[ARRAY_VERTEX];
+		ERR_FAIL_COND_V(vertices.is_empty(), Ref<TriangleMesh>());
 		const Vector3 *vr = vertices.ptr();
 
 		int32_t from_index = widx / 3;
@@ -863,27 +865,6 @@ static Mesh::PrimitiveType _old_primitives[7] = {
 };
 #endif // DISABLE_DEPRECATED
 
-// Convert Octahedron-mapped normalized vector back to Cartesian
-// Assumes normalized format (elements of v within range [-1, 1])
-Vector3 _oct_to_norm(const Vector2 v) {
-	Vector3 res(v.x, v.y, 1 - (Math::absf(v.x) + Math::absf(v.y)));
-	float t = MAX(-res.z, 0.0f);
-	res.x += t * -SIGN(res.x);
-	res.y += t * -SIGN(res.y);
-	return res.normalized();
-}
-
-// Convert Octahedron-mapped normalized tangent vector back to Cartesian
-// out_sign provides the direction for the original cartesian tangent
-// Assumes normalized format (elements of v within range [-1, 1])
-Vector3 _oct_to_tangent(const Vector2 v, float *out_sign) {
-	Vector2 v_decompressed = v;
-	v_decompressed.y = Math::absf(v_decompressed.y) * 2 - 1;
-	Vector3 res = _oct_to_norm(v_decompressed);
-	*out_sign = SIGN(v[1]);
-	return res;
-}
-
 void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_format, uint32_t p_new_format, uint32_t p_elements, Vector<uint8_t> &vertex_data, Vector<uint8_t> &attribute_data, Vector<uint8_t> &skin_data) {
 	uint32_t dst_vertex_stride;
 	uint32_t dst_attribute_stride;
@@ -954,127 +935,93 @@ void _fix_array_compatibility(const Vector<uint8_t> &p_src, uint32_t p_old_forma
 					if ((p_old_format & OLD_ARRAY_COMPRESS_NORMAL) && (p_old_format & OLD_ARRAY_FORMAT_TANGENT) && (p_old_format & OLD_ARRAY_COMPRESS_TANGENT)) {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
-							const Vector2 src_vec(src[0] / 127.0f, src[1] / 127.0f);
+							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							const Vector3 res = _oct_to_norm(src_vec) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
-							*dst = 0;
-							*dst |= CLAMP(int(res.x * 1023.0f), 0, 1023);
-							*dst |= CLAMP(int(res.y * 1023.0f), 0, 1023) << 10;
-							*dst |= CLAMP(int(res.z * 1023.0f), 0, 1023) << 20;
+							dst[0] = (int16_t)CLAMP(src[0] / 127.0f * 32767, -32768, 32767);
+							dst[1] = (int16_t)CLAMP(src[1] / 127.0f * 32767, -32768, 32767);
 						}
-						src_offset += sizeof(int8_t) * 2;
+						src_offset += sizeof(int16_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
-							const Vector2 src_vec(src[0] / 32767.0f, src[1] / 32767.0f);
+							int16_t *dst = (int16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
 
-							const Vector3 res = _oct_to_norm(src_vec) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
-							*dst = 0;
-							*dst |= CLAMP(int(res.x * 1023.0f), 0, 1023);
-							*dst |= CLAMP(int(res.y * 1023.0f), 0, 1023) << 10;
-							*dst |= CLAMP(int(res.z * 1023.0f), 0, 1023) << 20;
+							dst[0] = src[0];
+							dst[1] = src[1];
 						}
 						src_offset += sizeof(int16_t) * 2;
 					}
 				} else { // No Octahedral compression
 					if (p_old_format & OLD_ARRAY_COMPRESS_NORMAL) {
-						const float multiplier = 1.f / 127.f * 1023.0f;
-
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							const Vector3 original_normal(src[0], src[1], src[2]);
+							Vector2 res = original_normal.octahedron_encode();
 
-							*dst = 0;
-							*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
-							*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
-							*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint32_t);
+						src_offset += sizeof(uint16_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							const Vector3 original_normal(src[0], src[1], src[2]);
+							Vector2 res = original_normal.octahedron_encode();
 
-							*dst = 0;
-							*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
-							*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
-							*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(float) * 3;
+						src_offset += sizeof(uint16_t) * 2;
 					}
 				}
 
 			} break;
 			case OLD_ARRAY_TANGENT: {
 				if (p_old_format & OLD_ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION) {
-					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) { // int8
+					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) { // int8 SNORM -> uint16 UNORM
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
-							const Vector2 src_vec(src[0] / 127.0f, src[1] / 127.0f);
-							float out_sign;
-							const Vector3 res = _oct_to_tangent(src_vec, &out_sign) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 
-							*dst = 0;
-							*dst |= CLAMP(int(res.x * 1023.0), 0, 1023);
-							*dst |= CLAMP(int(res.y * 1023.0), 0, 1023) << 10;
-							*dst |= CLAMP(int(res.z * 1023.0), 0, 1023) << 20;
-							if (out_sign > 0) {
-								*dst |= 3 << 30;
-							}
+							dst[0] = (uint16_t)CLAMP((src[0] / 127.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 127.0f * .5f + .5f) * 65535, 0, 65535);
 						}
-						src_offset += sizeof(int8_t) * 2;
-					} else { // int16
+						src_offset += sizeof(uint16_t) * 2;
+					} else { // int16 SNORM -> uint16 UNORM
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int16_t *src = (const int16_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
-							const Vector2 src_vec(src[0] / 32767.0f, src[1] / 32767.0f);
-							float out_sign;
-							Vector3 res = _oct_to_tangent(src_vec, &out_sign) * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
 
-							*dst = 0;
-							*dst |= CLAMP(int(res.x * 1023.0), 0, 1023);
-							*dst |= CLAMP(int(res.y * 1023.0), 0, 1023) << 10;
-							*dst |= CLAMP(int(res.z * 1023.0), 0, 1023) << 20;
-							if (out_sign > 0) {
-								*dst |= 3 << 30;
-							}
+							dst[0] = (uint16_t)CLAMP((src[0] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP((src[1] / 32767.0f * .5f + .5f) * 65535, 0, 65535);
 						}
-						src_offset += sizeof(int16_t) * 2;
+						src_offset += sizeof(uint16_t) * 2;
 					}
 				} else { // No Octahedral compression
 					if (p_old_format & OLD_ARRAY_COMPRESS_TANGENT) {
-						const float multiplier = 1.f / 127.f * 1023.0f;
-
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const int8_t *src = (const int8_t *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+							const Vector3 original_tangent(src[0], src[1], src[2]);
+							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							*dst = 0;
-							*dst |= CLAMP(int(src[0] * multiplier), 0, 1023);
-							*dst |= CLAMP(int(src[1] * multiplier), 0, 1023) << 10;
-							*dst |= CLAMP(int(src[2] * multiplier), 0, 1023) << 20;
-							if (src[3] > 0) {
-								*dst |= 3 << 30;
-							}
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(uint32_t);
+						src_offset += sizeof(uint16_t) * 2;
 					} else {
 						for (uint32_t i = 0; i < p_elements; i++) {
 							const float *src = (const float *)&src_vertex_ptr[i * src_vertex_stride + src_offset];
-							uint32_t *dst = (uint32_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_TANGENT]];
+							const Vector3 original_tangent(src[0], src[1], src[2]);
+							Vector2 res = original_tangent.octahedron_tangent_encode(src[3]);
 
-							*dst = 0;
-							*dst |= CLAMP(int(src[0] * 1023.0), 0, 1023);
-							*dst |= CLAMP(int(src[1] * 1023.0), 0, 1023) << 10;
-							*dst |= CLAMP(int(src[2] * 1023.0), 0, 1023) << 20;
-							if (src[3] > 0) {
-								*dst |= 3 << 30;
-							}
+							uint16_t *dst = (uint16_t *)&dst_vertex_ptr[i * dst_vertex_stride + dst_offsets[Mesh::ARRAY_NORMAL]];
+							dst[0] = (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+							dst[1] = (uint16_t)CLAMP(res.y * 65535, 0, 65535);
 						}
-						src_offset += sizeof(float) * 4;
+						src_offset += sizeof(uint16_t) * 2;
 					}
 				}
 			} break;
@@ -1693,8 +1640,8 @@ Array ArrayMesh::surface_get_arrays(int p_surface) const {
 	return RenderingServer::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
 
-Array ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
-	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
+TypedArray<Array> ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), TypedArray<Array>());
 	return RenderingServer::get_singleton()->mesh_surface_get_blend_shape_arrays(mesh, p_surface);
 }
 

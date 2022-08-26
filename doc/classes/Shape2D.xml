@@ -21,7 +21,7 @@
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
-			<return type="Array" />
+			<return type="PackedVector2Array" />
 			<param index="0" name="local_xform" type="Transform2D" />
 			<param index="1" name="with_shape" type="Shape2D" />
 			<param index="2" name="shape_xform" type="Transform2D" />
@@ -45,7 +45,7 @@
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
-			<return type="Array" />
+			<return type="PackedVector2Array" />
 			<param index="0" name="local_xform" type="Transform2D" />
 			<param index="1" name="local_motion" type="Vector2" />
 			<param index="2" name="with_shape" type="Shape2D" />

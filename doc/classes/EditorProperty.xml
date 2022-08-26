@@ -29,7 +29,7 @@
 			<param index="2" name="field" type="StringName" default="&amp;&quot;&quot;" />
 			<param index="3" name="changing" type="bool" default="false" />
 			<description>
-				If one or several properties have changed, this must be called. [code]field[/code] is used in case your editor can modify fields separately (as an example, Vector3.x). The [code]changing[/code] argument avoids the editor requesting this property to be refreshed (leave as [code]false[/code] if unsure).
+				If one or several properties have changed, this must be called. [param field] is used in case your editor can modify fields separately (as an example, Vector3.x). The [param changing] argument avoids the editor requesting this property to be refreshed (leave as [code]false[/code] if unsure).
 			</description>
 		</method>
 		<method name="get_edited_object">
@@ -54,7 +54,7 @@
 			<return type="void" />
 			<param index="0" name="editor" type="Control" />
 			<description>
-				Puts the [code]editor[/code] control below the property label. The control must be previously added using [method Node.add_child].
+				Puts the [param editor] control below the property label. The control must be previously added using [method Node.add_child].
 			</description>
 		</method>
 		<method name="update_property">

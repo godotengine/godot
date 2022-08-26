@@ -86,6 +86,11 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 }
 
 void MenuButton::pressed() {
+	if (popup->is_visible()) {
+		popup->hide();
+		return;
+	}
+
 	emit_signal(SNAME("about_to_popup"));
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
@@ -99,9 +104,7 @@ void MenuButton::pressed() {
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
 
 	// If not triggered by the mouse, start the popup with its first item selected.
-	if (popup->get_item_count() > 0 &&
-			((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
-					(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept")))) {
+	if (popup->get_item_count() > 0 && !_was_pressed_by_mouse()) {
 		popup->set_current_index(0);
 	}
 
@@ -126,6 +129,11 @@ bool MenuButton::is_switch_on_hover() {
 
 void MenuButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
+
+	if (popup->get_item_count() == p_count) {
+		return;
+	}
+
 	popup->set_item_count(p_count);
 	notify_property_list_changed();
 }

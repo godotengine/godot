@@ -74,7 +74,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			code_edit->set_line_as_breakpoint(0, true);
 			CHECK(code_edit->is_line_breakpointed(0));
-			CHECK(code_edit->get_breakpointed_lines()[0] == Variant(0));
+			CHECK(code_edit->get_breakpointed_lines()[0] == 0);
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			code_edit->set_line_as_breakpoint(0, false);
@@ -451,7 +451,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			ERR_PRINT_ON;
 
 			code_edit->set_line_as_bookmarked(0, true);
-			CHECK(code_edit->get_bookmarked_lines()[0] == Variant(0));
+			CHECK(code_edit->get_bookmarked_lines()[0] == 0);
 			CHECK(code_edit->is_line_bookmarked(0));
 
 			code_edit->set_line_as_bookmarked(0, false);
@@ -657,7 +657,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			ERR_PRINT_ON;
 
 			code_edit->set_line_as_executing(0, true);
-			CHECK(code_edit->get_executing_lines()[0] == Variant(0));
+			CHECK(code_edit->get_executing_lines()[0] == 0);
 			CHECK(code_edit->is_line_executing(0));
 
 			code_edit->set_line_as_executing(0, false);

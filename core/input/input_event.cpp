@@ -274,24 +274,24 @@ void InputEventWithModifiers::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_pressed"), "set_command_pressed", "is_command_pressed");
 }
 
-void InputEventWithModifiers::_validate_property(PropertyInfo &property) const {
+void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const {
 	if (store_command) {
 		// If we only want to Store "Command".
 #ifdef APPLE_STYLE_KEYS
 		// Don't store "Meta" on Mac.
-		if (property.name == "meta_pressed") {
-			property.usage ^= PROPERTY_USAGE_STORAGE;
+		if (p_property.name == "meta_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 #else
 		// Don't store "Ctrl".
-		if (property.name == "ctrl_pressed") {
-			property.usage ^= PROPERTY_USAGE_STORAGE;
+		if (p_property.name == "ctrl_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 #endif
 	} else {
 		// We don't want to store command, only ctrl or meta (on mac).
-		if (property.name == "command_pressed") {
-			property.usage ^= PROPERTY_USAGE_STORAGE;
+		if (p_property.name == "command_pressed") {
+			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 	}
 }

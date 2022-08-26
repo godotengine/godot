@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -62,7 +57,7 @@ namespace Godot
                     case 1:
                         return y;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -76,7 +71,7 @@ namespace Godot
                         y = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -644,16 +639,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Vector2"/> from an existing <see cref="Vector2"/>.
-        /// </summary>
-        /// <param name="v">The existing <see cref="Vector2"/>.</param>
-        public Vector2(Vector2 v)
-        {
-            x = v.x;
-            y = v.y;
-        }
-
-        /// <summary>
         /// Creates a unit Vector2 rotated to the given angle. This is equivalent to doing
         /// <c>Vector2(Mathf.Cos(angle), Mathf.Sin(angle))</c> or <c>Vector2.Right.Rotated(angle)</c>.
         /// </summary>
@@ -940,11 +925,7 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Vector2)
-            {
-                return Equals((Vector2)obj);
-            }
-            return false;
+            return obj is Vector2 other && Equals(other);
         }
 
         /// <summary>

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Every class which is not a built-in type inherits from this class.
-		You can construct Objects from scripting languages, using [code]Object.new()[/code] in GDScript, [code]new Object[/code] in C#, or the "Construct Object" node in VisualScript.
+		You can construct Objects from scripting languages, using [code]Object.new()[/code] in GDScript, or [code]new Object[/code] in C#.
 		Objects do not manage memory. If a class inherits from Object, you will have to delete instances of it manually. To do so, call the [method free] method from your script or delete the instance from C++.
 		Some classes that extend Object add memory management. This is the case of [RefCounted], which counts references and deletes itself automatically when no longer referenced. [Node], another fundamental type, deletes all its children when freed from memory.
 		Objects export properties, which are mainly useful for storage and editing, but not really so much in programming. Properties are exported in [method _get_property_list] and handled in [method _get] and [method _set]. However, scripting languages and C++ have simpler means to export them.
@@ -39,11 +39,11 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method get].
-				Returns the given property. Returns [code]null[/code] if the [code]property[/code] does not exist.
+				Returns the given property. Returns [code]null[/code] if the [param property] does not exist.
 			</description>
 		</method>
 		<method name="_get_property_list" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method get_property_list].
 				Returns the object's property list as an [Array] of dictionaries.
@@ -61,7 +61,23 @@
 			<return type="void" />
 			<param index="0" name="what" type="int" />
 			<description>
-				Called whenever the object receives a notification, which is identified in [code]what[/code] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
+				Called whenever the object receives a notification, which is identified in [param what] by a constant. The base [Object] has two constants [constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE], but subclasses such as [Node] define a lot more notifications which are also received by this method.
+			</description>
+		</method>
+		<method name="_property_can_revert" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Virtual methods that can be overridden to customize the property revert behavior in the editor.
+				Returns [code]true[/code] if the property identified by [code]name[/code] can be reverted to a default value. Override [method _property_get_revert] to return the actual value.
+			</description>
+		</method>
+		<method name="_property_get_revert" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="property" type="StringName" />
+			<description>
+				Virtual methods that can be overridden to customize the property revert behavior in the editor.
+				Returns the default value of the property identified by [code]name[/code]. [method _property_can_revert] must be overridden as well for this method to be called.
 			</description>
 		</method>
 		<method name="_set" qualifiers="virtual">
@@ -70,7 +86,7 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Virtual method which can be overridden to customize the return value of [method set].
-				Sets a property. Returns [code]true[/code] if the [code]property[/code] exists.
+				Sets a property. Returns [code]true[/code] if the [param property] exists.
 			</description>
 		</method>
 		<method name="_to_string" qualifiers="virtual">
@@ -85,14 +101,14 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
+				Adds a user-defined [param signal]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
 			</description>
 		</method>
 		<method name="call" qualifiers="vararg">
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [code]method[/code] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [param method] on the object and returns the result. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -110,7 +126,7 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [code]method[/code] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Calls the [param method] on the object during idle time. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -129,7 +145,7 @@
 			<param index="0" name="method" type="StringName" />
 			<param index="1" name="arg_array" type="Array" />
 			<description>
-				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
+				Calls the [param method] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
 				[codeblocks]
 				[gdscript]
 				var node = Node3D.new()
@@ -154,7 +170,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<param index="2" name="flags" type="int" default="0" />
 			<description>
-				Connects a [code]signal[/code] to a [code]callable[/code]. Use [code]flags[/code] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
+				Connects a [param signal] to a [param callable]. Use [param flags] to set deferred or one-shot connections. See [enum ConnectFlags] constants.
 				A signal can only be connected once to a [Callable]. It will print an error if already connected, unless the signal was connected with [constant CONNECT_REFERENCE_COUNTED]. To avoid this, first, use [method is_connected] to check for existing connections.
 				If the callable's target is destroyed in the game's lifecycle, the connection will be lost.
 				[b]Examples with recommended syntax:[/b]
@@ -294,7 +310,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Disconnects a [code]signal[/code] from a given [code]callable[/code].
+				Disconnects a [param signal] from a given [param callable].
 				If you try to disconnect a connection that does not exist, the method will print an error. Use [method is_connected] to ensure that the connection exists.
 			</description>
 		</method>
@@ -302,7 +318,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Emits the given [code]signal[/code]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
+				Emits the given [param signal]. The signal must exist, so it should be a built-in signal of this class or one of its parent classes, or a user-defined signal. This method supports a variable number of arguments, so parameters are passed as a comma separated list. Example:
 				[codeblocks]
 				[gdscript]
 				emit_signal("hit", "sword", 100)
@@ -325,7 +341,7 @@
 			<return type="Variant" />
 			<param index="0" name="property" type="StringName" />
 			<description>
-				Returns the [Variant] value of the given [code]property[/code]. If the [code]property[/code] doesn't exist, this will return [code]null[/code].
+				Returns the [Variant] value of the given [param property]. If the [param property] doesn't exist, this will return [code]null[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
@@ -337,7 +353,7 @@
 			</description>
 		</method>
 		<method name="get_incoming_connections" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of dictionaries with information about signals that are connected to the object.
 				Each [Dictionary] contains three String entries:
@@ -366,8 +382,9 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="default" type="Variant" default="null" />
 			<description>
-				Returns the object's metadata entry for the given [code]name[/code].
-				Throws error if the entry does not exist, unless [code]default[/code] is not [code]null[/code] (in which case the default value will be returned).
+				Returns the object's metadata entry for the given [param name].
+				Throws error if the entry does not exist, unless [param default] is not [code]null[/code] (in which case the default value will be returned). See also [method has_meta], [method set_meta] and [method remove_meta].
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
 			</description>
 		</method>
 		<method name="get_meta_list" qualifiers="const">
@@ -377,13 +394,13 @@
 			</description>
 		</method>
 		<method name="get_method_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the object's methods and their signatures as an [Array].
 			</description>
 		</method>
 		<method name="get_property_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the object's property list as an [Array] of dictionaries.
 				Each property's [Dictionary] contain at least [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries. Optionally, it can also include [code]hint: int[/code] (see [enum PropertyHint]), [code]hint_string: String[/code], and [code]usage: int[/code] (see [enum PropertyUsageFlags]).
@@ -396,14 +413,14 @@
 			</description>
 		</method>
 		<method name="get_signal_connection_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns an [Array] of connections for the given [code]signal[/code].
+				Returns an [Array] of connections for the given [param signal].
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the list of signals as an [Array] of dictionaries.
 			</description>
@@ -412,28 +429,29 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if a metadata entry is found with the given [code]name[/code].
+				Returns [code]true[/code] if a metadata entry is found with the given [param name]. See also [method get_meta], [method set_meta] and [method remove_meta].
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
 			</description>
 		</method>
 		<method name="has_method" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the object contains the given [code]method[/code].
+				Returns [code]true[/code] if the object contains the given [param method].
 			</description>
 		</method>
 		<method name="has_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given [code]signal[/code] exists.
+				Returns [code]true[/code] if the given [param signal] exists.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the given user-defined [code]signal[/code] exists. Only signals added using [method add_user_signal] are taken into account.
+				Returns [code]true[/code] if the given user-defined [param signal] exists. Only signals added using [method add_user_signal] are taken into account.
 			</description>
 		</method>
 		<method name="is_blocking_signals" qualifiers="const">
@@ -446,7 +464,7 @@
 			<return type="bool" />
 			<param index="0" name="class" type="String" />
 			<description>
-				Returns [code]true[/code] if the object inherits from the given [code]class[/code]. See also [method get_class].
+				Returns [code]true[/code] if the object inherits from the given [param class]. See also [method get_class].
 				[b]Note:[/b] [method is_class] does not take [code]class_name[/code] declarations into account. If the object has a [code]class_name[/code] defined, [method is_class] will return [code]false[/code] for that name.
 			</description>
 		</method>
@@ -455,7 +473,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Returns [code]true[/code] if a connection exists for a given [code]signal[/code] and [code]callable[/code].
+				Returns [code]true[/code] if a connection exists for a given [param signal] and [param callable].
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
@@ -470,7 +488,7 @@
 			<param index="1" name="reversed" type="bool" default="false" />
 			<description>
 				Send a given notification to the object, which will also trigger a call to the [method _notification] method of all classes that the object inherits from.
-				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
+				If [param reversed] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [param reversed] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
 			</description>
 		</method>
 		<method name="notify_property_list_changed">
@@ -483,7 +501,8 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes a given entry from the object's metadata. See also [method set_meta].
+				Removes a given entry from the object's metadata. See also [method has_meta], [method get_meta] and [method set_meta].
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
 			</description>
 		</method>
 		<method name="set">
@@ -491,7 +510,7 @@
 			<param index="0" name="property" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Assigns a new value to the given property. If the [code]property[/code] does not exist or the given value's type doesn't match, nothing will happen.
+				Assigns a new value to the given property. If the [param property] does not exist or the given value's type doesn't match, nothing will happen.
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
@@ -546,7 +565,8 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Adds, changes or removes a given entry in the object's metadata. Metadata are serialized and can take any [Variant] value.
-				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code].
+				To remove a given entry from the object's metadata, use [method remove_meta]. Metadata is also removed if its value is set to [code]null[/code]. This means you can also use [code]set_meta("name", null)[/code] to remove metadata for [code]"name"[/code]. See also [method has_meta] and [method get_meta].
+				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the inspector and should not be edited.
 			</description>
 		</method>
 		<method name="set_script">
@@ -570,7 +590,7 @@
 			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a message using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
-				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] unchanged. See [method set_message_translation].
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [param message] unchanged. See [method set_message_translation].
 				See [url=$DOCS_URL/tutorials/i18n/internationalizing_games.html]Internationalizing games[/url] for examples of the usage of this method.
 			</description>
 		</method>
@@ -582,8 +602,8 @@
 			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a message involving plurals using translation catalogs configured in the Project Settings. An additional context could be used to specify the translation context.
-				Only works if message translation is enabled (which it is by default), otherwise it returns the [code]message[/code] or [code]plural_message[/code] unchanged. See [method set_message_translation].
-				The number [code]n[/code] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				Only works if message translation is enabled (which it is by default), otherwise it returns the [param message] or [param plural_message] unchanged. See [method set_message_translation].
+				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
 				[b]Note:[/b] Negative and floating-point values usually represent physical entities for which singular and plural don't clearly apply. In such cases, use [method tr].
 				See [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]Localization using gettext[/url] for examples of the usage of this method.
 			</description>

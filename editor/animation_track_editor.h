@@ -32,6 +32,7 @@
 #define ANIMATION_TRACK_EDITOR_H
 
 #include "editor/editor_data.h"
+#include "editor/editor_properties.h"
 #include "editor/editor_spin_slider.h"
 #include "editor/property_selector.h"
 
@@ -78,7 +79,7 @@ class AnimationTimelineEdit : public Range {
 	void _anim_loop_pressed();
 
 	void _play_position_draw();
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	Rect2 hsize_rect;
 
 	bool editing = false;
@@ -112,7 +113,7 @@ public:
 	void set_track_edit(AnimationTrackEdit *p_track_edit);
 	void set_zoom(Range *p_zoom);
 	Range *get_zoom() const { return zoom; }
-	void set_undo_redo(UndoRedo *p_undo_redo);
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 
 	void set_play_position(float p_pos);
 	float get_play_position() const;
@@ -152,7 +153,7 @@ class AnimationTrackEdit : public Control {
 	};
 
 	AnimationTimelineEdit *timeline = nullptr;
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 	Popup *path_popup = nullptr;
 	LineEdit *path = nullptr;
 	Node *root = nullptr;
@@ -233,12 +234,12 @@ public:
 	Ref<Animation> get_animation() const;
 	AnimationTimelineEdit *get_timeline() const { return timeline; }
 	AnimationTrackEditor *get_editor() const { return editor; }
-	UndoRedo *get_undo_redo() const { return undo_redo; }
+	Ref<EditorUndoRedoManager> get_undo_redo() const;
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track, bool p_read_only);
 	virtual Size2 get_minimum_size() const override;
 
-	void set_undo_redo(UndoRedo *p_undo_redo);
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_editor(AnimationTrackEditor *p_editor);
 	void set_root(Node *p_root);
@@ -322,8 +323,9 @@ class AnimationTrackEditor : public VBoxContainer {
 	Vector<AnimationTrackEditGroup *> groups;
 
 	bool animation_changing_awaiting_update = false;
-	void _animation_update();
+	void _animation_update(); // Updated by AnimationTrackEditor(this)
 	int _get_track_selected();
+	void _sync_animation_change();
 	void _animation_changed();
 	void _update_tracks();
 
@@ -333,7 +335,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _animation_track_remove_request(int p_track, Ref<Animation> p_from_animation);
 	void _track_grab_focus(int p_track);
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
@@ -447,13 +449,20 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _toggle_bezier_edit();
 	void _cancel_bezier_edit();
 	void _bezier_edit(int p_for_track);
+	void _bezier_track_set_key_handle_mode(Animation *p_anim, int p_track, int p_index, Animation::HandleMode p_mode, Animation::HandleSetMode p_set_mode = Animation::HANDLE_SET_MODE_NONE);
 
 	////////////// edit menu stuff
 
+	ConfirmationDialog *bake_dialog = nullptr;
+	CheckBox *bake_trs = nullptr;
+	CheckBox *bake_blendshape = nullptr;
+	CheckBox *bake_value = nullptr;
+	SpinBox *bake_fps = nullptr;
+
 	ConfirmationDialog *optimize_dialog = nullptr;
-	SpinBox *optimize_linear_error = nullptr;
+	SpinBox *optimize_velocity_error = nullptr;
 	SpinBox *optimize_angular_error = nullptr;
-	SpinBox *optimize_max_angle = nullptr;
+	SpinBox *optimize_precision_error = nullptr;
 
 	ConfirmationDialog *cleanup_dialog = nullptr;
 	CheckBox *cleanup_keys = nullptr;
@@ -462,6 +471,11 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	ConfirmationDialog *scale_dialog = nullptr;
 	SpinBox *scale = nullptr;
+
+	ConfirmationDialog *ease_dialog = nullptr;
+	OptionButton *transition_selection = nullptr;
+	OptionButton *ease_selection = nullptr;
+	SpinBox *ease_fps = nullptr;
 
 	void _select_all_tracks_for_copy();
 
@@ -488,7 +502,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		Animation::TrackType track_type = Animation::TYPE_ANIMATION;
 		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC;
 		Animation::UpdateMode update_mode = Animation::UPDATE_CAPTURE;
-		Animation::LoopMode loop_mode = Animation::LOOP_LINEAR;
+		Animation::LoopMode loop_mode = Animation::LOOP_PINGPONG;
 		bool loop_wrap = false;
 		bool enabled = false;
 
@@ -520,6 +534,8 @@ public:
 		EDIT_SCALE_SELECTION,
 		EDIT_SCALE_FROM_CURSOR,
 		EDIT_SCALE_CONFIRM,
+		EDIT_EASE_SELECTION,
+		EDIT_EASE_CONFIRM,
 		EDIT_DUPLICATE_SELECTION,
 		EDIT_DUPLICATE_TRANSPOSED,
 		EDIT_ADD_RESET_KEY,
@@ -528,6 +544,8 @@ public:
 		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
 		EDIT_APPLY_RESET,
+		EDIT_BAKE_ANIMATION,
+		EDIT_BAKE_ANIMATION_CONFIRM,
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,

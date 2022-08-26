@@ -129,20 +129,6 @@
 				Returns the localized path (starting with [code]res://[/code]) corresponding to the absolute, native OS [param path]. See also [method globalize_path].
 			</description>
 		</method>
-		<method name="property_can_revert">
-			<return type="bool" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns [code]true[/code] if the specified property exists and its initial value differs from the current value.
-			</description>
-		</method>
-		<method name="property_get_revert">
-			<return type="Variant" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns the specified property's initial value. Returns [code]null[/code] if the property does not exist.
-			</description>
-		</method>
 		<method name="save">
 			<return type="int" enum="Error" />
 			<description>
@@ -292,6 +278,8 @@
 		</member>
 		<member name="audio/driver/driver" type="String" setter="" getter="">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
+			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] command line argument.
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -344,7 +332,7 @@
 			Path to logs within the project. Using an [code]user://[/code] path is recommended.
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
-			Specifies the maximum amount of log files allowed (used for rotation).
+			Specifies the maximum number of log files allowed (used for rotation).
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
 			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
@@ -466,7 +454,7 @@
 			Maximum call stack allowed for debugging GDScript.
 		</member>
 		<member name="debug/settings/profiler/max_functions" type="int" setter="" getter="" default="16384">
-			Maximum amount of functions per frame allowed when profiling.
+			Maximum number of functions per frame allowed when profiling.
 		</member>
 		<member name="debug/settings/stdout/print_fps" type="bool" setter="" getter="" default="false">
 			Print frames per second to standard output every second.
@@ -475,9 +463,6 @@
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
-		</member>
-		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
-			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
 		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
@@ -576,19 +561,19 @@
 			Allows the window to be resizable by default.
 			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
-		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="600">
-			Sets the game's main viewport height. On desktop platforms, this is also the initial window height.
+		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
+			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
 		</member>
-		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1024">
-			Sets the game's main viewport width. On desktop platforms, this is also the initial window width.
+		<member name="display/window/size/viewport_width" type="int" setter="" getter="" default="1152">
+			Sets the game's main viewport width. On desktop platforms, this is also the initial window width, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_height], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
 		</member>
 		<member name="display/window/size/window_height_override" type="int" setter="" getter="" default="0">
-			On desktop platforms, sets the game's initial window height.
-			[b]Note:[/b] By default, or when set to 0, the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and HTML5.
+			On desktop platforms, overrides the game's initial window height. See also [member display/window/size/window_width_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
+			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window height is the [member display/window/size/viewport_height]. This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/size/window_width_override" type="int" setter="" getter="" default="0">
-			On desktop platforms, sets the game's initial window width.
-			[b]Note:[/b] By default, or when set to 0, the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and HTML5.
+			On desktop platforms, overrides the game's initial window width. See also [member display/window/size/window_height_override], [member display/window/size/viewport_width] and [member display/window/size/viewport_height].
+			[b]Note:[/b] By default, or when set to [code]0[/code], the initial window width is the viewport [member display/window/size/viewport_width]. This setting is ignored on iOS, Android, and HTML5.
 		</member>
 		<member name="display/window/vsync/vsync_mode" type="int" setter="" getter="" default="1">
 			Sets the V-Sync mode for the main game window.
@@ -663,8 +648,8 @@
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
-		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontFile.antialiased].
+		<member name="gui/theme/default_font_antialiasing" type="int" setter="" getter="" default="1">
+			Font anti-aliasing mode. See [member FontFile.antialiasing],
 		</member>
 		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
@@ -683,6 +668,9 @@
 			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
+			LCD sub-pixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
@@ -867,6 +855,7 @@
 		</member>
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] command line argument.
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
 			Override for [member input_devices/pen_tablet/driver] on Windows.
@@ -930,6 +919,9 @@
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
+			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
+			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] command line argument.
+			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] command line argument.
 		</member>
 		<member name="layer_names/2d_navigation/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the 2D navigation layer 1. If left empty, the layer will display as "Layer 1".
@@ -1441,20 +1433,6 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
-		<member name="mono/debugger_agent/port" type="int" setter="" getter="" default="23685">
-		</member>
-		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="" default="3000">
-		</member>
-		<member name="mono/profiler/args" type="String" setter="" getter="" default="&quot;log:calls,alloc,sample,output=output.mlpd&quot;">
-		</member>
-		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="mono/runtime/unhandled_exception_policy" type="int" setter="" getter="" default="0">
-			The policy to use for unhandled Mono (C#) exceptions. The default "Terminate Application" exits the project as soon as an unhandled exception is thrown. "Log Error" logs an error message to the console instead, and will not interrupt the project execution when an unhandled exception is thrown.
-			[b]Note:[/b] The unhandled exception policy is always set to "Log Error" in the editor, which also includes C# [code]tool[/code] scripts running within the editor as well as editor plugin code.
-		</member>
 		<member name="navigation/2d/default_cell_size" type="int" setter="" getter="" default="1">
 			Default cell size for 2D navigation maps. See [method NavigationServer2D.map_set_cell_size].
 		</member>
@@ -1468,13 +1446,13 @@
 			Default edge connection margin for 3D navigation maps. See [method NavigationServer3D.map_set_edge_connection_margin].
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
-			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/debugger/max_errors_per_second" type="int" setter="" getter="" default="400">
 			Maximum number of errors allowed to be sent from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/debugger/max_queued_messages" type="int" setter="" getter="" default="2048">
-			Maximum amount of messages in the debugger queue. Over this value, content is dropped. This helps to limit the debugger memory usage.
+			Maximum number of messages in the debugger queue. Over this value, content is dropped. This helps to limit the debugger memory usage.
 		</member>
 		<member name="network/limits/debugger/max_warnings_per_second" type="int" setter="" getter="" default="400">
 			Maximum number of warnings allowed to be sent from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
@@ -1565,7 +1543,7 @@
 			Individual shapes can have a specific bias value (see [member Shape2D.custom_solver_bias]).
 		</member>
 		<member name="physics/2d/solver/solver_iterations" type="int" setter="" getter="" default="16">
-			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer2D.SPACE_PARAM_SOLVER_ITERATIONS].
+			Number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer2D.SPACE_PARAM_SOLVER_ITERATIONS].
 		</member>
 		<member name="physics/2d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 2D physics body will put to sleep. See [constant PhysicsServer2D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
@@ -1633,7 +1611,7 @@
 			Individual shapes can have a specific bias value (see [member Shape3D.custom_solver_bias]).
 		</member>
 		<member name="physics/3d/solver/solver_iterations" type="int" setter="" getter="" default="16">
-			Number of solver iterations for all contacts and constraints. The greater the amount of iterations, the more accurate the collisions will be. However, a greater amount of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
+			Number of solver iterations for all contacts and constraints. The greater the number of iterations, the more accurate the collisions will be. However, a greater number of iterations requires more CPU power, which can decrease performance. See [constant PhysicsServer3D.SPACE_PARAM_SOLVER_ITERATIONS].
 		</member>
 		<member name="physics/3d/time_before_sleep" type="float" setter="" getter="" default="0.5">
 			Time (in seconds) of inactivity before which a 3D physics body will put to sleep. See [constant PhysicsServer3D.SPACE_PARAM_BODY_TIME_TO_SLEEP].
@@ -1836,7 +1814,7 @@
 			Max number of omnilights and spotlights renderable per object. At the default value of 8, this means that each surface can be affected by up to 8 omnilights and 8 spotlights. This is further limited by hardware support and [member rendering/limits/opengl/max_renderable_lights]. Setting this low will slightly reduce memory usage, may decrease shader compile times, and may result in faster rendering on low-end, mobile, or web devices.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_elements" type="int" setter="" getter="" default="65536">
-			Max amount of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
+			Max number of elements renderable in a frame. If more elements than this are visible per frame, they will not be drawn. Keep in mind elements refer to mesh surfaces and not meshes themselves. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
 		</member>
 		<member name="rendering/limits/opengl/max_renderable_lights" type="int" setter="" getter="" default="32">
 			Max number of positional lights renderable in a frame. If more lights than this number are used, they will be ignored. Setting this low will slightly reduce memory usage and may decrease shader compile times, particularly on web. For most uses, the default value is suitable, but consider lowering as much as possible on web export.
@@ -1970,6 +1948,7 @@
 		<member name="rendering/textures/default_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
 			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
 			The anisotropic filtering level also affects decals and light projectors if they are configured to use anisotropic filtering. See [member rendering/textures/decals/filter] and [member rendering/textures/light_projectors/filter].
+			[b]Note:[/b] For performance reasons, anisotropic filtering [i]is not enabled by default[/i] on 2D and 3D materials. For this setting to have an effect in 3D, set [member BaseMaterial3D.texture_filter] to [constant BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on materials. For this setting to have an effect in 2D, set [member CanvasItem.texture_filter] to [constant CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on the [CanvasItem] node displaying the texture (or in [CanvasTexture]). However, anisotropic filtering is rarely useful in 2D, so only enable it for textures in 2D if it makes a meaningful visual difference.
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/textures/default_filters/texture_mipmap_bias" type="float" setter="" getter="" default="0.0">

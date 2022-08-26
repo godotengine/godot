@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "camera_server.h"
+#include "core/variant/typed_array.h"
 #include "rendering_server.h"
 #include "servers/camera/camera_feed.h"
 
@@ -143,8 +144,8 @@ int CameraServer::get_feed_count() {
 	return feeds.size();
 };
 
-Array CameraServer::get_feeds() {
-	Array return_feeds;
+TypedArray<CameraFeed> CameraServer::get_feeds() {
+	TypedArray<CameraFeed> return_feeds;
 	int cc = get_feed_count();
 	return_feeds.resize(cc);
 

@@ -100,7 +100,7 @@
 			<param index="0" name="viewport_camera" type="Camera3D" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 3D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 3D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent to reach other Editor classes.
@@ -182,7 +182,7 @@
 			<return type="bool" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
 				[codeblocks]
 				[gdscript]
 				# Prevents the InputEvent to reach other Editor classes.
@@ -351,7 +351,7 @@
 			<return type="void" />
 			<param index="0" name="configuration" type="ConfigFile" />
 			<description>
-				Restore the plugin GUI layout and data saved by [method _get_window_layout]. This method is called for every plugin on editor startup. Use the provided [code]configuration[/code] file to read your saved data.
+				Restore the plugin GUI layout and data saved by [method _get_window_layout]. This method is called for every plugin on editor startup. Use the provided [param configuration] file to read your saved data.
 				[codeblock]
 				func _set_window_layout(configuration):
 				    $Window.position = configuration.get_value("MyPlugin", "window_position", Vector2())
@@ -364,7 +364,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="path" type="String" />
 			<description>
-				Adds a script at [code]path[/code] to the Autoload list as [code]name[/code].
+				Adds a script at [param path] to the Autoload list as [param name].
 			</description>
 		</method>
 		<method name="add_control_to_bottom_panel">
@@ -429,7 +429,7 @@
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Registers a new [EditorImportPlugin]. Import plugins are used to import custom and unsupported assets as a custom [Resource] type.
-				If [code]first_priority[/code] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
+				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 				[b]Note:[/b] If you want to import custom 3D asset formats use [method add_scene_format_importer_plugin] instead.
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
@@ -460,7 +460,7 @@
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Registers a new [EditorSceneFormatImporter]. Scene importers are used to import custom 3D asset formats as scenes.
-				If [code]first_priority[/code] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
+				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
 		<method name="add_scene_post_import_plugin">
@@ -469,7 +469,7 @@
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
 				Add a [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
-				If [code]first_priority[/code] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
+				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>
 		<method name="add_spatial_gizmo_plugin">
@@ -485,7 +485,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="callable" type="Callable" />
 			<description>
-				Adds a custom menu item to [b]Project &gt; Tools[/b] named [code]name[/code]. When clicked, the provided [code]callable[/code] will be called.
+				Adds a custom menu item to [b]Project &gt; Tools[/b] named [param name]. When clicked, the provided [param callable] will be called.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -493,7 +493,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="submenu" type="PopupMenu" />
 			<description>
-				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
+				Adds a custom [PopupMenu] submenu under [b]Project &gt; Tools &gt;[/b] [param name]. Use [code]remove_tool_menu_item(name)[/code] on plugin clean up to remove the menu.
 			</description>
 		</method>
 		<method name="add_translation_parser_plugin">
@@ -532,7 +532,7 @@
 			</description>
 		</method>
 		<method name="get_undo_redo">
-			<return type="UndoRedo" />
+			<return type="EditorUndoRedoManager" />
 			<description>
 				Gets the undo/redo object. Most actions in the editor can be undoable, so use this object to make sure this happens when it's worth it.
 			</description>
@@ -560,7 +560,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Removes an Autoload [code]name[/code] from the list.
+				Removes an Autoload [param name] from the list.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
@@ -645,7 +645,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Removes a menu [code]name[/code] from [b]Project &gt; Tools[/b].
+				Removes a menu [param name] from [b]Project &gt; Tools[/b].
 			</description>
 		</method>
 		<method name="remove_translation_parser_plugin">
@@ -729,7 +729,7 @@
 		</constant>
 		<constant name="CONTAINER_CANVAS_EDITOR_BOTTOM" value="8" enum="CustomControlContainer">
 		</constant>
-		<constant name="CONTAINER_PROPERTY_EDITOR_BOTTOM" value="9" enum="CustomControlContainer">
+		<constant name="CONTAINER_INSPECTOR_BOTTOM" value="9" enum="CustomControlContainer">
 		</constant>
 		<constant name="CONTAINER_PROJECT_SETTING_TAB_LEFT" value="10" enum="CustomControlContainer">
 		</constant>

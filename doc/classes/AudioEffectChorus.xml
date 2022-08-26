@@ -166,7 +166,7 @@
 			The voice's filter rate.
 		</member>
 		<member name="voice_count" type="int" setter="set_voice_count" getter="get_voice_count" default="2">
-			The amount of voices in the effect.
+			The number of voices in the effect.
 		</member>
 		<member name="wet" type="float" setter="set_wet" getter="get_wet" default="0.5">
 			The effect's processed signal.

@@ -73,6 +73,20 @@
 				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
 			</description>
 		</method>
+		<method name="cubic_interpolate_in_time" qualifiers="const">
+			<return type="Vector4" />
+			<param index="0" name="b" type="Vector4" />
+			<param index="1" name="pre_a" type="Vector4" />
+			<param index="2" name="post_b" type="Vector4" />
+			<param index="3" name="weight" type="float" />
+			<param index="4" name="b_t" type="float" />
+			<param index="5" name="pre_a_t" type="float" />
+			<param index="6" name="post_b_t" type="float" />
+			<description>
+				Performs a cubic interpolation between this vector and [param b] using [param pre_a] and [param post_b] as handles, and returns the result at position [param weight]. [param weight] is on the range of 0.0 to 1.0, representing the amount of interpolation.
+				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+			</description>
+		</method>
 		<method name="direction_to" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="to" type="Vector4" />

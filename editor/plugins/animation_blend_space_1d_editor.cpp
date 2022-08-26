@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/animation/animation_blend_tree.h"
 
 StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {

@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		3D particle node used to create a variety of particle systems and effects. [GPUParticles3D] features an emitter that generates some number of particles at a given rate.
-		Use the [code]process_material[/code] property to add a [ParticlesMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
+		Use the [code]process_material[/code] property to add a [ParticleProcessMaterial] to configure particle appearance and behavior. Alternatively, you can add a [ShaderMaterial] which will be applied to all particles.
 	</description>
 	<tutorials>
 		<link title="Controlling thousands of fish with Particles">$DOCS_URL/tutorials/performance/vertex_animation/controlling_thousands_of_fish.html</link>
@@ -26,14 +26,14 @@
 			<param index="3" name="custom" type="Color" />
 			<param index="4" name="flags" type="int" />
 			<description>
-				Emits a single particle. Whether [code]xform[/code], [code]velocity[/code], [code]color[/code] and [code]custom[/code] are applied depends on the value of [code]flags[/code]. See [enum EmitFlags].
+				Emits a single particle. Whether [param xform], [param velocity], [param color] and [param custom] are applied depends on the value of [param flags]. See [enum EmitFlags].
 			</description>
 		</method>
 		<method name="get_draw_pass_mesh" qualifiers="const">
 			<return type="Mesh" />
 			<param index="0" name="pass" type="int" />
 			<description>
-				Returns the [Mesh] that is drawn at index [code]pass[/code].
+				Returns the [Mesh] that is drawn at index [param pass].
 			</description>
 		</method>
 		<method name="restart">
@@ -47,7 +47,7 @@
 			<param index="0" name="pass" type="int" />
 			<param index="1" name="mesh" type="Mesh" />
 			<description>
-				Sets the [Mesh] that is drawn at index [code]pass[/code].
+				Sets the [Mesh] that is drawn at index [param pass].
 			</description>
 		</method>
 	</methods>
@@ -105,7 +105,7 @@
 			Amount of time to preprocess the particles before animation starts. Lets you start the animation some time after particles have started emitting.
 		</member>
 		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
-			[Material] for processing particles. Can be a [ParticlesMaterial] or a [ShaderMaterial].
+			[Material] for processing particles. Can be a [ParticleProcessMaterial] or a [ShaderMaterial].
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">
 			Emission randomness ratio.

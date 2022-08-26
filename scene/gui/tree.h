@@ -339,8 +339,15 @@ public:
 	TreeItem *get_child(int p_idx);
 	int get_visible_child_count();
 	int get_child_count();
-	Array get_children();
+	TypedArray<TreeItem> get_children();
 	int get_index();
+
+#ifdef DEV_ENABLED
+	// This debugging code can be removed once the current refactoring of this class is complete.
+	void validate_cache() const;
+#else
+	void validate_cache() const {}
+#endif
 
 	void move_before(TreeItem *p_item);
 	void move_after(TreeItem *p_item);

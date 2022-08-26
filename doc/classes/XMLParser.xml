@@ -12,7 +12,7 @@
 		<method name="get_attribute_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Gets the amount of attributes in the current element.
+				Gets the number of attributes in the current element.
 			</description>
 		</method>
 		<method name="get_attribute_name" qualifiers="const">

@@ -124,11 +124,11 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 
 					} break;
 					case RS::ARRAY_NORMAL: {
-						stride += sizeof(int32_t);
+						stride += sizeof(uint16_t) * 2;
 
 					} break;
 					case RS::ARRAY_TANGENT: {
-						stride += sizeof(int32_t);
+						stride += sizeof(uint16_t) * 2;
 
 					} break;
 					case RS::ARRAY_COLOR: {
@@ -186,11 +186,13 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	s->format = p_surface.format;
 	s->primitive = p_surface.primitive;
 
-	glGenBuffers(1, &s->vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, p_surface.vertex_data.size(), p_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-	s->vertex_buffer_size = p_surface.vertex_data.size();
+	if (p_surface.vertex_data.size()) {
+		glGenBuffers(1, &s->vertex_buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, s->vertex_buffer);
+		glBufferData(GL_ARRAY_BUFFER, p_surface.vertex_data.size(), p_surface.vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
+		s->vertex_buffer_size = p_surface.vertex_data.size();
+	}
 
 	if (p_surface.attribute_data.size()) {
 		glGenBuffers(1, &s->attribute_buffer);
@@ -214,7 +216,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	}
 
 	if (p_surface.index_count) {
-		bool is_index_16 = p_surface.vertex_count <= 65536;
+		bool is_index_16 = p_surface.vertex_count <= 65536 && p_surface.vertex_count > 0;
 		glGenBuffers(1, &s->index_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, p_surface.index_data.size(), p_surface.index_data.ptr(), GL_STATIC_DRAW);
@@ -238,6 +240,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		}
 	}
 
+	ERR_FAIL_COND_MSG(!p_surface.index_count && !p_surface.vertex_count, "Meshes must contain a vertex array, an index array, or both");
+
 	s->aabb = p_surface.aabb;
 	s->bone_aabbs = p_surface.bone_aabbs; //only really useful for returning them.
 
@@ -255,7 +259,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
 		}
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
-			mesh->bone_aabbs.write[i].merge_with(p_surface.bone_aabbs[i]);
+			const AABB &bone = p_surface.bone_aabbs[i];
+			if (!bone.has_no_volume()) {
+				mesh->bone_aabbs.write[i].merge_with(bone);
+			}
 		}
 		mesh->aabb.merge_with(p_surface.aabb);
 	}
@@ -337,7 +344,9 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 
 	RS::SurfaceData sd;
 	sd.format = s.format;
-	sd.vertex_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
+	if (s.vertex_buffer != 0) {
+		sd.vertex_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.vertex_buffer, s.vertex_buffer_size);
+	}
 
 	if (s.attribute_buffer != 0) {
 		sd.attribute_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.attribute_buffer, s.attribute_buffer_size);
@@ -595,17 +604,16 @@ void MeshStorage::_mesh_surface_generate_version_for_input_mask(Mesh::Surface::V
 			} break;
 			case RS::ARRAY_NORMAL: {
 				attribs[i].offset = vertex_stride;
-				// Will need to change to accommodate octahedral compression
-				attribs[i].size = 4;
-				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
-				vertex_stride += sizeof(float);
+				attribs[i].size = 2;
+				attribs[i].type = GL_UNSIGNED_SHORT;
+				vertex_stride += sizeof(uint16_t) * 2;
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_TANGENT: {
 				attribs[i].offset = vertex_stride;
-				attribs[i].size = 4;
-				attribs[i].type = GL_UNSIGNED_INT_2_10_10_10_REV;
-				vertex_stride += sizeof(float);
+				attribs[i].size = 2;
+				attribs[i].type = GL_UNSIGNED_SHORT;
+				vertex_stride += sizeof(uint16_t) * 2;
 				attribs[i].normalized = GL_TRUE;
 			} break;
 			case RS::ARRAY_COLOR: {

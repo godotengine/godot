@@ -8,7 +8,7 @@ using GodotTools.Internals;
 
 namespace GodotTools.Ides
 {
-    public sealed class GodotIdeManager : Node, ISerializationListener
+    public sealed partial class GodotIdeManager : Node, ISerializationListener
     {
         private MessagingServer _messagingServer;
 
@@ -76,7 +76,7 @@ namespace GodotTools.Ides
 
         public async Task<EditorPick?> LaunchIdeAsync(int millisecondsTimeout = 10000)
         {
-            var editorId = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
+            var editorId = (ExternalEditorId)(int)GodotSharpEditor.Instance.GetEditorInterface()
                 .GetEditorSettings().GetSetting("mono/editor/external_editor");
             string editorIdentity = GetExternalEditorIdentity(editorId);
 

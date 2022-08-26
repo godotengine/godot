@@ -224,6 +224,10 @@ void EditorLog::set_tool_button(Button *p_tool_button) {
 	tool_button = p_tool_button;
 }
 
+void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
+	p_undo_redo->set_commit_notify_callback(_undo_redo_cbk, this);
+}
+
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 	EditorLog *self = static_cast<EditorLog *>(p_self);
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
@@ -248,6 +252,11 @@ void EditorLog::_rebuild_log() {
 }
 
 void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
+	if (!is_inside_tree()) {
+		// The log will be built all at once when it enters the tree and has its theme items.
+		return;
+	}
+
 	// Only add the message to the log if it passes the filters.
 	bool filter_active = type_filter_map[p_message.type]->is_active();
 	String search_text = search_box->get_text();
@@ -458,8 +467,6 @@ EditorLog::EditorLog() {
 	add_error_handler(&eh);
 
 	current = Thread::get_caller_id();
-
-	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }
 
 void EditorLog::deinit() {

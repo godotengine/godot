@@ -62,8 +62,8 @@
 			<param index="1" name="position" type="Vector3" />
 			<param index="2" name="weight_scale" type="float" default="1.0" />
 			<description>
-				Adds a new point at the given position with the given identifier. The [code]id[/code] must be 0 or larger, and the [code]weight_scale[/code] must be 0.0 or greater.
-				The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [code]weight_scale[/code]s to form a path.
+				Adds a new point at the given position with the given identifier. The [param id] must be 0 or larger, and the [param weight_scale] must be 0.0 or greater.
+				The [param weight_scale] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point. Thus, all else being equal, the algorithm prefers points with lower [param weight_scale]s to form a path.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar3D.new()
@@ -74,7 +74,7 @@
 				astar.AddPoint(1, new Vector3(1, 0, 0), 4); // Adds the point (1, 0, 0) with weight_scale 4 and id 1
 				[/csharp]
 				[/codeblocks]
-				If there already exists a point for the given [code]id[/code], its position and weight scale are updated to the given values.
+				If there already exists a point for the given [param id], its position and weight scale are updated to the given values.
 			</description>
 		</method>
 		<method name="are_points_connected" qualifiers="const">
@@ -83,7 +83,7 @@
 			<param index="1" name="to_id" type="int" />
 			<param index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Returns whether the two given points are directly connected by a segment. If [code]bidirectional[/code] is [code]false[/code], returns whether movement from [code]id[/code] to [code]to_id[/code] is possible through this segment.
+				Returns whether the two given points are directly connected by a segment. If [param bidirectional] is [code]false[/code], returns whether movement from [param id] to [param to_id] is possible through this segment.
 			</description>
 		</method>
 		<method name="clear">
@@ -98,7 +98,7 @@
 			<param index="1" name="to_id" type="int" />
 			<param index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Creates a segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is allowed, not the reverse direction.
+				Creates a segment between the given points. If [param bidirectional] is [code]false[/code], only movement from [param id] to [param to_id] is allowed, not the reverse direction.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar3D.new()
@@ -121,7 +121,7 @@
 			<param index="1" name="to_id" type="int" />
 			<param index="2" name="bidirectional" type="bool" default="true" />
 			<description>
-				Deletes the segment between the given points. If [code]bidirectional[/code] is [code]false[/code], only movement from [code]id[/code] to [code]to_id[/code] is prevented, and a unidirectional segment possibly remains.
+				Deletes the segment between the given points. If [param bidirectional] is [code]false[/code], only movement from [param id] to [param to_id] is prevented, and a unidirectional segment possibly remains.
 			</description>
 		</method>
 		<method name="get_available_point_id" qualifiers="const">
@@ -135,15 +135,15 @@
 			<param index="0" name="to_position" type="Vector3" />
 			<param index="1" name="include_disabled" type="bool" default="false" />
 			<description>
-				Returns the ID of the closest point to [code]to_position[/code], optionally taking disabled points into account. Returns [code]-1[/code] if there are no points in the points pool.
-				[b]Note:[/b] If several points are the closest to [code]to_position[/code], the one with the smallest ID will be returned, ensuring a deterministic result.
+				Returns the ID of the closest point to [param to_position], optionally taking disabled points into account. Returns [code]-1[/code] if there are no points in the points pool.
+				[b]Note:[/b] If several points are the closest to [param to_position], the one with the smallest ID will be returned, ensuring a deterministic result.
 			</description>
 		</method>
 		<method name="get_closest_position_in_segment" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="to_position" type="Vector3" />
 			<description>
-				Returns the closest position to [code]to_position[/code] that resides inside a segment between two connected points.
+				Returns the closest position to [param to_position] that resides inside a segment between two connected points.
 				[codeblocks]
 				[gdscript]
 				var astar = AStar3D.new()
@@ -245,7 +245,7 @@
 			</description>
 		</method>
 		<method name="get_point_ids">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<description>
 				Returns an array of all point IDs.
 			</description>
@@ -263,21 +263,21 @@
 			<return type="Vector3" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Returns the position of the point associated with the given [code]id[/code].
+				Returns the position of the point associated with the given [param id].
 			</description>
 		</method>
 		<method name="get_point_weight_scale" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Returns the weight scale of the point associated with the given [code]id[/code].
+				Returns the weight scale of the point associated with the given [param id].
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Returns whether a point associated with the given [code]id[/code] exists.
+				Returns whether a point associated with the given [param id] exists.
 			</description>
 		</method>
 		<method name="is_point_disabled" qualifiers="const">
@@ -291,14 +291,14 @@
 			<return type="void" />
 			<param index="0" name="id" type="int" />
 			<description>
-				Removes the point associated with the given [code]id[/code] from the points pool.
+				Removes the point associated with the given [param id] from the points pool.
 			</description>
 		</method>
 		<method name="reserve_space">
 			<return type="void" />
 			<param index="0" name="num_nodes" type="int" />
 			<description>
-				Reserves space internally for [code]num_nodes[/code] points, useful if you're adding a known large number of points at once, for a grid for instance. New capacity must be greater or equals to old capacity.
+				Reserves space internally for [param num_nodes] points, useful if you're adding a known large number of points at once, for a grid for instance. New capacity must be greater or equals to old capacity.
 			</description>
 		</method>
 		<method name="set_point_disabled">
@@ -314,7 +314,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the [code]position[/code] for the point with the given [code]id[/code].
+				Sets the [param position] for the point with the given [param id].
 			</description>
 		</method>
 		<method name="set_point_weight_scale">
@@ -322,7 +322,7 @@
 			<param index="0" name="id" type="int" />
 			<param index="1" name="weight_scale" type="float" />
 			<description>
-				Sets the [code]weight_scale[/code] for the point with the given [code]id[/code]. The [code]weight_scale[/code] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
+				Sets the [param weight_scale] for the point with the given [param id]. The [param weight_scale] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
 			</description>
 		</method>
 	</methods>

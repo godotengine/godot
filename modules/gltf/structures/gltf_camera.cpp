@@ -33,15 +33,18 @@
 void GLTFCamera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_perspective"), &GLTFCamera::get_perspective);
 	ClassDB::bind_method(D_METHOD("set_perspective", "perspective"), &GLTFCamera::set_perspective);
-	ClassDB::bind_method(D_METHOD("get_fov_size"), &GLTFCamera::get_fov_size);
-	ClassDB::bind_method(D_METHOD("set_fov_size", "fov_size"), &GLTFCamera::set_fov_size);
+	ClassDB::bind_method(D_METHOD("get_fov"), &GLTFCamera::get_fov);
+	ClassDB::bind_method(D_METHOD("set_fov", "fov"), &GLTFCamera::set_fov);
+	ClassDB::bind_method(D_METHOD("get_size_mag"), &GLTFCamera::get_size_mag);
+	ClassDB::bind_method(D_METHOD("set_size_mag", "size_mag"), &GLTFCamera::set_size_mag);
 	ClassDB::bind_method(D_METHOD("get_depth_far"), &GLTFCamera::get_depth_far);
 	ClassDB::bind_method(D_METHOD("set_depth_far", "zdepth_far"), &GLTFCamera::set_depth_far);
 	ClassDB::bind_method(D_METHOD("get_depth_near"), &GLTFCamera::get_depth_near);
 	ClassDB::bind_method(D_METHOD("set_depth_near", "zdepth_near"), &GLTFCamera::set_depth_near);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "perspective"), "set_perspective", "get_perspective"); // bool
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov_size"), "set_fov_size", "get_fov_size"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_far"), "set_depth_far", "get_depth_far"); // float
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near"); // float
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "perspective"), "set_perspective", "get_perspective");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fov"), "set_fov", "get_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_mag"), "set_size_mag", "get_size_mag");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_far"), "set_depth_far", "get_depth_far");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near");
 }

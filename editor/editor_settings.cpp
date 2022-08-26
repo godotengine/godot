@@ -406,6 +406,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/debug/enable_pseudolocalization", false);
 	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);
 	// Use pseudolocalization in editor.
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1")
@@ -413,7 +414,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/code_font_contextual_ligatures", 0, "Default,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/code_font_custom_variations", "");
-	_initial_set("interface/editor/font_antialiased", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_antialiasing", 1, "None,Grayscale,LCD sub-pixel")
 #ifdef MACOS_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
@@ -962,8 +963,8 @@ void EditorSettings::save() {
 	}
 }
 
-Array EditorSettings::get_changed_settings() const {
-	Array arr;
+PackedStringArray EditorSettings::get_changed_settings() const {
+	PackedStringArray arr;
 	for (const String &setting : changed_settings) {
 		arr.push_back(setting);
 	}
@@ -1073,24 +1074,25 @@ Variant _EDITOR_GET(const String &p_setting) {
 	return EditorSettings::get_singleton()->get(p_setting);
 }
 
-bool EditorSettings::property_can_revert(const String &p_setting) {
-	if (!props.has(p_setting)) {
+bool EditorSettings::_property_can_revert(const StringName &p_name) const {
+	if (!props.has(p_name)) {
 		return false;
 	}
 
-	if (!props[p_setting].has_default_value) {
+	if (!props[p_name].has_default_value) {
 		return false;
 	}
 
-	return props[p_setting].initial != props[p_setting].variant;
+	return props[p_name].initial != props[p_name].variant;
 }
 
-Variant EditorSettings::property_get_revert(const String &p_setting) {
-	if (!props.has(p_setting) || !props[p_setting].has_default_value) {
-		return Variant();
+bool EditorSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (!props.has(p_name) || !props[p_name].has_default_value) {
+		return false;
 	}
 
-	return props[p_setting].initial;
+	r_property = props[p_name].initial;
+	return true;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
@@ -1621,8 +1623,6 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);

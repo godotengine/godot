@@ -40,6 +40,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "scene/animation/animation_player.h"
@@ -4063,7 +4064,7 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, 
 
 	bool type_changed = next_input_type != prev_input_type;
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Visual Shader Input Type Changed"));
 
 	undo_redo->add_do_method(p_input.ptr(), "set_input_name", p_name);
@@ -4132,7 +4133,7 @@ void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_
 
 	bool type_changed = p_uniform_ref->get_uniform_type_by_name(p_name) != p_uniform_ref->get_uniform_type_by_name(prev_name);
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("UniformRef Name Changed"));
 
 	undo_redo->add_do_method(p_uniform_ref.ptr(), "set_uniform_name", p_name);
@@ -4176,7 +4177,7 @@ void VisualShaderEditor::_varying_select_item(Ref<VisualShaderNodeVarying> p_var
 
 	bool is_getter = Ref<VisualShaderNodeVaryingGetter>(p_varying.ptr()).is_valid();
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Varying Name Changed"));
 
 	undo_redo->add_do_method(p_varying.ptr(), "set_varying_name", p_name);
@@ -4311,6 +4312,9 @@ void VisualShaderEditor::_update_varying_tree() {
 				case VisualShader::VARYING_TYPE_FLOAT:
 					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")));
 					break;
+				case VisualShader::VARYING_TYPE_INT:
+					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")));
+					break;
 				case VisualShader::VARYING_TYPE_VECTOR_2D:
 					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")));
 					break;
@@ -4320,8 +4324,8 @@ void VisualShaderEditor::_update_varying_tree() {
 				case VisualShader::VARYING_TYPE_VECTOR_4D:
 					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")));
 					break;
-				case VisualShader::VARYING_TYPE_COLOR:
-					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")));
+				case VisualShader::VARYING_TYPE_BOOLEAN:
+					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")));
 					break;
 				case VisualShader::VARYING_TYPE_TRANSFORM:
 					item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")));
@@ -4962,10 +4966,11 @@ VisualShaderEditor::VisualShaderEditor() {
 		varying_type = memnew(OptionButton);
 		hb->add_child(varying_type);
 		varying_type->add_item("Float");
+		varying_type->add_item("Int");
 		varying_type->add_item("Vector2");
 		varying_type->add_item("Vector3");
 		varying_type->add_item("Vector4");
-		varying_type->add_item("Color");
+		varying_type->add_item("Boolean");
 		varying_type->add_item("Transform");
 
 		varying_name = memnew(LineEdit);
@@ -5668,7 +5673,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	_update_options_menu();
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	Ref<VisualShaderNodePluginDefault> default_plugin;
 	default_plugin.instantiate();
@@ -5758,10 +5763,11 @@ public:
 
 		Ref<Texture2D> type_icon[] = {
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Vector4"), SNAME("EditorIcons")),
-			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
 		};
 
@@ -5876,7 +5882,7 @@ public:
 			return;
 		}
 
-		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 
 		updating = true;
 		undo_redo->create_action(TTR("Edit Visual Property:") + " " + p_property, UndoRedo::MERGE_ENDS);
@@ -6063,7 +6069,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	return editor;
 }
 
-void EditorPropertyShaderMode::_option_selected(int p_which) {
+void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 	Ref<VisualShader> visual_shader(Object::cast_to<VisualShader>(get_edited_object()));
 	if (visual_shader->get_mode() == p_which) {
 		return;
@@ -6078,7 +6084,7 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 		return;
 	}
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Visual Shader Mode Changed"));
 	//do is easy
 	undo_redo->add_do_method(visual_shader.ptr(), "set_mode", p_which);
@@ -6149,39 +6155,39 @@ void EditorPropertyShaderMode::_option_selected(int p_which) {
 	undo_redo->commit_action();
 }
 
-void EditorPropertyShaderMode::update_property() {
+void EditorPropertyVisualShaderMode::update_property() {
 	int which = get_edited_object()->get(get_edited_property());
 	options->select(which);
 }
 
-void EditorPropertyShaderMode::setup(const Vector<String> &p_options) {
+void EditorPropertyVisualShaderMode::setup(const Vector<String> &p_options) {
 	for (int i = 0; i < p_options.size(); i++) {
 		options->add_item(p_options[i], i);
 	}
 }
 
-void EditorPropertyShaderMode::set_option_button_clip(bool p_enable) {
+void EditorPropertyVisualShaderMode::set_option_button_clip(bool p_enable) {
 	options->set_clip_text(p_enable);
 }
 
-void EditorPropertyShaderMode::_bind_methods() {
+void EditorPropertyVisualShaderMode::_bind_methods() {
 }
 
-EditorPropertyShaderMode::EditorPropertyShaderMode() {
+EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
 	options = memnew(OptionButton);
 	options->set_clip_text(true);
 	add_child(options);
 	add_focusable(options);
-	options->connect("item_selected", callable_mp(this, &EditorPropertyShaderMode::_option_selected));
+	options->connect("item_selected", callable_mp(this, &EditorPropertyVisualShaderMode::_option_selected));
 }
 
-bool EditorInspectorShaderModePlugin::can_handle(Object *p_object) {
+bool EditorInspectorVisualShaderModePlugin::can_handle(Object *p_object) {
 	return true; // Can handle everything.
 }
 
-bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+bool EditorInspectorVisualShaderModePlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
 	if (p_path == "mode" && p_object->is_class("VisualShader") && p_type == Variant::INT) {
-		EditorPropertyShaderMode *mode_editor = memnew(EditorPropertyShaderMode);
+		EditorPropertyVisualShaderMode *mode_editor = memnew(EditorPropertyVisualShaderMode);
 		Vector<String> options = p_hint_text.split(",");
 		mode_editor->setup(options);
 		add_property_editor(p_path, mode_editor);

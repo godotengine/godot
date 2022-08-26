@@ -142,11 +142,11 @@
 			<param index="1" name="char" type="int" />
 			<param index="2" name="variation_selector" type="int" />
 			<description>
-				Returns the glyph index of a [code]char[/code], optionally modified by the [code]variation_selector[/code].
+				Returns the glyph index of a [param char], optionally modified by the [param variation_selector].
 			</description>
 		</method>
 		<method name="get_glyph_list" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="Vector2i" />
 			<description>
@@ -199,7 +199,7 @@
 			</description>
 		</method>
 		<method name="get_kerning_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
@@ -210,7 +210,7 @@
 			<return type="bool" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns [code]true[/code] if support override is enabled for the [code]language[/code].
+				Returns [code]true[/code] if support override is enabled for the [param language].
 			</description>
 		</method>
 		<method name="get_language_support_overrides" qualifiers="const">
@@ -223,7 +223,7 @@
 			<return type="bool" />
 			<param index="0" name="script" type="String" />
 			<description>
-				Returns [code]true[/code] if support override is enabled for the [code]script[/code].
+				Returns [code]true[/code] if support override is enabled for the [param script].
 			</description>
 		</method>
 		<method name="get_script_support_overrides" qualifiers="const">
@@ -233,7 +233,7 @@
 			</description>
 		</method>
 		<method name="get_size_cache_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="cache_index" type="int" />
 			<description>
 				Returns list of the font sizes in the cache. Each size is [code]Vector2i[/code] with font size and outline size.
@@ -283,7 +283,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Loads an AngelCode BMFont (.fnt, .font) bitmap font from file [code]path[/code].
+				Loads an AngelCode BMFont (.fnt, .font) bitmap font from file [param path].
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
 			</description>
 		</method>
@@ -291,7 +291,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [code]path[/code].
+				Loads a TrueType (.ttf), OpenType (.otf), WOFF (.woff), WOFF2 (.woff2) or Type 1 (.pfb, .pfm) dynamic font from file [param path].
 				[b]Warning:[/b] This method should only be used in the editor or in cases when you need to load external fonts at run-time, such as fonts located at the [code]user://[/code] directory.
 			</description>
 		</method>
@@ -543,8 +543,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="true">
-			If set to [code]true[/code], font 8-bit anitialiased glyph rendering is supported and enabled.
+		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
+			Font anti-aliasing mode.
 		</member>
 		<member name="data" type="PackedByteArray" setter="set_data" getter="get_data" default="PackedByteArray()">
 			Contents of the dynamic font source file.

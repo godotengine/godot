@@ -41,6 +41,7 @@ class RayCast3D : public Node3D {
 	bool enabled = true;
 	bool collided = false;
 	ObjectID against;
+	RID against_rid;
 	int against_shape = 0;
 	Vector3 collision_point;
 	Vector3 collision_normal;
@@ -113,6 +114,7 @@ public:
 	void force_raycast_update();
 	bool is_colliding() const;
 	Object *get_collider() const;
+	RID get_collider_rid() const;
 	int get_collider_shape() const;
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;

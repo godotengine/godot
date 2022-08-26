@@ -685,6 +685,9 @@ void FileDialog::add_filter(const String &p_filter, const String &p_description)
 }
 
 void FileDialog::set_filters(const Vector<String> &p_filters) {
+	if (filters == p_filters) {
+		return;
+	}
 	filters = p_filters;
 	update_filters();
 	invalidate();
@@ -708,10 +711,14 @@ String FileDialog::get_current_path() const {
 
 void FileDialog::set_current_dir(const String &p_dir) {
 	_change_dir(p_dir);
+
 	_push_history();
 }
 
 void FileDialog::set_current_file(const String &p_file) {
+	if (file->get_text() == p_file) {
+		return;
+	}
 	file->set_text(p_file);
 	update_dir();
 	invalidate();
@@ -764,7 +771,9 @@ bool FileDialog::is_mode_overriding_title() const {
 
 void FileDialog::set_file_mode(FileMode p_mode) {
 	ERR_FAIL_INDEX((int)p_mode, 5);
-
+	if (mode == p_mode) {
+		return;
+	}
 	mode = p_mode;
 	switch (mode) {
 		case FILE_MODE_OPEN_FILE:
@@ -977,6 +986,9 @@ void FileDialog::_bind_methods() {
 }
 
 void FileDialog::set_show_hidden_files(bool p_show) {
+	if (show_hidden_files == p_show) {
+		return;
+	}
 	show_hidden_files = p_show;
 	invalidate();
 }

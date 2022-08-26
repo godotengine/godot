@@ -45,6 +45,8 @@
 #include "core/templates/safe_refcount.h"
 
 class MainLoop;
+template <typename T>
+class TypedArray;
 
 namespace core_bind {
 
@@ -199,7 +201,6 @@ public:
 
 	String get_model_name() const;
 
-	void dump_memory_to_file(const String &p_file);
 	void dump_resources_to_file(const String &p_file);
 
 	void print_resources_in_use(bool p_short = false);
@@ -301,14 +302,14 @@ public:
 		OPERATION_XOR
 	};
 	// 2D polygon boolean operations.
-	Array merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
-	Array clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
-	Array intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
-	Array exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
+	TypedArray<PackedVector2Array> merge_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Union (add).
+	TypedArray<PackedVector2Array> clip_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Difference (subtract).
+	TypedArray<PackedVector2Array> intersect_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // Common area (multiply).
+	TypedArray<PackedVector2Array> exclude_polygons(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b); // All but common area (xor).
 
 	// 2D polyline vs polygon operations.
-	Array clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
-	Array intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
+	TypedArray<PackedVector2Array> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Cut.
+	TypedArray<PackedVector2Array> intersect_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon); // Chop.
 
 	// 2D offset polygons/polylines.
 	enum PolyJoinType {
@@ -323,8 +324,8 @@ public:
 		END_SQUARE,
 		END_ROUND
 	};
-	Array offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
-	Array offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
+	TypedArray<PackedVector2Array> offset_polygon(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
+	TypedArray<PackedVector2Array> offset_polyline(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
@@ -341,9 +342,9 @@ protected:
 
 public:
 	static Geometry3D *get_singleton();
-	Vector<Plane> build_box_planes(const Vector3 &p_extents);
-	Vector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
-	Vector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	TypedArray<Plane> build_box_planes(const Vector3 &p_extents);
+	TypedArray<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
+	TypedArray<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	Vector<Vector3> get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2);
 	Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
 	Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b);
@@ -602,15 +603,15 @@ public:
 
 	bool has_signal(StringName p_class, StringName p_signal) const;
 	Dictionary get_signal(StringName p_class, StringName p_signal) const;
-	Array get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_signal_list(StringName p_class, bool p_no_inheritance = false) const;
 
-	Array get_property_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_property_list(StringName p_class, bool p_no_inheritance = false) const;
 	Variant get_property(Object *p_object, const StringName &p_property) const;
 	Error set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const;
 
 	bool has_method(StringName p_class, StringName p_method, bool p_no_inheritance = false) const;
 
-	Array get_method_list(StringName p_class, bool p_no_inheritance = false) const;
+	TypedArray<Dictionary> get_method_list(StringName p_class, bool p_no_inheritance = false) const;
 
 	PackedStringArray get_integer_constant_list(const StringName &p_class, bool p_no_inheritance = false) const;
 	bool has_integer_constant(const StringName &p_class, const StringName &p_name) const;
@@ -661,7 +662,7 @@ public:
 
 	Dictionary get_version_info() const;
 	Dictionary get_author_info() const;
-	Array get_copyright_info() const;
+	TypedArray<Dictionary> get_copyright_info() const;
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;

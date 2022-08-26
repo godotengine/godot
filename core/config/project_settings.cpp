@@ -1070,7 +1070,7 @@ bool ProjectSettings::is_using_datapack() const {
 	return using_datapack;
 }
 
-bool ProjectSettings::property_can_revert(const String &p_name) {
+bool ProjectSettings::_property_can_revert(const StringName &p_name) const {
 	if (!props.has(p_name)) {
 		return false;
 	}
@@ -1078,12 +1078,13 @@ bool ProjectSettings::property_can_revert(const String &p_name) {
 	return props[p_name].initial != props[p_name].variant;
 }
 
-Variant ProjectSettings::property_get_revert(const String &p_name) {
+bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (!props.has(p_name)) {
-		return Variant();
+		return false;
 	}
 
-	return props[p_name].initial;
+	r_property = props[p_name].initial;
+	return true;
 }
 
 void ProjectSettings::set_setting(const String &p_setting, const Variant &p_value) {
@@ -1134,8 +1135,6 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ProjectSettings::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ProjectSettings::property_get_revert);
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 }
@@ -1183,10 +1182,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
 
-	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1024);
+	// The default window size is tuned to:
+	// - Have a 16:9 aspect ratio,
+	// - Have both dimensions divisible by 8 to better play along with video recording,
+	// - Be displayable correctly in windowed mode on a 1366×768 display (tested on Windows 10 with default settings).
+	GLOBAL_DEF_BASIC("display/window/size/viewport_width", 1152);
 	custom_prop_info["display/window/size/viewport_width"] = PropertyInfo(Variant::INT, "display/window/size/viewport_width", PROPERTY_HINT_RANGE, "0,7680,1,or_greater"); // 8K resolution
 
-	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 600);
+	GLOBAL_DEF_BASIC("display/window/size/viewport_height", 648);
 	custom_prop_info["display/window/size/viewport_height"] = PropertyInfo(Variant::INT, "display/window/size/viewport_height", PROPERTY_HINT_RANGE, "0,4320,1,or_greater"); // 8K resolution
 
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);

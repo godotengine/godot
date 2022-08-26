@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/3d/skeleton_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
-
 #ifndef SKELETON_MODIFICATION_3D_TWOBONEIK_H
 #define SKELETON_MODIFICATION_3D_TWOBONEIK_H
+
+#include "scene/3d/skeleton_3d.h"
+#include "scene/resources/skeleton_modification_3d.h"
 
 class SkeletonModification3DTwoBoneIK : public SkeletonModification3D {
 	GDCLASS(SkeletonModification3DTwoBoneIK, SkeletonModification3D);

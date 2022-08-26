@@ -7543,6 +7543,16 @@ RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(DrawL
 	}
 }
 
+void RenderingDeviceVulkan::draw_list_set_blend_constants(DrawListID p_list, const Color &p_color) {
+	DrawList *dl = _get_draw_list_ptr(p_list);
+	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
+
+	vkCmdSetBlendConstants(dl->command_buffer, p_color.components);
+}
+
 void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -7804,12 +7814,6 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 
 		ERR_FAIL_COND_MSG(!dl->validation.index_array_size,
 				"Draw command requested indices, but no index buffer was set.");
-
-		if (dl->validation.pipeline_vertex_format != INVALID_ID) {
-			// Uses vertices, do some vertex validations.
-			ERR_FAIL_COND_MSG(dl->validation.vertex_array_size < dl->validation.index_array_max_index,
-					"Index array references (max index: " + itos(dl->validation.index_array_max_index) + ") indices beyond the vertex array size (" + itos(dl->validation.vertex_array_size) + ").");
-		}
 
 		ERR_FAIL_COND_MSG(dl->validation.pipeline_uses_restart_indices != dl->validation.index_buffer_uses_restart_indices,
 				"The usage of restart indices in index buffer does not match the render primitive in the pipeline.");

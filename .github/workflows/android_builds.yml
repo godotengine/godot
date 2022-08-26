@@ -17,7 +17,7 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # Azure repositories are not reliable, we need to prevent azure giving us packages.
       - name: Make apt sources.list use the default Ubuntu repositories
@@ -27,8 +27,9 @@ jobs:
           sudo apt-get update
 
       - name: Set up Java 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: temurin
           java-version: 11
 
       - name: Setup Godot build cache
@@ -38,19 +39,19 @@ jobs:
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
 
-      - name: Compilation (armv7)
+      - name: Compilation (arm32)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} android_arch=armv7
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm32
           platform: android
           target: release
           tools: false
           tests: false
 
-      - name: Compilation (arm64v8)
+      - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} android_arch=arm64v8
+          sconsflags: ${{ env.SCONSFLAGS }} arch=arm64
           platform: android
           target: release
           tools: false

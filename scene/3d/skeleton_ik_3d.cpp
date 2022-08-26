@@ -329,8 +329,8 @@ void FabrikInverseKinematic::_update_chain(const Skeleton3D *p_sk, ChainItem *p_
 	}
 }
 
-void SkeletonIK3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "root_bone" || property.name == "tip_bone") {
+void SkeletonIK3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "root_bone" || p_property.name == "tip_bone") {
 		if (skeleton) {
 			String names("--,");
 			for (int i = 0; i < skeleton->get_bone_count(); i++) {
@@ -340,15 +340,13 @@ void SkeletonIK3D::_validate_property(PropertyInfo &property) const {
 				names += skeleton->get_bone_name(i);
 			}
 
-			property.hint = PROPERTY_HINT_ENUM;
-			property.hint_string = names;
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = names;
 		} else {
-			property.hint = PROPERTY_HINT_NONE;
-			property.hint_string = "";
+			p_property.hint = PROPERTY_HINT_NONE;
+			p_property.hint_string = "";
 		}
 	}
-
-	Node::_validate_property(property);
 }
 
 void SkeletonIK3D::_bind_methods() {

@@ -27,7 +27,7 @@
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="threshold" type="float" default="0.1" />
 			<description>
-				Creates a bitmap that matches the given image dimensions, every element of the bitmap is set to [code]false[/code] if the alpha value of the image at that position is equal to [code]threshold[/code] or less, and [code]true[/code] in other case.
+				Creates a bitmap that matches the given image dimensions, every element of the bitmap is set to [code]false[/code] if the alpha value of the image at that position is equal to [param threshold] or less, and [code]true[/code] in other case.
 			</description>
 		</method>
 		<method name="get_bit" qualifiers="const">
@@ -46,7 +46,7 @@
 		<method name="get_true_bit_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the amount of bitmap elements that are set to [code]true[/code].
+				Returns the number of bitmap elements that are set to [code]true[/code].
 			</description>
 		</method>
 		<method name="grow_mask">
@@ -54,11 +54,11 @@
 			<param index="0" name="pixels" type="int" />
 			<param index="1" name="rect" type="Rect2" />
 			<description>
-				Applies morphological dilation or erosion to the bitmap. If [code]pixels[/code] is positive, dilation is applied to the bitmap. If [code]pixels[/code] is negative, erosion is applied to the bitmap. [code]rect[/code] defines the area where the morphological operation is applied. Pixels located outside the [code]rect[/code] are unaffected by [method grow_mask].
+				Applies morphological dilation or erosion to the bitmap. If [param pixels] is positive, dilation is applied to the bitmap. If [param pixels] is negative, erosion is applied to the bitmap. [param rect] defines the area where the morphological operation is applied. Pixels located outside the [param rect] are unaffected by [method grow_mask].
 			</description>
 		</method>
 		<method name="opaque_to_polygons" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedVector2Array[]" />
 			<param index="0" name="rect" type="Rect2" />
 			<param index="1" name="epsilon" type="float" default="2.0" />
 			<description>
@@ -67,14 +67,14 @@
 				[codeblock]
 				Rect2(Vector2(), get_size())
 				[/codeblock]
-				[code]epsilon[/code] is passed to RDP to control how accurately the polygons cover the bitmap: a lower [code]epsilon[/code] corresponds to more points in the polygons.
+				[param epsilon] is passed to RDP to control how accurately the polygons cover the bitmap: a lower [param epsilon] corresponds to more points in the polygons.
 			</description>
 		</method>
 		<method name="resize">
 			<return type="void" />
 			<param index="0" name="new_size" type="Vector2" />
 			<description>
-				Resizes the image to [code]new_size[/code].
+				Resizes the image to [param new_size].
 			</description>
 		</method>
 		<method name="set_bit">

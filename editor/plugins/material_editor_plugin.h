@@ -122,8 +122,8 @@ public:
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
 
-class ParticlesMaterialConversionPlugin : public EditorResourceConversionPlugin {
-	GDCLASS(ParticlesMaterialConversionPlugin, EditorResourceConversionPlugin);
+class ParticleProcessMaterialConversionPlugin : public EditorResourceConversionPlugin {
+	GDCLASS(ParticleProcessMaterialConversionPlugin, EditorResourceConversionPlugin);
 
 public:
 	virtual String converts_to() const override;

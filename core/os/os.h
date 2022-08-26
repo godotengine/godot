@@ -52,7 +52,6 @@ class OS {
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
-	bool _single_window = false;
 	String _local_clipboard;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
 	bool _allow_hidpi = false;
@@ -243,13 +242,10 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
-	virtual bool is_single_window() const;
-
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
 
-	virtual void dump_memory_to_file(const char *p_file);
 	virtual void dump_resources_to_file(const char *p_file);
 	virtual void print_resources_in_use(bool p_short = false);
 	virtual void print_all_resources(String p_to_file = "");

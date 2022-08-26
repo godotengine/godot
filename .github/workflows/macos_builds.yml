@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: master-v3
+  GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
 
 concurrency:
@@ -24,7 +24,7 @@ jobs:
             target: release_debug
             tools: true
             tests: true
-            bin: "./bin/godot.macos.opt.tools.64"
+            bin: "./bin/godot.macos.opt.tools.x86_64"
 
           - name: Template (target=release, tools=no)
             cache-name: macos-template
@@ -34,7 +34,7 @@ jobs:
             sconsflags: debug_symbols=no
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

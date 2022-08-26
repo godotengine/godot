@@ -35,6 +35,7 @@
 #include "core/math/geometry_3d.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
@@ -51,14 +52,14 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/lightmap_gi.h"
 #include "scene/3d/lightmap_probe.h"
+#include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
-#include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/shape_cast_3d.h"
-#include "scene/3d/soft_dynamic_body_3d.h"
+#include "scene/3d/soft_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
@@ -1347,13 +1348,13 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 		light->set_param(p_id == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
 
 	} else if (p_id == 0) {
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light, "set_param", Light3D::PARAM_RANGE, light->get_param(Light3D::PARAM_RANGE));
 		ur->add_undo_method(light, "set_param", Light3D::PARAM_RANGE, p_restore);
 		ur->commit_action();
 	} else if (p_id == 1) {
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Light Radius"));
 		ur->add_do_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, light->get_param(Light3D::PARAM_SPOT_ANGLE));
 		ur->add_undo_method(light, "set_param", Light3D::PARAM_SPOT_ANGLE, p_restore);
@@ -1571,7 +1572,7 @@ void AudioStreamPlayer3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gi
 		player->set_emission_angle(p_restore);
 
 	} else {
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change AudioStreamPlayer3D Emission Angle"));
 		ur->add_do_method(player, "set_emission_angle", player->get_emission_angle());
 		ur->add_undo_method(player, "set_emission_angle", p_restore);
@@ -1814,7 +1815,7 @@ void Camera3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_
 		if (p_cancel) {
 			camera->set("fov", p_restore);
 		} else {
-			UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 			ur->create_action(TTR("Change Camera FOV"));
 			ur->add_do_property(camera, "fov", camera->get_fov());
 			ur->add_undo_property(camera, "fov", p_restore);
@@ -1825,7 +1826,7 @@ void Camera3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_
 		if (p_cancel) {
 			camera->set("size", p_restore);
 		} else {
-			UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 			ur->create_action(TTR("Change Camera Size"));
 			ur->add_do_property(camera, "size", camera->get_size());
 			ur->add_undo_property(camera, "size", p_restore);
@@ -1943,7 +1944,7 @@ MeshInstance3DGizmoPlugin::MeshInstance3DGizmoPlugin() {
 }
 
 bool MeshInstance3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftDynamicBody3D>(p_spatial) == nullptr;
+	return Object::cast_to<MeshInstance3D>(p_spatial) != nullptr && Object::cast_to<SoftBody3D>(p_spatial) == nullptr;
 }
 
 String MeshInstance3DGizmoPlugin::get_gizmo_name() const {
@@ -2141,7 +2142,7 @@ void OccluderInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_giz
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Sphere Shape Radius"));
 		ur->add_do_method(so.ptr(), "set_radius", so->get_radius());
 		ur->add_undo_method(so.ptr(), "set_radius", p_restore);
@@ -2155,7 +2156,7 @@ void OccluderInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_giz
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Size"));
 		ur->add_do_method(bo.ptr(), "set_size", bo->get_size());
 		ur->add_undo_method(bo.ptr(), "set_size", p_restore);
@@ -2169,7 +2170,7 @@ void OccluderInstance3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_giz
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Size"));
 		ur->add_do_method(qo.ptr(), "set_size", qo->get_size());
 		ur->add_undo_method(qo.ptr(), "set_size", p_restore);
@@ -2291,7 +2292,7 @@ void Label3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ///
 
-Position3DGizmoPlugin::Position3DGizmoPlugin() {
+Marker3DGizmoPlugin::Marker3DGizmoPlugin() {
 	pos3d_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 	cursor_points = Vector<Vector3>();
 
@@ -2315,7 +2316,7 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 
 	// Use the axis color which is brighter for the positive axis.
 	// Use a darkened axis color for the negative axis.
-	// This makes it possible to see in which direction the Position3D node is rotated
+	// This makes it possible to see in which direction the Marker3D node is rotated
 	// (which can be important depending on how it's used).
 	const Color color_x = EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("axis_x_color"), SNAME("Editor"));
 	cursor_colors.push_back(color_x);
@@ -2351,19 +2352,19 @@ Position3DGizmoPlugin::Position3DGizmoPlugin() {
 	pos3d_mesh->surface_set_material(0, mat);
 }
 
-bool Position3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<Position3D>(p_spatial) != nullptr;
+bool Marker3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Marker3D>(p_spatial) != nullptr;
 }
 
-String Position3DGizmoPlugin::get_gizmo_name() const {
-	return "Position3D";
+String Marker3DGizmoPlugin::get_gizmo_name() const {
+	return "Marker3D";
 }
 
-int Position3DGizmoPlugin::get_priority() const {
+int Marker3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void Position3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+void Marker3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 	p_gizmo->add_mesh(pos3d_mesh);
 	p_gizmo->add_collision_segments(cursor_points);
@@ -2686,30 +2687,30 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ///////////
 
-SoftDynamicBody3DGizmoPlugin::SoftDynamicBody3DGizmoPlugin() {
+SoftBody3DGizmoPlugin::SoftBody3DGizmoPlugin() {
 	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/shape");
 	create_material("shape_material", gizmo_color);
 	create_handle_material("handles");
 }
 
-bool SoftDynamicBody3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
-	return Object::cast_to<SoftDynamicBody3D>(p_spatial) != nullptr;
+bool SoftBody3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<SoftBody3D>(p_spatial) != nullptr;
 }
 
-String SoftDynamicBody3DGizmoPlugin::get_gizmo_name() const {
-	return "SoftDynamicBody3D";
+String SoftBody3DGizmoPlugin::get_gizmo_name() const {
+	return "SoftBody3D";
 }
 
-int SoftDynamicBody3DGizmoPlugin::get_priority() const {
+int SoftBody3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-bool SoftDynamicBody3DGizmoPlugin::is_selectable_when_hidden() const {
+bool SoftBody3DGizmoPlugin::is_selectable_when_hidden() const {
 	return true;
 }
 
-void SoftDynamicBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
+void SoftBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
 
 	p_gizmo->clear();
 
@@ -2745,22 +2746,22 @@ void SoftDynamicBody3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_collision_triangles(tm);
 }
 
-String SoftDynamicBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return "SoftDynamicBody3D pin point";
+String SoftBody3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	return "SoftBody3D pin point";
 }
 
-Variant SoftDynamicBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
+Variant SoftBody3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
 	return Variant(soft_body->is_point_pinned(p_id));
 }
 
-void SoftDynamicBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
-	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
+void SoftBody3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
 	soft_body->pin_point_toggle(p_id);
 }
 
-bool SoftDynamicBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	SoftDynamicBody3D *soft_body = Object::cast_to<SoftDynamicBody3D>(p_gizmo->get_spatial_node());
+bool SoftBody3DGizmoPlugin::is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	SoftBody3D *soft_body = Object::cast_to<SoftBody3D>(p_gizmo->get_spatial_node());
 	return soft_body->is_point_pinned(p_id);
 }
 
@@ -2870,7 +2871,7 @@ void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo
 		return;
 	}
 
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Change Notifier AABB"));
 	ur->add_do_method(notifier, "set_aabb", notifier->get_aabb());
 	ur->add_undo_method(notifier, "set_aabb", p_restore);
@@ -3061,7 +3062,7 @@ void GPUParticles3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, 
 		return;
 	}
 
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Change Particles AABB"));
 	ur->add_do_method(particles, "set_visibility_aabb", particles->get_visibility_aabb());
 	ur->add_undo_method(particles, "set_visibility_aabb", p_restore);
@@ -3227,7 +3228,7 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Radius"));
 		ur->add_do_method(sn, "set_radius", sn->call("get_radius"));
 		ur->add_undo_method(sn, "set_radius", p_restore);
@@ -3240,7 +3241,7 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Extents"));
 		ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
 		ur->add_undo_method(sn, "set_extents", p_restore);
@@ -3499,7 +3500,7 @@ void ReflectionProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo,
 		return;
 	}
 
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Change Probe Extents"));
 	ur->add_do_method(probe, "set_extents", probe->get_extents());
 	ur->add_do_method(probe, "set_origin_offset", probe->get_origin_offset());
@@ -3651,7 +3652,7 @@ void DecalGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id,
 		return;
 	}
 
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Change Decal Extents"));
 	ur->add_do_method(decal, "set_extents", decal->get_extents());
 	ur->add_undo_method(decal, "set_extents", restore);
@@ -3791,7 +3792,7 @@ void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 		return;
 	}
 
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Change Probe Extents"));
 	ur->add_do_method(probe, "set_extents", probe->get_extents());
 	ur->add_undo_method(probe, "set_extents", restore);
@@ -4406,7 +4407,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Sphere Shape Radius"));
 		ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
 		ur->add_undo_method(ss.ptr(), "set_radius", p_restore);
@@ -4420,7 +4421,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Box Shape Size"));
 		ur->add_do_method(ss.ptr(), "set_size", ss->get_size());
 		ur->add_undo_method(ss.ptr(), "set_size", p_restore);
@@ -4437,7 +4438,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		if (p_id == 0) {
 			ur->create_action(TTR("Change Capsule Shape Radius"));
 			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
@@ -4462,7 +4463,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		if (p_id == 0) {
 			ur->create_action(TTR("Change Cylinder Shape Radius"));
 			ur->add_do_method(ss.ptr(), "set_radius", ss->get_radius());
@@ -4487,7 +4488,7 @@ void CollisionShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 			return;
 		}
 
-		UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Change Separation Ray Shape Length"));
 		ur->add_do_method(ss.ptr(), "set_length", ss->get_length());
 		ur->add_undo_method(ss.ptr(), "set_length", p_restore);
@@ -5745,7 +5746,7 @@ void FogVolumeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p
 		return;
 	}
 
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Change Fog Volume Extents"));
 	ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
 	ur->add_undo_method(sn, "set_extents", p_restore);

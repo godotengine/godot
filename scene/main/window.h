@@ -158,7 +158,7 @@ protected:
 	virtual Size2 _get_contents_minimum_size() const;
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -239,6 +239,8 @@ public:
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
 
+	void warp_mouse(const Vector2 &p_position) override;
+
 	void set_wrap_controls(bool p_enable);
 	bool is_wrapping_controls() const;
 	void child_controls_changed();
@@ -253,6 +255,7 @@ public:
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
+	void _theme_changed();
 
 	void set_theme_type_variation(const StringName &p_theme_type);
 	StringName get_theme_type_variation() const;

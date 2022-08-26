@@ -223,21 +223,19 @@ bool Light3D::is_editor_only() const {
 	return editor_only;
 }
 
-void Light3D::_validate_property(PropertyInfo &property) const {
-	if (!shadow && (property.name == "shadow_bias" || property.name == "shadow_normal_bias" || property.name == "shadow_reverse_cull_face" || property.name == "shadow_transmittance_bias" || property.name == "shadow_fog_fade" || property.name == "shadow_opacity" || property.name == "shadow_blur" || property.name == "distance_fade_shadow")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Light3D::_validate_property(PropertyInfo &p_property) const {
+	if (!shadow && (p_property.name == "shadow_bias" || p_property.name == "shadow_normal_bias" || p_property.name == "shadow_reverse_cull_face" || p_property.name == "shadow_transmittance_bias" || p_property.name == "shadow_fog_fade" || p_property.name == "shadow_opacity" || p_property.name == "shadow_blur" || p_property.name == "distance_fade_shadow")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
+	if (get_light_type() != RS::LIGHT_DIRECTIONAL && p_property.name == "light_angular_distance") {
 		// Angular distance is only used in DirectionalLight3D.
-		property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (!distance_fade_enabled && (property.name == "distance_fade_begin" || property.name == "distance_fade_shadow" || property.name == "distance_fade_length")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
-
-	VisualInstance3D::_validate_property(property);
 }
 
 void Light3D::_bind_methods() {
@@ -429,29 +427,27 @@ DirectionalLight3D::SkyMode DirectionalLight3D::get_sky_mode() const {
 	return sky_mode;
 }
 
-void DirectionalLight3D::_validate_property(PropertyInfo &property) const {
-	if (shadow_mode == SHADOW_ORTHOGONAL && (property.name == "directional_shadow_split_1" || property.name == "directional_shadow_blend_splits")) {
+void DirectionalLight3D::_validate_property(PropertyInfo &p_property) const {
+	if (shadow_mode == SHADOW_ORTHOGONAL && (p_property.name == "directional_shadow_split_1" || p_property.name == "directional_shadow_blend_splits")) {
 		// Split 2 and split blending are only used with the PSSM 2 Splits and PSSM 4 Splits shadow modes.
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (property.name == "directional_shadow_split_2" || property.name == "directional_shadow_split_3")) {
+	if ((shadow_mode == SHADOW_ORTHOGONAL || shadow_mode == SHADOW_PARALLEL_2_SPLITS) && (p_property.name == "directional_shadow_split_2" || p_property.name == "directional_shadow_split_3")) {
 		// Splits 3 and 4 are only used with the PSSM 4 Splits shadow mode.
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "light_size" || property.name == "light_projector" || property.name == "light_specular") {
+	if (p_property.name == "light_size" || p_property.name == "light_projector" || p_property.name == "light_specular") {
 		// Not implemented in DirectionalLight3D (`light_size` is replaced by `light_angular_distance`).
-		property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "distance_fade_enabled" || property.name == "distance_fade_begin" || property.name == "distance_fade_shadow" || property.name == "distance_fade_length") {
+	if (p_property.name == "distance_fade_enabled" || p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_shadow" || p_property.name == "distance_fade_length") {
 		// Not relevant for DirectionalLight3D, as the light LOD system only pertains to point lights.
 		// For DirectionalLight3D, `directional_shadow_max_distance` can be used instead.
-		property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-
-	Light3D::_validate_property(property);
 }
 
 void DirectionalLight3D::_bind_methods() {

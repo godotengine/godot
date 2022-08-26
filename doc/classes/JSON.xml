@@ -10,8 +10,7 @@
 		[b]Example[/b]
 		[codeblock]
 		var data_to_send = ["a", "b", "c"]
-		var json = JSON.new()
-		var json_string = json.stringify(data_to_send)
+		var json_string = JSON.stringify(data_to_send)
 		# Save data
 		# ...
 		# Retrieve data
@@ -24,6 +23,10 @@
 		        print("Unexpected data")
 		else:
 		    print("JSON Parse Error: ", json.get_error_message(), " in ", json_string, " at line ", json.get_error_line())
+		[/codeblock]
+		Alternatively, you can parse string using the static [method parse_string] method, but it doesn't allow to handle errors.
+		[codeblock]
+		var data = JSON.parse_string(json_string) # Returns null if parsing failed.
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -52,11 +55,19 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="json_string" type="String" />
 			<description>
-				Attempts to parse the [code]json_string[/code] provided.
+				Attempts to parse the [param json_string] provided.
 				Returns an [enum Error]. If the parse was successful, it returns [code]OK[/code] and the result can be retrieved using [method get_data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
+				Non-static variant of [method parse_string], if you want custom error handling.
 			</description>
 		</method>
-		<method name="stringify">
+		<method name="parse_string" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="json_string" type="String" />
+			<description>
+				Attempts to parse the [param json_string] provided and returns the parsed data. Returns [code]null[/code] if parse failed.
+			</description>
+		</method>
+		<method name="stringify" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="data" type="Variant" />
 			<param index="1" name="indent" type="String" default="&quot;&quot;" />
@@ -65,8 +76,8 @@
 			<description>
 				Converts a [Variant] var to JSON text and returns the result. Useful for serializing data to store or send over the network.
 				[b]Note:[/b] The JSON specification does not define integer or float types, but only a [i]number[/i] type. Therefore, converting a Variant to JSON text will convert all numerical values to [float] types.
-				[b]Note:[/b] If [code]full_precision[/code] is true, when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
-				The [code]indent[/code] parameter controls if and how something is indented, the string used for this parameter will be used where there should be an indent in the output, even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
+				[b]Note:[/b] If [param full_precision] is [code]true[/code], when stringifying floats, the unreliable digits are stringified in addition to the reliable digits to guarantee exact decoding.
+				The [param indent] parameter controls if and how something is indented, the string used for this parameter will be used where there should be an indent in the output, even spaces like [code]"   "[/code] will work. [code]\t[/code] and [code]\n[/code] can also be used for a tab indent, or to make a newline for each indent respectively.
 				[b]Example output:[/b]
 				[codeblock]
 				## JSON.stringify(my_dictionary)

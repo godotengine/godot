@@ -1061,6 +1061,9 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			if (!actions_cache.is_empty()) {
+				update_action_list();
+			}
 		} break;
 	}
 }

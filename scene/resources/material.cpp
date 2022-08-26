@@ -71,12 +71,12 @@ RID Material::get_rid() const {
 	return material;
 }
 
-void Material::_validate_property(PropertyInfo &property) const {
-	if (!_can_do_next_pass() && property.name == "next_pass") {
-		property.usage = PROPERTY_USAGE_NONE;
+void Material::_validate_property(PropertyInfo &p_property) const {
+	if (!_can_do_next_pass() && p_property.name == "next_pass") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if (!_can_use_render_priority() && property.name == "render_priority") {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (!_can_use_render_priority() && p_property.name == "render_priority") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -297,7 +297,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-bool ShaderMaterial::property_can_revert(const String &p_name) {
+bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_uniform(p_name);
 		if (pr) {
@@ -310,15 +310,15 @@ bool ShaderMaterial::property_can_revert(const String &p_name) {
 	return false;
 }
 
-Variant ShaderMaterial::property_get_revert(const String &p_name) {
-	Variant r_ret;
+bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_uniform(p_name);
 		if (pr) {
-			r_ret = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
+			r_property = RenderingServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
+			return true;
 		}
 	}
-	return r_ret;
+	return false;
 }
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
@@ -386,8 +386,6 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_uniform", "param", "value"), &ShaderMaterial::set_shader_uniform);
 	ClassDB::bind_method(D_METHOD("get_shader_uniform", "param"), &ShaderMaterial::get_shader_uniform);
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &ShaderMaterial::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &ShaderMaterial::property_get_revert);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }
@@ -1869,61 +1867,61 @@ void BaseMaterial3D::_validate_high_end(const String &text, PropertyInfo &proper
 	}
 }
 
-void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
-	_validate_feature("normal", FEATURE_NORMAL_MAPPING, property);
-	_validate_feature("emission", FEATURE_EMISSION, property);
-	_validate_feature("rim", FEATURE_RIM, property);
-	_validate_feature("clearcoat", FEATURE_CLEARCOAT, property);
-	_validate_feature("anisotropy", FEATURE_ANISOTROPY, property);
-	_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, property);
-	_validate_feature("heightmap", FEATURE_HEIGHT_MAPPING, property);
-	_validate_feature("subsurf_scatter", FEATURE_SUBSURFACE_SCATTERING, property);
-	_validate_feature("backlight", FEATURE_BACKLIGHT, property);
-	_validate_feature("refraction", FEATURE_REFRACTION, property);
-	_validate_feature("detail", FEATURE_DETAIL, property);
+void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
+	_validate_feature("normal", FEATURE_NORMAL_MAPPING, p_property);
+	_validate_feature("emission", FEATURE_EMISSION, p_property);
+	_validate_feature("rim", FEATURE_RIM, p_property);
+	_validate_feature("clearcoat", FEATURE_CLEARCOAT, p_property);
+	_validate_feature("anisotropy", FEATURE_ANISOTROPY, p_property);
+	_validate_feature("ao", FEATURE_AMBIENT_OCCLUSION, p_property);
+	_validate_feature("heightmap", FEATURE_HEIGHT_MAPPING, p_property);
+	_validate_feature("subsurf_scatter", FEATURE_SUBSURFACE_SCATTERING, p_property);
+	_validate_feature("backlight", FEATURE_BACKLIGHT, p_property);
+	_validate_feature("refraction", FEATURE_REFRACTION, p_property);
+	_validate_feature("detail", FEATURE_DETAIL, p_property);
 
-	_validate_high_end("refraction", property);
-	_validate_high_end("subsurf_scatter", property);
-	_validate_high_end("heightmap", property);
+	_validate_high_end("refraction", p_property);
+	_validate_high_end("subsurf_scatter", p_property);
+	_validate_high_end("heightmap", p_property);
 
-	if (property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "billboard_keep_scale" && billboard_mode == BILLBOARD_DISABLED) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "grow_amount" && !grow_enabled) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "grow_amount" && !grow_enabled) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "point_size" && !flags[FLAG_USE_POINT_SIZE]) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "proximity_fade_distance" && !proximity_fade_enabled) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "msdf_pixel_range" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if (property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "msdf_outline_size" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if ((property.name == "distance_fade_max_distance" || property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if ((property.name == "uv1_triplanar_sharpness" || property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if ((p_property.name == "uv1_triplanar_sharpness" || p_property.name == "uv1_world_triplanar") && !flags[FLAG_UV1_USE_TRIPLANAR]) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
-	if ((property.name == "uv2_triplanar_sharpness" || property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if ((p_property.name == "uv2_triplanar_sharpness" || p_property.name == "uv2_world_triplanar") && !flags[FLAG_UV2_USE_TRIPLANAR]) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
 	// you can only enable anti-aliasing (in materials) on alpha scissor and alpha hash
@@ -1932,96 +1930,96 @@ void BaseMaterial3D::_validate_property(PropertyInfo &property) const {
 	const bool alpha_aa_enabled = (alpha_antialiasing_mode != ALPHA_ANTIALIASING_OFF) && can_select_aa;
 
 	// alpha scissor slider isn't needed when alpha antialiasing is enabled
-	if (property.name == "alpha_scissor_threshold" && transparency != TRANSPARENCY_ALPHA_SCISSOR) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "alpha_scissor_threshold" && transparency != TRANSPARENCY_ALPHA_SCISSOR) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	// alpha hash scale slider is only needed if transparency is alpha hash
-	if (property.name == "alpha_hash_scale" && transparency != TRANSPARENCY_ALPHA_HASH) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "alpha_hash_scale" && transparency != TRANSPARENCY_ALPHA_HASH) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "alpha_antialiasing_mode" && !can_select_aa) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "alpha_antialiasing_mode" && !can_select_aa) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	// we can't choose an antialiasing mode if alpha isn't possible
-	if (property.name == "alpha_antialiasing_edge" && !alpha_aa_enabled) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "alpha_antialiasing_edge" && !alpha_aa_enabled) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (property.name == "blend_mode" && alpha_aa_enabled) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (p_property.name == "blend_mode" && alpha_aa_enabled) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if ((property.name == "heightmap_min_layers" || property.name == "heightmap_max_layers") && !deep_parallax) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if ((p_property.name == "heightmap_min_layers" || p_property.name == "heightmap_max_layers") && !deep_parallax) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
-	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (property.name == "subsurf_scatter_transmittance_color" || property.name == "subsurf_scatter_transmittance_texture")) {
-		property.usage = PROPERTY_USAGE_NONE;
+	if (flags[FLAG_SUBSURFACE_MODE_SKIN] && (p_property.name == "subsurf_scatter_transmittance_color" || p_property.name == "subsurf_scatter_transmittance_texture")) {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 
 	if (orm) {
-		if (property.name == "shading_mode") {
+		if (p_property.name == "shading_mode") {
 			// Vertex not supported in ORM mode, since no individual roughness.
-			property.hint_string = "Unshaded,Per-Pixel";
+			p_property.hint_string = "Unshaded,Per-Pixel";
 		}
-		if (property.name.begins_with("roughness") || property.name.begins_with("metallic") || property.name.begins_with("ao_texture")) {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name.begins_with("roughness") || p_property.name.begins_with("metallic") || p_property.name.begins_with("ao_texture")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 
 	} else {
-		if (property.name == "orm_texture") {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name == "orm_texture") {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 
 	if (shading_mode != SHADING_MODE_PER_PIXEL) {
 		if (shading_mode != SHADING_MODE_PER_VERTEX) {
 			//these may still work per vertex
-			if (property.name.begins_with("ao")) {
-				property.usage = PROPERTY_USAGE_NONE;
+			if (p_property.name.begins_with("ao")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
 			}
-			if (property.name.begins_with("emission")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-
-			if (property.name.begins_with("metallic")) {
-				property.usage = PROPERTY_USAGE_NONE;
-			}
-			if (property.name.begins_with("rim")) {
-				property.usage = PROPERTY_USAGE_NONE;
+			if (p_property.name.begins_with("emission")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 
-			if (property.name.begins_with("roughness")) {
-				property.usage = PROPERTY_USAGE_NONE;
+			if (p_property.name.begins_with("metallic")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+			if (p_property.name.begins_with("rim")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 
-			if (property.name.begins_with("subsurf_scatter")) {
-				property.usage = PROPERTY_USAGE_NONE;
+			if (p_property.name.begins_with("roughness")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
+			}
+
+			if (p_property.name.begins_with("subsurf_scatter")) {
+				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 		}
 
 		//these definitely only need per pixel
-		if (property.name.begins_with("anisotropy")) {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name.begins_with("anisotropy")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 
-		if (property.name.begins_with("clearcoat")) {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name.begins_with("clearcoat")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 
-		if (property.name.begins_with("normal")) {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name.begins_with("normal")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 
-		if (property.name.begins_with("backlight")) {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name.begins_with("backlight")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 
-		if (property.name.begins_with("transmittance")) {
-			property.usage = PROPERTY_USAGE_NONE;
+		if (p_property.name.begins_with("transmittance")) {
+			p_property.usage = PROPERTY_USAGE_NONE;
 		}
 	}
 }
@@ -2054,8 +2052,9 @@ Vector3 BaseMaterial3D::get_uv1_offset() const {
 }
 
 void BaseMaterial3D::set_uv1_triplanar_blend_sharpness(float p_sharpness) {
-	uv1_triplanar_sharpness = p_sharpness;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, p_sharpness);
+	// Negative values or values higher than 150 can result in NaNs, leading to broken rendering.
+	uv1_triplanar_sharpness = CLAMP(p_sharpness, 0.0, 150.0);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_blend_sharpness, uv1_triplanar_sharpness);
 }
 
 float BaseMaterial3D::get_uv1_triplanar_blend_sharpness() const {
@@ -2081,8 +2080,9 @@ Vector3 BaseMaterial3D::get_uv2_offset() const {
 }
 
 void BaseMaterial3D::set_uv2_triplanar_blend_sharpness(float p_sharpness) {
-	uv2_triplanar_sharpness = p_sharpness;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, p_sharpness);
+	// Negative values or values higher than 150 can result in NaNs, leading to broken rendering.
+	uv2_triplanar_sharpness = CLAMP(p_sharpness, 0.0, 150.0);
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv2_blend_sharpness, uv2_triplanar_sharpness);
 }
 
 float BaseMaterial3D::get_uv2_triplanar_blend_sharpness() const {

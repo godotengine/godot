@@ -540,7 +540,7 @@ def detect_visual_c_compiler_version(tools_env):
     # and not scons setup environment (env)... so make sure you call the right environment on it or it will fail to detect
     # the proper vc version that will be called
 
-    # There is no flag to give to visual c compilers to set the architecture, i.e. scons bits argument (32,64,ARM etc)
+    # There is no flag to give to visual c compilers to set the architecture, i.e. scons arch argument (x86_32, x86_64, arm64, etc.).
     # There are many different cl.exe files that are run, and each one compiles & links to a different architecture
     # As far as I know, the only way to figure out what compiler will be run when Scons calls cl.exe via Program()
     # is to check the PATH variable and figure out which one will be called first. Code below does that and returns:
@@ -818,18 +818,21 @@ def generate_vs_project(env, num_jobs):
         module_configs = ModuleConfigs()
 
         if env.get("module_mono_enabled"):
-            import modules.mono.build_scripts.mono_reg_utils as mono_reg
+            import modules.mono.build_scripts.mono_configure as mono_configure
 
-            mono_root = env.get("mono_prefix") or mono_reg.find_mono_root_dir(env["bits"])
-            if mono_root:
+            app_host_dir = mono_configure.find_dotnet_app_host_dir(env)
+            if app_host_dir and os.path.isdir(app_host_dir):
+                mono_defines = [("NETHOST_USE_AS_STATIC",)]
+                if env["tools"]:
+                    mono_defines += [("GD_MONO_HOT_RELOAD",)]
                 module_configs.add_mode(
                     "mono",
-                    includes=os.path.join(mono_root, "include", "mono-2.0"),
-                    cli_args="module_mono_enabled=yes mono_glue=yes",
-                    defines=[("MONO_GLUE_ENABLED",)],
+                    includes=app_host_dir,
+                    cli_args="module_mono_enabled=yes",
+                    defines=mono_defines,
                 )
             else:
-                print("Mono installation directory not found. Generated project will not have build variants for Mono.")
+                print(".NET App Host directory not found. Generated project will not have build variants for .NET.")
 
         env["MSVSBUILDCOM"] = module_configs.build_commandline("scons")
         env["MSVSREBUILDCOM"] = module_configs.build_commandline("scons vsproj=yes")

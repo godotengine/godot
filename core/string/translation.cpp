@@ -70,7 +70,7 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 void Translation::set_locale(const String &p_locale) {
 	locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
 
-	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(this)) {
+	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(get_locale())) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
@@ -505,11 +505,11 @@ String TranslationServer::get_locale() const {
 	return locale;
 }
 
-Array TranslationServer::get_loaded_locales() const {
-	Array locales;
+PackedStringArray TranslationServer::get_loaded_locales() const {
+	PackedStringArray locales;
 	for (const Ref<Translation> &E : translations) {
 		const Ref<Translation> &t = E;
-		ERR_FAIL_COND_V(t.is_null(), Array());
+		ERR_FAIL_COND_V(t.is_null(), PackedStringArray());
 		String l = t->get_locale();
 
 		locales.push_back(l);

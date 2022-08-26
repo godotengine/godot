@@ -149,7 +149,7 @@ protected:
 
 	static void _bind_methods();
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _im_update();
 	void _font_changed();

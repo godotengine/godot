@@ -34,7 +34,7 @@
 			</description>
 		</method>
 		<method name="get_copyright_info" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an Array of copyright information Dictionaries.
 				[code]name[/code]    - String, component name
@@ -123,7 +123,7 @@
 			<return type="Object" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a global singleton with given [code]name[/code]. Often used for plugins, e.g. GodotPayments.
+				Returns a global singleton with given [param name]. Often used for plugins, e.g. GodotPayments.
 			</description>
 		</method>
 		<method name="get_singleton_list" qualifiers="const">
@@ -175,7 +175,7 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if a singleton with given [code]name[/code] exists in global scope.
+				Returns [code]true[/code] if a singleton with given [param name] exists in global scope.
 			</description>
 		</method>
 		<method name="is_editor_hint" qualifiers="const">

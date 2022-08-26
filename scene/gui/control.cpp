@@ -252,36 +252,36 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
-				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.icon_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
-				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.style_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
-				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.font_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			data.font_size_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else {
 			return false;
 		}
@@ -422,9 +422,9 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void Control::_validate_property(PropertyInfo &property) const {
+void Control::_validate_property(PropertyInfo &p_property) const {
 	// Update theme type variation options.
-	if (property.name == "theme_type_variation") {
+	if (p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		// Only the default theme and the project theme are used for the list of options.
@@ -447,18 +447,18 @@ void Control::_validate_property(PropertyInfo &property) const {
 			unique_names.append(E);
 		}
 
-		property.hint_string = hint_string;
+		p_property.hint_string = hint_string;
 	}
 
-	if (property.name == "mouse_force_pass_scroll_events") {
+	if (p_property.name == "mouse_force_pass_scroll_events") {
 		// Disable force pass if the control is not stopping the event.
 		if (data.mouse_filter != MOUSE_FILTER_STOP) {
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 	}
 
-	if (property.name == "scale") {
-		property.hint = PROPERTY_HINT_LINK;
+	if (p_property.name == "scale") {
+		p_property.hint = PROPERTY_HINT_LINK;
 	}
 
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
@@ -467,33 +467,33 @@ void Control::_validate_property(PropertyInfo &property) const {
 		// If there is no parent, display both anchor and container options.
 
 		// Set the layout mode to be disabled with the proper value.
-		if (property.name == "layout_mode") {
-			property.hint_string = "Position,Anchors,Container,Uncontrolled";
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
+		if (p_property.name == "layout_mode") {
+			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		}
 
 		// Use the layout mode to display or hide advanced anchoring properties.
 		bool use_custom_anchors = _get_anchors_layout_preset() == -1; // Custom "preset".
-		if (!use_custom_anchors && (property.name.begins_with("anchor_") || property.name.begins_with("offset_") || property.name.begins_with("grow_"))) {
-			property.usage ^= PROPERTY_USAGE_EDITOR;
+		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 	} else if (Object::cast_to<Container>(parent_node)) {
 		// If the parent is a container, display only container-related properties.
-		if (property.name.begins_with("anchor_") || property.name.begins_with("offset_") || property.name.begins_with("grow_") || property.name == "anchors_preset" ||
-				property.name == "position" || property.name == "rotation" || property.name == "scale" || property.name == "size" || property.name == "pivot_offset") {
-			property.usage ^= PROPERTY_USAGE_EDITOR;
+		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset" ||
+				p_property.name == "position" || p_property.name == "rotation" || p_property.name == "scale" || p_property.name == "size" || p_property.name == "pivot_offset") {
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 
-		} else if (property.name == "layout_mode") {
+		} else if (p_property.name == "layout_mode") {
 			// Set the layout mode to be disabled with the proper value.
-			property.hint_string = "Position,Anchors,Container,Uncontrolled";
-			property.usage |= PROPERTY_USAGE_READ_ONLY;
-		} else if (property.name == "size_flags_horizontal" || property.name == "size_flags_vertical") {
+			p_property.hint_string = "Position,Anchors,Container,Uncontrolled";
+			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
+		} else if (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical") {
 			// Filter allowed size flags based on the parent container configuration.
 			Container *parent_container = Object::cast_to<Container>(parent_node);
 			Vector<int> size_flags;
-			if (property.name == "size_flags_horizontal") {
+			if (p_property.name == "size_flags_horizontal") {
 				size_flags = parent_container->get_allowed_size_flags_horizontal();
-			} else if (property.name == "size_flags_vertical") {
+			} else if (p_property.name == "size_flags_vertical") {
 				size_flags = parent_container->get_allowed_size_flags_vertical();
 			}
 
@@ -522,30 +522,30 @@ void Control::_validate_property(PropertyInfo &property) const {
 			}
 
 			if (hint_string.is_empty()) {
-				property.hint_string = "";
-				property.usage |= PROPERTY_USAGE_READ_ONLY;
+				p_property.hint_string = "";
+				p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 			} else {
-				property.hint_string = hint_string;
+				p_property.hint_string = hint_string;
 			}
 		}
 	} else {
 		// If the parent is NOT a container or not a control at all, display only anchoring-related properties.
-		if (property.name.begins_with("size_flags_")) {
-			property.usage ^= PROPERTY_USAGE_EDITOR;
+		if (p_property.name.begins_with("size_flags_")) {
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 
-		} else if (property.name == "layout_mode") {
+		} else if (p_property.name == "layout_mode") {
 			// Set the layout mode to be enabled with proper options.
-			property.hint_string = "Position,Anchors";
+			p_property.hint_string = "Position,Anchors";
 		}
 
 		// Use the layout mode to display or hide advanced anchoring properties.
 		bool use_anchors = _get_layout_mode() == LayoutMode::LAYOUT_MODE_ANCHORS;
-		if (!use_anchors && property.name == "anchors_preset") {
-			property.usage ^= PROPERTY_USAGE_EDITOR;
+		if (!use_anchors && p_property.name == "anchors_preset") {
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 		bool use_custom_anchors = use_anchors && _get_anchors_layout_preset() == -1; // Custom "preset".
-		if (!use_custom_anchors && (property.name.begins_with("anchor_") || property.name.begins_with("offset_") || property.name.begins_with("grow_"))) {
-			property.usage ^= PROPERTY_USAGE_EDITOR;
+		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
+			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
 	}
 
@@ -555,14 +555,34 @@ void Control::_validate_property(PropertyInfo &property) const {
 	}
 	bool property_is_managed_by_container = false;
 	for (unsigned i = 0; i < properties_managed_by_container_count; i++) {
-		property_is_managed_by_container = properties_managed_by_container[i] == property.name;
+		property_is_managed_by_container = properties_managed_by_container[i] == p_property.name;
 		if (property_is_managed_by_container) {
 			break;
 		}
 	}
 	if (property_is_managed_by_container) {
-		property.usage |= PROPERTY_USAGE_READ_ONLY;
+		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
+}
+
+bool Control::_property_can_revert(const StringName &p_name) const {
+	if (p_name == "layout_mode" || p_name == "anchors_preset") {
+		return true;
+	}
+
+	return false;
+}
+
+bool Control::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "layout_mode") {
+		r_property = _get_default_layout_mode();
+		return true;
+	} else if (p_name == "anchors_preset") {
+		r_property = LayoutPreset::PRESET_TOP_LEFT;
+		return true;
+	}
+
+	return false;
 }
 
 // Global relations.
@@ -703,6 +723,9 @@ real_t Control::get_anchor(Side p_side) const {
 
 void Control::set_offset(Side p_side, real_t p_value) {
 	ERR_FAIL_INDEX((int)p_side, 4);
+	if (data.offset[p_side] == p_value) {
+		return;
+	}
 
 	data.offset[p_side] = p_value;
 	_size_changed();
@@ -720,6 +743,10 @@ void Control::set_anchor_and_offset(Side p_side, real_t p_anchor, real_t p_pos, 
 }
 
 void Control::set_begin(const Size2 &p_point) {
+	if (data.offset[0] == p_point.x && data.offset[1] == p_point.y) {
+		return;
+	}
+
 	data.offset[0] = p_point.x;
 	data.offset[1] = p_point.y;
 	_size_changed();
@@ -730,6 +757,10 @@ Size2 Control::get_begin() const {
 }
 
 void Control::set_end(const Size2 &p_point) {
+	if (data.offset[2] == p_point.x && data.offset[3] == p_point.y) {
+		return;
+	}
+
 	data.offset[2] = p_point.x;
 	data.offset[3] = p_point.y;
 	_size_changed();
@@ -740,6 +771,10 @@ Size2 Control::get_end() const {
 }
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
+	if (data.h_grow == p_direction) {
+		return;
+	}
+
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.h_grow = p_direction;
@@ -751,6 +786,10 @@ Control::GrowDirection Control::get_h_grow_direction() const {
 }
 
 void Control::set_v_grow_direction(GrowDirection p_direction) {
+	if (data.v_grow == p_direction) {
+		return;
+	}
+
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.v_grow = p_direction;
@@ -794,24 +833,15 @@ void Control::_compute_offsets(Rect2 p_rect, const real_t p_anchors[4], real_t (
 void Control::_set_layout_mode(LayoutMode p_mode) {
 	bool list_changed = false;
 
-	if (p_mode == LayoutMode::LAYOUT_MODE_POSITION || p_mode == LayoutMode::LAYOUT_MODE_ANCHORS) {
-		if ((int)get_meta("_edit_layout_mode", p_mode) != (int)p_mode) {
-			list_changed = true;
-		}
+	if (data.stored_layout_mode != p_mode) {
+		list_changed = true;
+		data.stored_layout_mode = p_mode;
+	}
 
-		set_meta("_edit_layout_mode", (int)p_mode);
-
-		if (p_mode == LayoutMode::LAYOUT_MODE_POSITION) {
-			remove_meta("_edit_layout_mode");
-			remove_meta("_edit_use_custom_anchors");
-			set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
-			set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
-		}
-	} else {
-		if (has_meta("_edit_layout_mode")) {
-			remove_meta("_edit_layout_mode");
-			list_changed = true;
-		}
+	if (data.stored_layout_mode == LayoutMode::LAYOUT_MODE_POSITION) {
+		data.stored_use_custom_anchors = false;
+		set_anchors_and_offsets_preset(LayoutPreset::PRESET_TOP_LEFT, LayoutPresetMode::PRESET_MODE_KEEP_SIZE);
+		set_grow_direction_preset(LayoutPreset::PRESET_TOP_LEFT);
 	}
 
 	if (list_changed) {
@@ -832,33 +862,43 @@ Control::LayoutMode Control::_get_layout_mode() const {
 	if (_get_anchors_layout_preset() != (int)LayoutPreset::PRESET_TOP_LEFT) {
 		return LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
-	// Otherwise check what was saved.
-	if (has_meta("_edit_layout_mode")) {
-		return (LayoutMode)(int)get_meta("_edit_layout_mode");
+
+	// Otherwise fallback on what's stored.
+	return data.stored_layout_mode;
+}
+
+Control::LayoutMode Control::_get_default_layout_mode() const {
+	Node *parent_node = get_parent_control();
+	// In these modes the property is read-only.
+	if (!parent_node) {
+		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
+	} else if (Object::cast_to<Container>(parent_node)) {
+		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
-	// Or fallback on default.
+
+	// Otherwise fallback on the position mode.
 	return LayoutMode::LAYOUT_MODE_POSITION;
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
 	bool list_changed = false;
 
-	if (get_meta("_edit_layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS).operator int() != LayoutMode::LAYOUT_MODE_ANCHORS) {
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
 		list_changed = true;
-		set_meta("_edit_layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
+		data.stored_layout_mode = LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
 
 	if (p_preset == -1) {
-		if (!get_meta("_edit_use_custom_anchors", false)) {
-			set_meta("_edit_use_custom_anchors", true);
+		if (!data.stored_use_custom_anchors) {
+			data.stored_use_custom_anchors = true;
 			notify_property_list_changed();
 		}
 		return; // Keep settings as is.
 	}
 
-	if (get_meta("_edit_use_custom_anchors", true)) {
+	if (data.stored_use_custom_anchors) {
 		list_changed = true;
-		remove_meta("_edit_use_custom_anchors");
+		data.stored_use_custom_anchors = false;
 	}
 
 	LayoutPreset preset = (LayoutPreset)p_preset;
@@ -899,7 +939,7 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 
 int Control::_get_anchors_layout_preset() const {
 	// If the custom preset was selected by user, use it.
-	if ((bool)get_meta("_edit_use_custom_anchors", false)) {
+	if (data.stored_use_custom_anchors) {
 		return -1;
 	}
 
@@ -1406,6 +1446,10 @@ Rect2 Control::get_anchorable_rect() const {
 }
 
 void Control::set_scale(const Vector2 &p_scale) {
+	if (data.scale == p_scale) {
+		return;
+	}
+
 	data.scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (data.scale.x == 0) {
@@ -1423,6 +1467,10 @@ Vector2 Control::get_scale() const {
 }
 
 void Control::set_rotation(real_t p_radians) {
+	if (data.rotation == p_radians) {
+		return;
+	}
+
 	data.rotation = p_radians;
 	update();
 	_notify_transform();
@@ -1433,6 +1481,10 @@ real_t Control::get_rotation() const {
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
+	if (data.pivot_offset == p_pivot) {
+		return;
+	}
+
 	data.pivot_offset = p_pivot;
 	update();
 	_notify_transform();
@@ -2183,6 +2235,9 @@ Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 }
 
 void Control::set_disable_visibility_clip(bool p_ignore) {
+	if (data.disable_visibility_clip == p_ignore) {
+		return;
+	}
 	data.disable_visibility_clip = p_ignore;
 	update();
 }
@@ -2192,6 +2247,9 @@ bool Control::is_visibility_clip_disabled() const {
 }
 
 void Control::set_clip_contents(bool p_clip) {
+	if (data.clip_contents == p_clip) {
+		return;
+	}
 	data.clip_contents = p_clip;
 	update();
 }
@@ -2202,64 +2260,73 @@ bool Control::is_clipping_contents() {
 
 // Theming.
 
-void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign) {
+void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_notify, bool p_assign) {
 	Control *c = Object::cast_to<Control>(p_at);
-
-	if (c && c != p_owner && c->data.theme.is_valid()) { // has a theme, this can't be propagated
-		return;
-	}
-
 	Window *w = c == nullptr ? Object::cast_to<Window>(p_at) : nullptr;
 
-	if (w && w != p_owner_window && w->theme.is_valid()) { // has a theme, this can't be propagated
+	if (!c && !w) {
+		// Theme inheritance chains are broken by nodes that aren't Control or Window.
 		return;
 	}
 
-	for (int i = 0; i < p_at->get_child_count(); i++) {
-		CanvasItem *child = Object::cast_to<CanvasItem>(p_at->get_child(i));
-		if (child) {
-			_propagate_theme_changed(child, p_owner, p_owner_window, p_assign);
-		} else {
-			Window *window = Object::cast_to<Window>(p_at->get_child(i));
-			if (window) {
-				_propagate_theme_changed(window, p_owner, p_owner_window, p_assign);
-			}
-		}
-	}
-
+	bool assign = p_assign;
 	if (c) {
-		if (p_assign) {
+		if (c != p_owner && c->data.theme.is_valid()) {
+			// Has a theme, so we don't want to change the theme owner,
+			// but we still want to propagate in case this child has theme items
+			// it inherits from the theme this node uses.
+			// See https://github.com/godotengine/godot/issues/62844.
+			assign = false;
+		}
+
+		if (assign) {
 			c->data.theme_owner = p_owner;
 			c->data.theme_owner_window = p_owner_window;
 		}
-		c->notification(Control::NOTIFICATION_THEME_CHANGED);
-		c->emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	}
 
-	if (w) {
-		if (p_assign) {
+		if (p_notify) {
+			c->notification(Control::NOTIFICATION_THEME_CHANGED);
+		}
+	} else if (w) {
+		if (w != p_owner_window && w->theme.is_valid()) {
+			// Same as above.
+			assign = false;
+		}
+
+		if (assign) {
 			w->theme_owner = p_owner;
 			w->theme_owner_window = p_owner_window;
 		}
-		w->notification(Window::NOTIFICATION_THEME_CHANGED);
-		w->emit_signal(SceneStringNames::get_singleton()->theme_changed);
+
+		if (p_notify) {
+			w->notification(Window::NOTIFICATION_THEME_CHANGED);
+		}
+	}
+
+	for (int i = 0; i < p_at->get_child_count(); i++) {
+		_propagate_theme_changed(p_at->get_child(i), p_owner, p_owner_window, p_notify, assign);
 	}
 }
 
 void Control::_theme_changed() {
-	_propagate_theme_changed(this, this, nullptr, false);
+	if (is_inside_tree()) {
+		_propagate_theme_changed(this, this, nullptr, true, false);
+	}
 }
 
-void Control::_theme_property_override_changed() {
-	notification(NOTIFICATION_THEME_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	update_minimum_size(); // Overrides are likely to affect minimum size.
-}
-
-void Control::_notify_theme_changed() {
-	if (!data.bulk_theme_override) {
+void Control::_notify_theme_override_changed() {
+	if (!data.bulk_theme_override && is_inside_tree()) {
 		notification(NOTIFICATION_THEME_CHANGED);
 	}
+}
+
+void Control::_invalidate_theme_cache() {
+	data.theme_icon_cache.clear();
+	data.theme_style_cache.clear();
+	data.theme_font_cache.clear();
+	data.theme_font_size_cache.clear();
+	data.theme_color_cache.clear();
+	data.theme_constant_cache.clear();
 }
 
 void Control::set_theme(const Ref<Theme> &p_theme) {
@@ -2272,28 +2339,25 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	data.theme = p_theme;
-	if (!p_theme.is_null()) {
-		data.theme_owner = this;
-		data.theme_owner_window = nullptr;
-		_propagate_theme_changed(this, this, nullptr);
-	} else {
-		Control *parent_c = Object::cast_to<Control>(get_parent());
-
-		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
-			Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window);
-		} else {
-			Window *parent_w = cast_to<Window>(get_parent());
-			if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
-				Control::_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window);
-			} else {
-				Control::_propagate_theme_changed(this, nullptr, nullptr);
-			}
-		}
-	}
-
 	if (data.theme.is_valid()) {
+		_propagate_theme_changed(this, this, nullptr, is_inside_tree(), true);
 		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), CONNECT_DEFERRED);
+		return;
 	}
+
+	Control *parent_c = Object::cast_to<Control>(get_parent());
+	if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
+		_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window, is_inside_tree(), true);
+		return;
+	}
+
+	Window *parent_w = cast_to<Window>(get_parent());
+	if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
+		_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window, is_inside_tree(), true);
+		return;
+	}
+
+	_propagate_theme_changed(this, nullptr, nullptr, is_inside_tree(), true);
 }
 
 Ref<Theme> Control::get_theme() const {
@@ -2301,8 +2365,13 @@ Ref<Theme> Control::get_theme() const {
 }
 
 void Control::set_theme_type_variation(const StringName &p_theme_type) {
+	if (data.theme_type_variation == p_theme_type) {
+		return;
+	}
 	data.theme_type_variation = p_theme_type;
-	_propagate_theme_changed(this, data.theme_owner, data.theme_owner_window);
+	if (is_inside_tree()) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
 }
 
 StringName Control::get_theme_type_variation() const {
@@ -2443,9 +2512,15 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 		}
 	}
 
+	if (data.theme_icon_cache.has(p_theme_type) && data.theme_icon_cache[p_theme_type].has(p_name)) {
+		return data.theme_icon_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<Texture2D>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_ICON, p_name, theme_types);
+	Ref<Texture2D> icon = get_theme_item_in_types<Ref<Texture2D>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_ICON, p_name, theme_types);
+	data.theme_icon_cache[p_theme_type][p_name] = icon;
+	return icon;
 }
 
 Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2456,9 +2531,15 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 		}
 	}
 
+	if (data.theme_style_cache.has(p_theme_type) && data.theme_style_cache[p_theme_type].has(p_name)) {
+		return data.theme_style_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
+	Ref<StyleBox> style = get_theme_item_in_types<Ref<StyleBox>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_STYLEBOX, p_name, theme_types);
+	data.theme_style_cache[p_theme_type][p_name] = style;
+	return style;
 }
 
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2469,9 +2550,15 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 		}
 	}
 
+	if (data.theme_font_cache.has(p_theme_type) && data.theme_font_cache[p_theme_type].has(p_name)) {
+		return data.theme_font_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Ref<Font>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+	Ref<Font> font = get_theme_item_in_types<Ref<Font>>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT, p_name, theme_types);
+	data.theme_font_cache[p_theme_type][p_name] = font;
+	return font;
 }
 
 int Control::get_theme_font_size(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2482,9 +2569,15 @@ int Control::get_theme_font_size(const StringName &p_name, const StringName &p_t
 		}
 	}
 
+	if (data.theme_font_size_cache.has(p_theme_type) && data.theme_font_size_cache[p_theme_type].has(p_name)) {
+		return data.theme_font_size_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	int font_size = get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_FONT_SIZE, p_name, theme_types);
+	data.theme_font_size_cache[p_theme_type][p_name] = font_size;
+	return font_size;
 }
 
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2495,9 +2588,15 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 		}
 	}
 
+	if (data.theme_color_cache.has(p_theme_type) && data.theme_color_cache[p_theme_type].has(p_name)) {
+		return data.theme_color_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<Color>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_COLOR, p_name, theme_types);
+	Color color = get_theme_item_in_types<Color>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_COLOR, p_name, theme_types);
+	data.theme_color_cache[p_theme_type][p_name] = color;
+	return color;
 }
 
 int Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2508,9 +2607,15 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 		}
 	}
 
+	if (data.theme_constant_cache.has(p_theme_type) && data.theme_constant_cache[p_theme_type].has(p_name)) {
+		return data.theme_constant_cache[p_theme_type][p_name];
+	}
+
 	List<StringName> theme_types;
 	_get_theme_type_dependencies(p_theme_type, &theme_types);
-	return get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	int constant = get_theme_item_in_types<int>(data.theme_owner, data.theme_owner_window, Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+	data.theme_constant_cache[p_theme_type][p_name] = constant;
+	return constant;
 }
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_theme_type) const {
@@ -2591,93 +2696,93 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 	ERR_FAIL_COND(!p_icon.is_valid());
 
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.icon_override[p_name] = p_icon;
-	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
+	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 	ERR_FAIL_COND(!p_style.is_valid());
 
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.style_override[p_name] = p_style;
-	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
+	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.font_override[p_name] = p_font;
-	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
+	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
 	data.font_size_override[p_name] = p_font_size;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_color_override(const StringName &p_name, const Color &p_color) {
 	data.color_override[p_name] = p_color;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	data.constant_override[p_name] = p_constant;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_icon_override(const StringName &p_name) {
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.icon_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_style_override(const StringName &p_name) {
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.style_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_font_override(const StringName &p_name) {
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.font_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_font_size_override(const StringName &p_name) {
 	data.font_size_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_color_override(const StringName &p_name) {
 	data.color_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_constant_override(const StringName &p_name) {
 	data.constant_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 bool Control::has_theme_icon_override(const StringName &p_name) const {
@@ -2875,18 +2980,18 @@ void Control::end_bulk_theme_override() {
 	ERR_FAIL_COND(!data.bulk_theme_override);
 
 	data.bulk_theme_override = false;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 // Internationalization.
 
-Array Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+TypedArray<Vector2i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
 	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
-		Array ret;
+		TypedArray<Vector2i> ret;
 		if (GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret)) {
 			return ret;
 		} else {
-			return Array();
+			return TypedArray<Vector2i>();
 		}
 	} else {
 		return TS->parse_structured_text(p_parser_type, p_args, p_text);
@@ -2894,6 +2999,9 @@ Array Control::structured_text_parser(TextServer::StructuredTextParser p_parser_
 }
 
 void Control::set_layout_direction(Control::LayoutDirection p_direction) {
+	if (data.layout_dir == p_direction) {
+		return;
+	}
 	ERR_FAIL_INDEX((int)p_direction, 4);
 
 	data.layout_dir = p_direction;
@@ -2978,35 +3086,28 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 // Base object overrides.
 
 void Control::add_child_notify(Node *p_child) {
-	Control *child_c = Object::cast_to<Control>(p_child);
-
-	if (child_c && child_c->data.theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
-		_propagate_theme_changed(child_c, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
-	}
-
-	Window *child_w = Object::cast_to<Window>(p_child);
-
-	if (child_w && child_w->theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
-		_propagate_theme_changed(child_w, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+	// We propagate when this node uses a custom theme, so it can pass it on to its children.
+	if (data.theme_owner || data.theme_owner_window) {
+		// `p_notify` is false here as `NOTIFICATION_THEME_CHANGED` will be handled by `NOTIFICATION_ENTER_TREE`.
+		_propagate_theme_changed(p_child, data.theme_owner, data.theme_owner_window, false, true);
 	}
 }
 
 void Control::remove_child_notify(Node *p_child) {
-	Control *child_c = Object::cast_to<Control>(p_child);
-
-	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
-		_propagate_theme_changed(child_c, nullptr, nullptr);
-	}
-
-	Window *child_w = Object::cast_to<Window>(p_child);
-
-	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
-		_propagate_theme_changed(child_w, nullptr, nullptr);
+	// If the removed child isn't inheriting any theme items through this node, then there's no need to propagate.
+	if (data.theme_owner || data.theme_owner_window) {
+		_propagate_theme_changed(p_child, nullptr, nullptr, false, true);
 	}
 }
 
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE: {
+			// Need to defer here, because theme owner information might be set in
+			// add_child_notify, which doesn't get called until right after this.
+			call_deferred(SNAME("notification"), NOTIFICATION_THEME_CHANGED);
+		} break;
+
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.minimum_size_valid = false;
 			data.is_rtl_dirty = true;
@@ -3028,18 +3129,6 @@ void Control::_notification(int p_notification) {
 			data.parent = Object::cast_to<Control>(get_parent());
 			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
-
-			if (data.theme.is_null()) {
-				if (data.parent && (data.parent->data.theme_owner || data.parent->data.theme_owner_window)) {
-					data.theme_owner = data.parent->data.theme_owner;
-					data.theme_owner_window = data.parent->data.theme_owner_window;
-					notification(NOTIFICATION_THEME_CHANGED);
-				} else if (data.parent_window && (data.parent_window->theme_owner || data.parent_window->theme_owner_window)) {
-					data.theme_owner = data.parent_window->theme_owner;
-					data.theme_owner_window = data.parent_window->theme_owner_window;
-					notification(NOTIFICATION_THEME_CHANGED);
-				}
-			}
 
 			CanvasItem *node = this;
 			bool has_parent_control = false;
@@ -3144,6 +3233,8 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			emit_signal(SceneStringNames::get_singleton()->theme_changed);
+			_invalidate_theme_cache();
 			update_minimum_size();
 			update();
 		} break;
@@ -3164,6 +3255,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_inside_tree()) {
 				data.is_rtl_dirty = true;
+				_invalidate_theme_cache();
 				_size_changed();
 			}
 		} break;
@@ -3340,7 +3432,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_contents"), "set_clip_contents", "is_clipping_contents");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "custom_minimum_size", PROPERTY_HINT_NONE, "suffix:px"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_direction", PROPERTY_HINT_ENUM, "Inherited,Locale,Left-to-Right,Right-to-Left"), "set_layout_direction", "get_layout_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layout_mode", PROPERTY_HINT_ENUM, "Position,Anchors,Container,Uncontrolled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_layout_mode", "_get_layout_mode");
 	ADD_PROPERTY_DEFAULT("layout_mode", LayoutMode::LAYOUT_MODE_POSITION);
 
 	const String anchors_presets_options = "Custom:-1,PresetFullRect:15,"
@@ -3348,7 +3440,7 @@ void Control::_bind_methods() {
 										   "PresetCenterLeft:4,PresetCenterTop:5,PresetCenterRight:6,PresetCenterBottom:7,PresetCenter:8,"
 										   "PresetLeftWide:9,PresetTopWide:10,PresetRightWide:11,PresetBottomWide:12,PresetVCenterWide:13,PresetHCenterWide:14";
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchors_preset", PROPERTY_HINT_ENUM, anchors_presets_options, PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_anchors_layout_preset", "_get_anchors_layout_preset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchors_preset", PROPERTY_HINT_ENUM, anchors_presets_options, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_anchors_layout_preset", "_get_anchors_layout_preset");
 	ADD_PROPERTY_DEFAULT("anchors_preset", -1);
 
 	ADD_SUBGROUP_INDENT("Anchor Points", "anchor_", 1);
@@ -3506,4 +3598,25 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
 
 	GDVIRTUAL_BIND(_gui_input, "event");
+}
+
+Control::~Control() {
+	// Resources need to be disconnected.
+	for (KeyValue<StringName, Ref<Texture2D>> &E : data.icon_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<StyleBox>> &E : data.style_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<Font>> &E : data.font_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+
+	// Then override maps can be simply cleared.
+	data.icon_override.clear();
+	data.style_override.clear();
+	data.font_override.clear();
+	data.font_size_override.clear();
+	data.color_override.clear();
+	data.constant_override.clear();
 }

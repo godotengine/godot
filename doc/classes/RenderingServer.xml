@@ -176,6 +176,16 @@
 			<description>
 			</description>
 		</method>
+		<method name="canvas_item_add_lcd_texture_rect_region">
+			<return type="void" />
+			<param index="0" name="item" type="RID" />
+			<param index="1" name="rect" type="Rect2" />
+			<param index="2" name="texture" type="RID" />
+			<param index="3" name="src_rect" type="Rect2" />
+			<param index="4" name="modulate" type="Color" />
+			<description>
+			</description>
+		</method>
 		<method name="canvas_item_add_line">
 			<return type="void" />
 			<param index="0" name="item" type="RID" />
@@ -1406,7 +1416,7 @@
 			</description>
 		</method>
 		<method name="instance_geometry_get_shader_uniform_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="instance" type="RID" />
 			<description>
 			</description>
@@ -1581,7 +1591,7 @@
 			</description>
 		</method>
 		<method name="instances_cull_aabb" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<param index="0" name="aabb" type="AABB" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
@@ -1590,7 +1600,7 @@
 			</description>
 		</method>
 		<method name="instances_cull_convex" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<param index="0" name="convex" type="Array" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
@@ -1599,7 +1609,7 @@
 			</description>
 		</method>
 		<method name="instances_cull_ray" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt64Array" />
 			<param index="0" name="from" type="Vector3" />
 			<param index="1" name="to" type="Vector3" />
 			<param index="2" name="scenario" type="RID" />
@@ -1801,7 +1811,7 @@
 			<param index="1" name="longitudes" type="int" />
 			<param index="2" name="radius" type="float" />
 			<description>
-				Returns a mesh of a sphere with the given amount of horizontal and vertical subdivisions.
+				Returns a mesh of a sphere with the given number of horizontal and vertical subdivisions.
 			</description>
 		</method>
 		<method name="material_create">
@@ -1959,7 +1969,7 @@
 			</description>
 		</method>
 		<method name="mesh_surface_get_blend_shape_arrays" qualifiers="const">
-			<return type="Array" />
+			<return type="Array[]" />
 			<param index="0" name="mesh" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<description>

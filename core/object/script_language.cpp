@@ -34,6 +34,7 @@
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
+#include "core/variant/typed_array.h"
 
 #include <stdint.h>
 
@@ -61,8 +62,8 @@ Variant Script::_get_property_default_value(const StringName &p_property) {
 	return ret;
 }
 
-Array Script::_get_script_property_list() {
-	Array ret;
+TypedArray<Dictionary> Script::_get_script_property_list() {
+	TypedArray<Dictionary> ret;
 	List<PropertyInfo> list;
 	get_script_property_list(&list);
 	for (const PropertyInfo &E : list) {
@@ -71,8 +72,8 @@ Array Script::_get_script_property_list() {
 	return ret;
 }
 
-Array Script::_get_script_method_list() {
-	Array ret;
+TypedArray<Dictionary> Script::_get_script_method_list() {
+	TypedArray<Dictionary> ret;
 	List<MethodInfo> list;
 	get_script_method_list(&list);
 	for (const MethodInfo &E : list) {
@@ -81,8 +82,8 @@ Array Script::_get_script_method_list() {
 	return ret;
 }
 
-Array Script::_get_script_signal_list() {
-	Array ret;
+TypedArray<Dictionary> Script::_get_script_signal_list() {
+	TypedArray<Dictionary> ret;
 	List<MethodInfo> list;
 	get_script_signal_list(&list);
 	for (const MethodInfo &E : list) {

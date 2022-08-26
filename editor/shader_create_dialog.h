@@ -44,13 +44,6 @@ class EditorFileDialog;
 class ShaderCreateDialog : public ConfirmationDialog {
 	GDCLASS(ShaderCreateDialog, ConfirmationDialog);
 
-	enum ShaderType {
-		SHADER_TYPE_TEXT,
-		SHADER_TYPE_VISUAL,
-		SHADER_TYPE_INC,
-		SHADER_TYPE_MAX,
-	};
-
 	struct ShaderTypeData {
 		List<String> extensions;
 		String default_extension;

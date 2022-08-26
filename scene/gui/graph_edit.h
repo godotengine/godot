@@ -206,7 +206,7 @@ private:
 	void _minimap_draw();
 	void _update_scroll_offset();
 
-	Array _get_connection_list() const;
+	TypedArray<Dictionary> _get_connection_list() const;
 
 	bool lines_on_bg = false;
 

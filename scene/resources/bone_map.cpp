@@ -82,9 +82,13 @@ StringName BoneMap::get_skeleton_bone_name(StringName p_profile_bone_name) const
 	return bone_map.get(p_profile_bone_name);
 }
 
-void BoneMap::set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
+void BoneMap::_set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
 	ERR_FAIL_COND(!bone_map.has(p_profile_bone_name));
 	bone_map.insert(p_profile_bone_name, p_skeleton_bone_name);
+}
+
+void BoneMap::set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name) {
+	_set_skeleton_bone_name(p_profile_bone_name, p_skeleton_bone_name);
 	emit_signal("bone_map_updated");
 }
 
@@ -168,7 +172,9 @@ void BoneMap::_bind_methods() {
 }
 
 void BoneMap::_validate_property(PropertyInfo &property) const {
-	//
+	if (property.name == "bonemap" || property.name == "profile") {
+		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 BoneMap::BoneMap() {

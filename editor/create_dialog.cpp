@@ -38,7 +38,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type, const String &p_select_name) {
 	_fill_type_list();
 
 	icon_fallback = search_options->has_theme_icon(base_type, SNAME("EditorIcons")) ? base_type : "Object";
@@ -57,7 +57,11 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	_update_search();
 
 	if (p_replace_mode) {
-		set_title(vformat(TTR("Change %s Type"), base_type));
+		if (!p_select_name.is_empty()) {
+			set_title(vformat(TTR("Convert %s from %s"), p_select_name, p_select_type));
+		} else {
+			set_title(vformat(TTR("Convert %s"), p_select_type));
+		}
 		set_ok_button_text(TTR("Change"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));

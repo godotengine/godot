@@ -14,22 +14,22 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" />
 			<description>
-				Override this method to define how the selected entry should be inserted. If [code]replace[/code] is true, any existing text should be replaced.
+				Override this method to define how the selected entry should be inserted. If [param replace] is true, any existing text should be replaced.
 			</description>
 		</method>
 		<method name="_filter_code_completion_candidates" qualifiers="virtual const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="candidates" type="Dictionary[]" />
 			<description>
-				Override this method to define what items in [code]candidates[/code] should be displayed.
-				Both [code]candidates[/code] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
+				Override this method to define what items in [param candidates] should be displayed.
+				Both [param candidates] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
 			</description>
 		</method>
 		<method name="_request_code_completion" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Override this method to define what happens when the user requests code completion. If [code]force[/code] is true, any checks should be bypassed.
+				Override this method to define what happens when the user requests code completion. If [param force] is true, any checks should be bypassed.
 			</description>
 		</method>
 		<method name="add_auto_brace_completion_pair">
@@ -123,7 +123,7 @@
 			<return type="void" />
 			<param index="0" name="replace" type="bool" default="false" />
 			<description>
-				Inserts the selected entry into the text. If [code]replace[/code] is true, any existing text is replaced rather then merged.
+				Inserts the selected entry into the text. If [param replace] is true, any existing text is replaced rather then merged.
 			</description>
 		</method>
 		<method name="do_indent">
@@ -155,17 +155,17 @@
 			<return type="String" />
 			<param index="0" name="open_key" type="String" />
 			<description>
-				Gets the matching auto brace close key for [code]open_key[/code].
+				Gets the matching auto brace close key for [param open_key].
 			</description>
 		</method>
 		<method name="get_bookmarked_lines" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Gets all bookmarked lines.
 			</description>
 		</method>
 		<method name="get_breakpointed_lines" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Gets all breakpointed lines.
 			</description>
@@ -174,7 +174,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Gets the completion option at [code]index[/code]. The return [Dictionary] has the following key-values:
+				Gets the completion option at [param index]. The return [Dictionary] has the following key-values:
 				[code]kind[/code]: [enum CodeCompletionKind]
 				[code]display_text[/code]: Text that is shown on the autocomplete menu.
 				[code]insert_text[/code]: Text that is to be inserted when this item is selected.
@@ -207,7 +207,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
-				If [code]line[/code] [code]column[/code] is in a string or comment, returns the end position of the region. If not or no end could be found, both [Vector2] values will be [code]-1[/code].
+				If [param line] [param column] is in a string or comment, returns the end position of the region. If not or no end could be found, both [Vector2] values will be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_delimiter_start_key" qualifiers="const">
@@ -222,11 +222,11 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" />
 			<description>
-				If [code]line[/code] [code]column[/code] is in a string or comment, returns the start position of the region. If not or no start could be found, both [Vector2] values will be [code]-1[/code].
+				If [param line] [param column] is in a string or comment, returns the start position of the region. If not or no start could be found, both [Vector2] values will be [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_executing_lines" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedInt32Array" />
 			<description>
 				Gets all executing lines.
 			</description>
@@ -253,28 +253,28 @@
 			<return type="bool" />
 			<param index="0" name="close_key" type="String" />
 			<description>
-				Returns [code]true[/code] if close key [code]close_key[/code] exists.
+				Returns [code]true[/code] if close key [param close_key] exists.
 			</description>
 		</method>
 		<method name="has_auto_brace_completion_open_key" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="open_key" type="String" />
 			<description>
-				Returns [code]true[/code] if open key [code]open_key[/code] exists.
+				Returns [code]true[/code] if open key [param open_key] exists.
 			</description>
 		</method>
 		<method name="has_comment_delimiter" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="start_key" type="String" />
 			<description>
-				Returns [code]true[/code] if comment [code]start_key[/code] exists.
+				Returns [code]true[/code] if comment [param start_key] exists.
 			</description>
 		</method>
 		<method name="has_string_delimiter" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="start_key" type="String" />
 			<description>
-				Returns [code]true[/code] if string [code]start_key[/code] exists.
+				Returns [code]true[/code] if string [param start_key] exists.
 			</description>
 		</method>
 		<method name="indent_lines">
@@ -288,7 +288,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" default="-1" />
 			<description>
-				Returns delimiter index if [code]line[/code] [code]column[/code] is in a comment. If [code]column[/code] is not provided, will return delimiter index if the entire [code]line[/code] is a comment. Otherwise [code]-1[/code].
+				Returns delimiter index if [param line] [param column] is in a comment. If [param column] is not provided, will return delimiter index if the entire [param line] is a comment. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_in_string" qualifiers="const">
@@ -296,7 +296,7 @@
 			<param index="0" name="line" type="int" />
 			<param index="1" name="column" type="int" default="-1" />
 			<description>
-				Returns the delimiter index if [code]line[/code] [code]column[/code] is in a string. If [code]column[/code] is not provided, will return the delimiter index if the entire [code]line[/code] is a string. Otherwise [code]-1[/code].
+				Returns the delimiter index if [param line] [param column] is in a string. If [param column] is not provided, will return the delimiter index if the entire [param line] is a string. Otherwise [code]-1[/code].
 			</description>
 		</method>
 		<method name="is_line_bookmarked" qualifiers="const">
@@ -331,21 +331,21 @@
 			<return type="void" />
 			<param index="0" name="start_key" type="String" />
 			<description>
-				Removes the comment delimiter with [code]start_key[/code].
+				Removes the comment delimiter with [param start_key].
 			</description>
 		</method>
 		<method name="remove_string_delimiter">
 			<return type="void" />
 			<param index="0" name="start_key" type="String" />
 			<description>
-				Removes the string delimiter with [code]start_key[/code].
+				Removes the string delimiter with [param start_key].
 			</description>
 		</method>
 		<method name="request_code_completion">
 			<return type="void" />
 			<param index="0" name="force" type="bool" default="false" />
 			<description>
-				Emits [signal code_completion_requested], if [code]force[/code] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
+				Emits [signal code_completion_requested], if [param force] is true will bypass all checks. Otherwise will check that the caret is in a word or in front of a prefix. Will ignore the request if all current options are of type file path, node path or signal.
 			</description>
 		</method>
 		<method name="set_code_completion_selected_index">
@@ -430,7 +430,7 @@
 			<return type="void" />
 			<param index="0" name="force" type="bool" />
 			<description>
-				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [code]force[/code] is [code]true[/code].
+				Submits all completion options added with [method add_code_completion_option]. Will try to force the autoccomplete menu to popup, if [param force] is [code]true[/code].
 				[b]Note:[/b] This will replace all current candidates.
 			</description>
 		</method>
@@ -482,7 +482,7 @@
 			Prefixes to trigger an automatic indent.
 		</member>
 		<member name="indent_size" type="int" setter="set_indent_size" getter="get_indent_size" default="4">
-			Size of tabs, if [code]indent_use_spaces[/code] is enabled the amount of spaces to use.
+			Size of tabs, if [code]indent_use_spaces[/code] is enabled the number of spaces to use.
 		</member>
 		<member name="indent_use_spaces" type="bool" setter="set_indent_using_spaces" getter="is_indent_using_spaces" default="false">
 			Use spaces instead of tabs for indentation.

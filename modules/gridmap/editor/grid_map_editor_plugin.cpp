@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/main/window.h"
@@ -94,91 +95,91 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
 			Basis r;
 			if (input_action == INPUT_PASTE) {
-				r.set_orthogonal_index(paste_indicator.orientation);
+				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(0, 1, 0), -Math_PI / 2.0);
-				paste_indicator.orientation = r.get_orthogonal_index();
+				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
 				break;
 			}
 
-			r.set_orthogonal_index(cursor_rot);
+			r = node->get_basis_with_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 1, 0), -Math_PI / 2.0);
-			cursor_rot = r.get_orthogonal_index();
+			cursor_rot = node->get_orthogonal_index_from_basis(r);
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_X: {
 			Basis r;
 			if (input_action == INPUT_PASTE) {
-				r.set_orthogonal_index(paste_indicator.orientation);
+				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(1, 0, 0), -Math_PI / 2.0);
-				paste_indicator.orientation = r.get_orthogonal_index();
+				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
 				break;
 			}
 
-			r.set_orthogonal_index(cursor_rot);
+			r = node->get_basis_with_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(1, 0, 0), -Math_PI / 2.0);
-			cursor_rot = r.get_orthogonal_index();
+			cursor_rot = node->get_orthogonal_index_from_basis(r);
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Z: {
 			Basis r;
 			if (input_action == INPUT_PASTE) {
-				r.set_orthogonal_index(paste_indicator.orientation);
+				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(0, 0, 1), -Math_PI / 2.0);
-				paste_indicator.orientation = r.get_orthogonal_index();
+				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
 				break;
 			}
 
-			r.set_orthogonal_index(cursor_rot);
+			r = node->get_basis_with_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 0, 1), -Math_PI / 2.0);
-			cursor_rot = r.get_orthogonal_index();
+			cursor_rot = node->get_orthogonal_index_from_basis(r);
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
 			Basis r;
 			if (input_action == INPUT_PASTE) {
-				r.set_orthogonal_index(paste_indicator.orientation);
+				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(0, 1, 0), Math_PI / 2.0);
-				paste_indicator.orientation = r.get_orthogonal_index();
+				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
 				break;
 			}
 
-			r.set_orthogonal_index(cursor_rot);
+			r = node->get_basis_with_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 1, 0), Math_PI / 2.0);
-			cursor_rot = r.get_orthogonal_index();
+			cursor_rot = node->get_orthogonal_index_from_basis(r);
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
 			Basis r;
 			if (input_action == INPUT_PASTE) {
-				r.set_orthogonal_index(paste_indicator.orientation);
+				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
-				paste_indicator.orientation = r.get_orthogonal_index();
+				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
 				break;
 			}
 
-			r.set_orthogonal_index(cursor_rot);
+			r = node->get_basis_with_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
-			cursor_rot = r.get_orthogonal_index();
+			cursor_rot = node->get_orthogonal_index_from_basis(r);
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
 			Basis r;
 			if (input_action == INPUT_PASTE) {
-				r.set_orthogonal_index(paste_indicator.orientation);
+				r = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(0, 0, 1), Math_PI / 2.0);
-				paste_indicator.orientation = r.get_orthogonal_index();
+				paste_indicator.orientation = node->get_orthogonal_index_from_basis(r);
 				_update_paste_indicator();
 				break;
 			}
 
-			r.set_orthogonal_index(cursor_rot);
+			r = node->get_basis_with_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 0, 1), Math_PI / 2.0);
-			cursor_rot = r.get_orthogonal_index();
+			cursor_rot = node->get_orthogonal_index_from_basis(r);
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_CLEAR_ROTATION: {
@@ -242,7 +243,7 @@ void GridMapEditor::_menu_option(int p_option) {
 void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = Transform3D();
 	cursor_transform.origin = cursor_origin;
-	cursor_transform.basis.set_orthogonal_index(cursor_rot);
+	cursor_transform.basis = node->get_basis_with_orthogonal_index(cursor_rot);
 	cursor_transform.basis *= node->get_cell_scale();
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
@@ -543,7 +544,7 @@ void GridMapEditor::_update_paste_indicator() {
 	xf.scale(scale);
 	xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
 	Basis rot;
-	rot.set_orthogonal_index(paste_indicator.orientation);
+	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 	xf.basis = rot * xf.basis;
 	xf.translate_local((-center * node->get_cell_size()) / scale);
 
@@ -556,7 +557,7 @@ void GridMapEditor::_update_paste_indicator() {
 		xf.translate_local(item.grid_offset * node->get_cell_size());
 
 		Basis item_rot;
-		item_rot.set_orthogonal_index(item.orientation);
+		item_rot = node->get_basis_with_orthogonal_index(item.orientation);
 		xf.basis = item_rot * xf.basis * node->get_cell_scale();
 
 		RenderingServer::get_singleton()->instance_set_transform(item.instance, node->get_global_transform() * xf);
@@ -568,7 +569,7 @@ void GridMapEditor::_do_paste() {
 	bool reselect = options->get_popup()->is_item_checked(idx);
 
 	Basis rot;
-	rot.set_orthogonal_index(paste_indicator.orientation);
+	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 
 	Vector3 ofs = paste_indicator.current - paste_indicator.click;
 	undo_redo->create_action(TTR("GridMap Paste Selection"));
@@ -577,10 +578,10 @@ void GridMapEditor::_do_paste() {
 		Vector3 position = rot.xform(item.grid_offset) + paste_indicator.begin + ofs;
 
 		Basis orm;
-		orm.set_orthogonal_index(item.orientation);
+		orm = node->get_basis_with_orthogonal_index(item.orientation);
 		orm = rot * orm;
 
-		undo_redo->add_do_method(node, "set_cell_item", position, item.cell_item, orm.get_orthogonal_index());
+		undo_redo->add_do_method(node, "set_cell_item", position, item.cell_item, node->get_orthogonal_index_from_basis(orm));
 		undo_redo->add_undo_method(node, "set_cell_item", position, node->get_cell_item(position), node->get_cell_item_orientation(position));
 	}
 

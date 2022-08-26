@@ -3302,11 +3302,11 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void TileSet::_validate_property(PropertyInfo &property) const {
-	if (property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
-		property.usage ^= PROPERTY_USAGE_READ_ONLY;
-	} else if (property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
-		property.usage ^= PROPERTY_USAGE_READ_ONLY;
+void TileSet::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
+		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
+	} else if (p_property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {
+		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
 	}
 }
 

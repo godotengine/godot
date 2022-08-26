@@ -117,10 +117,12 @@ public:
 	struct ExportOption {
 		PropertyInfo option;
 		Variant default_value;
+		bool update_visibility = false;
 
-		ExportOption(const PropertyInfo &p_info, const Variant &p_default) :
+		ExportOption(const PropertyInfo &p_info, const Variant &p_default, bool p_update_visibility = false) :
 				option(p_info),
-				default_value(p_default) {
+				default_value(p_default),
+				update_visibility(p_update_visibility) {
 		}
 		ExportOption() {}
 	};
@@ -136,13 +138,13 @@ public:
 		messages.push_back(msg);
 		switch (p_type) {
 			case EXPORT_MESSAGE_INFO: {
-				print_line(vformat("%s: %s\n", msg.category, msg.text));
+				print_line(vformat("%s: %s", msg.category, msg.text));
 			} break;
 			case EXPORT_MESSAGE_WARNING: {
-				WARN_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+				WARN_PRINT(vformat("%s: %s", msg.category, msg.text));
 			} break;
 			case EXPORT_MESSAGE_ERROR: {
-				ERR_PRINT(vformat("%s: %s\n", msg.category, msg.text));
+				ERR_PRINT(vformat("%s: %s", msg.category, msg.text));
 			} break;
 			default:
 				break;
@@ -170,7 +172,7 @@ public:
 
 	virtual void get_export_options(List<ExportOption> *r_options) = 0;
 	virtual bool should_update_export_options() { return false; }
-	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const { return true; }
 
 	virtual String get_os_name() const = 0;
 	virtual String get_name() const = 0;
@@ -200,7 +202,9 @@ public:
 	virtual Ref<Texture2D> get_run_icon() const { return get_logo(); }
 
 	String test_etc2() const;
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
+	bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const = 0;
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const = 0;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) = 0;

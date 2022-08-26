@@ -36,6 +36,8 @@
 #include "core/object/ref_counted.h"
 
 class PhysicsDirectSpaceState2D;
+template <typename T>
+class TypedArray;
 
 class PhysicsDirectBodyState2D : public Object {
 	GDCLASS(PhysicsDirectBodyState2D, Object);
@@ -114,10 +116,10 @@ class PhysicsDirectSpaceState2D : public Object {
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
 	Dictionary _intersect_ray(const Ref<PhysicsRayQueryParameters2D> &p_ray_query);
-	Array _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
-	Array _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
-	Array _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
-	Array _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_point(const Ref<PhysicsPointQueryParameters2D> &p_point_query, int p_max_results = 32);
+	TypedArray<Dictionary> _intersect_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
+	Vector<real_t> _cast_motion(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
+	TypedArray<PackedVector2Array> _collide_shape(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query, int p_max_results = 32);
 	Dictionary _get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query);
 
 protected:
@@ -346,8 +348,8 @@ public:
 	enum BodyMode {
 		BODY_MODE_STATIC,
 		BODY_MODE_KINEMATIC,
-		BODY_MODE_DYNAMIC,
-		BODY_MODE_DYNAMIC_LINEAR,
+		BODY_MODE_RIGID,
+		BODY_MODE_RIGID_LINEAR,
 	};
 
 	virtual RID body_create() = 0;
@@ -392,6 +394,9 @@ public:
 
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask) = 0;
 	virtual uint32_t body_get_collision_mask(RID p_body) const = 0;
+
+	virtual void body_set_collision_priority(RID p_body, real_t p_priority) = 0;
+	virtual real_t body_get_collision_priority(RID p_body) const = 0;
 
 	// common body variables
 	enum BodyParameter {

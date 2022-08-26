@@ -75,7 +75,7 @@ public:
 private:
 	Path3D *path = nullptr;
 	real_t prev_offset = 0.0; // Offset during the last _update_transform.
-	real_t offset = 0.0;
+	real_t progress = 0.0;
 	real_t h_offset = 0.0;
 	real_t v_offset = 0.0;
 	bool cubic = true;
@@ -85,14 +85,14 @@ private:
 	void _update_transform(bool p_update_xyz_rot = true);
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-	void set_offset(real_t p_offset);
-	real_t get_offset() const;
+	void set_progress(real_t p_progress);
+	real_t get_progress() const;
 
 	void set_h_offset(real_t p_h_offset);
 	real_t get_h_offset() const;
@@ -100,8 +100,8 @@ public:
 	void set_v_offset(real_t p_v_offset);
 	real_t get_v_offset() const;
 
-	void set_unit_offset(real_t p_unit_offset);
-	real_t get_unit_offset() const;
+	void set_progress_ratio(real_t p_ratio);
+	real_t get_progress_ratio() const;
 
 	void set_loop(bool p_loop);
 	bool has_loop() const;

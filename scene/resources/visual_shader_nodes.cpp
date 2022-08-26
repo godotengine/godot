@@ -1015,7 +1015,7 @@ Vector<StringName> VisualShaderNodeCurveTexture::get_editable_properties() const
 }
 
 String VisualShaderNodeCurveTexture::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	return "uniform sampler2D " + make_unique_id(p_type, p_id, "curve") + ";\n";
+	return "uniform sampler2D " + make_unique_id(p_type, p_id, "curve") + " : repeat_disable;\n";
 }
 
 String VisualShaderNodeCurveTexture::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -6830,23 +6830,23 @@ void VisualShaderNodeMultiplyAdd::set_op_type(OpType p_op_type) {
 	switch (p_op_type) {
 		case OP_TYPE_SCALAR: {
 			set_input_port_default_value(0, 0.0, get_input_port_default_value(0));
-			set_input_port_default_value(1, 0.0, get_input_port_default_value(1));
+			set_input_port_default_value(1, 1.0, get_input_port_default_value(1));
 			set_input_port_default_value(2, 0.0, get_input_port_default_value(2));
 		} break;
 		case OP_TYPE_VECTOR_2D: {
 			set_input_port_default_value(0, Vector2(), get_input_port_default_value(0));
-			set_input_port_default_value(1, Vector2(), get_input_port_default_value(1));
+			set_input_port_default_value(1, Vector2(1.0, 1.0), get_input_port_default_value(1));
 			set_input_port_default_value(2, Vector2(), get_input_port_default_value(2));
 		} break;
 		case OP_TYPE_VECTOR_3D: {
 			set_input_port_default_value(0, Vector3(), get_input_port_default_value(0));
-			set_input_port_default_value(1, Vector3(), get_input_port_default_value(1));
+			set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0), get_input_port_default_value(1));
 			set_input_port_default_value(2, Vector3(), get_input_port_default_value(2));
 		} break;
 		case OP_TYPE_VECTOR_4D: {
-			set_input_port_default_value(0, Quaternion(), get_input_port_default_value(0));
-			set_input_port_default_value(1, Quaternion(), get_input_port_default_value(1));
-			set_input_port_default_value(2, Quaternion(), get_input_port_default_value(2));
+			set_input_port_default_value(0, Vector4(), get_input_port_default_value(0));
+			set_input_port_default_value(1, Vector4(1.0, 1.0, 1.0, 1.0), get_input_port_default_value(1));
+			set_input_port_default_value(2, Vector4(), get_input_port_default_value(2));
 		} break;
 		default:
 			break;
@@ -6880,7 +6880,7 @@ void VisualShaderNodeMultiplyAdd::_bind_methods() {
 
 VisualShaderNodeMultiplyAdd::VisualShaderNodeMultiplyAdd() {
 	set_input_port_default_value(0, 0.0);
-	set_input_port_default_value(1, 0.0);
+	set_input_port_default_value(1, 1.0);
 	set_input_port_default_value(2, 0.0);
 }
 

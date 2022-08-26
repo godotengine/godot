@@ -46,7 +46,7 @@ TEST_CASE("[RegEx] Initialization") {
 	CHECK(re1.get_pattern() == pattern);
 	CHECK(re1.get_group_count() == 1);
 
-	Array names = re1.get_names();
+	PackedStringArray names = re1.get_names();
 	CHECK(names.size() == 1);
 	CHECK(names[0] == "vowel");
 

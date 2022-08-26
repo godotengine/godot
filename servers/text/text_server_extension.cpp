@@ -69,8 +69,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(font_set_style_name, "font_rid", "name_style");
 	GDVIRTUAL_BIND(font_get_style_name, "font_rid");
 
-	GDVIRTUAL_BIND(font_set_antialiased, "font_rid", "antialiased");
-	GDVIRTUAL_BIND(font_is_antialiased, "font_rid");
+	GDVIRTUAL_BIND(font_set_antialiasing, "font_rid", "antialiasing");
+	GDVIRTUAL_BIND(font_get_antialiasing, "font_rid");
 
 	GDVIRTUAL_BIND(font_set_generate_mipmaps, "font_rid", "generate_mipmaps");
 	GDVIRTUAL_BIND(font_get_generate_mipmaps, "font_rid");
@@ -478,16 +478,16 @@ String TextServerExtension::font_get_name(const RID &p_font_rid) const {
 	return String();
 }
 
-void TextServerExtension::font_set_antialiased(const RID &p_font_rid, bool p_antialiased) {
-	GDVIRTUAL_CALL(font_set_antialiased, p_font_rid, p_antialiased);
+void TextServerExtension::font_set_antialiasing(RID p_font_rid, TextServer::FontAntialiasing p_antialiasing) {
+	GDVIRTUAL_CALL(font_set_antialiasing, p_font_rid, p_antialiasing);
 }
 
-bool TextServerExtension::font_is_antialiased(const RID &p_font_rid) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(font_is_antialiased, p_font_rid, ret)) {
+TextServer::FontAntialiasing TextServerExtension::font_get_antialiasing(RID p_font_rid) const {
+	TextServer::FontAntialiasing ret;
+	if (GDVIRTUAL_CALL(font_get_antialiasing, p_font_rid, ret)) {
 		return ret;
 	}
-	return false;
+	return TextServer::FONT_ANTIALIASING_NONE;
 }
 
 void TextServerExtension::font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) {
@@ -634,12 +634,12 @@ double TextServerExtension::font_get_oversampling(const RID &p_font_rid) const {
 	return 0.0;
 }
 
-Array TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::font_get_size_cache_list(const RID &p_font_rid) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(font_get_size_cache_list, p_font_rid, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 void TextServerExtension::font_clear_size_cache(const RID &p_font_rid) {
@@ -750,12 +750,12 @@ PackedInt32Array TextServerExtension::font_get_texture_offsets(const RID &p_font
 	return PackedInt32Array();
 }
 
-Array TextServerExtension::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
-	Array ret;
+PackedInt32Array TextServerExtension::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
+	PackedInt32Array ret;
 	if (GDVIRTUAL_CALL(font_get_glyph_list, p_font_rid, p_size, ret)) {
 		return ret;
 	}
-	return Array();
+	return PackedInt32Array();
 }
 
 void TextServerExtension::font_clear_glyphs(const RID &p_font_rid, const Vector2i &p_size) {
@@ -850,12 +850,12 @@ Dictionary TextServerExtension::font_get_glyph_contours(const RID &p_font_rid, i
 	return Dictionary();
 }
 
-Array TextServerExtension::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(font_get_kerning_list, p_font_rid, p_size, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 void TextServerExtension::font_clear_kerning_map(const RID &p_font_rid, int64_t p_size) {
@@ -1534,12 +1534,12 @@ String TextServerExtension::string_to_lower(const String &p_string, const String
 	return p_string;
 }
 
-Array TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	Array ret;
+TypedArray<Vector2i> TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector2i> ret;
 	if (GDVIRTUAL_CALL(parse_structured_text, p_parser_type, p_args, p_text, ret)) {
 		return ret;
 	}
-	return Array();
+	return TypedArray<Vector2i>();
 }
 
 PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_string, const String &p_language) const {

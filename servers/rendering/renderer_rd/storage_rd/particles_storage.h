@@ -354,14 +354,14 @@ private:
 		return ParticlesStorage::get_singleton()->_create_particles_shader_func();
 	}
 
-	struct ParticlesMaterialData : public MaterialStorage::MaterialData {
+	struct ParticleProcessMaterialData : public MaterialStorage::MaterialData {
 		ParticlesShaderData *shader_data = nullptr;
 		RID uniform_set;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
 		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
-		virtual ~ParticlesMaterialData();
+		virtual ~ParticleProcessMaterialData();
 	};
 
 	MaterialStorage::MaterialData *_create_particles_material_func(ParticlesShaderData *p_shader);

@@ -24,8 +24,8 @@
 			<param index="1" name="slot_index" type="int" />
 			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
-				Returns whether the [code]mouse_position[/code] is in the input hot zone.
-				By default, a hot zone is a [Rect2] positioned such that its center is at [code]graph_node[/code].[method GraphNode.get_connection_input_position]([code]slot_index[/code]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
+				Returns whether the [param mouse_position] is in the input hot zone.
+				By default, a hot zone is a [Rect2] positioned such that its center is at [param graph_node].[method GraphNode.get_connection_input_position]([param slot_index]) (For output's case, call [method GraphNode.get_connection_output_position] instead). The hot zone's width is twice the Theme Property [code]port_grab_distance_horizontal[/code], and its height is twice the [code]port_grab_distance_vertical[/code].
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(graph_node, slot_index, mouse_position):
@@ -43,7 +43,7 @@
 			<param index="1" name="slot_index" type="int" />
 			<param index="2" name="mouse_position" type="Vector2" />
 			<description>
-				Returns whether the [code]mouse_position[/code] is in the output hot zone. For more information on hot zones, see [method _is_in_input_hotzone].
+				Returns whether the [param mouse_position] is in the output hot zone. For more information on hot zones, see [method _is_in_input_hotzone].
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_output_hotzone(graph_node, slot_index, mouse_position):
@@ -119,7 +119,7 @@
 			<param index="2" name="to" type="StringName" />
 			<param index="3" name="to_port" type="int" />
 			<description>
-				Create a connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection already exists, no connection is created.
+				Create a connection between the [param from_port] slot of the [param from] GraphNode and the [param to_port] slot of the [param to] GraphNode. If the connection already exists, no connection is created.
 			</description>
 		</method>
 		<method name="disconnect_node">
@@ -129,7 +129,7 @@
 			<param index="2" name="to" type="StringName" />
 			<param index="3" name="to_port" type="int" />
 			<description>
-				Removes the connection between the [code]from_port[/code] slot of the [code]from[/code] GraphNode and the [code]to_port[/code] slot of the [code]to[/code] GraphNode. If the connection does not exist, no connection is removed.
+				Removes the connection between the [param from_port] slot of the [param from] GraphNode and the [param to_port] slot of the [param to] GraphNode. If the connection does not exist, no connection is removed.
 			</description>
 		</method>
 		<method name="force_connection_drag_end">
@@ -145,11 +145,11 @@
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
 			<description>
-				Returns the points which would make up a connection between [code]from[/code] and [code]to[/code].
+				Returns the points which would make up a connection between [param from] and [param to].
 			</description>
 		</method>
 		<method name="get_connection_list" qualifiers="const">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an Array containing the list of connections. A connection consists in a structure of the form [code]{ from_port: 0, from: "GraphNode name 0", to_port: 1, to: "GraphNode name 1" }[/code].
 			</description>
@@ -168,7 +168,7 @@
 			<param index="2" name="to" type="StringName" />
 			<param index="3" name="to_port" type="int" />
 			<description>
-				Returns [code]true[/code] if the [code]from_port[/code] slot of the [code]from[/code] GraphNode is connected to the [code]to_port[/code] slot of the [code]to[/code] GraphNode.
+				Returns [code]true[/code] if the [param from_port] slot of the [param from] GraphNode is connected to the [param to_port] slot of the [param to] GraphNode.
 			</description>
 		</method>
 		<method name="is_valid_connection_type" qualifiers="const">
@@ -209,14 +209,14 @@
 			<param index="3" name="to_port" type="int" />
 			<param index="4" name="amount" type="float" />
 			<description>
-				Sets the coloration of the connection between [code]from[/code]'s [code]from_port[/code] and [code]to[/code]'s [code]to_port[/code] with the color provided in the [theme_item activity] theme property.
+				Sets the coloration of the connection between [param from]'s [param from_port] and [param to]'s [param to_port] with the color provided in the [theme_item activity] theme property.
 			</description>
 		</method>
 		<method name="set_selected">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<description>
-				Sets the specified [code]node[/code] as the one selected.
+				Sets the specified [param node] as the one selected.
 			</description>
 		</method>
 	</methods>
@@ -285,7 +285,7 @@
 		</signal>
 		<signal name="connection_drag_started">
 			<param index="0" name="from" type="String" />
-			<param index="1" name="slot" type="String" />
+			<param index="1" name="slot" type="int" />
 			<param index="2" name="is_output" type="bool" />
 			<description>
 				Emitted at the beginning of a connection drag.
@@ -305,7 +305,7 @@
 			<param index="2" name="to" type="StringName" />
 			<param index="3" name="to_slot" type="int" />
 			<description>
-				Emitted to the GraphEdit when the connection between the [code]from_slot[/code] slot of the [code]from[/code] GraphNode and the [code]to_slot[/code] slot of the [code]to[/code] GraphNode is attempted to be created.
+				Emitted to the GraphEdit when the connection between the [param from_slot] slot of the [param from] GraphNode and the [param to_slot] slot of the [param to] GraphNode is attempted to be created.
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
@@ -333,7 +333,7 @@
 			<param index="2" name="to" type="StringName" />
 			<param index="3" name="to_slot" type="int" />
 			<description>
-				Emitted to the GraphEdit when the connection between [code]from_slot[/code] slot of [code]from[/code] GraphNode and [code]to_slot[/code] slot of [code]to[/code] GraphNode is attempted to be removed.
+				Emitted to the GraphEdit when the connection between [param from_slot] slot of [param from] GraphNode and [param to_slot] slot of [param to] GraphNode is attempted to be removed.
 			</description>
 		</signal>
 		<signal name="duplicate_nodes_request">
@@ -365,7 +365,7 @@
 		<signal name="popup_request">
 			<param index="0" name="position" type="Vector2" />
 			<description>
-				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [code]position[/code] is the position of the mouse pointer when the signal is sent.
+				Emitted when a popup is requested. Happens on right-clicking in the GraphEdit. [param position] is the position of the mouse pointer when the signal is sent.
 			</description>
 		</signal>
 		<signal name="scroll_offset_changed">

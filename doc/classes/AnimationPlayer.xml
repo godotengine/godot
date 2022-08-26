@@ -20,21 +20,21 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="library" type="AnimationLibrary" />
 			<description>
-				Adds [code]library[/code] to the animation player, under the key [code]name[/code].
+				Adds [param library] to the animation player, under the key [param name].
 			</description>
 		</method>
 		<method name="advance">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Shifts position in the animation timeline and immediately updates the animation. [code]delta[/code] is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
+				Shifts position in the animation timeline and immediately updates the animation. [param delta] is the time in seconds to shift. Events between the current frame and [param delta] are handled.
 			</description>
 		</method>
 		<method name="animation_get_next" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="anim_from" type="StringName" />
 			<description>
-				Returns the key of the animation which is queued to play after the [code]anim_from[/code] animation.
+				Returns the key of the animation which is queued to play after the [param anim_from] animation.
 			</description>
 		</method>
 		<method name="animation_set_next">
@@ -42,7 +42,7 @@
 			<param index="0" name="anim_from" type="StringName" />
 			<param index="1" name="anim_to" type="StringName" />
 			<description>
-				Triggers the [code]anim_to[/code] animation when the [code]anim_from[/code] animation completes.
+				Triggers the [param anim_to] animation when the [param anim_from] animation completes.
 			</description>
 		</method>
 		<method name="clear_caches">
@@ -61,28 +61,28 @@
 			<return type="StringName" />
 			<param index="0" name="animation" type="Animation" />
 			<description>
-				Returns the key of [code]animation[/code] or an empty [StringName] if not found.
+				Returns the key of [param animation] or an empty [StringName] if not found.
 			</description>
 		</method>
 		<method name="find_animation_library" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="animation" type="Animation" />
 			<description>
-				Returns the key for the [AnimationLibrary] that contains [code]animation[/code] or an empty [StringName] if not found.
+				Returns the key for the [AnimationLibrary] that contains [param animation] or an empty [StringName] if not found.
 			</description>
 		</method>
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the [Animation] with key [code]name[/code] or [code]null[/code] if not found.
+				Returns the [Animation] with key [param name] or [code]null[/code] if not found.
 			</description>
 		</method>
 		<method name="get_animation_library" qualifiers="const">
 			<return type="AnimationLibrary" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the first [AnimationLibrary] with key [code]name[/code] or [code]null[/code] if not found.
+				Returns the first [AnimationLibrary] with key [param name] or [code]null[/code] if not found.
 			</description>
 		</method>
 		<method name="get_animation_library_list" qualifiers="const">
@@ -121,14 +121,14 @@
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [param name].
 			</description>
 		</method>
 		<method name="has_animation_library" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the [AnimationPlayer] stores an [AnimationLibrary] with key [code]name[/code].
+				Returns [code]true[/code] if the [AnimationPlayer] stores an [AnimationLibrary] with key [param name].
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const">
@@ -144,8 +144,8 @@
 			<param index="2" name="custom_speed" type="float" default="1.0" />
 			<param index="3" name="from_end" type="bool" default="false" />
 			<description>
-				Plays the animation with key [code]name[/code]. Custom blend times and speed can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
-				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [code]name[/code], or with no [code]name[/code] parameter, the assigned animation will resume playing if it was paused, or restart if it was stopped (see [method stop] for both pause and stop). If the animation was already playing, it will keep playing.
+				Plays the animation with key [param name]. Custom blend times and speed can be set. If [param custom_speed] is negative and [param from_end] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
+				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [param name], or with no [param name] parameter, the assigned animation will resume playing if it was paused, or restart if it was stopped (see [method stop] for both pause and stop). If the animation was already playing, it will keep playing.
 				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
 			</description>
 		</method>
@@ -154,7 +154,7 @@
 			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
 			<param index="1" name="custom_blend" type="float" default="-1" />
 			<description>
-				Plays the animation with key [code]name[/code] in reverse.
+				Plays the animation with key [param name] in reverse.
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
@@ -170,7 +170,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Removes the [AnimationLibrary] assosiated with the key [code]name[/code].
+				Removes the [AnimationLibrary] assosiated with the key [param name].
 			</description>
 		</method>
 		<method name="rename_animation_library">
@@ -178,7 +178,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="newname" type="StringName" />
 			<description>
-				Moves the [AnimationLibrary] associated with the key [code]name[/code] to the key [code]newname[/code].
+				Moves the [AnimationLibrary] associated with the key [param name] to the key [param newname].
 			</description>
 		</method>
 		<method name="seek">
@@ -186,7 +186,7 @@
 			<param index="0" name="seconds" type="float" />
 			<param index="1" name="update" type="bool" default="false" />
 			<description>
-				Seeks the animation to the [code]seconds[/code] point in time (in seconds). If [code]update[/code] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [code]seconds[/code] are skipped.
+				Seeks the animation to the [param seconds] point in time (in seconds). If [param update] is [code]true[/code], the animation updates too, otherwise it updates at process time. Events between the current frame and [param seconds] are skipped.
 				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].
 			</description>
 		</method>
@@ -203,8 +203,8 @@
 			<return type="void" />
 			<param index="0" name="reset" type="bool" default="true" />
 			<description>
-				Stops or pauses the currently playing animation. If [code]reset[/code] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
-				If [code]reset[/code] is [code]false[/code], the [member current_animation_position] will be kept and calling [method play] or [method play_backwards] without arguments or with the same animation name as [member assigned_animation] will resume the animation.
+				Stops or pauses the currently playing animation. If [param reset] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
+				If [param reset] is [code]false[/code], the [member current_animation_position] will be kept and calling [method play] or [method play_backwards] without arguments or with the same animation name as [member assigned_animation] will resume the animation.
 			</description>
 		</method>
 	</methods>

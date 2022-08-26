@@ -563,7 +563,7 @@ public:
 	bool is_input_disabled() const;
 
 	Vector2 get_mouse_position() const;
-	void warp_mouse(const Vector2 &p_position);
+	virtual void warp_mouse(const Vector2 &p_position);
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
@@ -709,7 +709,7 @@ public:
 	bool is_using_xr();
 #endif // _3D_DISABLED
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	Viewport();
 	~Viewport();
 };

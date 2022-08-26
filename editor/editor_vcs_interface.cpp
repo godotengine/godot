@@ -82,8 +82,8 @@ void EditorVCSInterface::_unstage_file(String p_file_path) {
 void EditorVCSInterface::_commit(String p_msg) {
 }
 
-Array EditorVCSInterface::_get_file_diff(String p_file_path) {
-	return Array();
+TypedArray<Dictionary> EditorVCSInterface::_get_file_diff(String p_file_path) {
+	return TypedArray<Dictionary>();
 }
 
 bool EditorVCSInterface::_shut_down() {
@@ -133,11 +133,11 @@ void EditorVCSInterface::commit(String p_msg) {
 	}
 }
 
-Array EditorVCSInterface::get_file_diff(String p_file_path) {
+TypedArray<Dictionary> EditorVCSInterface::get_file_diff(String p_file_path) {
 	if (is_addon_ready()) {
 		return call("_get_file_diff", p_file_path);
 	}
-	return Array();
+	return TypedArray<Dictionary>();
 }
 
 bool EditorVCSInterface::shut_down() {

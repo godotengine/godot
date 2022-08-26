@@ -10,6 +10,8 @@
 // Author: Jyrki Alakuijala (jyrki@google.com)
 //
 
+#include "src/enc/backward_references_enc.h"
+
 #include <assert.h>
 #include <float.h>
 #include <math.h>
@@ -17,10 +19,11 @@
 #include "src/dsp/dsp.h"
 #include "src/dsp/lossless.h"
 #include "src/dsp/lossless_common.h"
-#include "src/enc/backward_references_enc.h"
 #include "src/enc/histogram_enc.h"
+#include "src/enc/vp8i_enc.h"
 #include "src/utils/color_cache_utils.h"
 #include "src/utils/utils.h"
+#include "src/webp/encode.h"
 
 #define MIN_BLOCK_SIZE 256  // minimum block size for backward references
 
@@ -255,10 +258,13 @@ static WEBP_INLINE int MaxFindCopyLength(int len) {
 
 int VP8LHashChainFill(VP8LHashChain* const p, int quality,
                       const uint32_t* const argb, int xsize, int ysize,
-                      int low_effort) {
+                      int low_effort, const WebPPicture* const pic,
+                      int percent_range, int* const percent) {
   const int size = xsize * ysize;
   const int iter_max = GetMaxItersForQuality(quality);
   const uint32_t window_size = GetWindowSizeForHashChain(quality, xsize);
+  int remaining_percent = percent_range;
+  int percent_start = *percent;
   int pos;
   int argb_comp;
   uint32_t base_position;
@@ -276,7 +282,13 @@ int VP8LHashChainFill(VP8LHashChain* const p, int quality,
 
   hash_to_first_index =
       (int32_t*)WebPSafeMalloc(HASH_SIZE, sizeof(*hash_to_first_index));
-  if (hash_to_first_index == NULL) return 0;
+  if (hash_to_first_index == NULL) {
+    WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
+    return 0;
+  }
+
+  percent_range = remaining_percent / 2;
+  remaining_percent -= percent_range;
 
   // Set the int32_t array to -1.
   memset(hash_to_first_index, 0xff, HASH_SIZE * sizeof(*hash_to_first_index));
@@ -323,11 +335,21 @@ int VP8LHashChainFill(VP8LHashChain* const p, int quality,
       hash_to_first_index[hash_code] = pos++;
       argb_comp = argb_comp_next;
     }
+
+    if (!WebPReportProgress(
+            pic, percent_start + percent_range * pos / (size - 2), percent)) {
+      WebPSafeFree(hash_to_first_index);
+      return 0;
+    }
   }
   // Process the penultimate pixel.
   chain[pos] = hash_to_first_index[GetPixPairHash64(argb + pos)];
 
   WebPSafeFree(hash_to_first_index);
+
+  percent_start += percent_range;
+  if (!WebPReportProgress(pic, percent_start, percent)) return 0;
+  percent_range = remaining_percent;
 
   // Find the best match interval at each pixel, defined by an offset to the
   // pixel and a length. The right-most pixel cannot match anything to the right
@@ -417,8 +439,17 @@ int VP8LHashChainFill(VP8LHashChain* const p, int quality,
         max_base_position = base_position;
       }
     }
+
+    if (!WebPReportProgress(pic,
+                            percent_start + percent_range *
+                                                (size - 2 - base_position) /
+                                                (size - 2),
+                            percent)) {
+      return 0;
+    }
   }
-  return 1;
+
+  return WebPReportProgress(pic, percent_start + percent_range, percent);
 }
 
 static WEBP_INLINE void AddSingleLiteral(uint32_t pixel, int use_color_cache,
@@ -728,7 +759,7 @@ static int CalculateBestCacheSize(const uint32_t* argb, int quality,
                                   int* const best_cache_bits) {
   int i;
   const int cache_bits_max = (quality <= 25) ? 0 : *best_cache_bits;
-  double entropy_min = MAX_ENTROPY;
+  float entropy_min = MAX_ENTROPY;
   int cc_init[MAX_COLOR_CACHE_BITS + 1] = { 0 };
   VP8LColorCache hashers[MAX_COLOR_CACHE_BITS + 1];
   VP8LRefsCursor c = VP8LRefsCursorInit(refs);
@@ -813,14 +844,14 @@ static int CalculateBestCacheSize(const uint32_t* argb, int quality,
   }
 
   for (i = 0; i <= cache_bits_max; ++i) {
-    const double entropy = VP8LHistogramEstimateBits(histos[i]);
+    const float entropy = VP8LHistogramEstimateBits(histos[i]);
     if (i == 0 || entropy < entropy_min) {
       entropy_min = entropy;
       *best_cache_bits = i;
     }
   }
   ok = 1;
-Error:
+ Error:
   for (i = 0; i <= cache_bits_max; ++i) {
     if (cc_init[i]) VP8LColorCacheClear(&hashers[i]);
     VP8LFreeHistogram(histos[i]);
@@ -890,7 +921,7 @@ static int GetBackwardReferences(int width, int height,
   int i, lz77_type;
   // Index 0 is for a color cache, index 1 for no cache (if needed).
   int lz77_types_best[2] = {0, 0};
-  double bit_costs_best[2] = {DBL_MAX, DBL_MAX};
+  float bit_costs_best[2] = {FLT_MAX, FLT_MAX};
   VP8LHashChain hash_chain_box;
   VP8LBackwardRefs* const refs_tmp = &refs[do_no_cache ? 2 : 1];
   int status = 0;
@@ -902,7 +933,7 @@ static int GetBackwardReferences(int width, int height,
   for (lz77_type = 1; lz77_types_to_try;
        lz77_types_to_try &= ~lz77_type, lz77_type <<= 1) {
     int res = 0;
-    double bit_cost = 0.;
+    float bit_cost = 0.f;
     if ((lz77_types_to_try & lz77_type) == 0) continue;
     switch (lz77_type) {
       case kLZ77RLE:
@@ -976,15 +1007,16 @@ static int GetBackwardReferences(int width, int height,
       const VP8LHashChain* const hash_chain_tmp =
           (lz77_types_best[i] == kLZ77Standard) ? hash_chain : &hash_chain_box;
       const int cache_bits = (i == 1) ? 0 : *cache_bits_best;
-      if (VP8LBackwardReferencesTraceBackwards(width, height, argb, cache_bits,
-                                               hash_chain_tmp, &refs[i],
-                                               refs_tmp)) {
-        double bit_cost_trace;
-        VP8LHistogramCreate(histo, refs_tmp, cache_bits);
-        bit_cost_trace = VP8LHistogramEstimateBits(histo);
-        if (bit_cost_trace < bit_costs_best[i]) {
-          BackwardRefsSwap(refs_tmp, &refs[i]);
-        }
+      float bit_cost_trace;
+      if (!VP8LBackwardReferencesTraceBackwards(width, height, argb, cache_bits,
+                                                hash_chain_tmp, &refs[i],
+                                                refs_tmp)) {
+        goto Error;
+      }
+      VP8LHistogramCreate(histo, refs_tmp, cache_bits);
+      bit_cost_trace = VP8LHistogramEstimateBits(histo);
+      if (bit_cost_trace < bit_costs_best[i]) {
+        BackwardRefsSwap(refs_tmp, &refs[i]);
       }
     }
 
@@ -1000,31 +1032,37 @@ static int GetBackwardReferences(int width, int height,
   }
   status = 1;
 
-Error:
+ Error:
   VP8LHashChainClear(&hash_chain_box);
   VP8LFreeHistogram(histo);
   return status;
 }
 
-WebPEncodingError VP8LGetBackwardReferences(
+int VP8LGetBackwardReferences(
     int width, int height, const uint32_t* const argb, int quality,
     int low_effort, int lz77_types_to_try, int cache_bits_max, int do_no_cache,
     const VP8LHashChain* const hash_chain, VP8LBackwardRefs* const refs,
-    int* const cache_bits_best) {
+    int* const cache_bits_best, const WebPPicture* const pic, int percent_range,
+    int* const percent) {
   if (low_effort) {
     VP8LBackwardRefs* refs_best;
     *cache_bits_best = cache_bits_max;
     refs_best = GetBackwardReferencesLowEffort(
         width, height, argb, cache_bits_best, hash_chain, refs);
-    if (refs_best == NULL) return VP8_ENC_ERROR_OUT_OF_MEMORY;
+    if (refs_best == NULL) {
+      WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
+      return 0;
+    }
     // Set it in first position.
     BackwardRefsSwap(refs_best, &refs[0]);
   } else {
     if (!GetBackwardReferences(width, height, argb, quality, lz77_types_to_try,
                                cache_bits_max, do_no_cache, hash_chain, refs,
                                cache_bits_best)) {
-      return VP8_ENC_ERROR_OUT_OF_MEMORY;
+      WebPEncodingSetError(pic, VP8_ENC_ERROR_OUT_OF_MEMORY);
+      return 0;
     }
   }
-  return VP8_ENC_OK;
+
+  return WebPReportProgress(pic, *percent + percent_range, percent);
 }

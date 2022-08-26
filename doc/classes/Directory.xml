@@ -70,7 +70,7 @@
 			<param index="0" name="from" type="String" />
 			<param index="1" name="to" type="String" />
 			<description>
-				Copies the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+				Copies the [param from] file to the [param to] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
@@ -188,7 +188,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Opens an existing directory of the filesystem. The [code]path[/code] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
+				Opens an existing directory of the filesystem. The [param path] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
@@ -206,7 +206,7 @@
 			<param index="0" name="from" type="String" />
 			<param index="1" name="to" type="String" />
 			<description>
-				Renames (move) the [code]from[/code] file or directory to the [code]to[/code] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
+				Renames (move) the [param from] file or directory to the [param to] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>

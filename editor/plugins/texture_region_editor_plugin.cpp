@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"

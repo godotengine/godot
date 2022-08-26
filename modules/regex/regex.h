@@ -94,7 +94,7 @@ public:
 	bool is_valid() const;
 	String get_pattern() const;
 	int get_group_count() const;
-	Array get_names() const;
+	PackedStringArray get_names() const;
 
 	RegEx();
 	RegEx(const String &p_pattern);

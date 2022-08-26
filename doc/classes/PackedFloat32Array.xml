@@ -4,7 +4,7 @@
 		A packed array of 32-bit floating-point values.
 	</brief_description>
 	<description>
-		An array specifically designed to hold 32-bit floating-point values. Packs data tightly, so it saves memory for large array sizes.
+		An array specifically designed to hold 32-bit floating-point values (float). Packs data tightly, so it saves memory for large array sizes.
 		If you need to pack 64-bit floats tightly, see [PackedFloat64Array].
 	</description>
 	<tutorials>
@@ -188,24 +188,29 @@
 			<return type="bool" />
 			<param index="0" name="right" type="PackedFloat32Array" />
 			<description>
+				Returns [code]true[/code] if contents of the arrays differ.
 			</description>
 		</operator>
 		<operator name="operator +">
 			<return type="PackedFloat32Array" />
 			<param index="0" name="right" type="PackedFloat32Array" />
 			<description>
+				Returns a new [PackedFloat32Array] with contents of [param right] added at the end of this array. For better performance, consider using [method append_array] instead.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="PackedFloat32Array" />
 			<description>
+				Returns [code]true[/code] if contents of both arrays are the same, i.e. they have all equal floats at the corresponding indices.
 			</description>
 		</operator>
 		<operator name="operator []">
 			<return type="float" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns the [float] at index [param index]. Negative indices can be used to access the elements starting from the end. Using index out of array's bounds will result in an error.
+				Note that [float] type is 64-bit, unlike the values stored in the array.
 			</description>
 		</operator>
 	</operators>

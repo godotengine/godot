@@ -47,7 +47,7 @@ Size2 OptionButton::get_minimum_size() const {
 		const Size2 arrow_size = Control::get_theme_icon(SNAME("arrow"))->get_size();
 
 		Size2 content_size = minsize - padding;
-		content_size.width += arrow_size.width + get_theme_constant(SNAME("h_separation"));
+		content_size.width += arrow_size.width + MAX(0, get_theme_constant(SNAME("h_separation")));
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;
@@ -198,14 +198,18 @@ void OptionButton::_selected(int p_which) {
 }
 
 void OptionButton::pressed() {
+	if (popup->is_visible()) {
+		popup->hide();
+		return;
+	}
+
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
 	popup->set_size(Size2(size.width, 0));
 
 	// If not triggered by the mouse, start the popup with the checked item selected.
 	if (popup->get_item_count() > 0) {
-		if ((get_action_mode() == ActionMode::ACTION_MODE_BUTTON_PRESS && Input::get_singleton()->is_action_just_pressed("ui_accept")) ||
-				(get_action_mode() == ActionMode::ACTION_MODE_BUTTON_RELEASE && Input::get_singleton()->is_action_just_released("ui_accept"))) {
+		if (!_was_pressed_by_mouse()) {
 			popup->set_current_index(current > -1 ? current : 0);
 		} else {
 			popup->scroll_to_item(current > -1 ? current : 0);
@@ -471,9 +475,9 @@ void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
 
-void OptionButton::_validate_property(PropertyInfo &property) const {
-	if (property.name == "text" || property.name == "icon") {
-		property.usage = PROPERTY_USAGE_NONE;
+void OptionButton::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "text" || p_property.name == "icon") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 

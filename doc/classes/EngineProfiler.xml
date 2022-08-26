@@ -32,7 +32,7 @@
 			<param index="0" name="enable" type="bool" />
 			<param index="1" name="options" type="Array" />
 			<description>
-				Called when the profiler is enabled/disabled, along with a set of [code]options[/code].
+				Called when the profiler is enabled/disabled, along with a set of [param options].
 			</description>
 		</method>
 	</methods>

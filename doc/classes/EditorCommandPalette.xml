@@ -33,10 +33,10 @@
 			<param index="3" name="shortcut_text" type="String" default="&quot;None&quot;" />
 			<description>
 				Adds a custom command to EditorCommandPalette.
-				- [code]command_name[/code]: [String] (Name of the [b]Command[/b]. This is displayed to the user.)
-				- [code]key_name[/code]: [String] (Name of the key for a particular [b]Command[/b]. This is used to uniquely identify the [b]Command[/b].)
-				- [code]binded_callable[/code]: [Callable] (Callable of the [b]Command[/b]. This will be executed when the [b]Command[/b] is selected.)
-				- [code]shortcut_text[/code]: [String] (Shortcut text of the [b]Command[/b] if available.)
+				- [param command_name]: [String] (Name of the [b]Command[/b]. This is displayed to the user.)
+				- [param key_name]: [String] (Name of the key for a particular [b]Command[/b]. This is used to uniquely identify the [b]Command[/b].)
+				- [param binded_callable]: [Callable] (Callable of the [b]Command[/b]. This will be executed when the [b]Command[/b] is selected.)
+				- [param shortcut_text]: [String] (Shortcut text of the [b]Command[/b] if available.)
 			</description>
 		</method>
 		<method name="remove_command">
@@ -44,7 +44,7 @@
 			<param index="0" name="key_name" type="String" />
 			<description>
 				Removes the custom command from EditorCommandPalette.
-				- [code]key_name[/code]: [String] (Name of the key for a particular [b]Command[/b].)
+				- [param key_name]: [String] (Name of the key for a particular [b]Command[/b].)
 			</description>
 		</method>
 	</methods>

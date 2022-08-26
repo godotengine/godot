@@ -166,6 +166,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	class_name->deselect();
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
+	internal_name->set_text("");
 
 	if (!p_base_path.is_empty()) {
 		initial_bp = p_base_path.get_basename();

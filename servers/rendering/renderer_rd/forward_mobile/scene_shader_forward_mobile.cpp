@@ -158,11 +158,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 		print_line(gen_code.defines[i]);
 	}
 
-	RBMap<String, String>::Element * el = gen_code.code.front();
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
 	while (el) {
-		print_line("\n**code " + el->key() + ":\n" + el->value());
-
-		el = el->next();
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
 	}
 
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
@@ -353,7 +352,10 @@ void SceneShaderForwardMobile::ShaderData::get_shader_uniform_list(List<Property
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 			continue;
 		}
 

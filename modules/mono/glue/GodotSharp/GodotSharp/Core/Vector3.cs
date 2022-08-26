@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -74,7 +69,7 @@ namespace Godot
                     case 2:
                         return z;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -91,7 +86,7 @@ namespace Godot
                         z = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -523,7 +518,7 @@ namespace Godot
                 throw new ArgumentException("Argument is not normalized", nameof(axis));
             }
 #endif
-            return new Basis(axis, angle).Xform(this);
+            return new Basis(axis, angle) * this;
         }
 
         /// <summary>
@@ -694,17 +689,6 @@ namespace Godot
             this.x = x;
             this.y = y;
             this.z = z;
-        }
-
-        /// <summary>
-        /// Constructs a new <see cref="Vector3"/> from an existing <see cref="Vector3"/>.
-        /// </summary>
-        /// <param name="v">The existing <see cref="Vector3"/>.</param>
-        public Vector3(Vector3 v)
-        {
-            x = v.x;
-            y = v.y;
-            z = v.z;
         }
 
         /// <summary>
@@ -1009,12 +993,7 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Vector3)
-            {
-                return Equals((Vector3)obj);
-            }
-
-            return false;
+            return obj is Vector3 other && Equals(other);
         }
 
         /// <summary>

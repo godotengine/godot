@@ -54,7 +54,7 @@ protected:
 	virtual bool _can_do_next_pass() const;
 	virtual bool _can_use_render_priority() const;
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL0RC(RID, _get_shader_rid)
 	GDVIRTUAL0RC(Shader::Mode, _get_shader_mode)
@@ -99,8 +99,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	bool property_can_revert(const String &p_name);
-	Variant property_get_revert(const String &p_name);
+	bool _property_can_revert(const StringName &p_name) const;
+	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 	static void _bind_methods();
 
@@ -553,7 +553,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 	virtual bool _can_do_next_pass() const override { return true; }
 	virtual bool _can_use_render_priority() const override { return true; }
 

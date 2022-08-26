@@ -596,7 +596,7 @@ void ScriptTextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
+	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
@@ -751,7 +751,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 
-	Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
+	PackedInt32Array breakpoint_list = code_editor->get_text_editor()->get_breakpointed_lines();
 	if (breakpoint_list.size() == 0) {
 		return;
 	}
@@ -1264,7 +1264,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
-			Array bpoints = tx->get_breakpointed_lines();
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 
 			for (int i = 0; i < bpoints.size(); i++) {
 				int line = bpoints[i];
@@ -1274,7 +1274,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			}
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
-			Array bpoints = tx->get_breakpointed_lines();
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 			if (bpoints.size() <= 0) {
 				return;
 			}
@@ -1300,7 +1300,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
-			Array bpoints = tx->get_breakpointed_lines();
+			PackedInt32Array bpoints = tx->get_breakpointed_lines();
 			if (bpoints.size() <= 0) {
 				return;
 			}
@@ -1441,7 +1441,7 @@ void ScriptTextEditor::reload(bool p_soft) {
 	scr->get_language()->reload_tool_script(scr, soft);
 }
 
-Array ScriptTextEditor::get_breakpoints() {
+PackedInt32Array ScriptTextEditor::get_breakpoints() {
 	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 

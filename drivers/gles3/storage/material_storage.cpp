@@ -1083,6 +1083,12 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 
 		Vector<RID> textures;
 
+		if (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+			continue;
+		}
+
 		if (p_texture_uniforms[i].global) {
 			uses_global_textures = true;
 
@@ -1450,8 +1456,8 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["UV2"] = "uv2_interp";
 		actions.renames["COLOR"] = "color_interp";
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
-		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
-		actions.renames["VERTEX_ID"] = "gl_VertexIndex";
+		actions.renames["INSTANCE_ID"] = "gl_InstanceID";
+		actions.renames["VERTEX_ID"] = "gl_VertexID";
 
 		actions.renames["ALPHA_SCISSOR_THRESHOLD"] = "alpha_scissor_threshold";
 		actions.renames["ALPHA_HASH_SCALE"] = "alpha_hash_scale";
@@ -1492,9 +1498,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
-		actions.renames["SCREEN_TEXTURE"] = "color_buffer";
-		actions.renames["DEPTH_TEXTURE"] = "depth_buffer";
-		actions.renames["NORMAL_ROUGHNESS_TEXTURE"] = "normal_roughness_buffer";
+		//actions.renames["SCREEN_TEXTURE"] = "color_buffer"; //Not implemented in 3D yet.
+		//actions.renames["DEPTH_TEXTURE"] = "depth_buffer"; // Not implemented in 3D yet.
+		//actions.renames["NORMAL_ROUGHNESS_TEXTURE"] = "normal_roughness_buffer"; // Not implemented in 3D yet
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["OUTPUT_IS_SRGB"] = "true";
 		actions.renames["FOG"] = "fog";
@@ -2789,6 +2795,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 	uses_screen_texture = false;
+	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
 
@@ -2799,7 +2806,6 @@ void CanvasShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	int blend_modei = BLEND_MODE_MIX;
-	uses_screen_texture = false;
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
@@ -2826,6 +2832,7 @@ void CanvasShaderData::set_code(const String &p_code) {
 	}
 
 	blend_mode = BlendMode(blend_modei);
+	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 
 #if 0
 	print_line("**compiling shader:");
@@ -2833,12 +2840,16 @@ void CanvasShaderData::set_code(const String &p_code) {
 	for (int i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
+
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
+	while (el) {
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
+	}
+
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
-	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
-	print_line("\n**vertex_code:\n" + gen_code.vertex);
-	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
-	print_line("\n**fragment_code:\n" + gen_code.fragment);
-	print_line("\n**light_code:\n" + gen_code.light);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 
 	Vector<StringName> texture_uniform_names;
@@ -2877,7 +2888,10 @@ void CanvasShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list)
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 			continue;
 		}
 		if (E.value.texture_order >= 0) {
@@ -3070,12 +3084,16 @@ void SkyShaderData::set_code(const String &p_code) {
 	for (int i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
+
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
+	while (el) {
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
+	}
+
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
-	//	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
-	//	print_line("\n**vertex_code:\n" + gen_code.vertex);
-	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
-	print_line("\n**fragment_code:\n" + gen_code.fragment);
-	print_line("\n**light_code:\n" + gen_code.light);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 
 	Vector<StringName> texture_uniform_names;
@@ -3253,7 +3271,6 @@ void SceneShaderData::set_code(const String &p_code) {
 	valid = false;
 	ubo_size = 0;
 	uniforms.clear();
-	uses_screen_texture = false;
 
 	if (code.is_empty()) {
 		return; //just invalid, but no error
@@ -3378,6 +3395,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	vertex_input_mask |= uses_custom3 << 8;
 	vertex_input_mask |= uses_bones << 9;
 	vertex_input_mask |= uses_weights << 10;
+	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 
 #if 0
 	print_line("**compiling shader:");
@@ -3386,11 +3404,10 @@ void SceneShaderData::set_code(const String &p_code) {
 		print_line(gen_code.defines[i]);
 	}
 
-	Map<String, String>::Element *el = gen_code.code.front();
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
 	while (el) {
-		print_line("\n**code " + el->key() + ":\n" + el->value());
-
-		el = el->next();
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
 	}
 
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
@@ -3439,7 +3456,10 @@ void SceneShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) 
 	RBMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
 			continue;
 		}
 

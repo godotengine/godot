@@ -32,7 +32,7 @@
 			<return type="void" />
 			<param index="0" name="from_position" type="float" default="0.0" />
 			<description>
-				Plays the audio from the given [code]from_position[/code], in seconds.
+				Plays the audio from the given [param from_position], in seconds.
 			</description>
 		</method>
 		<method name="seek">

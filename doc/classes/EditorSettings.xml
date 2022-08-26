@@ -74,18 +74,18 @@
 			<return type="bool" />
 			<param index="0" name="setting_prefix" type="String" />
 			<description>
-				Checks if any settings with the prefix [code]setting_prefix[/code] exist in the set of changed settings. See also [method get_changed_settings].
+				Checks if any settings with the prefix [param setting_prefix] exist in the set of changed settings. See also [method get_changed_settings].
 			</description>
 		</method>
 		<method name="erase">
 			<return type="void" />
 			<param index="0" name="property" type="String" />
 			<description>
-				Erases the setting whose name is specified by [code]property[/code].
+				Erases the setting whose name is specified by [param property].
 			</description>
 		</method>
 		<method name="get_changed_settings" qualifiers="const">
-			<return type="Array" />
+			<return type="PackedStringArray" />
 			<description>
 				Gets an array of the settings which have been changed since the last save. Note that internally [code]changed_settings[/code] is cleared after a successful save, so generally the most appropriate place to use this method is when processing [constant NOTIFICATION_EDITOR_SETTINGS_CHANGED]
 			</description>
@@ -102,7 +102,7 @@
 			<param index="1" name="key" type="String" />
 			<param index="2" name="default" type="Variant" default="null" />
 			<description>
-				Returns project-specific metadata for the [code]section[/code] and [code]key[/code] specified. If the metadata doesn't exist, [code]default[/code] will be returned instead. See also [method set_project_metadata].
+				Returns project-specific metadata for the [param section] and [param key] specified. If the metadata doesn't exist, [param default] will be returned instead. See also [method set_project_metadata].
 			</description>
 		</method>
 		<method name="get_recent_dirs" qualifiers="const">
@@ -115,14 +115,14 @@
 			<return type="Variant" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns the value of the setting specified by [code]name[/code]. This is equivalent to using [method Object.get] on the EditorSettings instance.
+				Returns the value of the setting specified by [param name]. This is equivalent to using [method Object.get] on the EditorSettings instance.
 			</description>
 		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Returns [code]true[/code] if the setting specified by [code]name[/code] exists, [code]false[/code] otherwise.
+				Returns [code]true[/code] if the setting specified by [param name] exists, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="mark_setting_changed">
@@ -132,26 +132,12 @@
 				Marks the passed editor setting as being changed, see [method get_changed_settings]. Only settings which exist (see [method has_setting]) will be accepted.
 			</description>
 		</method>
-		<method name="property_can_revert">
-			<return type="bool" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns [code]true[/code] if the setting specified by [code]name[/code] can have its value reverted to the default value, [code]false[/code] otherwise. When this method returns [code]true[/code], a Revert button will display next to the setting in the Editor Settings.
-			</description>
-		</method>
-		<method name="property_get_revert">
-			<return type="Variant" />
-			<param index="0" name="name" type="String" />
-			<description>
-				Returns the default value of the setting specified by [code]name[/code]. This is the value that would be applied when clicking the Revert button in the Editor Settings.
-			</description>
-		</method>
 		<method name="set_builtin_action_override">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="actions_list" type="Array" />
 			<description>
-				Overrides the built-in editor action [code]name[/code] with the input actions defined in [code]actions_list[/code].
+				Overrides the built-in editor action [param name] with the input actions defined in [param actions_list].
 			</description>
 		</method>
 		<method name="set_favorites">
@@ -167,7 +153,7 @@
 			<param index="1" name="value" type="Variant" />
 			<param index="2" name="update_current" type="bool" />
 			<description>
-				Sets the initial value of the setting specified by [code]name[/code] to [code]value[/code]. This is used to provide a value for the Revert button in the Editor Settings. If [code]update_current[/code] is true, the current value of the setting will be set to [code]value[/code] as well.
+				Sets the initial value of the setting specified by [param name] to [param value]. This is used to provide a value for the Revert button in the Editor Settings. If [param update_current] is true, the current value of the setting will be set to [param value] as well.
 			</description>
 		</method>
 		<method name="set_project_metadata">
@@ -176,7 +162,7 @@
 			<param index="1" name="key" type="String" />
 			<param index="2" name="data" type="Variant" />
 			<description>
-				Sets project-specific metadata with the [code]section[/code], [code]key[/code] and [code]data[/code] specified. This metadata is stored outside the project folder and therefore won't be checked into version control. See also [method get_project_metadata].
+				Sets project-specific metadata with the [param section], [param key] and [param data] specified. This metadata is stored outside the project folder and therefore won't be checked into version control. See also [method get_project_metadata].
 			</description>
 		</method>
 		<method name="set_recent_dirs">
@@ -191,7 +177,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Sets the [code]value[/code] of the setting specified by [code]name[/code]. This is equivalent to using [method Object.set] on the EditorSettings instance.
+				Sets the [param value] of the setting specified by [param name]. This is equivalent to using [method Object.set] on the EditorSettings instance.
 			</description>
 		</method>
 	</methods>
@@ -479,15 +465,15 @@
 		</member>
 		<member name="interface/editor/code_font_contextual_ligatures" type="int" setter="" getter="">
 			The font ligatures to enable for the currently configured code font. Not all fonts include support for ligatures.
-			[b]Note:[/b] The default editor code font (Hack) does not have contextual ligatures in its font file.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has contextual ligatures in its font file.
 		</member>
 		<member name="interface/editor/code_font_custom_opentype_features" type="String" setter="" getter="">
 			List of custom OpenType features to use, if supported by the currently configured code font. Not all fonts include support for custom OpenType features. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font (Hack) does not have custom OpenType features in its font file.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.
 		</member>
 		<member name="interface/editor/code_font_custom_variations" type="String" setter="" getter="">
 			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font (Hack) does not have alternate characters in its font file.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
 		</member>
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
@@ -509,8 +495,8 @@
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=https://docs.godotengine.org/en/latest/community/contributing/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
-		<member name="interface/editor/font_antialiased" type="bool" setter="" getter="">
-			If [code]true[/code], enables FreeType's font antialiasing on the editor fonts. Most fonts are not designed to look good with antialiasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
+		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
+			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
 		</member>
 		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
 			The font hinting mode to use for the editor fonts. FreeType supports the following font hinting modes:
@@ -552,6 +538,10 @@
 		</member>
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="float" setter="" getter="">
 			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 20 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
+		</member>
+		<member name="interface/editor/use_embedded_menu" type="bool" setter="" getter="">
+			If [code]true[/code], editor main menu is using embedded [MenuBar] instead of system global menu.
+			Specific to the macOS platform.
 		</member>
 		<member name="interface/inspector/max_array_dictionary_items_per_page" type="int" setter="" getter="">
 			The number of [Array] or [Dictionary] items to display on each "page" in the inspector. Higher values allow viewing more values per page, but take more time to load. This increased load time is noticeable when selecting nodes that have array or dictionary properties in the editor.
@@ -710,7 +700,7 @@
 			If [code]true[/code], draws tab characters as chevrons.
 		</member>
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
-			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying less lines on screen.
+			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen.
 		</member>
 		<member name="text_editor/behavior/files/auto_reload_scripts_on_external_change" type="bool" setter="" getter="">
 			If [code]true[/code], automatically reloads scripts in the editor when they have been modified and saved by external editors.
@@ -866,7 +856,7 @@
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
-			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function declaration color configured in the syntax theme for function declarations (e.g. [code]func _ready():[/code]).
+			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], some built-in methods, ...).

@@ -31,6 +31,7 @@
 #include "rendering_server.h"
 
 #include "core/config/project_settings.h"
+#include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
 
@@ -69,44 +70,44 @@ Array RenderingServer::_texture_debug_usage_bind() {
 	return arr;
 }
 
-static Array to_array(const Vector<ObjectID> &ids) {
-	Array a;
+static PackedInt64Array to_int_array(const Vector<ObjectID> &ids) {
+	PackedInt64Array a;
 	a.resize(ids.size());
 	for (int i = 0; i < ids.size(); ++i) {
-		a[i] = ids[i];
+		a.write[i] = ids[i];
 	}
 	return a;
 }
 
-Array RenderingServer::_instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<ObjectID> ids = instances_cull_aabb(p_aabb, p_scenario);
-	return to_array(ids);
+	return to_int_array(ids);
 }
 
-Array RenderingServer::_instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<ObjectID> ids = instances_cull_ray(p_from, p_to, p_scenario);
-	return to_array(ids);
+	return to_int_array(ids);
 }
 
-Array RenderingServer::_instances_cull_convex_bind(const Array &p_convex, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_convex_bind(const Array &p_convex, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
 	Vector<Plane> planes;
 	for (int i = 0; i < p_convex.size(); ++i) {
 		Variant v = p_convex[i];
-		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, Array());
+		ERR_FAIL_COND_V(v.get_type() != Variant::PLANE, PackedInt64Array());
 		planes.push_back(v);
 	}
 
 	Vector<ObjectID> ids = instances_cull_convex(planes, p_scenario);
-	return to_array(ids);
+	return to_int_array(ids);
 }
 
 RID RenderingServer::get_test_texture() {
@@ -398,16 +399,14 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 				const Vector3 *src = array.ptr();
 				for (int i = 0; i < p_vertex_array_len; i++) {
-					Vector3 n = src[i] * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+					Vector2 res = src[i].octahedron_encode();
+					int16_t vector[2] = {
+						(int16_t)CLAMP(res.x * 65535, 0, 65535),
+						(int16_t)CLAMP(res.y * 65535, 0, 65535),
+					};
 
-					uint32_t value = 0;
-					value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-					value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-					value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
-
-					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+					memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 				}
-
 			} break;
 
 			case RS::ARRAY_TANGENT: {
@@ -416,33 +415,32 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				if (type == Variant::PACKED_FLOAT32_ARRAY) {
 					Vector<float> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-					const float *src = array.ptr();
+					const float *src_ptr = array.ptr();
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint32_t value = 0;
-						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-						if (src[i * 4 + 3] > 0) {
-							value |= 3UL << 30;
-						}
+						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
+						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+						int16_t vector[2] = {
+							(int16_t)CLAMP(res.x * 65535, 0, 65535),
+							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						};
 
-						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 					}
 				} else { // PACKED_FLOAT64_ARRAY
 					Vector<double> array = p_arrays[ai];
 					ERR_FAIL_COND_V(array.size() != p_vertex_array_len * 4, ERR_INVALID_PARAMETER);
-					const double *src = array.ptr();
+					const double *src_ptr = array.ptr();
 
 					for (int i = 0; i < p_vertex_array_len; i++) {
-						uint32_t value = 0;
-						value |= CLAMP(int((src[i * 4 + 0] * 0.5 + 0.5) * 1023.0), 0, 1023);
-						value |= CLAMP(int((src[i * 4 + 1] * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-						value |= CLAMP(int((src[i * 4 + 2] * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-						if (src[i * 4 + 3] > 0) {
-							value |= 3UL << 30;
-						}
-						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], &value, 4);
+						const Vector3 src(src_ptr[i * 4 + 0], src_ptr[i * 4 + 1], src_ptr[i * 4 + 2]);
+						Vector2 res = src.octahedron_tangent_encode(src_ptr[i * 4 + 3]);
+						int16_t vector[2] = {
+							(int16_t)CLAMP(res.x * 65535, 0, 65535),
+							(int16_t)CLAMP(res.y * 65535, 0, 65535),
+						};
+
+						memcpy(&vw[p_offsets[ai] + i * p_vertex_stride], vector, 4);
 					}
 				}
 			} break;
@@ -627,7 +625,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 				const int *src = indices.ptr();
 
 				for (int i = 0; i < p_index_array_len; i++) {
-					if (p_vertex_array_len < (1 << 16)) {
+					if (p_vertex_array_len < (1 << 16) && p_vertex_array_len > 0) {
 						uint16_t v = src[i];
 
 						memcpy(&iw[i * 2], &v, 2);
@@ -836,9 +834,8 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 					break;
 				}
 				/* determine whether using 16 or 32 bits indices */
-				if (p_vertex_len >= (1 << 16)) {
+				if (p_vertex_len >= (1 << 16) || p_vertex_len == 0) {
 					elem_size = 4;
-
 				} else {
 					elem_size = 2;
 				}
@@ -909,8 +906,6 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 		}
 	}
 
-	ERR_FAIL_COND_V((format & RS::ARRAY_FORMAT_VERTEX) == 0, ERR_INVALID_PARAMETER); // Mandatory
-
 	if (p_blend_shapes.size()) {
 		// Validate format for morphs.
 		for (int i = 0; i < p_blend_shapes.size(); i++) {
@@ -943,6 +938,12 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	uint32_t mask = (1 << ARRAY_MAX) - 1;
 	format |= (~mask) & p_compress_format; // Make the full format.
+
+	if ((format & RS::ARRAY_FORMAT_VERTEX) == 0 && !(format & RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY)) {
+		ERR_PRINT("Mesh created without vertex array. This mesh will not be visible with the default shader. If using an empty vertex array is intentional, create the mesh with the ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY flag to silence this error.");
+		// Set the flag here after warning to suppress errors down the pipeline.
+		format |= RS::ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY;
+	}
 
 	int vertex_array_size = vertex_element_size * array_len;
 	int attrib_array_size = attrib_element_size * array_len;
@@ -1337,7 +1338,7 @@ Dictionary RenderingServer::mesh_surface_get_lods(RID p_mesh, int p_surface) con
 	return ret;
 }
 
-Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
+TypedArray<Array> RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const {
 	SurfaceData sd = mesh_get_surface(p_mesh, p_surface);
 	ERR_FAIL_COND_V(sd.vertex_count == 0, Array());
 
@@ -1359,7 +1360,7 @@ Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_sur
 
 		ERR_FAIL_COND_V(blend_shape_count != (uint32_t)mesh_get_blend_shape_count(p_mesh), Array());
 
-		Array blend_shape_array;
+		TypedArray<Array> blend_shape_array;
 		blend_shape_array.resize(mesh_get_blend_shape_count(p_mesh));
 		for (uint32_t i = 0; i < blend_shape_count; i++) {
 			Vector<uint8_t> bs_data = blend_shape_data.slice(i * divisor, (i + 1) * divisor);
@@ -1369,7 +1370,7 @@ Array RenderingServer::mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_sur
 
 		return blend_shape_array;
 	} else {
-		return Array();
+		return TypedArray<Array>();
 	}
 }
 
@@ -1378,7 +1379,7 @@ Array RenderingServer::mesh_create_arrays_from_surface_data(const SurfaceData &p
 	Vector<uint8_t> attrib_data = p_data.attribute_data;
 	Vector<uint8_t> skin_data = p_data.skin_data;
 
-	ERR_FAIL_COND_V(vertex_data.size() == 0, Array());
+	ERR_FAIL_COND_V(vertex_data.size() == 0 && (p_data.format & RS::ARRAY_FORMAT_VERTEX), Array());
 	int vertex_len = p_data.vertex_count;
 
 	Vector<uint8_t> index_data = p_data.index_data;
@@ -1625,7 +1626,7 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 	return d;
 }
 
-Array RenderingServer::_instance_geometry_get_shader_uniform_list(RID p_instance) const {
+TypedArray<Dictionary> RenderingServer::_instance_geometry_get_shader_uniform_list(RID p_instance) const {
 	List<PropertyInfo> params;
 	instance_geometry_get_shader_uniform_list(p_instance, &params);
 	return convert_property_list(&params);
@@ -2579,6 +2580,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::canvas_item_add_circle);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect", "item", "rect", "texture", "tile", "modulate", "transpose"), &RenderingServer::canvas_item_add_texture_rect, DEFVAL(false), DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_msdf_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "outline_size", "px_range"), &RenderingServer::canvas_item_add_msdf_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(0), DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_lcd_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate"), &RenderingServer::canvas_item_add_lcd_texture_rect_region);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_texture_rect_region", "item", "rect", "texture", "src_rect", "modulate", "transpose", "clip_uv"), &RenderingServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_nine_patch", "item", "rect", "source", "texture", "topleft", "bottomright", "x_axis_mode", "y_axis_mode", "draw_center", "modulate"), &RenderingServer::canvas_item_add_nine_patch, DEFVAL(NINE_PATCH_STRETCH), DEFVAL(NINE_PATCH_STRETCH), DEFVAL(true), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_primitive", "item", "points", "colors", "uvs", "texture", "width"), &RenderingServer::canvas_item_add_primitive, DEFVAL(1.0));

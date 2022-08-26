@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/color_picker.h"
 
@@ -796,7 +797,7 @@ void ThemeItemImportTree::_import_selected() {
 
 	ProgressDialog::get_singleton()->end_task("import_theme_items");
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Import Theme Items"));
 
 	ur->add_do_method(*edited_theme, "clear");
@@ -1494,7 +1495,7 @@ void ThemeItemEditorDialog::_item_tree_button_pressed(Object *p_item, int p_colu
 			String item_name = item->get_text(0);
 			int data_type = item->get_parent()->get_metadata(0);
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 			ur->create_action(TTR("Remove Theme Item"));
 			ur->add_do_method(*edited_theme, "clear_theme_item", (Theme::DataType)data_type, item_name, edited_item_type);
 			ur->add_undo_method(*edited_theme, "set_theme_item", (Theme::DataType)data_type, item_name, edited_item_type, edited_theme->get_theme_item((Theme::DataType)data_type, item_name, edited_item_type));
@@ -1513,7 +1514,7 @@ void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
 	const String new_type = edit_add_type_value->get_text().strip_edges();
 	edit_add_type_value->clear();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Add Theme Type"));
 
 	ur->add_do_method(*edited_theme, "add_type", new_type);
@@ -1525,7 +1526,7 @@ void ThemeItemEditorDialog::_add_theme_type(const String &p_new_text) {
 }
 
 void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String p_item_name, String p_item_type) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Create Theme Item"));
 
 	switch (p_data_type) {
@@ -1570,7 +1571,7 @@ void ThemeItemEditorDialog::_remove_theme_type(const String &p_theme_type) {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Remove Theme Type"));
 
 	new_snapshot->remove_type(p_theme_type);
@@ -1593,7 +1594,7 @@ void ThemeItemEditorDialog::_remove_data_type_items(Theme::DataType p_data_type,
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Remove Data Type Items From Theme"));
 
 	new_snapshot->get_theme_item_list(p_data_type, p_item_type, &names);
@@ -1622,7 +1623,7 @@ void ThemeItemEditorDialog::_remove_class_items() {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Remove Class Items From Theme"));
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1658,7 +1659,7 @@ void ThemeItemEditorDialog::_remove_custom_items() {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Remove Custom Items From Theme"));
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1694,7 +1695,7 @@ void ThemeItemEditorDialog::_remove_all_items() {
 	Ref<Theme> old_snapshot = edited_theme->duplicate();
 	Ref<Theme> new_snapshot = edited_theme->duplicate();
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Remove All Items From Theme"));
 
 	for (int dt = 0; dt < Theme::DATA_TYPE_MAX; dt++) {
@@ -1798,7 +1799,7 @@ void ThemeItemEditorDialog::_confirm_edit_theme_item() {
 	if (item_popup_mode == CREATE_THEME_ITEM) {
 		_add_theme_item(edit_item_data_type, theme_item_name->get_text(), edited_item_type);
 	} else if (item_popup_mode == RENAME_THEME_ITEM) {
-		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Rename Theme Item"));
 
 		ur->add_do_method(*edited_theme, "rename_theme_item", edit_item_data_type, edit_item_old_name, theme_item_name->get_text(), edited_item_type);
@@ -2824,7 +2825,7 @@ void ThemeTypeEditor::_add_default_type_items() {
 
 	updating = false;
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Override All Default Theme Items"));
 
 	ur->add_do_method(*edited_theme, "merge_with", new_snapshot);
@@ -2844,7 +2845,7 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 	}
 
 	String item_name = le->get_text().strip_edges();
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Add Theme Item"));
 
 	switch (p_data_type) {
@@ -2889,7 +2890,7 @@ void ThemeTypeEditor::_item_add_lineedit_cbk(String p_value, int p_data_type, Co
 }
 
 void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Override Theme Item"));
 
 	switch (p_data_type) {
@@ -2928,7 +2929,7 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 }
 
 void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Remove Theme Item"));
 
 	switch (p_data_type) {
@@ -3002,7 +3003,7 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 		return;
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Rename Theme Item"));
 
 	switch (p_data_type) {
@@ -3058,7 +3059,7 @@ void ThemeTypeEditor::_item_rename_canceled(int p_data_type, String p_item_name,
 }
 
 void ThemeTypeEditor::_color_item_changed(Color p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Color Item in Theme"), UndoRedo::MERGE_ENDS);
 	ur->add_do_method(*edited_theme, "set_color", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_color", p_item_name, edited_type, edited_theme->get_color(p_item_name, edited_type));
@@ -3066,7 +3067,7 @@ void ThemeTypeEditor::_color_item_changed(Color p_value, String p_item_name) {
 }
 
 void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Constant Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_constant", p_item_name, edited_type, edited_theme->get_constant(p_item_name, edited_type));
@@ -3074,7 +3075,7 @@ void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) 
 }
 
 void ThemeTypeEditor::_font_size_item_changed(float p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Font Size Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_font_size", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_font_size", p_item_name, edited_type, edited_theme->get_font_size(p_item_name, edited_type));
@@ -3086,7 +3087,7 @@ void ThemeTypeEditor::_edit_resource_item(Ref<Resource> p_resource, bool p_edit)
 }
 
 void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Font Item in Theme"));
 
 	ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<Font>());
@@ -3103,7 +3104,7 @@ void ThemeTypeEditor::_font_item_changed(Ref<Font> p_value, String p_item_name) 
 }
 
 void ThemeTypeEditor::_icon_item_changed(Ref<Texture2D> p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Icon Item in Theme"));
 
 	ur->add_do_method(*edited_theme, "set_icon", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<Texture2D>());
@@ -3120,7 +3121,7 @@ void ThemeTypeEditor::_icon_item_changed(Ref<Texture2D> p_value, String p_item_n
 }
 
 void ThemeTypeEditor::_stylebox_item_changed(Ref<StyleBox> p_value, String p_item_name) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Stylebox Item in Theme"));
 
 	ur->add_do_method(*edited_theme, "set_stylebox", p_item_name, edited_type, p_value.is_valid() ? p_value : Ref<StyleBox>());
@@ -3163,7 +3164,7 @@ void ThemeTypeEditor::_on_pin_leader_button_pressed(Control *p_editor, String p_
 		stylebox = Object::cast_to<EditorResourcePicker>(p_editor)->get_edited_resource();
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Pin Stylebox"));
 	ur->add_do_method(this, "_pin_leading_stylebox", p_item_name, stylebox);
 
@@ -3196,7 +3197,7 @@ void ThemeTypeEditor::_pin_leading_stylebox(String p_item_name, Ref<StyleBox> p_
 }
 
 void ThemeTypeEditor::_on_unpin_leader_button_pressed() {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Unpin Stylebox"));
 	ur->add_do_method(this, "_unpin_leading_stylebox");
 	ur->add_undo_method(this, "_pin_leading_stylebox", leading_stylebox.item_name, leading_stylebox.stylebox);
@@ -3265,7 +3266,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 }
 
 void ThemeTypeEditor::_type_variation_changed(const String p_value) {
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Theme Type Variation"));
 
 	if (p_value.is_empty()) {

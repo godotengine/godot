@@ -113,12 +113,12 @@ class SectionedInspectorFilter : public Object {
 		}
 	}
 
-	bool property_can_revert(const String &p_name) {
-		return edited->call("property_can_revert", section + "/" + p_name);
+	bool property_can_revert(const StringName &p_name) {
+		return edited->property_can_revert(section + "/" + p_name);
 	}
 
-	Variant property_get_revert(const String &p_name) {
-		return edited->call("property_get_revert", section + "/" + p_name);
+	Variant property_get_revert(const StringName &p_name) {
+		return edited->property_get_revert(section + "/" + p_name);
 	}
 
 protected:

@@ -33,7 +33,10 @@
 #include "core/authors.gen.h"
 #include "core/config/project_settings.h"
 #include "core/donors.gen.h"
+#include "core/io/json.h"
 #include "core/license.gen.h"
+#include "core/os/os.h"
+#include "core/variant/typed_array.h"
 #include "core/version.h"
 
 void Engine::set_physics_ticks_per_second(int p_ips) {
@@ -134,8 +137,8 @@ Dictionary Engine::get_author_info() const {
 	return dict;
 }
 
-Array Engine::get_copyright_info() const {
-	Array components;
+TypedArray<Dictionary> Engine::get_copyright_info() const {
+	TypedArray<Dictionary> components;
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 		const ComponentCopyright &cp_info = COPYRIGHT_INFO[component_index];
 		Dictionary component_dict;
@@ -305,6 +308,43 @@ Engine *Engine::get_singleton() {
 
 Engine::Engine() {
 	singleton = this;
+}
+
+void Engine::startup_begin() {
+	startup_benchmark_total_from = OS::get_singleton()->get_ticks_usec();
+}
+
+void Engine::startup_benchmark_begin_measure(const String &p_what) {
+	startup_benchmark_section = p_what;
+	startup_benchmark_from = OS::get_singleton()->get_ticks_usec();
+}
+void Engine::startup_benchmark_end_measure() {
+	uint64_t total = OS::get_singleton()->get_ticks_usec() - startup_benchmark_from;
+	double total_f = double(total) / double(1000000);
+
+	startup_benchmark_json[startup_benchmark_section] = total_f;
+}
+
+void Engine::startup_dump(const String &p_to_file) {
+	uint64_t total = OS::get_singleton()->get_ticks_usec() - startup_benchmark_total_from;
+	double total_f = double(total) / double(1000000);
+	startup_benchmark_json["total_time"] = total_f;
+
+	if (!p_to_file.is_empty()) {
+		Ref<FileAccess> f = FileAccess::open(p_to_file, FileAccess::WRITE);
+		if (f.is_valid()) {
+			Ref<JSON> json;
+			json.instantiate();
+			f->store_string(json->stringify(startup_benchmark_json, "\t", false, true));
+		}
+	} else {
+		List<Variant> keys;
+		startup_benchmark_json.get_key_list(&keys);
+		print_line("STARTUP BENCHMARK:");
+		for (const Variant &K : keys) {
+			print_line("\t-", K, ": ", startup_benchmark_json[K], +" sec.");
+		}
+	}
 }
 
 Engine::Singleton::Singleton(const StringName &p_name, Object *p_ptr, const StringName &p_class_name) :

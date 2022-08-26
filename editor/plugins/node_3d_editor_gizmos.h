@@ -334,8 +334,8 @@ public:
 	Label3DGizmoPlugin();
 };
 
-class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(Position3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class Marker3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(Marker3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
 	Vector<Vector3> cursor_points;
@@ -346,7 +346,7 @@ public:
 	int get_priority() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
 
-	Position3DGizmoPlugin();
+	Marker3DGizmoPlugin();
 };
 
 class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
@@ -409,8 +409,8 @@ public:
 	VehicleWheel3DGizmoPlugin();
 };
 
-class SoftDynamicBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(SoftDynamicBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
 	bool has_gizmo(Node3D *p_spatial) override;
@@ -424,7 +424,7 @@ public:
 	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
 
-	SoftDynamicBody3DGizmoPlugin();
+	SoftBody3DGizmoPlugin();
 };
 
 class VisibleOnScreenNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {

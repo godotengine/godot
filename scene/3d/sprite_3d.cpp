@@ -562,23 +562,21 @@ void Sprite3D::_draw() {
 	{
 		Vector3 n = normal * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
+		Vector2 res = n.octahedron_encode();
 		uint32_t value = 0;
-		value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-		value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 
 		v_normal = value;
 	}
 	uint32_t v_tangent;
 	{
 		Plane t = tangent;
+		Vector2 res = t.normal.octahedron_tangent_encode(t.d);
 		uint32_t value = 0;
-		value |= CLAMP(int((t.normal.x * 0.5 + 0.5) * 1023.0), 0, 1023);
-		value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-		if (t.d > 0) {
-			value |= 3UL << 30;
-		}
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
+
 		v_tangent = value;
 	}
 
@@ -751,18 +749,16 @@ Rect2 Sprite3D::get_item_rect() const {
 	return Rect2(ofs, s);
 }
 
-void Sprite3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "frame") {
-		property.hint = PROPERTY_HINT_RANGE;
-		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+void Sprite3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "frame") {
+		p_property.hint = PROPERTY_HINT_RANGE;
+		p_property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (property.name == "frame_coords") {
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+	if (p_property.name == "frame_coords") {
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
-
-	SpriteBase3D::_validate_property(property);
 }
 
 void Sprite3D::_bind_methods() {
@@ -929,23 +925,20 @@ void AnimatedSprite3D::_draw() {
 	{
 		Vector3 n = normal * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
 
+		Vector2 res = n.octahedron_encode();
 		uint32_t value = 0;
-		value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-		value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 
 		v_normal = value;
 	}
 	uint32_t v_tangent;
 	{
 		Plane t = tangent;
+		Vector2 res = t.normal.octahedron_tangent_encode(t.d);
 		uint32_t value = 0;
-		value |= CLAMP(int((t.normal.x * 0.5 + 0.5) * 1023.0), 0, 1023);
-		value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-		value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-		if (t.d > 0) {
-			value |= 3UL << 30;
-		}
+		value |= (uint16_t)CLAMP(res.x * 65535, 0, 65535);
+		value |= (uint16_t)CLAMP(res.y * 65535, 0, 65535) << 16;
 		v_tangent = value;
 	}
 
@@ -1000,50 +993,51 @@ void AnimatedSprite3D::_draw() {
 	}
 }
 
-void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
+void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 	if (!frames.is_valid()) {
 		return;
 	}
-	if (property.name == "animation") {
-		property.hint = PROPERTY_HINT_ENUM;
+	if (p_property.name == "animation") {
+		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
 		frames->get_animation_list(&names);
 		names.sort_custom<StringName::AlphCompare>();
 
 		bool current_found = false;
+		bool is_first_element = true;
 
-		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			if (E->prev()) {
-				property.hint_string += ",";
+		for (const StringName &E : names) {
+			if (!is_first_element) {
+				p_property.hint_string += ",";
+			} else {
+				is_first_element = false;
 			}
 
-			property.hint_string += String(E->get());
-			if (animation == E->get()) {
+			p_property.hint_string += String(E);
+			if (animation == E) {
 				current_found = true;
 			}
 		}
 
 		if (!current_found) {
-			if (property.hint_string.is_empty()) {
-				property.hint_string = String(animation);
+			if (p_property.hint_string.is_empty()) {
+				p_property.hint_string = String(animation);
 			} else {
-				property.hint_string = String(animation) + "," + property.hint_string;
+				p_property.hint_string = String(animation) + "," + p_property.hint_string;
 			}
 		}
 	}
 
-	if (property.name == "frame") {
-		property.hint = PROPERTY_HINT_RANGE;
+	if (p_property.name == "frame") {
+		p_property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
-			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
+			p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
 		} else {
 			// Avoid an error, `hint_string` is required for `PROPERTY_HINT_RANGE`.
-			property.hint_string = "0,0,1";
+			p_property.hint_string = "0,0,1";
 		}
-		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
+		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
-
-	SpriteBase3D::_validate_property(property);
 }
 
 void AnimatedSprite3D::_notification(int p_what) {

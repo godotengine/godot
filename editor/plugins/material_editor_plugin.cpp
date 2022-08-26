@@ -33,9 +33,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/fog_material.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 #include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
@@ -261,10 +262,8 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 }
 
 void EditorInspectorPluginMaterial::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
-	if (!undo_redo) {
-		return;
-	}
+	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(!undo_redo.is_valid());
 
 	// For BaseMaterial3D, if a roughness or metallic textures is being assigned to an empty slot,
 	// set the respective metallic or roughness factor to 1.0 as a convenience feature
@@ -406,17 +405,17 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 	return smat;
 }
 
-String ParticlesMaterialConversionPlugin::converts_to() const {
+String ParticleProcessMaterialConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
 }
 
-bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<ParticleProcessMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 
-Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<ParticleProcessMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

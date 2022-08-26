@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -93,7 +88,7 @@ namespace Godot
                     case 2:
                         return origin;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -110,7 +105,7 @@ namespace Godot
                         origin = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }
@@ -389,31 +384,6 @@ namespace Godot
             return copy;
         }
 
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by this transformation matrix.
-        /// </summary>
-        /// <seealso cref="XformInv(Vector2)"/>
-        /// <param name="v">A vector to transform.</param>
-        /// <returns>The transformed vector.</returns>
-        [Obsolete("Xform is deprecated. Use the multiplication operator (Transform2D * Vector2) instead.")]
-        public Vector2 Xform(Vector2 v)
-        {
-            return new Vector2(Tdotx(v), Tdoty(v)) + origin;
-        }
-
-        /// <summary>
-        /// Returns a vector transformed (multiplied) by the inverse transformation matrix.
-        /// </summary>
-        /// <seealso cref="Xform(Vector2)"/>
-        /// <param name="v">A vector to inversely transform.</param>
-        /// <returns>The inversely transformed vector.</returns>
-        [Obsolete("XformInv is deprecated. Use the multiplication operator (Vector2 * Transform2D) instead.")]
-        public Vector2 XformInv(Vector2 v)
-        {
-            Vector2 vInv = v - origin;
-            return new Vector2(x.Dot(vInv), y.Dot(vInv));
-        }
-
         // Constants
         private static readonly Transform2D _identity = new Transform2D(1, 0, 0, 1, 0, 0);
         private static readonly Transform2D _flipX = new Transform2D(-1, 0, 0, 1, 0, 0);
@@ -507,7 +477,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Vector2 transformed (multiplied) by transformation matrix.
+        /// Returns a Vector2 transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="vector">A Vector2 to transform.</param>
@@ -530,7 +500,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a Rect2 transformed (multiplied) by transformation matrix.
+        /// Returns a Rect2 transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="rect">A Rect2 to transform.</param>
@@ -541,7 +511,7 @@ namespace Godot
             Vector2 toX = transform.x * rect.Size.x;
             Vector2 toY = transform.y * rect.Size.y;
 
-            return new Rect2(pos, rect.Size).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
+            return new Rect2(pos, new Vector2()).Expand(pos + toX).Expand(pos + toY).Expand(pos + toX + toY);
         }
 
         /// <summary>
@@ -557,11 +527,11 @@ namespace Godot
             Vector2 to2 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y + rect.Size.y) * transform;
             Vector2 to3 = new Vector2(rect.Position.x + rect.Size.x, rect.Position.y) * transform;
 
-            return new Rect2(pos, rect.Size).Expand(to1).Expand(to2).Expand(to3);
+            return new Rect2(pos, new Vector2()).Expand(to1).Expand(to2).Expand(to3);
         }
 
         /// <summary>
-        /// Returns a copy of the given Vector2[] transformed (multiplied) by transformation matrix.
+        /// Returns a copy of the given Vector2[] transformed (multiplied) by the transformation matrix.
         /// </summary>
         /// <param name="transform">The transformation to apply.</param>
         /// <param name="array">A Vector2[] to transform.</param>
@@ -632,7 +602,7 @@ namespace Godot
         /// <returns>Whether or not the transform and the object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Transform2D transform2D && Equals(transform2D);
+            return obj is Transform2D other && Equals(other);
         }
 
         /// <summary>

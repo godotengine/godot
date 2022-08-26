@@ -50,7 +50,6 @@
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "scene/2d/node_2d.h"
-#include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
@@ -4582,22 +4581,21 @@ Error GLTFDocument::_serialize_cameras(Ref<GLTFState> state) {
 
 		Ref<GLTFCamera> camera = state->cameras[i];
 
-		if (camera->get_perspective() == false) {
-			Dictionary og;
-			og["ymag"] = Math::deg2rad(camera->get_fov_size());
-			og["xmag"] = Math::deg2rad(camera->get_fov_size());
-			og["zfar"] = camera->get_depth_far();
-			og["znear"] = camera->get_depth_near();
-			d["orthographic"] = og;
-			d["type"] = "orthographic";
-		} else if (camera->get_perspective()) {
-			Dictionary ppt;
-			// GLTF spec is in radians, Godot's camera is in degrees.
-			ppt["yfov"] = Math::deg2rad(camera->get_fov_size());
-			ppt["zfar"] = camera->get_depth_far();
-			ppt["znear"] = camera->get_depth_near();
-			d["perspective"] = ppt;
+		if (camera->get_perspective()) {
+			Dictionary persp;
+			persp["yfov"] = camera->get_fov();
+			persp["zfar"] = camera->get_depth_far();
+			persp["znear"] = camera->get_depth_near();
+			d["perspective"] = persp;
 			d["type"] = "perspective";
+		} else {
+			Dictionary ortho;
+			ortho["ymag"] = camera->get_size_mag();
+			ortho["xmag"] = camera->get_size_mag();
+			ortho["zfar"] = camera->get_depth_far();
+			ortho["znear"] = camera->get_depth_near();
+			d["orthographic"] = ortho;
+			d["type"] = "orthographic";
 		}
 		cameras[i] = d;
 	}
@@ -4680,27 +4678,23 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> state) {
 		camera.instantiate();
 		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
 		const String &type = d["type"];
-		if (type == "orthographic") {
-			camera->set_perspective(false);
-			if (d.has("orthographic")) {
-				const Dictionary &og = d["orthographic"];
-				// GLTF spec is in radians, Godot's camera is in degrees.
-				camera->set_fov_size(Math::rad2deg(real_t(og["ymag"])));
-				camera->set_depth_far(og["zfar"]);
-				camera->set_depth_near(og["znear"]);
-			} else {
-				camera->set_fov_size(10);
-			}
-		} else if (type == "perspective") {
+		if (type == "perspective") {
 			camera->set_perspective(true);
 			if (d.has("perspective")) {
-				const Dictionary &ppt = d["perspective"];
-				// GLTF spec is in radians, Godot's camera is in degrees.
-				camera->set_fov_size(Math::rad2deg(real_t(ppt["yfov"])));
-				camera->set_depth_far(ppt["zfar"]);
-				camera->set_depth_near(ppt["znear"]);
-			} else {
-				camera->set_fov_size(10);
+				const Dictionary &persp = d["perspective"];
+				camera->set_fov(persp["yfov"]);
+				if (persp.has("zfar")) {
+					camera->set_depth_far(persp["zfar"]);
+				}
+				camera->set_depth_near(persp["znear"]);
+			}
+		} else if (type == "orthographic") {
+			camera->set_perspective(false);
+			if (d.has("orthographic")) {
+				const Dictionary &ortho = d["orthographic"];
+				camera->set_size_mag(ortho["ymag"]);
+				camera->set_depth_far(ortho["zfar"]);
+				camera->set_depth_near(ortho["znear"]);
 			}
 		} else {
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Camera3D should be in 'orthographic' or 'perspective'");
@@ -5204,12 +5198,13 @@ Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, const GLTFNodeInd
 	print_verbose("glTF: Creating camera for: " + gltf_node->get_name());
 
 	Ref<GLTFCamera> c = state->cameras[gltf_node->camera];
-	if (c->get_perspective()) {
-		camera->set_perspective(c->get_fov_size(), c->get_depth_near(), c->get_depth_far());
-	} else {
-		camera->set_orthogonal(c->get_fov_size(), c->get_depth_near(), c->get_depth_far());
-	}
-
+	camera->set_projection(c->get_perspective() ? Camera3D::PROJECTION_PERSPECTIVE : Camera3D::PROJECTION_ORTHOGONAL);
+	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	camera->set_fov(Math::rad2deg(c->get_fov()));
+	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	camera->set_size(c->get_size_mag() * 2.0f);
+	camera->set_near(c->get_depth_near());
+	camera->set_far(c->get_depth_far());
 	return camera;
 }
 
@@ -5218,11 +5213,11 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 
 	Ref<GLTFCamera> c;
 	c.instantiate();
-
-	if (p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE) {
-		c->set_perspective(true);
-	}
-	c->set_fov_size(p_camera->get_fov());
+	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
+	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
+	c->set_fov(Math::deg2rad(p_camera->get_fov()));
+	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
+	c->set_size_mag(p_camera->get_size() * 0.5f);
 	c->set_depth_far(p_camera->get_far());
 	c->set_depth_near(p_camera->get_near());
 	GLTFCameraIndex camera_index = state->cameras.size();
@@ -5442,7 +5437,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		int32_t cell = p_grid_map->get_cell_item(
 				Vector3(cell_location.x, cell_location.y, cell_location.z));
 		Transform3D cell_xform;
-		cell_xform.basis.set_orthogonal_index(
+		cell_xform.basis = p_grid_map->get_basis_with_orthogonal_index(
 				p_grid_map->get_cell_item_orientation(
 						Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		cell_xform.basis.scale(Vector3(p_grid_map->get_cell_scale(),

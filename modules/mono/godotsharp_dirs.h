@@ -37,12 +37,13 @@ namespace GodotSharpDirs {
 
 String get_res_data_dir();
 String get_res_metadata_dir();
-String get_res_assemblies_base_dir();
-String get_res_assemblies_dir();
 String get_res_config_dir();
 String get_res_temp_dir();
 String get_res_temp_assemblies_base_dir();
 String get_res_temp_assemblies_dir();
+
+String get_api_assemblies_dir();
+String get_api_assemblies_base_dir();
 
 String get_mono_user_dir();
 String get_mono_logs_dir();
@@ -51,11 +52,7 @@ String get_mono_logs_dir();
 String get_mono_solutions_dir();
 String get_build_logs_dir();
 
-String get_project_sln_path();
-String get_project_csproj_path();
-
 String get_data_editor_tools_dir();
-String get_data_editor_prebuilt_api_dir();
 #else
 String get_data_game_assemblies_dir();
 #endif

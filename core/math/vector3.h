@@ -105,12 +105,15 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
 	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
 
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	Vector2 octahedron_encode() const;
 	static Vector3 octahedron_decode(const Vector2 &p_oct);
+	Vector2 octahedron_tangent_encode(const float sign) const;
+	static Vector3 octahedron_tangent_decode(const Vector2 &p_oct, float *sign);
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
@@ -243,6 +246,14 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
 	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
 	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
+	return res;
+}
+
+Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+	Vector3 res = *this;
+	res.x = Math::cubic_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
+	res.y = Math::cubic_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
+	res.z = Math::cubic_interpolate_in_time(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	return res;
 }
 

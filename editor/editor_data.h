@@ -31,12 +31,12 @@
 #ifndef EDITOR_DATA_H
 #define EDITOR_DATA_H
 
-#include "core/object/undo_redo.h"
 #include "core/templates/list.h"
 #include "scene/resources/texture.h"
 
 class ConfigFile;
 class EditorPlugin;
+class EditorUndoRedoManager;
 
 /**
  * Stores the history of objects which have been selected for editing in the Editor & the Inspector.
@@ -118,8 +118,9 @@ public:
 		Vector<EditorSelectionHistory::HistoryElement> history_stored;
 		int history_current = 0;
 		Dictionary custom_state;
-		uint64_t version = 0;
 		NodePath live_edit_root;
+		int history_id = 0;
+		uint64_t last_checked_version = 0;
 	};
 
 private:
@@ -132,12 +133,13 @@ private:
 	HashMap<String, Vector<CustomType>> custom_types;
 
 	List<PropertyData> clipboard;
-	UndoRedo undo_redo;
+	Ref<EditorUndoRedoManager> undo_redo_manager;
 	Vector<Callable> undo_redo_callbacks;
 	HashMap<StringName, Callable> move_element_functions;
 
 	Vector<EditedScene> edited_scene;
-	int current_edited_scene;
+	int current_edited_scene = -1;
+	int last_created_scene = 1;
 
 	bool _find_updated_instances(Node *p_root, Node *p_node, HashSet<String> &checked_paths);
 
@@ -166,7 +168,7 @@ public:
 	int get_editor_plugin_count() const;
 	EditorPlugin *get_editor_plugin(int p_idx);
 
-	UndoRedo &get_undo_redo();
+	Ref<EditorUndoRedoManager> &get_undo_redo();
 	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have this signature: void (Object* undo_redo, Object *modified_object, String property, Variant new_value)
 	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
 	const Vector<Callable> get_undo_redo_inspector_hook_callback();
@@ -200,7 +202,6 @@ public:
 	void set_scene_path(int p_idx, const String &p_path);
 	Ref<Script> get_scene_root_script(int p_idx) const;
 	void set_edited_scene_version(uint64_t version, int p_scene_idx = -1);
-	uint64_t get_scene_version(int p_idx) const;
 	void set_scene_modified_time(int p_idx, uint64_t p_time);
 	uint64_t get_scene_modified_time(int p_idx) const;
 	void clear_edited_scenes();
@@ -209,6 +210,13 @@ public:
 	bool check_and_update_scene(int p_idx);
 	void move_edited_scene_to_index(int p_idx);
 	bool call_build();
+
+	void set_scene_as_saved(int p_idx);
+	bool is_scene_changed(int p_idx);
+
+	int get_scene_history_id_from_path(const String &p_path) const;
+	int get_current_edited_scene_history_id() const;
+	int get_scene_history_id(int p_idx) const;
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
 	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
@@ -263,7 +271,7 @@ class EditorSelection : public Object {
 	List<Node *> selected_node_list;
 
 	void _update_node_list();
-	Array _get_transformable_selected_nodes();
+	TypedArray<Node> _get_transformable_selected_nodes();
 	void _emit_change();
 
 protected:

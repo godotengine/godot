@@ -1,5 +1,5 @@
 using System;
-using System.Runtime.CompilerServices;
+using Godot.NativeInterop;
 
 namespace Godot
 {
@@ -32,10 +32,17 @@ namespace Godot
         /// </returns>
         public static WeakRef WeakRef(Object obj)
         {
-            return godot_icall_Object_weakref(GetPtr(obj));
-        }
+            if (!IsInstanceValid(obj))
+                return null;
 
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern WeakRef godot_icall_Object_weakref(IntPtr obj);
+            NativeFuncs.godotsharp_weakref(GetPtr(obj), out godot_ref weakRef);
+            using (weakRef)
+            {
+                if (weakRef.IsNull)
+                    return null;
+
+                return (WeakRef)InteropUtils.UnmanagedGetManaged(weakRef.Reference);
+            }
+        }
     }
 }

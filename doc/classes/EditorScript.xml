@@ -44,7 +44,7 @@
 			<return type="void" />
 			<param index="0" name="node" type="Node" />
 			<description>
-				Adds [code]node[/code] as a child of the root node in the editor context.
+				Adds [param node] as a child of the root node in the editor context.
 				[b]Warning:[/b] The implementation of this method is currently disabled.
 			</description>
 		</method>

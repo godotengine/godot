@@ -44,19 +44,19 @@
 			</description>
 		</method>
 		<method name="get_script_method_list">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the list of methods in this [Script].
 			</description>
 		</method>
 		<method name="get_script_property_list">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the list of properties in this [Script].
 			</description>
 		</method>
 		<method name="get_script_signal_list">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns the list of user signals defined in this [Script].
 			</description>

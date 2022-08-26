@@ -79,7 +79,7 @@
 			When true, the modification's in the stack will be called. This is handled automatically through the [Skeleton3D] node.
 		</member>
 		<member name="modification_count" type="int" setter="set_modification_count" getter="get_modification_count" default="0">
-			The amount of modifications in the stack.
+			The number of modifications in the stack.
 		</member>
 		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
 			The interpolation strength of the modifications in stack. A value of [code]0[/code] will make it where the modifications are not applied, a strength of [code]0.5[/code] will be half applied, and a strength of [code]1[/code] will allow the modifications to be fully applied and override the skeleton bone poses.
