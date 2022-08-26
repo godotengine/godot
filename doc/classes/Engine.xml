@@ -119,6 +119,26 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_session_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the session id assigned via command line.
+
+				While using Godot's multiple-instance debugger, users can check the returned value to branch logic for their needs.
+				For example, the session id can be used to tell one instance to host a server while the others establish a peer connection. This is a nice quality of life feature for developers of multiplayer games where they might want to start a server and multiple clients simultaneously.
+				Or you could use session ids to branch between two different gameplay configurations such as character walk speeds or jump heights. This is a nice way to compare and contrast two drastically different gameplay scenarios for game testing.
+
+				Session ids are generally assigned to values between 1 and 4, with 1 being the default value.
+			</description>
+		</method>
+		<method name="set_session_id">
+			<return type="void" />
+			<argument index="0" name="p_session_id" type="int" />
+			<description>
+				Assigns a session id to the current engine instance, which happens at launch by supplying [code]--session-id[/code] to the executable.
+				This is used by Godot's multiple-instance debugger so that each engine instance can be differentiated from one another.
+			</description>
+		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object" />
 			<param index="0" name="name" type="StringName" />
