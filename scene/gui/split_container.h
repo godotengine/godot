@@ -47,7 +47,6 @@ private:
 	bool should_clamp_split_offset = false;
 	int split_offset = 0;
 	int middle_sep = 0;
-	int prev_no_offset_middle_sep = INT_MAX;
 	bool vertical = false;
 	bool dragging = false;
 	int drag_from = 0;
