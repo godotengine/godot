@@ -1632,13 +1632,13 @@
 			Displays glyphs that are mapped to the first [member Label.visible_characters] or [member RichTextLabel.visible_characters] characters from the beginning of the text.
 		</constant>
 		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
-			Displays [member Label.percent_visible] or [member RichTextLabel.percent_visible] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
 		</constant>
 		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
-			Displays [member Label.percent_visible] or [member RichTextLabel.percent_visible] glyphs, starting from the left.
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the left.
 		</constant>
 		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
-			Displays [member Label.percent_visible] or [member RichTextLabel.percent_visible] glyphs, starting from the right.
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the right.
 		</constant>
 		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
 			No text trimming is performed.
