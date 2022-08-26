@@ -123,7 +123,7 @@ bool EditorExportPlatformWindows::get_export_option_visibility(const EditorExpor
 
 void EditorExportPlatformWindows::get_export_options(List<ExportOption> *r_options) {
 	EditorExportPlatformPC::get_export_options(r_options);
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32"), "x86_64"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64"), "x86_64"));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/identity_type", PROPERTY_HINT_ENUM, "Select automatically,Use PKCS12 file (specify *.PFX/*.P12 file),Use certificate store (specify SHA1 hash)"), 0));
