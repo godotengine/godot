@@ -856,8 +856,11 @@ void ParticlesMaterial::_update_shader() {
 	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
 		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
-		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
+		// Scale down bouncing if velocity is lower than twice the bounce multiplier.
+		// This prevents particles from bouncing at low amplitude forever,
+		// especially at lower Fixed Fps values (which looks odd).
+		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce * max(0.0, min(1.0, length(VELOCITY) - 2.0 * collision_bounce)));\n";
+		code += "		VELOCITY = mix(VELOCITY, vec3(0.0), min(1.0, collision_friction * DELTA * 100.0));\n";
 		code += "	}\n";
 	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
 		code += "	if (COLLIDED) {\n";
