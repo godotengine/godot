@@ -1888,7 +1888,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		alternative_tiles_control_unscaled->update();
 
 		if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
-			if (Vector2(drag_start_mouse_pos).distance_to(tile_atlas_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
+			if (Vector2(drag_start_mouse_pos).distance_to(alternative_tiles_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
 				drag_type = DRAG_TYPE_NONE;
 			}
 		}
@@ -1896,8 +1896,6 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		drag_type = DRAG_TYPE_NONE;
-
 		Vector2 mouse_local_pos = alternative_tiles_control->get_local_mouse_position();
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
@@ -1919,25 +1917,29 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 			if (mb->is_pressed()) {
 				drag_type = DRAG_TYPE_MAY_POPUP_MENU;
 				drag_start_mouse_pos = alternative_tiles_control->get_local_mouse_position();
-			} else if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
-				// Right click released and wasn't dragged too far
-				Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
+			} else {
+				if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
+					// Right click released and wasn't dragged too far
+					Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
 
-				selection.clear();
-				TileSelection selected = { Vector2i(tile.x, tile.y), int(tile.z) };
-				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
-					selection.insert(selected);
+					selection.clear();
+					TileSelection selected = { Vector2i(tile.x, tile.y), int(tile.z) };
+					if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
+						selection.insert(selected);
+					}
+
+					_update_tile_inspector();
+					_update_tile_id_label();
+
+					if (selection.size() == 1) {
+						selected = selection.front()->get();
+						menu_option_coords = selected.tile;
+						menu_option_alternative = selected.alternative;
+						alternative_tile_popup_menu->popup(Rect2i(get_global_mouse_position(), Size2i()));
+					}
 				}
 
-				_update_tile_inspector();
-				_update_tile_id_label();
-
-				if (selection.size() == 1) {
-					selected = selection.front()->get();
-					menu_option_coords = selected.tile;
-					menu_option_alternative = selected.alternative;
-					alternative_tile_popup_menu->popup(Rect2i(get_global_mouse_position(), Size2i()));
-				}
+				drag_type = DRAG_TYPE_NONE;
 			}
 		}
 		tile_atlas_control->update();
