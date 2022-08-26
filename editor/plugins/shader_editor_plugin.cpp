@@ -1257,6 +1257,17 @@ void ShaderEditorPlugin::_update_shader_list_status() {
 	}
 }
 
+void ShaderEditorPlugin::_move_shader_tab(int p_from, int p_to) {
+	if (p_from == p_to) {
+		return;
+	}
+	EditedShader es = edited_shaders[p_from];
+	edited_shaders.remove_at(p_from);
+	edited_shaders.insert(p_to, es);
+	shader_tabs->move_child(shader_tabs->get_tab_control(p_from), p_to);
+	_update_shader_list();
+}
+
 void ShaderEditorPlugin::edit(Object *p_object) {
 	EditedShader es;
 
@@ -1451,6 +1462,109 @@ void ShaderEditorPlugin::_shader_include_created(Ref<ShaderInclude> p_shader_inc
 	EditorNode::get_singleton()->push_item(p_shader_inc.ptr());
 }
 
+Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (shader_list->get_item_count() == 0) {
+		return Variant();
+	}
+
+	int idx = shader_list->get_item_at_position(p_point);
+	if (idx < 0) {
+		return Variant();
+	}
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+	String preview_name = shader_list->get_item_text(idx);
+	Ref<Texture2D> preview_icon = shader_list->get_item_icon(idx);
+
+	if (!preview_icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(preview_icon);
+		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(preview_name));
+	drag_preview->add_child(label);
+	main_split->set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "shader_list_element";
+	drag_data["shader_list_element"] = idx;
+
+	return drag_data;
+}
+
+bool ShaderEditorPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Dictionary d = p_data;
+	if (!d.has("type")) {
+		return false;
+	}
+
+	if (String(d["type"]) == "shader_list_element") {
+		return true;
+	}
+
+	if (String(d["type"]) == "files") {
+		Vector<String> files = d["files"];
+
+		if (files.size() == 0) {
+			return false;
+		}
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			if (ResourceLoader::exists(file, "Shader")) {
+				Ref<Shader> shader = ResourceLoader::load(file);
+				if (shader.is_valid()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	return false;
+}
+
+void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+		return;
+	}
+
+	Dictionary d = p_data;
+	if (!d.has("type")) {
+		return;
+	}
+
+	if (String(d["type"]) == "shader_list_element") {
+		int idx = d["shader_list_element"];
+		int new_idx = shader_list->get_item_at_position(p_point);
+		_move_shader_tab(idx, new_idx);
+		return;
+	}
+
+	if (String(d["type"]) == "files") {
+		Vector<String> files = d["files"];
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			if (!ResourceLoader::exists(file, "Shader")) {
+				continue;
+			}
+
+			Ref<Resource> res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				edit(res.ptr());
+			}
+		}
+	}
+}
+
+void ShaderEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "point", "from"), &ShaderEditorPlugin::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::drop_data_fw);
+}
+
 ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_split = memnew(HSplitContainer);
 
@@ -1483,6 +1597,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	vb->add_child(shader_list);
 	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
+	shader_list->set_drag_forwarding(this);
 
 	main_split->add_child(vb);
 	vb->set_custom_minimum_size(Size2(200, 300) * EDSCALE);
