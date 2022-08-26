@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "scene/2d/gpu_particles_2d.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 	if (emitting == p_emitting) {
@@ -890,7 +890,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			real_t orbit_amount = tex_orbit_velocity * Math::lerp(parameters_min[PARAM_ORBIT_VELOCITY], parameters_max[PARAM_ORBIT_VELOCITY], rand_from_seed(alt_seed));
 			if (orbit_amount != 0.0) {
 				real_t ang = orbit_amount * local_delta * Math_TAU;
-				// Not sure why the ParticlesMaterial code uses a clockwise rotation matrix,
+				// Not sure why the ParticleProcessMaterial code uses a clockwise rotation matrix,
 				// but we use -ang here to reproduce its behavior.
 				Transform2D rot = Transform2D(-ang, Vector2());
 				p.transform[2] -= diff;
@@ -1184,7 +1184,7 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 		set_material(mat);
 	}
 
-	Ref<ParticlesMaterial> material = particles->get_process_material();
+	Ref<ParticleProcessMaterial> material = particles->get_process_material();
 	if (material.is_null()) {
 		return;
 	}
@@ -1205,14 +1205,14 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 		set_color_initial_ramp(gti->get_gradient());
 	}
 
-	set_particle_flag(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, material->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
+	set_particle_flag(PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY, material->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY));
 
 	set_emission_shape(EmissionShape(material->get_emission_shape()));
 	set_emission_sphere_radius(material->get_emission_sphere_radius());
 	Vector2 rect_extents = Vector2(material->get_emission_box_extents().x, material->get_emission_box_extents().y);
 	set_emission_rect_extents(rect_extents);
 
-	Ref<CurveXYZTexture> scale3D = material->get_param_texture(ParticlesMaterial::PARAM_SCALE);
+	Ref<CurveXYZTexture> scale3D = material->get_param_texture(ParticleProcessMaterial::PARAM_SCALE);
 	if (scale3D.is_valid()) {
 		split_scale = true;
 		scale_curve_x = scale3D->get_curve_x();
@@ -1222,14 +1222,14 @@ void CPUParticles2D::convert_from_particles(Node *p_particles) {
 	set_gravity(gravity);
 	set_lifetime_randomness(material->get_lifetime_randomness());
 
-#define CONVERT_PARAM(m_param)                                                            \
-	set_param_min(m_param, material->get_param_min(ParticlesMaterial::m_param));          \
-	{                                                                                     \
-		Ref<CurveTexture> ctex = material->get_param_texture(ParticlesMaterial::m_param); \
-		if (ctex.is_valid())                                                              \
-			set_param_curve(m_param, ctex->get_curve());                                  \
-	}                                                                                     \
-	set_param_max(m_param, material->get_param_max(ParticlesMaterial::m_param));
+#define CONVERT_PARAM(m_param)                                                                  \
+	set_param_min(m_param, material->get_param_min(ParticleProcessMaterial::m_param));          \
+	{                                                                                           \
+		Ref<CurveTexture> ctex = material->get_param_texture(ParticleProcessMaterial::m_param); \
+		if (ctex.is_valid())                                                                    \
+			set_param_curve(m_param, ctex->get_curve());                                        \
+	}                                                                                           \
+	set_param_max(m_param, material->get_param_max(ParticleProcessMaterial::m_param));
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
 	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);

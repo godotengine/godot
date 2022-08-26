@@ -7294,7 +7294,7 @@ EditorNode::EditorNode() {
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
 
-		Ref<ParticlesMaterialConversionPlugin> particles_mat_convert;
+		Ref<ParticleProcessMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(particles_mat_convert);
 
