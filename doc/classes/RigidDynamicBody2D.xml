@@ -43,7 +43,7 @@
 			<return type="void" />
 			<param index="0" name="torque" type="float" />
 			<description>
-				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = 0[/code].
+				Adds a constant rotational force without affecting position that keeps being applied over time until cleared with [code]constant_torque = 0[/code]. The rotation is [i]clockwise[/i] around the [code]torque[/code] speed passed. Uses the rotation of the [i]global[/i] coordinate system.
 			</description>
 		</method>
 		<method name="apply_central_force">
