@@ -580,12 +580,7 @@ namespace Godot
         /// <returns>Whether or not the quaternion and the other object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Quaternion)
-            {
-                return Equals((Quaternion)obj);
-            }
-
-            return false;
+            return obj is Quaternion other && Equals(other);
         }
 
         /// <summary>

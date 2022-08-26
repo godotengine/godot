@@ -800,11 +800,7 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Projection)
-            {
-                return Equals((Projection)obj);
-            }
-            return false;
+            return obj is Projection other && Equals(other);
         }
 
         /// <summary>

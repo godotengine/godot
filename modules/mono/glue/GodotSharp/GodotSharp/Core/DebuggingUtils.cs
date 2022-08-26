@@ -121,8 +121,8 @@ namespace Godot
 
             var sb = new StringBuilder();
 
-            if (methodBase is MethodInfo)
-                sb.AppendTypeName(((MethodInfo)methodBase).ReturnType);
+            if (methodBase is MethodInfo methodInfo)
+                sb.AppendTypeName(methodInfo.ReturnType);
 
             sb.Append(methodBase.DeclaringType?.FullName ?? "<unknown>");
             sb.Append('.');
