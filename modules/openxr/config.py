@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    if platform == "linuxbsd" or platform == "windows" or platform == "android":
+    if platform in ("linuxbsd", "windows", "android"):
         return env["openxr"]
     else:
         # not supported on these platforms

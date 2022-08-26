@@ -22,6 +22,9 @@ env_openxr.Prepend(
     ]
 )
 
+if env["platform"] == "android":
+    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
+
 # may need to check and set:
 # - XR_USE_TIMESPEC
 
@@ -31,7 +34,6 @@ env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
 
 if env["platform"] == "android":
     # may need to set OPENXR_ANDROID_VERSION_SUFFIX
-    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
     env_thirdparty.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])
 
     # may need to include java parts of the openxr loader
@@ -46,10 +48,9 @@ elif env["platform"] == "linuxbsd":
 elif env["platform"] == "windows":
     env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
 
-env_khrloader = env_thirdparty.Clone()
-if "-fno-exceptions" in env_khrloader["CXXFLAGS"]:
-    env_khrloader["CXXFLAGS"].remove("-fno-exceptions")
-env_khrloader.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
+if "-fno-exceptions" in env_thirdparty["CXXFLAGS"]:
+    env_thirdparty["CXXFLAGS"].remove("-fno-exceptions")
+env_thirdparty.Append(CPPPATH=[thirdparty_dir + "/src/loader"])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_dir + "/src/xr_generated_dispatch_table.c")
 
@@ -67,28 +68,31 @@ if env["external_openxr_loader"] != "":
     env_thirdparty.AppendUnique(LIBS=[File(env["external_openxr_loader"])])
 else:
     if env["platform"] == "android":
-        env_khrloader.Append(
-            CPPPATH=[thirdparty_dir + "/src/external/android-jni-wrappers", thirdparty_dir + "/src/external/jnipp"]
+        env_thirdparty.Append(
+            CPPPATH=[
+                thirdparty_dir + "/src/external/android-jni-wrappers",
+                thirdparty_dir + "/src/external/jnipp",
+            ]
         )
-        env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/external/jnipp/jnipp.cpp")
-        env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/android_utilities.cpp")
-        env_khrloader.add_source_files(
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/external/jnipp/jnipp.cpp")
+        env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/android_utilities.cpp")
+        env_thirdparty.add_source_files(
             khrloader_obj, thirdparty_dir + "/src/external/android-jni-wrappers/wrap/android.content.cpp"
         )
-        env_khrloader.add_source_files(
+        env_thirdparty.add_source_files(
             khrloader_obj, thirdparty_dir + "/src/external/android-jni-wrappers/wrap/android.database.cpp"
         )
-        env_khrloader.add_source_files(
+        env_thirdparty.add_source_files(
             khrloader_obj, thirdparty_dir + "/src/external/android-jni-wrappers/wrap/android.net.cpp"
         )
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
-    env_khrloader.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/api_layer_interface.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_core.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_instance.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger_recorders.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/loader_logger.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/manifest_file.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/runtime_interface.cpp")
+    env_thirdparty.add_source_files(khrloader_obj, thirdparty_dir + "/src/loader/xr_generated_loader.cpp")
     env.modules_sources += khrloader_obj
 
 env.modules_sources += thirdparty_obj
@@ -104,7 +108,6 @@ env_openxr.add_source_files(module_obj, "action_map/*.cpp")
 # We're a little more targeted with our extensions
 if env["platform"] == "android":
     env_openxr.add_source_files(module_obj, "extensions/openxr_android_extension.cpp")
-    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
 if env["vulkan"]:
     env_openxr.add_source_files(module_obj, "extensions/openxr_vulkan_extension.cpp")
 
