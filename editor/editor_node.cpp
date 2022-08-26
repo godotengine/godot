@@ -6314,7 +6314,7 @@ EditorNode::EditorNode() {
 	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
 	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
 
-	menu_hb = memnew(HBoxContainer);
+	menu_hb = memnew(EditorTitleBar);
 	main_vbox->add_child(menu_hb);
 
 	left_l_hsplit = memnew(HSplitContainer);
@@ -6545,6 +6545,15 @@ EditorNode::EditorNode() {
 	scene_root_parent->add_child(main_control);
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU);
+	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
+
+	if (can_expand) {
+		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
+		Control *menu_spacer = memnew(Control);
+		menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		menu_spacer->set_custom_minimum_size(Size2(DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID).x, 0));
+		menu_hb->add_child(menu_spacer);
+	}
 
 	main_menu = memnew(MenuBar);
 	menu_hb->add_child(main_menu);
@@ -6714,6 +6723,11 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::Q);
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), RUN_PROJECT_MANAGER, true);
 
+	// Spacer to center 2D / 3D / Script buttons.
+	Control *left_spacer = memnew(Control);
+	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	menu_hb->add_child(left_spacer);
+
 	menu_hb->add_spacer();
 
 	main_editor_button_vb = memnew(HBoxContainer);
@@ -6791,7 +6805,9 @@ EditorNode::EditorNode() {
 	}
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("Heart"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTR("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
 
+	// Spacer to center 2D / 3D / Script buttons.
 	Control *right_spacer = memnew(Control);
+	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	menu_hb->add_child(right_spacer);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
@@ -6892,6 +6908,14 @@ EditorNode::EditorNode() {
 	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
 	right_menu_hb->add_child(rendering_driver);
+
+	if (can_expand) {
+		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
+		Control *menu_spacer = memnew(Control);
+		menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		menu_spacer->set_custom_minimum_size(Size2(DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID).y, 0));
+		menu_hb->add_child(menu_spacer);
+	}
 
 	// Only display the render drivers that are available for this display driver.
 	int display_driver_idx = OS::get_singleton()->get_display_driver_id();
@@ -7449,8 +7473,16 @@ EditorNode::EditorNode() {
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
 
-	main_menu->set_custom_minimum_size(Size2(MAX(main_menu->get_minimum_size().x, play_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, main_menu->get_minimum_size().x - play_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+	// Adjust spacers to center 2D / 3D / Script buttons.
+	int max_w = MAX(play_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
+	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
+	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - play_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+
+	// Extend menu bar to window title.
+	if (can_expand) {
+		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
+		menu_hb->set_can_move_window(true);
+	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.

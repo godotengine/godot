@@ -1685,6 +1685,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
@@ -1730,6 +1731,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
 	BIND_ENUM_CONSTANT(FLAG_POPUP);
+	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);
