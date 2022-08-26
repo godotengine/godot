@@ -153,6 +153,7 @@ def find_app_host_version(dotnet_cmd, search_version_str):
     from distutils.version import LooseVersion
 
     search_version = LooseVersion(search_version_str)
+    found_match = False
 
     try:
         env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
@@ -172,7 +173,10 @@ def find_app_host_version(dotnet_cmd, search_version_str):
             version = LooseVersion(version_str)
 
             if version >= search_version:
-                return version_str
+                search_version = version
+                found_match = True
+        if found_match:
+            return str(search_version)
     except (subprocess.CalledProcessError, OSError) as e:
         import sys
 
