@@ -2323,7 +2323,20 @@ Variant Animation::_interpolate(const Variant &p_a, const Variant &p_b, real_t p
 }
 
 real_t Animation::_interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const {
-	return p_a * (1.0 - p_c) + p_b * p_c;
+	return Math::lerp(p_a, p_b, p_c);
+}
+
+Variant Animation::_interpolate_angle(const Variant &p_a, const Variant &p_b, real_t p_c) const {
+	Variant::Type type_a = p_a.get_type();
+	Variant::Type type_b = p_b.get_type();
+	uint32_t vformat = 1 << type_a;
+	vformat |= 1 << type_b;
+	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+		real_t a = p_a;
+		real_t b = p_b;
+		return Math::fposmod((float)Math::lerp_angle(a, b, p_c), (float)Math_TAU);
+	}
+	return _interpolate(p_a, p_b, p_c);
 }
 
 // Cubic interpolation for anytype.
@@ -2413,6 +2426,25 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 }
 
 real_t Animation::_cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	return Math::cubic_interpolate_in_time(p_a, p_b, p_pre_a, p_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+}
+
+Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	Variant::Type type_a = p_a.get_type();
+	Variant::Type type_b = p_b.get_type();
+	Variant::Type type_pa = p_pre_a.get_type();
+	Variant::Type type_pb = p_post_b.get_type();
+	uint32_t vformat = 1 << type_a;
+	vformat |= 1 << type_b;
+	vformat |= 1 << type_pa;
+	vformat |= 1 << type_pb;
+	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+		real_t a = p_a;
+		real_t b = p_b;
+		real_t pa = p_pre_a;
+		real_t pb = p_post_b;
+		return Math::fposmod((float)Math::cubic_interpolate_angle_in_time(a, b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t), (float)Math_TAU);
+	}
 	return _interpolate(p_a, p_b, p_c);
 }
 
@@ -2595,7 +2627,11 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		case INTERPOLATION_LINEAR: {
 			return _interpolate(p_keys[idx].value, p_keys[next].value, c);
 		} break;
-		case INTERPOLATION_CUBIC: {
+		case INTERPOLATION_LINEAR_ANGLE: {
+			return _interpolate_angle(p_keys[idx].value, p_keys[next].value, c);
+		} break;
+		case INTERPOLATION_CUBIC:
+		case INTERPOLATION_CUBIC_ANGLE: {
 			int pre = 0;
 			int post = 0;
 			if (!p_backward) {
@@ -2634,19 +2670,27 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 				}
 			}
 
+			real_t pre_t = 0.0;
+			real_t to_t = 0.0;
+			real_t post_t = 0.0;
 			if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-				return _cubic_interpolate_in_time(
-						p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
-						pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time,
-						next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time,
-						next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time);
+				pre_t = pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time;
+				to_t = next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time;
+				post_t = next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time;
+			} else {
+				pre_t = p_keys[pre].time - p_keys[idx].time;
+				to_t = p_keys[next].time - p_keys[idx].time;
+				post_t = p_keys[post].time - p_keys[idx].time;
 			}
 
+			if (p_interp == INTERPOLATION_CUBIC_ANGLE) {
+				return _cubic_interpolate_angle_in_time(
+						p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
+						pre_t, to_t, post_t);
+			}
 			return _cubic_interpolate_in_time(
 					p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
-					p_keys[pre].time - p_keys[idx].time,
-					p_keys[next].time - p_keys[idx].time,
-					p_keys[post].time - p_keys[idx].time);
+					pre_t, to_t, post_t);
 		} break;
 		default:
 			return p_keys[idx].value;
@@ -3976,6 +4020,8 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATION_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC);
+	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR_ANGLE);
+	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC_ANGLE);
 
 	BIND_ENUM_CONSTANT(UPDATE_CONTINUOUS);
 	BIND_ENUM_CONSTANT(UPDATE_DISCRETE);

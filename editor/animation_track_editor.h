@@ -144,6 +144,8 @@ class AnimationTrackEdit : public Control {
 		MENU_INTERPOLATION_NEAREST,
 		MENU_INTERPOLATION_LINEAR,
 		MENU_INTERPOLATION_CUBIC,
+		MENU_INTERPOLATION_LINEAR_ANGLE,
+		MENU_INTERPOLATION_CUBIC_ANGLE,
 		MENU_LOOP_WRAP,
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
@@ -500,7 +502,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		NodePath full_path;
 		NodePath base_path;
 		Animation::TrackType track_type = Animation::TYPE_ANIMATION;
-		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC;
+		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC_ANGLE;
 		Animation::UpdateMode update_mode = Animation::UPDATE_CAPTURE;
 		Animation::LoopMode loop_mode = Animation::LOOP_PINGPONG;
 		bool loop_wrap = false;
