@@ -286,7 +286,7 @@ public:
 
 	BIND3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
 	BIND2(multimesh_set_physics_interpolated, RID, bool)
-	BIND2(multimesh_set_physics_interpolation_quality, RID, int)
+	BIND2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	BIND2(multimesh_instance_reset_physics_interpolation, RID, int)
 
 	BIND2(multimesh_set_visible_instances, RID, int)

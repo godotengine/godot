@@ -45,6 +45,14 @@
 				Once finished with your RID, you will want to free the RID using the VisualServer's [method free_rid] static method.
 			</description>
 		</method>
+		<method name="camera_reset_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="camera" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving a [Camera] to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="camera_set_cull_mask">
 			<return type="void" />
 			<argument index="0" name="camera" type="RID" />
@@ -70,6 +78,14 @@
 			<argument index="4" name="z_far" type="float" />
 			<description>
 				Sets camera to use frustum projection. This mode allows adjusting the [code]offset[/code] argument to create "tilted frustum" effects.
+			</description>
+		</method>
+		<method name="camera_set_interpolated">
+			<return type="void" />
+			<argument index="0" name="camera" type="RID" />
+			<argument index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the [Camera].
 			</description>
 		</method>
 		<method name="camera_set_orthogonal">
@@ -1404,6 +1420,14 @@
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance.material_override].
 			</description>
 		</method>
+		<method name="instance_reset_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<description>
+				Prevents physics interpolation for the current physics tick.
+				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="instance_set_base">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
@@ -1443,6 +1467,14 @@
 			<argument index="1" name="margin" type="float" />
 			<description>
 				Sets a margin to increase the size of the AABB when culling objects from the view frustum. This allows you to avoid culling objects that fall outside the view frustum. Equivalent to [member GeometryInstance.extra_cull_margin].
+			</description>
+		</method>
+		<method name="instance_set_interpolated">
+			<return type="void" />
+			<argument index="0" name="instance" type="RID" />
+			<argument index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the instance.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">
@@ -2115,6 +2147,15 @@
 				Returns the [Transform2D] of the specified instance. For use when the multimesh is set to use 2D transforms.
 			</description>
 		</method>
+		<method name="multimesh_instance_reset_physics_interpolation">
+			<return type="void" />
+			<argument index="0" name="multimesh" type="RID" />
+			<argument index="1" name="index" type="int" />
+			<description>
+				Prevents physics interpolation for the specified instance during the current physics tick.
+				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
+			</description>
+		</method>
 		<method name="multimesh_instance_set_color">
 			<return type="void" />
 			<argument index="0" name="multimesh" type="RID" />
@@ -2163,12 +2204,39 @@
 				[Transform] is stored as 12 floats, [Transform2D] is stored as 8 floats, [code]COLOR_8BIT[/code] / [code]CUSTOM_DATA_8BIT[/code] is stored as 1 float (4 bytes as is) and [code]COLOR_FLOAT[/code] / [code]CUSTOM_DATA_FLOAT[/code] is stored as 4 floats.
 			</description>
 		</method>
+		<method name="multimesh_set_as_bulk_array_interpolated">
+			<return type="void" />
+			<argument index="0" name="multimesh" type="RID" />
+			<argument index="1" name="array" type="PoolRealArray" />
+			<argument index="2" name="array_previous" type="PoolRealArray" />
+			<description>
+				Alternative version of [method multimesh_set_as_bulk_array] for use with physics interpolation.
+				Takes both an array of current data and an array of data for the previous physics tick.
+			</description>
+		</method>
 		<method name="multimesh_set_mesh">
 			<return type="void" />
 			<argument index="0" name="multimesh" type="RID" />
 			<argument index="1" name="mesh" type="RID" />
 			<description>
 				Sets the mesh to be drawn by the multimesh. Equivalent to [member MultiMesh.mesh].
+			</description>
+		</method>
+		<method name="multimesh_set_physics_interpolated">
+			<return type="void" />
+			<argument index="0" name="multimesh" type="RID" />
+			<argument index="1" name="interpolated" type="bool" />
+			<description>
+				Turns on and off physics interpolation for the [MultiMesh].
+			</description>
+		</method>
+		<method name="multimesh_set_physics_interpolation_quality">
+			<return type="void" />
+			<argument index="0" name="multimesh" type="RID" />
+			<argument index="1" name="quality" type="int" enum="VisualServer.MultimeshPhysicsInterpolationQuality" />
+			<description>
+				Sets the physics interpolation quality for the [MultiMesh].
+				A value of [code]0[/code] gives fast but low quality interpolation, a value of [code]1[/code] gives slower but higher quality interpolation.
 			</description>
 		</method>
 		<method name="multimesh_set_visible_instances">
@@ -3800,6 +3868,12 @@
 		</constant>
 		<constant name="MULTIMESH_CUSTOM_DATA_FLOAT" value="2" enum="MultimeshCustomDataFormat">
 			MultiMesh custom data uses a float per component.
+		</constant>
+		<constant name="MULTIMESH_INTERP_QUALITY_FAST" value="0" enum="MultimeshPhysicsInterpolationQuality">
+			MultiMesh physics interpolation favours speed over quality.
+		</constant>
+		<constant name="MULTIMESH_INTERP_QUALITY_HIGH" value="1" enum="MultimeshPhysicsInterpolationQuality">
+			MultiMesh physics interpolation favours quality over speed.
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
 			Reflection probe will update reflections once and then stop.
