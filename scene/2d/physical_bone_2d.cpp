@@ -35,7 +35,7 @@
 void PhysicalBone2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			// Position the RigidDynamicBody in the correct position.
+			// Position the RigidBody in the correct position.
 			if (follow_bone_when_simulating) {
 				_position_at_bone2d();
 			}
@@ -287,7 +287,7 @@ void PhysicalBone2D::_bind_methods() {
 }
 
 PhysicalBone2D::PhysicalBone2D() {
-	// Stop the RigidDynamicBody from executing its force integration.
+	// Stop the RigidBody from executing its force integration.
 	PhysicsServer2D::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer2D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer2D::get_singleton()->body_set_mode(get_rid(), PhysicsServer2D::BodyMode::BODY_MODE_STATIC);

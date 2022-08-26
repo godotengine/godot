@@ -44,7 +44,7 @@ void GodotStep3D::_populate_island(GodotBody3D *p_body, LocalVector<GodotBody3D 
 	p_body->set_island_step(_step);
 
 	if (p_body->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC) {
-		// Only dynamic bodies are tested for activation.
+		// Only rigid bodies are tested for activation.
 		p_body_island.push_back(p_body);
 	}
 

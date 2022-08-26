@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidDynamicBody3D" inherits="PhysicsBody3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody3D" inherits="PhysicsBody3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics Body which is moved by 3D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
 	<description>
-		This is the node that implements full 3D physics. This means that you do not control a RigidDynamicBody3D directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
+		This is the node that implements full 3D physics. This means that you do not control a RigidBody3D directly. Instead, you can apply forces to it (gravity, impulses, etc.), and the physics simulation will calculate the resulting movement, collision, bouncing, rotating, etc.
 		You can switch the body's behavior using [member lock_rotation], [member freeze], and [member freeze_mode].
-		[b]Note:[/b] Don't change a RigidDynamicBody3D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed Hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop may result in strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
+		[b]Note:[/b] Don't change a RigidBody3D's position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed Hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop may result in strange behavior. If you need to directly affect the body's state, use [method _integrate_forces], which allows you to directly access the physics state.
 		If you need to override the default physics behavior, you can write a custom force integration function. See [member custom_integrator].
 	</description>
 	<tutorials>
@@ -114,7 +114,7 @@
 		<method name="get_inverse_inertia_tensor" qualifiers="const">
 			<return type="Basis" />
 			<description>
-				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the [RigidDynamicBody3D].
+				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the [RigidBody3D].
 			</description>
 		</method>
 		<method name="set_axis_velocity">
@@ -130,11 +130,11 @@
 			Damps the body's rotation. By default, the body will use the [b]Default Angular Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
-		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidDynamicBody3D.DampMode" default="0">
+		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="RigidBody3D.DampMode" default="0">
 			Defines how [member angular_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="angular_velocity" type="Vector3" setter="set_angular_velocity" getter="get_angular_velocity" default="Vector3(0, 0, 0)">
-			The RigidDynamicBody3D's rotational velocity in [i]radians[/i] per second.
+			The RigidBody3D's rotational velocity in [i]radians[/i] per second.
 		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body can enter sleep mode when there is no movement. See [member sleeping].
@@ -143,7 +143,7 @@
 			The body's custom center of mass, relative to the body's origin position, when [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_CUSTOM]. This is the balanced point of the body, where applied forces only cause linear acceleration. Applying forces outside of the center of mass causes angular acceleration.
 			When [member center_of_mass_mode] is set to [constant CENTER_OF_MASS_MODE_AUTO] (default value), the center of mass is automatically computed.
 		</member>
-		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidDynamicBody3D.CenterOfMassMode" default="0">
+		<member name="center_of_mass_mode" type="int" setter="set_center_of_mass_mode" getter="get_center_of_mass_mode" enum="RigidBody3D.CenterOfMassMode" default="0">
 			Defines the way the body's center of mass is set. See [enum CenterOfMassMode] for possible values.
 		</member>
 		<member name="constant_force" type="Vector3" setter="set_constant_force" getter="get_constant_force" default="Vector3(0, 0, 0)">
@@ -155,7 +155,7 @@
 			See [method add_constant_torque].
 		</member>
 		<member name="contact_monitor" type="bool" setter="set_contact_monitor" getter="is_contact_monitor_enabled" default="false">
-			If [code]true[/code], the RigidDynamicBody3D will emit signals when it collides with another RigidDynamicBody3D.
+			If [code]true[/code], the RigidBody3D will emit signals when it collides with another RigidBody3D.
 			[b]Note:[/b] By default the maximum contacts reported is set to 0, meaning nothing will be recorded, see [member max_contacts_reported].
 		</member>
 		<member name="continuous_cd" type="bool" setter="set_use_continuous_collision_detection" getter="is_using_continuous_collision_detection" default="false">
@@ -170,12 +170,12 @@
 			See [member freeze_mode] to set the body's behavior when frozen.
 			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
 		</member>
-		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidDynamicBody3D.FreezeMode" default="0">
+		<member name="freeze_mode" type="int" setter="set_freeze_mode" getter="get_freeze_mode" enum="RigidBody3D.FreezeMode" default="0">
 			The body's freeze mode. Can be used to set the body's behavior when [member freeze] is enabled. See [enum FreezeMode] for possible values.
 			For a body that is always frozen, use [StaticBody3D] or [AnimatableBody3D] instead.
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
-			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidDynamicBody3D's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce RigidBody3D's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
 		</member>
 		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
@@ -185,7 +185,7 @@
 			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
-		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidDynamicBody3D.DampMode" default="0">
+		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="RigidBody3D.DampMode" default="0">
 			Defines how [member linear_damp] is applied. See [enum DampMode] for possible values.
 		</member>
 		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
@@ -230,11 +230,11 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of this RigidDynamicBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				Emitted when one of this RigidBody3D's [Shape3D]s collides with another [PhysicsBody3D] or [GridMap]'s [Shape3D]s. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
 				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
 				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -243,11 +243,11 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when the collision between one of this RigidDynamicBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
+				Emitted when the collision between one of this RigidBody3D's [Shape3D]s and another [PhysicsBody3D] or [GridMap]'s [Shape3D]s ends. Requires [member contact_monitor] to be set to [code]true[/code] and [member max_contacts_reported] to be set high enough to detect all the collisions. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
 				[param body_rid] the [RID] of the other [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D]. [GridMap]s are detected if the Meshes have [Shape3D]s.
 				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
 				[param body_shape_index] the index of the [Shape3D] of the other [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape3D] of this RigidDynamicBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				[param local_shape_index] the index of the [Shape3D] of this RigidBody3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
 			</description>
 		</signal>
 		<signal name="sleeping_state_changed">

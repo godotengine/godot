@@ -248,7 +248,7 @@
 #include "scene/3d/shape_cast_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_ik_3d.h"
-#include "scene/3d/soft_dynamic_body_3d.h"
+#include "scene/3d/soft_body_3d.h"
 #include "scene/3d/spring_arm_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
@@ -533,13 +533,13 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);
 	GDREGISTER_CLASS(AnimatableBody3D);
-	GDREGISTER_CLASS(RigidDynamicBody3D);
+	GDREGISTER_CLASS(RigidBody3D);
 	GDREGISTER_CLASS(KinematicCollision3D);
 	GDREGISTER_CLASS(CharacterBody3D);
 	GDREGISTER_CLASS(SpringArm3D);
 
 	GDREGISTER_CLASS(PhysicalBone3D);
-	GDREGISTER_CLASS(SoftDynamicBody3D);
+	GDREGISTER_CLASS(SoftBody3D);
 
 	GDREGISTER_CLASS(SkeletonIK3D);
 	GDREGISTER_CLASS(BoneAttachment3D);
@@ -704,7 +704,7 @@ void register_scene_types() {
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody2D);
 	GDREGISTER_CLASS(StaticBody2D);
 	GDREGISTER_CLASS(AnimatableBody2D);
-	GDREGISTER_CLASS(RigidDynamicBody2D);
+	GDREGISTER_CLASS(RigidBody2D);
 	GDREGISTER_CLASS(CharacterBody2D);
 	GDREGISTER_CLASS(KinematicCollision2D);
 	GDREGISTER_CLASS(Area2D);
@@ -1042,14 +1042,16 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("RayShape", "SeparationRayShape3D");
 	ClassDB::add_compatibility_class("RayShape2D", "SeparationRayShape2D");
 	ClassDB::add_compatibility_class("RemoteTransform", "RemoteTransform3D");
-	ClassDB::add_compatibility_class("RigidBody", "RigidDynamicBody3D");
-	ClassDB::add_compatibility_class("RigidBody2D", "RigidDynamicBody2D");
+	ClassDB::add_compatibility_class("RigidBody", "RigidBody3D");
+	ClassDB::add_compatibility_class("RigidDynamicBody2D", "RigidBody2D");
+	ClassDB::add_compatibility_class("RigidDynamicBody3D", "RigidBody3D");
 	ClassDB::add_compatibility_class("Shape", "Shape3D");
 	ClassDB::add_compatibility_class("ShortCut", "Shortcut");
 	ClassDB::add_compatibility_class("Skeleton", "Skeleton3D");
 	ClassDB::add_compatibility_class("SkeletonIK", "SkeletonIK3D");
 	ClassDB::add_compatibility_class("SliderJoint", "SliderJoint3D");
-	ClassDB::add_compatibility_class("SoftBody", "SoftDynamicBody3D");
+	ClassDB::add_compatibility_class("SoftBody", "SoftBody3D");
+	ClassDB::add_compatibility_class("SoftDynamicBody3D", "SoftBody3D");
 	ClassDB::add_compatibility_class("Spatial", "Node3D");
 	ClassDB::add_compatibility_class("SpatialGizmo", "Node3DGizmo");
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");

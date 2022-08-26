@@ -76,8 +76,7 @@ static const char *enum_renames[][2] = {
 	{ "ARVR_STEREO", "XR_STEREO" }, // XRInterface
 	{ "ARVR_UNKNOWN_TRACKING", "XR_UNKNOWN_TRACKING" }, // XRInterface
 	{ "BAKE_ERROR_INVALID_MESH", "BAKE_ERROR_MESHES_INVALID" }, // LightmapGI
-	{ "BODY_MODE_CHARACTER", "BODY_MODE_DYNAMIC" }, // PhysicsServer2D
-	{ "BODY_MODE_DYNAMIC_LOCKED", "BODY_MODE_DYNAMIC_LINEAR" }, // PhysicsServer3D
+	{ "BODY_MODE_CHARACTER", "BODY_MODE_RIGID_LINEAR" }, // PhysicsServer
 	{ "BUTTON_LEFT", "MOUSE_BUTTON_LEFT" }, // Globals
 	{ "BUTTON_MASK_LEFT", "MOUSE_BUTTON_MASK_LEFT" }, // Globals
 	{ "BUTTON_MASK_MIDDLE", "MOUSE_BUTTON_MASK_MIDDLE" }, // Globals
@@ -125,15 +124,13 @@ static const char *enum_renames[][2] = {
 	{ "MATH_RAND", "MATH_RANDF_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
 	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
-	{ "MODE_CHARACTER", "MODE_DYNAMIC_LOCKED" }, // RigidBody2D, RigidBody3D
-	{ "MODE_KINEMATIC", "FREEZE_MODE_KINEMATIC" }, // RigidDynamicBody
+	{ "MODE_KINEMATIC", "FREEZE_MODE_KINEMATIC" }, // RigidBody
 	{ "MODE_OPEN_ANY", "FILE_MODE_OPEN_ANY" }, // FileDialog
 	{ "MODE_OPEN_DIR", "FILE_MODE_OPEN_DIR" }, // FileDialog
 	{ "MODE_OPEN_FILE", "FILE_MODE_OPEN_FILE" }, // FileDialog
 	{ "MODE_OPEN_FILES", "FILE_MODE_OPEN_FILES" }, // FileDialog
-	{ "MODE_RIGID", "MODE_DYNAMIC" }, // RigidBody2D, RigidBody3D
 	{ "MODE_SAVE_FILE", "FILE_MODE_SAVE_FILE" }, // FileDialog
-	{ "MODE_STATIC", "FREEZE_MODE_STATIC" }, // RigidDynamicBody
+	{ "MODE_STATIC", "FREEZE_MODE_STATIC" }, // RigidBody
 	{ "NOTIFICATION_APP_PAUSED", "NOTIFICATION_APPLICATION_PAUSED" }, // MainLoop
 	{ "NOTIFICATION_APP_RESUMED", "NOTIFICATION_APPLICATION_RESUMED" }, // MainLoop
 	{ "NOTIFICATION_PATH_CHANGED", "NOTIFICATION_PATH_RENAMED" }, //Node
@@ -221,16 +218,16 @@ static const char *gdscript_function_renames[][2] = {
 	{ "_update_wrap_at", "_update_wrap_at_column" }, // TextEdit
 	{ "add_animation", "add_animation_library" }, // AnimationPlayer
 	{ "add_cancel", "add_cancel_button" }, // AcceptDialog
-	{ "add_central_force", "apply_central_force" }, //RigidDynamicBody2D
+	{ "add_central_force", "apply_central_force" }, //RigidBody2D
 	{ "add_child_below_node", "add_sibling" }, // Node
 	{ "add_color_override", "add_theme_color_override" }, // Control
 	{ "add_constant_override", "add_theme_constant_override" }, // Control
 	{ "add_font_override", "add_theme_font_override" }, // Control
-	{ "add_force", "apply_force" }, //RigidDynamicBody2D
+	{ "add_force", "apply_force" }, //RigidBody2D
 	{ "add_icon_override", "add_theme_icon_override" }, // Control
 	{ "add_scene_import_plugin", "add_scene_format_importer_plugin" }, //EditorPlugin
 	{ "add_stylebox_override", "add_theme_stylebox_override" }, // Control
-	{ "add_torque", "apply_torque" }, //RigidDynamicBody2D
+	{ "add_torque", "apply_torque" }, //RigidBody2D
 	{ "apply_changes", "_apply_changes" }, // EditorPlugin
 	{ "bind_child_node_to_bone", "set_bone_children" }, // Skeleton3D
 	{ "body_add_force", "body_apply_force" }, // PhysicsServer2D
@@ -276,8 +273,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_action_list", "action_get_events" }, // InputMap
 	{ "get_alt", "is_alt_pressed" }, // InputEventWithModifiers
 	{ "get_animation_process_mode", "get_process_callback" }, // AnimationPlayer
-	{ "get_applied_force", "get_constant_force" }, //RigidDynamicBody2D
-	{ "get_applied_torque", "get_constant_torque" }, //RigidDynamicBody2D
+	{ "get_applied_force", "get_constant_force" }, //RigidBody2D
+	{ "get_applied_torque", "get_constant_torque" }, //RigidBody2D
 	{ "get_audio_bus", "get_audio_bus_name" }, // Area3D
 	{ "get_bound_child_nodes_to_bone", "get_bone_children" }, // Skeleton3D
 	{ "get_camera", "get_camera_3d" }, // Viewport -> this is also convertable to get_camera_2d, broke GLTFNode
@@ -631,16 +628,16 @@ static const char *csharp_function_renames[][2] = {
 	{ "_UpdateWrapAt", "_UpdateWrapAtColumn" }, // TextEdit
 	{ "AddAnimation", "AddAnimationLibrary" }, // AnimationPlayer
 	{ "AddCancel", "AddCancelButton" }, // AcceptDialog
-	{ "AddCentralForce", "AddConstantCentralForce" }, //RigidDynamicBody2D
+	{ "AddCentralForce", "AddConstantCentralForce" }, //RigidBody2D
 	{ "AddChildBelowNode", "AddSibling" }, // Node
 	{ "AddColorOverride", "AddThemeColorOverride" }, // Control
 	{ "AddConstantOverride", "AddThemeConstantOverride" }, // Control
 	{ "AddFontOverride", "AddThemeFontOverride" }, // Control
-	{ "AddForce", "AddConstantForce" }, //RigidDynamicBody2D
+	{ "AddForce", "AddConstantForce" }, //RigidBody2D
 	{ "AddIconOverride", "AddThemeIconOverride" }, // Control
 	{ "AddSceneImportPlugin", "AddSceneFormatImporterPlugin" }, //EditorPlugin
 	{ "AddStyleboxOverride", "AddThemeStyleboxOverride" }, // Control
-	{ "AddTorque", "AddConstantTorque" }, //RigidDynamicBody2D
+	{ "AddTorque", "AddConstantTorque" }, //RigidBody2D
 	{ "BindChildNodeToBone", "SetBoneChildren" }, // Skeleton3D
 	{ "BumpmapToNormalmap", "BumpMapToNormalMap" }, // Image
 	{ "CanBeHidden", "_CanBeHidden" }, // EditorNode3DGizmoPlugin
@@ -679,8 +676,8 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetActionList", "ActionGetEvents" }, // InputMap
 	{ "GetAlt", "IsAltPressed" }, // InputEventWithModifiers
 	{ "GetAnimationProcessMode", "GetProcessCallback" }, // AnimationPlayer
-	{ "GetAppliedForce", "GetConstantForce" }, //RigidDynamicBody2D
-	{ "GetAppliedTorque", "GetConstantTorque" }, //RigidDynamicBody2D
+	{ "GetAppliedForce", "GetConstantForce" }, //RigidBody2D
+	{ "GetAppliedTorque", "GetConstantTorque" }, //RigidBody2D
 	{ "GetAudioBus", "GetAudioBusName" }, // Area3D
 	{ "GetBoundChildNodesToBone", "GetBoneChildren" }, // Skeleton3D
 	{ "GetCamera", "GetCamera3d" }, // Viewport -> this is also convertable to getCamera2d, broke GLTFNode
@@ -997,7 +994,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "close_h_ofs", "close_h_offset" }, // Theme
 	{ "close_v_ofs", "close_v_offset" }, // Theme
 	{ "commentfocus", "comment_focus" }, // Theme
-	{ "contacts_reported", "max_contacts_reported" }, // RigidDynamicBody
+	{ "contacts_reported", "max_contacts_reported" }, // RigidBody
 	{ "drag_margin_bottom", "drag_bottom_margin" }, // Camera2D
 	{ "drag_margin_h_enabled", "drag_horizontal_enabled" }, // Camera2D
 	{ "drag_margin_left", "drag_left_margin" }, // Camera2D
@@ -1385,15 +1382,14 @@ static const char *class_renames[][2] = {
 	{ "Reference", "RefCounted" }, // Be careful, this will be used everywhere
 	{ "RemoteTransform", "RemoteTransform3D" },
 	{ "ResourceInteractiveLoader", "ResourceLoader" },
-	{ "RigidBody", "RigidDynamicBody3D" },
-	{ "RigidBody2D", "RigidDynamicBody2D" },
+	{ "RigidBody", "RigidBody3D" },
 	{ "SceneTreeTween", "Tween" },
 	{ "Shape", "Shape3D" }, // Be careful, this will be used everywhere
 	{ "ShortCut", "Shortcut" },
 	{ "Skeleton", "Skeleton3D" },
 	{ "SkeletonIK", "SkeletonIK3D" },
 	{ "SliderJoint", "SliderJoint3D" },
-	{ "SoftBody", "SoftDynamicBody3D" },
+	{ "SoftBody", "SoftBody3D" },
 	{ "Spatial", "Node3D" },
 	{ "SpatialGizmo", "Node3DGizmo" },
 	{ "SpatialMaterial", "StandardMaterial3D" },

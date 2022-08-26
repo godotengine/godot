@@ -643,7 +643,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 						if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
 							const GodotBody2D *b = static_cast<const GodotBody2D *>(col_obj);
-							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
 								//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 								Vector2 lv = b->get_linear_velocity();
 								//compute displacement from linear velocity
@@ -948,7 +948,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 					if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
 						const GodotBody2D *b = static_cast<const GodotBody2D *>(col_obj);
-						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
 							//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 							Vector2 lv = b->get_linear_velocity();
 							//compute displacement from linear velocity
