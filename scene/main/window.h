@@ -253,6 +253,7 @@ public:
 
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
+	void _theme_changed();
 
 	void set_theme_type_variation(const StringName &p_theme_type);
 	StringName get_theme_type_variation() const;

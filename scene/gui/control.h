@@ -300,11 +300,10 @@ private:
 	// Theming.
 
 	void _theme_changed();
-	void _theme_property_override_changed();
-	void _notify_theme_changed();
+	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
-	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
+	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_notify, bool p_assign);
 
 	template <class T>
 	static T get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);

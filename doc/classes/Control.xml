@@ -1145,6 +1145,7 @@
 		</signal>
 		<signal name="theme_changed">
 			<description>
+				Emitted when the [constant NOTIFICATION_THEME_CHANGED] notification is sent.
 			</description>
 		</signal>
 	</signals>
@@ -1174,7 +1175,12 @@
 			Sent when the node loses focus.
 		</constant>
 		<constant name="NOTIFICATION_THEME_CHANGED" value="45">
-			Sent when the node's [member theme] changes, right before Godot redraws the control. Happens when you call one of the [code]add_theme_*_override[/code] methods.
+			Sent when the node needs to refresh its theme items. This happens in one of the following cases:
+			- The [member theme] property is changed on this node or any of its ancestors.
+			- The [member theme_type_variation] property is changed on this node.
+			- One of the node's theme property overrides is changed.
+			- The node enters the scene tree.
+			[b]Note:[/b] As an optimization, this notification won't be sent from changes that occur while this node is outside of the scene tree. Instead, all of the theme item updates can be applied at once when the node enters the scene tree.
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">
 			Sent when this node is inside a [ScrollContainer] which has begun being scrolled.
