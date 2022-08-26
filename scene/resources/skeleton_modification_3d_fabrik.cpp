@@ -59,6 +59,8 @@ bool SkeletonModification3DFABRIK::_set(const StringName &p_path, const Variant 
 			set_fabrik_joint_use_target_basis(which, p_value);
 		} else if (what == "roll") {
 			set_fabrik_joint_roll(which, Math::deg2rad(real_t(p_value)));
+		} else if (what == "rotational_constraint") {
+			set_fabrik_joint_rotational_constraint(which, Math::deg2rad(real_t(p_value)));
 		}
 		return true;
 	}
@@ -92,6 +94,8 @@ bool SkeletonModification3DFABRIK::_get(const StringName &p_path, Variant &r_ret
 			r_ret = get_fabrik_joint_use_target_basis(which);
 		} else if (what == "roll") {
 			r_ret = Math::rad2deg(get_fabrik_joint_roll(which));
+		} else if (what == "rotational_constraint") {
+			r_ret = Math::rad2deg(get_fabrik_joint_rotational_constraint(which));
 		}
 		return true;
 	}
@@ -105,6 +109,7 @@ void SkeletonModification3DFABRIK::_get_property_list(List<PropertyInfo> *p_list
 		p_list->push_back(PropertyInfo(Variant::STRING_NAME, base_string + "bone_name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "roll", PROPERTY_HINT_RANGE, "-360,360,0.01", PROPERTY_USAGE_DEFAULT));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, base_string + "rotational_constraint", PROPERTY_HINT_RANGE, "-180,180,0.01", PROPERTY_USAGE_DEFAULT));
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "auto_calculate_length", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
 		if (!fabrik_data_chain[i].auto_calculate_length) {
@@ -205,6 +210,50 @@ void SkeletonModification3DFABRIK::_execute(real_t p_delta) {
 	execution_error_found = false;
 }
 
+Vector3 SkeletonModification3DFABRIK::chain_ball_constraint(int i) {
+	// Get the inner-to-outer direction of this bone as well as the previous bone to use as a baseline
+	// Direction for the line L1 "Godot has a good function (direction_to) which does (B - A).normalized  : A.direction_to(B)"
+	Vector3 current_bone_inout_direction = fabrik_transforms[i - 1].origin.direction_to(fabrik_transforms[i].origin);
+	Vector3 prev_bone_inout_direction = fabrik_transforms[i + 1].origin.direction_to(fabrik_transforms[i].origin);
+
+	real_t angle_between = get_angle_between(current_bone_inout_direction, prev_bone_inout_direction);
+	real_t constraint_angle = fabrik_data_chain[i].rotational_constraint;
+
+	if (angle_between > constraint_angle) {
+		return get_angle_limited_unit_vector(current_bone_inout_direction, prev_bone_inout_direction, constraint_angle);
+	} else {
+		return Vector3();
+	}
+}
+
+Vector3 SkeletonModification3DFABRIK::get_angle_limited_unit_vector(const Vector3 &vec_to_limit, const Vector3 &vec_baseline, real_t angle_limit) {
+	// Get the angle between the two vectors
+	// Note: This will ALWAYS be a positive value between 0 and Pi.
+	float angle_between = get_angle_between(vec_baseline, vec_to_limit);
+
+	if (angle_between > angle_limit) {
+		// The axis which we need to rotate around is the one perpendicular to the two vectors - so we're
+		// rotating around the vector which is the cross-product of our two vectors.
+		// Note: We do not have to worry about both vectors being the same or pointing in opposite directions
+		// because if they bones are the same direction they will not have an angle greater than the angle limit,
+		// and if they point opposite directions we will approach but not quite reach the precise max angle
+		// limit of Pi (I believe).
+		Vector3 correction_axis = (vec_baseline.normalized().cross(vec_to_limit.normalized())).normalized();
+
+		// Our new vector is the baseline vector rotated by the max allowable angle about the correction axis
+		return vec_baseline.rotated(correction_axis, Math::rad2deg(angle_limit)).normalized();
+	} else // Angle not greater than limit? Just return a normalised version of the vec_to_limit
+	{
+		// This may already BE normalised, but we have no way of knowing without calcing the length, so best be safe and normalise.
+		// TODO: If performance is an issue, then I could get the length, and if it's not approx. 1.0f THEN normalise otherwise just return as is.
+		return vec_to_limit.normalized();
+	}
+}
+
+real_t SkeletonModification3DFABRIK::get_angle_between(const Vector3 &vec1, const Vector3 &vec2) {
+	return Math::acos(vec1.normalized().dot(vec2.normalized()));
+}
+
 void SkeletonModification3DFABRIK::chain_backwards() {
 	int final_bone_idx = fabrik_data_chain[final_joint_idx].bone_idx;
 	Transform3D final_joint_trans = fabrik_transforms[final_joint_idx];
@@ -232,7 +281,13 @@ void SkeletonModification3DFABRIK::chain_backwards() {
 		Transform3D current_trans = fabrik_transforms[i];
 
 		real_t length = fabrik_data_chain[i].length / (current_trans.origin.distance_to(next_bone_trans.origin));
-		current_trans.origin = next_bone_trans.origin.lerp(current_trans.origin, length);
+
+		Vector3 new_point = Vector3();
+		if (limit_rotation && (i < final_joint_idx)) {
+			new_point = chain_ball_constraint(i);
+		}
+
+		current_trans.origin = next_bone_trans.origin.lerp(current_trans.origin + new_point, length);
 
 		// Save the result
 		fabrik_transforms[i] = current_trans;
@@ -379,6 +434,14 @@ real_t SkeletonModification3DFABRIK::get_chain_tolerance() {
 void SkeletonModification3DFABRIK::set_chain_tolerance(real_t p_tolerance) {
 	ERR_FAIL_COND_MSG(p_tolerance <= 0, "FABRIK chain tolerance must be more than zero!");
 	chain_tolerance = p_tolerance;
+}
+
+bool SkeletonModification3DFABRIK::get_limit_rotation() const {
+	return limit_rotation;
+}
+
+void SkeletonModification3DFABRIK::set_limit_rotation(bool p_rot) {
+	limit_rotation = p_rot;
 }
 
 int SkeletonModification3DFABRIK::get_chain_max_iterations() {
@@ -583,6 +646,19 @@ void SkeletonModification3DFABRIK::set_fabrik_joint_roll(int p_joint_idx, real_t
 	fabrik_data_chain[p_joint_idx].roll = p_roll;
 }
 
+real_t SkeletonModification3DFABRIK::get_fabrik_joint_rotational_constraint(int p_joint_idx) const {
+	const int bone_chain_size = fabrik_data_chain.size();
+	ERR_FAIL_INDEX_V(p_joint_idx, bone_chain_size, 0.0);
+	return fabrik_data_chain[p_joint_idx].rotational_constraint;
+}
+
+void SkeletonModification3DFABRIK::set_fabrik_joint_rotational_constraint(int p_joint_idx, real_t p_rot) {
+	const int bone_chain_size = fabrik_data_chain.size();
+	ERR_FAIL_INDEX(p_joint_idx, bone_chain_size);
+	ERR_FAIL_COND_MSG(Math::abs(p_rot) > Math_PI, "Ball-head constraint must be limited to [-180, +180]");
+	fabrik_data_chain[p_joint_idx].rotational_constraint = p_rot;
+}
+
 void SkeletonModification3DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification3DFABRIK::set_target_node);
 	ClassDB::bind_method(D_METHOD("get_target_node"), &SkeletonModification3DFABRIK::get_target_node);
@@ -592,6 +668,8 @@ void SkeletonModification3DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_chain_tolerance"), &SkeletonModification3DFABRIK::get_chain_tolerance);
 	ClassDB::bind_method(D_METHOD("set_chain_max_iterations", "max_iterations"), &SkeletonModification3DFABRIK::set_chain_max_iterations);
 	ClassDB::bind_method(D_METHOD("get_chain_max_iterations"), &SkeletonModification3DFABRIK::get_chain_max_iterations);
+	ClassDB::bind_method(D_METHOD("set_limit_rotation", "limit_rotation"), &SkeletonModification3DFABRIK::set_limit_rotation);
+	ClassDB::bind_method(D_METHOD("get_limit_rotation"), &SkeletonModification3DFABRIK::get_limit_rotation);
 
 	// FABRIK joint data functions
 	ClassDB::bind_method(D_METHOD("get_fabrik_joint_bone_name", "joint_idx"), &SkeletonModification3DFABRIK::get_fabrik_joint_bone_name);
@@ -611,10 +689,13 @@ void SkeletonModification3DFABRIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fabrik_joint_tip_node", "joint_idx", "tip_node"), &SkeletonModification3DFABRIK::set_fabrik_joint_tip_node);
 	ClassDB::bind_method(D_METHOD("get_fabrik_joint_use_target_basis", "joint_idx"), &SkeletonModification3DFABRIK::get_fabrik_joint_use_target_basis);
 	ClassDB::bind_method(D_METHOD("set_fabrik_joint_use_target_basis", "joint_idx", "use_target_basis"), &SkeletonModification3DFABRIK::set_fabrik_joint_use_target_basis);
+	ClassDB::bind_method(D_METHOD("set_fabrik_joint_rotational_constraint", "joint_idx", "rotational_constraint"), &SkeletonModification3DFABRIK::set_fabrik_joint_rotational_constraint);
+	ClassDB::bind_method(D_METHOD("get_fabrik_joint_rotational_constraint", "joint_idx"), &SkeletonModification3DFABRIK::get_fabrik_joint_rotational_constraint);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node3D"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fabrik_data_chain_length", PROPERTY_HINT_RANGE, "0,100,1"), "set_fabrik_data_chain_length", "get_fabrik_data_chain_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "chain_tolerance", PROPERTY_HINT_RANGE, "0,100,0.001"), "set_chain_tolerance", "get_chain_tolerance");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_rotation"), "set_limit_rotation", "get_limit_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "chain_max_iterations", PROPERTY_HINT_RANGE, "1,50,1"), "set_chain_max_iterations", "get_chain_max_iterations");
 }
 

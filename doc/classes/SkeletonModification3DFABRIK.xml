@@ -55,6 +55,12 @@
 				Returns the magnet vector of the FABRIK joint at [param joint_idx].
 			</description>
 		</method>
+		<method name="get_fabrik_joint_rotational_constraint" qualifiers="const">
+			<return type="float" />
+			<argument index="0" name="joint_idx" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_fabrik_joint_tip_node" qualifiers="const">
 			<return type="NodePath" />
 			<param index="0" name="joint_idx" type="int" />
@@ -117,6 +123,13 @@
 				Sets the magenet position to [param magnet_position] for the joint at [param joint_idx]. The magnet position is used to nudge the joint in that direction when solving, which gives some control over how that joint will bend when being solved.
 			</description>
 		</method>
+		<method name="set_fabrik_joint_rotational_constraint">
+			<return type="void" />
+			<argument index="0" name="joint_idx" type="int" />
+			<argument index="1" name="rotational_constraint" type="float" />
+			<description>
+			</description>
+		</method>
 		<method name="set_fabrik_joint_tip_node">
 			<return type="void" />
 			<param index="0" name="joint_idx" type="int" />
@@ -153,6 +166,8 @@
 		</member>
 		<member name="fabrik_data_chain_length" type="int" setter="set_fabrik_data_chain_length" getter="get_fabrik_data_chain_length" default="0">
 			The amount of FABRIK joints in the FABRIK modification.
+		</member>
+		<member name="limit_rotation" type="bool" setter="set_limit_rotation" getter="get_limit_rotation" default="false">
 		</member>
 		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the FABRIK modification. This node is what the FABRIK chain will attempt to rotate the bone chain to.

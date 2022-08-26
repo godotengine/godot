@@ -52,6 +52,8 @@ private:
 
 		bool use_target_basis = false;
 		real_t roll = 0;
+
+		real_t rotational_constraint = 0;
 	};
 
 	LocalVector<FABRIK_Joint_Data> fabrik_data_chain;
@@ -63,6 +65,7 @@ private:
 	real_t chain_tolerance = 0.01;
 	int chain_max_iterations = 10;
 	int chain_iterations = 0;
+	bool limit_rotation = false;
 
 	void update_target_cache();
 	void update_joint_tip_cache(int p_joint_idx);
@@ -74,6 +77,10 @@ private:
 	void chain_backwards();
 	void chain_forwards();
 	void chain_apply();
+
+	Vector3 chain_ball_constraint(int i);
+	Vector3 get_angle_limited_unit_vector(const Vector3 &vec_to_limit, const Vector3 &vec_baseline, real_t angle_limit);
+	static real_t get_angle_between(const Vector3 &vec1, const Vector3 &vec2);
 
 protected:
 	static void _bind_methods();
@@ -97,6 +104,9 @@ public:
 	int get_chain_max_iterations();
 	void set_chain_max_iterations(int p_iterations);
 
+	bool get_limit_rotation() const;
+	void set_limit_rotation(bool p_rot);
+
 	String get_fabrik_joint_bone_name(int p_joint_idx) const;
 	void set_fabrik_joint_bone_name(int p_joint_idx, String p_bone_name);
 	int get_fabrik_joint_bone_index(int p_joint_idx) const;
@@ -116,6 +126,8 @@ public:
 	void set_fabrik_joint_use_target_basis(int p_joint_idx, bool p_use_basis);
 	real_t get_fabrik_joint_roll(int p_joint_idx) const;
 	void set_fabrik_joint_roll(int p_joint_idx, real_t p_roll);
+	real_t get_fabrik_joint_rotational_constraint(int p_joint_idx) const;
+	void set_fabrik_joint_rotational_constraint(int p_joint_idx, real_t p_rot);
 
 	SkeletonModification3DFABRIK();
 	~SkeletonModification3DFABRIK();
