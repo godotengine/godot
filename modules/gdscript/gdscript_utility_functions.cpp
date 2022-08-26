@@ -262,7 +262,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void inst2dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
 		if (p_args[0]->get_type() == Variant::NIL) {
@@ -329,7 +329,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void dict2inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
 		if (p_args[0]->get_type() != Variant::DICTIONARY) {
@@ -653,8 +653,8 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_VARARG_FUNC(str, true, Variant::STRING);
 	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
 	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
-	REGISTER_FUNC(inst2dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
-	REGISTER_FUNC(dict2inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
+	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));
+	REGISTER_FUNC(dict_to_inst, false, Variant::OBJECT, ARG("dictionary", Variant::DICTIONARY));
 	REGISTER_FUNC_DEF(Color8, true, 255, Variant::COLOR, ARG("r8", Variant::INT), ARG("g8", Variant::INT), ARG("b8", Variant::INT), ARG("a8", Variant::INT));
 	REGISTER_VARARG_FUNC(print_debug, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);

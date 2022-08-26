@@ -1924,7 +1924,7 @@ void GI::SDFGI::pre_process_gi(const Transform3D &p_transform, RenderDataRD *p_r
 			lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
 			lights[idx].attenuation = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 			lights[idx].radius = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-			lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+			lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
 			lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 			idx++;
@@ -2362,7 +2362,7 @@ void GI::SDFGI::render_static_lights(RID p_render_buffers, uint32_t p_cascade_co
 				lights[idx].has_shadow = RSG::light_storage->light_has_shadow(li->light);
 				lights[idx].attenuation = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_ATTENUATION);
 				lights[idx].radius = RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_RANGE);
-				lights[idx].cos_spot_angle = Math::cos(Math::deg2rad(RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				lights[idx].cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ANGLE)));
 				lights[idx].inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(li->light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				idx++;
@@ -2800,7 +2800,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				l.color[1] = color.g;
 				l.color[2] = color.b;
 
-				l.cos_spot_angle = Math::cos(Math::deg2rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
+				l.cos_spot_angle = Math::cos(Math::deg_to_rad(RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ANGLE)));
 				l.inv_spot_attenuation = 1.0f / RSG::light_storage->light_get_param(light, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 				Transform3D xform = p_scene_render->light_instance_get_base_transform(light_instance);

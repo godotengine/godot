@@ -215,7 +215,7 @@ private:
 	int primary_grid_steps = 8;
 	int grid_step_multiplier = 0;
 
-	real_t snap_rotation_step = Math::deg2rad(15.0);
+	real_t snap_rotation_step = Math::deg_to_rad(15.0);
 	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.1f;
 	bool smart_snap_active = false;

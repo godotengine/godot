@@ -21,10 +21,10 @@ namespace Godot
         /// <param name="bytes">Byte array that will be decoded to a <c>Variant</c>.</param>
         /// <param name="allowObjects">If objects should be decoded.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static Variant Bytes2Var(Span<byte> bytes, bool allowObjects = false)
+        public static Variant BytesToVar(Span<byte> bytes, bool allowObjects = false)
         {
             using var varBytes = Marshaling.ConvertSystemArrayToNativePackedByteArray(bytes);
-            NativeFuncs.godotsharp_bytes2var(varBytes, allowObjects.ToGodotBool(), out godot_variant ret);
+            NativeFuncs.godotsharp_bytes_to_var(varBytes, allowObjects.ToGodotBool(), out godot_variant ret);
             return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
@@ -52,10 +52,10 @@ namespace Godot
         /// <summary>
         /// Converts from decibels to linear energy (audio).
         /// </summary>
-        /// <seealso cref="Linear2Db(real_t)"/>
+        /// <seealso cref="LinearToDb(real_t)"/>
         /// <param name="db">Decibels to convert.</param>
         /// <returns>Audio volume as linear energy.</returns>
-        public static real_t Db2Linear(real_t db)
+        public static real_t DbToLinear(real_t db)
         {
             return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
         }
@@ -115,18 +115,18 @@ namespace Godot
         /// Converts from linear energy to decibels (audio).
         /// This can be used to implement volume sliders that behave as expected (since volume isn't linear).
         /// </summary>
-        /// <seealso cref="Db2Linear(real_t)"/>
+        /// <seealso cref="DbToLinear(real_t)"/>
         /// <example>
         /// <code>
         /// // "slider" refers to a node that inherits Range such as HSlider or VSlider.
         /// // Its range must be configured to go from 0 to 1.
         /// // Change the bus name if you'd like to change the volume of a specific bus only.
-        /// AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), GD.Linear2Db(slider.value));
+        /// AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), GD.LinearToDb(slider.value));
         /// </code>
         /// </example>
         /// <param name="linear">The linear energy to convert.</param>
         /// <returns>Audio as decibels.</returns>
-        public static real_t Linear2Db(real_t linear)
+        public static real_t LinearToDb(real_t linear)
         {
             return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
         }
@@ -518,21 +518,21 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a formatted string that was returned by <see cref="Var2Str(Variant)"/> to the original value.
+        /// Converts a formatted string that was returned by <see cref="VarToStr(Variant)"/> to the original value.
         /// </summary>
         /// <example>
         /// <code>
         /// string a = "{\"a\": 1, \"b\": 2 }";
-        /// var b = (Godot.Collections.Dictionary)GD.Str2Var(a);
+        /// var b = (Godot.Collections.Dictionary)GD.StrToVar(a);
         /// GD.Print(b["a"]); // Prints 1
         /// </code>
         /// </example>
         /// <param name="str">String that will be converted to Variant.</param>
         /// <returns>The decoded <c>Variant</c>.</returns>
-        public static Variant Str2Var(string str)
+        public static Variant StrToVar(string str)
         {
             using var godotStr = Marshaling.ConvertStringToNative(str);
-            NativeFuncs.godotsharp_str2var(godotStr, out godot_variant ret);
+            NativeFuncs.godotsharp_str_to_var(godotStr, out godot_variant ret);
             return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
@@ -540,26 +540,26 @@ namespace Godot
         /// Encodes a <c>Variant</c> value to a byte array.
         /// If <paramref name="fullObjects"/> is <see langword="true"/> encoding objects is allowed
         /// (and can potentially include code).
-        /// Deserialization can be done with <see cref="Bytes2Var(Span{byte}, bool)"/>.
+        /// Deserialization can be done with <see cref="BytesToVar(Span{byte}, bool)"/>.
         /// </summary>
         /// <param name="var">Variant that will be encoded.</param>
         /// <param name="fullObjects">If objects should be serialized.</param>
         /// <returns>The <c>Variant</c> encoded as an array of bytes.</returns>
-        public static byte[] Var2Bytes(Variant var, bool fullObjects = false)
+        public static byte[] VarToBytes(Variant var, bool fullObjects = false)
         {
-            NativeFuncs.godotsharp_var2bytes((godot_variant)var.NativeVar, fullObjects.ToGodotBool(), out var varBytes);
+            NativeFuncs.godotsharp_var_to_bytes((godot_variant)var.NativeVar, fullObjects.ToGodotBool(), out var varBytes);
             using (varBytes)
                 return Marshaling.ConvertNativePackedByteArrayToSystemArray(varBytes);
         }
 
         /// <summary>
         /// Converts a <c>Variant</c> <paramref name="var"/> to a formatted string that
-        /// can later be parsed using <see cref="Str2Var(string)"/>.
+        /// can later be parsed using <see cref="StrToVar(string)"/>.
         /// </summary>
         /// <example>
         /// <code>
         /// var a = new Godot.Collections.Dictionary { ["a"] = 1, ["b"] = 2 };
-        /// GD.Print(GD.Var2Str(a));
+        /// GD.Print(GD.VarToStr(a));
         /// // Prints
         /// // {
         /// //    "a": 1,
@@ -569,9 +569,9 @@ namespace Godot
         /// </example>
         /// <param name="var">Variant that will be converted to string.</param>
         /// <returns>The <c>Variant</c> encoded as a string.</returns>
-        public static string Var2Str(Variant var)
+        public static string VarToStr(Variant var)
         {
-            NativeFuncs.godotsharp_var2str((godot_variant)var.NativeVar, out godot_string ret);
+            NativeFuncs.godotsharp_var_to_str((godot_variant)var.NativeVar, out godot_string ret);
             using (ret)
                 return Marshaling.ConvertStringToManaged(ret);
         }

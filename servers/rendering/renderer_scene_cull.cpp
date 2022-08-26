@@ -2146,7 +2146,7 @@ void RendererSceneCull::_light_instance_setup_directional_shadow(int p_shadow_in
 
 				if (soft_shadow_angle > 0.0) {
 					float z_range = (z_vec.dot(center) + radius + pancake_size) - z_min_cam;
-					soft_shadow_expand = Math::tan(Math::deg2rad(soft_shadow_angle)) * z_range;
+					soft_shadow_expand = Math::tan(Math::deg_to_rad(soft_shadow_angle)) * z_range;
 
 					x_max += soft_shadow_expand;
 					y_max += soft_shadow_expand;
@@ -3125,8 +3125,8 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 						float radius = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
 						float angle = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 
-						float w = radius * Math::sin(Math::deg2rad(angle));
-						float d = radius * Math::cos(Math::deg2rad(angle));
+						float w = radius * Math::sin(Math::deg_to_rad(angle));
+						float d = radius * Math::cos(Math::deg_to_rad(angle));
 
 						Vector3 base = ins->transform.origin - ins->transform.basis.get_column(2).normalized() * d;
 

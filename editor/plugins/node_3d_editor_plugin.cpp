@@ -342,7 +342,7 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 		camera->set_global_transform(to_camera_transform(camera_cursor));
 
 		if (orthogonal) {
-			float half_fov = Math::deg2rad(get_fov()) / 2.0;
+			float half_fov = Math::deg_to_rad(get_fov()) / 2.0;
 			float height = 2.0 * cursor.distance * Math::tan(half_fov);
 			camera->set_orthogonal(height, get_znear(), get_zfar());
 		} else {
@@ -2144,7 +2144,7 @@ void Node3DEditorViewport::_nav_orbit(Ref<InputEventWithModifiers> p_event, cons
 	}
 
 	const real_t degrees_per_pixel = EditorSettings::get_singleton()->get("editors/3d/navigation_feel/orbit_sensitivity");
-	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+	const real_t radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
 	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 	const bool invert_x_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_x_axis");
 
@@ -2177,7 +2177,7 @@ void Node3DEditorViewport::_nav_look(Ref<InputEventWithModifiers> p_event, const
 
 	// Scale mouse sensitivity with camera FOV scale when zoomed in to make it easier to point at things.
 	const real_t degrees_per_pixel = real_t(EditorSettings::get_singleton()->get("editors/3d/freelook/freelook_sensitivity")) * MIN(1.0, cursor.fov_scale);
-	const real_t radians_per_pixel = Math::deg2rad(degrees_per_pixel);
+	const real_t radians_per_pixel = Math::deg_to_rad(degrees_per_pixel);
 	const bool invert_y_axis = EditorSettings::get_singleton()->get("editors/3d/navigation/invert_y_axis");
 
 	// Note: do NOT assume the camera has the "current" transform, because it is interpolated and may have "lag".
@@ -4534,7 +4534,7 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 				break;
 			}
 
-			static const float orthogonal_threshold = Math::cos(Math::deg2rad(87.0f));
+			static const float orthogonal_threshold = Math::cos(Math::deg_to_rad(87.0f));
 			bool axis_is_orthogonal = ABS(plane.normal.dot(global_axis)) < orthogonal_threshold;
 
 			double angle = 0.0f;
@@ -4554,10 +4554,10 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			if (_edit.snap || spatial_editor->is_snap_enabled()) {
 				snap = spatial_editor->get_rotate_snap();
 			}
-			angle = Math::rad2deg(angle) + snap * 0.5; //else it won't reach +180
+			angle = Math::rad_to_deg(angle) + snap * 0.5; //else it won't reach +180
 			angle -= Math::fmod(angle, snap);
 			set_message(vformat(TTR("Rotating %s degrees."), String::num(angle, snap_step_decimals)));
-			angle = Math::deg2rad(angle);
+			angle = Math::deg_to_rad(angle);
 
 			bool local_coords = (spatial_editor->are_local_coords_enabled() && _edit.plane != TRANSFORM_VIEW); // Disable local transformation for TRANSFORM_VIEW
 
@@ -5725,7 +5725,7 @@ void Node3DEditor::_xform_dialog_action() {
 
 	for (int i = 0; i < 3; i++) {
 		translate[i] = xform_translate[i]->get_text().to_float();
-		rotate[i] = Math::deg2rad(xform_rotate[i]->get_text().to_float());
+		rotate[i] = Math::deg_to_rad(xform_rotate[i]->get_text().to_float());
 		scale[i] = xform_scale[i]->get_text().to_float();
 	}
 
@@ -7611,10 +7611,10 @@ void Node3DEditor::_load_default_preview_settings() {
 	// On any not-tidally-locked planet, a sun would have an angular altitude
 	// of 60 degrees as the average of all points on the sphere at noon.
 	// The azimuth choice is arbitrary, but ideally shouldn't be on an axis.
-	sun_rotation = Vector2(-Math::deg2rad(60.0), Math::deg2rad(150.0));
+	sun_rotation = Vector2(-Math::deg_to_rad(60.0), Math::deg_to_rad(150.0));
 
-	sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
-	sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
+	sun_angle_altitude->set_value(-Math::rad_to_deg(sun_rotation.x));
+	sun_angle_azimuth->set_value(180.0 - Math::rad_to_deg(sun_rotation.y));
 	sun_direction->update();
 	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
 	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
@@ -7657,8 +7657,8 @@ void Node3DEditor::_update_preview_environment() {
 		}
 	}
 
-	sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
-	sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
+	sun_angle_altitude->set_value(-Math::rad_to_deg(sun_rotation.x));
+	sun_angle_azimuth->set_value(180.0 - Math::rad_to_deg(sun_rotation.y));
 
 	bool disable_env = world_env_count > 0 || environ_button->is_pressed();
 
@@ -7691,15 +7691,15 @@ void Node3DEditor::_sun_direction_input(const Ref<InputEvent> &p_event) {
 		sun_rotation.x += mm->get_relative().y * (0.02 * EDSCALE);
 		sun_rotation.y -= mm->get_relative().x * (0.02 * EDSCALE);
 		sun_rotation.x = CLAMP(sun_rotation.x, -Math_TAU / 4, Math_TAU / 4);
-		sun_angle_altitude->set_value(-Math::rad2deg(sun_rotation.x));
-		sun_angle_azimuth->set_value(180.0 - Math::rad2deg(sun_rotation.y));
+		sun_angle_altitude->set_value(-Math::rad_to_deg(sun_rotation.x));
+		sun_angle_azimuth->set_value(180.0 - Math::rad_to_deg(sun_rotation.y));
 		_preview_settings_changed();
 	}
 }
 
 void Node3DEditor::_sun_direction_angle_set() {
-	sun_rotation.x = Math::deg2rad(-sun_angle_altitude->get_value());
-	sun_rotation.y = Math::deg2rad(180.0 - sun_angle_azimuth->get_value());
+	sun_rotation.x = Math::deg_to_rad(-sun_angle_altitude->get_value());
+	sun_rotation.y = Math::deg_to_rad(180.0 - sun_angle_azimuth->get_value());
 	_preview_settings_changed();
 }
 

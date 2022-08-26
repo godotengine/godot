@@ -763,7 +763,7 @@ void Curve2D::_bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, re
 	Vector2 nb = (end - mid).normalized();
 	real_t dp = na.dot(nb);
 
-	if (dp < Math::cos(Math::deg2rad(p_tol))) {
+	if (dp < Math::cos(Math::deg_to_rad(p_tol))) {
 		r_bake[mp] = mid;
 	}
 
@@ -1352,7 +1352,7 @@ void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, re
 	Vector3 nb = (end - mid).normalized();
 	real_t dp = na.dot(nb);
 
-	if (dp < Math::cos(Math::deg2rad(p_tol))) {
+	if (dp < Math::cos(Math::deg_to_rad(p_tol))) {
 		r_bake[mp] = mid;
 	}
 	if (p_depth < p_max_depth) {

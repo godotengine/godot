@@ -566,9 +566,23 @@ static const char *gdscript_function_renames[][2] = {
 	{ "to_utf8", "to_utf8_buffer" }, // String
 	{ "to_wchar", "to_utf32_buffer" }, // String // TODO - utf32 or utf16?
 
-	// Globals
+	// @GlobalScope
+	{ "bytes2var", "bytes_to_var" },
+	{ "bytes2var_with_objects", "bytes_to_var_with_objects" },
+	{ "db2linear", "db_to_linear" },
+	{ "deg2rad", "deg_to_rad" },
+	{ "linear2db", "linear_to_db" },
+	{ "rad2deg", "rad_to_deg" },
 	{ "rand_range", "randf_range" },
 	{ "stepify", "snapped" },
+	{ "str2var", "str_to_var" },
+	{ "var2str", "var_to_str" },
+	{ "var2bytes", "var_to_bytes" },
+	{ "var2bytes_with_objects", "var_to_bytes_with_objects" },
+
+	// @GDScript
+	{ "dict2inst", "dict_to_inst" },
+	{ "inst2dict", "inst_to_dict" },
 
 	{ nullptr, nullptr },
 };
@@ -955,9 +969,23 @@ static const char *csharp_function_renames[][2] = {
 	{ "ToUtf8", "ToUtf8Buffer" }, // String
 	{ "ToWchar", "ToUtf32Buffer" }, // String // TODO - utf32 or utf16?
 
-	// Globals
+	// @GlobalScope
+	{ "Bytes2Var", "BytesToVar" },
+	{ "Bytes2VarWithObjects", "BytesToVarWithObjects" },
+	{ "Db2Linear", "DbToLinear" },
+	{ "Deg2Rad", "DegToRad" },
+	{ "Linear2Db", "LinearToDb" },
+	{ "Rad2Deg", "RadToDeg" },
 	{ "RandRange", "RandfRange" },
 	{ "Stepify", "Snapped" },
+	{ "Str2Var", "StrToVar" },
+	{ "Var2Str", "VarToStr" },
+	{ "Var2Bytes", "VarToBytes" },
+	{ "Var2BytesWithObjects", "VarToBytesWithObjects" },
+
+	// @GDScript
+	{ "Dict2Inst", "DictToInst" },
+	{ "Inst2Dict", "InstToDict" },
 
 	{ nullptr, nullptr },
 };

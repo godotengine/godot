@@ -35,9 +35,9 @@ namespace Godot
         public const real_t NaN = real_t.NaN;
 
         // 0.0174532924f and 0.0174532925199433
-        private const real_t _deg2RadConst = (real_t)0.0174532925199432957692369077M;
+        private const real_t _degToRadConst = (real_t)0.0174532925199432957692369077M;
         // 57.29578f and 57.2957795130823
-        private const real_t _rad2DegConst = (real_t)57.295779513082320876798154814M;
+        private const real_t _radToDegConst = (real_t)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
@@ -219,9 +219,9 @@ namespace Godot
         /// </summary>
         /// <param name="deg">An angle expressed in degrees.</param>
         /// <returns>The same angle expressed in radians.</returns>
-        public static real_t Deg2Rad(real_t deg)
+        public static real_t DegToRad(real_t deg)
         {
-            return deg * _deg2RadConst;
+            return deg * _degToRadConst;
         }
 
         /// <summary>
@@ -531,9 +531,9 @@ namespace Godot
         /// </summary>
         /// <param name="rad">An angle expressed in radians.</param>
         /// <returns>The same angle expressed in degrees.</returns>
-        public static real_t Rad2Deg(real_t rad)
+        public static real_t RadToDeg(real_t rad)
         {
-            return rad * _rad2DegConst;
+            return rad * _radToDegConst;
         }
 
         /// <summary>

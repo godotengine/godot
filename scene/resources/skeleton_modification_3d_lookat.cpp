@@ -39,9 +39,9 @@ bool SkeletonModification3DLookAt::_set(const StringName &p_path, const Variant 
 		set_lock_rotation_plane(p_value);
 	} else if (p_path == "additional_rotation") {
 		Vector3 tmp = p_value;
-		tmp.x = Math::deg2rad(tmp.x);
-		tmp.y = Math::deg2rad(tmp.y);
-		tmp.z = Math::deg2rad(tmp.z);
+		tmp.x = Math::deg_to_rad(tmp.x);
+		tmp.y = Math::deg_to_rad(tmp.y);
+		tmp.z = Math::deg_to_rad(tmp.z);
 		set_additional_rotation(tmp);
 	}
 
@@ -55,9 +55,9 @@ bool SkeletonModification3DLookAt::_get(const StringName &p_path, Variant &r_ret
 		r_ret = get_lock_rotation_plane();
 	} else if (p_path == "additional_rotation") {
 		Vector3 tmp = get_additional_rotation();
-		tmp.x = Math::rad2deg(tmp.x);
-		tmp.y = Math::rad2deg(tmp.y);
-		tmp.z = Math::rad2deg(tmp.z);
+		tmp.x = Math::rad_to_deg(tmp.x);
+		tmp.y = Math::rad_to_deg(tmp.y);
+		tmp.z = Math::rad_to_deg(tmp.z);
 		r_ret = tmp;
 	}
 

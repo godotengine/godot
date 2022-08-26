@@ -38,7 +38,7 @@ void AudioEffectEQInstance::process(const AudioFrame *p_src_frames, AudioFrame *
 	EQ::BandProcess *proc_r = bands[1].ptrw();
 	float *bgain = gains.ptrw();
 	for (int i = 0; i < band_count; i++) {
-		bgain[i] = Math::db2linear(base->gain[i]);
+		bgain[i] = Math::db_to_linear(base->gain[i]);
 	}
 
 	for (int i = 0; i < p_frame_count; i++) {

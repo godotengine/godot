@@ -255,7 +255,7 @@ void Projection::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t 
 	}
 
 	real_t sine, cotangent, deltaZ;
-	real_t radians = Math::deg2rad(p_fovy_degrees / 2.0);
+	real_t radians = Math::deg_to_rad(p_fovy_degrees / 2.0);
 
 	deltaZ = p_z_far - p_z_near;
 	sine = Math::sin(radians);
@@ -282,7 +282,7 @@ void Projection::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t 
 
 	real_t left, right, modeltranslation, ymax, xmax, frustumshift;
 
-	ymax = p_z_near * tan(Math::deg2rad(p_fovy_degrees / 2.0));
+	ymax = p_z_near * tan(Math::deg_to_rad(p_fovy_degrees / 2.0));
 	xmax = ymax * p_aspect;
 	frustumshift = (p_intraocular_dist / 2.0) * p_z_near / p_convergence_dist;
 
@@ -816,7 +816,7 @@ real_t Projection::get_fov() const {
 	right_plane.normalize();
 
 	if ((matrix[8] == 0) && (matrix[9] == 0)) {
-		return Math::rad2deg(Math::acos(Math::abs(right_plane.normal.x))) * 2.0;
+		return Math::rad_to_deg(Math::acos(Math::abs(right_plane.normal.x))) * 2.0;
 	} else {
 		// our frustum is asymmetrical need to calculate the left planes angle separately..
 		Plane left_plane = Plane(matrix[3] + matrix[0],
@@ -825,7 +825,7 @@ real_t Projection::get_fov() const {
 				matrix[15] + matrix[12]);
 		left_plane.normalize();
 
-		return Math::rad2deg(Math::acos(Math::abs(left_plane.normal.x))) + Math::rad2deg(Math::acos(Math::abs(right_plane.normal.x)));
+		return Math::rad_to_deg(Math::acos(Math::abs(left_plane.normal.x))) + Math::rad_to_deg(Math::acos(Math::abs(right_plane.normal.x)));
 	}
 }
 

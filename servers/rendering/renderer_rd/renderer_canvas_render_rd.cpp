@@ -1600,7 +1600,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 			real_t farp = p_far;
 			real_t aspect = 1.0;
 
-			real_t ymax = nearp * Math::tan(Math::deg2rad(fov * 0.5));
+			real_t ymax = nearp * Math::tan(Math::deg_to_rad(fov * 0.5));
 			real_t ymin = -ymax;
 			real_t xmin = ymin * aspect;
 			real_t xmax = ymax * aspect;
