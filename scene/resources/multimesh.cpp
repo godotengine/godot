@@ -219,7 +219,7 @@ void MultiMesh::set_visible_instance_count(int p_count) {
 
 void MultiMesh::set_physics_interpolation_quality(PhysicsInterpolationQuality p_quality) {
 	_physics_interpolation_quality = p_quality;
-	VisualServer::get_singleton()->multimesh_set_physics_interpolation_quality(multimesh, (int)p_quality);
+	VisualServer::get_singleton()->multimesh_set_physics_interpolation_quality(multimesh, (VS::MultimeshPhysicsInterpolationQuality)p_quality);
 }
 
 int MultiMesh::get_visible_instance_count() const {

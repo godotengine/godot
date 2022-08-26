@@ -466,11 +466,11 @@ void RasterizerStorage::multimesh_set_physics_interpolated(RID p_multimesh, bool
 	}
 }
 
-void RasterizerStorage::multimesh_set_physics_interpolation_quality(RID p_multimesh, int p_quality) {
+void RasterizerStorage::multimesh_set_physics_interpolation_quality(RID p_multimesh, VS::MultimeshPhysicsInterpolationQuality p_quality) {
 	ERR_FAIL_COND((p_quality < 0) || (p_quality > 1));
 	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
-		mmi->quality = p_quality;
+		mmi->quality = (int)p_quality;
 	}
 }
 
