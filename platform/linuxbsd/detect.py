@@ -387,7 +387,14 @@ def configure(env):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        env.ParseConfig("pkg-config gl --cflags --libs")
+
+        if env["x11"]:
+            env.ParseConfig("pkg-config gl --cflags --libs")
+
+        if env["wayland"]:
+            env.ParseConfig("pkg-config opengl --cflags --libs")
+            env.ParseConfig("pkg-config egl --cflags --libs")
+            env.ParseConfig("pkg-config wayland-egl --cflags --libs")
 
     env.Append(LIBS=["pthread"])
 

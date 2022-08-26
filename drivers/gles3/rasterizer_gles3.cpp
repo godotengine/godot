@@ -129,6 +129,7 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 }
 
 #ifdef CAN_DEBUG
+#if defined(GLAD_ENABLED) || !defined(GLES_OVER_GL)
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	if (type == _EXT_DEBUG_TYPE_OTHER_ARB) {
 		return;
@@ -180,6 +181,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 
 	ERR_PRINT(output);
 }
+#endif
 #endif
 
 typedef void (*DEBUGPROCARB)(GLenum source,
@@ -237,6 +239,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	// For debugging
 #ifdef CAN_DEBUG
 #ifdef GLES_OVER_GL
+#ifdef GLAD_ENABLED
 	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
 		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
@@ -249,6 +252,7 @@ RasterizerGLES3::RasterizerGLES3() {
 		//			GL_DEBUG_TYPE_OTHER_ARB, 1,
 		//			GL_DEBUG_SEVERITY_HIGH_ARB, 5, "hello");
 	}
+#endif
 #else
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		DebugMessageCallbackARB callback = (DebugMessageCallbackARB)eglGetProcAddress("glDebugMessageCallback");

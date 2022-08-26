@@ -36,6 +36,10 @@
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 #define DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
 #ifdef DISPLAY_SERVER_WAYLAND_DEBUG_LOGS_ENABLED
 #define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
@@ -1704,6 +1708,13 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
+
+#ifdef GLES3_ENABLED
+		if (wls.gl_manager) {
+			Error err = wls.gl_manager->window_create(p_id, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
+		}
+#endif
 		wd.visible = true;
 
 		if (wd.xdg_toplevel) {
@@ -1749,6 +1760,12 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 #ifdef VULKAN_ENABLED
 	if (wls.context_vulkan && wd.visible) {
 		wls.context_vulkan->window_destroy(p_id);
+	}
+#endif
+
+#ifdef GLES3_ENABLED
+	if (wls.gl_manager && wd.visible) {
+		wls.gl_manager->window_destroy(p_id);
 	}
 #endif
 
@@ -1950,8 +1967,11 @@ Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_windo
 }
 
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub gl_window_make_current window %d", p_window_id));
+#if defined(GLES3_ENABLED)
+	if (wls.gl_manager) {
+		wls.gl_manager->window_make_current(p_window_id);
+	}
+#endif
 }
 
 // TODO: Make accurate with the X11 implementation.
@@ -2042,6 +2062,12 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 #ifdef VULKAN_ENABLED
 	if (wd.visible && wls.context_vulkan) {
 		wls.context_vulkan->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
+	}
+#endif
+
+#ifdef GLES3_ENABLED
+	if (wd.visible && wls.gl_manager) {
+		wls.gl_manager->window_resize(p_window, wd.rect.size.width, wd.rect.size.height);
 	}
 #endif
 }
@@ -2302,6 +2328,11 @@ void DisplayServerWayland::process_events() {
 			}
 #endif
 
+#ifdef GLES3_ENABLED
+			if (wd.visible && wls.gl_manager) {
+				wls.gl_manager->window_resize(id, rect.size.width, rect.size.height);
+			}
+#endif
 			if (wd.rect_changed_callback.is_valid()) {
 				Variant var_rect = Variant(rect);
 				Variant *arg = &var_rect;
@@ -2380,18 +2411,27 @@ void DisplayServerWayland::process_events() {
 }
 
 void DisplayServerWayland::release_rendering_thread() {
-	// TODO
-	DEBUG_LOG_WAYLAND("wayland stub release_rendering_thread");
+#if defined(GLES3_ENABLED)
+	if (wls.gl_manager) {
+		wls.gl_manager->release_current();
+	}
+#endif
 }
 
 void DisplayServerWayland::make_rendering_thread() {
-	// TODO
-	DEBUG_LOG_WAYLAND("wayland stub make_rendering_thread");
+#if defined(GLES3_ENABLED)
+	if (wls.gl_manager) {
+		wls.gl_manager->make_current();
+	}
+#endif
 }
 
 void DisplayServerWayland::swap_buffers() {
-	// TODO
-	DEBUG_LOG_WAYLAND("wayland stub swap_buffers");
+#if defined(GLES3_ENABLED)
+	if (wls.gl_manager) {
+		wls.gl_manager->swap_buffers();
+	}
+#endif
 }
 
 void DisplayServerWayland::set_context(Context p_context) {
@@ -2416,12 +2456,9 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	drivers.push_back("vulkan");
 #endif
 
-	// TODO
-	/*
-	 * #ifdef GLES3_ENABLED
-	 * 	drivers.push_back("opengl3");
-	 * #endif
-	 */
+#ifdef GLES3_ENABLED
+	drivers.push_back("opengl3");
+#endif
 
 	return drivers;
 }
@@ -2476,6 +2513,21 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 			r_error = ERR_CANT_CREATE;
 			ERR_FAIL_MSG("Could not initialize Vulkan");
 		}
+	}
+#endif
+
+#if defined(GLES3_ENABLED)
+	if (p_rendering_driver == "opengl3") {
+		wls.gl_manager = memnew(GLManagerWayland);
+
+		if (wls.gl_manager->initialize() != OK) {
+			memdelete(wls.gl_manager);
+			wls.gl_manager = nullptr;
+			r_error = ERR_CANT_CREATE;
+			ERR_FAIL_MSG("Could not initialize GLES3");
+		}
+
+		RasterizerGLES3::make_current();
 	}
 #endif
 
@@ -2581,6 +2633,11 @@ DisplayServerWayland::~DisplayServerWayland() {
 		}
 #endif
 
+#ifdef GLES3_ENABLED
+		if (wls.gl_manager && wd.visible) {
+			wls.gl_manager->window_destroy(id);
+		}
+#endif
 		if (wd.xdg_popup) {
 			xdg_popup_destroy(wd.xdg_popup);
 		}

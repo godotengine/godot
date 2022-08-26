@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  platform_config.h                                                    */
+/*  gl_manager_wayland.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,73 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef __linux__
-#include <alloca.h>
-#endif
+#ifndef GL_MANAGER_WAYLAND_H
+#define GL_MANAGER_WAYLAND_H
 
-#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
-#include <stdlib.h> // alloca
-// FreeBSD and OpenBSD use pthread_set_name_np, while other platforms,
-// include NetBSD, use pthread_setname_np. NetBSD's version however requires
-// a different format, we handle this directly in thread_posix.
-#ifdef __NetBSD__
-#define PTHREAD_NETBSD_SET_NAME
-#else
-#define PTHREAD_BSD_SET_NAME
-#endif
-#endif
+#ifdef WAYLAND_ENABLED
+#ifdef GLES3_ENABLED
 
-#define GL_GLEXT_PROTOTYPES
-#define OPENGL_INCLUDE_H <GL/gl.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+
+#include <wayland-egl.h>
+
+#include "core/templates/local_vector.h"
+#include "servers/display_server.h"
+
+class GLManagerWayland {
+private:
+	// An EGL side rappresentation of a wl_display with its own rendering
+	// context.
+	struct GLDisplay {
+		struct wl_display *wl_display = nullptr;
+
+		EGLDisplay egl_display = EGL_NO_DISPLAY;
+		EGLContext egl_context = EGL_NO_CONTEXT;
+		EGLConfig egl_config;
+	};
+
+	// EGL specific window data.
+	struct GLWindow {
+		bool initialized = false;
+
+		int width = 0;
+		int height = 0;
+
+		// An handle to the GLDisplay associated with this window.
+		int gldisplay_id = -1;
+
+		struct wl_egl_window *wl_egl_window = nullptr;
+		EGLSurface egl_surface = EGL_NO_SURFACE;
+	};
+
+	LocalVector<GLDisplay> displays;
+	LocalVector<GLWindow> windows;
+
+	GLWindow *current_window = nullptr;
+
+	int _get_gldisplay_id(struct wl_display *p_display);
+	Error _gldisplay_create_context(GLDisplay &p_gldisplay);
+
+public:
+	Error window_create(DisplayServer::WindowID p_window_id, struct wl_display *p_display, struct wl_surface *p_surface, int p_width, int p_height);
+
+	void window_destroy(DisplayServer::WindowID p_window_id);
+	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
+
+	void release_current();
+	void make_current();
+	void swap_buffers();
+
+	void window_make_current(DisplayServer::WindowID p_window_id);
+
+	Error initialize();
+
+	GLManagerWayland();
+	~GLManagerWayland();
+};
+
+#endif // GLES3_ENABLED
+#endif // WAYLAND_ENABLED
+
+#endif // GL_MANAGER_WAYLAND_H

@@ -61,6 +61,10 @@
 #include "vulkan_context_wayland.h"
 #endif
 
+#ifdef GLES3_ENABLED
+#include "gl_manager_wayland.h"
+#endif
+
 #include "core/input/input.h"
 #include "core/os/thread.h"
 
@@ -285,6 +289,10 @@ class DisplayServerWayland : public DisplayServer {
 #ifdef VULKAN_ENABLED
 		VulkanContextWayland *context_vulkan = nullptr;
 		RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
+
+#ifdef GLES3_ENABLED
+		GLManagerWayland *gl_manager = nullptr;
 #endif
 	};
 

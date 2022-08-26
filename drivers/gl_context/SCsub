@@ -2,7 +2,10 @@
 
 Import("env")
 
-if env["platform"] in ["haiku", "macos", "windows", "linuxbsd"]:
+if env["platform"] == "linuxbsd":
+    env.Append(CPPDEFINES=["GLES_OVER_GL"])
+
+if env["platform"] in ["haiku", "macos", "windows"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [
