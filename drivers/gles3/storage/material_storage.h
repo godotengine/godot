@@ -142,6 +142,7 @@ struct CanvasShaderData : public ShaderData {
 		BLEND_MODE_MUL,
 		BLEND_MODE_PMALPHA,
 		BLEND_MODE_DISABLED,
+		BLEND_MODE_LCD,
 	};
 
 	bool valid;

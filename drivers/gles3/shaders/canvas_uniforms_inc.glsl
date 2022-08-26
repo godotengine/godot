@@ -25,6 +25,7 @@
 #define FLAGS_DEFAULT_SPECULAR_MAP_USED uint(1 << 27)
 
 #define FLAGS_USE_MSDF uint(1 << 28)
+#define FLAGS_USE_LCD uint(1 << 29)
 
 // must be always 128 bytes long
 struct DrawData {

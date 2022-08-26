@@ -85,6 +85,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
 
 		FLAGS_USE_MSDF = (1 << 28),
+		FLAGS_USE_LCD = (1 << 29),
 	};
 
 	enum {
@@ -122,6 +123,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		PIPELINE_VARIANT_ATTRIBUTE_LINES,
 		PIPELINE_VARIANT_ATTRIBUTE_LINES_STRIP,
 		PIPELINE_VARIANT_ATTRIBUTE_POINTS,
+		PIPELINE_VARIANT_QUAD_LCD_BLEND,
 		PIPELINE_VARIANT_MAX
 	};
 	enum PipelineLightMode {

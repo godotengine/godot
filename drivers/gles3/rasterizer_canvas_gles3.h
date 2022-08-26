@@ -73,6 +73,7 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		FLAGS_DEFAULT_SPECULAR_MAP_USED = (1 << 27),
 
 		FLAGS_USE_MSDF = (1 << 28),
+		FLAGS_USE_LCD = (1 << 29),
 	};
 
 	enum {
@@ -249,7 +250,7 @@ public:
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override;
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer = false);
-	void _render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index);
+	void _render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index, GLES3::CanvasShaderData::BlendMode p_blend_mode, GLES3::CanvasShaderData::BlendMode &r_last_blend_mode, Color &r_last_blend_color);
 	void _render_batch(uint32_t &p_max_index);
 	void _bind_instance_data_buffer(uint32_t p_max_index);
 	void _allocate_instance_data_buffer();

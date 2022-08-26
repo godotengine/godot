@@ -648,8 +648,8 @@
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
 		</member>
-		<member name="gui/theme/default_font_antialiased" type="bool" setter="" getter="" default="true">
-			If set to [code]true[/code], default font uses 8-bit anitialiased glyph rendering.  See [member FontFile.antialiased].
+		<member name="gui/theme/default_font_antialiasing" type="int" setter="" getter="" default="1">
+			Font anti-aliasing mode. See [member FontFile.antialiasing],
 		</member>
 		<member name="gui/theme/default_font_generate_mipmaps" type="bool" setter="" getter="" default="false">
 			If set to [code]true[/code], the default font will have mipmaps generated. This prevents text from looking grainy when a [Control] is scaled down, or when a [Label3D] is viewed from a long distance (if [member Label3D.texture_filter] is set to a mode that displays mipmaps).
@@ -668,6 +668,9 @@
 			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
+		</member>
+		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
+			LCD sub-pixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).

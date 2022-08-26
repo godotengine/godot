@@ -1133,8 +1133,8 @@ void initialize_theme() {
 	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
-	bool font_antialiased = (bool)GLOBAL_DEF_RST("gui/theme/default_font_antialiased", true);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiased", PropertyInfo(Variant::BOOL, "gui/theme/default_font_antialiased", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_DEF_RST("gui/theme/default_font_antialiasing", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiasing", PropertyInfo(Variant::INT, "gui/theme/default_font_antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD sub-pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
 
 	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST("gui/theme/default_font_hinting", TextServer::HINTING_LIGHT);
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_hinting", PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
@@ -1144,6 +1144,10 @@ void initialize_theme() {
 
 	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
 	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
+
+	GLOBAL_DEF_RST("gui/theme/lcd_subpixel_layout", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/lcd_subpixel_layout", PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"));
+	ProjectSettings::get_singleton()->set_restart_if_changed("gui/theme/lcd_subpixel_layout", false);
 
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
@@ -1155,7 +1159,7 @@ void initialize_theme() {
 
 	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
 	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiased, font_msdf, font_generate_mipmaps);
+		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiasing, font_msdf, font_generate_mipmaps);
 	}
 
 	if (!theme_path.is_empty()) {

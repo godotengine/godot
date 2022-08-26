@@ -69,8 +69,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(font_set_style_name, "font_rid", "name_style");
 	GDVIRTUAL_BIND(font_get_style_name, "font_rid");
 
-	GDVIRTUAL_BIND(font_set_antialiased, "font_rid", "antialiased");
-	GDVIRTUAL_BIND(font_is_antialiased, "font_rid");
+	GDVIRTUAL_BIND(font_set_antialiasing, "font_rid", "antialiasing");
+	GDVIRTUAL_BIND(font_get_antialiasing, "font_rid");
 
 	GDVIRTUAL_BIND(font_set_generate_mipmaps, "font_rid", "generate_mipmaps");
 	GDVIRTUAL_BIND(font_get_generate_mipmaps, "font_rid");
@@ -478,16 +478,16 @@ String TextServerExtension::font_get_name(const RID &p_font_rid) const {
 	return String();
 }
 
-void TextServerExtension::font_set_antialiased(const RID &p_font_rid, bool p_antialiased) {
-	GDVIRTUAL_CALL(font_set_antialiased, p_font_rid, p_antialiased);
+void TextServerExtension::font_set_antialiasing(RID p_font_rid, TextServer::FontAntialiasing p_antialiasing) {
+	GDVIRTUAL_CALL(font_set_antialiasing, p_font_rid, p_antialiasing);
 }
 
-bool TextServerExtension::font_is_antialiased(const RID &p_font_rid) const {
-	bool ret;
-	if (GDVIRTUAL_CALL(font_is_antialiased, p_font_rid, ret)) {
+TextServer::FontAntialiasing TextServerExtension::font_get_antialiasing(RID p_font_rid) const {
+	TextServer::FontAntialiasing ret;
+	if (GDVIRTUAL_CALL(font_get_antialiasing, p_font_rid, ret)) {
 		return ret;
 	}
-	return false;
+	return TextServer::FONT_ANTIALIASING_NONE;
 }
 
 void TextServerExtension::font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) {

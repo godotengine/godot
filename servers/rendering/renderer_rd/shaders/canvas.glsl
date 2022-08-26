@@ -509,7 +509,13 @@ void main() {
 			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
-
+	} else if (bool(draw_data.flags & FLAGS_USE_LCD)) {
+		vec4 lcd_sample = texture(sampler2D(color_texture, texture_sampler), uv);
+		if (lcd_sample.a == 1.0) {
+			color.rgb = lcd_sample.rgb * color.a;
+		} else {
+			color = vec4(0.0, 0.0, 0.0, 0.0);
+		}
 	} else {
 #else
 	{
