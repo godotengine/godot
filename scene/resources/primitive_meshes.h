@@ -534,14 +534,21 @@ private:
 	mutable HashMap<GlyphMeshKey, GlyphMeshData, GlyphMeshKeyHasher> cache;
 
 	RID text_rid;
+	mutable Vector<RID> lines_rid;
+
 	String text;
 	String xl_text;
 
 	int font_size = 16;
 	Ref<Font> font_override;
+
+	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
 	float width = 500.0;
+	float line_spacing = 0.f;
+	Point2 lbl_offset;
 
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER;
+	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_CENTER;
 	bool uppercase = false;
 	String language;
 	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
@@ -552,6 +559,7 @@ private:
 	real_t pixel_size = 0.01;
 	real_t curve_step = 0.5;
 
+	mutable bool dirty_lines = true;
 	mutable bool dirty_text = true;
 	mutable bool dirty_font = true;
 	mutable bool dirty_cache = true;
@@ -574,6 +582,9 @@ public:
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
 
+	void set_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_vertical_alignment() const;
+
 	void set_text(const String &p_string);
 	String get_text() const;
 
@@ -583,6 +594,12 @@ public:
 
 	void set_font_size(int p_size);
 	int get_font_size() const;
+
+	void set_line_spacing(float p_size);
+	float get_line_spacing() const;
+
+	void set_autowrap_mode(TextServer::AutowrapMode p_mode);
+	TextServer::AutowrapMode get_autowrap_mode() const;
 
 	void set_text_direction(TextServer::Direction p_text_direction);
 	TextServer::Direction get_text_direction() const;
@@ -610,6 +627,9 @@ public:
 
 	void set_pixel_size(real_t p_amount);
 	real_t get_pixel_size() const;
+
+	void set_offset(const Point2 &p_offset);
+	Point2 get_offset() const;
 };
 
 VARIANT_ENUM_CAST(RibbonTrailMesh::Shape)

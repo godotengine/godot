@@ -2458,9 +2458,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 
 		dirty_text = false;
 		dirty_font = false;
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			TS->shaped_text_fit_to_width(text_rid, width, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
-		}
+		dirty_lines = true;
 	} else if (dirty_font) {
 		int spans = TS->shaped_get_span_count(text_rid);
 		for (int i = 0; i < spans; i++) {
@@ -2471,73 +2469,63 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		}
 
 		dirty_font = false;
+		dirty_lines = true;
+	}
+
+	if (dirty_lines) {
+		for (int i = 0; i < lines_rid.size(); i++) {
+			TS->free_rid(lines_rid[i]);
+		}
+		lines_rid.clear();
+
+		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+		switch (autowrap_mode) {
+			case TextServer::AUTOWRAP_WORD_SMART:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_WORD:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_ARBITRARY:
+				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_OFF:
+				break;
+		}
+		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
+
+		float max_line_w = 0.0;
+		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
+			max_line_w = MAX(max_line_w, TS->shaped_text_get_width(line));
+			lines_rid.push_back(line);
+		}
+
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			TS->shaped_text_fit_to_width(text_rid, width, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
+			for (int i = 0; i < lines_rid.size() - 1; i++) {
+				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
+			}
 		}
+		dirty_lines = false;
 	}
 
-	Vector2 offset;
-	const Glyph *glyphs = TS->shaped_text_get_glyphs(text_rid);
-	int gl_size = TS->shaped_text_get_glyph_count(text_rid);
-	float line_width = TS->shaped_text_get_width(text_rid) * pixel_size;
-
-	switch (horizontal_alignment) {
-		case HORIZONTAL_ALIGNMENT_LEFT:
-			offset.x = 0.0;
-			break;
-		case HORIZONTAL_ALIGNMENT_FILL:
-		case HORIZONTAL_ALIGNMENT_CENTER: {
-			offset.x = -line_width / 2.0;
-		} break;
-		case HORIZONTAL_ALIGNMENT_RIGHT: {
-			offset.x = -line_width;
-		} break;
+	float total_h = 0.0;
+	for (int i = 0; i < lines_rid.size(); i++) {
+		total_h += (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size;
 	}
 
-	bool has_depth = !Math::is_zero_approx(depth);
-
-	// Generate glyph data, precalculate size of the arrays and mesh bounds for UV.
-	int64_t p_size = 0;
-	int64_t i_size = 0;
-
-	Vector2 min_p = Vector2(INFINITY, INFINITY);
-	Vector2 max_p = Vector2(-INFINITY, -INFINITY);
-
-	Vector2 offset_pre = offset;
-	for (int i = 0; i < gl_size; i++) {
-		if (glyphs[i].index == 0) {
-			offset.x += glyphs[i].advance * pixel_size * glyphs[i].repeat;
-			continue;
-		}
-		if (glyphs[i].font_rid != RID()) {
-			GlyphMeshKey key = GlyphMeshKey(glyphs[i].font_rid.get_id(), glyphs[i].index);
-			_generate_glyph_mesh_data(key, glyphs[i]);
-			GlyphMeshData &gl_data = cache[key];
-
-			p_size += glyphs[i].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
-			i_size += glyphs[i].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
-
-			if (has_depth) {
-				for (int j = 0; j < gl_data.contours.size(); j++) {
-					p_size += glyphs[i].repeat * gl_data.contours[j].size() * 4;
-					i_size += glyphs[i].repeat * gl_data.contours[j].size() * 6;
-				}
-			}
-
-			for (int j = 0; j < glyphs[i].repeat; j++) {
-				min_p.x = MIN(gl_data.min_p.x + offset_pre.x, min_p.x);
-				min_p.y = MIN(gl_data.min_p.y + offset_pre.y, min_p.y);
-				max_p.x = MAX(gl_data.max_p.x + offset_pre.x, max_p.x);
-				max_p.y = MAX(gl_data.max_p.y + offset_pre.y, max_p.y);
-
-				offset_pre.x += glyphs[i].advance * pixel_size;
-			}
-		} else {
-			p_size += glyphs[i].repeat * 4;
-			i_size += glyphs[i].repeat * 6;
-
-			offset_pre.x += glyphs[i].advance * pixel_size * glyphs[i].repeat;
-		}
+	float vbegin = 0.0;
+	switch (vertical_alignment) {
+		case VERTICAL_ALIGNMENT_FILL:
+		case VERTICAL_ALIGNMENT_TOP: {
+			// Nothing.
+		} break;
+		case VERTICAL_ALIGNMENT_CENTER: {
+			vbegin = (total_h - line_spacing * pixel_size) / 2.0;
+		} break;
+		case VERTICAL_ALIGNMENT_BOTTOM: {
+			vbegin = (total_h - line_spacing * pixel_size);
+		} break;
 	}
 
 	Vector<Vector3> vertices;
@@ -2545,6 +2533,73 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 	Vector<float> tangents;
 	Vector<Vector2> uvs;
 	Vector<int32_t> indices;
+
+	Vector2 min_p = Vector2(INFINITY, INFINITY);
+	Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+
+	int32_t p_size = 0;
+	int32_t i_size = 0;
+
+	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
+	for (int i = 0; i < lines_rid.size(); i++) {
+		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
+		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
+		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
+
+		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_LEFT:
+				offset.x = 0.0;
+				break;
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_CENTER: {
+				offset.x = -line_width / 2.0;
+			} break;
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
+				offset.x = -line_width;
+			} break;
+		}
+		offset.x += lbl_offset.x * pixel_size;
+		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
+
+		bool has_depth = !Math::is_zero_approx(depth);
+
+		for (int j = 0; j < gl_size; j++) {
+			if (glyphs[j].index == 0) {
+				offset.x += glyphs[j].advance * pixel_size * glyphs[j].repeat;
+				continue;
+			}
+			if (glyphs[j].font_rid != RID()) {
+				GlyphMeshKey key = GlyphMeshKey(glyphs[j].font_rid.get_id(), glyphs[j].index);
+				_generate_glyph_mesh_data(key, glyphs[j]);
+				GlyphMeshData &gl_data = cache[key];
+
+				p_size += glyphs[j].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
+				i_size += glyphs[j].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
+
+				if (has_depth) {
+					for (int k = 0; k < gl_data.contours.size(); k++) {
+						p_size += glyphs[j].repeat * gl_data.contours[k].size() * 4;
+						i_size += glyphs[j].repeat * gl_data.contours[k].size() * 6;
+					}
+				}
+
+				for (int r = 0; r < glyphs[j].repeat; r++) {
+					min_p.x = MIN(gl_data.min_p.x + offset.x, min_p.x);
+					min_p.y = MIN(gl_data.min_p.y - offset.y, min_p.y);
+					max_p.x = MAX(gl_data.max_p.x + offset.x, max_p.x);
+					max_p.y = MAX(gl_data.max_p.y - offset.y, max_p.y);
+
+					offset.x += glyphs[j].advance * pixel_size;
+				}
+			} else {
+				p_size += glyphs[j].repeat * 4;
+				i_size += glyphs[j].repeat * 6;
+
+				offset.x += glyphs[j].advance * pixel_size * glyphs[j].repeat;
+			}
+		}
+		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
+	}
 
 	vertices.resize(p_size);
 	normals.resize(p_size);
@@ -2561,149 +2616,176 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 	// Generate mesh.
 	int32_t p_idx = 0;
 	int32_t i_idx = 0;
-	for (int i = 0; i < gl_size; i++) {
-		if (glyphs[i].index == 0) {
-			offset.x += glyphs[i].advance * pixel_size * glyphs[i].repeat;
-			continue;
+
+	offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
+	for (int i = 0; i < lines_rid.size(); i++) {
+		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
+		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
+		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
+
+		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_LEFT:
+				offset.x = 0.0;
+				break;
+			case HORIZONTAL_ALIGNMENT_FILL:
+			case HORIZONTAL_ALIGNMENT_CENTER: {
+				offset.x = -line_width / 2.0;
+			} break;
+			case HORIZONTAL_ALIGNMENT_RIGHT: {
+				offset.x = -line_width;
+			} break;
 		}
-		if (glyphs[i].font_rid != RID()) {
-			GlyphMeshKey key = GlyphMeshKey(glyphs[i].font_rid.get_id(), glyphs[i].index);
-			_generate_glyph_mesh_data(key, glyphs[i]);
-			const GlyphMeshData &gl_data = cache[key];
+		offset.x += lbl_offset.x * pixel_size;
+		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
 
-			int64_t ts = gl_data.triangles.size();
-			const Vector2 *ts_ptr = gl_data.triangles.ptr();
+		bool has_depth = !Math::is_zero_approx(depth);
 
-			for (int j = 0; j < glyphs[i].repeat; j++) {
-				for (int k = 0; k < ts; k += 3) {
-					// Add front face.
-					for (int l = 0; l < 3; l++) {
-						Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, depth / 2.0);
-						vertices_ptr[p_idx] = point;
-						normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
-						if (has_depth) {
-							uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.0), real_t(0.4)));
-						} else {
-							uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.0), real_t(1.0)));
-						}
-						tangents_ptr[p_idx * 4 + 0] = 1.0;
-						tangents_ptr[p_idx * 4 + 1] = 0.0;
-						tangents_ptr[p_idx * 4 + 2] = 0.0;
-						tangents_ptr[p_idx * 4 + 3] = 1.0;
-						indices_ptr[i_idx++] = p_idx;
-						p_idx++;
-					}
-					if (has_depth) {
-						// Add back face.
-						for (int l = 2; l >= 0; l--) {
-							Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
+		// Generate glyph data, precalculate size of the arrays and mesh bounds for UV.
+		for (int j = 0; j < gl_size; j++) {
+			if (glyphs[j].index == 0) {
+				offset.x += glyphs[j].advance * pixel_size * glyphs[j].repeat;
+				continue;
+			}
+			if (glyphs[j].font_rid != RID()) {
+				GlyphMeshKey key = GlyphMeshKey(glyphs[j].font_rid.get_id(), glyphs[j].index);
+				_generate_glyph_mesh_data(key, glyphs[j]);
+				const GlyphMeshData &gl_data = cache[key];
+
+				int64_t ts = gl_data.triangles.size();
+				const Vector2 *ts_ptr = gl_data.triangles.ptr();
+
+				for (int r = 0; r < glyphs[j].repeat; r++) {
+					for (int k = 0; k < ts; k += 3) {
+						// Add front face.
+						for (int l = 0; l < 3; l++) {
+							Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, depth / 2.0);
 							vertices_ptr[p_idx] = point;
-							normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
-							uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -min_p.y, -max_p.y, real_t(0.4), real_t(0.8)));
-							tangents_ptr[p_idx * 4 + 0] = -1.0;
+							normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
+							if (has_depth) {
+								uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -max_p.y, -min_p.y, real_t(0.4), real_t(0.0)));
+							} else {
+								uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -max_p.y, -min_p.y, real_t(1.0), real_t(0.0)));
+							}
+							tangents_ptr[p_idx * 4 + 0] = 1.0;
 							tangents_ptr[p_idx * 4 + 1] = 0.0;
 							tangents_ptr[p_idx * 4 + 2] = 0.0;
 							tangents_ptr[p_idx * 4 + 3] = 1.0;
 							indices_ptr[i_idx++] = p_idx;
 							p_idx++;
 						}
-					}
-				}
-				// Add sides.
-				if (has_depth) {
-					for (int k = 0; k < gl_data.contours.size(); k++) {
-						int64_t ps = gl_data.contours[k].size();
-						const ContourPoint *ps_ptr = gl_data.contours[k].ptr();
-						const ContourInfo &ps_info = gl_data.contours_info[k];
-						real_t length = 0.0;
-						for (int l = 0; l < ps; l++) {
-							int prev = (l == 0) ? (ps - 1) : (l - 1);
-							int next = (l + 1 == ps) ? 0 : (l + 1);
-							Vector2 d1;
-							Vector2 d2 = (ps_ptr[next].point - ps_ptr[l].point).normalized();
-							if (ps_ptr[l].sharp) {
-								d1 = d2;
-							} else {
-								d1 = (ps_ptr[l].point - ps_ptr[prev].point).normalized();
+						if (has_depth) {
+							// Add back face.
+							for (int l = 2; l >= 0; l--) {
+								Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
+								vertices_ptr[p_idx] = point;
+								normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
+								uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -max_p.y, -min_p.y, real_t(0.8), real_t(0.4)));
+								tangents_ptr[p_idx * 4 + 0] = -1.0;
+								tangents_ptr[p_idx * 4 + 1] = 0.0;
+								tangents_ptr[p_idx * 4 + 2] = 0.0;
+								tangents_ptr[p_idx * 4 + 3] = 1.0;
+								indices_ptr[i_idx++] = p_idx;
+								p_idx++;
 							}
-							real_t seg_len = (ps_ptr[next].point - ps_ptr[l].point).length();
-
-							Vector3 quad_faces[4] = {
-								Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, -depth / 2.0),
-								Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, -depth / 2.0),
-								Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, depth / 2.0),
-								Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, depth / 2.0),
-							};
-							for (int m = 0; m < 4; m++) {
-								const Vector2 &d = ((m % 2) == 0) ? d1 : d2;
-								real_t u_pos = ((m % 2) == 0) ? length : length + seg_len;
-								vertices_ptr[p_idx + m] = quad_faces[m];
-								normals_ptr[p_idx + m] = Vector3(d.y, d.x, 0.0);
-								if (m < 2) {
-									uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.8 : 0.9);
-								} else {
-									uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.9 : 1.0);
-								}
-								tangents_ptr[(p_idx + m) * 4 + 0] = d.x;
-								tangents_ptr[(p_idx + m) * 4 + 1] = -d.y;
-								tangents_ptr[(p_idx + m) * 4 + 2] = 0.0;
-								tangents_ptr[(p_idx + m) * 4 + 3] = 1.0;
-							}
-
-							indices_ptr[i_idx++] = p_idx;
-							indices_ptr[i_idx++] = p_idx + 1;
-							indices_ptr[i_idx++] = p_idx + 2;
-
-							indices_ptr[i_idx++] = p_idx + 1;
-							indices_ptr[i_idx++] = p_idx + 3;
-							indices_ptr[i_idx++] = p_idx + 2;
-
-							length += seg_len;
-							p_idx += 4;
 						}
 					}
-				}
-				offset.x += glyphs[i].advance * pixel_size;
-			}
-		} else {
-			// Add fallback quad for missing glyphs.
-			for (int j = 0; j < glyphs[i].repeat; j++) {
-				Size2 sz = TS->get_hex_code_box_size(glyphs[i].font_size, glyphs[i].index) * pixel_size;
-				Vector3 quad_faces[4] = {
-					Vector3(offset.x, offset.y, 0.0),
-					Vector3(offset.x, sz.y + offset.y, 0.0),
-					Vector3(sz.x + offset.x, sz.y + offset.y, 0.0),
-					Vector3(sz.x + offset.x, offset.y, 0.0),
-				};
-				for (int k = 0; k < 4; k++) {
-					vertices_ptr[p_idx + k] = quad_faces[k];
-					normals_ptr[p_idx + k] = Vector3(0.0, 0.0, 1.0);
+					// Add sides.
 					if (has_depth) {
-						uvs_ptr[p_idx + k] = Vector2(Math::range_lerp(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(quad_faces[k].y, -min_p.y, -max_p.y, real_t(0.0), real_t(0.4)));
-					} else {
-						uvs_ptr[p_idx + k] = Vector2(Math::range_lerp(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(quad_faces[k].y, -min_p.y, -max_p.y, real_t(0.0), real_t(1.0)));
+						for (int k = 0; k < gl_data.contours.size(); k++) {
+							int64_t ps = gl_data.contours[k].size();
+							const ContourPoint *ps_ptr = gl_data.contours[k].ptr();
+							const ContourInfo &ps_info = gl_data.contours_info[k];
+							real_t length = 0.0;
+							for (int l = 0; l < ps; l++) {
+								int prev = (l == 0) ? (ps - 1) : (l - 1);
+								int next = (l + 1 == ps) ? 0 : (l + 1);
+								Vector2 d1;
+								Vector2 d2 = (ps_ptr[next].point - ps_ptr[l].point).normalized();
+								if (ps_ptr[l].sharp) {
+									d1 = d2;
+								} else {
+									d1 = (ps_ptr[l].point - ps_ptr[prev].point).normalized();
+								}
+								real_t seg_len = (ps_ptr[next].point - ps_ptr[l].point).length();
+
+								Vector3 quad_faces[4] = {
+									Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, -depth / 2.0),
+									Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, -depth / 2.0),
+									Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, depth / 2.0),
+									Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, depth / 2.0),
+								};
+								for (int m = 0; m < 4; m++) {
+									const Vector2 &d = ((m % 2) == 0) ? d1 : d2;
+									real_t u_pos = ((m % 2) == 0) ? length : length + seg_len;
+									vertices_ptr[p_idx + m] = quad_faces[m];
+									normals_ptr[p_idx + m] = Vector3(d.y, d.x, 0.0);
+									if (m < 2) {
+										uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.8 : 0.9);
+									} else {
+										uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.9 : 1.0);
+									}
+									tangents_ptr[(p_idx + m) * 4 + 0] = d.x;
+									tangents_ptr[(p_idx + m) * 4 + 1] = -d.y;
+									tangents_ptr[(p_idx + m) * 4 + 2] = 0.0;
+									tangents_ptr[(p_idx + m) * 4 + 3] = 1.0;
+								}
+
+								indices_ptr[i_idx++] = p_idx;
+								indices_ptr[i_idx++] = p_idx + 1;
+								indices_ptr[i_idx++] = p_idx + 2;
+
+								indices_ptr[i_idx++] = p_idx + 1;
+								indices_ptr[i_idx++] = p_idx + 3;
+								indices_ptr[i_idx++] = p_idx + 2;
+
+								length += seg_len;
+								p_idx += 4;
+							}
+						}
 					}
-					tangents_ptr[(p_idx + k) * 4 + 0] = 1.0;
-					tangents_ptr[(p_idx + k) * 4 + 1] = 0.0;
-					tangents_ptr[(p_idx + k) * 4 + 2] = 0.0;
-					tangents_ptr[(p_idx + k) * 4 + 3] = 1.0;
+					offset.x += glyphs[j].advance * pixel_size;
 				}
+			} else {
+				// Add fallback quad for missing glyphs.
+				for (int r = 0; r < glyphs[j].repeat; r++) {
+					Size2 sz = TS->get_hex_code_box_size(glyphs[j].font_size, glyphs[j].index) * pixel_size;
+					Vector3 quad_faces[4] = {
+						Vector3(offset.x, offset.y, 0.0),
+						Vector3(offset.x, sz.y + offset.y, 0.0),
+						Vector3(sz.x + offset.x, sz.y + offset.y, 0.0),
+						Vector3(sz.x + offset.x, offset.y, 0.0),
+					};
+					for (int k = 0; k < 4; k++) {
+						vertices_ptr[p_idx + k] = quad_faces[k];
+						normals_ptr[p_idx + k] = Vector3(0.0, 0.0, 1.0);
+						if (has_depth) {
+							uvs_ptr[p_idx + k] = Vector2(Math::range_lerp(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(quad_faces[k].y, -max_p.y, -min_p.y, real_t(0.4), real_t(0.0)));
+						} else {
+							uvs_ptr[p_idx + k] = Vector2(Math::range_lerp(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(quad_faces[k].y, -max_p.y, -min_p.y, real_t(1.0), real_t(0.0)));
+						}
+						tangents_ptr[(p_idx + k) * 4 + 0] = 1.0;
+						tangents_ptr[(p_idx + k) * 4 + 1] = 0.0;
+						tangents_ptr[(p_idx + k) * 4 + 2] = 0.0;
+						tangents_ptr[(p_idx + k) * 4 + 3] = 1.0;
+					}
 
-				indices_ptr[i_idx++] = p_idx;
-				indices_ptr[i_idx++] = p_idx + 1;
-				indices_ptr[i_idx++] = p_idx + 2;
+					indices_ptr[i_idx++] = p_idx;
+					indices_ptr[i_idx++] = p_idx + 1;
+					indices_ptr[i_idx++] = p_idx + 2;
 
-				indices_ptr[i_idx++] = p_idx + 0;
-				indices_ptr[i_idx++] = p_idx + 2;
-				indices_ptr[i_idx++] = p_idx + 3;
-				p_idx += 4;
+					indices_ptr[i_idx++] = p_idx + 0;
+					indices_ptr[i_idx++] = p_idx + 2;
+					indices_ptr[i_idx++] = p_idx + 3;
+					p_idx += 4;
 
-				offset.x += glyphs[i].advance * pixel_size;
+					offset.x += glyphs[j].advance * pixel_size;
+				}
 			}
 		}
+		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
 	}
 
-	if (p_size == 0) {
+	if (indices.is_empty()) {
 		// If empty, add single triangle to suppress errors.
 		vertices.push_back(Vector3());
 		normals.push_back(Vector3());
@@ -2728,6 +2810,9 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &TextMesh::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &TextMesh::get_horizontal_alignment);
 
+	ClassDB::bind_method(D_METHOD("set_vertical_alignment", "alignment"), &TextMesh::set_vertical_alignment);
+	ClassDB::bind_method(D_METHOD("get_vertical_alignment"), &TextMesh::get_vertical_alignment);
+
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &TextMesh::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &TextMesh::get_text);
 
@@ -2737,6 +2822,12 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_size", "font_size"), &TextMesh::set_font_size);
 	ClassDB::bind_method(D_METHOD("get_font_size"), &TextMesh::get_font_size);
 
+	ClassDB::bind_method(D_METHOD("set_line_spacing", "line_spacing"), &TextMesh::set_line_spacing);
+	ClassDB::bind_method(D_METHOD("get_line_spacing"), &TextMesh::get_line_spacing);
+
+	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &TextMesh::set_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &TextMesh::get_autowrap_mode);
+
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &TextMesh::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &TextMesh::get_depth);
 
@@ -2745,6 +2836,9 @@ void TextMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &TextMesh::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &TextMesh::get_pixel_size);
+
+	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &TextMesh::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"), &TextMesh::get_offset);
 
 	ClassDB::bind_method(D_METHOD("set_curve_step", "curve_step"), &TextMesh::set_curve_step);
 	ClassDB::bind_method(D_METHOD("get_curve_step"), &TextMesh::get_curve_step);
@@ -2768,17 +2862,21 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
 
 	ADD_GROUP("Text", "");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 
 	ADD_GROUP("Mesh", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "curve_step", PROPERTY_HINT_RANGE, "0.1,10,0.1,suffix:px"), "set_curve_step", "get_curve_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.0,100.0,0.001,or_greater,suffix:m"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:m"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left"), "set_text_direction", "get_text_direction");
@@ -2807,6 +2905,11 @@ TextMesh::TextMesh() {
 }
 
 TextMesh::~TextMesh() {
+	for (int i = 0; i < lines_rid.size(); i++) {
+		TS->free_rid(lines_rid[i]);
+	}
+	lines_rid.clear();
+
 	TS->free_rid(text_rid);
 }
 
@@ -2814,7 +2917,7 @@ void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
 	if (horizontal_alignment != p_alignment) {
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			dirty_text = true;
+			dirty_lines = true;
 		}
 		horizontal_alignment = p_alignment;
 		_request_update();
@@ -2823,6 +2926,18 @@ void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 
 HorizontalAlignment TextMesh::get_horizontal_alignment() const {
 	return horizontal_alignment;
+}
+
+void TextMesh::set_vertical_alignment(VerticalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, 4);
+	if (vertical_alignment != p_alignment) {
+		vertical_alignment = p_alignment;
+		_request_update();
+	}
+}
+
+VerticalAlignment TextMesh::get_vertical_alignment() const {
+	return vertical_alignment;
 }
 
 void TextMesh::set_text(const String &p_string) {
@@ -2909,6 +3024,29 @@ int TextMesh::get_font_size() const {
 	return font_size;
 }
 
+void TextMesh::set_line_spacing(float p_line_spacing) {
+	if (line_spacing != p_line_spacing) {
+		line_spacing = p_line_spacing;
+		_request_update();
+	}
+}
+
+float TextMesh::get_line_spacing() const {
+	return line_spacing;
+}
+
+void TextMesh::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
+	if (autowrap_mode != p_mode) {
+		autowrap_mode = p_mode;
+		dirty_lines = true;
+		_request_update();
+	}
+}
+
+TextServer::AutowrapMode TextMesh::get_autowrap_mode() const {
+	return autowrap_mode;
+}
+
 void TextMesh::set_depth(real_t p_depth) {
 	if (depth != p_depth) {
 		depth = MAX(p_depth, 0.0);
@@ -2923,9 +3061,7 @@ real_t TextMesh::get_depth() const {
 void TextMesh::set_width(real_t p_width) {
 	if (width != p_width) {
 		width = p_width;
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			dirty_text = true;
-		}
+		dirty_lines = true;
 		_request_update();
 	}
 }
@@ -2944,6 +3080,17 @@ void TextMesh::set_pixel_size(real_t p_amount) {
 
 real_t TextMesh::get_pixel_size() const {
 	return pixel_size;
+}
+
+void TextMesh::set_offset(const Point2 &p_offset) {
+	if (lbl_offset != p_offset) {
+		lbl_offset = p_offset;
+		_request_update();
+	}
+}
+
+Point2 TextMesh::get_offset() const {
+	return lbl_offset;
 }
 
 void TextMesh::set_curve_step(real_t p_step) {
