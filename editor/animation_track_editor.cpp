@@ -2122,10 +2122,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
 				};
-				Ref<Texture2D> interp_icon[3] = {
+				Ref<Texture2D> interp_icon[5] = {
 					get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("InterpLinearAngle"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("InterpCubicAngle"), SNAME("EditorIcons")),
 				};
 				Ref<Texture2D> cont_icon[4] = {
 					get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
@@ -2848,6 +2850,23 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
 				menu->add_icon_item(get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
 				menu->add_icon_item(get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
+				// Check is angle property.
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					AnimationPlayer *ap = ape->get_player();
+					if (ap) {
+						NodePath path = animation->track_get_path(track);
+						Node *nd = ap->get_node(ap->get_root())->get_node(NodePath(path.get_concatenated_names()));
+						StringName prop = path.get_concatenated_subnames();
+						PropertyInfo prop_info;
+						ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
+						if (is_angle) {
+							menu->add_icon_item(get_theme_icon(SNAME("InterpLinearAngle"), SNAME("EditorIcons")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
+							menu->add_icon_item(get_theme_icon(SNAME("InterpCubicAngle"), SNAME("EditorIcons")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+						}
+					}
+				}
 				menu->reset_size();
 
 				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
@@ -3188,7 +3207,9 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		} break;
 		case MENU_INTERPOLATION_NEAREST:
 		case MENU_INTERPOLATION_LINEAR:
-		case MENU_INTERPOLATION_CUBIC: {
+		case MENU_INTERPOLATION_CUBIC:
+		case MENU_INTERPOLATION_LINEAR_ANGLE:
+		case MENU_INTERPOLATION_CUBIC_ANGLE: {
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
@@ -6042,6 +6063,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				Vector<int> keys = E->value;
 				int len = keys.size() - 1;
 
+				// Special case for angle interpolation.
+				bool is_using_angle = animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_LINEAR_ANGLE || animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_CUBIC_ANGLE;
+
 				// Make insert queue.
 				Vector<Pair<double, Variant>> insert_queue;
 				for (int i = 0; i < len; i++) {
@@ -6051,6 +6075,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						double to_t = animation->track_get_key_time(track, keys[i + 1]);
 						Variant from_v = animation->track_get_key_value(track, keys[i]);
 						Variant to_v = animation->track_get_key_value(track, keys[i + 1]);
+						if (is_using_angle) {
+							real_t a = from_v;
+							real_t b = to_v;
+							real_t to_diff = fmod(b - a, Math_TAU);
+							to_v = a + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+						}
 						Variant delta_v;
 						Variant::sub(to_v, from_v, delta_v);
 						double duration = to_t - from_t;
@@ -6192,9 +6222,13 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				do_bake |= b_bs && type == Animation::TYPE_BLEND_SHAPE;
 				do_bake |= b_v && type == Animation::TYPE_VALUE;
 				if (do_bake && !animation->track_is_compressed(i)) {
-					if (animation->track_get_interpolation_type(i) == Animation::INTERPOLATION_NEAREST) {
-						continue; // Nearest interpolation cannot be baked.
+					Animation::InterpolationType it = animation->track_get_interpolation_type(i);
+					if (it == Animation::INTERPOLATION_NEAREST) {
+						continue; // Nearest and Angle interpolation cannot be baked.
 					}
+
+					// Special case for angle interpolation.
+					bool is_using_angle = it == Animation::INTERPOLATION_LINEAR_ANGLE || it == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 					// Make insert queue.
 					Vector<Pair<double, Variant>> insert_queue;
@@ -6259,7 +6293,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 
 					// Insert keys.
-					undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", i, Animation::INTERPOLATION_LINEAR);
+					undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", i, is_using_angle ? Animation::INTERPOLATION_LINEAR_ANGLE : Animation::INTERPOLATION_LINEAR);
 					for (int j = insert_queue.size() - 1; j >= 0; j--) {
 						undo_redo->add_do_method(animation.ptr(), "track_insert_key", i, insert_queue[j].first, insert_queue[j].second);
 						undo_redo->add_undo_method(animation.ptr(), "track_remove_key", i, j);

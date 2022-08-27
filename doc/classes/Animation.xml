@@ -600,6 +600,14 @@
 		<constant name="INTERPOLATION_CUBIC" value="2" enum="InterpolationType">
 			Cubic interpolation.
 		</constant>
+		<constant name="INTERPOLATION_LINEAR_ANGLE" value="3" enum="InterpolationType">
+			Linear interpolation with shortest path rotation.
+			[b]Note:[/b] The result value is always normalized and may not match the key value.
+		</constant>
+		<constant name="INTERPOLATION_CUBIC_ANGLE" value="4" enum="InterpolationType">
+			Cubic interpolation with shortest path rotation.
+			[b]Note:[/b] The result value is always normalized and may not match the key value.
+		</constant>
 		<constant name="UPDATE_CONTINUOUS" value="0" enum="UpdateMode">
 			Update between keyframes.
 		</constant>
