@@ -1349,7 +1349,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 }
 
 ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
-	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_type);
+	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_type);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 

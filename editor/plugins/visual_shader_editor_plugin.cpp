@@ -111,7 +111,7 @@ void VisualShaderGraphPlugin::_bind_methods() {
 	ClassDB::bind_method("update_node", &VisualShaderGraphPlugin::update_node);
 	ClassDB::bind_method("update_node_deferred", &VisualShaderGraphPlugin::update_node_deferred);
 	ClassDB::bind_method("set_input_port_default_value", &VisualShaderGraphPlugin::set_input_port_default_value);
-	ClassDB::bind_method("set_uniform_name", &VisualShaderGraphPlugin::set_uniform_name);
+	ClassDB::bind_method("set_parameter_name", &VisualShaderGraphPlugin::set_parameter_name);
 	ClassDB::bind_method("set_expression", &VisualShaderGraphPlugin::set_expression);
 	ClassDB::bind_method("update_curve", &VisualShaderGraphPlugin::update_curve);
 	ClassDB::bind_method("update_curve_xyz", &VisualShaderGraphPlugin::update_curve_xyz);
@@ -223,9 +223,9 @@ void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_
 	}
 }
 
-void VisualShaderGraphPlugin::set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name) {
-	if (visual_shader->get_shader_type() == p_type && links.has(p_node_id) && links[p_node_id].uniform_name != nullptr) {
-		links[p_node_id].uniform_name->set_text(p_name);
+void VisualShaderGraphPlugin::set_parameter_name(VisualShader::Type p_type, int p_node_id, const String &p_name) {
+	if (visual_shader->get_shader_type() == p_type && links.has(p_node_id) && links[p_node_id].parameter_name != nullptr) {
+		links[p_node_id].parameter_name->set_text(p_name);
 	}
 }
 
@@ -290,9 +290,9 @@ void VisualShaderGraphPlugin::register_curve_editor(int p_node_id, int p_index, 
 	links[p_node_id].curve_editors[p_index] = p_curve_editor;
 }
 
-void VisualShaderGraphPlugin::update_uniform_refs() {
+void VisualShaderGraphPlugin::update_parameter_refs() {
 	for (KeyValue<int, Link> &E : links) {
-		VisualShaderNodeUniformRef *ref = Object::cast_to<VisualShaderNodeUniformRef>(E.value.visual_node);
+		VisualShaderNodeParameterRef *ref = Object::cast_to<VisualShaderNodeParameterRef>(E.value.visual_node);
 		if (ref) {
 			remove_node(E.value.type, E.key);
 			add_node(E.value.type, E.key);
@@ -334,8 +334,8 @@ void VisualShaderGraphPlugin::register_output_port(int p_node_id, int p_port, Te
 	links[p_node_id].output_ports.insert(p_port, { p_button });
 }
 
-void VisualShaderGraphPlugin::register_uniform_name(int p_node_id, LineEdit *p_uniform_name) {
-	links[p_node_id].uniform_name = p_uniform_name;
+void VisualShaderGraphPlugin::register_parameter_name(int p_node_id, LineEdit *p_parameter_name) {
+	links[p_node_id].parameter_name = p_parameter_name;
 }
 
 void VisualShaderGraphPlugin::update_theme() {
@@ -466,29 +466,29 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 		node->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 	}
 
-	Ref<VisualShaderNodeUniformRef> uniform_ref = vsnode;
-	if (uniform_ref.is_valid()) {
-		uniform_ref->set_shader_rid(visual_shader->get_rid());
-		uniform_ref->update_uniform_type();
+	Ref<VisualShaderNodeParameterRef> parameter_ref = vsnode;
+	if (parameter_ref.is_valid()) {
+		parameter_ref->set_shader_rid(visual_shader->get_rid());
+		parameter_ref->update_parameter_type();
 	}
 
-	Ref<VisualShaderNodeUniform> uniform = vsnode;
+	Ref<VisualShaderNodeParameter> parameter = vsnode;
 	HBoxContainer *hb = nullptr;
 
-	if (uniform.is_valid()) {
-		LineEdit *uniform_name = memnew(LineEdit);
-		register_uniform_name(p_id, uniform_name);
-		uniform_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		uniform_name->set_text(uniform->get_uniform_name());
-		uniform_name->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_changed).bind(p_id));
-		uniform_name->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_uniform_line_edit_focus_out).bind(uniform_name, p_id));
+	if (parameter.is_valid()) {
+		LineEdit *parameter_name = memnew(LineEdit);
+		register_parameter_name(p_id, parameter_name);
+		parameter_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		parameter_name->set_text(parameter->get_parameter_name());
+		parameter_name->connect("text_submitted", callable_mp(editor, &VisualShaderEditor::_parameter_line_edit_changed).bind(p_id));
+		parameter_name->connect("focus_exited", callable_mp(editor, &VisualShaderEditor::_parameter_line_edit_focus_out).bind(parameter_name, p_id));
 
 		if (vsnode->get_output_port_count() == 1 && vsnode->get_output_port_name(0) == "") {
 			hb = memnew(HBoxContainer);
-			hb->add_child(uniform_name);
+			hb->add_child(parameter_name);
 			node->add_child(hb);
 		} else {
-			node->add_child(uniform_name);
+			node->add_child(parameter_name);
 		}
 		port_offset++;
 	}
@@ -1409,13 +1409,13 @@ void VisualShaderEditor::_update_options_menu() {
 						}
 					}
 
-					Ref<VisualShaderNodeUniformRef> uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(vsn.ptr());
-					if (uniform_ref.is_valid()) {
+					Ref<VisualShaderNodeParameterRef> parameter_ref = Object::cast_to<VisualShaderNodeParameterRef>(vsn.ptr());
+					if (parameter_ref.is_valid()) {
 						check_result = -1;
 
 						if (members_input_port_type != VisualShaderNode::PORT_TYPE_MAX) {
-							for (int j = 0; j < uniform_ref->get_uniforms_count(); j++) {
-								if (visual_shader->is_port_types_compatible(uniform_ref->get_port_type_by_index(j), members_input_port_type)) {
+							for (int j = 0; j < parameter_ref->get_parameters_count(); j++) {
+								if (visual_shader->is_port_types_compatible(parameter_ref->get_port_type_by_index(j), members_input_port_type)) {
 									check_result = 1;
 									break;
 								}
@@ -1612,66 +1612,66 @@ void VisualShaderEditor::_update_created_node(GraphNode *node) {
 	node->add_theme_color_override("resizer_color", c);
 }
 
-void VisualShaderEditor::_update_uniforms(bool p_update_refs) {
-	VisualShaderNodeUniformRef::clear_uniforms(visual_shader->get_rid());
+void VisualShaderEditor::_update_parameters(bool p_update_refs) {
+	VisualShaderNodeParameterRef::clear_parameters(visual_shader->get_rid());
 
 	for (int t = 0; t < VisualShader::TYPE_MAX; t++) {
 		Vector<int> tnodes = visual_shader->get_node_list((VisualShader::Type)t);
 		for (int i = 0; i < tnodes.size(); i++) {
 			Ref<VisualShaderNode> vsnode = visual_shader->get_node((VisualShader::Type)t, tnodes[i]);
-			Ref<VisualShaderNodeUniform> uniform = vsnode;
+			Ref<VisualShaderNodeParameter> parameter = vsnode;
 
-			if (uniform.is_valid()) {
-				Ref<VisualShaderNodeFloatUniform> float_uniform = vsnode;
-				Ref<VisualShaderNodeIntUniform> int_uniform = vsnode;
-				Ref<VisualShaderNodeVec2Uniform> vec2_uniform = vsnode;
-				Ref<VisualShaderNodeVec3Uniform> vec3_uniform = vsnode;
-				Ref<VisualShaderNodeVec4Uniform> vec4_uniform = vsnode;
-				Ref<VisualShaderNodeColorUniform> color_uniform = vsnode;
-				Ref<VisualShaderNodeBooleanUniform> bool_uniform = vsnode;
-				Ref<VisualShaderNodeTransformUniform> transform_uniform = vsnode;
+			if (parameter.is_valid()) {
+				Ref<VisualShaderNodeFloatParameter> float_parameter = vsnode;
+				Ref<VisualShaderNodeIntParameter> int_parameter = vsnode;
+				Ref<VisualShaderNodeVec2Parameter> vec2_parameter = vsnode;
+				Ref<VisualShaderNodeVec3Parameter> vec3_parameter = vsnode;
+				Ref<VisualShaderNodeVec4Parameter> vec4_parameter = vsnode;
+				Ref<VisualShaderNodeColorParameter> color_parameter = vsnode;
+				Ref<VisualShaderNodeBooleanParameter> boolean_parameter = vsnode;
+				Ref<VisualShaderNodeTransformParameter> transform_parameter = vsnode;
 
-				VisualShaderNodeUniformRef::UniformType uniform_type;
-				if (float_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_FLOAT;
-				} else if (int_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_INT;
-				} else if (bool_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_BOOLEAN;
-				} else if (vec2_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_VECTOR2;
-				} else if (vec3_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_VECTOR3;
-				} else if (vec4_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_VECTOR4;
-				} else if (transform_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_TRANSFORM;
-				} else if (color_uniform.is_valid()) {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_COLOR;
+				VisualShaderNodeParameterRef::ParameterType parameter_type;
+				if (float_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_FLOAT;
+				} else if (int_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_INT;
+				} else if (boolean_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_BOOLEAN;
+				} else if (vec2_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_VECTOR2;
+				} else if (vec3_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_VECTOR3;
+				} else if (vec4_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_VECTOR4;
+				} else if (transform_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_TRANSFORM;
+				} else if (color_parameter.is_valid()) {
+					parameter_type = VisualShaderNodeParameterRef::PARAMETER_TYPE_COLOR;
 				} else {
-					uniform_type = VisualShaderNodeUniformRef::UniformType::UNIFORM_TYPE_SAMPLER;
+					parameter_type = VisualShaderNodeParameterRef::UNIFORM_TYPE_SAMPLER;
 				}
-				VisualShaderNodeUniformRef::add_uniform(visual_shader->get_rid(), uniform->get_uniform_name(), uniform_type);
+				VisualShaderNodeParameterRef::add_parameter(visual_shader->get_rid(), parameter->get_parameter_name(), parameter_type);
 			}
 		}
 	}
 	if (p_update_refs) {
-		graph_plugin->update_uniform_refs();
+		graph_plugin->update_parameter_refs();
 	}
 }
 
-void VisualShaderEditor::_update_uniform_refs(HashSet<String> &p_deleted_names) {
+void VisualShaderEditor::_update_parameter_refs(HashSet<String> &p_deleted_names) {
 	for (int i = 0; i < VisualShader::TYPE_MAX; i++) {
 		VisualShader::Type type = VisualShader::Type(i);
 
 		Vector<int> nodes = visual_shader->get_node_list(type);
 		for (int j = 0; j < nodes.size(); j++) {
 			if (j > 0) {
-				Ref<VisualShaderNodeUniformRef> ref = visual_shader->get_node(type, nodes[j]);
+				Ref<VisualShaderNodeParameterRef> ref = visual_shader->get_node(type, nodes[j]);
 				if (ref.is_valid()) {
-					if (p_deleted_names.has(ref->get_uniform_name())) {
-						undo_redo->add_do_method(ref.ptr(), "set_uniform_name", "[None]");
-						undo_redo->add_undo_method(ref.ptr(), "set_uniform_name", ref->get_uniform_name());
+					if (p_deleted_names.has(ref->get_parameter_name())) {
+						undo_redo->add_do_method(ref.ptr(), "set_parameter_name", "[None]");
+						undo_redo->add_undo_method(ref.ptr(), "set_parameter_name", ref->get_parameter_name());
 						undo_redo->add_do_method(graph_plugin.ptr(), "update_node", VisualShader::Type(i), nodes[j]);
 						undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", VisualShader::Type(i), nodes[j]);
 					}
@@ -1711,7 +1711,7 @@ void VisualShaderEditor::_update_graph() {
 
 	Vector<int> nodes = visual_shader->get_node_list(type);
 
-	_update_uniforms(false);
+	_update_parameters(false);
 	_update_varyings();
 
 	graph_plugin->clear_links();
@@ -2257,38 +2257,38 @@ void VisualShaderEditor::_comment_desc_popup_hide() {
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_uniform_line_edit_changed(const String &p_text, int p_node_id) {
+void VisualShaderEditor::_parameter_line_edit_changed(const String &p_text, int p_node_id) {
 	VisualShader::Type type = get_current_shader_type();
 
-	Ref<VisualShaderNodeUniform> node = visual_shader->get_node(type, p_node_id);
+	Ref<VisualShaderNodeParameter> node = visual_shader->get_node(type, p_node_id);
 	ERR_FAIL_COND(!node.is_valid());
 
-	String validated_name = visual_shader->validate_uniform_name(p_text, node);
+	String validated_name = visual_shader->validate_parameter_name(p_text, node);
 
-	if (validated_name == node->get_uniform_name()) {
+	if (validated_name == node->get_parameter_name()) {
 		return;
 	}
 
-	undo_redo->create_action(TTR("Set Uniform Name"));
-	undo_redo->add_do_method(node.ptr(), "set_uniform_name", validated_name);
-	undo_redo->add_undo_method(node.ptr(), "set_uniform_name", node->get_uniform_name());
-	undo_redo->add_do_method(graph_plugin.ptr(), "set_uniform_name", type, p_node_id, validated_name);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "set_uniform_name", type, p_node_id, node->get_uniform_name());
+	undo_redo->create_action(TTR("Set Parameter Name"));
+	undo_redo->add_do_method(node.ptr(), "set_parameter_name", validated_name);
+	undo_redo->add_undo_method(node.ptr(), "set_parameter_name", node->get_parameter_name());
+	undo_redo->add_do_method(graph_plugin.ptr(), "set_parameter_name", type, p_node_id, validated_name);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "set_parameter_name", type, p_node_id, node->get_parameter_name());
 	undo_redo->add_do_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node_deferred", type, p_node_id);
 
-	undo_redo->add_do_method(this, "_update_uniforms", true);
-	undo_redo->add_undo_method(this, "_update_uniforms", true);
+	undo_redo->add_do_method(this, "_update_parameters", true);
+	undo_redo->add_undo_method(this, "_update_parameters", true);
 
 	HashSet<String> changed_names;
-	changed_names.insert(node->get_uniform_name());
-	_update_uniform_refs(changed_names);
+	changed_names.insert(node->get_parameter_name());
+	_update_parameter_refs(changed_names);
 
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_uniform_line_edit_focus_out(Object *line_edit, int p_node_id) {
-	_uniform_line_edit_changed(Object::cast_to<LineEdit>(line_edit)->get_text(), p_node_id);
+void VisualShaderEditor::_parameter_line_edit_focus_out(Object *line_edit, int p_node_id) {
+	_parameter_line_edit_changed(Object::cast_to<LineEdit>(line_edit)->get_text(), p_node_id);
 }
 
 void VisualShaderEditor::_port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output) {
@@ -2674,22 +2674,22 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		if (!p_ops.is_empty()) {
 			_setup_node(vsn, p_ops);
 		}
-		VisualShaderNodeUniformRef *uniform_ref = Object::cast_to<VisualShaderNodeUniformRef>(vsn);
-		if (uniform_ref && to_node != -1 && to_slot != -1) {
+		VisualShaderNodeParameterRef *parameter_ref = Object::cast_to<VisualShaderNodeParameterRef>(vsn);
+		if (parameter_ref && to_node != -1 && to_slot != -1) {
 			VisualShaderNode::PortType input_port_type = visual_shader->get_node(type, to_node)->get_input_port_type(to_slot);
 			bool success = false;
 
-			for (int i = 0; i < uniform_ref->get_uniforms_count(); i++) {
-				if (uniform_ref->get_port_type_by_index(i) == input_port_type) {
-					uniform_ref->set_uniform_name(uniform_ref->get_uniform_name_by_index(i));
+			for (int i = 0; i < parameter_ref->get_parameters_count(); i++) {
+				if (parameter_ref->get_port_type_by_index(i) == input_port_type) {
+					parameter_ref->set_parameter_name(parameter_ref->get_parameter_name_by_index(i));
 					success = true;
 					break;
 				}
 			}
 			if (!success) {
-				for (int i = 0; i < uniform_ref->get_uniforms_count(); i++) {
-					if (visual_shader->is_port_types_compatible(uniform_ref->get_port_type_by_index(i), input_port_type)) {
-						uniform_ref->set_uniform_name(uniform_ref->get_uniform_name_by_index(i));
+				for (int i = 0; i < parameter_ref->get_parameters_count(); i++) {
+					if (visual_shader->is_port_types_compatible(parameter_ref->get_port_type_by_index(i), input_port_type)) {
+						parameter_ref->set_parameter_name(parameter_ref->get_parameter_name_by_index(i));
 						break;
 					}
 				}
@@ -2712,7 +2712,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	bool is_cubemap = (Object::cast_to<VisualShaderNodeCubemap>(vsnode.ptr()) != nullptr);
 	bool is_curve = (Object::cast_to<VisualShaderNodeCurveTexture>(vsnode.ptr()) != nullptr);
 	bool is_curve_xyz = (Object::cast_to<VisualShaderNodeCurveXYZTexture>(vsnode.ptr()) != nullptr);
-	bool is_uniform = (Object::cast_to<VisualShaderNodeUniform>(vsnode.ptr()) != nullptr);
+	bool is_parameter = (Object::cast_to<VisualShaderNodeParameter>(vsnode.ptr()) != nullptr);
 
 	Point2 position = graph->get_scroll_ofs();
 
@@ -2861,9 +2861,9 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	}
 	_member_cancel();
 
-	if (is_uniform) {
-		undo_redo->add_do_method(this, "_update_uniforms", true);
-		undo_redo->add_undo_method(this, "_update_uniforms", true);
+	if (is_parameter) {
+		undo_redo->add_do_method(this, "_update_parameters", true);
+		undo_redo->add_undo_method(this, "_update_parameters", true);
 	}
 
 	if (is_curve) {
@@ -3118,7 +3118,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		}
 	}
 
-	HashSet<String> uniform_names;
+	HashSet<String> parameter_names;
 
 	for (const int &F : p_nodes) {
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, F);
@@ -3141,9 +3141,9 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 			undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
 		}
 
-		VisualShaderNodeUniform *uniform = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-		if (uniform) {
-			uniform_names.insert(uniform->get_uniform_name());
+		VisualShaderNodeParameter *parameter = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
+		if (parameter) {
+			parameter_names.insert(parameter->get_parameter_name());
 		}
 	}
 
@@ -3172,12 +3172,12 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F);
 	}
 
-	// update uniform refs if any uniform has been deleted
-	if (uniform_names.size() > 0) {
-		undo_redo->add_do_method(this, "_update_uniforms", true);
-		undo_redo->add_undo_method(this, "_update_uniforms", true);
+	// update parameter refs if any parameter has been deleted
+	if (parameter_names.size() > 0) {
+		undo_redo->add_do_method(this, "_update_parameters", true);
+		undo_redo->add_undo_method(this, "_update_parameters", true);
 
-		_update_uniform_refs(uniform_names);
+		_update_parameter_refs(parameter_names);
 	}
 }
 
@@ -3196,33 +3196,33 @@ void VisualShaderEditor::_update_constant(VisualShader::Type p_type_id, int p_no
 	}
 }
 
-void VisualShaderEditor::_update_uniform(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port) {
-	Ref<VisualShaderNodeUniform> uniform = visual_shader->get_node(p_type_id, p_node_id);
-	ERR_FAIL_COND(!uniform.is_valid());
+void VisualShaderEditor::_update_parameter(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port) {
+	Ref<VisualShaderNodeParameter> parameter = visual_shader->get_node(p_type_id, p_node_id);
+	ERR_FAIL_COND(!parameter.is_valid());
 
-	String valid_name = visual_shader->validate_uniform_name(uniform->get_uniform_name(), uniform);
-	uniform->set_uniform_name(valid_name);
-	graph_plugin->set_uniform_name(p_type_id, p_node_id, valid_name);
+	String valid_name = visual_shader->validate_parameter_name(parameter->get_parameter_name(), parameter);
+	parameter->set_parameter_name(valid_name);
+	graph_plugin->set_parameter_name(p_type_id, p_node_id, valid_name);
 
-	if (uniform->has_method("set_default_value_enabled")) {
-		uniform->call("set_default_value_enabled", true);
-		uniform->call("set_default_value", p_var);
+	if (parameter->has_method("set_default_value_enabled")) {
+		parameter->call("set_default_value_enabled", true);
+		parameter->call("set_default_value", p_var);
 	}
 	if (p_preview_port != -1) {
-		uniform->set_output_port_for_preview(p_preview_port);
+		parameter->set_output_port_for_preview(p_preview_port);
 	}
 }
 
-void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
+void VisualShaderEditor::_convert_constants_to_parameters(bool p_vice_versa) {
 	VisualShader::Type type_id = get_current_shader_type();
 
 	if (!p_vice_versa) {
-		undo_redo->create_action(TTR("Convert Constant Node(s) To Uniform(s)"));
+		undo_redo->create_action(TTR("Convert Constant Node(s) To Parameter(s)"));
 	} else {
-		undo_redo->create_action(TTR("Convert Uniform Node(s) To Constant(s)"));
+		undo_redo->create_action(TTR("Convert Parameter Node(s) To Constant(s)"));
 	}
 
-	const HashSet<int> &current_set = p_vice_versa ? selected_uniforms : selected_constants;
+	const HashSet<int> &current_set = p_vice_versa ? selected_parameters : selected_constants;
 	HashSet<String> deleted_names;
 
 	for (const int &E : current_set) {
@@ -3235,15 +3235,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 		if (!p_vice_versa) {
 			Ref<VisualShaderNodeFloatConstant> float_const = Object::cast_to<VisualShaderNodeFloatConstant>(node.ptr());
 			if (float_const.is_valid()) {
-				_replace_node(type_id, node_id, "VisualShaderNodeFloatConstant", "VisualShaderNodeFloatUniform");
+				_replace_node(type_id, node_id, "VisualShaderNodeFloatConstant", "VisualShaderNodeFloatParameter");
 				var = float_const->get_constant();
 				caught = true;
 			}
 		} else {
-			Ref<VisualShaderNodeFloatUniform> float_uniform = Object::cast_to<VisualShaderNodeFloatUniform>(node.ptr());
-			if (float_uniform.is_valid()) {
-				_replace_node(type_id, node_id, "VisualShaderNodeFloatUniform", "VisualShaderNodeFloatConstant");
-				var = float_uniform->get_default_value();
+			Ref<VisualShaderNodeFloatParameter> float_parameter = Object::cast_to<VisualShaderNodeFloatParameter>(node.ptr());
+			if (float_parameter.is_valid()) {
+				_replace_node(type_id, node_id, "VisualShaderNodeFloatParameter", "VisualShaderNodeFloatConstant");
+				var = float_parameter->get_default_value();
 				caught = true;
 			}
 		}
@@ -3253,15 +3253,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeIntConstant> int_const = Object::cast_to<VisualShaderNodeIntConstant>(node.ptr());
 				if (int_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeIntConstant", "VisualShaderNodeIntUniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeIntConstant", "VisualShaderNodeIntParameter");
 					var = int_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeIntUniform> int_uniform = Object::cast_to<VisualShaderNodeIntUniform>(node.ptr());
-				if (int_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeIntUniform", "VisualShaderNodeIntConstant");
-					var = int_uniform->get_default_value();
+				Ref<VisualShaderNodeIntParameter> int_parameter = Object::cast_to<VisualShaderNodeIntParameter>(node.ptr());
+				if (int_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeIntParameter", "VisualShaderNodeIntConstant");
+					var = int_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3272,15 +3272,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeBooleanConstant> boolean_const = Object::cast_to<VisualShaderNodeBooleanConstant>(node.ptr());
 				if (boolean_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeBooleanConstant", "VisualShaderNodeBooleanUniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeBooleanConstant", "VisualShaderNodeBooleanParameter");
 					var = boolean_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeBooleanUniform> boolean_uniform = Object::cast_to<VisualShaderNodeBooleanUniform>(node.ptr());
-				if (boolean_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeBooleanUniform", "VisualShaderNodeBooleanConstant");
-					var = boolean_uniform->get_default_value();
+				Ref<VisualShaderNodeBooleanParameter> boolean_parameter = Object::cast_to<VisualShaderNodeBooleanParameter>(node.ptr());
+				if (boolean_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeBooleanParameter", "VisualShaderNodeBooleanConstant");
+					var = boolean_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3291,15 +3291,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeVec2Constant> vec2_const = Object::cast_to<VisualShaderNodeVec2Constant>(node.ptr());
 				if (vec2_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeVec2Constant", "VisualShaderNodeVec2Uniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeVec2Constant", "VisualShaderNodeVec2Parameter");
 					var = vec2_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeVec2Uniform> vec2_uniform = Object::cast_to<VisualShaderNodeVec2Uniform>(node.ptr());
-				if (vec2_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeVec2Uniform", "VisualShaderNodeVec2Constant");
-					var = vec2_uniform->get_default_value();
+				Ref<VisualShaderNodeVec2Parameter> vec2_parameter = Object::cast_to<VisualShaderNodeVec2Parameter>(node.ptr());
+				if (vec2_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeVec2Parameter", "VisualShaderNodeVec2Constant");
+					var = vec2_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3310,15 +3310,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeVec3Constant> vec3_const = Object::cast_to<VisualShaderNodeVec3Constant>(node.ptr());
 				if (vec3_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeVec3Constant", "VisualShaderNodeVec3Uniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeVec3Constant", "VisualShaderNodeVec3Parameter");
 					var = vec3_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeVec3Uniform> vec3_uniform = Object::cast_to<VisualShaderNodeVec3Uniform>(node.ptr());
-				if (vec3_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeVec3Uniform", "VisualShaderNodeVec3Constant");
-					var = vec3_uniform->get_default_value();
+				Ref<VisualShaderNodeVec3Parameter> vec3_parameter = Object::cast_to<VisualShaderNodeVec3Parameter>(node.ptr());
+				if (vec3_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeVec3Parameter", "VisualShaderNodeVec3Constant");
+					var = vec3_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3329,15 +3329,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeVec4Constant> vec4_const = Object::cast_to<VisualShaderNodeVec4Constant>(node.ptr());
 				if (vec4_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeVec4Constant", "VisualShaderNodeVec4Uniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeVec4Constant", "VisualShaderNodeVec4Parameter");
 					var = vec4_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeVec4Uniform> vec4_uniform = Object::cast_to<VisualShaderNodeVec4Uniform>(node.ptr());
-				if (vec4_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeVec4Uniform", "VisualShaderNodeVec4Constant");
-					var = vec4_uniform->get_default_value();
+				Ref<VisualShaderNodeVec4Parameter> vec4_parameter = Object::cast_to<VisualShaderNodeVec4Parameter>(node.ptr());
+				if (vec4_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeVec4Parameter", "VisualShaderNodeVec4Constant");
+					var = vec4_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3348,15 +3348,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeColorConstant> color_const = Object::cast_to<VisualShaderNodeColorConstant>(node.ptr());
 				if (color_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeColorConstant", "VisualShaderNodeColorUniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeColorConstant", "VisualShaderNodeColorParameter");
 					var = color_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeColorUniform> color_uniform = Object::cast_to<VisualShaderNodeColorUniform>(node.ptr());
-				if (color_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeColorUniform", "VisualShaderNodeColorConstant");
-					var = color_uniform->get_default_value();
+				Ref<VisualShaderNodeColorParameter> color_parameter = Object::cast_to<VisualShaderNodeColorParameter>(node.ptr());
+				if (color_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeColorParameter", "VisualShaderNodeColorConstant");
+					var = color_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3367,15 +3367,15 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 			if (!p_vice_versa) {
 				Ref<VisualShaderNodeTransformConstant> transform_const = Object::cast_to<VisualShaderNodeTransformConstant>(node.ptr());
 				if (transform_const.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeTransformConstant", "VisualShaderNodeTransformUniform");
+					_replace_node(type_id, node_id, "VisualShaderNodeTransformConstant", "VisualShaderNodeTransformParameter");
 					var = transform_const->get_constant();
 					caught = true;
 				}
 			} else {
-				Ref<VisualShaderNodeTransformUniform> transform_uniform = Object::cast_to<VisualShaderNodeTransformUniform>(node.ptr());
-				if (transform_uniform.is_valid()) {
-					_replace_node(type_id, node_id, "VisualShaderNodeTransformUniform", "VisualShaderNodeTransformConstant");
-					var = transform_uniform->get_default_value();
+				Ref<VisualShaderNodeTransformParameter> transform_parameter = Object::cast_to<VisualShaderNodeTransformParameter>(node.ptr());
+				if (transform_parameter.is_valid()) {
+					_replace_node(type_id, node_id, "VisualShaderNodeTransformParameter", "VisualShaderNodeTransformConstant");
+					var = transform_parameter->get_default_value();
 					caught = true;
 				}
 			}
@@ -3384,27 +3384,27 @@ void VisualShaderEditor::_convert_constants_to_uniforms(bool p_vice_versa) {
 		int preview_port = node->get_output_port_for_preview();
 
 		if (!p_vice_versa) {
-			undo_redo->add_do_method(this, "_update_uniform", type_id, node_id, var, preview_port);
+			undo_redo->add_do_method(this, "_update_parameter", type_id, node_id, var, preview_port);
 			undo_redo->add_undo_method(this, "_update_constant", type_id, node_id, var, preview_port);
 		} else {
 			undo_redo->add_do_method(this, "_update_constant", type_id, node_id, var, preview_port);
-			undo_redo->add_undo_method(this, "_update_uniform", type_id, node_id, var, preview_port);
+			undo_redo->add_undo_method(this, "_update_parameter", type_id, node_id, var, preview_port);
 
-			Ref<VisualShaderNodeUniform> uniform = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-			ERR_CONTINUE(!uniform.is_valid());
+			Ref<VisualShaderNodeParameter> parameter = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
+			ERR_CONTINUE(!parameter.is_valid());
 
-			deleted_names.insert(uniform->get_uniform_name());
+			deleted_names.insert(parameter->get_parameter_name());
 		}
 
 		undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type_id, node_id);
 		undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", type_id, node_id);
 	}
 
-	undo_redo->add_do_method(this, "_update_uniforms", true);
-	undo_redo->add_undo_method(this, "_update_uniforms", true);
+	undo_redo->add_do_method(this, "_update_parameters", true);
+	undo_redo->add_undo_method(this, "_update_parameters", true);
 
 	if (deleted_names.size() > 0) {
-		_update_uniform_refs(deleted_names);
+		_update_parameter_refs(deleted_names);
 	}
 
 	undo_redo->commit_action();
@@ -3468,7 +3468,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
 		selected_constants.clear();
-		selected_uniforms.clear();
+		selected_parameters.clear();
 		selected_comment = -1;
 		selected_float_constant = -1;
 
@@ -3494,9 +3494,9 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 					if (float_constant_node != nullptr) {
 						selected_float_constant = id;
 					}
-					VisualShaderNodeUniform *uniform_node = Object::cast_to<VisualShaderNodeUniform>(node.ptr());
-					if (uniform_node != nullptr && uniform_node->is_convertible_to_constant()) {
-						selected_uniforms.insert(id);
+					VisualShaderNodeParameter *parameter_node = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
+					if (parameter_node != nullptr && parameter_node->is_convertible_to_constant()) {
+						selected_parameters.insert(id);
 					}
 				}
 			}
@@ -3533,11 +3533,11 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
+			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
-			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
+			temp = popup_menu->get_item_index(NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS);
 			if (temp != -1) {
 				popup_menu->remove_item(temp);
 			}
@@ -3554,7 +3554,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				popup_menu->remove_item(temp);
 			}
 
-			if (selected_constants.size() > 0 || selected_uniforms.size() > 0) {
+			if (selected_constants.size() > 0 || selected_parameters.size() > 0) {
 				popup_menu->add_separator("", NodeMenuOptions::SEPARATOR2);
 
 				if (selected_float_constant != -1) {
@@ -3573,11 +3573,11 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (selected_constants.size() > 0) {
-					popup_menu->add_item(TTR("Convert Constant(s) to Uniform(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS);
+					popup_menu->add_item(TTR("Convert Constant(s) to Parameter(s)"), NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS);
 				}
 
-				if (selected_uniforms.size() > 0) {
-					popup_menu->add_item(TTR("Convert Uniform(s) to Constant(s)"), NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS);
+				if (selected_parameters.size() > 0) {
+					popup_menu->add_item(TTR("Convert Parameter(s) to Constant(s)"), NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS);
 				}
 			}
 
@@ -4124,32 +4124,32 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, 
 	undo_redo->commit_action();
 }
 
-void VisualShaderEditor::_uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform_ref, String p_name) {
-	String prev_name = p_uniform_ref->get_uniform_name();
+void VisualShaderEditor::_parameter_ref_select_item(Ref<VisualShaderNodeParameterRef> p_parameter_ref, String p_name) {
+	String prev_name = p_parameter_ref->get_parameter_name();
 
 	if (p_name == prev_name) {
 		return;
 	}
 
-	bool type_changed = p_uniform_ref->get_uniform_type_by_name(p_name) != p_uniform_ref->get_uniform_type_by_name(prev_name);
+	bool type_changed = p_parameter_ref->get_parameter_type_by_name(p_name) != p_parameter_ref->get_parameter_type_by_name(prev_name);
 
 	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
-	undo_redo->create_action(TTR("UniformRef Name Changed"));
+	undo_redo->create_action(TTR("ParameterRef Name Changed"));
 
-	undo_redo->add_do_method(p_uniform_ref.ptr(), "set_uniform_name", p_name);
-	undo_redo->add_undo_method(p_uniform_ref.ptr(), "set_uniform_name", prev_name);
+	undo_redo->add_do_method(p_parameter_ref.ptr(), "set_parameter_name", p_name);
+	undo_redo->add_undo_method(p_parameter_ref.ptr(), "set_parameter_name", prev_name);
 
 	// update output port
 	for (int type_id = 0; type_id < VisualShader::TYPE_MAX; type_id++) {
 		VisualShader::Type type = VisualShader::Type(type_id);
-		int id = visual_shader->find_node_id(type, p_uniform_ref);
+		int id = visual_shader->find_node_id(type, p_parameter_ref);
 		if (id != VisualShader::NODE_ID_INVALID) {
 			if (type_changed) {
 				List<VisualShader::Connection> conns;
 				visual_shader->get_node_connections(type, &conns);
 				for (const VisualShader::Connection &E : conns) {
 					if (E.from_node == id) {
-						if (visual_shader->is_port_types_compatible(p_uniform_ref->get_uniform_type_by_name(p_name), visual_shader->get_node(type, E.to_node)->get_input_port_type(E.to_port))) {
+						if (visual_shader->is_port_types_compatible(p_parameter_ref->get_parameter_type_by_name(p_name), visual_shader->get_node(type, E.to_node)->get_input_port_type(E.to_port))) {
 							continue;
 						}
 						undo_redo->add_do_method(visual_shader.ptr(), "disconnect_nodes", type, E.from_node, E.from_port, E.to_node, E.to_port);
@@ -4442,11 +4442,11 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 		case NodeMenuOptions::CLEAR_COPY_BUFFER:
 			_clear_copy_buffer();
 			break;
-		case NodeMenuOptions::CONVERT_CONSTANTS_TO_UNIFORMS:
-			_convert_constants_to_uniforms(false);
+		case NodeMenuOptions::CONVERT_CONSTANTS_TO_PARAMETERS:
+			_convert_constants_to_parameters(false);
 			break;
-		case NodeMenuOptions::CONVERT_UNIFORMS_TO_CONSTANTS:
-			_convert_constants_to_uniforms(true);
+		case NodeMenuOptions::CONVERT_PARAMETERS_TO_CONSTANTS:
+			_convert_constants_to_parameters(true);
 			break;
 		case NodeMenuOptions::SET_COMMENT_TITLE:
 			_comment_title_popup_show(get_screen_position() + get_local_mouse_position(), selected_comment);
@@ -4598,7 +4598,7 @@ void VisualShaderEditor::_preview_size_changed() {
 }
 
 static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
-	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_variable);
+	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
@@ -4655,18 +4655,18 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_add_node", &VisualShaderEditor::_add_node);
 	ClassDB::bind_method("_node_changed", &VisualShaderEditor::_node_changed);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
-	ClassDB::bind_method("_uniform_select_item", &VisualShaderEditor::_uniform_select_item);
+	ClassDB::bind_method("_parameter_ref_select_item", &VisualShaderEditor::_parameter_ref_select_item);
 	ClassDB::bind_method("_varying_select_item", &VisualShaderEditor::_varying_select_item);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
 	ClassDB::bind_method("_clear_copy_buffer", &VisualShaderEditor::_clear_copy_buffer);
-	ClassDB::bind_method("_update_uniforms", &VisualShaderEditor::_update_uniforms);
+	ClassDB::bind_method("_update_parameters", &VisualShaderEditor::_update_parameters);
 	ClassDB::bind_method("_update_varyings", &VisualShaderEditor::_update_varyings);
 	ClassDB::bind_method("_update_varying_tree", &VisualShaderEditor::_update_varying_tree);
 	ClassDB::bind_method("_set_mode", &VisualShaderEditor::_set_mode);
 	ClassDB::bind_method("_nodes_dragged", &VisualShaderEditor::_nodes_dragged);
 	ClassDB::bind_method("_float_constant_selected", &VisualShaderEditor::_float_constant_selected);
 	ClassDB::bind_method("_update_constant", &VisualShaderEditor::_update_constant);
-	ClassDB::bind_method("_update_uniform", &VisualShaderEditor::_update_uniform);
+	ClassDB::bind_method("_update_parameter", &VisualShaderEditor::_update_parameter);
 	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
 
 	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
@@ -5077,7 +5077,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("SoftLight", "Color", "Operators", "VisualShaderNodeColorOp", TTR("SoftLight operator."), { VisualShaderNodeColorOp::OP_SOFT_LIGHT }, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("ColorParameter", "Color", "Variables", "VisualShaderNodeColorParameter", TTR("Color parameter."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 
 	// COMMON
 
@@ -5107,7 +5107,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Is", "Conditional", "Common", "VisualShaderNodeIs", TTR("Returns the boolean result of the comparison between INF (or NaN) and a scalar parameter."), {}, VisualShaderNode::PORT_TYPE_BOOLEAN));
 
 	add_options.push_back(AddOption("BooleanConstant", "Conditional", "Variables", "VisualShaderNodeBooleanConstant", TTR("Boolean constant."), {}, VisualShaderNode::PORT_TYPE_BOOLEAN));
-	add_options.push_back(AddOption("BooleanUniform", "Conditional", "Variables", "VisualShaderNodeBooleanUniform", TTR("Boolean uniform."), {}, VisualShaderNode::PORT_TYPE_BOOLEAN));
+	add_options.push_back(AddOption("BooleanParameter", "Conditional", "Variables", "VisualShaderNodeBooleanParameter", TTR("Boolean parameter."), {}, VisualShaderNode::PORT_TYPE_BOOLEAN));
 
 	// INPUT
 
@@ -5396,8 +5396,8 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("FloatConstant", "Scalar", "Variables", "VisualShaderNodeFloatConstant", TTR("Scalar floating-point constant."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
 	add_options.push_back(AddOption("IntConstant", "Scalar", "Variables", "VisualShaderNodeIntConstant", TTR("Scalar integer constant."), {}, VisualShaderNode::PORT_TYPE_SCALAR_INT));
-	add_options.push_back(AddOption("FloatUniform", "Scalar", "Variables", "VisualShaderNodeFloatUniform", TTR("Scalar floating-point uniform."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
-	add_options.push_back(AddOption("IntUniform", "Scalar", "Variables", "VisualShaderNodeIntUniform", TTR("Scalar integer uniform."), {}, VisualShaderNode::PORT_TYPE_SCALAR_INT));
+	add_options.push_back(AddOption("FloatParameter", "Scalar", "Variables", "VisualShaderNodeFloatParameter", TTR("Scalar floating-point parameter."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption("IntParameter", "Scalar", "Variables", "VisualShaderNodeIntParameter", TTR("Scalar integer parameter."), {}, VisualShaderNode::PORT_TYPE_SCALAR_INT));
 
 	// SDF
 	{
@@ -5429,11 +5429,11 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("UVPanning", "Textures", "Functions", "VisualShaderNodeUVFunc", TTR("Apply panning function on texture coordinates."), { VisualShaderNodeUVFunc::FUNC_PANNING }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("UVScaling", "Textures", "Functions", "VisualShaderNodeUVFunc", TTR("Apply scaling function on texture coordinates."), { VisualShaderNodeUVFunc::FUNC_SCALING }, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 
-	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubemapUniform", TTR("Cubic texture uniform lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
-	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
-	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
-	add_options.push_back(AddOption("Texture2DArrayUniform", "Textures", "Variables", "VisualShaderNodeTexture2DArrayUniform", TTR("2D array of textures uniform lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
-	add_options.push_back(AddOption("Texture3DUniform", "Textures", "Variables", "VisualShaderNodeTexture3DUniform", TTR("3D texture uniform lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
+	add_options.push_back(AddOption("CubeMapParameter", "Textures", "Variables", "VisualShaderNodeCubemapParameter", TTR("Cubic texture parameter lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
+	add_options.push_back(AddOption("Texture2DParameter", "Textures", "Variables", "VisualShaderNodeTexture2DParameter", TTR("2D texture parameter lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
+	add_options.push_back(AddOption("TextureParameterTriplanar", "Textures", "Variables", "VisualShaderNodeTextureParameterTriplanar", TTR("2D texture parameter lookup with triplanar."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Texture2DArrayParameter", "Textures", "Variables", "VisualShaderNodeTexture2DArrayParameter", TTR("2D array of textures parameter lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
+	add_options.push_back(AddOption("Texture3DParameter", "Textures", "Variables", "VisualShaderNodeTexture3DParameter", TTR("3D texture parameter lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
 
 	// TRANSFORM
 
@@ -5457,7 +5457,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("TransformVectorMult", "Transform", "Operators", "VisualShaderNodeTransformVecMult", TTR("Multiplies vector by transform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 
 	add_options.push_back(AddOption("TransformConstant", "Transform", "Variables", "VisualShaderNodeTransformConstant", TTR("Transform constant."), {}, VisualShaderNode::PORT_TYPE_TRANSFORM));
-	add_options.push_back(AddOption("TransformUniform", "Transform", "Variables", "VisualShaderNodeTransformUniform", TTR("Transform uniform."), {}, VisualShaderNode::PORT_TYPE_TRANSFORM));
+	add_options.push_back(AddOption("TransformParameter", "Transform", "Variables", "VisualShaderNodeTransformParameter", TTR("Transform parameter."), {}, VisualShaderNode::PORT_TYPE_TRANSFORM));
 
 	// UTILITY
 
@@ -5659,18 +5659,18 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Subtract", "Vector", "Operators", "VisualShaderNodeVectorOp", TTR("Subtracts 4D vector from 4D vector."), { VisualShaderNodeVectorOp::OP_SUB, VisualShaderNodeVectorOp::OP_TYPE_VECTOR_4D }, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 
 	add_options.push_back(AddOption("Vector2Constant", "Vector", "Variables", "VisualShaderNodeVec2Constant", TTR("2D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
-	add_options.push_back(AddOption("Vector2Uniform", "Vector", "Variables", "VisualShaderNodeVec2Uniform", TTR("2D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("Vector2Parameter", "Vector", "Variables", "VisualShaderNodeVec2Parameter", TTR("2D vector parameter."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 	add_options.push_back(AddOption("Vector3Constant", "Vector", "Variables", "VisualShaderNodeVec3Constant", TTR("3D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
-	add_options.push_back(AddOption("Vector3Uniform", "Vector", "Variables", "VisualShaderNodeVec3Uniform", TTR("3D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
+	add_options.push_back(AddOption("Vector3Parameter", "Vector", "Variables", "VisualShaderNodeVec3Parameter", TTR("3D vector parameter."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Vector4Constant", "Vector", "Variables", "VisualShaderNodeVec4Constant", TTR("4D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
-	add_options.push_back(AddOption("Vector4Uniform", "Vector", "Variables", "VisualShaderNodeVec4Uniform", TTR("4D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+	add_options.push_back(AddOption("Vector4Parameter", "Vector", "Variables", "VisualShaderNodeVec4Parameter", TTR("4D vector parameter."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 
 	// SPECIAL
 
 	add_options.push_back(AddOption("Comment", "Special", "", "VisualShaderNodeComment", TTR("A rectangular area with a description string for better graph organization.")));
 	add_options.push_back(AddOption("Expression", "Special", "", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
-	add_options.push_back(AddOption("GlobalExpression", "Special", "", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, uniforms and constants.")));
-	add_options.push_back(AddOption("UniformRef", "Special", "", "VisualShaderNodeUniformRef", TTR("A reference to an existing uniform.")));
+	add_options.push_back(AddOption("GlobalExpression", "Special", "", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which is placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, parameters and constants.")));
+	add_options.push_back(AddOption("ParameterRef", "Special", "", "VisualShaderNodeParameterRef", TTR("A reference to an existing parameter.")));
 	add_options.push_back(AddOption("VaryingGetter", "Special", "", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("VaryingSetter", "Special", "", "VisualShaderNodeVaryingSetter", TTR("Set varying parameter."), {}, -1, TYPE_FLAGS_VERTEX | TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("VaryingGetter", "Special", "", "VisualShaderNodeVaryingGetter", TTR("Get varying parameter."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_CANVAS_ITEM));
@@ -5826,28 +5826,28 @@ public:
 
 ////////////////
 
-class VisualShaderNodePluginUniformRefEditor : public OptionButton {
-	GDCLASS(VisualShaderNodePluginUniformRefEditor, OptionButton);
+class VisualShaderNodePluginParameterRefEditor : public OptionButton {
+	GDCLASS(VisualShaderNodePluginParameterRefEditor, OptionButton);
 
 	VisualShaderEditor *editor = nullptr;
-	Ref<VisualShaderNodeUniformRef> uniform_ref;
+	Ref<VisualShaderNodeParameterRef> parameter_ref;
 
 public:
 	void _notification(int p_what) {
 		switch (p_what) {
 			case NOTIFICATION_READY: {
-				connect("item_selected", callable_mp(this, &VisualShaderNodePluginUniformRefEditor::_item_selected));
+				connect("item_selected", callable_mp(this, &VisualShaderNodePluginParameterRefEditor::_item_selected));
 			} break;
 		}
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_uniform_select_item"), uniform_ref, get_item_text(p_item));
+		editor->call_deferred(SNAME("_parameter_ref_select_item"), parameter_ref, get_item_text(p_item));
 	}
 
-	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeUniformRef> &p_uniform_ref) {
+	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeParameterRef> &p_parameter_ref) {
 		editor = p_editor;
-		uniform_ref = p_uniform_ref;
+		parameter_ref = p_parameter_ref;
 
 		Ref<Texture2D> type_icon[] = {
 			EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
@@ -5863,11 +5863,11 @@ public:
 
 		add_item("[None]");
 		int to_select = -1;
-		for (int i = 0; i < p_uniform_ref->get_uniforms_count(); i++) {
-			if (p_uniform_ref->get_uniform_name() == p_uniform_ref->get_uniform_name_by_index(i)) {
+		for (int i = 0; i < p_parameter_ref->get_parameters_count(); i++) {
+			if (p_parameter_ref->get_parameter_name() == p_parameter_ref->get_parameter_name_by_index(i)) {
 				to_select = i + 1;
 			}
-			add_icon_item(type_icon[p_uniform_ref->get_uniform_type_by_index(i)], p_uniform_ref->get_uniform_name_by_index(i));
+			add_icon_item(type_icon[p_parameter_ref->get_parameter_type_by_index(i)], p_parameter_ref->get_parameter_name_by_index(i));
 		}
 
 		if (to_select >= 0) {
@@ -6011,8 +6011,8 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		return editor;
 	}
 
-	if (p_node->is_class("VisualShaderNodeUniformRef")) {
-		VisualShaderNodePluginUniformRefEditor *editor = memnew(VisualShaderNodePluginUniformRefEditor);
+	if (p_node->is_class("VisualShaderNodeParameterRef")) {
+		VisualShaderNodePluginParameterRefEditor *editor = memnew(VisualShaderNodePluginParameterRefEditor);
 		editor->setup(vseditor, p_node);
 		return editor;
 	}
@@ -6222,7 +6222,7 @@ void VisualShaderNodePortPreview::_shader_changed() {
 	preview_shader->set_code(shader_code);
 	for (int i = 0; i < default_textures.size(); i++) {
 		for (int j = 0; j < default_textures[i].params.size(); j++) {
-			preview_shader->set_default_texture_param(default_textures[i].name, default_textures[i].params[j], j);
+			preview_shader->set_default_texture_parameter(default_textures[i].name, default_textures[i].params[j], j);
 		}
 	}
 

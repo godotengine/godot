@@ -2209,7 +2209,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// able to load resources, load the global shader variables.
 		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
-		rendering_server->global_shader_uniforms_load_settings(!editor);
+		rendering_server->global_shader_parameters_load_settings(!editor);
 	}
 
 	_start_success = true;
@@ -3136,7 +3136,7 @@ void Main::cleanup(bool p_force) {
 	RenderingServer::get_singleton()->sync();
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_shader_uniforms_clear();
+	rendering_server->global_shader_parameters_clear();
 
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer

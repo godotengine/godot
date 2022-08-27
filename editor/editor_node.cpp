@@ -1070,7 +1070,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		// Reload the global shader variables, but this time
 		// loading textures, as they are now properly imported.
-		RenderingServer::get_singleton()->global_shader_uniforms_load_settings(true);
+		RenderingServer::get_singleton()->global_shader_parameters_load_settings(true);
 
 		// Start preview thread now that it's safe.
 		if (!singleton->cmdline_export_mode) {

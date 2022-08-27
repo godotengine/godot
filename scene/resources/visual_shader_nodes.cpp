@@ -4712,44 +4712,44 @@ VisualShaderNodeTransformDecompose::VisualShaderNodeTransformDecompose() {
 	set_input_port_default_value(0, Transform3D());
 }
 
-////////////// Float Uniform
+////////////// Float Parameter
 
-String VisualShaderNodeFloatUniform::get_caption() const {
-	return "FloatUniform";
+String VisualShaderNodeFloatParameter::get_caption() const {
+	return "FloatParameter";
 }
 
-int VisualShaderNodeFloatUniform::get_input_port_count() const {
+int VisualShaderNodeFloatParameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeFloatUniform::PortType VisualShaderNodeFloatUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeFloatParameter::PortType VisualShaderNodeFloatParameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeFloatUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeFloatParameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeFloatUniform::get_output_port_count() const {
+int VisualShaderNodeFloatParameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeFloatUniform::PortType VisualShaderNodeFloatUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeFloatParameter::PortType VisualShaderNodeFloatParameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeFloatUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeFloatParameter::get_output_port_name(int p_port) const {
 	return ""; //no output port means the editor will be used as port
 }
 
-String VisualShaderNodeFloatUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeFloatParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "";
 	if (hint == HINT_RANGE) {
-		code += _get_qual_str() + "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ")";
+		code += _get_qual_str() + "uniform float " + get_parameter_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ")";
 	} else if (hint == HINT_RANGE_STEP) {
-		code += _get_qual_str() + "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ")";
+		code += _get_qual_str() + "uniform float " + get_parameter_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ")";
 	} else {
-		code += _get_qual_str() + "uniform float " + get_uniform_name();
+		code += _get_qual_str() + "uniform float " + get_parameter_name();
 	}
 	if (default_value_enabled) {
 		code += " = " + rtos(default_value);
@@ -4758,19 +4758,19 @@ String VisualShaderNodeFloatUniform::generate_global(Shader::Mode p_mode, Visual
 	return code;
 }
 
-String VisualShaderNodeFloatUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeFloatParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-bool VisualShaderNodeFloatUniform::is_show_prop_names() const {
+bool VisualShaderNodeFloatParameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeFloatUniform::is_use_prop_slots() const {
+bool VisualShaderNodeFloatParameter::is_use_prop_slots() const {
 	return true;
 }
 
-void VisualShaderNodeFloatUniform::set_hint(Hint p_hint) {
+void VisualShaderNodeFloatParameter::set_hint(Hint p_hint) {
 	ERR_FAIL_INDEX(int(p_hint), int(HINT_MAX));
 	if (hint == p_hint) {
 		return;
@@ -4779,11 +4779,11 @@ void VisualShaderNodeFloatUniform::set_hint(Hint p_hint) {
 	emit_changed();
 }
 
-VisualShaderNodeFloatUniform::Hint VisualShaderNodeFloatUniform::get_hint() const {
+VisualShaderNodeFloatParameter::Hint VisualShaderNodeFloatParameter::get_hint() const {
 	return hint;
 }
 
-void VisualShaderNodeFloatUniform::set_min(float p_value) {
+void VisualShaderNodeFloatParameter::set_min(float p_value) {
 	if (Math::is_equal_approx(hint_range_min, p_value)) {
 		return;
 	}
@@ -4791,11 +4791,11 @@ void VisualShaderNodeFloatUniform::set_min(float p_value) {
 	emit_changed();
 }
 
-float VisualShaderNodeFloatUniform::get_min() const {
+float VisualShaderNodeFloatParameter::get_min() const {
 	return hint_range_min;
 }
 
-void VisualShaderNodeFloatUniform::set_max(float p_value) {
+void VisualShaderNodeFloatParameter::set_max(float p_value) {
 	if (Math::is_equal_approx(hint_range_max, p_value)) {
 		return;
 	}
@@ -4803,11 +4803,11 @@ void VisualShaderNodeFloatUniform::set_max(float p_value) {
 	emit_changed();
 }
 
-float VisualShaderNodeFloatUniform::get_max() const {
+float VisualShaderNodeFloatParameter::get_max() const {
 	return hint_range_max;
 }
 
-void VisualShaderNodeFloatUniform::set_step(float p_value) {
+void VisualShaderNodeFloatParameter::set_step(float p_value) {
 	if (Math::is_equal_approx(hint_range_step, p_value)) {
 		return;
 	}
@@ -4815,11 +4815,11 @@ void VisualShaderNodeFloatUniform::set_step(float p_value) {
 	emit_changed();
 }
 
-float VisualShaderNodeFloatUniform::get_step() const {
+float VisualShaderNodeFloatParameter::get_step() const {
 	return hint_range_step;
 }
 
-void VisualShaderNodeFloatUniform::set_default_value_enabled(bool p_enabled) {
+void VisualShaderNodeFloatParameter::set_default_value_enabled(bool p_enabled) {
 	if (default_value_enabled == p_enabled) {
 		return;
 	}
@@ -4827,11 +4827,11 @@ void VisualShaderNodeFloatUniform::set_default_value_enabled(bool p_enabled) {
 	emit_changed();
 }
 
-bool VisualShaderNodeFloatUniform::is_default_value_enabled() const {
+bool VisualShaderNodeFloatParameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeFloatUniform::set_default_value(float p_value) {
+void VisualShaderNodeFloatParameter::set_default_value(float p_value) {
 	if (Math::is_equal_approx(default_value, p_value)) {
 		return;
 	}
@@ -4839,28 +4839,28 @@ void VisualShaderNodeFloatUniform::set_default_value(float p_value) {
 	emit_changed();
 }
 
-float VisualShaderNodeFloatUniform::get_default_value() const {
+float VisualShaderNodeFloatParameter::get_default_value() const {
 	return default_value;
 }
 
-void VisualShaderNodeFloatUniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_hint", "hint"), &VisualShaderNodeFloatUniform::set_hint);
-	ClassDB::bind_method(D_METHOD("get_hint"), &VisualShaderNodeFloatUniform::get_hint);
+void VisualShaderNodeFloatParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_hint", "hint"), &VisualShaderNodeFloatParameter::set_hint);
+	ClassDB::bind_method(D_METHOD("get_hint"), &VisualShaderNodeFloatParameter::get_hint);
 
-	ClassDB::bind_method(D_METHOD("set_min", "value"), &VisualShaderNodeFloatUniform::set_min);
-	ClassDB::bind_method(D_METHOD("get_min"), &VisualShaderNodeFloatUniform::get_min);
+	ClassDB::bind_method(D_METHOD("set_min", "value"), &VisualShaderNodeFloatParameter::set_min);
+	ClassDB::bind_method(D_METHOD("get_min"), &VisualShaderNodeFloatParameter::get_min);
 
-	ClassDB::bind_method(D_METHOD("set_max", "value"), &VisualShaderNodeFloatUniform::set_max);
-	ClassDB::bind_method(D_METHOD("get_max"), &VisualShaderNodeFloatUniform::get_max);
+	ClassDB::bind_method(D_METHOD("set_max", "value"), &VisualShaderNodeFloatParameter::set_max);
+	ClassDB::bind_method(D_METHOD("get_max"), &VisualShaderNodeFloatParameter::get_max);
 
-	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeFloatUniform::set_step);
-	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeFloatUniform::get_step);
+	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeFloatParameter::set_step);
+	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeFloatParameter::get_step);
 
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeFloatUniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeFloatUniform::is_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeFloatParameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeFloatParameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeFloatUniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeFloatUniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeFloatParameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeFloatParameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range+Step"), "set_hint", "get_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min"), "set_min", "get_min");
@@ -4875,16 +4875,16 @@ void VisualShaderNodeFloatUniform::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINT_MAX);
 }
 
-bool VisualShaderNodeFloatUniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeFloatParameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
 
-bool VisualShaderNodeFloatUniform::is_convertible_to_constant() const {
+bool VisualShaderNodeFloatParameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeFloatUniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeFloatParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("hint");
 	if (hint == HINT_RANGE || hint == HINT_RANGE_STEP) {
 		props.push_back("min");
@@ -4900,47 +4900,47 @@ Vector<StringName> VisualShaderNodeFloatUniform::get_editable_properties() const
 	return props;
 }
 
-VisualShaderNodeFloatUniform::VisualShaderNodeFloatUniform() {
+VisualShaderNodeFloatParameter::VisualShaderNodeFloatParameter() {
 }
 
-////////////// Integer Uniform
+////////////// Integer Parametet
 
-String VisualShaderNodeIntUniform::get_caption() const {
-	return "IntUniform";
+String VisualShaderNodeIntParameter::get_caption() const {
+	return "IntParameter";
 }
 
-int VisualShaderNodeIntUniform::get_input_port_count() const {
+int VisualShaderNodeIntParameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeIntUniform::PortType VisualShaderNodeIntUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeIntParameter::PortType VisualShaderNodeIntParameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR_INT;
 }
 
-String VisualShaderNodeIntUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeIntParameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeIntUniform::get_output_port_count() const {
+int VisualShaderNodeIntParameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeIntUniform::PortType VisualShaderNodeIntUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeIntParameter::PortType VisualShaderNodeIntParameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR_INT;
 }
 
-String VisualShaderNodeIntUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeIntParameter::get_output_port_name(int p_port) const {
 	return ""; //no output port means the editor will be used as port
 }
 
-String VisualShaderNodeIntUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeIntParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code = "";
 	if (hint == HINT_RANGE) {
-		code += _get_qual_str() + "uniform int " + get_uniform_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ")";
+		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ")";
 	} else if (hint == HINT_RANGE_STEP) {
-		code += _get_qual_str() + "uniform int " + get_uniform_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ", " + itos(hint_range_step) + ")";
+		code += _get_qual_str() + "uniform int " + get_parameter_name() + " : hint_range(" + itos(hint_range_min) + ", " + itos(hint_range_max) + ", " + itos(hint_range_step) + ")";
 	} else {
-		code += _get_qual_str() + "uniform int " + get_uniform_name();
+		code += _get_qual_str() + "uniform int " + get_parameter_name();
 	}
 	if (default_value_enabled) {
 		code += " = " + itos(default_value);
@@ -4949,19 +4949,19 @@ String VisualShaderNodeIntUniform::generate_global(Shader::Mode p_mode, VisualSh
 	return code;
 }
 
-String VisualShaderNodeIntUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeIntParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-bool VisualShaderNodeIntUniform::is_show_prop_names() const {
+bool VisualShaderNodeIntParameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeIntUniform::is_use_prop_slots() const {
+bool VisualShaderNodeIntParameter::is_use_prop_slots() const {
 	return true;
 }
 
-void VisualShaderNodeIntUniform::set_hint(Hint p_hint) {
+void VisualShaderNodeIntParameter::set_hint(Hint p_hint) {
 	ERR_FAIL_INDEX(int(p_hint), int(HINT_MAX));
 	if (hint == p_hint) {
 		return;
@@ -4970,11 +4970,11 @@ void VisualShaderNodeIntUniform::set_hint(Hint p_hint) {
 	emit_changed();
 }
 
-VisualShaderNodeIntUniform::Hint VisualShaderNodeIntUniform::get_hint() const {
+VisualShaderNodeIntParameter::Hint VisualShaderNodeIntParameter::get_hint() const {
 	return hint;
 }
 
-void VisualShaderNodeIntUniform::set_min(int p_value) {
+void VisualShaderNodeIntParameter::set_min(int p_value) {
 	if (hint_range_min == p_value) {
 		return;
 	}
@@ -4982,11 +4982,11 @@ void VisualShaderNodeIntUniform::set_min(int p_value) {
 	emit_changed();
 }
 
-int VisualShaderNodeIntUniform::get_min() const {
+int VisualShaderNodeIntParameter::get_min() const {
 	return hint_range_min;
 }
 
-void VisualShaderNodeIntUniform::set_max(int p_value) {
+void VisualShaderNodeIntParameter::set_max(int p_value) {
 	if (hint_range_max == p_value) {
 		return;
 	}
@@ -4994,11 +4994,11 @@ void VisualShaderNodeIntUniform::set_max(int p_value) {
 	emit_changed();
 }
 
-int VisualShaderNodeIntUniform::get_max() const {
+int VisualShaderNodeIntParameter::get_max() const {
 	return hint_range_max;
 }
 
-void VisualShaderNodeIntUniform::set_step(int p_value) {
+void VisualShaderNodeIntParameter::set_step(int p_value) {
 	if (hint_range_step == p_value) {
 		return;
 	}
@@ -5006,11 +5006,11 @@ void VisualShaderNodeIntUniform::set_step(int p_value) {
 	emit_changed();
 }
 
-int VisualShaderNodeIntUniform::get_step() const {
+int VisualShaderNodeIntParameter::get_step() const {
 	return hint_range_step;
 }
 
-void VisualShaderNodeIntUniform::set_default_value_enabled(bool p_default_value_enabled) {
+void VisualShaderNodeIntParameter::set_default_value_enabled(bool p_default_value_enabled) {
 	if (default_value_enabled == p_default_value_enabled) {
 		return;
 	}
@@ -5018,11 +5018,11 @@ void VisualShaderNodeIntUniform::set_default_value_enabled(bool p_default_value_
 	emit_changed();
 }
 
-bool VisualShaderNodeIntUniform::is_default_value_enabled() const {
+bool VisualShaderNodeIntParameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeIntUniform::set_default_value(int p_default_value) {
+void VisualShaderNodeIntParameter::set_default_value(int p_default_value) {
 	if (default_value == p_default_value) {
 		return;
 	}
@@ -5030,28 +5030,28 @@ void VisualShaderNodeIntUniform::set_default_value(int p_default_value) {
 	emit_changed();
 }
 
-int VisualShaderNodeIntUniform::get_default_value() const {
+int VisualShaderNodeIntParameter::get_default_value() const {
 	return default_value;
 }
 
-void VisualShaderNodeIntUniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_hint", "hint"), &VisualShaderNodeIntUniform::set_hint);
-	ClassDB::bind_method(D_METHOD("get_hint"), &VisualShaderNodeIntUniform::get_hint);
+void VisualShaderNodeIntParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_hint", "hint"), &VisualShaderNodeIntParameter::set_hint);
+	ClassDB::bind_method(D_METHOD("get_hint"), &VisualShaderNodeIntParameter::get_hint);
 
-	ClassDB::bind_method(D_METHOD("set_min", "value"), &VisualShaderNodeIntUniform::set_min);
-	ClassDB::bind_method(D_METHOD("get_min"), &VisualShaderNodeIntUniform::get_min);
+	ClassDB::bind_method(D_METHOD("set_min", "value"), &VisualShaderNodeIntParameter::set_min);
+	ClassDB::bind_method(D_METHOD("get_min"), &VisualShaderNodeIntParameter::get_min);
 
-	ClassDB::bind_method(D_METHOD("set_max", "value"), &VisualShaderNodeIntUniform::set_max);
-	ClassDB::bind_method(D_METHOD("get_max"), &VisualShaderNodeIntUniform::get_max);
+	ClassDB::bind_method(D_METHOD("set_max", "value"), &VisualShaderNodeIntParameter::set_max);
+	ClassDB::bind_method(D_METHOD("get_max"), &VisualShaderNodeIntParameter::get_max);
 
-	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeIntUniform::set_step);
-	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeIntUniform::get_step);
+	ClassDB::bind_method(D_METHOD("set_step", "value"), &VisualShaderNodeIntParameter::set_step);
+	ClassDB::bind_method(D_METHOD("get_step"), &VisualShaderNodeIntParameter::get_step);
 
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeIntUniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeIntUniform::is_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeIntParameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeIntParameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeIntUniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeIntUniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeIntParameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeIntParameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,Range + Step"), "set_hint", "get_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "min"), "set_min", "get_min");
@@ -5066,16 +5066,16 @@ void VisualShaderNodeIntUniform::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINT_MAX);
 }
 
-bool VisualShaderNodeIntUniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeIntParameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
 
-bool VisualShaderNodeIntUniform::is_convertible_to_constant() const {
+bool VisualShaderNodeIntParameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeIntUniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeIntParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("hint");
 	if (hint == HINT_RANGE || hint == HINT_RANGE_STEP) {
 		props.push_back("min");
@@ -5091,40 +5091,40 @@ Vector<StringName> VisualShaderNodeIntUniform::get_editable_properties() const {
 	return props;
 }
 
-VisualShaderNodeIntUniform::VisualShaderNodeIntUniform() {
+VisualShaderNodeIntParameter::VisualShaderNodeIntParameter() {
 }
 
-////////////// Boolean Uniform
+////////////// Boolean Parameter
 
-String VisualShaderNodeBooleanUniform::get_caption() const {
-	return "BooleanUniform";
+String VisualShaderNodeBooleanParameter::get_caption() const {
+	return "BooleanParameter";
 }
 
-int VisualShaderNodeBooleanUniform::get_input_port_count() const {
+int VisualShaderNodeBooleanParameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeBooleanUniform::PortType VisualShaderNodeBooleanUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeBooleanParameter::PortType VisualShaderNodeBooleanParameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_BOOLEAN;
 }
 
-String VisualShaderNodeBooleanUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeBooleanParameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeBooleanUniform::get_output_port_count() const {
+int VisualShaderNodeBooleanParameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeBooleanUniform::PortType VisualShaderNodeBooleanUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeBooleanParameter::PortType VisualShaderNodeBooleanParameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_BOOLEAN;
 }
 
-String VisualShaderNodeBooleanUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeBooleanParameter::get_output_port_name(int p_port) const {
 	return ""; //no output port means the editor will be used as port
 }
 
-void VisualShaderNodeBooleanUniform::set_default_value_enabled(bool p_default_value_enabled) {
+void VisualShaderNodeBooleanParameter::set_default_value_enabled(bool p_default_value_enabled) {
 	if (default_value_enabled == p_default_value_enabled) {
 		return;
 	}
@@ -5132,11 +5132,11 @@ void VisualShaderNodeBooleanUniform::set_default_value_enabled(bool p_default_va
 	emit_changed();
 }
 
-bool VisualShaderNodeBooleanUniform::is_default_value_enabled() const {
+bool VisualShaderNodeBooleanParameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeBooleanUniform::set_default_value(bool p_default_value) {
+void VisualShaderNodeBooleanParameter::set_default_value(bool p_default_value) {
 	if (default_value == p_default_value) {
 		return;
 	}
@@ -5144,12 +5144,12 @@ void VisualShaderNodeBooleanUniform::set_default_value(bool p_default_value) {
 	emit_changed();
 }
 
-bool VisualShaderNodeBooleanUniform::get_default_value() const {
+bool VisualShaderNodeBooleanParameter::get_default_value() const {
 	return default_value;
 }
 
-String VisualShaderNodeBooleanUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform bool " + get_uniform_name();
+String VisualShaderNodeBooleanParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform bool " + get_parameter_name();
 	if (default_value_enabled) {
 		if (default_value) {
 			code += " = true";
@@ -5161,39 +5161,39 @@ String VisualShaderNodeBooleanUniform::generate_global(Shader::Mode p_mode, Visu
 	return code;
 }
 
-String VisualShaderNodeBooleanUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeBooleanParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-bool VisualShaderNodeBooleanUniform::is_show_prop_names() const {
+bool VisualShaderNodeBooleanParameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeBooleanUniform::is_use_prop_slots() const {
+bool VisualShaderNodeBooleanParameter::is_use_prop_slots() const {
 	return true;
 }
 
-void VisualShaderNodeBooleanUniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeBooleanUniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeBooleanUniform::is_default_value_enabled);
+void VisualShaderNodeBooleanParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeBooleanParameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeBooleanParameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeBooleanUniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeBooleanUniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeBooleanParameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeBooleanParameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value"), "set_default_value", "get_default_value");
 }
 
-bool VisualShaderNodeBooleanUniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeBooleanParameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
 
-bool VisualShaderNodeBooleanUniform::is_convertible_to_constant() const {
+bool VisualShaderNodeBooleanParameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeBooleanUniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeBooleanParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -5201,47 +5201,47 @@ Vector<StringName> VisualShaderNodeBooleanUniform::get_editable_properties() con
 	return props;
 }
 
-VisualShaderNodeBooleanUniform::VisualShaderNodeBooleanUniform() {
+VisualShaderNodeBooleanParameter::VisualShaderNodeBooleanParameter() {
 }
 
-////////////// Color Uniform
+////////////// Color Parameter
 
-String VisualShaderNodeColorUniform::get_caption() const {
-	return "ColorUniform";
+String VisualShaderNodeColorParameter::get_caption() const {
+	return "ColorParameter";
 }
 
-int VisualShaderNodeColorUniform::get_input_port_count() const {
+int VisualShaderNodeColorParameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeColorParameter::PortType VisualShaderNodeColorParameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeColorUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeColorParameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeColorUniform::get_output_port_count() const {
+int VisualShaderNodeColorParameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeColorUniform::PortType VisualShaderNodeColorUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeColorParameter::PortType VisualShaderNodeColorParameter::get_output_port_type(int p_port) const {
 	return p_port == 0 ? PORT_TYPE_VECTOR_4D : PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeColorUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeColorParameter::get_output_port_name(int p_port) const {
 	return "color";
 }
 
-bool VisualShaderNodeColorUniform::is_output_port_expandable(int p_port) const {
+bool VisualShaderNodeColorParameter::is_output_port_expandable(int p_port) const {
 	if (p_port == 0) {
 		return true;
 	}
 	return false;
 }
 
-void VisualShaderNodeColorUniform::set_default_value_enabled(bool p_enabled) {
+void VisualShaderNodeColorParameter::set_default_value_enabled(bool p_enabled) {
 	if (default_value_enabled == p_enabled) {
 		return;
 	}
@@ -5249,11 +5249,11 @@ void VisualShaderNodeColorUniform::set_default_value_enabled(bool p_enabled) {
 	emit_changed();
 }
 
-bool VisualShaderNodeColorUniform::is_default_value_enabled() const {
+bool VisualShaderNodeColorParameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeColorUniform::set_default_value(const Color &p_value) {
+void VisualShaderNodeColorParameter::set_default_value(const Color &p_value) {
 	if (default_value.is_equal_approx(p_value)) {
 		return;
 	}
@@ -5261,12 +5261,12 @@ void VisualShaderNodeColorUniform::set_default_value(const Color &p_value) {
 	emit_changed();
 }
 
-Color VisualShaderNodeColorUniform::get_default_value() const {
+Color VisualShaderNodeColorParameter::get_default_value() const {
 	return default_value;
 }
 
-String VisualShaderNodeColorUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform vec4 " + get_uniform_name() + " : source_color";
+String VisualShaderNodeColorParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform vec4 " + get_parameter_name() + " : source_color";
 	if (default_value_enabled) {
 		code += vformat(" = vec4(%.6f, %.6f, %.6f, %.6f)", default_value.r, default_value.g, default_value.b, default_value.a);
 	}
@@ -5274,35 +5274,35 @@ String VisualShaderNodeColorUniform::generate_global(Shader::Mode p_mode, Visual
 	return code;
 }
 
-String VisualShaderNodeColorUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeColorParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-bool VisualShaderNodeColorUniform::is_show_prop_names() const {
+bool VisualShaderNodeColorParameter::is_show_prop_names() const {
 	return true;
 }
 
-void VisualShaderNodeColorUniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeColorUniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeColorUniform::is_default_value_enabled);
+void VisualShaderNodeColorParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeColorParameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeColorParameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeColorUniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeColorUniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeColorParameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeColorParameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_value"), "set_default_value", "get_default_value");
 }
 
-bool VisualShaderNodeColorUniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeColorParameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
 
-bool VisualShaderNodeColorUniform::is_convertible_to_constant() const {
+bool VisualShaderNodeColorParameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeColorUniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeColorParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -5310,59 +5310,59 @@ Vector<StringName> VisualShaderNodeColorUniform::get_editable_properties() const
 	return props;
 }
 
-VisualShaderNodeColorUniform::VisualShaderNodeColorUniform() {
+VisualShaderNodeColorParameter::VisualShaderNodeColorParameter() {
 }
 
-////////////// Vector2 Uniform
+////////////// Vector2 Parameter
 
-String VisualShaderNodeVec2Uniform::get_caption() const {
-	return "Vector2Uniform";
+String VisualShaderNodeVec2Parameter::get_caption() const {
+	return "Vector2Parameter";
 }
 
-int VisualShaderNodeVec2Uniform::get_input_port_count() const {
+int VisualShaderNodeVec2Parameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeVec2Uniform::PortType VisualShaderNodeVec2Uniform::get_input_port_type(int p_port) const {
+VisualShaderNodeVec2Parameter::PortType VisualShaderNodeVec2Parameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_2D;
 }
 
-String VisualShaderNodeVec2Uniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeVec2Parameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeVec2Uniform::get_output_port_count() const {
+int VisualShaderNodeVec2Parameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeVec2Uniform::PortType VisualShaderNodeVec2Uniform::get_output_port_type(int p_port) const {
+VisualShaderNodeVec2Parameter::PortType VisualShaderNodeVec2Parameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_2D;
 }
 
-String VisualShaderNodeVec2Uniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeVec2Parameter::get_output_port_name(int p_port) const {
 	return String();
 }
 
-void VisualShaderNodeVec2Uniform::set_default_value_enabled(bool p_enabled) {
+void VisualShaderNodeVec2Parameter::set_default_value_enabled(bool p_enabled) {
 	default_value_enabled = p_enabled;
 	emit_changed();
 }
 
-bool VisualShaderNodeVec2Uniform::is_default_value_enabled() const {
+bool VisualShaderNodeVec2Parameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeVec2Uniform::set_default_value(const Vector2 &p_value) {
+void VisualShaderNodeVec2Parameter::set_default_value(const Vector2 &p_value) {
 	default_value = p_value;
 	emit_changed();
 }
 
-Vector2 VisualShaderNodeVec2Uniform::get_default_value() const {
+Vector2 VisualShaderNodeVec2Parameter::get_default_value() const {
 	return default_value;
 }
 
-String VisualShaderNodeVec2Uniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform vec2 " + get_uniform_name();
+String VisualShaderNodeVec2Parameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform vec2 " + get_parameter_name();
 	if (default_value_enabled) {
 		code += vformat(" = vec2(%.6f, %.6f)", default_value.x, default_value.y);
 	}
@@ -5370,39 +5370,39 @@ String VisualShaderNodeVec2Uniform::generate_global(Shader::Mode p_mode, VisualS
 	return code;
 }
 
-String VisualShaderNodeVec2Uniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeVec2Parameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-void VisualShaderNodeVec2Uniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeVec2Uniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeVec2Uniform::is_default_value_enabled);
+void VisualShaderNodeVec2Parameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeVec2Parameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeVec2Parameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeVec2Uniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeVec2Uniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeVec2Parameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeVec2Parameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "default_value"), "set_default_value", "get_default_value");
 }
 
-bool VisualShaderNodeVec2Uniform::is_show_prop_names() const {
+bool VisualShaderNodeVec2Parameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeVec2Uniform::is_use_prop_slots() const {
+bool VisualShaderNodeVec2Parameter::is_use_prop_slots() const {
 	return true;
 }
 
-bool VisualShaderNodeVec2Uniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeVec2Parameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
 
-bool VisualShaderNodeVec2Uniform::is_convertible_to_constant() const {
+bool VisualShaderNodeVec2Parameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeVec2Uniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeVec2Parameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -5410,59 +5410,59 @@ Vector<StringName> VisualShaderNodeVec2Uniform::get_editable_properties() const 
 	return props;
 }
 
-VisualShaderNodeVec2Uniform::VisualShaderNodeVec2Uniform() {
+VisualShaderNodeVec2Parameter::VisualShaderNodeVec2Parameter() {
 }
 
-////////////// Vector3 Uniform
+////////////// Vector3 Parameter
 
-String VisualShaderNodeVec3Uniform::get_caption() const {
-	return "Vector3Uniform";
+String VisualShaderNodeVec3Parameter::get_caption() const {
+	return "Vector3Parameter";
 }
 
-int VisualShaderNodeVec3Uniform::get_input_port_count() const {
+int VisualShaderNodeVec3Parameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeVec3Uniform::PortType VisualShaderNodeVec3Uniform::get_input_port_type(int p_port) const {
+VisualShaderNodeVec3Parameter::PortType VisualShaderNodeVec3Parameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_3D;
 }
 
-String VisualShaderNodeVec3Uniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeVec3Parameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeVec3Uniform::get_output_port_count() const {
+int VisualShaderNodeVec3Parameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeVec3Uniform::PortType VisualShaderNodeVec3Uniform::get_output_port_type(int p_port) const {
+VisualShaderNodeVec3Parameter::PortType VisualShaderNodeVec3Parameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_3D;
 }
 
-String VisualShaderNodeVec3Uniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeVec3Parameter::get_output_port_name(int p_port) const {
 	return ""; //no output port means the editor will be used as port
 }
 
-void VisualShaderNodeVec3Uniform::set_default_value_enabled(bool p_enabled) {
+void VisualShaderNodeVec3Parameter::set_default_value_enabled(bool p_enabled) {
 	default_value_enabled = p_enabled;
 	emit_changed();
 }
 
-bool VisualShaderNodeVec3Uniform::is_default_value_enabled() const {
+bool VisualShaderNodeVec3Parameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeVec3Uniform::set_default_value(const Vector3 &p_value) {
+void VisualShaderNodeVec3Parameter::set_default_value(const Vector3 &p_value) {
 	default_value = p_value;
 	emit_changed();
 }
 
-Vector3 VisualShaderNodeVec3Uniform::get_default_value() const {
+Vector3 VisualShaderNodeVec3Parameter::get_default_value() const {
 	return default_value;
 }
 
-String VisualShaderNodeVec3Uniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform vec3 " + get_uniform_name();
+String VisualShaderNodeVec3Parameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform vec3 " + get_parameter_name();
 	if (default_value_enabled) {
 		code += vformat(" = vec3(%.6f, %.6f, %.6f)", default_value.x, default_value.y, default_value.z);
 	}
@@ -5470,39 +5470,39 @@ String VisualShaderNodeVec3Uniform::generate_global(Shader::Mode p_mode, VisualS
 	return code;
 }
 
-String VisualShaderNodeVec3Uniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeVec3Parameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-void VisualShaderNodeVec3Uniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeVec3Uniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeVec3Uniform::is_default_value_enabled);
+void VisualShaderNodeVec3Parameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeVec3Parameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeVec3Parameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeVec3Uniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeVec3Uniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeVec3Parameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeVec3Parameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "default_value"), "set_default_value", "get_default_value");
 }
 
-bool VisualShaderNodeVec3Uniform::is_show_prop_names() const {
+bool VisualShaderNodeVec3Parameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeVec3Uniform::is_use_prop_slots() const {
+bool VisualShaderNodeVec3Parameter::is_use_prop_slots() const {
 	return true;
 }
 
-bool VisualShaderNodeVec3Uniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeVec3Parameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // all qualifiers are supported
 }
 
-bool VisualShaderNodeVec3Uniform::is_convertible_to_constant() const {
+bool VisualShaderNodeVec3Parameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeVec3Uniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeVec3Parameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -5510,59 +5510,59 @@ Vector<StringName> VisualShaderNodeVec3Uniform::get_editable_properties() const 
 	return props;
 }
 
-VisualShaderNodeVec3Uniform::VisualShaderNodeVec3Uniform() {
+VisualShaderNodeVec3Parameter::VisualShaderNodeVec3Parameter() {
 }
 
-////////////// Vector4 Uniform
+////////////// Vector4 Parameter
 
-String VisualShaderNodeVec4Uniform::get_caption() const {
-	return "Vector4Uniform";
+String VisualShaderNodeVec4Parameter::get_caption() const {
+	return "Vector4Parameter";
 }
 
-int VisualShaderNodeVec4Uniform::get_input_port_count() const {
+int VisualShaderNodeVec4Parameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeVec4Uniform::PortType VisualShaderNodeVec4Uniform::get_input_port_type(int p_port) const {
+VisualShaderNodeVec4Parameter::PortType VisualShaderNodeVec4Parameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_4D;
 }
 
-String VisualShaderNodeVec4Uniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeVec4Parameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeVec4Uniform::get_output_port_count() const {
+int VisualShaderNodeVec4Parameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeVec4Uniform::PortType VisualShaderNodeVec4Uniform::get_output_port_type(int p_port) const {
+VisualShaderNodeVec4Parameter::PortType VisualShaderNodeVec4Parameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_4D;
 }
 
-String VisualShaderNodeVec4Uniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeVec4Parameter::get_output_port_name(int p_port) const {
 	return ""; // No output port means the editor will be used as port.
 }
 
-void VisualShaderNodeVec4Uniform::set_default_value_enabled(bool p_enabled) {
+void VisualShaderNodeVec4Parameter::set_default_value_enabled(bool p_enabled) {
 	default_value_enabled = p_enabled;
 	emit_changed();
 }
 
-bool VisualShaderNodeVec4Uniform::is_default_value_enabled() const {
+bool VisualShaderNodeVec4Parameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeVec4Uniform::set_default_value(const Quaternion &p_value) {
+void VisualShaderNodeVec4Parameter::set_default_value(const Vector4 &p_value) {
 	default_value = p_value;
 	emit_changed();
 }
 
-Quaternion VisualShaderNodeVec4Uniform::get_default_value() const {
+Vector4 VisualShaderNodeVec4Parameter::get_default_value() const {
 	return default_value;
 }
 
-String VisualShaderNodeVec4Uniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform vec4 " + get_uniform_name();
+String VisualShaderNodeVec4Parameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform vec4 " + get_parameter_name();
 	if (default_value_enabled) {
 		code += vformat(" = vec4(%.6f, %.6f, %.6f, %.6f)", default_value.x, default_value.y, default_value.z, default_value.w);
 	}
@@ -5570,39 +5570,39 @@ String VisualShaderNodeVec4Uniform::generate_global(Shader::Mode p_mode, VisualS
 	return code;
 }
 
-String VisualShaderNodeVec4Uniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeVec4Parameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-void VisualShaderNodeVec4Uniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeVec4Uniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeVec4Uniform::is_default_value_enabled);
+void VisualShaderNodeVec4Parameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeVec4Parameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeVec4Parameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeVec4Uniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeVec4Uniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeVec4Parameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeVec4Parameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "default_value"), "set_default_value", "get_default_value");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR4, "default_value"), "set_default_value", "get_default_value");
 }
 
-bool VisualShaderNodeVec4Uniform::is_show_prop_names() const {
+bool VisualShaderNodeVec4Parameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeVec4Uniform::is_use_prop_slots() const {
+bool VisualShaderNodeVec4Parameter::is_use_prop_slots() const {
 	return true;
 }
 
-bool VisualShaderNodeVec4Uniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeVec4Parameter::is_qualifier_supported(Qualifier p_qual) const {
 	return true; // All qualifiers are supported.
 }
 
-bool VisualShaderNodeVec4Uniform::is_convertible_to_constant() const {
+bool VisualShaderNodeVec4Parameter::is_convertible_to_constant() const {
 	return true; // Conversion is allowed.
 }
 
-Vector<StringName> VisualShaderNodeVec4Uniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeVec4Parameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -5610,59 +5610,59 @@ Vector<StringName> VisualShaderNodeVec4Uniform::get_editable_properties() const 
 	return props;
 }
 
-VisualShaderNodeVec4Uniform::VisualShaderNodeVec4Uniform() {
+VisualShaderNodeVec4Parameter::VisualShaderNodeVec4Parameter() {
 }
 
-////////////// Transform Uniform
+////////////// Transform Parameter
 
-String VisualShaderNodeTransformUniform::get_caption() const {
-	return "TransformUniform";
+String VisualShaderNodeTransformParameter::get_caption() const {
+	return "TransformParameter";
 }
 
-int VisualShaderNodeTransformUniform::get_input_port_count() const {
+int VisualShaderNodeTransformParameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeTransformUniform::PortType VisualShaderNodeTransformUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeTransformParameter::PortType VisualShaderNodeTransformParameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR_3D;
 }
 
-String VisualShaderNodeTransformUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeTransformParameter::get_input_port_name(int p_port) const {
 	return String();
 }
 
-int VisualShaderNodeTransformUniform::get_output_port_count() const {
+int VisualShaderNodeTransformParameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeTransformUniform::PortType VisualShaderNodeTransformUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeTransformParameter::PortType VisualShaderNodeTransformParameter::get_output_port_type(int p_port) const {
 	return PORT_TYPE_TRANSFORM;
 }
 
-String VisualShaderNodeTransformUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeTransformParameter::get_output_port_name(int p_port) const {
 	return ""; //no output port means the editor will be used as port
 }
 
-void VisualShaderNodeTransformUniform::set_default_value_enabled(bool p_enabled) {
+void VisualShaderNodeTransformParameter::set_default_value_enabled(bool p_enabled) {
 	default_value_enabled = p_enabled;
 	emit_changed();
 }
 
-bool VisualShaderNodeTransformUniform::is_default_value_enabled() const {
+bool VisualShaderNodeTransformParameter::is_default_value_enabled() const {
 	return default_value_enabled;
 }
 
-void VisualShaderNodeTransformUniform::set_default_value(const Transform3D &p_value) {
+void VisualShaderNodeTransformParameter::set_default_value(const Transform3D &p_value) {
 	default_value = p_value;
 	emit_changed();
 }
 
-Transform3D VisualShaderNodeTransformUniform::get_default_value() const {
+Transform3D VisualShaderNodeTransformParameter::get_default_value() const {
 	return default_value;
 }
 
-String VisualShaderNodeTransformUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform mat4 " + get_uniform_name();
+String VisualShaderNodeTransformParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform mat4 " + get_parameter_name();
 	if (default_value_enabled) {
 		Vector3 row0 = default_value.basis.rows[0];
 		Vector3 row1 = default_value.basis.rows[1];
@@ -5674,42 +5674,42 @@ String VisualShaderNodeTransformUniform::generate_global(Shader::Mode p_mode, Vi
 	return code;
 }
 
-String VisualShaderNodeTransformUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "	" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+String VisualShaderNodeTransformParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "	" + p_output_vars[0] + " = " + get_parameter_name() + ";\n";
 }
 
-void VisualShaderNodeTransformUniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeTransformUniform::set_default_value_enabled);
-	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeTransformUniform::is_default_value_enabled);
+void VisualShaderNodeTransformParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_default_value_enabled", "enabled"), &VisualShaderNodeTransformParameter::set_default_value_enabled);
+	ClassDB::bind_method(D_METHOD("is_default_value_enabled"), &VisualShaderNodeTransformParameter::is_default_value_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeTransformUniform::set_default_value);
-	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeTransformUniform::get_default_value);
+	ClassDB::bind_method(D_METHOD("set_default_value", "value"), &VisualShaderNodeTransformParameter::set_default_value);
+	ClassDB::bind_method(D_METHOD("get_default_value"), &VisualShaderNodeTransformParameter::get_default_value);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "default_value_enabled"), "set_default_value_enabled", "is_default_value_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "default_value"), "set_default_value", "get_default_value");
 }
 
-bool VisualShaderNodeTransformUniform::is_show_prop_names() const {
+bool VisualShaderNodeTransformParameter::is_show_prop_names() const {
 	return true;
 }
 
-bool VisualShaderNodeTransformUniform::is_use_prop_slots() const {
+bool VisualShaderNodeTransformParameter::is_use_prop_slots() const {
 	return true;
 }
 
-bool VisualShaderNodeTransformUniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeTransformParameter::is_qualifier_supported(Qualifier p_qual) const {
 	if (p_qual == Qualifier::QUAL_INSTANCE) {
 		return false;
 	}
 	return true;
 }
 
-bool VisualShaderNodeTransformUniform::is_convertible_to_constant() const {
+bool VisualShaderNodeTransformParameter::is_convertible_to_constant() const {
 	return true; // conversion is allowed
 }
 
-Vector<StringName> VisualShaderNodeTransformUniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeTransformParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("default_value_enabled");
 	if (default_value_enabled) {
 		props.push_back("default_value");
@@ -5717,12 +5717,12 @@ Vector<StringName> VisualShaderNodeTransformUniform::get_editable_properties() c
 	return props;
 }
 
-VisualShaderNodeTransformUniform::VisualShaderNodeTransformUniform() {
+VisualShaderNodeTransformParameter::VisualShaderNodeTransformParameter() {
 }
 
 //////////////
 
-String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_type, VisualShaderNodeTextureUniform::ColorDefault p_color_default, VisualShaderNodeTextureUniform::TextureFilter p_texture_filter, VisualShaderNodeTextureUniform::TextureRepeat p_texture_repeat) {
+String get_sampler_hint(VisualShaderNodeTextureParameter::TextureType p_texture_type, VisualShaderNodeTextureParameter::ColorDefault p_color_default, VisualShaderNodeTextureParameter::TextureFilter p_texture_filter, VisualShaderNodeTextureParameter::TextureRepeat p_texture_repeat) {
 	String code;
 	bool has_colon = false;
 
@@ -5731,25 +5731,25 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 		String type_code;
 
 		switch (p_texture_type) {
-			case VisualShaderNodeTextureUniform::TYPE_DATA:
-				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
+			case VisualShaderNodeTextureParameter::TYPE_DATA:
+				if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_BLACK) {
 					type_code = "hint_default_black";
-				} else if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_TRANSPARENT) {
+				} else if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_TRANSPARENT) {
 					type_code = "hint_default_transparent";
 				}
 				break;
-			case VisualShaderNodeTextureUniform::TYPE_COLOR:
+			case VisualShaderNodeTextureParameter::TYPE_COLOR:
 				type_code = "source_color";
-				if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_BLACK) {
+				if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_BLACK) {
 					type_code += ", hint_default_black";
-				} else if (p_color_default == VisualShaderNodeTextureUniform::COLOR_DEFAULT_TRANSPARENT) {
+				} else if (p_color_default == VisualShaderNodeTextureParameter::COLOR_DEFAULT_TRANSPARENT) {
 					type_code += ", hint_default_transparent";
 				}
 				break;
-			case VisualShaderNodeTextureUniform::TYPE_NORMAL_MAP:
+			case VisualShaderNodeTextureParameter::TYPE_NORMAL_MAP:
 				type_code = "hint_normal";
 				break;
-			case VisualShaderNodeTextureUniform::TYPE_ANISOTROPY:
+			case VisualShaderNodeTextureParameter::TYPE_ANISOTROPY:
 				type_code = "hint_anisotropy";
 				break;
 			default:
@@ -5767,22 +5767,22 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 		String filter_code;
 
 		switch (p_texture_filter) {
-			case VisualShaderNodeTextureUniform::FILTER_NEAREST:
+			case VisualShaderNodeTextureParameter::FILTER_NEAREST:
 				filter_code = "filter_nearest";
 				break;
-			case VisualShaderNodeTextureUniform::FILTER_LINEAR:
+			case VisualShaderNodeTextureParameter::FILTER_LINEAR:
 				filter_code = "filter_linear";
 				break;
-			case VisualShaderNodeTextureUniform::FILTER_NEAREST_MIPMAP:
+			case VisualShaderNodeTextureParameter::FILTER_NEAREST_MIPMAP:
 				filter_code = "filter_nearest_mipmap";
 				break;
-			case VisualShaderNodeTextureUniform::FILTER_LINEAR_MIPMAP:
+			case VisualShaderNodeTextureParameter::FILTER_LINEAR_MIPMAP:
 				filter_code = "filter_linear_mipmap";
 				break;
-			case VisualShaderNodeTextureUniform::FILTER_NEAREST_MIPMAP_ANISOTROPIC:
+			case VisualShaderNodeTextureParameter::FILTER_NEAREST_MIPMAP_ANISOTROPIC:
 				filter_code = "filter_nearest_mipmap_anisotropic";
 				break;
-			case VisualShaderNodeTextureUniform::FILTER_LINEAR_MIPMAP_ANISOTROPIC:
+			case VisualShaderNodeTextureParameter::FILTER_LINEAR_MIPMAP_ANISOTROPIC:
 				filter_code = "filter_linear_mipmap_anisotropic";
 				break;
 			default:
@@ -5805,10 +5805,10 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 		String repeat_code;
 
 		switch (p_texture_repeat) {
-			case VisualShaderNodeTextureUniform::REPEAT_ENABLED:
+			case VisualShaderNodeTextureParameter::REPEAT_ENABLED:
 				repeat_code = "repeat_enable";
 				break;
-			case VisualShaderNodeTextureUniform::REPEAT_DISABLED:
+			case VisualShaderNodeTextureParameter::REPEAT_DISABLED:
 				repeat_code = "repeat_disable";
 				break;
 			default:
@@ -5828,29 +5828,25 @@ String get_sampler_hint(VisualShaderNodeTextureUniform::TextureType p_texture_ty
 	return code;
 }
 
-////////////// Texture Uniform
+////////////// Texture Parameter
 
-String VisualShaderNodeTextureUniform::get_caption() const {
-	return "TextureUniform";
-}
-
-int VisualShaderNodeTextureUniform::get_input_port_count() const {
+int VisualShaderNodeTextureParameter::get_input_port_count() const {
 	return 0;
 }
 
-VisualShaderNodeTextureUniform::PortType VisualShaderNodeTextureUniform::get_input_port_type(int p_port) const {
+VisualShaderNodeTextureParameter::PortType VisualShaderNodeTextureParameter::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeTextureUniform::get_input_port_name(int p_port) const {
+String VisualShaderNodeTextureParameter::get_input_port_name(int p_port) const {
 	return "";
 }
 
-int VisualShaderNodeTextureUniform::get_output_port_count() const {
+int VisualShaderNodeTextureParameter::get_output_port_count() const {
 	return 1;
 }
 
-VisualShaderNodeTextureUniform::PortType VisualShaderNodeTextureUniform::get_output_port_type(int p_port) const {
+VisualShaderNodeTextureParameter::PortType VisualShaderNodeTextureParameter::get_output_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
 			return PORT_TYPE_SAMPLER;
@@ -5859,27 +5855,11 @@ VisualShaderNodeTextureUniform::PortType VisualShaderNodeTextureUniform::get_out
 	}
 }
 
-String VisualShaderNodeTextureUniform::get_output_port_name(int p_port) const {
-	switch (p_port) {
-		case 0:
-			return "sampler2D";
-		default:
-			return "";
-	}
-}
-
-String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform sampler2D " + get_uniform_name();
-	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
-	code += ";\n";
-	return code;
-}
-
-String VisualShaderNodeTextureUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+String VisualShaderNodeTextureParameter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "";
 }
 
-void VisualShaderNodeTextureUniform::set_texture_type(TextureType p_texture_type) {
+void VisualShaderNodeTextureParameter::set_texture_type(TextureType p_texture_type) {
 	ERR_FAIL_INDEX(int(p_texture_type), int(TYPE_MAX));
 	if (texture_type == p_texture_type) {
 		return;
@@ -5888,11 +5868,11 @@ void VisualShaderNodeTextureUniform::set_texture_type(TextureType p_texture_type
 	emit_changed();
 }
 
-VisualShaderNodeTextureUniform::TextureType VisualShaderNodeTextureUniform::get_texture_type() const {
+VisualShaderNodeTextureParameter::TextureType VisualShaderNodeTextureParameter::get_texture_type() const {
 	return texture_type;
 }
 
-void VisualShaderNodeTextureUniform::set_color_default(ColorDefault p_color_default) {
+void VisualShaderNodeTextureParameter::set_color_default(ColorDefault p_color_default) {
 	ERR_FAIL_INDEX(int(p_color_default), int(COLOR_DEFAULT_MAX));
 	if (color_default == p_color_default) {
 		return;
@@ -5901,11 +5881,11 @@ void VisualShaderNodeTextureUniform::set_color_default(ColorDefault p_color_defa
 	emit_changed();
 }
 
-VisualShaderNodeTextureUniform::ColorDefault VisualShaderNodeTextureUniform::get_color_default() const {
+VisualShaderNodeTextureParameter::ColorDefault VisualShaderNodeTextureParameter::get_color_default() const {
 	return color_default;
 }
 
-void VisualShaderNodeTextureUniform::set_texture_filter(TextureFilter p_filter) {
+void VisualShaderNodeTextureParameter::set_texture_filter(TextureFilter p_filter) {
 	ERR_FAIL_INDEX(int(p_filter), int(FILTER_MAX));
 	if (texture_filter == p_filter) {
 		return;
@@ -5914,11 +5894,11 @@ void VisualShaderNodeTextureUniform::set_texture_filter(TextureFilter p_filter) 
 	emit_changed();
 }
 
-VisualShaderNodeTextureUniform::TextureFilter VisualShaderNodeTextureUniform::get_texture_filter() const {
+VisualShaderNodeTextureParameter::TextureFilter VisualShaderNodeTextureParameter::get_texture_filter() const {
 	return texture_filter;
 }
 
-void VisualShaderNodeTextureUniform::set_texture_repeat(TextureRepeat p_repeat) {
+void VisualShaderNodeTextureParameter::set_texture_repeat(TextureRepeat p_repeat) {
 	ERR_FAIL_INDEX(int(p_repeat), int(REPEAT_MAX));
 	if (texture_repeat == p_repeat) {
 		return;
@@ -5927,12 +5907,12 @@ void VisualShaderNodeTextureUniform::set_texture_repeat(TextureRepeat p_repeat) 
 	emit_changed();
 }
 
-VisualShaderNodeTextureUniform::TextureRepeat VisualShaderNodeTextureUniform::get_texture_repeat() const {
+VisualShaderNodeTextureParameter::TextureRepeat VisualShaderNodeTextureParameter::get_texture_repeat() const {
 	return texture_repeat;
 }
 
-Vector<StringName> VisualShaderNodeTextureUniform::get_editable_properties() const {
-	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
+Vector<StringName> VisualShaderNodeTextureParameter::get_editable_properties() const {
+	Vector<StringName> props = VisualShaderNodeParameter::get_editable_properties();
 	props.push_back("texture_type");
 	if (texture_type == TYPE_DATA || texture_type == TYPE_COLOR) {
 		props.push_back("color_default");
@@ -5942,11 +5922,11 @@ Vector<StringName> VisualShaderNodeTextureUniform::get_editable_properties() con
 	return props;
 }
 
-bool VisualShaderNodeTextureUniform::is_show_prop_names() const {
+bool VisualShaderNodeTextureParameter::is_show_prop_names() const {
 	return true;
 }
 
-HashMap<StringName, String> VisualShaderNodeTextureUniform::get_editable_properties_names() const {
+HashMap<StringName, String> VisualShaderNodeTextureParameter::get_editable_properties_names() const {
 	HashMap<StringName, String> names;
 	names.insert("texture_type", RTR("Type"));
 	names.insert("color_default", RTR("Default Color"));
@@ -5955,18 +5935,18 @@ HashMap<StringName, String> VisualShaderNodeTextureUniform::get_editable_propert
 	return names;
 }
 
-void VisualShaderNodeTextureUniform::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_texture_type", "type"), &VisualShaderNodeTextureUniform::set_texture_type);
-	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTextureUniform::get_texture_type);
+void VisualShaderNodeTextureParameter::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_texture_type", "type"), &VisualShaderNodeTextureParameter::set_texture_type);
+	ClassDB::bind_method(D_METHOD("get_texture_type"), &VisualShaderNodeTextureParameter::get_texture_type);
 
-	ClassDB::bind_method(D_METHOD("set_color_default", "type"), &VisualShaderNodeTextureUniform::set_color_default);
-	ClassDB::bind_method(D_METHOD("get_color_default"), &VisualShaderNodeTextureUniform::get_color_default);
+	ClassDB::bind_method(D_METHOD("set_color_default", "type"), &VisualShaderNodeTextureParameter::set_color_default);
+	ClassDB::bind_method(D_METHOD("get_color_default"), &VisualShaderNodeTextureParameter::get_color_default);
 
-	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &VisualShaderNodeTextureUniform::set_texture_filter);
-	ClassDB::bind_method(D_METHOD("get_texture_filter"), &VisualShaderNodeTextureUniform::get_texture_filter);
+	ClassDB::bind_method(D_METHOD("set_texture_filter", "filter"), &VisualShaderNodeTextureParameter::set_texture_filter);
+	ClassDB::bind_method(D_METHOD("get_texture_filter"), &VisualShaderNodeTextureParameter::get_texture_filter);
 
-	ClassDB::bind_method(D_METHOD("set_texture_repeat", "type"), &VisualShaderNodeTextureUniform::set_texture_repeat);
-	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureUniform::get_texture_repeat);
+	ClassDB::bind_method(D_METHOD("set_texture_repeat", "type"), &VisualShaderNodeTextureParameter::set_texture_repeat);
+	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &VisualShaderNodeTextureParameter::get_texture_repeat);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_type", PROPERTY_HINT_ENUM, "Data,Color,Normal Map,Anisotropic"), "set_texture_type", "get_texture_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_default", PROPERTY_HINT_ENUM, "White,Black,Transparent"), "set_color_default", "get_color_default");
@@ -5999,7 +5979,7 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 	BIND_ENUM_CONSTANT(REPEAT_MAX);
 }
 
-bool VisualShaderNodeTextureUniform::is_qualifier_supported(Qualifier p_qual) const {
+bool VisualShaderNodeTextureParameter::is_qualifier_supported(Qualifier p_qual) const {
 	switch (p_qual) {
 		case Qualifier::QUAL_NONE:
 			return true;
@@ -6013,31 +5993,56 @@ bool VisualShaderNodeTextureUniform::is_qualifier_supported(Qualifier p_qual) co
 	return false;
 }
 
-bool VisualShaderNodeTextureUniform::is_convertible_to_constant() const {
+bool VisualShaderNodeTextureParameter::is_convertible_to_constant() const {
 	return false; // conversion is not allowed
 }
 
-VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
+VisualShaderNodeTextureParameter::VisualShaderNodeTextureParameter() {
 }
 
-////////////// Texture Uniform (Triplanar)
+////////////// Texture2D Parameter
 
-String VisualShaderNodeTextureUniformTriplanar::get_caption() const {
+String VisualShaderNodeTexture2DParameter::get_caption() const {
+	return "Texture2DParameter";
+}
+
+String VisualShaderNodeTexture2DParameter::get_output_port_name(int p_port) const {
+	switch (p_port) {
+		case 0:
+			return "sampler2D";
+		default:
+			return "";
+	}
+}
+
+String VisualShaderNodeTexture2DParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform sampler2D " + get_parameter_name();
+	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
+	code += ";\n";
+	return code;
+}
+
+VisualShaderNodeTexture2DParameter::VisualShaderNodeTexture2DParameter() {
+}
+
+////////////// Texture Parameter (Triplanar)
+
+String VisualShaderNodeTextureParameterTriplanar::get_caption() const {
 	return "TextureUniformTriplanar";
 }
 
-int VisualShaderNodeTextureUniformTriplanar::get_input_port_count() const {
+int VisualShaderNodeTextureParameterTriplanar::get_input_port_count() const {
 	return 2;
 }
 
-VisualShaderNodeTextureUniformTriplanar::PortType VisualShaderNodeTextureUniformTriplanar::get_input_port_type(int p_port) const {
+VisualShaderNodeTextureParameterTriplanar::PortType VisualShaderNodeTextureParameterTriplanar::get_input_port_type(int p_port) const {
 	if (p_port == 0 || p_port == 1) {
 		return PORT_TYPE_VECTOR_3D;
 	}
 	return PORT_TYPE_SCALAR;
 }
 
-String VisualShaderNodeTextureUniformTriplanar::get_input_port_name(int p_port) const {
+String VisualShaderNodeTextureParameterTriplanar::get_input_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "weights";
 	} else if (p_port == 1) {
@@ -6046,11 +6051,11 @@ String VisualShaderNodeTextureUniformTriplanar::get_input_port_name(int p_port) 
 	return "";
 }
 
-int VisualShaderNodeTextureUniformTriplanar::get_output_port_count() const {
+int VisualShaderNodeTextureParameterTriplanar::get_output_port_count() const {
 	return 2;
 }
 
-VisualShaderNodeTextureUniformTriplanar::PortType VisualShaderNodeTextureUniformTriplanar::get_output_port_type(int p_port) const {
+VisualShaderNodeTextureParameterTriplanar::PortType VisualShaderNodeTextureParameterTriplanar::get_output_port_type(int p_port) const {
 	switch (p_port) {
 		case 0:
 			return PORT_TYPE_VECTOR_4D;
@@ -6061,7 +6066,7 @@ VisualShaderNodeTextureUniformTriplanar::PortType VisualShaderNodeTextureUniform
 	}
 }
 
-String VisualShaderNodeTextureUniformTriplanar::get_output_port_name(int p_port) const {
+String VisualShaderNodeTextureParameterTriplanar::get_output_port_name(int p_port) const {
 	switch (p_port) {
 		case 0:
 			return "color";
@@ -6072,7 +6077,7 @@ String VisualShaderNodeTextureUniformTriplanar::get_output_port_name(int p_port)
 	}
 }
 
-String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
+String VisualShaderNodeTextureParameterTriplanar::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
 	String code;
 
 	code += "// " + get_caption() + "\n";
@@ -6094,7 +6099,7 @@ String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader:
 	return code;
 }
 
-String VisualShaderNodeTextureUniformTriplanar::generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+String VisualShaderNodeTextureParameterTriplanar::generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	String code;
 
 	if (p_type == VisualShader::TYPE_VERTEX) {
@@ -6110,8 +6115,8 @@ String VisualShaderNodeTextureUniformTriplanar::generate_global_per_func(Shader:
 	return code;
 }
 
-String VisualShaderNodeTextureUniformTriplanar::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	String id = get_uniform_name();
+String VisualShaderNodeTextureParameterTriplanar::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	String id = get_parameter_name();
 
 	String code;
 	if (p_input_vars[0].is_empty() && p_input_vars[1].is_empty()) {
@@ -6127,7 +6132,7 @@ String VisualShaderNodeTextureUniformTriplanar::generate_code(Shader::Mode p_mod
 	return code;
 }
 
-bool VisualShaderNodeTextureUniformTriplanar::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+bool VisualShaderNodeTextureParameterTriplanar::is_input_port_default(int p_port, Shader::Mode p_mode) const {
 	if (p_port == 0) {
 		return true;
 	} else if (p_port == 1) {
@@ -6136,79 +6141,67 @@ bool VisualShaderNodeTextureUniformTriplanar::is_input_port_default(int p_port, 
 	return false;
 }
 
-VisualShaderNodeTextureUniformTriplanar::VisualShaderNodeTextureUniformTriplanar() {
+VisualShaderNodeTextureParameterTriplanar::VisualShaderNodeTextureParameterTriplanar() {
 }
 
-////////////// Texture2DArray Uniform
+////////////// Texture2DArray Parameter
 
-String VisualShaderNodeTexture2DArrayUniform::get_caption() const {
-	return "Texture2DArrayUniform";
+String VisualShaderNodeTexture2DArrayParameter::get_caption() const {
+	return "Texture2DArrayParameter";
 }
 
-String VisualShaderNodeTexture2DArrayUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeTexture2DArrayParameter::get_output_port_name(int p_port) const {
 	return "sampler2DArray";
 }
 
-String VisualShaderNodeTexture2DArrayUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform sampler2DArray " + get_uniform_name();
+String VisualShaderNodeTexture2DArrayParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform sampler2DArray " + get_parameter_name();
 	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
 	code += ";\n";
 	return code;
 }
 
-String VisualShaderNodeTexture2DArrayUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return String();
+VisualShaderNodeTexture2DArrayParameter::VisualShaderNodeTexture2DArrayParameter() {
 }
 
-VisualShaderNodeTexture2DArrayUniform::VisualShaderNodeTexture2DArrayUniform() {
+////////////// Texture3D Parameter
+
+String VisualShaderNodeTexture3DParameter::get_caption() const {
+	return "Texture3DParameter";
 }
 
-////////////// Texture3D Uniform
-
-String VisualShaderNodeTexture3DUniform::get_caption() const {
-	return "Texture3DUniform";
-}
-
-String VisualShaderNodeTexture3DUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeTexture3DParameter::get_output_port_name(int p_port) const {
 	return "sampler3D";
 }
 
-String VisualShaderNodeTexture3DUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform sampler3D " + get_uniform_name();
+String VisualShaderNodeTexture3DParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform sampler3D " + get_parameter_name();
 	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
 	code += ";\n";
 	return code;
 }
 
-String VisualShaderNodeTexture3DUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return String();
+VisualShaderNodeTexture3DParameter::VisualShaderNodeTexture3DParameter() {
 }
 
-VisualShaderNodeTexture3DUniform::VisualShaderNodeTexture3DUniform() {
+////////////// Cubemap Parameter
+
+String VisualShaderNodeCubemapParameter::get_caption() const {
+	return "CubemapParameter";
 }
 
-////////////// Cubemap Uniform
-
-String VisualShaderNodeCubemapUniform::get_caption() const {
-	return "CubemapUniform";
-}
-
-String VisualShaderNodeCubemapUniform::get_output_port_name(int p_port) const {
+String VisualShaderNodeCubemapParameter::get_output_port_name(int p_port) const {
 	return "samplerCube";
 }
 
-String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = _get_qual_str() + "uniform samplerCube " + get_uniform_name();
+String VisualShaderNodeCubemapParameter::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform samplerCube " + get_parameter_name();
 	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
 	code += ";\n";
 	return code;
 }
 
-String VisualShaderNodeCubemapUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return String();
-}
-
-VisualShaderNodeCubemapUniform::VisualShaderNodeCubemapUniform() {
+VisualShaderNodeCubemapParameter::VisualShaderNodeCubemapParameter() {
 }
 
 ////////////// If

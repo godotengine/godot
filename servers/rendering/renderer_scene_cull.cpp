@@ -1436,7 +1436,7 @@ void RendererSceneCull::instance_geometry_set_lod_bias(RID p_instance, float p_l
 	}
 }
 
-void RendererSceneCull::instance_geometry_set_shader_uniform(RID p_instance, const StringName &p_parameter, const Variant &p_value) {
+void RendererSceneCull::instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value) {
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!instance);
 
@@ -1454,12 +1454,12 @@ void RendererSceneCull::instance_geometry_set_shader_uniform(RID p_instance, con
 		E->value.value = p_value;
 		if (E->value.index >= 0 && instance->instance_allocated_shader_uniforms) {
 			//update directly
-			RSG::material_storage->global_shader_uniforms_instance_update(p_instance, E->value.index, p_value);
+			RSG::material_storage->global_shader_parameters_instance_update(p_instance, E->value.index, p_value);
 		}
 	}
 }
 
-Variant RendererSceneCull::instance_geometry_get_shader_uniform(RID p_instance, const StringName &p_parameter) const {
+Variant RendererSceneCull::instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!instance, Variant());
 
@@ -1469,7 +1469,7 @@ Variant RendererSceneCull::instance_geometry_get_shader_uniform(RID p_instance, 
 	return Variant();
 }
 
-Variant RendererSceneCull::instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &p_parameter) const {
+Variant RendererSceneCull::instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!instance, Variant());
 
@@ -1479,7 +1479,7 @@ Variant RendererSceneCull::instance_geometry_get_shader_uniform_default_value(RI
 	return Variant();
 }
 
-void RendererSceneCull::instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const {
+void RendererSceneCull::instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const {
 	const Instance *instance = const_cast<RendererSceneCull *>(this)->instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND(!instance);
 
@@ -3673,7 +3673,7 @@ void RendererSceneCull::render_particle_colliders() {
 
 void RendererSceneCull::_update_instance_shader_uniforms_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) {
 	List<RendererMaterialStorage::InstanceShaderParam> plist;
-	RSG::material_storage->material_get_instance_shader_uniforms(p_material, &plist);
+	RSG::material_storage->material_get_instance_shader_parameters(p_material, &plist);
 	for (const RendererMaterialStorage::InstanceShaderParam &E : plist) {
 		StringName name = E.info.name;
 		if (isparams.has(name)) {
@@ -3879,17 +3879,17 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			if (p_instance->instance_allocated_shader_uniforms != (p_instance->instance_shader_uniforms.size() > 0)) {
 				p_instance->instance_allocated_shader_uniforms = (p_instance->instance_shader_uniforms.size() > 0);
 				if (p_instance->instance_allocated_shader_uniforms) {
-					p_instance->instance_allocated_shader_uniforms_offset = RSG::material_storage->global_shader_uniforms_instance_allocate(p_instance->self);
+					p_instance->instance_allocated_shader_uniforms_offset = RSG::material_storage->global_shader_parameters_instance_allocate(p_instance->self);
 					ERR_FAIL_NULL(geom->geometry_instance);
 					geom->geometry_instance->set_instance_shader_uniforms_offset(p_instance->instance_allocated_shader_uniforms_offset);
 
 					for (const KeyValue<StringName, Instance::InstanceShaderParameter> &E : p_instance->instance_shader_uniforms) {
 						if (E.value.value.get_type() != Variant::NIL) {
-							RSG::material_storage->global_shader_uniforms_instance_update(p_instance->self, E.value.index, E.value.value);
+							RSG::material_storage->global_shader_parameters_instance_update(p_instance->self, E.value.index, E.value.value);
 						}
 					}
 				} else {
-					RSG::material_storage->global_shader_uniforms_instance_free(p_instance->self);
+					RSG::material_storage->global_shader_parameters_instance_free(p_instance->self);
 					p_instance->instance_allocated_shader_uniforms_offset = -1;
 					ERR_FAIL_NULL(geom->geometry_instance);
 					geom->geometry_instance->set_instance_shader_uniforms_offset(-1);
@@ -3987,7 +3987,7 @@ bool RendererSceneCull::free(RID p_rid) {
 
 		if (instance->instance_allocated_shader_uniforms) {
 			//free the used shader parameters
-			RSG::material_storage->global_shader_uniforms_instance_free(instance->self);
+			RSG::material_storage->global_shader_parameters_instance_free(instance->self);
 		}
 		update_dirty_instances(); //in case something changed this
 

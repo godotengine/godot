@@ -1736,7 +1736,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 	// Fill Light lists here
 	//////////
 
-	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_uniforms_get_uniform_buffer();
+	GLuint global_buffer = GLES3::MaterialStorage::get_singleton()->global_shader_parameters_get_uniform_buffer();
 	glBindBufferBase(GL_UNIFORM_BUFFER, SCENE_GLOBALS_UNIFORM_LOCATION, global_buffer);
 
 	Color clear_color;

@@ -6408,7 +6408,7 @@ void fragment() {
 				Ref<ShaderMaterial> rotate_mat = memnew(ShaderMaterial);
 				rotate_mat->set_render_priority(Material::RENDER_PRIORITY_MAX);
 				rotate_mat->set_shader(rotate_shader);
-				rotate_mat->set_shader_uniform("albedo", col);
+				rotate_mat->set_shader_parameter("albedo", col);
 				rotate_gizmo_color[i] = rotate_mat;
 
 				Array arrays = surftool->commit_to_arrays();
@@ -6416,7 +6416,7 @@ void fragment() {
 				rotate_gizmo[i]->surface_set_material(0, rotate_mat);
 
 				Ref<ShaderMaterial> rotate_mat_hl = rotate_mat->duplicate();
-				rotate_mat_hl->set_shader_uniform("albedo", albedo);
+				rotate_mat_hl->set_shader_parameter("albedo", albedo);
 				rotate_gizmo_color_hl[i] = rotate_mat_hl;
 
 				if (i == 2) { // Rotation white outline
@@ -6457,7 +6457,7 @@ void fragment() {
 )");
 
 					border_mat->set_shader(border_shader);
-					border_mat->set_shader_uniform("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
+					border_mat->set_shader_parameter("albedo", Color(0.75, 0.75, 0.75, col.a / 3.0));
 
 					rotate_gizmo[3] = Ref<ArrayMesh>(memnew(ArrayMesh));
 					rotate_gizmo[3]->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
@@ -6710,8 +6710,8 @@ void Node3DEditor::_init_grid() {
 		fade_size = CLAMP(fade_size, min_fade_size, max_fade_size);
 
 		real_t grid_fade_size = (grid_size - primary_grid_steps) * fade_size;
-		grid_mat[c]->set_shader_uniform("grid_size", grid_fade_size);
-		grid_mat[c]->set_shader_uniform("orthogonal", orthogonal);
+		grid_mat[c]->set_shader_parameter("grid_size", grid_fade_size);
+		grid_mat[c]->set_shader_parameter("orthogonal", orthogonal);
 
 		// Cache these so we don't have to re-access memory.
 		Vector<Vector3> &ref_grid = grid_points[c];
@@ -7567,9 +7567,9 @@ void Node3DEditor::_sun_direction_draw() {
 	sun_direction->draw_rect(Rect2(Vector2(), sun_direction->get_size()), Color(1, 1, 1, 1));
 	Vector3 z_axis = preview_sun->get_transform().basis.get_column(Vector3::AXIS_Z);
 	z_axis = get_editor_viewport(0)->camera->get_camera_transform().basis.xform_inv(z_axis);
-	sun_direction_material->set_shader_uniform("sun_direction", Vector3(z_axis.x, -z_axis.y, z_axis.z));
+	sun_direction_material->set_shader_parameter("sun_direction", Vector3(z_axis.x, -z_axis.y, z_axis.z));
 	Color color = sun_color->get_pick_color() * sun_energy->get_value();
-	sun_direction_material->set_shader_uniform("sun_color", Vector3(color.r, color.g, color.b));
+	sun_direction_material->set_shader_parameter("sun_color", Vector3(color.r, color.g, color.b));
 }
 
 void Node3DEditor::_preview_settings_changed() {
@@ -8170,8 +8170,8 @@ void fragment() {
 )");
 		sun_direction_material.instantiate();
 		sun_direction_material->set_shader(sun_direction_shader);
-		sun_direction_material->set_shader_uniform("sun_direction", Vector3(0, 0, 1));
-		sun_direction_material->set_shader_uniform("sun_color", Vector3(1, 1, 1));
+		sun_direction_material->set_shader_parameter("sun_direction", Vector3(0, 0, 1));
+		sun_direction_material->set_shader_parameter("sun_color", Vector3(1, 1, 1));
 		sun_direction->set_material(sun_direction_material);
 
 		HBoxContainer *sun_angle_hbox = memnew(HBoxContainer);

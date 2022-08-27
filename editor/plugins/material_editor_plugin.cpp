@@ -339,17 +339,17 @@ Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
 		Ref<Texture2D> texture = mat->get_texture_by_name(E.name);
 		if (texture.is_valid()) {
-			smat->set_shader_uniform(E.name, texture);
+			smat->set_shader_parameter(E.name, texture);
 		} else {
 			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-			smat->set_shader_uniform(E.name, value);
+			smat->set_shader_parameter(E.name, value);
 		}
 	}
 
@@ -385,17 +385,17 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		// Texture parameter has to be treated specially since ORMMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
 		Ref<Texture2D> texture = mat->get_texture_by_name(E.name);
 		if (texture.is_valid()) {
-			smat->set_shader_uniform(E.name, texture);
+			smat->set_shader_parameter(E.name, texture);
 		} else {
 			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-			smat->set_shader_uniform(E.name, value);
+			smat->set_shader_parameter(E.name, value);
 		}
 	}
 
@@ -431,11 +431,11 @@ Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resourc
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_uniform(E.name, value);
+		smat->set_shader_parameter(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -470,11 +470,11 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_uniform(E.name, value);
+		smat->set_shader_parameter(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -509,11 +509,11 @@ Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource>
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_uniform(E.name, value);
+		smat->set_shader_parameter(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -548,11 +548,11 @@ Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_uniform(E.name, value);
+		smat->set_shader_parameter(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -587,11 +587,11 @@ Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_uniform(E.name, value);
+		smat->set_shader_parameter(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());
@@ -626,11 +626,11 @@ Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resour
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	RS::get_singleton()->shader_get_shader_uniform_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->get_shader_parameter_list(mat->get_shader_rid(), &params);
 
 	for (const PropertyInfo &E : params) {
 		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E.name);
-		smat->set_shader_uniform(E.name, value);
+		smat->set_shader_parameter(E.name, value);
 	}
 
 	smat->set_render_priority(mat->get_render_priority());

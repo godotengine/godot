@@ -242,7 +242,7 @@ const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringNa
 bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	const StringName *r = _instance_uniform_get_remap(p_name);
 	if (r) {
-		set_instance_shader_uniform(*r, p_value);
+		set_instance_shader_parameter(*r, p_value);
 		return true;
 	}
 #ifndef DISABLE_DEPRECATED
@@ -262,7 +262,7 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 	const StringName *r = _instance_uniform_get_remap(p_name);
 	if (r) {
-		r_ret = get_instance_shader_uniform(*r);
+		r_ret = get_instance_shader_parameter(*r);
 		return true;
 	}
 
@@ -271,10 +271,10 @@ bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> pinfo;
-	RS::get_singleton()->instance_geometry_get_shader_uniform_list(get_instance(), &pinfo);
+	RS::get_singleton()->instance_geometry_get_shader_parameter_list(get_instance(), &pinfo);
 	for (PropertyInfo &pi : pinfo) {
 		bool has_def_value = false;
-		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_uniform_default_value(get_instance(), pi.name);
+		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), pi.name);
 		if (def_value.get_type() != Variant::NIL) {
 			has_def_value = true;
 		}
@@ -319,24 +319,24 @@ float GeometryInstance3D::get_lod_bias() const {
 	return lod_bias;
 }
 
-void GeometryInstance3D::set_instance_shader_uniform(const StringName &p_uniform, const Variant &p_value) {
+void GeometryInstance3D::set_instance_shader_parameter(const StringName &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
-		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_uniform_default_value(get_instance(), p_uniform);
-		RS::get_singleton()->instance_geometry_set_shader_uniform(get_instance(), p_uniform, def_value);
+		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_name);
+		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, def_value);
 		instance_uniforms.erase(p_value);
 	} else {
-		instance_uniforms[p_uniform] = p_value;
+		instance_uniforms[p_name] = p_value;
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_id = p_value;
-			RS::get_singleton()->instance_geometry_set_shader_uniform(get_instance(), p_uniform, tex_id);
+			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, tex_id);
 		} else {
-			RS::get_singleton()->instance_geometry_set_shader_uniform(get_instance(), p_uniform, p_value);
+			RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_name, p_value);
 		}
 	}
 }
 
-Variant GeometryInstance3D::get_instance_shader_uniform(const StringName &p_uniform) const {
-	return RS::get_singleton()->instance_geometry_get_shader_uniform(get_instance(), p_uniform);
+Variant GeometryInstance3D::get_instance_shader_parameter(const StringName &p_name) const {
+	return RS::get_singleton()->instance_geometry_get_shader_parameter(get_instance(), p_name);
 }
 
 void GeometryInstance3D::set_custom_aabb(AABB aabb) {
@@ -434,8 +434,8 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_visibility_range_fade_mode", "mode"), &GeometryInstance3D::set_visibility_range_fade_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_range_fade_mode"), &GeometryInstance3D::get_visibility_range_fade_mode);
 
-	ClassDB::bind_method(D_METHOD("set_instance_shader_uniform", "uniform", "value"), &GeometryInstance3D::set_instance_shader_uniform);
-	ClassDB::bind_method(D_METHOD("get_instance_shader_uniform", "uniform"), &GeometryInstance3D::get_instance_shader_uniform);
+	ClassDB::bind_method(D_METHOD("set_instance_shader_parameter", "name", "value"), &GeometryInstance3D::set_instance_shader_parameter);
+	ClassDB::bind_method(D_METHOD("get_instance_shader_parameter", "name"), &GeometryInstance3D::get_instance_shader_parameter);
 
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
