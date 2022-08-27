@@ -180,17 +180,17 @@ namespace GodotTools.Ides
 
             public void SendOpenFile(string file)
             {
-                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file});
+                SendRequest<OpenFileResponse>(new OpenFileRequest { File = file });
             }
 
             public void SendOpenFile(string file, int line)
             {
-                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file, Line = line});
+                SendRequest<OpenFileResponse>(new OpenFileRequest { File = file, Line = line });
             }
 
             public void SendOpenFile(string file, int line, int column)
             {
-                SendRequest<OpenFileResponse>(new OpenFileRequest {File = file, Line = line, Column = column});
+                SendRequest<OpenFileResponse>(new OpenFileRequest { File = file, Line = line, Column = column });
             }
         }
 

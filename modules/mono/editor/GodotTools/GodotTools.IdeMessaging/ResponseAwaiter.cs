@@ -17,7 +17,7 @@ namespace GodotTools.IdeMessaging
             if (content.Status == MessageStatus.Ok)
                 SetResult(JsonConvert.DeserializeObject<T>(content.Body));
             else
-                SetResult(new T {Status = content.Status});
+                SetResult(new T { Status = content.Status });
         }
     }
 }

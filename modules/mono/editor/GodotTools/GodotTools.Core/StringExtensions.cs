@@ -34,7 +34,7 @@ namespace GodotTools.Core
             path = path.Replace('\\', '/');
             path = path[path.Length - 1] == '/' ? path.Substring(0, path.Length - 1) : path;
 
-            string[] parts = path.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             path = string.Join(Path.DirectorySeparatorChar.ToString(), parts).Trim();
 
@@ -60,7 +60,7 @@ namespace GodotTools.Core
 
         public static string ToSafeDirName(this string dirName, bool allowDirSeparator = false)
         {
-            var invalidChars = new List<string> {":", "*", "?", "\"", "<", ">", "|"};
+            var invalidChars = new List<string> { ":", "*", "?", "\"", "<", ">", "|" };
 
             if (allowDirSeparator)
             {

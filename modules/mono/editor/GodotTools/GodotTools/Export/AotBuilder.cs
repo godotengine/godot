@@ -76,13 +76,20 @@ namespace GodotTools.Export
             else
             {
                 string arch = "";
-                if (features.Contains("x86_64")) {
+                if (features.Contains("x86_64"))
+                {
                     arch = "x86_64";
-                } else if (features.Contains("x86_32")) {
+                }
+                else if (features.Contains("x86_32"))
+                {
                     arch = "x86_32";
-                } else if (features.Contains("arm64")) {
+                }
+                else if (features.Contains("arm64"))
+                {
                     arch = "arm64";
-                } else if (features.Contains("arm32")) {
+                }
+                else if (features.Contains("arm32"))
+                {
                     arch = "arm32";
                 }
                 CompileAssembliesForDesktop(exporter, platform, isDebug, arch, aotOpts, aotTempDir, outputDataDir, assembliesPrepared, bclDir);
