@@ -112,9 +112,18 @@ void OptionButton::pressed() {
 	popup->set_size(Size2(size.width, 0));
 	popup->set_scale(get_global_transform().get_scale());
 
-	// If not triggered by the mouse, start the popup with its first item selected.
-	if (popup->get_item_count() > 0 && !_was_pressed_by_mouse()) {
-		popup->set_current_index(0);
+	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
+	if (!_was_pressed_by_mouse()) {
+		if (current > -1 && !popup->is_item_disabled(current)) {
+			popup->set_current_index(current);
+		} else {
+			for (int i = 0; i < popup->get_item_count(); i++) {
+				if (!popup->is_item_disabled(i)) {
+					popup->set_current_index(i);
+					break;
+				}
+			}
+		}
 	}
 
 	popup->popup();

@@ -62,9 +62,14 @@ void MenuButton::pressed() {
 	popup->set_scale(get_global_transform().get_scale());
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
 
-	// If not triggered by the mouse, start the popup with its first item selected.
-	if (popup->get_item_count() > 0 && !_was_pressed_by_mouse()) {
-		popup->set_current_index(0);
+	// If not triggered by the mouse, start the popup with its first enabled item focused.
+	if (!_was_pressed_by_mouse()) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			if (!popup->is_item_disabled(i)) {
+				popup->set_current_index(i);
+				break;
+			}
+		}
 	}
 
 	popup->popup();
