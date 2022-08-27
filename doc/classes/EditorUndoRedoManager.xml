@@ -107,6 +107,18 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="history_changed">
+			<description>
+				Emitted when the list of actions in any history has changed, either when an action is commited or a history is cleared.
+			</description>
+		</signal>
+		<signal name="version_changed">
+			<description>
+				Emitted when the version of any history has changed as a result of undo or redo call.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="GLOBAL_HISTORY" value="0" enum="SpecialHistory">
 			Global history not associated with any scene, but with external resources etc.
