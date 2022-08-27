@@ -293,7 +293,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 			String word = str.substr(j, to - j);
 			Color col = Color();
-			if (keywords.has(word)) {
+			if (global_functions.has(word)) {
+				// "assert" and "preload" are reserved, so highlight even if not followed by a bracket.
+				if (word == "assert" || word == "preload" || str[to] == '(') {
+					col = global_function_color;
+				}
+			} else if (keywords.has(word)) {
 				col = keywords[word];
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
@@ -302,12 +307,13 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); // keyword & member indexing not allowed
+						col = Color(); // keyword, member & global func indexing not allowed
 						break;
 					} else if (str[k] > 32) {
 						break;
 					}
 				}
+
 				if (col != Color()) {
 					in_keyword = true;
 					keyword_color = col;
@@ -535,6 +541,7 @@ PackedStringArray GDScriptSyntaxHighlighter::_get_supported_languages() const {
 void GDScriptSyntaxHighlighter::_update_cache() {
 	keywords.clear();
 	member_keywords.clear();
+	global_functions.clear();
 	color_regions.clear();
 	color_region_cache.clear();
 
@@ -591,6 +598,17 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		}
 	}
 
+	/* Global functions. */
+	List<StringName> global_function_list;
+	GDScriptUtilityFunctions::get_function_list(&global_function_list);
+	Variant::get_utility_function_list(&global_function_list);
+	// "assert" and "preload" are not utility functions, but are global nonetheless, so insert them.
+	global_functions.insert(SNAME("assert"));
+	global_functions.insert(SNAME("preload"));
+	for (const StringName &E : global_function_list) {
+		global_functions.insert(E);
+	}
+
 	/* Comments */
 	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
 	List<String> comments;
@@ -643,12 +661,14 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
+		global_function_color = Color(0.6, 0.6, 0.9);
 		node_path_color = Color(0.72, 0.77, 0.49);
 		node_ref_color = Color(0.39, 0.76, 0.35);
 		annotation_color = Color(1.0, 0.7, 0.45);
 		string_name_color = Color(1.0, 0.76, 0.65);
 	} else {
 		function_definition_color = Color(0, 0.6, 0.6);
+		global_function_color = Color(0.4, 0.2, 0.8);
 		node_path_color = Color(0.18, 0.55, 0);
 		node_ref_color = Color(0.0, 0.5, 0);
 		annotation_color = Color(0.8, 0.37, 0);
@@ -656,6 +676,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);
+	EDITOR_DEF("text_editor/theme/highlighting/gdscript/global_function_color", global_function_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_path_color", node_path_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_reference_color", node_ref_color);
 	EDITOR_DEF("text_editor/theme/highlighting/gdscript/annotation_color", annotation_color);
@@ -664,6 +685,10 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/function_definition_color",
 				function_definition_color,
+				true);
+		EditorSettings::get_singleton()->set_initial_value(
+				"text_editor/theme/highlighting/gdscript/global_function_color",
+				global_function_color,
 				true);
 		EditorSettings::get_singleton()->set_initial_value(
 				"text_editor/theme/highlighting/gdscript/node_path_color",
@@ -684,6 +709,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_color");
+	global_function_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/global_function_color");
 	node_path_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_path_color");
 	node_ref_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/node_reference_color");
 	annotation_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/annotation_color");
