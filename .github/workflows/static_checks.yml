@@ -63,3 +63,7 @@ jobs:
       - name: Style checks via clang-format (clang_format.sh)
         run: |
           bash ./misc/scripts/clang_format.sh
+
+      - name: Style checks via dotnet format (dotnet_format.sh)
+        run: |
+          bash ./misc/scripts/dotnet_format.sh
