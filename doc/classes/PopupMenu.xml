@@ -317,6 +317,7 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Sets the currently focused item as the given [code]index[/code].
+				Passing [code]-1[/code] as the index makes so that no item is focused.
 			</description>
 		</method>
 		<method name="set_hide_on_window_lose_focus">
