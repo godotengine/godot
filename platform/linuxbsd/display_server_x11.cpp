@@ -1869,6 +1869,14 @@ bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
 	return retval;
 }
 
+void DisplayServerX11::_validate_fullscreen_on_map(WindowID p_window) {
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
+		// Unmapped fullscreen attempt didn't take effect, redo...
+		_set_wm_fullscreen(p_window, true);
+	}
+}
+
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	return _window_maximize_check(p_window, "_NET_WM_ALLOWED_ACTIONS");
@@ -3650,6 +3658,9 @@ void DisplayServerX11::process_events() {
 
 				const WindowData &wd = windows[window_id];
 
+				// Have we failed to set fullscreen while the window was unmapped?
+				_validate_fullscreen_on_map(window_id);
+
 				XWindowAttributes xwa;
 				XSync(x11_display, False);
 				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
@@ -4990,6 +5001,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		XNextEvent(x11_display, &xevent);
 		if (xevent.type == ConfigureNotify) {
 			_window_changed(&xevent);
+		} else if (xevent.type == MapNotify) {
+			// Have we failed to set fullscreen while the window was unmapped?
+			_validate_fullscreen_on_map(main_window);
 		}
 	}
 
