@@ -498,6 +498,15 @@ namespace Godot
             );
         }
 
+        internal Basis Lerp(Basis to, real_t weight)
+        {
+            Basis b = this;
+            b.Row0 = Row0.Lerp(to.Row0, weight);
+            b.Row1 = Row1.Lerp(to.Row1, weight);
+            b.Row2 = Row2.Lerp(to.Row2, weight);
+            return b;
+        }
+
         /// <summary>
         /// Returns the orthonormalized version of the basis matrix (useful to
         /// call occasionally to avoid rounding errors for orthogonal matrices).
