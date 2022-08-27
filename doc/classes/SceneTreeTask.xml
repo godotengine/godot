@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneTreeTask" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		[WorkerThreadPool] task.
+	</brief_description>
+	<description>
+		A [WorkerThreadPool] task managed by the scene tree, which emits [signal completed] on completion. See also [method SceneTree.create_task].
+		[codeblocks]
+		[gdscript]
+		await get_tree().create_group_task(job).completed
+		[/gdscript]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_processed_element_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Get the number of processed elements. Either 0 or 1 if completed.
+			</description>
+		</method>
+		<method name="is_completed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Checks if the task is completed.
+			</description>
+		</method>
+		<method name="wait_for_completion" qualifiers="const">
+			<return type="void" />
+			<description>
+				Blocks and waits for the task to complete.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="completed">
+			<description>
+				Emitted when the task is completed.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -930,6 +930,8 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(SceneTree);
 	GDREGISTER_ABSTRACT_CLASS(SceneTreeTimer); // sorry, you can't create it
+	GDREGISTER_ABSTRACT_CLASS(SceneTreeTask);
+	GDREGISTER_ABSTRACT_CLASS(SceneTreeGroupTask);
 
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.

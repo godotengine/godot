@@ -106,6 +106,51 @@ void SceneTreeTimer::release_connections() {
 
 SceneTreeTimer::SceneTreeTimer() {}
 
+void SceneTreeTask::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_processed_element_count"), &SceneTreeTask::get_processed_element_count);
+
+	ClassDB::bind_method(D_METHOD("is_completed"), &SceneTreeTask::is_completed);
+
+	ClassDB::bind_method(D_METHOD("wait_for_completion"), &SceneTreeTask::wait_for_completion);
+
+	ADD_SIGNAL(MethodInfo("completed"));
+}
+
+uint32_t SceneTreeTask::get_processed_element_count() const {
+	return is_completed() ? 1 : 0;
+}
+
+bool SceneTreeTask::is_completed() const {
+	return WorkerThreadPool::get_singleton()->is_task_completed(task_id);
+}
+
+void SceneTreeTask::wait_for_completion() const {
+	WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
+}
+
+SceneTreeTask::SceneTreeTask(int64_t p_task_id) {
+	task_id = p_task_id;
+}
+
+void SceneTreeGroupTask::_bind_methods() {
+}
+
+uint32_t SceneTreeGroupTask::get_processed_element_count() const {
+	return WorkerThreadPool::get_singleton()->get_group_processed_element_count(task_id);
+}
+
+bool SceneTreeGroupTask::is_completed() const {
+	return WorkerThreadPool::get_singleton()->is_group_task_completed(task_id);
+}
+
+void SceneTreeGroupTask::wait_for_completion() const {
+	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(task_id);
+}
+
+SceneTreeGroupTask::SceneTreeGroupTask(int64_t p_group_task_id) :
+		SceneTreeTask(p_group_task_id) {
+}
+
 void SceneTree::tree_changed() {
 	tree_version++;
 	emit_signal(tree_changed_name);
@@ -494,6 +539,7 @@ bool SceneTree::process(double p_time) {
 	}
 
 	process_tweens(p_time, false);
+	process_tasks();
 
 	flush_transform_notifications(); //additional transforms after timers update
 
@@ -547,6 +593,23 @@ void SceneTree::process_tweens(float p_delta, bool p_physics) {
 		if (!E->get()->step(p_delta)) {
 			E->get()->clear();
 			tweens.erase(E);
+		}
+		if (E == L) {
+			break;
+		}
+		E = N;
+	}
+}
+
+void SceneTree::process_tasks() {
+	MutexLock lock(task_mutex);
+	List<Ref<SceneTreeTask>>::Element *L = tasks.back();
+
+	for (List<Ref<SceneTreeTask>>::Element *E = tasks.front(); E;) {
+		List<Ref<SceneTreeTask>>::Element *N = E->next();
+		if (E->get()->is_completed()) {
+			E->get()->emit_signal(SNAME("completed"));
+			tasks.erase(E);
 		}
 		if (E == L) {
 			break;
@@ -1184,6 +1247,22 @@ TypedArray<Tween> SceneTree::get_processed_tweens() {
 	return ret;
 }
 
+Ref<SceneTreeTask> SceneTree::create_task(const Callable &p_action, bool p_high_priority, const String &p_description) {
+	int64_t task_id = WorkerThreadPool::get_singleton()->add_task(p_action, p_high_priority, p_description);
+	Ref<SceneTreeTask> task = memnew(SceneTreeTask(task_id));
+	MutexLock lock(task_mutex);
+	tasks.push_back(task);
+	return task;
+}
+
+Ref<SceneTreeGroupTask> SceneTree::create_group_task(const Callable &p_action, int p_elements, int p_tasks, bool p_high_priority, const String &p_description) {
+	int64_t group_task_id = WorkerThreadPool::get_singleton()->add_group_task(p_action, p_elements, p_tasks, p_high_priority, p_description);
+	Ref<SceneTreeGroupTask> group_task = memnew(SceneTreeGroupTask(group_task_id));
+	MutexLock lock(task_mutex);
+	tasks.push_back(group_task);
+	return group_task;
+}
+
 Ref<MultiplayerAPI> SceneTree::get_multiplayer(const NodePath &p_for_path) const {
 	Ref<MultiplayerAPI> out = multiplayer;
 	for (const KeyValue<NodePath, Ref<MultiplayerAPI>> &E : custom_multiplayers) {
@@ -1261,6 +1340,9 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_timer", "time_sec", "process_always"), &SceneTree::create_timer, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("create_tween"), &SceneTree::create_tween);
 	ClassDB::bind_method(D_METHOD("get_processed_tweens"), &SceneTree::get_processed_tweens);
+
+	ClassDB::bind_method(D_METHOD("create_task", "action", "high_priority", "description"), &SceneTree::create_task, DEFVAL(false), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("create_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &SceneTree::create_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneTree::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_frame"), &SceneTree::get_frame);

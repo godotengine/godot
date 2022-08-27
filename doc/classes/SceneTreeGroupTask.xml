@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SceneTreeGroupTask" inherits="SceneTreeTask" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		[WorkerThreadPool] group task.
+	</brief_description>
+	<description>
+		A [WorkerThreadPool] task managed by the scene tree, which emits [signal completed] on completion. See also [method SceneTree.create_group_task].
+		[codeblocks]
+		[gdscript]
+		await get_tree().create_task(job).completed
+		[/gdscript]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

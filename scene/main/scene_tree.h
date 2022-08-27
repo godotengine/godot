@@ -32,6 +32,7 @@
 #define SCENE_TREE_H
 
 #include "core/os/main_loop.h"
+#include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
@@ -71,6 +72,40 @@ public:
 	void release_connections();
 
 	SceneTreeTimer();
+};
+
+class SceneTreeTask : public RefCounted {
+	GDCLASS(SceneTreeTask, RefCounted);
+
+protected:
+	int64_t task_id;
+
+	static void _bind_methods();
+
+public:
+	SceneTreeTask(int64_t p_task_id);
+
+	virtual uint32_t get_processed_element_count() const;
+
+	virtual bool is_completed() const;
+
+	virtual void wait_for_completion() const;
+};
+
+class SceneTreeGroupTask : public SceneTreeTask {
+	GDCLASS(SceneTreeGroupTask, SceneTreeTask);
+
+protected:
+	static void _bind_methods();
+
+public:
+	SceneTreeGroupTask(int64_t p_task_id);
+
+	virtual uint32_t get_processed_element_count() const override;
+
+	virtual bool is_completed() const override;
+
+	virtual void wait_for_completion() const override;
 };
 
 class SceneTree : public MainLoop {
@@ -162,6 +197,8 @@ private:
 
 	List<Ref<SceneTreeTimer>> timers;
 	List<Ref<Tween>> tweens;
+	List<Ref<SceneTreeTask>> tasks;
+	Mutex task_mutex;
 
 	///network///
 
@@ -177,6 +214,7 @@ private:
 	void node_removed(Node *p_node);
 	void node_renamed(Node *p_node);
 	void process_tweens(float p_delta, bool p_physics_frame);
+	void process_tasks();
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
@@ -368,6 +406,9 @@ public:
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
 	Ref<Tween> create_tween();
 	TypedArray<Tween> get_processed_tweens();
+
+	Ref<SceneTreeTask> create_task(const Callable &p_action, bool p_high_priority = false, const String &p_description = String());
+	Ref<SceneTreeGroupTask> create_group_task(const Callable &p_action, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String());
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node *p_current);
