@@ -188,21 +188,18 @@ void Slider::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
-			
+
 			if (adjust_step) {
 				float step = get_step(), dist = get_max() - get_min();
 				int idist = dist;
-
 				if (step > dist) {
 					ticks = 0;
 					WARN_PRINT_ONCE("The step must be less than or equal to : " + itos(dist));
-				}
-				else if (step == dist || step < 1) { ticks = 0; }
-				else if (step >= 1) {
-
+				} else if (step == dist || step < 1) {
+					ticks = 0;
+				} else if (step >= 1) {
 					if (!Math::is_equal_approx(Math::fmod(dist, step), 0)) {
 						List<int> factors = List<int>();
-						
 						for (int i = Math::sqrt(dist); i > 0; i--) { // find all divisors of the distance
 							if (idist % i == 0) {
 								factors.push_back(i);
@@ -210,7 +207,6 @@ void Slider::_notification(int p_what) {
 							}
 						}
 						factors.sort();
-
 						for (int i = factors.size() - 1; i >= 0; i--) {
 							if (step >= factors[i]) {
 								set_step(factors[i]);
