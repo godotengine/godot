@@ -285,7 +285,7 @@ Node *MeshInstance3D::create_multiple_convex_collisions_node() {
 	}
 
 	Mesh::ConvexDecompositionSettings settings;
-	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
+	TypedArray<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 	if (!shapes.size()) {
 		return nullptr;
 	}
@@ -305,16 +305,12 @@ TypedArray<Ref<Shape3D>> MeshInstance3D::create_convex_collisions_array() {
 	}
 
 	Mesh::ConvexDecompositionSettings settings;
-	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
+	TypedArray<Ref<Shape3D>> shapes = mesh->convex_decompose(settings);
 	if (!shapes.size()) {
 		return TypedArray<Ref<Shape3D>>();
 	}
 
-	TypedArray<Ref<Shape3D>> arr;
-	for (int i = 0; i < shapes.size(); i++) {
-		arr.push_back(*shapes[i]);
-	}
-	return arr;
+	return shapes;
 }
 
 void MeshInstance3D::create_multiple_convex_collisions() {

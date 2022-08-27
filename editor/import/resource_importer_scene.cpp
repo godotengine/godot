@@ -351,7 +351,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
-static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
+static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, TypedArray<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
 	ERR_FAIL_NULL_MSG(mesh->get_mesh(), "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
@@ -368,7 +368,7 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 	}
 }
 
-Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames) {
+Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, TypedArray<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames) {
 	// Children first.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _pre_fix_node(p_node->get_child(i), p_root, r_collision_map, r_occluder_arrays, r_node_renames);
@@ -496,7 +496,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			Ref<ImporterMesh> mesh = mi->get_mesh();
 
 			if (mesh.is_valid()) {
-				Vector<Ref<Shape3D>> shapes;
+				TypedArray<Ref<Shape3D>> shapes;
 				if (r_collision_map.has(mesh)) {
 					shapes = r_collision_map[mesh];
 				} else if (_teststr(name, "colonly")) {
@@ -558,7 +558,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		Ref<ImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			Vector<Ref<Shape3D>> shapes;
+			TypedArray<Ref<Shape3D>> shapes;
 			if (r_collision_map.has(mesh)) {
 				shapes = r_collision_map[mesh];
 			} else {
@@ -583,7 +583,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		Ref<ImporterMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			Vector<Ref<Shape3D>> shapes;
+			TypedArray<Ref<Shape3D>> shapes;
 			String fixed_name;
 			if (r_collision_map.has(mesh)) {
 				shapes = r_collision_map[mesh];
@@ -704,7 +704,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 
 		Ref<ImporterMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
-			Vector<Ref<Shape3D>> shapes;
+			TypedArray<Ref<Shape3D>> shapes;
 			if (r_collision_map.has(mesh)) {
 				shapes = r_collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
@@ -900,7 +900,7 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, TypedArray<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
@@ -1040,7 +1040,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				}
 
 				if (mesh_physics_mode != MeshPhysicsMode::MESH_PHYSICS_DISABLED) {
-					Vector<Ref<Shape3D>> shapes;
+					TypedArray<Ref<Shape3D>> shapes;
 					if (collision_map.has(m)) {
 						shapes = collision_map[m];
 					} else {
@@ -1092,7 +1092,8 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						}
 
 						int idx = 0;
-						for (const Ref<Shape3D> &E : shapes) {
+						for (int i = 0; i < shapes.size(); i++) {
+							const Ref<Shape3D> &E = shapes[i];
 							CollisionShape3D *cshape = memnew(CollisionShape3D);
 							cshape->set_shape(E);
 							base->add_child(cshape, true);
@@ -1884,8 +1885,9 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 	}
 }
 
-void ResourceImporterScene::_add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes) {
-	for (const Ref<Shape3D> &E : p_shapes) {
+void ResourceImporterScene::_add_shapes(Node *p_node, const TypedArray<Ref<Shape3D>> &p_shapes) {
+	for (int i = 0; i < p_shapes.size(); i++) {
+		const Ref<Shape3D> &E = p_shapes[i];
 		CollisionShape3D *cshape = memnew(CollisionShape3D);
 		cshape->set_shape(E);
 		p_node->add_child(cshape, true);
@@ -2081,7 +2083,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 		return nullptr;
 	}
 
-	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
+	HashMap<Ref<ImporterMesh>, TypedArray<Ref<Shape3D>>> collision_map;
 	List<Pair<NodePath, Node *>> node_renames;
 	_pre_fix_node(scene, scene, collision_map, nullptr, node_renames);
 
@@ -2162,7 +2164,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	HashSet<Ref<ImporterMesh>> scanned_meshes;
-	HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> collision_map;
+	HashMap<Ref<ImporterMesh>, TypedArray<Ref<Shape3D>>> collision_map;
 	Pair<PackedVector3Array, PackedInt32Array> occluder_arrays;
 	List<Pair<NodePath, Node *>> node_renames;
 
