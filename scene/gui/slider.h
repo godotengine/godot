@@ -82,7 +82,7 @@ public:
 	bool get_ticks_on_borders() const;
 
 	void set_adjust_step(bool p_adjust);
-	int is_adjusting_step() const;
+	bool is_adjusting_step() const;
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;

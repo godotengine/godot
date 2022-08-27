@@ -327,7 +327,7 @@ void Slider::set_adjust_step(bool p_adjust) {
 	update();
 }
 
-int Slider::is_adjusting_step() const {
+bool Slider::is_adjusting_step() const {
 	return adjust_step;
 }
 
