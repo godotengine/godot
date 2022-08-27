@@ -38,16 +38,7 @@ TextureRect *TexturePreview::get_texture_display() {
 
 void TexturePreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (!is_inside_tree()) {
-				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
-				// is getting called for some reason when the `TexturePreview` is
-				// getting destroyed, which causes `get_theme_font()` to return `nullptr`.
-				// See https://github.com/godotengine/godot/issues/50743.
-				break;
-			}
-
 			if (metadata_label) {
 				Ref<Font> metadata_label_font = get_theme_font(SNAME("expression"), SNAME("EditorFonts"));
 				metadata_label->add_theme_font_override("font", metadata_label_font);

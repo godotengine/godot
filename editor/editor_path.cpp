@@ -182,7 +182,6 @@ void EditorPath::_id_pressed(int p_idx) {
 
 void EditorPath::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 

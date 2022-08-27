@@ -34,15 +34,10 @@ void OpenXRActionEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remove", PropertyInfo(Variant::OBJECT, "action_editor")));
 }
 
-void OpenXRActionEditor::_theme_changed() {
-	rem_action->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-}
-
 void OpenXRActionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			_theme_changed();
+			rem_action->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 		} break;
 	}
 }

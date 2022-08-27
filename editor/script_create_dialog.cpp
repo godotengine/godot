@@ -120,9 +120,8 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
+		} break;
 
-			[[fallthrough]];
-		}
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
