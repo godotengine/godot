@@ -110,6 +110,7 @@
 #include "editor/export/export_template_manager.h"
 #include "editor/export/project_export.h"
 #include "editor/filesystem_dock.h"
+#include "editor/history_dock.h"
 #include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/editor_import_collada.h"
@@ -3697,6 +3698,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 	ScriptEditor::get_singleton()->set_scene_root_script(editor_data.get_scene_root_script(editor_data.get_edited_scene()));
 	editor_data.notify_edited_scene_changed();
+	emit_signal(SNAME("scene_changed"));
 }
 
 bool EditorNode::is_changing_scene() const {
@@ -6040,6 +6042,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
 	ADD_SIGNAL(MethodInfo("scene_saved", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("project_settings_changed"));
+	ADD_SIGNAL(MethodInfo("scene_changed"));
 }
 
 static Node *_resource_get_edited_scene() {
@@ -7105,6 +7108,8 @@ EditorNode::EditorNode() {
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_docks));
 	get_project_settings()->connect_filesystem_dock_signals(filesystem_dock);
 
+	HistoryDock *hd = memnew(HistoryDock);
+
 	// Scene: Top left.
 	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(SceneTreeDock::get_singleton());
 	dock_slot[DOCK_SLOT_LEFT_UR]->set_tab_title(dock_slot[DOCK_SLOT_LEFT_UR]->get_tab_idx_from_control(SceneTreeDock::get_singleton()), TTR("Scene"));
@@ -7124,6 +7129,10 @@ EditorNode::EditorNode() {
 	// Node: Full height right, behind Inspector.
 	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(NodeDock::get_singleton());
 	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(dock_slot[DOCK_SLOT_RIGHT_UL]->get_tab_idx_from_control(NodeDock::get_singleton()), TTR("Node"));
+
+	// History: Full height right, behind Node.
+	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(hd);
+	dock_slot[DOCK_SLOT_RIGHT_UL]->set_tab_title(dock_slot[DOCK_SLOT_RIGHT_UL]->get_tab_idx_from_control(hd), TTR("History"));
 
 	// Hide unused dock slots and vsplits.
 	dock_slot[DOCK_SLOT_LEFT_UL]->hide();

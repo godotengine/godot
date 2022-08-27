@@ -44,7 +44,6 @@ public:
 		INVALID_HISTORY = -99,
 	};
 
-private:
 	struct Action {
 		int history_id = INVALID_HISTORY;
 		double timestamp = 0;
@@ -60,6 +59,7 @@ private:
 		List<Action> redo_stack;
 	};
 
+private:
 	HashMap<int, History> history_map;
 	Action pending_action;
 
@@ -114,7 +114,9 @@ public:
 	bool is_committing_action() const;
 
 	bool undo();
+	bool undo_history(int p_id);
 	bool redo();
+	bool redo_history(int p_id);
 	void clear_history(bool p_increase_version = true, int p_idx = INVALID_HISTORY);
 
 	void set_history_as_saved(int p_idx);
