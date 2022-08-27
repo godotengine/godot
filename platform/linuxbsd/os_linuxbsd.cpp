@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "main/main.h"
 #include "servers/display_server.h"
+#include "tray_broker_dbus.h"
 
 #ifdef X11_ENABLED
 #include "display_server_x11.h"
@@ -124,6 +125,10 @@ void OS_LinuxBSD::initialize() {
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
+
+#ifdef DBUS_ENABLED
+	TrayBrokerDBus::make_default();
+#endif
 }
 
 void OS_LinuxBSD::initialize_joypads() {
@@ -532,8 +537,15 @@ void OS_LinuxBSD::run() {
 	//int frames=0;
 	//uint64_t frame=0;
 
+#ifdef DBUS_ENABLED
+	tb = reinterpret_cast<TrayBrokerDBus *>(TrayBroker::get_singleton());
+#endif
+
 	while (!force_quit) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
+#ifdef DBUS_ENABLED
+		tb->process_messages();
+#endif
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif

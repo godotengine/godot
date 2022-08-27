@@ -61,6 +61,7 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
+#include "core/io/tray_broker.h"
 #include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
@@ -96,6 +97,8 @@ static core_bind::Marshalls *_marshalls = nullptr;
 static core_bind::EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
+
+static TrayBroker *tb = nullptr;
 
 static core_bind::Geometry2D *_geometry_2d = nullptr;
 static core_bind::Geometry3D *_geometry_3d = nullptr;
@@ -194,6 +197,8 @@ void register_core_types() {
 
 	ClassDB::register_custom_instance_class<HTTPClient>();
 
+	GDREGISTER_ABSTRACT_CLASS(TrayBroker);
+
 	// Crypto
 	GDREGISTER_CLASS(HashingContext);
 	GDREGISTER_CLASS(AESContext);
@@ -258,6 +263,8 @@ void register_core_types() {
 
 	ip = IP::create();
 
+	tb = TrayBroker::create();
+
 	_geometry_2d = memnew(core_bind::Geometry2D);
 	_geometry_3d = memnew(core_bind::Geometry3D);
 
@@ -299,6 +306,7 @@ void register_core_settings() {
 void register_core_singletons() {
 	GDREGISTER_CLASS(ProjectSettings);
 	GDREGISTER_ABSTRACT_CLASS(IP);
+	GDREGISTER_ABSTRACT_CLASS(TrayBroker);
 	GDREGISTER_CLASS(core_bind::Geometry2D);
 	GDREGISTER_CLASS(core_bind::Geometry3D);
 	GDREGISTER_CLASS(core_bind::ResourceLoader);
@@ -387,6 +395,10 @@ void unregister_core_types() {
 
 	if (ip) {
 		memdelete(ip);
+	}
+
+	if (tb) {
+		memdelete(tb);
 	}
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_native_extension);

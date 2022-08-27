@@ -10,6 +10,7 @@ common_linuxbsd = [
     "os_linuxbsd.cpp",
     "joypad_linux.cpp",
     "freedesktop_screensaver.cpp",
+    "tray_broker_dbus.cpp",
 ]
 
 if env["x11"]:

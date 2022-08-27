@@ -39,6 +39,7 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
+#include "tray_broker_dbus.h"
 
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
@@ -51,6 +52,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 #ifdef JOYDEV_ENABLED
 	JoypadLinux *joypad = nullptr;
+#endif
+
+#ifdef DBUS_ENABLED
+	TrayBrokerDBus *tb = nullptr;
 #endif
 
 #ifdef ALSA_ENABLED
