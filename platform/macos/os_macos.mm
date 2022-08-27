@@ -512,8 +512,6 @@ Error OS_MacOS::move_to_trash(const String &p_path) {
 }
 
 void OS_MacOS::run() {
-	force_quit = false;
-
 	if (!main_loop) {
 		return;
 	}
@@ -521,7 +519,7 @@ void OS_MacOS::run() {
 	main_loop->initialize();
 
 	bool quit = false;
-	while (!force_quit && !quit) {
+	while (!quit) {
 		@try {
 			if (DisplayServer::get_singleton()) {
 				DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
@@ -541,7 +539,6 @@ void OS_MacOS::run() {
 
 OS_MacOS::OS_MacOS() {
 	main_loop = nullptr;
-	force_quit = false;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(MacOSTerminalLogger));

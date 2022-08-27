@@ -110,7 +110,6 @@ class OS_Windows : public OS {
 	ErrorHandlerList error_handlers;
 #endif
 
-	bool force_quit;
 	HWND main_window;
 
 	// functions used by main to initialize/deinitialize the OS
