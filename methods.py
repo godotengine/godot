@@ -705,7 +705,7 @@ def generate_vs_project(env, num_jobs):
             # required for Visual Studio to understand that it needs to generate an NMAKE
             # project. Do not modify without knowing what you are doing.
             PLATFORMS = ["Win32", "x64"]
-            PLATFORM_IDS = ["32", "64"]
+            PLATFORM_IDS = ["x86_32", "x86_64"]
             CONFIGURATIONS = ["debug", "release", "release_debug"]
             CONFIGURATION_IDS = ["tools", "opt", "opt.tools"]
 
