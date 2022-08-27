@@ -607,13 +607,16 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_color = Object::cast_to<GraphNode>(to)->get_connection_input_color(E.to_port);
 									connecting_target = false;
 									connecting_to = pos;
-									just_disconnected = true;
 
-									emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-									to = get_node(String(connecting_from)); //maybe it was erased
-									if (Object::cast_to<GraphNode>(to)) {
-										connecting = true;
-										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+									if (connecting_type >= 0) {
+										just_disconnected = true;
+
+										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
+										to = get_node(String(connecting_from)); //maybe it was erased
+										if (Object::cast_to<GraphNode>(to)) {
+											connecting = true;
+											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+										}
 									}
 									return;
 								}
@@ -621,7 +624,6 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 						}
 					}
 
-					connecting = true;
 					connecting_from = gn->get_name();
 					connecting_index = j;
 					connecting_out = true;
@@ -629,8 +631,11 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_output_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconnected = false;
-					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+					if (connecting_type >= 0) {
+						connecting = true;
+						just_disconnected = false;
+						emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+					}
 					return;
 				}
 			}
@@ -657,11 +662,13 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_to = pos;
 									just_disconnected = true;
 
-									emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-									fr = get_node(String(connecting_from)); //maybe it was erased
-									if (Object::cast_to<GraphNode>(fr)) {
-										connecting = true;
-										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+									if (connecting_type >= 0) {
+										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
+										fr = get_node(String(connecting_from)); //maybe it was erased
+										if (Object::cast_to<GraphNode>(fr)) {
+											connecting = true;
+											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+										}
 									}
 									return;
 								}
@@ -669,7 +676,6 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 						}
 					}
 
-					connecting = true;
 					connecting_from = gn->get_name();
 					connecting_index = j;
 					connecting_out = false;
@@ -677,8 +683,11 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_input_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconnected = false;
-					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+					if (connecting_type >= 0) {
+						connecting = true;
+						just_disconnected = false;
+						emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+					}
 					return;
 				}
 			}
@@ -1127,7 +1136,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		drag_accum += mm->get_relative();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-			if (gn && gn->is_selected()) {
+			if (gn && gn->is_selected() && gn->is_draggable()) {
 				Vector2 pos = (gn->get_drag_from() * zoom + drag_accum) / zoom;
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
@@ -1166,7 +1175,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				} else if (gn->is_selected() && !box_selection_mode_additive) {
 					emit_signal(SNAME("node_deselected"), gn);
 				}
-				gn->set_selected(box_selection_mode_additive);
+				if (gn->is_selectable()) {
+					gn->set_selected(box_selection_mode_additive);
+				}
 			} else {
 				bool select = (previous_selected.find(gn) != nullptr);
 				if (gn->is_selected() && !select) {
@@ -1174,7 +1185,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				} else if (!gn->is_selected() && select) {
 					emit_signal(SNAME("node_selected"), gn);
 				}
-				gn->set_selected(select);
+				if (gn->is_selectable()) {
+					gn->set_selected(select);
+				}
 			}
 		}
 
@@ -1193,7 +1206,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						continue;
 					}
 
-					bool select = (previous_selected.find(gn) != nullptr);
+					bool select = (gn->is_selectable() && previous_selected.find(gn) != nullptr);
 					if (gn->is_selected() && !select) {
 						emit_signal(SNAME("node_deselected"), gn);
 					} else if (!gn->is_selected() && select) {
@@ -1285,7 +1298,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 						if (o_gn) {
 							if (o_gn == gn) {
-								o_gn->set_selected(true);
+								o_gn->set_selected(o_gn->is_selectable());
 							} else {
 								if (o_gn->is_selected()) {
 									emit_signal(SNAME("node_deselected"), o_gn);
@@ -1296,7 +1309,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					}
 				}
 
-				gn->set_selected(true);
+				gn->set_selected(gn->is_selectable());
 				for (int i = 0; i < get_child_count(); i++) {
 					GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 					if (!o_gn) {
@@ -1709,6 +1722,19 @@ void GraphEdit::set_minimap_enabled(bool p_enable) {
 
 bool GraphEdit::is_minimap_enabled() const {
 	return minimap_button->is_pressed();
+}
+
+void GraphEdit::set_arrange_nodes_button_hidden(bool p_enable) {
+	arrange_nodes_button_hidden = p_enable;
+	if (arrange_nodes_button_hidden) {
+		layout_button->hide();
+	} else {
+		layout_button->show();
+	}
+}
+
+bool GraphEdit::is_arrange_nodes_button_hidden() const {
+	return arrange_nodes_button_hidden;
 }
 
 void GraphEdit::_minimap_toggled() {
@@ -2343,6 +2369,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimap_enabled", "enable"), &GraphEdit::set_minimap_enabled);
 	ClassDB::bind_method(D_METHOD("is_minimap_enabled"), &GraphEdit::is_minimap_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_arrange_nodes_button_hidden", "enable"), &GraphEdit::set_arrange_nodes_button_hidden);
+	ClassDB::bind_method(D_METHOD("is_arrange_nodes_button_hidden"), &GraphEdit::is_arrange_nodes_button_hidden);
+
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
@@ -2381,6 +2410,9 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_enabled"), "set_minimap_enabled", "is_minimap_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
+
+	ADD_GROUP("UI", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arrange_nodes_button_hidden"), "set_arrange_nodes_button_hidden", "is_arrange_nodes_button_hidden");
 
 	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot")));

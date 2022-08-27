@@ -48,7 +48,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == Key::KEY_DELETE && !k->is_echo()) {
 		if (selected_point != -1) {
-			_erase_selected();
+			if (!read_only) {
+				_erase_selected();
+			}
 			accept_event();
 		}
 	}
@@ -56,62 +58,64 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && ((tool_select->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) || (mb->get_button_index() == MouseButton::LEFT && tool_create->is_pressed()))) {
-		menu->clear();
-		animations_menu->clear();
-		animations_to_add.clear();
+		if (!read_only) {
+			menu->clear();
+			animations_menu->clear();
+			animations_to_add.clear();
 
-		List<StringName> classes;
-		ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
-		classes.sort_custom<StringName::AlphCompare>();
+			List<StringName> classes;
+			ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
+			classes.sort_custom<StringName::AlphCompare>();
 
-		menu->add_submenu_item(TTR("Add Animation"), "animations");
+			menu->add_submenu_item(TTR("Add Animation"), "animations");
 
-		AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_tree();
-		ERR_FAIL_COND(!gp);
+			AnimationTree *gp = AnimationTreeEditor::get_singleton()->get_tree();
+			ERR_FAIL_COND(!gp);
 
-		if (gp->has_node(gp->get_animation_player())) {
-			AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
+			if (gp->has_node(gp->get_animation_player())) {
+				AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(gp->get_node(gp->get_animation_player()));
 
-			if (ap) {
-				List<StringName> names;
-				ap->get_animation_list(&names);
+				if (ap) {
+					List<StringName> names;
+					ap->get_animation_list(&names);
 
-				for (const StringName &E : names) {
-					animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E);
-					animations_to_add.push_back(E);
+					for (const StringName &E : names) {
+						animations_menu->add_icon_item(get_theme_icon(SNAME("Animation"), SNAME("EditorIcons")), E);
+						animations_to_add.push_back(E);
+					}
 				}
 			}
-		}
 
-		for (const StringName &E : classes) {
-			String name = String(E).replace_first("AnimationNode", "");
-			if (name == "Animation" || name == "StartState" || name == "EndState") {
-				continue;
+			for (const StringName &E : classes) {
+				String name = String(E).replace_first("AnimationNode", "");
+				if (name == "Animation" || name == "StartState" || name == "EndState") {
+					continue;
+				}
+
+				int idx = menu->get_item_count();
+				menu->add_item(vformat(TTR("Add %s"), name), idx);
+				menu->set_item_metadata(idx, E);
 			}
 
-			int idx = menu->get_item_count();
-			menu->add_item(vformat(TTR("Add %s"), name), idx);
-			menu->set_item_metadata(idx, E);
-		}
-
-		Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
-		if (clipb.is_valid()) {
+			Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
+			if (clipb.is_valid()) {
+				menu->add_separator();
+				menu->add_item(TTR("Paste"), MENU_PASTE);
+			}
 			menu->add_separator();
-			menu->add_item(TTR("Paste"), MENU_PASTE);
-		}
-		menu->add_separator();
-		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
+			menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
-		menu->set_position(blend_space_draw->get_screen_position() + mb->get_position());
-		menu->reset_size();
-		menu->popup();
+			menu->set_position(blend_space_draw->get_screen_position() + mb->get_position());
+			menu->reset_size();
+			menu->popup();
 
-		add_point_pos = (mb->get_position() / blend_space_draw->get_size()).x;
-		add_point_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
-		add_point_pos += blend_space->get_min_space();
+			add_point_pos = (mb->get_position() / blend_space_draw->get_size()).x;
+			add_point_pos *= (blend_space->get_max_space() - blend_space->get_min_space());
+			add_point_pos += blend_space->get_min_space();
 
-		if (snap->is_pressed()) {
-			add_point_pos = Math::snapped(add_point_pos, blend_space->get_snap());
+			if (snap->is_pressed()) {
+				add_point_pos = Math::snapped(add_point_pos, blend_space->get_snap());
+			}
 		}
 	}
 
@@ -138,31 +142,33 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && !mb->is_pressed() && dragging_selected_attempt && mb->get_button_index() == MouseButton::LEFT) {
-		if (dragging_selected) {
-			// move
-			float point = blend_space->get_blend_point_position(selected_point);
-			point += drag_ofs.x;
+		if (!read_only) {
+			if (dragging_selected) {
+				// move
+				float point = blend_space->get_blend_point_position(selected_point);
+				point += drag_ofs.x;
 
-			if (snap->is_pressed()) {
-				point = Math::snapped(point, blend_space->get_snap());
+				if (snap->is_pressed()) {
+					point = Math::snapped(point, blend_space->get_snap());
+				}
+
+				updating = true;
+				undo_redo->create_action(TTR("Move Node Point"));
+				undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
+				undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
+				undo_redo->add_do_method(this, "_update_space");
+				undo_redo->add_undo_method(this, "_update_space");
+				undo_redo->add_do_method(this, "_update_edited_point_pos");
+				undo_redo->add_undo_method(this, "_update_edited_point_pos");
+				undo_redo->commit_action();
+				updating = false;
+				_update_edited_point_pos();
 			}
 
-			updating = true;
-			undo_redo->create_action(TTR("Move Node Point"));
-			undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
-			undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
-			undo_redo->add_do_method(this, "_update_space");
-			undo_redo->add_undo_method(this, "_update_space");
-			undo_redo->add_do_method(this, "_update_edited_point_pos");
-			undo_redo->add_undo_method(this, "_update_edited_point_pos");
-			undo_redo->commit_action();
-			updating = false;
-			_update_edited_point_pos();
+			dragging_selected_attempt = false;
+			dragging_selected = false;
+			blend_space_draw->update();
 		}
-
-		dragging_selected_attempt = false;
-		dragging_selected = false;
-		blend_space_draw->update();
 	}
 
 	// *set* the blend
@@ -255,10 +261,12 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 	for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
 		float point = blend_space->get_blend_point_position(i);
 
-		if (dragging_selected && selected_point == i) {
-			point += drag_ofs.x;
-			if (snap->is_pressed()) {
-				point = Math::snapped(point, blend_space->get_snap());
+		if (!read_only) {
+			if (dragging_selected && selected_point == i) {
+				point += drag_ofs.x;
+				if (snap->is_pressed()) {
+					point = Math::snapped(point, blend_space->get_snap());
+				}
 			}
 		}
 
@@ -475,7 +483,7 @@ void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
 
 void AnimationNodeBlendSpace1DEditor::_update_tool_erase() {
 	bool point_valid = selected_point >= 0 && selected_point < blend_space->get_blend_point_count();
-	tool_erase->set_disabled(!point_valid);
+	tool_erase->set_disabled(!point_valid || read_only);
 
 	if (point_valid) {
 		Ref<AnimationNode> an = blend_space->get_blend_point_node(selected_point);
@@ -486,7 +494,11 @@ void AnimationNodeBlendSpace1DEditor::_update_tool_erase() {
 			open_editor->hide();
 		}
 
-		edit_hb->show();
+		if (!read_only) {
+			edit_hb->show();
+		} else {
+			edit_hb->hide();
+		}
 	} else {
 		edit_hb->hide();
 	}
@@ -590,10 +602,20 @@ bool AnimationNodeBlendSpace1DEditor::can_edit(const Ref<AnimationNode> &p_node)
 
 void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	blend_space = p_node;
+	read_only = false;
 
 	if (!blend_space.is_null()) {
+		read_only = EditorNode::get_singleton()->is_resource_read_only(blend_space);
+
 		_update_space();
 	}
+
+	tool_create->set_disabled(read_only);
+	edit_value->set_editable(!read_only);
+	label_value->set_editable(!read_only);
+	min_value->set_editable(!read_only);
+	max_value->set_editable(!read_only);
+	sync->set_disabled(read_only);
 }
 
 AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nullptr;

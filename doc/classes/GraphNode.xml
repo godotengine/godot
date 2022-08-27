@@ -156,7 +156,7 @@
 			<description>
 				Sets properties of the slot with ID [param idx].
 				If [param enable_left]/[param enable_right], a port will appear and the slot will be able to be connected from this side.
-				[param type_left]/[param type_right] is an arbitrary type of the port. Only ports with the same type values can be connected.
+				[param type_left]/[param type_right] is an arbitrary type of the port. Only ports with the same type values can be connected and negative values will disallow all connections to be made via user inputs.
 				[param color_left]/[param color_right] is the tint of the port's icon on this side.
 				[param custom_left]/[param custom_right] is a custom texture for this side's port.
 				[b]Note:[/b] This method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
@@ -208,7 +208,7 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="type_left" type="int" />
 			<description>
-				Sets the left (input) type of the slot [param idx] to [param type_left].
+				Sets the left (input) type of the slot [param idx] to [param type_left]. If the value is negative, all connections will be disallowed to be created via user inputs.
 			</description>
 		</method>
 		<method name="set_slot_type_right">
@@ -216,13 +216,16 @@
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="type_right" type="int" />
 			<description>
-				Sets the right (output) type of the slot [param idx] to [param type_right].
+				Sets the right (output) type of the slot [param idx] to [param type_right]. If the value is negative, all connections will be disallowed to be created via user inputs.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
 			If [code]true[/code], the GraphNode is a comment node.
+		</member>
+		<member name="draggable" type="bool" setter="set_draggable" getter="is_draggable" default="true">
+			If [code]true[/code], the user can drag the GraphNode.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -238,6 +241,9 @@
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 			If [code]true[/code], the user can resize the GraphNode.
 			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] signal, the GraphNode needs to be resized manually.
+		</member>
+		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
+			If [code]true[/code], the user can select the GraphNode.
 		</member>
 		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
 			If [code]true[/code], the GraphNode is selected.

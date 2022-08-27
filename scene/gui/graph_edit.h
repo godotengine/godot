@@ -133,6 +133,8 @@ private:
 	void _pan_callback(Vector2 p_scroll_vec);
 	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
+	bool arrange_nodes_button_hidden = false;
+
 	bool connecting = false;
 	String connecting_from;
 	bool connecting_out = false;
@@ -322,6 +324,9 @@ public:
 
 	void set_minimap_enabled(bool p_enable);
 	bool is_minimap_enabled() const;
+
+	void set_arrange_nodes_button_hidden(bool p_enable);
+	bool is_arrange_nodes_button_hidden() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }
