@@ -1810,17 +1810,26 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 	GDVIRTUAL_CALL(_drop_data, p_point, p_data);
 }
 
-void Control::force_drag(const Variant &p_data, Control *p_control) {
+void Control::force_drag(const Variant &p_data, Control *p_control, Control *p_parent) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
 
-	get_viewport()->_gui_force_drag(this, p_data, p_control);
+	if (p_parent == nullptr) {
+		p_parent = this;
+	}
+
+	get_viewport()->_gui_force_drag(p_parent, p_data, p_control);
 }
 
-void Control::set_drag_preview(Control *p_control) {
+void Control::set_drag_preview(Control *p_control, Control *p_parent) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
-	get_viewport()->_gui_set_drag_preview(this, p_control);
+
+	if (p_parent == nullptr) {
+		p_parent = this;
+	}
+
+	get_viewport()->_gui_set_drag_preview(p_parent, p_control);
 }
 
 bool Control::is_drag_successful() const {
@@ -3423,7 +3432,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_focus_previous", "previous"), &Control::set_focus_previous);
 	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
 
-	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
+	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview", "parent"), &Control::force_drag, DEFVAL((Control *)nullptr));
 
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
@@ -3437,7 +3446,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("grab_click_focus"), &Control::grab_click_focus);
 
 	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
-	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
+	ClassDB::bind_method(D_METHOD("set_drag_preview", "control", "parent"), &Control::set_drag_preview, DEFVAL((Control *)nullptr));
 	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Control::warp_mouse);

@@ -4474,7 +4474,7 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 		Label *label = memnew(Label);
 		label->set_text(it->get_text(0));
-		set_drag_preview(label);
+		members->set_drag_preview(label, this);
 		return d;
 	}
 	return Variant();

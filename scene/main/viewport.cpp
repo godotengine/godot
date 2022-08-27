@@ -1779,7 +1779,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			Control *drag_preview = _gui_get_drag_preview();
 			if (drag_preview) {
-				drag_preview->set_position(mpos);
+				// The viewport which started the drag takes care of the preview position,
+				// even if it's owned by another viewport. So, we need to convert the mouse
+				// position according to the target viewport.
+
+				Point2i this_position = get_base_window()->get_position();
+				Point2i owner_position = drag_preview->get_viewport()->get_base_window()->get_position();
+
+				drag_preview->set_position(mpos + this_position - owner_position);
 			}
 
 			gui.drag_mouse_over = over;

@@ -501,8 +501,8 @@ public:
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
-	void set_drag_preview(Control *p_control);
-	void force_drag(const Variant &p_data, Control *p_control);
+	void set_drag_preview(Control *p_control, Control *p_parent = nullptr);
+	void force_drag(const Variant &p_data, Control *p_control, Control *p_parent = nullptr);
 	bool is_drag_successful() const;
 
 	// Focus.

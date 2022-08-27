@@ -336,9 +336,11 @@
 			<return type="void" />
 			<param index="0" name="data" type="Variant" />
 			<param index="1" name="preview" type="Control" />
+			<param index="2" name="parent" type="Control" default="null" />
 			<description>
 				Forces drag and bypasses [method _get_drag_data] and [method set_drag_preview] by passing [param data] and [param preview]. Drag will start even if the mouse is neither over nor pressed on this control.
 				The methods [method _can_drop_data] and [method _drop_data] must be implemented on controls that want to receive drop data.
+				The [param parent] parameter defines which control will be used to determine preview's parent, or defaults to [code]this[/code] if left null.
 			</description>
 		</method>
 		<method name="get_anchor" qualifiers="const">
@@ -844,6 +846,7 @@
 		<method name="set_drag_preview">
 			<return type="void" />
 			<param index="0" name="control" type="Control" />
+			<param index="1" name="parent" type="Control" default="null" />
 			<description>
 				Shows the given control at the mouse pointer. A good time to call this method is in [method _get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
@@ -873,6 +876,7 @@
 				}
 				[/csharp]
 				[/codeblocks]
+				The [param parent] parameter defines which control will be used to determine preview's parent, or defaults to [code]this[/code] if left null.
 			</description>
 		</method>
 		<method name="set_end">
