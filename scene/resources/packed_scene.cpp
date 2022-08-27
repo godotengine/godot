@@ -297,7 +297,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 										if (E) {
 											value = E->value;
 										} else {
-											if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
+											if (p_edit_state == GEN_EDIT_STATE_MAIN) {
 												//for the main scene, use the resource as is
 												res->configure_for_local_scene(base, resources_local_to_scene);
 												resources_local_to_scene[res] = res;
