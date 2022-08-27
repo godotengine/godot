@@ -639,6 +639,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a new <see cref="Vector2"/> from an existing <see cref="Vector2"/>.
+        /// </summary>
+        /// <param name="v">The existing <see cref="Vector2"/>.</param>
+        public Vector2(Vector2 v)
+        {
+            x = v.x;
+            y = v.y;
+        }
+
+        /// <summary>
         /// Creates a unit Vector2 rotated to the given angle. This is equivalent to doing
         /// <c>Vector2(Mathf.Cos(angle), Mathf.Sin(angle))</c> or <c>Vector2.Right.Rotated(angle)</c>.
         /// </summary>
@@ -925,7 +935,11 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Vector2 other && Equals(other);
+            if (obj is Vector2)
+            {
+                return Equals((Vector2)obj);
+            }
+            return false;
         }
 
         /// <summary>

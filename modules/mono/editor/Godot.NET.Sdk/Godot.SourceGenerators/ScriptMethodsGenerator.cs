@@ -49,7 +49,7 @@ namespace Godot.SourceGenerators
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+                var typeCache = new MarshalUtils.TypeCache(context);
 
                 foreach (var godotClass in godotClasses)
                 {

@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -49,7 +48,7 @@ namespace Godot.SourceGenerators
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+                var typeCache = new MarshalUtils.TypeCache(context);
 
                 foreach (var godotClass in godotClasses)
                 {
@@ -225,21 +224,21 @@ namespace Godot.SourceGenerators
                     .Append(dictionaryType)
                     .Append("();\n");
 
-                // To retain the definition order (and display categories correctly), we want to
-                //  iterate over fields and properties at the same time, sorted by line number.
-                var godotClassPropertiesAndFields = Enumerable.Empty<GodotPropertyOrFieldData>()
-                    .Concat(godotClassProperties.Select(propertyData => new GodotPropertyOrFieldData(propertyData)))
-                    .Concat(godotClassFields.Select(fieldData => new GodotPropertyOrFieldData(fieldData)))
-                    .OrderBy(data => data.Symbol.Locations[0].Path())
-                    .ThenBy(data => data.Symbol.Locations[0].StartLine());
-
-                foreach (var member in godotClassPropertiesAndFields)
+                foreach (var property in godotClassProperties)
                 {
-                    foreach (var groupingInfo in DetermineGroupingPropertyInfo(member.Symbol))
-                        AppendGroupingPropertyInfo(source, groupingInfo);
-
                     var propertyInfo = DeterminePropertyInfo(context, typeCache,
-                        member.Symbol, member.Type);
+                        property.PropertySymbol, property.Type);
+
+                    if (propertyInfo == null)
+                        continue;
+
+                    AppendPropertyInfo(source, propertyInfo.Value);
+                }
+
+                foreach (var field in godotClassFields)
+                {
+                    var propertyInfo = DeterminePropertyInfo(context, typeCache,
+                        field.FieldSymbol, field.Type);
 
                     if (propertyInfo == null)
                         continue;
@@ -322,21 +321,6 @@ namespace Godot.SourceGenerators
                 .Append("        }\n");
         }
 
-        private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
-        {
-            source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
-                .Append((int)VariantType.Nil)
-                .Append(", name: \"")
-                .Append(propertyInfo.Name)
-                .Append("\", hint: (Godot.PropertyHint)")
-                .Append((int)PropertyHint.None)
-                .Append(", hintString: \"")
-                .Append(propertyInfo.HintString)
-                .Append("\", usage: (Godot.PropertyUsageFlags)")
-                .Append((int)propertyInfo.Usage)
-                .Append(", exported: true));\n");
-        }
-
         private static void AppendPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
             source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
@@ -352,32 +336,6 @@ namespace Godot.SourceGenerators
                 .Append(", exported: ")
                 .Append(propertyInfo.Exported ? "true" : "false")
                 .Append("));\n");
-        }
-
-        private static IEnumerable<PropertyInfo> DetermineGroupingPropertyInfo(ISymbol memberSymbol)
-        {
-            foreach (var attr in memberSymbol.GetAttributes())
-            {
-                PropertyUsageFlags? propertyUsage = attr.AttributeClass?.ToString() switch
-                {
-                    GodotClasses.ExportCategoryAttr => PropertyUsageFlags.Category,
-                    GodotClasses.ExportGroupAttr => PropertyUsageFlags.Group,
-                    GodotClasses.ExportSubgroupAttr => PropertyUsageFlags.Subgroup,
-                    _ => null
-                };
-
-                if (propertyUsage is null)
-                    continue;
-
-                if (attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is string name)
-                {
-                    string? hintString = null;
-                    if (propertyUsage != PropertyUsageFlags.Category && attr.ConstructorArguments.Length > 1)
-                        hintString = attr.ConstructorArguments[1].Value?.ToString();
-
-                    yield return new PropertyInfo(VariantType.Nil, name, PropertyHint.None, hintString, propertyUsage.Value, true);
-                }
-            }
         }
 
         private static PropertyInfo? DeterminePropertyInfo(

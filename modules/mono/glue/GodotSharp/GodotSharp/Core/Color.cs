@@ -1151,7 +1151,12 @@ namespace Godot
         /// <returns>Whether or not the color and the other object are equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Color other && Equals(other);
+            if (obj is Color)
+            {
+                return Equals((Color)obj);
+            }
+
+            return false;
         }
 
         /// <summary>

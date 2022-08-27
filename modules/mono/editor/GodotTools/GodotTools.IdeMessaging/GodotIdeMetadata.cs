@@ -25,7 +25,10 @@ namespace GodotTools.IdeMessaging
 
         public override bool Equals(object obj)
         {
-            return obj is GodotIdeMetadata metadata && metadata == this;
+            if (obj is GodotIdeMetadata metadata)
+                return metadata == this;
+
+            return false;
         }
 
         public bool Equals(GodotIdeMetadata other)

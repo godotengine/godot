@@ -426,7 +426,12 @@ namespace Godot
         /// <returns>Whether or not the rect and the other object are equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Rect2i other && Equals(other);
+            if (obj is Rect2i)
+            {
+                return Equals((Rect2i)obj);
+            }
+
+            return false;
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ namespace Godot.SourceGenerators
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
+                var typeCache = new MarshalUtils.TypeCache(context);
 
                 foreach (var godotClass in godotClasses)
                 {
@@ -117,6 +117,10 @@ namespace Godot.SourceGenerators
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n");
 
+            // TODO:
+            // The delegate name already needs to end with 'Signal' to avoid collision with the event name.
+            // Requiring SignalAttribute is redundant. Should we remove it to make declaration shorter?
+
             var members = symbol.GetMembers();
 
             var signalDelegateSymbols = members
@@ -144,29 +148,8 @@ namespace Godot.SourceGenerators
 
                 if (invokeMethodData == null)
                 {
-                    if (signalDelegateSymbol.DelegateInvokeMethod is IMethodSymbol methodSymbol)
-                    {
-                        foreach (var parameter in methodSymbol.Parameters)
-                        {
-                            if (parameter.RefKind != RefKind.None)
-                            {
-                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
-                                continue;
-                            }
-
-                            var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(parameter.Type, typeCache);
-
-                            if (marshalType == null)
-                            {
-                                Common.ReportSignalParameterTypeNotSupported(context, parameter);
-                            }
-                        }
-
-                        if (!methodSymbol.ReturnsVoid)
-                        {
-                            Common.ReportSignalDelegateSignatureMustReturnVoid(context, signalDelegateSymbol);
-                        }
-                    }
+                    // TODO: Better error for incompatible signature. We should indicate incompatible argument types, as we do with exported properties.
+                    Common.ReportSignalDelegateSignatureNotSupported(context, signalDelegateSymbol);
                     continue;
                 }
 

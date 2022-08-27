@@ -477,6 +477,18 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a new <see cref="Vector4"/> from an existing <see cref="Vector4"/>.
+        /// </summary>
+        /// <param name="v">The existing <see cref="Vector4"/>.</param>
+        public Vector4(Vector4 v)
+        {
+            x = v.x;
+            y = v.y;
+            z = v.z;
+            w = v.w;
+        }
+
+        /// <summary>
         /// Adds each component of the <see cref="Vector4"/>
         /// with the components of the given <see cref="Vector4"/>.
         /// </summary>
@@ -754,7 +766,12 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Vector4 other && Equals(other);
+            if (obj is Vector4)
+            {
+                return Equals((Vector4)obj);
+            }
+
+            return false;
         }
 
         /// <summary>

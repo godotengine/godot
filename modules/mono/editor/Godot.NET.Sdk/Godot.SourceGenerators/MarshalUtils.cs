@@ -11,11 +11,11 @@ namespace Godot.SourceGenerators
         {
             public INamedTypeSymbol GodotObjectType { get; }
 
-            public TypeCache(Compilation compilation)
+            public TypeCache(GeneratorExecutionContext context)
             {
                 INamedTypeSymbol GetTypeByMetadataNameOrThrow(string fullyQualifiedMetadataName)
                 {
-                    return compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) ??
+                    return context.Compilation.GetTypeByMetadataName(fullyQualifiedMetadataName) ??
                            throw new InvalidOperationException("Type not found: " + fullyQualifiedMetadataName);
                 }
 

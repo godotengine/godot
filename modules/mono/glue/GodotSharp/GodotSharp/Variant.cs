@@ -14,7 +14,7 @@ public partial struct Variant : IDisposable
     private object? _obj;
     private Disposer? _disposer;
 
-    private sealed class Disposer : IDisposable
+    private class Disposer : IDisposable
     {
         private godot_variant.movable _native;
 
@@ -37,7 +37,7 @@ public partial struct Variant : IDisposable
             GC.SuppressFinalize(this);
         }
 
-        private void Dispose(bool disposing)
+        public void Dispose(bool disposing)
         {
             _native.DangerousSelfRef.Dispose();
 

@@ -177,9 +177,6 @@ namespace Godot.SourceGenerators
         public static bool IsGodotSignalAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.SignalAttr;
 
-        public static bool IsGodotMustBeVariantAttribute(this INamedTypeSymbol symbol)
-            => symbol.ToString() == GodotClasses.MustBeVariantAttr;
-
         public static bool IsGodotClassNameAttribute(this INamedTypeSymbol symbol)
             => symbol.ToString() == GodotClasses.GodotClassNameAttr;
 
@@ -275,13 +272,5 @@ namespace Godot.SourceGenerators
                 yield return new GodotFieldData(field, marshalType.Value);
             }
         }
-
-        public static string Path(this Location location)
-            => location.SourceTree?.GetLineSpan(location.SourceSpan).Path
-            ?? location.GetLineSpan().Path;
-
-        public static int StartLine(this Location location)
-            => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
-            ?? location.GetLineSpan().StartLinePosition.Line;
     }
 }

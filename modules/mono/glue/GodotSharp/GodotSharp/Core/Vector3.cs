@@ -692,6 +692,17 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a new <see cref="Vector3"/> from an existing <see cref="Vector3"/>.
+        /// </summary>
+        /// <param name="v">The existing <see cref="Vector3"/>.</param>
+        public Vector3(Vector3 v)
+        {
+            x = v.x;
+            y = v.y;
+            z = v.z;
+        }
+
+        /// <summary>
         /// Adds each component of the <see cref="Vector3"/>
         /// with the components of the given <see cref="Vector3"/>.
         /// </summary>
@@ -993,7 +1004,12 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            return obj is Vector3 other && Equals(other);
+            if (obj is Vector3)
+            {
+                return Equals((Vector3)obj);
+            }
+
+            return false;
         }
 
         /// <summary>
