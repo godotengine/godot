@@ -478,7 +478,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point, int relevant_layers) {
 
 			//make sure parallel layers are supported
 			// or if *relevant_layers is 0 then use all points
-			bool supported = relevant_layers == 0 || (relevant_layers & e->parallel_support_layers) > 0;
+			supported = relevant_layers == 0 || (relevant_layers & e->parallel_support_layers) > 0;
 			
 
 			if (!e->enabled || e->closed_pass == pass || !supported) {
