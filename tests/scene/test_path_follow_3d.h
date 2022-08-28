@@ -37,7 +37,7 @@
 
 namespace TestPathFollow3D {
 
-TEST_CASE("[PathFollow3D] Sampling with unit offset") {
+TEST_CASE("[PathFollow3D] Sampling with progress ratio") {
 	const Ref<Curve3D> &curve = memnew(Curve3D());
 	curve->add_point(Vector3(0, 0, 0));
 	curve->add_point(Vector3(100, 0, 0));
@@ -49,37 +49,37 @@ TEST_CASE("[PathFollow3D] Sampling with unit offset") {
 	const PathFollow3D *path_follow_3d = memnew(PathFollow3D);
 	path->add_child(path_follow_3d);
 
-	path_follow_3d->set_unit_offset(0);
+	path_follow_3d->set_progress_ratio(0);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(0, 0, 0));
 
-	path_follow_3d->set_unit_offset(0.125);
+	path_follow_3d->set_progress_ratio(0.125);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(50, 0, 0));
 
-	path_follow_3d->set_unit_offset(0.25);
+	path_follow_3d->set_progress_ratio(0.25);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 0, 0);
 
-	path_follow_3d->set_unit_offset(0.375);
+	path_follow_3d->set_progress_ratio(0.375);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 50, 0)));
 
-	path_follow_3d->set_unit_offset(0.5);
+	path_follow_3d->set_progress_ratio(0.5);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 100, 0)));
 
-	path_follow_3d->set_unit_offset(0.625);
+	path_follow_3d->set_progress_ratio(0.625);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 100, 50)));
 
-	path_follow_3d->set_unit_offset(0.75);
+	path_follow_3d->set_progress_ratio(0.75);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 100, 100)));
 
-	path_follow_3d->set_unit_offset(0.875);
+	path_follow_3d->set_progress_ratio(0.875);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 50, 100)));
 
-	path_follow_3d->set_unit_offset(1);
+	path_follow_3d->set_progress_ratio(1);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 0, 100)));
 
 	memdelete(path);
 }
 
-TEST_CASE("[PathFollow3D] Sampling with offset") {
+TEST_CASE("[PathFollow3D] Sampling with progress") {
 	const Ref<Curve3D> &curve = memnew(Curve3D());
 	curve->add_point(Vector3(0, 0, 0));
 	curve->add_point(Vector3(100, 0, 0));
@@ -91,31 +91,31 @@ TEST_CASE("[PathFollow3D] Sampling with offset") {
 	const PathFollow3D *path_follow_3d = memnew(PathFollow3D);
 	path->add_child(path_follow_3d);
 
-	path_follow_3d->set_offset(0);
+	path_follow_3d->set_progress(0);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(0, 0, 0));
 
-	path_follow_3d->set_offset(50);
+	path_follow_3d->set_progress(50);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(50, 0, 0));
 
-	path_follow_3d->set_offset(100);
+	path_follow_3d->set_progress(100);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 0, 0);
 
-	path_follow_3d->set_offset(150);
+	path_follow_3d->set_progress(150);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 50, 0)));
 
-	path_follow_3d->set_offset(200);
+	path_follow_3d->set_progress(200);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 100, 0)));
 
-	path_follow_3d->set_offset(250);
+	path_follow_3d->set_progress(250);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 100, 50)));
 
-	path_follow_3d->set_offset(300);
+	path_follow_3d->set_progress(300);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 100, 100)));
 
-	path_follow_3d->set_offset(350);
+	path_follow_3d->set_progress(350);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 50, 100)));
 
-	path_follow_3d->set_offset(400);
+	path_follow_3d->set_progress(400);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector3(100, 0, 100)));
 
 	memdelete(path);
@@ -131,7 +131,7 @@ TEST_CASE("[PathFollow3D] Removal of a point in curve") {
 	const PathFollow3D *path_follow_3d = memnew(PathFollow3D);
 	path->add_child(path_follow_3d);
 
-	path_follow_3d->set_unit_offset(0.5);
+	path_follow_3d->set_progress_ratio(0.5);
 	CHECK(path_follow_3d->get_transform().get_origin().is_equal_approx(Vector2(100, 0, 0)));
 
 	curve->remove_point(1);
@@ -143,7 +143,7 @@ TEST_CASE("[PathFollow3D] Removal of a point in curve") {
 	memdelete(path);
 }
 
-TEST_CASE("[PathFollow3D] Unit offset out of range") {
+TEST_CASE("[PathFollow3D] Progress ratio out of range") {
 	const Ref<Curve3D> &curve = memnew(Curve3D());
 	curve->add_point(Vector3(0, 0, 0));
 	curve->add_point(Vector3(100, 0, 0));
@@ -154,32 +154,32 @@ TEST_CASE("[PathFollow3D] Unit offset out of range") {
 
 	path_follow_3d->set_loop(true);
 
-	path_follow_3d->set_unit_offset(-0.3);
+	path_follow_3d->set_progress_ratio(-0.3);
 	CHECK_MESSAGE(
-			path_follow_3d->get_unit_offset() == 0.7,
-			"Unit Offset should loop back from the end in the opposite direction");
+			path_follow_3d->get_progress_ratio() == 0.7,
+			"Progress Ratio should loop back from the end in the opposite direction");
 
-	path_follow_3d->set_unit_offset(1.3);
+	path_follow_3d->set_progress_ratio(1.3);
 	CHECK_MESSAGE(
-			path_follow_3d->get_unit_offset() == 0.3,
-			"Unit Offset should loop back from the end in the opposite direction");
+			path_follow_3d->get_progress_ratio() == 0.3,
+			"Progress Ratio should loop back from the end in the opposite direction");
 
 	path_follow_3d->set_loop(false);
 
-	path_follow_3d->set_unit_offset(-0.3);
+	path_follow_3d->set_progress_ratio(-0.3);
 	CHECK_MESSAGE(
-			path_follow_3d->get_unit_offset() == 0,
-			"Unit Offset should be clamped at 0");
+			path_follow_3d->get_progress_ratio() == 0,
+			"Progress Ratio should be clamped at 0");
 
-	path_follow_3d->set_unit_offset(1.3);
+	path_follow_3d->set_progress_ratio(1.3);
 	CHECK_MESSAGE(
-			path_follow_3d->get_unit_offset() == 1,
-			"Unit Offset should be clamped at 1");
+			path_follow_3d->get_progress_ratio() == 1,
+			"Progress Ratio should be clamped at 1");
 
 	memdelete(path);
 }
 
-TEST_CASE("[PathFollow3D] Offset out of range") {
+TEST_CASE("[PathFollow3D] Progress out of range") {
 	const Ref<Curve3D> &curve = memnew(Curve3D());
 	curve->add_point(Vector3(0, 0, 0));
 	curve->add_point(Vector3(100, 0, 0));
@@ -190,27 +190,27 @@ TEST_CASE("[PathFollow3D] Offset out of range") {
 
 	path_follow_3d->set_loop(true);
 
-	path_follow_3d->set_offset(-50);
+	path_follow_3d->set_progress(-50);
 	CHECK_MESSAGE(
-			path_follow_3d->get_offset() == 50,
-			"Offset should loop back from the end in the opposite direction");
+			path_follow_3d->get_progress() == 50,
+			"Progress should loop back from the end in the opposite direction");
 
-	path_follow_3d->set_offset(150);
+	path_follow_3d->set_progress(150);
 	CHECK_MESSAGE(
-			path_follow_3d->get_offset() == 50,
-			"Offset should loop back from the end in the opposite direction");
+			path_follow_3d->get_progress() == 50,
+			"Progress should loop back from the end in the opposite direction");
 
 	path_follow_3d->set_loop(false);
 
-	path_follow_3d->set_offset(-50);
+	path_follow_3d->set_progress(-50);
 	CHECK_MESSAGE(
-			path_follow_3d->get_offset() == 0,
-			"Offset should be clamped at 0");
+			path_follow_3d->get_progress() == 0,
+			"Progress should be clamped at 0");
 
-	path_follow_3d->set_offset(150);
+	path_follow_3d->set_progress(150);
 	CHECK_MESSAGE(
-			path_follow_3d->get_offset() == 100,
-			"Offset should be clamped at max value of curve");
+			path_follow_3d->get_progress() == 100,
+			"Progress should be clamped at max value of curve");
 
 	memdelete(path);
 }

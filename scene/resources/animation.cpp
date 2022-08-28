@@ -2323,100 +2323,23 @@ Variant Animation::_interpolate(const Variant &p_a, const Variant &p_b, real_t p
 }
 
 real_t Animation::_interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const {
-	return p_a * (1.0 - p_c) + p_b * p_c;
+	return Math::lerp(p_a, p_b, p_c);
 }
 
-// Cubic interpolation for anytype.
-
-Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c) const {
-	return p_a.cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
-}
-
-Quaternion Animation::_cubic_interpolate(const Quaternion &p_pre_a, const Quaternion &p_a, const Quaternion &p_b, const Quaternion &p_post_b, real_t p_c) const {
-	return p_a.spherical_cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
-}
-
-Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c) const {
+Variant Animation::_interpolate_angle(const Variant &p_a, const Variant &p_b, real_t p_c) const {
 	Variant::Type type_a = p_a.get_type();
 	Variant::Type type_b = p_b.get_type();
-	Variant::Type type_pa = p_pre_a.get_type();
-	Variant::Type type_pb = p_post_b.get_type();
-
-	//make int and real play along
-
 	uint32_t vformat = 1 << type_a;
 	vformat |= 1 << type_b;
-	vformat |= 1 << type_pa;
-	vformat |= 1 << type_pb;
-
 	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
-		//mix of real and int
 		real_t a = p_a;
 		real_t b = p_b;
-		real_t pa = p_pre_a;
-		real_t pb = p_post_b;
-
-		return Math::cubic_interpolate(a, b, pa, pb, p_c);
-	} else if ((vformat & (vformat - 1))) {
-		return p_a; //can't interpolate, mix of types
+		return Math::fposmod((float)Math::lerp_angle(a, b, p_c), (float)Math_TAU);
 	}
-
-	switch (type_a) {
-		case Variant::VECTOR2: {
-			Vector2 a = p_a;
-			Vector2 b = p_b;
-			Vector2 pa = p_pre_a;
-			Vector2 pb = p_post_b;
-
-			return a.cubic_interpolate(b, pa, pb, p_c);
-		}
-		case Variant::RECT2: {
-			Rect2 a = p_a;
-			Rect2 b = p_b;
-			Rect2 pa = p_pre_a;
-			Rect2 pb = p_post_b;
-
-			return Rect2(
-					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
-					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
-		}
-		case Variant::VECTOR3: {
-			Vector3 a = p_a;
-			Vector3 b = p_b;
-			Vector3 pa = p_pre_a;
-			Vector3 pb = p_post_b;
-
-			return a.cubic_interpolate(b, pa, pb, p_c);
-		}
-		case Variant::QUATERNION: {
-			Quaternion a = p_a;
-			Quaternion b = p_b;
-			Quaternion pa = p_pre_a;
-			Quaternion pb = p_post_b;
-
-			return a.spherical_cubic_interpolate(b, pa, pb, p_c);
-		}
-		case Variant::AABB: {
-			AABB a = p_a;
-			AABB b = p_b;
-			AABB pa = p_pre_a;
-			AABB pb = p_post_b;
-
-			return AABB(
-					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
-					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
-		}
-		default: {
-			return _interpolate(p_a, p_b, p_c);
-		}
-	}
-}
-
-real_t Animation::_cubic_interpolate(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c) const {
 	return _interpolate(p_a, p_b, p_c);
 }
 
-// Cubic interpolation in time for anytype.
+// Cubic interpolation for anytype.
 
 Vector3 Animation::_cubic_interpolate_in_time(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
 	return p_a.cubic_interpolate_in_time(p_b, p_pre_a, p_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t);
@@ -2503,6 +2426,25 @@ Variant Animation::_cubic_interpolate_in_time(const Variant &p_pre_a, const Vari
 }
 
 real_t Animation::_cubic_interpolate_in_time(const real_t &p_pre_a, const real_t &p_a, const real_t &p_b, const real_t &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	return Math::cubic_interpolate_in_time(p_a, p_b, p_pre_a, p_post_b, p_c, p_b_t, p_pre_a_t, p_post_b_t);
+}
+
+Variant Animation::_cubic_interpolate_angle_in_time(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, real_t p_c, real_t p_pre_a_t, real_t p_b_t, real_t p_post_b_t) const {
+	Variant::Type type_a = p_a.get_type();
+	Variant::Type type_b = p_b.get_type();
+	Variant::Type type_pa = p_pre_a.get_type();
+	Variant::Type type_pb = p_post_b.get_type();
+	uint32_t vformat = 1 << type_a;
+	vformat |= 1 << type_b;
+	vformat |= 1 << type_pa;
+	vformat |= 1 << type_pb;
+	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
+		real_t a = p_a;
+		real_t b = p_b;
+		real_t pa = p_pre_a;
+		real_t pb = p_post_b;
+		return Math::fposmod((float)Math::cubic_interpolate_angle_in_time(a, b, pa, pb, p_c, p_b_t, p_pre_a_t, p_post_b_t), (float)Math_TAU);
+	}
 	return _interpolate(p_a, p_b, p_c);
 }
 
@@ -2685,8 +2627,11 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		case INTERPOLATION_LINEAR: {
 			return _interpolate(p_keys[idx].value, p_keys[next].value, c);
 		} break;
+		case INTERPOLATION_LINEAR_ANGLE: {
+			return _interpolate_angle(p_keys[idx].value, p_keys[next].value, c);
+		} break;
 		case INTERPOLATION_CUBIC:
-		case INTERPOLATION_CUBIC_IN_TIME: {
+		case INTERPOLATION_CUBIC_ANGLE: {
 			int pre = 0;
 			int post = 0;
 			if (!p_backward) {
@@ -2725,25 +2670,27 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 				}
 			}
 
+			real_t pre_t = 0.0;
+			real_t to_t = 0.0;
+			real_t post_t = 0.0;
 			if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-				if (p_interp == INTERPOLATION_CUBIC) {
-					return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
-				}
-				return _cubic_interpolate_in_time(
-						p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
-						pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time,
-						next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time,
-						next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time);
+				pre_t = pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time;
+				to_t = next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time;
+				post_t = next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time;
+			} else {
+				pre_t = p_keys[pre].time - p_keys[idx].time;
+				to_t = p_keys[next].time - p_keys[idx].time;
+				post_t = p_keys[post].time - p_keys[idx].time;
 			}
 
-			if (p_interp == INTERPOLATION_CUBIC) {
-				return _cubic_interpolate(p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c);
+			if (p_interp == INTERPOLATION_CUBIC_ANGLE) {
+				return _cubic_interpolate_angle_in_time(
+						p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
+						pre_t, to_t, post_t);
 			}
 			return _cubic_interpolate_in_time(
 					p_keys[pre].value, p_keys[idx].value, p_keys[next].value, p_keys[post].value, c,
-					p_keys[pre].time - p_keys[idx].time,
-					p_keys[next].time - p_keys[idx].time,
-					p_keys[post].time - p_keys[idx].time);
+					pre_t, to_t, post_t);
 		} break;
 		default:
 			return p_keys[idx].value;
@@ -4073,7 +4020,8 @@ void Animation::_bind_methods() {
 	BIND_ENUM_CONSTANT(INTERPOLATION_NEAREST);
 	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR);
 	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC);
-	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC_IN_TIME);
+	BIND_ENUM_CONSTANT(INTERPOLATION_LINEAR_ANGLE);
+	BIND_ENUM_CONSTANT(INTERPOLATION_CUBIC_ANGLE);
 
 	BIND_ENUM_CONSTANT(UPDATE_CONTINUOUS);
 	BIND_ENUM_CONSTANT(UPDATE_DISCRETE);
@@ -4100,6 +4048,65 @@ void Animation::clear() {
 	emit_signal(SceneStringNames::get_singleton()->tracks_changed);
 }
 
+bool Animation::_float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error) {
+	// Remove overlapping keys.
+	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
+		return true;
+	}
+	if (abs(t0.value - t1.value) < p_allowed_precision_error && abs(t1.value - t2.value) < p_allowed_precision_error) {
+		return true;
+	}
+	// Calc velocities.
+	double v0 = (t1.value - t0.value) / (t1.time - t0.time);
+	double v1 = (t2.value - t1.value) / (t2.time - t1.time);
+	// Avoid zero div but check equality.
+	if (abs(v0 - v1) < p_allowed_precision_error) {
+		return true;
+	} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
+		return false;
+	}
+	if (!signbit(v0 * v1)) {
+		v0 = abs(v0);
+		v1 = abs(v1);
+		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		if (ratio >= 1.0 - p_allowed_velocity_err) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Animation::_vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error) {
+	// Remove overlapping keys.
+	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
+		return true;
+	}
+	if ((t0.value - t1.value).length() < p_allowed_precision_error && (t1.value - t2.value).length() < p_allowed_precision_error) {
+		return true;
+	}
+	// Calc velocities.
+	Vector2 vc0 = (t1.value - t0.value) / (t1.time - t0.time);
+	Vector2 vc1 = (t2.value - t1.value) / (t2.time - t1.time);
+	double v0 = vc0.length();
+	double v1 = vc1.length();
+	// Avoid zero div but check equality.
+	if (abs(v0 - v1) < p_allowed_precision_error) {
+		return true;
+	} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
+		return false;
+	}
+	// Check axis.
+	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
+		v0 = abs(v0);
+		v1 = abs(v1);
+		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		if (ratio >= 1.0 - p_allowed_velocity_err) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error) {
 	// Remove overlapping keys.
 	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
@@ -4111,8 +4118,8 @@ bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<V
 	// Calc velocities.
 	Vector3 vc0 = (t1.value - t0.value) / (t1.time - t0.time);
 	Vector3 vc1 = (t2.value - t1.value) / (t2.time - t1.time);
-	real_t v0 = vc0.length();
-	real_t v1 = vc1.length();
+	double v0 = vc0.length();
+	double v1 = vc1.length();
 	// Avoid zero div but check equality.
 	if (abs(v0 - v1) < p_allowed_precision_error) {
 		return true;
@@ -4121,7 +4128,9 @@ bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<V
 	}
 	// Check axis.
 	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
-		real_t ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		v0 = abs(v0);
+		v1 = abs(v1);
+		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
 		if (ratio >= 1.0 - p_allowed_velocity_err) {
 			return true;
 		}
@@ -4141,42 +4150,21 @@ bool Animation::_quaternion_track_optimize_key(const TKey<Quaternion> t0, const 
 	Quaternion q0 = t0.value * t1.value * t0.value.inverse();
 	Quaternion q1 = t1.value * t2.value * t1.value.inverse();
 	if (q0.get_axis().dot(q1.get_axis()) >= 1.0 - p_allowed_angular_error * 2.0) {
+		double a0 = Math::acos(t0.value.dot(t1.value));
+		double a1 = Math::acos(t1.value.dot(t2.value));
+		if (a0 + a1 >= Math_PI) {
+			return false; // Rotation is more than 180 deg, keep key.
+		}
 		// Calc velocities.
-		real_t v0 = Math::acos(t0.value.dot(t1.value)) / (t1.time - t0.time);
-		real_t v1 = Math::acos(t1.value.dot(t2.value)) / (t2.time - t1.time);
+		double v0 = a0 / (t1.time - t0.time);
+		double v1 = a1 / (t2.time - t1.time);
 		// Avoid zero div but check equality.
 		if (abs(v0 - v1) < p_allowed_precision_error) {
 			return true;
 		} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
 			return false;
 		}
-		real_t ratio = v0 < v1 ? v0 / v1 : v1 / v0;
-		if (ratio >= 1.0 - p_allowed_velocity_err) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool Animation::_float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error) {
-	// Remove overlapping keys.
-	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
-		return true;
-	}
-	if (abs(t0.value - t1.value) < p_allowed_precision_error && abs(t1.value - t2.value) < p_allowed_precision_error) {
-		return true;
-	}
-	// Calc velocities.
-	real_t v0 = (t1.value - t0.value) / (t1.time - t0.time);
-	real_t v1 = (t2.value - t1.value) / (t2.time - t1.time);
-	// Avoid zero div but check equality.
-	if (abs(v0 - v1) < p_allowed_precision_error) {
-		return true;
-	} else if (abs(v0) < p_allowed_precision_error || abs(v1) < p_allowed_precision_error) {
-		return false;
-	}
-	if (!signbit(v0 * v1)) {
-		real_t ratio = v0 < v1 ? v0 / v1 : v1 / v0;
+		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
 		if (ratio >= 1.0 - p_allowed_velocity_err) {
 			return true;
 		}
@@ -4288,6 +4276,125 @@ void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_velocity
 	}
 }
 
+void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
+	ERR_FAIL_INDEX(p_idx, tracks.size());
+	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_VALUE);
+	ValueTrack *tt = static_cast<ValueTrack *>(tracks[p_idx]);
+	if (tt->values.size() == 0) {
+		return;
+	}
+	Variant::Type type = tt->values[0].value.get_type();
+
+	// Special case for angle interpolation.
+	bool is_using_angle = tt->interpolation == Animation::INTERPOLATION_LINEAR_ANGLE || tt->interpolation == Animation::INTERPOLATION_CUBIC_ANGLE;
+	int i = 0;
+	while (i < tt->values.size() - 2) {
+		bool erase = false;
+		switch (type) {
+			case Variant::FLOAT: {
+				TKey<float> t0;
+				TKey<float> t1;
+				TKey<float> t2;
+				t0.time = tt->values[i].time;
+				t1.time = tt->values[i + 1].time;
+				t2.time = tt->values[i + 2].time;
+				t0.value = tt->values[i].value;
+				t1.value = tt->values[i + 1].value;
+				t2.value = tt->values[i + 2].value;
+				if (is_using_angle) {
+					float diff1 = fmod(t1.value - t0.value, Math_TAU);
+					t1.value = t0.value + fmod(2.0 * diff1, Math_TAU) - diff1;
+					float diff2 = fmod(t2.value - t1.value, Math_TAU);
+					t2.value = t1.value + fmod(2.0 * diff2, Math_TAU) - diff2;
+					if (abs(abs(diff1) + abs(diff2)) >= Math_PI) {
+						break; // Rotation is more than 180 deg, keep key.
+					}
+				}
+				erase = _float_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_precision_error);
+			} break;
+			case Variant::VECTOR2: {
+				TKey<Vector2> t0;
+				TKey<Vector2> t1;
+				TKey<Vector2> t2;
+				t0.time = tt->values[i].time;
+				t1.time = tt->values[i + 1].time;
+				t2.time = tt->values[i + 2].time;
+				t0.value = tt->values[i].value;
+				t1.value = tt->values[i + 1].value;
+				t2.value = tt->values[i + 2].value;
+				erase = _vector2_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
+			} break;
+			case Variant::VECTOR3: {
+				TKey<Vector3> t0;
+				TKey<Vector3> t1;
+				TKey<Vector3> t2;
+				t0.time = tt->values[i].time;
+				t1.time = tt->values[i + 1].time;
+				t2.time = tt->values[i + 2].time;
+				t0.value = tt->values[i].value;
+				t1.value = tt->values[i + 1].value;
+				t2.value = tt->values[i + 2].value;
+				erase = _vector3_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
+			} break;
+			case Variant::QUATERNION: {
+				TKey<Quaternion> t0;
+				TKey<Quaternion> t1;
+				TKey<Quaternion> t2;
+				t0.time = tt->values[i].time;
+				t1.time = tt->values[i + 1].time;
+				t2.time = tt->values[i + 2].time;
+				t0.value = tt->values[i].value;
+				t1.value = tt->values[i + 1].value;
+				t2.value = tt->values[i + 2].value;
+				erase = _quaternion_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
+			} break;
+			default: {
+			} break;
+		}
+
+		if (erase) {
+			tt->values.remove_at(i + 1);
+		} else {
+			i++;
+		}
+	}
+
+	if (tt->values.size() == 2) {
+		bool single_key = false;
+		switch (type) {
+			case Variant::FLOAT: {
+				float val_0 = tt->values[0].value;
+				float val_1 = tt->values[1].value;
+				if (is_using_angle) {
+					float diff1 = fmod(val_1 - val_0, Math_TAU);
+					val_1 = val_0 + fmod(2.0 * diff1, Math_TAU) - diff1;
+				}
+				single_key = abs(val_0 - val_1) < p_allowed_precision_error;
+			} break;
+			case Variant::VECTOR2: {
+				Vector2 val_0 = tt->values[0].value;
+				Vector2 val_1 = tt->values[1].value;
+				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
+			} break;
+			case Variant::VECTOR3: {
+				Vector3 val_0 = tt->values[0].value;
+				Vector3 val_1 = tt->values[1].value;
+				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
+			} break;
+			case Variant::QUATERNION: {
+				Quaternion val_0 = tt->values[0].value;
+				Quaternion val_1 = tt->values[1].value;
+				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
+			} break;
+			default: {
+			} break;
+		}
+		if (single_key) {
+			tt->values.remove_at(1);
+		}
+	}
+}
+
 void Animation::optimize(real_t p_allowed_velocity_err, real_t p_allowed_angular_err, int p_precision) {
 	real_t precision = Math::pow(0.1, p_precision);
 	for (int i = 0; i < tracks.size(); i++) {
@@ -4302,6 +4409,8 @@ void Animation::optimize(real_t p_allowed_velocity_err, real_t p_allowed_angular
 			_scale_track_optimize(i, p_allowed_velocity_err, p_allowed_angular_err, precision);
 		} else if (tracks[i]->type == TYPE_BLEND_SHAPE) {
 			_blend_shape_track_optimize(i, p_allowed_velocity_err, precision);
+		} else if (tracks[i]->type == TYPE_VALUE) {
+			_value_track_optimize(i, p_allowed_velocity_err, p_allowed_angular_err, precision);
 		}
 	}
 }

@@ -67,6 +67,7 @@ public:
 	void set_string_name(bool p_enabled);
 	virtual void update_property() override;
 	void set_placeholder(const String &p_string);
+	void set_secret(bool p_enabled);
 	EditorPropertyText();
 };
 

@@ -134,7 +134,7 @@ void process() {
 		material_storage->material_initialize(particles_shader.default_material);
 		material_storage->material_set_shader(particles_shader.default_material, particles_shader.default_shader);
 
-		ParticlesMaterialData *md = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, MaterialStorage::SHADER_TYPE_PARTICLES));
+		ParticleProcessMaterialData *md = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(particles_shader.default_material, MaterialStorage::SHADER_TYPE_PARTICLES));
 		particles_shader.default_shader_rd = particles_shader.shader.version_get_shader(md->shader_data->version, 0);
 
 		Vector<RD::Uniform> uniforms;
@@ -1072,9 +1072,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	RD::get_singleton()->buffer_update(p_particles->frame_params_buffer, 0, sizeof(ParticlesFrameParams) * p_particles->trail_params.size(), p_particles->trail_params.ptr());
 
-	ParticlesMaterialData *m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(p_particles->process_material, MaterialStorage::SHADER_TYPE_PARTICLES));
+	ParticleProcessMaterialData *m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(p_particles->process_material, MaterialStorage::SHADER_TYPE_PARTICLES));
 	if (!m) {
-		m = static_cast<ParticlesMaterialData *>(material_storage->material_get_data(particles_shader.default_material, MaterialStorage::SHADER_TYPE_PARTICLES));
+		m = static_cast<ParticleProcessMaterialData *>(material_storage->material_get_data(particles_shader.default_material, MaterialStorage::SHADER_TYPE_PARTICLES));
 	}
 
 	ERR_FAIL_COND(!m);
@@ -1696,16 +1696,16 @@ MaterialStorage::ShaderData *ParticlesStorage::_create_particles_shader_func() {
 	return shader_data;
 }
 
-bool ParticlesStorage::ParticlesMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool ParticlesStorage::ParticleProcessMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, ParticlesStorage::get_singleton()->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
 }
 
-ParticlesStorage::ParticlesMaterialData::~ParticlesMaterialData() {
+ParticlesStorage::ParticleProcessMaterialData::~ParticleProcessMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
 MaterialStorage::MaterialData *ParticlesStorage::_create_particles_material_func(ParticlesShaderData *p_shader) {
-	ParticlesMaterialData *material_data = memnew(ParticlesMaterialData);
+	ParticleProcessMaterialData *material_data = memnew(ParticleProcessMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
 	return material_data;

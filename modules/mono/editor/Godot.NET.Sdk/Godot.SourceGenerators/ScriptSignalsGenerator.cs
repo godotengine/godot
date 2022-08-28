@@ -56,7 +56,7 @@ namespace Godot.SourceGenerators
 
             if (godotClasses.Length > 0)
             {
-                var typeCache = new MarshalUtils.TypeCache(context);
+                var typeCache = new MarshalUtils.TypeCache(context.Compilation);
 
                 foreach (var godotClass in godotClasses)
                 {
@@ -116,10 +116,6 @@ namespace Godot.SourceGenerators
             source.Append("partial class ");
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n");
-
-            // TODO:
-            // The delegate name already needs to end with 'Signal' to avoid collision with the event name.
-            // Requiring SignalAttribute is redundant. Should we remove it to make declaration shorter?
 
             var members = symbol.GetMembers();
 

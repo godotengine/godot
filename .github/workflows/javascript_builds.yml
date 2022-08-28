@@ -19,18 +19,10 @@ jobs:
     name: Template (target=release, tools=no)
 
     steps:
-      - uses: actions/checkout@v2
-
-      # Additional cache for Emscripten generated system libraries
-      - name: Load Emscripten cache
-        id: javascript-template-emscripten-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{env.EM_CACHE_FOLDER}}
-          key: ${{env.EM_VERSION}}-${{github.job}}
+      - uses: actions/checkout@v3
 
       - name: Set up Emscripten latest
-        uses: mymindstorm/setup-emsdk@v10
+        uses: mymindstorm/setup-emsdk@v11
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}

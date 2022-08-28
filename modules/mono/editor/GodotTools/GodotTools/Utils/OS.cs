@@ -15,6 +15,9 @@ namespace GodotTools.Utils
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class OS
     {
+        /// <summary>
+        /// Display names for the OS platforms.
+        /// </summary>
         private static class Names
         {
             public const string Windows = "Windows";
@@ -23,7 +26,6 @@ namespace GodotTools.Utils
             public const string FreeBSD = "FreeBSD";
             public const string NetBSD = "NetBSD";
             public const string BSD = "BSD";
-            public const string Server = "Server";
             public const string UWP = "UWP";
             public const string Haiku = "Haiku";
             public const string Android = "Android";
@@ -31,12 +33,14 @@ namespace GodotTools.Utils
             public const string HTML5 = "HTML5";
         }
 
+        /// <summary>
+        /// Godot platform identifiers.
+        /// </summary>
         public static class Platforms
         {
             public const string Windows = "windows";
             public const string MacOS = "macos";
             public const string LinuxBSD = "linuxbsd";
-            public const string Server = "server";
             public const string UWP = "uwp";
             public const string Haiku = "haiku";
             public const string Android = "android";
@@ -44,6 +48,10 @@ namespace GodotTools.Utils
             public const string HTML5 = "javascript";
         }
 
+        /// <summary>
+        /// OS name part of the .NET runtime identifier (RID).
+        /// See https://docs.microsoft.com/en-us/dotnet/core/rid-catalog.
+        /// </summary>
         public static class DotNetOS
         {
             public const string Win = "win";
@@ -65,7 +73,6 @@ namespace GodotTools.Utils
             ["LinuxBSD"] = Platforms.LinuxBSD,
             // "X11" for compatibility, temporarily, while we are on an outdated branch
             ["X11"] = Platforms.LinuxBSD,
-            ["Server"] = Platforms.Server,
             ["UWP"] = Platforms.UWP,
             ["Haiku"] = Platforms.Haiku,
             ["Android"] = Platforms.Android,
@@ -81,7 +88,6 @@ namespace GodotTools.Utils
             [Names.FreeBSD] = Platforms.LinuxBSD,
             [Names.NetBSD] = Platforms.LinuxBSD,
             [Names.BSD] = Platforms.LinuxBSD,
-            [Names.Server] = Platforms.Server,
             [Names.UWP] = Platforms.UWP,
             [Names.Haiku] = Platforms.Haiku,
             [Names.Android] = Platforms.Android,
@@ -98,7 +104,6 @@ namespace GodotTools.Utils
             // instead of `linux` in the runtime identifier. This would be a problem as
             // Godot has a single export profile for both, named LinuxBSD.
             [Platforms.LinuxBSD] = DotNetOS.Linux,
-            [Platforms.Server] = DotNetOS.Linux,
             [Platforms.UWP] = DotNetOS.Win10,
             [Platforms.Android] = DotNetOS.Android,
             [Platforms.iOS] = DotNetOS.iOS,
@@ -129,13 +134,12 @@ namespace GodotTools.Utils
             new[] { Names.Linux, Names.FreeBSD, Names.NetBSD, Names.BSD };
 
         private static readonly IEnumerable<string> UnixLikePlatforms =
-            new[] { Names.MacOS, Names.Server, Names.Haiku, Names.Android, Names.iOS }
+            new[] { Names.MacOS, Names.Haiku, Names.Android, Names.iOS }
                 .Concat(LinuxBSDPlatforms).ToArray();
 
         private static readonly Lazy<bool> _isWindows = new(() => IsOS(Names.Windows));
         private static readonly Lazy<bool> _isMacOS = new(() => IsOS(Names.MacOS));
         private static readonly Lazy<bool> _isLinuxBSD = new(() => IsAnyOS(LinuxBSDPlatforms));
-        private static readonly Lazy<bool> _isServer = new(() => IsOS(Names.Server));
         private static readonly Lazy<bool> _isUWP = new(() => IsOS(Names.UWP));
         private static readonly Lazy<bool> _isHaiku = new(() => IsOS(Names.Haiku));
         private static readonly Lazy<bool> _isAndroid = new(() => IsOS(Names.Android));
@@ -148,8 +152,6 @@ namespace GodotTools.Utils
         [SupportedOSPlatformGuard("osx")] public static bool IsMacOS => _isMacOS.Value;
 
         [SupportedOSPlatformGuard("linux")] public static bool IsLinuxBSD => _isLinuxBSD.Value;
-
-        [SupportedOSPlatformGuard("linux")] public static bool IsServer => _isServer.Value;
 
         [SupportedOSPlatformGuard("windows")] public static bool IsUWP => _isUWP.Value;
 

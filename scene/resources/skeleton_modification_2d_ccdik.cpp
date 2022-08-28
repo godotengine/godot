@@ -52,9 +52,9 @@ bool SkeletonModification2DCCDIK::_set(const StringName &p_path, const Variant &
 		} else if (what == "enable_constraint") {
 			set_ccdik_joint_enable_constraint(which, p_value);
 		} else if (what == "constraint_angle_min") {
-			set_ccdik_joint_constraint_angle_min(which, Math::deg2rad(float(p_value)));
+			set_ccdik_joint_constraint_angle_min(which, Math::deg_to_rad(float(p_value)));
 		} else if (what == "constraint_angle_max") {
-			set_ccdik_joint_constraint_angle_max(which, Math::deg2rad(float(p_value)));
+			set_ccdik_joint_constraint_angle_max(which, Math::deg_to_rad(float(p_value)));
 		} else if (what == "constraint_angle_invert") {
 			set_ccdik_joint_constraint_angle_invert(which, p_value);
 		} else if (what == "constraint_in_localspace") {
@@ -96,9 +96,9 @@ bool SkeletonModification2DCCDIK::_get(const StringName &p_path, Variant &r_ret)
 		} else if (what == "enable_constraint") {
 			r_ret = get_ccdik_joint_enable_constraint(which);
 		} else if (what == "constraint_angle_min") {
-			r_ret = Math::rad2deg(get_ccdik_joint_constraint_angle_min(which));
+			r_ret = Math::rad_to_deg(get_ccdik_joint_constraint_angle_min(which));
 		} else if (what == "constraint_angle_max") {
-			r_ret = Math::rad2deg(get_ccdik_joint_constraint_angle_max(which));
+			r_ret = Math::rad_to_deg(get_ccdik_joint_constraint_angle_max(which));
 		} else if (what == "constraint_angle_invert") {
 			r_ret = get_ccdik_joint_constraint_angle_invert(which);
 		} else if (what == "constraint_in_localspace") {

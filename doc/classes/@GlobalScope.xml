@@ -66,7 +66,7 @@
 			<description>
 				Returns the arc cosine of [param x] in radians. Use to get the angle of cosine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method acos] will return [constant @GDScript.NAN].
 				[codeblock]
-				# c is 0.523599 or 30 degrees if converted with rad2deg(c)
+				# c is 0.523599 or 30 degrees if converted with rad_to_deg(c)
 				var c = acos(0.866025)
 				[/codeblock]
 			</description>
@@ -77,7 +77,7 @@
 			<description>
 				Returns the arc sine of [param x] in radians. Use to get the angle of sine [param x]. [param x] must be between [code]-1.0[/code] and [code]1.0[/code] (inclusive), otherwise, [method asin] will return [constant @GDScript.NAN].
 				[codeblock]
-				# s is 0.523599 or 30 degrees if converted with rad2deg(s)
+				# s is 0.523599 or 30 degrees if converted with rad_to_deg(s)
 				var s = asin(0.5)
 				[/codeblock]
 			</description>
@@ -117,15 +117,15 @@
 				Returns the point at the given [param t] on a one-dimnesional [url=https://en.wikipedia.org/wiki/B%C3%A9zier_curve]Bezier curve[/url] defined by the given [param control_1], [param control_2], and [param end] points.
 			</description>
 		</method>
-		<method name="bytes2var">
+		<method name="bytes_to_var">
 			<return type="Variant" />
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
 				Decodes a byte array back to a [Variant] value, without decoding objects.
-				[b]Note:[/b] If you need object deserialization, see [method bytes2var_with_objects].
+				[b]Note:[/b] If you need object deserialization, see [method bytes_to_var_with_objects].
 			</description>
 		</method>
-		<method name="bytes2var_with_objects">
+		<method name="bytes_to_var_with_objects">
 			<return type="Variant" />
 			<param index="0" name="bytes" type="PackedByteArray" />
 			<description>
@@ -232,9 +232,9 @@
 			<description>
 				Returns the cosine of angle [param angle_rad] in radians.
 				[codeblock]
-				cos(PI * 2)      # Returns 1.0
-				cos(PI)          # Returns -1.0
-				cos(deg2rad(90)) # Returns 0.0
+				cos(PI * 2)         # Returns 1.0
+				cos(PI)             # Returns -1.0
+				cos(deg_to_rad(90)) # Returns 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -260,6 +260,32 @@
 				Cubic interpolates between two values by the factor defined in [param weight] with pre and post values.
 			</description>
 		</method>
+		<method name="cubic_interpolate_angle">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="weight" type="float" />
+			<description>
+				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with pre and post values. See also [method lerp_angle].
+			</description>
+		</method>
+		<method name="cubic_interpolate_angle_in_time">
+			<return type="float" />
+			<param index="0" name="from" type="float" />
+			<param index="1" name="to" type="float" />
+			<param index="2" name="pre" type="float" />
+			<param index="3" name="post" type="float" />
+			<param index="4" name="weight" type="float" />
+			<param index="5" name="to_t" type="float" />
+			<param index="6" name="pre_t" type="float" />
+			<param index="7" name="post_t" type="float" />
+			<description>
+				Cubic interpolates between two rotation values with shortest path by the factor defined in [param weight] with pre and post values. See also [method lerp_angle].
+				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
+			</description>
+		</method>
 		<method name="cubic_interpolate_in_time">
 			<return type="float" />
 			<param index="0" name="from" type="float" />
@@ -275,21 +301,21 @@
 				It can perform smoother interpolation than [code]cubic_interpolate()[/code] by the time values.
 			</description>
 		</method>
-		<method name="db2linear">
+		<method name="db_to_linear">
 			<return type="float" />
 			<param index="0" name="db" type="float" />
 			<description>
 				Converts from decibels to linear energy (audio).
 			</description>
 		</method>
-		<method name="deg2rad">
+		<method name="deg_to_rad">
 			<return type="float" />
 			<param index="0" name="deg" type="float" />
 			<description>
 				Converts an angle expressed in degrees to radians.
 				[codeblock]
 				# r is 3.141593
-				var r = deg2rad(180)
+				var r = deg_to_rad(180)
 				[/codeblock]
 			</description>
 		</method>
@@ -513,8 +539,8 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-				    var min_angle = deg2rad(0.0)
-				    var max_angle = deg2rad(90.0)
+				    var min_angle = deg_to_rad(0.0)
+				    var max_angle = deg_to_rad(90.0)
 				    rotation = lerp_angle(min_angle, max_angle, elapsed)
 				    elapsed += delta
 				[/codeblock]
@@ -534,7 +560,7 @@
 				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep].
 			</description>
 		</method>
-		<method name="linear2db">
+		<method name="linear_to_db">
 			<return type="float" />
 			<param index="0" name="lin" type="float" />
 			<description>
@@ -543,7 +569,7 @@
 				# "Slider" refers to a node that inherits Range such as HSlider or VSlider.
 				# Its range must be configured to go from 0 to 1.
 				# Change the bus name if you'd like to change the volume of a specific bus only.
-				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear2db($Slider.value))
+				AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db($Slider.value))
 				[/codeblock]
 			</description>
 		</method>
@@ -787,13 +813,13 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="rad2deg">
+		<method name="rad_to_deg">
 			<return type="float" />
 			<param index="0" name="rad" type="float" />
 			<description>
 				Converts an angle expressed in radians to degrees.
 				[codeblock]
-				rad2deg(0.523599) # Returns 30
+				rad_to_deg(0.523599) # Returns 30
 				[/codeblock]
 			</description>
 		</method>
@@ -974,8 +1000,8 @@
 			<description>
 				Returns the sine of angle [param angle_rad] in radians.
 				[codeblock]
-				sin(0.523599)    # Returns 0.5
-				sin(deg2rad(90)) # Returns 1.0
+				sin(0.523599)       # Returns 0.5
+				sin(deg_to_rad(90)) # Returns 1.0
 				[/codeblock]
 			</description>
 		</method>
@@ -1054,14 +1080,14 @@
 				Converts one or more arguments of any type to string in the best way possible.
 			</description>
 		</method>
-		<method name="str2var">
+		<method name="str_to_var">
 			<return type="Variant" />
 			<param index="0" name="string" type="String" />
 			<description>
-				Converts a formatted string that was returned by [method var2str] to the original value.
+				Converts a formatted [param string] that was returned by [method var_to_str] to the original value.
 				[codeblock]
 				var a = '{ "a": 1, "b": 2 }'
-				var b = str2var(a)
+				var b = str_to_var(a)
 				print(b["a"]) # Prints 1
 				[/codeblock]
 			</description>
@@ -1072,7 +1098,7 @@
 			<description>
 				Returns the tangent of angle [param angle_rad] in radians.
 				[codeblock]
-				tan(deg2rad(45)) # Returns 1
+				tan(deg_to_rad(45)) # Returns 1
 				[/codeblock]
 			</description>
 		</method>
@@ -1103,29 +1129,29 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="var2bytes">
+		<method name="var_to_bytes">
 			<return type="PackedByteArray" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes2var].
-				[b]Note:[/b] If you need object serialization, see [method var2bytes_with_objects].
+				Encodes a [Variant] value to a byte array, without encoding objects. Deserialization can be done with [method bytes_to_var].
+				[b]Note:[/b] If you need object serialization, see [method var_to_bytes_with_objects].
 			</description>
 		</method>
-		<method name="var2bytes_with_objects">
+		<method name="var_to_bytes_with_objects">
 			<return type="PackedByteArray" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include code). Deserialization can be done with [method bytes2var_with_objects].
+				Encodes a [Variant] value to a byte array. Encoding objects is allowed (and can potentially include code). Deserialization can be done with [method bytes_to_var_with_objects].
 			</description>
 		</method>
-		<method name="var2str">
+		<method name="var_to_str">
 			<return type="String" />
 			<param index="0" name="variable" type="Variant" />
 			<description>
-				Converts a Variant [param variable] to a formatted string that can later be parsed using [method str2var].
+				Converts a Variant [param variable] to a formatted string that can later be parsed using [method str_to_var].
 				[codeblock]
 				a = { "a": 1, "b": 2 }
-				print(var2str(a))
+				print(var_to_str(a))
 				[/codeblock]
 				prints
 				[codeblock]
@@ -2711,7 +2737,10 @@
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="45" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="46" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PASSWORD" value="46" enum="PropertyHint">
+			Hints that a string property is a password, and every character is replaced with the secret character.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
 		</constant>

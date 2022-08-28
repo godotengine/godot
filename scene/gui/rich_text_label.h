@@ -440,7 +440,7 @@ private:
 	void _menu_option(int p_option);
 
 	int visible_characters = -1;
-	float percent_visible = 1.0;
+	float visible_ratio = 1.0;
 	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 
 	bool _is_click_inside_selection() const;
@@ -660,8 +660,8 @@ public:
 	int get_total_character_count() const;
 	int get_total_glyph_count() const;
 
-	void set_percent_visible(float p_percent);
-	float get_percent_visible() const;
+	void set_visible_ratio(float p_ratio);
+	float get_visible_ratio() const;
 
 	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
 	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);

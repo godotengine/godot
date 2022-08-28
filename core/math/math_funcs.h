@@ -229,11 +229,11 @@ public:
 		return value;
 	}
 
-	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * (Math_PI / 180.0); }
-	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ double deg_to_rad(double p_y) { return p_y * (Math_PI / 180.0); }
+	static _ALWAYS_INLINE_ float deg_to_rad(float p_y) { return p_y * (float)(Math_PI / 180.0); }
 
-	static _ALWAYS_INLINE_ double rad2deg(double p_y) { return p_y * (180.0 / Math_PI); }
-	static _ALWAYS_INLINE_ float rad2deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ double rad_to_deg(double p_y) { return p_y * (180.0 / Math_PI); }
+	static _ALWAYS_INLINE_ float rad_to_deg(float p_y) { return p_y * (float)(180.0 / Math_PI); }
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
@@ -251,6 +251,35 @@ public:
 						(-p_pre + p_to) * p_weight +
 						(2.0f * p_pre - 5.0f * p_from + 4.0f * p_to - p_post) * (p_weight * p_weight) +
 						(-p_pre + 3.0f * p_from - 3.0f * p_to + p_post) * (p_weight * p_weight * p_weight));
+	}
+
+	static _ALWAYS_INLINE_ double cubic_interpolate_angle(double p_from, double p_to, double p_pre, double p_post, double p_weight) {
+		double from_rot = fmod(p_from, Math_TAU);
+
+		double pre_diff = fmod(p_pre - from_rot, Math_TAU);
+		double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+
+		double to_diff = fmod(p_to - from_rot, Math_TAU);
+		double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+
+		double post_diff = fmod(p_post - to_rot, Math_TAU);
+		double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+
+		return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
+	}
+	static _ALWAYS_INLINE_ float cubic_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
+		float from_rot = fmod(p_from, (float)Math_TAU);
+
+		float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
+		float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
+
+		float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
+		float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
+
+		float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
+		float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
+
+		return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 	}
 
 	static _ALWAYS_INLINE_ double cubic_interpolate_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
@@ -274,6 +303,37 @@ public:
 		float b1 = Math::lerp(a1, a2, p_to_t - p_pre_t == 0 ? 0.0f : (t - p_pre_t) / (p_to_t - p_pre_t));
 		float b2 = Math::lerp(a2, a3, p_post_t == 0 ? 1.0f : t / p_post_t);
 		return Math::lerp(b1, b2, p_to_t == 0 ? 0.5f : t / p_to_t);
+	}
+
+	static _ALWAYS_INLINE_ double cubic_interpolate_angle_in_time(double p_from, double p_to, double p_pre, double p_post, double p_weight,
+			double p_to_t, double p_pre_t, double p_post_t) {
+		double from_rot = fmod(p_from, Math_TAU);
+
+		double pre_diff = fmod(p_pre - from_rot, Math_TAU);
+		double pre_rot = from_rot + fmod(2.0 * pre_diff, Math_TAU) - pre_diff;
+
+		double to_diff = fmod(p_to - from_rot, Math_TAU);
+		double to_rot = from_rot + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+
+		double post_diff = fmod(p_post - to_rot, Math_TAU);
+		double post_rot = to_rot + fmod(2.0 * post_diff, Math_TAU) - post_diff;
+
+		return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
+	}
+	static _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
+			float p_to_t, float p_pre_t, float p_post_t) {
+		float from_rot = fmod(p_from, (float)Math_TAU);
+
+		float pre_diff = fmod(p_pre - from_rot, (float)Math_TAU);
+		float pre_rot = from_rot + fmod(2.0f * pre_diff, (float)Math_TAU) - pre_diff;
+
+		float to_diff = fmod(p_to - from_rot, (float)Math_TAU);
+		float to_rot = from_rot + fmod(2.0f * to_diff, (float)Math_TAU) - to_diff;
+
+		float post_diff = fmod(p_post - to_rot, (float)Math_TAU);
+		float post_rot = to_rot + fmod(2.0f * post_diff, (float)Math_TAU) - post_diff;
+
+		return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 	}
 
 	static _ALWAYS_INLINE_ double bezier_interpolate(double p_start, double p_control_1, double p_control_2, double p_end, double p_t) {
@@ -331,11 +391,11 @@ public:
 	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
 
-	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ float linear_to_db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
 
-	static _ALWAYS_INLINE_ double db2linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db2linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ double db_to_linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ float db_to_linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
 
 	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }

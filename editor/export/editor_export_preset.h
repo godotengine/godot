@@ -67,6 +67,7 @@ private:
 
 	List<PropertyInfo> properties;
 	HashMap<StringName, Variant> values;
+	HashMap<StringName, bool> update_visibility;
 
 	String name;
 

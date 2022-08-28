@@ -108,10 +108,10 @@ public:
 	GDVIRTUAL2(font_set_style_name, RID, const String &);
 	GDVIRTUAL1RC(String, font_get_style_name, RID);
 
-	virtual void font_set_antialiased(const RID &p_font_rid, bool p_antialiased) override;
-	virtual bool font_is_antialiased(const RID &p_font_rid) const override;
-	GDVIRTUAL2(font_set_antialiased, RID, bool);
-	GDVIRTUAL1RC(bool, font_is_antialiased, RID);
+	virtual void font_set_antialiasing(RID p_font_rid, TextServer::FontAntialiasing p_antialiasing) override;
+	virtual TextServer::FontAntialiasing font_get_antialiasing(RID p_font_rid) const override;
+	GDVIRTUAL2(font_set_antialiasing, RID, TextServer::FontAntialiasing);
+	GDVIRTUAL1RC(TextServer::FontAntialiasing, font_get_antialiasing, RID);
 
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) override;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const override;

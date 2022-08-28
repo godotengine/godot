@@ -80,6 +80,11 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 }
 
 void EditorPath::_show_popup() {
+	if (sub_objects_menu->is_visible()) {
+		sub_objects_menu->hide();
+		return;
+	}
+
 	sub_objects_menu->clear();
 
 	Size2 size = get_size();
@@ -177,7 +182,6 @@ void EditorPath::_id_pressed(int p_idx) {
 
 void EditorPath::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 

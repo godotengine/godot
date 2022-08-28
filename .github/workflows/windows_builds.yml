@@ -5,7 +5,7 @@ on: [push, pull_request]
 # SCONS_CACHE for windows must be set in the build environment
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: master-v2
+  GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=all werror=yes module_text_server_fb_enabled=yes
   SCONS_CACHE_MSVC_CONFIG: true
 
@@ -29,7 +29,7 @@ jobs:
             tests: true
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no
-            bin: "./bin/godot.windows.opt.tools.64.exe"
+            bin: "./bin/godot.windows.opt.tools.x86_64.exe"
 
           - name: Template (target=release, tools=no)
             cache-name: windows-template
@@ -39,7 +39,7 @@ jobs:
             sconsflags: debug_symbols=no
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

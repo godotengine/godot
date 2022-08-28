@@ -65,7 +65,7 @@
 			</description>
 		</method>
 		<method name="get_scroll_offset" qualifiers="const">
-			<return type="int" />
+			<return type="float" />
 			<description>
 				Returns the scroll offset due to [member caret_column], as a number of characters.
 			</description>

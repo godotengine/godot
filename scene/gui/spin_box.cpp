@@ -41,12 +41,16 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double p_value) {
 	String value = TS->format_number(String::num(get_value(), Math::range_step_decimals(get_step())));
-	if (!prefix.is_empty()) {
-		value = prefix + " " + value;
+
+	if (!line_edit->has_focus()) {
+		if (!prefix.is_empty()) {
+			value = prefix + " " + value;
+		}
+		if (!suffix.is_empty()) {
+			value += " " + suffix;
+		}
 	}
-	if (!suffix.is_empty()) {
-		value += " " + suffix;
-	}
+
 	line_edit->set_text(value);
 	Range::_value_changed(p_value);
 }
@@ -105,8 +109,9 @@ void SpinBox::_range_click_timeout() {
 void SpinBox::_release_mouse() {
 	if (drag.enabled) {
 		drag.enabled = false;
-		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
 		warp_mouse(drag.capture_pos);
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	}
 }
 
@@ -181,8 +186,14 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void SpinBox::_line_edit_focus_enter() {
+	int col = line_edit->get_caret_column();
+	_value_changed(0); // Update the LineEdit's text.
+	line_edit->set_caret_column(col);
+}
+
 void SpinBox::_line_edit_focus_exit() {
-	// discontinue because the focus_exit was caused by right-click context menu
+	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (line_edit->is_menu_visible()) {
 		return;
 	}
@@ -346,6 +357,7 @@ SpinBox::SpinBox() {
 	line_edit->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
 	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), CONNECT_DEFERRED);
+	line_edit->connect("focus_entered", callable_mp(this, &SpinBox::_line_edit_focus_enter), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
 

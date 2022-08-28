@@ -120,9 +120,8 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
+		} break;
 
-			[[fallthrough]];
-		}
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
@@ -166,6 +165,7 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	class_name->deselect();
 	parent_name->set_text(p_base_name);
 	parent_name->deselect();
+	internal_name->set_text("");
 
 	if (!p_base_path.is_empty()) {
 		initial_bp = p_base_path.get_basename();

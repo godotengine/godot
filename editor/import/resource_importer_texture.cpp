@@ -409,11 +409,26 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 }
 
 Error ResourceImporterTexture::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+	// Parse import options.
+	int32_t loader_flags = ImageFormatLoader::FLAG_NONE;
+
+	// Compression.
 	CompressMode compress_mode = CompressMode(int(p_options["compress/mode"]));
 	const float lossy = p_options["compress/lossy_quality"];
 	const int pack_channels = p_options["compress/channel_pack"];
+	const int normal = p_options["compress/normal_map"];
+	const int hdr_compression = p_options["compress/hdr_compression"];
+	const int bptc_ldr = p_options["compress/bptc_ldr"];
+
+	// Mipmaps.
 	const bool mipmaps = p_options["mipmaps/generate"];
 	const uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
+
+	// Roughness.
+	const int roughness = p_options["roughness/mode"];
+	const String normal_map = p_options["roughness/src_normal"];
+
+	// Processing.
 	const bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	const bool premult_alpha = p_options["process/premult_alpha"];
 	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
@@ -421,29 +436,29 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	const bool stream = false;
 	const int size_limit = p_options["process/size_limit"];
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
+	if (hdr_as_srgb) {
+		loader_flags |= ImageFormatLoader::FLAG_FORCE_LINEAR;
+	}
 	const bool hdr_clamp_exposure = p_options["process/hdr_clamp_exposure"];
-	const int normal = p_options["compress/normal_map"];
-	const int hdr_compression = p_options["compress/hdr_compression"];
-	const int bptc_ldr = p_options["compress/bptc_ldr"];
-	const int roughness = p_options["roughness/mode"];
-	const String normal_map = p_options["roughness/src_normal"];
+
 	float scale = 1.0;
+	// SVG-specific options.
 	if (p_options.has("svg/scale")) {
 		scale = p_options["svg/scale"];
 	}
 
 	Ref<Image> normal_image;
 	Image::RoughnessChannel roughness_channel = Image::ROUGHNESS_CHANNEL_R;
-
 	if (mipmaps && roughness > 1 && FileAccess::exists(normal_map)) {
 		normal_image.instantiate();
 		if (ImageLoader::load_image(normal_map, normal_image) == OK) {
 			roughness_channel = Image::RoughnessChannel(roughness - 2);
 		}
 	}
+
 	Ref<Image> image;
 	image.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, image, nullptr, hdr_as_srgb, scale);
+	Error err = ImageLoader::load_image(p_source_file, image, nullptr, loader_flags, scale);
 	if (err != OK) {
 		return err;
 	}

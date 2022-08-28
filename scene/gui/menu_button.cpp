@@ -86,6 +86,11 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 }
 
 void MenuButton::pressed() {
+	if (popup->is_visible()) {
+		popup->hide();
+		return;
+	}
+
 	emit_signal(SNAME("about_to_popup"));
 	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
 
@@ -103,11 +108,7 @@ void MenuButton::pressed() {
 		popup->set_current_index(0);
 	}
 
-	if (popup->is_visible()) {
-		popup->hide();
-	} else {
-		popup->popup();
-	}
+	popup->popup();
 }
 
 void MenuButton::gui_input(const Ref<InputEvent> &p_event) {

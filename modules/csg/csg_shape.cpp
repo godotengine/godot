@@ -1838,7 +1838,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			u_step *= curve_length / path_u_distance;
 		}
 		double v_step = 1.0 / shape_sides;
-		double spin_step = Math::deg2rad(spin_degrees / spin_sides);
+		double spin_step = Math::deg_to_rad(spin_degrees / spin_sides);
 		double extrusion_step = 1.0 / extrusions;
 		if (mode == MODE_PATH) {
 			if (path_joined) {
@@ -1902,7 +1902,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 		}
 
-		real_t angle_simplify_dot = Math::cos(Math::deg2rad(path_simplify_angle));
+		real_t angle_simplify_dot = Math::cos(Math::deg_to_rad(path_simplify_angle));
 		Vector3 previous_simplify_dir = Vector3(0, 0, 0);
 		int faces_combined = 0;
 

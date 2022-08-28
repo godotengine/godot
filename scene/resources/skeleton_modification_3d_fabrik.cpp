@@ -58,7 +58,7 @@ bool SkeletonModification3DFABRIK::_set(const StringName &p_path, const Variant 
 		} else if (what == "use_target_basis") {
 			set_fabrik_joint_use_target_basis(which, p_value);
 		} else if (what == "roll") {
-			set_fabrik_joint_roll(which, Math::deg2rad(real_t(p_value)));
+			set_fabrik_joint_roll(which, Math::deg_to_rad(real_t(p_value)));
 		}
 		return true;
 	}
@@ -91,7 +91,7 @@ bool SkeletonModification3DFABRIK::_get(const StringName &p_path, Variant &r_ret
 		} else if (what == "use_target_basis") {
 			r_ret = get_fabrik_joint_use_target_basis(which);
 		} else if (what == "roll") {
-			r_ret = Math::rad2deg(get_fabrik_joint_roll(which));
+			r_ret = Math::rad_to_deg(get_fabrik_joint_roll(which));
 		}
 		return true;
 	}

@@ -1004,14 +1004,17 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 		names.sort_custom<StringName::AlphCompare>();
 
 		bool current_found = false;
+		bool is_first_element = true;
 
-		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-			if (E->prev()) {
+		for (const StringName &E : names) {
+			if (!is_first_element) {
 				p_property.hint_string += ",";
+			} else {
+				is_first_element = false;
 			}
 
-			p_property.hint_string += String(E->get());
-			if (animation == E->get()) {
+			p_property.hint_string += String(E);
+			if (animation == E) {
 				current_found = true;
 			}
 		}

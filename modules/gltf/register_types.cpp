@@ -73,8 +73,8 @@ static void _editor_init() {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (blender3_path.is_empty()) {
 			WARN_PRINT("Blend file import is enabled in the project settings, but no Blender path is configured in the editor settings. Blend files will not be imported.");
-		} else if (!da->file_exists(blender3_path)) {
-			WARN_PRINT("Blend file import is enabled, but the Blender path doesn't point to an accessible file. Blend files will not be imported.");
+		} else if (!da->dir_exists(blender3_path)) {
+			WARN_PRINT("Blend file import is enabled, but the Blender path doesn't point to an accessible directory. Blend files will not be imported.");
 		} else {
 			Ref<EditorSceneFormatImporterBlend> importer;
 			importer.instantiate();

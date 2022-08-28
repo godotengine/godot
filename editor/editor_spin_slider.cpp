@@ -149,6 +149,10 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
+	if (read_only) {
+		return;
+	}
+
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (grabbing_grabber) {
@@ -427,7 +431,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
 		} break;

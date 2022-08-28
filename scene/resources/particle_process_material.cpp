@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  particles_material.cpp                                               */
+/*  particle_process_material.cpp                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "particles_material.h"
+#include "particle_process_material.h"
 
 #include "core/version.h"
 
-Mutex ParticlesMaterial::material_mutex;
-SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = nullptr;
-HashMap<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData, ParticlesMaterial::MaterialKey> ParticlesMaterial::shader_map;
-ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = nullptr;
+Mutex ParticleProcessMaterial::material_mutex;
+SelfList<ParticleProcessMaterial>::List *ParticleProcessMaterial::dirty_materials = nullptr;
+HashMap<ParticleProcessMaterial::MaterialKey, ParticleProcessMaterial::ShaderData, ParticleProcessMaterial::MaterialKey> ParticleProcessMaterial::shader_map;
+ParticleProcessMaterial::ShaderNames *ParticleProcessMaterial::shader_names = nullptr;
 
-void ParticlesMaterial::init_shaders() {
-	dirty_materials = memnew(SelfList<ParticlesMaterial>::List);
+void ParticleProcessMaterial::init_shaders() {
+	dirty_materials = memnew(SelfList<ParticleProcessMaterial>::List);
 
 	shader_names = memnew(ShaderNames);
 
@@ -121,14 +121,14 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->collision_bounce = "collision_bounce";
 }
 
-void ParticlesMaterial::finish_shaders() {
+void ParticleProcessMaterial::finish_shaders() {
 	memdelete(dirty_materials);
 	dirty_materials = nullptr;
 
 	memdelete(shader_names);
 }
 
-void ParticlesMaterial::_update_shader() {
+void ParticleProcessMaterial::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
@@ -155,7 +155,7 @@ void ParticlesMaterial::_update_shader() {
 	//must create a shader!
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ParticlesMaterial.\n\n";
+	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s ParticleProcessMaterial.\n\n";
 
 	code += "shader_type particles;\n";
 
@@ -287,7 +287,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform sampler2D anim_offset_texture : repeat_disable;\n";
 	}
 
-	if (collision_enabled) {
+	if (collision_mode == COLLISION_RIGID) {
 		code += "uniform float collision_friction;\n";
 		code += "uniform float collision_bounce;\n";
 	}
@@ -695,8 +695,10 @@ void ParticlesMaterial::_update_shader() {
 		}
 		code += "	vec3 noise_direction = get_noise_direction(TRANSFORM[3].xyz, EMISSION_TRANSFORM[3].xyz, time_noise);\n";
 		// If collision happened, turbulence is no longer applied.
+		// We don't need this check when the collision mode is "hide on contact",
+		// as the particle will be hidden anyway.
 		String extra_tab = "";
-		if (collision_enabled) {
+		if (collision_mode != COLLISION_RIGID) {
 			code += "	if (!COLLIDED) {\n";
 			extra_tab = "	";
 		}
@@ -704,7 +706,7 @@ void ParticlesMaterial::_update_shader() {
 		code += extra_tab + "	float vel_mag = length(VELOCITY);\n";
 		code += extra_tab + "	float vel_infl = clamp(mix(turbulence_influence_min, turbulence_influence_max, rand_from_seed(alt_seed)) * turbulence_influence, 0.0, 1.0);\n";
 		code += extra_tab + "	VELOCITY = mix(VELOCITY, normalize(noise_direction) * vel_mag * (1.0 + (1.0 - vel_infl) * 0.2), vel_infl);\n";
-		if (collision_enabled) {
+		if (collision_mode != COLLISION_RIGID) {
 			code += "	}";
 		}
 	}
@@ -828,7 +830,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 
-	if (collision_enabled) {
+	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
 		code += "		if (length(VELOCITY) > 3.0) {\n";
 		code += "			TRANSFORM[3].xyz += COLLISION_NORMAL * COLLISION_DEPTH;\n";
@@ -850,6 +852,18 @@ void ParticlesMaterial::_update_shader() {
 	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
 	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
 	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
+
+	if (collision_mode == COLLISION_RIGID) {
+		code += "	if (COLLIDED) {\n";
+		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
+		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
+		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
+		code += "	}\n";
+	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
+		code += "	if (COLLIDED) {\n";
+		code += "		ACTIVE = false;\n";
+		code += "	}\n";
+	}
 
 	if (sub_emitter_mode != SUB_EMITTER_DISABLED) {
 		code += "	int emit_count = 0;\n";
@@ -894,7 +908,7 @@ void ParticlesMaterial::_update_shader() {
 	RS::get_singleton()->material_set_shader(_get_material(), shader_data.shader);
 }
 
-void ParticlesMaterial::flush_changes() {
+void ParticleProcessMaterial::flush_changes() {
 	MutexLock lock(material_mutex);
 
 	while (dirty_materials->first()) {
@@ -902,7 +916,7 @@ void ParticlesMaterial::flush_changes() {
 	}
 }
 
-void ParticlesMaterial::_queue_shader_change() {
+void ParticleProcessMaterial::_queue_shader_change() {
 	MutexLock lock(material_mutex);
 
 	if (is_initialized && !element.in_list()) {
@@ -910,40 +924,40 @@ void ParticlesMaterial::_queue_shader_change() {
 	}
 }
 
-bool ParticlesMaterial::_is_shader_dirty() const {
+bool ParticleProcessMaterial::_is_shader_dirty() const {
 	MutexLock lock(material_mutex);
 
 	return element.in_list();
 }
 
-void ParticlesMaterial::set_direction(Vector3 p_direction) {
+void ParticleProcessMaterial::set_direction(Vector3 p_direction) {
 	direction = p_direction;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->direction, direction);
 }
 
-Vector3 ParticlesMaterial::get_direction() const {
+Vector3 ParticleProcessMaterial::get_direction() const {
 	return direction;
 }
 
-void ParticlesMaterial::set_spread(float p_spread) {
+void ParticleProcessMaterial::set_spread(float p_spread) {
 	spread = p_spread;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->spread, p_spread);
 }
 
-float ParticlesMaterial::get_spread() const {
+float ParticleProcessMaterial::get_spread() const {
 	return spread;
 }
 
-void ParticlesMaterial::set_flatness(float p_flatness) {
+void ParticleProcessMaterial::set_flatness(float p_flatness) {
 	flatness = p_flatness;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->flatness, p_flatness);
 }
 
-float ParticlesMaterial::get_flatness() const {
+float ParticleProcessMaterial::get_flatness() const {
 	return flatness;
 }
 
-void ParticlesMaterial::set_param_min(Parameter p_param, float p_value) {
+void ParticleProcessMaterial::set_param_min(Parameter p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	params_min[p_param] = p_value;
@@ -1002,13 +1016,13 @@ void ParticlesMaterial::set_param_min(Parameter p_param, float p_value) {
 	}
 }
 
-float ParticlesMaterial::get_param_min(Parameter p_param) const {
+float ParticleProcessMaterial::get_param_min(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
 	return params_min[p_param];
 }
 
-void ParticlesMaterial::set_param_max(Parameter p_param, float p_value) {
+void ParticleProcessMaterial::set_param_max(Parameter p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	params_max[p_param] = p_value;
@@ -1067,7 +1081,7 @@ void ParticlesMaterial::set_param_max(Parameter p_param, float p_value) {
 	}
 }
 
-float ParticlesMaterial::get_param_max(Parameter p_param) const {
+float ParticleProcessMaterial::get_param_max(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
 	return params_max[p_param];
@@ -1082,7 +1096,7 @@ static void _adjust_curve_range(const Ref<Texture2D> &p_texture, float p_min, fl
 	curve_tex->ensure_default_setup(p_min, p_max);
 }
 
-void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture) {
+void ParticleProcessMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D> &p_texture) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 
 	tex_parameters[p_param] = p_texture;
@@ -1153,22 +1167,22 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D
 	_queue_shader_change();
 }
 
-Ref<Texture2D> ParticlesMaterial::get_param_texture(Parameter p_param) const {
+Ref<Texture2D> ParticleProcessMaterial::get_param_texture(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Texture2D>());
 
 	return tex_parameters[p_param];
 }
 
-void ParticlesMaterial::set_color(const Color &p_color) {
+void ParticleProcessMaterial::set_color(const Color &p_color) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color, p_color);
 	color = p_color;
 }
 
-Color ParticlesMaterial::get_color() const {
+Color ParticleProcessMaterial::get_color() const {
 	return color;
 }
 
-void ParticlesMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
+void ParticleProcessMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
 	color_ramp = p_texture;
 	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_ramp, tex_rid);
@@ -1176,11 +1190,11 @@ void ParticlesMaterial::set_color_ramp(const Ref<Texture2D> &p_texture) {
 	notify_property_list_changed();
 }
 
-Ref<Texture2D> ParticlesMaterial::get_color_ramp() const {
+Ref<Texture2D> ParticleProcessMaterial::get_color_ramp() const {
 	return color_ramp;
 }
 
-void ParticlesMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) {
+void ParticleProcessMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) {
 	color_initial_ramp = p_texture;
 	RID tex_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->color_initial_ramp, tex_rid);
@@ -1188,11 +1202,11 @@ void ParticlesMaterial::set_color_initial_ramp(const Ref<Texture2D> &p_texture) 
 	notify_property_list_changed();
 }
 
-Ref<Texture2D> ParticlesMaterial::get_color_initial_ramp() const {
+Ref<Texture2D> ParticleProcessMaterial::get_color_initial_ramp() const {
 	return color_initial_ramp;
 }
 
-void ParticlesMaterial::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
+void ParticleProcessMaterial::set_particle_flag(ParticleFlags p_particle_flag, bool p_enable) {
 	ERR_FAIL_INDEX(p_particle_flag, PARTICLE_FLAG_MAX);
 	particle_flags[p_particle_flag] = p_enable;
 	_queue_shader_change();
@@ -1201,165 +1215,165 @@ void ParticlesMaterial::set_particle_flag(ParticleFlags p_particle_flag, bool p_
 	}
 }
 
-bool ParticlesMaterial::get_particle_flag(ParticleFlags p_particle_flag) const {
+bool ParticleProcessMaterial::get_particle_flag(ParticleFlags p_particle_flag) const {
 	ERR_FAIL_INDEX_V(p_particle_flag, PARTICLE_FLAG_MAX, false);
 	return particle_flags[p_particle_flag];
 }
 
-void ParticlesMaterial::set_emission_shape(EmissionShape p_shape) {
+void ParticleProcessMaterial::set_emission_shape(EmissionShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, EMISSION_SHAPE_MAX);
 	emission_shape = p_shape;
 	notify_property_list_changed();
 	_queue_shader_change();
 }
 
-void ParticlesMaterial::set_emission_sphere_radius(real_t p_radius) {
+void ParticleProcessMaterial::set_emission_sphere_radius(real_t p_radius) {
 	emission_sphere_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_sphere_radius, p_radius);
 }
 
-void ParticlesMaterial::set_emission_box_extents(Vector3 p_extents) {
+void ParticleProcessMaterial::set_emission_box_extents(Vector3 p_extents) {
 	emission_box_extents = p_extents;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_box_extents, p_extents);
 }
 
-void ParticlesMaterial::set_emission_point_texture(const Ref<Texture2D> &p_points) {
+void ParticleProcessMaterial::set_emission_point_texture(const Ref<Texture2D> &p_points) {
 	emission_point_texture = p_points;
 	RID tex_rid = p_points.is_valid() ? p_points->get_rid() : RID();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_points, tex_rid);
 }
 
-void ParticlesMaterial::set_emission_normal_texture(const Ref<Texture2D> &p_normals) {
+void ParticleProcessMaterial::set_emission_normal_texture(const Ref<Texture2D> &p_normals) {
 	emission_normal_texture = p_normals;
 	RID tex_rid = p_normals.is_valid() ? p_normals->get_rid() : RID();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_normal, tex_rid);
 }
 
-void ParticlesMaterial::set_emission_color_texture(const Ref<Texture2D> &p_colors) {
+void ParticleProcessMaterial::set_emission_color_texture(const Ref<Texture2D> &p_colors) {
 	emission_color_texture = p_colors;
 	RID tex_rid = p_colors.is_valid() ? p_colors->get_rid() : RID();
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_color, tex_rid);
 	_queue_shader_change();
 }
 
-void ParticlesMaterial::set_emission_point_count(int p_count) {
+void ParticleProcessMaterial::set_emission_point_count(int p_count) {
 	emission_point_count = p_count;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_texture_point_count, p_count);
 }
 
-void ParticlesMaterial::set_emission_ring_axis(Vector3 p_axis) {
+void ParticleProcessMaterial::set_emission_ring_axis(Vector3 p_axis) {
 	emission_ring_axis = p_axis;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_axis, p_axis);
 }
 
-void ParticlesMaterial::set_emission_ring_height(real_t p_height) {
+void ParticleProcessMaterial::set_emission_ring_height(real_t p_height) {
 	emission_ring_height = p_height;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_height, p_height);
 }
 
-void ParticlesMaterial::set_emission_ring_radius(real_t p_radius) {
+void ParticleProcessMaterial::set_emission_ring_radius(real_t p_radius) {
 	emission_ring_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_radius, p_radius);
 }
 
-void ParticlesMaterial::set_emission_ring_inner_radius(real_t p_radius) {
+void ParticleProcessMaterial::set_emission_ring_inner_radius(real_t p_radius) {
 	emission_ring_inner_radius = p_radius;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->emission_ring_inner_radius, p_radius);
 }
 
-ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
+ParticleProcessMaterial::EmissionShape ParticleProcessMaterial::get_emission_shape() const {
 	return emission_shape;
 }
 
-real_t ParticlesMaterial::get_emission_sphere_radius() const {
+real_t ParticleProcessMaterial::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
 }
 
-Vector3 ParticlesMaterial::get_emission_box_extents() const {
+Vector3 ParticleProcessMaterial::get_emission_box_extents() const {
 	return emission_box_extents;
 }
 
-Ref<Texture2D> ParticlesMaterial::get_emission_point_texture() const {
+Ref<Texture2D> ParticleProcessMaterial::get_emission_point_texture() const {
 	return emission_point_texture;
 }
 
-Ref<Texture2D> ParticlesMaterial::get_emission_normal_texture() const {
+Ref<Texture2D> ParticleProcessMaterial::get_emission_normal_texture() const {
 	return emission_normal_texture;
 }
 
-Ref<Texture2D> ParticlesMaterial::get_emission_color_texture() const {
+Ref<Texture2D> ParticleProcessMaterial::get_emission_color_texture() const {
 	return emission_color_texture;
 }
 
-int ParticlesMaterial::get_emission_point_count() const {
+int ParticleProcessMaterial::get_emission_point_count() const {
 	return emission_point_count;
 }
 
-Vector3 ParticlesMaterial::get_emission_ring_axis() const {
+Vector3 ParticleProcessMaterial::get_emission_ring_axis() const {
 	return emission_ring_axis;
 }
 
-real_t ParticlesMaterial::get_emission_ring_height() const {
+real_t ParticleProcessMaterial::get_emission_ring_height() const {
 	return emission_ring_height;
 }
 
-real_t ParticlesMaterial::get_emission_ring_radius() const {
+real_t ParticleProcessMaterial::get_emission_ring_radius() const {
 	return emission_ring_radius;
 }
 
-real_t ParticlesMaterial::get_emission_ring_inner_radius() const {
+real_t ParticleProcessMaterial::get_emission_ring_inner_radius() const {
 	return emission_ring_inner_radius;
 }
 
-void ParticlesMaterial::set_turbulence_enabled(const bool p_turbulence_enabled) {
+void ParticleProcessMaterial::set_turbulence_enabled(const bool p_turbulence_enabled) {
 	turbulence_enabled = p_turbulence_enabled;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_enabled, turbulence_enabled);
 	_queue_shader_change();
 	notify_property_list_changed();
 }
 
-bool ParticlesMaterial::get_turbulence_enabled() const {
+bool ParticleProcessMaterial::get_turbulence_enabled() const {
 	return turbulence_enabled;
 }
 
-void ParticlesMaterial::set_turbulence_noise_strength(float p_turbulence_noise_strength) {
+void ParticleProcessMaterial::set_turbulence_noise_strength(float p_turbulence_noise_strength) {
 	turbulence_noise_strength = p_turbulence_noise_strength;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_strength, p_turbulence_noise_strength);
 }
 
-float ParticlesMaterial::get_turbulence_noise_strength() const {
+float ParticleProcessMaterial::get_turbulence_noise_strength() const {
 	return turbulence_noise_strength;
 }
 
-void ParticlesMaterial::set_turbulence_noise_scale(float p_turbulence_noise_scale) {
+void ParticleProcessMaterial::set_turbulence_noise_scale(float p_turbulence_noise_scale) {
 	turbulence_noise_scale = p_turbulence_noise_scale;
 	float shader_turbulence_noise_scale = (pow(p_turbulence_noise_scale, 0.25) * 5.6234 / 10.0) * 4.0 - 3.0;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_scale, shader_turbulence_noise_scale);
 }
 
-float ParticlesMaterial::get_turbulence_noise_scale() const {
+float ParticleProcessMaterial::get_turbulence_noise_scale() const {
 	return turbulence_noise_scale;
 }
 
-void ParticlesMaterial::set_turbulence_noise_speed_random(float p_turbulence_noise_speed_random) {
+void ParticleProcessMaterial::set_turbulence_noise_speed_random(float p_turbulence_noise_speed_random) {
 	turbulence_noise_speed_random = p_turbulence_noise_speed_random;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_speed_random, p_turbulence_noise_speed_random);
 }
 
-float ParticlesMaterial::get_turbulence_noise_speed_random() const {
+float ParticleProcessMaterial::get_turbulence_noise_speed_random() const {
 	return turbulence_noise_speed_random;
 }
 
-void ParticlesMaterial::set_turbulence_noise_speed(const Vector3 &p_turbulence_noise_speed) {
+void ParticleProcessMaterial::set_turbulence_noise_speed(const Vector3 &p_turbulence_noise_speed) {
 	turbulence_noise_speed = p_turbulence_noise_speed;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->turbulence_noise_speed, turbulence_noise_speed);
 }
 
-Vector3 ParticlesMaterial::get_turbulence_noise_speed() const {
+Vector3 ParticleProcessMaterial::get_turbulence_noise_speed() const {
 	return turbulence_noise_speed;
 }
 
-void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
+void ParticleProcessMaterial::set_gravity(const Vector3 &p_gravity) {
 	gravity = p_gravity;
 	Vector3 gset = gravity;
 	if (gset == Vector3()) {
@@ -1368,25 +1382,25 @@ void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->gravity, gset);
 }
 
-Vector3 ParticlesMaterial::get_gravity() const {
+Vector3 ParticleProcessMaterial::get_gravity() const {
 	return gravity;
 }
 
-void ParticlesMaterial::set_lifetime_randomness(double p_lifetime) {
+void ParticleProcessMaterial::set_lifetime_randomness(double p_lifetime) {
 	lifetime_randomness = p_lifetime;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->lifetime_randomness, lifetime_randomness);
 }
 
-double ParticlesMaterial::get_lifetime_randomness() const {
+double ParticleProcessMaterial::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
 
-RID ParticlesMaterial::get_shader_rid() const {
+RID ParticleProcessMaterial::get_shader_rid() const {
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
 	return shader_map[current_key].shader;
 }
 
-void ParticlesMaterial::_validate_property(PropertyInfo &p_property) const {
+void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "emission_sphere_radius" && (emission_shape != EMISSION_SHAPE_SPHERE && emission_shape != EMISSION_SHAPE_SPHERE_SURFACE)) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
@@ -1436,204 +1450,213 @@ void ParticlesMaterial::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
+
+	if (p_property.name == "collision_friction" && collision_mode != COLLISION_RIGID) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+
+	if (p_property.name == "collision_bounce" && collision_mode != COLLISION_RIGID) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
-void ParticlesMaterial::set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode) {
+void ParticleProcessMaterial::set_sub_emitter_mode(SubEmitterMode p_sub_emitter_mode) {
 	sub_emitter_mode = p_sub_emitter_mode;
 	_queue_shader_change();
 	notify_property_list_changed();
 }
 
-ParticlesMaterial::SubEmitterMode ParticlesMaterial::get_sub_emitter_mode() const {
+ParticleProcessMaterial::SubEmitterMode ParticleProcessMaterial::get_sub_emitter_mode() const {
 	return sub_emitter_mode;
 }
 
-void ParticlesMaterial::set_sub_emitter_frequency(double p_frequency) {
+void ParticleProcessMaterial::set_sub_emitter_frequency(double p_frequency) {
 	sub_emitter_frequency = p_frequency;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_frequency, 1.0 / p_frequency); //pass delta instead of frequency, since its easier to compute
 }
 
-double ParticlesMaterial::get_sub_emitter_frequency() const {
+double ParticleProcessMaterial::get_sub_emitter_frequency() const {
 	return sub_emitter_frequency;
 }
 
-void ParticlesMaterial::set_sub_emitter_amount_at_end(int p_amount) {
+void ParticleProcessMaterial::set_sub_emitter_amount_at_end(int p_amount) {
 	sub_emitter_amount_at_end = p_amount;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_amount_at_end, p_amount);
 }
 
-int ParticlesMaterial::get_sub_emitter_amount_at_end() const {
+int ParticleProcessMaterial::get_sub_emitter_amount_at_end() const {
 	return sub_emitter_amount_at_end;
 }
 
-void ParticlesMaterial::set_sub_emitter_keep_velocity(bool p_enable) {
+void ParticleProcessMaterial::set_sub_emitter_keep_velocity(bool p_enable) {
 	sub_emitter_keep_velocity = p_enable;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->sub_emitter_keep_velocity, p_enable);
 }
-bool ParticlesMaterial::get_sub_emitter_keep_velocity() const {
+bool ParticleProcessMaterial::get_sub_emitter_keep_velocity() const {
 	return sub_emitter_keep_velocity;
 }
 
-void ParticlesMaterial::set_attractor_interaction_enabled(bool p_enable) {
+void ParticleProcessMaterial::set_attractor_interaction_enabled(bool p_enable) {
 	attractor_interaction_enabled = p_enable;
 	_queue_shader_change();
 }
 
-bool ParticlesMaterial::is_attractor_interaction_enabled() const {
+bool ParticleProcessMaterial::is_attractor_interaction_enabled() const {
 	return attractor_interaction_enabled;
 }
 
-void ParticlesMaterial::set_collision_enabled(bool p_enabled) {
-	collision_enabled = p_enabled;
+void ParticleProcessMaterial::set_collision_mode(CollisionMode p_collision_mode) {
+	collision_mode = p_collision_mode;
 	_queue_shader_change();
+	notify_property_list_changed();
 }
 
-bool ParticlesMaterial::is_collision_enabled() const {
-	return collision_enabled;
+ParticleProcessMaterial::CollisionMode ParticleProcessMaterial::get_collision_mode() const {
+	return collision_mode;
 }
 
-void ParticlesMaterial::set_collision_use_scale(bool p_scale) {
+void ParticleProcessMaterial::set_collision_use_scale(bool p_scale) {
 	collision_scale = p_scale;
 	_queue_shader_change();
 }
 
-bool ParticlesMaterial::is_collision_using_scale() const {
+bool ParticleProcessMaterial::is_collision_using_scale() const {
 	return collision_scale;
 }
 
-void ParticlesMaterial::set_collision_friction(float p_friction) {
+void ParticleProcessMaterial::set_collision_friction(float p_friction) {
 	collision_friction = p_friction;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->collision_friction, p_friction);
 }
 
-float ParticlesMaterial::get_collision_friction() const {
+float ParticleProcessMaterial::get_collision_friction() const {
 	return collision_friction;
 }
 
-void ParticlesMaterial::set_collision_bounce(float p_bounce) {
+void ParticleProcessMaterial::set_collision_bounce(float p_bounce) {
 	collision_bounce = p_bounce;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->collision_bounce, p_bounce);
 }
 
-float ParticlesMaterial::get_collision_bounce() const {
+float ParticleProcessMaterial::get_collision_bounce() const {
 	return collision_bounce;
 }
 
-Shader::Mode ParticlesMaterial::get_shader_mode() const {
+Shader::Mode ParticleProcessMaterial::get_shader_mode() const {
 	return Shader::MODE_PARTICLES;
 }
 
-void ParticlesMaterial::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_direction", "degrees"), &ParticlesMaterial::set_direction);
-	ClassDB::bind_method(D_METHOD("get_direction"), &ParticlesMaterial::get_direction);
+void ParticleProcessMaterial::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_direction", "degrees"), &ParticleProcessMaterial::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &ParticleProcessMaterial::get_direction);
 
-	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &ParticlesMaterial::set_spread);
-	ClassDB::bind_method(D_METHOD("get_spread"), &ParticlesMaterial::get_spread);
+	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &ParticleProcessMaterial::set_spread);
+	ClassDB::bind_method(D_METHOD("get_spread"), &ParticleProcessMaterial::get_spread);
 
-	ClassDB::bind_method(D_METHOD("set_flatness", "amount"), &ParticlesMaterial::set_flatness);
-	ClassDB::bind_method(D_METHOD("get_flatness"), &ParticlesMaterial::get_flatness);
+	ClassDB::bind_method(D_METHOD("set_flatness", "amount"), &ParticleProcessMaterial::set_flatness);
+	ClassDB::bind_method(D_METHOD("get_flatness"), &ParticleProcessMaterial::get_flatness);
 
-	ClassDB::bind_method(D_METHOD("set_param_min", "param", "value"), &ParticlesMaterial::set_param_min);
-	ClassDB::bind_method(D_METHOD("get_param_min", "param"), &ParticlesMaterial::get_param_min);
+	ClassDB::bind_method(D_METHOD("set_param_min", "param", "value"), &ParticleProcessMaterial::set_param_min);
+	ClassDB::bind_method(D_METHOD("get_param_min", "param"), &ParticleProcessMaterial::get_param_min);
 
-	ClassDB::bind_method(D_METHOD("set_param_max", "param", "value"), &ParticlesMaterial::set_param_max);
-	ClassDB::bind_method(D_METHOD("get_param_max", "param"), &ParticlesMaterial::get_param_max);
+	ClassDB::bind_method(D_METHOD("set_param_max", "param", "value"), &ParticleProcessMaterial::set_param_max);
+	ClassDB::bind_method(D_METHOD("get_param_max", "param"), &ParticleProcessMaterial::get_param_max);
 
-	ClassDB::bind_method(D_METHOD("set_param_texture", "param", "texture"), &ParticlesMaterial::set_param_texture);
-	ClassDB::bind_method(D_METHOD("get_param_texture", "param"), &ParticlesMaterial::get_param_texture);
+	ClassDB::bind_method(D_METHOD("set_param_texture", "param", "texture"), &ParticleProcessMaterial::set_param_texture);
+	ClassDB::bind_method(D_METHOD("get_param_texture", "param"), &ParticleProcessMaterial::get_param_texture);
 
-	ClassDB::bind_method(D_METHOD("set_color", "color"), &ParticlesMaterial::set_color);
-	ClassDB::bind_method(D_METHOD("get_color"), &ParticlesMaterial::get_color);
+	ClassDB::bind_method(D_METHOD("set_color", "color"), &ParticleProcessMaterial::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"), &ParticleProcessMaterial::get_color);
 
-	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticlesMaterial::set_color_ramp);
-	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticlesMaterial::get_color_ramp);
+	ClassDB::bind_method(D_METHOD("set_color_ramp", "ramp"), &ParticleProcessMaterial::set_color_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_ramp"), &ParticleProcessMaterial::get_color_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &ParticlesMaterial::set_color_initial_ramp);
-	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &ParticlesMaterial::get_color_initial_ramp);
+	ClassDB::bind_method(D_METHOD("set_color_initial_ramp", "ramp"), &ParticleProcessMaterial::set_color_initial_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_initial_ramp"), &ParticleProcessMaterial::get_color_initial_ramp);
 
-	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &ParticlesMaterial::set_particle_flag);
-	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &ParticlesMaterial::get_particle_flag);
+	ClassDB::bind_method(D_METHOD("set_particle_flag", "particle_flag", "enable"), &ParticleProcessMaterial::set_particle_flag);
+	ClassDB::bind_method(D_METHOD("get_particle_flag", "particle_flag"), &ParticleProcessMaterial::get_particle_flag);
 
-	ClassDB::bind_method(D_METHOD("set_emission_shape", "shape"), &ParticlesMaterial::set_emission_shape);
-	ClassDB::bind_method(D_METHOD("get_emission_shape"), &ParticlesMaterial::get_emission_shape);
+	ClassDB::bind_method(D_METHOD("set_emission_shape", "shape"), &ParticleProcessMaterial::set_emission_shape);
+	ClassDB::bind_method(D_METHOD("get_emission_shape"), &ParticleProcessMaterial::get_emission_shape);
 
-	ClassDB::bind_method(D_METHOD("set_emission_sphere_radius", "radius"), &ParticlesMaterial::set_emission_sphere_radius);
-	ClassDB::bind_method(D_METHOD("get_emission_sphere_radius"), &ParticlesMaterial::get_emission_sphere_radius);
+	ClassDB::bind_method(D_METHOD("set_emission_sphere_radius", "radius"), &ParticleProcessMaterial::set_emission_sphere_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_sphere_radius"), &ParticleProcessMaterial::get_emission_sphere_radius);
 
-	ClassDB::bind_method(D_METHOD("set_emission_box_extents", "extents"), &ParticlesMaterial::set_emission_box_extents);
-	ClassDB::bind_method(D_METHOD("get_emission_box_extents"), &ParticlesMaterial::get_emission_box_extents);
+	ClassDB::bind_method(D_METHOD("set_emission_box_extents", "extents"), &ParticleProcessMaterial::set_emission_box_extents);
+	ClassDB::bind_method(D_METHOD("get_emission_box_extents"), &ParticleProcessMaterial::get_emission_box_extents);
 
-	ClassDB::bind_method(D_METHOD("set_emission_point_texture", "texture"), &ParticlesMaterial::set_emission_point_texture);
-	ClassDB::bind_method(D_METHOD("get_emission_point_texture"), &ParticlesMaterial::get_emission_point_texture);
+	ClassDB::bind_method(D_METHOD("set_emission_point_texture", "texture"), &ParticleProcessMaterial::set_emission_point_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_point_texture"), &ParticleProcessMaterial::get_emission_point_texture);
 
-	ClassDB::bind_method(D_METHOD("set_emission_normal_texture", "texture"), &ParticlesMaterial::set_emission_normal_texture);
-	ClassDB::bind_method(D_METHOD("get_emission_normal_texture"), &ParticlesMaterial::get_emission_normal_texture);
+	ClassDB::bind_method(D_METHOD("set_emission_normal_texture", "texture"), &ParticleProcessMaterial::set_emission_normal_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_normal_texture"), &ParticleProcessMaterial::get_emission_normal_texture);
 
-	ClassDB::bind_method(D_METHOD("set_emission_color_texture", "texture"), &ParticlesMaterial::set_emission_color_texture);
-	ClassDB::bind_method(D_METHOD("get_emission_color_texture"), &ParticlesMaterial::get_emission_color_texture);
+	ClassDB::bind_method(D_METHOD("set_emission_color_texture", "texture"), &ParticleProcessMaterial::set_emission_color_texture);
+	ClassDB::bind_method(D_METHOD("get_emission_color_texture"), &ParticleProcessMaterial::get_emission_color_texture);
 
-	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticlesMaterial::set_emission_point_count);
-	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticlesMaterial::get_emission_point_count);
+	ClassDB::bind_method(D_METHOD("set_emission_point_count", "point_count"), &ParticleProcessMaterial::set_emission_point_count);
+	ClassDB::bind_method(D_METHOD("get_emission_point_count"), &ParticleProcessMaterial::get_emission_point_count);
 
-	ClassDB::bind_method(D_METHOD("set_emission_ring_axis", "axis"), &ParticlesMaterial::set_emission_ring_axis);
-	ClassDB::bind_method(D_METHOD("get_emission_ring_axis"), &ParticlesMaterial::get_emission_ring_axis);
+	ClassDB::bind_method(D_METHOD("set_emission_ring_axis", "axis"), &ParticleProcessMaterial::set_emission_ring_axis);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_axis"), &ParticleProcessMaterial::get_emission_ring_axis);
 
-	ClassDB::bind_method(D_METHOD("set_emission_ring_height", "height"), &ParticlesMaterial::set_emission_ring_height);
-	ClassDB::bind_method(D_METHOD("get_emission_ring_height"), &ParticlesMaterial::get_emission_ring_height);
+	ClassDB::bind_method(D_METHOD("set_emission_ring_height", "height"), &ParticleProcessMaterial::set_emission_ring_height);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_height"), &ParticleProcessMaterial::get_emission_ring_height);
 
-	ClassDB::bind_method(D_METHOD("set_emission_ring_radius", "radius"), &ParticlesMaterial::set_emission_ring_radius);
-	ClassDB::bind_method(D_METHOD("get_emission_ring_radius"), &ParticlesMaterial::get_emission_ring_radius);
+	ClassDB::bind_method(D_METHOD("set_emission_ring_radius", "radius"), &ParticleProcessMaterial::set_emission_ring_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_radius"), &ParticleProcessMaterial::get_emission_ring_radius);
 
-	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "inner_radius"), &ParticlesMaterial::set_emission_ring_inner_radius);
-	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticlesMaterial::get_emission_ring_inner_radius);
+	ClassDB::bind_method(D_METHOD("set_emission_ring_inner_radius", "inner_radius"), &ParticleProcessMaterial::set_emission_ring_inner_radius);
+	ClassDB::bind_method(D_METHOD("get_emission_ring_inner_radius"), &ParticleProcessMaterial::get_emission_ring_inner_radius);
 
-	ClassDB::bind_method(D_METHOD("get_turbulence_enabled"), &ParticlesMaterial::get_turbulence_enabled);
-	ClassDB::bind_method(D_METHOD("set_turbulence_enabled", "turbulence_enabled"), &ParticlesMaterial::set_turbulence_enabled);
+	ClassDB::bind_method(D_METHOD("get_turbulence_enabled"), &ParticleProcessMaterial::get_turbulence_enabled);
+	ClassDB::bind_method(D_METHOD("set_turbulence_enabled", "turbulence_enabled"), &ParticleProcessMaterial::set_turbulence_enabled);
 
-	ClassDB::bind_method(D_METHOD("get_turbulence_noise_strength"), &ParticlesMaterial::get_turbulence_noise_strength);
-	ClassDB::bind_method(D_METHOD("set_turbulence_noise_strength", "turbulence_noise_strength"), &ParticlesMaterial::set_turbulence_noise_strength);
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_strength"), &ParticleProcessMaterial::get_turbulence_noise_strength);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_strength", "turbulence_noise_strength"), &ParticleProcessMaterial::set_turbulence_noise_strength);
 
-	ClassDB::bind_method(D_METHOD("get_turbulence_noise_scale"), &ParticlesMaterial::get_turbulence_noise_scale);
-	ClassDB::bind_method(D_METHOD("set_turbulence_noise_scale", "turbulence_noise_scale"), &ParticlesMaterial::set_turbulence_noise_scale);
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_scale"), &ParticleProcessMaterial::get_turbulence_noise_scale);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_scale", "turbulence_noise_scale"), &ParticleProcessMaterial::set_turbulence_noise_scale);
 
-	ClassDB::bind_method(D_METHOD("get_turbulence_noise_speed_random"), &ParticlesMaterial::get_turbulence_noise_speed_random);
-	ClassDB::bind_method(D_METHOD("set_turbulence_noise_speed_random", "turbulence_noise_speed_random"), &ParticlesMaterial::set_turbulence_noise_speed_random);
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_speed_random"), &ParticleProcessMaterial::get_turbulence_noise_speed_random);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_speed_random", "turbulence_noise_speed_random"), &ParticleProcessMaterial::set_turbulence_noise_speed_random);
 
-	ClassDB::bind_method(D_METHOD("get_turbulence_noise_speed"), &ParticlesMaterial::get_turbulence_noise_speed);
-	ClassDB::bind_method(D_METHOD("set_turbulence_noise_speed", "turbulence_noise_speed"), &ParticlesMaterial::set_turbulence_noise_speed);
+	ClassDB::bind_method(D_METHOD("get_turbulence_noise_speed"), &ParticleProcessMaterial::get_turbulence_noise_speed);
+	ClassDB::bind_method(D_METHOD("set_turbulence_noise_speed", "turbulence_noise_speed"), &ParticleProcessMaterial::set_turbulence_noise_speed);
 
-	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
-	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
+	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticleProcessMaterial::get_gravity);
+	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticleProcessMaterial::set_gravity);
 
-	ClassDB::bind_method(D_METHOD("set_lifetime_randomness", "randomness"), &ParticlesMaterial::set_lifetime_randomness);
-	ClassDB::bind_method(D_METHOD("get_lifetime_randomness"), &ParticlesMaterial::get_lifetime_randomness);
+	ClassDB::bind_method(D_METHOD("set_lifetime_randomness", "randomness"), &ParticleProcessMaterial::set_lifetime_randomness);
+	ClassDB::bind_method(D_METHOD("get_lifetime_randomness"), &ParticleProcessMaterial::get_lifetime_randomness);
 
-	ClassDB::bind_method(D_METHOD("get_sub_emitter_mode"), &ParticlesMaterial::get_sub_emitter_mode);
-	ClassDB::bind_method(D_METHOD("set_sub_emitter_mode", "mode"), &ParticlesMaterial::set_sub_emitter_mode);
+	ClassDB::bind_method(D_METHOD("get_sub_emitter_mode"), &ParticleProcessMaterial::get_sub_emitter_mode);
+	ClassDB::bind_method(D_METHOD("set_sub_emitter_mode", "mode"), &ParticleProcessMaterial::set_sub_emitter_mode);
 
-	ClassDB::bind_method(D_METHOD("get_sub_emitter_frequency"), &ParticlesMaterial::get_sub_emitter_frequency);
-	ClassDB::bind_method(D_METHOD("set_sub_emitter_frequency", "hz"), &ParticlesMaterial::set_sub_emitter_frequency);
+	ClassDB::bind_method(D_METHOD("get_sub_emitter_frequency"), &ParticleProcessMaterial::get_sub_emitter_frequency);
+	ClassDB::bind_method(D_METHOD("set_sub_emitter_frequency", "hz"), &ParticleProcessMaterial::set_sub_emitter_frequency);
 
-	ClassDB::bind_method(D_METHOD("get_sub_emitter_amount_at_end"), &ParticlesMaterial::get_sub_emitter_amount_at_end);
-	ClassDB::bind_method(D_METHOD("set_sub_emitter_amount_at_end", "amount"), &ParticlesMaterial::set_sub_emitter_amount_at_end);
+	ClassDB::bind_method(D_METHOD("get_sub_emitter_amount_at_end"), &ParticleProcessMaterial::get_sub_emitter_amount_at_end);
+	ClassDB::bind_method(D_METHOD("set_sub_emitter_amount_at_end", "amount"), &ParticleProcessMaterial::set_sub_emitter_amount_at_end);
 
-	ClassDB::bind_method(D_METHOD("get_sub_emitter_keep_velocity"), &ParticlesMaterial::get_sub_emitter_keep_velocity);
-	ClassDB::bind_method(D_METHOD("set_sub_emitter_keep_velocity", "enable"), &ParticlesMaterial::set_sub_emitter_keep_velocity);
+	ClassDB::bind_method(D_METHOD("get_sub_emitter_keep_velocity"), &ParticleProcessMaterial::get_sub_emitter_keep_velocity);
+	ClassDB::bind_method(D_METHOD("set_sub_emitter_keep_velocity", "enable"), &ParticleProcessMaterial::set_sub_emitter_keep_velocity);
 
-	ClassDB::bind_method(D_METHOD("set_attractor_interaction_enabled", "enabled"), &ParticlesMaterial::set_attractor_interaction_enabled);
-	ClassDB::bind_method(D_METHOD("is_attractor_interaction_enabled"), &ParticlesMaterial::is_attractor_interaction_enabled);
+	ClassDB::bind_method(D_METHOD("set_attractor_interaction_enabled", "enabled"), &ParticleProcessMaterial::set_attractor_interaction_enabled);
+	ClassDB::bind_method(D_METHOD("is_attractor_interaction_enabled"), &ParticleProcessMaterial::is_attractor_interaction_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_collision_enabled", "enabled"), &ParticlesMaterial::set_collision_enabled);
-	ClassDB::bind_method(D_METHOD("is_collision_enabled"), &ParticlesMaterial::is_collision_enabled);
+	ClassDB::bind_method(D_METHOD("set_collision_mode", "mode"), &ParticleProcessMaterial::set_collision_mode);
+	ClassDB::bind_method(D_METHOD("get_collision_mode"), &ParticleProcessMaterial::get_collision_mode);
 
-	ClassDB::bind_method(D_METHOD("set_collision_use_scale", "radius"), &ParticlesMaterial::set_collision_use_scale);
-	ClassDB::bind_method(D_METHOD("is_collision_using_scale"), &ParticlesMaterial::is_collision_using_scale);
+	ClassDB::bind_method(D_METHOD("set_collision_use_scale", "radius"), &ParticleProcessMaterial::set_collision_use_scale);
+	ClassDB::bind_method(D_METHOD("is_collision_using_scale"), &ParticleProcessMaterial::is_collision_using_scale);
 
-	ClassDB::bind_method(D_METHOD("set_collision_friction", "friction"), &ParticlesMaterial::set_collision_friction);
-	ClassDB::bind_method(D_METHOD("get_collision_friction"), &ParticlesMaterial::get_collision_friction);
+	ClassDB::bind_method(D_METHOD("set_collision_friction", "friction"), &ParticleProcessMaterial::set_collision_friction);
+	ClassDB::bind_method(D_METHOD("get_collision_friction"), &ParticleProcessMaterial::get_collision_friction);
 
-	ClassDB::bind_method(D_METHOD("set_collision_bounce", "bounce"), &ParticlesMaterial::set_collision_bounce);
-	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &ParticlesMaterial::get_collision_bounce);
+	ClassDB::bind_method(D_METHOD("set_collision_bounce", "bounce"), &ParticleProcessMaterial::set_collision_bounce);
+	ClassDB::bind_method(D_METHOD("get_collision_bounce"), &ParticleProcessMaterial::get_collision_bounce);
 
 	ADD_GROUP("Time", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
@@ -1734,7 +1757,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_GROUP("Attractor Interaction", "attractor_interaction_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "attractor_interaction_enabled"), "set_attractor_interaction_enabled", "is_attractor_interaction_enabled");
 	ADD_GROUP("Collision", "collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_enabled"), "set_collision_enabled", "is_collision_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mode", PROPERTY_HINT_ENUM, "Disabled,Rigid,Hide On Contact"), "set_collision_mode", "get_collision_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_friction", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_friction", "get_collision_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_bounce", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_collision_bounce", "get_collision_bounce");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_use_scale"), "set_collision_use_scale", "is_collision_using_scale");
@@ -1776,9 +1799,14 @@ void ParticlesMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_END);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_AT_COLLISION);
 	BIND_ENUM_CONSTANT(SUB_EMITTER_MAX);
+
+	BIND_ENUM_CONSTANT(COLLISION_DISABLED);
+	BIND_ENUM_CONSTANT(COLLISION_RIGID);
+	BIND_ENUM_CONSTANT(COLLISION_HIDE_ON_CONTACT);
+	BIND_ENUM_CONSTANT(COLLISION_MAX);
 }
 
-ParticlesMaterial::ParticlesMaterial() :
+ParticleProcessMaterial::ParticleProcessMaterial() :
 		element(this) {
 	set_direction(Vector3(1, 0, 0));
 	set_spread(45);
@@ -1834,7 +1862,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_sub_emitter_keep_velocity(false);
 
 	set_attractor_interaction_enabled(true);
-	set_collision_enabled(false);
+	set_collision_mode(COLLISION_DISABLED);
 	set_collision_bounce(0.0);
 	set_collision_friction(0.0);
 	set_collision_use_scale(false);
@@ -1851,7 +1879,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	_queue_shader_change();
 }
 
-ParticlesMaterial::~ParticlesMaterial() {
+ParticleProcessMaterial::~ParticleProcessMaterial() {
 	MutexLock lock(material_mutex);
 
 	if (shader_map.has(current_key)) {

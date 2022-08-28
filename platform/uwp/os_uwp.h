@@ -106,7 +106,6 @@ private:
 	bool shift_mem;
 	bool control_mem;
 	bool meta_mem;
-	bool force_quit;
 	MouseButton last_button_state = MouseButton::NONE;
 
 	CursorShape cursor_shape;

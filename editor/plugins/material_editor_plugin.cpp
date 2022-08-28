@@ -36,7 +36,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/resources/fog_material.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 #include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
@@ -179,8 +179,8 @@ MaterialEditor::MaterialEditor() {
 	viewport->add_child(box_instance);
 
 	Transform3D box_xform;
-	box_xform.basis.rotate(Vector3(1, 0, 0), Math::deg2rad(25.0));
-	box_xform.basis = box_xform.basis * Basis().rotated(Vector3(0, 1, 0), Math::deg2rad(-25.0));
+	box_xform.basis.rotate(Vector3(1, 0, 0), Math::deg_to_rad(25.0));
+	box_xform.basis = box_xform.basis * Basis().rotated(Vector3(0, 1, 0), Math::deg_to_rad(-25.0));
 	box_xform.basis.scale(Vector3(0.7, 0.7, 0.7));
 	box_xform.origin.y = 0.05;
 	box_instance->set_transform(box_xform);
@@ -405,17 +405,17 @@ Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_reso
 	return smat;
 }
 
-String ParticlesMaterialConversionPlugin::converts_to() const {
+String ParticleProcessMaterialConversionPlugin::converts_to() const {
 	return "ShaderMaterial";
 }
 
-bool ParticlesMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+	Ref<ParticleProcessMaterial> mat = p_resource;
 	return mat.is_valid();
 }
 
-Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
-	Ref<ParticlesMaterial> mat = p_resource;
+Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+	Ref<ParticleProcessMaterial> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;

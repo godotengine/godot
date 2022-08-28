@@ -4,7 +4,7 @@ on: [push, pull_request]
 # Global Settings
 env:
   # Only used for the cache key. Increment version to force clean build.
-  GODOT_BASE_BRANCH: master-v2
+  GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: false
@@ -28,7 +28,7 @@ jobs:
             tests: false # Disabled due freeze caused by mix Mono build and CI
             sconsflags: module_mono_enabled=yes
             doc-test: true
-            bin: "./bin/godot.linuxbsd.opt.tools.64.mono"
+            bin: "./bin/godot.linuxbsd.opt.tools.x86_64.mono"
             build-mono: true
             proj-conv: true
             artifact: true
@@ -43,7 +43,7 @@ jobs:
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
             godot-cpp-test: true
-            bin: "./bin/godot.linuxbsd.double.tools.64.san"
+            bin: "./bin/godot.linuxbsd.double.tools.x86_64.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
@@ -54,7 +54,7 @@ jobs:
             tools: true
             tests: true
             sconsflags: use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
-            bin: "./bin/godot.linuxbsd.tools.64.llvm.san"
+            bin: "./bin/godot.linuxbsd.tools.x86_64.llvm.san"
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
@@ -77,7 +77,7 @@ jobs:
             artifact: true
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Linux dependencies
         shell: bash
@@ -102,7 +102,7 @@ jobs:
         uses: ./.github/actions/godot-deps
 
       - name: Set up .NET Sdk
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v2
         if: ${{ matrix.build-mono }}
         with:
           dotnet-version: '6.0.x'
@@ -195,7 +195,7 @@ jobs:
       # Checkout godot-cpp
       - name: Checkout godot-cpp
         if: ${{ matrix.godot-cpp-test }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: godotengine/godot-cpp
           submodules: 'recursive'

@@ -136,11 +136,11 @@ void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const
 	p_extensions->push_back("svg");
 }
 
-Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, bool p_force_linear, float p_scale) {
+Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, uint32_t p_flags, float p_scale) {
 	String svg = p_fileaccess->get_as_utf8_string();
 	create_image_from_string(p_image, svg, p_scale, false, HashMap<Color, Color>());
 	ERR_FAIL_COND_V(p_image->is_empty(), FAILED);
-	if (p_force_linear) {
+	if (p_flags & FLAG_FORCE_LINEAR) {
 		p_image->srgb_to_linear();
 	}
 	return OK;

@@ -59,9 +59,9 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a <see cref="StringName"/> from the given <paramref name="path"/> string.
+        /// Constructs a <see cref="StringName"/> from the given <paramref name="name"/> string.
         /// </summary>
-        /// <param name="path">String to construct the <see cref="StringName"/> from.</param>
+        /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
         public StringName(string name)
         {
             if (!string.IsNullOrEmpty(name))

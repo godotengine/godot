@@ -362,7 +362,7 @@ void VideoStreamPlayer::set_volume_db(float p_db) {
 	if (p_db < -79) {
 		set_volume(0);
 	} else {
-		set_volume(Math::db2linear(p_db));
+		set_volume(Math::db_to_linear(p_db));
 	}
 }
 
@@ -370,7 +370,7 @@ float VideoStreamPlayer::get_volume_db() const {
 	if (volume == 0) {
 		return -80;
 	} else {
-		return Math::linear2db(volume);
+		return Math::linear_to_db(volume);
 	}
 }
 

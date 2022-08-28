@@ -41,8 +41,8 @@ void AudioEffectDistortionInstance::process(const AudioFrame *p_src_frames, Audi
 	float lpf_ic = 1.0 - lpf_c;
 
 	float drive_f = base->drive;
-	float pregain_f = Math::db2linear(base->pre_gain);
-	float postgain_f = Math::db2linear(base->post_gain);
+	float pregain_f = Math::db_to_linear(base->pre_gain);
+	float postgain_f = Math::db_to_linear(base->post_gain);
 
 	float atan_mult = pow(10, drive_f * drive_f * 3.0) - 1.0 + 0.001;
 	float atan_div = 1.0 / (atanf(atan_mult) * (1.0 + drive_f * 8));

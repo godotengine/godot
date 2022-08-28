@@ -33,6 +33,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include <mmsystem.h>
@@ -77,9 +78,8 @@ class AudioDriverXAudio2 : public AudioDriver {
 
 	int channels = 0;
 
-	bool active = false;
-	bool thread_exited = false;
-	mutable bool exit_thread = false;
+	SafeFlag active;
+	SafeFlag exit_thread;
 	bool pcm_open = false;
 
 	WAVEFORMATEX wave_format = { 0 };

@@ -42,8 +42,7 @@ void AudioStreamImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &AudioStreamImportSettings::_reimport));
 		} break;
 
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 			_stop_button->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 			_preview->set_color(get_theme_color(SNAME("dark_color_2"), SNAME("Editor")));

@@ -327,7 +327,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 
 	Ref<Image> image;
 	image.instantiate();
-	Error err = ImageLoader::load_image(p_source_file, image, nullptr, false, 1.0);
+	Error err = ImageLoader::load_image(p_source_file, image);
 	if (err != OK) {
 		return err;
 	}

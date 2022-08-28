@@ -105,7 +105,6 @@ void EditorToaster::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vbox_container->is_visible()) {
 				main_button->set_icon(get_theme_icon(SNAME("Notification"), SNAME("EditorIcons")));

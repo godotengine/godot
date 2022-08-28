@@ -77,8 +77,8 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
 
-	rot_x = Math::deg2rad(-15.0);
-	rot_y = Math::deg2rad(30.0);
+	rot_x = Math::deg_to_rad(-15.0);
+	rot_y = Math::deg_to_rad(30.0);
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();

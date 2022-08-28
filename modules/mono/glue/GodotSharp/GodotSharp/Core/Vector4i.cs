@@ -629,12 +629,7 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Vector4i)
-            {
-                return Equals((Vector4i)obj);
-            }
-
-            return false;
+            return obj is Vector4i other && Equals(other);
         }
 
         /// <summary>

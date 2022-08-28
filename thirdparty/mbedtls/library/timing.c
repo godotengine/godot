@@ -195,8 +195,10 @@ unsigned long mbedtls_timing_hardclock( void )
 #endif /* !HAVE_HARDCLOCK && MBEDTLS_HAVE_ASM &&
           __GNUC__ && __ia64__ */
 
-#if !defined(HAVE_HARDCLOCK) && defined(_MSC_VER) && \
+// -- GODOT start --
+#if !defined(HAVE_HARDCLOCK) && defined(_WIN32) && \
     !defined(EFIX64) && !defined(EFI32)
+// -- GODOT end --
 
 #define HAVE_HARDCLOCK
 

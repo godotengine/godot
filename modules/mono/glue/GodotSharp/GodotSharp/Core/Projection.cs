@@ -39,22 +39,22 @@ namespace Godot
         }
 
         /// <summary>
-        /// The projections's X column. Also accessible by using the index position <c>[0]</c>.
+        /// The projection's X column. Also accessible by using the index position <c>[0]</c>.
         /// </summary>
         public Vector4 x;
 
         /// <summary>
-        /// The projections's Y column. Also accessible by using the index position <c>[1]</c>.
+        /// The projection's Y column. Also accessible by using the index position <c>[1]</c>.
         /// </summary>
         public Vector4 y;
 
         /// <summary>
-        /// The projections's Z column. Also accessible by using the index position <c>[2]</c>.
+        /// The projection's Z column. Also accessible by using the index position <c>[2]</c>.
         /// </summary>
         public Vector4 z;
 
         /// <summary>
-        /// The projections's W column. Also accessible by using the index position <c>[3]</c>.
+        /// The projection's W column. Also accessible by using the index position <c>[3]</c>.
         /// </summary>
         public Vector4 w;
 
@@ -226,7 +226,7 @@ namespace Godot
             {
                 fovyDegrees = GetFovy(fovyDegrees, (real_t)1.0 / aspect);
             }
-            real_t radians = Mathf.Deg2Rad(fovyDegrees / (real_t)2.0);
+            real_t radians = Mathf.DegToRad(fovyDegrees / (real_t)2.0);
             real_t deltaZ = zFar - zNear;
             real_t sine = Mathf.Sin(radians);
 
@@ -256,7 +256,7 @@ namespace Godot
                 fovyDegrees = GetFovy(fovyDegrees, (real_t)1.0 / aspect);
             }
 
-            real_t ymax = zNear * Mathf.Tan(Mathf.Deg2Rad(fovyDegrees / (real_t)2.0));
+            real_t ymax = zNear * Mathf.Tan(Mathf.DegToRad(fovyDegrees / (real_t)2.0));
             real_t xmax = ymax * aspect;
             real_t frustumshift = (intraocularDist / (real_t)2.0) * zNear / convergenceDist;
             real_t left;
@@ -313,18 +313,18 @@ namespace Godot
             Plane rightPlane = new Plane(x.w - x.x, y.w - y.x, z.w - z.x, -w.w + w.x).Normalized();
             if (z.x == 0 && z.y == 0)
             {
-                return Mathf.Rad2Deg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x))) * (real_t)2.0;
+                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x))) * (real_t)2.0;
             }
             else
             {
                 Plane leftPlane = new Plane(x.w + x.x, y.w + y.x, z.w + z.x, w.w + w.x).Normalized();
-                return Mathf.Rad2Deg(Mathf.Acos(Mathf.Abs(leftPlane.Normal.x))) + Mathf.Rad2Deg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x)));
+                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(leftPlane.Normal.x))) + Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x)));
             }
         }
 
         public static real_t GetFovy(real_t fovx, real_t aspect)
         {
-            return Mathf.Rad2Deg(Mathf.Atan(aspect * Mathf.Tan(Mathf.Deg2Rad(fovx) * (real_t)0.5)) * (real_t)2.0);
+            return Mathf.RadToDeg(Mathf.Atan(aspect * Mathf.Tan(Mathf.DegToRad(fovx) * (real_t)0.5)) * (real_t)2.0);
         }
 
         public real_t GetLodMultiplier()
@@ -800,11 +800,7 @@ namespace Godot
         /// <returns>Whether or not the vector and the object are equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Projection)
-            {
-                return Equals((Projection)obj);
-            }
-            return false;
+            return obj is Projection other && Equals(other);
         }
 
         /// <summary>

@@ -2459,6 +2459,19 @@ void RendererSceneRenderRD::render_buffers_configure(RID p_render_buffers, RID p
 		p_internal_width = p_width;
 	}
 
+	if (p_use_taa) {
+		// Use negative mipmap LOD bias when TAA is enabled to compensate for loss of sharpness.
+		// This restores sharpness in still images to be roughly at the same level as without TAA,
+		// but moving scenes will still be blurrier.
+		p_texture_mipmap_bias -= 0.5;
+	}
+
+	if (p_screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+		// Use negative mipmap LOD bias when FXAA is enabled to compensate for loss of sharpness.
+		// If both TAA and FXAA are enabled, combine their negative LOD biases together.
+		p_texture_mipmap_bias -= 0.25;
+	}
+
 	material_storage->sampler_rd_configure_custom(p_texture_mipmap_bias);
 	update_uniform_sets();
 
@@ -2862,7 +2875,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 				float size = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 
-				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); //angle to cosine offset
+				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(size)); //angle to cosine offset
 
 				if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
 					WARN_PRINT_ONCE("The DirectionalLight3D PSSM splits debug draw mode is not reimplemented yet.");
@@ -2877,7 +2890,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					// I know tan(0) is 0, but let's not risk it with numerical precision.
 					// technically this will keep expanding until reaching the sun, but all we care
 					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
-					angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+					angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
 					if (light_storage->light_has_shadow(base) && light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR) > 0.0) {
 						// Only enable PCSS-like soft shadows if blurring is enabled.
 						// Otherwise, performance would decrease with no visual difference.
@@ -3092,7 +3105,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 
 		light_data.inv_spot_attenuation = 1.0f / light_storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 		float spot_angle = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
-		light_data.cos_spot_angle = Math::cos(Math::deg2rad(spot_angle));
+		light_data.cos_spot_angle = Math::cos(Math::deg_to_rad(spot_angle));
 
 		light_data.mask = light_storage->light_get_cull_mask(base);
 
@@ -3193,7 +3206,7 @@ void RendererSceneRenderRD::_setup_lights(const PagedArray<RID> &p_lights, const
 					// Only enable PCSS-like soft shadows if blurring is enabled.
 					// Otherwise, performance would decrease with no visual difference.
 					Projection cm = li->shadow_transform[0].camera;
-					float half_np = cm.get_z_near() * Math::tan(Math::deg2rad(spot_angle));
+					float half_np = cm.get_z_near() * Math::tan(Math::deg_to_rad(spot_angle));
 					light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
 				} else {
 					light_data.soft_shadow_size = 0.0;

@@ -3,11 +3,11 @@ import os.path
 
 
 def is_desktop(platform):
-    return platform in ["windows", "macos", "linuxbsd", "server", "uwp", "haiku"]
+    return platform in ["windows", "macos", "linuxbsd", "uwp", "haiku"]
 
 
 def is_unix_like(platform):
-    return platform in ["macos", "linuxbsd", "server", "android", "haiku", "ios"]
+    return platform in ["macos", "linuxbsd", "android", "haiku", "ios"]
 
 
 def module_supports_tools_on(platform):
@@ -18,7 +18,7 @@ def configure(env, env_mono):
     # is_android = env["platform"] == "android"
     # is_javascript = env["platform"] == "javascript"
     # is_ios = env["platform"] == "ios"
-    # is_ios_sim = is_ios and env["arch"] in ["x86", "x86_64"]
+    # is_ios_sim = is_ios and env["arch"] in ["x86_32", "x86_64"]
 
     tools_enabled = env["tools"]
 
@@ -82,7 +82,7 @@ def find_dotnet_app_host_dir(env):
     dotnet_root = env["dotnet_root"]
 
     if not dotnet_root:
-        dotnet_cmd = find_executable("dotnet")
+        dotnet_cmd = find_dotnet_executable(env["arch"])
         if dotnet_cmd:
             sdk_path = find_dotnet_sdk(dotnet_cmd, dotnet_version)
             if sdk_path:
@@ -128,27 +128,22 @@ def find_dotnet_app_host_dir(env):
 
 
 def determine_runtime_identifier(env):
+    # The keys are Godot's names, the values are the Microsoft's names.
+    # List: https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
     names_map = {
         "windows": "win",
         "macos": "osx",
         "linuxbsd": "linux",
-        "server": "linux",  # FIXME: Is server linux only, or also macos?
     }
-
-    # .NET RID architectures: x86, x64, arm, or arm64
-
+    arch_map = {
+        "x86_64": "x64",
+        "x86_32": "x86",
+        "arm64": "arm64",
+        "arm32": "arm",
+    }
     platform = env["platform"]
-
     if is_desktop(platform):
-        if env["arch"] in ["arm", "arm32"]:
-            rid = "arm"
-        elif env["arch"] == "arm64":
-            rid = "arm64"
-        else:
-            bits = env["bits"]
-            bit_arch_map = {"64": "x64", "32": "x86"}
-            rid = bit_arch_map[bits]
-        return "%s-%s" % (names_map[platform], rid)
+        return "%s-%s" % (names_map[platform], arch_map[env["arch"]])
     else:
         raise NotImplementedError()
 
@@ -158,6 +153,7 @@ def find_app_host_version(dotnet_cmd, search_version_str):
     from distutils.version import LooseVersion
 
     search_version = LooseVersion(search_version_str)
+    found_match = False
 
     try:
         env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
@@ -177,7 +173,39 @@ def find_app_host_version(dotnet_cmd, search_version_str):
             version = LooseVersion(version_str)
 
             if version >= search_version:
-                return version_str
+                search_version = version
+                found_match = True
+        if found_match:
+            return str(search_version)
+    except (subprocess.CalledProcessError, OSError) as e:
+        import sys
+
+        print(e, file=sys.stderr)
+
+    return ""
+
+
+def find_dotnet_arch(dotnet_cmd):
+    import subprocess
+
+    try:
+        env = dict(os.environ, DOTNET_CLI_UI_LANGUAGE="en-US")
+        lines = subprocess.check_output([dotnet_cmd, "--info"], env=env).splitlines()
+
+        for line_bytes in lines:
+            line = line_bytes.decode("utf-8")
+
+            parts = line.split(":", 1)
+            if len(parts) < 2:
+                continue
+
+            arch_str = parts[0].strip()
+            if arch_str != "Architecture":
+                continue
+
+            arch_value = parts[1].strip()
+            arch_map = {"x64": "x86_64", "x86": "x86_32", "arm64": "arm64", "arm32": "arm32"}
+            return arch_map[arch_value]
     except (subprocess.CalledProcessError, OSError) as e:
         import sys
 
@@ -248,24 +276,44 @@ def find_dotnet_cli_rid(dotnet_cmd):
 ENV_PATH_SEP = ";" if os.name == "nt" else ":"
 
 
-def find_executable(name):
+def find_dotnet_executable(arch):
     is_windows = os.name == "nt"
     windows_exts = os.environ["PATHEXT"].split(ENV_PATH_SEP) if is_windows else None
     path_dirs = os.environ["PATH"].split(ENV_PATH_SEP)
 
     search_dirs = path_dirs + [os.getcwd()]  # cwd is last in the list
 
+    for dir in path_dirs:
+        search_dirs += [
+            os.path.join(dir, "x64"),
+            os.path.join(dir, "x86"),
+            os.path.join(dir, "arm64"),
+            os.path.join(dir, "arm32"),
+        ]  # search subfolders for cross compiling
+
+    # `dotnet --info` may not specify architecture. In such cases,
+    # we fallback to the first one we find without architecture.
+    sdk_path_unknown_arch = ""
+
     for dir in search_dirs:
-        path = os.path.join(dir, name)
+        path = os.path.join(dir, "dotnet")
 
         if is_windows:
             for extension in windows_exts:
                 path_with_ext = path + extension
 
                 if os.path.isfile(path_with_ext) and os.access(path_with_ext, os.X_OK):
-                    return path_with_ext
+                    sdk_arch = find_dotnet_arch(path_with_ext)
+                    if sdk_arch == arch or arch == "":
+                        return path_with_ext
+                    elif sdk_arch == "":
+                        sdk_path_unknown_arch = path_with_ext
         else:
             if os.path.isfile(path) and os.access(path, os.X_OK):
-                return path
+                sdk_arch = find_dotnet_arch(path)
+                if sdk_arch == arch or arch == "":
+                    return path
+                elif sdk_arch == "":
+                    sdk_path_unknown_arch = path
 
-    return ""
+    return sdk_path_unknown_arch

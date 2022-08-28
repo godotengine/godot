@@ -518,24 +518,6 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 	action_map_editor->update_action_list(actions);
 }
 
-void ProjectSettingsEditor::_update_theme() {
-	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-	restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-	restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-	restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
-	restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-
-	type_box->clear();
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
-			// These types can't be serialized properly, so skip them.
-			continue;
-		}
-		String type = Variant::get_type_name(Variant::Type(i));
-		type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
-	}
-}
-
 void ProjectSettingsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -547,11 +529,24 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			general_settings_inspector->edit(ps);
 			_update_action_map_editor();
-			_update_theme();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			restart_close_button->set_icon(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
+			restart_container->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			restart_icon->set_texture(get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons")));
+			restart_label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+
+			type_box->clear();
+			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+				if (i == Variant::NIL || i == Variant::OBJECT || i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
+					// These types can't be serialized properly, so skip them.
+					continue;
+				}
+				String type = Variant::get_type_name(Variant::Type(i));
+				type_box->add_icon_item(get_theme_icon(type, SNAME("EditorIcons")), type, i);
+			}
 		} break;
 	}
 }

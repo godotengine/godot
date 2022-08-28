@@ -128,7 +128,7 @@ float ProceduralSkyMaterial::get_ground_energy() const {
 
 void ProceduralSkyMaterial::set_sun_angle_max(float p_angle) {
 	sun_angle_max = p_angle;
-	RS::get_singleton()->material_set_param(_get_material(), "sun_angle_max", Math::deg2rad(sun_angle_max));
+	RS::get_singleton()->material_set_param(_get_material(), "sun_angle_max", Math::deg_to_rad(sun_angle_max));
 }
 
 float ProceduralSkyMaterial::get_sun_angle_max() const {

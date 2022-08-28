@@ -40,7 +40,6 @@ void EditorNetworkProfiler::_bind_methods() {
 
 void EditorNetworkProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 			clear_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));

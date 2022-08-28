@@ -71,15 +71,7 @@ void StyleBoxPreview::_sb_changed() {
 
 void StyleBoxPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			if (!is_inside_tree()) {
-				// TODO: This is a workaround because `NOTIFICATION_THEME_CHANGED`
-				// is getting called for some reason when the `TexturePreview` is
-				// getting destroyed, which causes `get_theme_font()` to return `nullptr`.
-				// See https://github.com/godotengine/godot/issues/50743.
-				break;
-			}
 			grid_preview->set_normal_texture(get_theme_icon(SNAME("StyleBoxGridInvisible"), SNAME("EditorIcons")));
 			grid_preview->set_pressed_texture(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));
 			grid_preview->set_hover_texture(get_theme_icon(SNAME("StyleBoxGridVisible"), SNAME("EditorIcons")));

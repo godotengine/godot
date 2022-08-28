@@ -43,8 +43,6 @@
 class OS_LinuxBSD : public OS_Unix {
 	virtual void delete_main_loop() override;
 
-	bool force_quit;
-
 #ifdef FONTCONFIG_ENABLED
 	bool font_config_initialized = false;
 #endif

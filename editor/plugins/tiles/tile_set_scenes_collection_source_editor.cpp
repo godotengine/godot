@@ -329,7 +329,6 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			scene_tile_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			scene_tile_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));

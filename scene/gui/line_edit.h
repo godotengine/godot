@@ -113,7 +113,7 @@ private:
 	bool caret_mid_grapheme_enabled = true;
 
 	int caret_column = 0;
-	int scroll_offset = 0;
+	float scroll_offset = 0.0;
 	int max_length = 0; // 0 for no maximum.
 
 	String language;
@@ -153,8 +153,7 @@ private:
 
 	struct TextOperation {
 		int caret_column = 0;
-		int scroll_offset = 0;
-		int cached_width = 0;
+		float scroll_offset = 0.0;
 		String text;
 	};
 	List<TextOperation> undo_stack;
@@ -192,11 +191,11 @@ private:
 	void shift_selection_check_post(bool);
 
 	void selection_fill_at_caret();
-	void set_scroll_offset(int p_pos);
-	int get_scroll_offset() const;
+	void set_scroll_offset(float p_pos);
+	float get_scroll_offset() const;
 
 	void set_caret_at_pixel_pos(int p_x);
-	Vector2i get_caret_pixel_pos();
+	Vector2 get_caret_pixel_pos();
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();

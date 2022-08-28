@@ -781,7 +781,7 @@ void OS_UWP::run() {
 	int frames = 0;
 	uint64_t frame = 0;
 
-	while (!force_quit) {
+	while (true) {
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		if (managed_object->alert_close_handle) {
 			continue;
@@ -811,7 +811,6 @@ bool OS_UWP::_check_internal_feature_support(const String &p_feature) {
 
 OS_UWP::OS_UWP() {
 	key_event_pos = 0;
-	force_quit = false;
 	alt_mem = false;
 	gr_mem = false;
 	shift_mem = false;

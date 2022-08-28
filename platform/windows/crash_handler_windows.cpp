@@ -173,10 +173,18 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	frame.AddrStack.Mode = AddrModeFlat;
 	frame.AddrFrame.Mode = AddrModeFlat;
 
-#ifdef _M_X64
+#if defined(_M_X64)
 	frame.AddrPC.Offset = context->Rip;
 	frame.AddrStack.Offset = context->Rsp;
 	frame.AddrFrame.Offset = context->Rbp;
+#elif defined(_M_ARM64) || defined(_M_ARM64EC)
+	frame.AddrPC.Offset = context->Pc;
+	frame.AddrStack.Offset = context->Sp;
+	frame.AddrFrame.Offset = context->Fp;
+#elif defined(_M_ARM)
+	frame.AddrPC.Offset = context->Pc;
+	frame.AddrStack.Offset = context->Sp;
+	frame.AddrFrame.Offset = context->R11;
 #else
 	frame.AddrPC.Offset = context->Eip;
 	frame.AddrStack.Offset = context->Esp;

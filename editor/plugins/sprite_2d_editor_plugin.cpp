@@ -506,7 +506,6 @@ void Sprite2DEditor::_debug_uv_draw() {
 
 void Sprite2DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_icon(get_theme_icon(SNAME("Sprite2D"), SNAME("EditorIcons")));
 

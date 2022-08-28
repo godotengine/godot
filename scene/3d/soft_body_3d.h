@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  soft_dynamic_body_3d.h                                               */
+/*  soft_body_3d.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SOFT_DYNAMIC_BODY_3D_H
-#define SOFT_DYNAMIC_BODY_3D_H
+#ifndef SOFT_BODY_3D_H
+#define SOFT_BODY_3D_H
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
 class PhysicsBody3D;
-class SoftDynamicBody3D;
+class SoftBody3D;
 
-class SoftDynamicBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
-	friend class SoftDynamicBody3D;
+class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
+	friend class SoftBody3D;
 
 	RID mesh;
 	int surface = 0;
@@ -50,7 +50,7 @@ class SoftDynamicBodyRenderingServerHandler : public PhysicsServer3DRenderingSer
 	uint8_t *write_buffer = nullptr;
 
 private:
-	SoftDynamicBodyRenderingServerHandler();
+	SoftBodyRenderingServerHandler();
 	bool is_ready(RID p_mesh_rid) const { return mesh.is_valid() && mesh == p_mesh_rid; }
 	void prepare(RID p_mesh_rid, int p_surface);
 	void clear();
@@ -64,8 +64,8 @@ public:
 	void set_aabb(const AABB &p_aabb) override;
 };
 
-class SoftDynamicBody3D : public MeshInstance3D {
-	GDCLASS(SoftDynamicBody3D, MeshInstance3D);
+class SoftBody3D : public MeshInstance3D {
+	GDCLASS(SoftBody3D, MeshInstance3D);
 
 public:
 	enum DisableMode {
@@ -85,7 +85,7 @@ public:
 	};
 
 private:
-	SoftDynamicBodyRenderingServerHandler *rendering_server_handler = nullptr;
+	SoftBodyRenderingServerHandler *rendering_server_handler = nullptr;
 
 	RID physics_rid;
 
@@ -182,8 +182,8 @@ public:
 	void set_ray_pickable(bool p_ray_pickable);
 	bool is_ray_pickable() const;
 
-	SoftDynamicBody3D();
-	~SoftDynamicBody3D();
+	SoftBody3D();
+	~SoftBody3D();
 
 private:
 	void _make_cache_dirty();
@@ -198,6 +198,6 @@ private:
 	int _has_pinned_point(int p_point_index) const;
 };
 
-VARIANT_ENUM_CAST(SoftDynamicBody3D::DisableMode);
+VARIANT_ENUM_CAST(SoftBody3D::DisableMode);
 
-#endif // SOFT_DYNAMIC_BODY_3D_H
+#endif // SOFT_BODY_3D_H

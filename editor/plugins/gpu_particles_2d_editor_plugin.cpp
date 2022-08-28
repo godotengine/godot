@@ -38,7 +38,7 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/2d/cpu_particles_2d.h"
 #include "scene/gui/separator.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 
 void GPUParticles2DEditorPlugin::edit(Object *p_object) {
 	particles = Object::cast_to<GPUParticles2D>(p_object);
@@ -167,9 +167,9 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 }
 
 void GPUParticles2DEditorPlugin::_generate_emission_mask() {
-	Ref<ParticlesMaterial> pm = particles->get_process_material();
+	Ref<ParticleProcessMaterial> pm = particles->get_process_material();
 	if (!pm.is_valid()) {
-		EditorNode::get_singleton()->show_warning(TTR("Can only set point into a ParticlesMaterial process material"));
+		EditorNode::get_singleton()->show_warning(TTR("Can only set point into a ParticleProcessMaterial process material"));
 		return;
 	}
 
@@ -320,7 +320,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	if (valid_normals.size()) {
-		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
+		pm->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 
 		Vector<uint8_t> normdata;
 		normdata.resize(w * h * 2 * sizeof(float)); //use RG texture
@@ -339,7 +339,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		pm->set_emission_normal_texture(ImageTexture::create_from_image(img));
 
 	} else {
-		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
+		pm->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
 	}
 }
 

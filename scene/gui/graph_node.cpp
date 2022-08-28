@@ -32,9 +32,7 @@
 
 #include "core/string/translation.h"
 
-#ifdef TOOLS_ENABLED
 #include "graph_edit.h"
-#endif
 
 struct _MinSizeCache {
 	int min_size;
@@ -445,6 +443,7 @@ void GraphNode::_edit_set_position(const Point2 &p_position) {
 	}
 	set_position(p_position);
 }
+#endif
 
 void GraphNode::_validate_property(PropertyInfo &p_property) const {
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
@@ -454,7 +453,6 @@ void GraphNode::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 }
-#endif
 
 void GraphNode::set_slot(int p_idx, bool p_enable_left, int p_type_left, const Color &p_color_left, bool p_enable_right, int p_type_right, const Color &p_color_right, const Ref<Texture2D> &p_custom_left, const Ref<Texture2D> &p_custom_right, bool p_draw_stylebox) {
 	ERR_FAIL_COND_MSG(p_idx < 0, vformat("Cannot set slot with p_idx (%d) lesser than zero.", p_idx));
@@ -1005,6 +1003,22 @@ bool GraphNode::is_resizable() const {
 	return resizable;
 }
 
+void GraphNode::set_draggable(bool p_draggable) {
+	draggable = p_draggable;
+}
+
+bool GraphNode::is_draggable() {
+	return draggable;
+}
+
+void GraphNode::set_selectable(bool p_selectable) {
+	selectable = p_selectable;
+}
+
+bool GraphNode::is_selectable() {
+	return selectable;
+}
+
 Vector<int> GraphNode::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
@@ -1066,6 +1080,12 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_resizable", "resizable"), &GraphNode::set_resizable);
 	ClassDB::bind_method(D_METHOD("is_resizable"), &GraphNode::is_resizable);
 
+	ClassDB::bind_method(D_METHOD("set_draggable", "draggable"), &GraphNode::set_draggable);
+	ClassDB::bind_method(D_METHOD("is_draggable"), &GraphNode::is_draggable);
+
+	ClassDB::bind_method(D_METHOD("set_selectable", "selectable"), &GraphNode::set_selectable);
+	ClassDB::bind_method(D_METHOD("is_selectable"), &GraphNode::is_selectable);
+
 	ClassDB::bind_method(D_METHOD("set_selected", "selected"), &GraphNode::set_selected);
 	ClassDB::bind_method(D_METHOD("is_selected"), &GraphNode::is_selected);
 
@@ -1091,6 +1111,8 @@ void GraphNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_position_offset", "get_position_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_close"), "set_show_close_button", "is_close_button_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resizable"), "set_resizable", "is_resizable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draggable"), "set_draggable", "is_draggable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selectable"), "set_selectable", "is_selectable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selected"), "set_selected", "is_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "comment"), "set_comment", "is_comment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "overlay", PROPERTY_HINT_ENUM, "Disabled,Breakpoint,Position"), "set_overlay", "get_overlay");

@@ -40,7 +40,6 @@
 
 void Path2DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			curve_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 			curve_edit_curve->set_icon(get_theme_icon(SNAME("CurveCurve"), SNAME("EditorIcons")));

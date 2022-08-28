@@ -256,7 +256,7 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 		channel_volume_db = AudioFrame(0, 0);
 	}
 
-	float volume_linear = Math::db2linear(volume_db);
+	float volume_linear = Math::db_to_linear(volume_db);
 
 	// Set the volume vector up according to the speaker mode and mix target.
 	// TODO do we need to scale the volume down when we output to more channels?

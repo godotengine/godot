@@ -223,8 +223,8 @@ public:
 		grid_step_x->set_value(p_grid_step.x);
 		grid_step_y->set_value(p_grid_step.y);
 		primary_grid_steps->set_value(p_primary_grid_steps);
-		rotation_offset->set_value(Math::rad2deg(p_rotation_offset));
-		rotation_step->set_value(Math::rad2deg(p_rotation_step));
+		rotation_offset->set_value(Math::rad_to_deg(p_rotation_offset));
+		rotation_step->set_value(Math::rad_to_deg(p_rotation_step));
 		scale_step->set_value(p_scale_step);
 	}
 
@@ -232,8 +232,8 @@ public:
 		p_grid_offset = Point2(grid_offset_x->get_value(), grid_offset_y->get_value());
 		p_grid_step = Point2(grid_step_x->get_value(), grid_step_y->get_value());
 		p_primary_grid_steps = int(primary_grid_steps->get_value());
-		p_rotation_offset = Math::deg2rad(rotation_offset->get_value());
-		p_rotation_step = Math::deg2rad(rotation_step->get_value());
+		p_rotation_offset = Math::deg_to_rad(rotation_offset->get_value());
+		p_rotation_step = Math::deg_to_rad(rotation_step->get_value());
 		p_scale_step = scale_step->get_value();
 	}
 };
@@ -1447,7 +1447,7 @@ bool CanvasItemEditor::_gui_input_rotate(const Ref<InputEvent> &p_event) {
 						drag_selection,
 						vformat(TTR("Rotate CanvasItem \"%s\" to %d degrees"),
 								drag_selection[0]->get_name(),
-								Math::rad2deg(drag_selection[0]->_edit_get_rotation())),
+								Math::rad_to_deg(drag_selection[0]->_edit_get_rotation())),
 						true);
 			}
 
@@ -3676,7 +3676,7 @@ void CanvasItemEditor::_draw_transform_message() {
 		} break;
 
 		case DRAG_ROTATE: {
-			real_t delta = Math::rad2deg(current_transform.get_rotation() - original_transform.get_rotation());
+			real_t delta = Math::rad_to_deg(current_transform.get_rotation() - original_transform.get_rotation());
 			transform_message = TTR("Rotating:") + " " + FORMAT(delta) + String::utf8(" °");
 		} break;
 
@@ -5563,19 +5563,7 @@ bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_targe
 void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point) {
 	// Adjust casing according to project setting. The file name is expected to be in snake_case, but will work for others.
 	String name = path.get_file().get_basename();
-	switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
-		case NAME_CASING_PASCAL_CASE:
-			name = name.capitalize().replace(" ", "");
-			break;
-		case NAME_CASING_CAMEL_CASE:
-			name = name.capitalize().replace(" ", "");
-			name[0] = name.to_lower()[0];
-			break;
-		case NAME_CASING_SNAKE_CASE:
-			name = name.capitalize().replace(" ", "_").to_lower();
-			break;
-	}
-	child->set_name(name);
+	child->set_name(Node::adjust_name_casing(name));
 
 	Ref<Texture2D> texture = ResourceCache::get_ref(path);
 
@@ -5868,26 +5856,21 @@ Node *CanvasItemEditorViewport::_make_texture_node_type(String texture_node_type
 	return node;
 }
 
-void CanvasItemEditorViewport::_update_theme() {
-	List<BaseButton *> btn_list;
-	button_group->get_buttons(&btn_list);
-
-	for (int i = 0; i < btn_list.size(); i++) {
-		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
-		check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
-	}
-
-	label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
-}
-
 void CanvasItemEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			_update_theme();
+			List<BaseButton *> btn_list;
+			button_group->get_buttons(&btn_list);
+
+			for (int i = 0; i < btn_list.size(); i++) {
+				CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
+				check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
+			}
+
+			label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			_update_theme();
 			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
 

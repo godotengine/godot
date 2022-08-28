@@ -300,11 +300,10 @@ private:
 	// Theming.
 
 	void _theme_changed();
-	void _theme_property_override_changed();
-	void _notify_theme_changed();
+	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
 
-	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign = true);
+	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_notify, bool p_assign);
 
 	template <class T>
 	static T get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
@@ -358,6 +357,7 @@ public:
 		NOTIFICATION_MOUSE_EXIT = 42,
 		NOTIFICATION_FOCUS_ENTER = 43,
 		NOTIFICATION_FOCUS_EXIT = 44,
+		// This doesn't need to be paired with `NOTIFICATION_ENTER_TREE`.
 		NOTIFICATION_THEME_CHANGED = 45,
 		NOTIFICATION_SCROLL_BEGIN = 47,
 		NOTIFICATION_SCROLL_END = 48,
@@ -610,6 +610,7 @@ public:
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
 	Control() {}
+	~Control();
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);

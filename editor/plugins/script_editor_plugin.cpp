@@ -352,9 +352,9 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
-			[[fallthrough]];
-		}
-		case NOTIFICATION_VISIBILITY_CHANGED: {
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
 
@@ -1613,8 +1613,8 @@ void ScriptEditor::_notification(int p_what) {
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
 			_editor_settings_changed();
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
