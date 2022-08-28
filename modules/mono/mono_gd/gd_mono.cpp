@@ -270,7 +270,7 @@ load_assembly_and_get_function_pointer_fn initialize_hostfxr_self_contained(
 	int i = 1;
 	for (const String &E : cmdline_args) {
 		HostFxrCharString &stored = argv_store.push_back(str_to_hostfxr(E))->get();
-		argv.write[i] = stored.ptr();
+		argv.write[i] = get_data(stored);
 		i++;
 	}
 
@@ -356,7 +356,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	print_verbose(".NET: hostfxr initialized");
 
 	int rc = load_assembly_and_get_function_pointer(get_data(assembly_path),
-			str_to_hostfxr("GodotPlugins.Game.Main, " + assembly_name),
+			get_data(str_to_hostfxr("GodotPlugins.Game.Main, " + assembly_name)),
 			HOSTFXR_STR("InitializeFromGameProject"),
 			UNMANAGEDCALLERSONLY_METHOD,
 			nullptr,
