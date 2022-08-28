@@ -288,9 +288,11 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 									// then tell this node to reference that resource.
 									if (n.instance >= 0) {
 										Ref<Resource> node_res = node->get(snames[nprops[j].name]);
-										node_res->copy_from(res);
-										node_res->configure_for_local_scene(node, resources_local_to_scene);
-										value = node_res;
+										if (node_res.is_valid()) {
+											node_res->copy_from(res);
+											node_res->configure_for_local_scene(node, resources_local_to_scene);
+											value = node_res;
+										}
 									} else {
 										HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = resources_local_to_scene.find(res);
 										Node *base = i == 0 ? node : ret_nodes[0];
