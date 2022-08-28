@@ -276,6 +276,23 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 	return p_constant;
 }
 
+// Macros for assigning the deprecation/experimental information to class members
+#define DEPRECATED_DOC_TAG                                                                  \
+	class_desc->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));         \
+	Ref<Texture2D> error_icon = get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons")); \
+	class_desc->add_text(" ");                                                              \
+	class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height());   \
+	class_desc->add_text(" (" + TTR("Deprecated") + ")");                                   \
+	class_desc->pop();
+
+#define EXPERIMENTAL_DOC_TAG                                                                    \
+	class_desc->push_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));           \
+	Ref<Texture2D> warning_icon = get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));   \
+	class_desc->add_text(" ");                                                                  \
+	class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height()); \
+	class_desc->add_text(" (" + TTR("Experimental") + ")");                                     \
+	class_desc->pop();
+
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
 	method_line[p_method.name] = class_desc->get_paragraph_count() - 2; //gets overridden if description
 
@@ -354,6 +371,14 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->add_text(" ");
 		_add_text(p_method.qualifiers);
 		class_desc->pop();
+	}
+
+	if (p_method.is_deprecated) {
+		DEPRECATED_DOC_TAG;
+	}
+
+	if (p_method.is_experimental) {
+		EXPERIMENTAL_DOC_TAG;
 	}
 
 	if (p_overview) {
@@ -565,6 +590,17 @@ void EditorHelp::_update_doc() {
 	class_desc->pop(); // color
 	class_desc->pop(); // font size
 	class_desc->pop(); // font
+
+	if (cd.is_deprecated) {
+		class_desc->add_text(" ");
+		Ref<Texture2D> error_icon = get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"));
+		class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height());
+	}
+	if (cd.is_experimental) {
+		class_desc->add_text(" ");
+		Ref<Texture2D> warning_icon = get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));
+		class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height());
+	}
 	class_desc->add_newline();
 
 	const String non_breaking_space = String::chr(160);
@@ -625,6 +661,26 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 			class_desc->add_newline();
 		}
+	}
+
+	// Note if deprecated.
+	if (cd.is_deprecated) {
+		Ref<Texture2D> error_icon = get_theme_icon(SNAME("StatusError"), SNAME("EditorIcons"));
+		class_desc->push_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
+		class_desc->add_image(error_icon, error_icon->get_width(), error_icon->get_height());
+		class_desc->add_text(String(" ") + TTR("This class is marked as deprecated. It will be removed in future versions."));
+		class_desc->pop();
+		class_desc->add_newline();
+	}
+
+	// Note if experimental.
+	if (cd.is_experimental) {
+		Ref<Texture2D> warning_icon = get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons"));
+		class_desc->push_color(get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+		class_desc->add_image(warning_icon, warning_icon->get_width(), warning_icon->get_height());
+		class_desc->add_text(String(" ") + TTR("This class is marked as experimental. It is subject to likely change or possible removal in future versions. Use at your own discretion."));
+		class_desc->pop();
+		class_desc->add_newline();
 	}
 
 	class_desc->add_newline();
@@ -815,6 +871,13 @@ void EditorHelp::_update_doc() {
 				class_desc->push_color(symbol_color);
 				class_desc->add_text("]");
 				class_desc->pop();
+			}
+
+			if (cd.properties[i].is_deprecated) {
+				DEPRECATED_DOC_TAG;
+			}
+			if (cd.properties[i].is_experimental) {
+				EXPERIMENTAL_DOC_TAG;
 			}
 
 			class_desc->pop();
@@ -1066,6 +1129,14 @@ void EditorHelp::_update_doc() {
 
 			class_desc->push_color(symbol_color);
 			class_desc->add_text(")");
+
+			if (cd.signals[i].is_deprecated) {
+				DEPRECATED_DOC_TAG;
+			}
+			if (cd.signals[i].is_experimental) {
+				EXPERIMENTAL_DOC_TAG;
+			}
+
 			class_desc->pop();
 			class_desc->pop(); // end monofont
 			if (!cd.signals[i].description.strip_edges().is_empty()) {
@@ -1187,6 +1258,14 @@ void EditorHelp::_update_doc() {
 					class_desc->pop();
 					class_desc->pop();
 
+					if (enum_list[i].is_deprecated) {
+						DEPRECATED_DOC_TAG;
+					}
+
+					if (enum_list[i].is_experimental) {
+						EXPERIMENTAL_DOC_TAG;
+					}
+
 					class_desc->add_newline();
 
 					if (!enum_list[i].description.strip_edges().is_empty()) {
@@ -1257,6 +1336,14 @@ void EditorHelp::_update_doc() {
 				class_desc->pop();
 
 				class_desc->pop();
+
+				if (constants[i].is_deprecated) {
+					DEPRECATED_DOC_TAG;
+				}
+
+				if (constants[i].is_experimental) {
+					EXPERIMENTAL_DOC_TAG;
+				}
 
 				class_desc->add_newline();
 
@@ -1436,6 +1523,13 @@ void EditorHelp::_update_doc() {
 				class_desc->push_color(symbol_color);
 				class_desc->add_text("]");
 				class_desc->pop(); // color
+			}
+
+			if (cd.properties[i].is_deprecated) {
+				DEPRECATED_DOC_TAG;
+			}
+			if (cd.properties[i].is_experimental) {
+				EXPERIMENTAL_DOC_TAG;
 			}
 
 			if (cd.is_script_doc && (!cd.properties[i].setter.is_empty() || !cd.properties[i].getter.is_empty())) {
