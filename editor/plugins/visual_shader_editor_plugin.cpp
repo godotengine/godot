@@ -5412,6 +5412,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// TEXTURES
 
 	add_options.push_back(AddOption("UVFunc", "Textures", "Common", "VisualShaderNodeUVFunc", TTR("Function to be applied on texture coordinates."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
+	add_options.push_back(AddOption("UVPolarCoord", "Textures", "Common", "VisualShaderNodeUVPolarCoord", TTR("Polar coordinates conversion applied on texture coordinates."), {}, VisualShaderNode::PORT_TYPE_VECTOR_2D));
 
 	cubemap_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubemap", TTR("Perform the cubic texture lookup."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
@@ -5433,6 +5434,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), {}, -1, TYPE_FLAGS_FRAGMENT | TYPE_FLAGS_LIGHT, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Texture2DArrayUniform", "Textures", "Variables", "VisualShaderNodeTexture2DArrayUniform", TTR("2D array of textures uniform lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
 	add_options.push_back(AddOption("Texture3DUniform", "Textures", "Variables", "VisualShaderNodeTexture3DUniform", TTR("3D texture uniform lookup."), {}, VisualShaderNode::PORT_TYPE_SAMPLER));
+
+	add_options.push_back(AddOption("LinearSceneDepth", "Textures", "Depth", "VisualShaderNodeLinearSceneDepth", TTR("Returns the depth value of the DEPTH_TEXTURE node in a linear space."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
 
 	// TRANSFORM
 
@@ -5656,6 +5659,19 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Vector3Uniform", "Vector", "Variables", "VisualShaderNodeVec3Uniform", TTR("3D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_3D));
 	add_options.push_back(AddOption("Vector4Constant", "Vector", "Variables", "VisualShaderNodeVec4Constant", TTR("4D vector constant."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
 	add_options.push_back(AddOption("Vector4Uniform", "Vector", "Variables", "VisualShaderNodeVec4Uniform", TTR("4D vector uniform."), {}, VisualShaderNode::PORT_TYPE_VECTOR_4D));
+
+	// FADE
+
+	add_options.push_back(AddOption("DistanceFace", "Fade", "Distance", "VisualShaderNodeDistanceFade", TTR(""), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("ProximityFade", "Fade", "", "VisualShaderNodeProximityFade", TTR("The proximity fade effect fades out each pixel based on its distance to another object."), {}, VisualShaderNode::PORT_TYPE_SCALAR, TYPE_FLAGS_FRAGMENT, Shader::MODE_SPATIAL));
+
+	// RANDOM
+
+	add_options.push_back(AddOption("RandomRange", "Random", "", "VisualShaderNodeRandomRange", TTR("Returns a random value between the minimum and maximum input values."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
+
+	// UTILITY
+
+	add_options.push_back(AddOption("Remap", "Utility", "", "VisualShaderNodeRemap", TTR("Remaps a given input from the input range to the output range."), {}, VisualShaderNode::PORT_TYPE_SCALAR));
 
 	// SPECIAL
 
