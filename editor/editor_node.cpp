@@ -3702,6 +3702,18 @@ void EditorNode::fix_dependencies(const String &p_for_file) {
 
 int EditorNode::new_scene() {
 	int idx = editor_data.add_edited_scene(-1);
+	// Remove placeholder empty scene.
+	if (editor_data.get_edited_scene_count() > 1) {
+		for (int i = 0; i < editor_data.get_edited_scene_count() - 1; i++) {
+			bool unsaved = get_undo_redo()->is_history_unsaved(editor_data.get_scene_history_id(i));
+			if (!unsaved && editor_data.get_scene_path(i).is_empty()) {
+				editor_data.remove_scene(i);
+				idx--;
+			}
+		}
+	}
+	idx = MAX(idx, 0);
+
 	_scene_tab_changed(idx);
 	editor_data.clear_editor_states();
 	_update_scene_tabs();
