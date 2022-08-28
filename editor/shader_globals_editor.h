@@ -31,7 +31,6 @@
 #ifndef SHADER_GLOBALS_EDITOR_H
 #define SHADER_GLOBALS_EDITOR_H
 
-#include "core/object/undo_redo.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"

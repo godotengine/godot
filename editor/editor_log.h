@@ -41,6 +41,8 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_rect.h"
 
+class UndoRedo;
+
 class EditorLog : public HBoxContainer {
 	GDCLASS(EditorLog, HBoxContainer);
 
@@ -66,6 +68,16 @@ private:
 				type(p_type) {
 		}
 	};
+
+	struct {
+		Color error_color;
+		Ref<Texture2D> error_icon;
+
+		Color warning_color;
+		Ref<Texture2D> warning_icon;
+
+		Color message_color;
+	} theme_cache;
 
 	// Encapsulates all data and functionality regarding filters.
 	struct LogFilter {
@@ -163,8 +175,6 @@ private:
 	void _save_state();
 	void _load_state();
 
-	void _update_theme();
-
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -172,6 +182,7 @@ protected:
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
 	void set_tool_button(Button *p_tool_button);
+	void register_undo_redo(UndoRedo *p_undo_redo);
 	void deinit();
 
 	void clear();

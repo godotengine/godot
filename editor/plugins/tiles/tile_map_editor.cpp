@@ -35,6 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 
 #include "scene/2d/camera_2d.h"
@@ -2145,7 +2146,6 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	// --- Bottom panel tiles ---
 	tiles_bottom_panel = memnew(VBoxContainer);
-	tiles_bottom_panel->connect("tree_entered", callable_mp(this, &TileMapEditorTilesPlugin::_update_theme));
 	tiles_bottom_panel->connect("theme_changed", callable_mp(this, &TileMapEditorTilesPlugin::_update_theme));
 	tiles_bottom_panel->connect("visibility_changed", callable_mp(this, &TileMapEditorTilesPlugin::_stop_dragging));
 	tiles_bottom_panel->connect("visibility_changed", callable_mp(this, &TileMapEditorTilesPlugin::_tab_changed));
@@ -3310,7 +3310,6 @@ TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {
 	undo_redo = EditorNode::get_undo_redo();
 
 	main_vbox_container = memnew(VBoxContainer);
-	main_vbox_container->connect("tree_entered", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->connect("theme_changed", callable_mp(this, &TileMapEditorTerrainsPlugin::_update_theme));
 	main_vbox_container->set_name("Terrains");
 
@@ -3418,7 +3417,6 @@ TileMapEditorTerrainsPlugin::~TileMapEditorTerrainsPlugin() {
 
 void TileMapEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			missing_tile_texture = get_theme_icon(SNAME("StatusWarning"), SNAME("EditorIcons"));
 			warning_pattern_texture = get_theme_icon(SNAME("WarningPattern"), SNAME("EditorIcons"));
@@ -3697,8 +3695,8 @@ void TileMapEditor::_update_layers_selection() {
 }
 
 void TileMapEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
-	ERR_FAIL_COND(!undo_redo);
+	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(undo_redo.is_null());
 
 	TileMap *tile_map = Object::cast_to<TileMap>(p_edited);
 	if (!tile_map) {

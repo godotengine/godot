@@ -114,7 +114,7 @@ private:
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool tile_set_changed_needs_update = false;
 

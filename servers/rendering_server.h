@@ -42,6 +42,9 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+template <typename T>
+class TypedArray;
+
 class RenderingServer : public Object {
 	GDCLASS(RenderingServer, Object);
 
@@ -170,7 +173,7 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
 	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
@@ -244,7 +247,7 @@ public:
 
 	enum ArrayFormat {
 		/* ARRAY FORMAT FLAGS */
-		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX, // Mandatory
+		ARRAY_FORMAT_VERTEX = 1 << ARRAY_VERTEX,
 		ARRAY_FORMAT_NORMAL = 1 << ARRAY_NORMAL,
 		ARRAY_FORMAT_TANGENT = 1 << ARRAY_TANGENT,
 		ARRAY_FORMAT_COLOR = 1 << ARRAY_COLOR,
@@ -262,17 +265,19 @@ public:
 
 		ARRAY_FORMAT_CUSTOM_BASE = (ARRAY_INDEX + 1),
 		ARRAY_FORMAT_CUSTOM_BITS = 3,
+		ARRAY_FORMAT_CUSTOM_MASK = 0x7,
 		ARRAY_FORMAT_CUSTOM0_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + 0),
 		ARRAY_FORMAT_CUSTOM1_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS),
 		ARRAY_FORMAT_CUSTOM2_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * 2),
 		ARRAY_FORMAT_CUSTOM3_SHIFT = (ARRAY_FORMAT_CUSTOM_BASE + ARRAY_FORMAT_CUSTOM_BITS * 3),
 
-		ARRAY_FORMAT_CUSTOM_MASK = 0x7,
 		ARRAY_COMPRESS_FLAGS_BASE = (ARRAY_INDEX + 1 + 12),
 
 		ARRAY_FLAG_USE_2D_VERTICES = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 0),
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 1),
 		ARRAY_FLAG_USE_8_BONE_WEIGHTS = 1 << (ARRAY_COMPRESS_FLAGS_BASE + 2),
+
+		ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY = 1 << (ARRAY_INDEX + 1 + 15),
 	};
 
 	enum PrimitiveType {
@@ -323,7 +328,7 @@ public:
 	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
 	Array mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const;
 	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
-	Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
+	TypedArray<Array> mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
@@ -425,6 +430,7 @@ public:
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
 		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
+		LIGHT_PARAM_SHADOW_OPACITY,
 		LIGHT_PARAM_SHADOW_BLUR,
 		LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
@@ -495,9 +501,10 @@ public:
 
 	enum LightProjectorFilter {
 		LIGHT_PROJECTOR_FILTER_NEAREST,
-		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS,
 		LIGHT_PROJECTOR_FILTER_LINEAR,
+		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS,
 		LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS,
+		LIGHT_PROJECTOR_FILTER_NEAREST_MIPMAPS_ANISOTROPIC,
 		LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
 	};
 
@@ -557,9 +564,10 @@ public:
 
 	enum DecalFilter {
 		DECAL_FILTER_NEAREST,
-		DECAL_FILTER_NEAREST_MIPMAPS,
 		DECAL_FILTER_LINEAR,
+		DECAL_FILTER_NEAREST_MIPMAPS,
 		DECAL_FILTER_LINEAR_MIPMAPS,
+		DECAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC,
 		DECAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC,
 	};
 
@@ -1208,9 +1216,9 @@ public:
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const = 0;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const = 0;
 
-	Array _instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario = RID()) const;
-	Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
-	Array _instances_cull_convex_bind(const Array &p_convex, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_convex_bind(const Array &p_convex, RID p_scenario = RID()) const;
 
 	enum InstanceFlags {
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
@@ -1242,10 +1250,10 @@ public:
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
-	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
-	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
-	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
-	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+	virtual void instance_geometry_set_shader_uniform(RID p_instance, const StringName &, const Variant &p_value) = 0;
+	virtual Variant instance_geometry_get_shader_uniform(RID p_instance, const StringName &) const = 0;
+	virtual Variant instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &) const = 0;
+	virtual void instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 
 	/* Bake 3D objects */
 
@@ -1318,6 +1326,7 @@ public:
 	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2 &p_rect, RID p_texture, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) = 0;
 	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = false) = 0;
 	virtual void canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), int p_outline_size = 0, float p_px_range = 1.0) = 0;
+	virtual void canvas_item_add_lcd_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1)) = 0;
 	virtual void canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, NinePatchAxisMode p_x_axis_mode = NINE_PATCH_STRETCH, NinePatchAxisMode p_y_axis_mode = NINE_PATCH_STRETCH, bool p_draw_center = true, const Color &p_modulate = Color(1, 1, 1)) = 0;
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width = 1.0) = 0;
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), RID p_texture = RID()) = 0;
@@ -1569,11 +1578,11 @@ private:
 	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
 	TypedArray<Image> _texture_3d_get(RID p_texture) const;
-	TypedArray<Dictionary> _shader_get_param_list(RID p_shader) const;
+	TypedArray<Dictionary> _shader_get_shader_uniform_list(RID p_shader) const;
 	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
-	Array _instance_geometry_get_shader_parameter_list(RID p_instance) const;
+	TypedArray<Dictionary> _instance_geometry_get_shader_uniform_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };

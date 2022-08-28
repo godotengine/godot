@@ -31,6 +31,7 @@
 #ifndef SKELETON_3D_EDITOR_PLUGIN_H
 #define SKELETON_3D_EDITOR_PLUGIN_H
 
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_properties.h"
 #include "node_3d_editor_plugin.h"
@@ -40,6 +41,7 @@
 #include "scene/resources/immediate_mesh.h"
 
 class EditorInspectorPluginSkeleton;
+class EditorUndoRedoManager;
 class Joint;
 class PhysicalBone3D;
 class Skeleton3DEditorPlugin;
@@ -63,7 +65,7 @@ class BoneTransformEditor : public VBoxContainer {
 	Skeleton3D *skeleton = nullptr;
 	// String property;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool toggle_enabled = false;
 	bool updating = false;
@@ -96,8 +98,8 @@ class Skeleton3DEditor : public VBoxContainer {
 	friend class Skeleton3DEditorPlugin;
 
 	enum SkeletonOption {
-		SKELETON_OPTION_INIT_ALL_POSES,
-		SKELETON_OPTION_INIT_SELECTED_POSES,
+		SKELETON_OPTION_RESET_ALL_POSES,
+		SKELETON_OPTION_RESET_SELECTED_POSES,
 		SKELETON_OPTION_ALL_POSES_TO_RESTS,
 		SKELETON_OPTION_SELECTED_POSES_TO_RESTS,
 		SKELETON_OPTION_CREATE_PHYSICAL_SKELETON,
@@ -148,7 +150,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 	void create_editors();
 
-	void init_pose(const bool p_all_bones);
+	void reset_pose(const bool p_all_bones);
 	void pose_to_rest(const bool p_all_bones);
 
 	void insert_keys(const bool p_all_bones);

@@ -55,6 +55,7 @@ _helper_module("modules.modules_builders", "modules/modules_builders.py")
 import methods
 import glsl_builders
 import gles3_builders
+from platform_methods import architectures, architecture_aliases
 
 if methods.get_cmdline_bool("tools", True):
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
@@ -138,6 +139,7 @@ env_base.__class__.CommandNoCache = methods.CommandNoCache
 env_base.__class__.Run = methods.Run
 env_base.__class__.disable_warnings = methods.disable_warnings
 env_base.__class__.force_optimization_on_debug = methods.force_optimization_on_debug
+env_base.__class__.module_add_dependencies = methods.module_add_dependencies
 env_base.__class__.module_check_dependencies = methods.module_check_dependencies
 
 env_base["x86_libtheora_opt_gcc"] = False
@@ -160,12 +162,11 @@ if profile:
 opts = Variables(customs, ARGUMENTS)
 
 # Target build options
-opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
+opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
-opts.Add("arch", "Platform-dependent architecture (arm/arm64/x86/x64/mips/...)", "")
-opts.Add(EnumVariable("bits", "Target platform bits", "default", ("default", "32", "64")))
+opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
 opts.Add(EnumVariable("float", "Floating-point precision", "default", ("default", "32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
@@ -337,21 +338,27 @@ for path in module_search_paths:
 
 # Add module options.
 for name, path in modules_detected.items():
+    sys.path.insert(0, path)
+    import config
+
     if env_base["modules_enabled_by_default"]:
         enabled = True
-
-        sys.path.insert(0, path)
-        import config
-
         try:
             enabled = config.is_enabled()
         except AttributeError:
             pass
-        sys.path.remove(path)
-        sys.modules.pop("config")
     else:
         enabled = False
 
+    # Add module-specific options.
+    try:
+        for opt in config.get_opts(selected_platform):
+            opts.Add(opt)
+    except AttributeError:
+        pass
+
+    sys.path.remove(path)
+    sys.modules.pop("config")
     opts.Add(BoolVariable("module_" + name + "_enabled", "Enable module '%s'" % (name,), enabled))
 
 methods.write_modules(modules_detected)
@@ -495,11 +502,16 @@ if selected_platform in platform_list:
     # Platform specific flags
     flag_list = platform_flags[selected_platform]
     for f in flag_list:
-        if not (f[0] in ARGUMENTS):  # allow command line to override platform flags
+        if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
             env[f[0]] = f[1]
 
     # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
+
+    print(
+        'Building for platform "%s", architecture "%s", %s, target "%s".'
+        % (selected_platform, env["arch"], "editor" if env["tools"] else "template", env["target"])
+    )
 
     # Set our C and C++ standard requirements.
     # C++17 is required as we need guaranteed copy elision as per GH-36436.
@@ -686,19 +698,14 @@ if selected_platform in platform_list:
             )
             suffix += ".debug"
 
-    if env["arch"] != "":
-        suffix += "." + env["arch"]
-    elif env["bits"] == "32":
-        suffix += ".32"
-    elif env["bits"] == "64":
-        suffix += ".64"
-
+    suffix += "." + env["arch"]
     suffix += env.extra_suffix
 
     sys.path.remove(tmppath)
     sys.modules.pop("detect")
 
     modules_enabled = OrderedDict()
+    env.module_dependencies = {}
     env.module_icons_paths = []
     env.doc_class_path = {}
 
@@ -710,6 +717,10 @@ if selected_platform in platform_list:
         import config
 
         if config.can_build(env, selected_platform):
+            # Disable it if a required dependency is missing.
+            if not env.module_check_dependencies(name):
+                continue
+
             config.configure(env)
             # Get doc classes paths (if present)
             try:
@@ -732,6 +743,7 @@ if selected_platform in platform_list:
         sys.modules.pop("config")
 
     env.module_list = modules_enabled
+    methods.sort_module_list(env)
 
     methods.update_version(env.module_version_string)
 
@@ -793,15 +805,6 @@ if selected_platform in platform_list:
             env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
     if env["minizip"]:
         env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-
-    editor_module_list = []
-    if env["tools"] and not env.module_check_dependencies("tools", editor_module_list):
-        print(
-            "Build option 'module_"
-            + x
-            + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template)."
-        )
-        Exit(255)
 
     if not env["verbose"]:
         methods.no_verbose(sys, env)

@@ -798,6 +798,7 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 		RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 	}
 	_update_global_transform();
+	update_configuration_warnings();
 
 	update_canvas_items();
 
@@ -1103,7 +1104,7 @@ Vector2 Viewport::get_mouse_position() const {
 
 void Viewport::warp_mouse(const Vector2 &p_position) {
 	Transform2D xform = get_screen_transform();
-	Vector2 gpos = xform.xform(p_position).round();
+	Vector2 gpos = xform.xform(p_position);
 	Input::get_singleton()->warp_mouse(gpos);
 }
 
@@ -1708,15 +1709,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								is_tooltip_shown = true;
 							}
 						} else {
-							Variant t = gui.tooltip_popup->call("get_tooltip_text");
-
-							if (t.get_type() == Variant::STRING) {
-								if (tooltip == String(t)) {
-									is_tooltip_shown = true;
-								}
-							} else {
-								is_tooltip_shown = true; // Nothing to compare against, likely using custom control, so if it changes there is nothing we can do.
-							}
+							is_tooltip_shown = true; // Nothing to compare against, likely using custom control, so if it changes there is nothing we can do.
 						}
 					} else {
 						_gui_cancel_tooltip();
@@ -1875,7 +1868,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
+		}
 	}
 
 	Ref<InputEventScreenTouch> touch_event = p_event;
@@ -2498,17 +2493,20 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_RESIZE) {
 				Vector2i diff = mm->get_position() - gui.subwindow_drag_from;
 				Size2i min_size = gui.subwindow_focused->get_min_size();
+
+				Size2i min_size_adjusted = min_size;
 				if (gui.subwindow_focused->is_wrapping_controls()) {
 					Size2i cms = gui.subwindow_focused->get_contents_minimum_size();
-					min_size.x = MAX(cms.x, min_size.x);
-					min_size.y = MAX(cms.y, min_size.y);
+					min_size_adjusted.x = MAX(cms.x, min_size.x);
+					min_size_adjusted.y = MAX(cms.y, min_size.y);
 				}
-				min_size.x = MAX(min_size.x, 1);
-				min_size.y = MAX(min_size.y, 1);
+
+				min_size_adjusted.x = MAX(min_size_adjusted.x, 1);
+				min_size_adjusted.y = MAX(min_size_adjusted.y, 1);
 
 				Rect2i r = gui.subwindow_resize_from_rect;
 
-				Size2i limit = r.size - min_size;
+				Size2i limit = r.size - min_size_adjusted;
 
 				switch (gui.subwindow_resize_mode) {
 					case SUB_WINDOW_RESIZE_TOP_LEFT: {
@@ -2563,6 +2561,19 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					}
 				}
 
+				Size2i max_size = gui.subwindow_focused->get_max_size();
+				if ((max_size.x > 0 || max_size.y > 0) && (max_size.x >= min_size.x && max_size.y >= min_size.y)) {
+					max_size.x = MAX(max_size.x, 1);
+					max_size.y = MAX(max_size.y, 1);
+
+					if (r.size.x > max_size.x) {
+						r.size.x = max_size.x;
+					}
+					if (r.size.y > max_size.y) {
+						r.size.y = max_size.y;
+					}
+				}
+
 				gui.subwindow_focused->_rect_changed_callback(r);
 			}
 
@@ -2600,7 +2611,7 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					Ref<Texture2D> close_icon = sw.window->get_theme_icon(SNAME("close"));
 
 					Rect2 close_rect;
-					close_rect.position = Vector2(r.position.x + r.size.x - close_v_ofs, r.position.y - close_h_ofs);
+					close_rect.position = Vector2(r.position.x + r.size.x - close_h_ofs, r.position.y - close_v_ofs);
 					close_rect.size = close_icon->get_size();
 
 					if (gui.subwindow_focused != sw.window) {
@@ -2668,7 +2679,9 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 					DisplayServer::CURSOR_FDIAGSIZE
 				};
 
-				DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
+				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
+					DisplayServer::get_singleton()->cursor_set_shape(shapes[resize]);
+				}
 
 				return true; // Reserved for showing the resize cursor.
 			}
@@ -2833,8 +2846,8 @@ Variant Viewport::gui_get_drag_data() const {
 TypedArray<String> Viewport::get_configuration_warnings() const {
 	TypedArray<String> warnings = Node::get_configuration_warnings();
 
-	if (size.x == 0 || size.y == 0) {
-		warnings.push_back(RTR("Viewport size must be greater than 0 to render anything."));
+	if (size.x <= 1 || size.y <= 1) {
+		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));
 	}
 	return warnings;
 }
@@ -3937,9 +3950,9 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(VRS_MAX);
 }
 
-void Viewport::_validate_property(PropertyInfo &property) const {
-	if (vrs_mode != VRS_TEXTURE && (property.name == "vrs_texture")) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Viewport::_validate_property(PropertyInfo &p_property) const {
+	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

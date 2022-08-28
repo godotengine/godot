@@ -19,7 +19,7 @@
 		</method>
 		<method name="_get_line_syntax_highlighting" qualifiers="virtual const">
 			<return type="Dictionary" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Virtual method which can be overridden to return syntax highlighting data.
 				See [method get_line_syntax_highlighting] for more details.
@@ -40,7 +40,7 @@
 		</method>
 		<method name="get_line_syntax_highlighting">
 			<return type="Dictionary" />
-			<argument index="0" name="line" type="int" />
+			<param index="0" name="line" type="int" />
 			<description>
 				Returns syntax highlighting data for a single line. If the line is not cached, calls [method _get_line_syntax_highlighting] to calculate the data.
 				The return [Dictionary] is column number to [Dictionary]. The column number notes the start of a region, the region will end if another region is found, or at the end of the line. The nested [Dictionary] contains the data for that region, currently only the key "color" is supported.

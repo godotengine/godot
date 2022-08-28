@@ -36,11 +36,12 @@
 #include "scene/gui/separator.h"
 
 class CanvasItemEditor;
+class EditorUndoRedoManager;
 
 class Path2DEditor : public HBoxContainer {
 	GDCLASS(Path2DEditor, HBoxContainer);
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
 	Panel *panel = nullptr;

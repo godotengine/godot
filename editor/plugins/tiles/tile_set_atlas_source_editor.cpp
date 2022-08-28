@@ -1888,7 +1888,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 		alternative_tiles_control_unscaled->update();
 
 		if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
-			if (Vector2(drag_start_mouse_pos).distance_to(tile_atlas_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
+			if (Vector2(drag_start_mouse_pos).distance_to(alternative_tiles_control->get_local_mouse_position()) > 5.0 * EDSCALE) {
 				drag_type = DRAG_TYPE_NONE;
 			}
 		}
@@ -1896,8 +1896,6 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		drag_type = DRAG_TYPE_NONE;
-
 		Vector2 mouse_local_pos = alternative_tiles_control->get_local_mouse_position();
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
@@ -1919,25 +1917,29 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_gui_input(const Ref<In
 			if (mb->is_pressed()) {
 				drag_type = DRAG_TYPE_MAY_POPUP_MENU;
 				drag_start_mouse_pos = alternative_tiles_control->get_local_mouse_position();
-			} else if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
-				// Right click released and wasn't dragged too far
-				Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
+			} else {
+				if (drag_type == DRAG_TYPE_MAY_POPUP_MENU) {
+					// Right click released and wasn't dragged too far
+					Vector3 tile = tile_atlas_view->get_alternative_tile_at_pos(mouse_local_pos);
 
-				selection.clear();
-				TileSelection selected = { Vector2i(tile.x, tile.y), int(tile.z) };
-				if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
-					selection.insert(selected);
+					selection.clear();
+					TileSelection selected = { Vector2i(tile.x, tile.y), int(tile.z) };
+					if (selected.tile != TileSetSource::INVALID_ATLAS_COORDS) {
+						selection.insert(selected);
+					}
+
+					_update_tile_inspector();
+					_update_tile_id_label();
+
+					if (selection.size() == 1) {
+						selected = selection.front()->get();
+						menu_option_coords = selected.tile;
+						menu_option_alternative = selected.alternative;
+						alternative_tile_popup_menu->popup(Rect2i(get_global_mouse_position(), Size2i()));
+					}
 				}
 
-				_update_tile_inspector();
-				_update_tile_id_label();
-
-				if (selection.size() == 1) {
-					selected = selection.front()->get();
-					menu_option_coords = selected.tile;
-					menu_option_alternative = selected.alternative;
-					alternative_tile_popup_menu->popup(Rect2i(get_global_mouse_position(), Size2i()));
-				}
+				drag_type = DRAG_TYPE_NONE;
 			}
 		}
 		tile_atlas_control->update();
@@ -2058,14 +2060,16 @@ void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what)
 }
 
 void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	UndoRedo *undo_redo = Object::cast_to<UndoRedo>(p_undo_redo);
-	ERR_FAIL_COND(!undo_redo);
+	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(!undo_redo.is_valid());
 
 #define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
 
-	undo_redo->start_force_keep_in_merge_ends();
 	AtlasTileProxyObject *tile_data_proxy = Object::cast_to<AtlasTileProxyObject>(p_edited);
 	if (tile_data_proxy) {
+		UndoRedo *internal_undo_redo = undo_redo->get_history_for_object(tile_data_proxy).undo_redo;
+		internal_undo_redo->start_force_keep_in_merge_ends();
+
 		Vector<String> components = String(p_property).split("/", true, 2);
 		if (components.size() == 2 && components[1] == "polygons_count") {
 			int layer_index = components[0].trim_prefix("physics_layer_").to_int();
@@ -2088,12 +2092,16 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				}
 			}
 		}
+		internal_undo_redo->end_force_keep_in_merge_ends();
 	}
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy = Object::cast_to<TileSetAtlasSourceProxyObject>(p_edited);
 	if (atlas_source_proxy) {
 		TileSetAtlasSource *atlas_source = atlas_source_proxy->get_edited();
 		ERR_FAIL_COND(!atlas_source);
+
+		UndoRedo *internal_undo_redo = undo_redo->get_history_for_object(atlas_source).undo_redo;
+		internal_undo_redo->start_force_keep_in_merge_ends();
 
 		PackedVector2Array arr;
 		if (p_property == "texture") {
@@ -2121,8 +2129,8 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 				}
 			}
 		}
+		internal_undo_redo->end_force_keep_in_merge_ends();
 	}
-	undo_redo->end_force_keep_in_merge_ends();
 
 #undef ADD_UNDO
 }
@@ -2279,7 +2287,6 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 
 void TileSetAtlasSourceEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			tool_setup_atlas_source_button->set_icon(get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 			tool_select_button->set_icon(get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
@@ -2518,7 +2525,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control);
 
 	tile_atlas_control_unscaled = memnew(Control);
-	tile_atlas_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	tile_atlas_control_unscaled->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw));
 	tile_atlas_view->add_control_over_atlas_tiles(tile_atlas_control_unscaled, false);
 	tile_atlas_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
@@ -2535,7 +2541,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_atlas_view->add_control_over_alternative_tiles(alternative_tiles_control);
 
 	alternative_tiles_control_unscaled = memnew(Control);
-	alternative_tiles_control_unscaled->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	alternative_tiles_control_unscaled->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw));
 	tile_atlas_view->add_control_over_alternative_tiles(alternative_tiles_control_unscaled, false);
 	alternative_tiles_control_unscaled->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);

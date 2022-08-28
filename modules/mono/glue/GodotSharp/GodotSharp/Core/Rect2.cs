@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -431,12 +426,7 @@ namespace Godot
         /// <returns>Whether or not the rect and the other object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Rect2)
-            {
-                return Equals((Rect2)obj);
-            }
-
-            return false;
+            return obj is Rect2 other && Equals(other);
         }
 
         /// <summary>

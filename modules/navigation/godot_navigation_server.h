@@ -85,7 +85,7 @@ public:
 
 	void add_command(SetCommand *command) const;
 
-	virtual Array get_maps() const override;
+	virtual TypedArray<RID> get_maps() const override;
 
 	virtual RID map_create() const override;
 	COMMAND_2(map_set_active, RID, p_map, bool, p_active);
@@ -107,8 +107,8 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override;
 
-	virtual Array map_get_regions(RID p_map) const override;
-	virtual Array map_get_agents(RID p_map) const override;
+	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
+	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
 
 	virtual void map_force_update(RID p_map) override;
 
@@ -135,7 +135,7 @@ public:
 	virtual RID agent_create() const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
 	virtual RID agent_get_map(RID p_agent) const override;
-	COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist);
+	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
 	COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count);
 	COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time);
 	COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius);

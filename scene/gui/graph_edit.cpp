@@ -424,7 +424,6 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 void GraphEdit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			port_hotzone_inner_extent = get_theme_constant("port_hotzone_inner_extent");
 			port_hotzone_outer_extent = get_theme_constant("port_hotzone_outer_extent");
@@ -607,13 +606,16 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_color = Object::cast_to<GraphNode>(to)->get_connection_input_color(E.to_port);
 									connecting_target = false;
 									connecting_to = pos;
-									just_disconnected = true;
 
-									emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-									to = get_node(String(connecting_from)); //maybe it was erased
-									if (Object::cast_to<GraphNode>(to)) {
-										connecting = true;
-										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+									if (connecting_type >= 0) {
+										just_disconnected = true;
+
+										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
+										to = get_node(String(connecting_from)); //maybe it was erased
+										if (Object::cast_to<GraphNode>(to)) {
+											connecting = true;
+											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+										}
 									}
 									return;
 								}
@@ -621,7 +623,6 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 						}
 					}
 
-					connecting = true;
 					connecting_from = gn->get_name();
 					connecting_index = j;
 					connecting_out = true;
@@ -629,8 +630,11 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_output_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconnected = false;
-					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+					if (connecting_type >= 0) {
+						connecting = true;
+						just_disconnected = false;
+						emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+					}
 					return;
 				}
 			}
@@ -657,11 +661,13 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									connecting_to = pos;
 									just_disconnected = true;
 
-									emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
-									fr = get_node(String(connecting_from)); //maybe it was erased
-									if (Object::cast_to<GraphNode>(fr)) {
-										connecting = true;
-										emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+									if (connecting_type >= 0) {
+										emit_signal(SNAME("disconnection_request"), E.from, E.from_port, E.to, E.to_port);
+										fr = get_node(String(connecting_from)); //maybe it was erased
+										if (Object::cast_to<GraphNode>(fr)) {
+											connecting = true;
+											emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, true);
+										}
 									}
 									return;
 								}
@@ -669,7 +675,6 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 						}
 					}
 
-					connecting = true;
 					connecting_from = gn->get_name();
 					connecting_index = j;
 					connecting_out = false;
@@ -677,8 +682,11 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_input_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconnected = false;
-					emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+					if (connecting_type >= 0) {
+						connecting = true;
+						just_disconnected = false;
+						emit_signal(SNAME("connection_drag_started"), connecting_from, connecting_index, false);
+					}
 					return;
 				}
 			}
@@ -710,6 +718,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = gn->get_connection_output_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_output_hotzone(gn, j, mpos, port_size)) {
+							if (!is_node_hover_valid(gn->get_name(), j, connecting_from, connecting_index)) {
+								continue;
+							}
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -725,6 +736,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 
 						int type = gn->get_connection_input_type(j);
 						if ((type == connecting_type || valid_connection_types.has(ConnType(connecting_type, type))) && is_in_input_hotzone(gn, j, mpos, port_size)) {
+							if (!is_node_hover_valid(connecting_from, connecting_index, gn->get_name(), j)) {
+								continue;
+							}
 							connecting_target = true;
 							connecting_to = pos;
 							connecting_target_to = gn->get_name();
@@ -1121,7 +1135,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		drag_accum += mm->get_relative();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-			if (gn && gn->is_selected()) {
+			if (gn && gn->is_selected() && gn->is_draggable()) {
 				Vector2 pos = (gn->get_drag_from() * zoom + drag_accum) / zoom;
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
@@ -1160,7 +1174,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				} else if (gn->is_selected() && !box_selection_mode_additive) {
 					emit_signal(SNAME("node_deselected"), gn);
 				}
-				gn->set_selected(box_selection_mode_additive);
+				if (gn->is_selectable()) {
+					gn->set_selected(box_selection_mode_additive);
+				}
 			} else {
 				bool select = (previous_selected.find(gn) != nullptr);
 				if (gn->is_selected() && !select) {
@@ -1168,7 +1184,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				} else if (!gn->is_selected() && select) {
 					emit_signal(SNAME("node_selected"), gn);
 				}
-				gn->set_selected(select);
+				if (gn->is_selectable()) {
+					gn->set_selected(select);
+				}
 			}
 		}
 
@@ -1187,7 +1205,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						continue;
 					}
 
-					bool select = (previous_selected.find(gn) != nullptr);
+					bool select = (gn->is_selectable() && previous_selected.find(gn) != nullptr);
 					if (gn->is_selected() && !select) {
 						emit_signal(SNAME("node_deselected"), gn);
 					} else if (!gn->is_selected() && select) {
@@ -1279,7 +1297,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 						if (o_gn) {
 							if (o_gn == gn) {
-								o_gn->set_selected(true);
+								o_gn->set_selected(o_gn->is_selectable());
 							} else {
 								if (o_gn->is_selected()) {
 									emit_signal(SNAME("node_deselected"), o_gn);
@@ -1290,7 +1308,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					}
 				}
 
-				gn->set_selected(true);
+				gn->set_selected(gn->is_selectable());
 				for (int i = 0; i < get_child_count(); i++) {
 					GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 					if (!o_gn) {
@@ -1453,6 +1471,14 @@ void GraphEdit::force_connection_drag_end() {
 	emit_signal(SNAME("connection_drag_ended"));
 }
 
+bool GraphEdit::is_node_hover_valid(const StringName &p_from, const int p_from_port, const StringName &p_to, const int p_to_port) {
+	bool valid;
+	if (GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid)) {
+		return valid;
+	}
+	return true;
+}
+
 void GraphEdit::set_panning_scheme(PanningScheme p_scheme) {
 	panning_scheme = p_scheme;
 	panner->set_control_scheme((ViewPanner::ControlScheme)p_scheme);
@@ -1577,10 +1603,10 @@ void GraphEdit::remove_valid_left_disconnect_type(int p_type) {
 	valid_left_disconnect_types.erase(p_type);
 }
 
-Array GraphEdit::_get_connection_list() const {
+TypedArray<Dictionary> GraphEdit::_get_connection_list() const {
 	List<Connection> conns;
 	get_connection_list(&conns);
-	Array arr;
+	TypedArray<Dictionary> arr;
 	for (const Connection &E : conns) {
 		Dictionary d;
 		d["from"] = E.from;
@@ -1626,6 +1652,9 @@ bool GraphEdit::is_valid_connection_type(int p_type, int p_with_type) const {
 }
 
 void GraphEdit::set_use_snap(bool p_enable) {
+	if (snap_button->is_pressed() == p_enable) {
+		return;
+	}
 	snap_button->set_pressed(p_enable);
 	update();
 }
@@ -1669,6 +1698,9 @@ Vector2 GraphEdit::get_minimap_size() const {
 }
 
 void GraphEdit::set_minimap_opacity(float p_opacity) {
+	if (minimap->get_modulate().a == p_opacity) {
+		return;
+	}
 	minimap->set_modulate(Color(1, 1, 1, p_opacity));
 	minimap->update();
 }
@@ -1679,6 +1711,9 @@ float GraphEdit::get_minimap_opacity() const {
 }
 
 void GraphEdit::set_minimap_enabled(bool p_enable) {
+	if (minimap_button->is_pressed() == p_enable) {
+		return;
+	}
 	minimap_button->set_pressed(p_enable);
 	_minimap_toggled();
 	minimap->update();
@@ -1686,6 +1721,19 @@ void GraphEdit::set_minimap_enabled(bool p_enable) {
 
 bool GraphEdit::is_minimap_enabled() const {
 	return minimap_button->is_pressed();
+}
+
+void GraphEdit::set_arrange_nodes_button_hidden(bool p_enable) {
+	arrange_nodes_button_hidden = p_enable;
+	if (arrange_nodes_button_hidden) {
+		layout_button->hide();
+	} else {
+		layout_button->show();
+	}
+}
+
+bool GraphEdit::is_arrange_nodes_button_hidden() const {
+	return arrange_nodes_button_hidden;
 }
 
 void GraphEdit::_minimap_toggled() {
@@ -1707,6 +1755,9 @@ float GraphEdit::get_connection_lines_curvature() const {
 }
 
 void GraphEdit::set_connection_lines_thickness(float p_thickness) {
+	if (lines_thickness == p_thickness) {
+		return;
+	}
 	lines_thickness = p_thickness;
 	update();
 }
@@ -1716,6 +1767,9 @@ float GraphEdit::get_connection_lines_thickness() const {
 }
 
 void GraphEdit::set_connection_lines_antialiased(bool p_antialiased) {
+	if (lines_antialiased == p_antialiased) {
+		return;
+	}
 	lines_antialiased = p_antialiased;
 	update();
 }
@@ -1809,7 +1863,20 @@ HashMap<int, Vector<StringName>> GraphEdit::_layering(const HashSet<StringName> 
 		}
 		if (!selected) {
 			current_layer++;
+			uint32_t previous_size_z = z.size();
 			_set_operations(GraphEdit::UNION, z, u);
+			if (z.size() == previous_size_z) {
+				WARN_PRINT("Graph contains cycle(s). The cycle(s) will not be rearranged accurately.");
+				Vector<StringName> t;
+				if (l.has(0)) {
+					t.append_array(l[0]);
+				}
+				for (const StringName &E : p) {
+					t.push_back(E);
+				}
+				l.insert(0, t);
+				break;
+			}
 		}
 		selected = false;
 	}
@@ -2124,7 +2191,7 @@ void GraphEdit::arrange_nodes() {
 			HashSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
-				if (E->get().to == gn->get_name() && p_from->is_selected()) {
+				if (E->get().to == gn->get_name() && p_from->is_selected() && E->get().to != E->get().from) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
 					}
@@ -2301,6 +2368,9 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_minimap_enabled", "enable"), &GraphEdit::set_minimap_enabled);
 	ClassDB::bind_method(D_METHOD("is_minimap_enabled"), &GraphEdit::is_minimap_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_arrange_nodes_button_hidden", "enable"), &GraphEdit::set_arrange_nodes_button_hidden);
+	ClassDB::bind_method(D_METHOD("is_arrange_nodes_button_hidden"), &GraphEdit::is_arrange_nodes_button_hidden);
+
 	ClassDB::bind_method(D_METHOD("set_right_disconnects", "enable"), &GraphEdit::set_right_disconnects);
 	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"), &GraphEdit::is_right_disconnects_enabled);
 
@@ -2315,6 +2385,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_selected", "node"), &GraphEdit::set_selected);
 
 	GDVIRTUAL_BIND(_get_connection_line, "from", "to")
+	GDVIRTUAL_BIND(_is_node_hover_valid, "from", "from_slot", "to", "to_slot");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "right_disconnects"), "set_right_disconnects", "is_right_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scroll_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_scroll_ofs", "get_scroll_ofs");
@@ -2339,6 +2410,9 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "minimap_size", PROPERTY_HINT_NONE, "suffix:px"), "set_minimap_size", "get_minimap_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "minimap_opacity"), "set_minimap_opacity", "get_minimap_opacity");
 
+	ADD_GROUP("UI", "");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arrange_nodes_button_hidden"), "set_arrange_nodes_button_hidden", "is_arrange_nodes_button_hidden");
+
 	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
@@ -2353,7 +2427,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("begin_node_move"));
 	ADD_SIGNAL(MethodInfo("end_node_move"));
 	ADD_SIGNAL(MethodInfo("scroll_offset_changed", PropertyInfo(Variant::VECTOR2, "offset")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::STRING, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "slot"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	BIND_ENUM_CONSTANT(SCROLL_ZOOMS);

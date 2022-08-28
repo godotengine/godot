@@ -31,6 +31,7 @@
 #include "label_3d.h"
 
 #include "core/core_string_names.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 
@@ -126,7 +127,7 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_draw_flag", "get_draw_flag", FLAG_DISABLE_DEPTH_TEST);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_draw_flag", "get_draw_flag", FLAG_FIXED_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
@@ -162,9 +163,19 @@ void Label3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_CUT_OPAQUE_PREPASS);
 }
 
-void Label3D::_validate_property(PropertyInfo &property) const {
-	if (property.name == "material_override" || property.name == "material_overlay") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Label3D::_validate_property(PropertyInfo &p_property) const {
+	if (
+			p_property.name == "material_override" ||
+			p_property.name == "material_overlay" ||
+			p_property.name == "lod_bias" ||
+			p_property.name == "gi_mode" ||
+			p_property.name == "gi_lightmap_scale") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+
+	if (p_property.name == "cast_shadow" && alpha_cut == ALPHA_CUT_DISABLED) {
+		// Alpha-blended materials can't cast shadows.
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -174,6 +185,14 @@ void Label3D::_notification(int p_what) {
 			if (!pending_update) {
 				_im_update();
 			}
+			Viewport *viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+			viewport->connect("size_changed", callable_mp(this, &Label3D::_font_changed));
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			Viewport *viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+			viewport->disconnect("size_changed", callable_mp(this, &Label3D::_font_changed));
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			String new_text = tr(text);
@@ -422,7 +441,7 @@ void Label3D::_shape() {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 
-		Array stt;
+		TypedArray<Vector2i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
 			GDVIRTUAL_CALL(_structured_text_parser, st_args, text, stt);
 		} else {
@@ -889,6 +908,7 @@ void Label3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
 	if (alpha_cut != p_mode) {
 		alpha_cut = p_mode;
 		_queue_update();
+		notify_property_list_changed();
 	}
 }
 
@@ -927,7 +947,12 @@ Label3D::Label3D() {
 
 	mesh = RenderingServer::get_singleton()->mesh_create();
 
+	// Disable shadow casting by default to improve performance and avoid unintended visual artifacts.
 	set_cast_shadows_setting(SHADOW_CASTING_SETTING_OFF);
+
+	// Label3D can't contribute to GI in any way, so disable it to improve performance.
+	set_gi_mode(GI_MODE_DISABLED);
+
 	set_base(mesh);
 }
 

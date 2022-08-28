@@ -32,7 +32,7 @@
 #include "servers/audio_server.h"
 
 void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-	float threshold = Math::db2linear(base->threshold);
+	float threshold = Math::db_to_linear(base->threshold);
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
 	float ratatcoef = exp(-1 / (0.00001f * sample_rate));
@@ -42,7 +42,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	float atcoef = exp(-1 / (attime * sample_rate));
 	float relcoef = exp(-1 / (reltime * sample_rate));
 
-	float makeup = Math::db2linear(base->gain);
+	float makeup = Math::db_to_linear(base->gain);
 
 	float mix = base->mix;
 	float gr_meter_decay = exp(1 / (1 * sample_rate));
@@ -64,7 +64,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 
 		float peak = MAX(s.l, s.r);
 
-		float overdb = 2.08136898f * Math::linear2db(peak / threshold);
+		float overdb = 2.08136898f * Math::linear_to_db(peak / threshold);
 
 		if (overdb < 0.0) { //we only care about what goes over to compress
 			overdb = 0.0;
@@ -94,7 +94,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 		}
 
 		float gr = -overdb * (cratio - 1) / cratio;
-		float grv = Math::db2linear(gr);
+		float grv = Math::db_to_linear(gr);
 
 		runmax = maxover + relcoef * (runmax - maxover); // highest peak for setting att/rel decays in reltime
 		maxover = runmax;
@@ -184,15 +184,15 @@ StringName AudioEffectCompressor::get_sidechain() const {
 	return sidechain;
 }
 
-void AudioEffectCompressor::_validate_property(PropertyInfo &property) const {
-	if (property.name == "sidechain") {
+void AudioEffectCompressor::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sidechain") {
 		String buses = "";
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 			buses += ",";
 			buses += AudioServer::get_singleton()->get_bus_name(i);
 		}
 
-		property.hint_string = buses;
+		p_property.hint_string = buses;
 	}
 }
 

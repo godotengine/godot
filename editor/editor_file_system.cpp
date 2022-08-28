@@ -1192,11 +1192,6 @@ void EditorFileSystem::scan_changes() {
 
 void EditorFileSystem::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			call_deferred(SNAME("scan")); //this should happen after every editor node entered the tree
-
-		} break;
-
 		case NOTIFICATION_EXIT_TREE: {
 			Thread &active_thread = thread.is_started() ? thread : thread_sources;
 			if (use_threads && active_thread.is_started()) {

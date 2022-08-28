@@ -155,7 +155,6 @@ public:
 TEST_CASE("[MethodBind] check all method binds") {
 	MethodBindTester *mbt = memnew(MethodBindTester);
 
-	print_line("testing method bind");
 	mbt->run_tests();
 
 	CHECK(mbt->test_valid[MethodBindTester::TEST_METHOD]);

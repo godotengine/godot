@@ -16,11 +16,11 @@ layout(location = 0) in vec3 vertex_attrib;
 //only for pure render depth when normal is not used
 
 #ifdef NORMAL_USED
-layout(location = 1) in vec3 normal_attrib;
+layout(location = 1) in vec2 normal_attrib;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 2) in vec4 tangent_attrib;
+layout(location = 2) in vec2 tangent_attrib;
 #endif
 
 #if defined(COLOR_USED)
@@ -58,6 +58,13 @@ layout(location = 10) in uvec4 bone_attrib;
 #if defined(WEIGHTS_USED) || defined(USE_PARTICLE_TRAILS)
 layout(location = 11) in vec4 weight_attrib;
 #endif
+
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return v;
+}
 
 /* Varyings */
 
@@ -229,12 +236,13 @@ void main() {
 
 	vec3 vertex = vertex_attrib;
 #ifdef NORMAL_USED
-	vec3 normal = normal_attrib * 2.0 - 1.0;
+	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 tangent = tangent_attrib.xyz * 2.0 - 1.0;
-	float binormalf = tangent_attrib.a * 2.0 - 1.0;
+	vec3 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
+	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
+	float binormalf = sign(signed_tangent_attrib.y);
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
@@ -889,8 +897,10 @@ void main() {
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
 		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
 		vec3 ref_vec = reflect(-view, normal);
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 #endif
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
@@ -940,6 +950,7 @@ void main() {
 		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
 		float NoV = max(dot(n, view), 0.0001);
 		vec3 ref_vec = reflect(-view, n);
+		ref_vec = mix(ref_vec, n, clearcoat_roughness * clearcoat_roughness);
 		// The clear coat layer assumes an IOR of 1.5 (4% reflectance)
 		float Fc = clearcoat * (0.04 + 0.96 * SchlickFresnel(NoV));
 		float attenuation = 1.0 - Fc;
@@ -1036,6 +1047,19 @@ void main() {
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 
 		uint reflection_indices = draw_call.reflection_probes.x;
+
+#ifdef LIGHT_ANISOTROPY_USED
+		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
+		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
+		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
+		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+#else
+		vec3 bent_normal = normal;
+#endif
+		vec3 ref_vec = normalize(reflect(-view, bent_normal));
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
+
 		for (uint i = 0; i < 8; i++) {
 			uint reflection_index = reflection_indices & 0xFF;
 			if (i == 4) {
@@ -1047,16 +1071,8 @@ void main() {
 			if (reflection_index == 0xFF) {
 				break;
 			}
-#ifdef LIGHT_ANISOTROPY_USED
-			// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
-			vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
-			vec3 anisotropic_tangent = cross(anisotropic_direction, view);
-			vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-			vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
-#else
-			vec3 bent_normal = normal;
-#endif
-			reflection_process(reflection_index, view, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+
+			reflection_process(reflection_index, vertex, ref_vec, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 		}
 
 		if (reflection_accum.a > 0.0) {
@@ -1134,7 +1150,7 @@ void main() {
 
 #ifdef USE_SOFT_SHADOWS
 			//version with soft shadows, more expensive
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;
@@ -1286,7 +1302,7 @@ void main() {
 #else
 			// Soft shadow disabled version
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				vec4 pssm_coord;

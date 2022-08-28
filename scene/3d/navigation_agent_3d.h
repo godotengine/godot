@@ -52,7 +52,7 @@ class NavigationAgent3D : public Node {
 	real_t radius = 0.0;
 	real_t navigation_height_offset = 0.0;
 	bool ignore_y = false;
-	real_t neighbor_dist = 0.0;
+	real_t neighbor_distance = 0.0;
 	int max_neighbors = 0;
 	real_t time_horizon = 0.0;
 	real_t max_speed = 0.0;
@@ -122,9 +122,9 @@ public:
 		return ignore_y;
 	}
 
-	void set_neighbor_dist(real_t p_dist);
-	real_t get_neighbor_dist() const {
-		return neighbor_dist;
+	void set_neighbor_distance(real_t p_distance);
+	real_t get_neighbor_distance() const {
+		return neighbor_distance;
 	}
 
 	void set_max_neighbors(int p_count);

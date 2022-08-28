@@ -244,27 +244,25 @@ void XRNode3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRNode3D::trigger_haptic_pulse);
 };
 
-void XRNode3D::_validate_property(PropertyInfo &property) const {
+void XRNode3D::_validate_property(PropertyInfo &p_property) const {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	if (property.name == "tracker") {
+	if (p_property.name == "tracker") {
 		PackedStringArray names = xr_server->get_suggested_tracker_names();
 		String hint_string;
 		for (const String &name : names) {
 			hint_string += name + ",";
 		}
-		property.hint_string = hint_string;
-	} else if (property.name == "pose") {
+		p_property.hint_string = hint_string;
+	} else if (p_property.name == "pose") {
 		PackedStringArray names = xr_server->get_suggested_pose_names(tracker_name);
 		String hint_string;
 		for (const String &name : names) {
 			hint_string += name + ",";
 		}
-		property.hint_string = hint_string;
+		p_property.hint_string = hint_string;
 	}
-
-	Node3D::_validate_property(property);
 }
 
 void XRNode3D::set_tracker(const StringName p_tracker_name) {

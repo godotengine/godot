@@ -128,7 +128,7 @@ class InputEventWithModifiers : public InputEventFromWindow {
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_store_command(bool p_enabled);

@@ -72,11 +72,11 @@ Skeleton3D *GLTFSkeleton::get_godot_skeleton() {
 	return godot_skeleton;
 }
 
-Array GLTFSkeleton::get_unique_names() {
+TypedArray<String> GLTFSkeleton::get_unique_names() {
 	return GLTFTemplateConvert::to_array(unique_names);
 }
 
-void GLTFSkeleton::set_unique_names(Array p_unique_names) {
+void GLTFSkeleton::set_unique_names(TypedArray<String> p_unique_names) {
 	GLTFTemplateConvert::set_from_array(unique_names, p_unique_names);
 }
 

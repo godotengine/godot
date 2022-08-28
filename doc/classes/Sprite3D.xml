@@ -24,7 +24,7 @@
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			[Texture2D] object to draw.
+			[Texture2D] object to draw. If [member GeometryInstance3D.material_override] is used, this will be overridden. The size information is still used.
 		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">
 			The number of rows in the sprite sheet.

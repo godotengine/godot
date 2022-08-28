@@ -26,7 +26,9 @@ struct CompositeGlyphRecord
     OVERLAP_COMPOUND		= 0x0400,
     SCALED_COMPONENT_OFFSET	= 0x0800,
     UNSCALED_COMPONENT_OFFSET	= 0x1000,
+#ifndef HB_NO_BEYOND_64K
     GID_IS_24BIT		= 0x2000
+#endif
   };
 
   public:
@@ -34,7 +36,9 @@ struct CompositeGlyphRecord
   {
     unsigned int size = min_size;
     /* glyphIndex is 24bit instead of 16bit */
+#ifndef HB_NO_BEYOND_64K
     if (flags & GID_IS_24BIT) size += HBGlyphID24::static_size - HBGlyphID16::static_size;
+#endif
     /* arg1 and 2 are int16 */
     if (flags & ARG_1_AND_2_ARE_WORDS) size += 4;
     /* arg1 and 2 are int8 */
@@ -64,9 +68,11 @@ struct CompositeGlyphRecord
   void get_anchor_points (unsigned int &point1, unsigned int &point2) const
   {
     const auto *p = &StructAfter<const HBUINT8> (flags);
+#ifndef HB_NO_BEYOND_64K
     if (flags & GID_IS_24BIT)
       p += HBGlyphID24::static_size;
     else
+#endif
       p += HBGlyphID16::static_size;
     if (flags & ARG_1_AND_2_ARE_WORDS)
     {
@@ -109,9 +115,11 @@ struct CompositeGlyphRecord
     matrix[1] = matrix[2] = 0.f;
 
     const auto *p = &StructAfter<const HBINT8> (flags);
+#ifndef HB_NO_BEYOND_64K
     if (flags & GID_IS_24BIT)
       p += HBGlyphID24::static_size;
     else
+#endif
       p += HBGlyphID16::static_size;
     int tx, ty;
     if (flags & ARG_1_AND_2_ARE_WORDS)
@@ -158,16 +166,20 @@ struct CompositeGlyphRecord
   public:
   hb_codepoint_t get_gid () const
   {
+#ifndef HB_NO_BEYOND_64K
     if (flags & GID_IS_24BIT)
       return StructAfter<const HBGlyphID24> (flags);
     else
+#endif
       return StructAfter<const HBGlyphID16> (flags);
   }
   void set_gid (hb_codepoint_t gid)
   {
+#ifndef HB_NO_BEYOND_64K
     if (flags & GID_IS_24BIT)
       StructAfter<HBGlyphID24> (flags) = gid;
     else
+#endif
       /* TODO assert? */
       StructAfter<HBGlyphID16> (flags) = gid;
   }

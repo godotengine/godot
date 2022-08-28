@@ -35,6 +35,7 @@
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
 #include <audioclient.h>
@@ -48,7 +49,7 @@ class AudioDriverWASAPI : public AudioDriver {
 		IAudioClient *audio_client = nullptr;
 		IAudioRenderClient *render_client = nullptr;
 		IAudioCaptureClient *capture_client = nullptr;
-		bool active = false;
+		SafeFlag active;
 
 		WORD format_tag = 0;
 		WORD bits_per_sample = 0;
@@ -76,8 +77,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	float real_latency = 0.0;
 	bool using_audio_client_3 = false;
 
-	bool thread_exited = false;
-	mutable bool exit_thread = false;
+	SafeFlag exit_thread;
 
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
@@ -91,7 +91,7 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	Error audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit);
 	Error audio_device_finish(AudioDeviceWASAPI *p_device);
-	Array audio_device_get_list(bool p_capture);
+	PackedStringArray audio_device_get_list(bool p_capture);
 
 public:
 	virtual const char *get_name() const {
@@ -103,7 +103,7 @@ public:
 	virtual int get_mix_rate() const;
 	virtual float get_latency();
 	virtual SpeakerMode get_speaker_mode() const;
-	virtual Array get_device_list();
+	virtual PackedStringArray get_device_list();
 	virtual String get_device();
 	virtual void set_device(String device);
 	virtual void lock();
@@ -112,7 +112,7 @@ public:
 
 	virtual Error capture_start();
 	virtual Error capture_stop();
-	virtual Array capture_get_device_list();
+	virtual PackedStringArray capture_get_device_list();
 	virtual void capture_set_device(const String &p_name);
 	virtual String capture_get_device();
 

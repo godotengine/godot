@@ -38,6 +38,7 @@
 #include "scene/resources/tile_set.h"
 
 class EditorFileDialog;
+class EditorUndoRedoManager;
 
 class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);
@@ -49,7 +50,7 @@ private:
 	LocalVector<HashMap<Vector2i, Vector2i>> merged_mapping;
 	Ref<TileSet> tile_set;
 
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	// Settings.
 	int next_line_after_column = 30;

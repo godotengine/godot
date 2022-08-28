@@ -101,7 +101,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
 	virtual void get_export_options(List<ExportOption> *r_options) override;
-	virtual bool get_export_option_visibility(const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
+	virtual bool get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 public:
 	virtual String get_name() const override { return "macOS"; }
@@ -119,7 +119,8 @@ public:
 	}
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const override;
 
 	virtual void get_platform_features(List<String> *r_features) const override {
 		r_features->push_back("pc");

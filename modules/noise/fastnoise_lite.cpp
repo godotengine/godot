@@ -476,24 +476,24 @@ void FastNoiseLite::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOMAIN_WARP_FRACTAL_INDEPENDENT);
 }
 
-void FastNoiseLite::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("cellular") && get_noise_type() != TYPE_CELLULAR) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void FastNoiseLite::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("cellular") && get_noise_type() != TYPE_CELLULAR) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;
 	}
 
-	if (property.name != "fractal_type" && property.name.begins_with("fractal") && get_fractal_type() == FRACTAL_NONE) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name != "fractal_type" && p_property.name.begins_with("fractal") && get_fractal_type() == FRACTAL_NONE) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;
 	}
 
-	if (property.name == "fractal_ping_pong_strength" && get_fractal_type() != FRACTAL_PING_PONG) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name == "fractal_ping_pong_strength" && get_fractal_type() != FRACTAL_PING_PONG) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;
 	}
 
-	if (property.name != "domain_warp_enabled" && property.name.begins_with("domain_warp") && !domain_warp_enabled) {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+	if (p_property.name != "domain_warp_enabled" && p_property.name.begins_with("domain_warp") && !domain_warp_enabled) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;
 	}
 }

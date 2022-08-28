@@ -95,7 +95,7 @@ void SplitContainer::_resort() {
 		no_offset_middle_sep = ms_first[axis];
 	}
 
-	// Compute the final middle separation
+	// Compute the final middle separation.
 	middle_sep = no_offset_middle_sep;
 	if (!collapsed) {
 		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
@@ -327,6 +327,10 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 }
 
 void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
+	if (dragger_visibility == p_visibility) {
+		return;
+	}
+
 	dragger_visibility = p_visibility;
 	queue_sort();
 	update();

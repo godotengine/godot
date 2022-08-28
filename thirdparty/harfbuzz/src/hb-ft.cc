@@ -1086,7 +1086,8 @@ hb_ft_font_changed (hb_font_t *font)
   }
 #endif
 
-  _hb_ft_hb_font_check_changed (font, ft_font);
+  ft_font->advance_cache.clear ();
+  ft_font->cached_serial = font->serial;
 }
 
 /**

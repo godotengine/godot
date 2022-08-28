@@ -9,7 +9,7 @@
 	<methods>
 		<method name="add_id">
 			<return type="void" />
-			<argument index="0" name="id" type="RID" />
+			<param index="0" name="id" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="get_ids" qualifiers="const">
-			<return type="Array" />
+			<return type="RID[]" />
 			<description>
 			</description>
 		</method>

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "servers/text_server.h"
+#include "core/variant/typed_array.h"
 #include "servers/rendering_server.h"
 
 TextServerManager *TextServerManager::singleton = nullptr;
@@ -103,8 +104,8 @@ Ref<TextServer> TextServerManager::find_interface(const String &p_name) const {
 	return interfaces[idx];
 }
 
-Array TextServerManager::get_interfaces() const {
-	Array ret;
+TypedArray<Dictionary> TextServerManager::get_interfaces() const {
+	TypedArray<Dictionary> ret;
 
 	for (int i = 0; i < interfaces.size(); i++) {
 		Dictionary iface_info;
@@ -222,8 +223,8 @@ void TextServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("font_set_style_name", "font_rid", "name"), &TextServer::font_set_style_name);
 	ClassDB::bind_method(D_METHOD("font_get_style_name", "font_rid"), &TextServer::font_get_style_name);
 
-	ClassDB::bind_method(D_METHOD("font_set_antialiased", "font_rid", "antialiased"), &TextServer::font_set_antialiased);
-	ClassDB::bind_method(D_METHOD("font_is_antialiased", "font_rid"), &TextServer::font_is_antialiased);
+	ClassDB::bind_method(D_METHOD("font_set_antialiasing", "font_rid", "antialiasing"), &TextServer::font_set_antialiasing);
+	ClassDB::bind_method(D_METHOD("font_get_antialiasing", "font_rid"), &TextServer::font_get_antialiasing);
 
 	ClassDB::bind_method(D_METHOD("font_set_generate_mipmaps", "font_rid", "generate_mipmaps"), &TextServer::font_set_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("font_get_generate_mipmaps", "font_rid"), &TextServer::font_get_generate_mipmaps);
@@ -446,12 +447,27 @@ void TextServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("string_get_word_breaks", "string", "language"), &TextServer::string_get_word_breaks, DEFVAL(""));
 
+	ClassDB::bind_method(D_METHOD("is_confusable", "string", "dict"), &TextServer::is_confusable);
+	ClassDB::bind_method(D_METHOD("spoof_check", "string"), &TextServer::spoof_check);
+
 	ClassDB::bind_method(D_METHOD("strip_diacritics", "string"), &TextServer::strip_diacritics);
+	ClassDB::bind_method(D_METHOD("is_valid_identifier", "string"), &TextServer::is_valid_identifier);
 
 	ClassDB::bind_method(D_METHOD("string_to_upper", "string", "language"), &TextServer::string_to_upper, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("string_to_lower", "string", "language"), &TextServer::string_to_lower, DEFVAL(""));
 
 	ClassDB::bind_method(D_METHOD("parse_structured_text", "parser_type", "args", "text"), &TextServer::parse_structured_text);
+
+	/* Font AA */
+	BIND_ENUM_CONSTANT(FONT_ANTIALIASING_NONE);
+	BIND_ENUM_CONSTANT(FONT_ANTIALIASING_GRAY);
+	BIND_ENUM_CONSTANT(FONT_ANTIALIASING_LCD);
+
+	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_NONE);
+	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_HRGB);
+	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_HBGR);
+	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_VRGB);
+	BIND_ENUM_CONSTANT(FONT_LCD_SUBPIXEL_LAYOUT_VBGR);
 
 	/* Direction */
 	BIND_ENUM_CONSTANT(DIRECTION_AUTO);
@@ -517,6 +533,7 @@ void TextServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_PUNCTUATION);
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_UNDERSCORE);
 	BIND_BITFIELD_FLAG(GRAPHEME_IS_CONNECTED);
+	BIND_BITFIELD_FLAG(GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL);
 
 	/* Hinting */
 	BIND_ENUM_CONSTANT(HINTING_NONE);
@@ -545,6 +562,8 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_FONT_VARIABLE);
 	BIND_ENUM_CONSTANT(FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION);
 	BIND_ENUM_CONSTANT(FEATURE_USE_SUPPORT_DATA);
+	BIND_ENUM_CONSTANT(FEATURE_UNICODE_IDENTIFIERS);
+	BIND_ENUM_CONSTANT(FEATURE_UNICODE_SECURITY);
 
 	/* FT Contour Point Types */
 	BIND_ENUM_CONSTANT(CONTOUR_CURVE_TAG_ON);
@@ -1578,8 +1597,8 @@ String TextServer::strip_diacritics(const String &p_string) const {
 	return result;
 }
 
-Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	Array ret;
+TypedArray<Vector2i> TextServer::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector2i> ret;
 	switch (p_parser_type) {
 		case STRUCTURED_TEXT_URI: {
 			int prev = 0;
@@ -1620,7 +1639,7 @@ Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, cons
 					ret.push_back(Vector2i(prev, i));
 					ret.push_back(Vector2i(i, i + 1));
 					prev = i + 1;
-				} else if (!local & (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
+				} else if (!local && (p_text[i] == '.')) { // Add each dot separated "domain" part as context.
 					if (prev != i) {
 						ret.push_back(Vector2i(prev, i));
 					}
@@ -1655,8 +1674,8 @@ Array TextServer::parse_structured_text(StructuredTextParser p_parser_type, cons
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
-	Array ret;
+TypedArray<Dictionary> TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
+	TypedArray<Dictionary> ret;
 
 	const Glyph *glyphs = shaped_text_get_glyphs(p_shaped);
 	int gl_size = shaped_text_get_glyph_count(p_shaped);
@@ -1680,7 +1699,7 @@ Array TextServer::_shaped_text_get_glyphs_wrapper(const RID &p_shaped) const {
 	return ret;
 }
 
-Array TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
+TypedArray<Dictionary> TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
 	Array ret;
 
 	const Glyph *glyphs = shaped_text_sort_logical(p_shaped);
@@ -1705,8 +1724,8 @@ Array TextServer::_shaped_text_sort_logical_wrapper(const RID &p_shaped) {
 	return ret;
 }
 
-Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const {
-	Array ret;
+TypedArray<Dictionary> TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) const {
+	TypedArray<Dictionary> ret;
 
 	const Glyph *glyphs = shaped_text_get_ellipsis_glyphs(p_shaped);
 	int gl_size = shaped_text_get_ellipsis_glyph_count(p_shaped);
@@ -1728,6 +1747,26 @@ Array TextServer::_shaped_text_get_ellipsis_glyphs_wrapper(const RID &p_shaped) 
 	}
 
 	return ret;
+}
+
+bool TextServer::is_valid_identifier(const String &p_string) const {
+	const char32_t *str = p_string.ptr();
+	int len = p_string.length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	if (!is_unicode_identifier_start(str[0])) {
+		return false;
+	}
+
+	for (int i = 1; i < len; i++) {
+		if (!is_unicode_identifier_continue(str[i])) {
+			return false;
+		}
+	}
+	return true;
 }
 
 TextServer::TextServer() {

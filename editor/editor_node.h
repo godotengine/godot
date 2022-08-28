@@ -35,9 +35,9 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_title_bar.h"
 #include "editor/export/editor_export.h"
 #include "editor/inspector_dock.h"
-#include "editor/property_editor.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -48,6 +48,7 @@ class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class Button;
 class CenterContainer;
+class ColorPicker;
 class ConfirmationDialog;
 class Control;
 class DependencyEditor;
@@ -67,16 +68,19 @@ class EditorPlugin;
 class EditorPluginList;
 class EditorQuickOpen;
 class EditorResourcePreview;
+class EditorResourceConversionPlugin;
 class EditorRun;
 class EditorRunNative;
 class EditorSettingsDialog;
 class EditorToaster;
+class EditorUndoRedoManager;
 class ExportTemplateManager;
 class FileDialog;
 class FileSystemDock;
 class HSplitContainer;
 class ImportDock;
 class LinkButton;
+class MenuBar;
 class MenuButton;
 class NodeDock;
 class OrphanResourcesDialog;
@@ -140,6 +144,7 @@ private:
 		FILE_SAVE_AS_SCENE,
 		FILE_SAVE_ALL_SCENES,
 		FILE_SAVE_AND_RUN,
+		FILE_SAVE_AND_RUN_MAIN_SCENE,
 		FILE_SHOW_IN_FILESYSTEM,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
@@ -318,13 +323,14 @@ private:
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
-	HBoxContainer *menu_hb = nullptr;
+	EditorTitleBar *menu_hb = nullptr;
 	Control *main_control = nullptr;
-	MenuButton *file_menu = nullptr;
-	MenuButton *project_menu = nullptr;
-	MenuButton *debug_menu = nullptr;
-	MenuButton *settings_menu = nullptr;
-	MenuButton *help_menu = nullptr;
+	MenuBar *main_menu = nullptr;
+	PopupMenu *file_menu = nullptr;
+	PopupMenu *project_menu = nullptr;
+	PopupMenu *debug_menu = nullptr;
+	PopupMenu *settings_menu = nullptr;
+	PopupMenu *help_menu = nullptr;
 	PopupMenu *tool_menu = nullptr;
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
@@ -465,10 +471,9 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
-	String run_custom_filename;
 
-	uint64_t saved_version = 1;
-	uint64_t last_checked_version = 0;
+	String run_custom_filename;
+	String run_current_filename;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
@@ -578,6 +583,7 @@ private:
 
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
+	void _reset_play_buttons();
 
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
@@ -678,6 +684,10 @@ private:
 	void _bottom_panel_switch(bool p_enable, int p_idx);
 	void _bottom_panel_raise_toggled(bool);
 
+	void _begin_first_scan();
+	bool use_startup_benchmark = false;
+	String startup_benchmark_file;
+
 protected:
 	friend class FileSystemDock;
 
@@ -701,7 +711,7 @@ public:
 	static EditorLog *get_log() { return singleton->log; }
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	static UndoRedo *get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
+	static Ref<EditorUndoRedoManager> &get_undo_redo();
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
@@ -770,6 +780,8 @@ public:
 	void open_request(const String &p_path);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
+	bool is_resource_read_only(Ref<Resource> p_resource);
+
 	bool is_changing_scene() const;
 
 	Control *get_main_control();
@@ -785,7 +797,6 @@ public:
 
 	bool is_scene_open(const String &p_path);
 
-	void set_current_version(uint64_t p_version);
 	void set_current_scene(int p_idx);
 
 	void setup_color_picker(ColorPicker *picker);
@@ -812,6 +823,7 @@ public:
 
 	void _copy_warning(const String &p_str);
 
+	void set_use_startup_benchmark(bool p_use_startup_benchmark, const String &p_startup_benchmark_file);
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	Control *get_gui_base() { return gui_base; }

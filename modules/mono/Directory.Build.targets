@@ -1,0 +1,22 @@
+<Project>
+  <PropertyGroup>
+    <_HasNuGetPackage Condition=" '$(_HasNuGetPackage)' == '' And '$(PackageId)' != '' And '$(GeneratePackageOnBuild.ToLower())' == 'true' ">true</_HasNuGetPackage>
+    <_HasNuGetPackage Condition=" '$(_HasNuGetPackage)' == '' ">false</_HasNuGetPackage>
+  </PropertyGroup>
+  <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack"
+    Condition=" '$(_HasNuGetPackage)' == 'true' ">
+    <PropertyGroup>
+      <GodotSourceRootPath>$(MSBuildThisFileDirectory)\..\..\</GodotSourceRootPath>
+      <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
+    </PropertyGroup>
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
+  </Target>
+  <Target Name="PushNuGetPackagesToLocalSource" BeforeTargets="Pack"
+    Condition=" '$(_HasNuGetPackage)' == 'true' And '$(PushNuGetToLocalSource)' != '' ">
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(PushNuGetToLocalSource)\" />
+  </Target>
+  <Target Name="ClearNuGetLocalPackageCache" BeforeTargets="Pack"
+    Condition=" '$(_HasNuGetPackage)' == 'true' And '$(ClearNuGetLocalCache.ToLower())' == 'true' ">
+    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(PackageVersion)"/>
+  </Target>
+</Project>

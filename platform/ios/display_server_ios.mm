@@ -128,7 +128,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
-	bool keep_screen_on = bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true));
+	bool keep_screen_on = bool(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 	screen_set_keep_on(keep_screen_on);
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
@@ -336,8 +336,8 @@ bool DisplayServerIOS::tts_is_paused() const {
 	return [tts isPaused];
 }
 
-Array DisplayServerIOS::tts_get_voices() const {
-	ERR_FAIL_COND_V(!tts, Array());
+TypedArray<Dictionary> DisplayServerIOS::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
 	return [tts getVoices];
 }
 
@@ -585,12 +585,44 @@ bool DisplayServerIOS::screen_is_touchscreen(int p_screen) const {
 	return true;
 }
 
-void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, bool p_multiline, int p_max_length, int p_cursor_start, int p_cursor_end) {
+void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	NSString *existingString = [[NSString alloc] initWithUTF8String:p_existing_text.utf8().get_data()];
+
+	AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
+	AppDelegate.viewController.keyboardView.textContentType = nil;
+	switch (p_type) {
+		case KEYBOARD_TYPE_DEFAULT: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
+		} break;
+		case KEYBOARD_TYPE_MULTILINE: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
+		} break;
+		case KEYBOARD_TYPE_NUMBER: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeNumberPad;
+		} break;
+		case KEYBOARD_TYPE_NUMBER_DECIMAL: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeDecimalPad;
+		} break;
+		case KEYBOARD_TYPE_PHONE: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypePhonePad;
+			AppDelegate.viewController.keyboardView.textContentType = UITextContentTypeTelephoneNumber;
+		} break;
+		case KEYBOARD_TYPE_EMAIL_ADDRESS: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeEmailAddress;
+			AppDelegate.viewController.keyboardView.textContentType = UITextContentTypeEmailAddress;
+		} break;
+		case KEYBOARD_TYPE_PASSWORD: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeDefault;
+			AppDelegate.viewController.keyboardView.textContentType = UITextContentTypePassword;
+		} break;
+		case KEYBOARD_TYPE_URL: {
+			AppDelegate.viewController.keyboardView.keyboardType = UIKeyboardTypeWebSearch;
+			AppDelegate.viewController.keyboardView.textContentType = UITextContentTypeURL;
+		} break;
+	}
 
 	[AppDelegate.viewController.keyboardView
 			becomeFirstResponderWithString:existingString
-								 multiline:p_multiline
 							   cursorStart:p_cursor_start
 								 cursorEnd:p_cursor_end];
 }

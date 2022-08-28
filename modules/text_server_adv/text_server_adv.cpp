@@ -29,12 +29,12 @@
 /*************************************************************************/
 
 #include "text_server_adv.h"
-#include "core/object/worker_thread_pool.h"
 
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
 
 #include <godot_cpp/classes/file.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/translation_server.hpp>
 #include <godot_cpp/core/error_macros.hpp>
@@ -44,8 +44,10 @@ using namespace godot;
 #else
 // Headers for building as built-in module.
 
+#include "core/config/project_settings.h"
 #include "core/core_bind.h"
 #include "core/error/error_macros.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
@@ -346,6 +348,8 @@ bool TextServerAdvanced::has_feature(Feature p_feature) const {
 		case FEATURE_FONT_VARIABLE:
 		case FEATURE_CONTEXT_SENSITIVE_CASE_CONVERSION:
 		case FEATURE_USE_SUPPORT_DATA:
+		case FEATURE_UNICODE_IDENTIFIERS:
+		case FEATURE_UNICODE_SECURITY:
 			return true;
 		default: {
 		}
@@ -789,6 +793,10 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 	for (int i = 0; i < p_data->textures.size(); i++) {
 		const FontTexture &ct = p_data->textures[i];
 
+		if (p_image_format != ct.format) {
+			continue;
+		}
+
 		if (mw > ct.texture_w || mh > ct.texture_h) { // Too big for this texture.
 			continue;
 		}
@@ -1080,9 +1088,28 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_msdf(
 #endif
 
 #ifdef MODULE_FREETYPE_ENABLED
-_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance) const {
+_FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance, bool p_bgra) const {
 	int w = bitmap.width;
 	int h = bitmap.rows;
+	int color_size = 2;
+
+	switch (bitmap.pixel_mode) {
+		case FT_PIXEL_MODE_MONO:
+		case FT_PIXEL_MODE_GRAY: {
+			color_size = 2;
+		} break;
+		case FT_PIXEL_MODE_BGRA: {
+			color_size = 4;
+		} break;
+		case FT_PIXEL_MODE_LCD: {
+			color_size = 4;
+			w /= 3;
+		} break;
+		case FT_PIXEL_MODE_LCD_V: {
+			color_size = 4;
+			h /= 3;
+		} break;
+	}
 
 	int mw = w + p_rect_margin * 4;
 	int mh = h + p_rect_margin * 4;
@@ -1090,7 +1117,6 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 	ERR_FAIL_COND_V(mw > 4096, FontGlyph());
 	ERR_FAIL_COND_V(mh > 4096, FontGlyph());
 
-	int color_size = bitmap.pixel_mode == FT_PIXEL_MODE_BGRA ? 4 : 2;
 	Image::Format require_format = color_size == 4 ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8;
 
 	FontTexturePosition tex_pos = find_texture_pos_for_glyph(p_data, color_size, require_format, mw, mh, false);
@@ -1124,6 +1150,34 @@ _FORCE_INLINE_ TextServerAdvanced::FontGlyph TextServerAdvanced::rasterize_bitma
 						wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
 						wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
 						wr[ofs + 3] = bitmap.buffer[ofs_color + 3];
+					} break;
+					case FT_PIXEL_MODE_LCD: {
+						int ofs_color = i * bitmap.pitch + (j * 3);
+						if (p_bgra) {
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 2];
+							wr[ofs + 3] = 255;
+						} else {
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 2];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + 1];
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 3] = 255;
+						}
+					} break;
+					case FT_PIXEL_MODE_LCD_V: {
+						int ofs_color = i * bitmap.pitch * 3 + j;
+						if (p_bgra) {
+							wr[ofs + 0] = bitmap.buffer[ofs_color + bitmap.pitch * 2];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + bitmap.pitch];
+							wr[ofs + 2] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 3] = 255;
+						} else {
+							wr[ofs + 0] = bitmap.buffer[ofs_color + 0];
+							wr[ofs + 1] = bitmap.buffer[ofs_color + bitmap.pitch];
+							wr[ofs + 2] = bitmap.buffer[ofs_color + bitmap.pitch * 2];
+							wr[ofs + 3] = 255;
+						}
 					} break;
 					default:
 						ERR_FAIL_V_MSG(FontGlyph(), "Font uses unsupported pixel format: " + String::num_int64(bitmap.pixel_mode) + ".");
@@ -1228,9 +1282,44 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 			FT_Outline_Transform(&fd->face->glyph->outline, &mat);
 		}
 
+		FT_Render_Mode aa_mode = FT_RENDER_MODE_NORMAL;
+		bool bgra = false;
+		switch (p_font_data->antialiasing) {
+			case FONT_ANTIALIASING_NONE: {
+				aa_mode = FT_RENDER_MODE_MONO;
+			} break;
+			case FONT_ANTIALIASING_GRAY: {
+				aa_mode = FT_RENDER_MODE_NORMAL;
+			} break;
+			case FONT_ANTIALIASING_LCD: {
+				int aa_layout = (int)((p_glyph >> 24) & 7);
+				switch (aa_layout) {
+					case FONT_LCD_SUBPIXEL_LAYOUT_HRGB: {
+						aa_mode = FT_RENDER_MODE_LCD;
+						bgra = false;
+					} break;
+					case FONT_LCD_SUBPIXEL_LAYOUT_HBGR: {
+						aa_mode = FT_RENDER_MODE_LCD;
+						bgra = true;
+					} break;
+					case FONT_LCD_SUBPIXEL_LAYOUT_VRGB: {
+						aa_mode = FT_RENDER_MODE_LCD_V;
+						bgra = false;
+					} break;
+					case FONT_LCD_SUBPIXEL_LAYOUT_VBGR: {
+						aa_mode = FT_RENDER_MODE_LCD_V;
+						bgra = true;
+					} break;
+					default: {
+						aa_mode = FT_RENDER_MODE_NORMAL;
+					} break;
+				}
+			} break;
+		}
+
 		if (!outline) {
 			if (!p_font_data->msdf) {
-				error = FT_Render_Glyph(fd->face->glyph, p_font_data->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO);
+				error = FT_Render_Glyph(fd->face->glyph, aa_mode);
 			}
 			FT_GlyphSlot slot = fd->face->glyph;
 			if (!error) {
@@ -1242,7 +1331,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 					ERR_FAIL_V_MSG(false, "Compiled without MSDFGEN support!");
 #endif
 				} else {
-					gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0);
+					gl = rasterize_bitmap(fd, rect_range, slot->bitmap, slot->bitmap_top, slot->bitmap_left, Vector2((h + (1 << 9)) >> 10, (v + (1 << 9)) >> 10) / 64.0, bgra);
 				}
 			}
 		} else {
@@ -1262,11 +1351,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 			if (FT_Glyph_Stroke(&glyph, stroker, 1) != 0) {
 				goto cleanup_glyph;
 			}
-			if (FT_Glyph_To_Bitmap(&glyph, p_font_data->antialiased ? FT_RENDER_MODE_NORMAL : FT_RENDER_MODE_MONO, nullptr, 1) != 0) {
+			if (FT_Glyph_To_Bitmap(&glyph, aa_mode, nullptr, 1) != 0) {
 				goto cleanup_glyph;
 			}
 			glyph_bitmap = (FT_BitmapGlyph)glyph;
-			gl = rasterize_bitmap(fd, rect_range, glyph_bitmap->bitmap, glyph_bitmap->top, glyph_bitmap->left, Vector2());
+			gl = rasterize_bitmap(fd, rect_range, glyph_bitmap->bitmap, glyph_bitmap->top, glyph_bitmap->left, Vector2(), bgra);
 
 		cleanup_glyph:
 			FT_Done_Glyph(glyph);
@@ -1311,12 +1400,14 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 		fargs.stream = &fd->stream;
 
 		int max_index = 0;
-		FT_Face tmp_face;
+		FT_Face tmp_face = nullptr;
 		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-		if (error == 0) {
+		if (tmp_face && error == 0) {
 			max_index = tmp_face->num_faces - 1;
 		}
-		FT_Done_Face(tmp_face);
+		if (tmp_face) {
+			FT_Done_Face(tmp_face);
+		}
 
 		error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
 		if (error) {
@@ -1359,7 +1450,13 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
 
+#if HB_VERSION_ATLEAST(3, 3, 0)
 		hb_font_set_synthetic_slant(fd->hb_handle, p_font_data->transform[0][1]);
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 3.3.0, synthetic slant offset correction disabled.
+#endif
+#endif
 
 		if (!p_font_data->face_init) {
 			// Get style flags and name.
@@ -1626,6 +1723,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 				for (unsigned int i = 0; i < count; i++) {
 					Dictionary ftr;
 
+#if HB_VERSION_ATLEAST(2, 1, 0)
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GSUB, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
 						PackedInt32Array lbl;
@@ -1635,6 +1733,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
+#endif
+#endif
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -1649,6 +1752,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 				for (unsigned int i = 0; i < count; i++) {
 					Dictionary ftr;
 
+#if HB_VERSION_ATLEAST(2, 1, 0)
 					hb_ot_name_id_t lbl_id;
 					if (hb_ot_layout_feature_get_name_ids(hb_face, HB_OT_TAG_GPOS, i, &lbl_id, nullptr, nullptr, nullptr, nullptr)) {
 						PackedInt32Array lbl;
@@ -1658,6 +1762,11 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 						hb_ot_name_get_utf32(hb_face, lbl_id, hb_language_from_string(TranslationServer::get_singleton()->get_tool_locale().ascii().get_data(), -1), &text_size, (uint32_t *)lbl.ptrw());
 						ftr["label"] = String((const char32_t *)lbl.ptr());
 					}
+#else
+#ifndef _MSC_VER
+#warning Building with HarfBuzz < 2.1.0, readable OpenType feature names disabled.
+#endif
+#endif
 					ftr["type"] = _get_tag_type(feature_tags[i]);
 					ftr["hidden"] = _get_tag_hidden(feature_tags[i]);
 
@@ -1903,23 +2012,23 @@ String TextServerAdvanced::font_get_name(const RID &p_font_rid) const {
 	return fd->font_name;
 }
 
-void TextServerAdvanced::font_set_antialiased(const RID &p_font_rid, bool p_antialiased) {
+void TextServerAdvanced::font_set_antialiasing(RID p_font_rid, TextServer::FontAntialiasing p_antialiasing) {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->antialiased != p_antialiased) {
+	if (fd->antialiasing != p_antialiasing) {
 		_font_clear_cache(fd);
-		fd->antialiased = p_antialiased;
+		fd->antialiasing = p_antialiasing;
 	}
 }
 
-bool TextServerAdvanced::font_is_antialiased(const RID &p_font_rid) const {
+TextServer::FontAntialiasing TextServerAdvanced::font_get_antialiasing(RID p_font_rid) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, false);
+	ERR_FAIL_COND_V(!fd, TextServer::FONT_ANTIALIASING_NONE);
 
 	MutexLock lock(fd->mutex);
-	return fd->antialiased;
+	return fd->antialiasing;
 }
 
 void TextServerAdvanced::font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) {
@@ -2148,12 +2257,12 @@ double TextServerAdvanced::font_get_oversampling(const RID &p_font_rid) const {
 	return fd->oversampling;
 }
 
-Array TextServerAdvanced::font_get_size_cache_list(const RID &p_font_rid) const {
+TypedArray<Vector2i> TextServerAdvanced::font_get_size_cache_list(const RID &p_font_rid) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, TypedArray<Vector2i>());
 
 	MutexLock lock(fd->mutex);
-	Array ret;
+	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
 		ret.push_back(E.key);
 	}
@@ -2432,15 +2541,15 @@ PackedInt32Array TextServerAdvanced::font_get_texture_offsets(const RID &p_font_
 	return tex.offsets;
 }
 
-Array TextServerAdvanced::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
+PackedInt32Array TextServerAdvanced::font_get_glyph_list(const RID &p_font_rid, const Vector2i &p_size) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, PackedInt32Array());
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size_outline(fd, p_size);
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), PackedInt32Array());
 
-	Array ret;
+	PackedInt32Array ret;
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 	for (const KeyValue<int32_t, FontGlyph> &E : gl) {
 		ret.push_back(E.key);
@@ -2492,7 +2601,16 @@ Vector2 TextServerAdvanced::font_get_glyph_advance(const RID &p_font_rid, int64_
 	Vector2i size = _get_size(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return Vector2(); // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2535,7 +2653,16 @@ Vector2 TextServerAdvanced::font_get_glyph_offset(const RID &p_font_rid, const V
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return Vector2(); // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2571,7 +2698,16 @@ Vector2 TextServerAdvanced::font_get_glyph_size(const RID &p_font_rid, const Vec
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Vector2());
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return Vector2(); // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2607,7 +2743,16 @@ Rect2 TextServerAdvanced::font_get_glyph_uv_rect(const RID &p_font_rid, const Ve
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Rect2());
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return Rect2(); // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2638,7 +2783,16 @@ int64_t TextServerAdvanced::font_get_glyph_texture_idx(const RID &p_font_rid, co
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), -1);
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return -1; // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2669,7 +2823,16 @@ RID TextServerAdvanced::font_get_glyph_texture_rid(const RID &p_font_rid, const 
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), RID());
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return RID(); // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2708,7 +2871,16 @@ Size2 TextServerAdvanced::font_get_glyph_texture_size(const RID &p_font_rid, con
 	Vector2i size = _get_size_outline(fd, p_size);
 
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Size2());
-	if (!_ensure_glyph(fd, size, p_glyph)) {
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
+
+	if (!_ensure_glyph(fd, size, p_glyph | mod)) {
 		return Size2(); // Invalid or non graphicl glyph, do not display errors.
 	}
 
@@ -2789,16 +2961,16 @@ Dictionary TextServerAdvanced::font_get_glyph_contours(const RID &p_font_rid, in
 #endif
 }
 
-Array TextServerAdvanced::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
+TypedArray<Vector2i> TextServerAdvanced::font_get_kerning_list(const RID &p_font_rid, int64_t p_size) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, Array());
+	ERR_FAIL_COND_V(!fd, TypedArray<Vector2i>());
 
 	MutexLock lock(fd->mutex);
 	Vector2i size = _get_size(fd, p_size);
 
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), Array());
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), TypedArray<Vector2i>());
 
-	Array ret;
+	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
 		ret.push_back(E.key);
 	}
@@ -2964,16 +3136,18 @@ void TextServerAdvanced::font_render_range(const RID &p_font_rid, const Vector2i
 			if (fd->msdf) {
 				_ensure_glyph(fd, size, (int32_t)idx);
 			} else {
-				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27));
-					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27));
-					_ensure_glyph(fd, size, (int32_t)idx | (2 << 27));
-					_ensure_glyph(fd, size, (int32_t)idx | (3 << 27));
-				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27));
-					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27));
-				} else {
-					_ensure_glyph(fd, size, (int32_t)idx);
+				for (int aa = 0; aa < ((fd->antialiasing == FONT_ANTIALIASING_LCD) ? FONT_LCD_SUBPIXEL_LAYOUT_MAX : 1); aa++) {
+					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+						_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (2 << 27) | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (3 << 27) | (aa << 24));
+					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+						_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
+						_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
+					} else {
+						_ensure_glyph(fd, size, (int32_t)idx | (aa << 24));
+					}
 				}
 			}
 		}
@@ -2994,16 +3168,18 @@ void TextServerAdvanced::font_render_glyph(const RID &p_font_rid, const Vector2i
 		if (fd->msdf) {
 			_ensure_glyph(fd, size, (int32_t)idx);
 		} else {
-			if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
-				_ensure_glyph(fd, size, (int32_t)idx | (0 << 27));
-				_ensure_glyph(fd, size, (int32_t)idx | (1 << 27));
-				_ensure_glyph(fd, size, (int32_t)idx | (2 << 27));
-				_ensure_glyph(fd, size, (int32_t)idx | (3 << 27));
-			} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-				_ensure_glyph(fd, size, (int32_t)idx | (1 << 27));
-				_ensure_glyph(fd, size, (int32_t)idx | (0 << 27));
-			} else {
-				_ensure_glyph(fd, size, (int32_t)idx);
+			for (int aa = 0; aa < ((fd->antialiasing == FONT_ANTIALIASING_LCD) ? FONT_LCD_SUBPIXEL_LAYOUT_MAX : 1); aa++) {
+				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (2 << 27) | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (3 << 27) | (aa << 24));
+				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24));
+					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24));
+				} else {
+					_ensure_glyph(fd, size, (int32_t)idx | (aa << 24));
+				}
 			}
 		}
 	}
@@ -3019,9 +3195,19 @@ void TextServerAdvanced::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 
 	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
+	bool lcd_aa = false;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (!fd->msdf && fd->cache[size]->face) {
+		// LCD layout, bits 24, 25, 26
+		if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+			TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+			if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+				lcd_aa = true;
+				index = index | (layout << 24);
+			}
+		}
+		// Subpixel X-shift, bits 27, 28
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
 			index = index | (xshift << 27);
@@ -3043,7 +3229,7 @@ void TextServerAdvanced::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 		if (gl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (fd->cache[size]->face && FT_HAS_COLOR(fd->cache[size]->face)) {
+			if (fd->cache[size]->face && (fd->cache[size]->textures[gl.texture_idx].format == Image::FORMAT_RGBA8) && !lcd_aa) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
@@ -3081,7 +3267,11 @@ void TextServerAdvanced::font_draw_glyph(const RID &p_font_rid, const RID &p_can
 					}
 					cpos += gl.rect.position;
 					Size2 csize = gl.rect.size;
-					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
+					if (lcd_aa) {
+						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate);
+					} else {
+						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
+					}
 				}
 			}
 		}
@@ -3097,9 +3287,19 @@ void TextServerAdvanced::font_draw_glyph_outline(const RID &p_font_rid, const RI
 	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size));
 
 	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
+	bool lcd_aa = false;
 
 #ifdef MODULE_FREETYPE_ENABLED
 	if (!fd->msdf && fd->cache[size]->face) {
+		// LCD layout, bits 24, 25, 26
+		if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+			TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+			if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+				lcd_aa = true;
+				index = index | (layout << 24);
+			}
+		}
+		// Subpixel X-shift, bits 27, 28
 		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
 			index = index | (xshift << 27);
@@ -3159,7 +3359,11 @@ void TextServerAdvanced::font_draw_glyph_outline(const RID &p_font_rid, const RI
 					}
 					cpos += gl.rect.position;
 					Size2 csize = gl.rect.size;
-					RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
+					if (lcd_aa) {
+						RenderingServer::get_singleton()->canvas_item_add_lcd_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate);
+					} else {
+						RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, false, false);
+					}
 				}
 			}
 		}
@@ -4225,7 +4429,7 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 
 	Glyph *sd_glyphs = sd->glyphs.ptrw();
 
-	if (p_trim_flags.has_flag(OVERRUN_TRIM) || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
+	if ((p_trim_flags & OVERRUN_TRIM) == OVERRUN_NO_TRIM || sd_glyphs == nullptr || p_width <= 0 || !(sd->width > p_width || enforce_ellipsis)) {
 		sd->overrun_trim_data.trim_pos = -1;
 		sd->overrun_trim_data.ellipsis_pos = -1;
 		return;
@@ -4686,7 +4890,7 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 		for (int i = 0; i < sd_size; i++) {
 			if (sd_glyphs[i].count > 0) {
 				char32_t c = sd->text[sd_glyphs[i].start - sd->start];
-				if (c == 0x0640) {
+				if (c == 0x0640 && sd_glyphs[i].start == sd_glyphs[i].end - 1) {
 					sd_glyphs[i].flags |= GRAPHEME_IS_ELONGATION;
 				}
 				if (sd->jstops.has(sd_glyphs[i].start)) {
@@ -4698,6 +4902,11 @@ bool TextServerAdvanced::shaped_text_update_justification_ops(const RID &p_shape
 							if (sd_glyphs[i].font_rid != RID()) {
 								Glyph gl = _shape_single_glyph(sd, 0x0640, HB_SCRIPT_ARABIC, HB_DIRECTION_RTL, sd->glyphs[i].font_rid, sd->glyphs[i].font_size);
 								if ((sd_glyphs[i].flags & GRAPHEME_IS_VALID) == GRAPHEME_IS_VALID) {
+#if HB_VERSION_ATLEAST(5, 1, 0)
+									if ((i > 0) && ((sd_glyphs[i - 1].flags & GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL) != GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL)) {
+										continue;
+									}
+#endif
 									gl.start = sd_glyphs[i].start;
 									gl.end = sd_glyphs[i].end;
 									gl.repeat = 0;
@@ -4888,11 +5097,16 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 
 	hb_buffer_clear_contents(p_sd->hb_buffer);
 	hb_buffer_set_direction(p_sd->hb_buffer, p_direction);
+	int flags = (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0);
 	if (p_sd->preserve_control) {
-		hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES | (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0)));
+		flags |= HB_BUFFER_FLAG_PRESERVE_DEFAULT_IGNORABLES;
 	} else {
-		hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)(HB_BUFFER_FLAG_DEFAULT | (p_start == 0 ? HB_BUFFER_FLAG_BOT : 0) | (p_end == p_sd->text.length() ? HB_BUFFER_FLAG_EOT : 0)));
+		flags |= HB_BUFFER_FLAG_DEFAULT;
 	}
+#if HB_VERSION_ATLEAST(5, 1, 0)
+	flags |= HB_BUFFER_FLAG_PRODUCE_SAFE_TO_INSERT_TATWEEL;
+#endif
+	hb_buffer_set_flags(p_sd->hb_buffer, (hb_buffer_flags_t)flags);
 	hb_buffer_set_script(p_sd->hb_buffer, p_script);
 
 	if (p_sd->spans[p_span].language.is_empty()) {
@@ -4914,6 +5128,14 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	unsigned int glyph_count = 0;
 	hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(p_sd->hb_buffer, &glyph_count);
 	hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(p_sd->hb_buffer, &glyph_count);
+
+	int mod = 0;
+	if (fd->antialiasing == FONT_ANTIALIASING_LCD) {
+		TextServer::FontLCDSubpixelLayout layout = (TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout");
+		if (layout != FONT_LCD_SUBPIXEL_LAYOUT_NONE) {
+			mod = (layout << 24);
+		}
+	}
 
 	// Process glyphs.
 	if (glyph_count > 0) {
@@ -4956,13 +5178,19 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 			gl.font_rid = p_fonts[p_fb_index];
 			gl.font_size = fs;
 
-			if (glyph_info[i].mask & HB_GLYPH_FLAG_DEFINED) {
+			if (glyph_info[i].mask & HB_GLYPH_FLAG_UNSAFE_TO_BREAK) {
 				gl.flags |= GRAPHEME_IS_CONNECTED;
 			}
 
+#if HB_VERSION_ATLEAST(5, 1, 0)
+			if (glyph_info[i].mask & HB_GLYPH_FLAG_SAFE_TO_INSERT_TATWEEL) {
+				gl.flags |= GRAPHEME_IS_SAFE_TO_INSERT_TATWEEL;
+			}
+#endif
+
 			gl.index = glyph_info[i].codepoint;
 			if (gl.index != 0) {
-				_ensure_glyph(fd, fss, gl.index);
+				_ensure_glyph(fd, fss, gl.index | mod);
 				if (p_sd->orientation == ORIENTATION_HORIZONTAL) {
 					if (subpos) {
 						gl.advance = glyph_pos[i].x_advance / (64.0 / scale) + ea;
@@ -5621,6 +5849,68 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 	return "%";
 }
 
+int TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	UErrorCode status = U_ZERO_ERROR;
+	int match_index = -1;
+
+	Char16String utf16 = p_string.utf16();
+	Vector<UChar *> skeletons;
+	skeletons.resize(p_dict.size());
+
+	USpoofChecker *sc = uspoof_open(&status);
+	uspoof_setChecks(sc, USPOOF_CONFUSABLE, &status);
+	for (int i = 0; i < p_dict.size(); i++) {
+		Char16String word = p_dict[i].utf16();
+		int32_t len = uspoof_getSkeleton(sc, 0, word.get_data(), -1, NULL, 0, &status);
+		skeletons.write[i] = (UChar *)memalloc(++len * sizeof(UChar));
+		status = U_ZERO_ERROR;
+		uspoof_getSkeleton(sc, 0, word.get_data(), -1, skeletons.write[i], len, &status);
+	}
+
+	int32_t len = uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, NULL, 0, &status);
+	UChar *skel = (UChar *)memalloc(++len * sizeof(UChar));
+	status = U_ZERO_ERROR;
+	uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, skel, len, &status);
+	for (int i = 0; i < skeletons.size(); i++) {
+		if (u_strcmp(skel, skeletons[i]) == 0) {
+			match_index = i;
+			break;
+		}
+	}
+	memfree(skel);
+
+	for (int i = 0; i < skeletons.size(); i++) {
+		memfree(skeletons.write[i]);
+	}
+	uspoof_close(sc);
+
+	ERR_FAIL_COND_V_MSG(U_FAILURE(status), -1, u_errorName(status));
+
+	return match_index;
+}
+
+bool TextServerAdvanced::spoof_check(const String &p_string) const {
+	UErrorCode status = U_ZERO_ERROR;
+	Char16String utf16 = p_string.utf16();
+
+	USet *allowed = uset_openEmpty();
+	uset_addAll(allowed, uspoof_getRecommendedSet(&status));
+	uset_addAll(allowed, uspoof_getInclusionSet(&status));
+
+	USpoofChecker *sc = uspoof_open(&status);
+	uspoof_setAllowedChars(sc, allowed, &status);
+	uspoof_setRestrictionLevel(sc, USPOOF_MODERATELY_RESTRICTIVE);
+
+	int32_t bitmask = uspoof_check(sc, utf16.get_data(), -1, NULL, &status);
+
+	uspoof_close(sc);
+	uset_close(allowed);
+
+	ERR_FAIL_COND_V_MSG(U_FAILURE(status), false, u_errorName(status));
+
+	return (bitmask != 0);
+}
+
 String TextServerAdvanced::strip_diacritics(const String &p_string) const {
 	UErrorCode err = U_ZERO_ERROR;
 
@@ -5737,6 +6027,191 @@ PackedInt32Array TextServerAdvanced::string_get_word_breaks(const String &p_stri
 		}
 	}
 	return ret;
+}
+
+bool TextServerAdvanced::is_valid_identifier(const String &p_string) const {
+	enum UAX31SequenceStatus {
+		SEQ_NOT_STARTED,
+		SEQ_STARTED,
+		SEQ_STARTED_VIR,
+		SEQ_NEAR_END,
+	};
+
+	const char32_t *str = p_string.ptr();
+	int len = p_string.length();
+
+	if (len == 0) {
+		return false; // Empty string.
+	}
+
+	UErrorCode err = U_ZERO_ERROR;
+	Char16String utf16 = p_string.utf16();
+	const UNormalizer2 *norm_c = unorm2_getNFCInstance(&err);
+	if (U_FAILURE(err)) {
+		return false; // Failed to load normalizer.
+	}
+	bool isnurom = unorm2_isNormalized(norm_c, utf16.ptr(), utf16.length(), &err);
+	if (U_FAILURE(err) || !isnurom) {
+		return false; // Do not conform to Normalization Form C.
+	}
+
+	UAX31SequenceStatus A1_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode A1_scr = USCRIPT_INHERITED;
+	UAX31SequenceStatus A2_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode A2_scr = USCRIPT_INHERITED;
+	UAX31SequenceStatus B_sequence_status = SEQ_NOT_STARTED;
+	UScriptCode B_scr = USCRIPT_INHERITED;
+
+	for (int i = 0; i < len; i++) {
+		err = U_ZERO_ERROR;
+		UScriptCode scr = uscript_getScript(str[i], &err);
+		if (U_FAILURE(err)) {
+			return false; // Invalid script.
+		}
+		if (uscript_getUsage(scr) != USCRIPT_USAGE_RECOMMENDED) {
+			return false; // Not a recommended script.
+		}
+		uint8_t cat = u_charType(str[i]);
+		int32_t jt = u_getIntPropertyValue(str[i], UCHAR_JOINING_TYPE);
+
+		// UAX #31 section 2.3 subsections A1, A2 and B, check ZWNJ and ZWJ usage.
+		switch (A1_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((A1_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A1_scr)) {
+					return false; // Mixed script.
+				}
+				if (jt == U_JT_RIGHT_JOINING || jt == U_JT_DUAL_JOINING) {
+					A1_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else if (jt != U_JT_TRANSPARENT) {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((A1_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A1_scr)) {
+					A1_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (jt != U_JT_TRANSPARENT) {
+						if (str[i] == 0x200C /*ZWNJ*/) {
+							A1_sequence_status = SEQ_NEAR_END;
+							continue;
+						} else {
+							A1_sequence_status = SEQ_NOT_STARTED; // Reset.
+						}
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (A1_sequence_status == SEQ_NOT_STARTED) {
+			if (jt == U_JT_LEFT_JOINING || jt == U_JT_DUAL_JOINING) {
+				A1_sequence_status = SEQ_STARTED;
+				A1_scr = scr;
+			}
+		};
+
+		switch (A2_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					return false; // Mixed script.
+				}
+				if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED_VIR: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (str[i] == 0x200C /*ZWNJ*/) {
+						A2_sequence_status = SEQ_NEAR_END;
+						continue;
+					} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+						A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((A2_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != A2_scr)) {
+					A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (u_getCombiningClass(str[i]) == 9 /*Virama Combining Class*/) {
+						A2_sequence_status = SEQ_STARTED_VIR;
+					} else if (cat != U_MODIFIER_LETTER) {
+						A2_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (A2_sequence_status == SEQ_NOT_STARTED) {
+			if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+				A2_sequence_status = SEQ_STARTED;
+				A2_scr = scr;
+			}
+		}
+
+		switch (B_sequence_status) {
+			case SEQ_NEAR_END: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					return false; // Mixed script.
+				}
+				if (u_getIntPropertyValue(str[i], UCHAR_INDIC_SYLLABIC_CATEGORY) != U_INSC_VOWEL_DEPENDENT) {
+					B_sequence_status = SEQ_NOT_STARTED; // Valid end of sequence, reset.
+				} else {
+					return false; // Invalid end of sequence.
+				}
+			} break;
+			case SEQ_STARTED_VIR: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					B_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (str[i] == 0x200D /*ZWJ*/) {
+						B_sequence_status = SEQ_NEAR_END;
+						continue;
+					} else if (cat != U_MODIFIER_LETTER || u_getCombiningClass(str[i]) == 0) {
+						B_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			case SEQ_STARTED: {
+				if ((B_scr > USCRIPT_INHERITED) && (scr > USCRIPT_INHERITED) && (scr != B_scr)) {
+					B_sequence_status = SEQ_NOT_STARTED; // Reset.
+				} else {
+					if (u_getCombiningClass(str[i]) == 9 /*Virama Combining Class*/) {
+						B_sequence_status = SEQ_STARTED_VIR;
+					} else if (cat != U_MODIFIER_LETTER) {
+						B_sequence_status = SEQ_NOT_STARTED; // Reset.
+					}
+				}
+			} break;
+			default:
+				break;
+		}
+		if (B_sequence_status == SEQ_NOT_STARTED) {
+			if (cat == U_UPPERCASE_LETTER || cat == U_LOWERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_MODIFIER_LETTER || cat == U_OTHER_LETTER) {
+				B_sequence_status = SEQ_STARTED;
+				B_scr = scr;
+			}
+		}
+
+		if (u_hasBinaryProperty(str[i], UCHAR_PATTERN_SYNTAX) || u_hasBinaryProperty(str[i], UCHAR_PATTERN_WHITE_SPACE) || u_hasBinaryProperty(str[i], UCHAR_NONCHARACTER_CODE_POINT)) {
+			return false; // Not a XID_Start or XID_Continue character.
+		}
+		if (i == 0) {
+			if (!(cat == U_LOWERCASE_LETTER || cat == U_UPPERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_OTHER_LETTER || cat == U_MODIFIER_LETTER || cat == U_LETTER_NUMBER || str[0] == 0x2118 || str[0] == 0x212E || str[0] == 0x309B || str[0] == 0x309C || str[0] == 0x005F)) {
+				return false; // Not a XID_Start character.
+			}
+		} else {
+			if (!(cat == U_LOWERCASE_LETTER || cat == U_UPPERCASE_LETTER || cat == U_TITLECASE_LETTER || cat == U_OTHER_LETTER || cat == U_MODIFIER_LETTER || cat == U_LETTER_NUMBER || cat == U_NON_SPACING_MARK || cat == U_COMBINING_SPACING_MARK || cat == U_DECIMAL_DIGIT_NUMBER || cat == U_CONNECTOR_PUNCTUATION || str[i] == 0x2118 || str[i] == 0x212E || str[i] == 0x309B || str[i] == 0x309C || str[i] == 0x1369 || str[i] == 0x1371 || str[i] == 0x00B7 || str[i] == 0x0387 || str[i] == 0x19DA || str[i] == 0x0E33 || str[i] == 0x0EB3 || str[i] == 0xFF9E || str[i] == 0xFF9F)) {
+				return false; // Not a XID_Continue character.
+			}
+		}
+	}
+	return true;
 }
 
 TextServerAdvanced::TextServerAdvanced() {

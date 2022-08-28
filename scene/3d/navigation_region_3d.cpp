@@ -119,7 +119,7 @@ real_t NavigationRegion3D::get_enter_cost() const {
 void NavigationRegion3D::set_travel_cost(real_t p_travel_cost) {
 	ERR_FAIL_COND_MSG(p_travel_cost < 0.0, "The travel_cost must be positive.");
 	travel_cost = MAX(p_travel_cost, 0.0);
-	NavigationServer3D::get_singleton()->region_set_enter_cost(region, travel_cost);
+	NavigationServer3D::get_singleton()->region_set_travel_cost(region, travel_cost);
 }
 
 real_t NavigationRegion3D::get_travel_cost() const {
@@ -363,6 +363,12 @@ NavigationRegion3D::~NavigationRegion3D() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion3D::_update_debug_mesh() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// don't update inside Editor as node 3d gizmo takes care of this
+		// as collisions and selections for Editor Viewport need to be updated
+		return;
+	}
+
 	if (!NavigationServer3D::get_singleton()->get_debug_enabled()) {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
@@ -418,11 +424,14 @@ void NavigationRegion3D::_update_debug_mesh() {
 	Ref<StandardMaterial3D> face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
 	Ref<StandardMaterial3D> line_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
 
+	RandomPCG rand;
 	Color polygon_color = debug_navigation_geometry_face_color;
 
 	for (int i = 0; i < polygon_count; i++) {
 		if (enabled_geometry_face_random_color) {
-			polygon_color = debug_navigation_geometry_face_color * (Color(Math::randf(), Math::randf(), Math::randf()));
+			// Generate the polygon color, slightly randomly modified from the settings one.
+			polygon_color.set_hsv(debug_navigation_geometry_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1, debug_navigation_geometry_face_color.get_s(), debug_navigation_geometry_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+			polygon_color.a = debug_navigation_geometry_face_color.a;
 		}
 
 		Vector<int> polygon = navmesh->get_polygon(i);

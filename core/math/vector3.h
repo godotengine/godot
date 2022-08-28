@@ -105,12 +105,15 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 lerp(const Vector3 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 slerp(const Vector3 &p_to, const real_t p_weight) const;
 	_FORCE_INLINE_ Vector3 cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const;
+	_FORCE_INLINE_ Vector3 cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
 	_FORCE_INLINE_ Vector3 bezier_interpolate(const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) const;
 
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
 	Vector2 octahedron_encode() const;
 	static Vector3 octahedron_decode(const Vector2 &p_oct);
+	Vector2 octahedron_tangent_encode(const float sign) const;
+	static Vector3 octahedron_tangent_decode(const Vector2 &p_oct, float *sign);
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_with) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_with) const;
@@ -217,16 +220,25 @@ Vector3 Vector3::lerp(const Vector3 &p_to, const real_t p_weight) const {
 }
 
 Vector3 Vector3::slerp(const Vector3 &p_to, const real_t p_weight) const {
+	// This method seems more complicated than it really is, since we write out
+	// the internals of some methods for efficiency (mainly, checking length).
 	real_t start_length_sq = length_squared();
 	real_t end_length_sq = p_to.length_squared();
 	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
 		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
 		return lerp(p_to, p_weight);
 	}
+	Vector3 axis = cross(p_to);
+	real_t axis_length_sq = axis.length_squared();
+	if (unlikely(axis_length_sq == 0.0f)) {
+		// Colinear vectors have no rotation axis or angle between them, so the best we can do is lerp.
+		return lerp(p_to, p_weight);
+	}
+	axis /= Math::sqrt(axis_length_sq);
 	real_t start_length = Math::sqrt(start_length_sq);
 	real_t result_length = Math::lerp(start_length, Math::sqrt(end_length_sq), p_weight);
 	real_t angle = angle_to(p_to);
-	return rotated(cross(p_to).normalized(), angle * p_weight) * (result_length / start_length);
+	return rotated(axis, angle * p_weight) * (result_length / start_length);
 }
 
 Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight) const {
@@ -234,6 +246,14 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 	res.x = Math::cubic_interpolate(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight);
 	res.y = Math::cubic_interpolate(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight);
 	res.z = Math::cubic_interpolate(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight);
+	return res;
+}
+
+Vector3 Vector3::cubic_interpolate_in_time(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, const real_t p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const {
+	Vector3 res = *this;
+	res.x = Math::cubic_interpolate_in_time(res.x, p_b.x, p_pre_a.x, p_post_b.x, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
+	res.y = Math::cubic_interpolate_in_time(res.y, p_b.y, p_pre_a.y, p_post_b.y, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
+	res.z = Math::cubic_interpolate_in_time(res.z, p_b.z, p_pre_a.z, p_post_b.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	return res;
 }
 

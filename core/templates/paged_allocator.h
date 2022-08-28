@@ -31,11 +31,14 @@
 #ifndef PAGED_ALLOCATOR_H
 #define PAGED_ALLOCATOR_H
 
+#include "core/core_globals.h"
 #include "core/os/memory.h"
 #include "core/os/spin_lock.h"
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
 
 #include <type_traits>
+#include <typeinfo>
 
 template <class T, bool thread_safe = false>
 class PagedAllocator {
@@ -132,7 +135,12 @@ public:
 	}
 
 	~PagedAllocator() {
-		ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, "Pages in use exist at exit in PagedAllocator");
+		if (allocs_available < pages_allocated * page_size) {
+			if (CoreGlobals::leak_reporting_enabled) {
+				ERR_FAIL_COND_MSG(allocs_available < pages_allocated * page_size, String("Pages in use exist at exit in PagedAllocator: ") + String(typeid(T).name()));
+			}
+			return;
+		}
 		reset();
 	}
 };

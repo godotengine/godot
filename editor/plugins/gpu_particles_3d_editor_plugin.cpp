@@ -32,10 +32,11 @@
 
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/cpu_particles_3d.h"
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 
 bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
 	bool use_normals = emission_fill->get_selected() == 1;
@@ -254,9 +255,9 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			}
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
-			Ref<ParticlesMaterial> material = node->get_process_material();
+			Ref<ParticleProcessMaterial> material = node->get_process_material();
 			if (material.is_null()) {
-				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticlesMaterial' is required."));
+				EditorNode::get_singleton()->show_warning(TTR("A processor material of type 'ParticleProcessMaterial' is required."));
 				return;
 			}
 
@@ -271,7 +272,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_visible(node->is_visible());
 			cpu_particles->set_process_mode(node->get_process_mode());
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
@@ -321,7 +322,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 		node->set_emitting(false);
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action(TTR("Generate Visibility AABB"));
 	ur->add_do_method(node, "set_visibility_aabb", rect);
 	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());
@@ -365,11 +366,11 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	Ref<Image> image = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img));
 	Ref<ImageTexture> tex = ImageTexture::create_from_image(image);
 
-	Ref<ParticlesMaterial> material = node->get_process_material();
+	Ref<ParticleProcessMaterial> material = node->get_process_material();
 	ERR_FAIL_COND(material.is_null());
 
 	if (normals.size() > 0) {
-		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
+		material->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 		material->set_emission_point_count(point_count);
 		material->set_emission_point_texture(tex);
 
@@ -391,7 +392,7 @@ void GPUParticles3DEditor::_generate_emission_points() {
 		Ref<Image> image2 = memnew(Image(w, h, false, Image::FORMAT_RGBF, point_img2));
 		material->set_emission_normal_texture(ImageTexture::create_from_image(image2));
 	} else {
-		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
+		material->set_emission_shape(ParticleProcessMaterial::EMISSION_SHAPE_POINTS);
 		material->set_emission_point_count(point_count);
 		material->set_emission_point_texture(tex);
 	}

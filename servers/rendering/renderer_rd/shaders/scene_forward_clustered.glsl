@@ -15,11 +15,11 @@ layout(location = 0) in vec3 vertex_attrib;
 //only for pure render depth when normal is not used
 
 #ifdef NORMAL_USED
-layout(location = 1) in vec3 normal_attrib;
+layout(location = 1) in vec2 normal_attrib;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-layout(location = 2) in vec4 tangent_attrib;
+layout(location = 2) in vec2 tangent_attrib;
 #endif
 
 #if defined(COLOR_USED)
@@ -57,6 +57,13 @@ layout(location = 10) in uvec4 bone_attrib;
 #if defined(WEIGHTS_USED) || defined(USE_PARTICLE_TRAILS)
 layout(location = 11) in vec4 weight_attrib;
 #endif
+
+vec3 oct_to_vec3(vec2 e) {
+	vec3 v = vec3(e.xy, 1.0 - abs(e.x) - abs(e.y));
+	float t = max(-v.z, 0.0);
+	v.xy += t * -sign(v.xy);
+	return v;
+}
 
 /* Varyings */
 
@@ -231,12 +238,13 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 
 	vec3 vertex = vertex_attrib;
 #ifdef NORMAL_USED
-	vec3 normal = normal_attrib * 2.0 - 1.0;
+	vec3 normal = oct_to_vec3(normal_attrib * 2.0 - 1.0);
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 tangent = tangent_attrib.xyz * 2.0 - 1.0;
-	float binormalf = tangent_attrib.a * 2.0 - 1.0;
+	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
+	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
+	float binormalf = sign(signed_tangent_attrib.y);
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
 
@@ -988,8 +996,10 @@ void fragment_shader(in SceneData scene_data) {
 		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
 		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
 		vec3 ref_vec = reflect(-view, bent_normal);
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
 #else
 		vec3 ref_vec = reflect(-view, normal);
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 #endif
 
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
@@ -1046,6 +1056,7 @@ void fragment_shader(in SceneData scene_data) {
 		ambient_light *= attenuation;
 		specular_light *= attenuation;
 
+		ref_vec = mix(ref_vec, n, clearcoat_roughness * clearcoat_roughness);
 		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
 		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
 		float roughness_lod = mix(0.001, 0.1, clearcoat_roughness) * MAX_ROUGHNESS_LOD;
@@ -1203,6 +1214,7 @@ void fragment_shader(in SceneData scene_data) {
 
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
 		vec3 ref_vec = normalize(reflect(-view, normal));
+		ref_vec = mix(ref_vec, normal, roughness * roughness);
 		//find arbitrary tangent and bitangent, then build a matrix
 		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
 		vec3 tangent = normalize(cross(v0, normal));
@@ -1302,6 +1314,18 @@ void fragment_shader(in SceneData scene_data) {
 		item_to = subgroupBroadcastFirst(subgroupMax(item_to));
 #endif
 
+#ifdef LIGHT_ANISOTROPY_USED
+		// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
+		vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
+		vec3 anisotropic_tangent = cross(anisotropic_direction, view);
+		vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
+		vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
+#else
+		vec3 bent_normal = normal;
+#endif
+		vec3 ref_vec = normalize(reflect(-view, bent_normal));
+		ref_vec = mix(ref_vec, bent_normal, roughness * roughness);
+
 		for (uint i = item_from; i < item_to; i++) {
 			uint mask = cluster_buffer.data[cluster_reflection_offset + i];
 			mask &= cluster_get_range_clip_mask(i, item_min, item_max);
@@ -1324,16 +1348,8 @@ void fragment_shader(in SceneData scene_data) {
 				if (!bool(reflections.data[reflection_index].mask & instances.data[instance_index].layer_mask)) {
 					continue; //not masked
 				}
-#ifdef LIGHT_ANISOTROPY_USED
-				// https://google.github.io/filament/Filament.html#lighting/imagebasedlights/anisotropy
-				vec3 anisotropic_direction = anisotropy >= 0.0 ? binormal : tangent;
-				vec3 anisotropic_tangent = cross(anisotropic_direction, view);
-				vec3 anisotropic_normal = cross(anisotropic_tangent, anisotropic_direction);
-				vec3 bent_normal = normalize(mix(normal, anisotropic_normal, abs(anisotropy) * clamp(5.0 * roughness, 0.0, 1.0)));
-#else
-				vec3 bent_normal = normal;
-#endif
-				reflection_process(reflection_index, view, vertex, bent_normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
+
+				reflection_process(reflection_index, vertex, ref_vec, normal, roughness, ambient_light, specular_light, ambient_accum, reflection_accum);
 			}
 		}
 
@@ -1381,7 +1397,7 @@ void fragment_shader(in SceneData scene_data) {
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
 
-		specular_light *= env.x * f0 + env.y;
+		specular_light *= env.x * f0 + env.y * clamp(50.0 * f0.g, 0.0, 1.0);
 #endif
 	}
 
@@ -1417,7 +1433,7 @@ void fragment_shader(in SceneData scene_data) {
 
 			float shadow = 1.0;
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 				vec3 light_dir = directional_lights.data[i].direction;
 				vec3 base_normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp))));
@@ -1626,7 +1642,7 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_TRANSMITTANCE_USED
 			float transmittance_z = transmittance_depth;
 
-			if (directional_lights.data[i].shadow_enabled) {
+			if (directional_lights.data[i].shadow_opacity > 0.001) {
 				float depth_z = -vertex.z;
 
 				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
@@ -1681,6 +1697,8 @@ void fragment_shader(in SceneData scene_data) {
 			} else {
 				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
 			}
+
+			shadow = shadow * directional_lights.data[i].shadow_opacity + 1.0 - directional_lights.data[i].shadow_opacity;
 #endif
 
 			blur_shadow(shadow);

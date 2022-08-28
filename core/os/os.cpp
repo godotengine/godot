@@ -166,10 +166,6 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
-bool OS::is_single_window() const {
-	return _single_window;
-}
-
 bool OS::is_stdout_debug_enabled() const {
 	return _debug_stdout;
 }
@@ -188,10 +184,6 @@ void OS::set_stdout_enabled(bool p_enabled) {
 
 void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
-}
-
-void OS::dump_memory_to_file(const char *p_file) {
-	//Memory::dump_static_mem_to_file(p_file);
 }
 
 static Ref<FileAccess> _OSPRF;
@@ -362,9 +354,10 @@ String OS::get_model_name() const {
 	return "GenericDevice";
 }
 
-void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
+void OS::set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args) {
 	_execpath = String::utf8(p_execpath);
 	_cmdline = p_args;
+	_user_args = p_user_args;
 }
 
 String OS::get_unique_id() const {

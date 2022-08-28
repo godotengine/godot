@@ -113,8 +113,8 @@ private:
 	bool is_sync_to_physics_enabled() const;
 };
 
-class RigidDynamicBody2D : public PhysicsBody2D {
-	GDCLASS(RigidDynamicBody2D, PhysicsBody2D);
+class RigidBody2D : public PhysicsBody2D {
+	GDCLASS(RigidBody2D, PhysicsBody2D);
 
 public:
 	enum FreezeMode {
@@ -186,7 +186,7 @@ private:
 			local_shape = p_ls;
 		}
 	};
-	struct RigidDynamicBody2D_RemoveAction {
+	struct RigidBody2D_RemoveAction {
 		RID rid;
 		ObjectID body_id;
 		ShapePair pair;
@@ -216,7 +216,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState2D *)
 
@@ -284,6 +284,7 @@ public:
 
 	void set_max_contacts_reported(int p_amount);
 	int get_max_contacts_reported() const;
+	int get_contact_count() const;
 
 	void set_continuous_collision_detection_mode(CCDMode p_mode);
 	CCDMode get_continuous_collision_detection_mode() const;
@@ -310,17 +311,17 @@ public:
 
 	virtual TypedArray<String> get_configuration_warnings() const override;
 
-	RigidDynamicBody2D();
-	~RigidDynamicBody2D();
+	RigidBody2D();
+	~RigidBody2D();
 
 private:
 	void _reload_physics_characteristics();
 };
 
-VARIANT_ENUM_CAST(RigidDynamicBody2D::FreezeMode);
-VARIANT_ENUM_CAST(RigidDynamicBody2D::CenterOfMassMode);
-VARIANT_ENUM_CAST(RigidDynamicBody2D::DampMode);
-VARIANT_ENUM_CAST(RigidDynamicBody2D::CCDMode);
+VARIANT_ENUM_CAST(RigidBody2D::FreezeMode);
+VARIANT_ENUM_CAST(RigidBody2D::CenterOfMassMode);
+VARIANT_ENUM_CAST(RigidBody2D::DampMode);
+VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class CharacterBody2D : public PhysicsBody2D {
 	GDCLASS(CharacterBody2D, PhysicsBody2D);
@@ -330,10 +331,10 @@ public:
 		MOTION_MODE_GROUNDED,
 		MOTION_MODE_FLOATING,
 	};
-	enum MovingPlatformApplyVelocityOnLeave {
-		PLATFORM_VEL_ON_LEAVE_ALWAYS,
-		PLATFORM_VEL_ON_LEAVE_UPWARD_ONLY,
-		PLATFORM_VEL_ON_LEAVE_NEVER,
+	enum PlatformOnLeave {
+		PLATFORM_ON_LEAVE_ADD_VELOCITY,
+		PLATFORM_ON_LEAVE_ADD_UPWARD_VELOCITY,
+		PLATFORM_ON_LEAVE_DO_NOTHING,
 	};
 	bool move_and_slide();
 
@@ -364,7 +365,7 @@ public:
 private:
 	real_t margin = 0.08;
 	MotionMode motion_mode = MOTION_MODE_GROUNDED;
-	MovingPlatformApplyVelocityOnLeave moving_platform_apply_velocity_on_leave = PLATFORM_VEL_ON_LEAVE_ALWAYS;
+	PlatformOnLeave platform_on_leave = PLATFORM_ON_LEAVE_ADD_VELOCITY;
 
 	bool floor_constant_speed = false;
 	bool floor_stop_on_slope = true;
@@ -372,12 +373,12 @@ private:
 	bool slide_on_ceiling = true;
 	int max_slides = 4;
 	int platform_layer = 0;
-	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
+	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
 	real_t floor_snap_length = 1;
-	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
+	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
-	uint32_t moving_platform_floor_layers = UINT32_MAX;
-	uint32_t moving_platform_wall_layers = 0;
+	uint32_t platform_floor_layers = UINT32_MAX;
+	uint32_t platform_wall_layers = 0;
 	Vector2 velocity;
 
 	Vector2 floor_normal;
@@ -423,17 +424,17 @@ private:
 	real_t get_wall_min_slide_angle() const;
 	void set_wall_min_slide_angle(real_t p_radians);
 
-	uint32_t get_moving_platform_floor_layers() const;
-	void set_moving_platform_floor_layers(const uint32_t p_exclude_layer);
+	uint32_t get_platform_floor_layers() const;
+	void set_platform_floor_layers(const uint32_t p_exclude_layer);
 
-	uint32_t get_moving_platform_wall_layers() const;
-	void set_moving_platform_wall_layers(const uint32_t p_exclude_layer);
+	uint32_t get_platform_wall_layers() const;
+	void set_platform_wall_layers(const uint32_t p_exclude_layer);
 
 	void set_motion_mode(MotionMode p_mode);
 	MotionMode get_motion_mode() const;
 
-	void set_moving_platform_apply_velocity_on_leave(MovingPlatformApplyVelocityOnLeave p_on_leave_velocity);
-	MovingPlatformApplyVelocityOnLeave get_moving_platform_apply_velocity_on_leave() const;
+	void set_platform_on_leave(PlatformOnLeave p_on_leave_velocity);
+	PlatformOnLeave get_platform_on_leave() const;
 
 	void _move_and_slide_floating(double p_delta);
 	void _move_and_slide_grounded(double p_delta, bool p_was_on_floor);
@@ -450,11 +451,11 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 };
 
 VARIANT_ENUM_CAST(CharacterBody2D::MotionMode);
-VARIANT_ENUM_CAST(CharacterBody2D::MovingPlatformApplyVelocityOnLeave);
+VARIANT_ENUM_CAST(CharacterBody2D::PlatformOnLeave);
 
 class KinematicCollision2D : public RefCounted {
 	GDCLASS(KinematicCollision2D, RefCounted);
@@ -473,6 +474,7 @@ public:
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
 	real_t get_angle(const Vector2 &p_up_direction = Vector2(0.0, -1.0)) const;
+	real_t get_depth() const;
 	Object *get_local_shape() const;
 	Object *get_collider() const;
 	ObjectID get_collider_id() const;

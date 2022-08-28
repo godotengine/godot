@@ -122,20 +122,21 @@ public:
 		FEATURE_KEEP_SCREEN_ON,
 		FEATURE_CLIPBOARD_PRIMARY,
 		FEATURE_TEXT_TO_SPEECH,
+		FEATURE_EXTEND_TO_TITLE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 
-	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual void global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
-	virtual void global_menu_add_separator(const String &p_menu_root, int p_index = -1);
+	virtual int global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
+	virtual int global_menu_add_separator(const String &p_menu_root, int p_index = -1);
 
 	virtual int global_menu_get_item_index_from_text(const String &p_menu_root, const String &p_text) const;
 	virtual int global_menu_get_item_index_from_tag(const String &p_menu_root, const Variant &p_tag) const;
@@ -153,6 +154,7 @@ public:
 	virtual int global_menu_get_item_state(const String &p_menu_root, int p_idx) const;
 	virtual int global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const;
 	virtual Ref<Texture2D> global_menu_get_item_icon(const String &p_menu_root, int p_idx) const;
+	virtual int global_menu_get_item_indentation_level(const String &p_menu_root, int p_idx) const;
 
 	virtual void global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked);
 	virtual void global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
@@ -167,6 +169,7 @@ public:
 	virtual void global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state);
 	virtual void global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states);
 	virtual void global_menu_set_item_icon(const String &p_menu_root, int p_idx, const Ref<Texture2D> &p_icon);
+	virtual void global_menu_set_item_indentation_level(const String &p_menu_root, int p_idx, int p_level);
 
 	virtual int global_menu_get_item_count(const String &p_menu_root) const;
 
@@ -196,7 +199,7 @@ private:
 public:
 	virtual bool tts_is_speaking() const;
 	virtual bool tts_is_paused() const;
-	virtual Array tts_get_voices() const;
+	virtual TypedArray<Dictionary> tts_get_voices() const;
 	virtual PackedStringArray tts_get_voices_for_language(const String &p_language) const;
 
 	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false);
@@ -228,7 +231,7 @@ public:
 	virtual void clipboard_set_primary(const String &p_text);
 	virtual String clipboard_get_primary() const;
 
-	virtual Array get_display_cutouts() const { return Array(); }
+	virtual TypedArray<Rect2> get_display_cutouts() const { return TypedArray<Rect2>(); }
 	virtual Rect2i get_display_safe_area() const { return screen_get_usable_rect(); }
 
 	enum {
@@ -287,6 +290,7 @@ public:
 		WINDOW_FLAG_TRANSPARENT,
 		WINDOW_FLAG_NO_FOCUS,
 		WINDOW_FLAG_POPUP,
+		WINDOW_FLAG_EXTEND_TO_TITLE,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -298,6 +302,7 @@ public:
 		WINDOW_FLAG_TRANSPARENT_BIT = (1 << WINDOW_FLAG_TRANSPARENT),
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
+		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
@@ -369,6 +374,8 @@ public:
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
+	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); };
+
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual bool can_any_window_draw() const = 0;
@@ -376,13 +383,27 @@ public:
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
 
+	virtual bool window_maximize_on_title_dbl_click() const { return false; }
+	virtual bool window_minimize_on_title_dbl_click() const { return false; }
+
 	// necessary for GL focus, may be able to use one of the existing functions for this, not sure yet
 	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);
 
 	virtual Point2i ime_get_selection() const;
 	virtual String ime_get_text() const;
 
-	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), bool p_multiline = false, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
+	enum VirtualKeyboardType {
+		KEYBOARD_TYPE_DEFAULT,
+		KEYBOARD_TYPE_MULTILINE,
+		KEYBOARD_TYPE_NUMBER,
+		KEYBOARD_TYPE_NUMBER_DECIMAL,
+		KEYBOARD_TYPE_PHONE,
+		KEYBOARD_TYPE_EMAIL_ADDRESS,
+		KEYBOARD_TYPE_PASSWORD,
+		KEYBOARD_TYPE_URL
+	};
+
+	virtual void virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2(), VirtualKeyboardType p_type = KEYBOARD_TYPE_DEFAULT, int p_max_length = -1, int p_cursor_start = -1, int p_cursor_end = -1);
 	virtual void virtual_keyboard_hide();
 
 	// returns height of the currently shown virtual keyboard (0 if keyboard is hidden)
@@ -467,6 +488,7 @@ VARIANT_ENUM_CAST(DisplayServer::ScreenOrientation)
 VARIANT_ENUM_CAST(DisplayServer::WindowMode)
 VARIANT_ENUM_CAST(DisplayServer::WindowFlags)
 VARIANT_ENUM_CAST(DisplayServer::HandleType)
+VARIANT_ENUM_CAST(DisplayServer::VirtualKeyboardType);
 VARIANT_ENUM_CAST(DisplayServer::CursorShape)
 VARIANT_ENUM_CAST(DisplayServer::VSyncMode)
 VARIANT_ENUM_CAST(DisplayServer::TTSUtteranceEvent)

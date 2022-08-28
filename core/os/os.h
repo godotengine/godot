@@ -46,12 +46,12 @@ class OS {
 	static uint64_t target_ticks;
 	String _execpath;
 	List<String> _cmdline;
+	List<String> _user_args;
 	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	bool low_processor_usage_mode = false;
 	int low_processor_usage_mode_sleep_usec = 10000;
 	bool _verbose_stdout = false;
 	bool _debug_stdout = false;
-	bool _single_window = false;
 	String _local_clipboard;
 	int _exit_code = EXIT_FAILURE; // unexpected exit is marked as failure
 	bool _allow_hidpi = false;
@@ -106,7 +106,7 @@ protected:
 	virtual void finalize() = 0;
 	virtual void finalize_core() = 0;
 
-	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args);
+	virtual void set_cmdline(const char *p_execpath, const List<String> &p_args, const List<String> &p_user_args);
 
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
 
@@ -162,6 +162,7 @@ public:
 
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
+	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
 
@@ -241,13 +242,10 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
-	virtual bool is_single_window() const;
-
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
 
-	virtual void dump_memory_to_file(const char *p_file);
 	virtual void dump_resources_to_file(const char *p_file);
 	virtual void print_resources_in_use(bool p_short = false);
 	virtual void print_all_resources(String p_to_file = "");

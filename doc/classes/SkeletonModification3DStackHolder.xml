@@ -18,7 +18,7 @@
 		</method>
 		<method name="set_held_modification_stack">
 			<return type="void" />
-			<argument index="0" name="held_modification_stack" type="SkeletonModificationStack3D" />
+			<param index="0" name="held_modification_stack" type="SkeletonModificationStack3D" />
 			<description>
 				Sets the [SkeletonModificationStack3D] that this modification is holding. This modification stack will then be executed when this modification is executed.
 			</description>

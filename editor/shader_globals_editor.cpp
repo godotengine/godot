@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "servers/rendering/shader_language.h"
 
 static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
@@ -85,7 +86,7 @@ protected:
 			return false;
 		}
 
-		UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_uniform_set", p_name, p_value);
@@ -393,7 +394,7 @@ void ShaderGlobalsEditor::_variable_added() {
 		return;
 	}
 
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	Variant value = create_var(RS::GlobalShaderUniformType(variable_type->get_selected()));
 
@@ -412,7 +413,7 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	undo_redo->create_action(TTR("Add Shader Global Uniform"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_shader_uniform_remove", p_variable);

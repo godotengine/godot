@@ -1602,8 +1602,27 @@ static inline void apply_lookup (hb_ot_apply_context_t *c,
     if (unlikely (buffer->max_ops <= 0))
       break;
 
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      if (buffer->have_output)
+        c->buffer->sync_so_far ();
+      c->buffer->message (c->font,
+			  "recursing to lookup %u at %d",
+			  (unsigned) lookupRecord[i].lookupListIndex,
+			  buffer->idx);
+    }
+
     if (!c->recurse (lookupRecord[i].lookupListIndex))
       continue;
+
+    if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
+    {
+      if (buffer->have_output)
+        c->buffer->sync_so_far ();
+      c->buffer->message (c->font,
+			  "recursed to lookup %u",
+			  (unsigned) lookupRecord[i].lookupListIndex);
+    }
 
     unsigned int new_len = buffer->backtrack_len () + buffer->lookahead_len ();
     int delta = new_len - orig_len;
@@ -4008,6 +4027,11 @@ struct GSUBGPOSVersion1_2
   {
     return min_size +
 	   (version.to_int () >= 0x00010001u ? featureVars.static_size : 0);
+  }
+
+  const typename Types::template OffsetTo<LookupList<Types>>* get_lookup_list_offset () const
+  {
+    return &lookupList;
   }
 
   template <typename TLookup>

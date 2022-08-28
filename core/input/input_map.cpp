@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/variant/typed_array.h"
 
 InputMap *InputMap::singleton = nullptr;
 
@@ -99,8 +100,8 @@ void InputMap::erase_action(const StringName &p_action) {
 	input_map.erase(p_action);
 }
 
-Array InputMap::_get_actions() {
-	Array ret;
+TypedArray<StringName> InputMap::_get_actions() {
+	TypedArray<StringName> ret;
 	List<StringName> actions = get_actions();
 	if (actions.is_empty()) {
 		return ret;
@@ -190,8 +191,8 @@ void InputMap::action_erase_events(const StringName &p_action) {
 	input_map[p_action].inputs.clear();
 }
 
-Array InputMap::_action_get_events(const StringName &p_action) {
-	Array ret;
+TypedArray<InputEvent> InputMap::_action_get_events(const StringName &p_action) {
+	TypedArray<InputEvent> ret;
 	const List<Ref<InputEvent>> *al = action_get_events(p_action);
 	if (al) {
 		for (const List<Ref<InputEvent>>::Element *E = al->front(); E; E = E->next()) {

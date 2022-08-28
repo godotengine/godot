@@ -58,7 +58,7 @@ bool SkeletonModification3DJiggle::_set(const StringName &p_path, const Variant 
 		} else if (what == "gravity") {
 			set_jiggle_joint_gravity(which, p_value);
 		} else if (what == "roll") {
-			set_jiggle_joint_roll(which, Math::deg2rad(real_t(p_value)));
+			set_jiggle_joint_roll(which, Math::deg_to_rad(real_t(p_value)));
 		}
 		return true;
 	} else {
@@ -98,7 +98,7 @@ bool SkeletonModification3DJiggle::_get(const StringName &p_path, Variant &r_ret
 		} else if (what == "gravity") {
 			r_ret = get_jiggle_joint_gravity(which);
 		} else if (what == "roll") {
-			r_ret = Math::rad2deg(get_jiggle_joint_roll(which));
+			r_ret = Math::rad_to_deg(get_jiggle_joint_roll(which));
 		}
 		return true;
 	} else {

@@ -37,6 +37,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
@@ -407,7 +408,6 @@ void SpriteFramesEditor::_prepare_sprite_sheet(const String &p_file) {
 
 void SpriteFramesEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			load->set_icon(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")));
 			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
@@ -1010,6 +1010,10 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	}
 }
 
+void SpriteFramesEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
+	undo_redo = p_undo_redo;
+}
+
 Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (!frames->has_animation(edited_anim)) {
 		return false;
@@ -1471,7 +1475,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 }
 
 void SpriteFramesEditorPlugin::edit(Object *p_object) {
-	frames_editor->set_undo_redo(&get_undo_redo());
+	frames_editor->set_undo_redo(get_undo_redo());
 
 	SpriteFrames *s;
 	AnimatedSprite2D *animated_sprite = Object::cast_to<AnimatedSprite2D>(p_object);

@@ -54,13 +54,13 @@ bool SkeletonModification3DTwoBoneIK::_set(const StringName &p_path, const Varia
 	} else if (path == "joint_one/bone_idx") {
 		set_joint_one_bone_idx(p_value);
 	} else if (path == "joint_one/roll") {
-		set_joint_one_roll(Math::deg2rad(real_t(p_value)));
+		set_joint_one_roll(Math::deg_to_rad(real_t(p_value)));
 	} else if (path == "joint_two/bone_name") {
 		set_joint_two_bone_name(p_value);
 	} else if (path == "joint_two/bone_idx") {
 		set_joint_two_bone_idx(p_value);
 	} else if (path == "joint_two/roll") {
-		set_joint_two_roll(Math::deg2rad(real_t(p_value)));
+		set_joint_two_roll(Math::deg_to_rad(real_t(p_value)));
 	}
 
 	return true;
@@ -88,13 +88,13 @@ bool SkeletonModification3DTwoBoneIK::_get(const StringName &p_path, Variant &r_
 	} else if (path == "joint_one/bone_idx") {
 		r_ret = get_joint_one_bone_idx();
 	} else if (path == "joint_one/roll") {
-		r_ret = Math::rad2deg(get_joint_one_roll());
+		r_ret = Math::rad_to_deg(get_joint_one_roll());
 	} else if (path == "joint_two/bone_name") {
 		r_ret = get_joint_two_bone_name();
 	} else if (path == "joint_two/bone_idx") {
 		r_ret = get_joint_two_bone_idx();
 	} else if (path == "joint_two/roll") {
-		r_ret = Math::rad2deg(get_joint_two_roll());
+		r_ret = Math::rad_to_deg(get_joint_two_roll());
 	}
 
 	return true;

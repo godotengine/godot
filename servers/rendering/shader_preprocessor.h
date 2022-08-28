@@ -50,12 +50,21 @@ public:
 		COMPLETION_TYPE_DIRECTIVE,
 		COMPLETION_TYPE_PRAGMA_DIRECTIVE,
 		COMPLETION_TYPE_PRAGMA,
+		COMPLETION_TYPE_CONDITION,
 		COMPLETION_TYPE_INCLUDE_PATH,
 	};
 
 	struct FilePosition {
 		String file;
 		int line = 0;
+	};
+
+	struct Region {
+		String file;
+		int from_line = -1;
+		int to_line = -1;
+		bool enabled = false;
+		Region *parent = nullptr;
 	};
 
 private:
@@ -122,23 +131,34 @@ private:
 		String body;
 	};
 
-	struct SkippedCondition {
-		int start_line = -1;
-		int end_line = -1;
+	struct Branch {
+		Vector<bool> conditions;
+		Branch *parent = nullptr;
+		bool else_defined = false;
+
+		Branch() {}
+
+		Branch(bool p_condition, Branch *p_parent) :
+				parent(p_parent) {
+			conditions.push_back(p_condition);
+		}
 	};
 
 	struct State {
 		RBMap<String, Define *> defines;
-		Vector<bool> skip_stack_else;
+		List<Branch> branches;
+		Branch *current_branch = nullptr;
 		int condition_depth = 0;
 		RBSet<String> includes;
 		List<uint64_t> cyclic_include_hashes; // Holds code hash of includes.
 		int include_depth = 0;
-		String current_include;
+		String current_filename;
 		String current_shader_type;
 		String error;
 		List<FilePosition> include_positions;
-		RBMap<String, Vector<SkippedCondition *>> skipped_conditions;
+		bool save_regions = false;
+		RBMap<String, List<Region>> regions;
+		Region *previous_region = nullptr;
 		bool disabled = false;
 		CompletionType completion_type = COMPLETION_TYPE_NONE;
 		HashSet<Ref<ShaderInclude>> shader_includes;
@@ -156,8 +176,17 @@ private:
 	static String vector_to_string(const LocalVector<char32_t> &p_v, int p_start = 0, int p_end = -1);
 	static String tokens_to_string(const LocalVector<Token> &p_tokens);
 
+	void _set_expected_error(const String &p_what, int p_line) {
+		set_error(vformat(RTR("Expected a '%s'."), p_what), p_line);
+	}
+
+	void _set_unexpected_token_error(const String &p_what, int p_line) {
+		set_error(vformat(RTR("Unexpected token '%s'."), p_what), p_line);
+	}
+
 	void process_directive(Tokenizer *p_tokenizer);
 	void process_define(Tokenizer *p_tokenizer);
+	void process_elif(Tokenizer *p_tokenizer);
 	void process_else(Tokenizer *p_tokenizer);
 	void process_endif(Tokenizer *p_tokenizer);
 	void process_if(Tokenizer *p_tokenizer);
@@ -167,12 +196,13 @@ private:
 	void process_pragma(Tokenizer *p_tokenizer);
 	void process_undef(Tokenizer *p_tokenizer);
 
-	void start_branch_condition(Tokenizer *p_tokenizer, bool p_success);
+	void add_region(int p_line, bool p_enabled, Region *p_parent_region);
+	void start_branch_condition(Tokenizer *p_tokenizer, bool p_success, bool p_continue = false);
 
+	Error expand_condition(const String &p_string, int p_line, String &r_result);
 	void expand_output_macros(int p_start, int p_line);
 	Error expand_macros(const String &p_string, int p_line, String &r_result);
-	Error expand_macros(const String &p_string, int p_line, Vector<Pair<String, Define *>> p_defines, String &r_result);
-	Error expand_macros_once(const String &p_line, int p_line_number, Pair<String, Define *> p_define_pair, String &r_expanded);
+	bool expand_macros_once(const String &p_line, int p_line_number, const RBMap<String, Define *>::Element *p_define_pair, String &r_expanded);
 	bool find_match(const String &p_string, const String &p_value, int &r_index, int &r_index_start);
 
 	String next_directive(Tokenizer *p_tokenizer, const Vector<String> &p_directives);
@@ -188,9 +218,9 @@ private:
 public:
 	typedef void (*IncludeCompletionFunction)(List<ScriptLanguage::CodeCompletionOption> *);
 
-	Error preprocess(const String &p_code, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
+	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 
-	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords);
+	static void get_keyword_list(List<String> *r_keywords, bool p_include_shader_keywords, bool p_ignore_context_keywords = false);
 	static void get_pragma_list(List<String> *r_pragmas);
 
 	ShaderPreprocessor();

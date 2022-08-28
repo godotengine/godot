@@ -594,6 +594,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 		const int max_results = 32;
 		int recover_attempts = 4;
 		Vector2 sr[max_results * 2];
+		real_t priorities[max_results];
 
 		do {
 			GodotPhysicsServer2D::CollCbkData cbk;
@@ -606,6 +607,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 			GodotPhysicsServer2D::CollCbkData *cbkptr = &cbk;
 			GodotCollisionSolver2D::CallbackResult cbkres = GodotPhysicsServer2D::_shape_col_cbk;
+			int priority_amount = 0;
 
 			bool collided = false;
 
@@ -641,7 +643,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 						if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
 							const GodotBody2D *b = static_cast<const GodotBody2D *>(col_obj);
-							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+							if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
 								//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 								Vector2 lv = b->get_linear_velocity();
 								//compute displacement from linear velocity
@@ -663,6 +665,10 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					GodotShape2D *against_shape = col_obj->get_shape(shape_idx);
 					if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), cbkres, cbkptr, nullptr, margin)) {
 						did_collide = cbk.passed > current_passed; //more passed, so collision actually existed
+					}
+					while (cbk.amount > priority_amount) {
+						priorities[priority_amount] = col_obj->get_collision_priority();
+						priority_amount++;
 					}
 
 					if (!did_collide && cbk.invalid_by_dir > 0) {
@@ -686,6 +692,12 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				break;
 			}
 
+			real_t inv_total_weight = 0.0;
+			for (int i = 0; i < cbk.amount; i++) {
+				inv_total_weight += priorities[i];
+			}
+			inv_total_weight = Math::is_zero_approx(inv_total_weight) ? 1.0 : (real_t)cbk.amount / inv_total_weight;
+
 			recovered = true;
 
 			Vector2 recover_motion;
@@ -701,7 +713,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				real_t depth = n.dot(a + recover_motion) - d;
 				if (depth > min_contact_depth + CMP_EPSILON) {
 					// Only recover if there is penetration.
-					recover_motion -= n * (depth - min_contact_depth) * 0.4;
+					recover_motion -= n * (depth - min_contact_depth) * 0.4 * priorities[i] * inv_total_weight;
 				}
 			}
 
@@ -936,7 +948,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 					if (col_obj->get_type() == GodotCollisionObject2D::TYPE_BODY) {
 						const GodotBody2D *b = static_cast<const GodotBody2D *>(col_obj);
-						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_DYNAMIC) {
+						if (b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_RIGID) {
 							//fix for moving platforms (kinematic and dynamic), margin is increased by how much it moved in the given direction
 							Vector2 lv = b->get_linear_velocity();
 							//compute displacement from linear velocity
@@ -1206,7 +1218,7 @@ GodotPhysicsDirectSpaceState2D *GodotSpace2D::get_direct_state() {
 
 GodotSpace2D::GodotSpace2D() {
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_linear", 2.0);
-	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", Math::deg2rad(8.0));
+	body_angular_velocity_sleep_threshold = GLOBAL_DEF("physics/2d/sleep_threshold_angular", Math::deg_to_rad(8.0));
 	body_time_to_sleep = GLOBAL_DEF("physics/2d/time_before_sleep", 0.5);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/time_before_sleep", PropertyInfo(Variant::FLOAT, "physics/2d/time_before_sleep", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 

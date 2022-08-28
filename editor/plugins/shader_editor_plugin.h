@@ -48,6 +48,21 @@ class VisualShaderEditor;
 class HSplitContainer;
 class ShaderCreateDialog;
 
+class GDShaderSyntaxHighlighter : public CodeHighlighter {
+	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
+
+private:
+	Vector<Point2i> disabled_branch_regions;
+	Color disabled_branch_color;
+
+public:
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
+
+	void add_disabled_branch_region(const Point2i &p_region);
+	void clear_disabled_branch_regions();
+	void set_disabled_branch_color(const Color &p_color);
+};
+
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
@@ -57,7 +72,7 @@ class ShaderTextEditor : public CodeTextEditor {
 		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
 	};
 
-	Ref<CodeHighlighter> syntax_highlighter;
+	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
 	RichTextLabel *warnings_panel = nullptr;
 	Ref<Shader> shader;
 	Ref<ShaderInclude> shader_inc;
@@ -185,6 +200,7 @@ public:
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	void save_external_data(const String &p_str = "");
 	void validate_script();
+	bool is_unsaved() const;
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 
@@ -226,6 +242,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	void _update_shader_list();
 	void _shader_selected(int p_index);
+	void _shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index);
 	void _menu_item_pressed(int p_index);
 	void _resource_saved(Object *obj);
 	void _close_shader(int p_index);
@@ -233,10 +250,16 @@ class ShaderEditorPlugin : public EditorPlugin {
 	void _shader_created(Ref<Shader> p_shader);
 	void _shader_include_created(Ref<ShaderInclude> p_shader_inc);
 	void _update_shader_list_status();
+	void _move_shader_tab(int p_from, int p_to);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+protected:
+	static void _bind_methods();
 
 public:
-	virtual String get_name() const override { return "Shader"; }
-	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;

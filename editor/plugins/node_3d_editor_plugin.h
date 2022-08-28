@@ -53,6 +53,7 @@ class Node3DEditorViewport;
 class SubViewportContainer;
 class DirectionalLight3D;
 class WorldEnvironment;
+class EditorUndoRedoManager;
 
 class ViewportRotationControl : public Control {
 	GDCLASS(ViewportRotationControl, Control);
@@ -201,7 +202,7 @@ private:
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
@@ -682,7 +683,7 @@ private:
 	HBoxContainer *context_menu_hbox = nullptr;
 
 	void _generate_selection_boxes();
-	UndoRedo *undo_redo = nullptr;
+	Ref<EditorUndoRedoManager> undo_redo;
 
 	int camera_override_viewport_id;
 
@@ -777,8 +778,6 @@ private:
 	void _add_sun_to_scene(bool p_already_added_environment = false);
 	void _add_environment_to_scene(bool p_already_added_sun = false);
 
-	void _update_theme();
-
 protected:
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
@@ -820,13 +819,13 @@ public:
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
 
-	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
 
 	Ref<Environment> get_viewport_environment() { return viewport_environment; }
 
-	UndoRedo *get_undo_redo() { return undo_redo; }
+	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
+	Ref<EditorUndoRedoManager> get_undo_redo();
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);

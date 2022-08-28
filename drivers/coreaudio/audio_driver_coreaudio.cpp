@@ -215,6 +215,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	}
 
 	ad->lock();
+	ad->start_counting_ticks();
 
 	AudioBufferList bufferList;
 	bufferList.mNumberBuffers = 1;
@@ -237,6 +238,7 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 		ERR_PRINT("AudioUnitRender failed, code: " + itos(result));
 	}
 
+	ad->stop_counting_ticks();
 	ad->unlock();
 
 	return result;
@@ -493,8 +495,8 @@ Error AudioDriverCoreAudio::capture_stop() {
 
 #ifdef MACOS_ENABLED
 
-Array AudioDriverCoreAudio::_get_device_list(bool capture) {
-	Array list;
+PackedStringArray AudioDriverCoreAudio::_get_device_list(bool capture) {
+	PackedStringArray list;
 
 	list.push_back("Default");
 
@@ -637,7 +639,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 	}
 }
 
-Array AudioDriverCoreAudio::get_device_list() {
+PackedStringArray AudioDriverCoreAudio::get_device_list() {
 	return _get_device_list();
 }
 
@@ -659,7 +661,7 @@ void AudioDriverCoreAudio::capture_set_device(const String &p_name) {
 	}
 }
 
-Array AudioDriverCoreAudio::capture_get_device_list() {
+PackedStringArray AudioDriverCoreAudio::capture_get_device_list() {
 	return _get_device_list(true);
 }
 

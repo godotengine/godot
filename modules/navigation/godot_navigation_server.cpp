@@ -123,8 +123,8 @@ void GodotNavigationServer::add_command(SetCommand *command) const {
 	}
 }
 
-Array GodotNavigationServer::get_maps() const {
-	Array all_map_rids;
+TypedArray<RID> GodotNavigationServer::get_maps() const {
+	TypedArray<RID> all_map_rids;
 	List<RID> maps_owned;
 	map_owner.get_owned_list(&maps_owned);
 	if (maps_owned.size()) {
@@ -245,8 +245,8 @@ RID GodotNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 
 	return map->get_closest_point_owner(p_point);
 }
 
-Array GodotNavigationServer::map_get_regions(RID p_map) const {
-	Array regions_rids;
+TypedArray<RID> GodotNavigationServer::map_get_regions(RID p_map) const {
+	TypedArray<RID> regions_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, regions_rids);
 	const LocalVector<NavRegion *> regions = map->get_regions();
@@ -257,8 +257,8 @@ Array GodotNavigationServer::map_get_regions(RID p_map) const {
 	return regions_rids;
 }
 
-Array GodotNavigationServer::map_get_agents(RID p_map) const {
-	Array agents_rids;
+TypedArray<RID> GodotNavigationServer::map_get_agents(RID p_map) const {
+	TypedArray<RID> agents_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, agents_rids);
 	const LocalVector<RvoAgent *> agents = map->get_agents();
@@ -453,11 +453,11 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	}
 }
 
-COMMAND_2(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist) {
+COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance) {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	agent->get_agent()->neighborDist_ = p_dist;
+	agent->get_agent()->neighborDist_ = p_distance;
 }
 
 COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {

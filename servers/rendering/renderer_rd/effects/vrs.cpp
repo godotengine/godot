@@ -146,10 +146,11 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 		if (vrs_mode == RS::VIEWPORT_VRS_TEXTURE) {
 			RID vrs_texture = texture_storage->render_target_get_vrs_texture(p_render_target);
 			if (vrs_texture.is_valid()) {
-				Texture *texture = texture_storage->get_texture(vrs_texture);
-				if (texture) {
+				RID rd_texture = texture_storage->texture_get_rd_texture(vrs_texture);
+				int layers = texture_storage->texture_get_layers(vrs_texture);
+				if (rd_texture.is_valid()) {
 					// Copy into our density buffer
-					copy_vrs(texture->rd_texture, p_vrs_fb, texture->layers > 1);
+					copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 				}
 			}
 		} else if (vrs_mode == RS::VIEWPORT_VRS_XR) {
@@ -157,10 +158,12 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 			if (interface.is_valid()) {
 				RID vrs_texture = interface->get_vrs_texture();
 				if (vrs_texture.is_valid()) {
-					Texture *texture = texture_storage->get_texture(vrs_texture);
-					if (texture) {
+					RID rd_texture = texture_storage->texture_get_rd_texture(vrs_texture);
+					int layers = texture_storage->texture_get_layers(vrs_texture);
+
+					if (rd_texture.is_valid()) {
 						// Copy into our density buffer
-						copy_vrs(texture->rd_texture, p_vrs_fb, texture->layers > 1);
+						copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 					}
 				}
 			}

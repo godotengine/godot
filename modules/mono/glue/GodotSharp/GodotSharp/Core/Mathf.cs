@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 
 namespace Godot
@@ -40,9 +35,9 @@ namespace Godot
         public const real_t NaN = real_t.NaN;
 
         // 0.0174532924f and 0.0174532925199433
-        private const real_t _deg2RadConst = (real_t)0.0174532925199432957692369077M;
+        private const real_t _degToRadConst = (real_t)0.0174532925199432957692369077M;
         // 57.29578f and 57.2957795130823
-        private const real_t _rad2DegConst = (real_t)57.295779513082320876798154814M;
+        private const real_t _radToDegConst = (real_t)57.295779513082320876798154814M;
 
         /// <summary>
         /// Returns the absolute value of <paramref name="s"/> (i.e. positive value).
@@ -180,7 +175,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Cubic interpolates between two values by a normalized value with pre and post values.
+        /// Cubic interpolates between two values by the factor defined in <paramref name="weight"/>
+        /// with pre and post values.
         /// </summary>
         /// <param name="from">The start value for interpolation.</param>
         /// <param name="to">The destination value for interpolation.</param>
@@ -195,6 +191,93 @@ namespace Godot
                             (-pre + to) * weight +
                             (2.0f * pre - 5.0f * from + 4.0f * to - post) * (weight * weight) +
                             (-pre + 3.0f * from - 3.0f * to + post) * (weight * weight * weight));
+        }
+
+        /// <summary>
+        /// Cubic interpolates between two rotation values with shortest path
+        /// by the factor defined in <paramref name="weight"/> with pre and post values.
+        /// See also <see cref="LerpAngle"/>.
+        /// </summary>
+        /// <param name="from">The start value for interpolation.</param>
+        /// <param name="to">The destination value for interpolation.</param>
+        /// <param name="pre">The value which before "from" value for interpolation.</param>
+        /// <param name="post">The value which after "to" value for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <returns>The resulting value of the interpolation.</returns>
+        public static real_t CubicInterpolateAngle(real_t from, real_t to, real_t pre, real_t post, real_t weight)
+        {
+            real_t fromRot = from % Mathf.Tau;
+
+            real_t preDiff = (pre - fromRot) % Mathf.Tau;
+            real_t preRot = fromRot + (2.0f * preDiff) % Mathf.Tau - preDiff;
+
+            real_t toDiff = (to - fromRot) % Mathf.Tau;
+            real_t toRot = fromRot + (2.0f * toDiff) % Mathf.Tau - toDiff;
+
+            real_t postDiff = (post - toRot) % Mathf.Tau;
+            real_t postRot = toRot + (2.0f * postDiff) % Mathf.Tau - postDiff;
+
+            return CubicInterpolate(fromRot, toRot, preRot, postRot, weight);
+        }
+
+        /// <summary>
+        /// Cubic interpolates between two values by the factor defined in <paramref name="weight"/>
+        /// with pre and post values.
+        /// It can perform smoother interpolation than <see cref="CubicInterpolate"/>
+        /// by the time values.
+        /// </summary>
+        /// <param name="from">The start value for interpolation.</param>
+        /// <param name="to">The destination value for interpolation.</param>
+        /// <param name="pre">The value which before "from" value for interpolation.</param>
+        /// <param name="post">The value which after "to" value for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="toT"></param>
+        /// <param name="preT"></param>
+        /// <param name="postT"></param>
+        /// <returns>The resulting value of the interpolation.</returns>
+        public static real_t CubicInterpolateInTime(real_t from, real_t to, real_t pre, real_t post, real_t weight, real_t toT, real_t preT, real_t postT)
+        {
+            /* Barry-Goldman method */
+            real_t t = Lerp(0.0f, toT, weight);
+            real_t a1 = Lerp(pre, from, preT == 0 ? 0.0f : (t - preT) / -preT);
+            real_t a2 = Lerp(from, to, toT == 0 ? 0.5f : t / toT);
+            real_t a3 = Lerp(to, post, postT - toT == 0 ? 1.0f : (t - toT) / (postT - toT));
+            real_t b1 = Lerp(a1, a2, toT - preT == 0 ? 0.0f : (t - preT) / (toT - preT));
+            real_t b2 = Lerp(a2, a3, postT == 0 ? 1.0f : t / postT);
+            return Lerp(b1, b2, toT == 0 ? 0.5f : t / toT);
+        }
+
+        /// <summary>
+        /// Cubic interpolates between two rotation values with shortest path
+        /// by the factor defined in <paramref name="weight"/> with pre and post values.
+        /// See also <see cref="LerpAngle"/>.
+        /// It can perform smoother interpolation than <see cref="CubicInterpolateAngle"/>
+        /// by the time values.
+        /// </summary>
+        /// <param name="from">The start value for interpolation.</param>
+        /// <param name="to">The destination value for interpolation.</param>
+        /// <param name="pre">The value which before "from" value for interpolation.</param>
+        /// <param name="post">The value which after "to" value for interpolation.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="toT"></param>
+        /// <param name="preT"></param>
+        /// <param name="postT"></param>
+        /// <returns>The resulting value of the interpolation.</returns>
+        public static real_t CubicInterpolateAngleInTime(real_t from, real_t to, real_t pre, real_t post, real_t weight,
+                    real_t toT, real_t preT, real_t postT)
+        {
+            real_t fromRot = from % Mathf.Tau;
+
+            real_t preDiff = (pre - fromRot) % Mathf.Tau;
+            real_t preRot = fromRot + (2.0f * preDiff) % Mathf.Tau - preDiff;
+
+            real_t toDiff = (to - fromRot) % Mathf.Tau;
+            real_t toRot = fromRot + (2.0f * toDiff) % Mathf.Tau - toDiff;
+
+            real_t postDiff = (post - toRot) % Mathf.Tau;
+            real_t postRot = toRot + (2.0f * postDiff) % Mathf.Tau - postDiff;
+
+            return CubicInterpolateInTime(fromRot, toRot, preRot, postRot, weight, toT, preT, postT);
         }
 
         /// <summary>
@@ -224,9 +307,9 @@ namespace Godot
         /// </summary>
         /// <param name="deg">An angle expressed in degrees.</param>
         /// <returns>The same angle expressed in radians.</returns>
-        public static real_t Deg2Rad(real_t deg)
+        public static real_t DegToRad(real_t deg)
         {
-            return deg * _deg2RadConst;
+            return deg * _degToRadConst;
         }
 
         /// <summary>
@@ -536,9 +619,9 @@ namespace Godot
         /// </summary>
         /// <param name="rad">An angle expressed in radians.</param>
         /// <returns>The same angle expressed in degrees.</returns>
-        public static real_t Rad2Deg(real_t rad)
+        public static real_t RadToDeg(real_t rad)
         {
-            return rad * _rad2DegConst;
+            return rad * _radToDegConst;
         }
 
         /// <summary>
@@ -759,9 +842,10 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the [code]value[/code] wrapped between [code]0[/code] and the [code]length[/code].
-        /// If the limit is reached, the next value the function returned is decreased to the [code]0[/code] side or increased to the [code]length[/code] side (like a triangle wave).
-        /// If [code]length[/code] is less than zero, it becomes positive.
+        /// Returns the <paramref name="value"/> wrapped between <c>0</c> and the <paramref name="length"/>.
+        /// If the limit is reached, the next value the function returned is decreased to the <c>0</c> side
+        /// or increased to the <paramref name="length"/> side (like a triangle wave).
+        /// If <paramref name="length"/> is less than zero, it becomes positive.
         /// </summary>
         /// <param name="value">The value to pingpong.</param>
         /// <param name="length">The maximum value of the function.</param>

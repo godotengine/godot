@@ -33,6 +33,7 @@
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/3d/sprite_3d.h"

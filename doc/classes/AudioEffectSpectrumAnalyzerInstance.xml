@@ -9,9 +9,9 @@
 	<methods>
 		<method name="get_magnitude_for_frequency_range" qualifiers="const">
 			<return type="Vector2" />
-			<argument index="0" name="from_hz" type="float" />
-			<argument index="1" name="to_hz" type="float" />
-			<argument index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1" />
+			<param index="0" name="from_hz" type="float" />
+			<param index="1" name="to_hz" type="float" />
+			<param index="2" name="mode" type="int" enum="AudioEffectSpectrumAnalyzerInstance.MagnitudeMode" default="1" />
 			<description>
 			</description>
 		</method>

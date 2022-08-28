@@ -607,10 +607,12 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 void LineEdit::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (alignment != p_alignment) {
-		alignment = p_alignment;
-		_shape();
+	if (alignment == p_alignment) {
+		return;
 	}
+
+	alignment = p_alignment;
+	_shape();
 	update();
 }
 
@@ -716,7 +718,7 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			_fit_to_width();
-			scroll_offset = 0;
+			scroll_offset = 0.0;
 			set_caret_column(get_caret_column());
 		} break;
 
@@ -799,7 +801,7 @@ void LineEdit::_notification(int p_what) {
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
-					if (scroll_offset != 0) {
+					if (!Math::is_zero_approx(scroll_offset)) {
 						x_ofs = style->get_offset().x;
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - (text_width)) / 2);
@@ -844,7 +846,7 @@ void LineEdit::_notification(int p_what) {
 				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(SIDE_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
 
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-					if (scroll_offset == 0) {
+					if (Math::is_zero_approx(scroll_offset)) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 					}
 				} else {
@@ -1206,7 +1208,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			if (scroll_offset != 0) {
+			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
@@ -1226,7 +1228,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-			if (scroll_offset == 0) {
+			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 			}
 		} else {
@@ -1234,11 +1236,11 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 		}
 	}
 
-	int ofs = TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset);
+	int ofs = ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
 	set_caret_column(ofs);
 }
 
-Vector2i LineEdit::get_caret_pixel_pos() {
+Vector2 LineEdit::get_caret_pixel_pos() {
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 	bool rtl = is_layout_rtl();
 
@@ -1254,7 +1256,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			if (scroll_offset != 0) {
+			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
@@ -1274,7 +1276,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-			if (scroll_offset == 0) {
+			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 			}
 		} else {
@@ -1282,7 +1284,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 		}
 	}
 
-	Vector2i ret;
+	Vector2 ret;
 	CaretInfo caret;
 	// Get position of the start of caret.
 	if (ime_text.length() != 0 && ime_selection.x != 0) {
@@ -1425,7 +1427,7 @@ void LineEdit::set_text(String p_text) {
 
 	update();
 	caret_column = 0;
-	scroll_offset = 0;
+	scroll_offset = 0.0;
 }
 
 void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
@@ -1513,9 +1515,9 @@ void LineEdit::clear() {
 void LineEdit::show_virtual_keyboard() {
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 		if (selection.enabled) {
-			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), false, max_length, selection.begin, selection.end);
+			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), max_length, selection.begin, selection.end);
 		} else {
-			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), false, max_length, caret_column);
+			DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), DisplayServer::VirtualKeyboardType(virtual_keyboard_type), max_length, caret_column);
 		}
 	}
 }
@@ -1525,6 +1527,10 @@ String LineEdit::get_text() const {
 }
 
 void LineEdit::set_placeholder(String p_text) {
+	if (placeholder == p_text) {
+		return;
+	}
+
 	placeholder = p_text;
 	placeholder_translated = atr(placeholder);
 	_shape();
@@ -1549,7 +1555,7 @@ void LineEdit::set_caret_column(int p_column) {
 	// Fit to window.
 
 	if (!is_inside_tree()) {
-		scroll_offset = 0;
+		scroll_offset = 0.0;
 		return;
 	}
 
@@ -1568,7 +1574,7 @@ void LineEdit::set_caret_column(int p_column) {
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			if (scroll_offset != 0) {
+			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
@@ -1589,7 +1595,7 @@ void LineEdit::set_caret_column(int p_column) {
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-			if (scroll_offset == 0) {
+			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 			}
 		} else {
@@ -1599,12 +1605,12 @@ void LineEdit::set_caret_column(int p_column) {
 	}
 
 	// Note: Use two coordinates to fit IME input range.
-	Vector2i primary_catret_offset = get_caret_pixel_pos();
+	Vector2 primary_caret_offset = get_caret_pixel_pos();
 
-	if (MIN(primary_catret_offset.x, primary_catret_offset.y) <= x_ofs) {
-		scroll_offset += (x_ofs - MIN(primary_catret_offset.x, primary_catret_offset.y));
-	} else if (MAX(primary_catret_offset.x, primary_catret_offset.y) >= ofs_max) {
-		scroll_offset += (ofs_max - MAX(primary_catret_offset.x, primary_catret_offset.y));
+	if (MIN(primary_caret_offset.x, primary_caret_offset.y) <= x_ofs) {
+		scroll_offset += x_ofs - MIN(primary_caret_offset.x, primary_caret_offset.y);
+	} else if (MAX(primary_caret_offset.x, primary_caret_offset.y) >= ofs_max) {
+		scroll_offset += ofs_max - MAX(primary_caret_offset.x, primary_caret_offset.y);
 	}
 	scroll_offset = MIN(0, scroll_offset);
 
@@ -1615,14 +1621,14 @@ int LineEdit::get_caret_column() const {
 	return caret_column;
 }
 
-void LineEdit::set_scroll_offset(int p_pos) {
+void LineEdit::set_scroll_offset(float p_pos) {
 	scroll_offset = p_pos;
-	if (scroll_offset < 0) {
-		scroll_offset = 0;
+	if (scroll_offset < 0.0) {
+		scroll_offset = 0.0;
 	}
 }
 
-int LineEdit::get_scroll_offset() const {
+float LineEdit::get_scroll_offset() const {
 	return scroll_offset;
 }
 
@@ -1650,7 +1656,7 @@ void LineEdit::clear_internal() {
 	deselect();
 	_clear_undo_stack();
 	caret_column = 0;
-	scroll_offset = 0;
+	scroll_offset = 0.0;
 	undo_text = "";
 	text = "";
 	_shape();
@@ -1781,10 +1787,12 @@ bool LineEdit::is_editable() const {
 }
 
 void LineEdit::set_secret(bool p_secret) {
-	if (pass != p_secret) {
-		pass = p_secret;
-		_shape();
+	if (pass == p_secret) {
+		return;
 	}
+
+	pass = p_secret;
+	_shape();
 	update();
 }
 
@@ -1797,10 +1805,12 @@ void LineEdit::set_secret_character(const String &p_string) {
 	// It also wouldn't make sense to use multiple characters as the secret character.
 	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
-	if (secret_character != p_string) {
-		secret_character = p_string;
-		_shape();
+	if (secret_character == p_string) {
+		return;
 	}
+
+	secret_character = p_string;
+	_shape();
 	update();
 }
 
@@ -2040,6 +2050,14 @@ bool LineEdit::is_virtual_keyboard_enabled() const {
 	return virtual_keyboard_enabled;
 }
 
+void LineEdit::set_virtual_keyboard_type(VirtualKeyboardType p_type) {
+	virtual_keyboard_type = p_type;
+}
+
+LineEdit::VirtualKeyboardType LineEdit::get_virtual_keyboard_type() const {
+	return virtual_keyboard_type;
+}
+
 void LineEdit::set_middle_mouse_paste_enabled(bool p_enabled) {
 	middle_mouse_paste_enabled = p_enabled;
 }
@@ -2049,6 +2067,10 @@ bool LineEdit::is_middle_mouse_paste_enabled() const {
 }
 
 void LineEdit::set_selecting_enabled(bool p_enabled) {
+	if (selecting_enabled == p_enabled) {
+		return;
+	}
+
 	selecting_enabled = p_enabled;
 
 	if (!selecting_enabled) {
@@ -2061,6 +2083,10 @@ bool LineEdit::is_selecting_enabled() const {
 }
 
 void LineEdit::set_deselect_on_focus_loss_enabled(const bool p_enabled) {
+	if (deselect_on_focus_loss_enabled == p_enabled) {
+		return;
+	}
+
 	deselect_on_focus_loss_enabled = p_enabled;
 	if (p_enabled && selection.enabled && !has_focus()) {
 		deselect();
@@ -2216,9 +2242,9 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
-void LineEdit::_validate_property(PropertyInfo &property) const {
-	if (!caret_blink_enabled && property.name == "caret_blink_speed") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void LineEdit::_validate_property(PropertyInfo &p_property) const {
+	if (!caret_blink_enabled && p_property.name == "caret_blink_speed") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -2280,6 +2306,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_enabled", "enable"), &LineEdit::set_virtual_keyboard_enabled);
 	ClassDB::bind_method(D_METHOD("is_virtual_keyboard_enabled"), &LineEdit::is_virtual_keyboard_enabled);
+	ClassDB::bind_method(D_METHOD("set_virtual_keyboard_type", "type"), &LineEdit::set_virtual_keyboard_type);
+	ClassDB::bind_method(D_METHOD("get_virtual_keyboard_type"), &LineEdit::get_virtual_keyboard_type);
 	ClassDB::bind_method(D_METHOD("set_clear_button_enabled", "enable"), &LineEdit::set_clear_button_enabled);
 	ClassDB::bind_method(D_METHOD("is_clear_button_enabled"), &LineEdit::is_clear_button_enabled);
 	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &LineEdit::set_shortcut_keys_enabled);
@@ -2329,6 +2357,15 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
 	BIND_ENUM_CONSTANT(MENU_MAX);
 
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_MULTILINE);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER_DECIMAL);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PHONE);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_EMAIL_ADDRESS);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PASSWORD);
+	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_URL);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
@@ -2339,6 +2376,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_to_text_length"), "set_expand_to_text_length_enabled", "is_expand_to_text_length_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "virtual_keyboard_enabled"), "set_virtual_keyboard_enabled", "is_virtual_keyboard_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "virtual_keyboard_type", PROPERTY_HINT_ENUM, "Default,Multiline,Number,Decimal,Phone,Email,Password,URL"), "set_virtual_keyboard_type", "get_virtual_keyboard_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_button_enabled"), "set_clear_button_enabled", "is_clear_button_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "middle_mouse_paste_enabled"), "set_middle_mouse_paste_enabled", "is_middle_mouse_paste_enabled");

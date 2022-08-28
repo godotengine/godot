@@ -37,8 +37,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/progress_dialog.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
 
@@ -752,7 +754,6 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 void ExportTemplateManager::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			current_value->add_theme_font_override("font", get_theme_font(SNAME("main"), SNAME("EditorFonts")));
 			current_missing_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));

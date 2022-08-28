@@ -501,11 +501,11 @@ Error AudioDriverWASAPI::init_capture_device(bool reinit) {
 }
 
 Error AudioDriverWASAPI::audio_device_finish(AudioDeviceWASAPI *p_device) {
-	if (p_device->active) {
+	if (p_device->active.is_set()) {
 		if (p_device->audio_client) {
 			p_device->audio_client->Stop();
 		}
-		p_device->active = false;
+		p_device->active.clear();
 	}
 
 	SAFE_RELEASE(p_device->audio_client)
@@ -533,8 +533,7 @@ Error AudioDriverWASAPI::init() {
 		ERR_PRINT("WASAPI: init_render_device error");
 	}
 
-	exit_thread = false;
-	thread_exited = false;
+	exit_thread.clear();
 
 	thread.start(thread_func, this);
 
@@ -553,8 +552,8 @@ AudioDriver::SpeakerMode AudioDriverWASAPI::get_speaker_mode() const {
 	return get_speaker_mode_by_total_channels(channels);
 }
 
-Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
-	Array list;
+PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
+	PackedStringArray list;
 	IMMDeviceCollection *devices = nullptr;
 	IMMDeviceEnumerator *enumerator = nullptr;
 
@@ -563,14 +562,14 @@ Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 	CoInitialize(nullptr);
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
-	ERR_FAIL_COND_V(hr != S_OK, Array());
+	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	hr = enumerator->EnumAudioEndpoints(p_capture ? eCapture : eRender, DEVICE_STATE_ACTIVE, &devices);
-	ERR_FAIL_COND_V(hr != S_OK, Array());
+	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	UINT count = 0;
 	hr = devices->GetCount(&count);
-	ERR_FAIL_COND_V(hr != S_OK, Array());
+	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());
 
 	for (ULONG i = 0; i < count; i++) {
 		IMMDevice *device = nullptr;
@@ -600,7 +599,7 @@ Array AudioDriverWASAPI::audio_device_get_list(bool p_capture) {
 	return list;
 }
 
-Array AudioDriverWASAPI::get_device_list() {
+PackedStringArray AudioDriverWASAPI::get_device_list() {
 	return audio_device_get_list(false);
 }
 
@@ -684,7 +683,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 	uint32_t avail_frames = 0;
 	uint32_t write_ofs = 0;
 
-	while (!ad->exit_thread) {
+	while (!ad->exit_thread.is_set()) {
 		uint32_t read_frames = 0;
 		uint32_t written_frames = 0;
 
@@ -692,7 +691,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			ad->lock();
 			ad->start_counting_ticks();
 
-			if (ad->audio_output.active) {
+			if (ad->audio_output.active.is_set()) {
 				ad->audio_server_process(ad->buffer_frames, ad->samples_in.ptrw());
 			} else {
 				for (int i = 0; i < ad->samples_in.size(); i++) {
@@ -758,7 +757,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 						}
 					} else {
 						ERR_PRINT("WASAPI: Get buffer error");
-						ad->exit_thread = true;
+						ad->exit_thread.set();
 					}
 				}
 			} else if (hr == AUDCLNT_E_DEVICE_INVALIDATED) {
@@ -807,7 +806,7 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			write_ofs = 0;
 		}
 
-		if (ad->audio_input.active) {
+		if (ad->audio_input.active.is_set()) {
 			UINT32 packet_length = 0;
 			BYTE *data;
 			UINT32 num_frames_available;
@@ -886,8 +885,6 @@ void AudioDriverWASAPI::thread_func(void *p_udata) {
 			OS::get_singleton()->delay_usec(1000);
 		}
 	}
-
-	ad->thread_exited = true;
 }
 
 void AudioDriverWASAPI::start() {
@@ -896,7 +893,7 @@ void AudioDriverWASAPI::start() {
 		if (hr != S_OK) {
 			ERR_PRINT("WASAPI: Start failed");
 		} else {
-			audio_output.active = true;
+			audio_output.active.set();
 		}
 	}
 }
@@ -910,7 +907,7 @@ void AudioDriverWASAPI::unlock() {
 }
 
 void AudioDriverWASAPI::finish() {
-	exit_thread = true;
+	exit_thread.set();
 	thread.wait_to_finish();
 
 	finish_capture_device();
@@ -924,19 +921,19 @@ Error AudioDriverWASAPI::capture_start() {
 		return err;
 	}
 
-	if (audio_input.active) {
+	if (audio_input.active.is_set()) {
 		return FAILED;
 	}
 
 	audio_input.audio_client->Start();
-	audio_input.active = true;
+	audio_input.active.set();
 	return OK;
 }
 
 Error AudioDriverWASAPI::capture_stop() {
-	if (audio_input.active) {
+	if (audio_input.active.is_set()) {
 		audio_input.audio_client->Stop();
-		audio_input.active = false;
+		audio_input.active.clear();
 
 		return OK;
 	}
@@ -950,7 +947,7 @@ void AudioDriverWASAPI::capture_set_device(const String &p_name) {
 	unlock();
 }
 
-Array AudioDriverWASAPI::capture_get_device_list() {
+PackedStringArray AudioDriverWASAPI::capture_get_device_list() {
 	return audio_device_get_list(true);
 }
 

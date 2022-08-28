@@ -18,25 +18,25 @@
 		</constructor>
 		<constructor name="Signal">
 			<return type="Signal" />
-			<argument index="0" name="from" type="Signal" />
+			<param index="0" name="from" type="Signal" />
 			<description>
 				Constructs a [Signal] as a copy of the given [Signal].
 			</description>
 		</constructor>
 		<constructor name="Signal">
 			<return type="Signal" />
-			<argument index="0" name="object" type="Object" />
-			<argument index="1" name="signal" type="StringName" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="signal" type="StringName" />
 			<description>
-				Creates a new [Signal] with the name [code]signal[/code] in the specified [code]object[/code].
+				Creates a new [Signal] with the name [param signal] in the specified [param object].
 			</description>
 		</constructor>
 	</constructors>
 	<methods>
 		<method name="connect">
 			<return type="int" />
-			<argument index="0" name="callable" type="Callable" />
-			<argument index="1" name="flags" type="int" default="0" />
+			<param index="0" name="callable" type="Callable" />
+			<param index="1" name="flags" type="int" default="0" />
 			<description>
 				Connects this signal to the specified [Callable], optionally providing connection flags. You can provide additional arguments to the connected method call by using [method Callable.bind].
 				[codeblock]
@@ -50,7 +50,7 @@
 		</method>
 		<method name="disconnect">
 			<return type="void" />
-			<argument index="0" name="callable" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
 				Disconnects this signal from the specified [Callable].
 			</description>
@@ -87,7 +87,7 @@
 		</method>
 		<method name="is_connected" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="callable" type="Callable" />
+			<param index="0" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if the specified [Callable] is connected to this signal.
 			</description>
@@ -101,13 +101,13 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Signal" />
+			<param index="0" name="right" type="Signal" />
 			<description>
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Signal" />
+			<param index="0" name="right" type="Signal" />
 			<description>
 			</description>
 		</operator>

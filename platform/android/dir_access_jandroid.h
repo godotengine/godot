@@ -67,6 +67,7 @@ public:
 
 	virtual int get_drive_count() override;
 	virtual String get_drive(int p_drive) override;
+	virtual String get_current_dir(bool p_include_drive = true) const override; ///< return current dir location
 
 	virtual Error change_dir(String p_dir) override; ///< can be relative or absolute, return false on success
 

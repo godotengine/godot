@@ -30,7 +30,7 @@
 
 #include "gpu_particles_2d.h"
 
-#include "scene/resources/particles_material.h"
+#include "scene/resources/particle_process_material.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/engine.h"
@@ -123,10 +123,10 @@ void GPUParticles2D::_update_particle_emission_transform() {
 
 void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
-	Ref<ParticlesMaterial> pm = p_material;
-	if (pm.is_valid() && !pm->get_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
+	Ref<ParticleProcessMaterial> pm = p_material;
+	if (pm.is_valid() && !pm->get_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_DISABLE_Z) && pm->get_gravity() == Vector3(0, -9.8, 0)) {
 		// Likely a new (3D) material, modify it to match 2D space
-		pm->set_particle_flag(ParticlesMaterial::PARTICLE_FLAG_DISABLE_Z, true);
+		pm->set_particle_flag(ParticleProcessMaterial::PARTICLE_FLAG_DISABLE_Z, true);
 		pm->set_gravity(Vector3(0, 98, 0));
 	}
 	RID material_rid;
@@ -308,10 +308,10 @@ TypedArray<String> GPUParticles2D::get_configuration_warnings() const {
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 
 		if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
-			const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
+			const ParticleProcessMaterial *process = Object::cast_to<ParticleProcessMaterial>(process_material.ptr());
 			if (process &&
-					(process->get_param_max(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
-							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
+					(process->get_param_max(ParticleProcessMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param_max(ParticleProcessMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
+							process->get_param_texture(ParticleProcessMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticleProcessMaterial::PARAM_ANIM_OFFSET).is_valid())) {
 				warnings.push_back(RTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled."));
 			}
 		}
@@ -340,7 +340,7 @@ Ref<Texture2D> GPUParticles2D::get_texture() const {
 	return texture;
 }
 
-void GPUParticles2D::_validate_property(PropertyInfo &property) const {
+void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -625,7 +625,7 @@ void GPUParticles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_sections", PROPERTY_HINT_RANGE, "2,128,1"), "set_trail_sections", "get_trail_sections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_section_subdivisions", PROPERTY_HINT_RANGE, "1,1024,1"), "set_trail_section_subdivisions", "get_trail_section_subdivisions");
 	ADD_GROUP("Process Material", "process_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticlesMaterial"), "set_process_material", "get_process_material");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,ParticleProcessMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Textures", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 
@@ -660,7 +660,7 @@ GPUParticles2D::GPUParticles2D() {
 	set_explosiveness_ratio(0);
 	set_randomness_ratio(0);
 	set_visibility_rect(Rect2(Vector2(-100, -100), Vector2(200, 200)));
-	set_use_local_coordinates(true);
+	set_use_local_coordinates(false);
 	set_draw_order(DRAW_ORDER_LIFETIME);
 	set_speed_scale(1);
 	set_fixed_fps(30);

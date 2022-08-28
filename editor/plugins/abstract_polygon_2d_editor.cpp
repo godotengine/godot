@@ -35,6 +35,9 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/separator.h"
 
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
 	return polygon == p_vertex.polygon && vertex == p_vertex.vertex;
@@ -148,7 +151,6 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 
 void AbstractPolygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
@@ -292,9 +294,9 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 							_commit_action();
 							return true;
 						} else {
-							pre_move_edit = vertices;
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
 							vertices.insert(edited_point.vertex, edited_point.pos);
+							pre_move_edit = vertices;
 							selected_point = Vertex(edited_point.polygon, edited_point.vertex);
 							edge_point = PosVertex();
 

@@ -531,10 +531,12 @@ String &String::operator+=(const String &p_str) {
 
 	resize(lhs_len + rhs_len + 1);
 
-	const char32_t *src = p_str.get_data();
+	const char32_t *src = p_str.ptr();
 	char32_t *dst = ptrw() + lhs_len;
 
-	memcpy(dst, src, (rhs_len + 1) * sizeof(char32_t));
+	// Don't copy the terminating null with `memcpy` to avoid undefined behavior when string is being added to itself (it would overlap the destination).
+	memcpy(dst, src, rhs_len * sizeof(char32_t));
+	*(dst + rhs_len) = _null;
 
 	return *this;
 }
@@ -1656,7 +1658,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 	return ret;
 }
 
-Error String::parse_utf8(const char *p_utf8, int p_len) {
+Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
@@ -1689,6 +1691,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len) {
 			uint8_t c = *ptrtmp >= 0 ? *ptrtmp : uint8_t(256 + *ptrtmp);
 
 			if (skip == 0) {
+				if (p_skip_cr && c == '\r') {
+					ptrtmp++;
+					continue;
+				}
 				/* Determine the number of characters in sequence */
 				if ((c & 0x80) == 0) {
 					skip = 0;
@@ -1753,6 +1759,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len) {
 		uint8_t c = *p_utf8 >= 0 ? *p_utf8 : uint8_t(256 + *p_utf8);
 
 		if (skip == 0) {
+			if (p_skip_cr && c == '\r') {
+				p_utf8++;
+				continue;
+			}
 			/* Determine the number of characters in sequence */
 			if ((c & 0x80) == 0) {
 				*(dst++) = c;
@@ -3441,18 +3451,19 @@ String String::replacen(const String &p_key, const String &p_with) const {
 String String::repeat(int p_count) const {
 	ERR_FAIL_COND_V_MSG(p_count < 0, "", "Parameter count should be a positive number.");
 
-	String new_string;
-	const char32_t *src = this->get_data();
+	int len = length();
+	String new_string = *this;
+	new_string.resize(p_count * len + 1);
 
-	new_string.resize(length() * p_count + 1);
-	new_string[length() * p_count] = 0;
-
-	for (int i = 0; i < p_count; i++) {
-		for (int j = 0; j < length(); j++) {
-			new_string[i * length() + j] = src[j];
-		}
+	char32_t *dst = new_string.ptrw();
+	int offset = 1;
+	int stride = 1;
+	while (offset < p_count) {
+		memcpy(dst + offset * len, dst, stride * len * sizeof(char32_t));
+		offset += stride;
+		stride = MIN(stride * 2, p_count - offset);
 	}
-
+	dst[p_count * len] = _null;
 	return new_string;
 }
 
@@ -4656,6 +4667,71 @@ String String::sprintf(const Array &values, bool *error) const {
 					in_format = false;
 					break;
 				}
+				case 'v': { // Vector2/3/4/2i/3i/4i
+					if (value_index >= values.size()) {
+						return "not enough arguments for format string";
+					}
+
+					int count;
+					switch (values[value_index].get_type()) {
+						case Variant::VECTOR2:
+						case Variant::VECTOR2I: {
+							count = 2;
+						} break;
+						case Variant::VECTOR3:
+						case Variant::VECTOR3I: {
+							count = 3;
+						} break;
+						case Variant::VECTOR4:
+						case Variant::VECTOR4I: {
+							count = 4;
+						} break;
+						default: {
+							return "%v requires a vector type (Vector2/3/4/2i/3i/4i)";
+						}
+					}
+
+					Vector4 vec = values[value_index];
+					String str = "(";
+					for (int i = 0; i < count; i++) {
+						double val = vec[i];
+						// Pad decimals out.
+						String number_str = String::num(ABS(val), min_decimals).pad_decimals(min_decimals);
+
+						int initial_len = number_str.length();
+
+						// Padding. Leave room for sign later if required.
+						int pad_chars_count = val < 0 ? min_chars - 1 : min_chars;
+						String pad_char = pad_with_zeros ? String("0") : String(" ");
+						if (left_justified) {
+							number_str = number_str.rpad(pad_chars_count, pad_char);
+						} else {
+							number_str = number_str.lpad(pad_chars_count, pad_char);
+						}
+
+						// Add sign if needed.
+						if (val < 0) {
+							if (left_justified) {
+								number_str = number_str.insert(0, "-");
+							} else {
+								number_str = number_str.insert(pad_with_zeros ? 0 : number_str.length() - initial_len, "-");
+							}
+						}
+
+						// Add number to combined string
+						str += number_str;
+
+						if (i < count - 1) {
+							str += ", ";
+						}
+					}
+					str += ")";
+
+					formatted += str;
+					++value_index;
+					in_format = false;
+					break;
+				}
 				case 's': { // String
 					if (value_index >= values.size()) {
 						return "not enough arguments for format string";
@@ -4748,7 +4824,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 					break;
 				}
-				case '.': { // Float separator.
+				case '.': { // Float/Vector separator.
 					if (in_decimals) {
 						return "too many decimal points in format";
 					}
@@ -4762,8 +4838,12 @@ String String::sprintf(const Array &values, bool *error) const {
 						return "not enough arguments for format string";
 					}
 
-					if (!values[value_index].is_num()) {
-						return "* wants number";
+					Variant::Type value_type = values[value_index].get_type();
+					if (!values[value_index].is_num() &&
+							value_type != Variant::VECTOR2 && value_type != Variant::VECTOR2I &&
+							value_type != Variant::VECTOR3 && value_type != Variant::VECTOR3I &&
+							value_type != Variant::VECTOR4 && value_type != Variant::VECTOR4I) {
+						return "* wants number or vector";
 					}
 
 					int size = values[value_index];

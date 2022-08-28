@@ -269,6 +269,7 @@ void register_core_types() {
 	_marshalls = memnew(core_bind::Marshalls);
 	_engine_debugger = memnew(core_bind::EngineDebugger);
 
+	GDREGISTER_NATIVE_STRUCT(ObjectID, "uint64_t id = 0");
 	GDREGISTER_NATIVE_STRUCT(AudioFrame, "float left;float right");
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 

@@ -38,248 +38,133 @@
 
 namespace RendererRD {
 
-enum DefaultRDTexture {
-	DEFAULT_RD_TEXTURE_WHITE,
-	DEFAULT_RD_TEXTURE_BLACK,
-	DEFAULT_RD_TEXTURE_NORMAL,
-	DEFAULT_RD_TEXTURE_ANISO,
-	DEFAULT_RD_TEXTURE_DEPTH,
-	DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER,
-	DEFAULT_RD_TEXTURE_CUBEMAP_BLACK,
-	DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
-	DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
-	DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE,
-	DEFAULT_RD_TEXTURE_3D_WHITE,
-	DEFAULT_RD_TEXTURE_3D_BLACK,
-	DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
-	DEFAULT_RD_TEXTURE_2D_UINT,
-	DEFAULT_RD_TEXTURE_VRS,
-	DEFAULT_RD_TEXTURE_MAX
-};
+class LightStorage;
+class MaterialStorage;
 
-class CanvasTexture {
+class TextureStorage : public RendererTextureStorage {
 public:
-	RID diffuse;
-	RID normal_map;
-	RID specular;
-	Color specular_color = Color(1, 1, 1, 1);
-	float shininess = 1.0;
+	enum DefaultRDTexture {
+		DEFAULT_RD_TEXTURE_WHITE,
+		DEFAULT_RD_TEXTURE_BLACK,
+		DEFAULT_RD_TEXTURE_TRANSPARENT,
+		DEFAULT_RD_TEXTURE_NORMAL,
+		DEFAULT_RD_TEXTURE_ANISO,
+		DEFAULT_RD_TEXTURE_DEPTH,
+		DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER,
+		DEFAULT_RD_TEXTURE_CUBEMAP_BLACK,
+		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
+		DEFAULT_RD_TEXTURE_CUBEMAP_WHITE,
+		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_3D_WHITE,
+		DEFAULT_RD_TEXTURE_3D_BLACK,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
+		DEFAULT_RD_TEXTURE_2D_UINT,
+		DEFAULT_RD_TEXTURE_VRS,
+		DEFAULT_RD_TEXTURE_MAX
+	};
 
-	RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
-	RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-	RID uniform_sets[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
-
-	Size2i size_cache = Size2i(1, 1);
-	bool use_normal_cache = false;
-	bool use_specular_cache = false;
-	bool cleared_cache = true;
-
-	void clear_sets();
-	~CanvasTexture();
-};
-
-class Texture {
-public:
-	enum Type {
+	enum TextureType {
 		TYPE_2D,
 		TYPE_LAYERED,
 		TYPE_3D
 	};
 
-	Type type;
-	RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
-
-	RenderingDevice::TextureType rd_type;
-	RID rd_texture;
-	RID rd_texture_srgb;
-	RenderingDevice::DataFormat rd_format;
-	RenderingDevice::DataFormat rd_format_srgb;
-
-	RD::TextureView rd_view;
-
-	Image::Format format;
-	Image::Format validated_format;
-
-	int width;
-	int height;
-	int depth;
-	int layers;
-	int mipmaps;
-
-	int height_2d;
-	int width_2d;
-
-	struct BufferSlice3D {
-		Size2i size;
-		uint32_t offset = 0;
-		uint32_t buffer_size = 0;
-	};
-	Vector<BufferSlice3D> buffer_slices_3d;
-	uint32_t buffer_size_3d = 0;
-
-	bool is_render_target;
-	bool is_proxy;
-
-	Ref<Image> image_cache_2d;
-	String path;
-
-	RID proxy_to;
-	Vector<RID> proxies;
-
-	HashSet<RID> lightmap_users;
-
-	RS::TextureDetectCallback detect_3d_callback = nullptr;
-	void *detect_3d_callback_ud = nullptr;
-
-	RS::TextureDetectCallback detect_normal_callback = nullptr;
-	void *detect_normal_callback_ud = nullptr;
-
-	RS::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
-	void *detect_roughness_callback_ud = nullptr;
-
-	CanvasTexture *canvas_texture = nullptr;
-
-	void cleanup();
-};
-
-struct DecalAtlas {
-	struct Texture {
-		int panorama_to_dp_users;
-		int users;
-		Rect2 uv_rect;
-	};
-
-	struct SortItem {
-		RID texture;
-		Size2i pixel_size;
-		Size2i size;
-		Point2i pos;
-
-		bool operator<(const SortItem &p_item) const {
-			//sort larger to smaller
-			if (size.height == p_item.size.height) {
-				return size.width > p_item.size.width;
-			} else {
-				return size.height > p_item.size.height;
-			}
-		}
-	};
-
-	HashMap<RID, Texture> textures;
-	bool dirty = true;
-	int mipmaps = 5;
-
-	RID texture;
-	RID texture_srgb;
-	struct MipMap {
-		RID fb;
-		RID texture;
-		Size2i size;
-	};
-	Vector<MipMap> texture_mipmaps;
-
-	Size2i size;
-};
-
-struct Decal {
-	Vector3 extents = Vector3(1, 1, 1);
-	RID textures[RS::DECAL_TEXTURE_MAX];
-	float emission_energy = 1.0;
-	float albedo_mix = 1.0;
-	Color modulate = Color(1, 1, 1, 1);
-	uint32_t cull_mask = (1 << 20) - 1;
-	float upper_fade = 0.3;
-	float lower_fade = 0.3;
-	bool distance_fade = false;
-	float distance_fade_begin = 40.0;
-	float distance_fade_length = 10.0;
-	float normal_fade = 0.0;
-
-	Dependency dependency;
-};
-
-struct RenderTarget {
-	Size2i size;
-	uint32_t view_count;
-	RID framebuffer;
-	RID color;
-
-	//used for retrieving from CPU
-	RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
-	RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
-	Image::Format image_format = Image::FORMAT_L8;
-
-	bool is_transparent = false;
-
-	bool sdf_enabled = false;
-
-	RID backbuffer; //used for effects
-	RID backbuffer_fb;
-	RID backbuffer_mipmap0;
-
-	Vector<RID> backbuffer_mipmaps;
-
-	RID framebuffer_uniform_set;
-	RID backbuffer_uniform_set;
-
-	RID sdf_buffer_write;
-	RID sdf_buffer_write_fb;
-	RID sdf_buffer_process[2];
-	RID sdf_buffer_read;
-	RID sdf_buffer_process_uniform_sets[2];
-	RS::ViewportSDFOversize sdf_oversize = RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
-	RS::ViewportSDFScale sdf_scale = RS::VIEWPORT_SDF_SCALE_50_PERCENT;
-	Size2i process_size;
-
-	// VRS
-	RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
-	RID vrs_texture;
-
-	//texture generated for this owner (nor RD).
-	RID texture;
-	bool was_used;
-
-	//clear request
-	bool clear_requested;
-	Color clear_color;
-};
-
-struct RenderTargetSDF {
-	enum {
-		SHADER_LOAD,
-		SHADER_LOAD_SHRINK,
-		SHADER_PROCESS,
-		SHADER_PROCESS_OPTIMIZED,
-		SHADER_STORE,
-		SHADER_STORE_SHRINK,
-		SHADER_MAX
-	};
-
-	struct PushConstant {
-		int32_t size[2];
-		int32_t stride;
-		int32_t shift;
-		int32_t base_size[2];
-		int32_t pad[2];
-	};
-
-	CanvasSdfShaderRD shader;
-	RID shader_version;
-	RID pipelines[SHADER_MAX];
-};
-
-class TextureStorage : public RendererTextureStorage {
 private:
+	friend class LightStorage;
+	friend class MaterialStorage;
+
 	static TextureStorage *singleton;
+
+	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 
 	/* Canvas Texture API */
 
-	RID_Owner<RendererRD::CanvasTexture, true> canvas_texture_owner;
+	class CanvasTexture {
+	public:
+		RID diffuse;
+		RID normal_map;
+		RID specular;
+		Color specular_color = Color(1, 1, 1, 1);
+		float shininess = 1.0;
+
+		RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
+		RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
+		RID uniform_sets[RS::CANVAS_ITEM_TEXTURE_FILTER_MAX][RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+
+		Size2i size_cache = Size2i(1, 1);
+		bool use_normal_cache = false;
+		bool use_specular_cache = false;
+		bool cleared_cache = true;
+
+		void clear_sets();
+		~CanvasTexture();
+	};
+
+	RID_Owner<CanvasTexture, true> canvas_texture_owner;
 
 	/* Texture API */
 
+	class Texture {
+	public:
+		TextureType type;
+		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
+
+		RenderingDevice::TextureType rd_type;
+		RID rd_texture;
+		RID rd_texture_srgb;
+		RenderingDevice::DataFormat rd_format;
+		RenderingDevice::DataFormat rd_format_srgb;
+
+		RD::TextureView rd_view;
+
+		Image::Format format;
+		Image::Format validated_format;
+
+		int width;
+		int height;
+		int depth;
+		int layers;
+		int mipmaps;
+
+		int height_2d;
+		int width_2d;
+
+		struct BufferSlice3D {
+			Size2i size;
+			uint32_t offset = 0;
+			uint32_t buffer_size = 0;
+		};
+		Vector<BufferSlice3D> buffer_slices_3d;
+		uint32_t buffer_size_3d = 0;
+
+		bool is_render_target;
+		bool is_proxy;
+
+		Ref<Image> image_cache_2d;
+		String path;
+
+		RID proxy_to;
+		Vector<RID> proxies;
+
+		HashSet<RID> lightmap_users;
+
+		RS::TextureDetectCallback detect_3d_callback = nullptr;
+		void *detect_3d_callback_ud = nullptr;
+
+		RS::TextureDetectCallback detect_normal_callback = nullptr;
+		void *detect_normal_callback_ud = nullptr;
+
+		RS::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
+		void *detect_roughness_callback_ud = nullptr;
+
+		CanvasTexture *canvas_texture = nullptr;
+
+		void cleanup();
+	};
+
 	//textures can be created from threads, so this RID_Owner is thread safe
 	mutable RID_Owner<Texture, true> texture_owner;
+	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
 
 	struct TextureToRDFormat {
 		RD::DataFormat format;
@@ -303,13 +188,115 @@ private:
 
 	/* DECAL API */
 
-	DecalAtlas decal_atlas;
+	struct DecalAtlas {
+		struct Texture {
+			int panorama_to_dp_users;
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+		int mipmaps = 5;
+
+		RID texture;
+		RID texture_srgb;
+		struct MipMap {
+			RID fb;
+			RID texture;
+			Size2i size;
+		};
+		Vector<MipMap> texture_mipmaps;
+
+		Size2i size;
+	} decal_atlas;
+
+	struct Decal {
+		Vector3 extents = Vector3(1, 1, 1);
+		RID textures[RS::DECAL_TEXTURE_MAX];
+		float emission_energy = 1.0;
+		float albedo_mix = 1.0;
+		Color modulate = Color(1, 1, 1, 1);
+		uint32_t cull_mask = (1 << 20) - 1;
+		float upper_fade = 0.3;
+		float lower_fade = 0.3;
+		bool distance_fade = false;
+		float distance_fade_begin = 40.0;
+		float distance_fade_length = 10.0;
+		float normal_fade = 0.0;
+
+		Dependency dependency;
+	};
 
 	mutable RID_Owner<Decal, true> decal_owner;
+	Decal *get_decal(RID p_rid) const { return decal_owner.get_or_null(p_rid); };
 
 	/* RENDER TARGET API */
 
+	struct RenderTarget {
+		Size2i size;
+		uint32_t view_count;
+		RID framebuffer;
+		RID color;
+
+		//used for retrieving from CPU
+		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
+		RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
+		Image::Format image_format = Image::FORMAT_L8;
+
+		bool is_transparent = false;
+
+		bool sdf_enabled = false;
+
+		RID backbuffer; //used for effects
+		RID backbuffer_fb;
+		RID backbuffer_mipmap0;
+
+		Vector<RID> backbuffer_mipmaps;
+
+		RID framebuffer_uniform_set;
+		RID backbuffer_uniform_set;
+
+		RID sdf_buffer_write;
+		RID sdf_buffer_write_fb;
+		RID sdf_buffer_process[2];
+		RID sdf_buffer_read;
+		RID sdf_buffer_process_uniform_sets[2];
+		RS::ViewportSDFOversize sdf_oversize = RS::VIEWPORT_SDF_OVERSIZE_120_PERCENT;
+		RS::ViewportSDFScale sdf_scale = RS::VIEWPORT_SDF_SCALE_50_PERCENT;
+		Size2i process_size;
+
+		// VRS
+		RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
+		RID vrs_texture;
+
+		//texture generated for this owner (nor RD).
+		RID texture;
+		bool was_used;
+
+		//clear request
+		bool clear_requested;
+		Color clear_color;
+	};
+
 	mutable RID_Owner<RenderTarget> render_target_owner;
+	RenderTarget *get_render_target(RID p_rid) const { return render_target_owner.get_or_null(p_rid); };
 
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
@@ -318,12 +305,32 @@ private:
 	void _render_target_clear_sdf(RenderTarget *rt);
 	Rect2i _render_target_get_sdf_rect(const RenderTarget *rt) const;
 
-	RenderTargetSDF rt_sdf;
+	struct RenderTargetSDF {
+		enum {
+			SHADER_LOAD,
+			SHADER_LOAD_SHRINK,
+			SHADER_PROCESS,
+			SHADER_PROCESS_OPTIMIZED,
+			SHADER_STORE,
+			SHADER_STORE_SHRINK,
+			SHADER_MAX
+		};
+
+		struct PushConstant {
+			int32_t size[2];
+			int32_t stride;
+			int32_t shift;
+			int32_t base_size[2];
+			int32_t pad[2];
+		};
+
+		CanvasSdfShaderRD shader;
+		RID shader_version;
+		RID pipelines[SHADER_MAX];
+	} rt_sdf;
 
 public:
 	static TextureStorage *get_singleton();
-
-	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
 
 	_FORCE_INLINE_ RID texture_rd_get_default(DefaultRDTexture p_texture) {
 		return default_rd_textures[p_texture];
@@ -334,7 +341,6 @@ public:
 
 	/* Canvas Texture API */
 
-	CanvasTexture *get_canvas_texture(RID p_rid) { return canvas_texture_owner.get_or_null(p_rid); };
 	bool owns_canvas_texture(RID p_rid) { return canvas_texture_owner.owns(p_rid); };
 
 	virtual RID canvas_texture_allocate() override;
@@ -351,8 +357,7 @@ public:
 
 	/* Texture API */
 
-	Texture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
-	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
+	bool owns_texture(RID p_rid) const { return texture_owner.owns(p_rid); };
 
 	virtual bool can_create_resources_async() const override;
 
@@ -394,12 +399,29 @@ public:
 	virtual Size2 texture_size_with_proxy(RID p_proxy) override;
 
 	//internal usage
+	_FORCE_INLINE_ TextureType texture_get_type(RID p_texture) {
+		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
+		if (tex == nullptr) {
+			return TYPE_2D;
+		}
+
+		return tex->type;
+	}
+
+	_FORCE_INLINE_ int texture_get_layers(RID p_texture) {
+		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
+		if (tex == nullptr) {
+			return 1;
+		}
+
+		return tex->layers;
+	}
 
 	_FORCE_INLINE_ RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) {
 		if (p_texture.is_null()) {
 			return RID();
 		}
-		RendererRD::Texture *tex = texture_owner.get_or_null(p_texture);
+		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
 
 		if (!tex) {
 			return RID();
@@ -411,7 +433,7 @@ public:
 		if (p_texture.is_null()) {
 			return Size2i();
 		}
-		RendererRD::Texture *tex = texture_owner.get_or_null(p_texture);
+		RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
 
 		if (!tex) {
 			return Size2i();
@@ -423,8 +445,7 @@ public:
 
 	void update_decal_atlas();
 
-	Decal *get_decal(RID p_rid) { return decal_owner.get_or_null(p_rid); };
-	bool owns_decal(RID p_rid) { return decal_owner.owns(p_rid); };
+	bool owns_decal(RID p_rid) const { return decal_owner.owns(p_rid); };
 
 	RID decal_atlas_get_texture() const;
 	RID decal_atlas_get_texture_srgb() const;
@@ -518,11 +539,11 @@ public:
 	}
 
 	virtual AABB decal_get_aabb(RID p_decal) const override;
+	Dependency *decal_get_dependency(RID p_decal);
 
 	/* RENDER TARGET API */
 
-	RenderTarget *get_render_target(RID p_rid) { return render_target_owner.get_or_null(p_rid); };
-	bool owns_render_target(RID p_rid) { return render_target_owner.owns(p_rid); };
+	bool owns_render_target(RID p_rid) const { return render_target_owner.owns(p_rid); };
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;

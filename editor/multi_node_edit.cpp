@@ -32,6 +32,7 @@
 
 #include "core/math/math_fieldwise.h"
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
@@ -54,7 +55,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		node_path_target = es->get_node(p_value);
 	}
 
-	UndoRedo *ur = EditorNode::get_undo_redo();
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 
 	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
 	for (const NodePath &E : nodes) {

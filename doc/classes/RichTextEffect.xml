@@ -25,9 +25,9 @@
 	<methods>
 		<method name="_process_custom_fx" qualifiers="virtual const">
 			<return type="bool" />
-			<argument index="0" name="char_fx" type="CharFXTransform" />
+			<param index="0" name="char_fx" type="CharFXTransform" />
 			<description>
-				Override this method to modify properties in [code]char_fx[/code]. The method must return [code]true[/code] if the character could be transformed successfully. If the method returns [code]false[/code], it will skip transformation to avoid displaying broken text.
+				Override this method to modify properties in [param char_fx]. The method must return [code]true[/code] if the character could be transformed successfully. If the method returns [code]false[/code], it will skip transformation to avoid displaying broken text.
 			</description>
 		</method>
 	</methods>

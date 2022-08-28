@@ -35,7 +35,10 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/texture.h"
 
@@ -818,7 +821,6 @@ void TextureRegionEditor::_update_autoslice() {
 
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 		} break;

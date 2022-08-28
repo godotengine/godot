@@ -31,174 +31,120 @@
 #ifndef GD_MONO_CACHE_H
 #define GD_MONO_CACHE_H
 
-#include "gd_mono_header.h"
-#include "gd_mono_method_thunk.h"
+#include <stdint.h>
+
+#include "../csharp_script.h"
+#include "../interop_types.h"
+#include "../mono_gc_handle.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
+
+class CSharpScript;
 
 namespace GDMonoCache {
 
-struct CachedData {
-	// -----------------------------------------------
-	// corlib classes
-
-	// Let's use the no-namespace format for these too
-	GDMonoClass *class_MonoObject = nullptr; // object
-	GDMonoClass *class_bool = nullptr; // bool
-	GDMonoClass *class_int8_t = nullptr; // sbyte
-	GDMonoClass *class_int16_t = nullptr; // short
-	GDMonoClass *class_int32_t = nullptr; // int
-	GDMonoClass *class_int64_t = nullptr; // long
-	GDMonoClass *class_uint8_t = nullptr; // byte
-	GDMonoClass *class_uint16_t = nullptr; // ushort
-	GDMonoClass *class_uint32_t = nullptr; // uint
-	GDMonoClass *class_uint64_t = nullptr; // ulong
-	GDMonoClass *class_float = nullptr; // float
-	GDMonoClass *class_double = nullptr; // double
-	GDMonoClass *class_String = nullptr; // string
-	GDMonoClass *class_IntPtr = nullptr; // System.IntPtr
-
-	GDMonoClass *class_System_Collections_IEnumerable = nullptr;
-	GDMonoClass *class_System_Collections_ICollection = nullptr;
-	GDMonoClass *class_System_Collections_IDictionary = nullptr;
-
-#ifdef DEBUG_ENABLED
-	GDMonoClass *class_System_Diagnostics_StackTrace = nullptr;
-	GDMonoMethodThunkR<MonoArray *, MonoObject *> methodthunk_System_Diagnostics_StackTrace_GetFrames;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_bool = nullptr;
-	GDMonoMethod *method_System_Diagnostics_StackTrace_ctor_Exception_bool = nullptr;
+#ifdef WIN32
+#define GD_CLR_STDCALL __stdcall
+#else
+#define GD_CLR_STDCALL
 #endif
 
-	GDMonoClass *class_KeyNotFoundException = nullptr;
-
-	MonoClass *rawclass_Dictionary = nullptr;
-	// -----------------------------------------------
-
-	GDMonoClass *class_Vector2 = nullptr;
-	GDMonoClass *class_Vector2i = nullptr;
-	GDMonoClass *class_Rect2 = nullptr;
-	GDMonoClass *class_Rect2i = nullptr;
-	GDMonoClass *class_Transform2D = nullptr;
-	GDMonoClass *class_Vector3 = nullptr;
-	GDMonoClass *class_Vector3i = nullptr;
-	GDMonoClass *class_Vector4 = nullptr;
-	GDMonoClass *class_Vector4i = nullptr;
-	GDMonoClass *class_Basis = nullptr;
-	GDMonoClass *class_Quaternion = nullptr;
-	GDMonoClass *class_Transform3D = nullptr;
-	GDMonoClass *class_Projection = nullptr;
-	GDMonoClass *class_AABB = nullptr;
-	GDMonoClass *class_Color = nullptr;
-	GDMonoClass *class_Plane = nullptr;
-	GDMonoClass *class_StringName = nullptr;
-	GDMonoClass *class_NodePath = nullptr;
-	GDMonoClass *class_RID = nullptr;
-	GDMonoClass *class_GodotObject = nullptr;
-	GDMonoClass *class_GodotResource = nullptr;
-	GDMonoClass *class_Node = nullptr;
-	GDMonoClass *class_Control = nullptr;
-	GDMonoClass *class_Node3D = nullptr;
-	GDMonoClass *class_WeakRef = nullptr;
-	GDMonoClass *class_Callable = nullptr;
-	GDMonoClass *class_SignalInfo = nullptr;
-	GDMonoClass *class_Array = nullptr;
-	GDMonoClass *class_Dictionary = nullptr;
-	GDMonoClass *class_MarshalUtils = nullptr;
-	GDMonoClass *class_ISerializationListener = nullptr;
-
-#ifdef DEBUG_ENABLED
-	GDMonoClass *class_DebuggingUtils = nullptr;
-	GDMonoMethodThunk<MonoObject *, MonoString **, int *, MonoString **> methodthunk_DebuggingUtils_GetStackFrameInfo;
-#endif
-
-	GDMonoClass *class_ExportAttribute = nullptr;
-	GDMonoField *field_ExportAttribute_hint = nullptr;
-	GDMonoField *field_ExportAttribute_hintString = nullptr;
-	GDMonoClass *class_SignalAttribute = nullptr;
-	GDMonoClass *class_ToolAttribute = nullptr;
-	GDMonoClass *class_RPCAttribute = nullptr;
-	GDMonoProperty *property_RPCAttribute_Mode = nullptr;
-	GDMonoProperty *property_RPCAttribute_CallLocal = nullptr;
-	GDMonoProperty *property_RPCAttribute_TransferMode = nullptr;
-	GDMonoProperty *property_RPCAttribute_TransferChannel = nullptr;
-	GDMonoClass *class_GodotMethodAttribute = nullptr;
-	GDMonoField *field_GodotMethodAttribute_methodName = nullptr;
-	GDMonoClass *class_ScriptPathAttribute = nullptr;
-	GDMonoField *field_ScriptPathAttribute_path = nullptr;
-	GDMonoClass *class_AssemblyHasScriptsAttribute = nullptr;
-	GDMonoField *field_AssemblyHasScriptsAttribute_requiresLookup = nullptr;
-	GDMonoField *field_AssemblyHasScriptsAttribute_scriptTypes = nullptr;
-
-	GDMonoField *field_GodotObject_ptr = nullptr;
-	GDMonoField *field_StringName_ptr = nullptr;
-	GDMonoField *field_NodePath_ptr = nullptr;
-	GDMonoField *field_Image_ptr = nullptr;
-	GDMonoField *field_RID_ptr = nullptr;
-
-	GDMonoMethodThunk<MonoObject *> methodthunk_GodotObject_Dispose;
-	GDMonoMethodThunkR<Array *, MonoObject *> methodthunk_Array_GetPtr;
-	GDMonoMethodThunkR<Dictionary *, MonoObject *> methodthunk_Dictionary_GetPtr;
-	GDMonoMethodThunk<MonoObject *, MonoArray *> methodthunk_SignalAwaiter_SignalCallback;
-	GDMonoMethodThunk<MonoObject *> methodthunk_GodotTaskScheduler_Activate;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoObject *> methodthunk_Delegate_Equals;
-
-	GDMonoMethodThunkR<MonoBoolean, MonoDelegate *, MonoObject *> methodthunk_DelegateUtils_TrySerializeDelegate;
-	GDMonoMethodThunkR<MonoBoolean, MonoObject *, MonoDelegate **> methodthunk_DelegateUtils_TryDeserializeDelegate;
-
-	// Start of MarshalUtils methods
-
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericArray;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericList;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsSystemGenericDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIEnumerable;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericICollection;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeIsGenericIDictionary;
-	GDMonoMethodThunkR<MonoBoolean, MonoReflectionType *> methodthunk_MarshalUtils_TypeHasFlagsAttribute;
-
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_GetGenericTypeDefinition;
-
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **> methodthunk_MarshalUtils_ArrayGetElementType;
-	GDMonoMethodThunk<MonoReflectionType *, MonoReflectionType **, MonoReflectionType **> methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
-
-	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericArrayType;
-	GDMonoMethodThunkR<MonoReflectionType *, MonoReflectionType *, MonoReflectionType *> methodthunk_MarshalUtils_MakeGenericDictionaryType;
-
-	// End of MarshalUtils methods
-
-	Ref<MonoGCHandleRef> task_scheduler_handle;
-
-	bool corlib_cache_updated;
-	bool godot_api_cache_updated;
-
-	void clear_corlib_cache();
-	void clear_godot_api_cache();
-
-	CachedData() {
-		clear_corlib_cache();
-		clear_godot_api_cache();
-	}
+struct godotsharp_property_info {
+	godot_string_name name; // Not owned
+	godot_string hint_string;
+	Variant::Type type;
+	PropertyHint hint;
+	PropertyUsageFlags usage;
+	bool exported;
 };
 
-extern CachedData cached_data;
+struct godotsharp_property_def_val_pair {
+	godot_string_name name; // Not owned
+	godot_variant value;
+};
 
-void update_corlib_cache();
-void update_godot_api_cache();
+struct ManagedCallbacks {
+	using Callback_ScriptManagerBridge_GetPropertyInfoList_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, const String *, godotsharp_property_info *p_props, int32_t p_count);
+	using Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add = void(GD_CLR_STDCALL *)(CSharpScript *p_script, godotsharp_property_def_val_pair *p_def_vals, int32_t p_count);
 
-inline void clear_corlib_cache() {
-	cached_data.clear_corlib_cache();
-}
+	using FuncSignalAwaiter_SignalCallback = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, int32_t, bool *);
+	using FuncDelegateUtils_InvokeWithVariantArgs = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Variant **, uint32_t, const Variant *);
+	using FuncDelegateUtils_DelegateEquals = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr);
+	using FuncDelegateUtils_TrySerializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const Array *);
+	using FuncDelegateUtils_TryDeserializeDelegateWithGCHandle = bool(GD_CLR_STDCALL *)(const Array *, GCHandleIntPtr *);
+	using FuncScriptManagerBridge_FrameCallback = void(GD_CLR_STDCALL *)();
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectBinding = GCHandleIntPtr(GD_CLR_STDCALL *)(const StringName *, Object *);
+	using FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = bool(GD_CLR_STDCALL *)(const CSharpScript *, Object *, const Variant **, int32_t);
+	using FuncScriptManagerBridge_GetScriptNativeName = void(GD_CLR_STDCALL *)(const CSharpScript *, StringName *);
+	using FuncScriptManagerBridge_SetGodotObjectPtr = void(GD_CLR_STDCALL *)(GCHandleIntPtr, Object *);
+	using FuncScriptManagerBridge_RaiseEventSignal = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, bool *);
+	using FuncScriptManagerBridge_ScriptIsOrInherits = bool(GD_CLR_STDCALL *)(const CSharpScript *, const CSharpScript *);
+	using FuncScriptManagerBridge_AddScriptBridge = bool(GD_CLR_STDCALL *)(const CSharpScript *, const String *);
+	using FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath = void(GD_CLR_STDCALL *)(const String *, Ref<CSharpScript> *);
+	using FuncScriptManagerBridge_RemoveScriptBridge = void(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass = bool(GD_CLR_STDCALL *)(const CSharpScript *);
+	using FuncScriptManagerBridge_UpdateScriptClassInfo = void(GD_CLR_STDCALL *)(const CSharpScript *, bool *, Array *, Dictionary *, Dictionary *, Ref<CSharpScript> *);
+	using FuncScriptManagerBridge_SwapGCHandleForType = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, GCHandleIntPtr *, bool);
+	using FuncScriptManagerBridge_GetPropertyInfoList = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyInfoList_Add);
+	using FuncScriptManagerBridge_GetPropertyDefaultValues = void(GD_CLR_STDCALL *)(CSharpScript *, Callback_ScriptManagerBridge_GetPropertyDefaultValues_Add);
+	using FuncCSharpInstanceBridge_Call = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant **, int32_t, Callable::CallError *, Variant *);
+	using FuncCSharpInstanceBridge_Set = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, const Variant *);
+	using FuncCSharpInstanceBridge_Get = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *, Variant *);
+	using FuncCSharpInstanceBridge_CallDispose = void(GD_CLR_STDCALL *)(GCHandleIntPtr, bool);
+	using FuncCSharpInstanceBridge_CallToString = void(GD_CLR_STDCALL *)(GCHandleIntPtr, String *, bool *);
+	using FuncCSharpInstanceBridge_HasMethodUnknownParams = bool(GD_CLR_STDCALL *)(GCHandleIntPtr, const StringName *);
+	using FuncCSharpInstanceBridge_SerializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncCSharpInstanceBridge_DeserializeState = void(GD_CLR_STDCALL *)(GCHandleIntPtr, const Dictionary *, const Dictionary *);
+	using FuncGCHandleBridge_FreeGCHandle = void(GD_CLR_STDCALL *)(GCHandleIntPtr);
+	using FuncDebuggingUtils_GetCurrentStackInfo = void(GD_CLR_STDCALL *)(Vector<ScriptLanguage::StackInfo> *);
+	using FuncDisposablesTracker_OnGodotShuttingDown = void(GD_CLR_STDCALL *)();
+	using FuncGD_OnCoreApiAssemblyLoaded = void(GD_CLR_STDCALL *)(bool);
 
-inline void clear_godot_api_cache() {
-	cached_data.clear_godot_api_cache();
-}
+	FuncSignalAwaiter_SignalCallback SignalAwaiter_SignalCallback;
+	FuncDelegateUtils_InvokeWithVariantArgs DelegateUtils_InvokeWithVariantArgs;
+	FuncDelegateUtils_DelegateEquals DelegateUtils_DelegateEquals;
+	FuncDelegateUtils_TrySerializeDelegateWithGCHandle DelegateUtils_TrySerializeDelegateWithGCHandle;
+	FuncDelegateUtils_TryDeserializeDelegateWithGCHandle DelegateUtils_TryDeserializeDelegateWithGCHandle;
+	FuncScriptManagerBridge_FrameCallback ScriptManagerBridge_FrameCallback;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectBinding ScriptManagerBridge_CreateManagedForGodotObjectBinding;
+	FuncScriptManagerBridge_CreateManagedForGodotObjectScriptInstance ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
+	FuncScriptManagerBridge_GetScriptNativeName ScriptManagerBridge_GetScriptNativeName;
+	FuncScriptManagerBridge_SetGodotObjectPtr ScriptManagerBridge_SetGodotObjectPtr;
+	FuncScriptManagerBridge_RaiseEventSignal ScriptManagerBridge_RaiseEventSignal;
+	FuncScriptManagerBridge_ScriptIsOrInherits ScriptManagerBridge_ScriptIsOrInherits;
+	FuncScriptManagerBridge_AddScriptBridge ScriptManagerBridge_AddScriptBridge;
+	FuncScriptManagerBridge_GetOrCreateScriptBridgeForPath ScriptManagerBridge_GetOrCreateScriptBridgeForPath;
+	FuncScriptManagerBridge_RemoveScriptBridge ScriptManagerBridge_RemoveScriptBridge;
+	FuncScriptManagerBridge_TryReloadRegisteredScriptWithClass ScriptManagerBridge_TryReloadRegisteredScriptWithClass;
+	FuncScriptManagerBridge_UpdateScriptClassInfo ScriptManagerBridge_UpdateScriptClassInfo;
+	FuncScriptManagerBridge_SwapGCHandleForType ScriptManagerBridge_SwapGCHandleForType;
+	FuncScriptManagerBridge_GetPropertyInfoList ScriptManagerBridge_GetPropertyInfoList;
+	FuncScriptManagerBridge_GetPropertyDefaultValues ScriptManagerBridge_GetPropertyDefaultValues;
+	FuncCSharpInstanceBridge_Call CSharpInstanceBridge_Call;
+	FuncCSharpInstanceBridge_Set CSharpInstanceBridge_Set;
+	FuncCSharpInstanceBridge_Get CSharpInstanceBridge_Get;
+	FuncCSharpInstanceBridge_CallDispose CSharpInstanceBridge_CallDispose;
+	FuncCSharpInstanceBridge_CallToString CSharpInstanceBridge_CallToString;
+	FuncCSharpInstanceBridge_HasMethodUnknownParams CSharpInstanceBridge_HasMethodUnknownParams;
+	FuncCSharpInstanceBridge_SerializeState CSharpInstanceBridge_SerializeState;
+	FuncCSharpInstanceBridge_DeserializeState CSharpInstanceBridge_DeserializeState;
+	FuncGCHandleBridge_FreeGCHandle GCHandleBridge_FreeGCHandle;
+	FuncDebuggingUtils_GetCurrentStackInfo DebuggingUtils_GetCurrentStackInfo;
+	FuncDisposablesTracker_OnGodotShuttingDown DisposablesTracker_OnGodotShuttingDown;
+	FuncGD_OnCoreApiAssemblyLoaded GD_OnCoreApiAssemblyLoaded;
+};
+
+extern ManagedCallbacks managed_callbacks;
+extern bool godot_api_cache_updated;
+
+void update_godot_api_cache(const ManagedCallbacks &p_managed_callbacks);
+
 } // namespace GDMonoCache
 
-#define CACHED_CLASS(m_class) (GDMonoCache::cached_data.class_##m_class)
-#define CACHED_CLASS_RAW(m_class) (GDMonoCache::cached_data.class_##m_class->get_mono_ptr())
-#define CACHED_RAW_MONO_CLASS(m_class) (GDMonoCache::cached_data.rawclass_##m_class)
-#define CACHED_FIELD(m_class, m_field) (GDMonoCache::cached_data.field_##m_class##_##m_field)
-#define CACHED_METHOD(m_class, m_method) (GDMonoCache::cached_data.method_##m_class##_##m_method)
-#define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoCache::cached_data.methodthunk_##m_class##_##m_method)
-#define CACHED_PROPERTY(m_class, m_property) (GDMonoCache::cached_data.property_##m_class##_##m_property)
+#undef GD_CLR_STDCALL
 
 #endif // GD_MONO_CACHE_H

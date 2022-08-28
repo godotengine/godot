@@ -206,6 +206,8 @@ void ENetPacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("send", "channel", "packet", "flags"), &ENetPacketPeer::_send);
 	ClassDB::bind_method(D_METHOD("throttle_configure", "interval", "acceleration", "deceleration"), &ENetPacketPeer::throttle_configure);
 	ClassDB::bind_method(D_METHOD("set_timeout", "timeout", "timeout_min", "timeout_max"), &ENetPacketPeer::set_timeout);
+	ClassDB::bind_method(D_METHOD("get_remote_address"), &ENetPacketPeer::get_remote_address);
+	ClassDB::bind_method(D_METHOD("get_remote_port"), &ENetPacketPeer::get_remote_port);
 	ClassDB::bind_method(D_METHOD("get_statistic", "statistic"), &ENetPacketPeer::get_statistic);
 	ClassDB::bind_method(D_METHOD("get_state"), &ENetPacketPeer::get_state);
 	ClassDB::bind_method(D_METHOD("get_channels"), &ENetPacketPeer::get_channels);

@@ -30,6 +30,7 @@
 
 #include "export.h"
 
+#include "editor/editor_settings.h"
 #include "export_plugin.h"
 
 void register_javascript_exporter() {

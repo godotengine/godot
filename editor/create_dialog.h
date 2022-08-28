@@ -101,8 +101,6 @@ class CreateDialog : public ConfirmationDialog {
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class) const;
 	void _load_favorites_and_history();
 
-	void _update_theme();
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -120,7 +118,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 	String get_preferred_search_result_type() { return preferred_search_result_type; }
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node");
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node", const String &p_select_name = "");
 
 	CreateDialog();
 };

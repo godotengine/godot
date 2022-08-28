@@ -63,8 +63,8 @@ void ColorPicker::_notification(int p_what) {
 				}
 			}
 #endif
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			btn_pick->set_icon(get_theme_icon(SNAME("screen_picker"), SNAME("ColorPicker")));
 			btn_add_preset->set_icon(get_theme_icon(SNAME("add_preset")));
@@ -171,6 +171,9 @@ uniform float v = 1.0;
 void fragment() {
 	float x = UV.x - 0.5;
 	float y = UV.y - 0.5;
+	float h = atan(y, x) / (2.0 * M_PI);
+	float s = sqrt(x * x + y * y) * 2.0;
+	vec3 col = okhsl_to_srgb(vec3(h, s, v));
 	x += 0.001;
 	y += 0.001;
 	float b = float(sqrt(x * x + y * y) < 0.5);
@@ -180,9 +183,6 @@ void fragment() {
 	float b3 = float(sqrt(x * x + y * y) < 0.5);
 	x += 0.002;
 	float b4 = float(sqrt(x * x + y * y) < 0.5);
-	float s = sqrt(x * x + y * y);
-	float h = atan(y, x) / (2.0*M_PI);
-	vec3 col = okhsl_to_srgb(vec3(h, s, v));
 	COLOR = vec4(col, (b + b2 + b3 + b4) / 4.00);
 })");
 }
@@ -264,15 +264,7 @@ void ColorPicker::_update_controls() {
 void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
 	color = p_color;
 	if (color != last_color) {
-		if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
-			h = color.get_ok_hsl_h();
-			s = color.get_ok_hsl_s();
-			v = color.get_ok_hsl_l();
-		} else {
-			h = color.get_h();
-			s = color.get_s();
-			v = color.get_v();
-		}
+		_copy_color_to_hsv();
 		last_color = color;
 	}
 
@@ -300,6 +292,9 @@ bool ColorPicker::is_displaying_old_color() const {
 }
 
 void ColorPicker::set_edit_alpha(bool p_show) {
+	if (edit_alpha == p_show) {
+		return;
+	}
 	edit_alpha = p_show;
 	_update_controls();
 
@@ -384,6 +379,26 @@ Vector<float> ColorPicker::get_active_slider_values() {
 	}
 	values.push_back(alpha_slider->get_value());
 	return values;
+}
+
+void ColorPicker::_copy_color_to_hsv() {
+	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
+		h = color.get_ok_hsl_h();
+		s = color.get_ok_hsl_s();
+		v = color.get_ok_hsl_l();
+	} else {
+		h = color.get_h();
+		s = color.get_s();
+		v = color.get_v();
+	}
+}
+
+void ColorPicker::_copy_hsv_to_color() {
+	if (_get_actual_shape() == SHAPE_OKHSL_CIRCLE) {
+		color.set_ok_hsl(h, s, v, color.a);
+	} else {
+		color.set_hsv(h, s, v, color.a);
+	}
 }
 
 ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
@@ -497,7 +512,12 @@ Color ColorPicker::get_pick_color() const {
 
 void ColorPicker::set_picker_shape(PickerShapeType p_shape) {
 	ERR_FAIL_INDEX(p_shape, SHAPE_MAX);
+	if (current_shape == p_shape) {
+		return;
+	}
 	current_shape = p_shape;
+
+	_copy_color_to_hsv();
 
 	_update_controls();
 	_update_color();
@@ -640,8 +660,7 @@ void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
 		const Rect2 rect_old = Rect2(Point2(), Size2(sample->get_size().width * 0.5, sample->get_size().height * 0.95));
 		if (rect_old.has_point(mb->get_position())) {
 			// Revert to the old color when left-clicking the old color sample.
-			color = old_color;
-			_update_color();
+			set_pick_color(old_color);
 			emit_signal(SNAME("color_changed"), color);
 		}
 	}
@@ -834,7 +853,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 2) {
 		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
 		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
-			circle_mat->set_shader_param("v", v);
+			circle_mat->set_shader_uniform("v", v);
 		}
 	}
 }
@@ -887,17 +906,14 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 					v = 1.0 - (y - c->get_position().y - corner_y) / real_size.y;
 				}
 			}
+
 			changing_color = true;
-			if (current_picker == SHAPE_OKHSL_CIRCLE) {
-				color.set_ok_hsl(h, s, v, color.a);
-			} else {
-				color.set_hsv(h, s, v, color.a);
-			}
 
+			_copy_hsv_to_color();
 			last_color = color;
-
 			set_pick_color(color);
 			_update_color();
+
 			if (!deferred_mode_enabled) {
 				emit_signal(SNAME("color_changed"), color);
 			}
@@ -940,14 +956,12 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				v = 1.0 - (y - corner_y) / real_size.y;
 			}
 		}
-		if (current_picker != SHAPE_OKHSL_CIRCLE) {
-			color.set_hsv(h, s, v, color.a);
-		} else {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
+
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -970,14 +984,12 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 		} else {
 			changing_color = false;
 		}
-		if (actual_shape != SHAPE_OKHSL_CIRCLE) {
-			color.set_hsv(h, s, v, color.a);
-		} else {
-			color.set_ok_hsl(h, s, v, color.a);
-		}
+
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		} else if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
@@ -998,15 +1010,11 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 			h = y / w_edit->get_size().height;
 		}
 
-		if (actual_shape == SHAPE_OKHSL_CIRCLE) {
-			color.set_ok_hsl(h, s, v, color.a);
-		} else {
-			color.set_hsv(h, s, v, color.a);
-		}
-
+		_copy_hsv_to_color();
 		last_color = color;
 		set_pick_color(color);
 		_update_color();
+
 		if (!deferred_mode_enabled) {
 			emit_signal(SNAME("color_changed"), color);
 		}
@@ -1019,7 +1027,6 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event, const Color &p_c
 	if (bev.is_valid()) {
 		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
 			set_pick_color(p_color);
-			_update_color();
 			emit_signal(SNAME("color_changed"), p_color);
 		} else if (bev->is_pressed() && bev->get_button_index() == MouseButton::RIGHT && presets_enabled) {
 			erase_preset(p_color);
@@ -1130,6 +1137,9 @@ void ColorPicker::_html_focus_exit() {
 }
 
 void ColorPicker::set_presets_enabled(bool p_enabled) {
+	if (presets_enabled == p_enabled) {
+		return;
+	}
 	presets_enabled = p_enabled;
 	if (!p_enabled) {
 		btn_add_preset->set_disabled(true);
@@ -1145,6 +1155,9 @@ bool ColorPicker::are_presets_enabled() const {
 }
 
 void ColorPicker::set_presets_visible(bool p_visible) {
+	if (presets_visible == p_visible) {
+		return;
+	}
 	presets_visible = p_visible;
 	preset_separator->set_visible(p_visible);
 	preset_container->set_visible(p_visible);
@@ -1418,6 +1431,9 @@ void ColorPickerButton::_notification(int p_what) {
 }
 
 void ColorPickerButton::set_pick_color(const Color &p_color) {
+	if (color == p_color) {
+		return;
+	}
 	color = p_color;
 	if (picker) {
 		picker->set_pick_color(p_color);
@@ -1431,6 +1447,9 @@ Color ColorPickerButton::get_pick_color() const {
 }
 
 void ColorPickerButton::set_edit_alpha(bool p_show) {
+	if (edit_alpha == p_show) {
+		return;
+	}
 	edit_alpha = p_show;
 	if (picker) {
 		picker->set_edit_alpha(p_show);

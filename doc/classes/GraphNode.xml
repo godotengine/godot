@@ -19,16 +19,16 @@
 		</method>
 		<method name="clear_slot">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Disables input and output slot whose index is [code]idx[/code].
+				Disables input and output slot whose index is [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_color">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the [Color] of the input connection [code]idx[/code].
+				Returns the [Color] of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_count">
@@ -39,30 +39,30 @@
 		</method>
 		<method name="get_connection_input_height">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the height of the input connection [code]idx[/code].
+				Returns the height of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_position">
 			<return type="Vector2" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the input connection [code]idx[/code].
+				Returns the position of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_input_type">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the type of the input connection [code]idx[/code].
+				Returns the type of the input connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_color">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the [Color] of the output connection [code]idx[/code].
+				Returns the [Color] of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_count">
@@ -73,156 +73,159 @@
 		</method>
 		<method name="get_connection_output_height">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the height of the output connection [code]idx[/code].
+				Returns the height of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_position">
 			<return type="Vector2" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the position of the output connection [code]idx[/code].
+				Returns the position of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_connection_output_type">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the type of the output connection [code]idx[/code].
+				Returns the type of the output connection [param idx].
 			</description>
 		</method>
 		<method name="get_slot_color_left" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the left (input) [Color] of the slot [code]idx[/code].
+				Returns the left (input) [Color] of the slot [param idx].
 			</description>
 		</method>
 		<method name="get_slot_color_right" qualifiers="const">
 			<return type="Color" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the right (output) [Color] of the slot [code]idx[/code].
+				Returns the right (output) [Color] of the slot [param idx].
 			</description>
 		</method>
 		<method name="get_slot_type_left" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the left (input) type of the slot [code]idx[/code].
+				Returns the left (input) type of the slot [param idx].
 			</description>
 		</method>
 		<method name="get_slot_type_right" qualifiers="const">
 			<return type="int" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns the right (output) type of the slot [code]idx[/code].
+				Returns the right (output) type of the slot [param idx].
 			</description>
 		</method>
 		<method name="is_slot_draw_stylebox" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns true if the background [StyleBox] of the slot [code]idx[/code] is drawn.
+				Returns true if the background [StyleBox] of the slot [param idx] is drawn.
 			</description>
 		</method>
 		<method name="is_slot_enabled_left" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if left (input) side of the slot [code]idx[/code] is enabled.
+				Returns [code]true[/code] if left (input) side of the slot [param idx] is enabled.
 			</description>
 		</method>
 		<method name="is_slot_enabled_right" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
-				Returns [code]true[/code] if right (output) side of the slot [code]idx[/code] is enabled.
+				Returns [code]true[/code] if right (output) side of the slot [param idx] is enabled.
 			</description>
 		</method>
 		<method name="set_slot">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="enable_left" type="bool" />
-			<argument index="2" name="type_left" type="int" />
-			<argument index="3" name="color_left" type="Color" />
-			<argument index="4" name="enable_right" type="bool" />
-			<argument index="5" name="type_right" type="int" />
-			<argument index="6" name="color_right" type="Color" />
-			<argument index="7" name="custom_left" type="Texture2D" default="null" />
-			<argument index="8" name="custom_right" type="Texture2D" default="null" />
-			<argument index="9" name="enable" type="bool" default="true" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="enable_left" type="bool" />
+			<param index="2" name="type_left" type="int" />
+			<param index="3" name="color_left" type="Color" />
+			<param index="4" name="enable_right" type="bool" />
+			<param index="5" name="type_right" type="int" />
+			<param index="6" name="color_right" type="Color" />
+			<param index="7" name="custom_left" type="Texture2D" default="null" />
+			<param index="8" name="custom_right" type="Texture2D" default="null" />
+			<param index="9" name="enable" type="bool" default="true" />
 			<description>
-				Sets properties of the slot with ID [code]idx[/code].
-				If [code]enable_left[/code]/[code]right[/code], a port will appear and the slot will be able to be connected from this side.
-				[code]type_left[/code]/[code]right[/code] is an arbitrary type of the port. Only ports with the same type values can be connected.
-				[code]color_left[/code]/[code]right[/code] is the tint of the port's icon on this side.
-				[code]custom_left[/code]/[code]right[/code] is a custom texture for this side's port.
+				Sets properties of the slot with ID [param idx].
+				If [param enable_left]/[param enable_right], a port will appear and the slot will be able to be connected from this side.
+				[param type_left]/[param type_right] is an arbitrary type of the port. Only ports with the same type values can be connected and negative values will disallow all connections to be made via user inputs.
+				[param color_left]/[param color_right] is the tint of the port's icon on this side.
+				[param custom_left]/[param custom_right] is a custom texture for this side's port.
 				[b]Note:[/b] This method only sets properties of the slot. To create the slot, add a [Control]-derived child to the GraphNode.
 				Individual properties can be set using one of the [code]set_slot_*[/code] methods. You must enable at least one side of the slot to do so.
 			</description>
 		</method>
 		<method name="set_slot_color_left">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="color_left" type="Color" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="color_left" type="Color" />
 			<description>
-				Sets the [Color] of the left (input) side of the slot [code]idx[/code] to [code]color_left[/code].
+				Sets the [Color] of the left (input) side of the slot [param idx] to [param color_left].
 			</description>
 		</method>
 		<method name="set_slot_color_right">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="color_right" type="Color" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="color_right" type="Color" />
 			<description>
-				Sets the [Color] of the right (output) side of the slot [code]idx[/code] to [code]color_right[/code].
+				Sets the [Color] of the right (output) side of the slot [param idx] to [param color_right].
 			</description>
 		</method>
 		<method name="set_slot_draw_stylebox">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="draw_stylebox" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="draw_stylebox" type="bool" />
 			<description>
-				Toggles the background [StyleBox] of the slot [code]idx[/code].
+				Toggles the background [StyleBox] of the slot [param idx].
 			</description>
 		</method>
 		<method name="set_slot_enabled_left">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="enable_left" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="enable_left" type="bool" />
 			<description>
-				Toggles the left (input) side of the slot [code]idx[/code]. If [code]enable_left[/code] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
+				Toggles the left (input) side of the slot [param idx]. If [param enable_left] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_enabled_right">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="enable_right" type="bool" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="enable_right" type="bool" />
 			<description>
-				Toggles the right (output) side of the slot [code]idx[/code]. If [code]enable_right[/code] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
+				Toggles the right (output) side of the slot [param idx]. If [param enable_right] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
 			</description>
 		</method>
 		<method name="set_slot_type_left">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="type_left" type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="type_left" type="int" />
 			<description>
-				Sets the left (input) type of the slot [code]idx[/code] to [code]type_left[/code].
+				Sets the left (input) type of the slot [param idx] to [param type_left]. If the value is negative, all connections will be disallowed to be created via user inputs.
 			</description>
 		</method>
 		<method name="set_slot_type_right">
 			<return type="void" />
-			<argument index="0" name="idx" type="int" />
-			<argument index="1" name="type_right" type="int" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="type_right" type="int" />
 			<description>
-				Sets the right (output) type of the slot [code]idx[/code] to [code]type_right[/code].
+				Sets the right (output) type of the slot [param idx] to [param type_right]. If the value is negative, all connections will be disallowed to be created via user inputs.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
 			If [code]true[/code], the GraphNode is a comment node.
+		</member>
+		<member name="draggable" type="bool" setter="set_draggable" getter="is_draggable" default="true">
+			If [code]true[/code], the user can drag the GraphNode.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -238,6 +241,9 @@
 		<member name="resizable" type="bool" setter="set_resizable" getter="is_resizable" default="false">
 			If [code]true[/code], the user can resize the GraphNode.
 			[b]Note:[/b] Dragging the handle will only emit the [signal resize_request] signal, the GraphNode needs to be resized manually.
+		</member>
+		<member name="selectable" type="bool" setter="set_selectable" getter="is_selectable" default="true">
+			If [code]true[/code], the user can select the GraphNode.
 		</member>
 		<member name="selected" type="bool" setter="set_selected" getter="is_selected" default="false">
 			If [code]true[/code], the GraphNode is selected.
@@ -260,8 +266,8 @@
 			</description>
 		</signal>
 		<signal name="dragged">
-			<argument index="0" name="from" type="Vector2" />
-			<argument index="1" name="to" type="Vector2" />
+			<param index="0" name="from" type="Vector2" />
+			<param index="1" name="to" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is dragged.
 			</description>
@@ -277,13 +283,13 @@
 			</description>
 		</signal>
 		<signal name="resize_request">
-			<argument index="0" name="new_minsize" type="Vector2" />
+			<param index="0" name="new_minsize" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
 			</description>
 		</signal>
 		<signal name="slot_updated">
-			<argument index="0" name="idx" type="int" />
+			<param index="0" name="idx" type="int" />
 			<description>
 				Emitted when any GraphNode's slot is updated.
 			</description>
@@ -320,6 +326,9 @@
 		</theme_item>
 		<theme_item name="separation" data_type="constant" type="int" default="2">
 			The vertical distance between ports.
+		</theme_item>
+		<theme_item name="title_h_offset" data_type="constant" type="int" default="0">
+			Horizontal offset of the title text.
 		</theme_item>
 		<theme_item name="title_offset" data_type="constant" type="int" default="26">
 			Vertical offset of the title text.

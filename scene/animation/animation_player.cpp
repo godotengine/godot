@@ -37,6 +37,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/skeleton_2d.h"
 
 void AnimatedValuesBackup::update_skeletons() {
@@ -174,8 +175,8 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 
-void AnimationPlayer::_validate_property(PropertyInfo &property) const {
-	if (property.name == "current_animation") {
+void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "current_animation") {
 		List<String> names;
 
 		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
@@ -191,10 +192,8 @@ void AnimationPlayer::_validate_property(PropertyInfo &property) const {
 			hint += E->get();
 		}
 
-		property.hint_string = hint;
+		p_property.hint_string = hint;
 	}
-
-	Node::_validate_property(property);
 }
 
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
@@ -323,10 +322,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 
 #endif // _3D_DISABLED
 
-		{
-			if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
-				child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONESHOT);
-			}
+		if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed))) {
+			child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -375,7 +372,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 					node_cache->init_rot = rest.basis.get_rotation_quaternion();
 					node_cache->init_scale = rest.basis.get_scale();
 				} else {
-					// no property, just use spatialnode
+					// Not a skeleton, the node can be accessed with the node_3d member.
 					node_cache->skeleton = nullptr;
 				}
 			}
@@ -1154,7 +1151,7 @@ void AnimationPlayer::_animation_update_transforms() {
 				}
 #endif
 
-				static_cast<Node2D *>(pa->object)->set_rotation(Math::deg2rad((double)pa->value_accum));
+				static_cast<Node2D *>(pa->object)->set_rotation(Math::deg_to_rad((double)pa->value_accum));
 			} break;
 			case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
@@ -2048,7 +2045,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 		Ref<AnimatedValuesBackup> new_values = aux_player->backup_animated_values();
 		old_values->restore();
 
-		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 		ur->create_action(TTR("Anim Apply Reset"));
 		ur->add_do_method(new_values.ptr(), "restore");
 		ur->add_undo_method(old_values.ptr(), "restore");
@@ -2124,7 +2121,7 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_method_call_mode", "mode"), &AnimationPlayer::set_method_call_mode);
 	ClassDB::bind_method(D_METHOD("get_method_call_mode"), &AnimationPlayer::get_method_call_mode);
 
-	ClassDB::bind_method(D_METHOD("set_movie_quit_on_finish_enabled"), &AnimationPlayer::set_movie_quit_on_finish_enabled);
+	ClassDB::bind_method(D_METHOD("set_movie_quit_on_finish_enabled", "enabled"), &AnimationPlayer::set_movie_quit_on_finish_enabled);
 	ClassDB::bind_method(D_METHOD("is_movie_quit_on_finish_enabled"), &AnimationPlayer::is_movie_quit_on_finish_enabled);
 
 	ClassDB::bind_method(D_METHOD("get_current_animation_position"), &AnimationPlayer::get_current_animation_position);

@@ -27,8 +27,8 @@
 		</method>
 		<method name="fit_child_in_rect">
 			<return type="void" />
-			<argument index="0" name="child" type="Control" />
-			<argument index="1" name="rect" type="Rect2" />
+			<param index="0" name="child" type="Control" />
+			<param index="1" name="rect" type="Rect2" />
 			<description>
 				Fit a child control in a given rect. This is mainly a helper for creating custom container classes.
 			</description>

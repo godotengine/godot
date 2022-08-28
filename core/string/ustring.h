@@ -377,7 +377,7 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	Error parse_utf8(const char *p_utf8, int p_len = -1);
+	Error parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	Char16String utf16() const;

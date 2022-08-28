@@ -158,12 +158,53 @@ void NavigationServer2D::_emit_map_changed(RID p_map) {
 	emit_signal(SNAME("map_changed"), p_map);
 }
 
+#ifdef DEBUG_ENABLED
+void NavigationServer2D::set_debug_enabled(bool p_enabled) {
+	NavigationServer3D::get_singleton_mut()->set_debug_enabled(p_enabled);
+}
+bool NavigationServer2D::get_debug_enabled() const {
+	return NavigationServer3D::get_singleton()->get_debug_enabled();
+}
+
+void NavigationServer2D::set_debug_navigation_edge_connection_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_edge_connection_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_edge_connection_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_edge_connection_color();
+}
+
+void NavigationServer2D::set_debug_navigation_geometry_face_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_geometry_face_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+}
+
+void NavigationServer2D::set_debug_navigation_geometry_face_disabled_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_disabled_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
+}
+
+void NavigationServer2D::set_debug_navigation_enable_edge_connections(const bool p_value) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_edge_connections(p_value);
+}
+
+bool NavigationServer2D::get_debug_navigation_enable_edge_connections() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_connections();
+}
+#endif // DEBUG_ENABLED
+
 void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer2D::get_maps);
 
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer2D::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer2D::map_set_active);
-	ClassDB::bind_method(D_METHOD("map_is_active", "nap"), &NavigationServer2D::map_is_active);
+	ClassDB::bind_method(D_METHOD("map_is_active", "map"), &NavigationServer2D::map_is_active);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &NavigationServer2D::map_set_cell_size);
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer2D::map_get_cell_size);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer2D::map_set_edge_connection_margin);
@@ -196,7 +237,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_create"), &NavigationServer2D::agent_create);
 	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
 	ClassDB::bind_method(D_METHOD("agent_get_map", "agent"), &NavigationServer2D::agent_get_map);
-	ClassDB::bind_method(D_METHOD("agent_set_neighbor_dist", "agent", "dist"), &NavigationServer2D::agent_set_neighbor_dist);
+	ClassDB::bind_method(D_METHOD("agent_set_neighbor_distance", "agent", "distance"), &NavigationServer2D::agent_set_neighbor_distance);
 	ClassDB::bind_method(D_METHOD("agent_set_max_neighbors", "agent", "count"), &NavigationServer2D::agent_set_max_neighbors);
 	ClassDB::bind_method(D_METHOD("agent_set_time_horizon", "agent", "time"), &NavigationServer2D::agent_set_time_horizon);
 	ClassDB::bind_method(D_METHOD("agent_set_radius", "agent", "radius"), &NavigationServer2D::agent_set_radius);
@@ -222,11 +263,11 @@ NavigationServer2D::~NavigationServer2D() {
 	singleton = nullptr;
 }
 
-Array FORWARD_0_C(get_maps);
+TypedArray<RID> FORWARD_0_C(get_maps);
 
-Array FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
+TypedArray<RID> FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
 
-Array FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
+TypedArray<RID> FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
 
 RID FORWARD_1_C(region_get_map, RID, p_region, rid_to_rid);
 
@@ -282,7 +323,7 @@ RID NavigationServer2D::agent_create() const {
 
 void FORWARD_2_C(agent_set_map, RID, p_agent, RID, p_map, rid_to_rid, rid_to_rid);
 
-void FORWARD_2_C(agent_set_neighbor_dist, RID, p_agent, real_t, p_dist, rid_to_rid, real_to_real);
+void FORWARD_2_C(agent_set_neighbor_distance, RID, p_agent, real_t, p_dist, rid_to_rid, real_to_real);
 
 void FORWARD_2_C(agent_set_max_neighbors, RID, p_agent, int, p_count, rid_to_rid, int_to_int);
 

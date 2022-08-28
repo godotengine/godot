@@ -61,6 +61,7 @@ class InspectorDock : public VBoxContainer {
 
 		COLLAPSE_ALL,
 		EXPAND_ALL,
+		EXPAND_REVERTABLE,
 
 		// Matches `EditorPropertyNameProcessor::Style`.
 		PROPERTY_NAME_STYLE_RAW,
@@ -92,8 +93,9 @@ class InspectorDock : public VBoxContainer {
 	MenuButton *object_menu = nullptr;
 	EditorPath *editor_path = nullptr;
 
-	Button *warning = nullptr;
-	AcceptDialog *warning_dialog = nullptr;
+	bool info_is_warning = false; // Display in yellow and use warning icon if true.
+	Button *info = nullptr;
+	AcceptDialog *info_dialog = nullptr;
 
 	int current_option = -1;
 	ConfirmationDialog *unique_resources_confirmation = nullptr;
@@ -117,13 +119,14 @@ class InspectorDock : public VBoxContainer {
 	void _paste_resource();
 	void _prepare_resource_extra_popup();
 
-	void _warning_pressed();
+	void _info_pressed();
 	void _resource_created();
 	void _resource_selected(const Ref<Resource> &p_res, const String &p_property);
 	void _edit_forward();
 	void _edit_back();
 	void _menu_collapseall();
 	void _menu_expandall();
+	void _menu_expand_revertable();
 	void _select_history(int p_idx);
 	void _prepare_history();
 
@@ -143,7 +146,7 @@ public:
 	void edit_resource(const Ref<Resource> &p_resource);
 	void open_resource(const String &p_type);
 	void clear();
-	void set_warning(const String &p_message);
+	void set_info(const String &p_button_text, const String &p_message, bool p_is_warning);
 	void update(Object *p_object);
 	Container *get_addon_area();
 	EditorInspector *get_inspector() { return inspector; }

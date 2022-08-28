@@ -1604,7 +1604,7 @@ void SSEffects::screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const R
 			ScreenSpaceReflectionFilterPushConstant push_constant;
 			push_constant.view_index = v;
 			push_constant.orthogonal = p_projections[v].is_orthogonal();
-			push_constant.edge_tolerance = Math::sin(Math::deg2rad(15.0));
+			push_constant.edge_tolerance = Math::sin(Math::deg_to_rad(15.0));
 			push_constant.proj_info[0] = -2.0f / (p_screen_size.width * p_projections[v].matrix[0][0]);
 			push_constant.proj_info[1] = -2.0f / (p_screen_size.height * p_projections[v].matrix[1][1]);
 			push_constant.proj_info[2] = (1.0f - p_projections[v].matrix[0][2]) / p_projections[v].matrix[0][0];

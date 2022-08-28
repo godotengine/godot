@@ -41,6 +41,7 @@ class RayCast2D : public Node2D {
 	bool enabled = true;
 	bool collided = false;
 	ObjectID against;
+	RID against_rid;
 	int against_shape = 0;
 	Vector2 collision_point;
 	Vector2 collision_normal;
@@ -91,6 +92,7 @@ public:
 
 	bool is_colliding() const;
 	Object *get_collider() const;
+	RID get_collider_rid() const;
 	int get_collider_shape() const;
 	Vector2 get_collision_point() const;
 	Vector2 get_collision_normal() const;

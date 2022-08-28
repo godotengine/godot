@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
@@ -248,7 +249,14 @@ void GenericTilePolygonEditor::_zoom_changed() {
 }
 
 void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
-	UndoRedo *undo_redo = use_undo_redo ? editor_undo_redo : memnew(UndoRedo);
+	Ref<EditorUndoRedoManager> undo_redo;
+	if (use_undo_redo) {
+		undo_redo = editor_undo_redo;
+	} else {
+		// This nice hack allows for discarding undo actions without making code too complex.
+		undo_redo.instantiate();
+	}
+
 	switch (p_item_pressed) {
 		case RESET_TO_DEFAULT_TILE: {
 			undo_redo->create_action(TTR("Reset Polygons"));
@@ -321,9 +329,6 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 		} break;
 		default:
 			break;
-	}
-	if (!use_undo_redo) {
-		memdelete(undo_redo);
 	}
 }
 
@@ -409,7 +414,14 @@ void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
 }
 
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
-	UndoRedo *undo_redo = use_undo_redo ? editor_undo_redo : memnew(UndoRedo);
+	Ref<EditorUndoRedoManager> undo_redo;
+	if (use_undo_redo) {
+		undo_redo = editor_undo_redo;
+	} else {
+		// This nice hack allows for discarding undo actions without making code too complex.
+		undo_redo.instantiate();
+	}
+
 	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 	hovered_polygon_index = -1;
@@ -600,10 +612,6 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 	}
 
 	base_control->update();
-
-	if (!use_undo_redo) {
-		memdelete(undo_redo);
-	}
 }
 
 void GenericTilePolygonEditor::set_use_undo_redo(bool p_use_undo_redo) {
@@ -714,7 +722,6 @@ void GenericTilePolygonEditor::set_multiple_polygon_mode(bool p_multiple_polygon
 
 void GenericTilePolygonEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
@@ -1160,7 +1167,6 @@ void TileDataDefaultEditor::setup_property_editor(Variant::Type p_type, String p
 
 void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 			tile_bool_checked = get_theme_icon(SNAME("TileChecked"), SNAME("EditorIcons"));
@@ -2559,7 +2565,6 @@ void TileDataTerrainsEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform
 
 void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			picker_button->set_icon(get_theme_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
 		} break;

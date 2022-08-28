@@ -17,7 +17,7 @@
 		</method>
 		<method name="get_draw_flag" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<param index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
 			<description>
 				Returns the value of the specified flag.
 			</description>
@@ -30,8 +30,8 @@
 		</method>
 		<method name="set_draw_flag">
 			<return type="void" />
-			<argument index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
-			<argument index="1" name="enabled" type="bool" />
+			<param index="0" name="flag" type="int" enum="SpriteBase3D.DrawFlags" />
+			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [code]true[/code], the specified flag will be enabled. See [enum SpriteBase3D.DrawFlags] for a list of flags.
 			</description>

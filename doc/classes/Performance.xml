@@ -15,11 +15,11 @@
 	<methods>
 		<method name="add_custom_monitor">
 			<return type="void" />
-			<argument index="0" name="id" type="StringName" />
-			<argument index="1" name="callable" type="Callable" />
-			<argument index="2" name="arguments" type="Array" default="[]" />
+			<param index="0" name="id" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
+			<param index="2" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a custom monitor with the name [code]id[/code]. You can specify the category of the monitor using slash delimiters in [code]id[/code] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [code]id[/code] is already present.
+				Adds a custom monitor with the name [param id]. You can specify the category of the monitor using slash delimiters in [param id] (for example: [code]"Game/NumberOfNPCs"[/code]). If there is more than one slash delimiter, then the default category is used. The default category is [code]"Custom"[/code]. Prints an error if given [param id] is already present.
 				[codeblocks]
 				[gdscript]
 				func _ready():
@@ -73,20 +73,20 @@
 		</method>
 		<method name="get_custom_monitor">
 			<return type="Variant" />
-			<argument index="0" name="id" type="StringName" />
+			<param index="0" name="id" type="StringName" />
 			<description>
-				Returns the value of custom monitor with given [code]id[/code]. The callable is called to get the value of custom monitor. See also [method has_custom_monitor]. Prints an error if the given [code]id[/code] is absent.
+				Returns the value of custom monitor with given [param id]. The callable is called to get the value of custom monitor. See also [method has_custom_monitor]. Prints an error if the given [param id] is absent.
 			</description>
 		</method>
 		<method name="get_custom_monitor_names">
-			<return type="Array" />
+			<return type="StringName[]" />
 			<description>
 				Returns the names of active custom monitors in an [Array].
 			</description>
 		</method>
 		<method name="get_monitor" qualifiers="const">
 			<return type="float" />
-			<argument index="0" name="monitor" type="int" enum="Performance.Monitor" />
+			<param index="0" name="monitor" type="int" enum="Performance.Monitor" />
 			<description>
 				Returns the value of one of the available built-in monitors. You should provide one of the [enum Monitor] constants as the argument, like this:
 				[codeblocks]
@@ -108,16 +108,16 @@
 		</method>
 		<method name="has_custom_monitor">
 			<return type="bool" />
-			<argument index="0" name="id" type="StringName" />
+			<param index="0" name="id" type="StringName" />
 			<description>
-				Returns [code]true[/code] if custom monitor with the given [code]id[/code] is present, [code]false[/code] otherwise.
+				Returns [code]true[/code] if custom monitor with the given [param id] is present, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="remove_custom_monitor">
 			<return type="void" />
-			<argument index="0" name="id" type="StringName" />
+			<param index="0" name="id" type="StringName" />
 			<description>
-				Removes the custom monitor with given [code]id[/code]. Prints an error if the given [code]id[/code] is already absent.
+				Removes the custom monitor with given [param id]. Prints an error if the given [param id] is already absent.
 			</description>
 		</method>
 	</methods>
@@ -171,7 +171,7 @@
 			The amount of render buffer memory used (in bytes). [i]Lower is better.[/i]
 		</constant>
 		<constant name="PHYSICS_2D_ACTIVE_OBJECTS" value="16" enum="Monitor">
-			Number of active [RigidDynamicBody2D] nodes in the game. [i]Lower is better.[/i]
+			Number of active [RigidBody2D] nodes in the game. [i]Lower is better.[/i]
 		</constant>
 		<constant name="PHYSICS_2D_COLLISION_PAIRS" value="17" enum="Monitor">
 			Number of collision pairs in the 2D physics engine. [i]Lower is better.[/i]
@@ -180,7 +180,7 @@
 			Number of islands in the 2D physics engine. [i]Lower is better.[/i]
 		</constant>
 		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="19" enum="Monitor">
-			Number of active [RigidDynamicBody3D] and [VehicleBody3D] nodes in the game. [i]Lower is better.[/i]
+			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game. [i]Lower is better.[/i]
 		</constant>
 		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="20" enum="Monitor">
 			Number of collision pairs in the 3D physics engine. [i]Lower is better.[/i]

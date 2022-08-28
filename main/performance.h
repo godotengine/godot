@@ -37,6 +37,9 @@
 #define PERF_WARN_OFFLINE_FUNCTION
 #define PERF_WARN_PROCESS_SYNC
 
+template <typename T>
+class TypedArray;
+
 class Performance : public Object {
 	GDCLASS(Performance, Object);
 
@@ -85,7 +88,6 @@ public:
 		PHYSICS_3D_ACTIVE_OBJECTS,
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
-		//physics
 		AUDIO_OUTPUT_LATENCY,
 		MONITOR_MAX
 	};
@@ -108,7 +110,7 @@ public:
 	void remove_custom_monitor(const StringName &p_id);
 	bool has_custom_monitor(const StringName &p_id);
 	Variant get_custom_monitor(const StringName &p_id);
-	Array get_custom_monitor_names();
+	TypedArray<StringName> get_custom_monitor_names();
 
 	uint64_t get_monitor_modification_time();
 

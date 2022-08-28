@@ -49,6 +49,7 @@ private:
 
 	HashMap<StringName, Color> keywords;
 	HashMap<StringName, Color> member_keywords;
+	HashSet<StringName> global_functions;
 
 	enum Type {
 		NONE,
@@ -67,10 +68,11 @@ private:
 		TYPE,
 	};
 
-	// colours
+	// Colors.
 	Color font_color;
 	Color symbol_color;
 	Color function_color;
+	Color global_function_color;
 	Color function_definition_color;
 	Color built_in_type_color;
 	Color number_color;
@@ -88,7 +90,7 @@ public:
 	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
 
 	virtual String _get_name() const override;
-	virtual Array _get_supported_languages() const override;
+	virtual PackedStringArray _get_supported_languages() const override;
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };

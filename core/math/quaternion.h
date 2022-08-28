@@ -72,6 +72,7 @@ struct _NO_DISCARD_ Quaternion {
 	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion slerpni(const Quaternion &p_to, const real_t &p_weight) const;
 	Quaternion spherical_cubic_interpolate(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight) const;
+	Quaternion spherical_cubic_interpolate_in_time(const Quaternion &p_b, const Quaternion &p_pre_a, const Quaternion &p_post_b, const real_t &p_weight, const real_t &p_b_t, const real_t &p_pre_a_t, const real_t &p_post_b_t) const;
 
 	Vector3 get_axis() const;
 	real_t get_angle() const;

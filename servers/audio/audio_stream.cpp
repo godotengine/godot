@@ -782,7 +782,7 @@ void AudioStreamPlaybackRandomizer::start(float p_from_pos) {
 		float range_to = randomizer->random_volume_offset_db;
 
 		float volume_offset_db = range_from + Math::randf() * (range_to - range_from);
-		volume_scale = Math::db2linear(volume_offset_db);
+		volume_scale = Math::db_to_linear(volume_offset_db);
 	}
 
 	if (playing.is_valid()) {

@@ -70,7 +70,8 @@ struct hb_object_t
 typedef struct hb_object_t hb_object_t;
 
 HB_EXTERN hb_blob_t*
-hb_subset_repack_or_fail (hb_object_t* hb_objects,
+hb_subset_repack_or_fail (hb_tag_t table_tag,
+                          hb_object_t* hb_objects,
                           unsigned num_hb_objs);
 
 #endif

@@ -130,6 +130,9 @@ String AcceptDialog::get_text() const {
 }
 
 void AcceptDialog::set_text(String p_text) {
+	if (label->get_text() == p_text) {
+		return;
+	}
 	label->set_text(p_text);
 	child_controls_changed();
 	if (is_visible()) {
@@ -387,7 +390,7 @@ String ConfirmationDialog::get_cancel_button_text() const {
 
 void ConfirmationDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cancel_button"), &ConfirmationDialog::get_cancel_button);
-	ClassDB::bind_method(D_METHOD("set_cancel_button_text"), &ConfirmationDialog::set_cancel_button_text);
+	ClassDB::bind_method(D_METHOD("set_cancel_button_text", "text"), &ConfirmationDialog::set_cancel_button_text);
 	ClassDB::bind_method(D_METHOD("get_cancel_button_text"), &ConfirmationDialog::get_cancel_button_text);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");

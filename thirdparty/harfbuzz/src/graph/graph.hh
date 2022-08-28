@@ -24,6 +24,10 @@
  * Google Author(s): Garret Rieger
  */
 
+#include "../hb-set.hh"
+#include "../hb-priority-queue.hh"
+#include "../hb-serialize.hh"
+
 #ifndef GRAPH_GRAPH_HH
 #define GRAPH_GRAPH_HH
 
@@ -76,6 +80,22 @@ struct graph_t
       }
     }
 
+    void remove_real_link (unsigned child_index, const void* offset)
+    {
+      for (unsigned i = 0; i < obj.real_links.length; i++)
+      {
+        auto& link = obj.real_links[i];
+        if (link.objidx != child_index)
+          continue;
+
+        if ((obj.head + link.position) != offset)
+          continue;
+
+        obj.real_links.remove (i);
+        return;
+      }
+    }
+
     void remap_parents (const hb_vector_t<unsigned>& id_map)
     {
       for (unsigned i = 0; i < parents.length; i++)
@@ -105,6 +125,10 @@ struct graph_t
 
     bool has_max_priority () const {
       return priority >= 3;
+    }
+
+    size_t table_size () const {
+      return obj.tail - obj.head;
     }
 
     int64_t modified_distance (unsigned order) const
@@ -199,10 +223,21 @@ struct graph_t
     return vertices_.length - 1;
   }
 
-  const hb_serialize_context_t::object_t& object(unsigned i) const
+  const hb_serialize_context_t::object_t& object (unsigned i) const
   {
     return vertices_[i].obj;
   }
+
+  /*
+   * Generates a new topological sorting of graph ordered by the shortest
+   * distance to each node if positions are marked as invalid.
+   */
+  void sort_shortest_distance_if_needed ()
+  {
+    if (!positions_invalid) return;
+    sort_shortest_distance ();
+  }
+
 
   /*
    * Generates a new topological sorting of graph ordered by the shortest
@@ -256,12 +291,12 @@ struct graph_t
 
     check_success (!queue.in_error ());
     check_success (!sorted_graph.in_error ());
-    if (!check_success (new_id == -1))
-      print_orphaned_nodes ();
 
     remap_all_obj_indices (id_map, &sorted_graph);
-
     hb_swap (vertices_, sorted_graph);
+
+    if (!check_success (new_id == -1))
+      print_orphaned_nodes ();
   }
 
   /*
@@ -310,6 +345,22 @@ struct graph_t
     }
   }
 
+  unsigned index_for_offset(unsigned node_idx, const void* offset) const
+  {
+    const auto& node = object (node_idx);
+    if (offset < node.head || offset >= node.tail) return -1;
+
+    for (const auto& link : node.real_links)
+    {
+      if (offset != node.head + link.position)
+        continue;
+      return link.objidx;
+    }
+
+    return -1;
+  }
+
+
   /*
    * Assign unique space numbers to each connected subgraph of 24 bit and/or 32 bit offset(s).
    * Currently, this is implemented specifically tailored to the structure of a GPOS/GSUB
@@ -317,6 +368,8 @@ struct graph_t
    */
   bool assign_spaces ()
   {
+    update_parents ();
+
     hb_set_t visited;
     hb_set_t roots;
     find_space_roots (visited, roots);
@@ -458,6 +511,21 @@ struct graph_t
       find_subgraph (link.objidx, subgraph);
   }
 
+  size_t find_subgraph_size (unsigned node_idx, hb_set_t& subgraph, unsigned max_depth = -1)
+  {
+    if (subgraph.has (node_idx)) return 0;
+    subgraph.add (node_idx);
+
+    const auto& o = vertices_[node_idx].obj;
+    size_t size = o.tail - o.head;
+    if (max_depth == 0)
+      return size;
+
+    for (const auto& link : o.all_links ())
+      size += find_subgraph_size (link.objidx, subgraph, max_depth - 1);
+    return size;
+  }
+
   /*
    * Finds the topmost children of 32bit offsets in the subgraph starting
    * at node_idx. Found indices are placed into 'found'.
@@ -472,6 +540,37 @@ struct graph_t
       }
       find_32bit_roots (link.objidx, found);
     }
+  }
+
+  /*
+   * Moves the child of old_parent_idx pointed to by old_offset to a new
+   * vertex at the new_offset.
+   */
+  template<typename O>
+  void move_child (unsigned old_parent_idx,
+                   const O* old_offset,
+                   unsigned new_parent_idx,
+                   const O* new_offset)
+  {
+    distance_invalid = true;
+    positions_invalid = true;
+
+    auto& old_v = vertices_[old_parent_idx];
+    auto& new_v = vertices_[new_parent_idx];
+
+    unsigned child_id = index_for_offset (old_parent_idx,
+                                          old_offset);
+
+    auto* new_link = new_v.obj.real_links.push ();
+    new_link->width = O::static_size;
+    new_link->objidx = child_id;
+    new_link->position = (const char*) new_offset - (const char*) new_v.obj.head;
+
+    auto& child = vertices_[child_id];
+    child.parents.push (new_parent_idx);
+
+    old_v.remove_real_link (child_id, old_offset);
+    child.remove_parent (old_parent_idx);
   }
 
   /*
@@ -579,6 +678,39 @@ struct graph_t
     }
 
     return true;
+  }
+
+
+  /*
+   * Adds a new node to the graph, not connected to anything.
+   */
+  unsigned new_node (char* head, char* tail)
+  {
+    positions_invalid = true;
+    distance_invalid = true;
+
+    auto* clone = vertices_.push ();
+    if (vertices_.in_error ()) {
+      return -1;
+    }
+
+    clone->obj.head = head;
+    clone->obj.tail = tail;
+    clone->distance = 0;
+    clone->space = 0;
+
+    unsigned clone_idx = vertices_.length - 2;
+
+    // The last object is the root of the graph, so swap back the root to the end.
+    // The root's obj idx does change, however since it's root nothing else refers to it.
+    // all other obj idx's will be unaffected.
+    hb_swap (vertices_[vertices_.length - 2], *clone);
+
+    // Since the root moved, update the parents arrays of all children on the root.
+    for (const auto& l : root ().obj.all_links ())
+      vertices_[l.objidx].remap_parent (root_idx () - 1, root_idx ());
+
+    return clone_idx;
   }
 
   /*

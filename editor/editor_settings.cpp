@@ -406,6 +406,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/debug/enable_pseudolocalization", false);
 	set_restart_if_changed("interface/editor/debug/enable_pseudolocalization", true);
 	// Use pseudolocalization in editor.
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/use_embedded_menu", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/expand_to_title", true, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "interface/editor/main_font_size", 14, "8,48,1")
@@ -413,7 +415,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/code_font_contextual_ligatures", 0, "Default,Disable Contextual Alternates (Coding Ligatures),Use Custom OpenType Feature Set")
 	_initial_set("interface/editor/code_font_custom_opentype_features", "");
 	_initial_set("interface/editor/code_font_custom_variations", "");
-	_initial_set("interface/editor/font_antialiased", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_antialiasing", 1, "None,Grayscale,LCD sub-pixel")
 #ifdef MACOS_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/font_hinting", 0, "Auto (None),None,Light,Normal")
 #else
@@ -685,7 +687,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Visual editors
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/minimap_opacity", 0.85, "0.0,1.0,0.01")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/visual_editors/lines_curvature", 0.5, "0.0,1.0,0.01")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/visual_editors/visualshader/port_preview_size", 160, "100,400,0.01")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/visual_editors/visual_shader/port_preview_size", 160, "100,400,0.01")
 
 	/* Run */
 
@@ -962,8 +964,8 @@ void EditorSettings::save() {
 	}
 }
 
-Array EditorSettings::get_changed_settings() const {
-	Array arr;
+PackedStringArray EditorSettings::get_changed_settings() const {
+	PackedStringArray arr;
 	for (const String &setting : changed_settings) {
 		arr.push_back(setting);
 	}
@@ -1051,6 +1053,8 @@ void EditorSettings::set_initial_value(const StringName &p_setting, const Varian
 }
 
 Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_restart_if_changed) {
+	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), p_default, "EditorSettings not instantiated yet.");
+
 	Variant ret = p_default;
 	if (EditorSettings::get_singleton()->has_setting(p_setting)) {
 		ret = EditorSettings::get_singleton()->get(p_setting);
@@ -1067,28 +1071,29 @@ Variant _EDITOR_DEF(const String &p_setting, const Variant &p_default, bool p_re
 }
 
 Variant _EDITOR_GET(const String &p_setting) {
-	ERR_FAIL_COND_V(!EditorSettings::get_singleton()->has_setting(p_setting), Variant());
+	ERR_FAIL_COND_V(!EditorSettings::get_singleton() || !EditorSettings::get_singleton()->has_setting(p_setting), Variant());
 	return EditorSettings::get_singleton()->get(p_setting);
 }
 
-bool EditorSettings::property_can_revert(const String &p_setting) {
-	if (!props.has(p_setting)) {
+bool EditorSettings::_property_can_revert(const StringName &p_name) const {
+	if (!props.has(p_name)) {
 		return false;
 	}
 
-	if (!props[p_setting].has_default_value) {
+	if (!props[p_name].has_default_value) {
 		return false;
 	}
 
-	return props[p_setting].initial != props[p_setting].variant;
+	return props[p_name].initial != props[p_name].variant;
 }
 
-Variant EditorSettings::property_get_revert(const String &p_setting) {
-	if (!props.has(p_setting) || !props[p_setting].has_default_value) {
-		return Variant();
+bool EditorSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
+	if (!props.has(p_name) || !props[p_name].has_default_value) {
+		return false;
 	}
 
-	return props[p_setting].initial;
+	r_property = props[p_name].initial;
+	return true;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
@@ -1422,9 +1427,7 @@ void EditorSettings::get_shortcut_list(List<String> *r_shortcuts) {
 }
 
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
-	if (!EditorSettings::get_singleton()) {
-		return nullptr;
-	}
+	ERR_FAIL_NULL_V_MSG(EditorSettings::get_singleton(), nullptr, "EditorSettings not instantiated yet.");
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
@@ -1434,6 +1437,8 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 }
 
 void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode) {
+	ERR_FAIL_NULL_MSG(EditorSettings::get_singleton(), "EditorSettings not instantiated yet.");
+
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path + ".");
 
@@ -1444,6 +1449,8 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 }
 
 void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes) {
+	ERR_FAIL_NULL_MSG(EditorSettings::get_singleton(), "EditorSettings not instantiated yet.");
+
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE_ARRAY with invalid shortcut: " + p_path + ".");
 
@@ -1470,8 +1477,11 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 		}
 	}
 
-	// Directly override the existing shortcut.
-	sc->set_events(events);
+	// Override the existing shortcut only if it wasn't customized by the user (i.e. still "original").
+	if (Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
+		sc->set_events(events);
+	}
+
 	sc->set_meta("original", events.duplicate(true));
 }
 
@@ -1617,8 +1627,6 @@ void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_setting", "name"), &EditorSettings::get_setting);
 	ClassDB::bind_method(D_METHOD("erase", "property"), &EditorSettings::erase);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "update_current"), &EditorSettings::set_initial_value);
-	ClassDB::bind_method(D_METHOD("property_can_revert", "name"), &EditorSettings::property_can_revert);
-	ClassDB::bind_method(D_METHOD("property_get_revert", "name"), &EditorSettings::property_get_revert);
 	ClassDB::bind_method(D_METHOD("add_property_info", "info"), &EditorSettings::_add_property_info_bind);
 
 	ClassDB::bind_method(D_METHOD("set_project_metadata", "section", "key", "data"), &EditorSettings::set_project_metadata);

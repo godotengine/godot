@@ -38,7 +38,6 @@
 namespace TestHashSet {
 
 TEST_CASE("[HashSet] Insert element") {
-	print_line("SMALL BEGIN MEM: ", Memory::get_mem_usage());
 	HashSet<int> set;
 	HashSet<int>::Iterator e = set.insert(42);
 
@@ -47,7 +46,6 @@ TEST_CASE("[HashSet] Insert element") {
 	CHECK(set.has(42));
 	CHECK(set.find(42));
 	set.reset();
-	print_line("SMALL END MEM: ", Memory::get_mem_usage());
 }
 
 TEST_CASE("[HashSet] Insert existing element") {

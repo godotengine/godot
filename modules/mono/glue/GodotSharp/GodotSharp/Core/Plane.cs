@@ -1,8 +1,3 @@
-#if REAL_T_IS_DOUBLE
-using real_t = System.Double;
-#else
-using real_t = System.Single;
-#endif
 using System;
 using System.Runtime.InteropServices;
 
@@ -358,12 +353,7 @@ namespace Godot
         /// <returns>Whether or not the plane and the other object are exactly equal.</returns>
         public override bool Equals(object obj)
         {
-            if (obj is Plane)
-            {
-                return Equals((Plane)obj);
-            }
-
-            return false;
+            return obj is Plane other && Equals(other);
         }
 
         /// <summary>

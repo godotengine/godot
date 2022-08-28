@@ -166,7 +166,7 @@ class StyleBoxFlat : public StyleBox {
 protected:
 	virtual float get_style_margin(Side p_side) const override;
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_bg_color(const Color &p_color);

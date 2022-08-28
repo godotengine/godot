@@ -192,7 +192,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			vd.stride = 0;
 
 			descriptions.write[1] = vd;
-			buffers.write[1] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::DEFAULT_RD_BUFFER_COLOR);
+			buffers.write[1] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_COLOR);
 		}
 
 		//uvs
@@ -220,7 +220,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			vd.stride = 0;
 
 			descriptions.write[2] = vd;
-			buffers.write[2] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::DEFAULT_RD_BUFFER_TEX_UV);
+			buffers.write[2] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_TEX_UV);
 		}
 
 		//bones
@@ -253,7 +253,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			vd.stride = 0;
 
 			descriptions.write[3] = vd;
-			buffers.write[3] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::DEFAULT_RD_BUFFER_BONES);
+			buffers.write[3] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_BONES);
 		}
 
 		//weights
@@ -286,7 +286,7 @@ RendererCanvasRender::PolygonID RendererCanvasRenderRD::request_polygon(const Ve
 			vd.stride = 0;
 
 			descriptions.write[4] = vd;
-			buffers.write[4] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::DEFAULT_RD_BUFFER_WEIGHTS);
+			buffers.write[4] = mesh_storage->mesh_get_default_rd_buffer(RendererRD::MeshStorage::DEFAULT_RD_BUFFER_WEIGHTS);
 		}
 
 		//check that everything is as it should be
@@ -494,7 +494,11 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 				}
 
 				//bind pipeline
-				{
+				if (rect->flags & CANVAS_RECT_LCD) {
+					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD_LCD_BLEND].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
+					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
+					RD::get_singleton()->draw_list_set_blend_constants(p_draw_list, rect->modulate);
+				} else {
 					RID pipeline = pipeline_variants->variants[light_mode][PIPELINE_VARIANT_QUAD].get_render_pipeline(RD::INVALID_ID, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
 				}
@@ -556,6 +560,8 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					push_constant.msdf[1] = rect->outline; // Outline size.
 					push_constant.msdf[2] = 0.f; // Reserved.
 					push_constant.msdf[3] = 0.f; // Reserved.
+				} else if (rect->flags & CANVAS_RECT_LCD) {
+					push_constant.flags |= FLAGS_USE_LCD;
 				}
 
 				push_constant.modulation[0] = rect->modulate.r * base_color.r;
@@ -988,7 +994,7 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 		} else {
 			screen = texture_storage->render_target_get_rd_backbuffer(p_to_render_target);
 			if (screen.is_null()) { //unallocated backbuffer
-				screen = RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::DEFAULT_RD_TEXTURE_WHITE);
+				screen = RendererRD::TextureStorage::get_singleton()->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 			}
 		}
 		u.append_id(screen);
@@ -1115,7 +1121,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 		if (material != prev_material) {
 			CanvasMaterialData *material_data = nullptr;
 			if (material.is_valid()) {
-				material_data = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::SHADER_TYPE_2D));
+				material_data = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::MaterialStorage::SHADER_TYPE_2D));
 			}
 
 			if (material_data) {
@@ -1361,6 +1367,7 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 	Item *ci = p_item_list;
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
+	bool backbuffer_gen_mipmaps = false;
 
 	Item *canvas_group_owner = nullptr;
 
@@ -1383,12 +1390,13 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
 		if (material.is_valid()) {
-			CanvasMaterialData *md = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::SHADER_TYPE_2D));
+			CanvasMaterialData *md = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::MaterialStorage::SHADER_TYPE_2D));
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
 					if (!material_screen_texture_found) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
+						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
 					}
 				}
 
@@ -1474,9 +1482,10 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			item_count = 0;
 
-			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, true);
+			texture_storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect, backbuffer_gen_mipmaps);
 
 			backbuffer_copy = false;
+			backbuffer_gen_mipmaps = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
 		}
 
@@ -1591,7 +1600,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 			real_t farp = p_far;
 			real_t aspect = 1.0;
 
-			real_t ymax = nearp * Math::tan(Math::deg2rad(fov * 0.5));
+			real_t ymax = nearp * Math::tan(Math::deg_to_rad(fov * 0.5));
 			real_t ymin = -ymax;
 			real_t xmin = ymin * aspect;
 			real_t xmax = ymax * aspect;
@@ -1980,6 +1989,7 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	ubo_size = 0;
 	uniforms.clear();
 	uses_screen_texture = false;
+	uses_screen_texture_mipmaps = false;
 	uses_sdf = false;
 	uses_time = false;
 
@@ -1990,7 +2000,6 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	int blend_mode = BLEND_MODE_MIX;
-	uses_screen_texture = false;
 
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
@@ -2015,6 +2024,8 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	Error err = canvas_singleton->shader.compiler.compile(RS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
 	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
 
+	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+
 	if (version.is_null()) {
 		version = canvas_singleton->shader.canvas_shader.version_create();
 	}
@@ -2025,12 +2036,16 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	for (int i = 0; i < gen_code.defines.size(); i++) {
 		print_line(gen_code.defines[i]);
 	}
+
+	HashMap<String, String>::Iterator el = gen_code.code.begin();
+	while (el) {
+		print_line("\n**code " + el->key + ":\n" + el->value);
+		++el;
+	}
+
 	print_line("\n**uniforms:\n" + gen_code.uniforms);
-	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
-	print_line("\n**vertex_code:\n" + gen_code.vertex);
-	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
-	print_line("\n**fragment_code:\n" + gen_code.fragment);
-	print_line("\n**light_code:\n" + gen_code.light);
+	print_line("\n**vertex_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX]);
+	print_line("\n**fragment_globals:\n" + gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT]);
 #endif
 	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines);
 	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
@@ -2104,6 +2119,18 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 	RD::PipelineColorBlendState blend_state;
 	blend_state.attachments.push_back(attachment);
 
+	RD::PipelineColorBlendState::Attachment attachment_lcd;
+	attachment_lcd.enable_blend = true;
+	attachment_lcd.alpha_blend_op = RD::BLEND_OP_ADD;
+	attachment_lcd.color_blend_op = RD::BLEND_OP_ADD;
+	attachment_lcd.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
+	attachment_lcd.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+	attachment_lcd.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+	attachment_lcd.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+	RD::PipelineColorBlendState blend_state_lcd;
+	blend_state_lcd.attachments.push_back(attachment_lcd);
+
 	//update pipelines
 
 	for (int i = 0; i < PIPELINE_LIGHT_MODE_MAX; i++) {
@@ -2119,10 +2146,12 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 				RD::RENDER_PRIMITIVE_LINES,
 				RD::RENDER_PRIMITIVE_LINESTRIPS,
 				RD::RENDER_PRIMITIVE_POINTS,
+				RD::RENDER_PRIMITIVE_TRIANGLES,
 			};
 
 			ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
-				{ //non lit
+				{
+						//non lit
 						SHADER_VARIANT_QUAD,
 						SHADER_VARIANT_NINEPATCH,
 						SHADER_VARIANT_PRIMITIVE,
@@ -2132,8 +2161,11 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_ATTRIBUTES,
 						SHADER_VARIANT_ATTRIBUTES,
 						SHADER_VARIANT_ATTRIBUTES,
-						SHADER_VARIANT_ATTRIBUTES_POINTS },
-				{ //lit
+						SHADER_VARIANT_ATTRIBUTES_POINTS,
+						SHADER_VARIANT_QUAD,
+				},
+				{
+						//lit
 						SHADER_VARIANT_QUAD_LIGHT,
 						SHADER_VARIANT_NINEPATCH_LIGHT,
 						SHADER_VARIANT_PRIMITIVE_LIGHT,
@@ -2143,11 +2175,17 @@ void RendererCanvasRenderRD::CanvasShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
-						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
+						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
+						SHADER_VARIANT_QUAD_LIGHT,
+				},
 			};
 
 			RID shader_variant = canvas_singleton->shader.canvas_shader.version_get_shader(version, shader_variants[i][j]);
-			pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+			if (j == PIPELINE_VARIANT_QUAD_LCD_BLEND) {
+				pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_lcd, RD::DYNAMIC_STATE_BLEND_CONSTANTS);
+			} else {
+				pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+			}
 		}
 	}
 
@@ -2171,11 +2209,15 @@ void RendererCanvasRenderRD::CanvasShaderData::set_default_texture_param(const S
 	}
 }
 
-void RendererCanvasRenderRD::CanvasShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+void RendererCanvasRenderRD::CanvasShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
 	HashMap<int, StringName> order;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
-		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE ||
+				E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+			// Don't expose any of these.
 			continue;
 		}
 		if (E.value.texture_order >= 0) {
@@ -2261,7 +2303,7 @@ RendererCanvasRenderRD::CanvasShaderData::~CanvasShaderData() {
 	}
 }
 
-RendererRD::ShaderData *RendererCanvasRenderRD::_create_shader_func() {
+RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_func() {
 	CanvasShaderData *shader_data = memnew(CanvasShaderData);
 	return shader_data;
 }
@@ -2276,7 +2318,7 @@ RendererCanvasRenderRD::CanvasMaterialData::~CanvasMaterialData() {
 	free_parameters_uniform_set(uniform_set);
 }
 
-RendererRD::MaterialData *RendererCanvasRenderRD::_create_material_func(CanvasShaderData *p_shader) {
+RendererRD::MaterialStorage::MaterialData *RendererCanvasRenderRD::_create_material_func(CanvasShaderData *p_shader) {
 	CanvasMaterialData *material_data = memnew(CanvasMaterialData);
 	material_data->shader_data = p_shader;
 	//update will happen later anyway so do nothing.
@@ -2350,6 +2392,18 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 
 		blend_state.attachments.push_back(blend_attachment);
 
+		RD::PipelineColorBlendState::Attachment attachment_lcd;
+		attachment_lcd.enable_blend = true;
+		attachment_lcd.alpha_blend_op = RD::BLEND_OP_ADD;
+		attachment_lcd.color_blend_op = RD::BLEND_OP_ADD;
+		attachment_lcd.src_color_blend_factor = RD::BLEND_FACTOR_CONSTANT_COLOR;
+		attachment_lcd.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+		attachment_lcd.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+		attachment_lcd.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		RD::PipelineColorBlendState blend_state_lcd;
+		blend_state_lcd.attachments.push_back(attachment_lcd);
+
 		for (int i = 0; i < PIPELINE_LIGHT_MODE_MAX; i++) {
 			for (int j = 0; j < PIPELINE_VARIANT_MAX; j++) {
 				RD::RenderPrimitive primitive[PIPELINE_VARIANT_MAX] = {
@@ -2363,10 +2417,12 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 					RD::RENDER_PRIMITIVE_LINES,
 					RD::RENDER_PRIMITIVE_LINESTRIPS,
 					RD::RENDER_PRIMITIVE_POINTS,
+					RD::RENDER_PRIMITIVE_TRIANGLES,
 				};
 
 				ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
-					{ //non lit
+					{
+							//non lit
 							SHADER_VARIANT_QUAD,
 							SHADER_VARIANT_NINEPATCH,
 							SHADER_VARIANT_PRIMITIVE,
@@ -2376,8 +2432,11 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 							SHADER_VARIANT_ATTRIBUTES,
 							SHADER_VARIANT_ATTRIBUTES,
 							SHADER_VARIANT_ATTRIBUTES,
-							SHADER_VARIANT_ATTRIBUTES_POINTS },
-					{ //lit
+							SHADER_VARIANT_ATTRIBUTES_POINTS,
+							SHADER_VARIANT_QUAD,
+					},
+					{
+							//lit
 							SHADER_VARIANT_QUAD_LIGHT,
 							SHADER_VARIANT_NINEPATCH_LIGHT,
 							SHADER_VARIANT_PRIMITIVE_LIGHT,
@@ -2387,11 +2446,17 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
-							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
+							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
+							SHADER_VARIANT_QUAD_LIGHT,
+					},
 				};
 
 				RID shader_variant = shader.canvas_shader.version_get_shader(shader.default_version, shader_variants[i][j]);
-				shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+				if (j == PIPELINE_VARIANT_QUAD_LCD_BLEND) {
+					shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state_lcd, RD::DYNAMIC_STATE_BLEND_CONSTANTS);
+				} else {
+					shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+				}
 			}
 		}
 	}
@@ -2629,8 +2694,8 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 	state.shadow_texture_size = GLOBAL_GET("rendering/2d/shadow_atlas/size");
 
 	//create functions for shader and material
-	material_storage->shader_set_data_request_function(RendererRD::SHADER_TYPE_2D, _create_shader_funcs);
-	material_storage->material_set_data_request_function(RendererRD::SHADER_TYPE_2D, _create_material_funcs);
+	material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_2D, _create_shader_funcs);
+	material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_2D, _create_material_funcs);
 
 	state.time = 0;
 

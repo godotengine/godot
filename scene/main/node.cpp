@@ -653,21 +653,6 @@ Error Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallE
 	return err;
 }
 
-template <typename... VarArgs>
-Error Node::rpc(const StringName &p_method, VarArgs... p_args) {
-	return rpc_id(0, p_method, p_args...);
-}
-
-template <typename... VarArgs>
-Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args) {
-	Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-	const Variant *argptrs[sizeof...(p_args) + 1];
-	for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-		argptrs[i] = &args[i];
-	}
-	return rpcp(p_peer_id, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-}
-
 Error Node::rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	return get_multiplayer()->rpcp(this, p_peer_id, p_method, p_arg, p_argcount);
@@ -963,6 +948,21 @@ String Node::validate_child_name(Node *p_child) {
 }
 #endif
 
+String Node::adjust_name_casing(const String &p_name) {
+	switch (GLOBAL_GET("editor/node_naming/name_casing").operator int()) {
+		case NAME_CASING_PASCAL_CASE:
+			return p_name.capitalize().replace(" ", "");
+		case NAME_CASING_CAMEL_CASE: {
+			String name = p_name.capitalize().replace(" ", "");
+			name[0] = name.to_lower()[0];
+			return name;
+		}
+		case NAME_CASING_SNAKE_CASE:
+			return p_name.capitalize().replace(" ", "_").to_lower();
+	}
+	return p_name;
+}
+
 void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 	/* Make sure the name is unique */
 
@@ -1036,19 +1036,8 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 		//no name and a new name is needed, create one.
 
 		name = p_child->get_class();
-		// Adjust casing according to project setting. The current type name is expected to be in PascalCase.
-		switch (ProjectSettings::get_singleton()->get("editor/node_naming/name_casing").operator int()) {
-			case NAME_CASING_PASCAL_CASE:
-				break;
-			case NAME_CASING_CAMEL_CASE: {
-				String n = name;
-				n[0] = n.to_lower()[0];
-				name = n;
-			} break;
-			case NAME_CASING_SNAKE_CASE:
-				name = String(name).camelcase_to_underscore(true);
-				break;
-		}
+		// Adjust casing according to project setting.
+		name = adjust_name_casing(name);
 	}
 
 	//quickly test if proposed name exists
@@ -1793,8 +1782,8 @@ void Node::remove_from_group(const StringName &p_identifier) {
 	data.grouped.remove(E);
 }
 
-Array Node::_get_groups() const {
-	Array groups;
+TypedArray<StringName> Node::_get_groups() const {
+	TypedArray<StringName> groups;
 	List<GroupInfo> gi;
 	get_groups(&gi);
 	for (const GroupInfo &E : gi) {

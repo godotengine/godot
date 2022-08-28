@@ -41,12 +41,55 @@
 #include "editor/filesystem_dock.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/project_settings_editor.h"
-#include "editor/property_editor.h"
 #include "editor/shader_create_dialog.h"
 #include "scene/gui/split_container.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
+
+/*** SHADER SYNTAX HIGHLIGHTER ****/
+
+Dictionary GDShaderSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
+	Dictionary color_map;
+
+	for (const Point2i &region : disabled_branch_regions) {
+		if (p_line >= region.x && p_line <= region.y) {
+			Dictionary highlighter_info;
+			highlighter_info["color"] = disabled_branch_color;
+
+			color_map[0] = highlighter_info;
+			return color_map;
+		}
+	}
+
+	return CodeHighlighter::_get_line_syntax_highlighting_impl(p_line);
+}
+
+void GDShaderSyntaxHighlighter::add_disabled_branch_region(const Point2i &p_region) {
+	ERR_FAIL_COND(p_region.x < 0);
+	ERR_FAIL_COND(p_region.y < 0);
+
+	for (int i = 0; i < disabled_branch_regions.size(); i++) {
+		ERR_FAIL_COND_MSG(disabled_branch_regions[i].x == p_region.x, "Branch region with a start line '" + itos(p_region.x) + "' already exists.");
+	}
+
+	Point2i disabled_branch_region;
+	disabled_branch_region.x = p_region.x;
+	disabled_branch_region.y = p_region.y;
+	disabled_branch_regions.push_back(disabled_branch_region);
+
+	clear_highlighting_cache();
+}
+
+void GDShaderSyntaxHighlighter::clear_disabled_branch_regions() {
+	disabled_branch_regions.clear();
+	clear_highlighting_cache();
+}
+
+void GDShaderSyntaxHighlighter::set_disabled_branch_color(const Color &p_color) {
+	disabled_branch_color = p_color;
+	clear_highlighting_cache();
+}
 
 /*** SHADER SCRIPT EDITOR ****/
 
@@ -135,6 +178,7 @@ void ShaderTextEditor::set_edited_code(const String &p_code) {
 	get_text_editor()->clear_undo_history();
 	get_text_editor()->call_deferred(SNAME("set_h_scroll"), 0);
 	get_text_editor()->call_deferred(SNAME("set_v_scroll"), 0);
+	get_text_editor()->tag_saved_version();
 
 	_validate_script();
 	_line_col_changed();
@@ -264,6 +308,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
+	syntax_highlighter->set_disabled_branch_color(comment_color);
 
 	text_editor->clear_comment_delimiters();
 	text_editor->add_comment_delimiter("/*", "*/", false);
@@ -346,7 +391,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 	if (!complete_from_path.ends_with("/")) {
 		complete_from_path += "/";
 	}
-	preprocessor.preprocess(p_code, code, nullptr, nullptr, nullptr, &pp_options, _complete_include_paths);
+	preprocessor.preprocess(p_code, "", code, nullptr, nullptr, nullptr, nullptr, &pp_options, _complete_include_paths);
 	complete_from_path = String();
 	if (pp_options.size()) {
 		for (const ScriptLanguage::CodeCompletionOption &E : pp_options) {
@@ -392,11 +437,29 @@ void ShaderTextEditor::_validate_script() {
 	String code_pp;
 	String error_pp;
 	List<ShaderPreprocessor::FilePosition> err_positions;
-	last_compile_result = preprocessor.preprocess(code, code_pp, &error_pp, &err_positions);
+	List<ShaderPreprocessor::Region> regions;
+	String filename;
+	if (shader.is_valid()) {
+		filename = shader->get_path();
+	} else if (shader_inc.is_valid()) {
+		filename = shader_inc->get_path();
+	}
+	last_compile_result = preprocessor.preprocess(code, filename, code_pp, &error_pp, &err_positions, &regions);
 
 	for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 		get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 	}
+
+	syntax_highlighter->clear_disabled_branch_regions();
+	for (const ShaderPreprocessor::Region &region : regions) {
+		if (!region.enabled) {
+			if (filename != region.file) {
+				continue;
+			}
+			syntax_highlighter->add_disabled_branch_region(Point2i(region.from_line, region.to_line));
+		}
+	}
+
 	set_error("");
 	set_error_count(0);
 
@@ -649,7 +712,6 @@ void ShaderEditor::_menu_option(int p_option) {
 
 void ShaderEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			PopupMenu *popup = help_menu->get_popup();
 			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
@@ -844,12 +906,17 @@ void ShaderEditor::save_external_data(const String &p_str) {
 	if (shader_inc.is_valid() && shader_inc != edited_shader_inc) {
 		ResourceSaver::save(shader_inc);
 	}
+	shader_editor->get_text_editor()->tag_saved_version();
 
 	disk_changed->hide();
 }
 
 void ShaderEditor::validate_script() {
 	shader_editor->_validate_script();
+}
+
+bool ShaderEditor::is_unsaved() const {
+	return shader_editor->get_text_editor()->get_saved_version() != shader_editor->get_text_editor()->get_version();
 }
 
 void ShaderEditor::apply_shaders() {
@@ -926,7 +993,7 @@ void ShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
-	Array bookmark_list = shader_editor->get_text_editor()->get_bookmarked_lines();
+	PackedInt32Array bookmark_list = shader_editor->get_text_editor()->get_bookmarked_lines();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
@@ -1128,36 +1195,34 @@ ShaderEditor::ShaderEditor() {
 void ShaderEditorPlugin::_update_shader_list() {
 	shader_list->clear();
 	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
-		String text;
-		String path;
-		String _class;
-		String shader_name;
-		if (edited_shaders[i].shader.is_valid()) {
-			Ref<Shader> shader = edited_shaders[i].shader;
-
-			path = shader->get_path();
-			_class = shader->get_class();
-			shader_name = shader->get_name();
-		} else {
-			Ref<ShaderInclude> shader_inc = edited_shaders[i].shader_inc;
-
-			path = shader_inc->get_path();
-			_class = shader_inc->get_class();
-			shader_name = shader_inc->get_name();
+		Ref<Resource> shader = edited_shaders[i].shader;
+		if (shader.is_null()) {
+			shader = edited_shaders[i].shader_inc;
 		}
 
-		if (path.is_resource_file()) {
-			text = path.get_file();
-		} else if (shader_name != "") {
-			text = shader_name;
-		} else {
-			if (edited_shaders[i].shader.is_valid()) {
-				text = _class + ":" + itos(edited_shaders[i].shader->get_instance_id());
-			} else {
-				text = _class + ":" + itos(edited_shaders[i].shader_inc->get_instance_id());
+		String path = shader->get_path();
+		String text = path.get_file();
+		if (text.is_empty()) {
+			// This appears for newly created built-in shaders before saving the scene.
+			text = TTR("[unsaved]");
+		} else if (shader->is_built_in()) {
+			const String &shader_name = shader->get_name();
+			if (!shader_name.is_empty()) {
+				text = vformat("%s (%s)", shader_name, text.get_slice("::", 0));
 			}
 		}
 
+		bool unsaved = false;
+		if (edited_shaders[i].shader_editor) {
+			unsaved = edited_shaders[i].shader_editor->is_unsaved();
+		}
+		// TODO: Handle visual shaders too.
+
+		if (unsaved) {
+			text += "(*)";
+		}
+
+		String _class = shader->get_class();
 		if (!shader_list->has_theme_icon(_class, SNAME("EditorIcons"))) {
 			_class = "TextFile";
 		}
@@ -1191,6 +1256,17 @@ void ShaderEditorPlugin::_update_shader_list_status() {
 	}
 }
 
+void ShaderEditorPlugin::_move_shader_tab(int p_from, int p_to) {
+	if (p_from == p_to) {
+		return;
+	}
+	EditedShader es = edited_shaders[p_from];
+	edited_shaders.remove_at(p_from);
+	edited_shaders.insert(p_to, es);
+	shader_tabs->move_child(shader_tabs->get_tab_control(p_from), p_to);
+	_update_shader_list();
+}
+
 void ShaderEditorPlugin::edit(Object *p_object) {
 	EditedShader es;
 
@@ -1207,7 +1283,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 		es.shader_editor = memnew(ShaderEditor);
 		es.shader_editor->edit(si);
 		shader_tabs->add_child(es.shader_editor);
-		es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list_status));
+		es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list));
 	} else {
 		Shader *s = Object::cast_to<Shader>(p_object);
 		for (uint32_t i = 0; i < edited_shaders.size(); i++) {
@@ -1227,7 +1303,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			es.shader_editor = memnew(ShaderEditor);
 			shader_tabs->add_child(es.shader_editor);
 			es.shader_editor->edit(s);
-			es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list_status));
+			es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list));
 		}
 	}
 
@@ -1273,6 +1349,7 @@ void ShaderEditorPlugin::save_external_data() {
 			edited_shaders[i].shader_editor->save_external_data();
 		}
 	}
+	_update_shader_list();
 }
 
 void ShaderEditorPlugin::apply_changes() {
@@ -1288,6 +1365,12 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 		edited_shaders[p_index].shader_editor->validate_script();
 	}
 	shader_tabs->set_current_tab(p_index);
+}
+
+void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index == MouseButton::MIDDLE) {
+		_close_shader(p_item);
+	}
 }
 
 void ShaderEditorPlugin::_close_shader(int p_index) {
@@ -1378,6 +1461,109 @@ void ShaderEditorPlugin::_shader_include_created(Ref<ShaderInclude> p_shader_inc
 	EditorNode::get_singleton()->push_item(p_shader_inc.ptr());
 }
 
+Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (shader_list->get_item_count() == 0) {
+		return Variant();
+	}
+
+	int idx = shader_list->get_item_at_position(p_point);
+	if (idx < 0) {
+		return Variant();
+	}
+
+	HBoxContainer *drag_preview = memnew(HBoxContainer);
+	String preview_name = shader_list->get_item_text(idx);
+	Ref<Texture2D> preview_icon = shader_list->get_item_icon(idx);
+
+	if (!preview_icon.is_null()) {
+		TextureRect *tf = memnew(TextureRect);
+		tf->set_texture(preview_icon);
+		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+		drag_preview->add_child(tf);
+	}
+	Label *label = memnew(Label(preview_name));
+	drag_preview->add_child(label);
+	main_split->set_drag_preview(drag_preview);
+
+	Dictionary drag_data;
+	drag_data["type"] = "shader_list_element";
+	drag_data["shader_list_element"] = idx;
+
+	return drag_data;
+}
+
+bool ShaderEditorPlugin::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	Dictionary d = p_data;
+	if (!d.has("type")) {
+		return false;
+	}
+
+	if (String(d["type"]) == "shader_list_element") {
+		return true;
+	}
+
+	if (String(d["type"]) == "files") {
+		Vector<String> files = d["files"];
+
+		if (files.size() == 0) {
+			return false;
+		}
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			if (ResourceLoader::exists(file, "Shader")) {
+				Ref<Shader> shader = ResourceLoader::load(file);
+				if (shader.is_valid()) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	return false;
+}
+
+void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+		return;
+	}
+
+	Dictionary d = p_data;
+	if (!d.has("type")) {
+		return;
+	}
+
+	if (String(d["type"]) == "shader_list_element") {
+		int idx = d["shader_list_element"];
+		int new_idx = shader_list->get_item_at_position(p_point);
+		_move_shader_tab(idx, new_idx);
+		return;
+	}
+
+	if (String(d["type"]) == "files") {
+		Vector<String> files = d["files"];
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			if (!ResourceLoader::exists(file, "Shader")) {
+				continue;
+			}
+
+			Ref<Resource> res = ResourceLoader::load(file);
+			if (res.is_valid()) {
+				edit(res.ptr());
+			}
+		}
+	}
+}
+
+void ShaderEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "point", "from"), &ShaderEditorPlugin::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::drop_data_fw);
+}
+
 ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_split = memnew(HSplitContainer);
 
@@ -1409,6 +1595,8 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_child(shader_list);
 	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
+	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
+	shader_list->set_drag_forwarding(this);
 
 	main_split->add_child(vb);
 	vb->set_custom_minimum_size(Size2(200, 300) * EDSCALE);

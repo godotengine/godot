@@ -38,6 +38,9 @@
 
 #include <enet/enet.h>
 
+template <typename T>
+class TypedArray;
+
 class ENetConnection : public RefCounted {
 	GDCLASS(ENetConnection, RefCounted);
 
@@ -83,7 +86,7 @@ private:
 	Error _create(ENetAddress *p_address, int p_max_peers, int p_max_channels, int p_in_bandwidth, int p_out_bandwidth);
 	Array _service(int p_timeout = 0);
 	void _broadcast(int p_channel, PackedByteArray p_packet, int p_flags);
-	Array _get_peers();
+	TypedArray<ENetPacketPeer> _get_peers();
 
 	class Compressor {
 	private:

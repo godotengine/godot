@@ -763,7 +763,7 @@ void Curve2D::_bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, re
 	Vector2 nb = (end - mid).normalized();
 	real_t dp = na.dot(nb);
 
-	if (dp < Math::cos(Math::deg2rad(p_tol))) {
+	if (dp < Math::cos(Math::deg_to_rad(p_tol))) {
 		r_bake[mp] = mid;
 	}
 
@@ -1167,7 +1167,7 @@ void Curve2D::_get_property_list(List<PropertyInfo> *p_list) const {
 void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve2D::get_point_count);
 	ClassDB::bind_method(D_METHOD("set_point_count", "count"), &Curve2D::set_point_count);
-	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "index"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve2D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_in", "idx", "position"), &Curve2D::set_point_in);
@@ -1190,7 +1190,7 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve2D::tessellate, DEFVAL(5), DEFVAL(4));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve2D::_get_data);
-	ClassDB::bind_method(D_METHOD("_set_data"), &Curve2D::_set_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve2D::_set_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
@@ -1352,7 +1352,7 @@ void Curve3D::_bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, re
 	Vector3 nb = (end - mid).normalized();
 	real_t dp = na.dot(nb);
 
-	if (dp < Math::cos(Math::deg2rad(p_tol))) {
+	if (dp < Math::cos(Math::deg_to_rad(p_tol))) {
 		r_bake[mp] = mid;
 	}
 	if (p_depth < p_max_depth) {
@@ -1972,7 +1972,7 @@ void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
 void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve3D::get_point_count);
 	ClassDB::bind_method(D_METHOD("set_point_count", "count"), &Curve3D::set_point_count);
-	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "index"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve3D::set_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_position", "idx"), &Curve3D::get_point_position);
 	ClassDB::bind_method(D_METHOD("set_point_tilt", "idx", "tilt"), &Curve3D::set_point_tilt);
@@ -2002,7 +2002,7 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tessellate", "max_stages", "tolerance_degrees"), &Curve3D::tessellate, DEFVAL(5), DEFVAL(4));
 
 	ClassDB::bind_method(D_METHOD("_get_data"), &Curve3D::_get_data);
-	ClassDB::bind_method(D_METHOD("_set_data"), &Curve3D::_set_data);
+	ClassDB::bind_method(D_METHOD("_set_data", "data"), &Curve3D::_set_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");

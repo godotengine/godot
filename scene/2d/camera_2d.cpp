@@ -655,9 +655,9 @@ bool Camera2D::is_margin_drawing_enabled() const {
 	return margin_drawing_enabled;
 }
 
-void Camera2D::_validate_property(PropertyInfo &property) const {
-	if (!smoothing_enabled && property.name == "smoothing_speed") {
-		property.usage = PROPERTY_USAGE_NO_EDITOR;
+void Camera2D::_validate_property(PropertyInfo &p_property) const {
+	if (!smoothing_enabled && p_property.name == "smoothing_speed") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 

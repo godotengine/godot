@@ -663,6 +663,14 @@ public:
 		if (native_info->get_property_list_func) {
 			uint32_t pcount;
 			const GDNativePropertyInfo *pinfo = native_info->get_property_list_func(instance, &pcount);
+
+#ifdef TOOLS_ENABLED
+			Ref<Script> script = get_script();
+			if (script->is_valid() && pcount > 0) {
+				p_list->push_back(script->get_class_category());
+			}
+#endif // TOOLS_ENABLED
+
 			for (uint32_t i = 0; i < pcount; i++) {
 				p_list->push_back(PropertyInfo(pinfo[i]));
 			}
@@ -682,6 +690,19 @@ public:
 			return Variant::Type(type);
 		}
 		return Variant::NIL;
+	}
+
+	virtual bool property_can_revert(const StringName &p_name) const override {
+		if (native_info->property_can_revert_func) {
+			return native_info->property_can_revert_func(instance, (const GDNativeStringNamePtr)&p_name);
+		}
+		return false;
+	}
+	virtual bool property_get_revert(const StringName &p_name, Variant &r_ret) const override {
+		if (native_info->property_get_revert_func) {
+			return native_info->property_get_revert_func(instance, (const GDNativeStringNamePtr)&p_name, (GDNativeVariantPtr)&r_ret);
+		}
+		return false;
 	}
 
 	virtual Object *get_owner() override {

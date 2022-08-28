@@ -144,8 +144,8 @@ int AudioDriver::get_total_channels_by_speaker_mode(AudioDriver::SpeakerMode p_m
 	ERR_FAIL_V(2);
 }
 
-Array AudioDriver::get_device_list() {
-	Array list;
+PackedStringArray AudioDriver::get_device_list() {
+	PackedStringArray list;
 
 	list.push_back("Default");
 
@@ -156,8 +156,8 @@ String AudioDriver::get_device() {
 	return "Default";
 }
 
-Array AudioDriver::capture_get_device_list() {
-	Array list;
+PackedStringArray AudioDriver::capture_get_device_list() {
+	PackedStringArray list;
 
 	list.push_back("Default");
 
@@ -547,7 +547,7 @@ void AudioServer::_mix_step() {
 
 			AudioFrame peak = AudioFrame(0, 0);
 
-			float volume = Math::db2linear(bus->volume_db);
+			float volume = Math::db_to_linear(bus->volume_db);
 
 			if (solo_mode) {
 				if (!bus->soloed) {
@@ -573,12 +573,12 @@ void AudioServer::_mix_step() {
 				}
 			}
 
-			bus->channels.write[k].peak_volume = AudioFrame(Math::linear2db(peak.l + AUDIO_PEAK_OFFSET), Math::linear2db(peak.r + AUDIO_PEAK_OFFSET));
+			bus->channels.write[k].peak_volume = AudioFrame(Math::linear_to_db(peak.l + AUDIO_PEAK_OFFSET), Math::linear_to_db(peak.r + AUDIO_PEAK_OFFSET));
 
 			if (!bus->channels[k].used) {
 				//see if any audio is contained, because channel was not used
 
-				if (MAX(peak.r, peak.l) > Math::db2linear(channel_disable_threshold_db)) {
+				if (MAX(peak.r, peak.l) > Math::db_to_linear(channel_disable_threshold_db)) {
 					bus->channels.write[k].last_mix_with_audio = mix_frames;
 				} else if (mix_frames - bus->channels[k].last_mix_with_audio > channel_disable_frames) {
 					bus->channels.write[k].active = false;
@@ -1637,7 +1637,7 @@ Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 	return state;
 }
 
-Array AudioServer::get_device_list() {
+PackedStringArray AudioServer::get_device_list() {
 	return AudioDriver::get_singleton()->get_device_list();
 }
 
@@ -1649,7 +1649,7 @@ void AudioServer::set_device(String device) {
 	AudioDriver::get_singleton()->set_device(device);
 }
 
-Array AudioServer::capture_get_device_list() {
+PackedStringArray AudioServer::capture_get_device_list() {
 	return AudioDriver::get_singleton()->capture_get_device_list();
 }
 

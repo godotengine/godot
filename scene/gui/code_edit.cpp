@@ -36,8 +36,7 @@
 
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			style_normal = get_theme_stylebox(SNAME("normal"));
 
 			font = get_theme_font(SNAME("font"));
@@ -1280,8 +1279,8 @@ void CodeEdit::clear_breakpointed_lines() {
 	}
 }
 
-Array CodeEdit::get_breakpointed_lines() const {
-	Array ret;
+PackedInt32Array CodeEdit::get_breakpointed_lines() const {
+	PackedInt32Array ret;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_breakpointed(i)) {
 			ret.append(i);
@@ -1309,8 +1308,8 @@ void CodeEdit::clear_bookmarked_lines() {
 	}
 }
 
-Array CodeEdit::get_bookmarked_lines() const {
-	Array ret;
+PackedInt32Array CodeEdit::get_bookmarked_lines() const {
+	PackedInt32Array ret;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_bookmarked(i)) {
 			ret.append(i);
@@ -1338,8 +1337,8 @@ void CodeEdit::clear_executing_lines() {
 	}
 }
 
-Array CodeEdit::get_executing_lines() const {
-	Array ret;
+PackedInt32Array CodeEdit::get_executing_lines() const {
+	PackedInt32Array ret;
 	for (int i = 0; i < get_line_count(); i++) {
 		if (is_line_executing(i)) {
 			ret.append(i);
@@ -2769,7 +2768,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			i++;
 		}
 
-		Array completion_options;
+		TypedArray<Dictionary> completion_options;
 
 		GDVIRTUAL_CALL(_filter_code_completion_candidates, completion_options_sources, completion_options);
 

@@ -133,6 +133,8 @@ private:
 	void _pan_callback(Vector2 p_scroll_vec);
 	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
 
+	bool arrange_nodes_button_hidden = false;
+
 	bool connecting = false;
 	String connecting_from;
 	bool connecting_out = false;
@@ -206,7 +208,7 @@ private:
 	void _minimap_draw();
 	void _update_scroll_offset();
 
-	Array _get_connection_list() const;
+	TypedArray<Dictionary> _get_connection_list() const;
 
 	bool lines_on_bg = false;
 
@@ -280,6 +282,7 @@ protected:
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
 	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
+	GDVIRTUAL4R(bool, _is_node_hover_valid, StringName, int, StringName, int);
 
 public:
 	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
@@ -287,6 +290,7 @@ public:
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
 	void force_connection_drag_end();
+	virtual bool is_node_hover_valid(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 
 	void set_connection_activity(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, float p_activity);
 
@@ -320,6 +324,9 @@ public:
 
 	void set_minimap_enabled(bool p_enable);
 	bool is_minimap_enabled() const;
+
+	void set_arrange_nodes_button_hidden(bool p_enable);
+	bool is_arrange_nodes_button_hidden() const;
 
 	GraphEditFilter *get_top_layer() const { return top_layer; }
 	GraphEditMinimap *get_minimap() const { return minimap; }

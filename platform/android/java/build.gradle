@@ -28,7 +28,7 @@ allprojects {
 }
 
 ext {
-    supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
+    supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
     supportedTargetsMap = [release: "release", dev: "debug", debug: "release_debug"]
     supportedFlavors = ["editor", "template"]
 
@@ -37,7 +37,7 @@ ext {
     // If building manually on the command line, it's recommended to use the
     // `./gradlew generateGodotTemplates` build command instead after running the `scons` command(s).
     // The {selectedAbis} values must be from the {supportedAbis} values.
-    selectedAbis = ["arm64v8"]
+    selectedAbis = ["arm64"]
 }
 
 def rootDir = "../../.."

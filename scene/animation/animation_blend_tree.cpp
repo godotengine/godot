@@ -47,8 +47,8 @@ void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) cons
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
 }
 
-void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
-	if (property.name == "animation" && get_editable_animation_list) {
+void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "animation" && get_editable_animation_list) {
 		Vector<String> names = get_editable_animation_list();
 		String anims;
 		for (int i = 0; i < names.size(); i++) {
@@ -58,8 +58,8 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 			anims += String(names[i]);
 		}
 		if (!anims.is_empty()) {
-			property.hint = PROPERTY_HINT_ENUM;
-			property.hint_string = anims;
+			p_property.hint = PROPERTY_HINT_ENUM;
+			p_property.hint_string = anims;
 		}
 	}
 }
@@ -676,12 +676,20 @@ String AnimationNodeTransition::get_input_caption(int p_input) const {
 	return inputs[p_input].name;
 }
 
-void AnimationNodeTransition::set_cross_fade_time(float p_fade) {
-	xfade = p_fade;
+void AnimationNodeTransition::set_xfade_time(float p_fade) {
+	xfade_time = p_fade;
 }
 
-float AnimationNodeTransition::get_cross_fade_time() const {
-	return xfade;
+float AnimationNodeTransition::get_xfade_time() const {
+	return xfade_time;
+}
+
+void AnimationNodeTransition::set_xfade_curve(const Ref<Curve> &p_curve) {
+	xfade_curve = p_curve;
+}
+
+Ref<Curve> AnimationNodeTransition::get_xfade_curve() const {
+	return xfade_curve;
 }
 
 void AnimationNodeTransition::set_from_start(bool p_from_start) {
@@ -707,7 +715,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 		set_parameter(this->prev, prev_current);
 
 		prev = prev_current;
-		prev_xfading = xfade;
+		prev_xfading = xfade_time;
 		time = 0;
 		switched = true;
 	}
@@ -734,13 +742,16 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 			time += p_time;
 		}
 
-		if (inputs[current].auto_advance && rem <= xfade) {
+		if (inputs[current].auto_advance && rem <= xfade_time) {
 			set_parameter(this->current, (current + 1) % enabled_inputs);
 		}
 
 	} else { // cross-fading from prev to current
 
-		float blend = xfade == 0 ? 0 : (prev_xfading / xfade);
+		float blend = xfade_time == 0 ? 0 : (prev_xfading / xfade_time);
+		if (xfade_curve.is_valid()) {
+			blend = xfade_curve->interpolate(blend);
+		}
 
 		if (from_start && !p_seek && switched) { //just switched, seek to start of current
 
@@ -768,18 +779,16 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 	return rem;
 }
 
-void AnimationNodeTransition::_validate_property(PropertyInfo &property) const {
-	if (property.name.begins_with("input_")) {
-		String n = property.name.get_slicec('/', 0).get_slicec('_', 1);
+void AnimationNodeTransition::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name.begins_with("input_")) {
+		String n = p_property.name.get_slicec('/', 0).get_slicec('_', 1);
 		if (n != "count") {
 			int idx = n.to_int();
 			if (idx >= enabled_inputs) {
-				property.usage = PROPERTY_USAGE_NONE;
+				p_property.usage = PROPERTY_USAGE_NONE;
 			}
 		}
 	}
-
-	AnimationNode::_validate_property(property);
 }
 
 void AnimationNodeTransition::_bind_methods() {
@@ -792,14 +801,18 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_caption", "input", "caption"), &AnimationNodeTransition::set_input_caption);
 	ClassDB::bind_method(D_METHOD("get_input_caption", "input"), &AnimationNodeTransition::get_input_caption);
 
-	ClassDB::bind_method(D_METHOD("set_cross_fade_time", "time"), &AnimationNodeTransition::set_cross_fade_time);
-	ClassDB::bind_method(D_METHOD("get_cross_fade_time"), &AnimationNodeTransition::get_cross_fade_time);
+	ClassDB::bind_method(D_METHOD("set_xfade_time", "time"), &AnimationNodeTransition::set_xfade_time);
+	ClassDB::bind_method(D_METHOD("get_xfade_time"), &AnimationNodeTransition::get_xfade_time);
+
+	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeTransition::set_xfade_curve);
+	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeTransition::get_xfade_curve);
 
 	ClassDB::bind_method(D_METHOD("set_from_start", "from_start"), &AnimationNodeTransition::set_from_start);
 	ClassDB::bind_method(D_METHOD("is_from_start"), &AnimationNodeTransition::is_from_start);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_RANGE, "0,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_enabled_inputs", "get_enabled_inputs");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_cross_fade_time", "get_cross_fade_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "from_start"), "set_from_start", "is_from_start");
 
 	for (int i = 0; i < MAX_INPUTS; i++) {

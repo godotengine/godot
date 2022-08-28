@@ -193,7 +193,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			previews_bg->add_theme_style_override("panel", previews->get_theme_stylebox(SNAME("normal"), SNAME("TextEdit")));
 		} break;
@@ -401,7 +400,6 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("AssetLib")));
 			status->add_theme_color_override("font_color", get_theme_color(SNAME("status_color"), SNAME("AssetLib")));
@@ -580,7 +578,6 @@ void EditorAssetLibrary::_notification(int p_what) {
 			error_label->raise();
 		} break;
 
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));

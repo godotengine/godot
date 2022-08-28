@@ -31,8 +31,7 @@
 #include "managed_callable.h"
 
 #include "csharp_script.h"
-#include "mono_gd/gd_mono_marshal.h"
-#include "mono_gd/gd_mono_utils.h"
+#include "mono_gd/gd_mono_cache.h"
 
 #ifdef GD_MONO_HOT_RELOAD
 SelfList<ManagedCallable>::List ManagedCallable::instances;
@@ -44,18 +43,16 @@ bool ManagedCallable::compare_equal(const CallableCustom *p_a, const CallableCus
 	const ManagedCallable *a = static_cast<const ManagedCallable *>(p_a);
 	const ManagedCallable *b = static_cast<const ManagedCallable *>(p_b);
 
-	MonoDelegate *delegate_a = (MonoDelegate *)a->delegate_handle.get_target();
-	MonoDelegate *delegate_b = (MonoDelegate *)b->delegate_handle.get_target();
-
-	if (!delegate_a || !delegate_b) {
-		if (!delegate_a && !delegate_b) {
+	if (!a->delegate_handle.value || !b->delegate_handle.value) {
+		if (!a->delegate_handle.value && !b->delegate_handle.value) {
 			return true;
 		}
 		return false;
 	}
 
 	// Call Delegate's 'Equals'
-	return GDMonoUtils::mono_delegate_equal(delegate_a, delegate_b);
+	return GDMonoCache::managed_callbacks.DelegateUtils_DelegateEquals(
+			a->delegate_handle, b->delegate_handle);
 }
 
 bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
@@ -66,8 +63,7 @@ bool ManagedCallable::compare_less(const CallableCustom *p_a, const CallableCust
 }
 
 uint32_t ManagedCallable::hash() const {
-	uint32_t hash = delegate_invoke->get_name().hash();
-	return hash_murmur3_one_64(delegate_handle.handle, hash);
+	return hash_murmur3_one_64((uint64_t)delegate_handle.value);
 }
 
 String ManagedCallable::get_as_text() const {
@@ -91,41 +87,24 @@ void ManagedCallable::call(const Variant **p_arguments, int p_argcount, Variant 
 	r_call_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // Can't find anything better
 	r_return_value = Variant();
 
-#ifdef GD_MONO_HOT_RELOAD
-	// Lost during hot-reload
-	ERR_FAIL_NULL(delegate_invoke);
-	ERR_FAIL_COND(delegate_handle.is_released());
-#endif
+	ERR_FAIL_COND(delegate_handle.value == nullptr);
 
-	ERR_FAIL_COND(delegate_invoke->get_parameters_count() < p_argcount);
+	GDMonoCache::managed_callbacks.DelegateUtils_InvokeWithVariantArgs(
+			delegate_handle, p_arguments, p_argcount, &r_return_value);
 
-	MonoObject *delegate = delegate_handle.get_target();
+	r_call_error.error = Callable::CallError::CALL_OK;
+}
 
-	MonoException *exc = nullptr;
-	MonoObject *ret = delegate_invoke->invoke(delegate, p_arguments, &exc);
-
-	if (exc) {
-		GDMonoUtils::set_pending_exception(exc);
-	} else {
-		r_return_value = GDMonoMarshal::mono_object_to_variant(ret);
-		r_call_error.error = Callable::CallError::CALL_OK;
+void ManagedCallable::release_delegate_handle() {
+	if (delegate_handle.value) {
+		GDMonoCache::managed_callbacks.GCHandleBridge_FreeGCHandle(delegate_handle);
+		delegate_handle = { nullptr };
 	}
 }
 
-void ManagedCallable::set_delegate(MonoDelegate *p_delegate) {
-	delegate_handle = MonoGCHandleData::new_strong_handle((MonoObject *)p_delegate);
-	MonoMethod *delegate_invoke_raw = mono_get_delegate_invoke(mono_object_get_class((MonoObject *)p_delegate));
-	const StringName &delegate_invoke_name = CSharpLanguage::get_singleton()->get_string_names().delegate_invoke_method_name;
-	delegate_invoke = memnew(GDMonoMethod(delegate_invoke_name, delegate_invoke_raw)); // TODO: Use pooling for this GDMonoMethod instances
-}
-
-ManagedCallable::ManagedCallable(MonoDelegate *p_delegate) {
-#ifdef DEBUG_ENABLED
-	CRASH_COND(p_delegate == nullptr);
-#endif
-
-	set_delegate(p_delegate);
-
+// Why you do this clang-format...
+/* clang-format off */
+ManagedCallable::ManagedCallable(GCHandleIntPtr p_delegate_handle) : delegate_handle(p_delegate_handle) {
 #ifdef GD_MONO_HOT_RELOAD
 	{
 		MutexLock lock(instances_mutex);
@@ -133,6 +112,7 @@ ManagedCallable::ManagedCallable(MonoDelegate *p_delegate) {
 	}
 #endif
 }
+/* clang-format on */
 
 ManagedCallable::~ManagedCallable() {
 #ifdef GD_MONO_HOT_RELOAD
@@ -143,5 +123,5 @@ ManagedCallable::~ManagedCallable() {
 	}
 #endif
 
-	delegate_handle.release();
+	release_delegate_handle();
 }

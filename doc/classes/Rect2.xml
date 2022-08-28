@@ -23,32 +23,32 @@
 		</constructor>
 		<constructor name="Rect2">
 			<return type="Rect2" />
-			<argument index="0" name="from" type="Rect2" />
+			<param index="0" name="from" type="Rect2" />
 			<description>
 				Constructs a [Rect2] as a copy of the given [Rect2].
 			</description>
 		</constructor>
 		<constructor name="Rect2">
 			<return type="Rect2" />
-			<argument index="0" name="from" type="Rect2i" />
+			<param index="0" name="from" type="Rect2i" />
 			<description>
 				Constructs a [Rect2] from a [Rect2i].
 			</description>
 		</constructor>
 		<constructor name="Rect2">
 			<return type="Rect2" />
-			<argument index="0" name="position" type="Vector2" />
-			<argument index="1" name="size" type="Vector2" />
+			<param index="0" name="position" type="Vector2" />
+			<param index="1" name="size" type="Vector2" />
 			<description>
 				Constructs a [Rect2] by position and size.
 			</description>
 		</constructor>
 		<constructor name="Rect2">
 			<return type="Rect2" />
-			<argument index="0" name="x" type="float" />
-			<argument index="1" name="y" type="float" />
-			<argument index="2" name="width" type="float" />
-			<argument index="3" name="height" type="float" />
+			<param index="0" name="x" type="float" />
+			<param index="1" name="y" type="float" />
+			<param index="2" name="width" type="float" />
+			<param index="3" name="height" type="float" />
 			<description>
 				Constructs a [Rect2] by x, y, width, and height.
 			</description>
@@ -63,14 +63,14 @@
 		</method>
 		<method name="encloses" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="b" type="Rect2" />
+			<param index="0" name="b" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if this [Rect2] completely encloses another one.
 			</description>
 		</method>
 		<method name="expand" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="to" type="Vector2" />
+			<param index="0" name="to" type="Vector2" />
 			<description>
 				Returns a copy of this [Rect2] expanded to include a given point.
 				[b]Example:[/b]
@@ -104,27 +104,27 @@
 		</method>
 		<method name="grow" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="amount" type="float" />
+			<param index="0" name="amount" type="float" />
 			<description>
-				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on all sides.
+				Returns a copy of the [Rect2] grown by the specified [param amount] on all sides.
 			</description>
 		</method>
 		<method name="grow_individual" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="left" type="float" />
-			<argument index="1" name="top" type="float" />
-			<argument index="2" name="right" type="float" />
-			<argument index="3" name="bottom" type="float" />
+			<param index="0" name="left" type="float" />
+			<param index="1" name="top" type="float" />
+			<param index="2" name="right" type="float" />
+			<param index="3" name="bottom" type="float" />
 			<description>
 				Returns a copy of the [Rect2] grown by the specified amount on each side individually.
 			</description>
 		</method>
 		<method name="grow_side" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="side" type="int" />
-			<argument index="1" name="amount" type="float" />
+			<param index="0" name="side" type="int" />
+			<param index="1" name="amount" type="float" />
 			<description>
-				Returns a copy of the [Rect2] grown by the specified [code]amount[/code] on the specified [enum Side].
+				Returns a copy of the [Rect2] grown by the specified [param amount] on the specified [enum Side].
 			</description>
 		</method>
 		<method name="has_no_area" qualifiers="const">
@@ -136,7 +136,7 @@
 		</method>
 		<method name="has_point" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="point" type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] contains a point. By convention, the right and bottom edges of the [Rect2] are considered exclusive, so points on these edges are [b]not[/b] included.
 				[b]Note:[/b] This method is not reliable for [Rect2] with a [i]negative size[/i]. Use [method abs] to get a positive sized equivalent rectangle to check for contained points.
@@ -144,33 +144,33 @@
 		</method>
 		<method name="intersection" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="b" type="Rect2" />
+			<param index="0" name="b" type="Rect2" />
 			<description>
-				Returns the intersection of this [Rect2] and [code]b[/code].
+				Returns the intersection of this [Rect2] and [param b].
 				If the rectangles do not intersect, an empty [Rect2] is returned.
 			</description>
 		</method>
 		<method name="intersects" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="b" type="Rect2" />
-			<argument index="1" name="include_borders" type="bool" default="false" />
+			<param index="0" name="b" type="Rect2" />
+			<param index="1" name="include_borders" type="bool" default="false" />
 			<description>
 				Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. they have at least one point in common).
-				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
+				If [param include_borders] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
-			<argument index="0" name="rect" type="Rect2" />
+			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns [code]true[/code] if this [Rect2] and [code]rect[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+				Returns [code]true[/code] if this [Rect2] and [param rect] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="merge" qualifiers="const">
 			<return type="Rect2" />
-			<argument index="0" name="b" type="Rect2" />
+			<param index="0" name="b" type="Rect2" />
 			<description>
-				Returns a larger [Rect2] that contains this [Rect2] and [code]b[/code].
+				Returns a larger [Rect2] that contains this [Rect2] and [param b].
 			</description>
 		</method>
 	</methods>
@@ -189,7 +189,7 @@
 	<operators>
 		<operator name="operator !=">
 			<return type="bool" />
-			<argument index="0" name="right" type="Rect2" />
+			<param index="0" name="right" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if the rectangles are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
@@ -197,14 +197,14 @@
 		</operator>
 		<operator name="operator *">
 			<return type="Rect2" />
-			<argument index="0" name="right" type="Transform2D" />
+			<param index="0" name="right" type="Transform2D" />
 			<description>
 				Inversely transforms (multiplies) the [Rect2] by the given [Transform2D] transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
-			<argument index="0" name="right" type="Rect2" />
+			<param index="0" name="right" type="Rect2" />
 			<description>
 				Returns [code]true[/code] if the rectangles are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.

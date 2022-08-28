@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import fnmatch
 import os
@@ -7,6 +7,7 @@ import re
 import math
 import platform
 import xml.etree.ElementTree as ET
+from typing import Dict, List, Set
 
 ################################################################################
 #                                    Config                                    #
@@ -103,13 +104,13 @@ overall_progress_description_weight = 10
 ################################################################################
 
 
-def validate_tag(elem, tag):
+def validate_tag(elem: ET.Element, tag: str) -> None:
     if elem.tag != tag:
         print('Tag mismatch, expected "' + tag + '", got ' + elem.tag)
         sys.exit(255)
 
 
-def color(color, string):
+def color(color: str, string: str) -> str:
     if flags["c"] and terminal_supports_color():
         color_format = ""
         for code in colors[color]:
@@ -122,7 +123,7 @@ def color(color, string):
 ansi_escape = re.compile(r"\x1b[^m]*m")
 
 
-def nonescape_len(s):
+def nonescape_len(s: str) -> int:
     return len(ansi_escape.sub("", s))
 
 
@@ -142,14 +143,14 @@ def terminal_supports_color():
 
 
 class ClassStatusProgress:
-    def __init__(self, described=0, total=0):
-        self.described = described
-        self.total = total
+    def __init__(self, described: int = 0, total: int = 0):
+        self.described: int = described
+        self.total: int = total
 
-    def __add__(self, other):
+    def __add__(self, other: "ClassStatusProgress"):
         return ClassStatusProgress(self.described + other.described, self.total + other.total)
 
-    def increment(self, described):
+    def increment(self, described: bool):
         if described:
             self.described += 1
         self.total += 1
@@ -163,7 +164,7 @@ class ClassStatusProgress:
         else:
             return self.to_colored_string()
 
-    def to_colored_string(self, format="{has}/{total}", pad_format="{pad_described}{s}{pad_total}"):
+    def to_colored_string(self, format: str = "{has}/{total}", pad_format: str = "{pad_described}{s}{pad_total}"):
         ratio = float(self.described) / float(self.total) if self.total != 0 else 1
         percent = int(round(100 * ratio))
         s = format.format(has=str(self.described), total=str(self.total), percent=str(percent))
@@ -183,11 +184,11 @@ class ClassStatusProgress:
 
 
 class ClassStatus:
-    def __init__(self, name=""):
-        self.name = name
-        self.has_brief_description = True
-        self.has_description = True
-        self.progresses = {
+    def __init__(self, name: str = ""):
+        self.name: str = name
+        self.has_brief_description: bool = True
+        self.has_description: bool = True
+        self.progresses: Dict[str, ClassStatusProgress] = {
             "methods": ClassStatusProgress(),
             "constants": ClassStatusProgress(),
             "members": ClassStatusProgress(),
@@ -197,7 +198,7 @@ class ClassStatus:
             "constructors": ClassStatusProgress(),
         }
 
-    def __add__(self, other):
+    def __add__(self, other: "ClassStatus"):
         new_status = ClassStatus()
         new_status.name = self.name
         new_status.has_brief_description = self.has_brief_description and other.has_brief_description
@@ -222,8 +223,8 @@ class ClassStatus:
             sum += self.progresses[k].total
         return sum < 1
 
-    def make_output(self):
-        output = {}
+    def make_output(self) -> Dict[str, str]:
+        output: Dict[str, str] = {}
         output["name"] = color("name", self.name)
 
         ok_string = color("part_good", "OK")
@@ -263,22 +264,24 @@ class ClassStatus:
         return output
 
     @staticmethod
-    def generate_for_class(c):
+    def generate_for_class(c: ET.Element):
         status = ClassStatus()
         status.name = c.attrib["name"]
 
         for tag in list(c):
+            len_tag_text = 0 if (tag.text is None) else len(tag.text.strip())
 
             if tag.tag == "brief_description":
-                status.has_brief_description = len(tag.text.strip()) > 0
+                status.has_brief_description = len_tag_text > 0
 
             elif tag.tag == "description":
-                status.has_description = len(tag.text.strip()) > 0
+                status.has_description = len_tag_text > 0
 
             elif tag.tag in ["methods", "signals", "operators", "constructors"]:
                 for sub_tag in list(tag):
                     descr = sub_tag.find("description")
-                    status.progresses[tag.tag].increment(len(descr.text.strip()) > 0)
+                    increment = (descr is not None) and (descr.text is not None) and len(descr.text.strip()) > 0
+                    status.progresses[tag.tag].increment(increment)
             elif tag.tag in ["constants", "members", "theme_items"]:
                 for sub_tag in list(tag):
                     if not sub_tag.text is None:
@@ -297,9 +300,9 @@ class ClassStatus:
 #                                  Arguments                                   #
 ################################################################################
 
-input_file_list = []
-input_class_list = []
-merged_file = ""
+input_file_list: List[str] = []
+input_class_list: List[str] = []
+merged_file: str = ""
 
 for arg in sys.argv[1:]:
     try:
@@ -373,8 +376,8 @@ if len(input_file_list) < 1 or flags["h"]:
 #                               Parse class list                               #
 ################################################################################
 
-class_names = []
-classes = {}
+class_names: List[str] = []
+classes: Dict[str, ET.Element] = {}
 
 for file in input_file_list:
     tree = ET.parse(file)
@@ -396,10 +399,10 @@ class_names.sort()
 if len(input_class_list) < 1:
     input_class_list = ["*"]
 
-filtered_classes = set()
+filtered_classes_set: Set[str] = set()
 for pattern in input_class_list:
-    filtered_classes |= set(fnmatch.filter(class_names, pattern))
-filtered_classes = list(filtered_classes)
+    filtered_classes_set |= set(fnmatch.filter(class_names, pattern))
+filtered_classes = list(filtered_classes_set)
 filtered_classes.sort()
 
 ################################################################################
@@ -413,7 +416,6 @@ table_column_chars = "|"
 total_status = ClassStatus("Total")
 
 for cn in filtered_classes:
-
     c = classes[cn]
     validate_tag(c, "class")
     status = ClassStatus.generate_for_class(c)
@@ -427,7 +429,7 @@ for cn in filtered_classes:
         continue
 
     out = status.make_output()
-    row = []
+    row: List[str] = []
     for column in table_columns:
         if column in out:
             row.append(out[column])
@@ -464,7 +466,7 @@ if flags["a"]:
     # without having to scroll back to the top.
     table.append(table_column_names)
 
-table_column_sizes = []
+table_column_sizes: List[int] = []
 for row in table:
     for cell_i, cell in enumerate(row):
         if cell_i >= len(table_column_sizes):
@@ -477,7 +479,6 @@ for cell_i in range(len(table[0])):
     divider_string += (
         table_row_chars[1] + table_row_chars[2] * (table_column_sizes[cell_i]) + table_row_chars[1] + table_row_chars[0]
     )
-print(divider_string)
 
 for row_i, row in enumerate(table):
     row_string = table_column_chars

@@ -49,7 +49,6 @@
 #include "editor/find_in_files.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
-#include "modules/visual_script/editor/visual_script_editor.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
 #include "script_text_editor.h"
@@ -66,12 +65,12 @@ String EditorSyntaxHighlighter::_get_name() const {
 	return "Unnamed";
 }
 
-Array EditorSyntaxHighlighter::_get_supported_languages() const {
-	Array ret;
+PackedStringArray EditorSyntaxHighlighter::_get_supported_languages() const {
+	PackedStringArray ret;
 	if (GDVIRTUAL_CALL(_get_supported_languages, ret)) {
 		return ret;
 	}
-	return Array();
+	return PackedStringArray();
 }
 
 Ref<EditorSyntaxHighlighter> EditorSyntaxHighlighter::_create() const {
@@ -353,9 +352,9 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &ScriptEditorQuickOpen::_confirmed));
 
 			search_box->set_clear_button_enabled(true);
-			[[fallthrough]];
-		}
-		case NOTIFICATION_VISIBILITY_CHANGED: {
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
 			search_box->set_right_icon(search_options->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 		} break;
 
@@ -591,7 +590,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		}
 	}
 
-	Control *c = Object::cast_to<Control>(tab_container->get_tab_control(p_idx));
+	Control *c = tab_container->get_tab_control(p_idx);
 	if (!c) {
 		return;
 	}
@@ -813,7 +812,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		if (history_pos >= 0) {
 			idx = tab_container->get_tab_idx_from_control(history[history_pos].control);
 		}
-		tab_container->set_current_tab(idx);
+		_go_to_tab(idx);
 	} else {
 		_update_selected_editor_menu();
 	}
@@ -1156,8 +1155,8 @@ Ref<Script> ScriptEditor::_get_current_script() {
 	}
 }
 
-Array ScriptEditor::_get_open_scripts() const {
-	Array ret;
+TypedArray<Script> ScriptEditor::_get_open_scripts() const {
+	TypedArray<Script> ret;
 	Vector<Ref<Script>> scripts = get_open_scripts();
 	int scrits_amount = scripts.size();
 	for (int idx_script = 0; idx_script < scrits_amount; idx_script++) {
@@ -1408,8 +1407,6 @@ void ScriptEditor::_menu_option(int p_option) {
 				es->set_editor(EditorNode::get_singleton());
 
 				es->_run();
-
-				EditorNode::get_undo_redo()->clear_history();
 			} break;
 			case FILE_CLOSE: {
 				if (current->is_unsaved()) {
@@ -1448,20 +1445,20 @@ void ScriptEditor::_menu_option(int p_option) {
 			case WINDOW_MOVE_UP: {
 				if (tab_container->get_current_tab() > 0) {
 					tab_container->move_child(current, tab_container->get_current_tab() - 1);
-					tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+					tab_container->set_current_tab(tab_container->get_current_tab());
 					_update_script_names();
 				}
 			} break;
 			case WINDOW_MOVE_DOWN: {
 				if (tab_container->get_current_tab() < tab_container->get_tab_count() - 1) {
 					tab_container->move_child(current, tab_container->get_current_tab() + 1);
-					tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+					tab_container->set_current_tab(tab_container->get_current_tab());
 					_update_script_names();
 				}
 			} break;
 			default: {
 				if (p_option >= WINDOW_SELECT_BASE) {
-					tab_container->set_current_tab(p_option - WINDOW_SELECT_BASE);
+					_go_to_tab(p_option - WINDOW_SELECT_BASE);
 					_update_script_names();
 				}
 			}
@@ -1494,14 +1491,14 @@ void ScriptEditor::_menu_option(int p_option) {
 				case WINDOW_MOVE_UP: {
 					if (tab_container->get_current_tab() > 0) {
 						tab_container->move_child(help, tab_container->get_current_tab() - 1);
-						tab_container->set_current_tab(tab_container->get_current_tab() - 1);
+						tab_container->set_current_tab(tab_container->get_current_tab());
 						_update_script_names();
 					}
 				} break;
 				case WINDOW_MOVE_DOWN: {
 					if (tab_container->get_current_tab() < tab_container->get_tab_count() - 1) {
 						tab_container->move_child(help, tab_container->get_current_tab() + 1);
-						tab_container->set_current_tab(tab_container->get_current_tab() + 1);
+						tab_container->set_current_tab(tab_container->get_current_tab());
 						_update_script_names();
 					}
 				} break;
@@ -1616,8 +1613,8 @@ void ScriptEditor::_notification(int p_what) {
 			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ScriptEditor::_editor_settings_changed));
 			EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &ScriptEditor::_filesystem_changed));
 			_editor_settings_changed();
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1734,7 +1731,7 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 			continue;
 		}
 
-		Array bpoints = se->get_breakpoints();
+		PackedInt32Array bpoints = se->get_breakpoints();
 		for (int j = 0; j < bpoints.size(); j++) {
 			p_breakpoints->push_back(base + ":" + itos((int)bpoints[j] + 1));
 		}
@@ -1853,10 +1850,12 @@ void ScriptEditor::_update_members_overview_visibility() {
 
 	if (members_overview_enabled && se->show_members_overview()) {
 		members_overview_alphabeta_sort_button->set_visible(true);
+		filter_methods->set_visible(true);
 		members_overview->set_visible(true);
 		overview_vbox->set_visible(true);
 	} else {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		filter_methods->set_visible(false);
 		members_overview->set_visible(false);
 		overview_vbox->set_visible(false);
 	}
@@ -1911,6 +1910,7 @@ void ScriptEditor::_update_help_overview_visibility() {
 
 	if (help_overview_enabled) {
 		members_overview_alphabeta_sort_button->set_visible(false);
+		filter_methods->set_visible(false);
 		help_overview->set_visible(true);
 		overview_vbox->set_visible(true);
 		filename->set_text(se->get_name());
@@ -2125,8 +2125,8 @@ void ScriptEditor::_update_script_names() {
 			sd.index = i;
 			sedata.set(i, sd);
 		}
-		tab_container->set_current_tab(new_prev_tab);
-		tab_container->set_current_tab(new_cur_tab);
+		_go_to_tab(new_prev_tab);
+		_go_to_tab(new_cur_tab);
 		_sort_list_on_update = false;
 	}
 
@@ -2154,7 +2154,6 @@ void ScriptEditor::_update_script_names() {
 		}
 		if (tab_container->get_current_tab() == sedata_filtered[i].index) {
 			script_list->select(index);
-			_script_selected(index);
 
 			script_name_label->set_text(sedata_filtered[i].name);
 			script_icon->set_texture(sedata_filtered[i].icon);
@@ -2380,8 +2379,8 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			se->add_syntax_highlighter(highlighter);
 
 			if (script != nullptr && !highlighter_set) {
-				Array languages = highlighter->_get_supported_languages();
-				if (languages.find(script->get_language()->get_name()) > -1) {
+				PackedStringArray languages = highlighter->_get_supported_languages();
+				if (languages.has(script->get_language()->get_name())) {
 					se->set_syntax_highlighter(highlighter);
 					highlighter_set = true;
 				}
@@ -3446,8 +3445,8 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	return out_scripts;
 }
 
-Array ScriptEditor::_get_open_script_editors() const {
-	Array script_editors;
+TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {
+	TypedArray<ScriptEditorBase> script_editors;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {

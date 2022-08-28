@@ -70,6 +70,17 @@ public:
 		MENU_MAX
 	};
 
+	enum VirtualKeyboardType {
+		KEYBOARD_TYPE_DEFAULT,
+		KEYBOARD_TYPE_MULTILINE,
+		KEYBOARD_TYPE_NUMBER,
+		KEYBOARD_TYPE_NUMBER_DECIMAL,
+		KEYBOARD_TYPE_PHONE,
+		KEYBOARD_TYPE_EMAIL_ADDRESS,
+		KEYBOARD_TYPE_PASSWORD,
+		KEYBOARD_TYPE_URL
+	};
+
 private:
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 
@@ -84,7 +95,7 @@ private:
 	String text;
 	String placeholder;
 	String placeholder_translated;
-	String secret_character = "*";
+	String secret_character = U"•";
 	String ime_text;
 	Point2 ime_selection;
 
@@ -102,7 +113,7 @@ private:
 	bool caret_mid_grapheme_enabled = true;
 
 	int caret_column = 0;
-	int scroll_offset = 0;
+	float scroll_offset = 0.0;
 	int max_length = 0; // 0 for no maximum.
 
 	String language;
@@ -120,6 +131,7 @@ private:
 	bool shortcut_keys_enabled = true;
 
 	bool virtual_keyboard_enabled = true;
+	VirtualKeyboardType virtual_keyboard_type = KEYBOARD_TYPE_DEFAULT;
 
 	bool middle_mouse_paste_enabled = true;
 
@@ -141,8 +153,7 @@ private:
 
 	struct TextOperation {
 		int caret_column = 0;
-		int scroll_offset = 0;
-		int cached_width = 0;
+		float scroll_offset = 0.0;
 		String text;
 	};
 	List<TextOperation> undo_stack;
@@ -180,11 +191,11 @@ private:
 	void shift_selection_check_post(bool);
 
 	void selection_fill_at_caret();
-	void set_scroll_offset(int p_pos);
-	int get_scroll_offset() const;
+	void set_scroll_offset(float p_pos);
+	float get_scroll_offset() const;
 
 	void set_caret_at_pixel_pos(int p_x);
-	Vector2i get_caret_pixel_pos();
+	Vector2 get_caret_pixel_pos();
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
@@ -209,7 +220,7 @@ protected:
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-	void _validate_property(PropertyInfo &property) const override;
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
@@ -311,6 +322,9 @@ public:
 	void set_virtual_keyboard_enabled(bool p_enable);
 	bool is_virtual_keyboard_enabled() const;
 
+	void set_virtual_keyboard_type(VirtualKeyboardType p_type);
+	VirtualKeyboardType get_virtual_keyboard_type() const;
+
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;
 
@@ -335,5 +349,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(LineEdit::MenuItems);
+VARIANT_ENUM_CAST(LineEdit::VirtualKeyboardType);
 
 #endif // LINE_EDIT_H

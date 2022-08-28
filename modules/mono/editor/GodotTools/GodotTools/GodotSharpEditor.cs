@@ -13,13 +13,14 @@ using GodotTools.Internals;
 using GodotTools.ProjectEditor;
 using JetBrains.Annotations;
 using static GodotTools.Internals.Globals;
+using Environment = System.Environment;
 using File = GodotTools.Utils.File;
 using OS = GodotTools.Utils.OS;
 using Path = System.IO.Path;
 
 namespace GodotTools
 {
-    public class GodotSharpEditor : EditorPlugin, ISerializationListener
+    public partial class GodotSharpEditor : EditorPlugin, ISerializationListener
     {
         private EditorSettings _editorSettings;
 
@@ -39,28 +40,27 @@ namespace GodotTools
 
         public bool SkipBuildBeforePlaying { get; set; } = false;
 
-        public static string ProjectAssemblyName
+        [UsedImplicitly]
+        private bool CreateProjectSolutionIfNeeded()
         {
-            get
+            if (!File.Exists(GodotSharpDirs.ProjectSlnPath) || !File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
-                string projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
-                projectAssemblyName = projectAssemblyName.ToSafeDirName();
-                if (string.IsNullOrEmpty(projectAssemblyName))
-                    projectAssemblyName = "UnnamedProject";
-                return projectAssemblyName;
+                return CreateProjectSolution();
             }
+
+            return true;
         }
 
         private bool CreateProjectSolution()
         {
-            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
+            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
                 pr.Step("Generating C# project...".TTR());
 
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = ProjectAssemblyName;
+                string name = GodotSharpDirs.ProjectAssemblyName;
 
                 string guid = CsProjOperations.GenerateGameProject(path, name);
 
@@ -75,7 +75,7 @@ namespace GodotTools
                     {
                         Guid = guid,
                         PathRelativeToSolution = name + ".csproj",
-                        Configs = new List<string> {"Debug", "ExportDebug", "ExportRelease"}
+                        Configs = new List<string> { "Debug", "ExportDebug", "ExportRelease" }
                     };
 
                     solution.AddNewProject(name, projectInfo);
@@ -87,24 +87,6 @@ namespace GodotTools
                     catch (IOException e)
                     {
                         ShowErrorDialog("Failed to save solution. Exception message: ".TTR() + e.Message);
-                        return false;
-                    }
-
-                    pr.Step("Updating Godot API assemblies...".TTR());
-
-                    string debugApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Debug");
-
-                    if (!string.IsNullOrEmpty(debugApiAssembliesError))
-                    {
-                        ShowErrorDialog("Failed to update the Godot API assemblies: " + debugApiAssembliesError);
-                        return false;
-                    }
-
-                    string releaseApiAssembliesError = Internal.UpdateApiAssembliesFromPrebuilt("Release");
-
-                    if (!string.IsNullOrEmpty(releaseApiAssembliesError))
-                    {
-                        ShowErrorDialog("Failed to update the Godot API assemblies: " + releaseApiAssembliesError);
                         return false;
                     }
 
@@ -141,7 +123,8 @@ namespace GodotTools
                     try
                     {
                         string fallbackFolder = NuGetUtils.GodotFallbackFolderPath;
-                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, fallbackFolder);
+                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
+                            fallbackFolder);
                         NuGetUtils.AddBundledPackagesToFallbackFolder(fallbackFolder);
                     }
                     catch (Exception e)
@@ -167,13 +150,6 @@ namespace GodotTools
             Instance.MSBuildPanel.BuildSolution();
         }
 
-        public override void _Ready()
-        {
-            base._Ready();
-
-            MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
-        }
-
         private enum MenuOptions
         {
             CreateSln,
@@ -197,7 +173,7 @@ namespace GodotTools
         [UsedImplicitly]
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
-            var editorId = (ExternalEditorId)_editorSettings.GetSetting("mono/editor/external_editor");
+            var editorId = (ExternalEditorId)(int)_editorSettings.GetSetting("mono/editor/external_editor");
 
             switch (editorId)
             {
@@ -219,13 +195,15 @@ namespace GodotTools
                     try
                     {
                         if (Godot.OS.IsStdoutVerbose())
-                            Console.WriteLine($"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
+                            Console.WriteLine(
+                                $"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
 
                         OS.RunProcess(command, args);
                     }
                     catch (Exception e)
                     {
-                        GD.PushError($"Error when trying to run code editor: VisualStudio. Exception message: '{e.Message}'");
+                        GD.PushError(
+                            $"Error when trying to run code editor: VisualStudio. Exception message: '{e.Message}'");
                     }
 
                     break;
@@ -347,7 +325,8 @@ namespace GodotTools
         [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditorId)_editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
+            return (ExternalEditorId)(int)_editorSettings.GetSetting("mono/editor/external_editor") !=
+                   ExternalEditorId.None;
         }
 
         public override bool _Build()
@@ -368,7 +347,7 @@ namespace GodotTools
                 // NOTE: The order in which changes are made to the project is important
 
                 // Migrate to MSBuild project Sdks style if using the old style
-                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, ProjectAssemblyName);
+                ProjectUtils.MigrateToProjectSdksStyle(msbuildProject, GodotSharpDirs.ProjectAssemblyName);
 
                 ProjectUtils.EnsureGodotSdkIsUpToDate(msbuildProject);
 
@@ -400,18 +379,49 @@ namespace GodotTools
                 throw new InvalidOperationException();
             Instance = this;
 
+            var dotNetSdkSearchVersion = Environment.Version;
+
+            // First we try to find the .NET Sdk ourselves to make sure we get the
+            // correct version first (`RegisterDefaults` always picks the latest).
+            if (DotNetFinder.TryFindDotNetSdk(dotNetSdkSearchVersion, out var sdkVersion, out string sdkPath))
+            {
+                if (Godot.OS.IsStdoutVerbose())
+                    Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
+
+                ProjectUtils.MSBuildLocatorRegisterMSBuildPath(sdkPath);
+            }
+            else
+            {
+                try
+                {
+                    ProjectUtils.MSBuildLocatorRegisterDefaults(out sdkVersion, out sdkPath);
+                    if (Godot.OS.IsStdoutVerbose())
+                        Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
+                }
+                catch (InvalidOperationException e)
+                {
+                    if (Godot.OS.IsStdoutVerbose())
+                        GD.PrintErr(e.ToString());
+                    GD.PushError($".NET Sdk not found. The required version is '{dotNetSdkSearchVersion}'.");
+                }
+            }
+
             var editorInterface = GetEditorInterface();
             var editorBaseControl = editorInterface.GetBaseControl();
 
             _editorSettings = editorInterface.GetEditorSettings();
 
+            GodotSharpDirs.RegisterProjectSettings();
+
             _errorDialog = new AcceptDialog();
             editorBaseControl.AddChild(_errorDialog);
 
             MSBuildPanel = new MSBuildPanel();
+            MSBuildPanel.Ready += () =>
+                MSBuildPanel.BuildOutputView.BuildStateChanged += BuildStateChanged;
             _bottomPanelBtn = AddControlToBottomPanel(MSBuildPanel, "MSBuild".TTR());
 
-            AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
+            AddChild(new HotReloadAssemblyWatcher { Name = "HotReloadAssemblyWatcher" });
 
             _menuPopup = new PopupMenu();
             _menuPopup.Hide();
@@ -472,9 +482,9 @@ namespace GodotTools
 
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
-                ["type"] = Variant.Type.Int,
+                ["type"] = (int)Variant.Type.Int,
                 ["name"] = "mono/editor/external_editor",
-                ["hint"] = PropertyHint.Enum,
+                ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = settingsHintStr
             });
 
@@ -487,7 +497,8 @@ namespace GodotTools
             try
             {
                 // At startup we make sure NuGet.Config files have our Godot NuGet fallback folder included
-                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName, NuGetUtils.GodotFallbackFolderPath);
+                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
+                    NuGetUtils.GodotFallbackFolderPath);
             }
             catch (Exception e)
             {
@@ -503,20 +514,23 @@ namespace GodotTools
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
-            if (_exportPluginWeak != null)
+            if (disposing)
             {
-                // We need to dispose our export plugin before the editor destroys EditorSettings.
-                // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
-                // will be freed after EditorSettings already was, and its device polling thread
-                // will try to access the EditorSettings singleton, resulting in null dereferencing.
-                (_exportPluginWeak.GetRef() as ExportPlugin)?.Dispose();
+                if (IsInstanceValid(_exportPluginWeak))
+                {
+                    // We need to dispose our export plugin before the editor destroys EditorSettings.
+                    // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
+                    // will be freed after EditorSettings already was, and its device polling thread
+                    // will try to access the EditorSettings singleton, resulting in null dereferencing.
+                    (_exportPluginWeak.GetRef().AsGodotObject() as ExportPlugin)?.Dispose();
 
-                _exportPluginWeak.Dispose();
+                    _exportPluginWeak.Dispose();
+                }
+
+                GodotIdeManager?.Dispose();
             }
 
-            GodotIdeManager?.Dispose();
+            base.Dispose(disposing);
         }
 
         public void OnBeforeSerialize()
@@ -533,8 +547,10 @@ namespace GodotTools
         public static GodotSharpEditor Instance { get; private set; }
 
         [UsedImplicitly]
-        private GodotSharpEditor()
+        private static IntPtr InternalCreateInstance(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
+            Internal.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
+            return new GodotSharpEditor().NativeInstance;
         }
     }
 }
