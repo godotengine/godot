@@ -446,7 +446,10 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 bool AStar::_solve(Point *begin_point, Point *end_point, int relevant_layers) {
 	pass++;
 
-	if (!end_point->enabled) {
+	//make sure parallel layers are supported
+	// or if *relevant_layers is 0 then use all points
+	bool supported = relevant_layers == 0 || (relevant_layers & end_point->parallel_support_layers) > 0;
+	if (!end_point->enabled || !supported) {
 		return false;
 	}
 
@@ -476,7 +479,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point, int relevant_layers) {
 
 			//make sure parallel layers are supported
 			// or if *relevant_layers is 0 then use all points
-			bool supported = relevant_layers == 0 || (relevant_layers & e->parallel_support_layers) > 0;
+			supported = relevant_layers == 0 || (relevant_layers & e->parallel_support_layers) > 0;
 			
 
 			if (!e->enabled || e->closed_pass == pass || !supported) {
@@ -662,7 +665,7 @@ bool AStar::is_point_disabled(int p_id) const {
 
 
 
-void AStar::set_point_layer(int p_id, int layer_index, bool l_disabled)
+void AStar::set_point_layer(int p_id, int layer_index, bool l_enabled)
 {
 	Point* p;
 	bool p_exists = points.lookup(p_id, p);
@@ -673,7 +676,7 @@ void AStar::set_point_layer(int p_id, int layer_index, bool l_disabled)
 
 	uint32_t layers = p->parallel_support_layers;
 
-	if (!l_disabled) {
+	if (l_enabled) {
 		p->parallel_support_layers = layers | (1 << layer_index);
 	}
 	else {
@@ -689,7 +692,7 @@ bool AStar::get_point_layer(int p_id,int layer_index) const
 
 	uint32_t layers = p->parallel_support_layers;
 	ERR_FAIL_INDEX_V(layer_index, 31, false);
-	return (layers & (1 << layer_index));
+	return (layers & (1 << layer_index)) > 0;
 }
 
 int AStar::get_point_layers_value(int p_id) const
@@ -722,7 +725,7 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar::is_point_disabled);
 
-	ClassDB::bind_method(D_METHOD("set_point_layer", "id","layer_index","disabled"), &AStar::set_point_layer, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_point_layer", "id","layer_index","enabled"), &AStar::set_point_layer, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_point_layer", "id", "layer_index"), &AStar::get_point_layer);
 	ClassDB::bind_method(D_METHOD("get_point_layers_value", "id"), &AStar::get_point_layers_value);
 	

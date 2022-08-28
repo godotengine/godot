@@ -146,7 +146,7 @@ public:
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
 
-	void set_point_layer(int p_id, int layer_index, bool l_disabled = true);
+	void set_point_layer(int p_id, int layer_index, bool l_enabled = true);
 	bool get_point_layer(int p_id,int layer_index) const;
 	int get_point_layers_value(int p_id) const;
 

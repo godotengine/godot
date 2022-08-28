@@ -292,7 +292,7 @@
 			<return type="void" />
 			<argument index="0" name="id" type="int" />
 			<argument index="1" name="layer_index" type="int" />
-			<argument index="2" name="disabled" type="int" />
+			<argument index="2" name="enabled" type="int" />
 			<description>
 				Enable or disable [code]layers[/code] of the specified point id.
 				[code]layer_index[/code] must be between 0 and 32.
