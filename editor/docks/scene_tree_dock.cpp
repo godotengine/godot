@@ -907,6 +907,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
+			HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &resources_local_to_scenes = clipboard_resource_remap[edited_scene->get_scene_file_path()];
+
 			for (Node *node : selection) {
 				Node *parent = node->get_parent();
 
@@ -922,7 +924,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				HashMap<const Node *, Node *> duplimap;
-				Node *dup = node->duplicate_from_editor(duplimap);
+				Node *dup = node->duplicate_from_editor(duplimap, edited_scene, resources_local_to_scenes);
 
 				ERR_CONTINUE(!dup);
 
@@ -955,6 +957,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			undo_redo->commit_action();
+
+			for (KeyValue<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &KV : resources_local_to_scenes) {
+				for (KeyValue<Ref<Resource>, Ref<Resource>> &R : KV.value) {
+					if (R.value->is_local_to_scene()) {
+						R.value->setup_local_to_scene();
+					}
+				}
+			}
 
 			if (dupsingle) {
 				_push_item(dupsingle);
@@ -4334,26 +4344,25 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	}
 	ur->add_do_method(editor_selection, "clear");
 
-	HashMap<Ref<Resource>, Ref<Resource>> resource_remap;
 	String target_scene;
 	if (edited_scene) {
 		target_scene = edited_scene->get_scene_file_path();
 	}
+	HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &resources_local_to_scenes = clipboard_resource_remap[target_scene]; // Record the mappings in the sub-scene.
 	if (target_scene != clipboard_source_scene) {
-		if (!clipboard_resource_remap.has(target_scene)) {
+		if (!resources_local_to_scenes.has(nullptr)) {
 			HashMap<Ref<Resource>, Ref<Resource>> remap;
 			for (Node *E : node_clipboard) {
 				_create_remap_for_node(E, remap);
 			}
-			clipboard_resource_remap[target_scene] = remap;
+			resources_local_to_scenes[nullptr] = remap;
 		}
-		resource_remap = clipboard_resource_remap[target_scene];
 	}
 
 	for (Node *node : node_clipboard) {
 		HashMap<const Node *, Node *> duplimap;
 
-		Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
+		Node *dup = node->duplicate_from_editor(duplimap, edited_scene, resources_local_to_scenes);
 		ERR_CONTINUE(!dup);
 
 		pasted_nodes.push_back(dup);
@@ -4396,6 +4405,15 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 	}
 
 	ur->commit_action();
+
+	for (KeyValue<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &KV : resources_local_to_scenes) {
+		for (KeyValue<Ref<Resource>, Ref<Resource>> &R : KV.value) {
+			if (R.value->is_local_to_scene()) {
+				R.value->setup_local_to_scene();
+			}
+		}
+	}
+
 	return pasted_nodes;
 }
 

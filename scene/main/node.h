@@ -721,9 +721,9 @@ public:
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const;
-	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
-	void remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
-	void remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
+	Node *duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const;
+	void remap_node_resources(Node *p_node, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const;
+	void remap_nested_resources(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const;
 #endif
 
 	// used by editors, to save what has changed only
