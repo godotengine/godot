@@ -134,6 +134,12 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
+                if (property.IsIndexer)
+                {
+                    Common.ReportExportedMemberIsIndexer(context, property);
+                    continue;
+                }
+
                 // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
                 // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
                 if (property.IsWriteOnly)
@@ -147,7 +153,6 @@ namespace Godot.SourceGenerators
                     Common.ReportExportedMemberIsReadOnly(context, property);
                     continue;
                 }
-
 
                 var propertyType = property.Type;
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(propertyType, typeCache);
