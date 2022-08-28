@@ -936,6 +936,12 @@
 				If [param keep_offsets] is [code]true[/code], control's anchors will be updated instead of offsets.
 			</description>
 		</method>
+		<method name="show_tooltip">
+			<return type="void" />
+			<description>
+				Forces the the tooltip to display instantly, regardless of the [code]gui/timers/tooltip_delay_sec[/code] option in Project Settings, and even if [member mouse_filter] is set to [constant MOUSE_FILTER_IGNORE]. See [member hint_tooltip].
+			</description>
+		</method>
 		<method name="update_minimum_size">
 			<return type="void" />
 			<description>
