@@ -464,7 +464,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_tools->add_child(staging_area_label);
 
 	refresh_button = memnew(Button);
-	refresh_button->set_tooltip(TTR("Detect new changes"));
+	refresh_button->set_tooltip_text(TTR("Detect new changes"));
 	refresh_button->set_text(TTR("Refresh"));
 	refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 	refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_stage_area));
@@ -551,7 +551,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	diff_heading = memnew(Label);
 	diff_heading->set_text(TTR("Status"));
-	diff_heading->set_tooltip(TTR("View file diffs before committing them to the latest version"));
+	diff_heading->set_tooltip_text(TTR("View file diffs before committing them to the latest version"));
 	diff_hbc->add_child(diff_heading);
 
 	diff_file_name = memnew(Label);
@@ -561,7 +561,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_hbc->add_child(diff_file_name);
 
 	diff_refresh_button = memnew(Button);
-	diff_refresh_button->set_tooltip(TTR("Detect changes in file diff"));
+	diff_refresh_button->set_tooltip_text(TTR("Detect changes in file diff"));
 	diff_refresh_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 	diff_refresh_button->connect("pressed", callable_mp(this, &VersionControlEditorPlugin::_refresh_file_diff));
 	diff_hbc->add_child(diff_refresh_button);

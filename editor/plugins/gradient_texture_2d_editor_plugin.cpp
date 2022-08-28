@@ -227,14 +227,14 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	add_child(toolbar);
 
 	reverse_button = memnew(Button);
-	reverse_button->set_tooltip(TTR("Swap Gradient Fill Points"));
+	reverse_button->set_tooltip_text(TTR("Swap Gradient Fill Points"));
 	toolbar->add_child(reverse_button);
 	reverse_button->connect("pressed", callable_mp(this, &GradientTexture2DEditor::_reverse_button_pressed));
 
 	toolbar->add_child(memnew(VSeparator));
 
 	snap_button = memnew(Button);
-	snap_button->set_tooltip(TTR("Toggle Grid Snap"));
+	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
 	snap_button->connect("toggled", callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));

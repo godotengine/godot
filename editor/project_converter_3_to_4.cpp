@@ -206,6 +206,7 @@ static const char *gdscript_function_renames[][2] = {
 	// { "set_offset", "set_progress" }, // PathFollow2D, PathFollow3D - Too common
 	// { "set_process_mode", "set_process_callback" }, // AnimationTree broke Node, Tween, Sky
 	// { "set_refuse_new_network_connections", "set_refuse_new_connections"}, // MultiplayerAPI broke SceneTree
+	// { "set_tooltip", "set_tooltip_text" }, // Control, breaks TreeItem, at least for now.
 	// { "set_uv", "surface_set_uv" }, // ImmediateMesh broke Polygon2D
 	// { "set_v_offset", "set_drag_vertical_offset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// {"get_points","get_points_id"},// Astar, broke Line2D, Convexpolygonshape
@@ -629,6 +630,7 @@ static const char *csharp_function_renames[][2] = {
 	// { "SetOffset", "SetProgress" }, // PathFollow2D, PathFollow3D - Too common
 	// { "SetProcessMode", "SetProcessCallback" }, // AnimationTree broke Node, Tween, Sky
 	// { "SetRefuseNewNetworkConnections", "SetRefuseNewConnections"}, // MultiplayerAPI broke SceneTree
+	// { "SetTooltip", "SetTooltipText" }, // Control, breaks TreeItem, at least for now.
 	// { "SetUv", "SurfaceSetUv" }, // ImmediateMesh broke Polygon2D
 	// { "SetVOffset", "SetDragVerticalOffset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// {"GetPoints","GetPointsId"},// Astar, broke Line2D, Convexpolygonshape
@@ -1039,6 +1041,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
 	{ "gravity_distance_scale", "gravity_point_distance_scale" }, // Area2D
 	{ "gravity_vec", "gravity_direction" }, // Area2D
+	{ "hint_tooltip", "tooltip_text" }, // Control
 	{ "hseparation", "h_separation" }, // Theme
 	{ "iterations_per_second", "physics_ticks_per_second" }, // Engine
 	{ "invert_enable", "invert_enabled" }, // Polygon2D
@@ -1123,6 +1126,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "GlobalRateScale", "PlaybackSpeedScale" }, // AudioServer
 	{ "GravityDistanceScale", "GravityPointDistanceScale" }, // Area2D
 	{ "GravityVec", "GravityDirection" }, // Area2D
+	{ "HintTooltip", "TooltipText" }, // Control
 	{ "Hseparation", "HSeparation" }, // Theme
 	{ "IterationsPerSecond", "PhysicsTicksPerSecond" }, // Engine
 	{ "InvertEnable", "InvertEnabled" }, // Polygon2D

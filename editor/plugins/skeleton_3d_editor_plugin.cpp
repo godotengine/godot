@@ -733,7 +733,7 @@ void Skeleton3DEditor::create_editors() {
 	edit_mode_button->set_flat(true);
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
-	edit_mode_button->set_tooltip(TTR("Edit Mode\nShow buttons on joints."));
+	edit_mode_button->set_tooltip_text(TTR("Edit Mode\nShow buttons on joints."));
 	edit_mode_button->connect("toggled", callable_mp(this, &Skeleton3DEditor::edit_mode_toggled));
 
 	edit_mode = false;
@@ -754,7 +754,7 @@ void Skeleton3DEditor::create_editors() {
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(false);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
-	key_loc_button->set_tooltip(TTR("Translation mask for inserting keys."));
+	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
@@ -762,7 +762,7 @@ void Skeleton3DEditor::create_editors() {
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
-	key_rot_button->set_tooltip(TTR("Rotation mask for inserting keys."));
+	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
@@ -770,14 +770,14 @@ void Skeleton3DEditor::create_editors() {
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_pressed(false);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
-	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
+	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
-	key_insert_button->set_tooltip(TTR("Insert key of bone poses already exist track."));
+	key_insert_button->set_tooltip_text(TTR("Insert key of bone poses already exist track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTR("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
 
@@ -785,7 +785,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button->set_flat(true);
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
-	key_insert_all_button->set_tooltip(TTR("Insert key of all bone poses."));
+	key_insert_all_button->set_tooltip_text(TTR("Insert key of all bone poses."));
 	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);
 

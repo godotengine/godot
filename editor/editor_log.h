@@ -95,7 +95,7 @@ private:
 			toggle_button->set_toggle_mode(true);
 			toggle_button->set_pressed(true);
 			toggle_button->set_text(itos(message_count));
-			toggle_button->set_tooltip(TTR(p_tooltip));
+			toggle_button->set_tooltip_text(TTR(p_tooltip));
 			// Don't tint the icon even when in "pressed" state.
 			toggle_button->add_theme_color_override("icon_color_pressed", Color(1, 1, 1, 1));
 			toggle_button->set_focus_mode(FOCUS_NONE);

@@ -433,7 +433,7 @@ namespace GodotTools
             _toolBarBuildButton = new Button
             {
                 Text = "Build",
-                HintTooltip = "Build Solution".TTR(),
+                TooltipText = "Build Solution".TTR(),
                 FocusMode = Control.FocusModeEnum.None,
                 Shortcut = buildSolutionShortcut,
                 ShortcutInTooltip = true

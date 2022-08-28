@@ -4261,11 +4261,11 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
 	if (p_game_running) {
 		override_camera_button->set_disabled(false);
-		override_camera_button->set_tooltip(TTR("Project Camera Override\nOverrides the running project's camera with the editor viewport camera."));
+		override_camera_button->set_tooltip_text(TTR("Project Camera Override\nOverrides the running project's camera with the editor viewport camera."));
 	} else {
 		override_camera_button->set_disabled(true);
 		override_camera_button->set_pressed(false);
-		override_camera_button->set_tooltip(TTR("Project Camera Override\nNo project instance running. Run the project from the editor to use this feature."));
+		override_camera_button->set_tooltip_text(TTR("Project Camera Override\nNo project instance running. Run the project from the editor to use this feature."));
 	}
 }
 
@@ -5104,7 +5104,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button->set_pressed(true);
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTR("Select Mode"), Key::Q));
 	select_button->set_shortcut_context(this);
-	select_button->set_tooltip(keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("RMB: Add node at position clicked."));
+	select_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("RMB: Add node at position clicked."));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5115,7 +5115,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	move_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_MOVE));
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTR("Move Mode"), Key::W));
 	move_button->set_shortcut_context(this);
-	move_button->set_tooltip(TTR("Move Mode"));
+	move_button->set_tooltip_text(TTR("Move Mode"));
 
 	rotate_button = memnew(Button);
 	rotate_button->set_flat(true);
@@ -5124,7 +5124,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	rotate_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_ROTATE));
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTR("Rotate Mode"), Key::E));
 	rotate_button->set_shortcut_context(this);
-	rotate_button->set_tooltip(TTR("Rotate Mode"));
+	rotate_button->set_tooltip_text(TTR("Rotate Mode"));
 
 	scale_button = memnew(Button);
 	scale_button->set_flat(true);
@@ -5133,7 +5133,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_SCALE));
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTR("Scale Mode"), Key::S));
 	scale_button->set_shortcut_context(this);
-	scale_button->set_tooltip(TTR("Shift: Scale proportionally."));
+	scale_button->set_tooltip_text(TTR("Shift: Scale proportionally."));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5142,14 +5142,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(list_select_button);
 	list_select_button->set_toggle_mode(true);
 	list_select_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_LIST_SELECT));
-	list_select_button->set_tooltip(TTR("Show list of selectable nodes at position clicked."));
+	list_select_button->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
 
 	pivot_button = memnew(Button);
 	pivot_button->set_flat(true);
 	main_menu_hbox->add_child(pivot_button);
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
-	pivot_button->set_tooltip(TTR("Click to change object's rotation pivot."));
+	pivot_button->set_tooltip_text(TTR("Click to change object's rotation pivot."));
 
 	pan_button = memnew(Button);
 	pan_button->set_flat(true);
@@ -5158,7 +5158,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	pan_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_PAN));
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTR("Pan Mode"), Key::G));
 	pan_button->set_shortcut_context(this);
-	pan_button->set_tooltip(TTR("You can also use Pan View shortcut (Space by default) to pan in any mode."));
+	pan_button->set_tooltip_text(TTR("You can also use Pan View shortcut (Space by default) to pan in any mode."));
 
 	ruler_button = memnew(Button);
 	ruler_button->set_flat(true);
@@ -5167,7 +5167,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ruler_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_RULER));
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTR("Ruler Mode"), Key::R));
 	ruler_button->set_shortcut_context(this);
-	ruler_button->set_tooltip(TTR("Ruler Mode"));
+	ruler_button->set_tooltip_text(TTR("Ruler Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5176,7 +5176,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(smart_snap_button);
 	smart_snap_button->set_toggle_mode(true);
 	smart_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_smart_snap));
-	smart_snap_button->set_tooltip(TTR("Toggle smart snapping."));
+	smart_snap_button->set_tooltip_text(TTR("Toggle smart snapping."));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTR("Use Smart Snap"), KeyModifierMask::SHIFT | Key::S));
 	smart_snap_button->set_shortcut_context(this);
 
@@ -5185,7 +5185,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(grid_snap_button);
 	grid_snap_button->set_toggle_mode(true);
 	grid_snap_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_button_toggle_grid_snap));
-	grid_snap_button->set_tooltip(TTR("Toggle grid snapping."));
+	grid_snap_button->set_tooltip_text(TTR("Toggle grid snapping."));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTR("Use Grid Snap"), KeyModifierMask::SHIFT | Key::G));
 	grid_snap_button->set_shortcut_context(this);
 
@@ -5193,7 +5193,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	snap_config_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(snap_config_menu);
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
-	snap_config_menu->set_tooltip(TTR("Snapping Options"));
+	snap_config_menu->set_tooltip_text(TTR("Snapping Options"));
 	snap_config_menu->set_switch_on_hover(true);
 
 	PopupMenu *p = snap_config_menu->get_popup();
@@ -5227,7 +5227,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(lock_button);
 
 	lock_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(LOCK_SELECTED));
-	lock_button->set_tooltip(TTR("Lock selected node, preventing selection and movement."));
+	lock_button->set_tooltip_text(TTR("Lock selected node, preventing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	lock_button->set_shortcut(ED_SHORTCUT("editor/lock_selected_nodes", TTR("Lock Selected Node(s)"), KeyModifierMask::CMD | Key::L));
 
@@ -5235,7 +5235,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	unlock_button->set_flat(true);
 	main_menu_hbox->add_child(unlock_button);
 	unlock_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNLOCK_SELECTED));
-	unlock_button->set_tooltip(TTR("Unlock selected node, allowing selection and movement."));
+	unlock_button->set_tooltip_text(TTR("Unlock selected node, allowing selection and movement."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	unlock_button->set_shortcut(ED_SHORTCUT("editor/unlock_selected_nodes", TTR("Unlock Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::L));
 
@@ -5243,7 +5243,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	group_button->set_flat(true);
 	main_menu_hbox->add_child(group_button);
 	group_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(GROUP_SELECTED));
-	group_button->set_tooltip(TTR("Make selected node's children not selectable."));
+	group_button->set_tooltip_text(TTR("Make selected node's children not selectable."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	group_button->set_shortcut(ED_SHORTCUT("editor/group_selected_nodes", TTR("Group Selected Node(s)"), KeyModifierMask::CMD | Key::G));
 
@@ -5251,7 +5251,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ungroup_button->set_flat(true);
 	main_menu_hbox->add_child(ungroup_button);
 	ungroup_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNGROUP_SELECTED));
-	ungroup_button->set_tooltip(TTR("Make selected node's children selectable."));
+	ungroup_button->set_tooltip_text(TTR("Make selected node's children selectable."));
 	// Define the shortcut globally (without a context) so that it works if the Scene tree dock is currently focused.
 	ungroup_button->set_shortcut(ED_SHORTCUT("editor/ungroup_selected_nodes", TTR("Ungroup Selected Node(s)"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::G));
 
@@ -5260,7 +5260,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	skeleton_menu = memnew(MenuButton);
 	skeleton_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(skeleton_menu);
-	skeleton_menu->set_tooltip(TTR("Skeleton Options"));
+	skeleton_menu->set_tooltip_text(TTR("Skeleton Options"));
 	skeleton_menu->set_switch_on_hover(true);
 
 	p = skeleton_menu->get_popup();
@@ -5340,7 +5340,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_loc_button->set_pressed(true);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
 	key_loc_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_POS));
-	key_loc_button->set_tooltip(TTR("Translation mask for inserting keys."));
+	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
@@ -5349,7 +5349,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
 	key_rot_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_ROT));
-	key_rot_button->set_tooltip(TTR("Rotation mask for inserting keys."));
+	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
@@ -5357,14 +5357,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_SCALE));
-	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
+	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_KEY));
-	key_insert_button->set_tooltip(TTR("Insert keys (based on mask)."));
+	key_insert_button->set_tooltip_text(TTR("Insert keys (based on mask)."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_insert_key", TTR("Insert Key"), Key::INSERT));
 	key_insert_button->set_shortcut_context(this);
 	animation_hb->add_child(key_insert_button);
@@ -5373,14 +5373,14 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_auto_insert_button->set_flat(true);
 	key_auto_insert_button->set_toggle_mode(true);
 	key_auto_insert_button->set_focus_mode(FOCUS_NONE);
-	key_auto_insert_button->set_tooltip(TTR("Auto insert keys when objects are translated, rotated or scaled (based on mask).\nKeys are only added to existing tracks, no new tracks will be created.\nKeys must be inserted manually for the first time."));
+	key_auto_insert_button->set_tooltip_text(TTR("Auto insert keys when objects are translated, rotated or scaled (based on mask).\nKeys are only added to existing tracks, no new tracks will be created.\nKeys must be inserted manually for the first time."));
 	key_auto_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_auto_insert_key", TTR("Auto Insert Key")));
 	key_auto_insert_button->set_shortcut_context(this);
 	animation_hb->add_child(key_auto_insert_button);
 
 	animation_menu = memnew(MenuButton);
 	animation_menu->set_shortcut_context(this);
-	animation_menu->set_tooltip(TTR("Animation Key and Pose Options"));
+	animation_menu->set_tooltip_text(TTR("Animation Key and Pose Options"));
 	animation_hb->add_child(animation_menu);
 	animation_menu->get_popup()->connect("id_pressed", callable_mp(this, &CanvasItemEditor::_popup_callback));
 	animation_menu->set_switch_on_hover(true);

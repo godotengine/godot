@@ -2050,7 +2050,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	paint_tool_button->set_toggle_mode(true);
 	paint_tool_button->set_button_group(tool_buttons_group);
 	paint_tool_button->set_shortcut(ED_SHORTCUT("tiles_editor/paint_tool", "Paint", Key::D));
-	paint_tool_button->set_tooltip(TTR("Shift: Draw line.") + "\n" + TTR("Shift+Ctrl: Draw rectangle."));
+	paint_tool_button->set_tooltip_text(TTR("Shift: Draw line.") + "\n" + TTR("Shift+Ctrl: Draw rectangle."));
 	paint_tool_button->connect("pressed", callable_mp(this, &TileMapEditorTilesPlugin::_update_toolbar));
 	tilemap_tiles_tools_buttons->add_child(paint_tool_button);
 
@@ -2091,7 +2091,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_SHORTCUT("tiles_editor/picker", "Picker", Key::P));
-	picker_button->set_tooltip(TTR("Alternatively hold Ctrl with other tools to pick tile."));
+	picker_button->set_tooltip_text(TTR("Alternatively hold Ctrl with other tools to pick tile."));
 	picker_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(picker_button);
 
@@ -2100,7 +2100,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	erase_button->set_flat(true);
 	erase_button->set_toggle_mode(true);
 	erase_button->set_shortcut(ED_SHORTCUT("tiles_editor/eraser", "Eraser", Key::E));
-	erase_button->set_tooltip(TTR("Alternatively use RMB to erase tiles."));
+	erase_button->set_tooltip_text(TTR("Alternatively use RMB to erase tiles."));
 	erase_button->connect("pressed", callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	tools_settings->add_child(erase_button);
 
@@ -2119,13 +2119,13 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	random_tile_toggle = memnew(Button);
 	random_tile_toggle->set_flat(true);
 	random_tile_toggle->set_toggle_mode(true);
-	random_tile_toggle->set_tooltip(TTR("Place Random Tile"));
+	random_tile_toggle->set_tooltip_text(TTR("Place Random Tile"));
 	random_tile_toggle->connect("toggled", callable_mp(this, &TileMapEditorTilesPlugin::_on_random_tile_checkbox_toggled));
 	tools_settings->add_child(random_tile_toggle);
 
 	// Random tile scattering.
 	scatter_label = memnew(Label);
-	scatter_label->set_tooltip(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
+	scatter_label->set_tooltip_text(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
 	scatter_label->set_text(TTR("Scattering:"));
 	tools_settings->add_child(scatter_label);
 
@@ -2133,7 +2133,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	scatter_spinbox->set_min(0.0);
 	scatter_spinbox->set_max(1000);
 	scatter_spinbox->set_step(0.001);
-	scatter_spinbox->set_tooltip(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
+	scatter_spinbox->set_tooltip_text(TTR("Defines the probability of painting nothing instead of a randomly selected tile."));
 	scatter_spinbox->get_line_edit()->add_theme_constant_override("minimum_character_width", 4);
 	scatter_spinbox->connect("value_changed", callable_mp(this, &TileMapEditorTilesPlugin::_on_scattering_spinbox_changed));
 	tools_settings->add_child(scatter_spinbox);
@@ -2177,7 +2177,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(true);
-	source_sort_button->set_tooltip(TTR("Sort sources"));
+	source_sort_button->set_tooltip_text(TTR("Sort sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &TileMapEditorTilesPlugin::_set_source_sort));
@@ -4000,7 +4000,7 @@ TileMapEditor::TileMapEditor() {
 	layers_selection_button = memnew(OptionButton);
 	layers_selection_button->set_custom_minimum_size(Size2(200, 0));
 	layers_selection_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-	layers_selection_button->set_tooltip(TTR("TileMap Layers"));
+	layers_selection_button->set_tooltip_text(TTR("TileMap Layers"));
 	layers_selection_button->connect("item_selected", callable_mp(this, &TileMapEditor::_layers_selection_item_selected));
 	tile_map_toolbar->add_child(layers_selection_button);
 
@@ -4009,7 +4009,7 @@ TileMapEditor::TileMapEditor() {
 	toggle_highlight_selected_layer_button->set_toggle_mode(true);
 	toggle_highlight_selected_layer_button->set_pressed(true);
 	toggle_highlight_selected_layer_button->connect("pressed", callable_mp(this, &TileMapEditor::_update_layers_selection));
-	toggle_highlight_selected_layer_button->set_tooltip(TTR("Highlight Selected TileMap Layer"));
+	toggle_highlight_selected_layer_button->set_tooltip_text(TTR("Highlight Selected TileMap Layer"));
 	tile_map_toolbar->add_child(toggle_highlight_selected_layer_button);
 
 	tile_map_toolbar->add_child(memnew(VSeparator));
@@ -4018,7 +4018,7 @@ TileMapEditor::TileMapEditor() {
 	toggle_grid_button = memnew(Button);
 	toggle_grid_button->set_flat(true);
 	toggle_grid_button->set_toggle_mode(true);
-	toggle_grid_button->set_tooltip(TTR("Toggle grid visibility."));
+	toggle_grid_button->set_tooltip_text(TTR("Toggle grid visibility."));
 	toggle_grid_button->connect("toggled", callable_mp(this, &TileMapEditor::_on_grid_toggled));
 	tile_map_toolbar->add_child(toggle_grid_button);
 

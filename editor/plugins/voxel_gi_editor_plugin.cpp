@@ -100,7 +100,7 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 				return;
 			}
 
-			bake->set_tooltip(text);
+			bake->set_tooltip_text(text);
 		} break;
 	}
 }

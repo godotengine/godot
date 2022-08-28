@@ -633,20 +633,20 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 
 	resource_new_button = memnew(Button);
 	resource_new_button->set_flat(true);
-	resource_new_button->set_tooltip(TTR("Create a new resource in memory and edit it."));
+	resource_new_button->set_tooltip_text(TTR("Create a new resource in memory and edit it."));
 	general_options_hb->add_child(resource_new_button);
 	resource_new_button->connect("pressed", callable_mp(this, &InspectorDock::_new_resource));
 	resource_new_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_load_button = memnew(Button);
 	resource_load_button->set_flat(true);
-	resource_load_button->set_tooltip(TTR("Load an existing resource from disk and edit it."));
+	resource_load_button->set_tooltip_text(TTR("Load an existing resource from disk and edit it."));
 	general_options_hb->add_child(resource_load_button);
 	resource_load_button->connect("pressed", callable_mp(this, &InspectorDock::_open_resource_selector));
 	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
 
 	resource_save_button = memnew(MenuButton);
-	resource_save_button->set_tooltip(TTR("Save the currently edited resource."));
+	resource_save_button->set_tooltip_text(TTR("Save the currently edited resource."));
 	general_options_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
 	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
@@ -655,7 +655,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_save_button->set_disabled(true);
 
 	resource_extra_button = memnew(MenuButton);
-	resource_extra_button->set_tooltip(TTR("Extra resource options."));
+	resource_extra_button->set_tooltip_text(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
 	resource_extra_button->get_popup()->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
@@ -671,19 +671,19 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	backward_button = memnew(Button);
 	backward_button->set_flat(true);
 	general_options_hb->add_child(backward_button);
-	backward_button->set_tooltip(TTR("Go to the previous edited object in history."));
+	backward_button->set_tooltip_text(TTR("Go to the previous edited object in history."));
 	backward_button->set_disabled(true);
 	backward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_back));
 
 	forward_button = memnew(Button);
 	forward_button->set_flat(true);
 	general_options_hb->add_child(forward_button);
-	forward_button->set_tooltip(TTR("Go to the next edited object in history."));
+	forward_button->set_tooltip_text(TTR("Go to the next edited object in history."));
 	forward_button->set_disabled(true);
 	forward_button->connect("pressed", callable_mp(this, &InspectorDock::_edit_forward));
 
 	history_menu = memnew(MenuButton);
-	history_menu->set_tooltip(TTR("History of recently edited objects."));
+	history_menu->set_tooltip_text(TTR("History of recently edited objects."));
 	general_options_hb->add_child(history_menu);
 	history_menu->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_history));
 	history_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_select_history));
@@ -697,7 +697,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button = memnew(Button);
 	open_docs_button->set_flat(true);
 	open_docs_button->set_disabled(true);
-	open_docs_button->set_tooltip(TTR("Open documentation for this object."));
+	open_docs_button->set_tooltip_text(TTR("Open documentation for this object."));
 	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
 	open_docs_button->connect("pressed", callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
@@ -719,7 +719,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu = memnew(MenuButton);
 	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
-	object_menu->set_tooltip(TTR("Manage object properties."));
+	object_menu->set_tooltip_text(TTR("Manage object properties."));
 	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
 	object_menu->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
 

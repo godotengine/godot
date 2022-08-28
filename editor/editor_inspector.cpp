@@ -2051,7 +2051,7 @@ void EditorInspectorArray::_setup() {
 		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
 		ae.panel->set_drag_forwarding(this);
 		ae.panel->set_meta("index", begin_array_index + i);
-		ae.panel->set_tooltip(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
+		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
 		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
 		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
@@ -2786,7 +2786,7 @@ void EditorInspector::update_tree() {
 					class_descr_cache[doc_name] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
+				category->set_tooltip_text(p.name + "::" + (class_descr_cache[doc_name].is_empty() ? "" : class_descr_cache[doc_name]));
 			}
 
 			// Add editors at the start of a category.
@@ -2979,7 +2979,7 @@ void EditorInspector::update_tree() {
 				Color c = sscolor;
 				c.a /= level;
 				section->setup(acc_path, label, object, c, use_folding, section_depth);
-				section->set_tooltip(tooltip);
+				section->set_tooltip_text(tooltip);
 
 				// Add editors at the start of a group.
 				for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
@@ -3223,9 +3223,9 @@ void EditorInspector::update_tree() {
 				ep->connect("resource_selected", callable_mp(this, &EditorInspector::_resource_selected), CONNECT_DEFERRED);
 				ep->connect("object_id_selected", callable_mp(this, &EditorInspector::_object_id_selected), CONNECT_DEFERRED);
 				if (!doc_info.description.is_empty()) {
-					ep->set_tooltip(property_prefix + p.name + "::" + doc_info.description);
+					ep->set_tooltip_text(property_prefix + p.name + "::" + doc_info.description);
 				} else {
-					ep->set_tooltip(property_prefix + p.name);
+					ep->set_tooltip_text(property_prefix + p.name);
 				}
 				ep->set_doc_path(doc_info.path);
 				ep->update_property();

@@ -69,14 +69,14 @@ void ControlPositioningWarning::_update_toggler() {
 	Ref<Texture2D> arrow;
 	if (hint_label->is_visible()) {
 		arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
-		set_tooltip(TTR("Collapse positioning hint."));
+		set_tooltip_text(TTR("Collapse positioning hint."));
 	} else {
 		if (is_layout_rtl()) {
 			arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 		} else {
 			arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
 		}
-		set_tooltip(TTR("Expand positioning hint."));
+		set_tooltip_text(TTR("Expand positioning hint."));
 	}
 
 	hint_icon->set_texture(arrow);
@@ -536,7 +536,7 @@ void ControlEditorPresetPicker::_add_row_button(HBoxContainer *p_row, const int 
 	Button *b = memnew(Button);
 	b->set_custom_minimum_size(Size2i(36, 36) * EDSCALE);
 	b->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	b->set_tooltip(p_name);
+	b->set_tooltip_text(p_name);
 	b->set_flat(true);
 	p_row->add_child(b);
 	b->connect("pressed", callable_mp(this, &ControlEditorPresetPicker::_preset_button_pressed).bind(p_preset));
@@ -655,10 +655,10 @@ void SizeFlagPresetPicker::set_allowed_flags(Vector<SizeFlags> &p_flags) {
 
 	expand_button->set_disabled(!p_flags.has(SIZE_EXPAND));
 	if (p_flags.has(SIZE_EXPAND)) {
-		expand_button->set_tooltip(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+		expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	} else {
 		expand_button->set_pressed(false);
-		expand_button->set_tooltip(TTR("Some parents of the selected nodes do not support the Expand flag."));
+		expand_button->set_tooltip_text(TTR("Some parents of the selected nodes do not support the Expand flag."));
 	}
 }
 
@@ -706,7 +706,7 @@ SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {
 	expand_button = memnew(CheckBox);
 	expand_button->set_flat(true);
 	expand_button->set_text(TTR("Align with Expand"));
-	expand_button->set_tooltip(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+	expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	main_vb->add_child(expand_button);
 }
 
@@ -983,7 +983,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
-	anchors_button->set_tooltip(TTR("Presets for the anchor and offset values of a Control node."));
+	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));
 	add_child(anchors_button);
 
 	Label *anchors_label = memnew(Label);
@@ -999,20 +999,20 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	Button *keep_ratio_button = memnew(Button);
 	keep_ratio_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	keep_ratio_button->set_text(TTR("Set to Current Ratio"));
-	keep_ratio_button->set_tooltip(TTR("Adjust anchors and offsets to match the current rect size."));
+	keep_ratio_button->set_tooltip_text(TTR("Adjust anchors and offsets to match the current rect size."));
 	anchors_button->get_popup_hbox()->add_child(keep_ratio_button);
 	keep_ratio_button->connect("pressed", callable_mp(this, &ControlEditorToolbar::_anchors_to_current_ratio));
 
 	anchor_mode_button = memnew(Button);
 	anchor_mode_button->set_flat(true);
 	anchor_mode_button->set_toggle_mode(true);
-	anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
+	anchor_mode_button->set_tooltip_text(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
 	add_child(anchor_mode_button);
 	anchor_mode_button->connect("toggled", callable_mp(this, &ControlEditorToolbar::_anchor_mode_toggled));
 
 	// Container tools.
 	containers_button = memnew(ControlEditorPopupButton);
-	containers_button->set_tooltip(TTR("Sizing settings for children of a Container node."));
+	containers_button->set_tooltip_text(TTR("Sizing settings for children of a Container node."));
 	add_child(containers_button);
 
 	Label *container_h_label = memnew(Label);

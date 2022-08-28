@@ -355,7 +355,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew(Button);
-	load->set_tooltip(TTR("Load Resource"));
+	load->set_tooltip_text(TTR("Load Resource"));
 	hbc->add_child(load);
 
 	paste = memnew(Button);

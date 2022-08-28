@@ -1238,7 +1238,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	add_var = memnew(Button);
 	page2_hb_vars->add_child(add_var);
-	add_var->set_tooltip(TTR("Add configuration"));
+	add_var->set_tooltip_text(TTR("Add configuration"));
 	add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 	add_var->connect("pressed", callable_mp(this, &DynamicFontImportSettings::_variation_add));
 

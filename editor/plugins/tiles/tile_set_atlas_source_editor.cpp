@@ -527,7 +527,7 @@ void TileSetAtlasSourceEditor::_update_tile_id_label() {
 	if (selection.size() == 1) {
 		TileSelection selected = selection.front()->get();
 		tool_tile_id_label->set_text(vformat("%d, %s, %d", tile_set_atlas_source_id, selected.tile, selected.alternative));
-		tool_tile_id_label->set_tooltip(vformat(TTR("Selected tile:\nSource: %d\nAtlas coordinates: %s\nAlternative: %d"), tile_set_atlas_source_id, selected.tile, selected.alternative));
+		tool_tile_id_label->set_tooltip_text(vformat(TTR("Selected tile:\nSource: %d\nAtlas coordinates: %s\nAlternative: %d"), tile_set_atlas_source_id, selected.tile, selected.alternative));
 		tool_tile_id_label->show();
 	} else {
 		tool_tile_id_label->hide();
@@ -2445,7 +2445,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_setup_atlas_source_button->set_toggle_mode(true);
 	tool_setup_atlas_source_button->set_pressed(true);
 	tool_setup_atlas_source_button->set_button_group(tools_button_group);
-	tool_setup_atlas_source_button->set_tooltip(TTR("Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, control for rectangle editing)."));
+	tool_setup_atlas_source_button->set_tooltip_text(TTR("Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, control for rectangle editing)."));
 	toolbox->add_child(tool_setup_atlas_source_button);
 
 	tool_select_button = memnew(Button);
@@ -2453,14 +2453,14 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tool_select_button->set_toggle_mode(true);
 	tool_select_button->set_pressed(false);
 	tool_select_button->set_button_group(tools_button_group);
-	tool_select_button->set_tooltip(TTR("Select tiles."));
+	tool_select_button->set_tooltip_text(TTR("Select tiles."));
 	toolbox->add_child(tool_select_button);
 
 	tool_paint_button = memnew(Button);
 	tool_paint_button->set_flat(true);
 	tool_paint_button->set_toggle_mode(true);
 	tool_paint_button->set_button_group(tools_button_group);
-	tool_paint_button->set_tooltip(TTR("Paint properties."));
+	tool_paint_button->set_tooltip_text(TTR("Paint properties."));
 	toolbox->add_child(tool_paint_button);
 
 	// Tool settings.

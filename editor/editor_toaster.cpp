@@ -235,11 +235,11 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	}
 
 	if (toasts.is_empty()) {
-		main_button->set_tooltip(TTR("No notifications."));
+		main_button->set_tooltip_text(TTR("No notifications."));
 		main_button->set_modulate(Color(0.5, 0.5, 0.5));
 		main_button->set_disabled(true);
 	} else {
-		main_button->set_tooltip(TTR("Show notifications."));
+		main_button->set_tooltip_text(TTR("Show notifications."));
 		main_button->set_modulate(Color(1, 1, 1));
 		main_button->set_disabled(false);
 	}
@@ -340,7 +340,7 @@ void EditorToaster::_repop_old() {
 Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, String p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
-	panel->set_tooltip(p_tooltip);
+	panel->set_tooltip_text(p_tooltip);
 	switch (p_severity) {
 		case SEVERITY_INFO:
 			panel->add_theme_style_override("panel", info_panel_style_background);
@@ -517,7 +517,7 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
-	main_button->set_tooltip(TTR("No notifications."));
+	main_button->set_tooltip_text(TTR("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
 	main_button->set_flat(true);
@@ -533,7 +533,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
-	disable_notifications_button->set_tooltip(TTR("Silence the notifications."));
+	disable_notifications_button->set_tooltip_text(TTR("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect("pressed", callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));
 	disable_notifications_panel->add_child(disable_notifications_button);

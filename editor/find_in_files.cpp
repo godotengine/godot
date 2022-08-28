@@ -373,7 +373,7 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	Label *filter_label = memnew(Label);
 	filter_label->set_text(TTR("Filters:"));
-	filter_label->set_tooltip(TTR("Include the files with the following extensions. Add or remove them in ProjectSettings."));
+	filter_label->set_tooltip_text(TTR("Include the files with the following extensions. Add or remove them in ProjectSettings."));
 	gc->add_child(filter_label);
 
 	_filters_container = memnew(HBoxContainer);

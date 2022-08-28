@@ -394,7 +394,7 @@ void EditorAudioBus::_show_value(float slider_value) {
 
 	// Also set the preview text as a standard Control tooltip.
 	// This way, it can be seen when the slider is merely hovered (instead of dragged).
-	slider->set_tooltip(text);
+	slider->set_tooltip_text(text);
 	audio_value_preview_label->set_text(text);
 	const Vector2 slider_size = slider->get_size();
 	const Vector2 slider_position = slider->get_global_position();
@@ -778,7 +778,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	buses = p_buses;
 	is_master = p_is_master;
 
-	set_tooltip(TTR("Drag & drop to rearrange."));
+	set_tooltip_text(TTR("Drag & drop to rearrange."));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
@@ -795,21 +795,21 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo = memnew(Button);
 	solo->set_flat(true);
 	solo->set_toggle_mode(true);
-	solo->set_tooltip(TTR("Solo"));
+	solo->set_tooltip_text(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect("pressed", callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
 	mute->set_flat(true);
 	mute->set_toggle_mode(true);
-	mute->set_tooltip(TTR("Mute"));
+	mute->set_tooltip_text(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect("pressed", callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
 	bypass->set_flat(true);
 	bypass->set_toggle_mode(true);
-	bypass->set_tooltip(TTR("Bypass"));
+	bypass->set_tooltip_text(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
 	bypass->connect("pressed", callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
@@ -935,7 +935,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options->set_shortcut_context(this);
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
 	bus_options->set_anchor(SIDE_RIGHT, 0.0);
-	bus_options->set_tooltip(TTR("Bus Options"));
+	bus_options->set_tooltip_text(TTR("Bus Options"));
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();
@@ -1280,7 +1280,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	add = memnew(Button);
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
-	add->set_tooltip(TTR("Add a new Audio Bus to this layout."));
+	add->set_tooltip_text(TTR("Add a new Audio Bus to this layout."));
 	add->connect("pressed", callable_mp(this, &EditorAudioBuses::_add_bus));
 
 	VSeparator *separator = memnew(VSeparator);
@@ -1288,25 +1288,25 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	load = memnew(Button);
 	load->set_text(TTR("Load"));
-	load->set_tooltip(TTR("Load an existing Bus Layout."));
+	load->set_tooltip_text(TTR("Load an existing Bus Layout."));
 	top_hb->add_child(load);
 	load->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_layout));
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save As"));
-	save_as->set_tooltip(TTR("Save this Bus Layout to a file."));
+	save_as->set_tooltip_text(TTR("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
 	save_as->connect("pressed", callable_mp(this, &EditorAudioBuses::_save_as_layout));
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Load Default"));
-	_default->set_tooltip(TTR("Load the default Bus Layout."));
+	_default->set_tooltip_text(TTR("Load the default Bus Layout."));
 	top_hb->add_child(_default);
 	_default->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_default_layout));
 
 	_new = memnew(Button);
 	_new->set_text(TTR("Create"));
-	_new->set_tooltip(TTR("Create a new Bus Layout."));
+	_new->set_tooltip_text(TTR("Create a new Bus Layout."));
 	top_hb->add_child(_new);
 	_new->connect("pressed", callable_mp(this, &EditorAudioBuses::_new_layout));
 

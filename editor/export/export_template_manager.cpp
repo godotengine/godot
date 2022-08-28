@@ -867,13 +867,13 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	current_open_button = memnew(Button);
 	current_open_button->set_text(TTR("Open Folder"));
-	current_open_button->set_tooltip(TTR("Open the folder containing installed templates for the current version."));
+	current_open_button->set_tooltip_text(TTR("Open the folder containing installed templates for the current version."));
 	current_installed_hb->add_child(current_open_button);
 	current_open_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_open_template_folder).bind(VERSION_FULL_CONFIG));
 
 	current_uninstall_button = memnew(Button);
 	current_uninstall_button->set_text(TTR("Uninstall"));
-	current_uninstall_button->set_tooltip(TTR("Uninstall templates for the current version."));
+	current_uninstall_button->set_tooltip_text(TTR("Uninstall templates for the current version."));
 	current_installed_hb->add_child(current_uninstall_button);
 	current_uninstall_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_uninstall_template).bind(VERSION_FULL_CONFIG));
 
@@ -914,14 +914,14 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	Button *download_current_button = memnew(Button);
 	download_current_button->set_text(TTR("Download and Install"));
-	download_current_button->set_tooltip(TTR("Download and install templates for the current version from the best possible mirror."));
+	download_current_button->set_tooltip_text(TTR("Download and install templates for the current version from the best possible mirror."));
 	download_install_hb->add_child(download_current_button);
 	download_current_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_download_current));
 
 	// Update downloads buttons to prevent unsupported downloads.
 	if (!downloads_available) {
 		download_current_button->set_disabled(true);
-		download_current_button->set_tooltip(TTR("Official export templates aren't available for development builds."));
+		download_current_button->set_tooltip_text(TTR("Official export templates aren't available for development builds."));
 	}
 
 	HBoxContainer *install_file_hb = memnew(HBoxContainer);
@@ -930,7 +930,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	install_file_button = memnew(Button);
 	install_file_button->set_text(TTR("Install from File"));
-	install_file_button->set_tooltip(TTR("Install templates from a local file."));
+	install_file_button->set_tooltip_text(TTR("Install templates from a local file."));
 	install_file_hb->add_child(install_file_button);
 	install_file_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_install_file));
 
@@ -955,7 +955,7 @@ ExportTemplateManager::ExportTemplateManager() {
 
 	Button *download_cancel_button = memnew(Button);
 	download_cancel_button->set_text(TTR("Cancel"));
-	download_cancel_button->set_tooltip(TTR("Cancel the download of the templates."));
+	download_cancel_button->set_tooltip_text(TTR("Cancel the download of the templates."));
 	download_progress_hb->add_child(download_cancel_button);
 	download_cancel_button->connect("pressed", callable_mp(this, &ExportTemplateManager::_cancel_template_download));
 

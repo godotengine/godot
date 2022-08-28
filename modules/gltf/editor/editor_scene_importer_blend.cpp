@@ -451,7 +451,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		configure_blender_dialog->set_ok_button_text(TTR("Confirm Path"));
 		configure_blender_dialog->set_cancel_button_text(TTR("Disable '.blend' Import"));
-		configure_blender_dialog->get_cancel_button()->set_tooltip(TTR("Disables Blender '.blend' files import for this project. Can be re-enabled in Project Settings."));
+		configure_blender_dialog->get_cancel_button()->set_tooltip_text(TTR("Disables Blender '.blend' files import for this project. Can be re-enabled in Project Settings."));
 		configure_blender_dialog->connect("confirmed", callable_mp(this, &EditorFileSystemImportFormatSupportQueryBlend::_path_confirmed));
 
 		browse_dialog = memnew(EditorFileDialog);

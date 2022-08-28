@@ -614,11 +614,11 @@ void FileSystemDock::_set_file_display(bool p_active) {
 	if (p_active) {
 		file_list_display_mode = FILE_LIST_DISPLAY_LIST;
 		button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
-		button_file_list_display_mode->set_tooltip(TTR("View items as a grid of thumbnails."));
+		button_file_list_display_mode->set_tooltip_text(TTR("View items as a grid of thumbnails."));
 	} else {
 		file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 		button_file_list_display_mode->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
-		button_file_list_display_mode->set_tooltip(TTR("View items as a list."));
+		button_file_list_display_mode->set_tooltip_text(TTR("View items as a list."));
 	}
 
 	_update_file_list(true);
@@ -2977,7 +2977,7 @@ void FileSystemDock::_file_sort_popup(int p_id) {
 MenuButton *FileSystemDock::_create_file_menu_button() {
 	MenuButton *button = memnew(MenuButton);
 	button->set_flat(true);
-	button->set_tooltip(TTR("Sort files"));
+	button->set_tooltip_text(TTR("Sort files"));
 
 	PopupMenu *p = button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &FileSystemDock::_file_sort_popup));
@@ -3040,14 +3040,14 @@ FileSystemDock::FileSystemDock() {
 	button_hist_prev->set_flat(true);
 	button_hist_prev->set_disabled(true);
 	button_hist_prev->set_focus_mode(FOCUS_NONE);
-	button_hist_prev->set_tooltip(TTR("Previous Folder/File"));
+	button_hist_prev->set_tooltip_text(TTR("Previous Folder/File"));
 	toolbar_hbc->add_child(button_hist_prev);
 
 	button_hist_next = memnew(Button);
 	button_hist_next->set_flat(true);
 	button_hist_next->set_disabled(true);
 	button_hist_next->set_focus_mode(FOCUS_NONE);
-	button_hist_next->set_tooltip(TTR("Next Folder/File"));
+	button_hist_next->set_tooltip_text(TTR("Next Folder/File"));
 	toolbar_hbc->add_child(button_hist_next);
 
 	current_path = memnew(LineEdit);
@@ -3059,7 +3059,7 @@ FileSystemDock::FileSystemDock() {
 	button_reload = memnew(Button);
 	button_reload->connect("pressed", callable_mp(this, &FileSystemDock::_rescan));
 	button_reload->set_focus_mode(FOCUS_NONE);
-	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
+	button_reload->set_tooltip_text(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
 	toolbar_hbc->add_child(button_reload);
 
@@ -3067,7 +3067,7 @@ FileSystemDock::FileSystemDock() {
 	button_toggle_display_mode->set_toggle_mode(true);
 	button_toggle_display_mode->connect("toggled", callable_mp(this, &FileSystemDock::_toggle_split_mode));
 	button_toggle_display_mode->set_focus_mode(FOCUS_NONE);
-	button_toggle_display_mode->set_tooltip(TTR("Toggle Split Mode"));
+	button_toggle_display_mode->set_tooltip_text(TTR("Toggle Split Mode"));
 	button_toggle_display_mode->set_flat(true);
 	toolbar_hbc->add_child(button_toggle_display_mode);
 

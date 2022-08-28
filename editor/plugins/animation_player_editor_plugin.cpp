@@ -1646,28 +1646,28 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	play_bw_from = memnew(Button);
 	play_bw_from->set_flat(true);
-	play_bw_from->set_tooltip(TTR("Play selected animation backwards from current pos. (A)"));
+	play_bw_from->set_tooltip_text(TTR("Play selected animation backwards from current pos. (A)"));
 	hb->add_child(play_bw_from);
 
 	play_bw = memnew(Button);
 	play_bw->set_flat(true);
-	play_bw->set_tooltip(TTR("Play selected animation backwards from end. (Shift+A)"));
+	play_bw->set_tooltip_text(TTR("Play selected animation backwards from end. (Shift+A)"));
 	hb->add_child(play_bw);
 
 	stop = memnew(Button);
 	stop->set_flat(true);
 	stop->set_toggle_mode(true);
 	hb->add_child(stop);
-	stop->set_tooltip(TTR("Stop animation playback. (S)"));
+	stop->set_tooltip_text(TTR("Stop animation playback. (S)"));
 
 	play = memnew(Button);
 	play->set_flat(true);
-	play->set_tooltip(TTR("Play selected animation from start. (Shift+D)"));
+	play->set_tooltip_text(TTR("Play selected animation from start. (Shift+D)"));
 	hb->add_child(play);
 
 	play_from = memnew(Button);
 	play_from->set_flat(true);
-	play_from->set_tooltip(TTR("Play selected animation from current pos. (D)"));
+	play_from->set_tooltip_text(TTR("Play selected animation from current pos. (D)"));
 	hb->add_child(play_from);
 
 	frame = memnew(SpinBox);
@@ -1675,7 +1675,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	frame->set_custom_minimum_size(Size2(80, 0) * EDSCALE);
 	frame->set_stretch_ratio(2);
 	frame->set_step(0.0001);
-	frame->set_tooltip(TTR("Animation position (in seconds)."));
+	frame->set_tooltip_text(TTR("Animation position (in seconds)."));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -1683,7 +1683,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	hb->add_child(scale);
 	scale->set_h_size_flags(SIZE_EXPAND_FILL);
 	scale->set_stretch_ratio(1);
-	scale->set_tooltip(TTR("Scale animation playback globally for the node."));
+	scale->set_tooltip_text(TTR("Scale animation playback globally for the node."));
 	scale->hide();
 
 	delete_dialog = memnew(ConfirmationDialog);
@@ -1693,7 +1693,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim = memnew(MenuButton);
 	tool_anim->set_shortcut_context(this);
 	tool_anim->set_flat(false);
-	tool_anim->set_tooltip(TTR("Animation Tools"));
+	tool_anim->set_tooltip_text(TTR("Animation Tools"));
 	tool_anim->set_text(TTR("Animation"));
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/new_animation", TTR("New")), TOOL_NEW_ANIM);
 	tool_anim->get_popup()->add_separator();
@@ -1712,13 +1712,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	animation = memnew(OptionButton);
 	hb->add_child(animation);
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
-	animation->set_tooltip(TTR("Display list of animations in player."));
+	animation->set_tooltip_text(TTR("Display list of animations in player."));
 	animation->set_clip_text(true);
 
 	autoplay = memnew(Button);
 	autoplay->set_flat(true);
 	hb->add_child(autoplay);
-	autoplay->set_tooltip(TTR("Autoplay on Load"));
+	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -1731,12 +1731,12 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_toggle = memnew(Button);
 	onion_toggle->set_flat(true);
 	onion_toggle->set_toggle_mode(true);
-	onion_toggle->set_tooltip(TTR("Enable Onion Skinning"));
+	onion_toggle->set_tooltip_text(TTR("Enable Onion Skinning"));
 	onion_toggle->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu).bind(ONION_SKINNING_ENABLE));
 	hb->add_child(onion_toggle);
 
 	onion_skinning = memnew(MenuButton);
-	onion_skinning->set_tooltip(TTR("Onion Skinning Options"));
+	onion_skinning->set_tooltip_text(TTR("Onion Skinning Options"));
 	onion_skinning->get_popup()->add_separator(TTR("Directions"));
 	// TRANSLATORS: Opposite of "Future", refers to a direction in animation onion skinning.
 	onion_skinning->get_popup()->add_check_item(TTR("Past"), ONION_SKINNING_PAST);
@@ -1759,7 +1759,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	pin = memnew(Button);
 	pin->set_flat(true);
 	pin->set_toggle_mode(true);
-	pin->set_tooltip(TTR("Pin AnimationPlayer"));
+	pin->set_tooltip_text(TTR("Pin AnimationPlayer"));
 	hb->add_child(pin);
 	pin->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_pin_pressed));
 

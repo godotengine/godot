@@ -62,7 +62,7 @@ void EditorResourcePicker::_update_resource() {
 		if (edited_resource == Ref<Resource>()) {
 			assign_button->set_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("[empty]"));
-			assign_button->set_tooltip("");
+			assign_button->set_tooltip_text("");
 		} else {
 			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
 
@@ -73,13 +73,13 @@ void EditorResourcePicker::_update_resource() {
 			} else {
 				assign_button->set_text(edited_resource->get_class());
 			}
-			assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 
 			// Preview will override the above, so called at the end.
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
 		}
 	} else if (edited_resource.is_valid()) {
-		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 	}
 
 	assign_button->set_disabled(!editable && !edited_resource.is_valid());

@@ -135,7 +135,7 @@ void EditorInspectorPluginGradient::parse_begin(Object *p_object) {
 	add_custom_control(gradient_tools_hbox);
 
 	reverse_btn->connect("pressed", callable_mp(this, &EditorInspectorPluginGradient::_reverse_button_pressed));
-	reverse_btn->set_tooltip(TTR("Reverse/mirror gradient."));
+	reverse_btn->set_tooltip_text(TTR("Reverse/mirror gradient."));
 }
 
 void EditorInspectorPluginGradient::_reverse_button_pressed() {

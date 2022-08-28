@@ -139,7 +139,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	but_insert_name = memnew(Button);
 	but_insert_name->set_text("NAME");
-	but_insert_name->set_tooltip(String("${NAME}\n") + TTR("Node name."));
+	but_insert_name->set_tooltip_text(String("${NAME}\n") + TTR("Node name."));
 	but_insert_name->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_name->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${NAME}"));
 	but_insert_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -149,7 +149,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	but_insert_parent = memnew(Button);
 	but_insert_parent->set_text("PARENT");
-	but_insert_parent->set_tooltip(String("${PARENT}\n") + TTR("Node's parent name, if available."));
+	but_insert_parent->set_tooltip_text(String("${PARENT}\n") + TTR("Node's parent name, if available."));
 	but_insert_parent->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_parent->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${PARENT}"));
 	but_insert_parent->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -159,7 +159,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	but_insert_type = memnew(Button);
 	but_insert_type->set_text("TYPE");
-	but_insert_type->set_tooltip(String("${TYPE}\n") + TTR("Node type."));
+	but_insert_type->set_tooltip_text(String("${TYPE}\n") + TTR("Node type."));
 	but_insert_type->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_type->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${TYPE}"));
 	but_insert_type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -169,7 +169,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	but_insert_scene = memnew(Button);
 	but_insert_scene->set_text("SCENE");
-	but_insert_scene->set_tooltip(String("${SCENE}\n") + TTR("Current scene name."));
+	but_insert_scene->set_tooltip_text(String("${SCENE}\n") + TTR("Current scene name."));
 	but_insert_scene->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_scene->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${SCENE}"));
 	but_insert_scene->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -179,7 +179,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	but_insert_root = memnew(Button);
 	but_insert_root->set_text("ROOT");
-	but_insert_root->set_tooltip(String("${ROOT}\n") + TTR("Root node name."));
+	but_insert_root->set_tooltip_text(String("${ROOT}\n") + TTR("Root node name."));
 	but_insert_root->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_root->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${ROOT}"));
 	but_insert_root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -189,7 +189,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	but_insert_count = memnew(Button);
 	but_insert_count->set_text("COUNTER");
-	but_insert_count->set_tooltip(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
+	but_insert_count->set_tooltip_text(String("${COUNTER}\n") + TTR("Sequential integer counter.\nCompare counter options."));
 	but_insert_count->set_focus_mode(Control::FOCUS_NONE);
 	but_insert_count->connect("pressed", callable_mp(this, &RenameDialog::_insert_text).bind("${COUNTER}"));
 	but_insert_count->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -197,7 +197,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	chk_per_level_counter = memnew(CheckBox);
 	chk_per_level_counter->set_text(TTR("Per-level Counter"));
-	chk_per_level_counter->set_tooltip(TTR("If set, the counter restarts for each group of child nodes."));
+	chk_per_level_counter->set_tooltip_text(TTR("If set, the counter restarts for each group of child nodes."));
 	vbc_substitute->add_child(chk_per_level_counter);
 
 	HBoxContainer *hbc_count_options = memnew(HBoxContainer);
@@ -205,32 +205,32 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 
 	Label *lbl_count_start = memnew(Label);
 	lbl_count_start->set_text(TTR("Start"));
-	lbl_count_start->set_tooltip(TTR("Initial value for the counter."));
+	lbl_count_start->set_tooltip_text(TTR("Initial value for the counter."));
 	hbc_count_options->add_child(lbl_count_start);
 
 	spn_count_start = memnew(SpinBox);
-	spn_count_start->set_tooltip(TTR("Initial value for the counter."));
+	spn_count_start->set_tooltip_text(TTR("Initial value for the counter."));
 	spn_count_start->set_step(1);
 	spn_count_start->set_min(0);
 	hbc_count_options->add_child(spn_count_start);
 
 	Label *lbl_count_step = memnew(Label);
 	lbl_count_step->set_text(TTR("Step"));
-	lbl_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node."));
+	lbl_count_step->set_tooltip_text(TTR("Amount by which counter is incremented for each node."));
 	hbc_count_options->add_child(lbl_count_step);
 
 	spn_count_step = memnew(SpinBox);
-	spn_count_step->set_tooltip(TTR("Amount by which counter is incremented for each node."));
+	spn_count_step->set_tooltip_text(TTR("Amount by which counter is incremented for each node."));
 	spn_count_step->set_step(1);
 	hbc_count_options->add_child(spn_count_step);
 
 	Label *lbl_count_padding = memnew(Label);
 	lbl_count_padding->set_text(TTR("Padding"));
-	lbl_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
+	lbl_count_padding->set_tooltip_text(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	hbc_count_options->add_child(lbl_count_padding);
 
 	spn_count_padding = memnew(SpinBox);
-	spn_count_padding->set_tooltip(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
+	spn_count_padding->set_tooltip_text(TTR("Minimum number of digits for the counter.\nMissing digits are padded with leading zeros."));
 	spn_count_padding->set_step(1);
 	hbc_count_options->add_child(spn_count_padding);
 

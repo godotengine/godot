@@ -476,9 +476,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 					to = String(transition_lines[closest].multi_transitions[i].to_node);
 					tooltip += "\n" + from + " -> " + to;
 				}
-				state_machine_draw->set_tooltip(tooltip);
+				state_machine_draw->set_tooltip_text(tooltip);
 			} else {
-				state_machine_draw->set_tooltip("");
+				state_machine_draw->set_tooltip_text("");
 			}
 		}
 	}
@@ -1916,7 +1916,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
-	tool_select->set_tooltip(TTR("Select and move nodes.\nRMB: Add node at position clicked.\nShift+LMB+Drag: Connects the selected node with another node or creates a new node if you select an area without nodes."));
+	tool_select->set_tooltip_text(TTR("Select and move nodes.\nRMB: Add node at position clicked.\nShift+LMB+Drag: Connects the selected node with another node or creates a new node if you select an area without nodes."));
 	tool_select->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
@@ -1924,7 +1924,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(tool_create);
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
-	tool_create->set_tooltip(TTR("Create new nodes."));
+	tool_create->set_tooltip_text(TTR("Create new nodes."));
 	tool_create->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
@@ -1932,7 +1932,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	top_hb->add_child(tool_connect);
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
-	tool_connect->set_tooltip(TTR("Connect nodes."));
+	tool_connect->set_tooltip_text(TTR("Connect nodes."));
 	tool_connect->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_erase_hb = memnew(HBoxContainer);
@@ -1941,21 +1941,21 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
 	tool_group = memnew(Button);
 	tool_group->set_flat(true);
-	tool_group->set_tooltip(TTR("Group Selected Node(s)") + " (Ctrl+G)");
+	tool_group->set_tooltip_text(TTR("Group Selected Node(s)") + " (Ctrl+G)");
 	tool_group->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_group_selected_nodes));
 	tool_group->set_disabled(true);
 	tool_erase_hb->add_child(tool_group);
 
 	tool_ungroup = memnew(Button);
 	tool_ungroup->set_flat(true);
-	tool_ungroup->set_tooltip(TTR("Ungroup Selected Node") + " (Ctrl+Shift+G)");
+	tool_ungroup->set_tooltip_text(TTR("Ungroup Selected Node") + " (Ctrl+Shift+G)");
 	tool_ungroup->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_ungroup_selected_nodes));
 	tool_ungroup->set_visible(false);
 	tool_erase_hb->add_child(tool_ungroup);
 
 	tool_erase = memnew(Button);
 	tool_erase->set_flat(true);
-	tool_erase->set_tooltip(TTR("Remove selected node or transition."));
+	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
 	tool_erase_hb->add_child(tool_erase);

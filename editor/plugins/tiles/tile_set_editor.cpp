@@ -694,7 +694,7 @@ TileSetEditor::TileSetEditor() {
 
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(true);
-	source_sort_button->set_tooltip(TTR("Sort sources"));
+	source_sort_button->set_tooltip_text(TTR("Sort sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &TileSetEditor::_set_source_sort));

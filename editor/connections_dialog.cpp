@@ -459,7 +459,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	unbind_count = memnew(SpinBox);
-	unbind_count->set_tooltip(TTR("Allows to drop arguments sent by signal emitter."));
+	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
 	unbind_count->connect("value_changed", callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
@@ -480,13 +480,13 @@ ConnectDialog::ConnectDialog() {
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
 	deferred->set_text(TTR("Deferred"));
-	deferred->set_tooltip(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
+	deferred->set_tooltip_text(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
 	vbc_right->add_child(deferred);
 
 	oneshot = memnew(CheckBox);
 	oneshot->set_h_size_flags(0);
 	oneshot->set_text(TTR("Oneshot"));
-	oneshot->set_tooltip(TTR("Disconnects the signal after its first emission."));
+	oneshot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
 	vbc_right->add_child(oneshot);
 
 	cdbinds = memnew(ConnectDialogBinds);

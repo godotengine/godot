@@ -536,7 +536,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit->set_flat(true);
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Left Click: Split Segment (in curve)") + "\n" + TTR("Right Click: Delete Point"));
 	curve_edit->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT));
 	base_hb->add_child(curve_edit);
 
@@ -544,7 +544,7 @@ Path2DEditor::Path2DEditor() {
 	curve_edit_curve->set_flat(true);
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit_curve->set_tooltip(TTR("Select Control Points (Shift+Drag)"));
+	curve_edit_curve->set_tooltip_text(TTR("Select Control Points (Shift+Drag)"));
 	curve_edit_curve->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_EDIT_CURVE));
 	base_hb->add_child(curve_edit_curve);
 
@@ -552,7 +552,7 @@ Path2DEditor::Path2DEditor() {
 	curve_create->set_flat(true);
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
-	curve_create->set_tooltip(TTR("Add Point (in empty space)"));
+	curve_create->set_tooltip_text(TTR("Add Point (in empty space)"));
 	curve_create->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_CREATE));
 	base_hb->add_child(curve_create);
 
@@ -560,14 +560,14 @@ Path2DEditor::Path2DEditor() {
 	curve_del->set_flat(true);
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
-	curve_del->set_tooltip(TTR("Delete Point"));
+	curve_del->set_tooltip_text(TTR("Delete Point"));
 	curve_del->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(MODE_DELETE));
 	base_hb->add_child(curve_del);
 
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
-	curve_close->set_tooltip(TTR("Close Curve"));
+	curve_close->set_tooltip_text(TTR("Close Curve"));
 	curve_close->connect("pressed", callable_mp(this, &Path2DEditor::_mode_selected).bind(ACTION_CLOSE));
 	base_hb->add_child(curve_close);
 

@@ -1160,13 +1160,13 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	new_anim = memnew(Button);
 	new_anim->set_flat(true);
-	new_anim->set_tooltip(TTR("New Animation"));
+	new_anim->set_tooltip_text(TTR("New Animation"));
 	hbc_animlist->add_child(new_anim);
 	new_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
 
 	remove_anim = memnew(Button);
 	remove_anim->set_flat(true);
-	remove_anim->set_tooltip(TTR("Remove Animation"));
+	remove_anim->set_tooltip_text(TTR("Remove Animation"));
 	hbc_animlist->add_child(remove_anim);
 	remove_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
@@ -1214,53 +1214,53 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	load = memnew(Button);
 	load->set_flat(true);
-	load->set_tooltip(TTR("Add a Texture from File"));
+	load->set_tooltip_text(TTR("Add a Texture from File"));
 	hbc->add_child(load);
 
 	load_sheet = memnew(Button);
 	load_sheet->set_flat(true);
-	load_sheet->set_tooltip(TTR("Add Frames from a Sprite Sheet"));
+	load_sheet->set_tooltip_text(TTR("Add Frames from a Sprite Sheet"));
 	hbc->add_child(load_sheet);
 
 	hbc->add_child(memnew(VSeparator));
 
 	copy = memnew(Button);
 	copy->set_flat(true);
-	copy->set_tooltip(TTR("Copy"));
+	copy->set_tooltip_text(TTR("Copy"));
 	hbc->add_child(copy);
 
 	paste = memnew(Button);
 	paste->set_flat(true);
-	paste->set_tooltip(TTR("Paste"));
+	paste->set_tooltip_text(TTR("Paste"));
 	hbc->add_child(paste);
 
 	hbc->add_child(memnew(VSeparator));
 
 	empty = memnew(Button);
 	empty->set_flat(true);
-	empty->set_tooltip(TTR("Insert Empty (Before)"));
+	empty->set_tooltip_text(TTR("Insert Empty (Before)"));
 	hbc->add_child(empty);
 
 	empty2 = memnew(Button);
 	empty2->set_flat(true);
-	empty2->set_tooltip(TTR("Insert Empty (After)"));
+	empty2->set_tooltip_text(TTR("Insert Empty (After)"));
 	hbc->add_child(empty2);
 
 	hbc->add_child(memnew(VSeparator));
 
 	move_up = memnew(Button);
 	move_up->set_flat(true);
-	move_up->set_tooltip(TTR("Move (Before)"));
+	move_up->set_tooltip_text(TTR("Move (Before)"));
 	hbc->add_child(move_up);
 
 	move_down = memnew(Button);
 	move_down->set_flat(true);
-	move_down->set_tooltip(TTR("Move (After)"));
+	move_down->set_tooltip_text(TTR("Move (After)"));
 	hbc->add_child(move_down);
 
 	_delete = memnew(Button);
 	_delete->set_flat(true);
-	_delete->set_tooltip(TTR("Delete"));
+	_delete->set_tooltip_text(TTR("Delete"));
 	hbc->add_child(_delete);
 
 	hbc->add_spacer();
@@ -1268,19 +1268,19 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	zoom_out = memnew(Button);
 	zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_out));
 	zoom_out->set_flat(true);
-	zoom_out->set_tooltip(TTR("Zoom Out"));
+	zoom_out->set_tooltip_text(TTR("Zoom Out"));
 	hbc->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_reset));
 	zoom_reset->set_flat(true);
-	zoom_reset->set_tooltip(TTR("Zoom Reset"));
+	zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
 	hbc->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_zoom_in));
 	zoom_in->set_flat(true);
-	zoom_in->set_tooltip(TTR("Zoom In"));
+	zoom_in->set_tooltip_text(TTR("Zoom In"));
 	hbc->add_child(zoom_in);
 
 	file = memnew(EditorFileDialog);
@@ -1433,21 +1433,21 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	split_sheet_zoom_out = memnew(Button);
 	split_sheet_zoom_out->set_flat(true);
 	split_sheet_zoom_out->set_focus_mode(FOCUS_NONE);
-	split_sheet_zoom_out->set_tooltip(TTR("Zoom Out"));
+	split_sheet_zoom_out->set_tooltip_text(TTR("Zoom Out"));
 	split_sheet_zoom_out->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_out));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_out);
 
 	split_sheet_zoom_reset = memnew(Button);
 	split_sheet_zoom_reset->set_flat(true);
 	split_sheet_zoom_reset->set_focus_mode(FOCUS_NONE);
-	split_sheet_zoom_reset->set_tooltip(TTR("Zoom Reset"));
+	split_sheet_zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
 	split_sheet_zoom_reset->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_reset));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_reset);
 
 	split_sheet_zoom_in = memnew(Button);
 	split_sheet_zoom_in->set_flat(true);
 	split_sheet_zoom_in->set_focus_mode(FOCUS_NONE);
-	split_sheet_zoom_in->set_tooltip(TTR("Zoom In"));
+	split_sheet_zoom_in->set_tooltip_text(TTR("Zoom In"));
 	split_sheet_zoom_in->connect("pressed", callable_mp(this, &SpriteFramesEditor::_sheet_zoom_in));
 	split_sheet_zoom_hb->add_child(split_sheet_zoom_in);
 

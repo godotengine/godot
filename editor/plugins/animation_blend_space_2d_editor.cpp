@@ -867,7 +867,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_blend->set_button_group(bg);
 	top_hb->add_child(tool_blend);
 	tool_blend->set_pressed(true);
-	tool_blend->set_tooltip(TTR("Set the blending position within the space"));
+	tool_blend->set_tooltip_text(TTR("Set the blending position within the space"));
 	tool_blend->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
@@ -875,7 +875,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
-	tool_select->set_tooltip(TTR("Select and move points, create points with RMB."));
+	tool_select->set_tooltip_text(TTR("Select and move points, create points with RMB."));
 	tool_select->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
@@ -883,7 +883,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
-	tool_create->set_tooltip(TTR("Create points."));
+	tool_create->set_tooltip_text(TTR("Create points."));
 	tool_create->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
 	tool_triangle = memnew(Button);
@@ -891,7 +891,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
-	tool_triangle->set_tooltip(TTR("Create triangles by connecting points."));
+	tool_triangle->set_tooltip_text(TTR("Create triangles by connecting points."));
 	tool_triangle->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(2));
 
 	tool_erase_sep = memnew(VSeparator);
@@ -899,7 +899,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_erase = memnew(Button);
 	tool_erase->set_flat(true);
 	top_hb->add_child(tool_erase);
-	tool_erase->set_tooltip(TTR("Erase points and triangles."));
+	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
 	tool_erase->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
 	tool_erase->set_disabled(true);
 
@@ -910,7 +910,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(auto_triangles);
 	auto_triangles->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
-	auto_triangles->set_tooltip(TTR("Generate blend triangles automatically (instead of manually)"));
+	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically (instead of manually)"));
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -919,7 +919,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
-	snap->set_tooltip(TTR("Enable snap and show grid."));
+	snap->set_tooltip_text(TTR("Enable snap and show grid."));
 	snap->connect("pressed", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_snap_toggled));
 
 	snap_x = memnew(SpinBox);

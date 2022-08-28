@@ -1011,13 +1011,13 @@ FileDialog::FileDialog() {
 
 	dir_prev = memnew(Button);
 	dir_prev->set_flat(true);
-	dir_prev->set_tooltip(RTR("Go to previous folder."));
+	dir_prev->set_tooltip_text(RTR("Go to previous folder."));
 	dir_next = memnew(Button);
 	dir_next->set_flat(true);
-	dir_next->set_tooltip(RTR("Go to next folder."));
+	dir_next->set_tooltip_text(RTR("Go to next folder."));
 	dir_up = memnew(Button);
 	dir_up->set_flat(true);
-	dir_up->set_tooltip(RTR("Go to parent folder."));
+	dir_up->set_tooltip_text(RTR("Go to parent folder."));
 	hbc->add_child(dir_prev);
 	hbc->add_child(dir_next);
 	hbc->add_child(dir_up);
@@ -1041,7 +1041,7 @@ FileDialog::FileDialog() {
 
 	refresh = memnew(Button);
 	refresh->set_flat(true);
-	refresh->set_tooltip(RTR("Refresh files."));
+	refresh->set_tooltip_text(RTR("Refresh files."));
 	refresh->connect("pressed", callable_mp(this, &FileDialog::update_file_list));
 	hbc->add_child(refresh);
 
@@ -1049,7 +1049,7 @@ FileDialog::FileDialog() {
 	show_hidden->set_flat(true);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
+	show_hidden->set_tooltip_text(RTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", callable_mp(this, &FileDialog::set_show_hidden_files));
 	hbc->add_child(show_hidden);
 

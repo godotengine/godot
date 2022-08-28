@@ -394,7 +394,7 @@ void EditorPropertyLocale::_locale_pressed() {
 void EditorPropertyLocale::update_property() {
 	String locale_code = get_edited_object()->get(get_edited_property());
 	locale->set_text(locale_code);
-	locale->set_tooltip(locale_code);
+	locale->set_tooltip_text(locale_code);
 }
 
 void EditorPropertyLocale::setup(const String &p_hint_text) {
@@ -482,7 +482,7 @@ void EditorPropertyPath::_path_pressed() {
 void EditorPropertyPath::update_property() {
 	String full_path = get_edited_object()->get(get_edited_property());
 	path->set_text(full_path);
-	path->set_tooltip(full_path);
+	path->set_tooltip_text(full_path);
 }
 
 void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global) {
@@ -3493,14 +3493,14 @@ void EditorPropertyColor::update_property() {
 
 	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
 	if (picker->is_editing_alpha()) {
-		picker->set_tooltip(vformat(
+		picker->set_tooltip_text(vformat(
 				"R: %s\nG: %s\nB: %s\nA: %s",
 				rtos(color.r).pad_decimals(2),
 				rtos(color.g).pad_decimals(2),
 				rtos(color.b).pad_decimals(2),
 				rtos(color.a).pad_decimals(2)));
 	} else {
-		picker->set_tooltip(vformat(
+		picker->set_tooltip_text(vformat(
 				"R: %s\nG: %s\nB: %s",
 				rtos(color.r).pad_decimals(2),
 				rtos(color.g).pad_decimals(2),
@@ -3658,7 +3658,7 @@ void EditorPropertyNodePath::update_property() {
 		p = get_edited_object()->get(get_edited_property());
 	}
 
-	assign->set_tooltip(p);
+	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));

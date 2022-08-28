@@ -289,7 +289,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			} else {
 				prop->set_label(TranslationServer::get_singleton()->get_locale_name(name));
 			}
-			prop->set_tooltip(name);
+			prop->set_tooltip_text(name);
 			prop->set_selectable(false);
 
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyFontMetaOverride::_property_changed));
@@ -478,7 +478,7 @@ void EditorPropertyOTVariation::update_property() {
 
 			String name = TS->tag_to_name(name_tag);
 			prop->set_label(name.capitalize());
-			prop->set_tooltip(name);
+			prop->set_tooltip_text(name);
 			prop->set_selectable(false);
 
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyOTVariation::_property_changed));
@@ -756,7 +756,7 @@ void EditorPropertyOTFeatures::update_property() {
 					disp_name = vformat("%s (%s)", disp_name, info["label"].operator String());
 				}
 				prop->set_label(disp_name);
-				prop->set_tooltip(name);
+				prop->set_tooltip_text(name);
 				prop->set_selectable(false);
 
 				prop->connect("property_changed", callable_mp(this, &EditorPropertyOTFeatures::_property_changed));

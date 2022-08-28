@@ -185,9 +185,9 @@ void ProjectExportDialog::_update_export_all() {
 	export_all_button->set_disabled(!can_export);
 
 	if (can_export) {
-		export_all_button->set_tooltip(TTR("Export the project for all the presets defined."));
+		export_all_button->set_tooltip_text(TTR("Export the project for all the presets defined."));
 	} else {
-		export_all_button->set_tooltip(TTR("All presets must have an export path defined for Export All to work."));
+		export_all_button->set_tooltip_text(TTR("All presets must have an export path defined for Export All to work."));
 	}
 }
 
@@ -1020,12 +1020,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
-	duplicate_preset->set_tooltip(TTR("Duplicate"));
+	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
 	duplicate_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
-	delete_preset->set_tooltip(TTR("Delete"));
+	delete_preset->set_tooltip_text(TTR("Delete"));
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect("pressed", callable_mp(this, &ProjectExportDialog::_delete_preset));
@@ -1041,7 +1041,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	name->connect("text_changed", callable_mp(this, &ProjectExportDialog::_name_changed));
 	runnable = memnew(CheckButton);
 	runnable->set_text(TTR("Runnable"));
-	runnable->set_tooltip(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
+	runnable->set_tooltip_text(TTR("If checked, the preset will be available for use in one-click deploy.\nOnly one preset per platform may be marked as runnable."));
 	runnable->connect("pressed", callable_mp(this, &ProjectExportDialog::_runnable_pressed));
 	settings_vb->add_child(runnable);
 

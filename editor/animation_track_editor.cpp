@@ -1750,13 +1750,13 @@ void AnimationTimelineEdit::update_values() {
 	if (use_fps && animation->get_step() > 0) {
 		length->set_value(animation->get_length() / animation->get_step());
 		length->set_step(1);
-		length->set_tooltip(TTR("Animation length (frames)"));
-		time_icon->set_tooltip(TTR("Animation length (frames)"));
+		length->set_tooltip_text(TTR("Animation length (frames)"));
+		time_icon->set_tooltip_text(TTR("Animation length (frames)"));
 	} else {
 		length->set_value(animation->get_length());
 		length->set_step(0.001);
-		length->set_tooltip(TTR("Animation length (seconds)"));
-		time_icon->set_tooltip(TTR("Animation length (seconds)"));
+		length->set_tooltip_text(TTR("Animation length (seconds)"));
+		time_icon->set_tooltip_text(TTR("Animation length (seconds)"));
 	}
 
 	switch (animation->get_loop_mode()) {
@@ -1941,7 +1941,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb->add_child(expander);
 	time_icon = memnew(TextureRect);
 	time_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
-	time_icon->set_tooltip(TTR("Animation length (seconds)"));
+	time_icon->set_tooltip_text(TTR("Animation length (seconds)"));
 	len_hb->add_child(time_icon);
 	length = memnew(EditorSpinSlider);
 	length->set_min(0.001);
@@ -1950,12 +1950,12 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
-	length->set_tooltip(TTR("Animation length (seconds)"));
+	length->set_tooltip_text(TTR("Animation length (seconds)"));
 	length->connect("value_changed", callable_mp(this, &AnimationTimelineEdit::_anim_length_changed));
 	len_hb->add_child(length);
 	loop = memnew(Button);
 	loop->set_flat(true);
-	loop->set_tooltip(TTR("Animation Looping"));
+	loop->set_tooltip_text(TTR("Animation Looping"));
 	loop->connect("pressed", callable_mp(this, &AnimationTimelineEdit::_anim_loop_pressed));
 	loop->set_toggle_mode(true);
 	len_hb->add_child(loop);
@@ -4599,7 +4599,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 				g->set_type_and_name(icon, name, animation->track_get_path(i));
 				g->set_root(root);
-				g->set_tooltip(tooltip);
+				g->set_tooltip_text(tooltip);
 				g->set_timeline(timeline);
 				groups.push_back(g);
 				VBoxContainer *vb = memnew(VBoxContainer);
@@ -6637,7 +6637,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	imported_anim_warning = memnew(Button);
 	imported_anim_warning->hide();
 	imported_anim_warning->set_text(TTR("Imported Scene"));
-	imported_anim_warning->set_tooltip(TTR("Warning: Editing imported animation"));
+	imported_anim_warning->set_tooltip_text(TTR("Warning: Editing imported animation"));
 	imported_anim_warning->connect("pressed", callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
 	bottom_hb->add_child(imported_anim_warning);
 
@@ -6648,7 +6648,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit_icon->set_disabled(true);
 	bezier_edit_icon->set_toggle_mode(true);
 	bezier_edit_icon->connect("pressed", callable_mp(this, &AnimationTrackEditor::_toggle_bezier_edit));
-	bezier_edit_icon->set_tooltip(TTR("Toggle between the bezier curve editor and track editor."));
+	bezier_edit_icon->set_tooltip_text(TTR("Toggle between the bezier curve editor and track editor."));
 
 	bottom_hb->add_child(bezier_edit_icon);
 
@@ -6656,7 +6656,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	selected_filter->set_flat(true);
 	selected_filter->connect("pressed", callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); // Same function works the same.
 	selected_filter->set_toggle_mode(true);
-	selected_filter->set_tooltip(TTR("Only show tracks from nodes selected in tree."));
+	selected_filter->set_tooltip_text(TTR("Only show tracks from nodes selected in tree."));
 
 	bottom_hb->add_child(selected_filter);
 
@@ -6664,7 +6664,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_flat(true);
 	view_group->connect("pressed", callable_mp(this, &AnimationTrackEditor::_view_group_toggle));
 	view_group->set_toggle_mode(true);
-	view_group->set_tooltip(TTR("Group tracks by node or display them as plain list."));
+	view_group->set_tooltip_text(TTR("Group tracks by node or display them as plain list."));
 
 	bottom_hb->add_child(view_group);
 	bottom_hb->add_child(memnew(VSeparator));
@@ -6683,7 +6683,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_step(0.001);
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
-	step->set_tooltip(TTR("Animation step value."));
+	step->set_tooltip_text(TTR("Animation step value."));
 	bottom_hb->add_child(step);
 	step->connect("value_changed", callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
@@ -6715,7 +6715,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->set_text(TTR("Edit"));
 	edit->set_flat(false);
 	edit->set_disabled(true);
-	edit->set_tooltip(TTR("Animation properties."));
+	edit->set_tooltip_text(TTR("Animation properties."));
 	edit->get_popup()->add_item(TTR("Copy Tracks"), EDIT_COPY_TRACKS);
 	edit->get_popup()->add_item(TTR("Paste Tracks"), EDIT_PASTE_TRACKS);
 	edit->get_popup()->add_separator();

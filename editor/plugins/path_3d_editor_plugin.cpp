@@ -595,7 +595,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Drag: Select Control Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
 
 	curve_create = memnew(Button);
@@ -603,7 +603,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_create->set_toggle_mode(true);
 	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
-	curve_create->set_tooltip(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
+	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_create);
 
 	curve_del = memnew(Button);
@@ -611,14 +611,14 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_del->set_toggle_mode(true);
 	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
-	curve_del->set_tooltip(TTR("Delete Point"));
+	curve_del->set_tooltip_text(TTR("Delete Point"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_del);
 
 	curve_close = memnew(Button);
 	curve_close->set_flat(true);
 	curve_close->hide();
 	curve_close->set_focus_mode(Control::FOCUS_NONE);
-	curve_close->set_tooltip(TTR("Close Curve"));
+	curve_close->set_tooltip_text(TTR("Close Curve"));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(curve_close);
 
 	PopupMenu *menu;

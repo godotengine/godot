@@ -60,7 +60,7 @@ public:
 
 		_3d_space_switch = memnew(Button);
 		_3d_space_switch->set_text(TTR("3D"));
-		_3d_space_switch->set_tooltip(TTR("Toggles whether the noise preview is computed in 3D space."));
+		_3d_space_switch->set_tooltip_text(TTR("Toggles whether the noise preview is computed in 3D space."));
 		_3d_space_switch->set_toggle_mode(true);
 		_3d_space_switch->set_offset(SIDE_LEFT, PADDING_3D_SPACE_SWITCH);
 		_3d_space_switch->set_offset(SIDE_TOP, PADDING_3D_SPACE_SWITCH);

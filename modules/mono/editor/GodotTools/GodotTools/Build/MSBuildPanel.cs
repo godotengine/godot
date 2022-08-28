@@ -139,7 +139,7 @@ namespace GodotTools.Build
 
             _errorsBtn = new Button
             {
-                HintTooltip = "Show Errors".TTR(),
+                TooltipText = "Show Errors".TTR(),
                 Icon = GetThemeIcon("StatusError", "EditorIcons"),
                 ExpandIcon = false,
                 ToggleMode = true,
@@ -151,7 +151,7 @@ namespace GodotTools.Build
 
             _warningsBtn = new Button
             {
-                HintTooltip = "Show Warnings".TTR(),
+                TooltipText = "Show Warnings".TTR(),
                 Icon = GetThemeIcon("NodeWarning", "EditorIcons"),
                 ExpandIcon = false,
                 ToggleMode = true,
