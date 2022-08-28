@@ -74,6 +74,55 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 	return pinned;
 }
 
+Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene) {
+	ERR_FAIL_COND_V(p_resource.is_null(), Ref<Resource>());
+
+	Ref<Resource> remap_resource;
+
+	// Find the shared copy of the source resource.
+	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = remap_cache.find(p_resource);
+	if (R) {
+		remap_resource = R->value;
+	} else if (p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class() == p_resource->get_class()) {
+		// Simply copy the data from the source resource to update the fallback resource that was previously set.
+
+		p_fallback->reset_state(); // May want to reset state.
+
+		List<PropertyInfo> pi;
+		p_resource->get_property_list(&pi);
+		for (const PropertyInfo &E : pi) {
+			if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+				continue;
+			}
+			if (E.name == "resource_path") {
+				continue; // Do not change path.
+			}
+
+			Variant value = p_resource->get(E.name);
+
+			// The local-to-scene subresource instance is preserved, thus maintaining the previous sharing relationship.
+			// This is mainly used when the sub-scene root is reset in the main scene.
+			Ref<Resource> sub_res_of_from = value;
+			if (sub_res_of_from.is_valid() && sub_res_of_from->is_local_to_scene()) {
+				value = get_remap_resource(sub_res_of_from, remap_cache, p_fallback->get(E.name), p_fallback->get_local_scene());
+			}
+
+			p_fallback->set(E.name, value);
+		}
+
+		p_fallback->set_scene_unique_id(p_resource->get_scene_unique_id()); // Get the id from the main scene, in case the id changes again when saving the scene.
+
+		remap_cache[p_resource] = p_fallback;
+		remap_resource = p_fallback;
+	} else { // A copy of the source resource is required to overwrite the previous one.
+		Ref<Resource> local_dupe = p_resource->duplicate_for_local_scene(p_for_scene, remap_cache);
+		remap_cache[p_resource] = local_dupe;
+		remap_resource = local_dupe;
+	}
+
+	return remap_resource;
+}
+
 Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	// Nodes where instantiation failed (because something is missing.)
 	List<Node *> stray_instances;
@@ -234,6 +283,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				const NodeData::Property *nprops = &n.properties[0];
 
 				Dictionary missing_resource_properties;
+				HashMap<Ref<Resource>, Ref<Resource>> resources_local_to_sub_scene; // Record the mappings in the sub-scene.
 
 				for (int j = 0; j < nprop_count; j++) {
 					bool valid;
@@ -278,20 +328,8 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
 								if (res->is_local_to_scene()) {
-									// In a situation where a local-to-scene resource is used in a child node of a non-editable instance,
-									// we need to avoid the parent scene from overriding the resource potentially also used in the root
-									// of the instantiated scene. That would to the instance having two different instances of the resource.
-									// Since at this point it's too late to propagate the resource instance in the parent scene to all the relevant
-									// nodes in the instance (and that would require very complex bookkepping), what we do instead is
-									// tampering the resource object already there with the values from the node in the parent scene and
-									// then tell this node to reference that resource.
-									if (n.instance >= 0) {
-										Ref<Resource> node_res = node->get(snames[nprops[j].name]);
-										if (node_res.is_valid()) {
-											node_res->copy_from(res);
-											node_res->configure_for_local_scene(node, resources_local_to_scene);
-											value = node_res;
-										}
+									if (n.instance >= 0) { // For the root node of a sub-scene, treat it as part of the sub-scene.
+										value = get_remap_resource(res, resources_local_to_sub_scene, node->get(snames[nprops[j].name]), node);
 									} else {
 										HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = resources_local_to_scene.find(res);
 										Node *base = i == 0 ? node : ret_nodes[0];
@@ -345,6 +383,12 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 				}
 				if (!missing_resource_properties.is_empty()) {
 					node->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
+				}
+
+				for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_sub_scene) {
+					if (E.value->get_local_scene() == node) {
+						E.value->setup_local_to_scene(); // Setup may be required for the resource to work properly.
+					}
 				}
 			}
 
