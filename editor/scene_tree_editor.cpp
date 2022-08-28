@@ -126,13 +126,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_WARNING) {
-		String config_err = n->get_configuration_warnings_as_string();
-		if (config_err.is_empty()) {
-			return;
-		}
-		config_err = config_err.word_wrap(80);
-		warning->set_text(config_err);
-		warning->popup_centered();
+		show_tooltip();
 
 	} else if (p_id == BUTTON_SIGNALS) {
 		editor_selection->clear();
@@ -1317,10 +1311,6 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	error = memnew(AcceptDialog);
 	add_child(error);
-
-	warning = memnew(AcceptDialog);
-	add_child(warning);
-	warning->set_title(TTR("Node Configuration Warning!"));
 
 	last_hash = 0;
 	blocked = 0;

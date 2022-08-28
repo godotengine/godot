@@ -1267,6 +1267,10 @@ void Viewport::_gui_show_tooltip() {
 	gui.tooltip_popup->child_controls_changed();
 }
 
+void Viewport::_gui_force_show_tooltip() {
+	gui.tooltip_forced = true;
+}
+
 bool Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_input) {
 	bool stopped = false;
 	Ref<InputEvent> ev = p_input;
@@ -1707,6 +1711,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 						} else if (gui.tooltip_label) {
 							if (tooltip == gui.tooltip_label->get_text()) {
 								is_tooltip_shown = true;
+							} else {
+								// Text is different, refresh tooltip instantly.
+								gui.tooltip_forced = true;
 							}
 						} else {
 							is_tooltip_shown = true; // Nothing to compare against, likely using custom control, so if it changes there is nothing we can do.
@@ -1723,9 +1730,14 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 					gui.tooltip_control = over;
 					gui.tooltip_pos = over->get_screen_transform().xform(pos);
-					gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
-					gui.tooltip_timer->set_ignore_time_scale(true);
-					gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
+					if (gui.tooltip_forced) {
+						gui.tooltip_forced = false;
+						_gui_show_tooltip();
+					} else {
+						gui.tooltip_timer = get_tree()->create_timer(gui.tooltip_delay);
+						gui.tooltip_timer->set_ignore_time_scale(true);
+						gui.tooltip_timer->connect("timeout", callable_mp(this, &Viewport::_gui_show_tooltip));
+					}
 				}
 			}
 
