@@ -112,7 +112,7 @@ namespace GodotTools.Export
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
             // TODO: This works for now, as we only implemented support for x86 family desktop so far, but it needs to be fixed
-            string arch = features.Contains("64") ? "x86_64" : "x86";
+            string arch = features.Contains("x86_64") ? "x86_64" : "x86";
 
             string ridOS = DetermineRuntimeIdentifierOS(platform);
             string ridArch = DetermineRuntimeIdentifierArch(arch);

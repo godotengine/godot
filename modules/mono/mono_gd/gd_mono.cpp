@@ -103,12 +103,12 @@ const char_t *get_data(const HostFxrCharString &p_char_str) {
 }
 
 #ifdef TOOLS_ENABLED
-String find_hostfxr(size_t p_known_buffet_size, get_hostfxr_parameters *p_get_hostfxr_params) {
+String find_hostfxr(size_t p_known_buffer_size, get_hostfxr_parameters *p_get_hostfxr_params) {
 	// Pre-allocate a large buffer for the path to hostfxr
 	Vector<char_t> buffer;
-	buffer.resize(p_known_buffet_size);
+	buffer.resize(p_known_buffer_size);
 
-	int rc = get_hostfxr_path(buffer.ptrw(), &p_known_buffet_size, p_get_hostfxr_params);
+	int rc = get_hostfxr_path(buffer.ptrw(), &p_known_buffer_size, p_get_hostfxr_params);
 
 	ERR_FAIL_COND_V_MSG(rc != 0, String(), "get_hostfxr_path failed with code: " + itos(rc));
 

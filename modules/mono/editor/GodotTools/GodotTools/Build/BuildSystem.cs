@@ -176,8 +176,9 @@ namespace GodotTools.Build
                 arguments.Add("--no-restore");
 
             // Incremental or rebuild
-            if (buildInfo.Rebuild)
-                arguments.Add("--no-incremental");
+            // TODO: Not supported in `dotnet publish` (https://github.com/dotnet/sdk/issues/11099)
+            // if (buildInfo.Rebuild)
+            //     arguments.Add("--no-incremental");
 
             // Configuration
             arguments.Add("-c");
