@@ -17,27 +17,27 @@
 			<description>
 				Closes this WebSocket connection. [code]code[/code] is the status code for the closure (see RFC 6455 section 7.4 for a list of valid status codes). [code]reason[/code] is the human readable reason for closing the connection (can be any UTF-8 string that's smaller than 123 bytes).
 				[b]Note:[/b] To achieve a clean close, you will need to keep polling until either [signal WebSocketClient.connection_closed] or [signal WebSocketServer.client_disconnected] is received.
-				[b]Note:[/b] The HTML5 export might not support all status codes. Please refer to browser-specific documentation for more details.
+				[b]Note:[/b] The Web export might not support all status codes. Please refer to browser-specific documentation for more details.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String" />
 			<description>
 				Returns the IP address of the connected peer.
-				[b]Note:[/b] Not available in the HTML5 export.
+				[b]Note:[/b] Not available in the Web export.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the remote port of the connected peer.
-				[b]Note:[/b] Not available in the HTML5 export.
+				[b]Note:[/b] Not available in the Web export.
 			</description>
 		</method>
 		<method name="get_current_outbound_buffered_amount" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the current amount of data in the outbound websocket buffer. [b]Note:[/b] HTML5 exports use WebSocket.bufferedAmount, while other platforms use an internal buffer.
+				Returns the current amount of data in the outbound websocket buffer. [b]Note:[/b] Web exports use WebSocket.bufferedAmount, while other platforms use an internal buffer.
 			</description>
 		</method>
 		<method name="get_write_mode" qualifiers="const">
@@ -57,7 +57,7 @@
 			<param index="0" name="enabled" type="bool" />
 			<description>
 				Disable Nagle's algorithm on the underling TCP socket (default). See [method StreamPeerTCP.set_no_delay] for more information.
-				[b]Note:[/b] Not available in the HTML5 export.
+				[b]Note:[/b] Not available in the Web export.
 			</description>
 		</method>
 		<method name="set_write_mode">

@@ -47,7 +47,7 @@ jobs:
 
       - name: JavaScript style and documentation checks via ESLint and JSDoc
         run: |
-          cd platform/javascript
+          cd platform/web
           npm ci
           npm run lint
           npm run docs -- -d dry-run

@@ -81,7 +81,7 @@
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'haiku' ">GODOT_HAIKU;GODOT_PC</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'android' ">GODOT_ANDROID;GODOT_MOBILE</GodotPlatformConstants>
     <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'ios' ">GODOT_IPHONE;GODOT_IOS;GODOT_MOBILE</GodotPlatformConstants>
-    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'javascript' ">GODOT_JAVASCRIPT;GODOT_HTML5;GODOT_WASM;GODOT_WEB</GodotPlatformConstants>
+    <GodotPlatformConstants Condition=" '$(GodotTargetPlatform)' == 'web' ">GODOT_JAVASCRIPT;GODOT_HTML5;GODOT_WASM;GODOT_WEB</GodotPlatformConstants>
 
     <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants)</GodotDefineConstants>
   </PropertyGroup>

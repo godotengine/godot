@@ -30,7 +30,7 @@ namespace GodotTools.Utils
             public const string Haiku = "Haiku";
             public const string Android = "Android";
             public const string iOS = "iOS";
-            public const string HTML5 = "HTML5";
+            public const string Web = "Web";
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace GodotTools.Utils
             public const string Haiku = "haiku";
             public const string Android = "android";
             public const string iOS = "ios";
-            public const string HTML5 = "javascript";
+            public const string Web = "web";
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace GodotTools.Utils
             ["Haiku"] = Platforms.Haiku,
             ["Android"] = Platforms.Android,
             ["iOS"] = Platforms.iOS,
-            ["HTML5"] = Platforms.HTML5
+            ["Web"] = Platforms.Web
         };
 
         public static readonly Dictionary<string, string> PlatformNameMap = new Dictionary<string, string>
@@ -92,7 +92,7 @@ namespace GodotTools.Utils
             [Names.Haiku] = Platforms.Haiku,
             [Names.Android] = Platforms.Android,
             [Names.iOS] = Platforms.iOS,
-            [Names.HTML5] = Platforms.HTML5
+            [Names.Web] = Platforms.Web
         };
 
         public static readonly Dictionary<string, string> DotNetOSPlatformMap = new Dictionary<string, string>
@@ -107,7 +107,7 @@ namespace GodotTools.Utils
             [Platforms.UWP] = DotNetOS.Win10,
             [Platforms.Android] = DotNetOS.Android,
             [Platforms.iOS] = DotNetOS.iOS,
-            [Platforms.HTML5] = DotNetOS.Browser
+            [Platforms.Web] = DotNetOS.Browser
         };
 
         private static bool IsOS(string name)
@@ -144,7 +144,7 @@ namespace GodotTools.Utils
         private static readonly Lazy<bool> _isHaiku = new(() => IsOS(Names.Haiku));
         private static readonly Lazy<bool> _isAndroid = new(() => IsOS(Names.Android));
         private static readonly Lazy<bool> _isiOS = new(() => IsOS(Names.iOS));
-        private static readonly Lazy<bool> _isHTML5 = new(() => IsOS(Names.HTML5));
+        private static readonly Lazy<bool> _isWeb = new(() => IsOS(Names.Web));
         private static readonly Lazy<bool> _isUnixLike = new(() => IsAnyOS(UnixLikePlatforms));
 
         [SupportedOSPlatformGuard("windows")] public static bool IsWindows => _isWindows.Value || IsUWP;
@@ -161,7 +161,7 @@ namespace GodotTools.Utils
 
         [SupportedOSPlatformGuard("ios")] public static bool IsiOS => _isiOS.Value;
 
-        [SupportedOSPlatformGuard("browser")] public static bool IsHTML5 => _isHTML5.Value;
+        [SupportedOSPlatformGuard("browser")] public static bool IsWeb => _isWeb.Value;
         public static bool IsUnixLike => _isUnixLike.Value;
 
         public static char PathSep => IsWindows ? ';' : ':';

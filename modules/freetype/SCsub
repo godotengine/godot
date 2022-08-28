@@ -99,7 +99,7 @@ if env["builtin_freetype"]:
 
     sfnt = thirdparty_dir + "src/sfnt/sfnt.c"
     # Must be done after all CPPDEFINES are being set so we can copy them.
-    if env["platform"] == "javascript":
+    if env["platform"] == "web":
         # Forcibly undefine this macro so SIMD is not used in this file,
         # since currently unsupported in WASM
         tmp_env = env_freetype.Clone()

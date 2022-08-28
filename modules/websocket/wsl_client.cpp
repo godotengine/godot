@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVASCRIPT_ENABLED
+#ifndef WEB_ENABLED
 
 #include "wsl_client.h"
 #include "core/config/project_settings.h"
@@ -404,4 +404,4 @@ WSLClient::~WSLClient() {
 	disconnect_from_host();
 }
 
-#endif // JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED

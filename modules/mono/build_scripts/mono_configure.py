@@ -16,7 +16,7 @@ def module_supports_tools_on(platform):
 
 def configure(env, env_mono):
     # is_android = env["platform"] == "android"
-    # is_javascript = env["platform"] == "javascript"
+    # is_web = env["platform"] == "web"
     # is_ios = env["platform"] == "ios"
     # is_ios_sim = is_ios and env["arch"] in ["x86_32", "x86_64"]
 

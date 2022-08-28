@@ -1,4 +1,4 @@
-# Prior to .NET Core, we supported these: ["windows", "macos", "linuxbsd", "android", "haiku", "javascript", "ios"]
+# Prior to .NET Core, we supported these: ["windows", "macos", "linuxbsd", "android", "haiku", "web", "ios"]
 # Eventually support for each them should be added back (except Haiku if not supported by .NET Core)
 supported_platforms = ["windows", "macos", "linuxbsd"]
 
@@ -10,8 +10,8 @@ def can_build(env, platform):
 def get_opts(platform):
     from SCons.Variables import BoolVariable, PathVariable
 
-    default_mono_static = platform in ["ios", "javascript"]
-    default_mono_bundles_zlib = platform in ["javascript"]
+    default_mono_static = platform in ["ios", "web"]
+    default_mono_bundles_zlib = platform in ["web"]
 
     return [
         PathVariable(

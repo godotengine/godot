@@ -30,7 +30,7 @@
 
 #include "webrtc_peer_connection.h"
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 #include "webrtc_peer_connection_js.h"
 #endif
 
@@ -44,7 +44,7 @@ void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) 
 }
 
 WebRTCPeerConnection *WebRTCPeerConnection::create() {
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 	return memnew(WebRTCPeerConnectionJS);
 #else
 	if (default_extension == String()) {

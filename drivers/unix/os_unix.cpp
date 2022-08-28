@@ -92,7 +92,7 @@ static void _setup_clock() {
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
 #else
-#if defined(CLOCK_MONOTONIC_RAW) && !defined(JAVASCRIPT_ENABLED) // This is a better clock on Linux.
+#if defined(CLOCK_MONOTONIC_RAW) && !defined(WEB_ENABLED) // This is a better clock on Linux.
 #define GODOT_CLOCK CLOCK_MONOTONIC_RAW
 #else
 #define GODOT_CLOCK CLOCK_MONOTONIC
@@ -292,7 +292,7 @@ uint64_t OS_Unix::get_ticks_usec() const {
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
-	// Actual virtual call goes to OS_JavaScript.
+	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
 	if (r_pipe) {
@@ -366,7 +366,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 Error OS_Unix::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
-	// Actual virtual call goes to OS_JavaScript.
+	// Actual virtual call goes to OS_Web.
 	ERR_FAIL_V(ERR_BUG);
 #else
 	pid_t pid = fork();
