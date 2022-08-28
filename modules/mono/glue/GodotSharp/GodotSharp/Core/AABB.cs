@@ -145,6 +145,9 @@ namespace Godot
         /// Gets the position of one of the 8 endpoints of the <see cref="AABB"/>.
         /// </summary>
         /// <param name="idx">Which endpoint to get.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="idx"/> is less than 0 or greater than 7.
+        /// </exception>
         /// <returns>An endpoint of the <see cref="AABB"/>.</returns>
         public Vector3 GetEndpoint(int idx)
         {

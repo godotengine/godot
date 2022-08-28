@@ -153,7 +153,7 @@ namespace GodotTools.Ides
                 }
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(editorId));
             }
         }
 

@@ -342,7 +342,7 @@ namespace GodotTools
                 DotNetSolution.MigrateFromOldConfigNames(GodotSharpDirs.ProjectSlnPath);
 
                 var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
-                                     ?? throw new Exception("Cannot open C# project");
+                                     ?? throw new InvalidOperationException("Cannot open C# project.");
 
                 // NOTE: The order in which changes are made to the project is important
 

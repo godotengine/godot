@@ -74,11 +74,11 @@ namespace GodotTools.Internals
         internal static unsafe void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             if (initialized)
-                throw new InvalidOperationException("Already initialized");
+                throw new InvalidOperationException("Already initialized.");
             initialized = true;
 
             if (unmanagedCallbacksSize != sizeof(InternalUnmanagedCallbacks))
-                throw new ArgumentException("Unmanaged callbacks size mismatch");
+                throw new ArgumentException("Unmanaged callbacks size mismatch.", nameof(unmanagedCallbacksSize));
 
             _unmanagedCallbacks = Unsafe.AsRef<InternalUnmanagedCallbacks>((void*)unmanagedCallbacks);
         }
