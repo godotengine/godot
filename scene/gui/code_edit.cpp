@@ -36,6 +36,7 @@
 
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			style_normal = get_theme_stylebox(SNAME("normal"));
 
