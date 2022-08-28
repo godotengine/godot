@@ -2953,10 +2953,11 @@ Node *Node::duplicate(int p_flags) const {
 
 #ifdef TOOLS_ENABLED
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) const {
-	return duplicate_from_editor(r_duplimap, HashMap<Ref<Resource>, Ref<Resource>>());
+	HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> tmp;
+	return duplicate_from_editor(r_duplimap, nullptr, tmp);
 }
 
-Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const {
 	int flags = DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR;
 	Node *dupe = _duplicate(flags, &r_duplimap);
 
@@ -2969,8 +2970,8 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	_duplicate_properties(this, this, dupe, flags);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
-	if (!p_resource_remap.is_empty()) {
-		remap_node_resources(dupe, p_resource_remap);
+	if (p_scene_root) {
+		remap_node_resources(dupe, p_scene_root, p_resource_remap);
 	}
 
 	// Duplication of signals must happen after all the node descendants have been copied,
@@ -2981,7 +2982,9 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, con
 	return dupe;
 }
 
-void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_node_resources(Node *p_node, Node *p_scene_root, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &p_resource_remap) const {
+	Node *local_scene = p_node->is_instance() ? p_node : (p_node->get_owner() ? p_node->get_owner() : p_scene_root);
+
 	List<PropertyInfo> props;
 	p_node->get_property_list(&props);
 
@@ -2991,23 +2994,39 @@ void Node::remap_node_resources(Node *p_node, const HashMap<Ref<Resource>, Ref<R
 		}
 
 		Variant v = p_node->get(E.name);
-		if (v.is_ref_counted()) {
-			Ref<Resource> res = v;
-			if (res.is_valid()) {
-				if (p_resource_remap.has(res)) {
-					p_node->set(E.name, p_resource_remap[res]);
-					remap_nested_resources(res, p_resource_remap);
-				}
+		if (!v.is_ref_counted()) {
+			continue;
+		}
+		Ref<Resource> res = v;
+		if (res.is_null()) {
+			continue;
+		}
+
+		if (res->is_local_to_scene()) {
+			if (local_scene == res->get_local_scene()) {
+				continue;
+			}
+			Ref<Resource> dup = SceneState::get_remap_resource(res, p_resource_remap, nullptr, local_scene);
+			p_node->set(E.name, dup);
+			continue;
+		}
+
+		if (res->is_built_in()) {
+			// Use nullptr instead of a specific node (current scene root node) to represent the scene,
+			// as the Make Scene Root operation may be executed.
+			if (p_resource_remap[nullptr].has(res)) {
+				p_node->set(E.name, p_resource_remap[nullptr][res]);
+				remap_nested_resources(res, p_resource_remap[nullptr]);
 			}
 		}
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		remap_node_resources(p_node->get_child(i), p_resource_remap);
+		remap_node_resources(p_node->get_child(i), p_scene_root, p_resource_remap);
 	}
 }
 
-void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
+void Node::remap_nested_resources(Ref<Resource> p_resource, HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
 	List<PropertyInfo> props;
 	p_resource->get_property_list(&props);
 

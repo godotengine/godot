@@ -81,7 +81,13 @@ static Array _sanitize_node_pinned_properties(Node *p_node) {
 Ref<Resource> SceneState::get_remap_resource(const Ref<Resource> &p_resource, HashMap<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &remap_cache, const Ref<Resource> &p_fallback, Node *p_for_scene) {
 	ERR_FAIL_COND_V(p_resource.is_null(), Ref<Resource>());
 
-	bool reuse_fallback = p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class() == p_resource->get_class();
+	// Find the shared copy of the source resource.
+	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = remap_cache[p_for_scene].find(p_resource);
+	if (R) {
+		return R->value;
+	}
+
+	bool reuse_fallback = p_fallback.is_valid() && p_fallback->is_local_to_scene() && p_fallback->get_class_name() == p_resource->get_class_name();
 
 	if (reuse_fallback) {
 		// The fallback resource can only be mapped at most once when it is valid.
@@ -703,14 +709,14 @@ Variant SceneState::make_local_resource(Variant &p_value, const SceneState::Node
 
 	Node *base = (p_i == 0 || p_node->is_instance()) ? p_node : (p_node->get_owner() ? p_node->get_owner() : p_ret_nodes[0]);
 
+	if (p_node_data.type == TYPE_INSTANTIATED) { // For the (root) nodes of sub-scenes, treat them as parts of the sub-scenes.
+		return get_remap_resource(res, p_resources_local_to_scenes, p_node->get(p_sname), base);
+	}
+
 	// Find the shared copy of the source resource.
 	HashMap<Ref<Resource>, Ref<Resource>>::Iterator R = p_resources_local_to_scenes[base].find(res);
 	if (R) {
 		return R->value;
-	}
-
-	if (p_node_data.type == TYPE_INSTANTIATED) { // For the (root) nodes of sub-scenes, treat them as parts of the sub-scenes.
-		return get_remap_resource(res, p_resources_local_to_scenes, p_node->get(p_sname), base);
 	}
 
 	if (p_edit_state == GEN_EDIT_STATE_MAIN) { // For the main scene, use the resource as is
