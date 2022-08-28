@@ -47,6 +47,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
+	bool read_only = false;
+
 	Button *tool_select = nullptr;
 	Button *tool_create = nullptr;
 	Button *tool_connect = nullptr;

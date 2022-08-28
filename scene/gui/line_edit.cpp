@@ -718,7 +718,7 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			_fit_to_width();
-			scroll_offset = 0;
+			scroll_offset = 0.0;
 			set_caret_column(get_caret_column());
 		} break;
 
@@ -801,7 +801,7 @@ void LineEdit::_notification(int p_what) {
 					}
 				} break;
 				case HORIZONTAL_ALIGNMENT_CENTER: {
-					if (scroll_offset != 0) {
+					if (!Math::is_zero_approx(scroll_offset)) {
 						x_ofs = style->get_offset().x;
 					} else {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - (text_width)) / 2);
@@ -846,7 +846,7 @@ void LineEdit::_notification(int p_what) {
 				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(SIDE_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
 
 				if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-					if (scroll_offset == 0) {
+					if (Math::is_zero_approx(scroll_offset)) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 					}
 				} else {
@@ -1208,7 +1208,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			if (scroll_offset != 0) {
+			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
@@ -1228,7 +1228,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-			if (scroll_offset == 0) {
+			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 			}
 		} else {
@@ -1236,11 +1236,11 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 		}
 	}
 
-	int ofs = TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset);
+	int ofs = ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
 	set_caret_column(ofs);
 }
 
-Vector2i LineEdit::get_caret_pixel_pos() {
+Vector2 LineEdit::get_caret_pixel_pos() {
 	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
 	bool rtl = is_layout_rtl();
 
@@ -1256,7 +1256,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			if (scroll_offset != 0) {
+			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
@@ -1276,7 +1276,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-			if (scroll_offset == 0) {
+			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 			}
 		} else {
@@ -1284,7 +1284,7 @@ Vector2i LineEdit::get_caret_pixel_pos() {
 		}
 	}
 
-	Vector2i ret;
+	Vector2 ret;
 	CaretInfo caret;
 	// Get position of the start of caret.
 	if (ime_text.length() != 0 && ime_selection.x != 0) {
@@ -1427,7 +1427,7 @@ void LineEdit::set_text(String p_text) {
 
 	update();
 	caret_column = 0;
-	scroll_offset = 0;
+	scroll_offset = 0.0;
 }
 
 void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
@@ -1555,7 +1555,7 @@ void LineEdit::set_caret_column(int p_column) {
 	// Fit to window.
 
 	if (!is_inside_tree()) {
-		scroll_offset = 0;
+		scroll_offset = 0.0;
 		return;
 	}
 
@@ -1574,7 +1574,7 @@ void LineEdit::set_caret_column(int p_column) {
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER: {
-			if (scroll_offset != 0) {
+			if (!Math::is_zero_approx(scroll_offset)) {
 				x_ofs = style->get_offset().x;
 			} else {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - (text_width)) / 2);
@@ -1595,7 +1595,7 @@ void LineEdit::set_caret_column(int p_column) {
 	if (right_icon.is_valid() || display_clear_icon) {
 		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
-			if (scroll_offset == 0) {
+			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
 			}
 		} else {
@@ -1605,12 +1605,12 @@ void LineEdit::set_caret_column(int p_column) {
 	}
 
 	// Note: Use two coordinates to fit IME input range.
-	Vector2i primary_catret_offset = get_caret_pixel_pos();
+	Vector2 primary_caret_offset = get_caret_pixel_pos();
 
-	if (MIN(primary_catret_offset.x, primary_catret_offset.y) <= x_ofs) {
-		scroll_offset += (x_ofs - MIN(primary_catret_offset.x, primary_catret_offset.y));
-	} else if (MAX(primary_catret_offset.x, primary_catret_offset.y) >= ofs_max) {
-		scroll_offset += (ofs_max - MAX(primary_catret_offset.x, primary_catret_offset.y));
+	if (MIN(primary_caret_offset.x, primary_caret_offset.y) <= x_ofs) {
+		scroll_offset += x_ofs - MIN(primary_caret_offset.x, primary_caret_offset.y);
+	} else if (MAX(primary_caret_offset.x, primary_caret_offset.y) >= ofs_max) {
+		scroll_offset += ofs_max - MAX(primary_caret_offset.x, primary_caret_offset.y);
 	}
 	scroll_offset = MIN(0, scroll_offset);
 
@@ -1621,14 +1621,14 @@ int LineEdit::get_caret_column() const {
 	return caret_column;
 }
 
-void LineEdit::set_scroll_offset(int p_pos) {
+void LineEdit::set_scroll_offset(float p_pos) {
 	scroll_offset = p_pos;
-	if (scroll_offset < 0) {
-		scroll_offset = 0;
+	if (scroll_offset < 0.0) {
+		scroll_offset = 0.0;
 	}
 }
 
-int LineEdit::get_scroll_offset() const {
+float LineEdit::get_scroll_offset() const {
 	return scroll_offset;
 }
 
@@ -1656,7 +1656,7 @@ void LineEdit::clear_internal() {
 	deselect();
 	_clear_undo_stack();
 	caret_column = 0;
-	scroll_offset = 0;
+	scroll_offset = 0.0;
 	undo_text = "";
 	text = "";
 	_shape();

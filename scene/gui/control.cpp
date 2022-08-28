@@ -252,36 +252,36 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		if (name.begins_with("theme_override_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
-				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+				data.icon_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.icon_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_styles/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.style_override.has(dname)) {
-				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+				data.style_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.style_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_fonts/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.font_override.has(dname)) {
-				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+				data.font_override[dname]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 			}
 			data.font_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_font_sizes/")) {
 			String dname = name.get_slicec('/', 1);
 			data.font_size_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			data.color_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.constant_override.erase(dname);
-			notification(NOTIFICATION_THEME_CHANGED);
+			_notify_theme_override_changed();
 		} else {
 			return false;
 		}
@@ -2260,62 +2260,62 @@ bool Control::is_clipping_contents() {
 
 // Theming.
 
-void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign) {
+void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_notify, bool p_assign) {
 	Control *c = Object::cast_to<Control>(p_at);
-
-	if (c && c != p_owner && c->data.theme.is_valid()) { // has a theme, this can't be propagated
-		return;
-	}
-
 	Window *w = c == nullptr ? Object::cast_to<Window>(p_at) : nullptr;
 
-	if (w && w != p_owner_window && w->theme.is_valid()) { // has a theme, this can't be propagated
+	if (!c && !w) {
+		// Theme inheritance chains are broken by nodes that aren't Control or Window.
 		return;
 	}
 
-	for (int i = 0; i < p_at->get_child_count(); i++) {
-		CanvasItem *child = Object::cast_to<CanvasItem>(p_at->get_child(i));
-		if (child) {
-			_propagate_theme_changed(child, p_owner, p_owner_window, p_assign);
-		} else {
-			Window *window = Object::cast_to<Window>(p_at->get_child(i));
-			if (window) {
-				_propagate_theme_changed(window, p_owner, p_owner_window, p_assign);
-			}
-		}
-	}
-
+	bool assign = p_assign;
 	if (c) {
-		if (p_assign) {
+		if (c != p_owner && c->data.theme.is_valid()) {
+			// Has a theme, so we don't want to change the theme owner,
+			// but we still want to propagate in case this child has theme items
+			// it inherits from the theme this node uses.
+			// See https://github.com/godotengine/godot/issues/62844.
+			assign = false;
+		}
+
+		if (assign) {
 			c->data.theme_owner = p_owner;
 			c->data.theme_owner_window = p_owner_window;
 		}
-		c->notification(Control::NOTIFICATION_THEME_CHANGED);
-		c->emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	}
 
-	if (w) {
-		if (p_assign) {
+		if (p_notify) {
+			c->notification(Control::NOTIFICATION_THEME_CHANGED);
+		}
+	} else if (w) {
+		if (w != p_owner_window && w->theme.is_valid()) {
+			// Same as above.
+			assign = false;
+		}
+
+		if (assign) {
 			w->theme_owner = p_owner;
 			w->theme_owner_window = p_owner_window;
 		}
-		w->notification(Window::NOTIFICATION_THEME_CHANGED);
-		w->emit_signal(SceneStringNames::get_singleton()->theme_changed);
+
+		if (p_notify) {
+			w->notification(Window::NOTIFICATION_THEME_CHANGED);
+		}
+	}
+
+	for (int i = 0; i < p_at->get_child_count(); i++) {
+		_propagate_theme_changed(p_at->get_child(i), p_owner, p_owner_window, p_notify, assign);
 	}
 }
 
 void Control::_theme_changed() {
-	_propagate_theme_changed(this, this, nullptr, false);
+	if (is_inside_tree()) {
+		_propagate_theme_changed(this, this, nullptr, true, false);
+	}
 }
 
-void Control::_theme_property_override_changed() {
-	notification(NOTIFICATION_THEME_CHANGED);
-	emit_signal(SceneStringNames::get_singleton()->theme_changed);
-	update_minimum_size(); // Overrides are likely to affect minimum size.
-}
-
-void Control::_notify_theme_changed() {
-	if (!data.bulk_theme_override) {
+void Control::_notify_theme_override_changed() {
+	if (!data.bulk_theme_override && is_inside_tree()) {
 		notification(NOTIFICATION_THEME_CHANGED);
 	}
 }
@@ -2339,28 +2339,25 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 	}
 
 	data.theme = p_theme;
-	if (!p_theme.is_null()) {
-		data.theme_owner = this;
-		data.theme_owner_window = nullptr;
-		_propagate_theme_changed(this, this, nullptr);
-	} else {
-		Control *parent_c = Object::cast_to<Control>(get_parent());
-
-		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
-			Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window);
-		} else {
-			Window *parent_w = cast_to<Window>(get_parent());
-			if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
-				Control::_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window);
-			} else {
-				Control::_propagate_theme_changed(this, nullptr, nullptr);
-			}
-		}
-	}
-
 	if (data.theme.is_valid()) {
+		_propagate_theme_changed(this, this, nullptr, is_inside_tree(), true);
 		data.theme->connect("changed", callable_mp(this, &Control::_theme_changed), CONNECT_DEFERRED);
+		return;
 	}
+
+	Control *parent_c = Object::cast_to<Control>(get_parent());
+	if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
+		_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window, is_inside_tree(), true);
+		return;
+	}
+
+	Window *parent_w = cast_to<Window>(get_parent());
+	if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
+		_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window, is_inside_tree(), true);
+		return;
+	}
+
+	_propagate_theme_changed(this, nullptr, nullptr, is_inside_tree(), true);
 }
 
 Ref<Theme> Control::get_theme() const {
@@ -2372,7 +2369,9 @@ void Control::set_theme_type_variation(const StringName &p_theme_type) {
 		return;
 	}
 	data.theme_type_variation = p_theme_type;
-	_propagate_theme_changed(this, data.theme_owner, data.theme_owner_window);
+	if (is_inside_tree()) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
 }
 
 StringName Control::get_theme_type_variation() const {
@@ -2697,93 +2696,93 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 	ERR_FAIL_COND(!p_icon.is_valid());
 
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.icon_override[p_name] = p_icon;
-	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
+	data.icon_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 	ERR_FAIL_COND(!p_style.is_valid());
 
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.style_override[p_name] = p_style;
-	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
+	data.style_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 	ERR_FAIL_COND(!p_font.is_valid());
 
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.font_override[p_name] = p_font;
-	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_theme_property_override_changed), CONNECT_REFERENCE_COUNTED);
-	_notify_theme_changed();
+	data.font_override[p_name]->connect("changed", callable_mp(this, &Control::_notify_theme_override_changed), CONNECT_REFERENCE_COUNTED);
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_font_size_override(const StringName &p_name, int p_font_size) {
 	data.font_size_override[p_name] = p_font_size;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_color_override(const StringName &p_name, const Color &p_color) {
 	data.color_override[p_name] = p_color;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	data.constant_override[p_name] = p_constant;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_icon_override(const StringName &p_name) {
 	if (data.icon_override.has(p_name)) {
-		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.icon_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_style_override(const StringName &p_name) {
 	if (data.style_override.has(p_name)) {
-		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.style_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_font_override(const StringName &p_name) {
 	if (data.font_override.has(p_name)) {
-		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_theme_property_override_changed));
+		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
 	}
 
 	data.font_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_font_size_override(const StringName &p_name) {
 	data.font_size_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_color_override(const StringName &p_name) {
 	data.color_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 void Control::remove_theme_constant_override(const StringName &p_name) {
 	data.constant_override.erase(p_name);
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 bool Control::has_theme_icon_override(const StringName &p_name) const {
@@ -2981,7 +2980,7 @@ void Control::end_bulk_theme_override() {
 	ERR_FAIL_COND(!data.bulk_theme_override);
 
 	data.bulk_theme_override = false;
-	_notify_theme_changed();
+	_notify_theme_override_changed();
 }
 
 // Internationalization.
@@ -3087,37 +3086,26 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 // Base object overrides.
 
 void Control::add_child_notify(Node *p_child) {
-	Control *child_c = Object::cast_to<Control>(p_child);
-
-	if (child_c && child_c->data.theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
-		_propagate_theme_changed(child_c, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
-	}
-
-	Window *child_w = Object::cast_to<Window>(p_child);
-
-	if (child_w && child_w->theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
-		_propagate_theme_changed(child_w, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+	// We propagate when this node uses a custom theme, so it can pass it on to its children.
+	if (data.theme_owner || data.theme_owner_window) {
+		// `p_notify` is false here as `NOTIFICATION_THEME_CHANGED` will be handled by `NOTIFICATION_ENTER_TREE`.
+		_propagate_theme_changed(p_child, data.theme_owner, data.theme_owner_window, false, true);
 	}
 }
 
 void Control::remove_child_notify(Node *p_child) {
-	Control *child_c = Object::cast_to<Control>(p_child);
-
-	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
-		_propagate_theme_changed(child_c, nullptr, nullptr);
-	}
-
-	Window *child_w = Object::cast_to<Window>(p_child);
-
-	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
-		_propagate_theme_changed(child_w, nullptr, nullptr);
+	// If the removed child isn't inheriting any theme items through this node, then there's no need to propagate.
+	if (data.theme_owner || data.theme_owner_window) {
+		_propagate_theme_changed(p_child, nullptr, nullptr, false, true);
 	}
 }
 
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_ENTER_TREE: {
-			_invalidate_theme_cache();
+			// Need to defer here, because theme owner information might be set in
+			// add_child_notify, which doesn't get called until right after this.
+			call_deferred(SNAME("notification"), NOTIFICATION_THEME_CHANGED);
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
@@ -3141,18 +3129,6 @@ void Control::_notification(int p_notification) {
 			data.parent = Object::cast_to<Control>(get_parent());
 			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
-
-			if (data.theme.is_null()) {
-				if (data.parent && (data.parent->data.theme_owner || data.parent->data.theme_owner_window)) {
-					data.theme_owner = data.parent->data.theme_owner;
-					data.theme_owner_window = data.parent->data.theme_owner_window;
-					notification(NOTIFICATION_THEME_CHANGED);
-				} else if (data.parent_window && (data.parent_window->theme_owner || data.parent_window->theme_owner_window)) {
-					data.theme_owner = data.parent_window->theme_owner;
-					data.theme_owner_window = data.parent_window->theme_owner_window;
-					notification(NOTIFICATION_THEME_CHANGED);
-				}
-			}
 
 			CanvasItem *node = this;
 			bool has_parent_control = false;
@@ -3257,6 +3233,7 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			emit_signal(SceneStringNames::get_singleton()->theme_changed);
 			_invalidate_theme_cache();
 			update_minimum_size();
 			update();
@@ -3621,4 +3598,25 @@ void Control::_bind_methods() {
 	GDVIRTUAL_BIND(_make_custom_tooltip, "for_text");
 
 	GDVIRTUAL_BIND(_gui_input, "event");
+}
+
+Control::~Control() {
+	// Resources need to be disconnected.
+	for (KeyValue<StringName, Ref<Texture2D>> &E : data.icon_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<StyleBox>> &E : data.style_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+	for (KeyValue<StringName, Ref<Font>> &E : data.font_override) {
+		E.value->disconnect("changed", callable_mp(this, &Control::_notify_theme_override_changed));
+	}
+
+	// Then override maps can be simply cleared.
+	data.icon_override.clear();
+	data.style_override.clear();
+	data.font_override.clear();
+	data.font_size_override.clear();
+	data.color_override.clear();
+	data.constant_override.clear();
 }

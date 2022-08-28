@@ -390,7 +390,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		int first = 0;
 		int last = (frames / format_channels) - 1;
 		bool found = false;
-		float limit = Math::db2linear(TRIM_DB_LIMIT);
+		float limit = Math::db_to_linear(TRIM_DB_LIMIT);
 
 		for (int i = 0; i < data.size() / format_channels; i++) {
 			float ampChannelSum = 0;

@@ -465,15 +465,15 @@
 		</member>
 		<member name="interface/editor/code_font_contextual_ligatures" type="int" setter="" getter="">
 			The font ligatures to enable for the currently configured code font. Not all fonts include support for ligatures.
-			[b]Note:[/b] The default editor code font (Hack) does not have contextual ligatures in its font file.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has contextual ligatures in its font file.
 		</member>
 		<member name="interface/editor/code_font_custom_opentype_features" type="String" setter="" getter="">
 			List of custom OpenType features to use, if supported by the currently configured code font. Not all fonts include support for custom OpenType features. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font (Hack) does not have custom OpenType features in its font file.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has custom OpenType features in its font file, but there is no documented list yet.
 		</member>
 		<member name="interface/editor/code_font_custom_variations" type="String" setter="" getter="">
 			List of alternative characters to use, if supported by the currently configured code font. Not all fonts include support for custom variations. The string should follow the OpenType specification.
-			[b]Note:[/b] The default editor code font (Hack) does not have alternate characters in its font file.
+			[b]Note:[/b] The default editor code font ([url=https://www.jetbrains.com/lp/mono/]JetBrains Mono[/url]) has alternate characters in its font file, but there is no documented list yet.
 		</member>
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
@@ -495,8 +495,12 @@
 			The language to use for the editor interface.
 			Translations are provided by the community. If you spot a mistake, [url=https://docs.godotengine.org/en/latest/community/contributing/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
-		<member name="interface/editor/font_antialiased" type="bool" setter="" getter="">
-			If [code]true[/code], enables FreeType's font antialiasing on the editor fonts. Most fonts are not designed to look good with antialiasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
+		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
+			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
+			Specific to the macOS platform.
+		</member>
+		<member name="interface/editor/font_antialiasing" type="int" setter="" getter="">
+			FreeType's font anti-aliasing mode used to render the editor fonts. Most fonts are not designed to look good with anti-aliasing disabled, so it's recommended to leave this enabled unless you're using a pixel art font.
 		</member>
 		<member name="interface/editor/font_hinting" type="int" setter="" getter="">
 			The font hinting mode to use for the editor fonts. FreeType supports the following font hinting modes:

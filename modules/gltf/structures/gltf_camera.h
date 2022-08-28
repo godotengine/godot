@@ -44,7 +44,7 @@ private:
 	// GLTF has no default camera values, they should always be specified in
 	// the GLTF file. Here we default to Godot's default camera settings.
 	bool perspective = true;
-	real_t fov = Math::deg2rad(75.0);
+	real_t fov = Math::deg_to_rad(75.0);
 	real_t size_mag = 0.5;
 	real_t depth_far = 4000.0;
 	real_t depth_near = 0.05;

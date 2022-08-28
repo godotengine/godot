@@ -18,7 +18,7 @@
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
 			The particle rendering layers ([member VisualInstance3D.layers]) that will be affected by the attractor. By default, all particles are affected by an attractor.
 			After configuring particle nodes accordingly, specific layers can be unchecked to prevent certain particles from being affected by attractors. For example, this can be used if you're using an attractor as part of a spell effect but don't want the attractor to affect unrelated weather particles at the same position.
-			Particle attraction can also be disabled on a per-process material basis by setting [member ParticlesMaterial.attractor_interaction_enabled] on the [GPUParticles3D] node.
+			Particle attraction can also be disabled on a per-process material basis by setting [member ParticleProcessMaterial.attractor_interaction_enabled] on the [GPUParticles3D] node.
 		</member>
 		<member name="directionality" type="float" setter="set_directionality" getter="get_directionality" default="0.0">
 			Adjusts how directional the attractor is. At [code]0.0[/code], the attractor is not directional at all: it will attract particles towards its center. At [code]1.0[/code], the attractor is fully directional: particles will always be pushed towards local -Z (or +Z if [member strength] is negative).

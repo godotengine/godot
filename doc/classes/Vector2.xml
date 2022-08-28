@@ -304,7 +304,7 @@
 			<return type="Vector2" />
 			<param index="0" name="angle" type="float" />
 			<description>
-				Returns the vector rotated by [param angle] (in radians). See also [method @GlobalScope.deg2rad].
+				Returns the vector rotated by [param angle] (in radians). See also [method @GlobalScope.deg_to_rad].
 			</description>
 		</method>
 		<method name="round" qualifiers="const">

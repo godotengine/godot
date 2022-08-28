@@ -44,17 +44,12 @@ void OpenXRActionSetEditor::_set_fold_icon() {
 	}
 }
 
-void OpenXRActionSetEditor::_theme_changed() {
-	_set_fold_icon();
-	add_action->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
-	rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-}
-
 void OpenXRActionSetEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			_theme_changed();
+			_set_fold_icon();
+			add_action->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+			rem_action_set->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 		} break;
 	}

@@ -87,9 +87,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
-#define CS_STATIC_FIELD_METHOD_NAME_PREFIX "MethodName_"
 #define CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX "MethodProxyName_"
-#define CS_STATIC_FIELD_SIGNAL_NAME_PREFIX "SignalName_"
 
 #define ICALL_PREFIX "godot_icall_"
 #define ICALL_CLASSDB_GET_METHOD "ClassDB_get_method"
@@ -1606,12 +1604,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
 				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
 				   << INDENT1 "private static readonly StringName "
-				   << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
-				   << " = \"" << imethod.name << "\";\n";
-
-			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
-				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
-				   << INDENT1 "private static readonly StringName "
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
 				   << " = \"" << imethod.proxy_name << "\";\n";
 		}
@@ -1637,7 +1629,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 			// We check both native names (snake_case) and proxy names (PascalCase)
 			output << INDENT2 "if ((method == " << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
-				   << " || method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
+				   << " || method == MethodName." << imethod.proxy_name
 				   << ") && argCount == " << itos(imethod.arguments.size())
 				   << " && " << CS_METHOD_HAS_GODOT_CLASS_METHOD << "((godot_string_name)"
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name << ".NativeValue))\n"
@@ -1713,7 +1705,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			// again, but this time with the respective proxy name (PascalCase). It's the job of
 			// user derived classes to override the method and check for those. Our C# source
 			// generators take care of generating those override methods.
-			output << INDENT2 "if (method == " << CS_STATIC_FIELD_METHOD_NAME_PREFIX << imethod.name
+			output << INDENT2 "if (method == MethodName." << imethod.proxy_name
 				   << ")\n" INDENT2 "{\n"
 				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_METHOD "("
 				   << CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX << imethod.name
@@ -1730,6 +1722,45 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		output << INDENT1 "}\n";
 	}
+
+	//Generate StringName for all class members
+	bool is_inherit = !itype.is_singleton && obj_types.has(itype.base_name);
+	//PropertyName
+	if (is_inherit) {
+		output << MEMBER_BEGIN "public new class PropertyName : " << obj_types[itype.base_name].proxy_name << ".PropertyName";
+	} else {
+		output << MEMBER_BEGIN "public class PropertyName";
+	}
+	output << "\n"
+		   << INDENT1 "{\n";
+	for (const PropertyInterface &iprop : itype.properties) {
+		output << INDENT2 "public static readonly StringName " << iprop.proxy_name << " = \"" << iprop.cname << "\";\n";
+	}
+	output << INDENT1 "}\n";
+	//MethodName
+	if (is_inherit) {
+		output << MEMBER_BEGIN "public new class MethodName : " << obj_types[itype.base_name].proxy_name << ".MethodName";
+	} else {
+		output << MEMBER_BEGIN "public class MethodName";
+	}
+	output << "\n"
+		   << INDENT1 "{\n";
+	for (const MethodInterface &imethod : itype.methods) {
+		output << INDENT2 "public static readonly StringName " << imethod.proxy_name << " = \"" << imethod.cname << "\";\n";
+	}
+	output << INDENT1 "}\n";
+	//SignalName
+	if (is_inherit) {
+		output << MEMBER_BEGIN "public new class SignalName : " << obj_types[itype.base_name].proxy_name << ".SignalName";
+	} else {
+		output << MEMBER_BEGIN "public class SignalName";
+	}
+	output << "\n"
+		   << INDENT1 "{\n";
+	for (const SignalInterface &isignal : itype.signals_) {
+		output << INDENT2 "public static readonly StringName " << isignal.proxy_name << " = \"" << isignal.cname << "\";\n";
+	}
+	output << INDENT1 "}\n";
 
 	output.append(CLOSE_BLOCK /* class */);
 
@@ -2052,9 +2083,9 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 				p_output << "Object.";
 			}
 
-			p_output << ICALL_CLASSDB_GET_METHOD "(" BINDINGS_NATIVE_NAME_FIELD ", \""
-					 << p_imethod.name
-					 << "\");\n";
+			p_output << ICALL_CLASSDB_GET_METHOD "(" BINDINGS_NATIVE_NAME_FIELD ", MethodName."
+					 << p_imethod.proxy_name
+					 << ");\n";
 		}
 
 		if (p_imethod.method_doc && p_imethod.method_doc->description.size()) {
@@ -2226,7 +2257,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		String delegate_name = p_isignal.proxy_name;
-		delegate_name += "Handler"; // Delegate name is [SignalName]Handler
+		delegate_name += "EventHandler"; // Delegate name is [SignalName]EventHandler
 
 		// Generate delegate
 		p_output.append(MEMBER_BEGIN "public delegate void ");
@@ -2239,17 +2270,8 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		// Could we assume the StringName instance of signal name will never be freed (it's stored in ClassDB) before the managed world is unloaded?
 		// If so, we could store the pointer we get from `data_unique_pointer()` instead of allocating StringName here.
 
-		// Cached signal name (StringName)
-		p_output.append(MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n");
-		p_output.append(INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]" MEMBER_BEGIN
-								"private static readonly StringName " CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
-		p_output.append(p_isignal.name);
-		p_output.append(" = \"");
-		p_output.append(p_isignal.name);
-		p_output.append("\";\n");
-
 		// Generate event
-		p_output.append(MEMBER_BEGIN "[Signal]" MEMBER_BEGIN "public ");
+		p_output.append(MEMBER_BEGIN "public ");
 
 		if (p_itype.is_singleton) {
 			p_output.append("static ");
@@ -2262,21 +2284,21 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		p_output.append("\n" OPEN_BLOCK_L1 INDENT2);
 
 		if (p_itype.is_singleton) {
-			p_output.append("add => " CS_PROPERTY_SINGLETON ".Connect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+			p_output.append("add => " CS_PROPERTY_SINGLETON ".Connect(SignalName.");
 		} else {
-			p_output.append("add => Connect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+			p_output.append("add => Connect(SignalName.");
 		}
 
-		p_output.append(p_isignal.name);
+		p_output.append(p_isignal.proxy_name);
 		p_output.append(", new Callable(value));\n");
 
 		if (p_itype.is_singleton) {
-			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(SignalName.");
 		} else {
-			p_output.append(INDENT2 "remove => Disconnect(" CS_STATIC_FIELD_SIGNAL_NAME_PREFIX);
+			p_output.append(INDENT2 "remove => Disconnect(SignalName.");
 		}
 
-		p_output.append(p_isignal.name);
+		p_output.append(p_isignal.proxy_name);
 		p_output.append(", new Callable(value));\n");
 		p_output.append(CLOSE_BLOCK_L1);
 	}

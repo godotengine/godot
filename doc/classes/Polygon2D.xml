@@ -79,10 +79,10 @@
 		<member name="internal_vertex_count" type="int" setter="set_internal_vertex_count" getter="get_internal_vertex_count" default="0">
 		</member>
 		<member name="invert_border" type="float" setter="set_invert_border" getter="get_invert_border" default="100.0">
-			Added padding applied to the bounding box when using [code]invert[/code]. Setting this value too small may result in a "Bad Polygon" error.
+			Added padding applied to the bounding box when [member invert_enabled] is set to [code]true[/code]. Setting this value too small may result in a "Bad Polygon" error.
 		</member>
-		<member name="invert_enable" type="bool" setter="set_invert" getter="get_invert" default="false">
-			If [code]true[/code], polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code].
+		<member name="invert_enabled" type="bool" setter="set_invert_enabled" getter="get_invert_enabled" default="false">
+			If [code]true[/code], the polygon will be inverted, containing the area outside the defined points and extending to the [member invert_border].
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The offset applied to each vertex.

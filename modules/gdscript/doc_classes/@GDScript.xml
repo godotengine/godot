@@ -74,11 +74,11 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="dict2inst">
+		<method name="dict_to_inst">
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
-				Converts a dictionary (previously created with [method inst2dict]) back to an instance. Useful for deserializing.
+				Converts a [param dictionary] (previously created with [method inst_to_dict]) back to an Object instance. Useful for deserializing.
 			</description>
 		</method>
 		<method name="get_stack">
@@ -102,15 +102,15 @@
 				[b]Note:[/b] Not supported for calling from threads. Instead, this will return an empty array.
 			</description>
 		</method>
-		<method name="inst2dict">
+		<method name="inst_to_dict">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed instance converted to a dictionary (useful for serializing).
+				Returns the passed [param instance] converted to a Dictionary (useful for serializing).
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst2dict(self)
+				    var d = inst_to_dict(self)
 				    print(d.keys())
 				    print(d.values())
 				[/codeblock]

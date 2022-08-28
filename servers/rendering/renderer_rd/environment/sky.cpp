@@ -1232,7 +1232,7 @@ void SkyRD::setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_ligh
 						// I know tan(0) is 0, but let's not risk it with numerical precision.
 						// technically this will keep expanding until reaching the sun, but all we care
 						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
-						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+						angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
 					} else {
 						angular_diameter = 0.0;
 					}

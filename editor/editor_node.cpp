@@ -2432,7 +2432,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	String run_filename;
 
-	if (p_current || (editor_data.get_edited_scene_root() && !p_custom.is_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
+	if ((p_current && p_custom.is_empty()) || (editor_data.get_edited_scene_root() && !p_custom.is_empty() && p_custom == editor_data.get_edited_scene_root()->get_scene_file_path())) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
@@ -2494,15 +2494,19 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	emit_signal(SNAME("play_pressed"));
 	if (p_current) {
+		run_current_filename = run_filename;
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		play_scene_button->set_tooltip(TTR("Reload the played scene."));
 	} else if (!p_custom.is_empty()) {
 		run_custom_filename = p_custom;
 		play_custom_scene_button->set_pressed(true);
 		play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		play_custom_scene_button->set_tooltip(TTR("Reload the played scene."));
 	} else {
 		play_button->set_pressed(true);
 		play_button->set_icon(gui_base->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
+		play_button->set_tooltip(TTR("Reload the played scene."));
 	}
 	stop_button->set_disabled(false);
 
@@ -2527,9 +2531,22 @@ void EditorNode::_run_native(const Ref<EditorExportPreset> &p_preset) {
 	}
 }
 
+void EditorNode::_reset_play_buttons() {
+	play_button->set_pressed(false);
+	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
+	play_button->set_tooltip(TTR("Play the project."));
+	play_scene_button->set_pressed(false);
+	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
+	play_scene_button->set_tooltip(TTR("Play the edited scene."));
+	play_custom_scene_button->set_pressed(false);
+	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
+	play_custom_scene_button->set_tooltip(TTR("Play a custom scene."));
+}
+
 void EditorNode::_android_build_source_selected(const String &p_file) {
 	export_template_manager->install_android_template_from_file(p_file);
 }
+
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	if (!p_confirmed) { // FIXME: this may be a hack.
 		current_menu_option = (MenuOptions)p_option;
@@ -2821,7 +2838,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				quick_run->set_title(TTR("Quick Run Scene..."));
 				play_custom_scene_button->set_pressed(false);
 			} else {
-				String last_custom_scene = run_custom_filename;
+				String last_custom_scene = run_custom_filename; // This is necessary to have a copy of the string.
 				run_play_custom(last_custom_scene);
 			}
 
@@ -2833,13 +2850,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			editor_run.stop();
 			run_custom_filename.clear();
-			play_button->set_pressed(false);
-			play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
-			play_scene_button->set_pressed(false);
-			play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
-			play_custom_scene_button->set_pressed(false);
-			play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
+			run_current_filename.clear();
 			stop_button->set_disabled(true);
+			_reset_play_buttons();
 
 			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
 				for (int i = 0; i < bottom_panel_items.size(); i++) {
@@ -2862,7 +2875,12 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 
 		case RUN_PLAY_SCENE: {
-			run_play_current();
+			if (run_current_filename.is_empty() || editor_run.get_status() == EditorRun::STATUS_STOP) {
+				run_play_current();
+			} else {
+				String last_current_scene = run_current_filename; // This is necessary to have a copy of the string.
+				run_play_custom(last_current_scene);
+			}
 
 		} break;
 		case RUN_SETTINGS: {
@@ -5066,8 +5084,9 @@ void EditorNode::run_play_current() {
 }
 
 void EditorNode::run_play_custom(const String &p_custom) {
+	bool is_current = !run_current_filename.is_empty();
 	_menu_option_confirm(RUN_STOP, true);
-	_run(false, p_custom);
+	_run(is_current, p_custom);
 }
 
 void EditorNode::run_stop() {
@@ -6295,7 +6314,7 @@ EditorNode::EditorNode() {
 	main_vbox->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT, Control::PRESET_MODE_MINSIZE, 8);
 	main_vbox->add_theme_constant_override("separation", 8 * EDSCALE);
 
-	menu_hb = memnew(HBoxContainer);
+	menu_hb = memnew(EditorTitleBar);
 	main_vbox->add_child(menu_hb);
 
 	left_l_hsplit = memnew(HSplitContainer);
@@ -6526,6 +6545,15 @@ EditorNode::EditorNode() {
 	scene_root_parent->add_child(main_control);
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU);
+	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
+
+	if (can_expand) {
+		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
+		Control *menu_spacer = memnew(Control);
+		menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		menu_spacer->set_custom_minimum_size(Size2(DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID).x, 0));
+		menu_hb->add_child(menu_spacer);
+	}
 
 	main_menu = memnew(MenuBar);
 	menu_hb->add_child(main_menu);
@@ -6695,6 +6723,11 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::Q);
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), RUN_PROJECT_MANAGER, true);
 
+	// Spacer to center 2D / 3D / Script buttons.
+	Control *left_spacer = memnew(Control);
+	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	menu_hb->add_child(left_spacer);
+
 	menu_hb->add_spacer();
 
 	main_editor_button_vb = memnew(HBoxContainer);
@@ -6772,7 +6805,9 @@ EditorNode::EditorNode() {
 	}
 	help_menu->add_icon_shortcut(gui_base->get_theme_icon(SNAME("Heart"), SNAME("EditorIcons")), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTR("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
 
+	// Spacer to center 2D / 3D / Script buttons.
 	Control *right_spacer = memnew(Control);
+	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	menu_hb->add_child(right_spacer);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
@@ -6782,10 +6817,8 @@ EditorNode::EditorNode() {
 	play_button->set_flat(true);
 	play_hb->add_child(play_button);
 	play_button->set_toggle_mode(true);
-	play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY));
-	play_button->set_tooltip(TTR("Play the project."));
 
 	ED_SHORTCUT_AND_COMMAND("editor/play", TTR("Play"), Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/play", "macos", KeyModifierMask::CMD | Key::B);
@@ -6826,9 +6859,7 @@ EditorNode::EditorNode() {
 	play_hb->add_child(play_scene_button);
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
 	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_SCENE));
-	play_scene_button->set_tooltip(TTR("Play the edited scene."));
 
 	ED_SHORTCUT_AND_COMMAND("editor/play_scene", TTR("Play Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/play_scene", "macos", KeyModifierMask::CMD | Key::R);
@@ -6839,9 +6870,9 @@ EditorNode::EditorNode() {
 	play_hb->add_child(play_custom_scene_button);
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
-	play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
 	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_CUSTOM_SCENE));
-	play_custom_scene_button->set_tooltip(TTR("Play custom scene"));
+
+	_reset_play_buttons();
 
 	ED_SHORTCUT_AND_COMMAND("editor/play_custom_scene", TTR("Play Custom Scene"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/play_custom_scene", "macos", KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::R);
@@ -6877,6 +6908,14 @@ EditorNode::EditorNode() {
 	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
 	right_menu_hb->add_child(rendering_driver);
+
+	if (can_expand) {
+		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
+		Control *menu_spacer = memnew(Control);
+		menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		menu_spacer->set_custom_minimum_size(Size2(DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID).y, 0));
+		menu_hb->add_child(menu_spacer);
+	}
 
 	// Only display the render drivers that are available for this display driver.
 	int display_driver_idx = OS::get_singleton()->get_display_driver_id();
@@ -7294,7 +7333,7 @@ EditorNode::EditorNode() {
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
 
-		Ref<ParticlesMaterialConversionPlugin> particles_mat_convert;
+		Ref<ParticleProcessMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(particles_mat_convert);
 
@@ -7434,8 +7473,16 @@ EditorNode::EditorNode() {
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
 
-	main_menu->set_custom_minimum_size(Size2(MAX(main_menu->get_minimum_size().x, play_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, main_menu->get_minimum_size().x - play_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+	// Adjust spacers to center 2D / 3D / Script buttons.
+	int max_w = MAX(play_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
+	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
+	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - play_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+
+	// Extend menu bar to window title.
+	if (can_expand) {
+		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
+		menu_hb->set_can_move_window(true);
+	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 	// Save editor executable path for third-party tools.

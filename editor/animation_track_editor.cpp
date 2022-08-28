@@ -1489,7 +1489,6 @@ int AnimationTimelineEdit::get_name_limit() const {
 
 void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 			add_track->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -2122,11 +2121,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 					get_theme_icon(SNAME("InterpWrapClamp"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpWrapLoop"), SNAME("EditorIcons")),
 				};
-				Ref<Texture2D> interp_icon[4] = {
+				Ref<Texture2D> interp_icon[5] = {
 					get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")),
 					get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")),
-					get_theme_icon(SNAME("InterpCubicInTime"), SNAME("EditorIcons"))
+					get_theme_icon(SNAME("InterpLinearAngle"), SNAME("EditorIcons")),
+					get_theme_icon(SNAME("InterpCubicAngle"), SNAME("EditorIcons")),
 				};
 				Ref<Texture2D> cont_icon[4] = {
 					get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")),
@@ -2849,7 +2849,23 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_icon_item(get_theme_icon(SNAME("InterpRaw"), SNAME("EditorIcons")), TTR("Nearest"), MENU_INTERPOLATION_NEAREST);
 				menu->add_icon_item(get_theme_icon(SNAME("InterpLinear"), SNAME("EditorIcons")), TTR("Linear"), MENU_INTERPOLATION_LINEAR);
 				menu->add_icon_item(get_theme_icon(SNAME("InterpCubic"), SNAME("EditorIcons")), TTR("Cubic"), MENU_INTERPOLATION_CUBIC);
-				menu->add_icon_item(get_theme_icon(SNAME("InterpCubicInTime"), SNAME("EditorIcons")), TTR("CubicInTime"), MENU_INTERPOLATION_CUBIC_IN_TIME);
+				// Check is angle property.
+				AnimationPlayerEditor *ape = AnimationPlayerEditor::get_singleton();
+				if (ape) {
+					AnimationPlayer *ap = ape->get_player();
+					if (ap) {
+						NodePath path = animation->track_get_path(track);
+						Node *nd = ap->get_node(ap->get_root())->get_node(NodePath(path.get_concatenated_names()));
+						StringName prop = path.get_concatenated_subnames();
+						PropertyInfo prop_info;
+						ClassDB::get_property_info(nd->get_class(), prop, &prop_info);
+						bool is_angle = prop_info.type == Variant::FLOAT && prop_info.hint_string.find("radians") != -1;
+						if (is_angle) {
+							menu->add_icon_item(get_theme_icon(SNAME("InterpLinearAngle"), SNAME("EditorIcons")), TTR("Linear Angle"), MENU_INTERPOLATION_LINEAR_ANGLE);
+							menu->add_icon_item(get_theme_icon(SNAME("InterpCubicAngle"), SNAME("EditorIcons")), TTR("Cubic Angle"), MENU_INTERPOLATION_CUBIC_ANGLE);
+						}
+					}
+				}
 				menu->reset_size();
 
 				Vector2 popup_pos = get_screen_position() + interp_mode_rect.position + Vector2(0, interp_mode_rect.size.height);
@@ -3191,7 +3207,8 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_INTERPOLATION_NEAREST:
 		case MENU_INTERPOLATION_LINEAR:
 		case MENU_INTERPOLATION_CUBIC:
-		case MENU_INTERPOLATION_CUBIC_IN_TIME: {
+		case MENU_INTERPOLATION_LINEAR_ANGLE:
+		case MENU_INTERPOLATION_CUBIC_ANGLE: {
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
@@ -4741,8 +4758,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			zoom_icon->set_texture(get_theme_icon(SNAME("Zoom"), SNAME("EditorIcons")));
 			bezier_edit_icon->set_icon(get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons")));
@@ -6045,6 +6062,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				Vector<int> keys = E->value;
 				int len = keys.size() - 1;
 
+				// Special case for angle interpolation.
+				bool is_using_angle = animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_LINEAR_ANGLE || animation->track_get_interpolation_type(track) == Animation::INTERPOLATION_CUBIC_ANGLE;
+
 				// Make insert queue.
 				Vector<Pair<double, Variant>> insert_queue;
 				for (int i = 0; i < len; i++) {
@@ -6054,6 +6074,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						double to_t = animation->track_get_key_time(track, keys[i + 1]);
 						Variant from_v = animation->track_get_key_value(track, keys[i]);
 						Variant to_v = animation->track_get_key_value(track, keys[i + 1]);
+						if (is_using_angle) {
+							real_t a = from_v;
+							real_t b = to_v;
+							real_t to_diff = fmod(b - a, Math_TAU);
+							to_v = a + fmod(2.0 * to_diff, Math_TAU) - to_diff;
+						}
 						Variant delta_v;
 						Variant::sub(to_v, from_v, delta_v);
 						double duration = to_t - from_t;
@@ -6169,15 +6195,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_GOTO_PREV_STEP: {
 			goto_prev_step(false);
 		} break;
-		case EDIT_APPLY_RESET: {
-			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
-		} break;
 
-		case EDIT_BAKE_ANIMATION: {
+		case EDIT_BAKE_TRACK: {
 			bake_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
-		case EDIT_BAKE_ANIMATION_CONFIRM: {
-			undo_redo->create_action(TTR("Bake Animation as Linear keys."));
+		case EDIT_BAKE_TRACK_CONFIRM: {
+			undo_redo->create_action(TTR("Bake Track as Linear keys."));
 
 			int track_len = animation->get_track_count();
 			bool b_trs = bake_trs->is_pressed();
@@ -6195,9 +6218,13 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				do_bake |= b_bs && type == Animation::TYPE_BLEND_SHAPE;
 				do_bake |= b_v && type == Animation::TYPE_VALUE;
 				if (do_bake && !animation->track_is_compressed(i)) {
-					if (animation->track_get_interpolation_type(i) == Animation::INTERPOLATION_NEAREST) {
-						continue; // Nearest interpolation cannot be baked.
+					Animation::InterpolationType it = animation->track_get_interpolation_type(i);
+					if (it == Animation::INTERPOLATION_NEAREST) {
+						continue; // Nearest and Angle interpolation cannot be baked.
 					}
+
+					// Special case for angle interpolation.
+					bool is_using_angle = it == Animation::INTERPOLATION_LINEAR_ANGLE || it == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 					// Make insert queue.
 					Vector<Pair<double, Variant>> insert_queue;
@@ -6262,7 +6289,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					}
 
 					// Insert keys.
-					undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", i, Animation::INTERPOLATION_LINEAR);
+					undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", i, is_using_angle ? Animation::INTERPOLATION_LINEAR_ANGLE : Animation::INTERPOLATION_LINEAR);
 					for (int j = insert_queue.size() - 1; j >= 0; j--) {
 						undo_redo->add_do_method(animation.ptr(), "track_insert_key", i, insert_queue[j].first, insert_queue[j].second);
 						undo_redo->add_undo_method(animation.ptr(), "track_remove_key", i, j);
@@ -6280,6 +6307,10 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 		} break;
 
+		case EDIT_APPLY_RESET: {
+			AnimationPlayerEditor::get_singleton()->get_player()->apply_reset(true);
+		} break;
+
 		case EDIT_OPTIMIZE_ANIMATION: {
 			optimize_dialog->popup_centered(Size2(250, 180) * EDSCALE);
 
@@ -6288,6 +6319,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			animation->optimize(optimize_velocity_error->get_value(), optimize_angular_error->get_value(), optimize_precision_error->get_value());
 			_update_tracks();
 			undo_redo->clear_history(true, undo_redo->get_history_for_object(animation.ptr()).id);
+			undo_redo->clear_history(true, undo_redo->get_history_for_object(this).id);
 
 		} break;
 		case EDIT_CLEAN_UP_ANIMATION: {
@@ -6356,6 +6388,7 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	}
 
 	undo_redo->clear_history(true, undo_redo->get_history_for_object(animation.ptr()).id);
+	undo_redo->clear_history(true, undo_redo->get_history_for_object(this).id);
 	_update_tracks();
 }
 
@@ -6701,11 +6734,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KeyModifierMask::CMD | Key::RIGHT), EDIT_GOTO_NEXT_STEP);
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Go to Previous Step"), KeyModifierMask::CMD | Key::LEFT), EDIT_GOTO_PREV_STEP);
 	edit->get_popup()->add_separator();
+	edit->get_popup()->add_item(TTR("Bake Track"), EDIT_BAKE_TRACK);
+	edit->get_popup()->add_separator();
 	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_item(TTR("Bake Animation"), EDIT_BAKE_ANIMATION);
-	edit->get_popup()->add_item(TTR("Optimize Animation"), EDIT_OPTIMIZE_ANIMATION);
-	edit->get_popup()->add_item(TTR("Clean-Up Animation"), EDIT_CLEAN_UP_ANIMATION);
+	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)"), EDIT_OPTIMIZE_ANIMATION);
+	edit->get_popup()->add_item(TTR("Clean-Up Animation (no undo)"), EDIT_CLEAN_UP_ANIMATION);
 
 	edit->get_popup()->connect("id_pressed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed));
 	edit->get_popup()->connect("about_to_popup", callable_mp(this, &AnimationTrackEditor::_edit_menu_about_to_popup));
@@ -6873,8 +6907,8 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	//
 	bake_dialog = memnew(ConfirmationDialog);
-	bake_dialog->set_title(TTR("Anim. Baker"));
-	bake_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_BAKE_ANIMATION_CONFIRM));
+	bake_dialog->set_title(TTR("Track Baker"));
+	bake_dialog->connect("confirmed", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_BAKE_TRACK_CONFIRM));
 	add_child(bake_dialog);
 	GridContainer *bake_grid = memnew(GridContainer);
 	bake_grid->set_columns(2);

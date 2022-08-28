@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  particles_material.h                                                 */
+/*  particle_process_material.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -31,8 +31,8 @@
 #include "core/templates/rid.h"
 #include "scene/resources/material.h"
 
-#ifndef PARTICLES_MATERIAL_H
-#define PARTICLES_MATERIAL_H
+#ifndef PARTICLE_PROCESS_MATERIAL_H
+#define PARTICLE_PROCESS_MATERIAL_H
 
 /*
  TODO:
@@ -41,8 +41,8 @@
 -Proper trails
 */
 
-class ParticlesMaterial : public Material {
-	GDCLASS(ParticlesMaterial, Material);
+class ParticleProcessMaterial : public Material {
+	GDCLASS(ParticleProcessMaterial, Material);
 
 public:
 	enum Parameter {
@@ -93,6 +93,14 @@ public:
 		SUB_EMITTER_MAX
 	};
 
+	// When extending, make sure not to overflow the size of the MaterialKey below.
+	enum CollisionMode {
+		COLLISION_DISABLED,
+		COLLISION_RIGID,
+		COLLISION_HIDE_ON_CONTACT,
+		COLLISION_MAX
+	};
+
 private:
 	union MaterialKey {
 		// The bit size of the struct must be kept below or equal to 32 bits.
@@ -106,7 +114,7 @@ private:
 			uint32_t has_emission_color : 1;
 			uint32_t sub_emitter : 2;
 			uint32_t attractor_enabled : 1;
-			uint32_t collision_enabled : 1;
+			uint32_t collision_mode : 2;
 			uint32_t collision_scale : 1;
 			uint32_t turbulence_enabled : 1;
 		};
@@ -153,7 +161,7 @@ private:
 		mk.emission_shape = emission_shape;
 		mk.has_emission_color = emission_shape >= EMISSION_SHAPE_POINTS && emission_color_texture.is_valid();
 		mk.sub_emitter = sub_emitter_mode;
-		mk.collision_enabled = collision_enabled;
+		mk.collision_mode = collision_mode;
 		mk.attractor_enabled = attractor_interaction_enabled;
 		mk.collision_scale = collision_scale;
 		mk.turbulence_enabled = turbulence_enabled;
@@ -162,7 +170,7 @@ private:
 	}
 
 	static Mutex material_mutex;
-	static SelfList<ParticlesMaterial>::List *dirty_materials;
+	static SelfList<ParticleProcessMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
 		StringName direction;
@@ -246,7 +254,7 @@ private:
 
 	static ShaderNames *shader_names;
 
-	SelfList<ParticlesMaterial> element;
+	SelfList<ParticleProcessMaterial> element;
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
@@ -300,7 +308,7 @@ private:
 	//do not save emission points here
 
 	bool attractor_interaction_enabled = false;
-	bool collision_enabled = false;
+	CollisionMode collision_mode;
 	bool collision_scale = false;
 	float collision_friction = 0.0f;
 	float collision_bounce = 0.0f;
@@ -385,8 +393,8 @@ public:
 	void set_attractor_interaction_enabled(bool p_enable);
 	bool is_attractor_interaction_enabled() const;
 
-	void set_collision_enabled(bool p_enabled);
-	bool is_collision_enabled() const;
+	void set_collision_mode(CollisionMode p_collision_mode);
+	CollisionMode get_collision_mode() const;
 
 	void set_collision_use_scale(bool p_scale);
 	bool is_collision_using_scale() const;
@@ -417,13 +425,14 @@ public:
 
 	virtual Shader::Mode get_shader_mode() const override;
 
-	ParticlesMaterial();
-	~ParticlesMaterial();
+	ParticleProcessMaterial();
+	~ParticleProcessMaterial();
 };
 
-VARIANT_ENUM_CAST(ParticlesMaterial::Parameter)
-VARIANT_ENUM_CAST(ParticlesMaterial::ParticleFlags)
-VARIANT_ENUM_CAST(ParticlesMaterial::EmissionShape)
-VARIANT_ENUM_CAST(ParticlesMaterial::SubEmitterMode)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::Parameter)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::ParticleFlags)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::EmissionShape)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::SubEmitterMode)
+VARIANT_ENUM_CAST(ParticleProcessMaterial::CollisionMode)
 
-#endif // PARTICLES_MATERIAL_H
+#endif // PARTICLE_PROCESS_MATERIAL_H

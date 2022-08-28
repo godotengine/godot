@@ -47,6 +47,21 @@ class TextServer : public RefCounted {
 	GDCLASS(TextServer, RefCounted);
 
 public:
+	enum FontAntialiasing {
+		FONT_ANTIALIASING_NONE,
+		FONT_ANTIALIASING_GRAY,
+		FONT_ANTIALIASING_LCD,
+	};
+
+	enum FontLCDSubpixelLayout {
+		FONT_LCD_SUBPIXEL_LAYOUT_NONE,
+		FONT_LCD_SUBPIXEL_LAYOUT_HRGB,
+		FONT_LCD_SUBPIXEL_LAYOUT_HBGR,
+		FONT_LCD_SUBPIXEL_LAYOUT_VRGB,
+		FONT_LCD_SUBPIXEL_LAYOUT_VBGR,
+		FONT_LCD_SUBPIXEL_LAYOUT_MAX,
+	};
+
 	enum Direction {
 		DIRECTION_AUTO,
 		DIRECTION_LTR,
@@ -233,8 +248,8 @@ public:
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;
 
-	virtual void font_set_antialiased(const RID &p_font_rid, bool p_antialiased) = 0;
-	virtual bool font_is_antialiased(const RID &p_font_rid) const = 0;
+	virtual void font_set_antialiasing(RID p_font_rid, FontAntialiasing p_antialiasing) = 0;
+	virtual FontAntialiasing font_get_antialiasing(RID p_font_rid) const = 0;
 
 	virtual void font_set_generate_mipmaps(const RID &p_font_rid, bool p_generate_mipmaps) = 0;
 	virtual bool font_get_generate_mipmaps(const RID &p_font_rid) const = 0;
@@ -572,6 +587,8 @@ VARIANT_ENUM_CAST(TextServer::ContourPointTag);
 VARIANT_ENUM_CAST(TextServer::SpacingType);
 VARIANT_BITFIELD_CAST(TextServer::FontStyle);
 VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
+VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
+VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);

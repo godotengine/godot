@@ -186,10 +186,6 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
-void OS::dump_memory_to_file(const char *p_file) {
-	//Memory::dump_static_mem_to_file(p_file);
-}
-
 static Ref<FileAccess> _OSPRF;
 
 static void _OS_printres(Object *p_obj) {

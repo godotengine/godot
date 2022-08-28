@@ -179,7 +179,6 @@ class SceneTreeDialog : public ConfirmationDialog {
 	void _cancel();
 	void _selected_changed();
 	void _filter_changed(const String &p_filter);
-	void _update_theme();
 
 protected:
 	void _notification(int p_what);

@@ -40,7 +40,7 @@ class GodotConstraint3D;
 class GodotPhysicsDirectBodyState3D;
 
 class GodotBody3D : public GodotCollisionObject3D {
-	PhysicsServer3D::BodyMode mode = PhysicsServer3D::BODY_MODE_DYNAMIC;
+	PhysicsServer3D::BodyMode mode = PhysicsServer3D::BODY_MODE_RIGID;
 
 	Vector3 linear_velocity;
 	Vector3 angular_velocity;

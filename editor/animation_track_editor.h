@@ -144,7 +144,8 @@ class AnimationTrackEdit : public Control {
 		MENU_INTERPOLATION_NEAREST,
 		MENU_INTERPOLATION_LINEAR,
 		MENU_INTERPOLATION_CUBIC,
-		MENU_INTERPOLATION_CUBIC_IN_TIME,
+		MENU_INTERPOLATION_LINEAR_ANGLE,
+		MENU_INTERPOLATION_CUBIC_ANGLE,
 		MENU_LOOP_WRAP,
 		MENU_LOOP_CLAMP,
 		MENU_KEY_INSERT,
@@ -501,7 +502,7 @@ class AnimationTrackEditor : public VBoxContainer {
 		NodePath full_path;
 		NodePath base_path;
 		Animation::TrackType track_type = Animation::TYPE_ANIMATION;
-		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC_IN_TIME;
+		Animation::InterpolationType interp_type = Animation::INTERPOLATION_CUBIC_ANGLE;
 		Animation::UpdateMode update_mode = Animation::UPDATE_CAPTURE;
 		Animation::LoopMode loop_mode = Animation::LOOP_PINGPONG;
 		bool loop_wrap = false;
@@ -544,9 +545,9 @@ public:
 		EDIT_GOTO_NEXT_STEP,
 		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
+		EDIT_BAKE_TRACK,
+		EDIT_BAKE_TRACK_CONFIRM,
 		EDIT_APPLY_RESET,
-		EDIT_BAKE_ANIMATION,
-		EDIT_BAKE_ANIMATION_CONFIRM,
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,

@@ -36,9 +36,8 @@
 AudioDriverDummy *AudioDriverDummy::singleton = nullptr;
 
 Error AudioDriverDummy::init() {
-	active = false;
-	thread_exited = false;
-	exit_thread = false;
+	active.clear();
+	exit_thread.clear();
 	samples_in = nullptr;
 
 	if (mix_rate == -1) {
@@ -60,23 +59,23 @@ void AudioDriverDummy::thread_func(void *p_udata) {
 
 	uint64_t usdelay = (ad->buffer_frames / float(ad->mix_rate)) * 1000000;
 
-	while (!ad->exit_thread) {
-		if (ad->active) {
+	while (!ad->exit_thread.is_set()) {
+		if (ad->active.is_set()) {
 			ad->lock();
+			ad->start_counting_ticks();
 
 			ad->audio_server_process(ad->buffer_frames, ad->samples_in);
 
+			ad->stop_counting_ticks();
 			ad->unlock();
 		};
 
 		OS::get_singleton()->delay_usec(usdelay);
 	};
-
-	ad->thread_exited = true;
 };
 
 void AudioDriverDummy::start() {
-	active = true;
+	active.set();
 };
 
 int AudioDriverDummy::get_mix_rate() const {
@@ -113,7 +112,7 @@ uint32_t AudioDriverDummy::get_channels() const {
 }
 
 void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
-	ERR_FAIL_COND(!active); // If not active, should not mix.
+	ERR_FAIL_COND(!active.is_set()); // If not active, should not mix.
 	ERR_FAIL_COND(use_threads == true); // If using threads, this will not work well.
 
 	uint32_t todo = p_frames;
@@ -136,7 +135,7 @@ void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
 
 void AudioDriverDummy::finish() {
 	if (use_threads) {
-		exit_thread = true;
+		exit_thread.set();
 		thread.wait_to_finish();
 	}
 

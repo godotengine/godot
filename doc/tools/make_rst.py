@@ -878,7 +878,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                     f.write("----\n\n")
 
                 if i == 0:
-                    f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name.strip("@")))
+                    f.write(".. _class_{}_annotation_{}:\n\n".format(class_name, m.name))
 
                 _, signature = make_method_signature(class_def, m, "", state)
                 f.write("- {}\n\n".format(signature))
@@ -1337,8 +1337,10 @@ def format_text_block(
 
             # Cross-references to items in this or other class documentation pages.
             elif is_in_tagset(cmd, RESERVED_CROSSLINK_TAGS):
+                link_type: str = ""
                 link_target: str = ""
                 if space_pos >= 0:
+                    link_type = tag_text[:space_pos]
                     link_target = tag_text[space_pos + 1 :].strip()
 
                 if link_target == "":
@@ -1350,11 +1352,13 @@ def format_text_block(
                 else:
                     if (
                         cmd.startswith("method")
+                        or cmd.startswith("constructor")
+                        or cmd.startswith("operator")
                         or cmd.startswith("member")
                         or cmd.startswith("signal")
-                        or cmd.startswith("constant")
                         or cmd.startswith("annotation")
                         or cmd.startswith("theme_item")
+                        or cmd.startswith("constant")
                     ):
                         if link_target.find(".") != -1:
                             ss = link_target.split(".")
@@ -1371,48 +1375,62 @@ def format_text_block(
                             class_param = state.current_class
                             method_param = link_target
 
-                        ref_type = ""
+                        # Default to the tag command name. This works by default for most tags,
+                        # but member and theme_item have special cases.
+                        ref_type = "_{}".format(link_type)
+                        if link_type == "member":
+                            ref_type = "_property"
+
                         if class_param in state.classes:
                             class_def = state.classes[class_param]
-                            if cmd.startswith("constructor"):
-                                if method_param not in class_def.constructors:
-                                    print_error(
-                                        '{}.xml: Unresolved constructor reference "{}" in {}.'.format(
-                                            state.current_class, link_target, context_name
-                                        ),
-                                        state,
-                                    )
-                                ref_type = "_constructor"
 
-                            elif cmd.startswith("method"):
-                                if method_param not in class_def.methods:
-                                    print_error(
-                                        '{}.xml: Unresolved method reference "{}" in {}.'.format(
-                                            state.current_class, link_target, context_name
-                                        ),
-                                        state,
-                                    )
-                                ref_type = "_method"
+                            if cmd.startswith("method") and method_param not in class_def.methods:
+                                print_error(
+                                    '{}.xml: Unresolved method reference "{}" in {}.'.format(
+                                        state.current_class, link_target, context_name
+                                    ),
+                                    state,
+                                )
 
-                            elif cmd.startswith("operator"):
-                                if method_param not in class_def.operators:
-                                    print_error(
-                                        '{}.xml: Unresolved operator reference "{}" in {}.'.format(
-                                            state.current_class, link_target, context_name
-                                        ),
-                                        state,
-                                    )
-                                ref_type = "_operator"
+                            elif cmd.startswith("constructor") and method_param not in class_def.constructors:
+                                print_error(
+                                    '{}.xml: Unresolved constructor reference "{}" in {}.'.format(
+                                        state.current_class, link_target, context_name
+                                    ),
+                                    state,
+                                )
 
-                            elif cmd.startswith("member"):
-                                if method_param not in class_def.properties:
-                                    print_error(
-                                        '{}.xml: Unresolved member reference "{}" in {}.'.format(
-                                            state.current_class, link_target, context_name
-                                        ),
-                                        state,
-                                    )
-                                ref_type = "_property"
+                            elif cmd.startswith("operator") and method_param not in class_def.operators:
+                                print_error(
+                                    '{}.xml: Unresolved operator reference "{}" in {}.'.format(
+                                        state.current_class, link_target, context_name
+                                    ),
+                                    state,
+                                )
+
+                            elif cmd.startswith("member") and method_param not in class_def.properties:
+                                print_error(
+                                    '{}.xml: Unresolved member reference "{}" in {}.'.format(
+                                        state.current_class, link_target, context_name
+                                    ),
+                                    state,
+                                )
+
+                            elif cmd.startswith("signal") and method_param not in class_def.signals:
+                                print_error(
+                                    '{}.xml: Unresolved signal reference "{}" in {}.'.format(
+                                        state.current_class, link_target, context_name
+                                    ),
+                                    state,
+                                )
+
+                            elif cmd.startswith("annotation") and method_param not in class_def.annotations:
+                                print_error(
+                                    '{}.xml: Unresolved annotation reference "{}" in {}.'.format(
+                                        state.current_class, link_target, context_name
+                                    ),
+                                    state,
+                                )
 
                             elif cmd.startswith("theme_item"):
                                 if method_param not in class_def.theme_items:
@@ -1422,27 +1440,9 @@ def format_text_block(
                                         ),
                                         state,
                                     )
-                                ref_type = "_theme_{}".format(class_def.theme_items[method_param].data_name)
-
-                            elif cmd.startswith("signal"):
-                                if method_param not in class_def.signals:
-                                    print_error(
-                                        '{}.xml: Unresolved signal reference "{}" in {}.'.format(
-                                            state.current_class, link_target, context_name
-                                        ),
-                                        state,
-                                    )
-                                ref_type = "_signal"
-
-                            elif cmd.startswith("annotation"):
-                                if method_param not in class_def.annotations:
-                                    print_error(
-                                        '{}.xml: Unresolved annotation reference "{}" in {}.'.format(
-                                            state.current_class, link_target, context_name
-                                        ),
-                                        state,
-                                    )
-                                ref_type = "_annotation"
+                                else:
+                                    # Needs theme data type to be properly linked, which we cannot get without a class.
+                                    ref_type = "_theme_{}".format(class_def.theme_items[method_param].data_name)
 
                             elif cmd.startswith("constant"):
                                 found = False
@@ -1473,7 +1473,6 @@ def format_text_block(
                                         ),
                                         state,
                                     )
-                                ref_type = "_constant"
 
                         else:
                             print_error(

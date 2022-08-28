@@ -185,7 +185,7 @@ void AudioStreamPlayer2D::_update_panning() {
 		}
 
 		float multiplier = Math::pow(1.0f - dist / max_distance, attenuation);
-		multiplier *= Math::db2linear(volume_db); //also apply player volume!
+		multiplier *= Math::db_to_linear(volume_db); //also apply player volume!
 
 		float pan = relative_to_listener.x / screen_size.x;
 		// Don't let the panning effect extend (too far) beyond the screen.

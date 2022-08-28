@@ -301,9 +301,9 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		float normal_merge_threshold = Math::cos(Math::deg2rad(p_normal_merge_angle));
-		float normal_pre_split_threshold = Math::cos(Math::deg2rad(MIN(180.0f, p_normal_split_angle * 2.0f)));
-		float normal_split_threshold = Math::cos(Math::deg2rad(p_normal_split_angle));
+		float normal_merge_threshold = Math::cos(Math::deg_to_rad(p_normal_merge_angle));
+		float normal_pre_split_threshold = Math::cos(Math::deg_to_rad(MIN(180.0f, p_normal_split_angle * 2.0f)));
+		float normal_split_threshold = Math::cos(Math::deg_to_rad(p_normal_split_angle));
 		const Vector3 *normals_ptr = normals.ptr();
 
 		HashMap<Vector3, LocalVector<Pair<int, int>>> unique_vertices;

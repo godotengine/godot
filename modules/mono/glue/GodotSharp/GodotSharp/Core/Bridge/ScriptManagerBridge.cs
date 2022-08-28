@@ -831,7 +831,7 @@ namespace Godot.Bridge
                 }
                 else
                 {
-                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc((nuint)length))!;
+                    interopProperties = ((godotsharp_property_info*)NativeMemory.Alloc((nuint)length, (nuint)sizeof(godotsharp_property_info)))!;
                 }
 
                 try
@@ -951,7 +951,7 @@ namespace Godot.Bridge
                 }
                 else
                 {
-                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc((nuint)length))!;
+                    interopDefaultValues = ((godotsharp_property_def_val_pair*)NativeMemory.Alloc((nuint)length, (nuint)sizeof(godotsharp_property_def_val_pair)))!;
                 }
 
                 try

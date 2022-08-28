@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  noise_texture.h                                                      */
+/*  noise_texture_2d.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NOISE_TEXTURE_H
-#define NOISE_TEXTURE_H
+#ifndef NOISE_TEXTURE_2D_H
+#define NOISE_TEXTURE_2D_H
 
 #include "noise.h"
 
 #include "core/object/ref_counted.h"
 #include "scene/resources/texture.h"
 
-class NoiseTexture : public Texture2D {
-	GDCLASS(NoiseTexture, Texture2D);
+class NoiseTexture2D : public Texture2D {
+	GDCLASS(NoiseTexture2D, Texture2D);
 
 private:
 	Ref<Image> image;
@@ -116,8 +116,8 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	NoiseTexture();
-	virtual ~NoiseTexture();
+	NoiseTexture2D();
+	virtual ~NoiseTexture2D();
 };
 
-#endif // NOISE_TEXTURE_H
+#endif // NOISE_TEXTURE_2D_H

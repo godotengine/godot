@@ -9,6 +9,7 @@ namespace Godot.SourceGenerators
         public const string ExportGroupAttr = "Godot.ExportGroupAttribute";
         public const string ExportSubgroupAttr = "Godot.ExportSubgroupAttribute";
         public const string SignalAttr = "Godot.SignalAttribute";
+        public const string MustBeVariantAttr = "Godot.MustBeVariantAttribute";
         public const string GodotClassNameAttr = "Godot.GodotClassName";
         public const string SystemFlagsAttr = "System.FlagsAttribute";
     }

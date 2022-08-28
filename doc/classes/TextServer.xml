@@ -98,6 +98,13 @@
 				[b]Note:[/b] If there are pending glyphs to render, calling this function might trigger the texture cache update.
 			</description>
 		</method>
+		<method name="font_get_antialiasing" qualifiers="const">
+			<return type="int" enum="TextServer.FontAntialiasing" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns font anti-aliasing mode.
+			</description>
+		</method>
 		<method name="font_get_ascent" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
@@ -447,13 +454,6 @@
 				Returns [code]true[/code] if a Unicode [param char] is available in the font.
 			</description>
 		</method>
-		<method name="font_is_antialiased" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="font_rid" type="RID" />
-			<description>
-				Returns [code]true[/code] if font 8-bit anitialiased glyph rendering is supported and enabled.
-			</description>
-		</method>
 		<method name="font_is_force_autohinter" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -556,12 +556,12 @@
 				Renders the range of characters to the font cache texture.
 			</description>
 		</method>
-		<method name="font_set_antialiased">
+		<method name="font_set_antialiasing">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
-			<param index="1" name="antialiased" type="bool" />
+			<param index="1" name="antialiasing" type="int" enum="TextServer.FontAntialiasing" />
 			<description>
-				If set to [code]true[/code], 8-bit antialiased glyph rendering is used, otherwise 1-bit rendering is used. Used by dynamic fonts only.
+				Sets font anti-aliasing mode.
 			</description>
 		</method>
 		<method name="font_set_ascent">
@@ -1539,6 +1539,32 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="FONT_ANTIALIASING_NONE" value="0" enum="FontAntialiasing">
+			Font glyphs are rasterized as 1-bit bitmaps.
+		</constant>
+		<constant name="FONT_ANTIALIASING_GRAY" value="1" enum="FontAntialiasing">
+			Font glyphs are rasterized as 8-bit grayscale anti-aliased bitmaps.
+		</constant>
+		<constant name="FONT_ANTIALIASING_LCD" value="2" enum="FontAntialiasing">
+			Font glyphs are rasterized for LCD screens.
+			LCD sub-pixel layout is determined by the value of [code]gui/theme/lcd_subpixel_layout[/code] project settings.
+			LCD sub-pixel anti-aliasing mode is suitable only for rendering horizontal, unscaled text in 2D.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_NONE" value="0" enum="FontLCDSubpixelLayout">
+			Unknown or unsupported sub-pixel layout, LCD sub-pixel anti-aliasing is disabled.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_HRGB" value="1" enum="FontLCDSubpixelLayout">
+			Horizontal RGB sub-pixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_HBGR" value="2" enum="FontLCDSubpixelLayout">
+			Horizontal BGR sub-pixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VRGB" value="3" enum="FontLCDSubpixelLayout">
+			Vertical RGB sub-pixel layout.
+		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VBGR" value="4" enum="FontLCDSubpixelLayout">
+			Vertical BGR sub-pixel layout.
+		</constant>
 		<constant name="DIRECTION_AUTO" value="0" enum="Direction">
 			Text direction is determined based on contents and current locale.
 		</constant>
@@ -1606,13 +1632,13 @@
 			Displays glyphs that are mapped to the first [member Label.visible_characters] or [member RichTextLabel.visible_characters] characters from the beginning of the text.
 		</constant>
 		<constant name="VC_GLYPHS_AUTO" value="2" enum="VisibleCharactersBehavior">
-			Displays [member Label.percent_visible] or [member RichTextLabel.percent_visible] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the left or from the right, depending on [member Control.layout_direction] value.
 		</constant>
 		<constant name="VC_GLYPHS_LTR" value="3" enum="VisibleCharactersBehavior">
-			Displays [member Label.percent_visible] or [member RichTextLabel.percent_visible] glyphs, starting from the left.
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the left.
 		</constant>
 		<constant name="VC_GLYPHS_RTL" value="4" enum="VisibleCharactersBehavior">
-			Displays [member Label.percent_visible] or [member RichTextLabel.percent_visible] glyphs, starting from the right.
+			Displays [member Label.visible_ratio] or [member RichTextLabel.visible_ratio] glyphs, starting from the right.
 		</constant>
 		<constant name="OVERRUN_NO_TRIMMING" value="0" enum="OverrunBehavior">
 			No text trimming is performed.

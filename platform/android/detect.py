@@ -22,7 +22,6 @@ def get_opts():
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
-        EnumVariable("android_arch", "Target architecture", "arm64v8", ("armv7", "arm64v8", "x86", "x86_64")),
     ]
 
 
@@ -46,6 +45,7 @@ def get_ndk_version():
 
 def get_flags():
     return [
+        ("arch", "arm64"),  # Default for convenience.
         ("tools", False),
     ]
 
@@ -75,35 +75,37 @@ def install_ndk_if_needed(env):
 
 
 def configure(env):
+    # Validate arch.
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
+    if env["arch"] not in supported_arches:
+        print(
+            'Unsupported CPU architecture "%s" for Android. Supported architectures are: %s.'
+            % (env["arch"], ", ".join(supported_arches))
+        )
+        sys.exit()
+
     install_ndk_if_needed(env)
     ndk_root = env["ANDROID_NDK_ROOT"]
 
     # Architecture
 
-    if env["android_arch"] not in ["armv7", "arm64v8", "x86", "x86_64"]:
-        env["android_arch"] = "arm64v8"
+    if get_min_sdk_version(env["ndk_platform"]) < 21 and env["arch"] in ["x86_64", "arm64"]:
+        print(
+            'WARNING: arch="%s" is not supported with "ndk_platform" lower than "android-21". Forcing platform 21.'
+            % env["arch"]
+        )
+        env["ndk_platform"] = "android-21"
 
-    print("Building for Android, platform " + env["ndk_platform"] + " (" + env["android_arch"] + ")")
-
-    if get_min_sdk_version(env["ndk_platform"]) < 21:
-        if env["android_arch"] == "x86_64" or env["android_arch"] == "arm64v8":
-            print(
-                "WARNING: android_arch="
-                + env["android_arch"]
-                + " is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21"
-            )
-            env["ndk_platform"] = "android-21"
-
-    if env["android_arch"] == "armv7":
+    if env["arch"] == "arm32":
         target_triple = "armv7a-linux-androideabi"
         env.extra_suffix = ".armv7" + env.extra_suffix
-    elif env["android_arch"] == "arm64v8":
+    elif env["arch"] == "arm64":
         target_triple = "aarch64-linux-android"
         env.extra_suffix = ".armv8" + env.extra_suffix
-    elif env["android_arch"] == "x86":
+    elif env["arch"] == "x86_32":
         target_triple = "i686-linux-android"
         env.extra_suffix = ".x86" + env.extra_suffix
-    elif env["android_arch"] == "x86_64":
+    elif env["arch"] == "x86_64":
         target_triple = "x86_64-linux-android"
         env.extra_suffix = ".x86_64" + env.extra_suffix
 
@@ -176,14 +178,14 @@ def configure(env):
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
-    if env["android_arch"] == "x86":
+    if env["arch"] == "x86_32":
         # The NDK adds this if targeting API < 24, so we can drop it when Godot targets it at least
         env.Append(CCFLAGS=["-mstackrealign"])
-    elif env["android_arch"] == "armv7":
+    elif env["arch"] == "arm32":
         env.Append(CCFLAGS="-march=armv7-a -mfloat-abi=softfp".split())
         env.Append(CPPDEFINES=["__ARM_ARCH_7__", "__ARM_ARCH_7A__"])
         env.Append(CPPDEFINES=["__ARM_NEON__"])
-    elif env["android_arch"] == "arm64v8":
+    elif env["arch"] == "arm64":
         env.Append(CCFLAGS=["-mfix-cortex-a53-835769"])
         env.Append(CPPDEFINES=["__ARM_ARCH_8A__"])
 

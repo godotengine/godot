@@ -762,8 +762,8 @@ void EditorResourcePicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_resource();
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
@@ -1038,7 +1038,6 @@ EditorShaderPicker::EditorShaderPicker() {
 
 void EditorAudioStreamPicker::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_resource();
 		} break;

@@ -201,7 +201,6 @@ public:
 
 	String get_model_name() const;
 
-	void dump_memory_to_file(const String &p_file);
 	void dump_resources_to_file(const String &p_file);
 
 	void print_resources_in_use(bool p_short = false);

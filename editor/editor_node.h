@@ -35,6 +35,7 @@
 #include "editor/editor_folding.h"
 #include "editor/editor_native_shader_source_visualizer.h"
 #include "editor/editor_run.h"
+#include "editor/editor_title_bar.h"
 #include "editor/export/editor_export.h"
 #include "editor/inspector_dock.h"
 
@@ -322,7 +323,7 @@ private:
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
-	HBoxContainer *menu_hb = nullptr;
+	EditorTitleBar *menu_hb = nullptr;
 	Control *main_control = nullptr;
 	MenuBar *main_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
@@ -470,7 +471,9 @@ private:
 	String _tmp_import_path;
 	String external_file;
 	String open_navigate;
+
 	String run_custom_filename;
+	String run_current_filename;
 
 	DynamicFontImportSettings *fontdata_import_settings = nullptr;
 	SceneImportSettings *scene_import_settings = nullptr;
@@ -580,6 +583,7 @@ private:
 
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);
+	void _reset_play_buttons();
 
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();

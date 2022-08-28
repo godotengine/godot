@@ -3718,12 +3718,17 @@ bool Tree::edit_selected() {
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE) {
 		Rect2 popup_rect;
 
-		Vector2 ofs(0, (text_editor->get_size().height - rect.size.height) / 2);
+		Vector2 ofs(0, Math::floor((text_editor->get_size().height - rect.size.height) / 2)); // "floor()" centers vertically.
 
 		Point2i textedpos = get_screen_position() + rect.position - ofs;
 		cache.text_editor_position = textedpos;
 		popup_rect.position = textedpos;
 		popup_rect.size = rect.size;
+
+		// Account for icon.
+		popup_rect.position.x += c.get_icon_size().x;
+		popup_rect.size.x -= c.get_icon_size().x;
+
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();

@@ -519,8 +519,6 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 }
 
 void OS_LinuxBSD::run() {
-	force_quit = false;
-
 	if (!main_loop) {
 		return;
 	}
@@ -532,7 +530,7 @@ void OS_LinuxBSD::run() {
 	//int frames=0;
 	//uint64_t frame=0;
 
-	while (!force_quit) {
+	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
@@ -730,7 +728,6 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
-	force_quit = false;
 
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);

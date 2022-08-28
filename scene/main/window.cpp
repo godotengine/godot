@@ -848,21 +848,13 @@ void Window::_notification(int p_what) {
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
-			if (theme.is_null()) {
-				Control *parent_c = cast_to<Control>(get_parent());
-				if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
-					theme_owner = parent_c->data.theme_owner;
-					theme_owner_window = parent_c->data.theme_owner_window;
-					notification(NOTIFICATION_THEME_CHANGED);
-				} else {
-					Window *parent_w = cast_to<Window>(get_parent());
-					if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
-						theme_owner = parent_w->theme_owner;
-						theme_owner_window = parent_w->theme_owner_window;
-						notification(NOTIFICATION_THEME_CHANGED);
-					}
-				}
-			}
+			// Need to defer here, because theme owner information might be set in
+			// add_child_notify, which doesn't get called until right after this.
+			call_deferred(SNAME("notification"), NOTIFICATION_THEME_CHANGED);
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			emit_signal(SceneStringNames::get_singleton()->theme_changed);
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -972,6 +964,18 @@ DisplayServer::WindowID Window::get_window_id() const {
 		return parent->get_window_id();
 	}
 	return window_id;
+}
+
+void Window::warp_mouse(const Vector2 &p_position) {
+	Transform2D xform = get_screen_transform();
+	Vector2 gpos = xform.xform(p_position);
+
+	if (transient_parent && !transient_parent->is_embedding_subwindows()) {
+		Transform2D window_trans = Transform2D().translated(get_position() + (transient_parent->get_visible_rect().size - transient_parent->get_real_size()));
+		gpos = window_trans.xform(gpos);
+	}
+
+	Input::get_singleton()->warp_mouse(gpos);
 }
 
 void Window::set_wrap_controls(bool p_enable) {
@@ -1250,16 +1254,10 @@ Rect2i Window::get_usable_parent_rect() const {
 }
 
 void Window::add_child_notify(Node *p_child) {
-	Control *child_c = Object::cast_to<Control>(p_child);
-
-	if (child_c && child_c->data.theme.is_null() && (theme_owner || theme_owner_window)) {
-		Control::_propagate_theme_changed(child_c, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
-	}
-
-	Window *child_w = Object::cast_to<Window>(p_child);
-
-	if (child_w && child_w->theme.is_null() && (theme_owner || theme_owner_window)) {
-		Control::_propagate_theme_changed(child_w, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+	// We propagate when this node uses a custom theme, so it can pass it on to its children.
+	if (theme_owner || theme_owner_window) {
+		// `p_notify` is false here as `NOTIFICATION_THEME_CHANGED` will be handled by `NOTIFICATION_ENTER_TREE`.
+		Control::_propagate_theme_changed(this, theme_owner, theme_owner_window, false, true);
 	}
 
 	if (is_inside_tree() && wrap_controls) {
@@ -1268,16 +1266,9 @@ void Window::add_child_notify(Node *p_child) {
 }
 
 void Window::remove_child_notify(Node *p_child) {
-	Control *child_c = Object::cast_to<Control>(p_child);
-
-	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
-		Control::_propagate_theme_changed(child_c, nullptr, nullptr);
-	}
-
-	Window *child_w = Object::cast_to<Window>(p_child);
-
-	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
-		Control::_propagate_theme_changed(child_w, nullptr, nullptr);
+	// If the removed child isn't inheriting any theme items through this node, then there's no need to propagate.
+	if (theme_owner || theme_owner_window) {
+		Control::_propagate_theme_changed(this, nullptr, nullptr, false, true);
 	}
 
 	if (is_inside_tree() && wrap_controls) {
@@ -1290,34 +1281,47 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 		return;
 	}
 
-	theme = p_theme;
-
-	if (!p_theme.is_null()) {
-		theme_owner = nullptr;
-		theme_owner_window = this;
-		Control::_propagate_theme_changed(this, nullptr, this);
-	} else {
-		Control *parent_c = cast_to<Control>(get_parent());
-		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
-			Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window);
-		} else {
-			Window *parent_w = cast_to<Window>(get_parent());
-			if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
-				Control::_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window);
-			} else {
-				Control::_propagate_theme_changed(this, nullptr, nullptr);
-			}
-		}
+	if (theme.is_valid()) {
+		theme->disconnect("changed", callable_mp(this, &Window::_theme_changed));
 	}
+
+	theme = p_theme;
+	if (theme.is_valid()) {
+		Control::_propagate_theme_changed(this, nullptr, this, is_inside_tree(), true);
+		theme->connect("changed", callable_mp(this, &Window::_theme_changed), CONNECT_DEFERRED);
+		return;
+	}
+
+	Control *parent_c = Object::cast_to<Control>(get_parent());
+	if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
+		Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window, is_inside_tree(), true);
+		return;
+	}
+
+	Window *parent_w = cast_to<Window>(get_parent());
+	if (parent_w && (parent_w->theme_owner || parent_w->theme_owner_window)) {
+		Control::_propagate_theme_changed(this, parent_w->theme_owner, parent_w->theme_owner_window, is_inside_tree(), true);
+		return;
+	}
+
+	Control::_propagate_theme_changed(this, nullptr, nullptr, is_inside_tree(), true);
 }
 
 Ref<Theme> Window::get_theme() const {
 	return theme;
 }
 
+void Window::_theme_changed() {
+	if (is_inside_tree()) {
+		Control::_propagate_theme_changed(this, nullptr, this, true, false);
+	}
+}
+
 void Window::set_theme_type_variation(const StringName &p_theme_type) {
 	theme_type_variation = p_theme_type;
-	Control::_propagate_theme_changed(this, theme_owner, theme_owner_window);
+	if (is_inside_tree()) {
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
 }
 
 StringName Window::get_theme_type_variation() const {
@@ -1681,6 +1685,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_flag", "get_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
@@ -1712,6 +1717,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("theme_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
 
 	BIND_ENUM_CONSTANT(MODE_WINDOWED);
 	BIND_ENUM_CONSTANT(MODE_MINIMIZED);
@@ -1725,6 +1731,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
 	BIND_ENUM_CONSTANT(FLAG_POPUP);
+	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);

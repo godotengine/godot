@@ -742,7 +742,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 	bool trim_glyphs_ltr = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !lrtl));
 	bool trim_glyphs_rtl = (visible_characters >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_RTL) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && lrtl));
 	int total_glyphs = (trim_glyphs_ltr || trim_glyphs_rtl) ? get_total_glyph_count() : 0;
-	int visible_glyphs = total_glyphs * percent_visible;
+	int visible_glyphs = total_glyphs * visible_ratio;
 
 	Vector<int> list_index;
 	Vector<ItemList *> list_items;
@@ -4940,19 +4940,19 @@ TextServer::AutowrapMode RichTextLabel::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
-void RichTextLabel::set_percent_visible(float p_percent) {
-	if (percent_visible != p_percent) {
+void RichTextLabel::set_visible_ratio(float p_ratio) {
+	if (visible_ratio != p_ratio) {
 		_stop_thread();
 
-		if (percent_visible >= 1.0) {
+		if (visible_ratio >= 1.0) {
 			visible_characters = -1;
-			percent_visible = 1.0;
-		} else if (percent_visible < 0.0) {
+			visible_ratio = 1.0;
+		} else if (visible_ratio < 0.0) {
 			visible_characters = 0;
-			percent_visible = 0.0;
+			visible_ratio = 0.0;
 		} else {
-			visible_characters = get_total_character_count() * p_percent;
-			percent_visible = p_percent;
+			visible_characters = get_total_character_count() * p_ratio;
+			visible_ratio = p_ratio;
 		}
 
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
@@ -4963,8 +4963,8 @@ void RichTextLabel::set_percent_visible(float p_percent) {
 	}
 }
 
-float RichTextLabel::get_percent_visible() const {
-	return percent_visible;
+float RichTextLabel::get_visible_ratio() const {
+	return visible_ratio;
 }
 
 void RichTextLabel::set_effects(Array p_effects) {
@@ -5139,8 +5139,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_visible_characters_behavior"), &RichTextLabel::get_visible_characters_behavior);
 	ClassDB::bind_method(D_METHOD("set_visible_characters_behavior", "behavior"), &RichTextLabel::set_visible_characters_behavior);
 
-	ClassDB::bind_method(D_METHOD("set_percent_visible", "percent_visible"), &RichTextLabel::set_percent_visible);
-	ClassDB::bind_method(D_METHOD("get_percent_visible"), &RichTextLabel::get_percent_visible);
+	ClassDB::bind_method(D_METHOD("set_visible_ratio", "ratio"), &RichTextLabel::set_visible_ratio);
+	ClassDB::bind_method(D_METHOD("get_visible_ratio"), &RichTextLabel::get_visible_ratio);
 
 	ClassDB::bind_method(D_METHOD("get_character_line", "character"), &RichTextLabel::get_character_line);
 	ClassDB::bind_method(D_METHOD("get_character_paragraph", "character"), &RichTextLabel::get_character_paragraph);
@@ -5189,10 +5189,10 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hint_underlined"), "set_hint_underline", "is_hint_underlined");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 
-	// Note: "visible_characters" and "percent_visible" should be set after "text" to be correctly applied.
+	// Note: "visible_characters" and "visible_ratio" should be set after "text" to be correctly applied.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping,Characters After Shaping,Glyphs (Layout Direction),Glyphs (Left-to-Right),Glyphs (Right-to-Left)"), "set_visible_characters_behavior", "get_visible_characters_behavior");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "percent_visible", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_percent_visible", "get_percent_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visible_ratio", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_visible_ratio", "get_visible_ratio");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
@@ -5264,11 +5264,11 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 
 		visible_characters = p_visible;
 		if (p_visible == -1) {
-			percent_visible = 1;
+			visible_ratio = 1;
 		} else {
 			int total_char_count = get_total_character_count();
 			if (total_char_count > 0) {
-				percent_visible = (float)p_visible / (float)total_char_count;
+				visible_ratio = (float)p_visible / (float)total_char_count;
 			}
 		}
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {

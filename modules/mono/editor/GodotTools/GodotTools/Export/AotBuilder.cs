@@ -75,8 +75,17 @@ namespace GodotTools.Export
             }
             else
             {
-                string bits = features.Contains("64") ? "64" : features.Contains("32") ? "32" : null;
-                CompileAssembliesForDesktop(exporter, platform, isDebug, bits, aotOpts, aotTempDir, outputDataDir, assembliesPrepared, bclDir);
+                string arch = "";
+                if (features.Contains("x86_64")) {
+                    arch = "x86_64";
+                } else if (features.Contains("x86_32")) {
+                    arch = "x86_32";
+                } else if (features.Contains("arm64")) {
+                    arch = "arm64";
+                } else if (features.Contains("arm32")) {
+                    arch = "arm32";
+                }
+                CompileAssembliesForDesktop(exporter, platform, isDebug, arch, aotOpts, aotTempDir, outputDataDir, assembliesPrepared, bclDir);
             }
         }
 
@@ -112,7 +121,7 @@ namespace GodotTools.Export
             }
         }
 
-        public static void CompileAssembliesForDesktop(ExportPlugin exporter, string platform, bool isDebug, string bits, AotOptions aotOpts, string aotTempDir, string outputDataDir, IDictionary<string, string> assemblies, string bclDir)
+        public static void CompileAssembliesForDesktop(ExportPlugin exporter, string platform, bool isDebug, string arch, AotOptions aotOpts, string aotTempDir, string outputDataDir, IDictionary<string, string> assemblies, string bclDir)
         {
             foreach (var assembly in assemblies)
             {
@@ -126,9 +135,9 @@ namespace GodotTools.Export
                 string outputFileName = assemblyName + ".dll" + outputFileExtension;
                 string tempOutputFilePath = Path.Combine(aotTempDir, outputFileName);
 
-                var compilerArgs = GetAotCompilerArgs(platform, isDebug, bits, aotOpts, assemblyPath, tempOutputFilePath);
+                var compilerArgs = GetAotCompilerArgs(platform, isDebug, arch, aotOpts, assemblyPath, tempOutputFilePath);
 
-                string compilerDirPath = GetMonoCrossDesktopDirName(platform, bits);
+                string compilerDirPath = GetMonoCrossDesktopDirName(platform, arch);
 
                 ExecuteCompiler(FindCrossCompiler(compilerDirPath), compilerArgs, bclDir);
 
@@ -432,9 +441,9 @@ MONO_AOT_MODE_LAST = 1000,
 
                 var androidToolPrefixes = new Dictionary<string, string>
                 {
-                    ["armeabi-v7a"] = "arm-linux-androideabi-",
-                    ["arm64-v8a"] = "aarch64-linux-android-",
-                    ["x86"] = "i686-linux-android-",
+                    ["arm32"] = "arm-linux-androideabi-",
+                    ["arm64"] = "aarch64-linux-android-",
+                    ["x86_32"] = "i686-linux-android-",
                     ["x86_64"] = "x86_64-linux-android-"
                 };
 
@@ -547,9 +556,9 @@ MONO_AOT_MODE_LAST = 1000,
         {
             var androidAbis = new[]
             {
-                "armeabi-v7a",
-                "arm64-v8a",
-                "x86",
+                "arm32",
+                "arm64",
+                "x86_32",
                 "x86_64"
             };
 
@@ -560,9 +569,9 @@ MONO_AOT_MODE_LAST = 1000,
         {
             var abiArchs = new Dictionary<string, string>
             {
-                ["armeabi-v7a"] = "armv7",
-                ["arm64-v8a"] = "aarch64-v8a",
-                ["x86"] = "i686",
+                ["arm32"] = "armv7",
+                ["arm64"] = "aarch64-v8a",
+                ["x86_32"] = "i686",
                 ["x86_64"] = "x86_64"
             };
 
@@ -571,31 +580,25 @@ MONO_AOT_MODE_LAST = 1000,
             return $"{arch}-linux-android";
         }
 
-        private static string GetMonoCrossDesktopDirName(string platform, string bits)
+        private static string GetMonoCrossDesktopDirName(string platform, string arch)
         {
             switch (platform)
             {
                 case OS.Platforms.Windows:
                 case OS.Platforms.UWP:
                 {
-                    string arch = bits == "64" ? "x86_64" : "i686";
                     return $"windows-{arch}";
                 }
                 case OS.Platforms.MacOS:
                 {
-                    Debug.Assert(bits == null || bits == "64");
-                    string arch = "x86_64";
                     return $"{platform}-{arch}";
                 }
                 case OS.Platforms.LinuxBSD:
-                case OS.Platforms.Server:
                 {
-                    string arch = bits == "64" ? "x86_64" : "i686";
                     return $"linux-{arch}";
                 }
                 case OS.Platforms.Haiku:
                 {
-                    string arch = bits == "64" ? "x86_64" : "i686";
                     return $"{platform}-{arch}";
                 }
                 default:

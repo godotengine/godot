@@ -191,11 +191,11 @@ String Engine::get_architecture_name() const {
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	return "x86_32";
 
-#elif defined(__aarch64__) || defined(_M_ARM64)
+#elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
 
-#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7S__)
-	return "armv7";
+#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7S__) || defined(_M_ARM)
+	return "arm32";
 
 #elif defined(__riscv)
 #if __riscv_xlen == 8

@@ -35,7 +35,7 @@
 #include "editor/editor_scale.h"
 
 #include "modules/noise/noise.h"
-#include "modules/noise/noise_texture.h"
+#include "modules/noise/noise_texture_2d.h"
 
 class NoisePreview : public Control {
 	GDCLASS(NoisePreview, Control)
@@ -102,7 +102,7 @@ private:
 
 	void update_preview() {
 		if (MIN(_preview_texture_size.width, _preview_texture_size.height) > 0) {
-			Ref<NoiseTexture> tex;
+			Ref<NoiseTexture2D> tex;
 			tex.instantiate();
 			tex->set_width(_preview_texture_size.width);
 			tex->set_height(_preview_texture_size.height);

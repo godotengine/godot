@@ -1,18 +1,9 @@
 def can_build(env, platform):
-    # Depends on Embree library, which only supports x86_64 and aarch64.
-    if env["arch"].startswith("rv") or env["arch"].startswith("ppc"):
-        return False
+    # Depends on Embree library, which only supports x86_64 and arm64.
+    if platform == "windows":
+        return env["arch"] == "x86_64"  # TODO build for Windows on ARM
 
-    if platform == "android":
-        return env["android_arch"] in ["arm64v8", "x86_64"]
-
-    if platform == "javascript":
-        return False  # No SIMD support yet
-
-    if env["bits"] == "32":
-        return False
-
-    return True
+    return env["arch"] in ["x86_64", "arm64"]
 
 
 def configure(env):

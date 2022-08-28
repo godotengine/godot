@@ -485,8 +485,7 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
@@ -1166,8 +1165,7 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
@@ -1405,8 +1403,7 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 
 void EditorPropertyLocalizableString::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			if (Object::cast_to<Button>(button_add_item)) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}

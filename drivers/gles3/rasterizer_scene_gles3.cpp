@@ -648,7 +648,7 @@ void RasterizerSceneGLES3::_setup_sky(RID p_env, RID p_render_buffers, const Pag
 
 					float angular_diameter = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 					if (angular_diameter > 0.0) {
-						angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+						angular_diameter = Math::tan(Math::deg_to_rad(angular_diameter));
 					} else {
 						angular_diameter = 0.0;
 					}
@@ -1518,7 +1518,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				light_data.color[2] = linear_col.b;
 
 				float size = light_storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
-				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); //angle to cosine offset
+				light_data.size = 1.0 - Math::cos(Math::deg_to_rad(size)); //angle to cosine offset
 
 				light_data.specular = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
 
@@ -1645,7 +1645,7 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		light_data.inv_spot_attenuation = 1.0f / light_storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION);
 
 		float spot_angle = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
-		light_data.cos_spot_angle = Math::cos(Math::deg2rad(spot_angle));
+		light_data.cos_spot_angle = Math::cos(Math::deg_to_rad(spot_angle));
 
 		light_data.specular_amount = light_storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR) * 2.0;
 

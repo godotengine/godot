@@ -221,6 +221,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="arrange_nodes_button_hidden" type="bool" setter="set_arrange_nodes_button_hidden" getter="is_arrange_nodes_button_hidden" default="false">
+			If [code]true[/code], the Arrange Nodes button is hidden.
+		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
 			If [code]true[/code], the lines between nodes will use antialiasing.

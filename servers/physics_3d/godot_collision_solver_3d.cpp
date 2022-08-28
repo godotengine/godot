@@ -38,7 +38,7 @@
 #define collision_solver sat_calculate_penetration
 //#define collision_solver gjk_epa_calculate_penetration
 
-bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result) {
+bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result, real_t p_margin) {
 	const GodotWorldBoundaryShape3D *world_boundary = static_cast<const GodotWorldBoundaryShape3D *>(p_shape_A);
 	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		return false;
@@ -70,6 +70,7 @@ bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_s
 	bool found = false;
 
 	for (int i = 0; i < support_count; i++) {
+		supports[i] += p_margin * supports[i].normalized();
 		supports[i] = p_transform_B.xform(supports[i]);
 		if (p.distance_to(supports[i]) >= 0) {
 			continue;
@@ -379,9 +380,9 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 		}
 
 		if (swap) {
-			return solve_static_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true);
+			return solve_static_world_boundary(p_shape_B, p_transform_B, p_shape_A, p_transform_A, p_result_callback, p_userdata, true, p_margin_A);
 		} else {
-			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false);
+			return solve_static_world_boundary(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, p_margin_B);
 		}
 
 	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
@@ -456,8 +457,17 @@ bool GodotCollisionSolver3D::solve_distance_world_boundary(const GodotShape3D *p
 	Vector3 supports[max_supports];
 	int support_count;
 	GodotShape3D::FeatureType support_type;
+	Vector3 support_direction = p_transform_B.basis.xform_inv(-p.normal).normalized();
 
-	p_shape_B->get_supports(p_transform_B.basis.xform_inv(-p.normal).normalized(), max_supports, supports, support_count, support_type);
+	p_shape_B->get_supports(support_direction, max_supports, supports, support_count, support_type);
+
+	if (support_count == 0) { // This is a poor man's way to detect shapes that don't implement get_supports, such as GodotMotionShape3D.
+		Vector3 support_B = p_transform_B.xform(p_shape_B->get_support(support_direction));
+		r_point_A = p.project(support_B);
+		r_point_B = support_B;
+		bool collided = p.distance_to(support_B) <= 0;
+		return collided;
+	}
 
 	if (support_type == GodotShape3D::FEATURE_CIRCLE) {
 		ERR_FAIL_COND_V(support_count != 3, false);

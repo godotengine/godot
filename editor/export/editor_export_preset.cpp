@@ -34,6 +34,9 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 	if (values.has(p_name)) {
 		values[p_name] = p_value;
 		EditorExport::singleton->save_presets();
+		if (update_visibility[p_name]) {
+			notify_property_list_changed();
+		}
 		return true;
 	}
 
@@ -51,7 +54,7 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const PropertyInfo &E : properties) {
-		if (platform->get_export_option_visibility(E.name, values)) {
+		if (platform->get_export_option_visibility(this, E.name, values)) {
 			p_list->push_back(E);
 		}
 	}

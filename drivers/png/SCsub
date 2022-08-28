@@ -37,7 +37,7 @@ if env["builtin_libpng"]:
     import os
 
     # Enable ARM NEON instructions on 32-bit Android to compile more optimized code.
-    use_neon = "android_arch" in env and env["android_arch"] == "armv7" and os.name != "nt"
+    use_neon = env["platform"] == "android" and env["arch"] == "arm32" and os.name != "nt"
     if use_neon:
         env_png.Append(CPPDEFINES=[("PNG_ARM_NEON_OPT", 2)])
     else:

@@ -37,7 +37,7 @@ Godot runs on a large variety of platforms and operating systems and devices.
 
 For bugs that are likely OS-specific and/or graphics-related, please also specify:
 
-- Device (CPU model including architecture, e.g. x86, x86_64, ARM, etc.)
+- Device (CPU model including architecture, e.g. x86_64, arm64, etc.)
 - GPU model (and the driver version in use if you know it)
 
 **Bug reports not including the required information may be closed at the

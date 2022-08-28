@@ -18,6 +18,18 @@
 				Returns the number of channels allocated for communication with peer.
 			</description>
 		</method>
+		<method name="get_remote_address" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the IP address of this peer.
+			</description>
+		</method>
+		<method name="get_remote_port" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the remote port of this peer.
+			</description>
+		</method>
 		<method name="get_state" qualifiers="const">
 			<return type="int" enum="ENetPacketPeer.PeerState" />
 			<description>

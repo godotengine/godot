@@ -63,8 +63,8 @@ void ColorPicker::_notification(int p_what) {
 				}
 			}
 #endif
-			[[fallthrough]];
-		}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			btn_pick->set_icon(get_theme_icon(SNAME("screen_picker"), SNAME("ColorPicker")));
 			btn_add_preset->set_icon(get_theme_icon(SNAME("add_preset")));

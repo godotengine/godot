@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Godot.SourceGenerators
 {
@@ -19,7 +20,7 @@ namespace Godot.SourceGenerators
                                  "must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0001",
+                new DiagnosticDescriptor(id: "GD0001",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -51,7 +52,7 @@ namespace Godot.SourceGenerators
                                  "containing types must be declared with the partial modifier.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0002",
+                new DiagnosticDescriptor(id: "GD0002",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -78,7 +79,7 @@ namespace Godot.SourceGenerators
                                  " Remove the 'static' modifier or the '[Export]' attribute.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0101",
+                new DiagnosticDescriptor(id: "GD0101",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -104,7 +105,7 @@ namespace Godot.SourceGenerators
             string description = $"{message}. Use a supported type or remove the '[Export]' attribute.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0102",
+                new DiagnosticDescriptor(id: "GD0102",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -132,7 +133,7 @@ namespace Godot.SourceGenerators
                 $"{message}. Exported properties must be writable.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0103",
+                new DiagnosticDescriptor(id: "GD0103",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -156,7 +157,7 @@ namespace Godot.SourceGenerators
             string description = $"{message}. Exported properties must be readable.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0104",
+                new DiagnosticDescriptor(id: "GD0104",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -181,7 +182,7 @@ namespace Godot.SourceGenerators
             string description = $"{message}. Rename the delegate accordingly or remove the '[Signal]' attribute.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0201",
+                new DiagnosticDescriptor(id: "GD0201",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -205,7 +206,7 @@ namespace Godot.SourceGenerators
             string description = $"{message}. Use supported types only or remove the '[Signal]' attribute.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0202",
+                new DiagnosticDescriptor(id: "GD0202",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -229,7 +230,7 @@ namespace Godot.SourceGenerators
             string description = $"{message}. Return void or remove the '[Signal]' attribute.";
 
             context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor(id: "GODOT-G0203",
+                new DiagnosticDescriptor(id: "GD0203",
                     title: message,
                     messageFormat: message,
                     category: "Usage",
@@ -238,6 +239,98 @@ namespace Godot.SourceGenerators
                     description),
                 location,
                 location?.SourceTree?.FilePath));
+        }
+
+        public static readonly DiagnosticDescriptor GenericTypeArgumentMustBeVariantRule =
+            new DiagnosticDescriptor(id: "GD0301",
+                title: "The generic type argument must be a Variant compatible type",
+                messageFormat: "The generic type argument must be a Variant compatible type: {0}",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The generic type argument must be a Variant compatible type. Use a Variant compatible type as the generic type argument.");
+
+        public static void ReportGenericTypeArgumentMustBeVariant(
+            SyntaxNodeAnalysisContext context,
+            SyntaxNode typeArgumentSyntax,
+            ISymbol typeArgumentSymbol)
+        {
+            string message = "The generic type argument " +
+                            $"must be a Variant compatible type: '{typeArgumentSymbol.ToDisplayString()}'";
+
+            string description = $"{message}. Use a Variant compatible type as the generic type argument.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0301",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                typeArgumentSyntax.GetLocation(),
+                typeArgumentSyntax.SyntaxTree.FilePath));
+        }
+
+        public static readonly DiagnosticDescriptor GenericTypeParameterMustBeVariantAnnotatedRule =
+            new DiagnosticDescriptor(id: "GD0302",
+                title: "The generic type parameter must be annotated with the MustBeVariant attribute",
+                messageFormat: "The generic type argument must be a Variant type: {0}",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The generic type argument must be a Variant type. Use a Variant type as the generic type argument.");
+
+        public static void ReportGenericTypeParameterMustBeVariantAnnotated(
+            SyntaxNodeAnalysisContext context,
+            SyntaxNode typeArgumentSyntax,
+            ISymbol typeArgumentSymbol)
+        {
+            string message = "The generic type parameter must be annotated with the MustBeVariant attribute";
+
+            string description = $"{message}. Add the MustBeVariant attribute to the generic type parameter.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0302",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                typeArgumentSyntax.GetLocation(),
+                typeArgumentSyntax.SyntaxTree.FilePath));
+        }
+
+        public static readonly DiagnosticDescriptor TypeArgumentParentSymbolUnhandledRule =
+            new DiagnosticDescriptor(id: "GD0303",
+                title: "The generic type parameter must be annotated with the MustBeVariant attribute",
+                messageFormat: "The generic type argument must be a Variant type: {0}",
+                category: "Usage",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true,
+                "The generic type argument must be a Variant type. Use a Variant type as the generic type argument.");
+
+        public static void ReportTypeArgumentParentSymbolUnhandled(
+            SyntaxNodeAnalysisContext context,
+            SyntaxNode typeArgumentSyntax,
+            ISymbol parentSymbol)
+        {
+            string message = $"Symbol '{parentSymbol.ToDisplayString()}' parent of a type argument " +
+                             "that must be Variant compatible was not handled.";
+
+            string description = $"{message}. Handle type arguments that are children of the unhandled symbol type.";
+
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor(id: "GD0303",
+                    title: message,
+                    messageFormat: message,
+                    category: "Usage",
+                    DiagnosticSeverity.Error,
+                    isEnabledByDefault: true,
+                    description),
+                typeArgumentSyntax.GetLocation(),
+                typeArgumentSyntax.SyntaxTree.FilePath));
         }
     }
 }
