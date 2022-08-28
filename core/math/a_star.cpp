@@ -445,8 +445,10 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 
 bool AStar::_solve(Point *begin_point, Point *end_point, int relevant_layers) {
 	pass++;
-
-	if (!end_point->enabled) {
+	//make sure parallel layers are supported
+	// or if *relevant_layers is 0 then use all points
+	bool supported = relevant_layers == 0 || (relevant_layers & end_point->parallel_support_layers) > 0;
+	if (!end_point->enabled || !supported) {
 		return false;
 	}
 
