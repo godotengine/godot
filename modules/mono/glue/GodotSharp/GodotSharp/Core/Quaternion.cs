@@ -483,6 +483,14 @@ namespace Godot
         public static Quaternion Identity { get { return _identity; } }
 
         /// <summary>
+        /// Constructs an identity quaternion representing no rotation.
+        /// </summary>
+        public Quaternion()
+        {
+            this = _identity;
+        }
+
+        /// <summary>
         /// Constructs a <see cref="Quaternion"/> defined by the given values.
         /// </summary>
         /// <param name="x">X component of the quaternion (imaginary <c>i</c> axis part).</param>

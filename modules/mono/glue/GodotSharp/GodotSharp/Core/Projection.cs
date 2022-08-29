@@ -59,6 +59,14 @@ namespace Godot
         public Vector4 w;
 
         /// <summary>
+        /// Constructs an identity projection with no distortion applied.
+        /// </summary>
+        public Projection()
+        {
+            this = _identity;
+        }
+
+        /// <summary>
         /// Constructs a projection from 4 vectors (matrix columns).
         /// </summary>
         /// <param name="x">The X column, or column index 0.</param>
@@ -762,8 +770,6 @@ namespace Godot
 
         /// <summary>
         /// The identity projection, with no distortion applied.
-        /// This is used as a replacement for <c>Projection()</c> in GDScript.
-        /// Do not use <c>new Projection()</c> with no arguments in C#, because it sets all values to zero.
         /// </summary>
         /// <value>Equivalent to <c>new Projection(new Vector4(1, 0, 0, 0), new Vector4(0, 1, 0, 0), new Vector4(0, 0, 1, 0), new Vector4(0, 0, 0, 1))</c>.</value>
         public static Projection Identity { get { return _identity; } }

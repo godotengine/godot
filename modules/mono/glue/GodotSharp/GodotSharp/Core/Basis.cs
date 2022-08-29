@@ -664,8 +664,6 @@ namespace Godot
 
         /// <summary>
         /// The identity basis, with no rotation or scaling applied.
-        /// This is used as a replacement for <c>Basis()</c> in GDScript.
-        /// Do not use <c>new Basis()</c> with no arguments in C#, because it sets all values to zero.
         /// </summary>
         /// <value>Equivalent to <c>new Basis(Vector3.Right, Vector3.Up, Vector3.Back)</c>.</value>
         public static Basis Identity { get { return _identity; } }
@@ -684,6 +682,14 @@ namespace Godot
         /// </summary>
         /// <value>Equivalent to <c>new Basis(Vector3.Right, Vector3.Up, Vector3.Forward)</c>.</value>
         public static Basis FlipZ { get { return _flipZ; } }
+
+        /// <summary>
+        /// Constructs an identity basis with no rotation or scaling applied.
+        /// </summary>
+        public Basis()
+        {
+            this = _identity;
+        }
 
         /// <summary>
         /// Constructs a pure rotation basis matrix from the given quaternion.
