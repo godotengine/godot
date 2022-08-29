@@ -60,7 +60,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (active_menu >= 0) {
 				get_menu_popup(active_menu)->hide();
 			}
-			_open_popup(selected_menu);
+			_open_popup(selected_menu, true);
 		}
 		return;
 	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
@@ -82,7 +82,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			if (active_menu >= 0) {
 				get_menu_popup(active_menu)->hide();
 			}
-			_open_popup(selected_menu);
+			_open_popup(selected_menu, true);
 		}
 		return;
 	}
@@ -110,7 +110,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void MenuBar::_open_popup(int p_index) {
+void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 	ERR_FAIL_INDEX(p_index, menu_cache.size());
 
 	PopupMenu *pm = get_menu_popup(p_index);
@@ -133,6 +133,15 @@ void MenuBar::_open_popup(int p_index) {
 	pm->set_position(screen_pos);
 	pm->set_parent_rect(Rect2(Point2(screen_pos - pm->get_position()), Size2(screen_size.x, screen_pos.y)));
 	pm->popup();
+
+	if (p_focus_item) {
+		for (int i = 0; i < pm->get_item_count(); i++) {
+			if (!pm->is_item_disabled(i)) {
+				pm->set_current_index(i);
+				break;
+			}
+		}
+	}
 
 	update();
 }
