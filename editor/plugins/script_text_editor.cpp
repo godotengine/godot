@@ -1392,11 +1392,7 @@ void ScriptTextEditor::_change_syntax_highlighter(int p_idx) {
 
 void ScriptTextEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
-		} break;
-
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
 			if (!editor_enabled) {
 				break;
 			}
@@ -1404,6 +1400,9 @@ void ScriptTextEditor::_notification(int p_what) {
 				_update_warnings();
 				_update_errors();
 			}
+			[[fallthrough]];
+		case NOTIFICATION_ENTER_TREE: {
+			code_editor->get_text_editor()->set_gutter_width(connection_gutter, code_editor->get_text_editor()->get_line_height());
 		} break;
 	}
 }

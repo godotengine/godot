@@ -563,6 +563,8 @@ void Path3DEditorPlugin::_notification(int p_what) {
 			curve_edit->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(1));
 			curve_del->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(2));
 			curve_close->connect("pressed", callable_mp(this, &Path3DEditorPlugin::_close_curve));
+
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_READY: {

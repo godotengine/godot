@@ -380,6 +380,7 @@ void GroupDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (is_layout_rtl()) {
 				add_button->set_icon(groups->get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));

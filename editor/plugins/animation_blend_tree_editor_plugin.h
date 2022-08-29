@@ -123,6 +123,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _removed_from_graph();
 
 	void _update_editor_settings();
+	void _update_theme();
 
 	EditorFileDialog *open_file = nullptr;
 	Ref<AnimationNode> file_loaded;

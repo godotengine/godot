@@ -143,6 +143,8 @@ private:
 	virtual void _post_popup() override;
 
 protected:
+	void _theme_changed();
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	//bind helpers

@@ -61,6 +61,7 @@ private:
 	VBoxContainer *actions_vb = nullptr;
 
 	void _set_fold_icon();
+	void _theme_changed();
 	OpenXRActionEditor *_add_action_editor(Ref<OpenXRAction> p_action);
 	void _update_actions();
 

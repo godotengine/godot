@@ -44,6 +44,29 @@
 
 DocTools *EditorHelp::doc = nullptr;
 
+void EditorHelp::_update_theme() {
+	text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
+	title_color = get_theme_color(SNAME("title_color"), SNAME("EditorHelp"));
+	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
+	comment_color = get_theme_color(SNAME("comment_color"), SNAME("EditorHelp"));
+	symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
+	value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
+	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
+	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
+
+	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
+
+	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
+	doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+
+	doc_title_font_size = get_theme_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"));
+}
+
 void EditorHelp::_search(bool p_search_previous) {
 	if (p_search_previous) {
 		find_bar->search_prev();
@@ -523,6 +546,7 @@ void EditorHelp::_update_doc() {
 	method_line.clear();
 	section_line.clear();
 
+	_update_theme();
 	String link_color_text = title_color.to_html(false);
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
@@ -1985,29 +2009,10 @@ void EditorHelp::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_class_desc_resized(true);
+			if (is_inside_tree()) {
+				_class_desc_resized(true);
+			}
 			update_toggle_scripts_button();
-
-			text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
-			title_color = get_theme_color(SNAME("title_color"), SNAME("EditorHelp"));
-			headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
-			comment_color = get_theme_color(SNAME("comment_color"), SNAME("EditorHelp"));
-			symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
-			value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
-			qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
-			type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
-
-			class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
-			class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
-			class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
-			class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
-
-			doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-			doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-			doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
-			doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-
-			doc_title_font_size = get_theme_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -2185,6 +2190,7 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 			rich_text->clear();
@@ -2266,6 +2272,7 @@ void FindBar::popup_search() {
 
 void FindBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));

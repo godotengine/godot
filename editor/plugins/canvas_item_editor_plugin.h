@@ -616,6 +616,7 @@ class CanvasItemEditorViewport : public Control {
 	bool _create_instance(Node *parent, String &path, const Point2 &p_point);
 	void _perform_drop_data();
 	void _show_resource_type_selector();
+	void _update_theme();
 
 	static void _bind_methods();
 

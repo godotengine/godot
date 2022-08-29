@@ -168,7 +168,6 @@ public:
 	enum {
 		NOTIFICATION_VISIBILITY_CHANGED = 30,
 		NOTIFICATION_POST_POPUP = 31,
-		// This doesn't need to be paired with `NOTIFICATION_ENTER_TREE`.
 		NOTIFICATION_THEME_CHANGED = 32
 	};
 

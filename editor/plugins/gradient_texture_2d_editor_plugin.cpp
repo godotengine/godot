@@ -104,6 +104,7 @@ void GradientTexture2DEditorRect::set_snap_size(float p_snap_size) {
 
 void GradientTexture2DEditorRect::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			checkerboard->set_texture(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 		} break;
@@ -213,6 +214,7 @@ void GradientTexture2DEditor::set_texture(Ref<GradientTexture2D> &p_texture) {
 
 void GradientTexture2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			reverse_button->set_icon(get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons")));
 			snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
