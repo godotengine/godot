@@ -88,15 +88,6 @@
 				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
-		<method name="dump_resources_to_file">
-			<return type="void" />
-			<param index="0" name="file" type="String" />
-			<description>
-				Dumps all used resources to file (only works in debug).
-				Entry format per line: "Resource Type : Resource Location".
-				At the end of the file is a statistic of all used Resource Types.
-			</description>
-		</method>
 		<method name="execute">
 			<return type="int" />
 			<param index="0" name="path" type="String" />
@@ -524,33 +515,6 @@
 			<description>
 				Initialises the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-			</description>
-		</method>
-		<method name="print_all_resources">
-			<return type="void" />
-			<param index="0" name="tofile" type="String" default="&quot;&quot;" />
-			<description>
-				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [param tofile].
-			</description>
-		</method>
-		<method name="print_all_textures_by_size">
-			<return type="void" />
-			<description>
-				Shows the list of loaded textures sorted by size in memory.
-			</description>
-		</method>
-		<method name="print_resources_by_type">
-			<return type="void" />
-			<param index="0" name="types" type="PackedStringArray" />
-			<description>
-				Shows the number of resources loaded by the game of the given types.
-			</description>
-		</method>
-		<method name="print_resources_in_use">
-			<return type="void" />
-			<param index="0" name="short" type="bool" default="false" />
-			<description>
-				Shows all resources currently used by the game.
 			</description>
 		</method>
 		<method name="request_permission">

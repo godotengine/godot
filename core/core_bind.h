@@ -201,13 +201,6 @@ public:
 
 	String get_model_name() const;
 
-	void dump_resources_to_file(const String &p_file);
-
-	void print_resources_in_use(bool p_short = false);
-	void print_all_resources(const String &p_to_file);
-	void print_all_textures_by_size();
-	void print_resources_by_type(const Vector<String> &p_types);
-
 	bool is_debug_build() const;
 
 	String get_unique_id() const;
