@@ -61,7 +61,7 @@ void EditorPerformanceProfiler::Monitor::update_value(float p_value) {
 		} break;
 	}
 	item->set_text(1, label);
-	item->set_tooltip(1, tooltip);
+	item->set_tooltip_text(1, tooltip);
 
 	if (p_value > max) {
 		max = p_value;
@@ -73,7 +73,7 @@ void EditorPerformanceProfiler::Monitor::reset() {
 	max = 0.0f;
 	if (item) {
 		item->set_text(1, "");
-		item->set_tooltip(1, "");
+		item->set_tooltip_text(1, "");
 	}
 }
 

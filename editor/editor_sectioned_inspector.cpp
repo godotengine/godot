@@ -283,7 +283,7 @@ void SectionedInspector::update_category_list() {
 				const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(sectionarr[i], tooltip_style);
 
 				ms->set_text(0, text);
-				ms->set_tooltip(0, tooltip);
+				ms->set_tooltip_text(0, tooltip);
 				ms->set_metadata(0, metasection);
 				ms->set_selectable(0, false);
 			}

@@ -89,7 +89,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 	if (keep) {
 		node->set_text(0, item_name);
 		node->set_metadata(0, path);
-		node->set_tooltip(0, path);
+		node->set_tooltip_text(0, path);
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_current, "Node");
 		node->set_icon(0, icon);

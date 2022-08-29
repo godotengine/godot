@@ -276,7 +276,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
 			ti->set_icon_modulate(0, color);
-			ti->set_tooltip(0, fave);
+			ti->set_tooltip_text(0, fave);
 			ti->set_selectable(0, true);
 			ti->set_metadata(0, fave);
 			if (p_select_in_favorites && fave == path) {
