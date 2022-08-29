@@ -70,9 +70,7 @@ namespace GodotTools.Utils
         {
             ["Windows"] = Platforms.Windows,
             ["macOS"] = Platforms.MacOS,
-            ["LinuxBSD"] = Platforms.LinuxBSD,
-            // "X11" for compatibility, temporarily, while we are on an outdated branch
-            ["X11"] = Platforms.LinuxBSD,
+            ["Linux"] = Platforms.LinuxBSD,
             ["UWP"] = Platforms.UWP,
             ["Haiku"] = Platforms.Haiku,
             ["Android"] = Platforms.Android,
