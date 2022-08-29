@@ -843,15 +843,16 @@ void AnimationPlayerEditor::_update_player() {
 
 	animation->clear();
 
+	tool_anim->set_disabled(player == nullptr);
+	pin->set_disabled(player == nullptr);
+
 	if (!player) {
 		AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 		return;
 	}
 
 	List<StringName> libraries;
-	if (player) {
-		player->get_animation_library_list(&libraries);
-	}
+	player->get_animation_library_list(&libraries);
 
 	int active_idx = -1;
 	bool no_anims_found = true;
@@ -926,10 +927,8 @@ void AnimationPlayerEditor::_update_player() {
 	frame->set_editable(!no_anims_found);
 	animation->set_disabled(no_anims_found);
 	autoplay->set_disabled(no_anims_found);
-	tool_anim->set_disabled(player == nullptr);
 	onion_toggle->set_disabled(no_anims_found);
 	onion_skinning->set_disabled(no_anims_found);
-	pin->set_disabled(player == nullptr);
 
 	_update_animation_list_icons();
 
