@@ -521,6 +521,9 @@ Error Main::test_setup() {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_COMPLETE);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_COMPLETE);
+
 	ClassDB::set_current_api(ClassDB::API_NONE);
 
 	_start_success = true;
@@ -535,6 +538,9 @@ void Main::test_cleanup() {
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_COMPLETE);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_COMPLETE);
 
 #ifdef TOOLS_ENABLED
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
@@ -2349,6 +2355,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		rendering_server->global_shader_parameters_load_settings(!editor);
 	}
 
+	initialize_modules(MODULE_INITIALIZATION_LEVEL_COMPLETE);
+	NativeExtensionManager::get_singleton()->initialize_extensions(NativeExtension::INITIALIZATION_LEVEL_COMPLETE);
+
 	_start_success = true;
 
 	ClassDB::set_current_api(ClassDB::API_NONE); //no more APIs are registered at this point
@@ -3280,6 +3289,9 @@ void Main::cleanup(bool p_force) {
 		// We do however unset our primary interface
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
+
+	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_COMPLETE);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_COMPLETE);
 
 #ifdef TOOLS_ENABLED
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_EDITOR);
