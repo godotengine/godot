@@ -90,6 +90,8 @@
 		<signal name="property_changed">
 			<argument index="0" name="property" type="String" />
 			<argument index="1" name="value" type="Variant" />
+			<argument index="2" name="field" type="String" />
+			<argument index="3" name="changing" type="bool" />
 			<description>
 				Do not emit this manually, use the [method emit_changed] method instead.
 			</description>
