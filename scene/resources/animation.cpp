@@ -4201,25 +4201,25 @@ void Animation::_position_track_optimize(int p_idx, real_t p_allowed_velocity_er
 void Animation::_rotation_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_ROTATION_3D);
-	RotationTrack *tt = static_cast<RotationTrack *>(tracks[p_idx]);
+	RotationTrack *rt = static_cast<RotationTrack *>(tracks[p_idx]);
 
 	int i = 0;
-	while (i < tt->rotations.size() - 2) {
-		TKey<Quaternion> t0 = tt->rotations[i];
-		TKey<Quaternion> t1 = tt->rotations[i + 1];
-		TKey<Quaternion> t2 = tt->rotations[i + 2];
+	while (i < rt->rotations.size() - 2) {
+		TKey<Quaternion> t0 = rt->rotations[i];
+		TKey<Quaternion> t1 = rt->rotations[i + 1];
+		TKey<Quaternion> t2 = rt->rotations[i + 2];
 
 		bool erase = _quaternion_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 		if (erase) {
-			tt->rotations.remove_at(i + 1);
+			rt->rotations.remove_at(i + 1);
 		} else {
 			i++;
 		}
 	}
 
-	if (tt->rotations.size() == 2) {
-		if ((tt->rotations[0].value - tt->rotations[1].value).length() < p_allowed_precision_error) {
-			tt->rotations.remove_at(1);
+	if (rt->rotations.size() == 2) {
+		if ((rt->rotations[0].value - rt->rotations[1].value).length() < p_allowed_precision_error) {
+			rt->rotations.remove_at(1);
 		}
 	}
 }
@@ -4227,25 +4227,25 @@ void Animation::_rotation_track_optimize(int p_idx, real_t p_allowed_velocity_er
 void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_SCALE_3D);
-	ScaleTrack *tt = static_cast<ScaleTrack *>(tracks[p_idx]);
+	ScaleTrack *st = static_cast<ScaleTrack *>(tracks[p_idx]);
 
 	int i = 0;
-	while (i < tt->scales.size() - 2) {
-		TKey<Vector3> t0 = tt->scales[i];
-		TKey<Vector3> t1 = tt->scales[i + 1];
-		TKey<Vector3> t2 = tt->scales[i + 2];
+	while (i < st->scales.size() - 2) {
+		TKey<Vector3> t0 = st->scales[i];
+		TKey<Vector3> t1 = st->scales[i + 1];
+		TKey<Vector3> t2 = st->scales[i + 2];
 
 		bool erase = _vector3_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 		if (erase) {
-			tt->scales.remove_at(i + 1);
+			st->scales.remove_at(i + 1);
 		} else {
 			i++;
 		}
 	}
 
-	if (tt->scales.size() == 2) {
-		if ((tt->scales[0].value - tt->scales[1].value).length() < p_allowed_precision_error) {
-			tt->scales.remove_at(1);
+	if (st->scales.size() == 2) {
+		if ((st->scales[0].value - st->scales[1].value).length() < p_allowed_precision_error) {
+			st->scales.remove_at(1);
 		}
 	}
 }
@@ -4253,25 +4253,25 @@ void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_BLEND_SHAPE);
-	BlendShapeTrack *tt = static_cast<BlendShapeTrack *>(tracks[p_idx]);
+	BlendShapeTrack *bst = static_cast<BlendShapeTrack *>(tracks[p_idx]);
 
 	int i = 0;
-	while (i < tt->blend_shapes.size() - 2) {
-		TKey<float> t0 = tt->blend_shapes[i];
-		TKey<float> t1 = tt->blend_shapes[i + 1];
-		TKey<float> t2 = tt->blend_shapes[i + 2];
+	while (i < bst->blend_shapes.size() - 2) {
+		TKey<float> t0 = bst->blend_shapes[i];
+		TKey<float> t1 = bst->blend_shapes[i + 1];
+		TKey<float> t2 = bst->blend_shapes[i + 2];
 
 		bool erase = _float_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_precision_error);
 		if (erase) {
-			tt->blend_shapes.remove_at(i + 1);
+			bst->blend_shapes.remove_at(i + 1);
 		} else {
 			i++;
 		}
 	}
 
-	if (tt->blend_shapes.size() == 2) {
-		if (abs(tt->blend_shapes[0].value - tt->blend_shapes[1].value) < p_allowed_precision_error) {
-			tt->blend_shapes.remove_at(1);
+	if (bst->blend_shapes.size() == 2) {
+		if (abs(bst->blend_shapes[0].value - bst->blend_shapes[1].value) < p_allowed_precision_error) {
+			bst->blend_shapes.remove_at(1);
 		}
 	}
 }
@@ -4279,28 +4279,28 @@ void Animation::_blend_shape_track_optimize(int p_idx, real_t p_allowed_velocity
 void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error) {
 	ERR_FAIL_INDEX(p_idx, tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type != TYPE_VALUE);
-	ValueTrack *tt = static_cast<ValueTrack *>(tracks[p_idx]);
-	if (tt->values.size() == 0) {
+	ValueTrack *vt = static_cast<ValueTrack *>(tracks[p_idx]);
+	if (vt->values.size() == 0) {
 		return;
 	}
-	Variant::Type type = tt->values[0].value.get_type();
+	Variant::Type type = vt->values[0].value.get_type();
 
 	// Special case for angle interpolation.
-	bool is_using_angle = tt->interpolation == Animation::INTERPOLATION_LINEAR_ANGLE || tt->interpolation == Animation::INTERPOLATION_CUBIC_ANGLE;
+	bool is_using_angle = vt->interpolation == Animation::INTERPOLATION_LINEAR_ANGLE || vt->interpolation == Animation::INTERPOLATION_CUBIC_ANGLE;
 	int i = 0;
-	while (i < tt->values.size() - 2) {
+	while (i < vt->values.size() - 2) {
 		bool erase = false;
 		switch (type) {
 			case Variant::FLOAT: {
 				TKey<float> t0;
 				TKey<float> t1;
 				TKey<float> t2;
-				t0.time = tt->values[i].time;
-				t1.time = tt->values[i + 1].time;
-				t2.time = tt->values[i + 2].time;
-				t0.value = tt->values[i].value;
-				t1.value = tt->values[i + 1].value;
-				t2.value = tt->values[i + 2].value;
+				t0.time = vt->values[i].time;
+				t1.time = vt->values[i + 1].time;
+				t2.time = vt->values[i + 2].time;
+				t0.value = vt->values[i].value;
+				t1.value = vt->values[i + 1].value;
+				t2.value = vt->values[i + 2].value;
 				if (is_using_angle) {
 					float diff1 = fmod(t1.value - t0.value, Math_TAU);
 					t1.value = t0.value + fmod(2.0 * diff1, Math_TAU) - diff1;
@@ -4316,36 +4316,36 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				TKey<Vector2> t0;
 				TKey<Vector2> t1;
 				TKey<Vector2> t2;
-				t0.time = tt->values[i].time;
-				t1.time = tt->values[i + 1].time;
-				t2.time = tt->values[i + 2].time;
-				t0.value = tt->values[i].value;
-				t1.value = tt->values[i + 1].value;
-				t2.value = tt->values[i + 2].value;
+				t0.time = vt->values[i].time;
+				t1.time = vt->values[i + 1].time;
+				t2.time = vt->values[i + 2].time;
+				t0.value = vt->values[i].value;
+				t1.value = vt->values[i + 1].value;
+				t2.value = vt->values[i + 2].value;
 				erase = _vector2_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 			} break;
 			case Variant::VECTOR3: {
 				TKey<Vector3> t0;
 				TKey<Vector3> t1;
 				TKey<Vector3> t2;
-				t0.time = tt->values[i].time;
-				t1.time = tt->values[i + 1].time;
-				t2.time = tt->values[i + 2].time;
-				t0.value = tt->values[i].value;
-				t1.value = tt->values[i + 1].value;
-				t2.value = tt->values[i + 2].value;
+				t0.time = vt->values[i].time;
+				t1.time = vt->values[i + 1].time;
+				t2.time = vt->values[i + 2].time;
+				t0.value = vt->values[i].value;
+				t1.value = vt->values[i + 1].value;
+				t2.value = vt->values[i + 2].value;
 				erase = _vector3_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 			} break;
 			case Variant::QUATERNION: {
 				TKey<Quaternion> t0;
 				TKey<Quaternion> t1;
 				TKey<Quaternion> t2;
-				t0.time = tt->values[i].time;
-				t1.time = tt->values[i + 1].time;
-				t2.time = tt->values[i + 2].time;
-				t0.value = tt->values[i].value;
-				t1.value = tt->values[i + 1].value;
-				t2.value = tt->values[i + 2].value;
+				t0.time = vt->values[i].time;
+				t1.time = vt->values[i + 1].time;
+				t2.time = vt->values[i + 2].time;
+				t0.value = vt->values[i].value;
+				t1.value = vt->values[i + 1].value;
+				t2.value = vt->values[i + 2].value;
 				erase = _quaternion_track_optimize_key(t0, t1, t2, p_allowed_velocity_err, p_allowed_angular_err, p_allowed_precision_error);
 			} break;
 			default: {
@@ -4353,18 +4353,18 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 		}
 
 		if (erase) {
-			tt->values.remove_at(i + 1);
+			vt->values.remove_at(i + 1);
 		} else {
 			i++;
 		}
 	}
 
-	if (tt->values.size() == 2) {
+	if (vt->values.size() == 2) {
 		bool single_key = false;
 		switch (type) {
 			case Variant::FLOAT: {
-				float val_0 = tt->values[0].value;
-				float val_1 = tt->values[1].value;
+				float val_0 = vt->values[0].value;
+				float val_1 = vt->values[1].value;
 				if (is_using_angle) {
 					float diff1 = fmod(val_1 - val_0, Math_TAU);
 					val_1 = val_0 + fmod(2.0 * diff1, Math_TAU) - diff1;
@@ -4372,25 +4372,25 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 				single_key = abs(val_0 - val_1) < p_allowed_precision_error;
 			} break;
 			case Variant::VECTOR2: {
-				Vector2 val_0 = tt->values[0].value;
-				Vector2 val_1 = tt->values[1].value;
+				Vector2 val_0 = vt->values[0].value;
+				Vector2 val_1 = vt->values[1].value;
 				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
 			} break;
 			case Variant::VECTOR3: {
-				Vector3 val_0 = tt->values[0].value;
-				Vector3 val_1 = tt->values[1].value;
+				Vector3 val_0 = vt->values[0].value;
+				Vector3 val_1 = vt->values[1].value;
 				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
 			} break;
 			case Variant::QUATERNION: {
-				Quaternion val_0 = tt->values[0].value;
-				Quaternion val_1 = tt->values[1].value;
+				Quaternion val_0 = vt->values[0].value;
+				Quaternion val_1 = vt->values[1].value;
 				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
 			} break;
 			default: {
 			} break;
 		}
 		if (single_key) {
-			tt->values.remove_at(1);
+			vt->values.remove_at(1);
 		}
 	}
 }
