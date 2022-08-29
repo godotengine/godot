@@ -270,7 +270,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		hb->add_child(scene_name_edit);
 		scene_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		scene_name_edit->connect("text_changed", this, "update_dialog");
-		scene_name_edit->connect("text_submitted", this, "accept_create");
+		scene_name_edit->connect("text_entered", this, "accept_create");
 
 		List<String> extensions;
 		Ref<PackedScene> sd = memnew(PackedScene);
@@ -293,7 +293,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		root_name_edit->set_placeholder(TTR("Leave empty to use scene name"));
 		root_name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		root_name_edit->connect("text_changed", this, "update_dialog");
-		root_name_edit->connect("text_submitted", this, "accept_create");
+		root_name_edit->connect("text_entered", this, "accept_create");
 	}
 
 	Control *spacing = memnew(Control);
