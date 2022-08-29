@@ -279,23 +279,24 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_number = true;
 		}
 
-		// Special cases for numbers: Unary operators, separator '_', decimal point '.', literals '0x' and '0b', and scientific notation 'e'.
+		// Special cases for numbers
 		if (in_number && !is_a_digit) {
-			if ((str[j] == '+' || str[j] == '-') && j > 0 && str[j - 1] == 'e' && !prev_is_digit) {
-				in_number = true;
-			} else if ((str[j] == 'e' || str[j] == '_' || str[j] == '.') && prev_is_digit) {
-				in_number = true;
-			} else if ((str[j] == 'b' || str[j] == 'x') && (j > 0 && str[j - 1] == '0')) {
-				in_number = true;
-				if (str[j] == 'b') {
-					is_bin_notation = true;
-				} else if (str[j] == 'x') {
-					is_hex_notation = true;
-				}
-			} else {
+			if (str[j] == 'b' && str[j - 1] == '0') {
+				is_bin_notation = true;
+			} else if (str[j] == 'x' && str[j - 1] == '0') {
+				is_hex_notation = true;
+			} else if (!((str[j] == '-' || str[j] == '+') && str[j - 1] == 'e' && !prev_is_digit) &&
+					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
+					!((str[j] == 'e' || str[j] == '.') && (prev_is_digit || str[j - 1] == '_')) &&
+					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !prev_is_binary_op && str[j - 1] != 'e')) {
+				/* 1st row of condition: '+' or '-' after scientific notation;
+				2nd row of condition: '_' as a numeric separator;
+				3rd row of condition: Scientific notation 'e' and floating points;
+				4th row of condition: Multiple unary operators. */
 				in_number = false;
 			}
-		} else if ((str[j] == '.' || str[j] == '+' || str[j] == '-' || str[j] == '~') && !is_binary_op) {
+		} else if ((str[j] == '-' || str[j] == '+' || str[j] == '~' || (str[j] == '.' && str[j + 1] != '.' && (j == 0 || (j > 0 && str[j - 1] != '.')))) && !is_binary_op) {
+			// Start a number from unary mathematical operators and floating points, except for '..'
 			in_number = true;
 		}
 
