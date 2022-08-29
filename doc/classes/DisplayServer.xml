@@ -104,6 +104,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_accent_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
 			<description>
@@ -642,6 +649,20 @@
 		<method name="ime_get_text" qualifiers="const">
 			<return type="String" />
 			<description>
+			</description>
+		</method>
+		<method name="is_dark_mode" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OS is using dark mode.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
+		<method name="is_dark_mode_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OS supports dark mode.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
