@@ -330,6 +330,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _sync_animation_change();
 	void _animation_changed();
 	void _update_tracks();
+	void _redraw_tracks();
+	void _redraw_groups();
 
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);
@@ -545,9 +547,9 @@ public:
 		EDIT_GOTO_NEXT_STEP,
 		EDIT_GOTO_NEXT_STEP_TIMELINE_ONLY, // Next step without updating animation.
 		EDIT_GOTO_PREV_STEP,
-		EDIT_BAKE_TRACK,
-		EDIT_BAKE_TRACK_CONFIRM,
 		EDIT_APPLY_RESET,
+		EDIT_BAKE_ANIMATION,
+		EDIT_BAKE_ANIMATION_CONFIRM,
 		EDIT_OPTIMIZE_ANIMATION,
 		EDIT_OPTIMIZE_ANIMATION_CONFIRM,
 		EDIT_CLEAN_UP_ANIMATION,
