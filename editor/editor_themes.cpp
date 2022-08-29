@@ -655,45 +655,46 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// TabBar
 
-	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
+	Ref<StyleBoxFlat> style_tab_base = style_widget->duplicate();
 
+	style_tab_base->set_border_width_all(0);
+	// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
+	// This also makes the top highlight look better.
+	style_tab_base->set_corner_detail(corner_width);
+	style_tab_base->set_corner_radius_all(0);
+	style_tab_base->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
+	style_tab_base->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
+
+	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
+	// We can't prevent them with both rounded corners and non-zero border width, though
+	style_tab_base->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
+	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
+	style_tab_base->set_expand_margin_size(SIDE_LEFT, -border_width);
+
+	style_tab_base->set_default_margin(SIDE_LEFT, widget_default_margin.x + 5 * EDSCALE);
+	style_tab_base->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 5 * EDSCALE);
+	style_tab_base->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
+	style_tab_base->set_default_margin(SIDE_TOP, widget_default_margin.y);
+
+	Ref<StyleBoxFlat> style_tab_selected = style_tab_base->duplicate();
+
+	style_tab_selected->set_bg_color(base_color);
 	// Add a highlight line at the top of the selected tab.
-	style_tab_selected->set_border_width_all(0);
-	style_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x - border_width);
 	style_tab_selected->set_border_width(SIDE_TOP, Math::round(2 * EDSCALE));
 	// Make the highlight line prominent, but not too prominent as to not be distracting.
 	Color tab_highlight = dark_color_2.lerp(accent_color, 0.75);
 	style_tab_selected->set_border_color(tab_highlight);
-	// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
-	// This also makes the top highlight look better.
 	style_tab_selected->set_corner_radius_all(0);
 
-	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
-	// We can't prevent them with both rounded corners and non-zero border width, though
-	style_tab_selected->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
-
-	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
-	style_tab_selected->set_expand_margin_size(SIDE_LEFT, -border_width);
-
-	style_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
-	style_tab_selected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
-	style_tab_selected->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
-	style_tab_selected->set_default_margin(SIDE_TOP, widget_default_margin.y);
-	style_tab_selected->set_bg_color(base_color);
-
-	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
-	style_tab_unselected->set_bg_color(dark_color_1);
+	Ref<StyleBoxFlat> style_tab_unselected = style_tab_base->duplicate();
 	style_tab_unselected->set_expand_margin_size(SIDE_BOTTOM, 0);
+	style_tab_unselected->set_bg_color(dark_color_1);
 	// Add some spacing between unselected tabs to make them easier to distinguish from each other
 	style_tab_unselected->set_border_color(Color(0, 0, 0, 0));
-	style_tab_unselected->set_border_width(SIDE_LEFT, Math::round(1 * EDSCALE));
-	style_tab_unselected->set_border_width(SIDE_RIGHT, Math::round(1 * EDSCALE));
-	style_tab_unselected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
-	style_tab_unselected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
 
-	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
-	style_tab_disabled->set_bg_color(disabled_bg_color);
+	Ref<StyleBoxFlat> style_tab_disabled = style_tab_base->duplicate();
 	style_tab_disabled->set_expand_margin_size(SIDE_BOTTOM, 0);
+	style_tab_disabled->set_bg_color(disabled_bg_color);
 	style_tab_disabled->set_border_color(disabled_bg_color);
 
 	// Editor background
@@ -1192,6 +1193,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// TabBar & TabContainer
+	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
+	style_tabbar_background->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
+	style_tabbar_background->set_corner_detail(corner_width);
+	style_tabbar_background->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
+	style_tabbar_background->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
+	theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
+
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
@@ -1227,14 +1235,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
+	style_content_panel->set_border_width(Side::SIDE_TOP, 0);
+	style_content_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
+	style_content_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
 	// compensate the border
 	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
-	// Display border to visually split the body of the container from its possible backgrounds.
-	style_content_panel->set_border_width(Side::SIDE_TOP, Math::round(2 * EDSCALE));
-	style_content_panel->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
