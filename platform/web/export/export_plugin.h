@@ -57,20 +57,10 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Mutex server_lock;
 	Thread server_thread;
 
-	enum ExportMode {
-		EXPORT_MODE_NORMAL = 0,
-		EXPORT_MODE_THREADS = 1,
-		EXPORT_MODE_GDNATIVE = 2,
-		EXPORT_MODE_THREADS_GDNATIVE = 3,
-	};
-
-	String _get_template_name(ExportMode p_mode, bool p_debug) const {
-		String name = "webassembly";
-		if (p_mode & EXPORT_MODE_GDNATIVE) {
-			name += "_gdnative";
-		}
-		if (p_mode & EXPORT_MODE_THREADS) {
-			name += "_threads";
+	String _get_template_name(bool p_extension, bool p_debug) const {
+		String name = "web";
+		if (p_extension) {
+			name += "_dlink";
 		}
 		if (p_debug) {
 			name += "_debug.zip";

@@ -201,7 +201,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	// Service worker
 	const String dir = p_path.get_base_dir();
 	const String name = p_path.get_file().get_basename();
-	const ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
+	bool extensions = (bool)p_preset->get("variant/extensions_support");
 	HashMap<String, String> replaces;
 	replaces["@GODOT_VERSION@"] = String::num_int64(OS::get_singleton()->get_unix_time()) + "|" + String::num_int64(OS::get_singleton()->get_ticks_usec());
 	replaces["@GODOT_NAME@"] = proj_name.substr(0, 16);
@@ -216,17 +216,15 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 		cache_files.push_back(name + ".icon.png");
 		cache_files.push_back(name + ".apple-touch-icon.png");
 	}
-	if (mode & EXPORT_MODE_THREADS) {
-		cache_files.push_back(name + ".worker.js");
-		cache_files.push_back(name + ".audio.worklet.js");
-	}
+	cache_files.push_back(name + ".worker.js");
+	cache_files.push_back(name + ".audio.worklet.js");
 	replaces["@GODOT_CACHE@"] = Variant(cache_files).to_json_string();
 
 	// Heavy files that are cached on demand.
 	Array opt_cache_files;
 	opt_cache_files.push_back(name + ".wasm");
 	opt_cache_files.push_back(name + ".pck");
-	if (mode & EXPORT_MODE_GDNATIVE) {
+	if (extensions) {
 		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {
 			opt_cache_files.push_back(p_shared_objects[i].path.get_file());
@@ -317,20 +315,14 @@ void EditorExportPlatformWeb::get_preset_features(const Ref<EditorExportPreset> 
 			r_features->push_back("etc2");
 		}
 	}
-	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-	if (mode & EXPORT_MODE_THREADS) {
-		r_features->push_back("threads");
-	}
-	if (mode & EXPORT_MODE_GDNATIVE) {
-		r_features->push_back("wasm32");
-	}
+	r_features->push_back("wasm32");
 }
 
 void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "variant/export_type", PROPERTY_HINT_ENUM, "Regular,Threads,GDNative"), 0)); // Export type.
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // Export type.
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
@@ -374,11 +366,11 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 
 	String err;
 	bool valid = false;
-	ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
+	bool extensions = (bool)p_preset->get("variant/extensions_support");
 
 	// Look for export templates (first official, and if defined custom templates).
-	bool dvalid = exists_export_template(_get_template_name(mode, true), &err);
-	bool rvalid = exists_export_template(_get_template_name(mode, false), &err);
+	bool dvalid = exists_export_template(_get_template_name(extensions, true), &err);
+	bool rvalid = exists_export_template(_get_template_name(extensions, false), &err);
 
 	if (p_preset->get("custom_template/debug") != "") {
 		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
@@ -456,8 +448,8 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	String template_path = p_debug ? custom_debug : custom_release;
 	template_path = template_path.strip_edges();
 	if (template_path.is_empty()) {
-		ExportMode mode = (ExportMode)(int)p_preset->get("variant/export_type");
-		template_path = find_export_template(_get_template_name(mode, p_debug));
+		bool extensions = (bool)p_preset->get("variant/extensions_support");
+		template_path = find_export_template(_get_template_name(extensions, p_debug));
 	}
 
 	if (!DirAccess::exists(base_dir)) {
