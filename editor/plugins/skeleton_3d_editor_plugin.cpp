@@ -690,8 +690,6 @@ void Skeleton3DEditor::update_editors() {
 
 void Skeleton3DEditor::create_editors() {
 	set_h_size_flags(SIZE_EXPAND_FILL);
-	add_theme_constant_override("separation", 0);
-
 	set_focus_mode(FOCUS_ALL);
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
@@ -823,20 +821,11 @@ void Skeleton3DEditor::create_editors() {
 
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			edit_mode_button->set_icon(get_theme_icon(SNAME("ToolBoneSelect"), SNAME("EditorIcons")));
-			key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
-			key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
-			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
-			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
-			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
-			break;
-		}
 		case NOTIFICATION_ENTER_TREE: {
 			create_editors();
 			update_joint_tree();
 			update_editors();
+
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
 			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
 #ifdef TOOLS_ENABLED
@@ -845,8 +834,23 @@ void Skeleton3DEditor::_notification(int p_what) {
 			skeleton->connect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
 			skeleton->connect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 #endif
-			break;
-		}
+
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
+		} break;
+		case NOTIFICATION_READY: {
+			// Will trigger NOTIFICATION_THEME_CHANGED, but won't cause any loops if called here.
+			add_theme_constant_override("separation", 0);
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			edit_mode_button->set_icon(get_theme_icon(SNAME("ToolBoneSelect"), SNAME("EditorIcons")));
+			key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
+			key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
+			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
+			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
+			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
+
+			update_joint_tree();
+		} break;
 	}
 }
 
