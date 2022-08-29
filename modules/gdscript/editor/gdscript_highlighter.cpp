@@ -45,10 +45,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	int previous_column = 0;
 
 	bool prev_is_char = false;
-	bool prev_is_number = false;
+	bool prev_is_digit = false;
 	bool prev_is_binary_op = false;
 	bool in_keyword = false;
 	bool in_word = false;
+	bool in_number = false;
 	bool in_function_name = false;
 	bool in_lambda = false;
 	bool in_variable_declaration = false;
@@ -94,7 +95,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		color = font_color;
 		bool is_char = !is_symbol(str[j]);
 		bool is_a_symbol = is_symbol(str[j]);
-		bool is_number = is_digit(str[j]);
+		bool is_a_digit = is_digit(str[j]);
 		bool is_binary_op = false;
 
 		/* color regions */
@@ -233,56 +234,77 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 					in_region = -1;
 					prev_is_char = false;
-					prev_is_number = false;
+					prev_is_digit = false;
+					prev_is_binary_op = false;
 					continue;
 				}
 			}
 		}
 
+		// A bit of a hack, but couldn't come up with anything better.
+		if (j > 0 && (str[j] == '&' || str[j] == '^' || str[j] == '%' || str[j] == '+' || str[j] == '-' || str[j] == '~' || str[j] == '.')) {
+			if (!keywords.has(previous_text)) {
+				if (previous_text == "PI" || previous_text == "TAU" || previous_text == "INF" || previous_text == "NAN") {
+					is_binary_op = true;
+				} else {
+					int k = j - 1;
+					while (k > 0 && is_whitespace(str[k])) {
+						k--;
+					}
+					if (!is_symbol(str[k]) || str[k] == '"' || str[k] == '\'' || str[k] == ')' || str[k] == ']' || str[k] == '}') {
+						is_binary_op = true;
+					}
+				}
+			}
+		}
+
+		if (!is_char) {
+			in_keyword = false;
+		}
+
 		// allow ABCDEF in hex notation
-		if (is_hex_notation && (is_hex_digit(str[j]) || is_number)) {
-			is_number = true;
+		if (is_hex_notation && (is_hex_digit(str[j]) || is_a_digit)) {
+			is_a_digit = true;
 		} else {
 			is_hex_notation = false;
 		}
 
 		// disallow anything not a 0 or 1 in binary notation
-		if (is_bin_notation && (is_binary_digit(str[j]))) {
-			is_number = true;
-		} else if (is_bin_notation) {
-			is_bin_notation = false;
-			is_number = false;
-		} else {
+		if (is_bin_notation && !is_binary_digit(str[j])) {
+			is_a_digit = false;
 			is_bin_notation = false;
 		}
 
-		// check for dot or underscore or 'x' for hex notation in floating point number or 'e' for scientific notation
-		if ((str[j] == '.' || str[j] == 'x' || str[j] == 'b' || str[j] == '_' || str[j] == 'e') && !in_word && prev_is_number && !is_number) {
-			is_number = true;
-			is_a_symbol = false;
-			is_char = false;
+		if (!in_number && !in_word && is_a_digit) {
+			in_number = true;
+		}
 
-			if (str[j] == 'x' && str[j - 1] == '0') {
-				is_hex_notation = true;
-			} else if (str[j] == 'b' && str[j - 1] == '0') {
-				is_bin_notation = true;
+		// Special cases for numbers: Unary operators, separator '_', decimal point '.', literals '0x' and '0b', and scientific notation 'e'.
+		if (in_number && !is_a_digit) {
+			if ((str[j] == '+' || str[j] == '-') && j > 0 && str[j - 1] == 'e' && !prev_is_digit) {
+				in_number = true;
+			} else if ((str[j] == 'e' || str[j] == '_' || str[j] == '.') && prev_is_digit) {
+				in_number = true;
+			} else if ((str[j] == 'b' || str[j] == 'x') && (j > 0 && str[j - 1] == '0')) {
+				in_number = true;
+				if (str[j] == 'b') {
+					is_bin_notation = true;
+				} else if (str[j] == 'x') {
+					is_hex_notation = true;
+				}
+			} else {
+				in_number = false;
 			}
+		} else if ((str[j] == '.' || str[j] == '+' || str[j] == '-' || str[j] == '~') && !is_binary_op) {
+			in_number = true;
 		}
 
-		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !is_number) {
+		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !in_number) {
 			in_word = true;
-		}
-
-		if ((in_keyword || in_word) && !is_hex_notation) {
-			is_number = false;
 		}
 
 		if (is_a_symbol && str[j] != '.' && in_word) {
 			in_word = false;
-		}
-
-		if (!is_char) {
-			in_keyword = false;
 		}
 
 		if (!in_keyword && is_char && !prev_is_char) {
@@ -355,7 +377,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 		}
 
-		if (!in_function_name && !in_member_variable && !in_keyword && !is_number && in_word) {
+		if (!in_function_name && !in_member_variable && !in_keyword && !in_number && in_word) {
 			int k = j;
 			while (k > 0 && !is_symbol(str[k]) && !is_whitespace(str[k])) {
 				k--;
@@ -401,22 +423,6 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_function_name = false;
 			in_lambda = false;
 			in_member_variable = false;
-		}
-
-		if (j > 0 && (str[j] == '&' || str[j] == '^' || str[j] == '%' || str[j] == '+' || str[j] == '-' || str[j] == '~')) {
-			int k = j - 1;
-			while (k > 0 && is_whitespace(str[k])) {
-				k--;
-			}
-			if (!is_symbol(str[k]) || str[k] == '"' || str[k] == '\'' || str[k] == ')' || str[k] == ']' || str[k] == '}') {
-				is_binary_op = true;
-			}
-		}
-
-		// Highlight '+' and '-' like numbers when unary
-		if ((str[j] == '+' || str[j] == '-' || str[j] == '~') && !is_binary_op) {
-			is_number = true;
-			is_a_symbol = false;
 		}
 
 		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand
@@ -479,12 +485,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			} else {
 				color = function_color;
 			}
+		} else if (in_number) {
+			next_type = NUMBER;
+			color = number_color;
 		} else if (is_a_symbol) {
 			next_type = SYMBOL;
 			color = symbol_color;
-		} else if (is_number) {
-			next_type = NUMBER;
-			color = number_color;
 		} else if (expect_type) {
 			next_type = TYPE;
 			color = type_color;
@@ -516,7 +522,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		}
 
 		prev_is_char = is_char;
-		prev_is_number = is_number;
+		prev_is_digit = is_a_digit;
 		prev_is_binary_op = is_binary_op;
 
 		if (color != prev_color) {
