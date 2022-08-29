@@ -1052,13 +1052,15 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 bool AnimationPlayer::has_animation(const StringName &p_name) const {
 	return animation_set.has(p_name);
 }
+
 Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!animation_set.has(p_name), Ref<Animation>());
+	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 
 	const AnimationData &data = animation_set[p_name];
 
 	return data.animation;
 }
+
 void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 	List<String> anims;
 
