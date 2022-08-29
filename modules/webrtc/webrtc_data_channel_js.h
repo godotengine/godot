@@ -31,7 +31,7 @@
 #ifndef WEBRTC_DATA_CHANNEL_JS_H
 #define WEBRTC_DATA_CHANNEL_JS_H
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 
 #include "webrtc_data_channel.h"
 
@@ -89,6 +89,6 @@ public:
 	~WebRTCDataChannelJS();
 };
 
-#endif // JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED
 
 #endif // WEBRTC_DATA_CHANNEL_JS_H

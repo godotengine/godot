@@ -103,7 +103,7 @@ void RemoteDebuggerPeerWebSocket::close() {
 }
 
 bool RemoteDebuggerPeerWebSocket::can_block() const {
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 	return false;
 #else
 	return true;
@@ -111,7 +111,7 @@ bool RemoteDebuggerPeerWebSocket::can_block() const {
 }
 
 RemoteDebuggerPeerWebSocket::RemoteDebuggerPeerWebSocket(Ref<WebSocketPeer> p_peer) {
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 	ws_client = Ref<WebSocketClient>(memnew(EMWSClient));
 #else
 	ws_client = Ref<WebSocketClient>(memnew(WSLClient));

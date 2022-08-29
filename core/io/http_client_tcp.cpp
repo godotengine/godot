@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVASCRIPT_ENABLED
+#ifndef WEB_ENABLED
 
 #include "http_client_tcp.h"
 
@@ -788,4 +788,4 @@ HTTPClientTCP::HTTPClientTCP() {
 
 HTTPClient *(*HTTPClient::_create)() = HTTPClientTCP::_create_func;
 
-#endif // #ifndef JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED

@@ -1277,7 +1277,7 @@
 		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
 			The [JavaScript] singleton.
-			[b]Note:[/b] Only implemented on HTML5.
+			[b]Note:[/b] Only implemented on the Web platform.
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.

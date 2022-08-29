@@ -2106,7 +2106,7 @@ void ProjectManager::_confirm_update_settings() {
 
 void ProjectManager::_open_selected_projects() {
 	// Show loading text to tell the user that the project manager is busy loading.
-	// This is especially important for the HTML5 project manager.
+	// This is especially important for the Web project manager.
 	loading_label->show();
 
 	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();

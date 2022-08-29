@@ -201,7 +201,7 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 			}
 		} else if (platform_string == "web") {
 			for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
-				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "HTML5") {
+				if (EditorExport::get_singleton()->get_export_platform(i)->get_name() == "Web") {
 					idx = i;
 					break;
 				}

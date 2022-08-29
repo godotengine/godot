@@ -137,7 +137,7 @@ private:
 
 		api_assemblies_base_dir = res_data_dir.plus_file("assemblies");
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 		mono_user_dir = "user://";
 #else
 		mono_user_dir = _get_mono_user_dir();

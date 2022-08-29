@@ -31,7 +31,7 @@
 #ifndef WSL_SERVER_H
 #define WSL_SERVER_H
 
-#ifndef JAVASCRIPT_ENABLED
+#ifndef WEB_ENABLED
 
 #include "websocket_server.h"
 #include "wsl_peer.h"
@@ -93,6 +93,6 @@ public:
 	~WSLServer();
 };
 
-#endif // JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED
 
 #endif // WSL_SERVER_H

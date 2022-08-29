@@ -1595,7 +1595,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 ///////
 
 bool AssetLibraryEditorPlugin::is_available() {
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 	// Asset Library can't work on Web editor for now as most assets are sourced
 	// directly from GitHub which does not set CORS.
 	return false;
