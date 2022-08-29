@@ -628,6 +628,9 @@ ImportDock::ImportDock() {
 	content->add_margin_child(TTR("Import As:"), hb);
 	import_as = memnew(OptionButton);
 	import_as->set_disabled(true);
+	import_as->set_fit_to_longest_item(false);
+	import_as->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	import_as->connect("item_selected", callable_mp(this, &ImportDock::_importer_selected));
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
