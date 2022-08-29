@@ -123,12 +123,16 @@ namespace GodotTools.IdeMessaging
 
             string projectMetadataDir = Path.Combine(godotProjectDir, ".godot", "mono", "metadata");
             // FileSystemWatcher requires an existing directory
-            if (!Directory.Exists(projectMetadataDir)) {
+            if (!Directory.Exists(projectMetadataDir))
+            {
                 // Check if the non hidden version exists
                 string nonHiddenProjectMetadataDir = Path.Combine(godotProjectDir, "godot", "mono", "metadata");
-                if (Directory.Exists(nonHiddenProjectMetadataDir)) {
+                if (Directory.Exists(nonHiddenProjectMetadataDir))
+                {
                     projectMetadataDir = nonHiddenProjectMetadataDir;
-                } else {
+                }
+                else
+                {
                     Directory.CreateDirectory(projectMetadataDir);
                 }
             }

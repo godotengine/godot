@@ -385,7 +385,7 @@ namespace GodotTools.Ides
                 // However, it doesn't fix resource loading if the rest of the path is also case insensitive.
                 string scriptFileLocalized = FsPathUtils.LocalizePathWithCaseChecked(request.ScriptFile);
 
-                var response = new CodeCompletionResponse {Kind = request.Kind, ScriptFile = request.ScriptFile};
+                var response = new CodeCompletionResponse { Kind = request.Kind, ScriptFile = request.ScriptFile };
                 response.Suggestions = await Task.Run(() =>
                     Internal.CodeCompletionRequest(response.Kind, scriptFileLocalized ?? request.ScriptFile));
                 return response;

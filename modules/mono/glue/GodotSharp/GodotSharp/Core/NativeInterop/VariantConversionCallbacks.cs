@@ -6,7 +6,7 @@ namespace Godot.NativeInterop;
 internal static unsafe class VariantConversionCallbacks
 {
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-    internal static delegate* <in T, godot_variant> GetToVariantCallback<T>()
+    internal static delegate*<in T, godot_variant> GetToVariantCallback<T>()
     {
         static godot_variant FromBool(in bool @bool) =>
             VariantUtils.CreateFromBool(@bool);
@@ -153,163 +153,163 @@ internal static unsafe class VariantConversionCallbacks
 
         if (typeOfT == typeof(bool))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in bool, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in bool, godot_variant>)
                 &FromBool;
         }
 
         if (typeOfT == typeof(char))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in char, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in char, godot_variant>)
                 &FromChar;
         }
 
         if (typeOfT == typeof(sbyte))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in sbyte, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in sbyte, godot_variant>)
                 &FromInt8;
         }
 
         if (typeOfT == typeof(short))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in short, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in short, godot_variant>)
                 &FromInt16;
         }
 
         if (typeOfT == typeof(int))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in int, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in int, godot_variant>)
                 &FromInt32;
         }
 
         if (typeOfT == typeof(long))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in long, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in long, godot_variant>)
                 &FromInt64;
         }
 
         if (typeOfT == typeof(byte))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in byte, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in byte, godot_variant>)
                 &FromUInt8;
         }
 
         if (typeOfT == typeof(ushort))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in ushort, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in ushort, godot_variant>)
                 &FromUInt16;
         }
 
         if (typeOfT == typeof(uint))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in uint, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in uint, godot_variant>)
                 &FromUInt32;
         }
 
         if (typeOfT == typeof(ulong))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in ulong, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in ulong, godot_variant>)
                 &FromUInt64;
         }
 
         if (typeOfT == typeof(float))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in float, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in float, godot_variant>)
                 &FromFloat;
         }
 
         if (typeOfT == typeof(double))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in double, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in double, godot_variant>)
                 &FromDouble;
         }
 
         if (typeOfT == typeof(Vector2))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Vector2, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector2, godot_variant>)
                 &FromVector2;
         }
 
         if (typeOfT == typeof(Vector2i))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Vector2i, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector2i, godot_variant>)
                 &FromVector2I;
         }
 
         if (typeOfT == typeof(Rect2))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Rect2, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Rect2, godot_variant>)
                 &FromRect2;
         }
 
         if (typeOfT == typeof(Rect2i))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Rect2i, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Rect2i, godot_variant>)
                 &FromRect2I;
         }
 
         if (typeOfT == typeof(Transform2D))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Transform2D, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Transform2D, godot_variant>)
                 &FromTransform2D;
         }
 
         if (typeOfT == typeof(Vector3))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Vector3, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector3, godot_variant>)
                 &FromVector3;
         }
 
         if (typeOfT == typeof(Vector3i))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Vector3i, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector3i, godot_variant>)
                 &FromVector3I;
         }
 
         if (typeOfT == typeof(Basis))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Basis, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Basis, godot_variant>)
                 &FromBasis;
         }
 
         if (typeOfT == typeof(Quaternion))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Quaternion, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Quaternion, godot_variant>)
                 &FromQuaternion;
         }
 
         if (typeOfT == typeof(Transform3D))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Transform3D, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Transform3D, godot_variant>)
                 &FromTransform3D;
         }
 
         if (typeOfT == typeof(AABB))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in AABB, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in AABB, godot_variant>)
                 &FromAabb;
         }
 
         if (typeOfT == typeof(Color))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Color, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Color, godot_variant>)
                 &FromColor;
         }
 
         if (typeOfT == typeof(Plane))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Plane, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Plane, godot_variant>)
                 &FromPlane;
         }
 
         if (typeOfT == typeof(Callable))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Callable, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Callable, godot_variant>)
                 &FromCallable;
         }
 
         if (typeOfT == typeof(SignalInfo))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in SignalInfo, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in SignalInfo, godot_variant>)
                 &FromSignalInfo;
         }
 
@@ -321,42 +321,42 @@ internal static unsafe class VariantConversionCallbacks
             {
                 case TypeCode.SByte:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in sbyte, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in sbyte, godot_variant>)
                         &FromInt8;
                 }
                 case TypeCode.Int16:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in short, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in short, godot_variant>)
                         &FromInt16;
                 }
                 case TypeCode.Int32:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in int, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in int, godot_variant>)
                         &FromInt32;
                 }
                 case TypeCode.Int64:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in long, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in long, godot_variant>)
                         &FromInt64;
                 }
                 case TypeCode.Byte:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in byte, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in byte, godot_variant>)
                         &FromUInt8;
                 }
                 case TypeCode.UInt16:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in ushort, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in ushort, godot_variant>)
                         &FromUInt16;
                 }
                 case TypeCode.UInt32:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in uint, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in uint, godot_variant>)
                         &FromUInt32;
                 }
                 case TypeCode.UInt64:
                 {
-                    return (delegate* <in T, godot_variant>)(delegate* <in ulong, godot_variant>)
+                    return (delegate*<in T, godot_variant>)(delegate*<in ulong, godot_variant>)
                         &FromUInt64;
                 }
                 default:
@@ -366,121 +366,121 @@ internal static unsafe class VariantConversionCallbacks
 
         if (typeOfT == typeof(string))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in string, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in string, godot_variant>)
                 &FromString;
         }
 
         if (typeOfT == typeof(byte[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in byte[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in byte[], godot_variant>)
                 &FromByteArray;
         }
 
         if (typeOfT == typeof(int[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in int[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in int[], godot_variant>)
                 &FromInt32Array;
         }
 
         if (typeOfT == typeof(long[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in long[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in long[], godot_variant>)
                 &FromInt64Array;
         }
 
         if (typeOfT == typeof(float[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in float[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in float[], godot_variant>)
                 &FromFloatArray;
         }
 
         if (typeOfT == typeof(double[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in double[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in double[], godot_variant>)
                 &FromDoubleArray;
         }
 
         if (typeOfT == typeof(string[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in string[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in string[], godot_variant>)
                 &FromStringArray;
         }
 
         if (typeOfT == typeof(Vector2[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Vector2[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector2[], godot_variant>)
                 &FromVector2Array;
         }
 
         if (typeOfT == typeof(Vector3[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Vector3[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector3[], godot_variant>)
                 &FromVector3Array;
         }
 
         if (typeOfT == typeof(Color[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Color[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Color[], godot_variant>)
                 &FromColorArray;
         }
 
         if (typeOfT == typeof(StringName[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in StringName[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in StringName[], godot_variant>)
                 &FromStringNameArray;
         }
 
         if (typeOfT == typeof(NodePath[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in NodePath[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in NodePath[], godot_variant>)
                 &FromNodePathArray;
         }
 
         if (typeOfT == typeof(RID[]))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in RID[], godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in RID[], godot_variant>)
                 &FromRidArray;
         }
 
         if (typeof(Godot.Object).IsAssignableFrom(typeOfT))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Godot.Object, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Godot.Object, godot_variant>)
                 &FromGodotObject;
         }
 
         if (typeOfT == typeof(StringName))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in StringName, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in StringName, godot_variant>)
                 &FromStringName;
         }
 
         if (typeOfT == typeof(NodePath))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in NodePath, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in NodePath, godot_variant>)
                 &FromNodePath;
         }
 
         if (typeOfT == typeof(RID))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in RID, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in RID, godot_variant>)
                 &FromRid;
         }
 
         if (typeOfT == typeof(Godot.Collections.Dictionary))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Godot.Collections.Dictionary, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Godot.Collections.Dictionary, godot_variant>)
                 &FromGodotDictionary;
         }
 
         if (typeOfT == typeof(Godot.Collections.Array))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Godot.Collections.Array, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Godot.Collections.Array, godot_variant>)
                 &FromGodotArray;
         }
 
         if (typeOfT == typeof(Variant))
         {
-            return (delegate* <in T, godot_variant>)(delegate* <in Variant, godot_variant>)
+            return (delegate*<in T, godot_variant>)(delegate*<in Variant, godot_variant>)
                 &FromVariant;
         }
 
@@ -488,7 +488,7 @@ internal static unsafe class VariantConversionCallbacks
     }
 
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-    internal static delegate* <in godot_variant, T> GetToManagedCallback<T>()
+    internal static delegate*<in godot_variant, T> GetToManagedCallback<T>()
     {
         static bool ToBool(in godot_variant variant) =>
             VariantUtils.ConvertToBool(variant);
@@ -638,163 +638,163 @@ internal static unsafe class VariantConversionCallbacks
 
         if (typeOfT == typeof(bool))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, bool>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, bool>)
                 &ToBool;
         }
 
         if (typeOfT == typeof(char))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, char>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, char>)
                 &ToChar;
         }
 
         if (typeOfT == typeof(sbyte))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, sbyte>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, sbyte>)
                 &ToInt8;
         }
 
         if (typeOfT == typeof(short))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, short>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, short>)
                 &ToInt16;
         }
 
         if (typeOfT == typeof(int))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, int>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, int>)
                 &ToInt32;
         }
 
         if (typeOfT == typeof(long))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, long>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, long>)
                 &ToInt64;
         }
 
         if (typeOfT == typeof(byte))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, byte>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, byte>)
                 &ToUInt8;
         }
 
         if (typeOfT == typeof(ushort))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, ushort>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, ushort>)
                 &ToUInt16;
         }
 
         if (typeOfT == typeof(uint))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, uint>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, uint>)
                 &ToUInt32;
         }
 
         if (typeOfT == typeof(ulong))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, ulong>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, ulong>)
                 &ToUInt64;
         }
 
         if (typeOfT == typeof(float))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, float>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, float>)
                 &ToFloat;
         }
 
         if (typeOfT == typeof(double))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, double>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, double>)
                 &ToDouble;
         }
 
         if (typeOfT == typeof(Vector2))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Vector2>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector2>)
                 &ToVector2;
         }
 
         if (typeOfT == typeof(Vector2i))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Vector2i>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector2i>)
                 &ToVector2I;
         }
 
         if (typeOfT == typeof(Rect2))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Rect2>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Rect2>)
                 &ToRect2;
         }
 
         if (typeOfT == typeof(Rect2i))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Rect2i>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Rect2i>)
                 &ToRect2I;
         }
 
         if (typeOfT == typeof(Transform2D))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Transform2D>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Transform2D>)
                 &ToTransform2D;
         }
 
         if (typeOfT == typeof(Vector3))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Vector3>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector3>)
                 &ToVector3;
         }
 
         if (typeOfT == typeof(Vector3i))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Vector3i>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector3i>)
                 &ToVector3I;
         }
 
         if (typeOfT == typeof(Basis))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Basis>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Basis>)
                 &ToBasis;
         }
 
         if (typeOfT == typeof(Quaternion))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Quaternion>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Quaternion>)
                 &ToQuaternion;
         }
 
         if (typeOfT == typeof(Transform3D))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Transform3D>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Transform3D>)
                 &ToTransform3D;
         }
 
         if (typeOfT == typeof(AABB))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, AABB>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, AABB>)
                 &ToAabb;
         }
 
         if (typeOfT == typeof(Color))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Color>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Color>)
                 &ToColor;
         }
 
         if (typeOfT == typeof(Plane))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Plane>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Plane>)
                 &ToPlane;
         }
 
         if (typeOfT == typeof(Callable))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Callable>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Callable>)
                 &ToCallable;
         }
 
         if (typeOfT == typeof(SignalInfo))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, SignalInfo>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, SignalInfo>)
                 &ToSignalInfo;
         }
 
@@ -806,42 +806,42 @@ internal static unsafe class VariantConversionCallbacks
             {
                 case TypeCode.SByte:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, sbyte>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, sbyte>)
                         &ToInt8;
                 }
                 case TypeCode.Int16:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, short>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, short>)
                         &ToInt16;
                 }
                 case TypeCode.Int32:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, int>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, int>)
                         &ToInt32;
                 }
                 case TypeCode.Int64:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, long>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, long>)
                         &ToInt64;
                 }
                 case TypeCode.Byte:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, byte>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, byte>)
                         &ToUInt8;
                 }
                 case TypeCode.UInt16:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, ushort>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, ushort>)
                         &ToUInt16;
                 }
                 case TypeCode.UInt32:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, uint>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, uint>)
                         &ToUInt32;
                 }
                 case TypeCode.UInt64:
                 {
-                    return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, ulong>)
+                    return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, ulong>)
                         &ToUInt64;
                 }
                 default:
@@ -851,121 +851,121 @@ internal static unsafe class VariantConversionCallbacks
 
         if (typeOfT == typeof(string))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, string>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, string>)
                 &ToString;
         }
 
         if (typeOfT == typeof(byte[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, byte[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, byte[]>)
                 &ToByteArray;
         }
 
         if (typeOfT == typeof(int[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, int[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, int[]>)
                 &ToInt32Array;
         }
 
         if (typeOfT == typeof(long[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, long[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, long[]>)
                 &ToInt64Array;
         }
 
         if (typeOfT == typeof(float[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, float[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, float[]>)
                 &ToFloatArray;
         }
 
         if (typeOfT == typeof(double[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, double[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, double[]>)
                 &ToDoubleArray;
         }
 
         if (typeOfT == typeof(string[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, string[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, string[]>)
                 &ToStringArray;
         }
 
         if (typeOfT == typeof(Vector2[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Vector2[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector2[]>)
                 &ToVector2Array;
         }
 
         if (typeOfT == typeof(Vector3[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Vector3[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector3[]>)
                 &ToVector3Array;
         }
 
         if (typeOfT == typeof(Color[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Color[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Color[]>)
                 &ToColorArray;
         }
 
         if (typeOfT == typeof(StringName[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, StringName[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, StringName[]>)
                 &ToStringNameArray;
         }
 
         if (typeOfT == typeof(NodePath[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, NodePath[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, NodePath[]>)
                 &ToNodePathArray;
         }
 
         if (typeOfT == typeof(RID[]))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, RID[]>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, RID[]>)
                 &ToRidArray;
         }
 
         if (typeof(Godot.Object).IsAssignableFrom(typeOfT))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Godot.Object>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Godot.Object>)
                 &ToGodotObject;
         }
 
         if (typeOfT == typeof(StringName))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, StringName>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, StringName>)
                 &ToStringName;
         }
 
         if (typeOfT == typeof(NodePath))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, NodePath>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, NodePath>)
                 &ToNodePath;
         }
 
         if (typeOfT == typeof(RID))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, RID>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, RID>)
                 &ToRid;
         }
 
         if (typeOfT == typeof(Godot.Collections.Dictionary))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Godot.Collections.Dictionary>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Godot.Collections.Dictionary>)
                 &ToGodotDictionary;
         }
 
         if (typeOfT == typeof(Godot.Collections.Array))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Godot.Collections.Array>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Godot.Collections.Array>)
                 &ToGodotArray;
         }
 
         if (typeOfT == typeof(Variant))
         {
-            return (delegate* <in godot_variant, T>)(delegate* <in godot_variant, Variant>)
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Variant>)
                 &ToVariant;
         }
 
