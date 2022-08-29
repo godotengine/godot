@@ -3031,7 +3031,7 @@ String Viewport::get_configuration_warning() const {
 		warning += TTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything.");
 	}
 
-	if (hdr && (usage == USAGE_2D || usage == USAGE_2D_NO_SAMPLING)) {
+	if (!VisualServer::get_singleton()->is_low_end() && hdr && (usage == USAGE_2D || usage == USAGE_2D_NO_SAMPLING)) {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
