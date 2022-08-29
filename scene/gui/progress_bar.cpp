@@ -36,7 +36,7 @@ Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
 	minimum_size.height = MAX(minimum_size.height, theme_cache.fill_style->get_minimum_size().height);
 	minimum_size.width = MAX(minimum_size.width, theme_cache.fill_style->get_minimum_size().width);
-	if (percent_visible) {
+	if (show_percentage) {
 		String txt = "100%";
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
@@ -102,7 +102,7 @@ void ProgressBar::_notification(int p_what) {
 					break;
 			}
 
-			if (percent_visible) {
+			if (show_percentage) {
 				String txt = TS->format_number(itos(int(get_as_ratio() * 100))) + TS->percent_sign();
 				TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 				Vector2 text_pos = (Point2(get_size().width - tl.get_size().x, get_size().height - tl.get_size().y) / 2).round();
@@ -127,27 +127,27 @@ int ProgressBar::get_fill_mode() {
 	return mode;
 }
 
-void ProgressBar::set_percent_visible(bool p_visible) {
-	if (percent_visible == p_visible) {
+void ProgressBar::set_show_percentage(bool p_visible) {
+	if (show_percentage == p_visible) {
 		return;
 	}
-	percent_visible = p_visible;
+	show_percentage = p_visible;
 	update_minimum_size();
 	queue_redraw();
 }
 
-bool ProgressBar::is_percent_visible() const {
-	return percent_visible;
+bool ProgressBar::is_percentage_shown() const {
+	return show_percentage;
 }
 
 void ProgressBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fill_mode", "mode"), &ProgressBar::set_fill_mode);
 	ClassDB::bind_method(D_METHOD("get_fill_mode"), &ProgressBar::get_fill_mode);
-	ClassDB::bind_method(D_METHOD("set_percent_visible", "visible"), &ProgressBar::set_percent_visible);
-	ClassDB::bind_method(D_METHOD("is_percent_visible"), &ProgressBar::is_percent_visible);
+	ClassDB::bind_method(D_METHOD("set_show_percentage", "visible"), &ProgressBar::set_show_percentage);
+	ClassDB::bind_method(D_METHOD("is_percentage_shown"), &ProgressBar::is_percentage_shown);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_mode", PROPERTY_HINT_ENUM, "Begin to End,End to Begin,Top to Bottom,Bottom to Top"), "set_fill_mode", "get_fill_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "percent_visible"), "set_percent_visible", "is_percent_visible");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_percentage"), "set_show_percentage", "is_percentage_shown");
 
 	BIND_ENUM_CONSTANT(FILL_BEGIN_TO_END);
 	BIND_ENUM_CONSTANT(FILL_END_TO_BEGIN);
