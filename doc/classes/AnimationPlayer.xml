@@ -67,7 +67,7 @@
 			<return type="Animation" />
 			<argument index="0" name="name" type="String" />
 			<description>
-				Returns the [Animation] with key [code]name[/code] or [code]null[/code] if not found.
+				Returns the [Animation] with the key [code]name[/code]. If the animation does not exist, [code]null[/code] is returned and an error is logged.
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
