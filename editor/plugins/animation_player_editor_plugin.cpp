@@ -39,6 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
@@ -167,6 +168,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	String current = animation->get_item_text(animation->get_selected());
 	if (player->get_autoplay() == current) {
 		//unset
@@ -383,6 +385,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	if (current.contains("/")) {
 		current = current.get_slice("/", 1);
 	}
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -458,6 +461,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (name_dialog_op) {
 		case TOOL_RENAME_ANIM: {
 			String current = animation->get_item_text(animation->get_selected());
@@ -592,6 +596,7 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	String current = animation->get_item_text(animation->get_selected());
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Blend Next Changed"));
 	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
 	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
@@ -678,6 +683,7 @@ void AnimationPlayerEditor::_blend_edited() {
 	float blend_time = selected->get_range(1);
 	float prev_blend_time = player->get_blend_time(current, to);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Change Blend Time"));
 	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
 	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
@@ -982,10 +988,6 @@ void AnimationPlayerEditor::_update_name_dialog_library_dropdown() {
 	} else {
 		library->hide();
 	}
-}
-
-void AnimationPlayerEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
 }
 
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
@@ -1894,7 +1896,6 @@ void AnimationPlayerEditorPlugin::_update_keying() {
 }
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {
-	anim_editor->set_undo_redo(get_undo_redo());
 	if (!p_object) {
 		return;
 	}
@@ -1915,7 +1916,6 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	anim_editor->set_undo_redo(EditorNode::get_undo_redo());
 	EditorNode::get_singleton()->add_bottom_panel_item(TTR("Animation"), anim_editor);
 }
 

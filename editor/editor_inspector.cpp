@@ -39,6 +39,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
 #include "scene/gui/center_container.h"
@@ -1698,6 +1699,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	} else {
 		action_name = vformat("Move element %d to position %d in property array with prefix %s.", p_element_index, p_to_pos, array_element_prefix);
 	}
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(action_name);
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		// Call the function.
@@ -1841,6 +1843,7 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 }
 
 void EditorInspectorArray::_clear_array() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat("Clear property array with prefix %s.", array_element_prefix));
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		for (int i = count - 1; i >= 0; i--) {
@@ -1893,6 +1896,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 		return;
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat("Resize property array with prefix %s.", array_element_prefix));
 	if (p_size > count) {
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
@@ -2242,10 +2246,6 @@ void EditorInspectorArray::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
-void EditorInspectorArray::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
-}
-
 void EditorInspectorArray::setup_with_move_element_function(Object *p_object, String p_label, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable, bool p_numbered, int p_page_length, const String &p_add_item_text) {
 	count_property = "";
 	mode = MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION;
@@ -2506,10 +2506,6 @@ Button *EditorInspector::create_inspector_action_button(const String &p_text) {
 	button->set_theme_type_variation(SNAME("InspectorActionButton"));
 	button->set_h_size_flags(SIZE_SHRINK_CENTER);
 	return button;
-}
-
-void EditorInspector::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
 }
 
 String EditorInspector::get_selected_path() const {
@@ -3077,7 +3073,6 @@ void EditorInspector::update_tree() {
 				int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 				editor_inspector_array->setup_with_move_element_function(object, array_label, array_element_prefix, page, c, use_folding);
 				editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
-				editor_inspector_array->set_undo_redo(undo_redo);
 			} else if (p.type == Variant::INT) {
 				// Setup the array to use the count property and built-in functions to create/move/delete elements.
 				if (class_name_components.size() >= 2) {
@@ -3087,8 +3082,6 @@ void EditorInspector::update_tree() {
 
 					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, numbered, page_size, add_button_text, swap_method);
 					editor_inspector_array->connect("page_change_request", callable_mp(this, &EditorInspector::_page_change_request).bind(array_element_prefix));
-
-					editor_inspector_array->set_undo_redo(undo_redo);
 				}
 			}
 
@@ -3565,6 +3558,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (!undo_redo.is_valid() || bool(object->call("_dont_undo_redo"))) {
 		object->set(p_name, p_value);
 		if (p_refresh_all) {
@@ -3685,6 +3679,7 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 		}
 		names += p_paths[i];
 	}
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
 	for (int i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
@@ -3719,6 +3714,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 
 	if (p_path.begins_with("metadata/")) {
 		String name = p_path.replace_first("metadata/", "");
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(vformat(TTR("Remove metadata %s"), name));
 		undo_redo->add_do_method(object, "remove_meta", name);
 		undo_redo->add_undo_method(object, "set_meta", name, object->get_meta(name));
@@ -3784,6 +3780,7 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 	Node *node = Object::cast_to<Node>(object);
 	ERR_FAIL_COND(!node);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (undo_redo.is_valid()) {
 		undo_redo->create_action(vformat(p_pinned ? TTR("Pinned %s") : TTR("Unpinned %s"), p_path));
 		undo_redo->add_do_method(node, "_set_property_pinned", p_path, p_pinned);
@@ -3981,6 +3978,7 @@ void EditorInspector::_add_meta_confirm() {
 	Variant defval;
 	Callable::CallError ce;
 	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
 	undo_redo->add_do_method(object, "set_meta", name, defval);
 	undo_redo->add_undo_method(object, "remove_meta", name);
