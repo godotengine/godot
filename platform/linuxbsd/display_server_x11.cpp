@@ -1522,11 +1522,15 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 
 		XSetTransientForHint(x11_display, wd_window.x11_window, None);
 
+		XWindowAttributes xwa;
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, wd_parent.x11_window, &xwa);
+
 		// Set focus to parent sub window to avoid losing all focus when closing a nested sub-menu.
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
 		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
-			if (!wd_parent.no_focus && !wd_window.is_popup) {
+			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup) {
 				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
 			}
 		}
@@ -3646,10 +3650,14 @@ void DisplayServerX11::process_events() {
 
 				const WindowData &wd = windows[window_id];
 
+				XWindowAttributes xwa;
+				XSync(x11_display, False);
+				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if (!wd.no_focus && !wd.is_popup) {
+				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
 					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 				}
 			} break;
