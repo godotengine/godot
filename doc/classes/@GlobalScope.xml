@@ -1323,6 +1323,9 @@
 		<member name="TextServerManager" type="TextServerManager" setter="" getter="">
 			The [TextServerManager] singleton.
 		</member>
+		<member name="ThemeDB" type="ThemeDB" setter="" getter="">
+			The [ThemeDB] singleton.
+		</member>
 		<member name="Time" type="Time" setter="" getter="">
 			The [Time] singleton.
 		</member>
