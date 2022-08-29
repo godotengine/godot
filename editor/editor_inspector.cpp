@@ -2175,6 +2175,7 @@ bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant
 
 void EditorInspectorArray::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Color color = get_theme_color(SNAME("dark_color_1"), SNAME("Editor"));
 			odd_style->set_bg_color(color.darkened(-0.08));
@@ -2368,6 +2369,7 @@ void EditorPaginator::update(int p_page, int p_max_page) {
 
 void EditorPaginator::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			first_page_button->set_icon(get_theme_icon(SNAME("PageFirst"), SNAME("EditorIcons")));
 			prev_page_button->set_icon(get_theme_icon(SNAME("PagePrevious"), SNAME("EditorIcons")));

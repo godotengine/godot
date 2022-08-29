@@ -91,8 +91,8 @@ void Polygon2DEditor::_notification(int p_what) {
 
 			uv_vscroll->set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE);
 			uv_hscroll->set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE);
-		} break;
-
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
 			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));

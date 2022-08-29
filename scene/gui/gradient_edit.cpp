@@ -292,8 +292,8 @@ void GradientEdit::_notification(int p_what) {
 			if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
 				picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
 			}
-		} break;
-
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			draw_spacing = BASE_SPACING * get_theme_default_base_scale();
 			draw_point_width = BASE_POINT_WIDTH * get_theme_default_base_scale();

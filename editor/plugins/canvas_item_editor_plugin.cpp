@@ -5856,21 +5856,26 @@ Node *CanvasItemEditorViewport::_make_texture_node_type(String texture_node_type
 	return node;
 }
 
+void CanvasItemEditorViewport::_update_theme() {
+	List<BaseButton *> btn_list;
+	button_group->get_buttons(&btn_list);
+
+	for (int i = 0; i < btn_list.size(); i++) {
+		CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
+		check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
+	}
+
+	label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+}
+
 void CanvasItemEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			List<BaseButton *> btn_list;
-			button_group->get_buttons(&btn_list);
-
-			for (int i = 0; i < btn_list.size(); i++) {
-				CheckBox *check = Object::cast_to<CheckBox>(btn_list[i]);
-				check->set_icon(get_theme_icon(check->get_text(), SNAME("EditorIcons")));
-			}
-
-			label->add_theme_color_override("font_color", get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
+			_update_theme();
 			connect("mouse_exited", callable_mp(this, &CanvasItemEditorViewport::_on_mouse_exit));
 		} break;
 

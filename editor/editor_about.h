@@ -62,6 +62,8 @@ private:
 	RichTextLabel *_tpl_text = nullptr;
 	TextureRect *_logo = nullptr;
 
+	void _theme_changed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

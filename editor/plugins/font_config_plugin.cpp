@@ -152,6 +152,7 @@ bool EditorPropertyFontOTObject::_property_get_revert(const StringName &p_name, 
 
 void EditorPropertyFontMetaOverride::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (Object::cast_to<Button>(button_add)) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -379,6 +380,14 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 /* EditorPropertyOTVariation                                             */
 /*************************************************************************/
 
+void EditorPropertyOTVariation::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+		} break;
+	}
+}
+
 void EditorPropertyOTVariation::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
 		Dictionary dict = object->get_dict();
@@ -538,6 +547,7 @@ EditorPropertyOTVariation::EditorPropertyOTVariation() {
 
 void EditorPropertyOTFeatures::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (Object::cast_to<Button>(button_add)) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));

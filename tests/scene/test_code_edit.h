@@ -2943,10 +2943,6 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_code_completion_enabled(true);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
 
-			// Need to flush here since `NOTIFICATION_THEME_CHANGED` is called deferred from `NOTIFICATION_ENTER_TREE`,
-			// and `update_code_completion_options` requires access to the theme's font size.
-			MessageQueue::get_singleton()->flush();
-
 			code_edit->update_code_completion_options();
 			code_edit->set_code_completion_selected_index(1);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);

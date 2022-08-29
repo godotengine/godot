@@ -1345,6 +1345,10 @@ void SceneTreeDialog::popup_scenetree_dialog() {
 	popup_centered_clamped(Size2(350, 700) * EDSCALE);
 }
 
+void SceneTreeDialog::_update_theme() {
+	filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+}
+
 void SceneTreeDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1355,10 +1359,11 @@ void SceneTreeDialog::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &SceneTreeDialog::_select));
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			filter->set_right_icon(tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {

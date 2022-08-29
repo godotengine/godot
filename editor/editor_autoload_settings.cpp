@@ -59,6 +59,7 @@ void EditorAutoloadSettings::_notification(int p_what) {
 					get_tree()->get_root()->call_deferred(SNAME("add_child"), info.node);
 				}
 			}
+			browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

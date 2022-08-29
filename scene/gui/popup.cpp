@@ -240,7 +240,8 @@ void PopupPanel::_notification(int p_what) {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_READY: {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
 			_update_child_rects();
 		} break;

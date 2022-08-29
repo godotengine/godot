@@ -139,6 +139,7 @@ class EditorPropertyOTVariation : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods(){};
 
 	void _edit_pressed();

@@ -1716,6 +1716,7 @@ void VisualShaderEditor::_update_graph() {
 
 	graph_plugin->clear_links();
 	graph_plugin->make_dirty(true);
+	graph_plugin->update_theme();
 
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
 		graph_plugin->add_node(type, nodes[n_i]);
@@ -3703,11 +3704,9 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EditorSettings::get_singleton()->get("editors/panning/simple_panning")));
 			graph->set_warped_panning(bool(EditorSettings::get_singleton()->get("editors/panning/warped_mouse_panning")));
-		} break;
-
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
-			graph_plugin->update_theme();
-
 			highend_label->set_modulate(get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
 
 			node_filter->set_right_icon(Control::get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -3760,7 +3759,7 @@ void VisualShaderEditor::_notification(int p_what) {
 
 			tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Tools"), SNAME("EditorIcons")));
 
-			if (is_visible_in_tree()) {
+			if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree()) {
 				_update_graph();
 			}
 		} break;

@@ -145,6 +145,7 @@ class EditorHelp : public VBoxContainer {
 
 	int scroll_to = -1;
 
+	void _update_theme();
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);

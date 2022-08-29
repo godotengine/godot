@@ -424,6 +424,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 void GraphEdit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			port_hotzone_inner_extent = get_theme_constant("port_hotzone_inner_extent");
 			port_hotzone_outer_extent = get_theme_constant("port_hotzone_outer_extent");

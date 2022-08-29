@@ -167,7 +167,8 @@ void EditorPropertyMultilineText::update_property() {
 
 void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			Ref<Texture2D> df = get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons"));
 			open_big_text->set_icon(df);
 
@@ -321,6 +322,7 @@ void EditorPropertyTextEnum::_bind_methods() {
 
 void EditorPropertyTextEnum::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			accept_button->set_icon(get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons")));
@@ -402,6 +404,7 @@ void EditorPropertyLocale::setup(const String &p_hint_text) {
 
 void EditorPropertyLocale::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			locale_edit->set_icon(get_theme_icon(SNAME("Translation"), SNAME("EditorIcons")));
 		} break;
@@ -497,6 +500,7 @@ void EditorPropertyPath::set_save_mode() {
 
 void EditorPropertyPath::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			path_edit->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 		} break;
@@ -1149,6 +1153,7 @@ void EditorPropertyLayersGrid::_bind_methods() {
 
 void EditorPropertyLayers::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button->set_normal_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			button->set_pressed_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
@@ -1672,7 +1677,8 @@ void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
 
 void EditorPropertyEasing::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			preset->clear();
 			preset->add_icon_item(get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")), "Linear", EASING_LINEAR);
 			preset->add_icon_item(get_theme_icon(SNAME("CurveIn"), SNAME("EditorIcons")), "Ease In", EASING_IN);
@@ -1769,6 +1775,7 @@ void EditorPropertyVector2::_update_ratio() {
 
 void EditorPropertyVector2::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -1878,6 +1885,7 @@ void EditorPropertyRect2::update_property() {
 
 void EditorPropertyRect2::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2045,6 +2053,7 @@ Vector3 EditorPropertyVector3::get_vector() {
 
 void EditorPropertyVector3::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -2179,6 +2188,7 @@ void EditorPropertyVector2i::_update_ratio() {
 
 void EditorPropertyVector2i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -2288,6 +2298,7 @@ void EditorPropertyRect2i::update_property() {
 
 void EditorPropertyRect2i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2428,6 +2439,7 @@ void EditorPropertyVector3i::_update_ratio() {
 
 void EditorPropertyVector3i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -2539,6 +2551,7 @@ void EditorPropertyPlane::update_property() {
 
 void EditorPropertyPlane::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2692,6 +2705,7 @@ void EditorPropertyQuaternion::_warning_pressed() {
 
 void EditorPropertyQuaternion::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2846,6 +2860,7 @@ void EditorPropertyVector4::update_property() {
 
 void EditorPropertyVector4::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2937,6 +2952,7 @@ void EditorPropertyVector4i::update_property() {
 
 void EditorPropertyVector4i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -3031,6 +3047,7 @@ void EditorPropertyAABB::update_property() {
 
 void EditorPropertyAABB::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 6; i++) {
@@ -3113,6 +3130,7 @@ void EditorPropertyTransform2D::update_property() {
 
 void EditorPropertyTransform2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 6; i++) {
@@ -3209,6 +3227,7 @@ void EditorPropertyBasis::update_property() {
 
 void EditorPropertyBasis::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 9; i++) {
@@ -3306,6 +3325,7 @@ void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) 
 
 void EditorPropertyTransform3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 12; i++) {
@@ -3411,6 +3431,7 @@ void EditorPropertyProjection::update_using_transform(Projection p_transform) {
 
 void EditorPropertyProjection::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 16; i++) {
@@ -3481,6 +3502,7 @@ void EditorPropertyColor::_picker_opening() {
 
 void EditorPropertyColor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
 		} break;
@@ -3704,6 +3726,7 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 
 void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
 			clear->set_icon(t);
@@ -4115,6 +4138,7 @@ void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
 
 void EditorPropertyResource::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (!updating_theme) {
 				_update_property_bg();

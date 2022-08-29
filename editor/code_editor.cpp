@@ -1740,6 +1740,10 @@ void CodeTextEditor::_update_status_bar_theme() {
 
 void CodeTextEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			_update_status_bar_theme();
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_status_bar_theme();
 			if (toggle_scripts_button->is_visible()) {

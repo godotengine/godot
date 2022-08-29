@@ -876,6 +876,7 @@ void DynamicFontImportSettings::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &DynamicFontImportSettings::_re_import));
 		} break;
 
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			add_var->set_icon(add_var->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;

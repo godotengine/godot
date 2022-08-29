@@ -46,6 +46,7 @@
 
 void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			select_node_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 			node_type_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
