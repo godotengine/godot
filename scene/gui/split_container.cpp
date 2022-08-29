@@ -67,9 +67,51 @@ Ref<Texture2D> SplitContainer::_get_grabber_icon() const {
 	}
 }
 
-void SplitContainer::_resort() {
-	int axis = vertical ? 1 : 0;
+void SplitContainer::_compute_middle_sep(bool p_clamp) {
+	Control *first = _getch(0);
+	Control *second = _getch(1);
 
+	// Determine expanded children.
+	bool first_expanded = (vertical ? first->get_v_size_flags() : first->get_h_size_flags()) & SIZE_EXPAND;
+	bool second_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
+
+	// Compute the minimum size.
+	int axis = vertical ? 1 : 0;
+	int size = get_size()[axis];
+	int ms_first = first->get_combined_minimum_size()[axis];
+	int ms_second = second->get_combined_minimum_size()[axis];
+
+	// Determine the separation between items.
+	Ref<Texture2D> g = get_theme_icon(SNAME("grabber"));
+	int sep = get_theme_constant(SNAME("separation"));
+	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
+
+	// Compute the wished separation_point.
+	int wished_middle_sep = 0;
+	int split_offset_with_collapse = 0;
+	if (!collapsed) {
+		split_offset_with_collapse = split_offset;
+	}
+	if (first_expanded && second_expanded) {
+		float ratio = first->get_stretch_ratio() / (first->get_stretch_ratio() + second->get_stretch_ratio());
+		wished_middle_sep = size * ratio - sep / 2 + split_offset_with_collapse;
+	} else if (first_expanded) {
+		wished_middle_sep = size - sep + split_offset_with_collapse;
+	} else {
+		wished_middle_sep = split_offset_with_collapse;
+	}
+
+	// Clamp the middle sep to acceptatble values.
+	middle_sep = CLAMP(wished_middle_sep, ms_first, size - sep - ms_second);
+
+	// Clamp the split_offset if requested.
+	if (p_clamp) {
+		split_offset -= wished_middle_sep - middle_sep;
+		p_clamp = false;
+	}
+}
+
+void SplitContainer::_resort() {
 	Control *first = _getch(0);
 	Control *second = _getch(1);
 
@@ -83,40 +125,11 @@ void SplitContainer::_resort() {
 		return;
 	}
 
-	// Determine expanded children
-	bool first_expanded = (vertical ? first->get_v_size_flags() : first->get_h_size_flags()) & SIZE_EXPAND;
-	bool second_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
+	// If we have more that one.
+	_compute_middle_sep(false);
 
-	// Determine the separation between items
 	Ref<Texture2D> g = _get_grabber_icon();
 	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
-
-	// Compute the minimum size
-	Size2 ms_first = first->get_combined_minimum_size();
-	Size2 ms_second = second->get_combined_minimum_size();
-
-	// Compute the separator position without the split offset
-	float ratio = first->get_stretch_ratio() / (first->get_stretch_ratio() + second->get_stretch_ratio());
-	int no_offset_middle_sep = 0;
-	if (first_expanded && second_expanded) {
-		no_offset_middle_sep = get_size()[axis] * ratio - sep / 2;
-	} else if (first_expanded) {
-		no_offset_middle_sep = get_size()[axis] - ms_second[axis] - sep;
-	} else {
-		no_offset_middle_sep = ms_first[axis];
-	}
-
-	// Compute the final middle separation.
-	middle_sep = no_offset_middle_sep;
-	if (!collapsed) {
-		int clamped_split_offset = CLAMP(split_offset, ms_first[axis] - no_offset_middle_sep, (get_size()[axis] - ms_second[axis] - sep) - no_offset_middle_sep);
-		middle_sep += clamped_split_offset;
-		if (should_clamp_split_offset) {
-			split_offset = clamped_split_offset;
-
-			should_clamp_split_offset = false;
-		}
-	}
 
 	if (vertical) {
 		fit_child_in_rect(first, Rect2(Point2(0, 0), Size2(get_size().width, middle_sep)));
@@ -248,12 +261,14 @@ void SplitContainer::gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 				if (vertical) {
 					if (mb->get_position().y > middle_sep && mb->get_position().y < middle_sep + theme_cache.separation) {
+						_compute_middle_sep(true);
 						dragging = true;
 						drag_from = mb->get_position().y;
 						drag_ofs = split_offset;
 					}
 				} else {
 					if (mb->get_position().x > middle_sep && mb->get_position().x < middle_sep + theme_cache.separation) {
+						_compute_middle_sep(true);
 						dragging = true;
 						drag_from = mb->get_position().x;
 						drag_ofs = split_offset;
@@ -287,11 +302,11 @@ void SplitContainer::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (!vertical && is_layout_rtl()) {
-			split_offset = drag_ofs + (drag_from - (vertical ? mm->get_position().y : mm->get_position().x));
+			split_offset = drag_ofs - ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
 		} else {
 			split_offset = drag_ofs + ((vertical ? mm->get_position().y : mm->get_position().x) - drag_from);
 		}
-		should_clamp_split_offset = true;
+		_compute_middle_sep(true);
 		queue_sort();
 		emit_signal(SNAME("dragged"), get_split_offset());
 	}
@@ -332,8 +347,11 @@ int SplitContainer::get_split_offset() const {
 }
 
 void SplitContainer::clamp_split_offset() {
-	should_clamp_split_offset = true;
+	if (!_getch(0) || !_getch(1)) {
+		return;
+	}
 
+	_compute_middle_sep(true);
 	queue_sort();
 }
 
