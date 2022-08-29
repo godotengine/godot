@@ -36,6 +36,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_undo_redo_manager.h"
 
 void ResourcePreloaderEditor::_notification(int p_what) {
 	switch (p_what) {

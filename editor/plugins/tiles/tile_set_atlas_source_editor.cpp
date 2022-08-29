@@ -33,7 +33,9 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_inspector.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/progress_dialog.h"
 
 #include "editor/editor_node.h"
@@ -1310,6 +1312,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 }
 
 void TileSetAtlasSourceEditor::_end_dragging() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	switch (drag_type) {
 		case DRAG_TYPE_CREATE_TILES:
 			undo_redo->create_action(TTR("Create tiles"));
@@ -1540,6 +1543,8 @@ HashMap<Vector2i, List<const PropertyInfo *>> TileSetAtlasSourceEditor::_group_p
 }
 
 void TileSetAtlasSourceEditor::_menu_option(int p_option) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+
 	switch (p_option) {
 		case TILE_DELETE: {
 			List<PropertyInfo> list;
@@ -2198,6 +2203,7 @@ void TileSetAtlasSourceEditor::_auto_create_tiles() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Create tiles in non-transparent texture regions"));
 		for (int y = 0; y < grid_size.y; y++) {
 			for (int x = 0; x < grid_size.x; x++) {
@@ -2243,6 +2249,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Remove tiles in fully transparent texture regions"));
 
 		List<PropertyInfo> list;
@@ -2336,8 +2343,6 @@ void TileSetAtlasSourceEditor::_bind_methods() {
 }
 
 TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	set_process_unhandled_key_input(true);
 	set_process_internal(true);
 
@@ -2366,7 +2371,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 
 	tile_inspector = memnew(EditorInspector);
-	tile_inspector->set_undo_redo(undo_redo);
 	tile_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
@@ -2414,7 +2418,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed));
 
 	atlas_source_inspector = memnew(EditorInspector);
-	atlas_source_inspector->set_undo_redo(undo_redo);
 	atlas_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
 	middle_vbox_container->add_child(atlas_source_inspector);

@@ -37,8 +37,6 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
-class EditorUndoRedoManager;
-
 class SceneTreeEditor : public Control {
 	GDCLASS(SceneTreeEditor, Control);
 
@@ -98,9 +96,9 @@ class SceneTreeEditor : public Control {
 	bool can_open_instance;
 	bool updating_tree = false;
 	bool show_enabled_subscene = false;
+	bool is_scene_tree_dock = false;
 
 	void _renamed();
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	HashSet<Node *> marked;
 	bool marked_selectable = false;
@@ -145,7 +143,7 @@ public:
 	String get_filter() const;
 	String get_filter_term_warning();
 
-	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
+	void set_as_scene_tree_dock();
 	void set_display_foreign_nodes(bool p_display);
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);

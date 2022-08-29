@@ -132,6 +132,7 @@ void EditorSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_method_notify_callback(EditorDebuggerNode::_method_changeds, nullptr);
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_property_notify_callback(EditorDebuggerNode::_property_changeds, nullptr);
 			undo_redo->get_or_create_history(EditorUndoRedoManager::GLOBAL_HISTORY).undo_redo->set_commit_notify_callback(_undo_redo_callback, this);
@@ -158,9 +159,9 @@ void EditorSettingsDialog::_notification(int p_what) {
 
 void EditorSettingsDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 
 	const Ref<InputEventKey> k = p_event;
-
 	if (k.is_valid() && k->is_pressed()) {
 		bool handled = false;
 
@@ -229,6 +230,7 @@ void EditorSettingsDialog::_event_config_confirmed() {
 void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Array &p_events) {
 	Array old_input_array = EditorSettings::get_singleton()->get_builtin_action_overrides(p_name);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Edit Built-in Action") + " '" + p_name + "'");
 	undo_redo->add_do_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
 	undo_redo->add_undo_method(EditorSettings::get_singleton(), "mark_setting_changed", "builtin_action_overrides");
@@ -244,6 +246,7 @@ void EditorSettingsDialog::_update_builtin_action(const String &p_name, const Ar
 void EditorSettingsDialog::_update_shortcut_events(const String &p_path, const Array &p_events) {
 	Ref<Shortcut> current_sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Edit Shortcut") + " '" + p_path + "'");
 	undo_redo->add_do_method(current_sc.ptr(), "set_events", p_events);
 	undo_redo->add_undo_method(current_sc.ptr(), "set_events", current_sc->get_events());
@@ -697,8 +700,6 @@ void EditorSettingsDialog::_bind_methods() {
 EditorSettingsDialog::EditorSettingsDialog() {
 	set_title(TTR("Editor Settings"));
 
-	undo_redo = EditorNode::get_undo_redo();
-
 	tabs = memnew(TabContainer);
 	tabs->set_theme_type_variation("TabContainerOdd");
 	tabs->connect("tab_changed", callable_mp(this, &EditorSettingsDialog::_tabs_tab_changed));
@@ -723,7 +724,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	inspector->get_inspector()->set_use_filter(true);
 	inspector->register_search_box(search_box);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	inspector->get_inspector()->set_undo_redo(undo_redo);
 	tab_general->add_child(inspector);
 	inspector->get_inspector()->connect("property_edited", callable_mp(this, &EditorSettingsDialog::_settings_property_edited));
 	inspector->get_inspector()->connect("restart_requested", callable_mp(this, &EditorSettingsDialog::_editor_restart_request));

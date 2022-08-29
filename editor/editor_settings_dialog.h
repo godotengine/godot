@@ -40,8 +40,6 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 
-class EditorUndoRedoManager;
-
 class EditorSettingsDialog : public AcceptDialog {
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
@@ -74,8 +72,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	int current_event_index = -1;
 
 	Timer *timer = nullptr;
-
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	virtual void cancel_pressed() override;
 	virtual void ok_pressed() override;

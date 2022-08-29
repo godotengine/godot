@@ -86,7 +86,7 @@ protected:
 			return false;
 		}
 
-		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);

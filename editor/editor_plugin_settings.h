@@ -31,7 +31,6 @@
 #ifndef EDITOR_PLUGIN_SETTINGS_H
 #define EDITOR_PLUGIN_SETTINGS_H
 
-#include "core/object/undo_redo.h"
 #include "editor/editor_data.h"
 #include "editor/plugin_config_dialog.h"
 

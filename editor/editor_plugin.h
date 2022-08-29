@@ -32,7 +32,6 @@
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "core/object/undo_redo.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_translation_parser.h"
@@ -134,7 +133,6 @@ public:
 class EditorPlugin : public Node {
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	Ref<EditorUndoRedoManager> undo_redo;
 
 	bool input_event_forwarding_always_enabled = false;
 	bool force_draw_over_forwarding_enabled = false;

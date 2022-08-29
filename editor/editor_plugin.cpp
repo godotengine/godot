@@ -967,7 +967,7 @@ void EditorPlugin::_bind_methods() {
 }
 
 Ref<EditorUndoRedoManager> EditorPlugin::get_undo_redo() {
-	return undo_redo;
+	return EditorNode::get_undo_redo();
 }
 
 EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];

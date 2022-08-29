@@ -4062,7 +4062,7 @@ void VisualShaderEditor::_input_select_item(Ref<VisualShaderNodeInput> p_input, 
 
 	bool type_changed = next_input_type != prev_input_type;
 
-	Ref<EditorUndoRedoManager> undo_redo_man = EditorNode::get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo_man = EditorNode::get_undo_redo();
 	undo_redo_man->create_action(TTR("Visual Shader Input Type Changed"));
 
 	undo_redo_man->add_do_method(p_input.ptr(), "set_input_name", p_name);
@@ -4131,7 +4131,7 @@ void VisualShaderEditor::_parameter_ref_select_item(Ref<VisualShaderNodeParamete
 
 	bool type_changed = p_parameter_ref->get_parameter_type_by_name(p_name) != p_parameter_ref->get_parameter_type_by_name(prev_name);
 
-	Ref<EditorUndoRedoManager> undo_redo_man = EditorNode::get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo_man = EditorNode::get_undo_redo();
 	undo_redo_man->create_action(TTR("ParameterRef Name Changed"));
 
 	undo_redo_man->add_do_method(p_parameter_ref.ptr(), "set_parameter_name", p_name);
@@ -4175,7 +4175,7 @@ void VisualShaderEditor::_varying_select_item(Ref<VisualShaderNodeVarying> p_var
 
 	bool is_getter = Ref<VisualShaderNodeVaryingGetter>(p_varying.ptr()).is_valid();
 
-	Ref<EditorUndoRedoManager> undo_redo_man = EditorNode::get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo_man = EditorNode::get_undo_redo();
 	undo_redo_man->create_action(TTR("Varying Name Changed"));
 
 	undo_redo_man->add_do_method(p_varying.ptr(), "set_varying_name", p_name);
@@ -5892,7 +5892,7 @@ public:
 			return;
 		}
 
-		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 
 		updating = true;
 		undo_redo->create_action(TTR("Edit Visual Property:") + " " + p_property, UndoRedo::MERGE_ENDS);
@@ -6094,7 +6094,7 @@ void EditorPropertyVisualShaderMode::_option_selected(int p_which) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Visual Shader Mode Changed"));
 	//do is easy
 	undo_redo->add_do_method(visual_shader.ptr(), "set_mode", p_which);

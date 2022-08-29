@@ -68,6 +68,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (p_id == BUTTON_SUBSCENE) {
 		if (n == get_scene_node()) {
 			if (n && n->get_scene_inherited_state().is_valid()) {
@@ -167,6 +168,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
 		bool v = bool(p_node->call("is_visible"));
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
 	}
@@ -379,8 +381,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->set_tooltip_text(0, tooltip);
 	}
 
-	if (can_open_instance && undo_redo.is_valid()) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
-
+	if (can_open_instance && is_scene_tree_dock) { // Show buttons only when necessary (SceneTreeDock) to avoid crashes.
 		if (!p_node->is_connected("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed))) {
 			p_node->connect("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed).bind(p_node));
 		}
@@ -997,11 +998,12 @@ void SceneTreeEditor::_renamed() {
 		return;
 	}
 
-	if (!undo_redo.is_valid()) {
+	if (!is_scene_tree_dock) {
 		n->set_name(new_name);
 		which->set_metadata(0, n->get_path());
 		emit_signal(SNAME("node_renamed"));
 	} else {
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal(SNAME("node_prerename"), n, new_name);
 		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
@@ -1045,8 +1047,8 @@ String SceneTreeEditor::get_filter_term_warning() {
 	return filter_term_warning;
 }
 
-void SceneTreeEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
+void SceneTreeEditor::set_as_scene_tree_dock() {
+	is_scene_tree_dock = true;
 }
 
 void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {

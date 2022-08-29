@@ -31,7 +31,6 @@
 #ifndef LOCALIZATION_EDITOR_H
 #define LOCALIZATION_EDITOR_H
 
-#include "core/object/undo_redo.h"
 #include "editor/editor_locale_dialog.h"
 #include "scene/gui/tree.h"
 
@@ -56,7 +55,6 @@ class LocalizationEditor : public VBoxContainer {
 	EditorFileDialog *pot_file_open_dialog = nullptr;
 	EditorFileDialog *pot_generate_dialog = nullptr;
 
-	Ref<EditorUndoRedoManager> undo_redo;
 	bool updating_translations = false;
 	String localization_changed;
 
