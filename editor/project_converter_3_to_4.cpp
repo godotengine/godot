@@ -1128,6 +1128,7 @@ static const char *csharp_properties_renames[][2] = {
 	//	{ "CastTo", "TargetPosition" }, // RayCast2D, RayCast3D
 	//	{ "Doubleclick", "DoubleClick" }, // InputEventMouseButton
 	//	{ "Group", "ButtonGroup" }, // BaseButton
+	//  { "PercentVisible, "ShowPercentage}, // ProgressBar, conflicts with Label and RichTextLabel, but may be a worth it.
 	//	{ "ProcessMode", "ProcessCallback" }, // AnimationTree, Camera2D
 	//	{ "Scancode", "Keycode" }, // InputEventKey
 	//	{ "Toplevel", "TopLevel" }, // Node
