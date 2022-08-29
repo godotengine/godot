@@ -171,9 +171,14 @@ void PopupMenu::_activate_submenu(int over, bool p_by_keyboard) {
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
-		// If not triggered by the mouse, start the popup with its first item selected.
-		if (pum->get_item_count() > 0 && p_by_keyboard) {
-			pum->set_current_index(0);
+		// If not triggered by the mouse, start the popup with its first enabled item focused.
+		if (p_by_keyboard) {
+			for (int i = 0; i < pum->get_item_count(); i++) {
+				if (!pum->is_item_disabled(i)) {
+					pum->set_current_index(i);
+					break;
+				}
+			}
 		}
 
 		// Setting autohide areas *must* be done after `popup()` which can move the popup (to fit it into the viewport).
@@ -1051,7 +1056,14 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 }
 
 void PopupMenu::set_current_index(int p_idx) {
-	ERR_FAIL_INDEX(p_idx, items.size());
+	if (p_idx != -1) {
+		ERR_FAIL_INDEX(p_idx, items.size());
+	}
+
+	if (mouse_over == p_idx) {
+		return;
+	}
+
 	mouse_over = p_idx;
 	update();
 }
