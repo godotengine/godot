@@ -18,6 +18,7 @@ jobs:
     # Windows 10 with latest image
     runs-on: "windows-latest"
     name: ${{ matrix.name }}
+    if: "!contains(github.event.head_commit.message, '[skip build]')"
     strategy:
       fail-fast: false
       matrix:
@@ -46,7 +47,6 @@ jobs:
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
-
 
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps

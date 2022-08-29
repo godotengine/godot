@@ -17,6 +17,7 @@ jobs:
   javascript-template:
     runs-on: "ubuntu-20.04"
     name: Template (target=release, tools=no)
+    if: "!contains(github.event.head_commit.message, '[skip build]')"
 
     steps:
       - uses: actions/checkout@v3
