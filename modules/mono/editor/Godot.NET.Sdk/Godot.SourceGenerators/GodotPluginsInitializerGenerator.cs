@@ -27,7 +27,8 @@ namespace GodotPlugins.Game
     internal static partial class Main
     {
         [UnmanagedCallersOnly(EntryPoint = ""godotsharp_game_main_init"")]
-        private static godot_bool InitializeFromGameProject(IntPtr godotDllHandle, IntPtr outManagedCallbacks)
+        private static godot_bool InitializeFromGameProject(IntPtr godotDllHandle, IntPtr outManagedCallbacks,
+            IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             try
             {
@@ -36,6 +37,8 @@ namespace GodotPlugins.Game
                 var coreApiAssembly = typeof(Godot.Object).Assembly;
 
                 NativeLibrary.SetDllImportResolver(coreApiAssembly, dllImportResolver);
+
+                NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
 
                 ManagedCallbacks.Create(outManagedCallbacks);
 
