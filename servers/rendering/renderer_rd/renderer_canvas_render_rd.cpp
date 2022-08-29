@@ -1965,8 +1965,8 @@ void RendererCanvasRenderRD::occluder_polygon_set_shape(RID p_occluder, const Ve
 
 		} else {
 			//update existing
-			RD::get_singleton()->buffer_update(oc->vertex_buffer, 0, sizeof(real_t) * 2 * p_points.size(), p_points.ptr());
-			RD::get_singleton()->buffer_update(oc->index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
+			RD::get_singleton()->buffer_update(oc->sdf_vertex_buffer, 0, sizeof(real_t) * 2 * p_points.size(), p_points.ptr());
+			RD::get_singleton()->buffer_update(oc->sdf_index_buffer, 0, sdf_indices.size() * sizeof(int32_t), sdf_indices.ptr());
 		}
 	}
 }
