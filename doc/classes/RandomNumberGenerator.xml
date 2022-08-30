@@ -19,6 +19,13 @@
 		<link title="Random number generation">$DOCS_URL/tutorials/math/random_number_generation.html</link>
 	</tutorials>
 	<methods>
+		<method name="rand_pick">
+			<return type="Variant" />
+			<param index="0" name="choices" type="Variant" />
+			<description>
+				Returns a pseudo-random element from the [param choices] array. If [param choices] is not an array, or if the array is empty, [code]null[/code] is returned and an error is logged.
+			</description>
+		</method>
 		<method name="randf">
 			<return type="float" />
 			<description>

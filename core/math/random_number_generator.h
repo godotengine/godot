@@ -57,6 +57,8 @@ public:
 	_FORCE_INLINE_ real_t randfn(real_t p_mean = 0.0, real_t p_deviation = 1.0) { return randbase.randfn(p_mean, p_deviation); }
 	_FORCE_INLINE_ int randi_range(int p_from, int p_to) { return randbase.random(p_from, p_to); }
 
+	Variant rand_pick(const Variant &p_choices);
+
 	RandomNumberGenerator() {}
 };
 

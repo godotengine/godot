@@ -42,6 +42,7 @@ void RandomNumberGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("randfn", "mean", "deviation"), &RandomNumberGenerator::randfn, DEFVAL(0.0), DEFVAL(1.0));
 	ClassDB::bind_method(D_METHOD("randf_range", "from", "to"), &RandomNumberGenerator::randf_range);
 	ClassDB::bind_method(D_METHOD("randi_range", "from", "to"), &RandomNumberGenerator::randi_range);
+	ClassDB::bind_method(D_METHOD("rand_pick", "choices"), &RandomNumberGenerator::rand_pick);
 	ClassDB::bind_method(D_METHOD("randomize"), &RandomNumberGenerator::randomize);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
@@ -49,4 +50,32 @@ void RandomNumberGenerator::_bind_methods() {
 	// Default values are non-deterministic, override for doc generation purposes.
 	ADD_PROPERTY_DEFAULT("seed", 0);
 	ADD_PROPERTY_DEFAULT("state", 0);
+}
+
+Variant RandomNumberGenerator::rand_pick(const Variant &p_choices) {
+#define PICK_RANDOM_CASE(m_variant_type, m_type)                                        \
+	case Variant::m_variant_type: {                                                     \
+		const m_type &arr = p_choices;                                                  \
+		ERR_FAIL_COND_V_MSG(arr.is_empty(), Variant(), "Can't pick from empty array."); \
+		return arr[randi() % arr.size()];                                               \
+	} break
+
+	switch (p_choices.get_type()) {
+		PICK_RANDOM_CASE(ARRAY, Array);
+		PICK_RANDOM_CASE(PACKED_BYTE_ARRAY, PackedByteArray);
+		PICK_RANDOM_CASE(PACKED_INT32_ARRAY, PackedInt32Array);
+		PICK_RANDOM_CASE(PACKED_INT64_ARRAY, PackedInt32Array);
+		PICK_RANDOM_CASE(PACKED_FLOAT32_ARRAY, PackedFloat32Array);
+		PICK_RANDOM_CASE(PACKED_FLOAT64_ARRAY, PackedFloat64Array);
+		PICK_RANDOM_CASE(PACKED_STRING_ARRAY, PackedStringArray);
+		PICK_RANDOM_CASE(PACKED_VECTOR2_ARRAY, PackedVector2Array);
+		PICK_RANDOM_CASE(PACKED_VECTOR3_ARRAY, PackedVector3Array);
+		PICK_RANDOM_CASE(PACKED_COLOR_ARRAY, PackedColorArray);
+
+		default: {
+			ERR_FAIL_V_MSG(Variant(), "Choices should be an array.");
+		}
+	}
+
+#undef PICK_RANDOM_CASE
 }

@@ -830,6 +830,13 @@
 				Random from seed: pass a [param seed], and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
 			</description>
 		</method>
+		<method name="rand_pick">
+			<return type="Variant" />
+			<param index="0" name="choices" type="Variant" />
+			<description>
+				Returns a pseudo-random element from the [param choices] array. If [param choices] is not an array, or if the array is empty, [code]null[/code] is returned and an error is logged.
+			</description>
+		</method>
 		<method name="randf">
 			<return type="float" />
 			<description>

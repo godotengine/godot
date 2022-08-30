@@ -628,6 +628,37 @@ struct VariantUtilityFunctions {
 		return arr;
 	}
 
+	static inline Variant rand_pick(const Variant &p_choices, Callable::CallError &r_error) {
+		r_error.error = Callable::CallError::CALL_OK;
+
+#define PICK_RANDOM_CASE(m_variant_type, m_type)                                        \
+	case Variant::m_variant_type: {                                                     \
+		const m_type &arr = VariantInternalAccessor<m_type>::get(&p_choices);           \
+		ERR_FAIL_COND_V_MSG(arr.is_empty(), Variant(), "Can't pick from empty array."); \
+		return arr[Math::rand() % arr.size()];                                          \
+	} break
+
+		switch (p_choices.get_type()) {
+			PICK_RANDOM_CASE(ARRAY, Array);
+			PICK_RANDOM_CASE(PACKED_BYTE_ARRAY, PackedByteArray);
+			PICK_RANDOM_CASE(PACKED_INT32_ARRAY, PackedInt32Array);
+			PICK_RANDOM_CASE(PACKED_INT64_ARRAY, PackedInt32Array);
+			PICK_RANDOM_CASE(PACKED_FLOAT32_ARRAY, PackedFloat32Array);
+			PICK_RANDOM_CASE(PACKED_FLOAT64_ARRAY, PackedFloat64Array);
+			PICK_RANDOM_CASE(PACKED_STRING_ARRAY, PackedStringArray);
+			PICK_RANDOM_CASE(PACKED_VECTOR2_ARRAY, PackedVector2Array);
+			PICK_RANDOM_CASE(PACKED_VECTOR3_ARRAY, PackedVector3Array);
+			PICK_RANDOM_CASE(PACKED_COLOR_ARRAY, PackedColorArray);
+
+			default: {
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				return Variant();
+			}
+		}
+
+#undef PICK_RANDOM_CASE
+	}
+
 	// Utility
 
 	static inline Variant weakref(const Variant &obj, Callable::CallError &r_error) {
@@ -1473,6 +1504,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(randfn, sarray("mean", "deviation"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDVR(rand_pick, sarray("choices"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 
 	// Utility
 
