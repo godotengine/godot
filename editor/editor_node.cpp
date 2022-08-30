@@ -784,6 +784,14 @@ void EditorNode::_notification(int p_what) {
 
 			_build_icon_type_cache();
 
+			if (write_movie_button->is_pressed()) {
+				launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
+				write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
+			} else {
+				launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
+				write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+			}
+
 			play_button->set_icon(gui_base->get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 			play_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayScene"), SNAME("EditorIcons")));
 			play_custom_scene_button->set_icon(gui_base->get_theme_icon(SNAME("PlayCustom"), SNAME("EditorIcons")));
@@ -2403,6 +2411,16 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 	}
 
 	InspectorDock::get_singleton()->update(current_obj);
+}
+
+void EditorNode::_write_movie_toggled(bool p_enabled) {
+	if (p_enabled) {
+		launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadMovieMode"), SNAME("EditorStyles")));
+		write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonPressed"), SNAME("EditorStyles")));
+	} else {
+		launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
+		write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+	}
 }
 
 void EditorNode::_run(bool p_current, const String &p_custom) {
@@ -6825,12 +6843,16 @@ EditorNode::EditorNode() {
 	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	menu_hb->add_child(right_spacer);
 
-	HBoxContainer *play_hb = memnew(HBoxContainer);
-	menu_hb->add_child(play_hb);
+	launch_pad = memnew(PanelContainer);
+	launch_pad->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("LaunchPadNormal"), SNAME("EditorStyles")));
+	menu_hb->add_child(launch_pad);
+
+	HBoxContainer *launch_pad_hb = memnew(HBoxContainer);
+	launch_pad->add_child(launch_pad_hb);
 
 	play_button = memnew(Button);
 	play_button->set_flat(true);
-	play_hb->add_child(play_button);
+	launch_pad_hb->add_child(play_button);
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY));
@@ -6846,7 +6868,7 @@ EditorNode::EditorNode() {
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->set_tooltip_text(TTR("Pause the scene execution for debugging."));
 	pause_button->set_disabled(true);
-	play_hb->add_child(pause_button);
+	launch_pad_hb->add_child(pause_button);
 
 	ED_SHORTCUT("editor/pause_scene", TTR("Pause Scene"), Key::F7);
 	ED_SHORTCUT_OVERRIDE("editor/pause_scene", "macos", KeyModifierMask::CMD | KeyModifierMask::CTRL | Key::Y);
@@ -6854,7 +6876,7 @@ EditorNode::EditorNode() {
 
 	stop_button = memnew(Button);
 	stop_button->set_flat(true);
-	play_hb->add_child(stop_button);
+	launch_pad_hb->add_child(stop_button);
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_STOP));
@@ -6866,12 +6888,12 @@ EditorNode::EditorNode() {
 	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop"));
 
 	run_native = memnew(EditorRunNative);
-	play_hb->add_child(run_native);
+	launch_pad_hb->add_child(run_native);
 	run_native->connect("native_run", callable_mp(this, &EditorNode::_run_native));
 
 	play_scene_button = memnew(Button);
 	play_scene_button->set_flat(true);
-	play_hb->add_child(play_scene_button);
+	launch_pad_hb->add_child(play_scene_button);
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_SCENE));
@@ -6882,7 +6904,7 @@ EditorNode::EditorNode() {
 
 	play_custom_scene_button = memnew(Button);
 	play_custom_scene_button->set_flat(true);
-	play_hb->add_child(play_custom_scene_button);
+	launch_pad_hb->add_child(play_custom_scene_button);
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_CUSTOM_SCENE));
@@ -6893,18 +6915,23 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/play_custom_scene", "macos", KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::R);
 	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_custom_scene"));
 
+	write_movie_panel = memnew(PanelContainer);
+	write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
+	launch_pad_hb->add_child(write_movie_panel);
+
 	write_movie_button = memnew(Button);
 	write_movie_button->set_flat(true);
 	write_movie_button->set_toggle_mode(true);
-	play_hb->add_child(write_movie_button);
+	write_movie_panel->add_child(write_movie_button);
 	write_movie_button->set_pressed(false);
 	write_movie_button->set_icon(gui_base->get_theme_icon(SNAME("MainMovieWrite"), SNAME("EditorIcons")));
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
+	write_movie_button->connect("toggled", callable_mp(this, &EditorNode::_write_movie_toggled));
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 
 	// This button behaves differently, so color it as such.
 	write_movie_button->add_theme_color_override("icon_normal_color", Color(1, 1, 1, 0.7));
-	write_movie_button->add_theme_color_override("icon_pressed_color", gui_base->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	write_movie_button->add_theme_color_override("icon_pressed_color", Color(0, 0, 0, 0.84));
 	write_movie_button->add_theme_color_override("icon_hover_color", Color(1, 1, 1, 0.9));
 
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
@@ -7489,9 +7516,9 @@ EditorNode::EditorNode() {
 	screenshot_timer->set_owner(get_owner());
 
 	// Adjust spacers to center 2D / 3D / Script buttons.
-	int max_w = MAX(play_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
+	int max_w = MAX(launch_pad_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
 	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - play_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - launch_pad_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
 
 	// Extend menu bar to window title.
 	if (can_expand) {
