@@ -82,6 +82,8 @@ private:
 
 	void _attach_sub_emitter();
 
+	void _texture_changed();
+
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
