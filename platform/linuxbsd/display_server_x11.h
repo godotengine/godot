@@ -152,6 +152,7 @@ class DisplayServerX11 : public DisplayServer {
 		Vector2i last_position_before_fs;
 		bool focused = true;
 		bool minimized = false;
+		bool maximized = false;
 		bool is_popup = false;
 
 		Rect2i parent_safe_rect;
@@ -268,10 +269,12 @@ class DisplayServerX11 : public DisplayServer {
 	void _update_real_mouse_position(const WindowData &wd);
 	bool _window_maximize_check(WindowID p_window, const char *p_atom_name) const;
 	bool _window_fullscreen_check(WindowID p_window) const;
-	void _validate_fullscreen_on_map(WindowID p_window);
+	bool _window_minimize_check(WindowID p_window) const;
+	void _validate_mode_on_map(WindowID p_window);
 	void _update_size_hints(WindowID p_window);
 	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
+	void _set_wm_minimized(WindowID p_window, bool p_enabled);
 
 	void _update_context(WindowData &wd);
 
