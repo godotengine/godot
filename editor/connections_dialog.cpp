@@ -753,22 +753,12 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	}
 
 	Dictionary subst;
-
-	String s = node_name.capitalize().replace(" ", "");
-	subst["NodeName"] = s;
-	if (!s.is_empty()) {
-		s[0] = s.to_lower()[0];
-	}
-	subst["nodeName"] = s;
-	subst["node_name"] = node_name.capitalize().replace(" ", "_").to_lower();
-
-	s = signal_name.capitalize().replace(" ", "");
-	subst["SignalName"] = s;
-	if (!s.is_empty()) {
-		s[0] = s.to_lower()[0];
-	}
-	subst["signalName"] = s;
-	subst["signal_name"] = signal_name.capitalize().replace(" ", "_").to_lower();
+	subst["NodeName"] = node_name.to_pascal_case();
+	subst["nodeName"] = node_name.to_camel_case();
+	subst["node_name"] = node_name.to_snake_case();
+	subst["SignalName"] = signal_name.to_pascal_case();
+	subst["signalName"] = signal_name.to_camel_case();
+	subst["signal_name"] = signal_name.to_snake_case();
 
 	String dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
 

@@ -466,11 +466,6 @@ TEST_CASE("[String] String to float") {
 	}
 }
 
-TEST_CASE("[String] CamelCase to underscore") {
-	CHECK(String("TestTestStringGD").camelcase_to_underscore(false) == String("Test_Test_String_GD"));
-	CHECK(String("TestTestStringGD").camelcase_to_underscore(true) == String("test_test_string_gd"));
-}
-
 TEST_CASE("[String] Slicing") {
 	String s = "Mars,Jupiter,Saturn,Uranus";
 
@@ -1096,8 +1091,36 @@ TEST_CASE("[String] IPVX address to string") {
 }
 
 TEST_CASE("[String] Capitalize against many strings") {
-	String input = "bytes2var";
-	String output = "Bytes 2 Var";
+	String input = "2D";
+	String output = "2d";
+	CHECK(input.capitalize() == output);
+
+	input = "2d";
+	output = "2d";
+	CHECK(input.capitalize() == output);
+
+	input = "2db";
+	output = "2 Db";
+	CHECK(input.capitalize() == output);
+
+	input = "HTML5 Html5 html5 html_5";
+	output = "Html 5 Html 5 Html 5 Html 5";
+	CHECK(input.capitalize() == output);
+
+	input = "Node2D Node2d NODE2D NODE_2D node_2d";
+	output = "Node 2d Node 2d Node 2d Node 2d Node 2d";
+	CHECK(input.capitalize() == output);
+
+	input = "Node2DPosition";
+	output = "Node 2d Position";
+	CHECK(input.capitalize() == output);
+
+	input = "Number2Digits";
+	output = "Number 2 Digits";
+	CHECK(input.capitalize() == output);
+
+	input = "bytes2var";
+	output = "Bytes 2 Var";
 	CHECK(input.capitalize() == output);
 
 	input = "linear2db";
@@ -1110,10 +1133,6 @@ TEST_CASE("[String] Capitalize against many strings") {
 
 	input = "sha256";
 	output = "Sha 256";
-	CHECK(input.capitalize() == output);
-
-	input = "2db";
-	output = "2 Db";
 	CHECK(input.capitalize() == output);
 
 	input = "PascalCase";
@@ -1151,6 +1170,50 @@ TEST_CASE("[String] Capitalize against many strings") {
 	input = "snake_case_function( snake_case_arg )";
 	output = "Snake Case Function( Snake Case Arg )";
 	CHECK(input.capitalize() == output);
+}
+
+struct StringCasesTestCase {
+	const char *input;
+	const char *camel_case;
+	const char *pascal_case;
+	const char *snake_case;
+};
+
+TEST_CASE("[String] Checking case conversion methods") {
+	StringCasesTestCase test_cases[] = {
+		/* clang-format off */
+		{ "2D",                "2d",              "2d",              "2d"                },
+		{ "2d",                "2d",              "2d",              "2d"                },
+		{ "2db",               "2Db",             "2Db",             "2_db"              },
+		{ "Vector3",           "vector3",         "Vector3",         "vector_3"          },
+		{ "sha256",            "sha256",          "Sha256",          "sha_256"           },
+		{ "Node2D",            "node2d",          "Node2d",          "node_2d"           },
+		{ "RichTextLabel",     "richTextLabel",   "RichTextLabel",   "rich_text_label"   },
+		{ "HTML5",             "html5",           "Html5",           "html_5"            },
+		{ "Node2DPosition",    "node2dPosition",  "Node2dPosition",  "node_2d_position"  },
+		{ "Number2Digits",     "number2Digits",   "Number2Digits",   "number_2_digits"   },
+		{ "get_property_list", "getPropertyList", "GetPropertyList", "get_property_list" },
+		{ "get_camera_2d",     "getCamera2d",     "GetCamera2d",     "get_camera_2d"     },
+		{ "_physics_process",  "physicsProcess",  "PhysicsProcess",  "_physics_process"  },
+		{ "bytes2var",         "bytes2Var",       "Bytes2Var",       "bytes_2_var"       },
+		{ "linear2db",         "linear2Db",       "Linear2Db",       "linear_2_db"       },
+		{ "sha256sum",         "sha256Sum",       "Sha256Sum",       "sha_256_sum"       },
+		{ "camelCase",         "camelCase",       "CamelCase",       "camel_case"        },
+		{ "PascalCase",        "pascalCase",      "PascalCase",      "pascal_case"       },
+		{ "snake_case",        "snakeCase",       "SnakeCase",       "snake_case"        },
+		{ "Test TEST test",    "testTestTest",    "TestTestTest",    "test_test_test"    },
+		{ nullptr,             nullptr,           nullptr,           nullptr             },
+		/* clang-format on */
+	};
+
+	int idx = 0;
+	while (test_cases[idx].input != nullptr) {
+		String input = test_cases[idx].input;
+		CHECK(input.to_camel_case() == test_cases[idx].camel_case);
+		CHECK(input.to_pascal_case() == test_cases[idx].pascal_case);
+		CHECK(input.to_snake_case() == test_cases[idx].snake_case);
+		idx++;
+	}
 }
 
 TEST_CASE("[String] Checking string is empty when it should be") {
@@ -1663,7 +1726,7 @@ TEST_CASE("[String] Variant ptr indexed set") {
 TEST_CASE("[Stress][String] Empty via ' == String()'") {
 	for (int i = 0; i < 100000; ++i) {
 		String str = "Hello World!";
-		if (str.is_empty()) {
+		if (str == String()) {
 			continue;
 		}
 	}

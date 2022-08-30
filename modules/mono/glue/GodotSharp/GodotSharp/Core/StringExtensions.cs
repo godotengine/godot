@@ -287,6 +287,45 @@ namespace Godot
             return cap;
         }
 
+        /// <summary>
+        /// Returns the string converted to <c>camelCase</c>.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static string ToCamelCase(this string instance)
+        {
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_to_camel_case(instanceStr, out godot_string camelCase);
+            using (camelCase)
+                return Marshaling.ConvertStringToManaged(camelCase);
+        }
+
+        /// <summary>
+        /// Returns the string converted to <c>PascalCase</c>.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static string ToPascalCase(this string instance)
+        {
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_to_pascal_case(instanceStr, out godot_string pascalCase);
+            using (pascalCase)
+                return Marshaling.ConvertStringToManaged(pascalCase);
+        }
+
+        /// <summary>
+        /// Returns the string converted to <c>snake_case</c>.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static string ToSnakeCase(this string instance)
+        {
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_to_snake_case(instanceStr, out godot_string snakeCase);
+            using (snakeCase)
+                return Marshaling.ConvertStringToManaged(snakeCase);
+        }
+
         private static string CamelcaseToUnderscore(this string instance, bool lowerCase)
         {
             string newString = string.Empty;

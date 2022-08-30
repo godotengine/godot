@@ -500,7 +500,7 @@ String RenameDialog::_postprocess(const String &subject) {
 	if (style_id == 1) {
 		// PascalCase to snake_case
 
-		result = result.camelcase_to_underscore(true);
+		result = result.to_snake_case();
 		result = _regex("_+", result, "_");
 
 	} else if (style_id == 2) {
@@ -521,7 +521,7 @@ String RenameDialog::_postprocess(const String &subject) {
 				end = start + 1;
 			}
 			buffer += result.substr(end, result.size() - (end + 1));
-			result = buffer.replace("_", "").capitalize();
+			result = buffer.to_pascal_case();
 		}
 	}
 

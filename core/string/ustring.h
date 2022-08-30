@@ -196,6 +196,7 @@ class String {
 
 	bool _base_is_subsequence_of(const String &p_string, bool case_insensitive) const;
 	int _count(const String &p_string, int p_from, int p_to, bool p_case_insensitive) const;
+	String _camelcase_to_underscore() const;
 
 public:
 	enum {
@@ -335,7 +336,9 @@ public:
 	static double to_float(const char32_t *p_str, const char32_t **r_end = nullptr);
 
 	String capitalize() const;
-	String camelcase_to_underscore(bool lowercase = true) const;
+	String to_camel_case() const;
+	String to_pascal_case() const;
+	String to_snake_case() const;
 
 	String get_with_code_lines() const;
 	int get_slice_count(String p_splitter) const;
