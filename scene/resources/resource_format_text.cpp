@@ -451,7 +451,7 @@ Error ResourceLoaderText::load() {
 
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
 		}
 
 		if (remaps.has(path)) {
@@ -861,7 +861,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 
 		if (!using_uid && !path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path = ProjectSettings::get_singleton()->localize_path(local_path.get_base_dir().path_join(path));
 		}
 
 		if (p_add_types) {
@@ -938,7 +938,7 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 			}
 			bool relative = false;
 			if (!path.begins_with("res://")) {
-				path = base_path.plus_file(path).simplify_path();
+				path = base_path.path_join(path).simplify_path();
 				relative = true;
 			}
 

@@ -942,7 +942,7 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 
 String ScriptTextEditor::_get_absolute_path(const String &rel_path) {
 	String base_path = script->get_path().get_base_dir();
-	String path = base_path.plus_file(rel_path);
+	String path = base_path.path_join(rel_path);
 	return path.replace("///", "//").simplify_path();
 }
 

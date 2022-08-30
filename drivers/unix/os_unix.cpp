@@ -454,12 +454,12 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 
 	if (!FileAccess::exists(path)) {
 		// This code exists so GDExtension can load .so files from within the executable path.
-		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
 
 	if (!FileAccess::exists(path)) {
 		// This code exists so GDExtension can load .so files from a standard unix location.
-		path = get_executable_path().get_base_dir().plus_file("../lib").plus_file(p_path.get_file());
+		path = get_executable_path().get_base_dir().path_join("../lib").path_join(p_path.get_file());
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
@@ -526,13 +526,13 @@ String OS_Unix::get_user_data_dir() const {
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
-			return get_data_path().plus_file(custom_dir);
+			return get_data_path().path_join(custom_dir);
 		} else {
-			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname);
+			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname);
 		}
 	}
 
-	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
+	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
 }
 
 String OS_Unix::get_executable_path() const {

@@ -75,7 +75,7 @@ Error EditorExportPlatformWeb::_extract_template(const String &p_template, const
 		unzCloseCurrentFile(pkg);
 
 		//write
-		String dst = p_dir.plus_file(file.replace("godot", p_name));
+		String dst = p_dir.path_join(file.replace("godot", p_name));
 		Ref<FileAccess> f = FileAccess::open(dst, FileAccess::WRITE);
 		if (f.is_null()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Templates"), vformat(TTR("Could not write file: \"%s\"."), dst));
@@ -162,7 +162,7 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 Error EditorExportPlatformWeb::_add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr) {
 	const String name = p_path.get_file().get_basename();
 	const String icon_name = vformat("%s.%dx%d.png", name, p_size, p_size);
-	const String icon_dest = p_path.get_base_dir().plus_file(icon_name);
+	const String icon_dest = p_path.get_base_dir().path_join(icon_name);
 
 	Ref<Image> icon;
 	if (!p_icon.is_empty()) {
@@ -234,7 +234,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	}
 	replaces["@GODOT_OPT_CACHE@"] = Variant(opt_cache_files).to_json_string();
 
-	const String sw_path = dir.plus_file(name + ".service.worker.js");
+	const String sw_path = dir.path_join(name + ".service.worker.js");
 	Vector<uint8_t> sw;
 	{
 		Ref<FileAccess> f = FileAccess::open(sw_path, FileAccess::READ);
@@ -246,7 +246,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 		f->get_buffer(sw.ptrw(), sw.size());
 	}
 	_replace_strings(replaces, sw);
-	Error err = _write_or_error(sw.ptr(), sw.size(), dir.plus_file(name + ".service.worker.js"));
+	Error err = _write_or_error(sw.ptr(), sw.size(), dir.path_join(name + ".service.worker.js"));
 	if (err != OK) {
 		return err;
 	}
@@ -255,7 +255,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	const String offline_page = p_preset->get("progressive_web_app/offline_page");
 	if (!offline_page.is_empty()) {
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		const String offline_dest = dir.plus_file(name + ".offline.html");
+		const String offline_dest = dir.path_join(name + ".offline.html");
 		err = da->copy(ProjectSettings::get_singleton()->globalize_path(offline_page), offline_dest);
 		if (err != OK) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PWA"), vformat(TTR("Could not read file: \"%s\"."), offline_dest));
@@ -295,7 +295,7 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	manifest["icons"] = icons_arr;
 
 	CharString cs = Variant(manifest).to_json_string().utf8();
-	err = _write_or_error((const uint8_t *)cs.get_data(), cs.length(), dir.plus_file(name + ".manifest.json"));
+	err = _write_or_error((const uint8_t *)cs.get_data(), cs.length(), dir.path_join(name + ".manifest.json"));
 	if (err != OK) {
 		return err;
 	}
@@ -481,7 +481,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	{
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		for (int i = 0; i < shared_objects.size(); i++) {
-			String dst = base_dir.plus_file(shared_objects[i].path.get_file());
+			String dst = base_dir.path_join(shared_objects[i].path.get_file());
 			error = da->copy(shared_objects[i].path, dst);
 			if (error != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), shared_objects[i].path.get_file()));
@@ -601,7 +601,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 		return OK;
 	}
 
-	const String dest = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
+	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("web");
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
@@ -611,7 +611,7 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 		}
 	}
 
-	const String basepath = dest.plus_file("tmp_js_export");
+	const String basepath = dest.path_join("tmp_js_export");
 	Error err = export_project(p_preset, true, basepath + ".html", p_debug_flags);
 	if (err != OK) {
 		// Export generates several files, clean them up on failure.

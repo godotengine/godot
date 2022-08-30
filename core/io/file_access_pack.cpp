@@ -520,7 +520,7 @@ String DirAccessPack::get_current_dir(bool p_include_drive) const {
 
 	while (pd->parent) {
 		pd = pd->parent;
-		p = pd->name.plus_file(p);
+		p = pd->name.path_join(p);
 	}
 
 	return "res://" + p;

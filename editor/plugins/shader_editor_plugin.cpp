@@ -1398,12 +1398,12 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 	switch (p_index) {
 		case FILE_NEW: {
 			String base_path = FileSystemDock::get_singleton()->get_current_path().get_base_dir();
-			shader_create_dialog->config(base_path.plus_file("new_shader"), false, false, 0);
+			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, 0);
 			shader_create_dialog->popup_centered();
 		} break;
 		case FILE_NEW_INCLUDE: {
 			String base_path = FileSystemDock::get_singleton()->get_current_path().get_base_dir();
-			shader_create_dialog->config(base_path.plus_file("new_shader"), false, false, 2);
+			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, 2);
 			shader_create_dialog->popup_centered();
 		} break;
 		case FILE_OPEN: {

@@ -4451,7 +4451,7 @@ String String::get_extension() const {
 	return substr(pos + 1, length());
 }
 
-String String::plus_file(const String &p_file) const {
+String String::path_join(const String &p_file) const {
 	if (is_empty()) {
 		return p_file;
 	}

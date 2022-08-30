@@ -99,7 +99,7 @@ String EditorFileSystemDirectory::get_path() const {
 	String p;
 	const EditorFileSystemDirectory *d = this;
 	while (d->parent) {
-		p = d->name.plus_file(p);
+		p = d->name.path_join(p);
 		d = d->parent;
 	}
 
@@ -110,7 +110,7 @@ String EditorFileSystemDirectory::get_file_path(int p_idx) const {
 	String file = get_file(p_idx);
 	const EditorFileSystemDirectory *d = this;
 	while (d->parent) {
-		file = d->name.plus_file(file);
+		file = d->name.path_join(file);
 		d = d->parent;
 	}
 
@@ -219,7 +219,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 	String project = ProjectSettings::get_singleton()->get_resource_path();
 
-	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
 
@@ -261,7 +261,7 @@ void EditorFileSystem::_scan_filesystem() {
 					String file;
 
 					file = name;
-					name = cpath.plus_file(name);
+					name = cpath.path_join(name);
 
 					FileCache fc;
 					fc.type = split[1];
@@ -289,7 +289,7 @@ void EditorFileSystem::_scan_filesystem() {
 		}
 	}
 
-	String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
+	String update_cache = EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_update4");
 
 	if (FileAccess::exists(update_cache)) {
 		{
@@ -332,7 +332,7 @@ void EditorFileSystem::_scan_filesystem() {
 void EditorFileSystem::_save_filesystem_cache() {
 	group_file_cache.clear();
 
-	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file(CACHE_FILE_NAME);
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
@@ -758,7 +758,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				continue;
 			}
 
-			if (_should_skip_directory(cd.plus_file(f))) {
+			if (_should_skip_directory(cd.path_join(f))) {
 				continue;
 			}
 
@@ -822,7 +822,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 		EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 		fi->file = E->get();
 
-		String path = cd.plus_file(fi->file);
+		String path = cd.path_join(fi->file);
 
 		FileCache *fc = file_cache.getptr(path);
 		uint64_t mt = FileAccess::get_modified_time(path);
@@ -982,7 +982,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 				int idx = p_dir->find_dir_index(f);
 				if (idx == -1) {
-					if (_should_skip_directory(cd.plus_file(f))) {
+					if (_should_skip_directory(cd.path_join(f))) {
 						continue;
 					}
 
@@ -991,7 +991,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					efd->parent = p_dir;
 					efd->name = f;
 					Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-					d->change_dir(cd.plus_file(f));
+					d->change_dir(cd.path_join(f));
 					_scan_new_dir(efd, d, p_progress.get_sub(1, 1));
 
 					ItemAction ia;
@@ -1017,7 +1017,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
 					fi->file = f;
 
-					String path = cd.plus_file(fi->file);
+					String path = cd.path_join(fi->file);
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
 					fi->type = ResourceLoader::get_resource_type(path);
@@ -1066,7 +1066,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 			continue;
 		}
 
-		String path = cd.plus_file(p_dir->files[i]->file);
+		String path = cd.path_join(p_dir->files[i]->file);
 
 		if (import_extensions.has(p_dir->files[i]->file.get_extension().to_lower())) {
 			//check here if file must be imported or not
@@ -1452,7 +1452,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 
 void EditorFileSystem::_save_late_updated_files() {
 	//files that already existed, and were modified, need re-scanning for dependencies upon project restart. This is done via saving this special file
-	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().plus_file("filesystem_update4");
+	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join("filesystem_update4");
 	Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::WRITE);
 	ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + fscache + "'. Check user write permissions.");
 	for (const String &E : late_update_files) {
@@ -2198,12 +2198,12 @@ bool EditorFileSystem::_should_skip_directory(const String &p_path) {
 		return true;
 	}
 
-	if (FileAccess::exists(p_path.plus_file("project.godot"))) {
+	if (FileAccess::exists(p_path.path_join("project.godot"))) {
 		// skip if another project inside this
 		return true;
 	}
 
-	if (FileAccess::exists(p_path.plus_file(".gdignore"))) {
+	if (FileAccess::exists(p_path.path_join(".gdignore"))) {
 		// skip if a `.gdignore` file is inside this
 		return true;
 	}

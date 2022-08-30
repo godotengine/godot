@@ -694,7 +694,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 		}
 
 		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
-								.plus_file(assembly_name + ".dll");
+								.path_join(assembly_name + ".dll");
 		assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
 		if (!FileAccess::exists(assembly_path)) {
@@ -1085,7 +1085,7 @@ void CSharpLanguage::_editor_init_callback() {
 	const void **interop_funcs = godotsharp::get_editor_interop_funcs(interop_funcs_size);
 
 	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
-			GodotSharpDirs::get_data_editor_tools_dir().plus_file("GodotTools.dll").utf16(),
+			GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll").utf16(),
 			interop_funcs, interop_funcs_size);
 	CRASH_COND(editor_plugin_obj == nullptr);
 

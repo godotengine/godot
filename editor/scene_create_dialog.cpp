@@ -111,7 +111,7 @@ void SceneCreateDialog::update_dialog() {
 	}
 
 	if (is_valid) {
-		scene_name = directory.plus_file(scene_name);
+		scene_name = directory.path_join(scene_name);
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(scene_name)) {
 			update_error(file_error_label, MSG_ERROR, TTR("File already exists."));

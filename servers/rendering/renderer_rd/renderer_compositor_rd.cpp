@@ -267,7 +267,7 @@ RendererCompositorRD::RendererCompositorRD() {
 			if (err != OK) {
 				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 			} else {
-				shader_cache_dir = shader_cache_dir.plus_file("shader_cache");
+				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
 
 				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
 				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {

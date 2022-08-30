@@ -238,9 +238,9 @@ public:
 
 				if (da->current_is_dir()) {
 					if (p_check_directories) {
-						Vector<String> directory_files = list_plugin_config_files(p_path.plus_file(file), false);
+						Vector<String> directory_files = list_plugin_config_files(p_path.path_join(file), false);
 						for (int i = 0; i < directory_files.size(); ++i) {
-							dir_files.push_back(file.plus_file(directory_files[i]));
+							dir_files.push_back(file.path_join(directory_files[i]));
 						}
 					}
 
@@ -260,7 +260,7 @@ public:
 	static Vector<PluginConfigIOS> get_plugins() {
 		Vector<PluginConfigIOS> loaded_plugins;
 
-		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("ios/plugins");
+		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().path_join("ios/plugins");
 
 		if (DirAccess::exists(plugins_dir)) {
 			Vector<String> plugins_filenames = list_plugin_config_files(plugins_dir, true);
@@ -268,7 +268,7 @@ public:
 			if (!plugins_filenames.is_empty()) {
 				Ref<ConfigFile> config_file = memnew(ConfigFile);
 				for (int i = 0; i < plugins_filenames.size(); i++) {
-					PluginConfigIOS config = PluginConfigIOS::load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					PluginConfigIOS config = PluginConfigIOS::load_plugin_config(config_file, plugins_dir.path_join(plugins_filenames[i]));
 					if (config.valid_config) {
 						loaded_plugins.push_back(config);
 					} else {

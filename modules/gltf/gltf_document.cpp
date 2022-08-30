@@ -786,7 +786,7 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> state, const String &p_base_pa
 				} else { // Relative path to an external image file.
 					ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 					uri = uri.uri_decode();
-					uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
+					uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 					buffer_data = FileAccess::get_file_as_array(uri);
 					ERR_FAIL_COND_V_MSG(buffer.size() == 0, ERR_PARSE_ERROR, "glTF: Couldn't load binary file as an array: " + uri);
 				}
@@ -3039,8 +3039,8 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			if (!da->dir_exists(new_texture_dir)) {
 				da->make_dir(new_texture_dir);
 			}
-			image->save_png(new_texture_dir.plus_file(name));
-			d["uri"] = texture_dir.plus_file(name).uri_encode();
+			image->save_png(new_texture_dir.path_join(name));
+			d["uri"] = texture_dir.path_join(name).uri_encode();
 		}
 		images.push_back(d);
 	}
@@ -3118,7 +3118,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_decode();
-				uri = p_base_path.plus_file(uri).replace("\\", "/"); // Fix for Windows.
+				uri = p_base_path.path_join(uri).replace("\\", "/"); // Fix for Windows.
 				// ResourceLoader will rely on the file extension to use the relevant loader.
 				// The spec says that if mimeType is defined, it should take precedence (e.g.
 				// there could be a `.png` image which is actually JPEG), but there's no easy

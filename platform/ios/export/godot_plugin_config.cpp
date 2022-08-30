@@ -46,7 +46,7 @@ String PluginConfigIOS::resolve_local_dependency_path(String plugin_config_dir, 
 	}
 
 	String res_path = ProjectSettings::get_singleton()->globalize_path("res://");
-	absolute_path = plugin_config_dir.plus_file(dependency_path);
+	absolute_path = plugin_config_dir.path_join(dependency_path);
 
 	return absolute_path.replace(res_path, "res://");
 }
@@ -64,7 +64,7 @@ String PluginConfigIOS::resolve_system_dependency_path(String dependency_path) {
 
 	String system_path = "/System/Library/Frameworks";
 
-	return system_path.plus_file(dependency_path);
+	return system_path.path_join(dependency_path);
 }
 
 Vector<String> PluginConfigIOS::resolve_local_dependencies(String plugin_config_dir, Vector<String> p_paths) {
@@ -121,8 +121,8 @@ bool PluginConfigIOS::validate_plugin(PluginConfigIOS &plugin_config) {
 		String file_path = plugin_config.binary.get_base_dir();
 		String file_name = plugin_config.binary.get_basename().get_file();
 		String file_extension = plugin_config.binary.get_extension();
-		String release_file_name = file_path.plus_file(file_name + ".release." + file_extension);
-		String debug_file_name = file_path.plus_file(file_name + ".debug." + file_extension);
+		String release_file_name = file_path.path_join(file_name + ".release." + file_extension);
+		String debug_file_name = file_path.path_join(file_name + ".debug." + file_extension);
 
 		if ((plugin_extension == "a" && FileAccess::exists(release_file_name) && FileAccess::exists(debug_file_name)) ||
 				(plugin_extension == "xcframework" && DirAccess::exists(release_file_name) && DirAccess::exists(debug_file_name))) {
@@ -144,7 +144,7 @@ String PluginConfigIOS::get_plugin_main_binary(PluginConfigIOS &plugin_config, b
 	String plugin_extension = plugin_config.binary.get_extension();
 	String plugin_file = plugin_name_prefix + "." + (p_debug ? "debug" : "release") + "." + plugin_extension;
 
-	return plugin_binary_dir.plus_file(plugin_file);
+	return plugin_binary_dir.path_join(plugin_file);
 }
 
 uint64_t PluginConfigIOS::get_plugin_modification_time(const PluginConfigIOS &plugin_config, const String &config_path) {
@@ -156,8 +156,8 @@ uint64_t PluginConfigIOS::get_plugin_modification_time(const PluginConfigIOS &pl
 		String file_path = plugin_config.binary.get_base_dir();
 		String file_name = plugin_config.binary.get_basename().get_file();
 		String plugin_extension = plugin_config.binary.get_extension();
-		String release_file_name = file_path.plus_file(file_name + ".release." + plugin_extension);
-		String debug_file_name = file_path.plus_file(file_name + ".debug." + plugin_extension);
+		String release_file_name = file_path.path_join(file_name + ".release." + plugin_extension);
+		String debug_file_name = file_path.path_join(file_name + ".debug." + plugin_extension);
 
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(release_file_name));
 		last_updated = MAX(last_updated, FileAccess::get_modified_time(debug_file_name));

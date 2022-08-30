@@ -649,7 +649,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 
 	if (custom_launch_image_2x.length() > 0 && custom_launch_image_3x.length() > 0) {
 		Ref<Image> image;
-		String image_path = p_dest_dir.plus_file("splash@2x.png");
+		String image_path = p_dest_dir.path_join("splash@2x.png");
 		image.instantiate();
 		Error err = image->load(custom_launch_image_2x);
 
@@ -663,7 +663,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		}
 
 		image.unref();
-		image_path = p_dest_dir.plus_file("splash@3x.png");
+		image_path = p_dest_dir.path_join("splash@3x.png");
 		image.instantiate();
 		err = image->load(custom_launch_image_3x);
 
@@ -696,8 +696,8 @@ Error EditorExportPlatformIOS::_export_loading_screen_file(const Ref<EditorExpor
 		// because Godot's own boot logo uses single image for all resolutions.
 		// Also not using @1x image, because devices using this image variant
 		// are not supported by iOS 9, which is minimal target.
-		const String splash_png_path_2x = p_dest_dir.plus_file("splash@2x.png");
-		const String splash_png_path_3x = p_dest_dir.plus_file("splash@3x.png");
+		const String splash_png_path_2x = p_dest_dir.path_join("splash@2x.png");
+		const String splash_png_path_3x = p_dest_dir.path_join("splash@3x.png");
 
 		if (splash->save_png(splash_png_path_2x) != OK) {
 			return ERR_FILE_CANT_WRITE;
@@ -812,7 +812,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(Ref<DirAccess> &p_da, FileHan
 				dirs.push_back(path);
 			}
 		} else {
-			Error err = p_handler(current_dir.plus_file(path), p_userdata);
+			Error err = p_handler(current_dir.path_join(path), p_userdata);
 			if (err) {
 				p_da->list_dir_end();
 				return err;
@@ -1028,7 +1028,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 	if (p_is_framework && p_asset.ends_with(".dylib")) {
 		// For iOS we need to turn .dylib into .framework
 		// to be able to send application to AppStore
-		asset_path = String("dylibs").plus_file(base_dir);
+		asset_path = String("dylibs").path_join(base_dir);
 
 		String file_name;
 
@@ -1040,12 +1040,12 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 
 		String framework_name = file_name + ".framework";
 
-		asset_path = asset_path.plus_file(framework_name);
-		destination_dir = p_out_dir.plus_file(asset_path);
-		destination = destination_dir.plus_file(file_name);
+		asset_path = asset_path.path_join(framework_name);
+		destination_dir = p_out_dir.path_join(asset_path);
+		destination = destination_dir.path_join(file_name);
 		create_framework = true;
 	} else if (p_is_framework && (p_asset.ends_with(".framework") || p_asset.ends_with(".xcframework"))) {
-		asset_path = String("dylibs").plus_file(base_dir);
+		asset_path = String("dylibs").path_join(base_dir);
 
 		String file_name;
 
@@ -1055,8 +1055,8 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 			file_name = *p_custom_file_name;
 		}
 
-		asset_path = asset_path.plus_file(file_name);
-		destination_dir = p_out_dir.plus_file(asset_path);
+		asset_path = asset_path.path_join(file_name);
+		destination_dir = p_out_dir.path_join(asset_path);
 		destination = destination_dir;
 	} else {
 		asset_path = base_dir;
@@ -1069,9 +1069,9 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 			file_name = *p_custom_file_name;
 		}
 
-		destination_dir = p_out_dir.plus_file(asset_path);
-		asset_path = asset_path.plus_file(file_name);
-		destination = p_out_dir.plus_file(asset_path);
+		destination_dir = p_out_dir.path_join(asset_path);
+		asset_path = asset_path.path_join(file_name);
+		destination = p_out_dir.path_join(asset_path);
 	}
 
 	Ref<DirAccess> filesystem_da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1088,7 +1088,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 	if (err) {
 		return err;
 	}
-	IOSExportAsset exported_asset = { binary_name.plus_file(asset_path), p_is_framework, p_should_embed };
+	IOSExportAsset exported_asset = { binary_name.path_join(asset_path), p_is_framework, p_should_embed };
 	r_exported_assets.push_back(exported_asset);
 
 	if (create_framework) {
@@ -1106,7 +1106,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 		{
 			List<String> install_name_args;
 			install_name_args.push_back("-id");
-			install_name_args.push_back(String("@rpath").plus_file(framework_name).plus_file(file_name));
+			install_name_args.push_back(String("@rpath").path_join(framework_name).path_join(file_name));
 			install_name_args.push_back(destination);
 
 			OS::get_singleton()->execute("install_name_tool", install_name_args);
@@ -1141,7 +1141,7 @@ Error EditorExportPlatformIOS::_copy_asset(const String &p_out_dir, const String
 
 			String info_plist = info_plist_format.replace("$name", file_name);
 
-			Ref<FileAccess> f = FileAccess::open(destination_dir.plus_file("Info.plist"), FileAccess::WRITE);
+			Ref<FileAccess> f = FileAccess::open(destination_dir.path_join("Info.plist"), FileAccess::WRITE);
 			if (f.is_valid()) {
 				f->store_string(info_plist);
 			}

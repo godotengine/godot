@@ -57,7 +57,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 	// enclosed in double quotes by OS::execute(), so we only need to escape those.
 	// `c_escape_multiline()` seems to do this (escapes `\` and `"` only).
 	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape_multiline();
-	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().plus_file(
+	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.glb", p_path.get_file().get_basename(), p_path.md5_text()));
 	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape_multiline();
 

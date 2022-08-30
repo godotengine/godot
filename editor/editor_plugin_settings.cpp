@@ -178,8 +178,8 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 			continue;
 		}
 
-		const String full_path = p_dir.plus_file(path);
-		const String plugin_config = full_path.plus_file("plugin.cfg");
+		const String full_path = p_dir.path_join(path);
+		const String plugin_config = full_path.path_join("plugin.cfg");
 		if (FileAccess::exists(plugin_config)) {
 			plugins.push_back(plugin_config);
 		} else {

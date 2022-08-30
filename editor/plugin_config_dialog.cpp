@@ -62,7 +62,7 @@ void PluginConfigDialog::_on_confirmed() {
 	if (script_name.get_extension().is_empty()) {
 		script_name += "." + ext;
 	}
-	String script_path = path.plus_file(script_name);
+	String script_path = path.path_join(script_name);
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	cf->set_value("plugin", "name", name_edit->get_text());
@@ -71,7 +71,7 @@ void PluginConfigDialog::_on_confirmed() {
 	cf->set_value("plugin", "version", version_edit->get_text());
 	cf->set_value("plugin", "script", script_name);
 
-	cf->save(path.plus_file("plugin.cfg"));
+	cf->save(path.path_join("plugin.cfg"));
 
 	if (!_edit_mode) {
 		String class_name = script_name.get_basename();

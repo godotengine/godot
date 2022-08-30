@@ -64,7 +64,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 	// Escape paths to be valid Python strings to embed in the script.
 	const String source_global = ProjectSettings::get_singleton()->globalize_path(p_path).c_escape();
-	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().plus_file(
+	const String sink = ProjectSettings::get_singleton()->get_imported_files_path().path_join(
 			vformat("%s-%s.gltf", p_path.get_file().get_basename(), p_path.md5_text()));
 	const String sink_global = ProjectSettings::get_singleton()->globalize_path(sink).c_escape();
 
@@ -193,9 +193,9 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
 
 #ifdef WINDOWS_ENABLED
-	blender_path = blender_path.plus_file("blender.exe");
+	blender_path = blender_path.path_join("blender.exe");
 #else
-	blender_path = blender_path.plus_file("blender");
+	blender_path = blender_path.path_join("blender");
 #endif
 
 	List<String> args;
@@ -287,14 +287,14 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 	String path = p_path;
 #ifdef WINDOWS_ENABLED
-	path = path.plus_file("blender.exe");
+	path = path.path_join("blender.exe");
 #else
-	path = path.plus_file("blender");
+	path = path.path_join("blender");
 #endif
 
 #if defined(MACOS_ENABLED)
 	if (!FileAccess::exists(path)) {
-		path = path.plus_file("Blender");
+		path = path.path_join("Blender");
 	}
 #endif
 
@@ -485,7 +485,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 			bool found = false;
 			for (const String &path : mdfind_paths) {
-				found = _autodetect_path(path.plus_file("Contents/MacOS"));
+				found = _autodetect_path(path.path_join("Contents/MacOS"));
 				if (found) {
 					break;
 				}

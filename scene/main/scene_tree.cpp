@@ -1370,9 +1370,9 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 				}
 
 				if (dir_access->dir_exists(filename)) {
-					directories.push_back(dir_access->get_current_dir().plus_file(filename));
+					directories.push_back(dir_access->get_current_dir().path_join(filename));
 				} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
-					r_options->push_back("\"" + dir_access->get_current_dir().plus_file(filename) + "\"");
+					r_options->push_back("\"" + dir_access->get_current_dir().path_join(filename) + "\"");
 				}
 
 				filename = dir_access->get_next();

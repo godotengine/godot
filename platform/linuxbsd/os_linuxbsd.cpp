@@ -65,7 +65,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 
 	for (int i = 0; i < path_elems.size(); i++) {
 		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
-			String tested_path = path_elems[i].plus_file(message_programs[k]);
+			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
 				program = tested_path;
@@ -432,10 +432,10 @@ String OS_LinuxBSD::get_config_path() const {
 			return get_environment("XDG_CONFIG_HOME");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.config` or `.` per the XDG Base Directory specification.");
-			return has_environment("HOME") ? get_environment("HOME").plus_file(".config") : ".";
+			return has_environment("HOME") ? get_environment("HOME").path_join(".config") : ".";
 		}
 	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".config");
+		return get_environment("HOME").path_join(".config");
 	} else {
 		return ".";
 	}
@@ -447,10 +447,10 @@ String OS_LinuxBSD::get_data_path() const {
 			return get_environment("XDG_DATA_HOME");
 		} else {
 			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.local/share` or `get_config_path()` per the XDG Base Directory specification.");
-			return has_environment("HOME") ? get_environment("HOME").plus_file(".local/share") : get_config_path();
+			return has_environment("HOME") ? get_environment("HOME").path_join(".local/share") : get_config_path();
 		}
 	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".local/share");
+		return get_environment("HOME").path_join(".local/share");
 	} else {
 		return get_config_path();
 	}
@@ -462,10 +462,10 @@ String OS_LinuxBSD::get_cache_path() const {
 			return get_environment("XDG_CACHE_HOME");
 		} else {
 			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.cache` or `get_config_path()` per the XDG Base Directory specification.");
-			return has_environment("HOME") ? get_environment("HOME").plus_file(".cache") : get_config_path();
+			return has_environment("HOME") ? get_environment("HOME").path_join(".cache") : get_config_path();
 		}
 	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".cache");
+		return get_environment("HOME").path_join(".cache");
 	} else {
 		return get_config_path();
 	}

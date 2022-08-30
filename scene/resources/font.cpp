@@ -1427,7 +1427,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 					while (!f->eof_reached() && f->get_position() <= off + block_size) {
 						if (c == '\0') {
 							String base_dir = p_path.get_base_dir();
-							String file = base_dir.plus_file(String::utf8(cs.ptr(), cs.length()));
+							String file = base_dir.path_join(String::utf8(cs.ptr(), cs.length()));
 							if (RenderingServer::get_singleton() != nullptr) {
 								Ref<Image> img;
 								img.instantiate();
@@ -1660,7 +1660,7 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 				}
 				if (keys.has("file")) {
 					String base_dir = p_path.get_base_dir();
-					String file = base_dir.plus_file(keys["file"]);
+					String file = base_dir.path_join(keys["file"]);
 					if (RenderingServer::get_singleton() != nullptr) {
 						Ref<Image> img;
 						img.instantiate();

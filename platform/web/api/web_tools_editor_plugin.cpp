@@ -76,7 +76,7 @@ void WebToolsEditorPlugin::_download_zip(Variant p_v) {
 	const String datetime_safe =
 			Time::get_singleton()->get_datetime_string_from_system(false, true).replace(" ", "_");
 	const String output_name = OS::get_singleton()->get_safe_dir_name(vformat("%s_%s.zip"));
-	const String output_path = String("/tmp").plus_file(output_name);
+	const String output_path = String("/tmp").path_join(output_name);
 
 	zipFile zip = zipOpen2(output_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io);
 	const String base_path = resource_path.substr(0, resource_path.rfind("/")) + "/";
@@ -131,7 +131,7 @@ void WebToolsEditorPlugin::_zip_recursive(String p_path, String p_base_path, zip
 	String cur = dir->get_next();
 	String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
 	while (!cur.is_empty()) {
-		String cs = p_path.plus_file(cur);
+		String cs = p_path.path_join(cur);
 		if (cur == "." || cur == ".." || cur == project_data_dir_name) {
 			// Skip
 		} else if (dir->current_is_dir()) {

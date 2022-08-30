@@ -315,7 +315,7 @@ void EditorFeatureProfileManager::_notification(int p_what) {
 			current_profile = EDITOR_GET("_default_feature_profile");
 			if (!current_profile.is_empty()) {
 				current.instantiate();
-				Error err = current->load_from_file(EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(current_profile + ".profile"));
+				Error err = current->load_from_file(EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(current_profile + ".profile"));
 				if (err != OK) {
 					ERR_PRINT("Error loading default feature profile: " + current_profile);
 					current_profile = String();
@@ -346,7 +346,7 @@ void EditorFeatureProfileManager::_update_profile_list(const String &p_select_pr
 	if (p_select_profile.is_empty()) { //default, keep
 		if (profile_list->get_selected() >= 0) {
 			selected_profile = profile_list->get_item_metadata(profile_list->get_selected());
-			if (!FileAccess::exists(EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(selected_profile + ".profile"))) {
+			if (!FileAccess::exists(EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(selected_profile + ".profile"))) {
 				selected_profile = String(); //does not exist
 			}
 		}
@@ -475,7 +475,7 @@ void EditorFeatureProfileManager::_create_new_profile() {
 		EditorNode::get_singleton()->show_warning(TTR("Profile must be a valid filename and must not contain '.'"));
 		return;
 	}
-	String file = EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(name + ".profile");
+	String file = EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(name + ".profile");
 	if (FileAccess::exists(file)) {
 		EditorNode::get_singleton()->show_warning(TTR("Profile with this name already exists."));
 		return;
@@ -754,8 +754,8 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	} else {
 		//reload edited, if different from current
 		edited.instantiate();
-		Error err = edited->load_from_file(EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile"));
-		ERR_FAIL_COND_MSG(err != OK, "Error when loading editor feature profile from file '" + EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile") + "'.");
+		Error err = edited->load_from_file(EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(profile + ".profile"));
+		ERR_FAIL_COND_MSG(err != OK, "Error when loading editor feature profile from file '" + EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(profile + ".profile") + "'.");
 	}
 
 	updating_features = true;
@@ -810,7 +810,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 			return;
 		}
 
-		String dst_file = EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(basefile);
+		String dst_file = EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(basefile);
 
 		if (FileAccess::exists(dst_file)) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Profile '%s' already exists. Remove it first before importing, import aborted."), basefile.get_basename()));
@@ -825,7 +825,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 		Error err = profile->load_from_file(p_paths[i]);
 		ERR_CONTINUE(err != OK);
 		String basefile = p_paths[i].get_file();
-		String dst_file = EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(basefile);
+		String dst_file = EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(basefile);
 		profile->save_to_file(dst_file);
 	}
 
@@ -849,7 +849,7 @@ void EditorFeatureProfileManager::_save_and_update() {
 	ERR_FAIL_COND(edited_path.is_empty());
 	ERR_FAIL_COND(edited.is_null());
 
-	edited->save_to_file(EditorPaths::get_singleton()->get_feature_profiles_dir().plus_file(edited_path + ".profile"));
+	edited->save_to_file(EditorPaths::get_singleton()->get_feature_profiles_dir().path_join(edited_path + ".profile"));
 
 	if (edited == current) {
 		update_timer->start();
