@@ -64,6 +64,7 @@
 #include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
+#include "core/math/dijkstra.h"
 #include "core/math/expression.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
@@ -236,6 +237,8 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
 	GDREGISTER_CLASS(AStar3D);
 	GDREGISTER_CLASS(AStar2D);
+	GDREGISTER_CLASS(Dijkstra3D);
+	GDREGISTER_CLASS(Dijkstra2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
