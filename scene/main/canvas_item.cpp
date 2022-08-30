@@ -365,7 +365,7 @@ void CanvasItem::queue_redraw() {
 
 	pending_update = true;
 
-	MessageQueue::get_singleton()->push_call(this, SNAME("_redraw_callback"));
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CanvasItem::_redraw_callback));
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
@@ -867,7 +867,6 @@ void CanvasItem::force_update_transform() {
 
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
-	ClassDB::bind_method(D_METHOD("_redraw_callback"), &CanvasItem::_redraw_callback);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_edit_set_state", "state"), &CanvasItem::_edit_set_state);
