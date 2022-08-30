@@ -349,6 +349,28 @@ void DisplayServerX11::tts_stop() {
 
 #endif
 
+#ifdef DBUS_ENABLED
+
+bool DisplayServerX11::is_dark_mode_supported() const {
+	return portal_desktop->is_supported();
+}
+
+bool DisplayServerX11::is_dark_mode() const {
+	switch (portal_desktop->get_appearance_color_scheme()) {
+		case 1:
+			// Prefers dark theme.
+			return true;
+		case 2:
+			// Prefers light theme.
+			return false;
+		default:
+			// Preference unknown.
+			return false;
+	}
+}
+
+#endif
+
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -5009,6 +5031,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #ifdef DBUS_ENABLED
 	screensaver = memnew(FreeDesktopScreenSaver);
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
+	portal_desktop = memnew(FreeDesktopPortalDesktop);
 #endif
 
 	r_error = OK;
@@ -5094,6 +5118,7 @@ DisplayServerX11::~DisplayServerX11() {
 
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);
+	memdelete(portal_desktop);
 #endif
 }
 
