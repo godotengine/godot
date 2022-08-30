@@ -476,6 +476,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_color = mono_color.lerp(base_color, 0.25);
 	const Color font_hover_color = mono_color.lerp(base_color, 0.125);
 	const Color font_focus_color = mono_color.lerp(base_color, 0.125);
+	const Color font_hover_pressed_color = font_hover_color.lerp(accent_color, 0.74);
 	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
 	const Color font_readonly_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_placeholder_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.6);
@@ -750,6 +751,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "MenuButton", font_color);
 	theme->set_color("font_hover_color", "MenuButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "MenuButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "MenuButton", font_focus_color);
 
 	theme->set_stylebox("MenuHover", "EditorStyles", style_widget_hover);
@@ -763,6 +765,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "Button", font_color);
 	theme->set_color("font_hover_color", "Button", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "Button", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "Button", font_focus_color);
 	theme->set_color("font_pressed_color", "Button", accent_color);
 	theme->set_color("font_disabled_color", "Button", font_disabled_color);
@@ -815,6 +818,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "MenuBar", font_color);
 	theme->set_color("font_hover_color", "MenuBar", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "MenuBar", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "MenuBar", font_focus_color);
 	theme->set_color("font_pressed_color", "MenuBar", accent_color);
 	theme->set_color("font_disabled_color", "MenuBar", font_disabled_color);
@@ -851,6 +855,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "OptionButton", font_color);
 	theme->set_color("font_hover_color", "OptionButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "OptionButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "OptionButton", font_focus_color);
 	theme->set_color("font_pressed_color", "OptionButton", accent_color);
 	theme->set_color("font_disabled_color", "OptionButton", font_disabled_color);
@@ -885,6 +890,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "CheckButton", font_color);
 	theme->set_color("font_hover_color", "CheckButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "CheckButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "CheckButton", font_focus_color);
 	theme->set_color("font_pressed_color", "CheckButton", accent_color);
 	theme->set_color("font_disabled_color", "CheckButton", font_disabled_color);
@@ -921,6 +927,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "CheckBox", font_color);
 	theme->set_color("font_hover_color", "CheckBox", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "CheckBox", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "CheckBox", font_focus_color);
 	theme->set_color("font_pressed_color", "CheckBox", accent_color);
 	theme->set_color("font_disabled_color", "CheckBox", font_disabled_color);
@@ -1478,6 +1485,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "LinkButton", style_empty);
 	theme->set_color("font_color", "LinkButton", font_color);
 	theme->set_color("font_hover_color", "LinkButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "LinkButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "LinkButton", font_focus_color);
 	theme->set_color("font_pressed_color", "LinkButton", accent_color);
 	theme->set_color("font_disabled_color", "LinkButton", font_disabled_color);
@@ -1508,8 +1516,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	control_editor_popup_style->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE);
 	control_editor_popup_style->set_border_width_all(0);
 
-	theme->set_stylebox("panel", "ControlEditorPopupButton", control_editor_popup_style);
-	theme->set_type_variation("ControlEditorPopupButton", "PopupPanel");
+	theme->set_stylebox("panel", "ControlEditorPopupPanel", control_editor_popup_style);
+	theme->set_type_variation("ControlEditorPopupPanel", "PopupPanel");
 
 	// SpinBox
 	theme->set_icon("updown", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdown"), SNAME("EditorIcons")));
