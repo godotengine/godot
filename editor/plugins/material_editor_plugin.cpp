@@ -153,7 +153,7 @@ MaterialEditor::MaterialEditor() {
 	vc->add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_transparent_background(true);
-	viewport->set_msaa(Viewport::MSAA_4X);
+	viewport->set_msaa_3d(Viewport::MSAA_4X);
 
 	camera = memnew(Camera3D);
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 3)));
