@@ -90,7 +90,7 @@ if [ ! -x "$CLANG_FORMAT" ] ; then
             $XMSG -center -title "Error" "$message"
             exit 1
         elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
-            winmessage="$(canonicalize_filename "./.git/hooks/winmessage.ps1")"
+            winmessage="$(canonicalize_filename "$(dirname -- "$0")/winmessage.ps1")"
             $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -center -title "Error" --text "$message"
             exit 1
         fi
@@ -200,7 +200,7 @@ while true; do
                 yn="N"
             fi
         elif [ \( \( "$OSTYPE" = "msys" \) -o \( "$OSTYPE" = "win32" \) \) -a \( -x "$PWSH" \) ]; then
-            winmessage="$(canonicalize_filename "./.git/hooks/winmessage.ps1")"
+            winmessage="$(canonicalize_filename "$(dirname -- "$0")/winmessage.ps1")"
             $PWSH -noprofile -executionpolicy bypass -file "$winmessage" -file "$patch" -buttons "Apply":100,"Apply and stage":200,"Do not apply":0 -center -default "Do not apply" -geometry 800x600 -title "Do you want to apply that patch?"
             choice=$?
             if [ "$choice" = "100" ] ; then
