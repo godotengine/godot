@@ -140,26 +140,9 @@ int OS_Web::get_processor_count() const {
 }
 
 bool OS_Web::_check_internal_feature_support(const String &p_feature) {
-	if (p_feature == "html5" || p_feature == "web") {
-		return true;
-	}
-
-#ifdef JAVASCRIPT_EVAL_ENABLED
 	if (p_feature == "web") {
 		return true;
 	}
-#endif
-#ifndef NO_THREADS
-	if (p_feature == "threads") {
-		return true;
-	}
-#endif
-#if WASM_GDNATIVE
-	if (p_feature == "wasm32") {
-		return true;
-	}
-#endif
-
 	return false;
 }
 

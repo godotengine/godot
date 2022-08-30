@@ -38,8 +38,9 @@ def get_opts():
         BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
-        BoolVariable("threads_enabled", "Enable WebAssembly Threads support (limited browser support)", True),
-        BoolVariable("gdnative_enabled", "Enable WebAssembly GDNative support (produces bigger binaries)", False),
+        BoolVariable(
+            "dlink_enabled", "Enable WebAssembly dynamic linking (GDExtension support). Produces bigger binaries", False
+        ),
         BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
     ]
 
@@ -50,6 +51,13 @@ def get_flags():
         ("tools", False),
         ("builtin_pcre2_with_jit", False),
         ("vulkan", False),
+        # Use -Os to prioritize optimizing for reduced file size. This is
+        # particularly valuable for the web platform because it directly
+        # decreases download time.
+        # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
+        # 100 KiB over -Os, which does not justify the negative impact on
+        # run-time performance.
+        ("optimize", "size"),
     ]
 
 
@@ -71,15 +79,12 @@ def configure(env):
 
     ## Build type
     if env["target"].startswith("release"):
-        # Use -Os to prioritize optimizing for reduced file size. This is
-        # particularly valuable for the web platform because it directly
-        # decreases download time.
-        # -Os reduces file size by around 5 MiB over -O3. -Oz only saves about
-        # 100 KiB over -Os, which does not justify the negative impact on
-        # run-time performance.
-        if env["optimize"] != "none":
+        if env["optimize"] == "size":
             env.Append(CCFLAGS=["-Os"])
             env.Append(LINKFLAGS=["-Os"])
+        elif env["optimize"] == "speed":
+            env.Append(CCFLAGS=["-O3"])
+            env.Append(LINKFLAGS=["-O3"])
 
         if env["target"] == "release_debug":
             # Retain function names for backtraces at the cost of file size.
@@ -93,21 +98,11 @@ def configure(env):
         env.Append(LINKFLAGS=["-s", "ASSERTIONS=1"])
 
     if env["tools"]:
-        if not env["threads_enabled"]:
-            print('Note: Forcing "threads_enabled=yes" as it is required for the web editor.')
-            env["threads_enabled"] = "yes"
         if env["initial_memory"] < 64:
             print('Note: Forcing "initial_memory=64" as it is required for the web editor.')
             env["initial_memory"] = 64
-        env.Append(CCFLAGS=["-frtti"])
-    elif env["builtin_icu"]:
-        env.Append(CCFLAGS=["-fno-exceptions", "-frtti"])
     else:
-        # Disable exceptions and rtti on non-tools (template) builds
-        # These flags help keep the file size down.
-        env.Append(CCFLAGS=["-fno-exceptions", "-fno-rtti"])
-        # Don't use dynamic_cast, necessary with no-rtti.
-        env.Append(CPPDEFINES=["NO_SAFE_CAST"])
+        env.Append(CPPFLAGS=["-fno-exceptions"])
 
     env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
 
@@ -171,9 +166,9 @@ def configure(env):
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
     env["ARCOM"] = "${TEMPFILE(ARCOM_POSIX)}"
 
-    # All intermediate files are just LLVM bitcode.
+    # All intermediate files are just object files.
     env["OBJPREFIX"] = ""
-    env["OBJSUFFIX"] = ".bc"
+    env["OBJSUFFIX"] = ".o"
     env["PROGPREFIX"] = ""
     # Program() output consists of multiple files, so specify suffixes manually at builder.
     env["PROGSUFFIX"] = ""
@@ -196,31 +191,22 @@ def configure(env):
         env.Append(CPPDEFINES=["JAVASCRIPT_EVAL_ENABLED"])
 
     # Thread support (via SharedArrayBuffer).
-    if env["threads_enabled"]:
-        env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
-        env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
-        env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
-        env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
-        env.extra_suffix = ".threads" + env.extra_suffix
-    else:
-        env.Append(CPPDEFINES=["NO_THREADS"])
+    env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
+    env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
+    env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
+    env.Append(LINKFLAGS=["-s", "PTHREAD_POOL_SIZE=8"])
+    env.Append(LINKFLAGS=["-s", "WASM_MEM_MAX=2048MB"])
 
-    if env["gdnative_enabled"]:
+    if env["dlink_enabled"]:
         cc_version = get_compiler_version(env)
         cc_semver = (int(cc_version["major"]), int(cc_version["minor"]), int(cc_version["patch"]))
-        if cc_semver < (2, 0, 10):
-            print("GDNative support requires emscripten >= 2.0.10, detected: %s.%s.%s" % cc_semver)
+        if cc_semver < (3, 1, 14):
+            print("GDExtension support requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
             sys.exit(255)
 
-        if env["threads_enabled"] and cc_semver < (3, 1, 14):
-            print("Threads and GDNative requires emscripten >= 3.1.14, detected: %s.%s.%s" % cc_semver)
-            sys.exit(255)
-        env.Append(CCFLAGS=["-s", "RELOCATABLE=1"])
-        env.Append(LINKFLAGS=["-s", "RELOCATABLE=1"])
-        # Weak symbols are broken upstream: https://github.com/emscripten-core/emscripten/issues/12819
-        env.Append(CPPDEFINES=["ZSTD_HAVE_WEAK_SYMBOLS=0"])
-        env.extra_suffix = ".gdnative" + env.extra_suffix
+        env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
+        env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
+        env.extra_suffix = ".dlink" + env.extra_suffix
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])

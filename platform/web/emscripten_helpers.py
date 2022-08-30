@@ -37,26 +37,25 @@ def create_engine_file(env, target, source, externs):
     return env.Textfile(target, [env.File(s) for s in source])
 
 
-def create_template_zip(env, js, wasm, extra):
+def create_template_zip(env, js, wasm, worker, side):
     binary_name = "godot.tools" if env["tools"] else "godot"
     zip_dir = env.Dir("#bin/.web_zip")
     in_files = [
         js,
         wasm,
+        worker,
         "#platform/web/js/libs/audio.worklet.js",
     ]
     out_files = [
         zip_dir.File(binary_name + ".js"),
         zip_dir.File(binary_name + ".wasm"),
+        zip_dir.File(binary_name + ".worker.js"),
         zip_dir.File(binary_name + ".audio.worklet.js"),
     ]
-    # GDNative/Threads specific
-    if env["gdnative_enabled"]:
-        in_files.append(extra.pop())  # Runtime
+    # Dynamic linking (extensions) specific.
+    if env["dlink_enabled"]:
+        in_files.append(side)  # Side wasm (contains the actual Godot code).
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
-    if env["threads_enabled"]:
-        in_files.append(extra.pop())  # Worker
-        out_files.append(zip_dir.File(binary_name + ".worker.js"))
 
     service_worker = "#misc/dist/html/service-worker.js"
     if env["tools"]:

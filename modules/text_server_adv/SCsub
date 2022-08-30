@@ -140,14 +140,8 @@ if env["builtin_harfbuzz"]:
             env_harfbuzz.Prepend(CPPPATH=["#thirdparty/graphite/include"])
             env_harfbuzz.Append(CCFLAGS=["-DGRAPHITE2_STATIC"])
 
-    if env["platform"] == "android" or env["platform"] == "linuxbsd":
+    if env["platform"] in ["android", "linuxbsd", "web"]:
         env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
-
-    if env["platform"] == "web":
-        if env["threads_enabled"]:
-            env_harfbuzz.Append(CCFLAGS=["-DHAVE_PTHREAD"])
-        else:
-            env_harfbuzz.Append(CCFLAGS=["-DHB_NO_MT"])
 
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/harfbuzz/src"])
 
