@@ -23,7 +23,21 @@ env_openxr.Prepend(
 )
 
 if env["platform"] == "android":
+    # may need to set OPENXR_ANDROID_VERSION_SUFFIX
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
+    env_openxr.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])
+
+    # may need to include java parts of the openxr loader
+elif env["platform"] == "linuxbsd":
+    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_LINUX"])
+
+    if env["x11"]:
+        env_openxr.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
+
+    # FIXME: Review what needs to be set for Android and macOS.
+    env_openxr.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
+elif env["platform"] == "windows":
+    env_openxr.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
 
 # may need to check and set:
 # - XR_USE_TIMESPEC
@@ -31,22 +45,6 @@ if env["platform"] == "android":
 env_thirdparty = env_openxr.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.AppendUnique(CPPDEFINES=["DISABLE_STD_FILESYSTEM"])
-
-if env["platform"] == "android":
-    # may need to set OPENXR_ANDROID_VERSION_SUFFIX
-    env_thirdparty.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])
-
-    # may need to include java parts of the openxr loader
-elif env["platform"] == "linuxbsd":
-    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_LINUX"])
-
-    if env["x11"]:
-        env_thirdparty.AppendUnique(CPPDEFINES=["XR_USE_PLATFORM_XLIB"])
-
-    # FIXME: Review what needs to be set for Android and macOS.
-    env_thirdparty.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
-elif env["platform"] == "windows":
-    env_thirdparty.AppendUnique(CPPDEFINES=["XR_OS_WINDOWS", "NOMINMAX", "XR_USE_PLATFORM_WIN32"])
 
 if "-fno-exceptions" in env_thirdparty["CXXFLAGS"]:
     env_thirdparty["CXXFLAGS"].remove("-fno-exceptions")
