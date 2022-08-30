@@ -741,8 +741,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
 	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
 
-	// Play button group
-	theme->set_stylebox("PlayButtonPanel", "EditorStyles", style_empty);
+	// Launch Pad and Play buttons
+	Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, corner_width);
+	style_launch_pad->set_corner_radius_all(corner_radius * EDSCALE);
+	theme->set_stylebox("LaunchPadNormal", "EditorStyles", style_launch_pad);
+	Ref<StyleBoxFlat> style_launch_pad_movie = style_launch_pad->duplicate();
+	style_launch_pad_movie->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
+	style_launch_pad_movie->set_border_color(accent_color);
+	style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
+	theme->set_stylebox("LaunchPadMovieMode", "EditorStyles", style_launch_pad_movie);
+
+	theme->set_stylebox("MovieWriterButtonNormal", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+	Ref<StyleBoxFlat> style_write_movie_button = style_widget_pressed->duplicate();
+	style_write_movie_button->set_bg_color(accent_color);
+	style_write_movie_button->set_corner_radius_all(corner_radius * EDSCALE);
+	style_write_movie_button->set_default_margin(SIDE_TOP, 0);
+	style_write_movie_button->set_default_margin(SIDE_BOTTOM, 0);
+	style_write_movie_button->set_default_margin(SIDE_LEFT, 0);
+	style_write_movie_button->set_default_margin(SIDE_RIGHT, 0);
+	style_write_movie_button->set_expand_margin_size(SIDE_RIGHT, 2 * EDSCALE);
+	theme->set_stylebox("MovieWriterButtonPressed", "EditorStyles", style_write_movie_button);
 
 	theme->set_stylebox("normal", "MenuButton", style_menu);
 	theme->set_stylebox("hover", "MenuButton", style_widget_hover);
