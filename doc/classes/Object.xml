@@ -345,6 +345,12 @@
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
 			</description>
 		</method>
+		<method name="get_by_path" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="property" type="NodePath" />
+			<description>
+			</description>
+		</method>
 		<method name="get_class" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -360,14 +366,6 @@
 				- [code]source[/code] is a reference to the signal emitter.
 				- [code]signal_name[/code] is the name of the connected signal.
 				- [code]method_name[/code] is the name of the method to which the signal is connected.
-			</description>
-		</method>
-		<method name="get_indexed" qualifiers="const">
-			<return type="Variant" />
-			<param index="0" name="property" type="NodePath" />
-			<description>
-				Gets the object's property indexed by the given [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
-				[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't support actual paths to [Node]s in the scene tree, only colon-separated sub-property paths. For the purpose of nodes, use [method Node.get_node_and_resource] instead.
 			</description>
 		</method>
 		<method name="get_instance_id" qualifiers="const">
@@ -521,6 +519,13 @@
 				If set to [code]true[/code], signal emission is blocked.
 			</description>
 		</method>
+		<method name="set_by_path">
+			<return type="void" />
+			<param index="0" name="property" type="NodePath" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+			</description>
+		</method>
 		<method name="set_deferred">
 			<return type="void" />
 			<param index="0" name="property" type="StringName" />
@@ -528,28 +533,6 @@
 			<description>
 				Assigns a new value to the given property, after the current frame's physics step. This is equivalent to calling [method set] via [method call_deferred], i.e. [code]call_deferred("set", property, value)[/code].
 				[b]Note:[/b] In C#, the property name must be specified as snake_case if it is defined by a built-in Godot node. This doesn't apply to user-defined properties where you should use the same convention as in the C# source (typically PascalCase).
-			</description>
-		</method>
-		<method name="set_indexed">
-			<return type="void" />
-			<param index="0" name="property" type="NodePath" />
-			<param index="1" name="value" type="Variant" />
-			<description>
-				Assigns a new value to the property identified by the [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Example:
-				[codeblocks]
-				[gdscript]
-				var node = Node2D.new()
-				node.set_indexed("position", Vector2(42, 0))
-				node.set_indexed("position:y", -10)
-				print(node.position) # (42, -10)
-				[/gdscript]
-				[csharp]
-				var node = new Node2D();
-				node.SetIndexed("position", new Vector2(42, 0));
-				node.SetIndexed("position:y", -10);
-				GD.Print(node.Position); // (42, -10)
-				[/csharp]
-				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_message_translation">

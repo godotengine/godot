@@ -59,7 +59,7 @@ void AnimatedValuesBackup::restore() const {
 	for (int i = 0; i < entries.size(); i++) {
 		const AnimatedValuesBackup::Entry *entry = &entries[i];
 		if (entry->bone_idx == -1) {
-			entry->object->set_indexed(entry->subpath, entry->value);
+			entry->object->set_by_path(entry->subpath, entry->value);
 		} else {
 			Array arr = entry->value;
 			if (arr.size() == 3) {
@@ -624,7 +624,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				if (update_mode == Animation::UPDATE_CAPTURE) {
 					if (p_started || pa->capture == Variant()) {
-						pa->capture = pa->object->get_indexed(pa->subpath);
+						pa->capture = pa->object->get_by_path(pa->subpath);
 					}
 
 					int key_count = a->track_get_key_count(i);
@@ -692,7 +692,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						switch (pa->special) {
 							case SP_NONE: {
 								bool valid;
-								pa->object->set_indexed(pa->subpath, value, &valid); //you are not speshul
+								pa->object->set_by_path(pa->subpath, value, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 								if (!valid) {
 									ERR_PRINT("Failed setting track value '" + String(pa->owner->path) + "'. Check if the property exists or the type of key is valid. Animation '" + a->get_name() + "' at node '" + get_path() + "'.");
@@ -1112,7 +1112,7 @@ void AnimationPlayer::_animation_update_transforms() {
 		switch (pa->special) {
 			case SP_NONE: {
 				bool valid;
-				pa->object->set_indexed(pa->subpath, pa->value_accum, &valid); //you are not speshul
+				pa->object->set_by_path(pa->subpath, pa->value_accum, &valid); //you are not speshul
 #ifdef DEBUG_ENABLED
 
 				if (!valid) {
@@ -1171,7 +1171,7 @@ void AnimationPlayer::_animation_update_transforms() {
 		TrackNodeCache::BezierAnim *ba = cache_update_bezier[i];
 
 		ERR_CONTINUE(ba->accum_pass != accum_pass);
-		ba->object->set_indexed(ba->bezier_property, ba->bezier_accum);
+		ba->object->set_by_path(ba->bezier_property, ba->bezier_accum);
 	}
 
 	cache_update_bezier_size = 0;
@@ -2006,7 +2006,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::backup_animated_values(Node *p_root_o
 					entry.object = E.value.object;
 					entry.subpath = E.value.subpath;
 					bool valid;
-					entry.value = E.value.object->get_indexed(E.value.subpath, &valid);
+					entry.value = E.value.object->get_by_path(E.value.subpath, &valid);
 					entry.bone_idx = -1;
 					if (valid) {
 						backup->entries.push_back(entry);

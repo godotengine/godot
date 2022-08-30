@@ -607,8 +607,8 @@ private:
 	TypedArray<Dictionary> _get_incoming_connections() const;
 	void _set_bind(const StringName &p_set, const Variant &p_value);
 	Variant _get_bind(const StringName &p_name) const;
-	void _set_indexed_bind(const NodePath &p_name, const Variant &p_value);
-	Variant _get_indexed_bind(const NodePath &p_name) const;
+	void _set_by_path_bind(const NodePath &p_name, const Variant &p_value);
+	Variant _get_by_path_bind(const NodePath &p_name) const;
 
 	_FORCE_INLINE_ void _construct_object(bool p_reference);
 
@@ -805,8 +805,8 @@ public:
 
 	void set(const StringName &p_name, const Variant &p_value, bool *r_valid = nullptr);
 	Variant get(const StringName &p_name, bool *r_valid = nullptr) const;
-	void set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
-	Variant get_indexed(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
+	void set_by_path(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid = nullptr);
+	Variant get_by_path(const Vector<StringName> &p_names, bool *r_valid = nullptr) const;
 
 	void get_property_list(List<PropertyInfo> *p_list, bool p_reversed = false) const;
 	void validate_property(PropertyInfo &p_property) const;

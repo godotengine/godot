@@ -1393,14 +1393,14 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 								Variant value = a->track_get_key_value(i, idx);
 								value = _post_process_key_value(a, i, value, t->object);
-								t->object->set_indexed(t->subpath, value);
+								t->object->set_by_path(t->subpath, value);
 							} else {
 								List<int> indices;
 								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
 									value = _post_process_key_value(a, i, value, t->object);
-									t->object->set_indexed(t->subpath, value);
+									t->object->set_by_path(t->subpath, value);
 								}
 							}
 						}
@@ -1698,13 +1698,13 @@ void AnimationTree::_process_graph(double p_delta) {
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+					t->object->set_by_path(t->subpath, t->value);
 
 				} break;
 				case Animation::TYPE_BEZIER: {
 					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+					t->object->set_by_path(t->subpath, t->value);
 
 				} break;
 				default: {

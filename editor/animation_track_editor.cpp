@@ -4220,12 +4220,12 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	if (res.is_valid()) {
 		property_info_base = res;
 		if (r_current_val) {
-			*r_current_val = res->get_indexed(leftover_path);
+			*r_current_val = res->get_by_path(leftover_path);
 		}
 	} else if (node) {
 		property_info_base = node;
 		if (r_current_val) {
-			*r_current_val = node->get_indexed(leftover_path);
+			*r_current_val = node->get_by_path(leftover_path);
 		}
 	}
 

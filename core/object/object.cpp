@@ -388,7 +388,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	}
 }
 
-void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
+void Object::set_by_path(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
 	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
@@ -447,7 +447,7 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	ERR_FAIL_COND(!value_stack.is_empty());
 }
 
-Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
+Variant Object::get_by_path(const Vector<StringName> &p_names, bool *r_valid) const {
 	if (p_names.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
@@ -1355,12 +1355,12 @@ Variant Object::_get_bind(const StringName &p_name) const {
 	return get(p_name);
 }
 
-void Object::_set_indexed_bind(const NodePath &p_name, const Variant &p_value) {
-	set_indexed(p_name.get_as_property_path().get_subnames(), p_value);
+void Object::_set_by_path_bind(const NodePath &p_name, const Variant &p_value) {
+	set_by_path(p_name.get_as_property_path().get_subnames(), p_value);
 }
 
-Variant Object::_get_indexed_bind(const NodePath &p_name) const {
-	return get_indexed(p_name.get_as_property_path().get_subnames());
+Variant Object::_get_by_path_bind(const NodePath &p_name) const {
+	return get_by_path(p_name.get_as_property_path().get_subnames());
 }
 
 void Object::initialize_class() {
@@ -1468,8 +1468,8 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
-	ClassDB::bind_method(D_METHOD("set_indexed", "property", "value"), &Object::_set_indexed_bind);
-	ClassDB::bind_method(D_METHOD("get_indexed", "property"), &Object::_get_indexed_bind);
+	ClassDB::bind_method(D_METHOD("set_by_path", "property", "value"), &Object::_set_by_path_bind);
+	ClassDB::bind_method(D_METHOD("get_by_path", "property"), &Object::_get_by_path_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
 	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
