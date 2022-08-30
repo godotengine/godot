@@ -42,6 +42,7 @@
 class PackedScene;
 class Node;
 class SceneTreeTween;
+class ShortCut;
 class Spatial;
 class Viewport;
 class Material;
@@ -230,6 +231,9 @@ private:
 	SelfList<Node>::List xform_change_list;
 
 	friend class ScriptDebuggerRemote;
+
+	Ref<ShortCut> debugger_stop_shortcut;
+
 #ifdef DEBUG_ENABLED
 
 	Map<int, NodePath> live_edit_node_path_cache;

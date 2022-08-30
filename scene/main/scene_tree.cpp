@@ -38,10 +38,12 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
+#include "core/variant_parser.h"
 #include "main/input_default.h"
 #include "node.h"
 #include "scene/animation/scene_tree_tween.h"
 #include "scene/debugger/script_debugger_remote.h"
+#include "scene/gui/shortcut.h"
 #include "scene/resources/dynamic_font.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
@@ -463,9 +465,35 @@ void SceneTree::input_event(const Ref<InputEvent> &p_event) {
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "_vp_input", ev); //special one for GUI, as controls use their own process check
 
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote()) {
-		//quit from game window using F8
+		// Quit from game window using the stop shortcut (F8 by default).
+		// The custom shortcut is provided via environment variable when running from the editor.
+		if (debugger_stop_shortcut.is_null()) {
+			String shortcut_str = OS::get_singleton()->get_environment("__GODOT_EDITOR_STOP_SHORTCUT__");
+			if (!shortcut_str.empty()) {
+				Variant shortcut_var;
+
+				VariantParser::StreamString ss;
+				ss.s = shortcut_str;
+
+				String errs;
+				int line;
+				VariantParser::parse(&ss, shortcut_var, errs, line);
+				debugger_stop_shortcut = shortcut_var;
+			}
+
+			if (debugger_stop_shortcut.is_null()) {
+				// Define a default shortcut if it wasn't provided or is invalid.
+				Ref<InputEventKey> ie;
+				ie.instance();
+				ie->set_scancode(KEY_F8);
+				ie->set_unicode(KEY_F8);
+				debugger_stop_shortcut.instance();
+				debugger_stop_shortcut->set_shortcut(ie);
+			}
+		}
+
 		Ref<InputEventKey> k = ev;
-		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_scancode() == KEY_F8) {
+		if (k.is_valid() && k->is_pressed() && !k->is_echo() && debugger_stop_shortcut->is_shortcut(k)) {
 			ScriptDebugger::get_singleton()->request_quit();
 		}
 	}

@@ -235,6 +235,11 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		}
 	}
 
+	// Pass the debugger stop shortcut to the running instance(s).
+	String shortcut;
+	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop"), shortcut);
+	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
+
 	printf("Running: %ls", exec.c_str());
 	for (List<String>::Element *E = args.front(); E; E = E->next()) {
 		printf(" %ls", E->get().c_str());
