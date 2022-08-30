@@ -65,10 +65,17 @@ Ref<PropertyTweener> SceneTreeTween::tween_property(Object *p_target, NodePath p
 	ERR_FAIL_COND_V_MSG(!valid, nullptr, "SceneTreeTween invalid. Either finished or created outside scene tree.");
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a SceneTreeTween that has started. Use stop() first.");
 
-#ifdef DEBUG_ENABLED
 	Variant::Type property_type = p_target->get_indexed(p_property.get_as_property_path().get_subnames()).get_type();
-	ERR_FAIL_COND_V_MSG(property_type != p_to.get_type(), Ref<PropertyTweener>(), "Type mismatch between property and final value: " + Variant::get_type_name(property_type) + " and " + Variant::get_type_name(p_to.get_type()));
-#endif
+	if (property_type != p_to.get_type()) {
+		// Cast p_to between floats and ints to avoid minor annoyances.
+		if (property_type == Variant::REAL && p_to.get_type() == Variant::INT) {
+			p_to = float(p_to);
+		} else if (property_type == Variant::INT && p_to.get_type() == Variant::REAL) {
+			p_to = int(p_to);
+		} else {
+			ERR_FAIL_V_MSG(Ref<PropertyTweener>(), "Type mismatch between property and final value: " + Variant::get_type_name(property_type) + " and " + Variant::get_type_name(p_to.get_type()));
+		}
+	}
 
 	Ref<PropertyTweener> tweener = memnew(PropertyTweener(p_target, p_property, p_to, p_duration));
 	append(tweener);
