@@ -426,6 +426,7 @@ private:
 	int dock_popup_selected_idx = -1;
 	int dock_select_rect_over_idx = -1;
 
+	PanelContainer *tabbar_panel = nullptr;
 	HBoxContainer *tabbar_container = nullptr;
 	Button *distraction_free = nullptr;
 	Button *scene_tab_add = nullptr;

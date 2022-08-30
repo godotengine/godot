@@ -258,5 +258,8 @@
 		<theme_item name="tab_unselected" data_type="style" type="StyleBox">
 			The style of the other, unselected tabs.
 		</theme_item>
+		<theme_item name="tabbar_background" data_type="style" type="StyleBox">
+			The style for the background fill of the [TabBar] area.
+		</theme_item>
 	</theme_items>
 </class>

@@ -163,6 +163,10 @@ void TabContainer::_notification(int p_what) {
 
 			int header_height = _get_top_margin();
 
+			// Draw background for the tabbar.
+			Ref<StyleBox> tabbar_background = get_theme_stylebox(SNAME("tabbar_background"));
+			tabbar_background->draw(canvas, Rect2(0, 0, size.width, header_height));
+			// Draw the background for the tab's content.
 			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 
 			// Draw the popup menu.
