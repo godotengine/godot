@@ -54,7 +54,7 @@ private:
 
 protected:
 	String _get_root_path() const;
-	String _get_root_string() const;
+	virtual String _get_root_string() const;
 
 	AccessType get_access_type() const;
 	String fix_path(String p_path) const;
