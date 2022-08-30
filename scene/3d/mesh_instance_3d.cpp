@@ -115,8 +115,8 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	if (mesh.is_valid()) {
 		mesh->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
-		_mesh_changed();
 		set_base(mesh->get_rid());
+		_mesh_changed();
 	} else {
 		blend_shape_tracks.clear();
 		blend_shape_properties.clear();
@@ -377,6 +377,13 @@ void MeshInstance3D::_mesh_changed() {
 			set_blend_shape_value(i, blend_shape_tracks[i]);
 		} else {
 			set_blend_shape_value(i, 0);
+		}
+	}
+
+	int surface_count = mesh->get_surface_count();
+	for (int surface_index = 0; surface_index < surface_count; ++surface_index) {
+		if (surface_override_materials[surface_index].is_valid()) {
+			RS::get_singleton()->instance_set_surface_override_material(get_instance(), surface_index, surface_override_materials[surface_index]->get_rid());
 		}
 	}
 
