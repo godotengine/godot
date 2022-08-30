@@ -35,35 +35,76 @@
 #include "core/os/keyboard.h"
 #include "core/string_buffer.h"
 
-CharType VariantParser::StreamFile::get_char() {
-	return f->get_8();
+CharType VariantParser::Stream::get_char() {
+	// is within buffer?
+	if (readahead_pointer < readahead_filled) {
+		return readahead_buffer[readahead_pointer++];
+	}
+
+	// attempt to readahead
+	readahead_filled = _read_buffer(readahead_buffer, READAHEAD_SIZE);
+	if (readahead_filled) {
+		readahead_pointer = 0;
+	} else {
+		// EOF
+		readahead_pointer = 1;
+		eof = true;
+		return 0;
+	}
+	return get_char();
+}
+
+uint32_t VariantParser::StreamFile::_read_buffer(CharType *p_buffer, uint32_t p_num_chars) {
+	// The buffer is assumed to include at least one character (for null terminator)
+	ERR_FAIL_COND_V(!p_num_chars, 0);
+
+	uint8_t *temp = (uint8_t *)alloca(p_num_chars);
+	uint64_t num_read = f->get_buffer(temp, p_num_chars);
+	ERR_FAIL_COND_V(num_read == UINT64_MAX, 0);
+
+	// translate to wchar
+	for (uint32_t n = 0; n < num_read; n++) {
+		p_buffer[n] = temp[n];
+	}
+
+	// could be less than p_num_chars, or zero
+	return num_read;
 }
 
 bool VariantParser::StreamFile::is_utf8() const {
 	return true;
 }
-bool VariantParser::StreamFile::is_eof() const {
-	return f->eof_reached();
-}
 
-CharType VariantParser::StreamString::get_char() {
-	if (pos > s.length()) {
-		return 0;
-	} else if (pos == s.length()) {
-		// You need to try to read again when you have reached the end for EOF to be reported,
-		// so this works the same as files (like StreamFile does)
-		pos++;
-		return 0;
-	} else {
-		return s[pos++];
+uint32_t VariantParser::StreamString::_read_buffer(CharType *p_buffer, uint32_t p_num_chars) {
+	// The buffer is assumed to include at least one character (for null terminator)
+	ERR_FAIL_COND_V(!p_num_chars, 0);
+
+	int available = MAX(s.length() - pos, 0);
+	if (available >= (int)p_num_chars) {
+		const CharType *src = s.ptr();
+		src += pos;
+		memcpy(p_buffer, src, p_num_chars * sizeof(CharType));
+		pos += p_num_chars;
+
+		return p_num_chars;
 	}
+
+	// going to reach EOF
+	if (available) {
+		const CharType *src = s.ptr();
+		src += pos;
+		memcpy(p_buffer, src, available * sizeof(CharType));
+		pos += available;
+	}
+
+	// add a zero
+	p_buffer[available] = 0;
+
+	return available;
 }
 
 bool VariantParser::StreamString::is_utf8() const {
 	return false;
-}
-bool VariantParser::StreamString::is_eof() const {
-	return pos > s.length();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
