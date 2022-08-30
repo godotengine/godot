@@ -227,7 +227,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	String current_material_library;
 	String current_material;
 	String current_group;
-	uint32_t smooth_group = 0;
 	bool smoothing = true;
 
 	while (true) {
@@ -317,10 +316,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					ERR_FAIL_INDEX_V(vtx, vertices.size(), ERR_FILE_CORRUPT);
 
 					Vector3 vertex = vertices[vtx];
-					if (!smoothing) {
-						smooth_group++;
-					}
-					surf_tool->set_smooth_group(smooth_group);
+					surf_tool->set_smooth_normals(smoothing);
 					surf_tool->add_vertex(vertex);
 				}
 
@@ -335,7 +331,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				do_smooth = true;
 			}
 			if (do_smooth != smoothing) {
-				smooth_group++;
 				smoothing = do_smooth;
 			}
 		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh

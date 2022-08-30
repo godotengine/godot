@@ -236,9 +236,9 @@
 				[b]Note:[/b] This function takes an enum, not the exact number of weights.
 			</description>
 		</method>
-		<method name="set_smooth_group">
+		<method name="set_smooth_normals">
 			<return type="void" />
-			<param index="0" name="index" type="int" />
+			<param index="0" name="smooth" type="bool" />
 			<description>
 				Specifies whether the current vertex (if using only vertex arrays) or current index (if also using index arrays) should use smooth normals for normal calculation.
 			</description>

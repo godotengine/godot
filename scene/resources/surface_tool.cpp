@@ -123,7 +123,7 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 		}
 	}
 
-	if (smooth_group != p_vertex.smooth_group) {
+	if (smooth_normal != p_vertex.smooth_normal) {
 		return false;
 	}
 
@@ -141,7 +141,7 @@ uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int), h);
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
 	h = hash_djb2_buffer((const uint8_t *)&p_vtx.custom[0], sizeof(Color) * RS::ARRAY_CUSTOM_COUNT, h);
-	h = hash_murmur3_one_32(p_vtx.smooth_group, h);
+	h = hash_djb2_buffer((const uint8_t *)&p_vtx.smooth_normal, sizeof(bool), h);
 	h = hash_fmix32(h);
 	return h;
 }
@@ -217,7 +217,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	vtx.bones = last_bones;
 	vtx.tangent = last_tangent.normal;
 	vtx.binormal = last_normal.cross(last_tangent.normal).normalized() * last_tangent.d;
-	vtx.smooth_group = last_smooth_group;
+	vtx.smooth_normal = last_smooth_normal;
 
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		vtx.custom[i] = last_custom[i];
@@ -351,8 +351,8 @@ void SurfaceTool::set_weights(const Vector<float> &p_weights) {
 	last_weights = p_weights;
 }
 
-void SurfaceTool::set_smooth_group(uint32_t p_group) {
-	last_smooth_group = p_group;
+void SurfaceTool::set_smooth_normals(bool p_smooth) {
+	last_smooth_normal = p_smooth;
 }
 
 void SurfaceTool::add_triangle_fan(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<Color> &p_colors, const Vector<Vector2> &p_uv2s, const Vector<Vector3> &p_normals, const Vector<Plane> &p_tangents) {
@@ -1167,21 +1167,29 @@ void SurfaceTool::generate_normals(bool p_flip) {
 		}
 
 		for (int i = 0; i < 3; i++) {
-			Vector3 *lv = vertex_hash.getptr(v[i]);
-			if (!lv) {
-				vertex_hash.insert(v[i], normal);
+			if (v[i].smooth_normal) {
+				Vector3 *lv = vertex_hash.getptr(v[i]);
+				if (!lv) {
+					vertex_hash.insert(v[i], normal);
+				} else {
+					(*lv) += normal;
+				}
+
 			} else {
-				(*lv) += normal;
+				v[i].normal = normal;
 			}
 		}
 	}
 
 	for (uint32_t vi = 0; vi < vertex_array.size(); vi++) {
-		Vector3 *lv = vertex_hash.getptr(vertex_array[vi]);
-		if (!lv) {
-			vertex_array[vi].normal = Vector3();
-		} else {
-			vertex_array[vi].normal = lv->normalized();
+		Vertex vertex = vertex_array[vi];
+		if (vertex.smooth_normal) {
+			Vector3 *lv = vertex_hash.getptr(vertex);
+			if (!lv) {
+				vertex_array[vi].normal = Vector3();
+			} else {
+				vertex_array[vi].normal = lv->normalized();
+			}
 		}
 	}
 
@@ -1209,7 +1217,7 @@ void SurfaceTool::clear() {
 	index_array.clear();
 	vertex_array.clear();
 	material.unref();
-	last_smooth_group = 0;
+	last_smooth_normal = false;
 	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
 		last_custom_format[i] = CUSTOM_MAX;
 	}
@@ -1308,7 +1316,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bones", "bones"), &SurfaceTool::set_bones);
 	ClassDB::bind_method(D_METHOD("set_weights", "weights"), &SurfaceTool::set_weights);
 	ClassDB::bind_method(D_METHOD("set_custom", "channel_index", "custom_color"), &SurfaceTool::set_custom);
-	ClassDB::bind_method(D_METHOD("set_smooth_group", "index"), &SurfaceTool::set_smooth_group);
+	ClassDB::bind_method(D_METHOD("set_smooth_normals", "smooth"), &SurfaceTool::set_smooth_normals);
 
 	ClassDB::bind_method(D_METHOD("add_triangle_fan", "vertices", "uvs", "colors", "uv2s", "normals", "tangents"), &SurfaceTool::add_triangle_fan, DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Color>()), DEFVAL(Vector<Vector2>()), DEFVAL(Vector<Vector3>()), DEFVAL(Vector<Plane>()));
 

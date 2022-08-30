@@ -50,7 +50,7 @@ public:
 		Vector<int> bones;
 		Vector<float> weights;
 		Color custom[RS::ARRAY_CUSTOM_COUNT];
-		uint32_t smooth_group = 0;
+		bool smooth_normal = false;
 
 		bool operator==(const Vertex &p_vertex) const;
 
@@ -127,7 +127,7 @@ private:
 	Vector<int> last_bones;
 	Vector<float> last_weights;
 	Plane last_tangent;
-	uint32_t last_smooth_group = 0;
+	uint32_t last_smooth_normal = 0;
 
 	SkinWeightCount skin_weights = SKIN_4_WEIGHTS;
 
@@ -169,7 +169,7 @@ public:
 	void set_custom(int p_channel_index, const Color &p_custom);
 	void set_bones(const Vector<int> &p_bones);
 	void set_weights(const Vector<float> &p_weights);
-	void set_smooth_group(uint32_t p_group);
+	void set_smooth_normals(bool p_smooth);
 
 	void add_vertex(const Vector3 &p_vertex);
 
