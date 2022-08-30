@@ -69,7 +69,6 @@ public:
 
 	/* Texture API */
 
-	DummyTexture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
 
 	virtual RID texture_allocate() override {

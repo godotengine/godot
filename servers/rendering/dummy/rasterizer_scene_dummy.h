@@ -31,12 +31,65 @@
 #ifndef RASTERIZER_SCENE_DUMMY_H
 #define RASTERIZER_SCENE_DUMMY_H
 
+#include "core/templates/paged_allocator.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "storage/utilities.h"
 
 class RasterizerSceneDummy : public RendererSceneRender {
 public:
-	RenderGeometryInstance *geometry_instance_create(RID p_base) override { return nullptr; }
-	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override {}
+	class GeometryInstanceDummy : public RenderGeometryInstance {
+	public:
+		GeometryInstanceDummy() {}
+
+		virtual void _mark_dirty() override {}
+
+		virtual void set_skeleton(RID p_skeleton) override {}
+		virtual void set_material_override(RID p_override) override {}
+		virtual void set_material_overlay(RID p_overlay) override {}
+		virtual void set_surface_materials(const Vector<RID> &p_materials) override {}
+		virtual void set_mesh_instance(RID p_mesh_instance) override {}
+		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override {}
+		virtual void set_lod_bias(float p_lod_bias) override {}
+		virtual void set_layer_mask(uint32_t p_layer_mask) override {}
+		virtual void set_fade_range(bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override {}
+		virtual void set_parent_fade_alpha(float p_alpha) override {}
+		virtual void set_transparency(float p_transparency) override {}
+		virtual void set_use_baked_light(bool p_enable) override {}
+		virtual void set_use_dynamic_gi(bool p_enable) override {}
+		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override {}
+		virtual void set_lightmap_capture(const Color *p_sh9) override {}
+		virtual void set_instance_shader_uniforms_offset(int32_t p_offset) override {}
+		virtual void set_cast_double_sided_shadows(bool p_enable) override {}
+
+		virtual Transform3D get_transform() override { return Transform3D(); }
+		virtual AABB get_aabb() override { return AABB(); }
+
+		virtual void pair_light_instances(const RID *p_light_instances, uint32_t p_light_instance_count) override {}
+		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override {}
+		virtual void pair_decal_instances(const RID *p_decal_instances, uint32_t p_decal_instance_count) override {}
+		virtual void pair_voxel_gi_instances(const RID *p_voxel_gi_instances, uint32_t p_voxel_gi_instance_count) override {}
+
+		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override {}
+	};
+
+	PagedAllocator<GeometryInstanceDummy> geometry_instance_alloc;
+
+public:
+	RenderGeometryInstance *geometry_instance_create(RID p_base) override {
+		RS::InstanceType type = RendererDummy::Utilities::get_singleton()->get_base_type(p_base);
+		ERR_FAIL_COND_V(!((1 << type) & RS::INSTANCE_GEOMETRY_MASK), nullptr);
+
+		GeometryInstanceDummy *ginstance = geometry_instance_alloc.alloc();
+
+		return ginstance;
+	}
+
+	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override {
+		GeometryInstanceDummy *ginstance = static_cast<GeometryInstanceDummy *>(p_geometry_instance);
+		ERR_FAIL_COND(!ginstance);
+
+		geometry_instance_alloc.free(ginstance);
+	}
 
 	uint32_t geometry_instance_get_pair_mask() override { return 0; }
 
