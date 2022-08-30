@@ -474,7 +474,7 @@ void DynamicFontImportSettings::_main_prop_changed(const String &p_edited_proper
 
 	font_preview_label->add_theme_font_override("font", font_preview);
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
-	font_preview_label->update();
+	font_preview_label->queue_redraw();
 }
 
 /*************************************************************************/
@@ -1096,7 +1096,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 	}
 	font_preview_label->add_theme_font_override("font", font_preview);
 	font_preview_label->add_theme_font_size_override("font_size", 200 * EDSCALE);
-	font_preview_label->update();
+	font_preview_label->queue_redraw();
 
 	_variations_validate();
 

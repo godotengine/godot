@@ -231,7 +231,7 @@ void EditorProperty::_notification(int p_what) {
 				bottom_child_rect = bottom_rect;
 			}
 
-			update(); //need to redraw text
+			queue_redraw(); //need to redraw text
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -398,7 +398,7 @@ void EditorProperty::_notification(int p_what) {
 
 void EditorProperty::set_label(const String &p_label) {
 	label = p_label;
-	update();
+	queue_redraw();
 }
 
 String EditorProperty::get_label() const {
@@ -478,7 +478,7 @@ void EditorProperty::update_revert_and_pin_status() {
 		}
 		can_revert = new_can_revert;
 		pinned = new_pinned;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -499,7 +499,7 @@ bool EditorProperty::use_keying_next() const {
 
 void EditorProperty::set_checkable(bool p_checkable) {
 	checkable = p_checkable;
-	update();
+	queue_redraw();
 	queue_sort();
 }
 
@@ -509,7 +509,7 @@ bool EditorProperty::is_checkable() const {
 
 void EditorProperty::set_checked(bool p_checked) {
 	checked = p_checked;
-	update();
+	queue_redraw();
 }
 
 bool EditorProperty::is_checked() const {
@@ -518,18 +518,18 @@ bool EditorProperty::is_checked() const {
 
 void EditorProperty::set_draw_warning(bool p_draw_warning) {
 	draw_warning = p_draw_warning;
-	update();
+	queue_redraw();
 }
 
 void EditorProperty::set_keying(bool p_keying) {
 	keying = p_keying;
-	update();
+	queue_redraw();
 	queue_sort();
 }
 
 void EditorProperty::set_deletable(bool p_deletable) {
 	deletable = p_deletable;
-	update();
+	queue_redraw();
 	queue_sort();
 }
 
@@ -552,7 +552,7 @@ void EditorProperty::_focusable_focused(int p_index) {
 	bool already_selected = selected;
 	selected = true;
 	selected_focusable = p_index;
-	update();
+	queue_redraw();
 	if (!already_selected && selected) {
 		emit_signal(SNAME("selected"), property, selected_focusable);
 	}
@@ -571,7 +571,7 @@ void EditorProperty::select(int p_focusable) {
 		focusables[p_focusable]->grab_focus();
 	} else {
 		selected = true;
-		update();
+		queue_redraw();
 	}
 
 	if (!already_selected && selected) {
@@ -582,7 +582,7 @@ void EditorProperty::select(int p_focusable) {
 void EditorProperty::deselect() {
 	selected = false;
 	selected_focusable = -1;
-	update();
+	queue_redraw();
 }
 
 bool EditorProperty::is_selected() const {
@@ -608,25 +608,25 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		bool new_keying_hover = keying_rect.has_point(mpos) && !button_left;
 		if (new_keying_hover != keying_hover) {
 			keying_hover = new_keying_hover;
-			update();
+			queue_redraw();
 		}
 
 		bool new_delete_hover = delete_rect.has_point(mpos) && !button_left;
 		if (new_delete_hover != delete_hover) {
 			delete_hover = new_delete_hover;
-			update();
+			queue_redraw();
 		}
 
 		bool new_revert_hover = revert_rect.has_point(mpos) && !button_left;
 		if (new_revert_hover != revert_hover) {
 			revert_hover = new_revert_hover;
-			update();
+			queue_redraw();
 		}
 
 		bool new_check_hover = check_rect.has_point(mpos) && !button_left;
 		if (new_check_hover != check_hover) {
 			check_hover = new_check_hover;
-			update();
+			queue_redraw();
 		}
 	}
 
@@ -641,7 +641,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		if (!selected && selectable) {
 			selected = true;
 			emit_signal(SNAME("selected"), property, -1);
-			update();
+			queue_redraw();
 		}
 
 		if (keying_rect.has_point(mpos)) {
@@ -681,7 +681,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (check_rect.has_point(mpos)) {
 			checked = !checked;
-			update();
+			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
@@ -912,7 +912,7 @@ void EditorProperty::menu_option(int p_option) {
 		} break;
 		case MENU_PIN_VALUE: {
 			emit_signal(SNAME("property_pinned"), property, !pinned);
-			update();
+			queue_redraw();
 		} break;
 		case MENU_OPEN_DOCUMENTATION: {
 			ScriptEditor::get_singleton()->goto_help(doc_path);
@@ -1372,26 +1372,26 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 
 			dropping = children_can_drop;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
 			dropping = false;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
 			if (dropping) {
 				dropping_unfold_timer->start();
 			}
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (dropping) {
 				dropping_unfold_timer->stop();
 			}
-			update();
+			queue_redraw();
 		} break;
 	}
 }
@@ -1477,7 +1477,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			fold();
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
-		update();
+		queue_redraw();
 	}
 }
 
@@ -1494,7 +1494,7 @@ void EditorInspectorSection::unfold() {
 
 	object->editor_set_section_unfold(section, true);
 	vbox->show();
-	update();
+	queue_redraw();
 }
 
 void EditorInspectorSection::fold() {
@@ -1508,7 +1508,7 @@ void EditorInspectorSection::fold() {
 
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
-	update();
+	queue_redraw();
 }
 
 bool EditorInspectorSection::has_revertable_properties() const {
@@ -1523,7 +1523,7 @@ void EditorInspectorSection::property_can_revert_changed(const String &p_path, b
 		revertable_properties.erase(p_path);
 	}
 	if (has_revertable_properties() != had_revertable_properties) {
-		update();
+		queue_redraw();
 	}
 }
 
@@ -2052,8 +2052,8 @@ void EditorInspectorArray::_setup() {
 		ae.panel->set_drag_forwarding(this);
 		ae.panel->set_meta("index", begin_array_index + i);
 		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
-		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
-		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::update));
+		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
+		ae.panel->connect("focus_exited", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
 		ae.panel->connect("draw", callable_mp(this, &EditorInspectorArray::_panel_draw).bind(i));
 		ae.panel->connect("gui_input", callable_mp(this, &EditorInspectorArray::_panel_gui_input).bind(i));
 		ae.panel->add_theme_style_override(SNAME("panel"), i % 2 ? odd_style : even_style);
@@ -2155,7 +2155,7 @@ bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant
 		return false;
 	}
 	// First, update drawing.
-	control_dropping->update();
+	control_dropping->queue_redraw();
 
 	if (p_data.get_type() != Variant::DICTIONARY) {
 		return false;
@@ -2206,14 +2206,14 @@ void EditorInspectorArray::_notification(int p_what) {
 			Dictionary dict = get_viewport()->gui_get_drag_data();
 			if (dict.has("type") && dict["type"] == "property_array_element" && String(dict["property_array_prefix"]) == array_element_prefix) {
 				dropping = true;
-				control_dropping->update();
+				control_dropping->queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
-				control_dropping->update();
+				control_dropping->queue_redraw();
 			}
 		} break;
 	}

@@ -36,7 +36,7 @@
 void RayCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
-		update();
+		queue_redraw();
 	}
 }
 
@@ -100,7 +100,7 @@ Vector2 RayCast2D::get_collision_normal() const {
 
 void RayCast2D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
-	update();
+	queue_redraw();
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		set_physics_process_internal(p_enabled);
 	}
@@ -219,7 +219,7 @@ void RayCast2D::_update_raycast_state() {
 	}
 
 	if (prev_collision_state != collided) {
-		update();
+		queue_redraw();
 	}
 }
 

@@ -351,7 +351,7 @@ void TileMapEditorTilesPlugin::_update_atlas_view() {
 
 	tile_atlas_view->set_atlas_source(*tile_map->get_tileset(), atlas_source, source_id);
 	TilesEditorPlugin::get_singleton()->synchronize_atlas_view(tile_atlas_view);
-	tile_atlas_control->update();
+	tile_atlas_control->queue_redraw();
 }
 
 void TileMapEditorTilesPlugin::_update_scenes_collection_view() {
@@ -1651,8 +1651,8 @@ void TileMapEditorTilesPlugin::_update_tileset_selection_from_selection_pattern(
 		}
 	}
 	_update_source_display();
-	tile_atlas_control->update();
-	alternative_tiles_control->update();
+	tile_atlas_control->queue_redraw();
+	alternative_tiles_control->queue_redraw();
 }
 
 void TileMapEditorTilesPlugin::_tile_atlas_control_draw() {
@@ -1736,7 +1736,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_mouse_exited() {
 	hovered_tile.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
 	hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
 	tile_set_dragging_selection = false;
-	tile_atlas_control->update();
+	tile_atlas_control->queue_redraw();
 }
 
 void TileMapEditorTilesPlugin::_tile_atlas_control_gui_input(const Ref<InputEvent> &p_event) {
@@ -1780,8 +1780,8 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_gui_input(const Ref<InputEven
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		tile_atlas_control->update();
-		alternative_tiles_control->update();
+		tile_atlas_control->queue_redraw();
+		alternative_tiles_control->queue_redraw();
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1841,7 +1841,7 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_gui_input(const Ref<InputEven
 			}
 			tile_set_dragging_selection = false;
 		}
-		tile_atlas_control->update();
+		tile_atlas_control->queue_redraw();
 	}
 }
 
@@ -1895,7 +1895,7 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_mouse_exited() {
 	hovered_tile.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
 	hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
 	tile_set_dragging_selection = false;
-	alternative_tiles_control->update();
+	alternative_tiles_control->queue_redraw();
 }
 
 void TileMapEditorTilesPlugin::_tile_alternatives_control_gui_input(const Ref<InputEvent> &p_event) {
@@ -1938,8 +1938,8 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_gui_input(const Ref<In
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		tile_atlas_control->update();
-		alternative_tiles_control->update();
+		tile_atlas_control->queue_redraw();
+		alternative_tiles_control->queue_redraw();
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
@@ -1959,8 +1959,8 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_gui_input(const Ref<In
 			}
 			_update_selection_pattern_from_tileset_tiles_selection();
 		}
-		tile_atlas_control->update();
-		alternative_tiles_control->update();
+		tile_atlas_control->queue_redraw();
+		alternative_tiles_control->queue_redraw();
 	}
 }
 
@@ -3618,7 +3618,7 @@ void TileMapEditor::_tab_changed(int p_tab_id) {
 	}
 
 	// Graphical update.
-	tabs_data[tabs_bar->get_current_tab()].panel->update();
+	tabs_data[tabs_bar->get_current_tab()].panel->queue_redraw();
 	CanvasItemEditor::get_singleton()->update_viewport();
 }
 

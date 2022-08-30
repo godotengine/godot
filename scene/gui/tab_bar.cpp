@@ -129,39 +129,39 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (pos.x < decr->get_width()) {
 					if (highlight_arrow != 1) {
 						highlight_arrow = 1;
-						update();
+						queue_redraw();
 					}
 				} else if (pos.x < incr->get_width() + decr->get_width()) {
 					if (highlight_arrow != 0) {
 						highlight_arrow = 0;
-						update();
+						queue_redraw();
 					}
 				} else if (highlight_arrow != -1) {
 					highlight_arrow = -1;
-					update();
+					queue_redraw();
 				}
 			} else {
 				int limit_minus_buttons = get_size().width - incr->get_width() - decr->get_width();
 				if (pos.x > limit_minus_buttons + decr->get_width()) {
 					if (highlight_arrow != 1) {
 						highlight_arrow = 1;
-						update();
+						queue_redraw();
 					}
 				} else if (pos.x > limit_minus_buttons) {
 					if (highlight_arrow != 0) {
 						highlight_arrow = 0;
-						update();
+						queue_redraw();
 					}
 				} else if (highlight_arrow != -1) {
 					highlight_arrow = -1;
-					update();
+					queue_redraw();
 				}
 			}
 		}
 
 		if (get_viewport()->gui_is_dragging() && can_drop_data(pos, get_viewport()->gui_get_drag_data())) {
 			dragging_valid_tab = true;
-			update();
+			queue_redraw();
 		}
 
 		_update_hover();
@@ -177,7 +177,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (offset > 0) {
 					offset--;
 					_update_cache();
-					update();
+					queue_redraw();
 				}
 			}
 		}
@@ -187,7 +187,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 				if (missing_right && offset < tabs.size()) {
 					offset++;
 					_update_cache();
-					update();
+					queue_redraw();
 				}
 			}
 		}
@@ -198,7 +198,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			rb_pressing = false;
-			update();
+			queue_redraw();
 		}
 
 		if (cb_pressing && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
@@ -207,7 +207,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			cb_pressing = false;
-			update();
+			queue_redraw();
 		}
 
 		if (mb->is_pressed() && (mb->get_button_index() == MouseButton::LEFT || (select_with_rmb && mb->get_button_index() == MouseButton::RIGHT))) {
@@ -222,14 +222,14 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						if (missing_right) {
 							offset++;
 							_update_cache();
-							update();
+							queue_redraw();
 						}
 						return;
 					} else if (pos.x < incr->get_width() + decr->get_width()) {
 						if (offset > 0) {
 							offset--;
 							_update_cache();
-							update();
+							queue_redraw();
 						}
 						return;
 					}
@@ -239,14 +239,14 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 						if (missing_right) {
 							offset++;
 							_update_cache();
-							update();
+							queue_redraw();
 						}
 						return;
 					} else if (pos.x > limit) {
 						if (offset > 0) {
 							offset--;
 							_update_cache();
-							update();
+							queue_redraw();
 						}
 						return;
 					}
@@ -266,13 +266,13 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (tabs[i].rb_rect.has_point(pos)) {
 					rb_pressing = true;
-					update();
+					queue_redraw();
 					return;
 				}
 
 				if (tabs[i].cb_rect.has_point(pos) && (cb_displaypolicy == CLOSE_BUTTON_SHOW_ALWAYS || (cb_displaypolicy == CLOSE_BUTTON_SHOW_ACTIVE_ONLY && i == current))) {
 					cb_pressing = true;
-					update();
+					queue_redraw();
 					return;
 				}
 
@@ -317,7 +317,7 @@ void TabBar::_shape(int p_tab) {
 void TabBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
@@ -343,7 +343,7 @@ void TabBar::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (dragging_valid_tab) {
 				dragging_valid_tab = false;
-				update();
+				queue_redraw();
 			}
 		} break;
 
@@ -581,7 +581,7 @@ void TabBar::set_tab_count(int p_count) {
 		}
 	}
 
-	update();
+	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
 }
@@ -607,7 +607,7 @@ void TabBar::set_current_tab(int p_current) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 
 	emit_signal(SNAME("tab_changed"), p_current);
 }
@@ -647,7 +647,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -663,7 +663,7 @@ void TabBar::set_tab_text_direction(int p_tab, Control::TextDirection p_text_dir
 	if (tabs[p_tab].text_direction != p_text_direction) {
 		tabs.write[p_tab].text_direction = p_text_direction;
 		_shape(p_tab);
-		update();
+		queue_redraw();
 	}
 }
 
@@ -683,7 +683,7 @@ void TabBar::set_tab_language(int p_tab, const String &p_language) {
 		if (scroll_to_selected) {
 			ensure_tab_visible(current);
 		}
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -707,7 +707,7 @@ void TabBar::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -730,7 +730,7 @@ void TabBar::set_tab_disabled(int p_tab, bool p_disabled) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -753,7 +753,7 @@ void TabBar::set_tab_hidden(int p_tab, bool p_hidden) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -776,7 +776,7 @@ void TabBar::set_tab_button_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -817,7 +817,7 @@ void TabBar::_update_hover() {
 		}
 
 		if (hover_buttons != -1) {
-			update();
+			queue_redraw();
 			break;
 		}
 	}
@@ -838,7 +838,7 @@ void TabBar::_update_hover() {
 		cb_hover = hover_buttons;
 
 		if (rb_hover != rb_hover_old || cb_hover != cb_hover_old) {
-			update();
+			queue_redraw();
 		}
 	}
 }
@@ -940,7 +940,7 @@ void TabBar::_on_mouse_exited() {
 	highlight_arrow = -1;
 	dragging_valid_tab = false;
 
-	update();
+	queue_redraw();
 }
 
 void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
@@ -955,7 +955,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 
 	if (tabs.size() == 1 && is_inside_tree()) {
@@ -974,7 +974,7 @@ void TabBar::clear_tabs() {
 	current = 0;
 	previous = 0;
 
-	update();
+	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
 }
@@ -1004,7 +1004,7 @@ void TabBar::remove_tab(int p_idx) {
 		}
 	}
 
-	update();
+	queue_redraw();
 	update_minimum_size();
 	notify_property_list_changed();
 
@@ -1152,7 +1152,7 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 					set_current_tab(hover_now);
 				} else {
 					_update_cache();
-					update();
+					queue_redraw();
 				}
 
 				update_minimum_size();
@@ -1188,7 +1188,7 @@ void TabBar::set_tab_alignment(AlignmentMode p_alignment) {
 	tab_alignment = p_alignment;
 
 	_update_cache();
-	update();
+	queue_redraw();
 }
 
 TabBar::AlignmentMode TabBar::get_tab_alignment() const {
@@ -1210,7 +1210,7 @@ void TabBar::set_clip_tabs(bool p_clip_tabs) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -1251,7 +1251,7 @@ void TabBar::move_tab(int p_from, int p_to) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	notify_property_list_changed();
 }
 
@@ -1337,7 +1337,7 @@ void TabBar::_ensure_no_over_offset() {
 
 	if (prev_offset != offset) {
 		_update_cache();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -1354,7 +1354,7 @@ void TabBar::ensure_tab_visible(int p_idx) {
 	if (p_idx < offset) {
 		offset = p_idx;
 		_update_cache();
-		update();
+		queue_redraw();
 
 		return;
 	}
@@ -1389,7 +1389,7 @@ void TabBar::ensure_tab_visible(int p_idx) {
 
 	if (prev_offset != offset) {
 		_update_cache();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -1416,7 +1416,7 @@ void TabBar::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -1438,7 +1438,7 @@ void TabBar::set_max_tab_width(int p_width) {
 	if (scroll_to_selected) {
 		ensure_tab_visible(current);
 	}
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 

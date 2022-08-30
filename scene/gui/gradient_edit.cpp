@@ -92,7 +92,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 		points.remove_at(grabbed);
 		grabbed = -1;
 		grabbing = false;
-		update();
+		queue_redraw();
 		emit_signal(SNAME("ramp_changed"));
 		accept_event();
 	}
@@ -112,7 +112,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 			points.remove_at(grabbed);
 			grabbed = -1;
 			grabbing = false;
-			update();
+			queue_redraw();
 			emit_signal(SNAME("ramp_changed"));
 			accept_event();
 		}
@@ -138,13 +138,13 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			emit_signal(SNAME("ramp_changed"));
-			update();
+			queue_redraw();
 		}
 	}
 
 	// Select.
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-		update();
+		queue_redraw();
 		int x = mb->get_position().x;
 		int total_w = get_size().width - get_size().height - draw_spacing;
 
@@ -214,7 +214,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 			grabbing = false;
 			emit_signal(SNAME("ramp_changed"));
 		}
-		update();
+		queue_redraw();
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -282,7 +282,7 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		emit_signal(SNAME("ramp_changed"));
 
-		update();
+		queue_redraw();
 	}
 }
 
@@ -378,7 +378,7 @@ void GradientEdit::_color_changed(const Color &p_color) {
 		return;
 	}
 	points.write[grabbed].color = p_color;
-	update();
+	queue_redraw();
 	emit_signal(SNAME("ramp_changed"));
 }
 
@@ -393,7 +393,7 @@ void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> 
 	}
 
 	points.sort();
-	update();
+	queue_redraw();
 }
 
 Vector<float> GradientEdit::get_offsets() const {

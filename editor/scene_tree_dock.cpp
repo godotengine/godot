@@ -1237,7 +1237,7 @@ void SceneTreeDock::_notification(int p_what) {
 			if (canvas_item_plugin) {
 				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", Callable(scene_tree, "_update_tree"));
 				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", Callable(scene_tree, "_update_tree"));
-				scene_tree->connect("node_changed", callable_mp((CanvasItem *)canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), &CanvasItem::update));
+				scene_tree->connect("node_changed", callable_mp((CanvasItem *)canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), &CanvasItem::queue_redraw));
 			}
 
 			Node3DEditorPlugin *spatial_editor_plugin = Object::cast_to<Node3DEditorPlugin>(editor_data->get_editor("3D"));
@@ -2164,7 +2164,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	// hack, force 2d editor viewport to refresh after deletion
 	if (CanvasItemEditor *editor = CanvasItemEditor::get_singleton()) {
-		editor->get_viewport_control()->update();
+		editor->get_viewport_control()->queue_redraw();
 	}
 
 	_push_item(nullptr);

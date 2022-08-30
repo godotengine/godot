@@ -62,7 +62,7 @@ void EditorToaster::_notification(int p_what) {
 					if (toasts[element.key].remaining_time < 0) {
 						close(element.key);
 					}
-					element.key->update();
+					element.key->queue_redraw();
 				}
 			} else {
 				// Reset the timers when hovered.
@@ -71,7 +71,7 @@ void EditorToaster::_notification(int p_what) {
 						continue;
 					}
 					toasts[element.key].remaining_time = element.value.duration;
-					element.key->update();
+					element.key->queue_redraw();
 				}
 			}
 
@@ -101,7 +101,7 @@ void EditorToaster::_notification(int p_what) {
 			if (needs_update) {
 				_update_vbox_position();
 				_update_disable_notifications_button();
-				main_button->update();
+				main_button->queue_redraw();
 			}
 		} break;
 
@@ -132,8 +132,8 @@ void EditorToaster::_notification(int p_what) {
 			error_panel_style_progress->set_bg_color(get_theme_color(SNAME("base_color"), SNAME("Editor")).lightened(0.03));
 			error_panel_style_progress->set_border_color(get_theme_color(SNAME("error_color"), SNAME("Editor")));
 
-			main_button->update();
-			disable_notifications_button->update();
+			main_button->queue_redraw();
+			disable_notifications_button->queue_redraw();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -334,7 +334,7 @@ void EditorToaster::_repop_old() {
 	if (needs_update) {
 		_update_vbox_position();
 		_update_disable_notifications_button();
-		main_button->update();
+		main_button->queue_redraw();
 	}
 }
 
@@ -389,7 +389,7 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	_auto_hide_or_free_toasts();
 	_update_vbox_position();
 	_update_disable_notifications_button();
-	main_button->update();
+	main_button->queue_redraw();
 
 	return panel;
 }
@@ -438,7 +438,7 @@ void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_t
 		_auto_hide_or_free_toasts();
 		_update_vbox_position();
 		_update_disable_notifications_button();
-		main_button->update();
+		main_button->queue_redraw();
 	}
 
 	// Retrieve the label back then update the text.

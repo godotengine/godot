@@ -95,7 +95,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			selected_menu = focused_menu;
 		}
 		if (selected_menu != old_sel) {
-			update();
+			queue_redraw();
 		}
 	}
 
@@ -143,7 +143,7 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 		}
 	}
 
-	update();
+	queue_redraw();
 }
 
 void MenuBar::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -212,7 +212,7 @@ void MenuBar::_popup_visibility_changed(bool p_visible) {
 		active_menu = -1;
 		focused_menu = -1;
 		set_process_internal(false);
-		update();
+		queue_redraw();
 		return;
 	}
 
@@ -337,7 +337,7 @@ void MenuBar::_update_menu() {
 		}
 	}
 	update_minimum_size();
-	update();
+	queue_redraw();
 }
 
 void MenuBar::_notification(int p_what) {
@@ -352,7 +352,7 @@ void MenuBar::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			focused_menu = -1;
-			update();
+			queue_redraw();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
@@ -716,7 +716,7 @@ String MenuBar::get_language() const {
 void MenuBar::set_flat(bool p_enabled) {
 	if (flat != p_enabled) {
 		flat = p_enabled;
-		update();
+		queue_redraw();
 	}
 }
 

@@ -4563,7 +4563,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 		}
 
 		if (nrect != dock_select_rect_over_idx) {
-			dock_select->update();
+			dock_select->queue_redraw();
 			dock_select_rect_over_idx = nrect;
 		}
 
@@ -4589,7 +4589,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 			dock_popup_selected_idx = nrect;
 			dock_slot[nrect]->set_current_tab(dock_slot[nrect]->get_tab_count() - 1);
 			dock_slot[nrect]->show();
-			dock_select->update();
+			dock_select->queue_redraw();
 
 			_update_dock_containers();
 
@@ -4601,7 +4601,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 
 void EditorNode::_dock_popup_exit() {
 	dock_select_rect_over_idx = -1;
-	dock_select->update();
+	dock_select->queue_redraw();
 }
 
 void EditorNode::_dock_pre_popup(int p_which) {
@@ -4619,7 +4619,7 @@ void EditorNode::_dock_move_left() {
 	}
 	dock_slot[dock_popup_selected_idx]->move_child(current, prev->get_index());
 	dock_slot[dock_popup_selected_idx]->set_current_tab(dock_slot[dock_popup_selected_idx]->get_current_tab() - 1);
-	dock_select->update();
+	dock_select->queue_redraw();
 	_edit_current();
 	_save_docks();
 }
@@ -4632,7 +4632,7 @@ void EditorNode::_dock_move_right() {
 	}
 	dock_slot[dock_popup_selected_idx]->move_child(next, current->get_index());
 	dock_slot[dock_popup_selected_idx]->set_current_tab(dock_slot[dock_popup_selected_idx]->get_current_tab() + 1);
-	dock_select->update();
+	dock_select->queue_redraw();
 	_edit_current();
 	_save_docks();
 }

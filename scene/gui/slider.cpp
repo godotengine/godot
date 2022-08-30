@@ -149,17 +149,17 @@ void Slider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_inside = true;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED:
@@ -232,7 +232,7 @@ void Slider::set_ticks(int p_count) {
 	}
 
 	ticks = p_count;
-	update();
+	queue_redraw();
 }
 
 int Slider::get_ticks() const {
@@ -249,7 +249,7 @@ void Slider::set_ticks_on_borders(bool _tob) {
 	}
 
 	ticks_on_borders = _tob;
-	update();
+	queue_redraw();
 }
 
 void Slider::set_editable(bool p_editable) {
@@ -258,7 +258,7 @@ void Slider::set_editable(bool p_editable) {
 	}
 
 	editable = p_editable;
-	update();
+	queue_redraw();
 }
 
 bool Slider::is_editable() const {

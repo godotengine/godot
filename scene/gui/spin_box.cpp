@@ -238,7 +238,7 @@ void SpinBox::_notification(int p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_value_changed(0);
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -247,7 +247,7 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			update();
+			queue_redraw();
 		} break;
 	}
 }

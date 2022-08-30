@@ -505,7 +505,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
 		visible = p_node->call("is_visible");
-		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
+		CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 	} else if (p_node->is_class("Node3D")) {
 		visible = p_node->call("is_visible");
 	}

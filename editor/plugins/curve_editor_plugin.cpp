@@ -87,7 +87,7 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 	_hover_point = -1;
 	_selected_tangent = TANGENT_NONE;
 
-	update();
+	queue_redraw();
 
 	// Note: if you edit a curve, then set another, and try to undo,
 	// it will normally apply on the previous curve, but you won't see it
@@ -311,7 +311,7 @@ void CurveEditor::on_preset_item_selected(int preset_id) {
 }
 
 void CurveEditor::_curve_changed() {
-	update();
+	queue_redraw();
 	// Point count can change in case of undo
 	if (_selected_point >= _curve_ref->get_point_count()) {
 		set_selected_point(-1);
@@ -512,14 +512,14 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 void CurveEditor::set_selected_point(int index) {
 	if (index != _selected_point) {
 		_selected_point = index;
-		update();
+		queue_redraw();
 	}
 }
 
 void CurveEditor::set_hover_point_index(int index) {
 	if (index != _hover_point) {
 		_hover_point = index;
-		update();
+		queue_redraw();
 	}
 }
 

@@ -61,7 +61,7 @@ void MultiMeshInstance2D::_bind_methods() {
 
 void MultiMeshInstance2D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	multimesh = p_multimesh;
-	update();
+	queue_redraw();
 }
 
 Ref<MultiMesh> MultiMeshInstance2D::get_multimesh() const {
@@ -73,7 +73,7 @@ void MultiMeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 		return;
 	}
 	texture = p_texture;
-	update();
+	queue_redraw();
 	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 }
 
@@ -83,7 +83,7 @@ Ref<Texture2D> MultiMeshInstance2D::get_texture() const {
 
 void MultiMeshInstance2D::set_normal_map(const Ref<Texture2D> &p_texture) {
 	normal_map = p_texture;
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> MultiMeshInstance2D::get_normal_map() const {

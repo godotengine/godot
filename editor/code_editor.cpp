@@ -1092,7 +1092,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 
 	if (trimed_whitespace) {
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1110,7 +1110,7 @@ void CodeTextEditor::insert_final_newline() {
 		text_editor->set_line(final_line, line);
 
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1154,7 +1154,7 @@ void CodeTextEditor::convert_indent_to_spaces() {
 	if (changed_indentation) {
 		text_editor->set_caret_column(cursor_column);
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1203,7 +1203,7 @@ void CodeTextEditor::convert_indent_to_tabs() {
 	if (changed_indentation) {
 		text_editor->set_caret_column(cursor_column);
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1295,7 +1295,7 @@ void CodeTextEditor::move_lines_up() {
 		text_editor->set_caret_line(next_id);
 	}
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::move_lines_down() {
@@ -1341,7 +1341,7 @@ void CodeTextEditor::move_lines_down() {
 		text_editor->set_caret_line(next_id);
 	}
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::_delete_line(int p_line) {
@@ -1418,7 +1418,7 @@ void CodeTextEditor::duplicate_selection() {
 	}
 
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
@@ -1495,7 +1495,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		text_editor->set_caret_column(col);
 	}
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::goto_line(int p_line) {

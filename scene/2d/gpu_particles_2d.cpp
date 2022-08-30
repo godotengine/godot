@@ -100,7 +100,7 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
 	RS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
-	update();
+	queue_redraw();
 }
 
 void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
@@ -142,7 +142,7 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 	trail_enabled = p_enabled;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
-	update();
+	queue_redraw();
 
 	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
 }
@@ -151,7 +151,7 @@ void GPUParticles2D::set_trail_length(double p_seconds) {
 	ERR_FAIL_COND(p_seconds < 0.001);
 	trail_length = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
-	update();
+	queue_redraw();
 }
 
 void GPUParticles2D::set_trail_sections(int p_sections) {
@@ -159,7 +159,7 @@ void GPUParticles2D::set_trail_sections(int p_sections) {
 	ERR_FAIL_COND(p_sections > 128);
 
 	trail_sections = p_sections;
-	update();
+	queue_redraw();
 }
 
 void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
@@ -167,13 +167,13 @@ void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
 	ERR_FAIL_COND(p_subdivisions > 1024);
 
 	trail_section_subdivisions = p_subdivisions;
-	update();
+	queue_redraw();
 }
 
 #ifdef TOOLS_ENABLED
 void GPUParticles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
 	show_visibility_rect = p_show_visibility_rect;
-	update();
+	queue_redraw();
 }
 #endif
 
@@ -342,7 +342,7 @@ void GPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GPUParticles2D::_texture_changed));
 	}
 	_update_collision_size();
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> GPUParticles2D::get_texture() const {

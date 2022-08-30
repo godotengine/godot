@@ -36,7 +36,7 @@
 #include "scene/resources/convex_polygon_shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
-	update();
+	queue_redraw();
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
@@ -140,7 +140,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 		shape->disconnect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
 	shape = p_shape;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_clear_shapes(owner_id);
 		if (shape.is_valid()) {
@@ -192,7 +192,7 @@ TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
 
 void CollisionShape2D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}
@@ -204,7 +204,7 @@ bool CollisionShape2D::is_disabled() const {
 
 void CollisionShape2D::set_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}

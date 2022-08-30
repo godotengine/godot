@@ -77,7 +77,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 			bool last_press_inside = status.pressing_inside;
 			status.pressing_inside = has_point(mouse_motion->get_position());
 			if (last_press_inside != status.pressing_inside) {
-				update();
+				queue_redraw();
 			}
 		}
 	}
@@ -87,32 +87,32 @@ void BaseButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_MOUSE_ENTER: {
 			status.hovering = true;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
 			status.hovering = false;
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN:
 		case NOTIFICATION_SCROLL_BEGIN: {
 			if (status.press_attempt) {
 				status.press_attempt = false;
-				update();
+				queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
 			if (status.press_attempt) {
 				status.press_attempt = false;
-				update();
+				queue_redraw();
 			} else if (status.hovering) {
-				update();
+				queue_redraw();
 			}
 		} break;
 
@@ -188,7 +188,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		emit_signal(SNAME("button_up"));
 	}
 
-	update();
+	queue_redraw();
 }
 
 void BaseButton::pressed() {
@@ -210,7 +210,7 @@ void BaseButton::set_disabled(bool p_disabled) {
 		status.press_attempt = false;
 		status.pressing_inside = false;
 	}
-	update();
+	queue_redraw();
 }
 
 bool BaseButton::is_disabled() const {
@@ -234,7 +234,7 @@ void BaseButton::set_pressed(bool p_pressed) {
 	}
 	_toggled(status.pressed);
 
-	update();
+	queue_redraw();
 }
 
 void BaseButton::set_pressed_no_signal(bool p_pressed) {
@@ -246,7 +246,7 @@ void BaseButton::set_pressed_no_signal(bool p_pressed) {
 	}
 	status.pressed = p_pressed;
 
-	update();
+	queue_redraw();
 }
 
 bool BaseButton::is_pressing() const {
@@ -385,7 +385,7 @@ void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 		button_group->buttons.insert(this);
 	}
 
-	update(); //checkbox changes to radio if set a buttongroup
+	queue_redraw(); //checkbox changes to radio if set a buttongroup
 }
 
 Ref<ButtonGroup> BaseButton::get_button_group() const {

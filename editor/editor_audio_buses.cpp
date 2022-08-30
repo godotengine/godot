@@ -182,7 +182,7 @@ void EditorAudioBus::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (hovering_drop) {
 				hovering_drop = false;
-				update();
+				queue_redraw();
 			}
 		} break;
 	}
@@ -967,7 +967,7 @@ void EditorAudioBusDrop::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_ENTER: {
 			if (!hovering_drop) {
 				hovering_drop = true;
-				update();
+				queue_redraw();
 			}
 		} break;
 
@@ -975,7 +975,7 @@ void EditorAudioBusDrop::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (hovering_drop) {
 				hovering_drop = false;
-				update();
+				queue_redraw();
 			}
 		} break;
 	}

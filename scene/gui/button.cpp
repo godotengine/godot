@@ -49,7 +49,7 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 void Button::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -57,14 +57,14 @@ void Button::_notification(int p_what) {
 			_shape();
 
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -389,7 +389,7 @@ void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 		overrun_behavior = p_behavior;
 		_shape();
 
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -404,7 +404,7 @@ void Button::set_text(const String &p_text) {
 		xl_text = atr(text);
 		_shape();
 
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -418,7 +418,7 @@ void Button::set_text_direction(Control::TextDirection p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -430,7 +430,7 @@ void Button::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -441,7 +441,7 @@ String Button::get_language() const {
 void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	if (icon != p_icon) {
 		icon = p_icon;
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -453,7 +453,7 @@ Ref<Texture2D> Button::get_icon() const {
 void Button::set_expand_icon(bool p_enabled) {
 	if (expand_icon != p_enabled) {
 		expand_icon = p_enabled;
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -465,7 +465,7 @@ bool Button::is_expand_icon() const {
 void Button::set_flat(bool p_enabled) {
 	if (flat != p_enabled) {
 		flat = p_enabled;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -476,7 +476,7 @@ bool Button::is_flat() const {
 void Button::set_clip_text(bool p_enabled) {
 	if (clip_text != p_enabled) {
 		clip_text = p_enabled;
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -488,7 +488,7 @@ bool Button::get_clip_text() const {
 void Button::set_text_alignment(HorizontalAlignment p_alignment) {
 	if (alignment != p_alignment) {
 		alignment = p_alignment;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -499,7 +499,7 @@ HorizontalAlignment Button::get_text_alignment() const {
 void Button::set_icon_alignment(HorizontalAlignment p_alignment) {
 	icon_alignment = p_alignment;
 	update_minimum_size();
-	update();
+	queue_redraw();
 }
 
 HorizontalAlignment Button::get_icon_alignment() const {

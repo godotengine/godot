@@ -1023,7 +1023,7 @@ void Viewport::_update_canvas_items(Node *p_node) {
 
 		CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
 		if (ci) {
-			ci->update();
+			ci->queue_redraw();
 		}
 	}
 
@@ -2197,7 +2197,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	gui.key_focus = p_control;
 	emit_signal(SNAME("gui_focus_changed"), p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
-	p_control->update();
+	p_control->queue_redraw();
 }
 
 void Viewport::_gui_accept_event() {
@@ -2865,7 +2865,7 @@ void Viewport::gui_release_focus() {
 		Control *f = gui.key_focus;
 		gui.key_focus = nullptr;
 		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
-		f->update();
+		f->queue_redraw();
 	}
 }
 

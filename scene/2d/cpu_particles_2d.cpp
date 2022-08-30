@@ -211,13 +211,13 @@ void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
 		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &CPUParticles2D::_texture_changed));
 	}
 
-	update();
+	queue_redraw();
 	_update_mesh_texture();
 }
 
 void CPUParticles2D::_texture_changed() {
 	if (texture.is_valid()) {
-		update();
+		queue_redraw();
 		_update_mesh_texture();
 	}
 }
@@ -556,7 +556,7 @@ static real_t rand_from_seed(uint32_t &seed) {
 
 void CPUParticles2D::_update_internal() {
 	if (particles.size() == 0 || !is_visible_in_tree()) {
-		_set_redraw(false);
+		_set_do_redraw(false);
 		return;
 	}
 
@@ -567,7 +567,7 @@ void CPUParticles2D::_update_internal() {
 		inactive_time += delta;
 		if (inactive_time > lifetime * 1.2) {
 			set_process_internal(false);
-			_set_redraw(false);
+			_set_do_redraw(false);
 
 			//reset variables
 			time = 0;
@@ -577,7 +577,7 @@ void CPUParticles2D::_update_internal() {
 			return;
 		}
 	}
-	_set_redraw(true);
+	_set_do_redraw(true);
 
 	if (time == 0 && pre_process_time > 0.0) {
 		double frame_time;
@@ -1062,16 +1062,16 @@ void CPUParticles2D::_update_particle_data_buffer() {
 	}
 }
 
-void CPUParticles2D::_set_redraw(bool p_redraw) {
-	if (redraw == p_redraw) {
+void CPUParticles2D::_set_do_redraw(bool p_do_redraw) {
+	if (do_redraw == p_do_redraw) {
 		return;
 	}
-	redraw = p_redraw;
+	do_redraw = p_do_redraw;
 
 	{
 		MutexLock lock(update_mutex);
 
-		if (redraw) {
+		if (do_redraw) {
 			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
 			RS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
 
@@ -1086,7 +1086,7 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 		}
 	}
 
-	update(); // redraw to update render list
+	queue_redraw(); // redraw to update render list
 }
 
 void CPUParticles2D::_update_render_thread() {
@@ -1102,7 +1102,7 @@ void CPUParticles2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			_set_redraw(false);
+			_set_do_redraw(false);
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1111,7 +1111,7 @@ void CPUParticles2D::_notification(int p_what) {
 				_update_internal();
 			}
 
-			if (!redraw) {
+			if (!do_redraw) {
 				return; // don't add to render list
 			}
 

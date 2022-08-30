@@ -1621,7 +1621,7 @@ void RichTextLabel::_scroll_changed(double) {
 
 	scroll_updated = true;
 
-	update();
+	queue_redraw();
 }
 
 void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, double p_delta_time) {
@@ -1685,20 +1685,20 @@ void RichTextLabel::_notification(int p_what) {
 				meta_hovering = nullptr;
 				emit_signal(SNAME("meta_hover_ended"), current_meta);
 				current_meta = false;
-				update();
+				queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_RESIZED: {
 			_stop_thread();
 			main->first_resized_line.store(0); //invalidate ALL
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_stop_thread();
 			main->first_invalid_font_line.store(0); //invalidate ALL
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1708,7 +1708,7 @@ void RichTextLabel::_notification(int p_what) {
 			}
 
 			main->first_invalid_line.store(0); //invalidate ALL
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_PREDELETE:
@@ -1720,11 +1720,11 @@ void RichTextLabel::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_stop_thread();
 			main->first_invalid_line.store(0); //invalidate ALL
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -1806,7 +1806,7 @@ void RichTextLabel::_notification(int p_what) {
 				}
 				double dt = get_process_delta_time();
 				_update_fx(main, dt);
-				update();
+				queue_redraw();
 			}
 		} break;
 
@@ -1918,7 +1918,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 							if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CLIPBOARD_PRIMARY)) {
 								DisplayServer::get_singleton()->clipboard_set_primary(get_selected_text());
 							}
-							update();
+							queue_redraw();
 							break;
 						}
 					}
@@ -2084,7 +2084,7 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			selection.active = true;
-			update();
+			queue_redraw();
 		}
 
 		Variant meta;
@@ -2541,7 +2541,7 @@ void RichTextLabel::_thread_function(void *self) {
 	RichTextLabel *rtl = reinterpret_cast<RichTextLabel *>(self);
 	rtl->_process_line_caches();
 	rtl->updating.store(false);
-	rtl->call_deferred(SNAME("update"));
+	rtl->call_deferred(SNAME("queue_redraw"));
 }
 
 void RichTextLabel::_stop_thread() {
@@ -2562,7 +2562,7 @@ void RichTextLabel::set_threaded(bool p_threaded) {
 	if (threaded != p_threaded) {
 		_stop_thread();
 		threaded = p_threaded;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -2661,7 +2661,7 @@ bool RichTextLabel::_validate_line_caches() {
 		return false;
 	} else {
 		_process_line_caches();
-		update();
+		queue_redraw();
 		return true;
 	}
 }
@@ -2799,7 +2799,7 @@ void RichTextLabel::add_text(const String &p_text) {
 
 		pos = end + 1;
 	}
-	update();
+	queue_redraw();
 }
 
 void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline) {
@@ -2837,7 +2837,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	if (fixed_width != -1) {
 		update_minimum_size();
 	}
-	update();
+	queue_redraw();
 }
 
 void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_subitem_line) {
@@ -2918,7 +2918,7 @@ void RichTextLabel::add_newline() {
 	_add_item(item, false);
 	current_frame->lines.resize(current_frame->lines.size() + 1);
 	_invalidate_current_line(current_frame);
-	update();
+	queue_redraw();
 }
 
 bool RichTextLabel::remove_line(const int p_line) {
@@ -2957,7 +2957,7 @@ bool RichTextLabel::remove_line(const int p_line) {
 	}
 
 	main->first_invalid_line.store(0);
-	update();
+	queue_redraw();
 
 	return true;
 }
@@ -3386,7 +3386,7 @@ void RichTextLabel::set_tab_size(int p_spaces) {
 
 	tab_size = p_spaces;
 	main->first_resized_line.store(0);
-	update();
+	queue_redraw();
 }
 
 int RichTextLabel::get_tab_size() const {
@@ -3410,7 +3410,7 @@ void RichTextLabel::set_meta_underline(bool p_underline) {
 	}
 
 	underline_meta = p_underline;
-	update();
+	queue_redraw();
 }
 
 bool RichTextLabel::is_meta_underlined() const {
@@ -3419,7 +3419,7 @@ bool RichTextLabel::is_meta_underlined() const {
 
 void RichTextLabel::set_hint_underline(bool p_underline) {
 	underline_hint = p_underline;
-	update();
+	queue_redraw();
 }
 
 bool RichTextLabel::is_hint_underlined() const {
@@ -3445,7 +3445,7 @@ void RichTextLabel::set_scroll_active(bool p_active) {
 
 	scroll_active = p_active;
 	vscroll->set_drag_node_enabled(p_active);
-	update();
+	queue_redraw();
 }
 
 bool RichTextLabel::is_scroll_active() const {
@@ -4570,7 +4570,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		if (!(p_search_previous && char_idx < 0) &&
 				_search_line(selection.from_frame, selection.from_line, p_string, char_idx, p_search_previous)) {
 			scroll_to_line(selection.from_frame->line + selection.from_line);
-			update();
+			queue_redraw();
 			return true;
 		}
 		char_idx = p_search_previous ? -1 : 0;
@@ -4595,7 +4595,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 				// Search for next element
 				if (_search_table(parent_table, parent_element, p_string, p_search_previous)) {
 					scroll_to_line(selection.from_frame->line + selection.from_line);
-					update();
+					queue_redraw();
 					return true;
 				}
 			}
@@ -4619,7 +4619,7 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 
 		if (_search_line(main, current_line, p_string, char_idx, p_search_previous)) {
 			scroll_to_line(current_line);
-			update();
+			queue_redraw();
 			return true;
 		}
 		p_search_previous ? current_line-- : current_line++;
@@ -4729,7 +4729,7 @@ String RichTextLabel::get_selected_text() const {
 
 void RichTextLabel::deselect() {
 	selection.active = false;
-	update();
+	queue_redraw();
 }
 
 void RichTextLabel::selection_copy() {
@@ -4784,7 +4784,7 @@ void RichTextLabel::select_all() {
 	selection.to_char = to_frame->lines[to_line].char_count;
 	selection.to_item = to_item;
 	selection.active = true;
-	update();
+	queue_redraw();
 }
 
 bool RichTextLabel::is_selection_enabled() const {
@@ -4872,7 +4872,7 @@ void RichTextLabel::set_text_direction(Control::TextDirection p_text_direction) 
 		text_direction = p_text_direction;
 		main->first_invalid_line.store(0); //invalidate ALL
 		_validate_line_caches();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -4883,7 +4883,7 @@ void RichTextLabel::set_structured_text_bidi_override(TextServer::StructuredText
 		st_parser = p_parser;
 		main->first_invalid_line.store(0); //invalidate ALL
 		_validate_line_caches();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -4898,7 +4898,7 @@ void RichTextLabel::set_structured_text_bidi_override_options(Array p_args) {
 		st_args = p_args;
 		main->first_invalid_line.store(0); //invalidate ALL
 		_validate_line_caches();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -4917,7 +4917,7 @@ void RichTextLabel::set_language(const String &p_language) {
 		language = p_language;
 		main->first_invalid_line.store(0); //invalidate ALL
 		_validate_line_caches();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -4932,7 +4932,7 @@ void RichTextLabel::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 		autowrap_mode = p_mode;
 		main->first_invalid_line = 0; //invalidate ALL
 		_validate_line_caches();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -4959,7 +4959,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 			main->first_invalid_line.store(0); // Invalidate ALL.
 			_validate_line_caches();
 		}
-		update();
+		queue_redraw();
 	}
 }
 
@@ -5259,7 +5259,7 @@ void RichTextLabel::set_visible_characters_behavior(TextServer::VisibleCharacter
 		visible_chars_behavior = p_behavior;
 		main->first_invalid_line.store(0); //invalidate ALL
 		_validate_line_caches();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -5280,7 +5280,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 			main->first_invalid_line.store(0); //invalidate ALL
 			_validate_line_caches();
 		}
-		update();
+		queue_redraw();
 	}
 }
 

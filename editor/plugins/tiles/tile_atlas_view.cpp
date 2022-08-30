@@ -404,12 +404,12 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 	_update_zoom_and_panning();
 
 	// Update.
-	base_tiles_draw->update();
-	base_tiles_texture_grid->update();
-	base_tiles_shape_grid->update();
-	alternatives_draw->update();
-	background_left->update();
-	background_right->update();
+	base_tiles_draw->queue_redraw();
+	base_tiles_texture_grid->queue_redraw();
+	base_tiles_shape_grid->queue_redraw();
+	alternatives_draw->queue_redraw();
+	background_left->queue_redraw();
+	background_right->queue_redraw();
 }
 
 float TileAtlasView::get_zoom() const {
@@ -493,13 +493,13 @@ Rect2i TileAtlasView::get_alternative_tile_rect(const Vector2i p_coords, int p_a
 	return alternative_tiles_rect_cache[p_coords][p_alternative_tile];
 }
 
-void TileAtlasView::update() {
-	base_tiles_draw->update();
-	base_tiles_texture_grid->update();
-	base_tiles_shape_grid->update();
-	alternatives_draw->update();
-	background_left->update();
-	background_right->update();
+void TileAtlasView::queue_redraw() {
+	base_tiles_draw->queue_redraw();
+	base_tiles_texture_grid->queue_redraw();
+	base_tiles_shape_grid->queue_redraw();
+	alternatives_draw->queue_redraw();
+	background_left->queue_redraw();
+	background_right->queue_redraw();
 }
 
 void TileAtlasView::_notification(int p_what) {

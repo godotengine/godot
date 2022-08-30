@@ -962,12 +962,12 @@ public:
 		switch (p_what) {
 			case NOTIFICATION_MOUSE_ENTER: {
 				hover = true;
-				update();
+				queue_redraw();
 			} break;
 
 			case NOTIFICATION_MOUSE_EXIT: {
 				hover = false;
-				update();
+				queue_redraw();
 			} break;
 
 			case NOTIFICATION_DRAW: {
@@ -1682,7 +1682,7 @@ void ProjectList::select_project(int p_index) {
 	_selected_project_paths.clear();
 
 	for (int i = 0; i < previous_selected_items.size(); ++i) {
-		previous_selected_items[i].control->update();
+		previous_selected_items[i].control->queue_redraw();
 	}
 
 	toggle_select(p_index);
@@ -1728,7 +1728,7 @@ void ProjectList::toggle_select(int p_index) {
 	} else {
 		_selected_project_paths.insert(item.path);
 	}
-	item.control->update();
+	item.control->queue_redraw();
 }
 
 void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
@@ -1860,7 +1860,7 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {

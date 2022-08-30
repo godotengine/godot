@@ -120,7 +120,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && tool_select->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		blend_space_draw->update(); // why not
+		blend_space_draw->queue_redraw(); // why not
 
 		// try to see if a point can be selected
 		selected_point = -1;
@@ -167,7 +167,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 			dragging_selected_attempt = false;
 			dragging_selected = false;
-			blend_space_draw->update();
+			blend_space_draw->queue_redraw();
 		}
 	}
 
@@ -178,20 +178,20 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		blend_pos += blend_space->get_min_space();
 
 		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(), blend_pos);
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && !blend_space_draw->has_focus()) {
 		blend_space_draw->grab_focus();
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
 		drag_ofs = ((mm->get_position() - drag_from) / blend_space_draw->get_size()) * ((blend_space->get_max_space() - blend_space->get_min_space()) * Vector2(1, 0));
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 		_update_edited_point_pos();
 	}
 
@@ -202,7 +202,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		AnimationTreeEditor::get_singleton()->get_tree()->set(get_blend_position_path(), blend_pos);
 
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 }
 
@@ -330,7 +330,7 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 
 	snap_value->set_value(blend_space->get_snap());
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 
 	updating = false;
 }
@@ -355,7 +355,7 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace1DEditor::_labels_changed(String) {
@@ -374,7 +374,7 @@ void AnimationNodeBlendSpace1DEditor::_labels_changed(String) {
 }
 
 void AnimationNodeBlendSpace1DEditor::_snap_toggled() {
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace1DEditor::_file_opened(const String &p_file) {
@@ -425,7 +425,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
@@ -443,7 +443,7 @@ void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace1DEditor::_tool_switch(int p_tool) {
@@ -456,7 +456,7 @@ void AnimationNodeBlendSpace1DEditor::_tool_switch(int p_tool) {
 	}
 
 	_update_tool_erase();
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace1DEditor::_update_edited_point_pos() {
@@ -517,7 +517,7 @@ void AnimationNodeBlendSpace1DEditor::_erase_selected() {
 
 		updating = false;
 
-		blend_space_draw->update();
+		blend_space_draw->queue_redraw();
 	}
 }
 
@@ -537,7 +537,7 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_pos(double) {
 	undo_redo->commit_action();
 	updating = false;
 
-	blend_space_draw->update();
+	blend_space_draw->queue_redraw();
 }
 
 void AnimationNodeBlendSpace1DEditor::_open_editor() {

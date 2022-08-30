@@ -99,7 +99,7 @@ void ViewportRotationControl::_notification(int p_what) {
 			axis_colors.push_back(get_theme_color(SNAME("axis_x_color"), SNAME("Editor")));
 			axis_colors.push_back(get_theme_color(SNAME("axis_y_color"), SNAME("Editor")));
 			axis_colors.push_back(get_theme_color(SNAME("axis_z_color"), SNAME("Editor")));
-			update();
+			queue_redraw();
 
 			if (!is_connected("mouse_exited", callable_mp(this, &ViewportRotationControl::_on_mouse_exited))) {
 				connect("mouse_exited", callable_mp(this, &ViewportRotationControl::_on_mouse_exited));
@@ -247,13 +247,13 @@ void ViewportRotationControl::_update_focus() {
 	}
 
 	if (focused_axis != original_focus) {
-		update();
+		queue_redraw();
 	}
 }
 
 void ViewportRotationControl::_on_mouse_exited() {
 	focused_axis = -2;
-	update();
+	queue_redraw();
 }
 
 void ViewportRotationControl::set_viewport(Node3DEditorViewport *p_viewport) {
@@ -350,7 +350,7 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 		}
 
 		update_transform_gizmo_view();
-		rotation_control->update();
+		rotation_control->queue_redraw();
 		spatial_editor->update_grid();
 	}
 }
@@ -1614,7 +1614,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					surface->update();
+					surface->queue_redraw();
 				} else {
 					if (_edit.gizmo.is_valid()) {
 						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
@@ -1632,7 +1632,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						if (cursor.region_select) {
 							_select_region();
 							cursor.region_select = false;
-							surface->update();
+							surface->queue_redraw();
 						}
 					}
 
@@ -1657,7 +1657,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						_edit.mode = TRANSFORM_NONE;
 						set_message("");
 					}
-					surface->update();
+					surface->queue_redraw();
 				}
 
 			} break;
@@ -1741,7 +1741,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				if (cursor.region_select) {
 					cursor.region_end = m->get_position();
-					surface->update();
+					surface->queue_redraw();
 					return;
 				}
 
@@ -2244,12 +2244,12 @@ void Node3DEditorViewport::set_freelook_active(bool active_now) {
 
 void Node3DEditorViewport::scale_fov(real_t p_fov_offset) {
 	cursor.fov_scale = CLAMP(cursor.fov_scale + p_fov_offset, 0.1, 2.5);
-	surface->update();
+	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::reset_fov() {
 	cursor.fov_scale = 1.0;
-	surface->update();
+	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
@@ -2268,7 +2268,7 @@ void Node3DEditorViewport::scale_cursor_distance(real_t scale) {
 	}
 
 	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
-	surface->update();
+	surface->queue_redraw();
 }
 
 void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
@@ -2281,7 +2281,7 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 	}
 
 	zoom_indicator_delay = ZOOM_FREELOOK_INDICATOR_DELAY_S;
-	surface->update();
+	surface->queue_redraw();
 }
 
 Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
@@ -2454,7 +2454,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			if (zoom_indicator_delay > 0) {
 				zoom_indicator_delay -= delta;
 				if (zoom_indicator_delay <= 0) {
-					surface->update();
+					surface->queue_redraw();
 					zoom_limit_label->hide();
 				}
 			}
@@ -2472,7 +2472,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 					previewing = cam;
 					previewing->connect("tree_exited", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 					RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
-					surface->update();
+					surface->queue_redraw();
 				}
 			}
 
@@ -2538,13 +2538,13 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 			if (message_time > 0) {
 				if (message != last_message) {
-					surface->update();
+					surface->queue_redraw();
 					last_message = message;
 				}
 
 				message_time -= get_physics_process_delta_time();
 				if (message_time < 0) {
-					surface->update();
+					surface->queue_redraw();
 				}
 			}
 
@@ -3356,13 +3356,13 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		if (!preview) {
 			preview_camera->hide();
 		}
-		surface->update();
+		surface->queue_redraw();
 
 	} else {
 		previewing = preview;
 		previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
-		surface->update();
+		surface->queue_redraw();
 	}
 }
 
@@ -3384,7 +3384,7 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 			preview_camera->show();
 		}
 		view_menu->show();
-		surface->update();
+		surface->queue_redraw();
 	}
 }
 
@@ -3619,7 +3619,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 			previewing = Object::cast_to<Camera3D>(pv);
 			previewing->connect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
 			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
-			surface->update();
+			surface->queue_redraw();
 			preview_camera->set_pressed(true);
 			preview_camera->show();
 		}
@@ -4392,7 +4392,7 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			}
 
 			spatial_editor->update_transform_gizmo();
-			surface->update();
+			surface->queue_redraw();
 
 		} break;
 
@@ -4491,7 +4491,7 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			}
 
 			spatial_editor->update_transform_gizmo();
-			surface->update();
+			surface->queue_redraw();
 
 		} break;
 
@@ -4595,7 +4595,7 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 			}
 
 			spatial_editor->update_transform_gizmo();
-			surface->update();
+			surface->queue_redraw();
 
 		} break;
 		default: {
@@ -4608,7 +4608,7 @@ void Node3DEditorViewport::finish_transform() {
 	spatial_editor->update_transform_gizmo();
 	_edit.mode = TRANSFORM_NONE;
 	_edit.instant = false;
-	surface->update();
+	surface->queue_redraw();
 }
 
 // Register a shortcut and also add it as an input action with the same events.
@@ -5010,7 +5010,7 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 			hovering_v = mm->get_position().y > (mid_h - v_sep / 2) && mm->get_position().y < (mid_h + v_sep / 2);
 
 			if (was_hovering_h != hovering_h || was_hovering_v != hovering_v) {
-				update();
+				queue_redraw();
 			}
 		}
 
@@ -5019,14 +5019,14 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 			new_ratio = CLAMP(new_ratio, 40 / get_size().width, (get_size().width - 40) / get_size().width);
 			ratio_h = new_ratio;
 			queue_sort();
-			update();
+			queue_redraw();
 		}
 		if (dragging_v) {
 			real_t new_ratio = drag_begin_ratio.y + (mm->get_position().y - drag_begin_pos.y) / get_size().height;
 			new_ratio = CLAMP(new_ratio, 40 / get_size().height, (get_size().height - 40) / get_size().height);
 			ratio_v = new_ratio;
 			queue_sort();
-			update();
+			queue_redraw();
 		}
 	}
 }
@@ -5036,7 +5036,7 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_ENTER:
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouseover = (p_what == NOTIFICATION_MOUSE_ENTER);
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -7581,7 +7581,7 @@ void Node3DEditor::_preview_settings_changed() {
 		Transform3D t;
 		t.basis = Basis(Vector3(sun_rotation.x, sun_rotation.y, 0));
 		preview_sun->set_transform(t);
-		sun_direction->update();
+		sun_direction->queue_redraw();
 		preview_sun->set_param(Light3D::PARAM_ENERGY, sun_energy->get_value());
 		preview_sun->set_param(Light3D::PARAM_SHADOW_MAX_DISTANCE, sun_max_distance->get_value());
 		preview_sun->set_color(sun_color->get_pick_color());
@@ -7615,7 +7615,7 @@ void Node3DEditor::_load_default_preview_settings() {
 
 	sun_angle_altitude->set_value(-Math::rad_to_deg(sun_rotation.x));
 	sun_angle_azimuth->set_value(180.0 - Math::rad_to_deg(sun_rotation.y));
-	sun_direction->update();
+	sun_direction->queue_redraw();
 	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
 	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
 	environ_energy->set_value(1.0);

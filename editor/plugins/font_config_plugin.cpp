@@ -942,7 +942,7 @@ Size2 FontPreview::get_minimum_size() const {
 
 void FontPreview::set_data(const Ref<Font> &p_f) {
 	prev_font = p_f;
-	update();
+	queue_redraw();
 }
 
 FontPreview::FontPreview() {

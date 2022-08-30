@@ -89,17 +89,17 @@ void GradientTexture2DEditorRect::gui_input(const Ref<InputEvent> &p_event) {
 
 void GradientTexture2DEditorRect::set_texture(Ref<GradientTexture2D> &p_texture) {
 	texture = p_texture;
-	texture->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+	texture->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 void GradientTexture2DEditorRect::set_snap_enabled(bool p_snap_enabled) {
 	snap_enabled = p_snap_enabled;
-	update();
+	queue_redraw();
 }
 
 void GradientTexture2DEditorRect::set_snap_size(float p_snap_size) {
 	snap_size = p_snap_size;
-	update();
+	queue_redraw();
 }
 
 void GradientTexture2DEditorRect::_notification(int p_what) {

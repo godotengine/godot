@@ -599,7 +599,7 @@ int EditorPlugin::update_overlays() const {
 		return count;
 	} else {
 		// This will update the normal viewport itself as well
-		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
+		CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 		return 1;
 	}
 }

@@ -64,7 +64,7 @@ void TextureLayeredEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
-	update();
+	queue_redraw();
 }
 
 void TextureLayeredEditor::_update_material() {
@@ -190,7 +190,7 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 		}
 
 		texture->connect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
-		update();
+		queue_redraw();
 		texture_rect->set_material(materials[texture->get_layered_type()]);
 		setting = true;
 		if (texture->get_layered_type() == TextureLayered::LAYERED_TYPE_2D_ARRAY) {

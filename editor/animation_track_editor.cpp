@@ -1399,8 +1399,8 @@ public:
 };
 
 void AnimationTimelineEdit::_zoom_changed(double) {
-	update();
-	play_position->update();
+	queue_redraw();
+	play_position->queue_redraw();
 	emit_signal(SNAME("zoom_changed"));
 }
 
@@ -1430,7 +1430,7 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 	undo_redo->add_undo_method(animation.ptr(), "set_length", animation->get_length());
 	undo_redo->commit_action();
 	editing = false;
-	update();
+	queue_redraw();
 
 	emit_signal(SNAME("length_changed"), p_new_len);
 }
@@ -1703,7 +1703,7 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 		add_track->hide();
 		play_position->hide();
 	}
-	update();
+	queue_redraw();
 	update_values();
 }
 
@@ -1731,7 +1731,7 @@ void AnimationTimelineEdit::set_track_edit(AnimationTrackEdit *p_track_edit) {
 
 void AnimationTimelineEdit::set_play_position(float p_pos) {
 	play_position_pos = p_pos;
-	play_position->update();
+	play_position->queue_redraw();
 }
 
 float AnimationTimelineEdit::get_play_position() const {
@@ -1739,7 +1739,7 @@ float AnimationTimelineEdit::get_play_position() const {
 }
 
 void AnimationTimelineEdit::update_play_position() {
-	play_position->update();
+	play_position->queue_redraw();
 }
 
 void AnimationTimelineEdit::update_values() {
@@ -1853,9 +1853,9 @@ void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
-			update();
+			queue_redraw();
 			emit_signal(SNAME("name_limit_changed"));
-			play_position->update();
+			play_position->queue_redraw();
 		}
 		if (dragging_timeline) {
 			int x = mm->get_position().x - get_name_limit();
@@ -1898,7 +1898,7 @@ void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origi
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	use_fps = p_use_fps;
 	update_values();
-	update();
+	queue_redraw();
 }
 
 bool AnimationTimelineEdit::is_using_fps() const {
@@ -2292,13 +2292,13 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 		case NOTIFICATION_MOUSE_ENTER:
 			hovered = true;
-			update();
+			queue_redraw();
 			break;
 		case NOTIFICATION_MOUSE_EXIT:
 			hovered = false;
 			// When the mouse cursor exits the track, we're no longer hovering any keyframe.
 			hovering_key_idx = -1;
-			update();
+			queue_redraw();
 			[[fallthrough]];
 		case NOTIFICATION_DRAG_END: {
 			cancel_drop();
@@ -2491,7 +2491,7 @@ void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animati
 	read_only = p_read_only;
 
 	track = p_track;
-	update();
+	queue_redraw();
 
 	ERR_FAIL_INDEX(track, animation->get_track_count());
 
@@ -2553,11 +2553,11 @@ void AnimationTrackEdit::_play_position_draw() {
 
 void AnimationTrackEdit::set_play_position(float p_pos) {
 	play_position_pos = p_pos;
-	play_position->update();
+	play_position->queue_redraw();
 }
 
 void AnimationTrackEdit::update_play_position() {
-	play_position->update();
+	play_position->queue_redraw();
 }
 
 void AnimationTrackEdit::set_root(Node *p_root) {
@@ -2565,8 +2565,8 @@ void AnimationTrackEdit::set_root(Node *p_root) {
 }
 
 void AnimationTrackEdit::_zoom_changed() {
-	update();
-	play_position->update();
+	queue_redraw();
+	play_position->queue_redraw();
 }
 
 void AnimationTrackEdit::_path_submitted(const String &p_text) {
@@ -2811,7 +2811,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				undo_redo->add_do_method(animation.ptr(), "track_set_enabled", track, !animation->track_is_enabled(track));
 				undo_redo->add_undo_method(animation.ptr(), "track_set_enabled", track, animation->track_is_enabled(track));
 				undo_redo->commit_action();
-				update();
+				queue_redraw();
 				accept_event();
 			}
 
@@ -3090,7 +3090,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 				if (hovering_key_idx != previous_hovering_key_idx) {
 					// Required to draw keyframe hover feedback on the correct keyframe.
-					update();
+					queue_redraw();
 				}
 			}
 		}
@@ -3156,7 +3156,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 		dropping_at = 1;
 	}
 
-	const_cast<AnimationTrackEdit *>(this)->update();
+	const_cast<AnimationTrackEdit *>(this)->queue_redraw();
 	const_cast<AnimationTrackEdit *>(this)->emit_signal(SNAME("drop_attempted"), track);
 
 	return true;
@@ -3202,7 +3202,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", track, update_mode);
 			undo_redo->add_undo_method(animation.ptr(), "value_track_set_update_mode", track, animation->value_track_get_update_mode(track));
 			undo_redo->commit_action();
-			update();
+			queue_redraw();
 
 		} break;
 		case MENU_INTERPOLATION_NEAREST:
@@ -3215,7 +3215,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_type", track, animation->track_get_interpolation_type(track));
 			undo_redo->commit_action();
-			update();
+			queue_redraw();
 		} break;
 		case MENU_LOOP_WRAP:
 		case MENU_LOOP_CLAMP: {
@@ -3224,7 +3224,7 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, loop_wrap);
 			undo_redo->add_undo_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, animation->track_get_interpolation_loop_wrap(track));
 			undo_redo->commit_action();
-			update();
+			queue_redraw();
 
 		} break;
 		case MENU_KEY_INSERT: {
@@ -3247,13 +3247,13 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 void AnimationTrackEdit::cancel_drop() {
 	if (dropping_at != 0) {
 		dropping_at = 0;
-		update();
+		queue_redraw();
 	}
 }
 
 void AnimationTrackEdit::set_in_group(bool p_enable) {
 	in_group = p_enable;
-	update();
+	queue_redraw();
 }
 
 void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselection) {
@@ -3399,7 +3399,7 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 	icon = p_type;
 	node_name = p_name;
 	node = p_node;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -3419,11 +3419,11 @@ void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {
 
 void AnimationTrackEditGroup::set_root(Node *p_root) {
 	root = p_root;
-	update();
+	queue_redraw();
 }
 
 void AnimationTrackEditGroup::_zoom_changed() {
-	update();
+	queue_redraw();
 }
 
 void AnimationTrackEditGroup::_bind_methods() {
@@ -4645,18 +4645,18 @@ void AnimationTrackEditor::_update_tracks() {
 
 void AnimationTrackEditor::_redraw_tracks() {
 	for (int i = 0; i < track_edits.size(); i++) {
-		track_edits[i]->update();
+		track_edits[i]->queue_redraw();
 	}
 }
 
 void AnimationTrackEditor::_redraw_groups() {
 	for (int i = 0; i < groups.size(); i++) {
-		groups[i]->update();
+		groups[i]->queue_redraw();
 	}
 }
 
 void AnimationTrackEditor::_sync_animation_change() {
-	bezier_edit->update();
+	bezier_edit->queue_redraw();
 }
 
 void AnimationTrackEditor::_animation_changed() {
@@ -4669,12 +4669,12 @@ void AnimationTrackEditor::_animation_changed() {
 	}
 
 	if (key_edit && key_edit->setting) {
-		// If editing a key, just update the edited track, makes refresh less costly.
+		// If editing a key, just redraw the edited track, makes refresh less costly.
 		if (key_edit->track < track_edits.size()) {
 			if (animation->track_get_type(key_edit->track) == Animation::TYPE_BEZIER) {
-				bezier_edit->update();
+				bezier_edit->queue_redraw();
 			} else {
-				track_edits[key_edit->track]->update();
+				track_edits[key_edit->track]->queue_redraw();
 			}
 		}
 		return;
@@ -4713,7 +4713,7 @@ void AnimationTrackEditor::_update_step_spinbox() {
 }
 
 void AnimationTrackEditor::_animation_update() {
-	timeline->update();
+	timeline->queue_redraw();
 	timeline->update_values();
 
 	bool same = true;
@@ -4742,7 +4742,7 @@ void AnimationTrackEditor::_animation_update() {
 		_update_tracks();
 	}
 
-	bezier_edit->update();
+	bezier_edit->queue_redraw();
 
 	_update_step_spinbox();
 	emit_signal(SNAME("animation_step_changed"), animation->get_step());
@@ -5000,7 +5000,7 @@ void AnimationTrackEditor::_timeline_value_changed(double) {
 	}
 	_redraw_groups();
 
-	bezier_edit->update();
+	bezier_edit->queue_redraw();
 	bezier_edit->update_play_position();
 }
 

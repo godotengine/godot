@@ -124,7 +124,7 @@ void SplitContainer::_resort() {
 		}
 	}
 
-	update();
+	queue_redraw();
 }
 
 Size2 SplitContainer::get_minimum_size() const {
@@ -176,7 +176,7 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			mouse_inside = false;
 			if (get_theme_constant(SNAME("autohide"))) {
-				update();
+				queue_redraw();
 			}
 		} break;
 
@@ -256,7 +256,7 @@ void SplitContainer::gui_input(const Ref<InputEvent> &p_event) {
 		if (mouse_inside != mouse_inside_state) {
 			mouse_inside = mouse_inside_state;
 			if (get_theme_constant(SNAME("autohide"))) {
-				update();
+				queue_redraw();
 			}
 		}
 
@@ -333,7 +333,7 @@ void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
 
 	dragger_visibility = p_visibility;
 	queue_sort();
-	update();
+	queue_redraw();
 }
 
 SplitContainer::DraggerVisibility SplitContainer::get_dragger_visibility() const {
