@@ -4534,28 +4534,7 @@ Error GLTFDocument::_serialize_lights(Ref<GLTFState> state) {
 	}
 	Array lights;
 	for (GLTFLightIndex i = 0; i < state->lights.size(); i++) {
-		Dictionary d;
-		Ref<GLTFLight> light = state->lights[i];
-		Array color;
-		color.resize(3);
-		color[0] = light->color.r;
-		color[1] = light->color.g;
-		color[2] = light->color.b;
-		d["color"] = color;
-		d["type"] = light->light_type;
-		if (light->light_type == "spot") {
-			Dictionary s;
-			float inner_cone_angle = light->inner_cone_angle;
-			s["innerConeAngle"] = inner_cone_angle;
-			float outer_cone_angle = light->outer_cone_angle;
-			s["outerConeAngle"] = outer_cone_angle;
-			d["spot"] = s;
-		}
-		float intensity = light->intensity;
-		d["intensity"] = intensity;
-		float range = light->range;
-		d["range"] = range;
-		lights.push_back(d);
+		lights.push_back(state->lights[i]->to_dictionary());
 	}
 
 	Dictionary extensions;
@@ -4577,27 +4556,7 @@ Error GLTFDocument::_serialize_cameras(Ref<GLTFState> state) {
 	Array cameras;
 	cameras.resize(state->cameras.size());
 	for (GLTFCameraIndex i = 0; i < state->cameras.size(); i++) {
-		Dictionary d;
-
-		Ref<GLTFCamera> camera = state->cameras[i];
-
-		if (camera->get_perspective()) {
-			Dictionary persp;
-			persp["yfov"] = camera->get_fov();
-			persp["zfar"] = camera->get_depth_far();
-			persp["znear"] = camera->get_depth_near();
-			d["perspective"] = persp;
-			d["type"] = "perspective";
-		} else {
-			Dictionary ortho;
-			ortho["ymag"] = camera->get_size_mag();
-			ortho["xmag"] = camera->get_size_mag();
-			ortho["zfar"] = camera->get_depth_far();
-			ortho["znear"] = camera->get_depth_near();
-			d["orthographic"] = ortho;
-			d["type"] = "orthographic";
-		}
-		cameras[i] = d;
+		cameras[i] = state->cameras[i]->to_dictionary();
 	}
 
 	if (!state->cameras.size()) {
@@ -4627,35 +4586,10 @@ Error GLTFDocument::_parse_lights(Ref<GLTFState> state) {
 	const Array &lights = lights_punctual["lights"];
 
 	for (GLTFLightIndex light_i = 0; light_i < lights.size(); light_i++) {
-		const Dictionary &d = lights[light_i];
-
-		Ref<GLTFLight> light;
-		light.instantiate();
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		const String &type = d["type"];
-		light->light_type = type;
-
-		if (d.has("color")) {
-			const Array &arr = d["color"];
-			ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
-			const Color c = Color(arr[0], arr[1], arr[2]).linear_to_srgb();
-			light->color = c;
+		Ref<GLTFLight> light = GLTFLight::from_dictionary(lights[light_i]);
+		if (light.is_null()) {
+			return Error::ERR_PARSE_ERROR;
 		}
-		if (d.has("intensity")) {
-			light->intensity = d["intensity"];
-		}
-		if (d.has("range")) {
-			light->range = d["range"];
-		}
-		if (type == "spot") {
-			const Dictionary &spot = d["spot"];
-			light->inner_cone_angle = spot["innerConeAngle"];
-			light->outer_cone_angle = spot["outerConeAngle"];
-			ERR_CONTINUE_MSG(light->inner_cone_angle >= light->outer_cone_angle, "The inner angle must be smaller than the outer angle.");
-		} else if (type != "point" && type != "directional") {
-			ERR_CONTINUE_MSG(true, "Light type is unknown.");
-		}
-
 		state->lights.push_back(light);
 	}
 
@@ -4672,35 +4606,7 @@ Error GLTFDocument::_parse_cameras(Ref<GLTFState> state) {
 	const Array cameras = state->json["cameras"];
 
 	for (GLTFCameraIndex i = 0; i < cameras.size(); i++) {
-		const Dictionary &d = cameras[i];
-
-		Ref<GLTFCamera> camera;
-		camera.instantiate();
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		const String &type = d["type"];
-		if (type == "perspective") {
-			camera->set_perspective(true);
-			if (d.has("perspective")) {
-				const Dictionary &persp = d["perspective"];
-				camera->set_fov(persp["yfov"]);
-				if (persp.has("zfar")) {
-					camera->set_depth_far(persp["zfar"]);
-				}
-				camera->set_depth_near(persp["znear"]);
-			}
-		} else if (type == "orthographic") {
-			camera->set_perspective(false);
-			if (d.has("orthographic")) {
-				const Dictionary &ortho = d["orthographic"];
-				camera->set_size_mag(ortho["ymag"]);
-				camera->set_depth_far(ortho["zfar"]);
-				camera->set_depth_near(ortho["znear"]);
-			}
-		} else {
-			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Camera3D should be in 'orthographic' or 'perspective'");
-		}
-
-		state->cameras.push_back(camera);
+		state->cameras.push_back(GLTFCamera::from_dictionary(cameras[i]));
 	}
 
 	print_verbose("glTF: Total cameras: " + itos(state->cameras.size()));
@@ -5148,45 +5054,7 @@ Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, const GLTFNodeIndex 
 	print_verbose("glTF: Creating light for: " + gltf_node->get_name());
 
 	Ref<GLTFLight> l = state->lights[gltf_node->light];
-
-	float intensity = l->intensity;
-	if (intensity > 10) {
-		// GLTF spec has the default around 1, but Blender defaults lights to 100.
-		// The only sane way to handle this is to check where it came from and
-		// handle it accordingly. If it's over 10, it probably came from Blender.
-		intensity /= 100;
-	}
-
-	if (l->light_type == "directional") {
-		DirectionalLight3D *light = memnew(DirectionalLight3D);
-		light->set_param(Light3D::PARAM_ENERGY, intensity);
-		light->set_color(l->color);
-		return light;
-	}
-
-	const float range = CLAMP(l->range, 0, 4096);
-	if (l->light_type == "point") {
-		OmniLight3D *light = memnew(OmniLight3D);
-		light->set_param(OmniLight3D::PARAM_ENERGY, intensity);
-		light->set_param(OmniLight3D::PARAM_RANGE, range);
-		light->set_color(l->color);
-		return light;
-	}
-	if (l->light_type == "spot") {
-		SpotLight3D *light = memnew(SpotLight3D);
-		light->set_param(SpotLight3D::PARAM_ENERGY, intensity);
-		light->set_param(SpotLight3D::PARAM_RANGE, range);
-		light->set_param(SpotLight3D::PARAM_SPOT_ANGLE, Math::rad_to_deg(l->outer_cone_angle));
-		light->set_color(l->color);
-
-		// Line of best fit derived from guessing, see https://www.desmos.com/calculator/biiflubp8b
-		// The points in desmos are not exact, except for (1, infinity).
-		float angle_ratio = l->inner_cone_angle / l->outer_cone_angle;
-		float angle_attenuation = 0.2 / (1 - angle_ratio) - 0.1;
-		light->set_param(SpotLight3D::PARAM_SPOT_ATTENUATION, angle_attenuation);
-		return light;
-	}
-	return memnew(Node3D);
+	return l->to_node();
 }
 
 Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, const GLTFNodeIndex node_index) {
@@ -5194,32 +5062,16 @@ Camera3D *GLTFDocument::_generate_camera(Ref<GLTFState> state, const GLTFNodeInd
 
 	ERR_FAIL_INDEX_V(gltf_node->camera, state->cameras.size(), nullptr);
 
-	Camera3D *camera = memnew(Camera3D);
 	print_verbose("glTF: Creating camera for: " + gltf_node->get_name());
 
 	Ref<GLTFCamera> c = state->cameras[gltf_node->camera];
-	camera->set_projection(c->get_perspective() ? Camera3D::PROJECTION_PERSPECTIVE : Camera3D::PROJECTION_ORTHOGONAL);
-	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
-	camera->set_fov(Math::rad_to_deg(c->get_fov()));
-	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
-	camera->set_size(c->get_size_mag() * 2.0f);
-	camera->set_near(c->get_depth_near());
-	camera->set_far(c->get_depth_far());
-	return camera;
+	return c->to_node();
 }
 
 GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_camera) {
 	print_verbose("glTF: Converting camera: " + p_camera->get_name());
 
-	Ref<GLTFCamera> c;
-	c.instantiate();
-	c->set_perspective(p_camera->get_projection() == Camera3D::ProjectionType::PROJECTION_PERSPECTIVE);
-	// GLTF spec (yfov) is in radians, Godot's camera (fov) is in degrees.
-	c->set_fov(Math::deg_to_rad(p_camera->get_fov()));
-	// GLTF spec (xmag and ymag) is a radius in meters, Godot's camera (size) is a diameter in meters.
-	c->set_size_mag(p_camera->get_size() * 0.5f);
-	c->set_depth_far(p_camera->get_far());
-	c->set_depth_near(p_camera->get_near());
+	Ref<GLTFCamera> c = GLTFCamera::from_node(p_camera);
 	GLTFCameraIndex camera_index = state->cameras.size();
 	state->cameras.push_back(c);
 	return camera_index;
@@ -5228,31 +5080,7 @@ GLTFCameraIndex GLTFDocument::_convert_camera(Ref<GLTFState> state, Camera3D *p_
 GLTFLightIndex GLTFDocument::_convert_light(Ref<GLTFState> state, Light3D *p_light) {
 	print_verbose("glTF: Converting light: " + p_light->get_name());
 
-	Ref<GLTFLight> l;
-	l.instantiate();
-	l->color = p_light->get_color();
-	if (cast_to<DirectionalLight3D>(p_light)) {
-		l->light_type = "directional";
-		DirectionalLight3D *light = cast_to<DirectionalLight3D>(p_light);
-		l->intensity = light->get_param(DirectionalLight3D::PARAM_ENERGY);
-		l->range = FLT_MAX; // Range for directional lights is infinite in Godot.
-	} else if (cast_to<OmniLight3D>(p_light)) {
-		l->light_type = "point";
-		OmniLight3D *light = cast_to<OmniLight3D>(p_light);
-		l->range = light->get_param(OmniLight3D::PARAM_RANGE);
-		l->intensity = light->get_param(OmniLight3D::PARAM_ENERGY);
-	} else if (cast_to<SpotLight3D>(p_light)) {
-		l->light_type = "spot";
-		SpotLight3D *light = cast_to<SpotLight3D>(p_light);
-		l->range = light->get_param(SpotLight3D::PARAM_RANGE);
-		l->intensity = light->get_param(SpotLight3D::PARAM_ENERGY);
-		l->outer_cone_angle = Math::deg_to_rad(light->get_param(SpotLight3D::PARAM_SPOT_ANGLE));
-
-		// This equation is the inverse of the import equation (which has a desmos link).
-		float angle_ratio = 1 - (0.2 / (0.1 + light->get_param(SpotLight3D::PARAM_SPOT_ATTENUATION)));
-		angle_ratio = MAX(0, angle_ratio);
-		l->inner_cone_angle = l->outer_cone_angle * angle_ratio;
-	}
+	Ref<GLTFLight> l = GLTFLight::from_node(p_light);
 
 	GLTFLightIndex light_index = state->lights.size();
 	state->lights.push_back(l);
