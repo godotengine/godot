@@ -73,6 +73,7 @@ class MenuBar : public Control {
 	int active_menu = -1;
 
 	Vector2i mouse_pos_adjusted;
+	Vector2i old_mouse_pos;
 	ObjectID shortcut_context;
 
 	int _get_index_at_point(const Point2 &p_point) const;

@@ -377,6 +377,11 @@ void MenuBar::_notification(int p_what) {
 			MutexLock lock(mutex);
 
 			Vector2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted - get_global_position();
+			if (pos == old_mouse_pos) {
+				return;
+			}
+			old_mouse_pos = pos;
+
 			int index = _get_index_at_point(pos);
 			if (index >= 0 && index != active_menu) {
 				selected_menu = index;
