@@ -313,7 +313,7 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 	}
 
 	const String &description = DTR(EditorHelp::get_doc_data()->class_list[p_type].brief_description);
-	r_item->set_tooltip(0, description);
+	r_item->set_tooltip_text(0, description);
 
 	if (p_type_category == TypeCategory::OTHER_TYPE && !script_type) {
 		Ref<Texture2D> icon = EditorNode::get_editor_data().get_custom_types()[custom_type_parents[p_type]][custom_type_indices[p_type]].icon;

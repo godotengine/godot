@@ -440,7 +440,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style);
 
 			section->set_text(0, item_name);
-			section->set_tooltip(0, tooltip);
+			section->set_tooltip_text(0, tooltip);
 			section->set_selectable(0, false);
 			section->set_selectable(1, false);
 			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));

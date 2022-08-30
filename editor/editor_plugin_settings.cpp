@@ -102,7 +102,7 @@ void EditorPluginSettings::update_plugins() {
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(0, name);
-				item->set_tooltip(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
+				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
 				item->set_metadata(0, path);
 				item->set_text(1, version);
 				item->set_metadata(1, script);

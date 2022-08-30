@@ -1070,7 +1070,7 @@ void ConnectionsDock::update_tree() {
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
-				signal_item->set_tooltip(0, String(signal_name) + "::" + signaldesc + "::" + descr);
+				signal_item->set_tooltip_text(0, String(signal_name) + "::" + signaldesc + "::" + descr);
 			}
 
 			// List existing connections.

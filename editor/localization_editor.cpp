@@ -193,7 +193,7 @@ void LocalizationEditor::_translation_res_option_popup(bool p_arrow_clicked) {
 	TreeItem *ed = translation_remap_options->get_edited();
 	ERR_FAIL_COND(!ed);
 
-	locale_select->set_locale(ed->get_tooltip(1));
+	locale_select->set_locale(ed->get_tooltip_text(1));
 	locale_select->popup_locale_dialog();
 }
 
@@ -202,7 +202,7 @@ void LocalizationEditor::_translation_res_option_selected(const String &p_locale
 	ERR_FAIL_COND(!ed);
 
 	ed->set_text(1, TranslationServer::get_singleton()->get_locale_name(p_locale));
-	ed->set_tooltip(1, p_locale);
+	ed->set_tooltip_text(1, p_locale);
 
 	LocalizationEditor::_translation_res_option_changed();
 }
@@ -226,7 +226,7 @@ void LocalizationEditor::_translation_res_option_changed() {
 	String key = k->get_metadata(0);
 	int idx = ed->get_metadata(0);
 	String path = ed->get_metadata(1);
-	String locale = ed->get_tooltip(1);
+	String locale = ed->get_tooltip_text(1);
 
 	ERR_FAIL_COND(!remaps.has(key));
 	PackedStringArray r = remaps[key];
@@ -486,7 +486,7 @@ void LocalizationEditor::update_translations() {
 			TreeItem *t = translation_list->create_item(root);
 			t->set_editable(0, false);
 			t->set_text(0, translations[i].replace_first("res://", ""));
-			t->set_tooltip(0, translations[i]);
+			t->set_tooltip_text(0, translations[i]);
 			t->set_metadata(0, i);
 			t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
 		}
@@ -520,14 +520,14 @@ void LocalizationEditor::update_translations() {
 			TreeItem *t = translation_remap->create_item(root);
 			t->set_editable(0, false);
 			t->set_text(0, keys[i].replace_first("res://", ""));
-			t->set_tooltip(0, keys[i]);
+			t->set_tooltip_text(0, keys[i]);
 			t->set_metadata(0, keys[i]);
 			t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
 
 			// Display that it has been removed if this is the case.
 			if (!FileAccess::exists(keys[i])) {
 				t->set_text(0, t->get_text(0) + vformat(" (%s)", TTR("Removed")));
-				t->set_tooltip(0, vformat(TTR("%s cannot be found."), t->get_tooltip(0)));
+				t->set_tooltip_text(0, vformat(TTR("%s cannot be found."), t->get_tooltip_text(0)));
 			}
 
 			if (keys[i] == remap_selected) {
@@ -544,19 +544,19 @@ void LocalizationEditor::update_translations() {
 					TreeItem *t2 = translation_remap_options->create_item(root2);
 					t2->set_editable(0, false);
 					t2->set_text(0, path.replace_first("res://", ""));
-					t2->set_tooltip(0, path);
+					t2->set_tooltip_text(0, path);
 					t2->set_metadata(0, j);
 					t2->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
 					t2->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
 					t2->set_text(1, TranslationServer::get_singleton()->get_locale_name(locale));
 					t2->set_editable(1, true);
 					t2->set_metadata(1, path);
-					t2->set_tooltip(1, locale);
+					t2->set_tooltip_text(1, locale);
 
 					// Display that it has been removed if this is the case.
 					if (!FileAccess::exists(path)) {
 						t2->set_text(0, t2->get_text(0) + vformat(" (%s)", TTR("Removed")));
-						t2->set_tooltip(0, vformat(TTR("%s cannot be found."), t2->get_tooltip(0)));
+						t2->set_tooltip_text(0, vformat(TTR("%s cannot be found."), t2->get_tooltip_text(0)));
 					}
 				}
 			}
@@ -573,7 +573,7 @@ void LocalizationEditor::update_translations() {
 			TreeItem *t = translation_pot_list->create_item(root);
 			t->set_editable(0, false);
 			t->set_text(0, pot_translations[i].replace_first("res://", ""));
-			t->set_tooltip(0, pot_translations[i]);
+			t->set_tooltip_text(0, pot_translations[i]);
 			t->set_metadata(0, i);
 			t->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), 0, false, TTR("Remove"));
 		}

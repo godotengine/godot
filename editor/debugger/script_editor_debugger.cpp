@@ -580,8 +580,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			stack_trace->set_text(1, frame_txt);
 		}
 
-		error->set_tooltip(0, tooltip);
-		error->set_tooltip(1, tooltip);
+		error->set_tooltip_text(0, tooltip);
+		error->set_tooltip_text(1, tooltip);
 
 		if (warning_count == 0 && error_count == 0) {
 			expand_all_button->set_disabled(false);
