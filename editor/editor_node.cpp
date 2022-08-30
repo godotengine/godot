@@ -216,6 +216,8 @@ EditorNode *EditorNode::singleton = nullptr;
 static const String META_TEXT_TO_COPY = "text_to_copy";
 
 void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames) {
+	ERR_FAIL_COND_MSG(p_full_paths.size() != r_filenames.size(), vformat("disambiguate_filenames requires two string vectors of same length (%d != %d).", p_full_paths.size(), r_filenames.size()));
+
 	// Keep track of a list of "index sets," i.e. sets of indices
 	// within disambiguated_scene_names which contain the same name.
 	Vector<RBSet<int>> index_sets;
@@ -248,6 +250,13 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				}
 				if (full_path.rfind(".") >= 0) {
 					full_path = full_path.substr(0, full_path.rfind("."));
+				}
+
+				// Normalize trailing slashes when normalizing directory names.
+				if (scene_name.rfind("/") == scene_name.length() - 1 && full_path.rfind("/") != full_path.length() - 1) {
+					full_path = full_path + "/";
+				} else if (scene_name.rfind("/") != scene_name.length() - 1 && full_path.rfind("/") == full_path.length() - 1) {
+					scene_name = scene_name + "/";
 				}
 
 				int scene_name_size = scene_name.size();
