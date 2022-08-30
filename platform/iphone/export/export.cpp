@@ -666,12 +666,18 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String locale_files;
 			Vector<String> translations = ProjectSettings::get_singleton()->get("locale/translations");
 			if (translations.size() > 0) {
+				Set<String> languages;
 				for (int j = 0; j < translations.size(); j++) {
 					Ref<Translation> tr = ResourceLoader::load(translations[j]);
-					if (tr.is_valid()) {
-						String lang = tr->get_locale();
-						locale_files += "D0BCFE4518AEBDA2004A" + itos(j).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };";
+					if (tr.is_valid() && tr->get_locale() != "en") {
+						languages.insert(tr->get_locale());
 					}
+				}
+				int index = 0;
+				for (const Set<String>::Element *E = languages.front(); E; E = E->next()) {
+					const String &lang = E->get();
+					locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + lang + " */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = " + lang + "; path = " + lang + ".lproj/InfoPlist.strings; sourceTree = \"<group>\"; };\n";
+					index++;
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_file_reference", locale_files);
@@ -679,12 +685,17 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			String locale_files;
 			Vector<String> translations = ProjectSettings::get_singleton()->get("locale/translations");
 			if (translations.size() > 0) {
+				Set<String> languages;
 				for (int j = 0; j < translations.size(); j++) {
 					Ref<Translation> tr = ResourceLoader::load(translations[j]);
-					if (tr.is_valid()) {
-						String lang = tr->get_locale();
-						locale_files += "D0BCFE4518AEBDA2004A" + itos(j).pad_zeros(4) + " /* " + lang + " */,";
+					if (tr.is_valid() && tr->get_locale() != "en") {
+						languages.insert(tr->get_locale());
 					}
+				}
+				int index = 0;
+				for (const Set<String>::Element *E = languages.front(); E; E = E->next()) {
+					locale_files += "D0BCFE4518AEBDA2004A" + itos(index).pad_zeros(4) + " /* " + E->get() + " */,\n";
+					index++;
 				}
 			}
 			strnew += lines[i].replace("$pbx_locale_build_reference", locale_files);
@@ -1957,16 +1968,20 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 			f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get("application/config/name").operator String() + "\";");
 		}
 
-		for (int i = 0; i < translations.size(); i++) {
-			Ref<Translation> tr = ResourceLoader::load(translations[i]);
-			if (tr.is_valid()) {
-				String fname = dest_dir + binary_name + "/" + tr->get_locale() + ".lproj";
-				tmp_app_path->make_dir_recursive(fname);
-				FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
-				String prop = "application/config/name_" + tr->get_locale();
-				if (ProjectSettings::get_singleton()->has_setting(prop)) {
-					f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
-				}
+		Set<String> languages;
+		for (int j = 0; j < translations.size(); j++) {
+			Ref<Translation> tr = ResourceLoader::load(translations[j]);
+			if (tr.is_valid() && tr->get_locale() != "en") {
+				languages.insert(tr->get_locale());
+			}
+		}
+		for (const Set<String>::Element *E = languages.front(); E; E = E->next()) {
+			String fname = dest_dir + binary_name + "/" + E->get() + ".lproj";
+			tmp_app_path->make_dir_recursive(fname);
+			FileAccessRef f = FileAccess::open(fname + "/InfoPlist.strings", FileAccess::WRITE);
+			String prop = "application/config/name_" + E->get();
+			if (ProjectSettings::get_singleton()->has_setting(prop)) {
+				f->store_line("CFBundleDisplayName = \"" + ProjectSettings::get_singleton()->get(prop).operator String() + "\";");
 			}
 		}
 	}
