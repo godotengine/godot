@@ -2303,17 +2303,20 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
-				// Update everything.
-				_update_source_inspector();
 
-				// Update the selected tile.
-				_update_fix_selected_and_hovered_tiles();
-				_update_tile_id_label();
-				_update_atlas_view();
-				_update_atlas_source_inspector();
-				_update_tile_inspector();
-				_update_tile_data_editors();
-				_update_current_tile_data_editor();
+				if (tile_set->get_source_count() > 0) {
+					// Update everything.
+					_update_source_inspector();
+
+					// Update the selected tile.
+					_update_fix_selected_and_hovered_tiles();
+					_update_tile_id_label();
+					_update_atlas_view();
+					_update_atlas_source_inspector();
+					_update_tile_inspector();
+					_update_tile_data_editors();
+					_update_current_tile_data_editor();
+				}
 
 				tile_set_changed_needs_update = false;
 			}
