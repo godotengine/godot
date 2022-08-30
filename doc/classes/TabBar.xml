@@ -201,6 +201,7 @@
 		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			Sets the position at which tabs will be placed. See [enum AlignmentMode] for details.
+			[b]Note[/b]: If [member vertical_mode] is [code]true[/code], this option is ignored, see [member vertical_tab_alignment] instead.
 		</member>
 		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="TabBar.CloseButtonDisplayPolicy" default="0">
 			Sets when the close button will appear on the tabs. See [enum CloseButtonDisplayPolicy] for details.
@@ -211,6 +212,13 @@
 		<member name="tabs_rearrange_group" type="int" setter="set_tabs_rearrange_group" getter="get_tabs_rearrange_group" default="-1">
 			[TabBar]s with the same rearrange group ID will allow dragging the tabs between them. Enable drag with [member drag_to_rearrange_enabled].
 			Setting this to [code]-1[/code] will disable rearranging between [TabBar]s.
+		</member>
+		<member name="vertical_mode" type="bool" setter="set_vertical_mode" getter="is_vertical_mode" default="false">
+			If [code]true[/code], sets the TabBar to render in a vertical mode where tabs are listed in a vertically descending order but their content is not.
+			[b]Note[/b]: The tab button, see [method get_tab_button_icon], and close button follow the side opposite the icon and text. If [method Control.is_layout_rtl] is [code]true[/code], the tab button and close button will be on the left side.
+		</member>
+		<member name="vertical_tab_alignment" type="int" setter="set_vertical_tab_alignment" getter="get_vertical_tab_alignment" enum="TabBar.VAlignmentMode" default="0">
+			Sets the position at which tabs will be placed when [member vertical_mode] is true. See [enum VAlignmentMode] for details.
 		</member>
 	</members>
 	<signals>
@@ -285,6 +293,18 @@
 		<constant name="ALIGNMENT_MAX" value="3" enum="AlignmentMode">
 			Represents the size of the [enum AlignmentMode] enum.
 		</constant>
+		<constant name="VALIGNMENT_TOP" value="0" enum="VAlignmentMode">
+			Places tabs to the top.
+		</constant>
+		<constant name="VALIGNMENT_CENTER" value="1" enum="VAlignmentMode">
+			Places tabs in the middle.
+		</constant>
+		<constant name="VALIGNMENT_BOTTOM" value="2" enum="VAlignmentMode">
+			Places tabs to the bottom.
+		</constant>
+		<constant name="VALIGNMENT_MAX" value="3" enum="VAlignmentMode">
+			Represents the size of the [enum VAlignmentMode] enum.
+		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 			Never show the close buttons.
 		</constant>
@@ -344,6 +364,21 @@
 		<theme_item name="increment_highlight" data_type="icon" type="Texture2D">
 			Icon for the right arrow button that appears when there are too many tabs to fit in the container width. Used when the button is being hovered with the cursor.
 		</theme_item>
+		<theme_item name="vertical_decrement" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container width when [member vertical_mode] is [code]true[/code]. When the button is disabled (i.e. the first tab is visible), it appears semi-transparent.
+		</theme_item>
+		<theme_item name="vertical_decrement_highlight" data_type="icon" type="Texture2D">
+			Icon for the up arrow button that appears when there are too many tabs to fit in the container width when [member vertical_mode] is [code]true[/code]. Used when the button is being hovered with the cursor.
+		</theme_item>
+		<theme_item name="vertical_drop_mark" data_type="icon" type="Texture2D">
+			Icon shown to indicate where a dragged tab is gonna be dropped (see [member drag_to_rearrange_enabled]) when [member vertical_mode] is [code]true[/code].
+		</theme_item>
+		<theme_item name="vertical_increment" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container width when [member vertical_mode] is [code]true[/code]. When the button is disabled (i.e. the last tab is visible) it appears semi-transparent.
+		</theme_item>
+		<theme_item name="vertical_increment_highlight" data_type="icon" type="Texture2D">
+			Icon for the down arrow button that appears when there are too many tabs to fit in the container width when [member vertical_mode] is [code]true[/code]. Used when the button is being hovered with the cursor.
+		</theme_item>
 		<theme_item name="button_highlight" data_type="style" type="StyleBox">
 			Background of the tab and close buttons when they're being hovered with the cursor.
 		</theme_item>
@@ -358,6 +393,15 @@
 		</theme_item>
 		<theme_item name="tab_unselected" data_type="style" type="StyleBox">
 			The style of the other, unselected tabs.
+		</theme_item>
+		<theme_item name="vertical_tab_disabled" data_type="style" type="StyleBox">
+			The style of disabled tabs when [member vertical_mode] is [code]true[/code].
+		</theme_item>
+		<theme_item name="vertical_tab_selected" data_type="style" type="StyleBox">
+			The style of the currently selected tab when [member vertical_mode] is [code]true[/code].
+		</theme_item>
+		<theme_item name="vertical_tab_unselected" data_type="style" type="StyleBox">
+			The style of the other, unselected tabs when [member vertical_mode] is [code]true[/code].
 		</theme_item>
 	</theme_items>
 </class>

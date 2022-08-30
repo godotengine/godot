@@ -45,6 +45,13 @@ public:
 		ALIGNMENT_MAX,
 	};
 
+	enum VAlignmentMode {
+		VALIGNMENT_TOP,
+		VALIGNMENT_CENTER,
+		VALIGNMENT_BOTTOM,
+		VALIGNMENT_MAX
+	};
+
 	enum CloseButtonDisplayPolicy {
 		CLOSE_BUTTON_SHOW_NEVER,
 		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
@@ -90,6 +97,9 @@ private:
 	int rb_hover = -1;
 	bool rb_pressing = false;
 
+	bool vertical_mode = false;
+	VAlignmentMode vertical_tab_alignment = VALIGNMENT_TOP;
+
 	bool select_with_rmb = false;
 
 	int cb_hover = -1;
@@ -105,6 +115,7 @@ private:
 	int tabs_rearrange_group = -1;
 
 	int get_tab_width(int p_idx) const;
+	int get_tab_height(int p_idx) const;
 	void _ensure_no_over_offset();
 
 	void _update_hover();
@@ -113,13 +124,14 @@ private:
 	void _on_mouse_exited();
 
 	void _shape(int p_tab);
-	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x);
+	void _draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_tab_offset);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -155,6 +167,12 @@ public:
 
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
+
+	void set_vertical_mode(bool p_vertical);
+	bool is_vertical_mode() const;
+
+	void set_vertical_tab_alignment(VAlignmentMode p_alignment);
+	VAlignmentMode get_vertical_tab_alignment() const;
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
@@ -205,6 +223,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(TabBar::AlignmentMode);
+VARIANT_ENUM_CAST(TabBar::VAlignmentMode);
 VARIANT_ENUM_CAST(TabBar::CloseButtonDisplayPolicy);
 
 #endif // TAB_BAR_H
