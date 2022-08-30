@@ -376,7 +376,7 @@ void GPUParticles2D::_texture_changed() {
 	// Changes to the texture need to trigger an update to make
 	// the editor redraw the sprite with the updated texture.
 	if (texture.is_valid()) {
-		update();
+		queue_redraw();
 	}
 }
 
