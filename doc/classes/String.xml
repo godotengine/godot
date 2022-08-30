@@ -775,6 +775,12 @@
 				Converts the String (which is a character array) to ASCII/Latin-1 encoded [PackedByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8_buffer], as this method assumes that all the characters in the String are ASCII/Latin-1 characters, unsupported characters are replaced with spaces.
 			</description>
 		</method>
+		<method name="to_camel_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]camelCase[/code].
+			</description>
+		</method>
 		<method name="to_float" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -802,6 +808,18 @@
 			<return type="String" />
 			<description>
 				Returns the string converted to lowercase.
+			</description>
+		</method>
+		<method name="to_pascal_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]PascalCase[/code].
+			</description>
+		</method>
+		<method name="to_snake_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]snake_case[/code].
 			</description>
 		</method>
 		<method name="to_upper" qualifiers="const">

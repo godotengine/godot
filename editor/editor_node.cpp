@@ -1314,7 +1314,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 			file->set_current_file(p_resource->get_path().get_file());
 		} else {
 			if (extensions.size()) {
-				String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
+				String resource_name_snake_case = p_resource->get_class().to_snake_case();
 				file->set_current_file("new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower());
 			} else {
 				file->set_current_file(String());
@@ -1331,7 +1331,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	} else if (preferred.size()) {
 		String existing;
 		if (extensions.size()) {
-			String resource_name_snake_case = p_resource->get_class().camelcase_to_underscore();
+			String resource_name_snake_case = p_resource->get_class().to_snake_case();
 			existing = "new_" + resource_name_snake_case + "." + preferred.front()->get().to_lower();
 		}
 		file->set_current_path(existing);
@@ -2730,10 +2730,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						// Use casing of the root node.
 						break;
 					case SCENE_NAME_CASING_PASCAL_CASE: {
-						root_name = root_name.capitalize().replace(" ", "");
+						root_name = root_name.to_pascal_case();
 					} break;
 					case SCENE_NAME_CASING_SNAKE_CASE:
-						root_name = root_name.capitalize().replace(" ", "").replace("-", "_").camelcase_to_underscore();
+						root_name = root_name.replace("-", "_").to_snake_case();
 						break;
 				}
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());

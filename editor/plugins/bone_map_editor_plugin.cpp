@@ -609,7 +609,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 }
 
 BoneMapper::BoneSegregation BoneMapper::guess_bone_segregation(String p_bone_name) {
-	String fixed_bn = p_bone_name.camelcase_to_underscore().to_lower();
+	String fixed_bn = p_bone_name.to_snake_case();
 
 	LocalVector<String> left_words;
 	left_words.push_back("(?<![a-zA-Z])left");

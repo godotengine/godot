@@ -139,7 +139,7 @@ theme_property_patterns = {
 }
 
 
-# See String::camelcase_to_underscore().
+# See String::_camelcase_to_underscore().
 capitalize_re = re.compile(r"(?<=\D)(?=\d)|(?<=\d)(?=\D([a-z]|\d))")
 
 

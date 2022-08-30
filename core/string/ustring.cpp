@@ -970,8 +970,42 @@ const char32_t *String::get_data() const {
 	return size() ? &operator[](0) : &zero;
 }
 
+String String::_camelcase_to_underscore() const {
+	const char32_t *cstr = get_data();
+	String new_string;
+	int start_index = 0;
+
+	for (int i = 1; i < this->size(); i++) {
+		bool is_prev_upper = is_ascii_upper_case(cstr[i - 1]);
+		bool is_prev_lower = is_ascii_lower_case(cstr[i - 1]);
+		bool is_prev_digit = is_digit(cstr[i - 1]);
+
+		bool is_curr_upper = is_ascii_upper_case(cstr[i]);
+		bool is_curr_lower = is_ascii_lower_case(cstr[i]);
+		bool is_curr_digit = is_digit(cstr[i]);
+
+		bool is_next_lower = false;
+		if (i + 1 < this->size()) {
+			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
+		}
+
+		const bool cond_a = is_prev_lower && is_curr_upper; // aA
+		const bool cond_b = (is_prev_upper || is_prev_digit) && is_curr_upper && is_next_lower; // AAa, 2Aa
+		const bool cond_c = is_prev_digit && is_curr_lower && is_next_lower; // 2aa
+		const bool cond_d = (is_prev_upper || is_prev_lower) && is_curr_digit; // A2, a2
+
+		if (cond_a || cond_b || cond_c || cond_d) {
+			new_string += this->substr(start_index, i - start_index) + "_";
+			start_index = i;
+		}
+	}
+
+	new_string += this->substr(start_index, this->size() - start_index);
+	return new_string.to_lower();
+}
+
 String String::capitalize() const {
-	String aux = this->camelcase_to_underscore(true).replace("_", " ").strip_edges();
+	String aux = this->_camelcase_to_underscore().replace("_", " ").strip_edges();
 	String cap;
 	for (int i = 0; i < aux.get_slice_count(" "); i++) {
 		String slice = aux.get_slicec(' ', i);
@@ -987,45 +1021,20 @@ String String::capitalize() const {
 	return cap;
 }
 
-String String::camelcase_to_underscore(bool lowercase) const {
-	const char32_t *cstr = get_data();
-	String new_string;
-	int start_index = 0;
-
-	for (int i = 1; i < this->size(); i++) {
-		bool is_upper = is_ascii_upper_case(cstr[i]);
-		bool is_number = is_digit(cstr[i]);
-
-		bool are_next_2_lower = false;
-		bool is_next_lower = false;
-		bool is_next_number = false;
-		bool was_precedent_upper = is_ascii_upper_case(cstr[i - 1]);
-		bool was_precedent_number = is_digit(cstr[i - 1]);
-
-		if (i + 2 < this->size()) {
-			are_next_2_lower = is_ascii_lower_case(cstr[i + 1]) && is_ascii_lower_case(cstr[i + 2]);
-		}
-
-		if (i + 1 < this->size()) {
-			is_next_lower = is_ascii_lower_case(cstr[i + 1]);
-			is_next_number = is_digit(cstr[i + 1]);
-		}
-
-		const bool cond_a = is_upper && !was_precedent_upper && !was_precedent_number;
-		const bool cond_b = was_precedent_upper && is_upper && are_next_2_lower;
-		const bool cond_c = is_number && !was_precedent_number;
-		const bool can_break_number_letter = is_number && !was_precedent_number && is_next_lower;
-		const bool can_break_letter_number = !is_number && was_precedent_number && (is_next_lower || is_next_number);
-
-		bool should_split = cond_a || cond_b || cond_c || can_break_number_letter || can_break_letter_number;
-		if (should_split) {
-			new_string += this->substr(start_index, i - start_index) + "_";
-			start_index = i;
-		}
+String String::to_camel_case() const {
+	String s = this->to_pascal_case();
+	if (!s.is_empty()) {
+		s[0] = _find_lower(s[0]);
 	}
+	return s;
+}
 
-	new_string += this->substr(start_index, this->size() - start_index);
-	return lowercase ? new_string.to_lower() : new_string;
+String String::to_pascal_case() const {
+	return this->capitalize().replace(" ", "");
+}
+
+String String::to_snake_case() const {
+	return this->_camelcase_to_underscore().replace(" ", "_").strip_edges();
 }
 
 String String::get_with_code_lines() const {

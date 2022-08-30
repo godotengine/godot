@@ -898,7 +898,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 
 	// Get name from file name if no name in meta information
 	if (script_template.name == String()) {
-		script_template.name = p_filename.get_basename().replace("_", " ").capitalize();
+		script_template.name = p_filename.get_basename().capitalize();
 	}
 
 	return script_template;

@@ -161,7 +161,7 @@ void ShaderCreateDialog::_create_new() {
 			shader = text_shader;
 
 			StringBuilder code;
-			code += vformat("shader_type %s;\n", mode_menu->get_text().replace(" ", "").camelcase_to_underscore());
+			code += vformat("shader_type %s;\n", mode_menu->get_text().to_snake_case());
 
 			if (current_template == 0) { // Default template.
 				code += "\n";

@@ -1590,7 +1590,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					}
 				}
 
-				String variable_name = String(node->get_name()).camelcase_to_underscore(true).validate_identifier();
+				String variable_name = String(node->get_name()).to_snake_case().validate_identifier();
 				if (use_type) {
 					text_to_drop += vformat("@onready var %s: %s = %s%s\n", variable_name, node->get_class_name(), is_unique ? "%" : "$", path);
 				} else {

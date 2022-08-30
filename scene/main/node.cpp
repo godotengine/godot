@@ -951,14 +951,11 @@ String Node::validate_child_name(Node *p_child) {
 String Node::adjust_name_casing(const String &p_name) {
 	switch (GLOBAL_GET("editor/node_naming/name_casing").operator int()) {
 		case NAME_CASING_PASCAL_CASE:
-			return p_name.capitalize().replace(" ", "");
-		case NAME_CASING_CAMEL_CASE: {
-			String name = p_name.capitalize().replace(" ", "");
-			name[0] = name.to_lower()[0];
-			return name;
-		}
+			return p_name.to_pascal_case();
+		case NAME_CASING_CAMEL_CASE:
+			return p_name.to_camel_case();
 		case NAME_CASING_SNAKE_CASE:
-			return p_name.capitalize().replace(" ", "_").to_lower();
+			return p_name.to_snake_case();
 	}
 	return p_name;
 }
