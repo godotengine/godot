@@ -60,6 +60,7 @@ class SpinBox : public Range {
 		float diff_y = 0;
 	} drag;
 
+	void _line_edit_focus_enter();
 	void _line_edit_focus_exit();
 
 	inline void _adjust_width_for_icon(const Ref<Texture> &icon);
