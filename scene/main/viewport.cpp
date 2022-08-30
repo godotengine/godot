@@ -190,14 +190,7 @@ void Viewport::_sub_window_register(Window *p_window) {
 }
 
 void Viewport::_sub_window_update(Window *p_window) {
-	int index = -1;
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
-		if (gui.sub_windows[i].window == p_window) {
-			index = i;
-			break;
-		}
-	}
-
+	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
 
 	const SubWindow &sw = gui.sub_windows[index];
@@ -257,14 +250,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		return;
 	}
 
-	int index = -1;
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
-		if (gui.sub_windows[i].window == p_window) {
-			index = i;
-			break;
-		}
-	}
-
+	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
 
 	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
@@ -312,13 +298,11 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 }
 
 void Viewport::_sub_window_remove(Window *p_window) {
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
-		if (gui.sub_windows[i].window == p_window) {
-			RS::get_singleton()->free(gui.sub_windows[i].canvas_item);
-			gui.sub_windows.remove_at(i);
-			break;
-		}
-	}
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	RS::get_singleton()->free(gui.sub_windows[index].canvas_item);
+	gui.sub_windows.remove_at(index);
 
 	if (gui.sub_windows.size() == 0) {
 		RS::get_singleton()->free(subwindow_canvas);
@@ -326,25 +310,44 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	}
 
 	if (gui.subwindow_focused == p_window) {
+		Window *new_focused_window;
 		Window *parent_visible = p_window->get_parent_visible_window();
 
 		gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 
 		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 
-		if (parent_visible && parent_visible != this) {
-			gui.subwindow_focused = parent_visible;
-			gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+		if (parent_visible) {
+			new_focused_window = parent_visible;
+		} else {
+			new_focused_window = Object::cast_to<Window>(this);
+		}
+
+		if (new_focused_window) {
+			int new_focused_index = _sub_window_find(new_focused_window);
+			if (new_focused_index != -1) {
+				gui.subwindow_focused = new_focused_window;
+			} else {
+				gui.subwindow_focused = nullptr;
+			}
+
+			new_focused_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		} else {
 			gui.subwindow_focused = nullptr;
-			Window *this_window = Object::cast_to<Window>(this);
-			if (this_window) {
-				this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
-			}
 		}
 	}
 
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
+}
+
+int Viewport::_sub_window_find(Window *p_window) {
+	for (int i = 0; i < gui.sub_windows.size(); i++) {
+		if (gui.sub_windows[i].window == p_window) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void Viewport::_notification(int p_what) {

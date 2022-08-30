@@ -461,6 +461,7 @@ private:
 	void _sub_window_update(Window *p_window);
 	void _sub_window_grab_focus(Window *p_window);
 	void _sub_window_remove(Window *p_window);
+	int _sub_window_find(Window *p_window);
 	bool _sub_windows_forward_input(const Ref<InputEvent> &p_event);
 	SubWindowResize _sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point);
 
