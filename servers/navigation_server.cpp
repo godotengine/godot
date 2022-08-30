@@ -37,7 +37,7 @@ void NavigationServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_create"), &NavigationServer::map_create);
 	ClassDB::bind_method(D_METHOD("map_set_active", "map", "active"), &NavigationServer::map_set_active);
-	ClassDB::bind_method(D_METHOD("map_is_active", "nap"), &NavigationServer::map_is_active);
+	ClassDB::bind_method(D_METHOD("map_is_active", "map"), &NavigationServer::map_is_active);
 	ClassDB::bind_method(D_METHOD("map_set_up", "map", "up"), &NavigationServer::map_set_up);
 	ClassDB::bind_method(D_METHOD("map_get_up", "map"), &NavigationServer::map_get_up);
 	ClassDB::bind_method(D_METHOD("map_set_cell_size", "map", "cell_size"), &NavigationServer::map_set_cell_size);

@@ -233,9 +233,11 @@
 		</member>
 		<member name="debug_collisions_hint" type="bool" setter="set_debug_collisions_hint" getter="is_debugging_collisions_hint" default="false">
 			If [code]true[/code], collision shapes will be visible when running the game from the editor for debugging purposes.
+			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_collisions_hint] while the project is running will not have the desired effect.
 		</member>
 		<member name="debug_navigation_hint" type="bool" setter="set_debug_navigation_hint" getter="is_debugging_navigation_hint" default="false">
 			If [code]true[/code], navigation polygons will be visible when running the game from the editor for debugging purposes.
+			[b]Note:[/b] This property is not designed to be changed at run-time. Changing the value of [member debug_navigation_hint] while the project is running will not have the desired effect.
 		</member>
 		<member name="edited_scene_root" type="Node" setter="set_edited_scene_root" getter="get_edited_scene_root">
 			The root of the edited scene.

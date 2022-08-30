@@ -107,6 +107,14 @@ MonoString *godot_icall_GodotSharpDirs_BuildLogsDirs() {
 #endif
 }
 
+MonoString *godot_icall_GodotSharpDirs_ProjectAssemblyName() {
+#ifdef TOOLS_ENABLED
+	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_assembly_name());
+#else
+	return NULL;
+#endif
+}
+
 MonoString *godot_icall_GodotSharpDirs_ProjectSlnPath() {
 #ifdef TOOLS_ENABLED
 	return GDMonoMarshal::mono_string_from_godot(GodotSharpDirs::get_project_sln_path());
@@ -388,6 +396,7 @@ void register_editor_internal_calls() {
 	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_MonoLogsDir", godot_icall_GodotSharpDirs_MonoLogsDir);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_MonoSolutionsDir", godot_icall_GodotSharpDirs_MonoSolutionsDir);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_BuildLogsDirs", godot_icall_GodotSharpDirs_BuildLogsDirs);
+	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ProjectAssemblyName", godot_icall_GodotSharpDirs_ProjectAssemblyName);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ProjectSlnPath", godot_icall_GodotSharpDirs_ProjectSlnPath);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ProjectCsProjPath", godot_icall_GodotSharpDirs_ProjectCsProjPath);
 	GDMonoUtils::add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_DataEditorToolsDir", godot_icall_GodotSharpDirs_DataEditorToolsDir);

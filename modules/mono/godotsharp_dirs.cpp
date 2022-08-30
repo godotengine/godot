@@ -102,6 +102,7 @@ public:
 	String mono_solutions_dir;
 	String build_logs_dir;
 
+	String project_assembly_name;
 	String sln_filepath;
 	String csproj_filepath;
 
@@ -144,16 +145,35 @@ private:
 		mono_solutions_dir = mono_user_dir.plus_file("solutions");
 		build_logs_dir = mono_user_dir.plus_file("build_logs");
 
+		GLOBAL_DEF("mono/project/assembly_name", "");
+		GLOBAL_DEF("mono/project/solution_directory", "");
+		GLOBAL_DEF("mono/project/c#_project_directory", "");
+
 		String appname = ProjectSettings::get_singleton()->get("application/config/name");
 		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
 		if (appname_safe.empty()) {
 			appname_safe = "UnnamedProject";
 		}
 
-		String base_path = ProjectSettings::get_singleton()->globalize_path("res://");
+		project_assembly_name = ProjectSettings::get_singleton()->get("mono/project/assembly_name");
+		if (project_assembly_name.empty()) {
+			project_assembly_name = appname_safe;
+			ProjectSettings::get_singleton()->set("mono/project/assembly_name", project_assembly_name);
+		}
 
-		sln_filepath = base_path.plus_file(appname_safe + ".sln");
-		csproj_filepath = base_path.plus_file(appname_safe + ".csproj");
+		String sln_parent_dir = ProjectSettings::get_singleton()->get("mono/project/solution_directory");
+		if (sln_parent_dir.empty()) {
+			sln_parent_dir = "res://";
+		}
+
+		String csproj_parent_dir = ProjectSettings::get_singleton()->get("mono/project/c#_project_directory");
+		if (csproj_parent_dir.empty()) {
+			csproj_parent_dir = "res://";
+		}
+
+		sln_filepath = ProjectSettings::get_singleton()->globalize_path(sln_parent_dir).plus_file(project_assembly_name + ".sln");
+
+		csproj_filepath = ProjectSettings::get_singleton()->globalize_path(csproj_parent_dir).plus_file(project_assembly_name + ".csproj");
 #endif
 
 		String exe_dir = OS::get_singleton()->get_executable_path().get_base_dir();
@@ -286,6 +306,10 @@ String get_mono_solutions_dir() {
 
 String get_build_logs_dir() {
 	return _GodotSharpDirs::get_singleton().build_logs_dir;
+}
+
+String get_project_assembly_name() {
+	return _GodotSharpDirs::get_singleton().project_assembly_name;
 }
 
 String get_project_sln_path() {

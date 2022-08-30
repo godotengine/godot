@@ -57,20 +57,20 @@
 		<method name="get_caption" qualifiers="virtual">
 			<return type="String" />
 			<description>
-				Gets the text caption for this node (used by some editors).
+				When inheriting from [AnimationRootNode], implement this virtual method to override the text caption for this node.
 			</description>
 		</method>
 		<method name="get_child_by_name" qualifiers="virtual">
 			<return type="Object" />
 			<argument index="0" name="name" type="String" />
 			<description>
-				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
+				When inheriting from [AnimationRootNode], implement this virtual method to return a child node by its [code]name[/code].
 			</description>
 		</method>
 		<method name="get_child_nodes" qualifiers="virtual">
 			<return type="Dictionary" />
 			<description>
-				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
+				When inheriting from [AnimationRootNode], implement this virtual method to return all children nodes in order as a [code]name: node[/code] dictionary.
 			</description>
 		</method>
 		<method name="get_input_count" qualifiers="const">
@@ -97,19 +97,19 @@
 			<return type="Variant" />
 			<argument index="0" name="name" type="String" />
 			<description>
-				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+				When inheriting from [AnimationRootNode], implement this virtual method to return the default value of parameter "[code]name[/code]". Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
 		<method name="get_parameter_list" qualifiers="virtual">
 			<return type="Array" />
 			<description>
-				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
+				When inheriting from [AnimationRootNode], implement this virtual method to return a list of the properties on this node. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">
-			<return type="String" />
+			<return type="bool" />
 			<description>
-				Returns [code]true[/code] whether you want the blend tree editor to display filter editing on this node.
+				When inheriting from [AnimationRootNode], implement this virtual method to return whether the blend tree editor should display filter editing on this node.
 			</description>
 		</method>
 		<method name="is_path_filtered" qualifiers="const">
@@ -124,7 +124,7 @@
 			<argument index="0" name="time" type="float" />
 			<argument index="1" name="seek" type="bool" />
 			<description>
-				User-defined callback called when a custom node is processed. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute.
+				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this node is processed. The [code]time[/code] parameter is a relative delta, unless [code]seek[/code] is [code]true[/code], in which case it is absolute.
 				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
 				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
 			</description>

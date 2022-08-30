@@ -139,7 +139,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (rb_pressing && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 			if (rb_hover != -1) {
-				// Right mouse button pressed.
+				// Right tab button pressed.
 				emit_signal("right_button_pressed", rb_hover);
 			}
 
@@ -955,6 +955,8 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &Tabs::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon"), &Tabs::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon", "tab_idx"), &Tabs::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_button_icon", "tab_idx", "icon"), &Tabs::set_tab_right_button);
+	ClassDB::bind_method(D_METHOD("get_tab_button_icon", "tab_idx"), &Tabs::get_tab_right_button);
 	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &Tabs::set_tab_disabled);
 	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &Tabs::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("remove_tab", "tab_idx"), &Tabs::remove_tab);
