@@ -35,6 +35,7 @@
 
 class Control;
 class Font;
+class Shortcut;
 class StyleBox;
 class Theme;
 
@@ -150,6 +151,8 @@ private:
 	void _rect_changed_callback(const Rect2i &p_callback);
 	void _event_callback(DisplayServer::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
+
+	Ref<Shortcut> debugger_stop_shortcut;
 
 protected:
 	Viewport *_get_embedder() const;
