@@ -57,10 +57,11 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	Vector<String> path;
 	if (tree && tree->has_meta("_tree_edit_path")) {
 		path = tree->get_meta("_tree_edit_path");
-		edit_path(path);
 	} else {
 		current_root = 0;
 	}
+
+	edit_path(path);
 }
 
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
@@ -127,6 +128,11 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	} else {
 		current_root = 0;
 		edited_path = button_path;
+
+		for (int i = 0; i < editors.size(); i++) {
+			editors[i]->edit(Ref<AnimationNode>());
+			editors[i]->hide();
+		}
 	}
 
 	_update_path();
