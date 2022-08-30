@@ -62,6 +62,13 @@
 			The render layer(s) this [VisualInstance] is drawn on.
 			This object will only be visible for [Camera]s whose cull mask includes the render object this [VisualInstance] is set to.
 		</member>
+		<member name="sorting_offset" type="float" setter="set_sorting_offset" getter="get_sorting_offset" default="0.0">
+			The sorting offset used by this [VisualInstance]. Adjusting it to a higher value will make the [VisualInstance] reliably draw on top of other [VisualInstance]s that are otherwise positioned at the same spot.
+		</member>
+		<member name="sorting_use_aabb_center" type="bool" setter="set_sorting_use_aabb_center" getter="is_sorting_use_aabb_center" default="true">
+			If [code]true[/code], the object is sorted based on the [AABB] center. Sorted based on the global position otherwise.
+			The [AABB] center based sorting is generally more accurate for 3D models. The position based sorting instead allows to better control the drawing order when working with [Particles] and [CPUParticles].
+		</member>
 	</members>
 	<constants>
 	</constants>
