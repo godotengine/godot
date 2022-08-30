@@ -1401,6 +1401,7 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 
 void SceneTreeDock::_load_request(const String &p_path) {
 	EditorNode::get_singleton()->open_request(p_path);
+	_local_tree_selected();
 }
 
 void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
@@ -3218,6 +3219,7 @@ void SceneTreeDock::add_remote_tree_editor(Control *p_remote) {
 	add_child(p_remote);
 	remote_tree = p_remote;
 	remote_tree->hide();
+	remote_tree->connect("open", callable_mp(this, &SceneTreeDock::_load_request));
 }
 
 void SceneTreeDock::show_remote_tree() {
