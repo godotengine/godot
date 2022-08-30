@@ -103,6 +103,7 @@ public:
 		BREAK_WORD_BOUND = 1 << 1,
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
+		BREAK_TRIM_EDGE_SPACES = 1 << 4,
 	};
 
 	enum OverrunBehavior {

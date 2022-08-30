@@ -453,6 +453,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 		case TextServer::AUTOWRAP_OFF:
 			break;
 	}
+	autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
 
 	// Clear cache.
 	l.text_buf->clear();
