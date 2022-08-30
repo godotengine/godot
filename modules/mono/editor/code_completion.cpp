@@ -163,9 +163,9 @@ PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_scr
 					}
 
 					if (dir_access->dir_exists(filename)) {
-						directories.push_back(dir_access->get_current_dir().plus_file(filename));
+						directories.push_back(dir_access->get_current_dir().path_join(filename));
 					} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
-						suggestions.push_back(quoted(dir_access->get_current_dir().plus_file(filename)));
+						suggestions.push_back(quoted(dir_access->get_current_dir().path_join(filename)));
 					}
 
 					filename = dir_access->get_next();

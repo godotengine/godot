@@ -566,11 +566,11 @@
 				Formats a number to have an exact number of [param digits] before the decimal point.
 			</description>
 		</method>
-		<method name="plus_file" qualifiers="const">
+		<method name="path_join" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="file" type="String" />
 			<description>
-				If the string is a path, this concatenates [param file] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
+				If the string is a path, this concatenates [param file] at the end of the string as a subpath. E.g. [code]"this/is".path_join("path") == "this/is/path"[/code].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">

@@ -91,7 +91,7 @@ void ExportTemplateManager::_update_template_status() {
 		install_options_vb->show();
 
 		if (templates.has(current_version)) {
-			current_installed_path->set_text(templates_dir.plus_file(current_version));
+			current_installed_path->set_text(templates_dir.path_join(current_version));
 		}
 	}
 
@@ -146,7 +146,7 @@ void ExportTemplateManager::_download_template(const String &p_url, bool p_skip_
 	download_progress_hb->show();
 	_set_current_progress_status(TTR("Starting the download..."));
 
-	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().plus_file("tmp_templates.tpz"));
+	download_templates->set_download_file(EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_templates.tpz"));
 	download_templates->set_use_threads(true);
 
 	const String proxy_host = EDITOR_GET("network/http_proxy/host");
@@ -440,7 +440,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 	}
 
 	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(version);
+	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(version);
 	Error err = d->make_dir_recursive(template_path);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error creating path for extracting templates:") + "\n" + template_path);
@@ -486,12 +486,12 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		if (base_dir != contents_dir && base_dir.begins_with(contents_dir)) {
 			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/");
-			file = base_dir.plus_file(file);
+			file = base_dir.path_join(file);
 
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			ERR_CONTINUE(da.is_null());
 
-			String output_dir = template_path.plus_file(base_dir);
+			String output_dir = template_path.path_join(base_dir);
 
 			if (!DirAccess::exists(output_dir)) {
 				Error mkdir_err = da->make_dir_recursive(output_dir);
@@ -503,7 +503,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			p->step(TTR("Importing:") + " " + file, fc);
 		}
 
-		String to_write = template_path.plus_file(file);
+		String to_write = template_path.path_join(file);
 		Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 
 		if (f.is_null()) {
@@ -544,14 +544,14 @@ void ExportTemplateManager::_uninstall_template_confirmed() {
 	Error err = da->change_dir(templates_dir);
 	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir + "'.");
 	err = da->change_dir(uninstall_version);
-	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir.plus_file(uninstall_version) + "'.");
+	ERR_FAIL_COND_MSG(err != OK, "Could not access templates directory at '" + templates_dir.path_join(uninstall_version) + "'.");
 
 	err = da->erase_contents_recursive();
-	ERR_FAIL_COND_MSG(err != OK, "Could not remove all templates in '" + templates_dir.plus_file(uninstall_version) + "'.");
+	ERR_FAIL_COND_MSG(err != OK, "Could not remove all templates in '" + templates_dir.path_join(uninstall_version) + "'.");
 
 	da->change_dir("..");
 	err = da->remove(uninstall_version);
-	ERR_FAIL_COND_MSG(err != OK, "Could not remove templates directory at '" + templates_dir.plus_file(uninstall_version) + "'.");
+	ERR_FAIL_COND_MSG(err != OK, "Could not remove templates directory at '" + templates_dir.path_join(uninstall_version) + "'.");
 
 	_update_template_status();
 }
@@ -618,7 +618,7 @@ void ExportTemplateManager::_installed_table_button_cbk(Object *p_item, int p_co
 
 void ExportTemplateManager::_open_template_folder(const String &p_version) {
 	const String &templates_dir = EditorPaths::get_singleton()->get_export_templates_dir();
-	OS::get_singleton()->shell_open("file://" + templates_dir.plus_file(p_version));
+	OS::get_singleton()->shell_open("file://" + templates_dir.path_join(p_version));
 }
 
 void ExportTemplateManager::popup_manager() {
@@ -641,13 +641,13 @@ void ExportTemplateManager::_hide_dialog() {
 }
 
 bool ExportTemplateManager::can_install_android_template() {
-	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
-	return FileAccess::exists(templates_dir.plus_file("android_source.zip"));
+	const String templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	return FileAccess::exists(templates_dir.path_join("android_source.zip"));
 }
 
 Error ExportTemplateManager::install_android_template() {
-	const String &templates_path = EditorPaths::get_singleton()->get_export_templates_dir().plus_file(VERSION_FULL_CONFIG);
-	const String &source_zip = templates_path.plus_file("android_source.zip");
+	const String &templates_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	const String &source_zip = templates_path.path_join("android_source.zip");
 	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
 	return install_android_template_from_file(source_zip);
 }
@@ -723,11 +723,11 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 			unzCloseCurrentFile(pkg);
 
 			if (!dirs_tested.has(base_dir)) {
-				da->make_dir_recursive(String("android/build").plus_file(base_dir));
+				da->make_dir_recursive(String("android/build").path_join(base_dir));
 				dirs_tested.insert(base_dir);
 			}
 
-			String to_write = String("res://android/build").plus_file(path);
+			String to_write = String("res://android/build").path_join(path);
 			Ref<FileAccess> f = FileAccess::open(to_write, FileAccess::WRITE);
 			if (f.is_valid()) {
 				f->store_buffer(data.ptr(), data.size());

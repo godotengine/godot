@@ -1315,7 +1315,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	// Generate GodotSharp source files
 
-	String core_proj_dir = output_dir.plus_file(CORE_API_ASSEMBLY_NAME);
+	String core_proj_dir = output_dir.path_join(CORE_API_ASSEMBLY_NAME);
 
 	proj_err = generate_cs_core_project(core_proj_dir);
 	if (proj_err != OK) {
@@ -1325,7 +1325,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	// Generate GodotSharpEditor source files
 
-	String editor_proj_dir = output_dir.plus_file(EDITOR_API_ASSEMBLY_NAME);
+	String editor_proj_dir = output_dir.path_join(EDITOR_API_ASSEMBLY_NAME);
 
 	proj_err = generate_cs_editor_project(editor_proj_dir);
 	if (proj_err != OK) {
@@ -3880,7 +3880,7 @@ static void handle_cmdline_options(String glue_dir_path) {
 
 	CRASH_COND(glue_dir_path.is_empty());
 
-	if (bindings_generator.generate_cs_api(glue_dir_path.plus_file(API_SOLUTION_NAME)) != OK) {
+	if (bindings_generator.generate_cs_api(glue_dir_path.path_join(API_SOLUTION_NAME)) != OK) {
 		ERR_PRINT(generate_all_glue_option + ": Failed to generate the C# API.");
 	}
 }

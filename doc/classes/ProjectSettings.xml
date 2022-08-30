@@ -100,7 +100,7 @@
 				    # `path` will contain the absolute path to `hello.txt` next to the executable.
 				    # This is *not* identical to using `ProjectSettings.globalize_path()` with a `res://` path,
 				    # but is close enough in spirit.
-				    path = OS.get_executable_path().get_base_dir().plus_file("hello.txt")
+				    path = OS.get_executable_path().get_base_dir().path_join("hello.txt")
 				[/codeblock]
 			</description>
 		</method>

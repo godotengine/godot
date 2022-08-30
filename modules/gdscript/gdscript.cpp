@@ -683,7 +683,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						if (base.is_empty() || base.is_relative_path()) {
 							ERR_PRINT(("Could not resolve relative path for parent class: " + path).utf8().get_data());
 						} else {
-							path = base.get_base_dir().plus_file(path);
+							path = base.get_base_dir().path_join(path);
 						}
 					}
 				} else if (c->extends.size() != 0) {
@@ -2204,7 +2204,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
 				*r_icon_path = c->icon_path;
 			} else if (c->icon_path.is_relative_path()) {
-				*r_icon_path = p_path.get_base_dir().plus_file(c->icon_path).simplify_path();
+				*r_icon_path = p_path.get_base_dir().path_join(c->icon_path).simplify_path();
 			}
 		}
 		if (r_base_type) {
@@ -2232,7 +2232,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 							}
 							String subpath = subclass->extends_path;
 							if (subpath.is_relative_path()) {
-								subpath = path.get_base_dir().plus_file(subpath).simplify_path();
+								subpath = path.get_base_dir().path_join(subpath).simplify_path();
 							}
 
 							if (OK != subparser.parse(subsource, subpath, false)) {

@@ -168,7 +168,7 @@ void FindInFiles::_iterate() {
 			String folder_name = folders_to_scan[folders_to_scan.size() - 1];
 			pop_back(folders_to_scan);
 
-			_current_dir = _current_dir.plus_file(folder_name);
+			_current_dir = _current_dir.path_join(folder_name);
 
 			PackedStringArray sub_dirs;
 			_scan_dir("res://" + _current_dir, sub_dirs);
@@ -246,7 +246,7 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 		} else {
 			String file_ext = file.get_extension();
 			if (_extension_filter.has(file_ext)) {
-				_files_to_scan.push_back(path.plus_file(file));
+				_files_to_scan.push_back(path.path_join(file));
 			}
 		}
 	}

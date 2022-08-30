@@ -62,8 +62,8 @@ private:
 
 	void _set_internal_certs(Ref<Crypto> p_crypto) {
 		const String cache_path = EditorPaths::get_singleton()->get_cache_dir();
-		const String key_path = cache_path.plus_file("html5_server.key");
-		const String crt_path = cache_path.plus_file("html5_server.crt");
+		const String key_path = cache_path.path_join("html5_server.key");
+		const String crt_path = cache_path.path_join("html5_server.crt");
 		bool regen = !FileAccess::exists(key_path) || !FileAccess::exists(crt_path);
 		if (!regen) {
 			key = Ref<CryptoKey>(CryptoKey::create());
@@ -139,8 +139,8 @@ public:
 
 		const String req_file = path.get_file();
 		const String req_ext = path.get_extension();
-		const String cache_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("web");
-		const String filepath = cache_path.plus_file(req_file);
+		const String cache_path = EditorPaths::get_singleton()->get_cache_dir().path_join("web");
+		const String filepath = cache_path.path_join(req_file);
 
 		if (!mimes.has(req_ext) || !FileAccess::exists(filepath)) {
 			String s = "HTTP/1.1 404 Not Found\r\n";

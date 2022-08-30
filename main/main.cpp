@@ -2342,7 +2342,7 @@ bool Main::start() {
 			// Custom modules are always located by absolute path.
 			String path = _doc_data_class_paths[i].path;
 			if (path.is_relative_path()) {
-				path = doc_tool_path.plus_file(path);
+				path = doc_tool_path.path_join(path);
 			}
 			String name = _doc_data_class_paths[i].name;
 			doc_data_classes[name] = path;
@@ -2360,7 +2360,7 @@ bool Main::start() {
 			}
 		}
 
-		String index_path = doc_tool_path.plus_file("doc/classes");
+		String index_path = doc_tool_path.path_join("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
@@ -2730,11 +2730,11 @@ bool Main::start() {
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							local_game_path = da->get_current_dir().plus_file(local_game_path);
+							local_game_path = da->get_current_dir().path_join(local_game_path);
 						} else {
 							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da.is_valid()) {
-								local_game_path = da->get_current_dir().plus_file(
+								local_game_path = da->get_current_dir().path_join(
 										local_game_path.substr(sep + 1, local_game_path.length()));
 							}
 						}

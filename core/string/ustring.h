@@ -370,7 +370,7 @@ public:
 	String rstrip(const String &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
-	String plus_file(const String &p_file) const;
+	String path_join(const String &p_file) const;
 	char32_t unicode_at(int p_idx) const;
 
 	void erase(int p_pos, int p_chars);

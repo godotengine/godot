@@ -228,9 +228,9 @@ void GDScriptWorkspace::list_script_files(const String &p_root_dir, List<String>
 		String file_name = dir->get_next();
 		while (file_name.length()) {
 			if (dir->current_is_dir() && file_name != "." && file_name != ".." && file_name != "./") {
-				list_script_files(p_root_dir.plus_file(file_name), r_files);
+				list_script_files(p_root_dir.path_join(file_name), r_files);
 			} else if (file_name.ends_with(".gd")) {
-				String script_file = p_root_dir.plus_file(file_name);
+				String script_file = p_root_dir.path_join(file_name);
 				r_files.push_back(script_file);
 			}
 			file_name = dir->get_next();

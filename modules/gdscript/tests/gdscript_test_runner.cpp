@@ -247,7 +247,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				next = dir->get_next();
 				continue;
 			}
-			if (!make_tests_for_dir(current_dir.plus_file(next))) {
+			if (!make_tests_for_dir(current_dir.path_join(next))) {
 				return false;
 			}
 		} else {
@@ -255,7 +255,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 #ifndef DEBUG_ENABLED
 				// On release builds, skip tests marked as debug only.
 				Error open_err = OK;
-				Ref<FileAccess> script_file(FileAccess::open(current_dir.plus_file(next), FileAccess::READ, &open_err));
+				Ref<FileAccess> script_file(FileAccess::open(current_dir.path_join(next), FileAccess::READ, &open_err));
 				if (open_err != OK) {
 					ERR_PRINT(vformat(R"(Couldn't open test file "%s".)", next));
 					next = dir->get_next();
@@ -272,7 +272,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				if (!is_generating && !dir->file_exists(out_file)) {
 					ERR_FAIL_V_MSG(false, "Could not find output file for " + next);
 				}
-				GDScriptTest test(current_dir.plus_file(next), current_dir.plus_file(out_file), source_dir);
+				GDScriptTest test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
 				tests.push_back(test);
 			}
 		}

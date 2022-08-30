@@ -173,13 +173,13 @@ String find_hostfxr() {
 
 #if defined(WINDOWS_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.plus_file("hostfxr.dll");
+								.path_join("hostfxr.dll");
 #elif defined(MACOS_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.plus_file("libhostfxr.dylib");
+								.path_join("libhostfxr.dylib");
 #elif defined(UNIX_ENABLED)
 	String probe_path = GodotSharpDirs::get_api_assemblies_dir()
-								.plus_file("libhostfxr.so");
+								.path_join("libhostfxr.so");
 #else
 #error "Platform not supported (yet?)"
 #endif
@@ -305,10 +305,10 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	HostFxrCharString godot_plugins_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().plus_file("GodotPlugins.dll"));
+			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll"));
 
 	HostFxrCharString config_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().plus_file("GodotPlugins.runtimeconfig.json"));
+			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
 
 	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
 			initialize_hostfxr_for_config(get_data(config_path));
@@ -345,7 +345,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 	String assembly_name = get_assembly_name();
 
 	HostFxrCharString assembly_path = str_to_hostfxr(GodotSharpDirs::get_api_assemblies_dir()
-															 .plus_file(assembly_name + ".dll"));
+															 .path_join(assembly_name + ".dll"));
 
 	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
 			initialize_hostfxr_self_contained(get_data(assembly_path));
@@ -370,11 +370,11 @@ godot_plugins_initialize_fn try_load_native_aot_library(void *&r_aot_dll_handle)
 	String assembly_name = get_assembly_name();
 
 #if defined(WINDOWS_ENABLED)
-	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().plus_file(assembly_name + ".dll");
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dll");
 #elif defined(MACOS_ENABLED)
-	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().plus_file(assembly_name + ".dylib");
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".dylib");
 #elif defined(UNIX_ENABLED)
-	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().plus_file(assembly_name + ".so");
+	String native_aot_so_path = GodotSharpDirs::get_api_assemblies_dir().path_join(assembly_name + ".so");
 #else
 #error "Platform not supported (yet?)"
 #endif
@@ -514,7 +514,7 @@ bool GDMono::_load_project_assembly() {
 	}
 
 	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
-								   .plus_file(assembly_name + ".dll");
+								   .path_join(assembly_name + ".dll");
 	assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
 
 	if (!FileAccess::exists(assembly_path)) {

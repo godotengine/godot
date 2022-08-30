@@ -438,7 +438,7 @@ private:
 				ProjectSettings::CustomMap edited_settings;
 				edited_settings["application/config/name"] = project_name->get_text().strip_edges();
 
-				if (current->save_custom(dir2.plus_file("project.godot"), edited_settings, Vector<String>(), true) != OK) {
+				if (current->save_custom(dir2.path_join("project.godot"), edited_settings, Vector<String>(), true) != OK) {
 					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
 				}
 			}
@@ -486,12 +486,12 @@ private:
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.svg";
 
-					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
+					if (ProjectSettings::get_singleton()->save_custom(dir.path_join("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
 						// Store default project icon in SVG format.
 						Error err;
-						Ref<FileAccess> fa_icon = FileAccess::open(dir.plus_file("icon.svg"), FileAccess::WRITE, &err);
+						Ref<FileAccess> fa_icon = FileAccess::open(dir.path_join("icon.svg"), FileAccess::WRITE, &err);
 						fa_icon->store_string(get_default_project_icon());
 
 						if (err != OK) {
@@ -556,7 +556,7 @@ private:
 							String rel_path = path.substr(zip_root.length());
 
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							da->make_dir(dir.plus_file(rel_path));
+							da->make_dir(dir.path_join(rel_path));
 						} else {
 							Vector<uint8_t> data;
 							data.resize(info.uncompressed_size);
@@ -568,7 +568,7 @@ private:
 							ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
 							unzCloseCurrentFile(pkg);
 
-							Ref<FileAccess> f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);
+							Ref<FileAccess> f = FileAccess::open(dir.path_join(rel_path), FileAccess::WRITE);
 							if (f.is_valid()) {
 								f->store_buffer(data.ptr(), data.size());
 							} else {
@@ -1126,7 +1126,7 @@ ProjectList::ProjectList() {
 
 	_icon_load_index = 0;
 	project_opening_initiated = false;
-	_config_path = EditorPaths::get_singleton()->get_data_dir().plus_file("projects.cfg");
+	_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
 }
 
 ProjectList::~ProjectList() {
@@ -1185,7 +1185,7 @@ void ProjectList::load_project_icon(int p_index) {
 
 // Load project data from p_property_key and return it in a ProjectList::Item. p_favorite is passed directly into the Item.
 ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_favorite) {
-	String conf = p_path.plus_file("project.godot");
+	String conf = p_path.path_join("project.godot");
 	bool grayed = false;
 	bool missing = false;
 
@@ -1221,7 +1221,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		// when editing a project (but not when running it).
 		last_edited = FileAccess::get_modified_time(conf);
 
-		String fscache = p_path.plus_file(".fscache");
+		String fscache = p_path.path_join(".fscache");
 		if (FileAccess::exists(fscache)) {
 			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
 			if (cache_modified > last_edited) {
@@ -1341,7 +1341,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 	int idx = (int)p_tag;
 
 	if (idx >= 0 && idx < _projects.size()) {
-		String conf = _projects[idx].path.plus_file("project.godot");
+		String conf = _projects[idx].path.path_join("project.godot");
 		List<String> args;
 		args.push_back(conf);
 		OS::get_singleton()->create_instance(args);
@@ -2112,7 +2112,7 @@ void ProjectManager::_open_selected_projects() {
 	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	for (const String &path : selected_list) {
-		String conf = path.plus_file("project.godot");
+		String conf = path.path_join("project.godot");
 
 		if (!FileAccess::exists(conf)) {
 			dialog_error->set_text(vformat(TTR("Can't open project at '%s'."), path));
@@ -2162,7 +2162,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 
 	// Update the project settings or don't open
-	const String conf = project.path.plus_file("project.godot");
+	const String conf = project.path.path_join("project.godot");
 	const int config_version = project.version;
 	PackedStringArray unsupported_features = project.unsupported_features;
 
@@ -2235,7 +2235,7 @@ void ProjectManager::_run_project_confirm() {
 		const String &path = selected_list[i].path;
 
 		// `.substr(6)` on `ProjectSettings::get_singleton()->get_imported_files_path()` strips away the leading "res://".
-		if (!DirAccess::exists(path.plus_file(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
+		if (!DirAccess::exists(path.path_join(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
 			continue;
@@ -2280,7 +2280,7 @@ void ProjectManager::_scan_dir(const String &path) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
-			_scan_dir(da->get_current_dir().plus_file(n));
+			_scan_dir(da->get_current_dir().path_join(n));
 		} else if (n == "project.godot") {
 			_project_list->add_project(da->get_current_dir(), false);
 		}

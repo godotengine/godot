@@ -163,7 +163,7 @@ Vector<String> FileDialog::get_selected_files() const {
 
 	TreeItem *item = tree->get_root();
 	while ((item = tree->get_next_selected(item))) {
-		list.push_back(dir_access->get_current_dir().plus_file(item->get_text(0)));
+		list.push_back(dir_access->get_current_dir().path_join(item->get_text(0)));
 	};
 
 	return list;
@@ -192,7 +192,7 @@ void FileDialog::update_dir() {
 }
 
 void FileDialog::_dir_submitted(String p_dir) {
-	_change_dir(root_prefix.plus_file(p_dir));
+	_change_dir(root_prefix.path_join(p_dir));
 	file->set_text("");
 	_push_history();
 }
@@ -202,7 +202,7 @@ void FileDialog::_file_submitted(const String &p_file) {
 }
 
 void FileDialog::_save_confirm_pressed() {
-	String f = dir_access->get_current_dir().plus_file(file->get_text());
+	String f = dir_access->get_current_dir().path_join(file->get_text());
 	emit_signal(SNAME("file_selected"), f);
 	hide();
 }
@@ -252,7 +252,7 @@ void FileDialog::_action_pressed() {
 
 		Vector<String> files;
 		while (ti) {
-			files.push_back(fbase.plus_file(ti->get_text(0)));
+			files.push_back(fbase.path_join(ti->get_text(0)));
 			ti = tree->get_next_selected(ti);
 		}
 
@@ -265,7 +265,7 @@ void FileDialog::_action_pressed() {
 	}
 
 	String file_text = file->get_text();
-	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().plus_file(file_text);
+	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		emit_signal(SNAME("file_selected"), f);
@@ -278,7 +278,7 @@ void FileDialog::_action_pressed() {
 		if (item) {
 			Dictionary d = item->get_metadata(0);
 			if (d["dir"] && d["name"] != "..") {
-				path = path.plus_file(d["name"]);
+				path = path.path_join(d["name"]);
 			}
 		}
 
@@ -598,7 +598,7 @@ void FileDialog::update_file_list() {
 			ti->set_text(0, files.front()->get());
 
 			if (get_icon_func) {
-				Ref<Texture2D> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(base_dir.path_join(files.front()->get()));
 				ti->set_icon(0, icon);
 			} else {
 				ti->set_icon(0, file_icon);
@@ -706,7 +706,7 @@ String FileDialog::get_current_file() const {
 }
 
 String FileDialog::get_current_path() const {
-	return dir->get_text().plus_file(file->get_text());
+	return dir->get_text().path_join(file->get_text());
 }
 
 void FileDialog::set_current_dir(const String &p_dir) {

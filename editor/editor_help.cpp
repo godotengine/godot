@@ -1929,7 +1929,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			}
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture2D> texture = ResourceLoader::load(base_path.plus_file(image), "Texture2D");
+			Ref<Texture2D> texture = ResourceLoader::load(base_path.path_join(image), "Texture2D");
 			if (texture.is_valid()) {
 				p_rt->add_image(texture);
 			}
@@ -1946,7 +1946,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		} else if (tag.begins_with("font=")) {
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
+			Ref<Font> font = ResourceLoader::load(base_path.path_join(fnt), "Font");
 			if (font.is_valid()) {
 				p_rt->push_font(font);
 			} else {

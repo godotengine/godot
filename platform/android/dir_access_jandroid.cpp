@@ -169,7 +169,7 @@ String DirAccessJAndroid::get_absolute_path(String p_path) {
 	}
 
 	if (p_path.is_relative_path()) {
-		p_path = get_current_dir().plus_file(p_path);
+		p_path = get_current_dir().path_join(p_path);
 	}
 
 	p_path = fix_path(p_path);

@@ -329,7 +329,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			return data;
 		}
 
-		String tmp_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("uwp_tmp_logo.png");
+		String tmp_path = EditorPaths::get_singleton()->get_cache_dir().path_join("uwp_tmp_logo.png");
 
 		Error err = texture->get_image()->save_png(tmp_path);
 

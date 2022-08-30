@@ -251,7 +251,7 @@ void EditorFileDialog::_file_submitted(const String &p_file) {
 }
 
 void EditorFileDialog::_save_confirm_pressed() {
-	String f = dir_access->get_current_dir().plus_file(file->get_text());
+	String f = dir_access->get_current_dir().path_join(file->get_text());
 	_save_to_recent();
 	hide();
 	emit_signal(SNAME("file_selected"), f);
@@ -284,7 +284,7 @@ void EditorFileDialog::_post_popup() {
 	}
 
 	if (is_visible() && !get_current_file().is_empty()) {
-		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 
 	if (is_visible()) {
@@ -381,7 +381,7 @@ void EditorFileDialog::_action_pressed() {
 		Vector<String> files;
 		for (int i = 0; i < item_list->get_item_count(); i++) {
 			if (item_list->is_selected(i)) {
-				files.push_back(fbase.plus_file(item_list->get_item_text(i)));
+				files.push_back(fbase.path_join(item_list->get_item_text(i)));
 			}
 		}
 
@@ -395,7 +395,7 @@ void EditorFileDialog::_action_pressed() {
 	}
 
 	String file_text = file->get_text();
-	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().plus_file(file_text);
+	String f = file_text.is_absolute_path() ? file_text : dir_access->get_current_dir().path_join(file_text);
 
 	if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		_save_to_recent();
@@ -410,7 +410,7 @@ void EditorFileDialog::_action_pressed() {
 			if (item_list->is_selected(i)) {
 				Dictionary d = item_list->get_item_metadata(i);
 				if (d["dir"]) {
-					path = path.plus_file(d["name"]);
+					path = path.path_join(d["name"]);
 
 					break;
 				}
@@ -461,7 +461,7 @@ void EditorFileDialog::_action_pressed() {
 				if (!valid && filterSliceCount > 0) {
 					String str = (flt.get_slice(",", 0).strip_edges());
 					f += str.substr(1, str.length() - 1);
-					_request_single_thumbnail(get_current_dir().plus_file(f.get_file()));
+					_request_single_thumbnail(get_current_dir().path_join(f.get_file()));
 					file->set_text(f.get_file());
 					valid = true;
 				}
@@ -505,7 +505,7 @@ void EditorFileDialog::_item_selected(int p_item) {
 
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
-		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	} else if (mode == FILE_MODE_OPEN_DIR) {
 		set_ok_button_text(TTR("Select This Folder"));
 	}
@@ -523,7 +523,7 @@ void EditorFileDialog::_multi_selected(int p_item, bool p_selected) {
 
 	if (!d["dir"] && p_selected) {
 		file->set_text(d["name"]);
-		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -830,7 +830,7 @@ void EditorFileDialog::update_file_list() {
 
 		Dictionary d;
 		d["name"] = dir_name;
-		d["path"] = cdir.plus_file(dir_name);
+		d["path"] = cdir.path_join(dir_name);
 		d["dir"] = true;
 
 		item_list->set_item_metadata(-1, d);
@@ -879,7 +879,7 @@ void EditorFileDialog::update_file_list() {
 			item_list->add_item(files.front()->get());
 
 			if (get_icon_func) {
-				Ref<Texture2D> icon = get_icon_func(cdir.plus_file(files.front()->get()));
+				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
 					item_list->set_item_icon(-1, file_thumbnail);
 					item_list->set_item_tag_icon(-1, icon);
@@ -891,7 +891,7 @@ void EditorFileDialog::update_file_list() {
 			Dictionary d;
 			d["name"] = files.front()->get();
 			d["dir"] = false;
-			String fullpath = cdir.plus_file(files.front()->get());
+			String fullpath = cdir.path_join(files.front()->get());
 			d["path"] = fullpath;
 			item_list->set_item_metadata(-1, d);
 
@@ -995,7 +995,7 @@ String EditorFileDialog::get_current_file() const {
 }
 
 String EditorFileDialog::get_current_path() const {
-	return dir_access->get_current_dir().plus_file(file->get_text());
+	return dir_access->get_current_dir().path_join(file->get_text());
 }
 
 void EditorFileDialog::set_current_dir(const String &p_dir) {
@@ -1014,7 +1014,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	_focus_file_text();
 
 	if (is_visible()) {
-		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 }
 

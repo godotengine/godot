@@ -127,7 +127,7 @@ TEST_CASE("[ConfigFile] Saving file") {
 	config_file.set_value("quoted", "a=b", 7);
 
 #ifdef WINDOWS_ENABLED
-	const String config_path = OS::get_singleton()->get_environment("TEMP").plus_file("config.ini");
+	const String config_path = OS::get_singleton()->get_environment("TEMP").path_join("config.ini");
 #else
 	const String config_path = "/tmp/config.ini";
 #endif
