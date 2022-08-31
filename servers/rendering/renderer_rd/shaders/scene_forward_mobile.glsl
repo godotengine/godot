@@ -240,7 +240,7 @@ void main() {
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	vec3 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
+	vec2 signed_tangent_attrib = tangent_attrib * 2.0 - 1.0;
 	vec3 tangent = oct_to_vec3(vec2(signed_tangent_attrib.x, abs(signed_tangent_attrib.y) * 2.0 - 1.0));
 	float binormalf = sign(signed_tangent_attrib.y);
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
