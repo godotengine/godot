@@ -25,7 +25,7 @@ struct LightData { //this structure needs to be as packed as possible
 	highp float soft_shadow_size; // for spot, it's the size in uv coordinates of the light, for omni it's the span angle
 	highp float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
-	mediump float shadow_volumetric_fog_fade;
+	mediump float volumetric_fog_energy;
 	uint bake_mode;
 	highp vec4 projector_rect; //projector rect in srgb decal atlas
 };
@@ -65,7 +65,7 @@ struct DirectionalLightData {
 	highp float fade_to;
 	uvec2 pad;
 	uint bake_mode;
-	mediump float shadow_volumetric_fog_fade;
+	mediump float volumetric_fog_energy;
 	highp vec4 shadow_bias;
 	highp vec4 shadow_normal_bias;
 	highp vec4 shadow_transmittance_bias;

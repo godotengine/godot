@@ -224,7 +224,7 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &p_property) const {
-	if (!shadow && (p_property.name == "shadow_bias" || p_property.name == "shadow_normal_bias" || p_property.name == "shadow_reverse_cull_face" || p_property.name == "shadow_transmittance_bias" || p_property.name == "shadow_fog_fade" || p_property.name == "shadow_opacity" || p_property.name == "shadow_blur" || p_property.name == "distance_fade_shadow")) {
+	if (!shadow && (p_property.name == "shadow_bias" || p_property.name == "shadow_normal_bias" || p_property.name == "shadow_reverse_cull_face" || p_property.name == "shadow_transmittance_bias" || p_property.name == "shadow_opacity" || p_property.name == "shadow_blur" || p_property.name == "distance_fade_shadow")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -282,6 +282,7 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_volumetric_fog_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), "set_param", "get_param", PARAM_VOLUMETRIC_FOG_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "light_projector", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_projector", "get_projector");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,1,0.001,or_greater,suffix:m"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01,degrees"), "set_param", "get_param", PARAM_SIZE);
@@ -296,7 +297,6 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_normal_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.001"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_fog_fade", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_param", "get_param", PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_OPACITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_blur", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BLUR);
 
@@ -313,6 +313,7 @@ void Light3D::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PARAM_ENERGY);
 	BIND_ENUM_CONSTANT(PARAM_INDIRECT_ENERGY);
+	BIND_ENUM_CONSTANT(PARAM_VOLUMETRIC_FOG_ENERGY);
 	BIND_ENUM_CONSTANT(PARAM_SPECULAR);
 	BIND_ENUM_CONSTANT(PARAM_RANGE);
 	BIND_ENUM_CONSTANT(PARAM_SIZE);
@@ -329,7 +330,6 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_PANCAKE_SIZE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_OPACITY);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BLUR);
-	BIND_ENUM_CONSTANT(PARAM_SHADOW_VOLUMETRIC_FOG_FADE);
 	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
@@ -363,6 +363,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 
 	set_param(PARAM_ENERGY, 1);
 	set_param(PARAM_INDIRECT_ENERGY, 1);
+	set_param(PARAM_VOLUMETRIC_FOG_ENERGY, 1);
 	set_param(PARAM_SPECULAR, 0.5);
 	set_param(PARAM_RANGE, 5);
 	set_param(PARAM_SIZE, 0);
@@ -380,7 +381,6 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_SHADOW_BIAS, 0.03);
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
 	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
-	set_param(PARAM_SHADOW_VOLUMETRIC_FOG_FADE, 0.1);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }

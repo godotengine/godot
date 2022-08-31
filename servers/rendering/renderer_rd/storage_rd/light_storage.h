@@ -250,13 +250,6 @@ public:
 		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
 	}
 
-	_FORCE_INLINE_ float light_get_shadow_volumetric_fog_fade(RID p_light) const {
-		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0.0);
-
-		return light->param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE];
-	}
-
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override;
 	virtual uint64_t light_get_version(RID p_light) const override;

@@ -58,6 +58,7 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 
 	light.param[RS::LIGHT_PARAM_ENERGY] = 1.0;
 	light.param[RS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light.param[RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY] = 1.0;
 	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
 	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
@@ -74,7 +75,6 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
 	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
-	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 0.1;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 
 	light_owner.initialize_rid(p_light, light);
