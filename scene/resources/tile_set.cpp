@@ -4716,14 +4716,19 @@ void TileSetScenesCollectionSource::set_scene_tile_id(int p_id, int p_new_id) {
 void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene) {
 	ERR_FAIL_COND(!scenes.has(p_id));
 	if (p_packed_scene.is_valid()) {
-		// Make sure we have a root node. Supposed to be at 0 index because find_node_by_path() does not seem to work.
-		ERR_FAIL_COND(!p_packed_scene->get_state().is_valid());
-		ERR_FAIL_COND(p_packed_scene->get_state()->get_node_count() < 1);
-
 		// Check if it extends CanvasItem.
-		String type = p_packed_scene->get_state()->get_node_type(0);
+		Ref<SceneState> scene_state = p_packed_scene->get_state();
+		String type;
+		while (scene_state.is_valid() && type.is_empty()) {
+			// Make sure we have a root node. Supposed to be at 0 index because find_node_by_path() does not seem to work.
+			ERR_FAIL_COND(scene_state->get_node_count() < 1);
+
+			type = scene_state->get_node_type(0);
+			scene_state = scene_state->get_base_scene_state();
+		}
+		ERR_FAIL_COND_MSG(type.is_empty(), vformat("Invalid PackedScene for TileSetScenesCollectionSource: %s. Could not get the type of the root node.", p_packed_scene->get_path()));
 		bool extends_correct_class = ClassDB::is_parent_class(type, "Control") || ClassDB::is_parent_class(type, "Node2D");
-		ERR_FAIL_COND_MSG(!extends_correct_class, vformat("Invalid PackedScene for TileSetScenesCollectionSource: %s. Root node should extend Control or Node2D.", p_packed_scene->get_path()));
+		ERR_FAIL_COND_MSG(!extends_correct_class, vformat("Invalid PackedScene for TileSetScenesCollectionSource: %s. Root node should extend Control or Node2D. Found %s instead.", p_packed_scene->get_path(), type));
 
 		scenes[p_id].scene = p_packed_scene;
 	} else {
