@@ -318,8 +318,18 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			Color col = Color();
 			if (global_functions.has(word)) {
 				// "assert" and "preload" are reserved, so highlight even if not followed by a bracket.
-				if (word == "assert" || word == "preload" || str[to] == '(') {
+				if (word == "assert" || word == "preload") {
 					col = global_function_color;
+				} else {
+					// For other global functions, check if followed by bracket.
+					int k = to;
+					while (k < line_length && is_whitespace(str[k])) {
+						k++;
+					}
+
+					if (str[k] == '(') {
+						col = global_function_color;
+					}
 				}
 			} else if (keywords.has(word)) {
 				col = keywords[word];
@@ -668,14 +678,14 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
 		function_definition_color = Color(0.4, 0.9, 1.0);
-		global_function_color = Color(0.6, 0.6, 0.9);
+		global_function_color = Color(0.64, 0.64, 0.96);
 		node_path_color = Color(0.72, 0.77, 0.49);
 		node_ref_color = Color(0.39, 0.76, 0.35);
 		annotation_color = Color(1.0, 0.7, 0.45);
 		string_name_color = Color(1.0, 0.76, 0.65);
 	} else {
 		function_definition_color = Color(0, 0.6, 0.6);
-		global_function_color = Color(0.4, 0.2, 0.8);
+		global_function_color = Color(0.36, 0.18, 0.72);
 		node_path_color = Color(0.18, 0.55, 0);
 		node_ref_color = Color(0.0, 0.5, 0);
 		annotation_color = Color(0.8, 0.37, 0);
