@@ -344,6 +344,15 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 }
 
 double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root) {
+	if (p_time == -1) {
+		Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
+		if (anodesm.is_valid()) {
+			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+		}
+		playing = false;
+		return 0;
+	}
+
 	//if not playing and it can restart, then restart
 	if (!playing && start_request == StringName()) {
 		if (!stop_request && p_state_machine->start_node) {
@@ -491,7 +500,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			// handles start_node: if previous state machine is pointing to a node inside the current state machine, starts the current machine from start_node to prev_local_to
 			if (p_state_machine->start_node == current && p_state_machine->transitions[i].local_from == current) {
 				if (p_state_machine->prev_state_machine != nullptr) {
-					Ref<AnimationNodeStateMachinePlayback> prev_playback = p_state_machine->prev_state_machine->get_parameter("playback");
+					Ref<AnimationNodeStateMachinePlayback> prev_playback = p_state_machine->prev_state_machine->get_parameter(p_state_machine->playback);
 
 					if (prev_playback.is_valid()) {
 						StringName prev_local_to = String(prev_playback->current_transition.next).replace_first(String(p_state_machine->state_machine_name) + "/", "");
@@ -530,7 +539,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		AnimationNodeStateMachine *prev_state_machine = p_state_machine->prev_state_machine;
 
 		if (prev_state_machine != nullptr) {
-			Ref<AnimationNodeStateMachinePlayback> prev_playback = prev_state_machine->get_parameter("playback");
+			Ref<AnimationNodeStateMachinePlayback> prev_playback = prev_state_machine->get_parameter(p_state_machine->playback);
 
 			if (prev_playback.is_valid()) {
 				if (next_xfade) {
@@ -578,7 +587,6 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 
 		if (goto_next) { //end_loop should be used because fade time may be too small or zero and animation may have looped
-
 			if (next_xfade) {
 				//time to fade, baby
 				fading_from = current;
@@ -592,7 +600,16 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			if (path.size()) { //if it came from path, remove path
 				path.remove_at(0);
 			}
+
+			{ // if the current node is a state machine, update the "playing" variable to false by passing -1 in p_time
+				Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
+				if (anodesm.is_valid()) {
+					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+				}
+			}
+
 			current = next;
+
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
 				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = MIN(pos_current, len_current);
@@ -607,9 +624,8 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		}
 	}
 
-	// time left must always be 1 because the end node don't length to compute
-	if (p_state_machine->end_node != current) {
-		rem = 1;
+	if (current != p_state_machine->end_node) {
+		rem = 1; // the time remaining must always be 1 because there is no way to predict how long it takes for the entire state machine to complete
 	} else {
 		if (p_state_machine->prev_state_machine != nullptr) {
 			Ref<AnimationNodeStateMachinePlayback> prev_playback = p_state_machine->prev_state_machine->get_parameter(p_state_machine->playback);
@@ -692,23 +708,6 @@ void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) c
 	for (const StringName &E : advance_conditions) {
 		r_list->push_back(PropertyInfo(Variant::BOOL, E));
 	}
-
-	// for (const KeyValue<StringName, State> &E : states) {
-	// 	if (E->node == ansm) {
-	// 		for (int i = 0; i < E->node->transitions.size(); i++) {
-	// 			StringName ac = E->node->transitions[i].transition->get_advance_condition_name();
-	// 			if (ac != StringName() && advance_conditions.find(ac) == nullptr) {
-	// 				advance_conditions.push_back(ac);
-	// 			}
-	// 		}
-
-	// 		advance_conditions.sort_custom<StringName::AlphCompare>();
-
-	// 		for (const StringName &E : advance_conditions) {
-	// 			r_list->push_back(PropertyInfo(Variant::BOOL, E));
-	// 		}
-	// 	}
-	// }
 }
 
 Variant AnimationNodeStateMachine::get_parameter_default_value(const StringName &p_parameter) const {
