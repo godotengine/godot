@@ -832,26 +832,35 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	bool first = true;
 	uint32_t current_val;
 	for (int i = 0; i < p_options.size(); i++) {
+		// An empty option is not considered a "flag".
 		String option = p_options[i].strip_edges();
-		if (!option.is_empty()) {
-			CheckBox *cb = memnew(CheckBox);
-			cb->set_text(option);
-			cb->set_clip_text(true);
-			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(i));
-			add_focusable(cb);
-			vbox->add_child(cb);
-			flags.push_back(cb);
-			Vector<String> text_split = p_options[i].split(":");
-			if (text_split.size() != 1) {
-				current_val = text_split[1].to_int();
-			} else {
-				current_val = 1 << i;
-			}
-			flag_values.push_back(current_val);
-			if (first) {
-				set_label_reference(cb);
-				first = false;
-			}
+		if (option.is_empty()) {
+			continue;
+		}
+		const int flag_index = flags.size(); // Index of the next element (added by the code below).
+
+		// Value for a flag can be explicitly overridden.
+		Vector<String> text_split = p_options[i].split(":");
+		if (text_split.size() != 1) {
+			current_val = text_split[1].to_int();
+		} else {
+			current_val = 1 << i;
+		}
+		flag_values.push_back(current_val);
+
+		// Create a CheckBox for the current flag.
+		CheckBox *cb = memnew(CheckBox);
+		cb->set_text(option);
+		cb->set_clip_text(true);
+		cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
+		add_focusable(cb);
+		vbox->add_child(cb);
+		flags.push_back(cb);
+
+		// Can't use `i == 0` because we want to find the first none-empty option.
+		if (first) {
+			set_label_reference(cb);
+			first = false;
 		}
 	}
 }
