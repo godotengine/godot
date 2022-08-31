@@ -42,11 +42,17 @@ private:
 
 	bool vertical = false;
 
+	struct ThemeCache {
+		int h_separation = 0;
+		int v_separation = 0;
+	} theme_cache;
+
 	void _resort();
 
 protected:
-	void _notification(int p_what);
+	virtual void _update_theme_item_cache() override;
 
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

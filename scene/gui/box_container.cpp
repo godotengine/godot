@@ -44,7 +44,6 @@ void BoxContainer::_resort() {
 
 	Size2i new_size = get_size();
 
-	int sep = get_theme_constant(SNAME("separation")); //,vertical?"VBoxContainer":"HBoxContainer");
 	bool rtl = is_layout_rtl();
 
 	bool first = true;
@@ -90,7 +89,7 @@ void BoxContainer::_resort() {
 		return;
 	}
 
-	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * sep;
+	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * theme_cache.separation;
 	int stretch_diff = stretch_max - stretch_min;
 	if (stretch_diff < 0) {
 		//avoid negative stretch space
@@ -214,7 +213,7 @@ void BoxContainer::_resort() {
 		if (first) {
 			first = false;
 		} else {
-			ofs += sep;
+			ofs += theme_cache.separation;
 		}
 
 		int from = ofs;
@@ -248,7 +247,6 @@ Size2 BoxContainer::get_minimum_size() const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	int sep = get_theme_constant(SNAME("separation")); //,vertical?"VBoxContainer":"HBoxContainer");
 
 	bool first = true;
 
@@ -273,7 +271,7 @@ Size2 BoxContainer::get_minimum_size() const {
 				minimum.width = size.width;
 			}
 
-			minimum.height += size.height + (first ? 0 : sep);
+			minimum.height += size.height + (first ? 0 : theme_cache.separation);
 
 		} else { /* HORIZONTAL */
 
@@ -281,13 +279,19 @@ Size2 BoxContainer::get_minimum_size() const {
 				minimum.height = size.height;
 			}
 
-			minimum.width += size.width + (first ? 0 : sep);
+			minimum.width += size.width + (first ? 0 : theme_cache.separation);
 		}
 
 		first = false;
 	}
 
 	return minimum;
+}
+
+void BoxContainer::_update_theme_item_cache() {
+	Container::_update_theme_item_cache();
+
+	theme_cache.separation = get_theme_constant(SNAME("separation")); //,vertical?"VBoxContainer":"HBoxContainer");
 }
 
 void BoxContainer::_notification(int p_what) {

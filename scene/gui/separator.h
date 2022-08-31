@@ -35,8 +35,16 @@
 class Separator : public Control {
 	GDCLASS(Separator, Control);
 
+	struct ThemeCache {
+		int separation = 0;
+		Ref<StyleBox> separator_style;
+	} theme_cache;
+
 protected:
 	Orientation orientation = Orientation::HORIZONTAL;
+
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 
 public:

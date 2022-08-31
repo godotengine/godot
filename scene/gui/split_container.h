@@ -55,12 +55,20 @@ private:
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
 	bool mouse_inside = false;
 
+	struct ThemeCache {
+		int separation = 0;
+		int autohide = 0;
+		Ref<Texture2D> grabber_icon;
+	} theme_cache;
+
 	Control *_getch(int p_idx) const;
 
 	void _resort();
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

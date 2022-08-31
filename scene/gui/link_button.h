@@ -55,10 +55,29 @@ private:
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 	Array st_args;
 
+	struct ThemeCache {
+		Ref<StyleBox> focus;
+
+		Color font_color;
+		Color font_focus_color;
+		Color font_pressed_color;
+		Color font_hover_color;
+		Color font_hover_pressed_color;
+		Color font_disabled_color;
+
+		Ref<Font> font;
+		int font_size = 0;
+		int outline_size = 0;
+		Color font_outline_color;
+
+		int underline_spacing = 0;
+	} theme_cache;
+
 	void _shape();
 
 protected:
 	virtual Size2 get_minimum_size() const override;
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 

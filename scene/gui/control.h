@@ -325,6 +325,10 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const;
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
+	// Theming.
+
+	virtual void _update_theme_item_cache();
+
 	// Internationalization.
 
 	virtual TypedArray<Vector2i> structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;

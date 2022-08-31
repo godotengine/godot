@@ -30,12 +30,17 @@
 
 #include "panel.h"
 
+void Panel::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+}
+
 void Panel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
-			Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
-			style->draw(ci, Rect2(Point2(), get_size()));
+			theme_cache.panel_style->draw(ci, Rect2(Point2(), get_size()));
 		} break;
 	}
 }

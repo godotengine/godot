@@ -43,6 +43,23 @@ class OptionButton : public Button {
 	Vector2 _cached_size;
 	bool cache_refresh_pending = false;
 
+	struct ThemeCache {
+		Ref<StyleBox> normal;
+
+		Color font_color;
+		Color font_focus_color;
+		Color font_pressed_color;
+		Color font_hover_color;
+		Color font_hover_pressed_color;
+		Color font_disabled_color;
+
+		int h_separation = 0;
+
+		Ref<Texture2D> arrow_icon;
+		int arrow_margin = 0;
+		int modulate_arrow = 0;
+	} theme_cache;
+
 	void _focused(int p_which);
 	void _selected(int p_which);
 	void _select(int p_which, bool p_emit = false);
@@ -54,6 +71,7 @@ class OptionButton : public Button {
 
 protected:
 	Size2 get_minimum_size() const override;
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;

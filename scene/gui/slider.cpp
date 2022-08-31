@@ -33,11 +33,8 @@
 #include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("slider"));
-	Size2i ss = style->get_minimum_size() + style->get_center_size();
-
-	Ref<Texture2D> grabber = get_theme_icon(SNAME("grabber"));
-	Size2i rs = grabber->get_size();
+	Size2i ss = theme_cache.slider_style->get_minimum_size() + theme_cache.slider_style->get_center_size();
+	Size2i rs = theme_cache.grabber_icon->get_size();
 
 	if (orientation == HORIZONTAL) {
 		return Size2i(ss.width, MAX(ss.height, rs.height));
@@ -58,7 +55,13 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				Ref<Texture2D> grabber = get_theme_icon(mouse_inside || has_focus() ? "grabber_highlight" : "grabber");
+				Ref<Texture2D> grabber;
+				if (mouse_inside || has_focus()) {
+					grabber = theme_cache.grabber_hl_icon;
+				} else {
+					grabber = theme_cache.grabber_icon;
+				}
+
 				grab.pos = orientation == VERTICAL ? mb->get_position().y : mb->get_position().x;
 
 				double grab_width = (double)grabber->get_size().width;
@@ -95,7 +98,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid()) {
 		if (grab.active) {
 			Size2i size = get_size();
-			Ref<Texture2D> grabber = get_theme_icon(SNAME("grabber"));
+			Ref<Texture2D> grabber = theme_cache.grabber_icon;
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
@@ -145,6 +148,19 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void Slider::_update_theme_item_cache() {
+	Range::_update_theme_item_cache();
+
+	theme_cache.slider_style = get_theme_stylebox(SNAME("slider"));
+	theme_cache.grabber_area_style = get_theme_stylebox(SNAME("grabber_area"));
+	theme_cache.grabber_area_hl_style = get_theme_stylebox(SNAME("grabber_area_highlight"));
+
+	theme_cache.grabber_icon = get_theme_icon(SNAME("grabber"));
+	theme_cache.grabber_hl_icon = get_theme_icon(SNAME("grabber_highlight"));
+	theme_cache.grabber_disabled_icon = get_theme_icon(SNAME("grabber_disabled"));
+	theme_cache.tick_icon = get_theme_icon(SNAME("tick"));
+}
+
 void Slider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -171,12 +187,29 @@ void Slider::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
-			Ref<StyleBox> style = get_theme_stylebox(SNAME("slider"));
-			bool highlighted = mouse_inside || has_focus();
-			Ref<StyleBox> grabber_area = get_theme_stylebox(highlighted ? "grabber_area_highlight" : "grabber_area");
-			Ref<Texture2D> grabber = get_theme_icon(editable ? (highlighted ? "grabber_highlight" : "grabber") : "grabber_disabled");
-			Ref<Texture2D> tick = get_theme_icon(SNAME("tick"));
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
+
+			Ref<StyleBox> style = theme_cache.slider_style;
+			Ref<Texture2D> tick = theme_cache.tick_icon;
+
+			bool highlighted = mouse_inside || has_focus();
+			Ref<Texture2D> grabber;
+			if (editable) {
+				if (highlighted) {
+					grabber = theme_cache.grabber_hl_icon;
+				} else {
+					grabber = theme_cache.grabber_icon;
+				}
+			} else {
+				grabber = theme_cache.grabber_disabled_icon;
+			}
+
+			Ref<StyleBox> grabber_area;
+			if (highlighted) {
+				grabber_area = theme_cache.grabber_area_hl_style;
+			} else {
+				grabber_area = theme_cache.grabber_area_style;
+			}
 
 			if (orientation == VERTICAL) {
 				int widget_width = style->get_minimum_size().width + style->get_center_size().width;

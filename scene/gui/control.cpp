@@ -2330,6 +2330,9 @@ void Control::_invalidate_theme_cache() {
 	data.theme_constant_cache.clear();
 }
 
+void Control::_update_theme_item_cache() {
+}
+
 void Control::set_theme(const Ref<Theme> &p_theme) {
 	if (data.theme == p_theme) {
 		return;
@@ -3103,6 +3106,11 @@ void Control::remove_child_notify(Node *p_child) {
 
 void Control::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			_invalidate_theme_cache();
+			_update_theme_item_cache();
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			// Need to defer here, because theme owner information might be set in
 			// add_child_notify, which doesn't get called until right after this.
@@ -3236,6 +3244,7 @@ void Control::_notification(int p_notification) {
 		case NOTIFICATION_THEME_CHANGED: {
 			emit_signal(SceneStringNames::get_singleton()->theme_changed);
 			_invalidate_theme_cache();
+			_update_theme_item_cache();
 			update_minimum_size();
 			queue_redraw();
 		} break;
@@ -3257,6 +3266,7 @@ void Control::_notification(int p_notification) {
 			if (is_inside_tree()) {
 				data.is_rtl_dirty = true;
 				_invalidate_theme_cache();
+				_update_theme_item_cache();
 				_size_changed();
 			}
 		} break;

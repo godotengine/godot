@@ -174,6 +174,31 @@ private:
 	double caret_blink_timer = 0.0;
 	bool caret_blinking = false;
 
+	struct ThemeCache {
+		Ref<StyleBox> normal;
+		Ref<StyleBox> read_only;
+		Ref<StyleBox> focus;
+
+		Ref<Font> font;
+		int font_size = 0;
+		Color font_color;
+		Color font_uneditable_color;
+		Color font_selected_color;
+		int font_outline_size;
+		Color font_outline_color;
+		Color font_placeholder_color;
+		int caret_width = 0;
+		Color caret_color;
+		int minimum_character_width = 0;
+		Color selection_color;
+
+		Ref<Texture2D> clear_icon;
+		Color clear_button_color;
+		Color clear_button_color_pressed;
+
+		int base_scale = 0;
+	} theme_cache;
+
 	bool _is_over_clear_button(const Point2 &p_pos) const;
 
 	void _clear_undo_stack();
@@ -215,6 +240,7 @@ private:
 	void _ensure_menu();
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void unhandled_key_input(const Ref<InputEvent> &p_event) override;
