@@ -3189,7 +3189,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 			p_preload->resolved_path = parser->script_path.get_base_dir().path_join(p_preload->resolved_path);
 		}
 		p_preload->resolved_path = p_preload->resolved_path.simplify_path();
-		if (!FileAccess::exists(p_preload->resolved_path)) {
+		if (!ResourceLoader::exists(p_preload->resolved_path)) {
 			push_error(vformat(R"(Preload file "%s" does not exist.)", p_preload->resolved_path), p_preload->path);
 		} else {
 			// TODO: Don't load if validating: use completion cache.
