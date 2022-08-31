@@ -17,10 +17,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="granule_positions" type="Array" setter="set_packet_granule_positions" getter="get_packet_granule_positions" default="[]">
+		<member name="granule_positions" type="PackedInt64Array" setter="set_packet_granule_positions" getter="get_packet_granule_positions" default="PackedInt64Array()">
 			Contains the granule positions for each page in this packet sequence.
 		</member>
-		<member name="packet_data" type="Array" setter="set_packet_data" getter="get_packet_data" default="[]">
+		<member name="packet_data" type="Array[]" setter="set_packet_data" getter="get_packet_data" default="[]">
 			Contains the raw packets that make up this OggPacketSequence.
 		</member>
 		<member name="sampling_rate" type="float" setter="set_sampling_rate" getter="get_sampling_rate" default="0.0">

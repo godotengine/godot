@@ -167,7 +167,7 @@
 		</method>
 		<method name="make_mesh_previews">
 			<return type="Texture2D[]" />
-			<param index="0" name="meshes" type="Array" />
+			<param index="0" name="meshes" type="Mesh[]" />
 			<param index="1" name="preview_size" type="int" />
 			<description>
 				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.

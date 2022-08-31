@@ -631,7 +631,7 @@
 		</method>
 		<method name="uniform_set_create">
 			<return type="RID" />
-			<param index="0" name="uniforms" type="Array" />
+			<param index="0" name="uniforms" type="RDUniform[]" />
 			<param index="1" name="shader" type="RID" />
 			<param index="2" name="shader_set" type="int" />
 			<description>

@@ -48,7 +48,7 @@
 #include "scene/gui/popup_menu.h"
 #include "servers/rendering_server.h"
 
-TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
+TypedArray<Texture2D> EditorInterface::_make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size) {
 	Vector<Ref<Mesh>> meshes;
 
 	for (int i = 0; i < p_meshes.size(); i++) {

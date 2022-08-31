@@ -2792,7 +2792,7 @@ Variant TextServerFallback::shaped_get_span_meta(const RID &p_shaped, int64_t p_
 	return sd->spans[p_index].meta;
 }
 
-void TextServerFallback::shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features) {
+void TextServerFallback::shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
 	ERR_FAIL_INDEX(p_index, sd->spans.size());
@@ -2816,7 +2816,7 @@ void TextServerFallback::shaped_set_span_update_font(const RID &p_shaped, int64_
 	sd->valid = false;
 }
 
-bool TextServerFallback::shaped_text_add_string(const RID &p_shaped, const String &p_text, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
+bool TextServerFallback::shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 

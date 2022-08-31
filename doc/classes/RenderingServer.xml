@@ -21,7 +21,7 @@
 		<method name="bake_render_uv2">
 			<return type="Image[]" />
 			<param index="0" name="base" type="RID" />
-			<param index="1" name="material_overrides" type="Array" />
+			<param index="1" name="material_overrides" type="RID[]" />
 			<param index="2" name="image_size" type="Vector2i" />
 			<description>
 			</description>
@@ -1601,7 +1601,7 @@
 		</method>
 		<method name="instances_cull_convex" qualifiers="const">
 			<return type="PackedInt64Array" />
-			<param index="0" name="convex" type="Array" />
+			<param index="0" name="convex" type="Plane[]" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
 				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.

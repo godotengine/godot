@@ -108,7 +108,7 @@ protected:
 	// Proxy endpoints for extensions to implement
 	GDVIRTUAL1R(bool, _initialize, String);
 	GDVIRTUAL5(_set_credentials, String, String, String, String, String);
-	GDVIRTUAL0R(Array, _get_modified_files_data);
+	GDVIRTUAL0R(TypedArray<Dictionary>, _get_modified_files_data);
 	GDVIRTUAL1(_stage_file, String);
 	GDVIRTUAL1(_unstage_file, String);
 	GDVIRTUAL1(_discard_file, String);
@@ -116,9 +116,9 @@ protected:
 	GDVIRTUAL2R(TypedArray<Dictionary>, _get_diff, String, int);
 	GDVIRTUAL0R(bool, _shut_down);
 	GDVIRTUAL0R(String, _get_vcs_name);
-	GDVIRTUAL1R(Array, _get_previous_commits, int);
-	GDVIRTUAL0R(Array, _get_branch_list);
-	GDVIRTUAL0R(Array, _get_remotes);
+	GDVIRTUAL1R(TypedArray<Dictionary>, _get_previous_commits, int);
+	GDVIRTUAL0R(TypedArray<Dictionary>, _get_branch_list);
+	GDVIRTUAL0R(TypedArray<Dictionary>, _get_remotes);
 	GDVIRTUAL1(_create_branch, String);
 	GDVIRTUAL1(_remove_branch, String);
 	GDVIRTUAL2(_create_remote, String, String);
@@ -128,7 +128,7 @@ protected:
 	GDVIRTUAL1(_pull, String);
 	GDVIRTUAL2(_push, String, bool);
 	GDVIRTUAL1(_fetch, String);
-	GDVIRTUAL2R(Array, _get_line_diff, String, String);
+	GDVIRTUAL2R(TypedArray<Dictionary>, _get_line_diff, String, String);
 
 public:
 	static EditorVCSInterface *get_singleton();
@@ -171,8 +171,8 @@ public:
 	Dictionary create_diff_file(String p_new_file, String p_old_file);
 	Dictionary create_commit(String p_msg, String p_author, String p_id, int64_t p_unix_timestamp, int64_t p_offset_minutes);
 	Dictionary create_status_file(String p_file_path, ChangeType p_change, TreeArea p_area);
-	Dictionary add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs);
-	Dictionary add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks);
+	Dictionary add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, TypedArray<Dictionary> p_line_diffs);
+	Dictionary add_diff_hunks_into_diff_file(Dictionary p_diff_file, TypedArray<Dictionary> p_diff_hunks);
 
 	void popup_error(String p_msg);
 };

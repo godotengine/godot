@@ -95,7 +95,7 @@ PackedInt64Array RenderingServer::_instances_cull_ray_bind(const Vector3 &p_from
 	return to_int_array(ids);
 }
 
-PackedInt64Array RenderingServer::_instances_cull_convex_bind(const Array &p_convex, RID p_scenario) const {
+PackedInt64Array RenderingServer::_instances_cull_convex_bind(const TypedArray<Plane> &p_convex, RID p_scenario) const {
 	if (RSG::threaded) {
 		WARN_PRINT_ONCE("Using this function with a threaded renderer hurts performance, as it causes a server stall.");
 	}
@@ -1633,7 +1633,7 @@ TypedArray<Dictionary> RenderingServer::_instance_geometry_get_shader_uniform_li
 }
 
 TypedArray<Image> RenderingServer::_bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) {
-	Vector<RID> mat_overrides;
+	TypedArray<RID> mat_overrides;
 	for (int i = 0; i < p_material_overrides.size(); i++) {
 		mat_overrides.push_back(p_material_overrides[i]);
 	}

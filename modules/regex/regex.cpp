@@ -82,8 +82,8 @@ Dictionary RegExMatch::get_names() const {
 	return result;
 }
 
-Array RegExMatch::get_strings() const {
-	Array result;
+PackedStringArray RegExMatch::get_strings() const {
+	PackedStringArray result;
 
 	int size = data.size();
 
