@@ -74,6 +74,12 @@ internal static unsafe class VariantConversionCallbacks
         static godot_variant FromTransform3D(in Transform3D @transform3d) =>
             VariantUtils.CreateFromTransform3D(@transform3d);
 
+        static godot_variant FromVector4(in Vector4 @vector4) =>
+            VariantUtils.CreateFromVector4(@vector4);
+
+        static godot_variant FromVector4I(in Vector4i vector4I) =>
+            VariantUtils.CreateFromVector4i(vector4I);
+
         static godot_variant FromAabb(in AABB @aabb) =>
             VariantUtils.CreateFromAABB(@aabb);
 
@@ -281,6 +287,18 @@ internal static unsafe class VariantConversionCallbacks
         {
             return (delegate*<in T, godot_variant>)(delegate*<in Transform3D, godot_variant>)
                 &FromTransform3D;
+        }
+
+        if (typeOfT == typeof(Vector4))
+        {
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector4, godot_variant>)
+                &FromVector4;
+        }
+
+        if (typeOfT == typeof(Vector4i))
+        {
+            return (delegate*<in T, godot_variant>)(delegate*<in Vector4i, godot_variant>)
+                &FromVector4I;
         }
 
         if (typeOfT == typeof(AABB))
@@ -556,6 +574,12 @@ internal static unsafe class VariantConversionCallbacks
         static Transform3D ToTransform3D(in godot_variant variant) =>
             VariantUtils.ConvertToTransform3D(variant);
 
+        static Vector4 ToVector4(in godot_variant variant) =>
+            VariantUtils.ConvertToVector4(variant);
+
+        static Vector4i ToVector4I(in godot_variant variant) =>
+            VariantUtils.ConvertToVector4i(variant);
+
         static AABB ToAabb(in godot_variant variant) =>
             VariantUtils.ConvertToAABB(variant);
 
@@ -766,6 +790,18 @@ internal static unsafe class VariantConversionCallbacks
         {
             return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Transform3D>)
                 &ToTransform3D;
+        }
+
+        if (typeOfT == typeof(Vector4))
+        {
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector4>)
+                &ToVector4;
+        }
+
+        if (typeOfT == typeof(Vector4i))
+        {
+            return (delegate*<in godot_variant, T>)(delegate*<in godot_variant, Vector4i>)
+                &ToVector4I;
         }
 
         if (typeOfT == typeof(AABB))

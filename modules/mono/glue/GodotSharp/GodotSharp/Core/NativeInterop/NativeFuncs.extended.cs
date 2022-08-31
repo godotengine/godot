@@ -28,6 +28,10 @@ namespace Godot.NativeInterop
                     return new godot_variant() { Vector3 = src.Vector3, Type = Variant.Type.Vector3 };
                 case Variant.Type.Vector3i:
                     return new godot_variant() { Vector3i = src.Vector3i, Type = Variant.Type.Vector3i };
+                case Variant.Type.Vector4:
+                    return new godot_variant() { Vector4 = src.Vector4, Type = Variant.Type.Vector4 };
+                case Variant.Type.Vector4i:
+                    return new godot_variant() { Vector4i = src.Vector4i, Type = Variant.Type.Vector4i };
                 case Variant.Type.Plane:
                     return new godot_variant() { Plane = src.Plane, Type = Variant.Type.Plane };
                 case Variant.Type.Quaternion:

@@ -613,9 +613,9 @@ namespace Godot.NativeInterop
                 case Variant.Type.Transform2d:
                     return *p_var.Transform2D;
                 case Variant.Type.Vector4:
-                    return *p_var.Vector4;
+                    return p_var.Vector4;
                 case Variant.Type.Vector4i:
-                    return *p_var.Vector4i;
+                    return p_var.Vector4i;
                 case Variant.Type.Plane:
                     return p_var.Plane;
                 case Variant.Type.Quaternion:

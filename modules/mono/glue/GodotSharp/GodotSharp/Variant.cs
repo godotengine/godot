@@ -65,6 +65,8 @@ public partial struct Variant : IDisposable
             case Type.Rect2i:
             case Type.Vector3:
             case Type.Vector3i:
+            case Type.Vector4:
+            case Type.Vector4i:
             case Type.Plane:
             case Type.Quaternion:
             case Type.Color:
