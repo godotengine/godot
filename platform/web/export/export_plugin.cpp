@@ -31,7 +31,6 @@
 #include "export_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_settings.h"
 
 Error EditorExportPlatformWeb::_extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa) {
 	Ref<FileAccess> io_fa;
