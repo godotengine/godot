@@ -1,5 +1,10 @@
 name: 🏁 Windows Builds
-on: [push, pull_request]
+on:
+  workflow_run:
+      workflows:
+        - "📊 Static Checks"
+      types:
+        - completed
 
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
@@ -18,6 +23,8 @@ jobs:
     # Windows 10 with latest image
     runs-on: "windows-latest"
     name: ${{ matrix.name }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     strategy:
       fail-fast: false
       matrix:

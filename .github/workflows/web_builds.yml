@@ -1,5 +1,12 @@
 name: 🌐 Web Builds
-on: [push, pull_request]
+on:
+  workflow_run:
+      workflows:
+        - "📊 Static Checks"
+      types:
+        - completed
+      branches:
+        - '**'
 
 # Global Settings
 env:
@@ -17,6 +24,7 @@ jobs:
   web-template:
     runs-on: "ubuntu-20.04"
     name: Template (target=release, tools=no)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3

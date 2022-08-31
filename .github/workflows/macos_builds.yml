@@ -1,5 +1,10 @@
 name: 🍎 macOS Builds
-on: [push, pull_request]
+on:
+  workflow_run:
+      workflows:
+        - "📊 Static Checks"
+      types:
+        - completed
 
 # Global Settings
 env:
@@ -15,6 +20,8 @@ jobs:
   build-macos:
     runs-on: "macos-latest"
     name: ${{ matrix.name }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     strategy:
       fail-fast: false
       matrix:
