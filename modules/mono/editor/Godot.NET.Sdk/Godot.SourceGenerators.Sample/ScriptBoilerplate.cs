@@ -7,7 +7,7 @@ namespace Godot.SourceGenerators.Sample
         private NodePath _nodePath;
         private int _velocity;
 
-        public override void _Process(float delta)
+        public override void _Process(double delta)
         {
             _ = delta;
 

@@ -2585,6 +2585,16 @@ const String BindingsGenerator::_get_generic_type_parameters(const TypeInterface
 	return params;
 }
 
+StringName BindingsGenerator::_get_type_name_from_meta(Variant::Type p_type, GodotTypeInfo::Metadata p_meta) {
+	if (p_type == Variant::INT) {
+		return _get_int_type_name_from_meta(p_meta);
+	} else if (p_type == Variant::FLOAT) {
+		return _get_float_type_name_from_meta(p_meta);
+	} else {
+		return Variant::get_type_name(p_type);
+	}
+}
+
 StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
 	switch (p_meta) {
 		case GodotTypeInfo::METADATA_INT_IS_INT8:
@@ -2612,8 +2622,8 @@ StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metada
 			return "ulong";
 			break;
 		default:
-			// Assume INT32
-			return "int";
+			// Assume INT64
+			return "long";
 	}
 }
 
@@ -2626,12 +2636,8 @@ StringName BindingsGenerator::_get_float_type_name_from_meta(GodotTypeInfo::Meta
 			return "double";
 			break;
 		default:
-			// Assume real_t (float or double depending of REAL_T_IS_DOUBLE)
-#ifdef REAL_T_IS_DOUBLE
+			// Assume FLOAT64
 			return "double";
-#else
-			return "float";
-#endif
 	}
 }
 
@@ -2922,13 +2928,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			} else if (return_info.type == Variant::NIL) {
 				imethod.return_type.cname = name_cache.type_void;
 			} else {
-				if (return_info.type == Variant::INT) {
-					imethod.return_type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
-				} else if (return_info.type == Variant::FLOAT) {
-					imethod.return_type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
-				} else {
-					imethod.return_type.cname = Variant::get_type_name(return_info.type);
-				}
+				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : GodotTypeInfo::METADATA_NONE);
 			}
 
 			for (int i = 0; i < argc; i++) {
@@ -2952,13 +2952,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					if (arginfo.type == Variant::INT) {
-						iarg.type.cname = _get_int_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
-					} else if (arginfo.type == Variant::FLOAT) {
-						iarg.type.cname = _get_float_type_name_from_meta(m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
-					} else {
-						iarg.type.cname = Variant::get_type_name(arginfo.type);
-					}
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, m ? m->get_argument_meta(i) : GodotTypeInfo::METADATA_NONE);
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
@@ -3060,13 +3054,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				} else if (arginfo.type == Variant::NIL) {
 					iarg.type.cname = name_cache.type_Variant;
 				} else {
-					if (arginfo.type == Variant::INT) {
-						iarg.type.cname = _get_int_type_name_from_meta(GodotTypeInfo::METADATA_NONE);
-					} else if (arginfo.type == Variant::FLOAT) {
-						iarg.type.cname = _get_float_type_name_from_meta(GodotTypeInfo::METADATA_NONE);
-					} else {
-						iarg.type.cname = Variant::get_type_name(arginfo.type);
-					}
+					iarg.type.cname = _get_type_name_from_meta(arginfo.type, GodotTypeInfo::METADATA_NONE);
 				}
 
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
