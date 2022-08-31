@@ -2726,6 +2726,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				result.builtin_type = Variant::INT;
 				result.native_type = base.native_type;
 				result.enum_type = base.enum_type;
+				result.enum_values = base.enum_values;
 				p_identifier->set_datatype(result);
 				return;
 			} else {
