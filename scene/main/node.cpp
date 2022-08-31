@@ -1369,18 +1369,16 @@ Node *Node::get_unique_node(const StringName &p_name) const {
 		ERR_FAIL_V_MSG(nullptr, "'name' parameter cannot be empty");
 	}
 
-	const StringName key = StringName(UNIQUE_NODE_PREFIX + p_name);
-
 	if (data.owned_unique_nodes.size()) {
 		// Has unique nodes in ownership.
-		Node *const *unique = data.owned_unique_nodes.getptr(key);
+		Node *const *unique = data.owned_unique_nodes.getptr(p_name);
 		if (!unique) {
 			// Could not find 'p_name' among the Unique Nodes this node owns.
 			return nullptr;
 		}
 		return *unique;
 	} else if (data.owner) {
-		Node **unique = data.owner->data.owned_unique_nodes.getptr(key);
+		Node **unique = data.owner->data.owned_unique_nodes.getptr(p_name);
 		if (!unique) {
 			// Could not find 'p_name' among the Unique Nodes this node's owner contains.
 			return nullptr;
@@ -1580,17 +1578,19 @@ void Node::_set_owner_nocheck(Node *p_owner) {
 
 void Node::_release_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Sanity check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which == nullptr || *which != this) {
 		return; // Ignore.
 	}
+	StringName prefixed_key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	data.owner->data.owned_unique_nodes.erase(key);
+	data.owner->data.owned_unique_nodes.erase(prefixed_key);
 }
 
 void Node::_acquire_unique_name_in_owner() {
 	ERR_FAIL_NULL(data.owner); // Sanity check.
-	StringName key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
+	StringName key = StringName(data.name.operator String());
 	Node **which = data.owner->data.owned_unique_nodes.getptr(key);
 	if (which != nullptr && *which != this) {
 		String which_path = is_inside_tree() ? (*which)->get_path() : data.owner->get_path_to(*which);
@@ -1599,7 +1599,10 @@ void Node::_acquire_unique_name_in_owner() {
 		data.unique_name_in_owner = false;
 		return;
 	}
+	// HACK: Add both keys to make both get_node("%") and get_unique_node() performant, at the cost of memory usage.
+	StringName prefixed_key = StringName(UNIQUE_NODE_PREFIX + data.name.operator String());
 	data.owner->data.owned_unique_nodes[key] = this;
+	data.owner->data.owned_unique_nodes[prefixed_key] = this;
 }
 
 void Node::set_unique_name_in_owner(bool p_enabled) {
@@ -2711,7 +2714,9 @@ void Node::get_argument_options(const StringName &p_function, int p_idx, List<St
 			elem = data.owner->data.owned_unique_nodes.begin();
 			while (elem) {
 				String name = elem->value->data.name;
-				r_options->push_back(name.quote());
+				if (!name.begins_with(UNIQUE_NODE_PREFIX)) {
+					r_options->push_back(name.quote());
+				}
 				++elem;
 			}
 		}
