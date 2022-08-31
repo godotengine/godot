@@ -137,14 +137,14 @@ void LineBuilder::build() {
 		// The line's outer length will be a little higher due to begin and end caps
 		if (begin_cap_mode == Line2D::LINE_CAP_BOX || begin_cap_mode == Line2D::LINE_CAP_ROUND) {
 			if (retrieve_curve) {
-				total_distance += width * curve->interpolate_baked(0.f) * 0.5f;
+				total_distance += width * curve->sample_baked(0.f) * 0.5f;
 			} else {
 				total_distance += width * 0.5f;
 			}
 		}
 		if (end_cap_mode == Line2D::LINE_CAP_BOX || end_cap_mode == Line2D::LINE_CAP_ROUND) {
 			if (retrieve_curve) {
-				total_distance += width * curve->interpolate_baked(1.f) * 0.5f;
+				total_distance += width * curve->sample_baked(1.f) * 0.5f;
 			} else {
 				total_distance += width * 0.5f;
 			}
@@ -160,7 +160,7 @@ void LineBuilder::build() {
 	float uvx1 = 0.f;
 
 	if (retrieve_curve) {
-		width_factor = curve->interpolate_baked(0.f);
+		width_factor = curve->sample_baked(0.f);
 	}
 
 	pos_up0 += u0 * hw * width_factor;
@@ -219,7 +219,7 @@ void LineBuilder::build() {
 			color1 = gradient->get_color_at_offset(current_distance1 / total_distance);
 		}
 		if (retrieve_curve) {
-			width_factor = curve->interpolate_baked(current_distance1 / total_distance);
+			width_factor = curve->sample_baked(current_distance1 / total_distance);
 		}
 
 		Vector2 inner_normal0, inner_normal1;
@@ -383,7 +383,7 @@ void LineBuilder::build() {
 		color1 = gradient->get_color(gradient->get_points_count() - 1);
 	}
 	if (retrieve_curve) {
-		width_factor = curve->interpolate_baked(1.f);
+		width_factor = curve->sample_baked(1.f);
 	}
 
 	Vector2 pos_up1 = pos1 + u0 * hw * width_factor;

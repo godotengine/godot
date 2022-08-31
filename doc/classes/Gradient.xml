@@ -38,13 +38,6 @@
 				Returns the number of colors in the gradient.
 			</description>
 		</method>
-		<method name="interpolate">
-			<return type="Color" />
-			<param index="0" name="offset" type="float" />
-			<description>
-				Returns the interpolated color specified by [param offset].
-			</description>
-		</method>
 		<method name="remove_point">
 			<return type="void" />
 			<param index="0" name="point" type="int" />
@@ -56,6 +49,13 @@
 			<return type="void" />
 			<description>
 				Reverses/mirrors the gradient.
+			</description>
+		</method>
+		<method name="sample">
+			<return type="Color" />
+			<param index="0" name="offset" type="float" />
+			<description>
+				Returns the interpolated color specified by [code]offset[/code].
 			</description>
 		</method>
 		<method name="set_color">
