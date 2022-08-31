@@ -46,11 +46,10 @@
 
 #include "wayland-cursor.h"
 
-// Protocols.
 #include "protocol/pointer_constraints.gen.h"
+#include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/wayland.gen.h"
-#include "protocol/wlr_data_control.gen.h"
 #include "protocol/xdg_shell.gen.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
@@ -111,19 +110,24 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_compositor *wl_compositor = nullptr;
 		uint32_t wl_compositor_name = 0;
 
+		struct wl_data_device_manager *wl_data_device_manager = nullptr;
+		uint32_t wl_data_device_manager_name = 0;
+
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
+
+		struct zwp_primary_selection_device_manager_v1 *wp_primary_selection_device_manager = nullptr;
+		uint32_t wp_primary_selection_device_manager_name = 0;
 
 		struct zwp_relative_pointer_manager_v1 *wp_relative_pointer_manager = nullptr;
 		uint32_t wp_relative_pointer_manager_name = 0;
 
 		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
 		uint32_t wp_pointer_constraints_name = 0;
-
-		struct zwlr_data_control_manager_v1 *wlr_data_control_manager = nullptr;
-		uint32_t wlr_data_control_manager_name = 0;
 	};
 
+	// This forward declaration is needed due to a circular dependency with
+	// WindowData. The actual struct members are declared later in this header.
 	struct WaylandState;
 
 	struct WindowData {
@@ -213,8 +217,8 @@ class DisplayServerWayland : public DisplayServer {
 		// This variable is needed to buffer all pointer changes until a
 		// wl_pointer.frame event, as per Wayland's specification. Everything is
 		// first set in `data_buffer` and then `data` is set with its contents on
-		// an input frame event. All methods should generally read from `data` and
-		// write to `data_buffer`.
+		// an input frame event. All methods should generally read from
+		// `pointer_data` and write to `data_buffer`.
 		PointerData pointer_data_buffer;
 		PointerData pointer_data;
 
@@ -244,14 +248,19 @@ class DisplayServerWayland : public DisplayServer {
 		bool alt_pressed = false;
 		bool meta_pressed = false;
 
+		uint32_t last_key_pressed_serial = 0;
+
 		// Clipboard.
-		struct zwlr_data_control_device_v1 *wlr_data_control_device = nullptr;
+		struct wl_data_device *wl_data_device = nullptr;
 
-		struct zwlr_data_control_offer_v1 *selection_data_control_offer = nullptr;
-		struct zwlr_data_control_source_v1 *selection_data_control_source = nullptr;
+		struct wl_data_source *wl_data_source_selection = nullptr;
+		struct wl_data_offer *wl_data_offer_selection = nullptr;
 
-		struct zwlr_data_control_offer_v1 *primary_data_control_offer = nullptr;
-		struct zwlr_data_control_source_v1 *primary_data_control_source = nullptr;
+		// Primary selection.
+		struct zwp_primary_selection_device_v1 *wp_primary_selection_device = nullptr;
+
+		struct zwp_primary_selection_source_v1 *wp_primary_selection_source = nullptr;
+		struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer = nullptr;
 
 		Vector<uint8_t> selection_data;
 		Vector<uint8_t> primary_data;
@@ -300,7 +309,10 @@ class DisplayServerWayland : public DisplayServer {
 
 	Thread events_thread;
 
-	String read_data_control_offer(zwlr_data_control_offer_v1 *wlr_data_control_offer) const;
+	String _string_read_fd(int fd) const;
+
+	String _wl_data_offer_read(wl_data_offer *wl_data_offer) const;
+	String _wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const;
 
 	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
 	static void _seat_state_set_current(SeatState &p_ss);
@@ -352,14 +364,23 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched, uint32_t mods_locked, uint32_t group);
 	static void _wl_keyboard_on_repeat_info(void *data, struct wl_keyboard *wl_keyboard, int32_t rate, int32_t delay);
 
-	// wlr-protocols event handlers.
-	static void _wlr_data_control_device_on_data_offer(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
-	static void _wlr_data_control_device_on_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
-	static void _wlr_data_control_device_on_finished(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device);
-	static void _wlr_data_control_device_on_primary_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id);
+	static void _wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
+	static void _wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id);
+	static void _wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device);
+	static void _wl_data_device_on_motion(void *data, struct wl_data_device *wl_data_device, uint32_t time, wl_fixed_t x, wl_fixed_t y);
+	static void _wl_data_device_on_drop(void *data, struct wl_data_device *wl_data_device);
+	static void _wl_data_device_on_selection(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id);
 
-	static void _wlr_data_control_source_on_send(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source, const char *mime_type, int32_t fd);
-	static void _wlr_data_control_source_on_cancelled(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source);
+	static void _wl_data_offer_on_offer(void *data, struct wl_data_offer *wl_data_offer, const char *mime_type);
+	static void _wl_data_offer_on_source_actions(void *data, struct wl_data_offer *wl_data_offer, uint32_t source_actions);
+	static void _wl_data_offer_on_action(void *data, struct wl_data_offer *wl_data_offer, uint32_t dnd_action);
+
+	static void _wl_data_source_on_target(void *data, struct wl_data_source *wl_data_source, const char *mime_type);
+	static void _wl_data_source_on_send(void *data, struct wl_data_source *wl_data_source, const char *mime_type, int32_t fd);
+	static void _wl_data_source_on_cancelled(void *data, struct wl_data_source *wl_data_source);
+	static void _wl_data_source_on_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source);
+	static void _wl_data_source_on_dnd_finished(void *data, struct wl_data_source *wl_data_source);
+	static void _wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action);
 
 	// xdg-shell event handlers.
 	static void _xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial);
@@ -375,6 +396,13 @@ class DisplayServerWayland : public DisplayServer {
 	// wayland-protocols event handlers.
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
+	static void _wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer);
+	static void _wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id);
+
+	static void _wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1, const char *mime_type, int32_t fd);
+	static void _wp_primary_selection_source_on_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1);
+
+	// Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
 		.global = _wl_registry_on_global,
 		.global_remove = _wl_registry_on_global_remove,
@@ -418,6 +446,30 @@ class DisplayServerWayland : public DisplayServer {
 		.repeat_info = _wl_keyboard_on_repeat_info,
 	};
 
+	static constexpr struct wl_data_device_listener wl_data_device_listener = {
+		.data_offer = _wl_data_device_on_data_offer,
+		.enter = _wl_data_device_on_enter,
+		.leave = _wl_data_device_on_leave,
+		.motion = _wl_data_device_on_motion,
+		.drop = _wl_data_device_on_drop,
+		.selection = _wl_data_device_on_selection,
+	};
+
+	static constexpr struct wl_data_offer_listener wl_data_offer_listener = {
+		.offer = _wl_data_offer_on_offer,
+		.source_actions = _wl_data_offer_on_source_actions,
+		.action = _wl_data_offer_on_action,
+	};
+
+	static constexpr struct wl_data_source_listener wl_data_source_listener = {
+		.target = _wl_data_source_on_target,
+		.send = _wl_data_source_on_send,
+		.cancelled = _wl_data_source_on_cancelled,
+		.dnd_drop_performed = _wl_data_source_on_dnd_drop_performed,
+		.dnd_finished = _wl_data_source_on_dnd_finished,
+		.action = _wl_data_source_on_action,
+	};
+
 	// xdg-shell event listeners.
 	static constexpr struct xdg_wm_base_listener xdg_wm_base_listener = {
 		.ping = _xdg_wm_base_on_ping,
@@ -438,22 +490,19 @@ class DisplayServerWayland : public DisplayServer {
 		.repositioned = _xdg_popup_on_repositioned,
 	};
 
-	// wlr-protocols event listeners.
-	static constexpr struct zwlr_data_control_device_v1_listener wlr_data_control_device_listener = {
-		.data_offer = _wlr_data_control_device_on_data_offer,
-		.selection = _wlr_data_control_device_on_selection,
-		.finished = _wlr_data_control_device_on_finished,
-		.primary_selection = _wlr_data_control_device_on_primary_selection,
-	};
-
-	static constexpr struct zwlr_data_control_source_v1_listener wlr_data_control_source_listener = {
-		.send = _wlr_data_control_source_on_send,
-		.cancelled = _wlr_data_control_source_on_cancelled,
-	};
-
 	// wayland-protocols event listeners.
 	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
 		.relative_motion = _wp_relative_pointer_on_relative_motion,
+	};
+
+	static constexpr struct zwp_primary_selection_device_v1_listener wp_primary_selection_device_listener = {
+		.data_offer = _wp_primary_selection_device_on_data_offer,
+		.selection = _wp_primary_selection_device_on_selection,
+	};
+
+	static constexpr struct zwp_primary_selection_source_v1_listener wp_primary_selection_source_listener = {
+		.send = _wp_primary_selection_source_on_send,
+		.cancelled = _wp_primary_selection_source_on_cancelled,
 	};
 
 public:

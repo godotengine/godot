@@ -86,8 +86,44 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	}
 }
 
-String DisplayServerWayland::read_data_control_offer(zwlr_data_control_offer_v1 *wlr_data_control_offer) const {
-	if (!wlr_data_control_offer) {
+String DisplayServerWayland::_string_read_fd(int fd) const {
+	// This is pretty much an arbitrary size.
+	uint32_t chunk_size = 2048;
+
+	LocalVector<uint8_t> data;
+	data.resize(chunk_size);
+
+	uint32_t bytes_read = 0;
+
+	while (true) {
+		ssize_t last_bytes_read = read(fd, data.ptr() + bytes_read, chunk_size);
+		if (last_bytes_read < 0) {
+			ERR_PRINT(vformat("Clipboard: read error %d.", errno));
+			return "";
+		}
+
+		if (last_bytes_read == 0) {
+			// We're done, we've reached the EOF.
+			DEBUG_LOG_WAYLAND(vformat("Clipboard: done reading %d bytes.", bytes_read));
+			close(fd);
+			break;
+		}
+
+		DEBUG_LOG_WAYLAND(vformat("Clipboard: read chunk of %d bytes.", last_bytes_read));
+
+		bytes_read += last_bytes_read;
+
+		// Increase the buffer size by one chunk in preparation of the next read.
+		data.resize(bytes_read + chunk_size);
+	}
+
+	String ret;
+	ret.parse_utf8((const char *)data.ptr(), bytes_read);
+	return ret;
+}
+
+String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) const {
+	if (!wl_data_offer) {
 		// The clipboard's empty, return an empty string.
 		return "";
 	}
@@ -96,7 +132,7 @@ String DisplayServerWayland::read_data_control_offer(zwlr_data_control_offer_v1 
 	if (pipe(fds) == 0) {
 		// This function expects to return a string, so we can only ask for a MIME of
 		// "text/plain"
-		zwlr_data_control_offer_v1_receive(wlr_data_control_offer, "text/plain", fds[1]);
+		wl_data_offer_receive(wl_data_offer, "text/plain", fds[1]);
 
 		// Wait for the compositor to know about the pipe.
 		wl_display_roundtrip(wls.display);
@@ -105,38 +141,32 @@ String DisplayServerWayland::read_data_control_offer(zwlr_data_control_offer_v1 
 		// just stall our next `read`s.
 		close(fds[1]);
 
-		// This is pretty much an arbitrary size.
-		uint32_t chunk_size = 2048;
+		return _string_read_fd(fds[0]);
+	}
 
-		LocalVector<uint8_t> data;
-		data.resize(chunk_size);
+	return "";
+}
 
-		uint32_t bytes_read = 0;
+String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const {
+	if (!wp_primary_selection_offer) {
+		// The clipboard's empty, return an empty string.
+		return "";
+	}
 
-		while (true) {
-			ssize_t last_bytes_read = read(fds[0], data.ptr() + bytes_read, chunk_size);
-			if (last_bytes_read < 0) {
-				ERR_PRINT(vformat("Clipboard: read error %d.", errno));
-			}
+	int fds[2];
+	if (pipe(fds) == 0) {
+		// This function expects to return a string, so we can only ask for a MIME of
+		// "text/plain"
+		zwp_primary_selection_offer_v1_receive(wp_primary_selection_offer, "text/plain", fds[1]);
 
-			if (last_bytes_read == 0) {
-				// We're done, we've reached the EOF.
-				DEBUG_LOG_WAYLAND(vformat("Clipboard: done reading %d bytes.", bytes_read));
-				close(fds[0]);
-				break;
-			}
+		// Wait for the compositor to know about the pipe.
+		wl_display_roundtrip(wls.display);
 
-			DEBUG_LOG_WAYLAND(vformat("Clipboard: read chunk of %d bytes.", last_bytes_read));
+		// Close the write end of the pipe, which we don't need and would otherwise
+		// just stall our next `read`s.
+		close(fds[1]);
 
-			bytes_read += last_bytes_read;
-
-			// Increase the buffer size by one chunk in preparation of the next read.
-			data.resize(bytes_read + chunk_size);
-		}
-
-		String ret;
-		ret.parse_utf8((const char *)data.ptr(), bytes_read);
-		return ret;
+		return _string_read_fd(fds[0]);
 	}
 
 	return "";
@@ -513,6 +543,30 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
+		globals.wl_data_device_manager = (struct wl_data_device_manager *)wl_registry_bind(wl_registry, name, &wl_data_device_manager_interface, 3);
+		globals.wl_data_device_manager_name = name;
+
+		for (SeatState &ss : wls->seats) {
+			if (!ss.wl_data_device) {
+				ss.wl_data_device = wl_data_device_manager_get_data_device(wls->globals.wl_data_device_manager, ss.wl_seat);
+				wl_data_device_add_listener(ss.wl_data_device, &wl_data_device_listener, &ss);
+			}
+		}
+		return;
+	}
+
+	if (strcmp(interface, zwp_primary_selection_device_manager_v1_interface.name) == 0) {
+		globals.wp_primary_selection_device_manager = (struct zwp_primary_selection_device_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_primary_selection_device_manager_v1_interface, 1);
+
+		for (SeatState &ss : wls->seats) {
+			if (!ss.wp_primary_selection_device) {
+				ss.wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(wls->globals.wp_primary_selection_device_manager, ss.wl_seat);
+				zwp_primary_selection_device_v1_add_listener(ss.wp_primary_selection_device, &wp_primary_selection_device_listener, &ss);
+			}
+		}
+	}
+
 	if (strcmp(interface, wl_output_interface.name) == 0) {
 		// The screen listener requires a pointer for its state data. For this
 		// reason, to get one that points to a variable that can live outside of this
@@ -536,6 +590,16 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		ss->wl_seat = (struct wl_seat *)wl_registry_bind(wl_registry, name, &wl_seat_interface, 5);
 		ss->wl_seat_name = name;
 
+		if (!ss->wl_data_device && globals.wl_data_device_manager) {
+			ss->wl_data_device = wl_data_device_manager_get_data_device(globals.wl_data_device_manager, ss->wl_seat);
+			wl_data_device_add_listener(ss->wl_data_device, &wl_data_device_listener, ss);
+		}
+
+		if (!ss->wp_primary_selection_device && globals.wp_primary_selection_device_manager) {
+			ss->wp_primary_selection_device = zwp_primary_selection_device_manager_v1_get_device(wls->globals.wp_primary_selection_device_manager, ss->wl_seat);
+			zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
+		}
+
 		wl_seat_add_listener(ss->wl_seat, &wl_seat_listener, ss);
 		return;
 	}
@@ -557,19 +621,6 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		globals.wp_relative_pointer_manager_name = name;
 		return;
 	}
-
-	if (strcmp(interface, zwlr_data_control_manager_v1_interface.name) == 0) {
-		globals.wlr_data_control_manager = (struct zwlr_data_control_manager_v1 *)wl_registry_bind(wl_registry, name, &zwlr_data_control_manager_v1_interface, 2);
-		globals.wlr_data_control_manager_name = name;
-
-		for (SeatState &ss : wls->seats) {
-			if (!ss.wlr_data_control_device) {
-				ss.wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, ss.wl_seat);
-				zwlr_data_control_device_v1_add_listener(ss.wlr_data_control_device, &wlr_data_control_device_listener, &ss);
-			}
-		}
-		return;
-	}
 }
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -589,6 +640,17 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		return;
 	}
 
+	if (name == globals.wl_data_device_manager_name) {
+		wl_data_device_manager_destroy(globals.wl_data_device_manager);
+		globals.wl_data_device_manager = nullptr;
+
+		// Destroy any seat data device that's there.
+		for (SeatState &ss : wls->seats) {
+			wl_data_device_destroy(ss.wl_data_device);
+			ss.wl_data_device = nullptr;
+		}
+	}
+
 	if (name == globals.xdg_wm_base_name) {
 		xdg_wm_base_destroy(globals.xdg_wm_base);
 		globals.xdg_wm_base = nullptr;
@@ -605,17 +667,6 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
 		globals.wp_relative_pointer_manager = nullptr;
 		return;
-	}
-
-	if (name == globals.wlr_data_control_manager_name) {
-		zwlr_data_control_manager_v1_destroy(globals.wlr_data_control_manager);
-		globals.wlr_data_control_manager = nullptr;
-
-		// Destroy any seat data device that's there.
-		for (SeatState &ss : wls->seats) {
-			zwlr_data_control_device_v1_destroy(ss.wlr_data_control_device);
-			ss.wlr_data_control_device = nullptr;
-		}
 	}
 
 	{
@@ -643,6 +694,10 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 			SeatState &ss = it->get();
 
 			if (ss.wl_seat_name == name) {
+				if (ss.wl_data_device) {
+					wl_data_device_destroy(ss.wl_data_device);
+				}
+
 				wl_seat_destroy(ss.wl_seat);
 				wls->seats.erase(it);
 				return;
@@ -758,16 +813,6 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 }
 
 void DisplayServerWayland::_wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	WaylandState *wls = ss->wls;
-	ERR_FAIL_NULL(wls);
-
-	if (wls->globals.wlr_data_control_manager) {
-		ss->wlr_data_control_device = zwlr_data_control_manager_v1_get_data_device(wls->globals.wlr_data_control_manager, ss->wl_seat);
-		zwlr_data_control_device_v1_add_listener(ss->wlr_data_control_device, &wlr_data_control_device_listener, ss);
-	}
 }
 
 void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *wl_pointer, uint32_t serial, struct wl_surface *surface, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -1147,6 +1192,8 @@ void DisplayServerWayland::_wl_keyboard_on_key(void *data, struct wl_keyboard *w
 			ss->last_repeat_start_msec = OS::get_singleton()->get_ticks_msec();
 			ss->repeating_keycode = xkb_keycode;
 		}
+
+		ss->last_key_pressed_serial = serial;
 	} else if (ss->repeating_keycode == xkb_keycode) {
 		ss->repeating_keycode = XKB_KEYCODE_INVALID;
 	}
@@ -1189,52 +1236,57 @@ void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_key
 	ss->repeat_start_delay_msec = delay;
 }
 
-void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
-	xdg_wm_base_pong(xdg_wm_base, serial);
-}
-
-// wlr-protocols event handlers.
-
-void DisplayServerWayland::_wlr_data_control_device_on_data_offer(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id) {
+void DisplayServerWayland::_wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
 	// This method is purposely left unimplemented as we don't care about the
 	// offered MIME type, as we only want `text/plain` data.
 
 	// TODO: Perhaps we could try to detect other text types such as `TEXT`?
 }
 
-void DisplayServerWayland::_wlr_data_control_device_on_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id) {
+void DisplayServerWayland::_wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id) {
+}
+
+void DisplayServerWayland::_wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device) {
+}
+
+void DisplayServerWayland::_wl_data_device_on_motion(void *data, struct wl_data_device *wl_data_device, uint32_t time, wl_fixed_t x, wl_fixed_t y) {
+}
+
+void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_device *wl_data_device) {
+}
+
+void DisplayServerWayland::_wl_data_device_on_selection(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	ss->selection_data_control_offer = id;
+	if (ss->wl_data_offer_selection) {
+		wl_data_offer_destroy(ss->wl_data_offer_selection);
+	}
+
+	ss->wl_data_offer_selection = id;
 }
 
-void DisplayServerWayland::_wlr_data_control_device_on_finished(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	ss->wlr_data_control_device = nullptr;
+void DisplayServerWayland::_wl_data_offer_on_offer(void *data, struct wl_data_offer *wl_data_offer, const char *mime_type) {
 }
 
-void DisplayServerWayland::_wlr_data_control_device_on_primary_selection(void *data, struct zwlr_data_control_device_v1 *wlr_data_control_device, struct zwlr_data_control_offer_v1 *id) {
-	SeatState *ss = (SeatState *)data;
-	ERR_FAIL_NULL(ss);
-
-	ss->primary_data_control_offer = id;
+void DisplayServerWayland::_wl_data_offer_on_source_actions(void *data, struct wl_data_offer *wl_data_offer, uint32_t source_actions) {
 }
 
-void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source, const char *mime_type, int32_t fd) {
+void DisplayServerWayland::_wl_data_offer_on_action(void *data, struct wl_data_offer *wl_data_offer, uint32_t dnd_action) {
+}
+
+void DisplayServerWayland::_wl_data_source_on_target(void *data, struct wl_data_source *wl_data_source, const char *mime_type) {
+}
+
+void DisplayServerWayland::_wl_data_source_on_send(void *data, struct wl_data_source *wl_data_source, const char *mime_type, int32_t fd) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
 	Vector<uint8_t> *data_to_send = nullptr;
 
-	if (wlr_data_control_source == ss->selection_data_control_source) {
+	if (wl_data_source == ss->wl_data_source_selection) {
 		data_to_send = &ss->selection_data;
 		DEBUG_LOG_WAYLAND("Clipboard: requested selection.");
-	} else if (wlr_data_control_source == ss->primary_data_control_source) {
-		data_to_send = &ss->primary_data;
-		DEBUG_LOG_WAYLAND("Clipboard: requested primary selection.");
 	}
 
 	if (data_to_send) {
@@ -1256,29 +1308,32 @@ void DisplayServerWayland::_wlr_data_control_source_on_send(void *data, struct z
 	close(fd);
 }
 
-void DisplayServerWayland::_wlr_data_control_source_on_cancelled(void *data, struct zwlr_data_control_source_v1 *wlr_data_control_source) {
+void DisplayServerWayland::_wl_data_source_on_cancelled(void *data, struct wl_data_source *wl_data_source) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	if (wlr_data_control_source == ss->selection_data_control_source) {
-		zwlr_data_control_source_v1_destroy(ss->selection_data_control_source);
-		ss->selection_data_control_source = nullptr;
+	if (wl_data_source == ss->wl_data_source_selection) {
+		wl_data_source_destroy(ss->wl_data_source_selection);
+		ss->wl_data_source_selection = nullptr;
 
 		ss->selection_data.clear();
 
 		DEBUG_LOG_WAYLAND("Clipboard: selection set by another program.");
 		return;
 	}
+}
 
-	if (wlr_data_control_source == ss->primary_data_control_source) {
-		zwlr_data_control_source_v1_destroy(ss->primary_data_control_source);
-		ss->primary_data_control_source = nullptr;
+void DisplayServerWayland::_wl_data_source_on_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source) {
+}
 
-		ss->primary_data.clear();
+void DisplayServerWayland::_wl_data_source_on_dnd_finished(void *data, struct wl_data_source *wl_data_source) {
+}
 
-		DEBUG_LOG_WAYLAND("Clipboard: primary selection set by another program.");
-		return;
-	}
+void DisplayServerWayland::_wl_data_source_on_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action) {
+}
+
+void DisplayServerWayland::_xdg_wm_base_on_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial) {
+	xdg_wm_base_pong(xdg_wm_base, serial);
 }
 
 void DisplayServerWayland::_xdg_surface_on_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial) {
@@ -1405,16 +1460,80 @@ void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, s
 	pd.relative_motion_time = uptime_lo;
 }
 
+void DisplayServerWayland::_wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer) {
+	// This method is purposely left unimplemented as we don't care about the
+	// offered MIME type, as we only want `text/plain` data.
+
+	// TODO: Perhaps we could try to detect other text types such as `TEXT`?
+}
+
+void DisplayServerWayland::_wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (ss->wp_primary_selection_offer) {
+		zwp_primary_selection_offer_v1_destroy(ss->wp_primary_selection_offer);
+	}
+
+	ss->wp_primary_selection_offer = id;
+}
+
+void DisplayServerWayland::_wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1, const char *mime_type, int32_t fd) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	Vector<uint8_t> *data_to_send = nullptr;
+
+	if (zwp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
+		data_to_send = &ss->primary_data;
+		DEBUG_LOG_WAYLAND("Clipboard: requested primary selection.");
+	}
+
+	if (data_to_send) {
+		ssize_t written_bytes = 0;
+
+		if (strcmp(mime_type, "text/plain") == 0) {
+			written_bytes = write(fd, data_to_send->ptr(), data_to_send->size());
+		}
+
+		if (written_bytes > 0) {
+			DEBUG_LOG_WAYLAND(vformat("Clipboard: sent %d bytes.", written_bytes));
+		} else if (written_bytes == 0) {
+			DEBUG_LOG_WAYLAND("Clipboard: no bytes sent.");
+		} else {
+			ERR_PRINT(vformat("Clipboard: write error %d.", errno));
+		}
+	}
+
+	close(fd);
+}
+
+void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (zwp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
+		zwp_primary_selection_source_v1_destroy(ss->wp_primary_selection_source);
+		ss->wp_primary_selection_source = nullptr;
+
+		ss->primary_data.clear();
+
+		DEBUG_LOG_WAYLAND("Clipboard: primary selection set by another program.");
+		return;
+	}
+}
+
 // Interface mthods
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_MOUSE:
 		case FEATURE_SUBWINDOWS:
-			return true;
 		case FEATURE_CLIPBOARD:
-		case FEATURE_CLIPBOARD_PRIMARY:
-			return wls.globals.wlr_data_control_manager != nullptr;
+		case FEATURE_CLIPBOARD_PRIMARY: {
+			return true;
+		} break;
+
 		default: {
 		}
 	}
@@ -1467,6 +1586,10 @@ MouseButton DisplayServerWayland::mouse_get_button_state() const {
 	return wls.current_seat->pointer_data.pressed_button_mask;
 }
 
+// NOTE: According to the Wayland specification, this method will only do
+// anything if the user has interacted with the application by sending a
+// "recent enough" input event.
+// TODO: Add this limitation to the documentation.
 void DisplayServerWayland::clipboard_set(const String &p_text) {
 	MutexLock mutex_lock(wls.mutex);
 
@@ -1476,17 +1599,18 @@ void DisplayServerWayland::clipboard_set(const String &p_text) {
 
 	SeatState &ss = *wls.current_seat;
 
-	if (!wls.current_seat->selection_data_control_source) {
-		ss.selection_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
-		zwlr_data_control_source_v1_add_listener(ss.selection_data_control_source, &wlr_data_control_source_listener, wls.current_seat);
-		zwlr_data_control_source_v1_offer(ss.selection_data_control_source, "text/plain");
-
-		zwlr_data_control_device_v1_set_selection(ss.wlr_data_control_device, ss.selection_data_control_source);
-
-		// Wait for the message to get to the server before continuing, otherwise the
-		// clipboard update might come with a delay.
-		wl_display_roundtrip(wls.display);
+	if (!wls.current_seat->wl_data_source_selection) {
+		ss.wl_data_source_selection = wl_data_device_manager_create_data_source(wls.globals.wl_data_device_manager);
+		wl_data_source_add_listener(ss.wl_data_source_selection, &wl_data_source_listener, wls.current_seat);
+		wl_data_source_offer(ss.wl_data_source_selection, "text/plain");
 	}
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	wl_data_device_set_selection(ss.wl_data_device, ss.wl_data_source_selection, MAX(ss.pointer_data.button_serial, ss.last_key_pressed_serial));
+
+	// Wait for the message to get to the server before continuing, otherwise the
+	// clipboard update might come with a delay.
+	wl_display_roundtrip(wls.display);
 
 	ss.selection_data = p_text.to_utf8_buffer();
 }
@@ -1498,7 +1622,7 @@ String DisplayServerWayland::clipboard_get() const {
 		return String();
 	}
 
-	return read_data_control_offer(wls.current_seat->selection_data_control_offer);
+	return _wl_data_offer_read(wls.current_seat->wl_data_offer_selection);
 }
 
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
@@ -1510,27 +1634,30 @@ void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 
 	SeatState &ss = *wls.current_seat;
 
-	if (!ss.primary_data_control_source) {
-		ss.primary_data_control_source = zwlr_data_control_manager_v1_create_data_source(wls.globals.wlr_data_control_manager);
-		zwlr_data_control_source_v1_add_listener(ss.primary_data_control_source, &wlr_data_control_source_listener, wls.current_seat);
-		zwlr_data_control_source_v1_offer(ss.primary_data_control_source, "text/plain");
-
-		zwlr_data_control_device_v1_set_primary_selection(ss.wlr_data_control_device, ss.primary_data_control_source);
-
-		// Wait for the message to get to the server before continuing, otherwise the
-		// clipboard update might come with a delay.
-		wl_display_roundtrip(wls.display);
+	if (!wls.current_seat->wp_primary_selection_source) {
+		ss.wp_primary_selection_source = zwp_primary_selection_device_manager_v1_create_source(wls.globals.wp_primary_selection_device_manager);
+		zwp_primary_selection_source_v1_add_listener(ss.wp_primary_selection_source, &wp_primary_selection_source_listener, wls.current_seat);
+		zwp_primary_selection_source_v1_offer(ss.wp_primary_selection_source, "text/plain");
 	}
+
+	// TODO: Implement a good way of getting the latest serial from the user.
+	zwp_primary_selection_device_v1_set_selection(ss.wp_primary_selection_device, ss.wp_primary_selection_source, MAX(ss.pointer_data.button_serial, ss.last_key_pressed_serial));
+
+	// Wait for the message to get to the server before continuing, otherwise the
+	// clipboard update might come with a delay.
+	wl_display_roundtrip(wls.display);
 
 	ss.primary_data = p_text.to_utf8_buffer();
 }
 
 String DisplayServerWayland::clipboard_get_primary() const {
+	MutexLock mutex_lock(wls.mutex);
+
 	if (!wls.current_seat) {
 		return String();
 	}
 
-	return read_data_control_offer(wls.current_seat->primary_data_control_offer);
+	return _wp_primary_selection_offer_read(wls.current_seat->wp_primary_selection_offer);
 }
 
 int DisplayServerWayland::get_screen_count() const {
@@ -2500,6 +2627,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// TODO: Perhaps gracefully handle missing protocols when possible?
 	ERR_FAIL_COND_MSG(!wls.globals.wl_shm, "Can't obtain the Wayland shared memory global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wl_compositor, "Can't obtain the Wayland compositor global.");
+	ERR_FAIL_COND_MSG(!wls.globals.wl_data_device_manager, "Can't obtain the Wayland data device manager global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
 	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
 
@@ -2686,6 +2814,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 			wl_surface_destroy(seat.cursor_surface);
 		}
 
+		if (seat.wl_data_device) {
+			wl_data_device_destroy(seat.wl_data_device);
+		}
+
 		if (seat.wp_relative_pointer) {
 			zwp_relative_pointer_v1_destroy(seat.wp_relative_pointer);
 		}
@@ -2697,26 +2829,6 @@ DisplayServerWayland::~DisplayServerWayland() {
 		if (seat.wp_confined_pointer) {
 			zwp_confined_pointer_v1_destroy(seat.wp_confined_pointer);
 		}
-
-		if (seat.wlr_data_control_device) {
-			zwlr_data_control_device_v1_destroy(seat.wlr_data_control_device);
-		}
-
-		if (seat.selection_data_control_offer) {
-			zwlr_data_control_offer_v1_destroy(seat.selection_data_control_offer);
-		}
-
-		if (seat.selection_data_control_source) {
-			zwlr_data_control_source_v1_destroy(seat.selection_data_control_source);
-		}
-
-		if (seat.primary_data_control_offer) {
-			zwlr_data_control_offer_v1_destroy(seat.primary_data_control_offer);
-		}
-
-		if (seat.primary_data_control_source) {
-			zwlr_data_control_source_v1_destroy(seat.primary_data_control_source);
-		}
 	}
 
 	for (ScreenData &screen : wls.screens) {
@@ -2727,10 +2839,6 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.wl_cursor_theme) {
 		wl_cursor_theme_destroy(wls.wl_cursor_theme);
-	}
-
-	if (wls.globals.wlr_data_control_manager) {
-		zwlr_data_control_manager_v1_destroy(wls.globals.wlr_data_control_manager);
 	}
 
 	if (wls.globals.wp_pointer_constraints) {

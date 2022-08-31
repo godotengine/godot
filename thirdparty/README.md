@@ -741,21 +741,11 @@ Files extracted from upstream source:
 
 - `stable/xdg-shell/xdg-shell.xml`
 - `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
+- `unstable/primary-selection/primary-selection-unstable-v1.xml`
 - `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
 - `COPYING`
 
 
-# wlr-protocols
-
-- Upstream: https://gitlab.freedesktop.org/wlroots/wlr-protocols
-- Version: git (7437e2b600382f0be33949c4e244b2a3702fcb, 2020)
-- License: MIT
-
-Files extracted from upstream source:
-
-- `unstable/wlr-data-control-unstable-v1.xml`
-
- 
 ## wslay
 
 - Upstream: https://github.com/tatsuhiro-t/wslay

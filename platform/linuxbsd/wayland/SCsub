@@ -54,13 +54,13 @@ env.WAYLAND_API_CODE(
 )
 
 env.WAYLAND_API_HEADER(
-    target="protocol/wlr_data_control.gen.h",
-    source="#thirdparty/wlr-protocols/unstable/wlr-data-control-unstable-v1.xml",
+    target="protocol/primary_selection.gen.h",
+    source="#thirdparty/wayland-protocols/unstable/primary-selection/primary-selection-unstable-v1.xml",
 )
 
 env.WAYLAND_API_CODE(
-    target="protocol/wlr_data_control.gen.c",
-    source="#thirdparty/wlr-protocols/unstable/wlr-data-control-unstable-v1.xml",
+    target="protocol/primary_selection.gen.c",
+    source="#thirdparty/wayland-protocols/unstable/primary-selection/primary-selection-unstable-v1.xml",
 )
 
 source_files = [
@@ -68,7 +68,7 @@ source_files = [
     "protocol/xdg_shell.gen.c",
     "protocol/relative_pointer.gen.c",
     "protocol/pointer_constraints.gen.c",
-    "protocol/wlr_data_control.gen.c",
+    "protocol/primary_selection.gen.c",
     "display_server_wayland.cpp",
     "key_mapping_xkb.cpp",
 ]
