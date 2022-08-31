@@ -1,5 +1,10 @@
 name: 🍏 iOS Builds
-on: [push, pull_request]
+on:
+  workflow_run:
+      workflows:
+        - "📊 Static Checks"
+      types:
+        - completed
 
 # Global Settings
 env:
@@ -15,6 +20,7 @@ jobs:
   ios-template:
     runs-on: "macos-latest"
     name: Template (target=release, tools=no)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - uses: actions/checkout@v3
