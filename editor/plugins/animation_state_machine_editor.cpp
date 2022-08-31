@@ -802,8 +802,7 @@ void AnimationNodeStateMachineEditor::_open_connect_menu(const Vector2 &p_positi
 	if (anodesm.is_valid()) {
 		_create_submenu(connect_menu, anodesm, connecting_to_node, connecting_to_node);
 	} else {
-		Ref<AnimationNodeStateMachine> prev = state_machine;
-		_create_submenu(connect_menu, prev, connecting_to_node, connecting_to_node, true);
+		_create_submenu(connect_menu, state_machine, connecting_to_node, connecting_to_node, true);
 	}
 
 	connect_menu->add_submenu_item(TTR("To") + " Animation", connecting_to_node);
@@ -835,6 +834,10 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 	String prev_path;
 	Vector<Ref<AnimationNodeStateMachine>> parents = p_parents;
 
+	if (from_root && p_nodesm->get_prev_state_machine() == nullptr) {
+		return false;
+	}
+
 	if (from_root) {
 		AnimationNodeStateMachine *prev = p_nodesm->get_prev_state_machine();
 
@@ -844,6 +847,8 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 			prev_path += "../";
 			prev = prev->get_prev_state_machine();
 		}
+		end_menu->add_item("Root", nodes_to_connect.size());
+		nodes_to_connect.push_back(prev_path + state_machine->end_node);
 		prev_path.remove_at(prev_path.size() - 1);
 	}
 
@@ -874,22 +879,22 @@ bool AnimationNodeStateMachineEditor::_create_submenu(PopupMenu *p_menu, Ref<Ani
 			}
 
 			if (ansm.is_valid()) {
-				bool found = false;
+				bool parent_found = false;
 
 				for (int i = 0; i < parents.size(); i++) {
 					if (parents[i] == ansm) {
 						path = path.replace_first("/../" + E, "");
-						found = true;
+						parent_found = true;
 						break;
 					}
 				}
 
-				if (!found) {
-					state_machine_menu->add_item(E, nodes_to_connect.size());
-					nodes_to_connect.push_back(path);
-				} else {
+				if (parent_found) {
 					end_menu->add_item(E, nodes_to_connect.size());
 					nodes_to_connect.push_back(path + "/" + state_machine->end_node);
+				} else {
+					state_machine_menu->add_item(E, nodes_to_connect.size());
+					nodes_to_connect.push_back(path);
 				}
 
 				if (_create_submenu(nodes_menu, ansm, E, path, false, parents)) {

@@ -611,11 +611,13 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	if (p_state_machine->end_node != current) {
 		rem = 1;
 	} else {
-		Ref<AnimationNodeStateMachinePlayback> prev_playback = p_state_machine->prev_state_machine->get_parameter("playback");
+		if (p_state_machine->prev_state_machine != nullptr) {
+			Ref<AnimationNodeStateMachinePlayback> prev_playback = p_state_machine->prev_state_machine->get_parameter(p_state_machine->playback);
 
-		if (prev_playback.is_valid()) {
-			prev_playback->current_transition = current_transition;
-			prev_playback->force_auto_advance = true;
+			if (prev_playback.is_valid()) {
+				prev_playback->current_transition = current_transition;
+				prev_playback->force_auto_advance = true;
+			}
 		}
 	}
 
@@ -900,10 +902,6 @@ void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, co
 void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
 	List<StringName> nodes;
 	for (const KeyValue<StringName, State> &E : states) {
-		if (E.key == end_node && prev_state_machine == nullptr) {
-			continue;
-		}
-
 		nodes.push_back(E.key);
 	}
 	nodes.sort_custom<StringName::AlphCompare>();
