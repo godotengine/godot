@@ -105,7 +105,6 @@ public:
 	virtual int mesh_get_surface_count(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!m, 0);
-		print_line(m->surfaces.size());
 		return m->surfaces.size();
 	}
 
