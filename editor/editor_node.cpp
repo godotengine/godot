@@ -253,11 +253,8 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				}
 
 				// Normalize trailing slashes when normalizing directory names.
-				if (scene_name.rfind("/") == scene_name.length() - 1 && full_path.rfind("/") != full_path.length() - 1) {
-					full_path = full_path + "/";
-				} else if (scene_name.rfind("/") != scene_name.length() - 1 && full_path.rfind("/") == full_path.length() - 1) {
-					scene_name = scene_name + "/";
-				}
+				scene_name = scene_name.trim_suffix("/");
+				full_path = full_path.trim_suffix("/");
 
 				int scene_name_size = scene_name.size();
 				int full_path_size = full_path.size();
@@ -301,17 +298,23 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 				// and the scene name first to remove extensions so that this
 				// comparison actually works.
 				String path = p_full_paths[E->get()];
+
+				// Get rid of file extensions and res:// prefixes.
+				if (scene_name.rfind(".") >= 0) {
+					scene_name = scene_name.substr(0, scene_name.rfind("."));
+				}
 				if (path.begins_with("res://")) {
 					path = path.substr(6);
 				}
 				if (path.rfind(".") >= 0) {
 					path = path.substr(0, path.rfind("."));
 				}
-				if (scene_name.rfind(".") >= 0) {
-					scene_name = scene_name.substr(0, scene_name.rfind("."));
-				}
 
-				// We can proceed iff the full path is longer than the scene name,
+				// Normalize trailing slashes when normalizing directory names.
+				scene_name = scene_name.trim_suffix("/");
+				path = path.trim_suffix("/");
+
+				// We can proceed if the full path is longer than the scene name,
 				// meaning that there is at least one more parent folder we can
 				// tack onto the name.
 				can_proceed = can_proceed || (path.size() - scene_name.size()) >= 1;
