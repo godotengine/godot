@@ -42,7 +42,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 #else
 		const int key = KEY_CONTROL;
 #endif
-		return rtos(get_value()) + "\n\n" + vformat(TTR("Hold %s to round to integers. Hold Shift for more precise changes."), find_keycode_name(key));
+		return rtos(get_value()) + "\n\n" + vformat(TTR("Hold %s to round to integers.\nHold Shift for more precise changes."), find_keycode_name(key));
 	}
 	return rtos(get_value());
 }
