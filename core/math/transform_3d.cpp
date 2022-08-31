@@ -94,9 +94,7 @@ void Transform3D::set_look_at(const Vector3 &p_eye, const Vector3 &p_target, con
 	origin = p_eye;
 }
 
-Transform3D Transform3D::spherical_interpolate_with(const Transform3D &p_transform, real_t p_c) const {
-	/* not sure if very "efficient" but good enough? */
-
+Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
 	Transform3D interp;
 
 	Vector3 src_scale = basis.get_scale();
@@ -109,15 +107,6 @@ Transform3D Transform3D::spherical_interpolate_with(const Transform3D &p_transfo
 
 	interp.basis.set_quaternion_scale(src_rot.slerp(dst_rot, p_c).normalized(), src_scale.lerp(dst_scale, p_c));
 	interp.origin = src_loc.lerp(dst_loc, p_c);
-
-	return interp;
-}
-
-Transform3D Transform3D::interpolate_with(const Transform3D &p_transform, real_t p_c) const {
-	Transform3D interp;
-
-	interp.basis = basis.lerp(p_transform.basis, p_c);
-	interp.origin = origin.lerp(p_transform.origin, p_c);
 
 	return interp;
 }
