@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "export.h"
+
 #include "core/bind/core_bind.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/marshalls.h"
@@ -41,6 +42,12 @@
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "platform/uwp/logo.gen.h"
+
+// Mono build doesn't support UWP, so we show a specific error.
+// We don't bypass the whole logic so that it doesn't lose potential UWP presets
+// added to export_presets.cfg from a non-Mono build (and in case third-parties
+// actually have Mono-enabled UWP templates they can use).
+#include "modules/modules_enabled.gen.h" // For mono.
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
@@ -1110,11 +1117,20 @@ public:
 		}
 
 		valid = dvalid || rvalid;
+
+#ifdef MODULE_MONO_ENABLED
+		// If this is a Mono build, provide a custom error so that users are not confused.
+		// We don't bypass the whole logic to check templates because third-parties might have
+		// Mono-enabled UWP builds using this path.
+		r_missing_templates = false; // Don't warn about those.
+		r_error = TTR("Godot's Mono version does not support the UWP platform. Use the standard build (no C# support) if you wish to target UWP.");
+#else
 		r_missing_templates = !valid;
 
 		if (!err.empty()) {
 			r_error = err;
 		}
+#endif // MODULE_MONO_ENABLED
 
 		return valid;
 	}
@@ -1122,6 +1138,17 @@ public:
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
 		String err;
 		bool valid = true;
+
+#ifdef MODULE_MONO_ENABLED
+		// Don't warn about project configuration issue if this is a Mono build
+		// without custom-provided Mono-enabled UWP templates.
+		// We check if we have valid templates to decide if we should actually
+		// validate the config.
+		bool tmp;
+		if (!has_valid_export_configuration(p_preset, err, tmp)) {
+			return false;
+		}
+#endif // MODULE_MONO_ENABLED
 
 		// Validate the rest of the configuration.
 
