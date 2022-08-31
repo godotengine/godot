@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_menu_item.h                                                    */
+/*  godot_menu_delegate.mm                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_MENU_ITEM_H
-#define GODOT_MENU_ITEM_H
+#include "godot_menu_delegate.h"
 
-#include "servers/display_server.h"
+#include "display_server_macos.h"
+#include "godot_menu_item.h"
+#include "key_mapping_macos.h"
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
+@implementation GodotMenuDelegate
 
-enum GlobalMenuCheckType {
-	CHECKABLE_TYPE_NONE,
-	CHECKABLE_TYPE_CHECK_BOX,
-	CHECKABLE_TYPE_RADIO_BUTTON,
-};
+- (void)doNothing:(id)sender {
+}
 
-@interface GodotMenuItem : NSObject {
-@public
-	Callable callback;
-	Callable key_callback;
-	Variant meta;
-	GlobalMenuCheckType checkable_type;
-	int max_states;
-	int state;
-	Ref<Image> img;
+- (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action {
+	NSString *ev_key = [[event charactersIgnoringModifiers] lowercaseString];
+	NSUInteger ev_modifiers = [event modifierFlags] & NSDeviceIndependentModifierFlagsMask;
+	for (int i = 0; i < [menu numberOfItems]; i++) {
+		const NSMenuItem *menu_item = [menu itemAtIndex:i];
+		if ([menu_item isEnabled] && [[menu_item keyEquivalent] compare:ev_key] == NSOrderedSame) {
+			NSUInteger item_modifiers = [menu_item keyEquivalentModifierMask];
+
+			if (ev_modifiers == item_modifiers) {
+				GodotMenuItem *value = [menu_item representedObject];
+				if (value->key_callback != Callable()) {
+					// If custom callback is set, use it.
+					Variant tag = value->meta;
+					Variant *tagp = &tag;
+					Variant ret;
+					Callable::CallError ce;
+					value->key_callback.callp((const Variant **)&tagp, 1, ret, ce);
+				} else {
+					// Otherwise redirect event to the engine.
+					if (DisplayServer::get_singleton()) {
+						DisplayServerMacOS::KeyEvent ke;
+
+						ke.window_id = DisplayServer::MAIN_WINDOW_ID;
+						ke.macos_state = [event modifierFlags];
+						ke.pressed = true;
+						ke.echo = [event isARepeat];
+						ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
+						ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+						ke.raw = false;
+						ke.unicode = 0;
+
+						reinterpret_cast<DisplayServerMacOS *>(DisplayServer::get_singleton())->push_to_key_event_buffer(ke);
+					}
+				}
+
+				// Suppress default menu action.
+				*target = self;
+				*action = @selector(doNothing:);
+				return YES;
+			}
+		}
+	}
+	return NO;
 }
 
 @end
-
-#endif // GODOT_MENU_ITEM_H

@@ -149,10 +149,6 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 void MenuBar::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (is_native_menu()) {
-		return;
-	}
-
 	if (!_is_focus_owner_in_shortcut_context()) {
 		return;
 	}
@@ -253,7 +249,7 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, p_child->get_item_text(i), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);
 		} else {
-			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, p_child->get_item_text(i), callable_mp(p_child, &PopupMenu::activate_item), i);
+			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, p_child->get_item_text(i), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
 
 			if (p_child->is_item_checkable(i)) {
 				DisplayServer::get_singleton()->global_menu_set_item_checkable(p_menu_name, index, true);
@@ -376,12 +372,19 @@ void MenuBar::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			MutexLock lock(mutex);
 
+			if (is_native_menu()) {
+				// Handled by OS.
+				return;
+			}
+
 			Vector2 pos = DisplayServer::get_singleton()->mouse_get_position() - mouse_pos_adjusted - get_global_position();
 			int index = _get_index_at_point(pos);
 			if (index >= 0 && index != active_menu) {
 				selected_menu = index;
 				focused_menu = selected_menu;
-				get_menu_popup(active_menu)->hide();
+				if (active_menu >= 0) {
+					get_menu_popup(active_menu)->hide();
+				}
 				_open_popup(index);
 			}
 		} break;
