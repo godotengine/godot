@@ -34,6 +34,7 @@
 #include "core/extension/native_extension.h"
 #include "editor_export_preset.h"
 #include "editor_export_shared_object.h"
+#include "scene/main/node.h"
 
 class EditorExportPlugin : public RefCounted {
 	GDCLASS(EditorExportPlugin, RefCounted);
@@ -77,6 +78,7 @@ class EditorExportPlugin : public RefCounted {
 		macos_plugin_files.clear();
 	}
 
+	// Export
 	void _export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features);
 	void _export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags);
 	void _export_end_script();
@@ -108,6 +110,31 @@ protected:
 	GDVIRTUAL4(_export_begin, Vector<String>, bool, String, uint32_t)
 	GDVIRTUAL0(_export_end)
 
+	GDVIRTUAL2RC(bool, _begin_customize_resources, const Ref<EditorExportPlatform> &, const Vector<String> &)
+	GDVIRTUAL2R(Ref<Resource>, _customize_resource, const Ref<Resource> &, String)
+
+	GDVIRTUAL2RC(bool, _begin_customize_scenes, const Ref<EditorExportPlatform> &, const Vector<String> &)
+	GDVIRTUAL2R(Node *, _customize_scene, Node *, String)
+	GDVIRTUAL0RC(uint64_t, _get_customization_configuration_hash)
+
+	GDVIRTUAL0(_end_customize_scenes)
+	GDVIRTUAL0(_end_customize_resources)
+
+	GDVIRTUAL0RC(String, _get_name)
+
+	bool _begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const; // Return true if this plugin does property export customization
+	Ref<Resource> _customize_resource(const Ref<Resource> &p_resource, const String &p_path); // If nothing is returned, it means do not touch (nothing changed). If something is returned (either the same or a different resource) it means changes are made.
+
+	bool _begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const; // Return true if this plugin does property export customization
+	Node *_customize_scene(Node *p_root, const String &p_path); // Return true if a change was made
+
+	uint64_t _get_customization_configuration_hash() const; // Hash used for caching customized resources and scenes.
+
+	void _end_customize_scenes();
+	void _end_customize_resources();
+
+	virtual String _get_name() const;
+
 public:
 	Vector<String> get_ios_frameworks() const;
 	Vector<String> get_ios_embedded_frameworks() const;
@@ -119,14 +146,6 @@ public:
 	const Vector<String> &get_macos_plugin_files() const;
 
 	EditorExportPlugin();
-};
-
-class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
-	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin);
-
-public:
-	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) override;
-	EditorExportTextSceneToBinaryPlugin();
 };
 
 #endif // EDITOR_EXPORT_PLUGIN_H

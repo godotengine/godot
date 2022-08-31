@@ -98,6 +98,12 @@
 				Removes the entire contents of the config.
 			</description>
 		</method>
+		<method name="encode_to_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Obtain the text version of this config file (the same text that would be written to a file).
+			</description>
+		</method>
 		<method name="erase_section">
 			<return type="void" />
 			<param index="0" name="section" type="String" />

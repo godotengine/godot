@@ -4107,6 +4107,7 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(EditorSyntaxHighlighter);
 	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
 	GDREGISTER_CLASS(EditorExportPlugin);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
 	GDREGISTER_CLASS(EditorSceneFormatImporter);
 	GDREGISTER_CLASS(EditorScenePostImportPlugin);
@@ -7417,11 +7418,6 @@ EditorNode::EditorNode() {
 	editor_plugins_over = memnew(EditorPluginList);
 	editor_plugins_force_over = memnew(EditorPluginList);
 	editor_plugins_force_input_forwarding = memnew(EditorPluginList);
-
-	Ref<EditorExportTextSceneToBinaryPlugin> export_text_to_binary_plugin;
-	export_text_to_binary_plugin.instantiate();
-
-	EditorExport::get_singleton()->add_export_plugin(export_text_to_binary_plugin);
 
 	Ref<GDExtensionExportPlugin> gdextension_export_plugin;
 	gdextension_export_plugin.instantiate();

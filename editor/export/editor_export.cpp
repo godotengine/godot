@@ -351,6 +351,8 @@ EditorExport::EditorExport() {
 
 	singleton = this;
 	set_process(true);
+
+	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", true);
 }
 
 EditorExport::~EditorExport() {

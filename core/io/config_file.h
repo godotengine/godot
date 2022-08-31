@@ -68,6 +68,8 @@ public:
 	Error load(const String &p_path);
 	Error parse(const String &p_data);
 
+	String encode_to_text() const; // used by exporter
+
 	void clear();
 
 	Error load_encrypted(const String &p_path, const Vector<uint8_t> &p_key);
