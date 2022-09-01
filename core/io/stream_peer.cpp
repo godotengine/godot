@@ -410,48 +410,39 @@ void StreamPeer::_bind_methods() {
 
 ////////////////////////////////
 
-int StreamPeerExtension::get_available_bytes() const {
-	int count;
-	if (GDVIRTUAL_CALL(_get_available_bytes, count)) {
-		return count;
-	}
-	WARN_PRINT_ONCE("StreamPeerExtension::_get_available_bytes is unimplemented!");
-	return -1;
-}
-
 Error StreamPeerExtension::get_data(uint8_t *r_buffer, int p_bytes) {
-	int err;
+	Error err;
 	int received = 0;
 	if (GDVIRTUAL_CALL(_get_data, r_buffer, p_bytes, &received, err)) {
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("StreamPeerExtension::_get_data is unimplemented!");
 	return FAILED;
 }
 
 Error StreamPeerExtension::get_partial_data(uint8_t *r_buffer, int p_bytes, int &r_received) {
-	int err;
+	Error err;
 	if (GDVIRTUAL_CALL(_get_partial_data, r_buffer, p_bytes, &r_received, err)) {
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("StreamPeerExtension::_get_partial_data is unimplemented!");
 	return FAILED;
 }
 
 Error StreamPeerExtension::put_data(const uint8_t *p_data, int p_bytes) {
-	int err;
+	Error err;
 	int sent = 0;
 	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &sent, err)) {
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("StreamPeerExtension::_put_data is unimplemented!");
 	return FAILED;
 }
 
 Error StreamPeerExtension::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
-	int err;
+	Error err;
 	if (GDVIRTUAL_CALL(_put_data, p_data, p_bytes, &r_sent, err)) {
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("StreamPeerExtension::_put_partial_data is unimplemented!");
 	return FAILED;
