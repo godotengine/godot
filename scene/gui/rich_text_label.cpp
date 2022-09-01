@@ -4945,10 +4945,10 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
 		_stop_thread();
 
-		if (visible_ratio >= 1.0) {
+		if (p_ratio >= 1.0) {
 			visible_characters = -1;
 			visible_ratio = 1.0;
-		} else if (visible_ratio < 0.0) {
+		} else if (p_ratio < 0.0) {
 			visible_characters = 0;
 			visible_ratio = 0.0;
 		} else {
