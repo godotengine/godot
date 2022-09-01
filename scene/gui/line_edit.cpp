@@ -448,7 +448,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
 				_ensure_menu();
-				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")))) / 2);
+				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
 				menu->set_position(get_screen_position() + pos);
 				menu->reset_size();
 				menu->popup();
@@ -696,9 +696,36 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	if (!clear_button_enabled || !has_point(p_pos)) {
 		return false;
 	}
-	Ref<Texture2D> icon = Control::get_theme_icon(SNAME("clear"));
-	int x_ofs = get_theme_stylebox(SNAME("normal"))->get_margin(SIDE_RIGHT);
+	Ref<Texture2D> icon = theme_cache.clear_icon;
+	int x_ofs = theme_cache.normal->get_margin(SIDE_RIGHT);
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
+}
+
+void LineEdit::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
+	theme_cache.read_only = get_theme_stylebox(SNAME("read_only"));
+	theme_cache.focus = get_theme_stylebox(SNAME("focus"));
+
+	theme_cache.font = get_theme_font(SNAME("font"));
+	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
+	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_uneditable_color = get_theme_color(SNAME("font_uneditable_color"));
+	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
+	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
+	theme_cache.font_placeholder_color = get_theme_color(SNAME("font_placeholder_color"));
+	theme_cache.caret_width = get_theme_constant(SNAME("caret_width"));
+	theme_cache.caret_color = get_theme_color(SNAME("caret_color"));
+	theme_cache.minimum_character_width = get_theme_constant(SNAME("minimum_character_width"));
+	theme_cache.selection_color = get_theme_color(SNAME("selection_color"));
+
+	theme_cache.clear_icon = get_theme_icon(SNAME("clear"));
+	theme_cache.clear_button_color = get_theme_color(SNAME("clear_button_color"));
+	theme_cache.clear_button_color_pressed = get_theme_color(SNAME("clear_button_color_pressed"));
+
+	theme_cache.base_scale = get_theme_default_base_scale();
 }
 
 void LineEdit::_notification(int p_what) {
@@ -771,19 +798,19 @@ void LineEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+			Ref<StyleBox> style = theme_cache.normal;
 			if (!is_editable()) {
-				style = get_theme_stylebox(SNAME("read_only"));
+				style = theme_cache.read_only;
 				draw_caret = false;
 			}
-			Ref<Font> font = get_theme_font(SNAME("font"));
+			Ref<Font> font = theme_cache.font;
 
 			if (!flat) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
 			if (has_focus()) {
-				get_theme_stylebox(SNAME("focus"))->draw(ci, Rect2(Point2(), size));
+				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
 			int x_ofs = 0;
@@ -821,25 +848,30 @@ void LineEdit::_notification(int p_what) {
 			int y_area = height - style->get_minimum_size().height;
 			int y_ofs = style->get_offset().y + (y_area - text_height) / 2;
 
-			Color selection_color = get_theme_color(SNAME("selection_color"));
-			Color font_color = get_theme_color(is_editable() ? SNAME("font_color") : SNAME("font_uneditable_color"));
-			Color font_selected_color = get_theme_color(SNAME("font_selected_color"));
-			Color caret_color = get_theme_color(SNAME("caret_color"));
+			Color selection_color = theme_cache.selection_color;
+			Color font_color;
+			if (is_editable()) {
+				font_color = theme_cache.font_color;
+			} else {
+				font_color = theme_cache.font_uneditable_color;
+			}
+			Color font_selected_color = theme_cache.font_selected_color;
+			Color caret_color = theme_cache.caret_color;
 
 			// Draw placeholder color.
 			if (using_placeholder) {
-				font_color = get_theme_color(SNAME("font_placeholder_color"));
+				font_color = theme_cache.font_placeholder_color;
 			}
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
-				Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
+				Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
-						color_icon = get_theme_color(SNAME("clear_button_color_pressed"));
+						color_icon = theme_cache.clear_button_color_pressed;
 					} else {
-						color_icon = get_theme_color(SNAME("clear_button_color"));
+						color_icon = theme_cache.clear_button_color;
 					}
 				}
 
@@ -879,8 +911,8 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw text.
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
-			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-			int outline_size = get_theme_constant(SNAME("outline_size"));
+			Color font_outline_color = theme_cache.font_outline_color;
+			int outline_size = theme_cache.font_outline_size;
 			if (outline_size > 0 && font_outline_color.a > 0) {
 				Vector2 oofs = ofs;
 				for (int i = 0; i < gl_size; i++) {
@@ -918,7 +950,7 @@ void LineEdit::_notification(int p_what) {
 			ofs.x = x_ofs + scroll_offset;
 			if (draw_caret || drag_caret_force_displayed) {
 				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
-				const int caret_width = get_theme_constant(SNAME("caret_width")) * MAX(1, get_theme_default_base_scale());
+				const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
 				if (ime_text.length() == 0) {
 					// Normal caret.
@@ -926,7 +958,7 @@ void LineEdit::_notification(int p_what) {
 
 					if (caret.l_caret == Rect2() && caret.t_caret == Rect2()) {
 						// No carets, add one at the start.
-						int h = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
+						int h = theme_cache.font->get_height(theme_cache.font_size);
 						int y = style->get_offset().y + (y_area - h) / 2;
 						if (rtl) {
 							caret.l_dir = TextServer::DIRECTION_RTL;
@@ -1193,7 +1225,7 @@ void LineEdit::shift_selection_check_post(bool p_shift) {
 }
 
 void LineEdit::set_caret_at_pixel_pos(int p_x) {
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+	Ref<StyleBox> style = theme_cache.normal;
 	bool rtl = is_layout_rtl();
 
 	int x_ofs = 0;
@@ -1226,7 +1258,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
@@ -1241,7 +1273,7 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 }
 
 Vector2 LineEdit::get_caret_pixel_pos() {
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+	Ref<StyleBox> style = theme_cache.normal;
 	bool rtl = is_layout_rtl();
 
 	int x_ofs = 0;
@@ -1274,7 +1306,7 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
@@ -1559,7 +1591,7 @@ void LineEdit::set_caret_column(int p_column) {
 		return;
 	}
 
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+	Ref<StyleBox> style = theme_cache.normal;
 	bool rtl = is_layout_rtl();
 
 	int x_ofs = 0;
@@ -1593,7 +1625,7 @@ void LineEdit::set_caret_column(int p_column) {
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
 	bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 	if (right_icon.is_valid() || display_clear_icon) {
-		Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
+		Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 		if (alignment == HORIZONTAL_ALIGNMENT_CENTER) {
 			if (Math::is_zero_approx(scroll_offset)) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - text_width - r_icon->get_width() - style->get_margin(SIDE_RIGHT) * 2) / 2);
@@ -1664,15 +1696,15 @@ void LineEdit::clear_internal() {
 }
 
 Size2 LineEdit::get_minimum_size() const {
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
+	Ref<StyleBox> style = theme_cache.normal;
+	Ref<Font> font = theme_cache.font;
+	int font_size = theme_cache.font_size;
 
 	Size2 min_size;
 
 	// Minimum size of text.
 	float em_space_size = font->get_char_size('M', font_size).x;
-	min_size.width = get_theme_constant(SNAME("minimum_character_width")) * em_space_size;
+	min_size.width = theme_cache.minimum_character_width * em_space_size;
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because caret needs a bit more when at the end.
@@ -1688,9 +1720,8 @@ Size2 LineEdit::get_minimum_size() const {
 		icon_max_width = right_icon->get_width();
 	}
 	if (clear_button_enabled) {
-		Ref<Texture2D> clear_icon = Control::get_theme_icon(SNAME("clear"));
-		min_size.height = MAX(min_size.height, clear_icon->get_height());
-		icon_max_width = MAX(icon_max_width, clear_icon->get_width());
+		min_size.height = MAX(min_size.height, theme_cache.clear_icon->get_height());
+		icon_max_width = MAX(icon_max_width, theme_cache.clear_icon->get_width());
 	}
 	min_size.width += icon_max_width;
 
@@ -2155,8 +2186,8 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
+	const Ref<Font> &font = theme_cache.font;
+	int font_size = theme_cache.font_size;
 	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
@@ -2176,12 +2207,12 @@ void LineEdit::_shape() {
 
 void LineEdit::_fit_to_width() {
 	if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		Ref<StyleBox> style = get_theme_stylebox(SNAME("normal"));
+		Ref<StyleBox> style = theme_cache.normal;
 		int t_width = get_size().width - style->get_margin(SIDE_RIGHT) - style->get_margin(SIDE_LEFT);
 		bool using_placeholder = text.is_empty() && ime_text.is_empty();
 		bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
-			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon(SNAME("clear")) : right_icon;
+			Ref<Texture2D> r_icon = display_clear_icon ? theme_cache.clear_icon : right_icon;
 			t_width -= r_icon->get_width();
 		}
 		TS->shaped_text_fit_to_width(text_rid, MAX(t_width, full_width));

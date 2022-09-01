@@ -43,7 +43,7 @@ void ItemList::_shape(int p_idx) {
 	} else {
 		item.text_buf->set_direction((TextServer::Direction)item.text_direction);
 	}
-	item.text_buf->add_string(item.text, get_theme_font(SNAME("font")), get_theme_font_size(SNAME("font_size")), item.language);
+	item.text_buf->add_string(item.text, theme_cache.font, theme_cache.font_size, item.language);
 	if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
 		item.text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
 	} else {
@@ -655,8 +655,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
-		Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
-		pos -= bg->get_offset();
+		pos -= theme_cache.bg_style->get_offset();
 		pos.y += scroll_bar->get_value();
 
 		if (is_layout_rtl()) {
@@ -980,6 +979,31 @@ static Rect2 _adjust_to_max_size(Size2 p_size, Size2 p_max_size) {
 	return Rect2(ofs_x, ofs_y, tex_width, tex_height);
 }
 
+void ItemList::_update_theme_item_cache() {
+	Control::_update_theme_item_cache();
+
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
+
+	theme_cache.bg_style = get_theme_stylebox(SNAME("bg"));
+	theme_cache.bg_focus_style = get_theme_stylebox(SNAME("bg_focus"));
+
+	theme_cache.font = get_theme_font(SNAME("font"));
+	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
+	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
+	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
+
+	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
+	theme_cache.icon_margin = get_theme_constant(SNAME("icon_margin"));
+	theme_cache.selected_style = get_theme_stylebox(SNAME("selected"));
+	theme_cache.selected_focus_style = get_theme_stylebox(SNAME("selected_focus"));
+	theme_cache.cursor_style = get_theme_stylebox(SNAME("cursor_unfocused"));
+	theme_cache.cursor_focus_style = get_theme_stylebox(SNAME("cursor"));
+	theme_cache.guide_color = get_theme_color(SNAME("guide_color"));
+}
+
 void ItemList::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_RESIZED: {
@@ -998,37 +1022,32 @@ void ItemList::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
-
 			int mw = scroll_bar->get_minimum_size().x;
 			scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -mw);
 			scroll_bar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-			scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, bg->get_margin(SIDE_TOP));
-			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -bg->get_margin(SIDE_BOTTOM));
+			scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.bg_style->get_margin(SIDE_TOP));
+			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.bg_style->get_margin(SIDE_BOTTOM));
 
 			Size2 size = get_size();
-			int width = size.width - bg->get_minimum_size().width;
+			int width = size.width - theme_cache.bg_style->get_minimum_size().width;
 
-			draw_style_box(bg, Rect2(Point2(), size));
+			draw_style_box(theme_cache.bg_style, Rect2(Point2(), size));
 
-			int hseparation = get_theme_constant(SNAME("h_separation"));
-			int vseparation = get_theme_constant(SNAME("v_separation"));
-			int icon_margin = get_theme_constant(SNAME("icon_margin"));
-			int line_separation = get_theme_constant(SNAME("line_separation"));
-			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-			int outline_size = get_theme_constant(SNAME("outline_size"));
+			Ref<StyleBox> sbsel;
+			Ref<StyleBox> cursor;
 
-			Ref<StyleBox> sbsel = has_focus() ? get_theme_stylebox(SNAME("selected_focus")) : get_theme_stylebox(SNAME("selected"));
-			Ref<StyleBox> cursor = has_focus() ? get_theme_stylebox(SNAME("cursor")) : get_theme_stylebox(SNAME("cursor_unfocused"));
+			if (has_focus()) {
+				sbsel = theme_cache.selected_focus_style;
+				cursor = theme_cache.cursor_focus_style;
+			} else {
+				sbsel = theme_cache.selected_style;
+				cursor = theme_cache.cursor_style;
+			}
 			bool rtl = is_layout_rtl();
-
-			Color guide_color = get_theme_color(SNAME("guide_color"));
-			Color font_color = get_theme_color(SNAME("font_color"));
-			Color font_selected_color = get_theme_color(SNAME("font_selected_color"));
 
 			if (has_focus()) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-				draw_style_box(get_theme_stylebox(SNAME("bg_focus")), Rect2(Point2(), size));
+				draw_style_box(theme_cache.bg_focus_style, Rect2(Point2(), size));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 
@@ -1047,9 +1066,9 @@ void ItemList::_notification(int p_what) {
 
 						if (!items[i].text.is_empty()) {
 							if (icon_mode == ICON_MODE_TOP) {
-								minsize.y += icon_margin;
+								minsize.y += theme_cache.icon_margin;
 							} else {
-								minsize.x += icon_margin;
+								minsize.x += theme_cache.icon_margin;
 							}
 						}
 					}
@@ -1067,7 +1086,7 @@ void ItemList::_notification(int p_what) {
 						if (icon_mode == ICON_MODE_TOP) {
 							minsize.x = MAX(minsize.x, s.width);
 							if (max_text_lines > 0) {
-								minsize.y += s.height + line_separation * max_text_lines;
+								minsize.y += s.height + theme_cache.line_separation * max_text_lines;
 							} else {
 								minsize.y += s.height;
 							}
@@ -1084,13 +1103,13 @@ void ItemList::_notification(int p_what) {
 					max_column_width = MAX(max_column_width, minsize.x);
 
 					// elements need to adapt to the selected size
-					minsize.y += vseparation;
-					minsize.x += hseparation;
+					minsize.y += theme_cache.v_separation;
+					minsize.x += theme_cache.h_separation;
 					items.write[i].rect_cache.size = minsize;
 					items.write[i].min_rect_cache.size = minsize;
 				}
 
-				int fit_size = size.x - bg->get_minimum_size().width - mw;
+				int fit_size = size.x - theme_cache.bg_style->get_minimum_size().width - mw;
 
 				//2-attempt best fit
 				current_columns = 0x7FFFFFFF;
@@ -1118,11 +1137,11 @@ void ItemList::_notification(int p_what) {
 						}
 						items.write[i].rect_cache.position = ofs;
 						max_h = MAX(max_h, items[i].rect_cache.size.y);
-						ofs.x += items[i].rect_cache.size.x + hseparation;
+						ofs.x += items[i].rect_cache.size.x + theme_cache.h_separation;
 						col++;
 						if (col == current_columns) {
 							if (i < items.size() - 1) {
-								separators.push_back(ofs.y + max_h + vseparation / 2);
+								separators.push_back(ofs.y + max_h + theme_cache.v_separation / 2);
 							}
 
 							for (int j = i; j >= 0 && col > 0; j--, col--) {
@@ -1130,7 +1149,7 @@ void ItemList::_notification(int p_what) {
 							}
 
 							ofs.x = 0;
-							ofs.y += max_h + vseparation;
+							ofs.y += max_h + theme_cache.v_separation;
 							col = 0;
 							max_h = 0;
 						}
@@ -1141,10 +1160,10 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (all_fit) {
-						float page = MAX(0, size.height - bg->get_minimum_size().height);
+						float page = MAX(0, size.height - theme_cache.bg_style->get_minimum_size().height);
 						float max = MAX(page, ofs.y + max_h);
 						if (auto_height) {
-							auto_height_value = ofs.y + max_h + bg->get_minimum_size().height;
+							auto_height_value = ofs.y + max_h + theme_cache.bg_style->get_minimum_size().height;
 						}
 						scroll_bar->set_max(max);
 						scroll_bar->set_page(page);
@@ -1185,7 +1204,7 @@ void ItemList::_notification(int p_what) {
 
 			ensure_selected_visible = false;
 
-			Vector2 base_ofs = bg->get_offset();
+			Vector2 base_ofs = theme_cache.bg_style->get_offset();
 			base_ofs.y -= int(scroll_bar->get_value());
 
 			const Rect2 clip(-base_ofs, size); // visible frame, don't need to draw outside of there
@@ -1229,10 +1248,10 @@ void ItemList::_notification(int p_what) {
 				if (items[i].selected) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= vseparation / 2;
-					r.size.y += vseparation;
-					r.position.x -= hseparation / 2;
-					r.size.x += hseparation;
+					r.position.y -= theme_cache.v_separation / 2;
+					r.size.y += theme_cache.v_separation;
+					r.position.x -= theme_cache.h_separation / 2;
+					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1245,10 +1264,10 @@ void ItemList::_notification(int p_what) {
 					r.position += base_ofs;
 
 					// Size rect to make the align the temperature colors
-					r.position.y -= vseparation / 2;
-					r.size.y += vseparation;
-					r.position.x -= hseparation / 2;
-					r.size.x += hseparation;
+					r.position.y -= theme_cache.v_separation / 2;
+					r.size.y += theme_cache.v_separation;
+					r.position.x -= theme_cache.h_separation / 2;
+					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1274,11 +1293,11 @@ void ItemList::_notification(int p_what) {
 
 					if (icon_mode == ICON_MODE_TOP) {
 						pos.x += Math::floor((items[i].rect_cache.size.width - icon_size.width) / 2);
-						pos.y += icon_margin;
-						text_ofs.y = icon_size.height + icon_margin * 2;
+						pos.y += theme_cache.icon_margin;
+						text_ofs.y = icon_size.height + theme_cache.icon_margin * 2;
 					} else {
 						pos.y += Math::floor((items[i].rect_cache.size.height - icon_size.height) / 2);
-						text_ofs.x = icon_size.width + icon_margin;
+						text_ofs.x = icon_size.width + theme_cache.icon_margin;
 					}
 
 					Rect2 draw_rect = Rect2(pos, icon_size);
@@ -1329,7 +1348,7 @@ void ItemList::_notification(int p_what) {
 						max_len = size2.x;
 					}
 
-					Color modulate = items[i].selected ? font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
+					Color modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
 					if (items[i].disabled) {
 						modulate.a *= 0.5;
 					}
@@ -1344,8 +1363,8 @@ void ItemList::_notification(int p_what) {
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
-						if (outline_size > 0 && font_outline_color.a > 0) {
-							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
+						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
 						items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
@@ -1375,8 +1394,8 @@ void ItemList::_notification(int p_what) {
 							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 						}
 
-						if (outline_size > 0 && font_outline_color.a > 0) {
-							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, outline_size, font_outline_color);
+						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
 						if (width - text_ofs.x > 0) {
@@ -1388,10 +1407,10 @@ void ItemList::_notification(int p_what) {
 				if (select_mode == SELECT_MULTI && i == current) {
 					Rect2 r = rcache;
 					r.position += base_ofs;
-					r.position.y -= vseparation / 2;
-					r.size.y += vseparation;
-					r.position.x -= hseparation / 2;
-					r.size.x += hseparation;
+					r.position.y -= theme_cache.v_separation / 2;
+					r.size.y += theme_cache.v_separation;
+					r.position.x -= theme_cache.h_separation / 2;
+					r.size.x += theme_cache.h_separation;
 
 					if (rtl) {
 						r.position.x = size.width - r.position.x - r.size.x;
@@ -1423,7 +1442,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(bg->get_margin(SIDE_LEFT), y), Vector2(width, y), guide_color);
+				draw_line(Vector2(theme_cache.bg_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
 			}
 		} break;
 	}
@@ -1435,8 +1454,7 @@ void ItemList::_scroll_changed(double) {
 
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
-	pos -= bg->get_offset();
+	pos -= theme_cache.bg_style->get_offset();
 	pos.y += scroll_bar->get_value();
 
 	if (is_layout_rtl()) {
@@ -1473,8 +1491,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 	}
 
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_theme_stylebox(SNAME("bg"));
-	pos -= bg->get_offset();
+	pos -= theme_cache.bg_style->get_offset();
 	pos.y += scroll_bar->get_value();
 
 	if (is_layout_rtl()) {

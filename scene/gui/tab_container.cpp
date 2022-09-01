@@ -60,26 +60,24 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		// Handle menu button.
-		Ref<Texture2D> menu = get_theme_icon(SNAME("menu"));
-
 		if (is_layout_rtl()) {
-			if (popup && pos.x < menu->get_width()) {
+			if (popup && pos.x < theme_cache.menu_icon->get_width()) {
 				emit_signal(SNAME("pre_popup_pressed"));
 
 				Vector2 popup_pos = get_screen_position();
-				popup_pos.y += menu->get_height();
+				popup_pos.y += theme_cache.menu_icon->get_height();
 
 				popup->set_position(popup_pos);
 				popup->popup();
 				return;
 			}
 		} else {
-			if (popup && pos.x > size.width - menu->get_width()) {
+			if (popup && pos.x > size.width - theme_cache.menu_icon->get_width()) {
 				emit_signal(SNAME("pre_popup_pressed"));
 
 				Vector2 popup_pos = get_screen_position();
 				popup_pos.x += size.width - popup->get_size().width;
-				popup_pos.y += menu->get_height();
+				popup_pos.y += theme_cache.menu_icon->get_height();
 
 				popup->set_position(popup_pos);
 				popup->popup();
@@ -103,10 +101,9 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 
-		Ref<Texture2D> menu = get_theme_icon(SNAME("menu"));
 		if (popup) {
 			if (is_layout_rtl()) {
-				if (pos.x <= menu->get_width()) {
+				if (pos.x <= theme_cache.menu_icon->get_width()) {
 					if (!menu_hovered) {
 						menu_hovered = true;
 						queue_redraw();
@@ -117,7 +114,7 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 					queue_redraw();
 				}
 			} else {
-				if (pos.x >= size.width - menu->get_width()) {
+				if (pos.x >= size.width - theme_cache.menu_icon->get_width()) {
 					if (!menu_hovered) {
 						menu_hovered = true;
 						queue_redraw();
@@ -134,6 +131,41 @@ void TabContainer::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
+}
+
+void TabContainer::_update_theme_item_cache() {
+	Container::_update_theme_item_cache();
+
+	theme_cache.side_margin = get_theme_constant(SNAME("side_margin"));
+
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+	theme_cache.tabbar_style = get_theme_stylebox(SNAME("tabbar_background"));
+
+	theme_cache.menu_icon = get_theme_icon(SNAME("menu"));
+	theme_cache.menu_hl_icon = get_theme_icon(SNAME("menu_highlight"));
+
+	// TabBar overrides.
+	theme_cache.icon_separation = get_theme_constant(SNAME("icon_separation"));
+	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
+
+	theme_cache.tab_unselected_style = get_theme_stylebox(SNAME("tab_unselected"));
+	theme_cache.tab_selected_style = get_theme_stylebox(SNAME("tab_selected"));
+	theme_cache.tab_disabled_style = get_theme_stylebox(SNAME("tab_disabled"));
+
+	theme_cache.increment_icon = get_theme_icon(SNAME("increment"));
+	theme_cache.increment_hl_icon = get_theme_icon(SNAME("increment_highlight"));
+	theme_cache.decrement_icon = get_theme_icon(SNAME("decrement"));
+	theme_cache.decrement_hl_icon = get_theme_icon(SNAME("decrement_highlight"));
+	theme_cache.drop_mark_icon = get_theme_icon(SNAME("drop_mark"));
+	theme_cache.drop_mark_color = get_theme_color(SNAME("drop_mark_color"));
+
+	theme_cache.font_selected_color = get_theme_color(SNAME("font_selected_color"));
+	theme_cache.font_unselected_color = get_theme_color(SNAME("font_unselected_color"));
+	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
+	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
+
+	theme_cache.tab_font = get_theme_font(SNAME("font"));
+	theme_cache.tab_font_size = get_theme_font_size(SNAME("font_size"));
 }
 
 void TabContainer::_notification(int p_what) {
@@ -155,31 +187,26 @@ void TabContainer::_notification(int p_what) {
 			Size2 size = get_size();
 
 			// Draw only the tab area if the header is hidden.
-			Ref<StyleBox> panel = get_theme_stylebox(SNAME("panel"));
 			if (!tabs_visible) {
-				panel->draw(canvas, Rect2(0, 0, size.width, size.height));
+				theme_cache.panel_style->draw(canvas, Rect2(0, 0, size.width, size.height));
 				return;
 			}
 
 			int header_height = _get_top_margin();
 
 			// Draw background for the tabbar.
-			Ref<StyleBox> tabbar_background = get_theme_stylebox(SNAME("tabbar_background"));
-			tabbar_background->draw(canvas, Rect2(0, 0, size.width, header_height));
+			theme_cache.tabbar_style->draw(canvas, Rect2(0, 0, size.width, header_height));
 			// Draw the background for the tab's content.
-			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+			theme_cache.panel_style->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 
 			// Draw the popup menu.
 			if (get_popup()) {
-				Ref<Texture2D> menu = get_theme_icon(SNAME("menu"));
-				Ref<Texture2D> menu_hl = get_theme_icon(SNAME("menu_highlight"));
-
-				int x = is_layout_rtl() ? 0 : get_size().width - menu->get_width();
+				int x = is_layout_rtl() ? 0 : get_size().width - theme_cache.menu_icon->get_width();
 
 				if (menu_hovered) {
-					menu_hl->draw(get_canvas_item(), Point2(x, (header_height - menu_hl->get_height()) / 2));
+					theme_cache.menu_hl_icon->draw(get_canvas_item(), Point2(x, (header_height - theme_cache.menu_hl_icon->get_height()) / 2));
 				} else {
-					menu->draw(get_canvas_item(), Point2(x, (header_height - menu->get_height()) / 2));
+					theme_cache.menu_icon->draw(get_canvas_item(), Point2(x, (header_height - theme_cache.menu_icon->get_height()) / 2));
 				}
 			}
 		} break;
@@ -198,23 +225,27 @@ void TabContainer::_on_theme_changed() {
 		return;
 	}
 
-	tab_bar->add_theme_style_override(SNAME("tab_unselected"), get_theme_stylebox(SNAME("tab_unselected")));
-	tab_bar->add_theme_style_override(SNAME("tab_selected"), get_theme_stylebox(SNAME("tab_selected")));
-	tab_bar->add_theme_style_override(SNAME("tab_disabled"), get_theme_stylebox(SNAME("tab_disabled")));
-	tab_bar->add_theme_icon_override(SNAME("increment"), get_theme_icon(SNAME("increment")));
-	tab_bar->add_theme_icon_override(SNAME("increment_highlight"), get_theme_icon(SNAME("increment_highlight")));
-	tab_bar->add_theme_icon_override(SNAME("decrement"), get_theme_icon(SNAME("decrement")));
-	tab_bar->add_theme_icon_override(SNAME("decrement_highlight"), get_theme_icon(SNAME("decrement_highlight")));
-	tab_bar->add_theme_icon_override(SNAME("drop_mark"), get_theme_icon(SNAME("drop_mark")));
-	tab_bar->add_theme_color_override(SNAME("drop_mark_color"), get_theme_color(SNAME("drop_mark_color")));
-	tab_bar->add_theme_color_override(SNAME("font_selected_color"), get_theme_color(SNAME("font_selected_color")));
-	tab_bar->add_theme_color_override(SNAME("font_unselected_color"), get_theme_color(SNAME("font_unselected_color")));
-	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), get_theme_color(SNAME("font_disabled_color")));
-	tab_bar->add_theme_color_override(SNAME("font_outline_color"), get_theme_color(SNAME("font_outline_color")));
-	tab_bar->add_theme_font_override(SNAME("font"), get_theme_font(SNAME("font")));
-	tab_bar->add_theme_font_size_override(SNAME("font_size"), get_theme_font_size(SNAME("font_size")));
-	tab_bar->add_theme_constant_override(SNAME("h_separation"), get_theme_constant(SNAME("icon_separation")));
-	tab_bar->add_theme_constant_override(SNAME("outline_size"), get_theme_constant(SNAME("outline_size")));
+	tab_bar->add_theme_style_override(SNAME("tab_unselected"), theme_cache.tab_unselected_style);
+	tab_bar->add_theme_style_override(SNAME("tab_selected"), theme_cache.tab_selected_style);
+	tab_bar->add_theme_style_override(SNAME("tab_disabled"), theme_cache.tab_disabled_style);
+
+	tab_bar->add_theme_icon_override(SNAME("increment"), theme_cache.increment_icon);
+	tab_bar->add_theme_icon_override(SNAME("increment_highlight"), theme_cache.increment_hl_icon);
+	tab_bar->add_theme_icon_override(SNAME("decrement"), theme_cache.decrement_icon);
+	tab_bar->add_theme_icon_override(SNAME("decrement_highlight"), theme_cache.decrement_hl_icon);
+	tab_bar->add_theme_icon_override(SNAME("drop_mark"), theme_cache.drop_mark_icon);
+	tab_bar->add_theme_color_override(SNAME("drop_mark_color"), theme_cache.drop_mark_color);
+
+	tab_bar->add_theme_color_override(SNAME("font_selected_color"), theme_cache.font_selected_color);
+	tab_bar->add_theme_color_override(SNAME("font_unselected_color"), theme_cache.font_unselected_color);
+	tab_bar->add_theme_color_override(SNAME("font_disabled_color"), theme_cache.font_disabled_color);
+	tab_bar->add_theme_color_override(SNAME("font_outline_color"), theme_cache.font_outline_color);
+
+	tab_bar->add_theme_font_override(SNAME("font"), theme_cache.tab_font);
+	tab_bar->add_theme_font_size_override(SNAME("font_size"), theme_cache.tab_font_size);
+
+	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
+	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
 	_update_margins();
 	if (get_tab_count() > 0) {
@@ -228,7 +259,6 @@ void TabContainer::_on_theme_changed() {
 }
 
 void TabContainer::_repaint() {
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"));
 	Vector<Control *> controls = _get_tab_controls();
 	int current = get_current_tab();
 
@@ -243,10 +273,10 @@ void TabContainer::_repaint() {
 				c->set_offset(SIDE_TOP, _get_top_margin());
 			}
 
-			c->set_offset(SIDE_TOP, c->get_offset(SIDE_TOP) + sb->get_margin(SIDE_TOP));
-			c->set_offset(SIDE_LEFT, c->get_offset(SIDE_LEFT) + sb->get_margin(SIDE_LEFT));
-			c->set_offset(SIDE_RIGHT, c->get_offset(SIDE_RIGHT) - sb->get_margin(SIDE_RIGHT));
-			c->set_offset(SIDE_BOTTOM, c->get_offset(SIDE_BOTTOM) - sb->get_margin(SIDE_BOTTOM));
+			c->set_offset(SIDE_TOP, c->get_offset(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_TOP));
+			c->set_offset(SIDE_LEFT, c->get_offset(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_LEFT));
+			c->set_offset(SIDE_RIGHT, c->get_offset(SIDE_RIGHT) - theme_cache.panel_style->get_margin(SIDE_RIGHT));
+			c->set_offset(SIDE_BOTTOM, c->get_offset(SIDE_BOTTOM) - theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 		} else {
 			c->hide();
 		}
@@ -256,8 +286,7 @@ void TabContainer::_repaint() {
 }
 
 void TabContainer::_update_margins() {
-	int menu_width = get_theme_icon(SNAME("menu"))->get_width();
-	int side_margin = get_theme_constant(SNAME("side_margin"));
+	int menu_width = theme_cache.menu_icon->get_width();
 
 	// Directly check for validity, to avoid errors when quitting.
 	bool has_popup = popup_obj_id.is_valid();
@@ -271,7 +300,7 @@ void TabContainer::_update_margins() {
 
 	switch (get_tab_alignment()) {
 		case TabBar::ALIGNMENT_LEFT: {
-			tab_bar->set_offset(SIDE_LEFT, side_margin);
+			tab_bar->set_offset(SIDE_LEFT, theme_cache.side_margin);
 			tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
 		} break;
 
@@ -293,10 +322,10 @@ void TabContainer::_update_margins() {
 			int total_tabs_width = last_tab_rect.position.x - first_tab_pos + last_tab_rect.size.width;
 
 			// Calculate if all the tabs would still fit if the margin was present.
-			if (get_clip_tabs() && (tab_bar->get_offset_buttons_visible() || (get_tab_count() > 1 && (total_tabs_width + side_margin) > get_size().width))) {
+			if (get_clip_tabs() && (tab_bar->get_offset_buttons_visible() || (get_tab_count() > 1 && (total_tabs_width + theme_cache.side_margin) > get_size().width))) {
 				tab_bar->set_offset(SIDE_RIGHT, has_popup ? -menu_width : 0);
 			} else {
-				tab_bar->set_offset(SIDE_RIGHT, -side_margin);
+				tab_bar->set_offset(SIDE_RIGHT, -theme_cache.side_margin);
 			}
 		} break;
 
@@ -798,13 +827,12 @@ Size2 TabContainer::get_minimum_size() const {
 
 		if (!get_clip_tabs()) {
 			if (get_popup()) {
-				ms.x += get_theme_icon(SNAME("menu"))->get_width();
+				ms.x += theme_cache.menu_icon->get_width();
 			}
 
-			int side_margin = get_theme_constant(SNAME("side_margin"));
-			if (side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
+			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
 					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
-				ms.x += side_margin;
+				ms.x += theme_cache.side_margin;
 			}
 		}
 	}
@@ -824,7 +852,7 @@ Size2 TabContainer::get_minimum_size() const {
 	}
 	ms.y += max_control_height;
 
-	Size2 panel_ms = get_theme_stylebox(SNAME("panel"))->get_minimum_size();
+	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
 	ms.x = MAX(ms.x, panel_ms.x);
 	ms.y += panel_ms.y;
 

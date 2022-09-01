@@ -210,25 +210,29 @@ inline void SpinBox::_adjust_width_for_icon(const Ref<Texture2D> &icon) {
 	}
 }
 
+void SpinBox::_update_theme_item_cache() {
+	Range::_update_theme_item_cache();
+
+	theme_cache.updown_icon = get_theme_icon(SNAME("updown"));
+}
+
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			Ref<Texture2D> updown = get_theme_icon(SNAME("updown"));
-
-			_adjust_width_for_icon(updown);
+			_adjust_width_for_icon(theme_cache.updown_icon);
 
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
 
 			if (is_layout_rtl()) {
-				updown->draw(ci, Point2i(0, (size.height - updown->get_height()) / 2));
+				theme_cache.updown_icon->draw(ci, Point2i(0, (size.height - theme_cache.updown_icon->get_height()) / 2));
 			} else {
-				updown->draw(ci, Point2i(size.width - updown->get_width(), (size.height - updown->get_height()) / 2));
+				theme_cache.updown_icon->draw(ci, Point2i(size.width - theme_cache.updown_icon->get_width(), (size.height - theme_cache.updown_icon->get_height()) / 2));
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			_adjust_width_for_icon(get_theme_icon(SNAME("updown")));
+			_adjust_width_for_icon(theme_cache.updown_icon);
 			_value_changed(0);
 		} break;
 

@@ -76,6 +76,33 @@ class MenuBar : public Control {
 	Vector2i old_mouse_pos;
 	ObjectID shortcut_context;
 
+	struct ThemeCache {
+		Ref<StyleBox> normal;
+		Ref<StyleBox> normal_mirrored;
+		Ref<StyleBox> disabled;
+		Ref<StyleBox> disabled_mirrored;
+		Ref<StyleBox> pressed;
+		Ref<StyleBox> pressed_mirrored;
+		Ref<StyleBox> hover;
+		Ref<StyleBox> hover_mirrored;
+		Ref<StyleBox> hover_pressed;
+		Ref<StyleBox> hover_pressed_mirrored;
+
+		Ref<Font> font;
+		int font_size = 0;
+		int outline_size = 0;
+		Color font_outline_color;
+
+		Color font_color;
+		Color font_disabled_color;
+		Color font_pressed_color;
+		Color font_hover_color;
+		Color font_hover_pressed_color;
+		Color font_focus_color;
+
+		int h_separation = 0;
+	} theme_cache;
+
 	int _get_index_at_point(const Point2 &p_point) const;
 	Rect2 _get_menu_item_rect(int p_index) const;
 	void _draw_menu_item(int p_index);
@@ -96,6 +123,7 @@ class MenuBar : public Control {
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

@@ -43,11 +43,11 @@ Size2 OptionButton::get_minimum_size() const {
 	}
 
 	if (has_theme_icon(SNAME("arrow"))) {
-		const Size2 padding = get_theme_stylebox(SNAME("normal"))->get_minimum_size();
-		const Size2 arrow_size = Control::get_theme_icon(SNAME("arrow"))->get_size();
+		const Size2 padding = theme_cache.normal->get_minimum_size();
+		const Size2 arrow_size = theme_cache.arrow_icon->get_size();
 
 		Size2 content_size = minsize - padding;
-		content_size.width += arrow_size.width + MAX(0, get_theme_constant(SNAME("h_separation")));
+		content_size.width += arrow_size.width + MAX(0, theme_cache.h_separation);
 		content_size.height = MAX(content_size.height, arrow_size.height);
 
 		minsize = content_size + padding;
@@ -56,35 +56,63 @@ Size2 OptionButton::get_minimum_size() const {
 	return minsize;
 }
 
+void OptionButton::_update_theme_item_cache() {
+	Button::_update_theme_item_cache();
+
+	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
+
+	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
+	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
+	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
+	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
+	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
+
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+
+	theme_cache.arrow_icon = get_theme_icon(SNAME("arrow"));
+	theme_cache.arrow_margin = get_theme_constant(SNAME("arrow_margin"));
+	theme_cache.modulate_arrow = get_theme_constant(SNAME("modulate_arrow"));
+}
+
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_POSTINITIALIZE: {
+			if (has_theme_icon(SNAME("arrow"))) {
+				if (is_layout_rtl()) {
+					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
+				} else {
+					_set_internal_margin(SIDE_RIGHT, theme_cache.arrow_icon->get_width());
+				}
+			}
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (!has_theme_icon(SNAME("arrow"))) {
 				return;
 			}
 
 			RID ci = get_canvas_item();
-			Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"));
 			Color clr = Color(1, 1, 1);
-			if (get_theme_constant(SNAME("modulate_arrow"))) {
+			if (theme_cache.modulate_arrow) {
 				switch (get_draw_mode()) {
 					case DRAW_PRESSED:
-						clr = get_theme_color(SNAME("font_pressed_color"));
+						clr = theme_cache.font_pressed_color;
 						break;
 					case DRAW_HOVER:
-						clr = get_theme_color(SNAME("font_hover_color"));
+						clr = theme_cache.font_hover_color;
 						break;
 					case DRAW_HOVER_PRESSED:
-						clr = get_theme_color(SNAME("font_hover_pressed_color"));
+						clr = theme_cache.font_hover_pressed_color;
 						break;
 					case DRAW_DISABLED:
-						clr = get_theme_color(SNAME("font_disabled_color"));
+						clr = theme_cache.font_disabled_color;
 						break;
 					default:
 						if (has_focus()) {
-							clr = get_theme_color(SNAME("font_focus_color"));
+							clr = theme_cache.font_focus_color;
 						} else {
-							clr = get_theme_color(SNAME("font_color"));
+							clr = theme_cache.font_color;
 						}
 				}
 			}
@@ -93,11 +121,11 @@ void OptionButton::_notification(int p_what) {
 
 			Point2 ofs;
 			if (is_layout_rtl()) {
-				ofs = Point2(get_theme_constant(SNAME("arrow_margin")), int(Math::abs((size.height - arrow->get_height()) / 2)));
+				ofs = Point2(theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
 			} else {
-				ofs = Point2(size.width - arrow->get_width() - get_theme_constant(SNAME("arrow_margin")), int(Math::abs((size.height - arrow->get_height()) / 2)));
+				ofs = Point2(size.width - theme_cache.arrow_icon->get_width() - theme_cache.arrow_margin, int(Math::abs((size.height - theme_cache.arrow_icon->get_height()) / 2)));
 			}
-			arrow->draw(ci, ofs, clr);
+			theme_cache.arrow_icon->draw(ci, ofs, clr);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED:
@@ -108,11 +136,11 @@ void OptionButton::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (has_theme_icon(SNAME("arrow"))) {
 				if (is_layout_rtl()) {
-					_set_internal_margin(SIDE_LEFT, Control::get_theme_icon(SNAME("arrow"))->get_width());
+					_set_internal_margin(SIDE_LEFT, theme_cache.arrow_icon->get_width());
 					_set_internal_margin(SIDE_RIGHT, 0.f);
 				} else {
 					_set_internal_margin(SIDE_LEFT, 0.f);
-					_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon(SNAME("arrow"))->get_width());
+					_set_internal_margin(SIDE_RIGHT, theme_cache.arrow_icon->get_width());
 				}
 			}
 			_refresh_size_cache();
@@ -540,15 +568,6 @@ OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
-	if (is_layout_rtl()) {
-		if (has_theme_icon(SNAME("arrow"))) {
-			_set_internal_margin(SIDE_LEFT, Control::get_theme_icon(SNAME("arrow"))->get_width());
-		}
-	} else {
-		if (has_theme_icon(SNAME("arrow"))) {
-			_set_internal_margin(SIDE_RIGHT, Control::get_theme_icon(SNAME("arrow"))->get_width());
-		}
-	}
 	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 
 	popup = memnew(PopupMenu);

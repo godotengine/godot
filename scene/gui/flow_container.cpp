@@ -44,9 +44,6 @@ void FlowContainer::_resort() {
 		return;
 	}
 
-	int separation_horizontal = get_theme_constant(SNAME("h_separation"));
-	int separation_vertical = get_theme_constant(SNAME("v_separation"));
-
 	bool rtl = is_layout_rtl();
 
 	HashMap<Control *, Size2i> children_minsize_cache;
@@ -74,14 +71,14 @@ void FlowContainer::_resort() {
 
 		if (vertical) { /* VERTICAL */
 			if (children_in_current_line > 0) {
-				ofs.y += separation_vertical;
+				ofs.y += theme_cache.v_separation;
 			}
 			if (ofs.y + child_msc.y > current_container_size) {
-				line_length = ofs.y - separation_vertical;
+				line_length = ofs.y - theme_cache.v_separation;
 				lines_data.push_back(_LineData{ children_in_current_line, line_height, line_length, current_container_size - line_length, line_stretch_ratio_total });
 
 				// Move in new column (vertical line).
-				ofs.x += line_height + separation_horizontal;
+				ofs.x += line_height + theme_cache.h_separation;
 				ofs.y = 0;
 				line_height = 0;
 				line_stretch_ratio_total = 0;
@@ -96,14 +93,14 @@ void FlowContainer::_resort() {
 
 		} else { /* HORIZONTAL */
 			if (children_in_current_line > 0) {
-				ofs.x += separation_horizontal;
+				ofs.x += theme_cache.h_separation;
 			}
 			if (ofs.x + child_msc.x > current_container_size) {
-				line_length = ofs.x - separation_horizontal;
+				line_length = ofs.x - theme_cache.h_separation;
 				lines_data.push_back(_LineData{ children_in_current_line, line_height, line_length, current_container_size - line_length, line_stretch_ratio_total });
 
 				// Move in new line.
-				ofs.y += line_height + separation_vertical;
+				ofs.y += line_height + theme_cache.v_separation;
 				ofs.x = 0;
 				line_height = 0;
 				line_stretch_ratio_total = 0;
@@ -146,11 +143,11 @@ void FlowContainer::_resort() {
 			current_line_idx++;
 			child_idx_in_line = 0;
 			if (vertical) {
-				ofs.x += line_data.min_line_height + separation_horizontal;
+				ofs.x += line_data.min_line_height + theme_cache.h_separation;
 				ofs.y = 0;
 			} else {
 				ofs.x = 0;
-				ofs.y += line_data.min_line_height + separation_vertical;
+				ofs.y += line_data.min_line_height + theme_cache.v_separation;
 			}
 			line_data = lines_data[current_line_idx];
 		}
@@ -184,9 +181,9 @@ void FlowContainer::_resort() {
 		fit_child_in_rect(child, child_rect);
 
 		if (vertical) { /* VERTICAL */
-			ofs.y += child_size.height + separation_vertical;
+			ofs.y += child_size.height + theme_cache.v_separation;
 		} else { /* HORIZONTAL */
-			ofs.x += child_size.width + separation_horizontal;
+			ofs.x += child_size.width + theme_cache.h_separation;
 		}
 
 		child_idx_in_line++;
@@ -248,6 +245,13 @@ Vector<int> FlowContainer::get_allowed_size_flags_vertical() const {
 	flags.append(SIZE_SHRINK_CENTER);
 	flags.append(SIZE_SHRINK_END);
 	return flags;
+}
+
+void FlowContainer::_update_theme_item_cache() {
+	Container::_update_theme_item_cache();
+
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
 }
 
 void FlowContainer::_notification(int p_what) {

@@ -30,12 +30,16 @@
 
 #include "margin_container.h"
 
-Size2 MarginContainer::get_minimum_size() const {
-	int margin_left = get_theme_constant(SNAME("margin_left"));
-	int margin_top = get_theme_constant(SNAME("margin_top"));
-	int margin_right = get_theme_constant(SNAME("margin_right"));
-	int margin_bottom = get_theme_constant(SNAME("margin_bottom"));
+void MarginContainer::_update_theme_item_cache() {
+	Container::_update_theme_item_cache();
 
+	theme_cache.margin_left = get_theme_constant(SNAME("margin_left"));
+	theme_cache.margin_top = get_theme_constant(SNAME("margin_top"));
+	theme_cache.margin_right = get_theme_constant(SNAME("margin_right"));
+	theme_cache.margin_bottom = get_theme_constant(SNAME("margin_bottom"));
+}
+
+Size2 MarginContainer::get_minimum_size() const {
 	Size2 max;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -59,8 +63,8 @@ Size2 MarginContainer::get_minimum_size() const {
 		}
 	}
 
-	max.width += (margin_left + margin_right);
-	max.height += (margin_top + margin_bottom);
+	max.width += (theme_cache.margin_left + theme_cache.margin_right);
+	max.height += (theme_cache.margin_top + theme_cache.margin_bottom);
 
 	return max;
 }
@@ -86,11 +90,6 @@ Vector<int> MarginContainer::get_allowed_size_flags_vertical() const {
 void MarginContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			int margin_left = get_theme_constant(SNAME("margin_left"));
-			int margin_top = get_theme_constant(SNAME("margin_top"));
-			int margin_right = get_theme_constant(SNAME("margin_right"));
-			int margin_bottom = get_theme_constant(SNAME("margin_bottom"));
-
 			Size2 s = get_size();
 
 			for (int i = 0; i < get_child_count(); i++) {
@@ -102,9 +101,9 @@ void MarginContainer::_notification(int p_what) {
 					continue;
 				}
 
-				int w = s.width - margin_left - margin_right;
-				int h = s.height - margin_top - margin_bottom;
-				fit_child_in_rect(c, Rect2(margin_left, margin_top, w, h));
+				int w = s.width - theme_cache.margin_left - theme_cache.margin_right;
+				int h = s.height - theme_cache.margin_top - theme_cache.margin_bottom;
+				fit_child_in_rect(c, Rect2(theme_cache.margin_left, theme_cache.margin_top, w, h));
 			}
 		} break;
 

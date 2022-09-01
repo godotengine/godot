@@ -48,6 +48,39 @@ class TabContainer : public Container {
 	bool theme_changing = false;
 	Node *child_removing = nullptr;
 
+	struct ThemeCache {
+		int side_margin = 0;
+
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> tabbar_style;
+
+		Ref<Texture2D> menu_icon;
+		Ref<Texture2D> menu_hl_icon;
+
+		// TabBar overrides.
+		int icon_separation = 0;
+		int outline_size = 0;
+
+		Ref<StyleBox> tab_unselected_style;
+		Ref<StyleBox> tab_selected_style;
+		Ref<StyleBox> tab_disabled_style;
+
+		Ref<Texture2D> increment_icon;
+		Ref<Texture2D> increment_hl_icon;
+		Ref<Texture2D> decrement_icon;
+		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> drop_mark_icon;
+		Color drop_mark_color;
+
+		Color font_selected_color;
+		Color font_unselected_color;
+		Color font_disabled_color;
+		Color font_outline_color;
+
+		Ref<Font> tab_font;
+		int tab_font_size;
+	} theme_cache;
+
 	int _get_top_margin() const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
@@ -65,6 +98,8 @@ class TabContainer : public Container {
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

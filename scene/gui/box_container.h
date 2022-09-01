@@ -47,11 +47,16 @@ private:
 	bool vertical = false;
 	AlignmentMode alignment = ALIGNMENT_BEGIN;
 
+	struct ThemeCache {
+		int separation = 0;
+	} theme_cache;
+
 	void _resort();
 
 protected:
-	void _notification(int p_what);
+	virtual void _update_theme_item_cache() override;
 
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
