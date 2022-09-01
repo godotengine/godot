@@ -46,6 +46,8 @@ TEST_CASE("[Geometry3D] Closest Points Between Segments") {
 	};
 	Vector<Case> tt;
 	tt.push_back(Case(Vector3(1, -1, 1), Vector3(1, 1, -1), Vector3(-1, -2, -1), Vector3(-1, 1, 1), Vector3(1, -0.2, 0.2), Vector3(-1, -0.2, 0.2)));
+	tt.push_back(Case(Vector3(0, 0, 0), Vector3(0, 4, 0), Vector3(2, 2, 0), Vector3(3, 4, 0), Vector3(0, 2, 0), Vector3(2, 2, 0)));
+	tt.push_back(Case(Vector3(0, 0, 0), Vector3(0, 4, 0), Vector3(-1, 1, 1), Vector3(1, 3, 1), Vector3(0, 2, 0), Vector3(0, 2, 1)));
 	for (int i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		Geometry3D::get_closest_points_between_segments(current_case.p_1, current_case.p_2, current_case.p_3, current_case.p_4, current_case.got_1, current_case.got_2);
@@ -63,10 +65,14 @@ TEST_CASE("[Geometry3D] Closest Distance Between Segments") {
 				p_1(p_p_1), p_2(p_p_2), p_3(p_p_3), p_4(p_p_4), want(p_want){};
 	};
 	Vector<Case> tt;
-	tt.push_back(Case(Vector3(1, -2, 0), Vector3(1, 2, 0), Vector3(-1, 2, 0), Vector3(-1, -2, 0), 0.0f));
+	tt.push_back(Case(Vector3(1, -2, 0), Vector3(1, 2, 0), Vector3(-1, 2, 0), Vector3(-1, -2, 0), 2.0f));
+	tt.push_back(Case(Vector3(0, 0, 0), Vector3(0, 0, 10), Vector3(2, 3, 4), Vector3(5, 3, 7), Math::sqrt(13.0f)));
+	tt.push_back(Case(Vector3(0, 0, 0), Vector3(0, 4, 0), Vector3(2, 2, 0), Vector3(3, 4, 0), 2));
+	tt.push_back(Case(Vector3(0, 0, 0), Vector3(0, 4, 0), Vector3(-1, 1, 1), Vector3(1, 3, 1), 1));
 	for (int i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		float out = Geometry3D::get_closest_distance_between_segments(current_case.p_1, current_case.p_2, current_case.p_3, current_case.p_4);
+		// CHECK(Math::is_equal_approx(out, current_case.want));
 		CHECK(out == current_case.want);
 	}
 }

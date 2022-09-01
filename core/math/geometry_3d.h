@@ -37,98 +37,143 @@
 
 class Geometry3D {
 public:
-	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
-// Do the function 'd' as defined by pb. I think it's a dot product of some sort.
-#define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
+// Dot product of NM and PO vectors
+#define dot_4(M, N, O, P) ((M.x - N.x) * (O.x - P.x) + (M.y - N.y) * (O.y - P.y) + (M.z - N.z) * (O.z - P.z))
 
-		// Calculate the parametric position on the 2 curves, mua and mub.
-		real_t mua = (d_of(p1, q1, q2, q1) * d_of(q2, q1, p2, p1) - d_of(p1, q1, p2, p1) * d_of(q2, q1, q2, q1)) / (d_of(p2, p1, p2, p1) * d_of(q2, q1, q2, q1) - d_of(q2, q1, p2, p1) * d_of(q2, q1, p2, p1));
-		real_t mub = (d_of(p1, q1, q2, q1) + mua * d_of(q2, q1, p2, p1)) / d_of(q2, q1, q2, q1);
+// Returns t where A + t * AB is the closest point on the segment to point P (t can be outside [0..1], it's uncapped).
+// it basically does this: (AB•AP) / (|AB|^2)
+#define CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(P, A, B) (dot_4(A, B, A, P) / dot_4(A, B, A, B))
 
-		// Clip the value between [0..1] constraining the solution to lie on the original curves.
-		if (mua < 0) {
-			mua = 0;
+	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 *p_segment) {
+		real_t t = 0.0f;
+
+		if (p_segment[0].distance_squared_to(p_segment[1]) > 1e-20f) {
+			t = CLAMP(CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(p_point, p_segment[0], p_segment[1]), 0, 1);
 		}
-		if (mub < 0) {
-			mub = 0;
-		}
-		if (mua > 1) {
-			mua = 1;
-		}
-		if (mub > 1) {
-			mub = 1;
-		}
-		c1 = p1.lerp(p2, mua);
-		c2 = q1.lerp(q2, mub);
+
+		return p_segment[0].lerp(p_segment[1], t);
 	}
 
-	static real_t get_closest_distance_between_segments(const Vector3 &p_from_a, const Vector3 &p_to_a, const Vector3 &p_from_b, const Vector3 &p_to_b) {
-		Vector3 u = p_to_a - p_from_a;
-		Vector3 v = p_to_b - p_from_b;
-		Vector3 w = p_from_a - p_to_a;
-		real_t a = u.dot(u); // Always >= 0
-		real_t b = u.dot(v);
-		real_t c = v.dot(v); // Always >= 0
-		real_t d = u.dot(w);
-		real_t e = v.dot(w);
-		real_t D = a * c - b * b; // Always >= 0
-		real_t sc, sN, sD = D; // sc = sN / sD, default sD = D >= 0
-		real_t tc, tN, tD = D; // tc = tN / tD, default tD = D >= 0
+	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
+		real_t t = 0.0f;
 
-		// Compute the line parameters of the two closest points.
-		if (D < (real_t)CMP_EPSILON) { // The lines are almost parallel.
-			sN = 0.0f; // Force using point P0 on segment S1
-			sD = 1.0f; // to prevent possible division by 0.0 later.
-			tN = e;
-			tD = c;
-		} else { // Get the closest points on the infinite lines
-			sN = (b * e - c * d);
-			tN = (a * e - b * d);
-			if (sN < 0.0f) { // sc < 0 => the s=0 edge is visible.
-				sN = 0.0f;
-				tN = e;
-				tD = c;
-			} else if (sN > sD) { // sc > 1 => the s=1 edge is visible.
-				sN = sD;
-				tN = e + b;
-				tD = c;
-			}
+		if (p_segment[0].distance_squared_to(p_segment[1]) > 1e-20f) {
+			t = CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(p_point, p_segment[0], p_segment[1]);
 		}
 
-		if (tN < 0.0f) { // tc < 0 => the t=0 edge is visible.
-			tN = 0.0f;
-			// Recompute sc for this edge.
-			if (-d < 0.0f) {
-				sN = 0.0f;
-			} else if (-d > a) {
-				sN = sD;
-			} else {
-				sN = -d;
-				sD = a;
-			}
-		} else if (tN > tD) { // tc > 1 => the t=1 edge is visible.
-			tN = tD;
-			// Recompute sc for this edge.
-			if ((-d + b) < 0.0f) {
-				sN = 0;
-			} else if ((-d + b) > a) {
-				sN = sD;
-			} else {
-				sN = (-d + b);
-				sD = a;
-			}
-		}
-		// Finally do the division to get sc and tc.
-		sc = (Math::is_zero_approx(sN) ? 0.0f : sN / sD);
-		tc = (Math::is_zero_approx(tN) ? 0.0f : tN / tD);
-
-		// Get the difference of the two closest points.
-		Vector3 dP = w + (sc * u) - (tc * v); // = S1(sc) - S2(tc)
-
-		return dP.length(); // Return the closest distance.
+		return p_segment[0].lerp(p_segment[1], t);
 	}
 
-	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
+	static void get_closest_points_between_segments(const Vector3 &p_A, const Vector3 &p_B, const Vector3 &p_C, const Vector3 &p_D, Vector3 &r_c1, Vector3 &r_c2) {
+		Vector3 a = p_B - p_A;
+		Vector3 b = p_D - p_C;
+		Vector3 c = p_C - p_A;
+
+		real_t ta = 0.0f, tb = 0.0f;
+
+		// If segments are not co-planar
+		bool are_coplanar = Math::is_zero_approx((p_C - p_A).cross(p_D - p_A).dot(p_B - p_A));
+		if (!are_coplanar) {
+			// Segments AB and CD are not parallel
+			// We know that the shortest segment (if not bounded) between segments (or rather, lines)
+			// is going to be orthogonal to both of the lines. That means that it will be parallel to
+			// the cross product of AB and CD.
+			Vector3 n = a.cross(b);
+			// We don't care about the length of n, we just want the direction, but since normalization
+			// is an expensive calculation, involving square roots, we'll just get rid of the length later.
+
+			// Now we can project any vector connecting the two segments (since it doesn't matter, we'll
+			// use vector CA) on vector n to get the closest possible distance between segments. Since n
+			// is not normalized, this is what we need:  (n / |n|) • CA = (n • CA) / |n|
+			// But we don't want just the length of the shortest possible segment connecting lines AB and
+			// CD, we want the segment itself. We do have both, the length and the direction, so we just
+			// multiply the unit vector with the direction (n / |n|) with the length ((n • CA) / |n|) to
+			// get:  ((n • CA) / |n|) * (n / |n|) = n * (n • CA) / |n|^2
+			Vector3 s = n * (n.dot(p_A - p_C) / n.length_squared()); // s stands for  shortest possible
+
+			// Now, we know that there exist such t_a and t_b that satisfy the equation:
+			//  A + AB * t_a + s = C + CD * t_b
+			// we can (kinda) simplify this equation by substituting variables a, b, c in:
+			//  a * t_a + s = b * t_b + c  <=>  a * t_a - b * t_b = c - s
+			// if you expand write the above in terms of the coordinates, you get what's written bellow.
+
+			Vector3 axb = a.cross(b);
+			Vector3 gxb = (c - s).cross(b);
+			Vector3 gxa = (c - s).cross(a);
+
+			if (!Math::is_zero_approx(axb.x)) {
+				ta = gxb.x / axb.x;
+				tb = gxa.x / axb.x;
+			} else if (!Math::is_zero_approx(axb.y)) {
+				ta = gxb.y / axb.y;
+				tb = gxa.y / axb.y;
+			} else if (!Math::is_zero_approx(axb.z)) {
+				ta = gxb.z / axb.z;
+				tb = gxa.z / axb.z;
+			}
+
+			ta = CLAMP(ta, 0, 1);
+			tb = CLAMP(tb, 0, 1);
+		}
+
+		// Check all points manually
+		real_t min_d = (p_A.lerp(p_B, ta)).distance_squared_to(p_C.lerp(p_D, tb));
+		real_t d = 0;
+		real_t t = 0;
+
+		t = CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(p_A, p_C, p_D);
+		t = CLAMP(t, 0, 1);
+		d = p_A.distance_squared_to(p_C.lerp(p_D, t));
+		if (d < min_d) {
+			min_d = d;
+			ta = 0;
+			tb = t;
+		}
+
+		t = CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(p_B, p_C, p_D);
+		t = CLAMP(t, 0, 1);
+		d = p_B.distance_squared_to(p_C.lerp(p_D, t));
+		if (d < min_d) {
+			min_d = d;
+			ta = 1;
+			tb = t;
+		}
+
+		t = CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(p_C, p_A, p_B);
+		t = CLAMP(t, 0, 1);
+		d = p_C.distance_squared_to(p_A.lerp(p_B, t));
+		if (d < min_d) {
+			min_d = d;
+			ta = t;
+			tb = 0;
+		}
+
+		t = CLOSEST_POINT_ON_SEGMENT_PARAMETRIC(p_D, p_A, p_B);
+		t = CLAMP(t, 0, 1);
+		d = p_D.distance_squared_to(p_A.lerp(p_B, t));
+		if (d < min_d) {
+			min_d = d;
+			ta = t;
+			tb = 1;
+		}
+
+		r_c1 = p_A + a * ta;
+		r_c2 = p_C + b * tb;
+	}
+
+#undef CLOSEST_POINT_ON_SEGMENT_PARAMETRIC
+#undef dot_4
+
+	static real_t get_closest_distance_between_segments(const Vector3 &p_a1, const Vector3 &p_a2, const Vector3 &p_b1, const Vector3 &p_b2) {
+		Vector3 u = p_a1;
+		Vector3 v = p_b1;
+
+		get_closest_points_between_segments(p_a1, p_a2, p_b1, p_b2, u, v);
+
+		return u.distance_to(v);
+	}
+
+	static inline bool ray_intersects_triangle_parametric(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, real_t *r_res = nullptr) {
 		Vector3 e1 = p_v1 - p_v0;
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = p_dir.cross(e2);
@@ -158,9 +203,9 @@ public:
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
-		if (t > 0.00001f) { // ray intersection
+		if (t > (real_t)CMP_EPSILON) { // ray intersection
 			if (r_res) {
-				*r_res = p_from + p_dir * t;
+				*r_res = t;
 			}
 			return true;
 		} else { // This means that there is a line intersection but not a ray intersection.
@@ -168,45 +213,31 @@ public:
 		}
 	}
 
+	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
+		real_t t = 0.0f;
+		bool intersects = ray_intersects_triangle_parametric(p_from, p_dir, p_v0, p_v1, p_v2, &t);
+
+		if (intersects && r_res) {
+			*r_res = p_from + p_dir * t;
+		}
+
+		return intersects;
+	}
+
 	static inline bool segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
 		Vector3 rel = p_to - p_from;
-		Vector3 e1 = p_v1 - p_v0;
-		Vector3 e2 = p_v2 - p_v0;
-		Vector3 h = rel.cross(e2);
-		real_t a = e1.dot(h);
-		if (Math::is_zero_approx(a)) { // Parallel test.
-			return false;
-		}
 
-		real_t f = 1.0f / a;
+		real_t t = 0.0f;
+		bool intersects = ray_intersects_triangle_parametric(p_from, rel, p_v0, p_v1, p_v2, &t);
 
-		Vector3 s = p_from - p_v0;
-		real_t u = f * s.dot(h);
-
-		if ((u < 0.0f) || (u > 1.0f)) {
-			return false;
-		}
-
-		Vector3 q = s.cross(e1);
-
-		real_t v = f * rel.dot(q);
-
-		if ((v < 0.0f) || (u + v > 1.0f)) {
-			return false;
-		}
-
-		// At this stage we can compute t to find out where
-		// the intersection point is on the line.
-		real_t t = f * e2.dot(q);
-
-		if (t > (real_t)CMP_EPSILON && t <= 1.0f) { // Ray intersection.
+		if (t <= 1.0f) {
 			if (r_res) {
 				*r_res = p_from + rel * t;
 			}
-			return true;
-		} else { // This means that there is a line intersection but not a ray intersection.
-			return false;
+			return intersects;
 		}
+
+		return false;
 	}
 
 	static inline bool segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr) {
@@ -411,38 +442,6 @@ public:
 		}
 
 		return true;
-	}
-
-	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 *p_segment) {
-		Vector3 p = p_point - p_segment[0];
-		Vector3 n = p_segment[1] - p_segment[0];
-		real_t l2 = n.length_squared();
-		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
-		}
-
-		real_t d = n.dot(p) / l2;
-
-		if (d <= 0.0f) {
-			return p_segment[0]; // Before first point.
-		} else if (d >= 1.0f) {
-			return p_segment[1]; // After first point.
-		} else {
-			return p_segment[0] + n * d; // Inside.
-		}
-	}
-
-	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
-		Vector3 p = p_point - p_segment[0];
-		Vector3 n = p_segment[1] - p_segment[0];
-		real_t l2 = n.length_squared();
-		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
-		}
-
-		real_t d = n.dot(p) / l2;
-
-		return p_segment[0] + n * d; // Inside.
 	}
 
 	static inline bool point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
