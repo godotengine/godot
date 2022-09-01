@@ -2617,17 +2617,9 @@ void AnimatedTexture::_update_proxy() {
 
 	time += delta;
 
-	float limit;
-
-	if (fps == 0) {
-		limit = 0;
-	} else {
-		limit = 1.0 / fps;
-	}
-
 	int iter_max = frame_count;
 	while (iter_max && !pause) {
-		float frame_limit = limit + frames[current_frame].delay_sec;
+		float frame_limit = base_delay + frames[current_frame].delay;
 
 		if (time > frame_limit) {
 			current_frame++;
@@ -2715,7 +2707,7 @@ void AnimatedTexture::set_frame_delay(int p_frame, float p_delay_sec) {
 
 	RWLockRead r(rw_lock);
 
-	frames[p_frame].delay_sec = p_delay_sec;
+	frames[p_frame].delay = p_delay_sec;
 }
 
 float AnimatedTexture::get_frame_delay(int p_frame) const {
@@ -2723,17 +2715,17 @@ float AnimatedTexture::get_frame_delay(int p_frame) const {
 
 	RWLockRead r(rw_lock);
 
-	return frames[p_frame].delay_sec;
+	return frames[p_frame].delay;
 }
 
-void AnimatedTexture::set_fps(float p_fps) {
-	ERR_FAIL_COND(p_fps < 0 || p_fps >= 1000);
+void AnimatedTexture::set_base_delay(float p_base_delay) {
+	ERR_FAIL_COND(p_base_delay < 0 || p_base_delay >= 1000);
 
-	fps = p_fps;
+	base_delay = p_base_delay;
 }
 
-float AnimatedTexture::get_fps() const {
-	return fps;
+float AnimatedTexture::get_base_delay() const {
+	return base_delay;
 }
 
 int AnimatedTexture::get_width() const {
@@ -2812,8 +2804,8 @@ void AnimatedTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_oneshot", "oneshot"), &AnimatedTexture::set_oneshot);
 	ClassDB::bind_method(D_METHOD("get_oneshot"), &AnimatedTexture::get_oneshot);
 
-	ClassDB::bind_method(D_METHOD("set_fps", "fps"), &AnimatedTexture::set_fps);
-	ClassDB::bind_method(D_METHOD("get_fps"), &AnimatedTexture::get_fps);
+	ClassDB::bind_method(D_METHOD("set_base_delay", "base_delay"), &AnimatedTexture::set_base_delay);
+	ClassDB::bind_method(D_METHOD("get_base_delay"), &AnimatedTexture::get_base_delay);
 
 	ClassDB::bind_method(D_METHOD("set_frame_texture", "frame", "texture"), &AnimatedTexture::set_frame_texture);
 	ClassDB::bind_method(D_METHOD("get_frame_texture", "frame"), &AnimatedTexture::get_frame_texture);
@@ -2825,11 +2817,11 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_frame", "get_current_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "get_pause");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oneshot"), "set_oneshot", "get_oneshot");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_delay", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater,suffix:s"), "set_base_delay", "get_base_delay");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "frame_" + itos(i) + "/texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_texture", "get_frame_texture", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "frame_" + itos(i) + "/delay_sec", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_delay", "get_frame_delay", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "frame_" + itos(i) + "/delay", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater,suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_frame_delay", "get_frame_delay", i);
 	}
 
 	BIND_CONSTANT(MAX_FRAMES);
