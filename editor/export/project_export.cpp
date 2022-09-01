@@ -102,6 +102,11 @@ void ProjectExportDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			duplicate_preset->set_icon(presets->get_editor_theme_icon(SNAME("Duplicate")));
 			delete_preset->set_icon(presets->get_editor_theme_icon(SNAME("Remove")));
+
+			Control *panel = custom_feature_display->get_parent_control();
+			if (panel) {
+				panel->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
+			}
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -248,6 +253,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		duplicate_preset->set_disabled(true);
 		delete_preset->set_disabled(true);
 		sections->hide();
+		patches->clear();
 		export_error->hide();
 		export_templates_error->hide();
 		return;
@@ -291,6 +297,31 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	include_label->set_text(_get_resource_export_header(current->get_export_filter()));
 	exclude_filters->set_text(current->get_exclude_filter());
 	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
+
+	patches->clear();
+	TreeItem *patch_root = patches->create_item();
+	Vector<String> patch_list = current->get_patches();
+	for (int i = 0; i < patch_list.size(); i++) {
+		TreeItem *patch = patches->create_item(patch_root);
+		String patch_path = patch_list[i];
+		patch->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		patch->set_editable(0, true);
+		patch->set_text(0, patch_path.get_file());
+		patch->set_checked(0, current->is_patch_enabled(patch_path));
+		patch->set_tooltip_text(0, patch_list[i]);
+		patch->set_metadata(0, i);
+		patch->add_button(0, get_editor_theme_icon(SNAME("Remove")), 0);
+		patch->add_button(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")), 1);
+	}
+
+	TreeItem *patch_add = patches->create_item(patch_root);
+	patch_add->set_metadata(0, patch_list.size());
+	if (patch_list.is_empty()) {
+		patch_add->set_text(0, TTR("Add initial export..."));
+	} else {
+		patch_add->set_text(0, TTR("Add previous patches..."));
+	}
+	patch_add->add_button(0, get_theme_icon(SNAME("folder"), SNAME("FileDialog")), 1);
 
 	_fill_resource_tree();
 
@@ -453,6 +484,66 @@ void ProjectExportDialog::_custom_features_changed(const String &p_text) {
 
 void ProjectExportDialog::_tab_changed(int) {
 	_update_feature_list();
+}
+
+void ProjectExportDialog::_patch_button_clicked(Object *p_item, int p_column, int p_id, int p_mouse_button_index) {
+	TreeItem *ti = Object::cast_to<TreeItem>(p_item);
+
+	patch_index = ti->get_metadata(0);
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	if (p_id == 0) {
+		Vector<String> preset_patches = current->get_patches();
+		ERR_FAIL_INDEX(patch_index, preset_patches.size());
+		patch_erase->set_text(vformat(TTR("Delete patch '%s' from list?"), preset_patches[patch_index].get_file()));
+		patch_erase->popup_centered();
+	} else {
+		patch_dialog->popup_centered_ratio();
+	}
+}
+
+void ProjectExportDialog::_patch_edited() {
+	TreeItem *item = patches->get_edited();
+	if (!item) {
+		return;
+	}
+	int index = item->get_metadata(0);
+
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	Vector<String> preset_patches = current->get_patches();
+
+	ERR_FAIL_INDEX(index, preset_patches.size());
+
+	current->set_patch(index, preset_patches[index], item->is_checked(0));
+}
+
+void ProjectExportDialog::_patch_selected(const String &p_path) {
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	Vector<String> preset_patches = current->get_patches();
+	if (patch_index >= preset_patches.size()) {
+		current->add_patch(ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path), true);
+	} else {
+		current->set_patch(patch_index, ProjectSettings::get_singleton()->get_resource_path().path_to_file(p_path), current->is_patch_enabled(p_path));
+	}
+
+	_update_current_preset();
+}
+
+void ProjectExportDialog::_patch_deleted() {
+	Ref<EditorExportPreset> current = get_current_preset();
+	ERR_FAIL_COND(current.is_null());
+
+	Vector<String> preset_patches = current->get_patches();
+	if (patch_index < preset_patches.size()) {
+		current->remove_patch(patch_index);
+		_update_current_preset();
+	}
 }
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
@@ -664,6 +755,9 @@ void ProjectExportDialog::_duplicate_preset() {
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
+
+	preset->set_patches(current->get_patches(), current->get_disabled_patches());
+
 	preset->set_custom_features(current->get_custom_features());
 
 	for (const KeyValue<StringName, Variant> &E : current->get_values()) {
@@ -719,8 +813,22 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 
 			return d;
 		}
-	}
+	} else if (p_from == patches) {
+		TreeItem *item = patches->get_item_at_position(p_point);
 
+		if (item && item->get_cell_mode(0) == TreeItem::CELL_MODE_CHECK) {
+			int item_metadata = item->get_metadata(0);
+			Dictionary d;
+			d["type"] = "export_patch";
+			d["patch"] = item_metadata;
+
+			Label *label = memnew(Label);
+			label->set_text(item->get_text(0));
+			patches->set_drag_preview(label);
+
+			return d;
+		}
+	}
 	return Variant();
 }
 
@@ -732,6 +840,19 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 		}
 
 		if (presets->get_item_at_position(p_point, true) < 0 && !presets->is_pos_at_end_of_items(p_point)) {
+			return false;
+		}
+	} else if (p_from == patches) {
+		Dictionary d = p_data;
+		if (!d.has("type") || String(d["type"]) != "export_patch") {
+			return false;
+		}
+
+		patches->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+
+		TreeItem *item = patches->get_item_at_position(p_point);
+
+		if (!item) {
 			return false;
 		}
 	}
@@ -770,6 +891,34 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		} else {
 			_edit_preset(presets->get_item_count() - 1);
 		}
+	} else if (p_from == patches) {
+		Dictionary d = p_data;
+		if (!d.has("type") || String(d["type"]) != "export_patch") {
+			return;
+		}
+
+		int from_pos = d["patch"];
+
+		TreeItem *item = patches->get_item_at_position(p_point);
+		if (!item) {
+			return;
+		}
+
+		int to_pos = item->get_cell_mode(0) == TreeItem::CELL_MODE_CHECK ? int(item->get_metadata(0)) : -1;
+
+		if (to_pos == from_pos) {
+			return;
+		} else if (to_pos > from_pos) {
+			to_pos--;
+		}
+
+		Ref<EditorExportPreset> preset = get_current_preset();
+		String patch = preset->get_patch(from_pos);
+		bool patch_enabled = preset->is_patch_enabled(patch);
+		preset->remove_patch(from_pos);
+		preset->add_patch(patch, patch_enabled, to_pos);
+
+		_update_current_preset();
 	}
 }
 
@@ -1043,11 +1192,20 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 
 	const Dictionary &fd_option = export_pck_zip->get_selected_options();
 	bool export_debug = fd_option.get(TTR("Export With Debug"), true);
+	bool export_as_patch = fd_option.get(TTR("Export As Patch"), false);
 
 	if (p_path.ends_with(".zip")) {
-		platform->export_zip(current, export_debug, p_path);
+		if (export_as_patch) {
+			platform->export_zip_patch(current, export_debug, p_path);
+		} else {
+			platform->export_zip(current, export_debug, p_path);
+		}
 	} else if (p_path.ends_with(".pck")) {
-		platform->export_pack(current, export_debug, p_path);
+		if (export_as_patch) {
+			platform->export_patch(current, export_debug, p_path);
+		} else {
+			platform->export_pack(current, export_debug, p_path);
+		}
 	} else {
 		ERR_FAIL_MSG("Path must end with .pck or .zip");
 	}
@@ -1380,6 +1538,31 @@ ProjectExportDialog::ProjectExportDialog() {
 			exclude_filters);
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
 
+	// Patch packages.
+
+	VBoxContainer *patch_vb = memnew(VBoxContainer);
+	sections->add_child(patch_vb);
+	patch_vb->set_name(TTR("Patches"));
+
+	patches = memnew(Tree);
+	patch_vb->add_child(patches);
+	patches->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patches->set_hide_root(true);
+	patches->connect("button_clicked", callable_mp(this, &ProjectExportDialog::_patch_button_clicked));
+	patches->connect("item_edited", callable_mp(this, &ProjectExportDialog::_patch_edited));
+	SET_DRAG_FORWARDING_GCD(patches, ProjectExportDialog);
+	patches->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
+	patch_dialog = memnew(EditorFileDialog);
+	patch_dialog->add_filter("*.pck", TTR("Godot Project Pack"));
+	patch_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	patch_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+	patch_dialog->connect("file_selected", callable_mp(this, &ProjectExportDialog::_patch_selected));
+	add_child(patch_dialog);
+	patch_erase = memnew(ConfirmationDialog);
+	patch_erase->set_ok_button_text(TTR("Delete"));
+	patch_erase->connect("confirmed", callable_mp(this, &ProjectExportDialog::_patch_deleted));
+	add_child(patch_erase);
+
 	// Feature tags.
 
 	VBoxContainer *feature_vb = memnew(VBoxContainer);
@@ -1566,6 +1749,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), true);
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), true);
+	export_pck_zip->add_option(TTR("Export As Patch"), Vector<String>(), false);
 
 	set_hide_on_ok(false);
 
