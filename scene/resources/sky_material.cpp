@@ -546,14 +546,23 @@ bool PhysicalSkyMaterial::get_use_debanding() const {
 	return use_debanding;
 }
 
-void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
-	night_sky = p_night_sky;
-	RID tex_rid = p_night_sky.is_valid() ? p_night_sky->get_rid() : RID();
-	RS::get_singleton()->material_set_param(_get_material(), "night_sky", tex_rid);
+void PhysicalSkyMaterial::set_sky_cover(const Ref<Texture2D> &p_sky_cover) {
+	sky_cover = p_sky_cover;
+	RID tex_rid = p_sky_cover.is_valid() ? p_sky_cover->get_rid() : RID();
+	RS::get_singleton()->material_set_param(_get_material(), "sky_cover", tex_rid);
 }
 
-Ref<Texture2D> PhysicalSkyMaterial::get_night_sky() const {
-	return night_sky;
+Ref<Texture2D> PhysicalSkyMaterial::get_sky_cover() const {
+	return sky_cover;
+}
+
+void PhysicalSkyMaterial::set_sky_cover_modulate(const Color &p_sky_cover_modulate) {
+	sky_cover_modulate = p_sky_cover_modulate;
+	RS::get_singleton()->material_set_param(_get_material(), "sky_cover_modulate", sky_cover_modulate);
+}
+
+Color PhysicalSkyMaterial::get_sky_cover_modulate() const {
+	return sky_cover_modulate;
 }
 
 Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {
@@ -608,8 +617,11 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_debanding", "use_debanding"), &PhysicalSkyMaterial::set_use_debanding);
 	ClassDB::bind_method(D_METHOD("get_use_debanding"), &PhysicalSkyMaterial::get_use_debanding);
 
-	ClassDB::bind_method(D_METHOD("set_night_sky", "night_sky"), &PhysicalSkyMaterial::set_night_sky);
-	ClassDB::bind_method(D_METHOD("get_night_sky"), &PhysicalSkyMaterial::get_night_sky);
+	ClassDB::bind_method(D_METHOD("set_sky_cover", "sky_cover"), &PhysicalSkyMaterial::set_sky_cover);
+	ClassDB::bind_method(D_METHOD("get_sky_cover"), &PhysicalSkyMaterial::get_sky_cover);
+
+	ClassDB::bind_method(D_METHOD("set_sky_cover_modulate", "color"), &PhysicalSkyMaterial::set_sky_cover_modulate);
+	ClassDB::bind_method(D_METHOD("get_sky_cover_modulate"), &PhysicalSkyMaterial::get_sky_cover_modulate);
 
 	ADD_GROUP("Rayleigh", "rayleigh_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rayleigh_coefficient", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_rayleigh_coefficient", "get_rayleigh_coefficient");
@@ -625,7 +637,8 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_ground_color", "get_ground_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_exposure", "get_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "get_use_debanding");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "night_sky", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_night_sky", "get_night_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky_cover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_sky_cover", "get_sky_cover");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "sky_cover_modulate"), "set_sky_cover_modulate", "get_sky_cover_modulate");
 }
 
 void PhysicalSkyMaterial::cleanup_shader() {
@@ -657,7 +670,8 @@ uniform vec4 ground_color : source_color = vec4(0.1, 0.07, 0.034, 1.0);
 uniform float exposure : hint_range(0, 128) = 0.1;
 uniform bool use_debanding = true;
 
-uniform sampler2D night_sky : source_color, hint_default_black;
+uniform sampler2D sky_cover : source_color, hint_default_black;
+uniform vec4 sky_cover_modulate : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 
 const vec3 UP = vec3( 0.0, 1.0, 0.0 );
 
@@ -681,6 +695,8 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 }
 
 void sky() {
+	vec4 sky_cover_texture = texture(sky_cover, SKY_COORDS);
+
 	if (LIGHT0_ENABLED) {
 		float zenith_angle = clamp( dot(UP, normalize(LIGHT0_DIRECTION)), -1.0, 1.0 );
 		float sun_energy = max(0.0, 1.0 - exp(-((PI * 0.5) - acos(zenith_angle)))) * SUN_ENERGY * LIGHT0_ENERGY;
@@ -722,7 +738,8 @@ void sky() {
 		float sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale*0.5);
 		float sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);
 		vec3 L0 = (sun_energy * 1900.0 * extinction) * sundisk * LIGHT0_COLOR;
-		L0 += texture(night_sky, SKY_COORDS).xyz * extinction;
+		// Multiply by 250 to compensate for color multiplication by 0.04 below and the default exposure (0.1).
+		L0 += (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a * extinction * 250.0;
 
 		vec3 color = (Lin + L0) * 0.04;
 		COLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));
@@ -731,8 +748,8 @@ void sky() {
 			COLOR += interleaved_gradient_noise(FRAGCOORD.xy);
 		}
 	} else {
-		// There is no sun, so display night_sky and nothing else.
-		COLOR = texture(night_sky, SKY_COORDS).xyz * 0.04;
+		// There is no sun, so display sky_cover and nothing else.
+		COLOR = (sky_cover_texture.rgb * sky_cover_modulate.rgb) * sky_cover_texture.a * sky_cover_modulate.a;
 		COLOR *= exposure;
 	}
 }
@@ -753,6 +770,7 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	set_ground_color(Color(0.1, 0.07, 0.034));
 	set_exposure(0.1);
 	set_use_debanding(true);
+	set_sky_cover_modulate(Color(1, 1, 1));
 }
 
 PhysicalSkyMaterial::~PhysicalSkyMaterial() {
