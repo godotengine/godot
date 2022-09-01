@@ -112,7 +112,7 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 		}
 
 		Point2i p = point;
-		return click_mask->get_bit(p);
+		return click_mask->get_bitv(p);
 	}
 
 	return Control::has_point(p_point);

@@ -99,7 +99,7 @@ Error ResourceImporterBitMap::import(const String &p_source_file, const String &
 				bit = c.a > threshold;
 			}
 
-			bitmap->set_bit(Vector2(j, i), bit);
+			bitmap->set_bit(j, i, bit);
 		}
 	}
 

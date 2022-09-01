@@ -294,7 +294,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(x, y);
 	}
 
 	return true;
@@ -561,7 +561,7 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(x, y);
 	}
 
 	return true;
@@ -1017,7 +1017,7 @@ bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(x, y);
 	}
 
 	return true;
