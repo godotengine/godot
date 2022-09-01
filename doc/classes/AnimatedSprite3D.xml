@@ -10,12 +10,6 @@
 		<link title="2D Sprite animation (also applies to 3D)">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
 	</tutorials>
 	<methods>
-		<method name="is_playing" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if an animation is currently being played.
-			</description>
-		</method>
 		<method name="play">
 			<return type="void" />
 			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
@@ -40,7 +34,7 @@
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
+		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 	</members>
