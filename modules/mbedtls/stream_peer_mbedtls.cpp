@@ -63,7 +63,12 @@ int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	int got;
-	Error err = sp->base->get_partial_data((uint8_t *)buf, len, got);
+	Error err;
+	if (sp->blocking) {
+		err = sp->base->get_data((uint8_t *)buf, len, got);
+	} else {
+		err = sp->base->get_partial_data((uint8_t *)buf, len, got);
+	}
 	if (err != OK) {
 		return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
 	}
@@ -191,30 +196,19 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 	return OK;
 }
 
-Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes) {
-	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
-
-	Error err;
-
-	int got = 0;
-	while (p_bytes > 0) {
-		err = get_partial_data(p_buffer, p_bytes, got);
-
-		if (err != OK) {
-			return err;
-		}
-
-		p_buffer += got;
-		p_bytes -= got;
-	}
-
-	return OK;
+Error StreamPeerMbedTLS::get_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
+	return read(p_buffer, p_bytes, r_received, true);
 }
 
 Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
+	return read(p_buffer, p_bytes, r_received, false);
+}
+
+Error StreamPeerMbedTLS::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block) {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
 	r_received = 0;
+	blocking = p_block;
 
 	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {

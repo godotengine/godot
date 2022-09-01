@@ -56,7 +56,8 @@ void EditorFileServer::_subthread_start(void *s) {
 
 	cd->connection->set_no_delay(true);
 	uint8_t buf4[8];
-	Error err = cd->connection->get_data(buf4, 4);
+	int read = 0;
+	Error err = cd->connection->get_data(buf4, 4, read);
 	if (err != OK) {
 		_close_client(cd);
 		ERR_FAIL_COND(err != OK);
@@ -70,7 +71,7 @@ void EditorFileServer::_subthread_start(void *s) {
 	} else if (passlen > 0) {
 		Vector<char> passutf8;
 		passutf8.resize(passlen + 1);
-		err = cd->connection->get_data((uint8_t *)passutf8.ptr(), passlen);
+		err = cd->connection->get_data((uint8_t *)passutf8.ptr(), passlen, read);
 		if (err != OK) {
 			_close_client(cd);
 			ERR_FAIL_COND(err != OK);
@@ -102,7 +103,7 @@ void EditorFileServer::_subthread_start(void *s) {
 
 	while (!cd->quit) {
 		//wait for ID
-		err = cd->connection->get_data(buf4, 4);
+		err = cd->connection->get_data(buf4, 4, read);
 		DEBUG_TIME("get_data")
 
 		if (err != OK) {
@@ -112,7 +113,7 @@ void EditorFileServer::_subthread_start(void *s) {
 		int id = decode_uint32(buf4);
 
 		//wait for command
-		err = cd->connection->get_data(buf4, 4);
+		err = cd->connection->get_data(buf4, 4, read);
 		if (err != OK) {
 			_close_client(cd);
 			ERR_FAIL_COND(err != OK);
@@ -124,7 +125,7 @@ void EditorFileServer::_subthread_start(void *s) {
 			case FileAccessNetwork::COMMAND_GET_MODTIME:
 			case FileAccessNetwork::COMMAND_OPEN_FILE: {
 				DEBUG_TIME("open_file")
-				err = cd->connection->get_data(buf4, 4);
+				err = cd->connection->get_data(buf4, 4, read);
 				if (err != OK) {
 					_close_client(cd);
 					ERR_FAIL_COND(err != OK);
@@ -133,7 +134,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				int namelen = decode_uint32(buf4);
 				Vector<char> fileutf8;
 				fileutf8.resize(namelen + 1);
-				err = cd->connection->get_data((uint8_t *)fileutf8.ptr(), namelen);
+				err = cd->connection->get_data((uint8_t *)fileutf8.ptr(), namelen, read);
 				if (err != OK) {
 					_close_client(cd);
 					ERR_FAIL_COND(err != OK);
@@ -207,7 +208,7 @@ void EditorFileServer::_subthread_start(void *s) {
 
 			} break;
 			case FileAccessNetwork::COMMAND_READ_BLOCK: {
-				err = cd->connection->get_data(buf4, 8);
+				err = cd->connection->get_data(buf4, 8, read);
 				if (err != OK) {
 					_close_client(cd);
 					ERR_FAIL_COND(err != OK);
@@ -217,7 +218,7 @@ void EditorFileServer::_subthread_start(void *s) {
 
 				uint64_t offset = decode_uint64(buf4);
 
-				err = cd->connection->get_data(buf4, 4);
+				err = cd->connection->get_data(buf4, 4, read);
 				if (err != OK) {
 					_close_client(cd);
 					ERR_FAIL_COND(err != OK);
@@ -229,7 +230,7 @@ void EditorFileServer::_subthread_start(void *s) {
 				cd->files[id]->seek(offset);
 				Vector<uint8_t> buf;
 				buf.resize(blocklen);
-				uint32_t read = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
+				uint32_t size = cd->files[id]->get_buffer(buf.ptrw(), blocklen);
 
 				print_verbose("GET BLOCK - offset: " + itos(offset) + ", blocklen: " + itos(blocklen));
 
@@ -240,9 +241,9 @@ void EditorFileServer::_subthread_start(void *s) {
 				cd->connection->put_data(buf4, 4);
 				encode_uint64(offset, buf4);
 				cd->connection->put_data(buf4, 8);
-				encode_uint32(read, buf4);
+				encode_uint32(size, buf4);
 				cd->connection->put_data(buf4, 4);
-				cd->connection->put_data(buf.ptr(), read);
+				cd->connection->put_data(buf.ptr(), size);
 
 			} break;
 			case FileAccessNetwork::COMMAND_CLOSE: {

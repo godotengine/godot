@@ -56,7 +56,7 @@ public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
 	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) = 0; ///< put as much data as possible, without blocking.
 
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes) = 0; ///< read p_bytes of data, if p_bytes > available, it will block
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes, int &r_received) = 0; ///< read p_bytes of data, if p_bytes > available, it will block
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) = 0; ///< read as much data as p_bytes into buffer, if less was read, return in r_received
 
 	virtual int get_available_bytes() const = 0;
@@ -105,7 +105,7 @@ protected:
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
 	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 	virtual int get_available_bytes() const override;
 
@@ -129,7 +129,7 @@ public:
 	Error put_data(const uint8_t *p_data, int p_bytes) override;
 	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
 
-	Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	Error get_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
 	virtual int get_available_bytes() const override;

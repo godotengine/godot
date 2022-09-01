@@ -47,10 +47,13 @@ private:
 	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
 	void _cleanup();
 
+	bool blocking = false;
+
 protected:
 	Ref<SSLContextMbedTLS> ssl_ctx;
 
 	Error _do_handshake();
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
 public:
 	virtual void poll();
@@ -64,7 +67,7 @@ public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes);
 	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
 
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 	virtual int get_available_bytes() const;
