@@ -54,6 +54,13 @@
 			The root animation node of this [AnimationTree]. See [AnimationNode].
 		</member>
 	</members>
+	<signals>
+		<signal name="animation_player_changed">
+			<description>
+				Emitted when the [member anim_player] is changed.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessCallback">
 			The animations will progress during the physics frame (i.e. [method Node._physics_process]).
