@@ -31,6 +31,7 @@
 #include "display_server_macos.h"
 
 #include "godot_content_view.h"
+#include "godot_menu_delegate.h"
 #include "godot_menu_item.h"
 #include "godot_window.h"
 #include "godot_window_delegate.h"
@@ -95,6 +96,7 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 		if (!submenu.has(p_menu_root)) {
 			NSMenu *n_menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:p_menu_root.utf8().get_data()]];
 			[n_menu setAutoenablesItems:NO];
+			[n_menu setDelegate:menu_delegate];
 			submenu[p_menu_root] = n_menu;
 		}
 		menu = submenu[p_menu_root];
@@ -754,7 +756,7 @@ NSMenuItem *DisplayServerMacOS::_menu_add_item(const String &p_menu_root, const 
 	return nullptr;
 }
 
-int DisplayServerMacOS::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
 	int out = -1;
@@ -762,6 +764,7 @@ int DisplayServerMacOS::global_menu_add_item(const String &p_menu_root, const St
 	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_NONE;
 		obj->max_states = 0;
@@ -772,7 +775,7 @@ int DisplayServerMacOS::global_menu_add_item(const String &p_menu_root, const St
 	return out;
 }
 
-int DisplayServerMacOS::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
 	int out = -1;
@@ -780,6 +783,7 @@ int DisplayServerMacOS::global_menu_add_check_item(const String &p_menu_root, co
 	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_CHECK_BOX;
 		obj->max_states = 0;
@@ -790,7 +794,7 @@ int DisplayServerMacOS::global_menu_add_check_item(const String &p_menu_root, co
 	return out;
 }
 
-int DisplayServerMacOS::global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
 	int out = -1;
@@ -798,6 +802,7 @@ int DisplayServerMacOS::global_menu_add_icon_item(const String &p_menu_root, con
 	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_NONE;
 		obj->max_states = 0;
@@ -817,7 +822,7 @@ int DisplayServerMacOS::global_menu_add_icon_item(const String &p_menu_root, con
 	return out;
 }
 
-int DisplayServerMacOS::global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
 	int out = -1;
@@ -825,6 +830,7 @@ int DisplayServerMacOS::global_menu_add_icon_check_item(const String &p_menu_roo
 	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_CHECK_BOX;
 		obj->max_states = 0;
@@ -844,7 +850,7 @@ int DisplayServerMacOS::global_menu_add_icon_check_item(const String &p_menu_roo
 	return out;
 }
 
-int DisplayServerMacOS::global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
 	int out = -1;
@@ -852,6 +858,7 @@ int DisplayServerMacOS::global_menu_add_radio_check_item(const String &p_menu_ro
 	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_RADIO_BUTTON;
 		obj->max_states = 0;
@@ -862,7 +869,7 @@ int DisplayServerMacOS::global_menu_add_radio_check_item(const String &p_menu_ro
 	return out;
 }
 
-int DisplayServerMacOS::global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
 	int out = -1;
@@ -870,6 +877,7 @@ int DisplayServerMacOS::global_menu_add_icon_radio_check_item(const String &p_me
 	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_RADIO_BUTTON;
 		obj->max_states = 0;
@@ -889,30 +897,15 @@ int DisplayServerMacOS::global_menu_add_icon_radio_check_item(const String &p_me
 	return out;
 }
 
-int DisplayServerMacOS::global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback, const Variant &p_tag, Key p_accel, int p_index) {
+int DisplayServerMacOS::global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
 	_THREAD_SAFE_METHOD_
 
-	NSMenu *menu = _get_menu_root(p_menu_root);
 	int out = -1;
-	if (menu) {
-		String keycode = KeyMappingMacOS::keycode_get_native_string(p_accel & KeyModifierMask::CODE_MASK);
-		NSMenuItem *menu_item;
-		int item_count = ((menu == [NSApp mainMenu]) && _has_help_menu()) ? [menu numberOfItems] - 1 : [menu numberOfItems];
-		if ((menu == [NSApp mainMenu]) && (p_label == "Help" || p_label == RTR("Help"))) {
-			p_index = [menu numberOfItems];
-		} else if (p_index < 0) {
-			p_index = item_count;
-		} else {
-			if (menu == [NSApp mainMenu]) { // Skip Apple menu.
-				p_index++;
-			}
-			p_index = CLAMP(p_index, 0, item_count);
-		}
-		menu_item = [menu insertItemWithTitle:[NSString stringWithUTF8String:p_label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:[NSString stringWithUTF8String:keycode.utf8().get_data()] atIndex:p_index];
-		out = (menu == [NSApp mainMenu]) ? p_index - 1 : p_index;
-
+	NSMenuItem *menu_item = _menu_add_item(p_menu_root, p_label, p_accel, p_index, &out);
+	if (menu_item) {
 		GodotMenuItem *obj = [[GodotMenuItem alloc] init];
 		obj->callback = p_callback;
+		obj->key_callback = p_key_callback;
 		obj->meta = p_tag;
 		obj->checkable_type = CHECKABLE_TYPE_NONE;
 		obj->max_states = p_max_states;
@@ -1098,6 +1091,27 @@ Callable DisplayServerMacOS::global_menu_get_item_callback(const String &p_menu_
 			GodotMenuItem *obj = [menu_item representedObject];
 			if (obj) {
 				return obj->callback;
+			}
+		}
+	}
+	return Callable();
+}
+
+Callable DisplayServerMacOS::global_menu_get_item_key_callback(const String &p_menu_root, int p_idx) const {
+	_THREAD_SAFE_METHOD_
+
+	const NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		ERR_FAIL_COND_V(p_idx < 0, Callable());
+		if (menu == [NSApp mainMenu]) { // Skip Apple menu.
+			p_idx++;
+		}
+		ERR_FAIL_COND_V(p_idx >= [menu numberOfItems], Callable());
+		const NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GodotMenuItem *obj = [menu_item representedObject];
+			if (obj) {
+				return obj->key_callback;
 			}
 		}
 	}
@@ -1397,6 +1411,25 @@ void DisplayServerMacOS::global_menu_set_item_callback(const String &p_menu_root
 			GodotMenuItem *obj = [menu_item representedObject];
 			ERR_FAIL_COND(!obj);
 			obj->callback = p_callback;
+		}
+	}
+}
+
+void DisplayServerMacOS::global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback) {
+	_THREAD_SAFE_METHOD_
+
+	NSMenu *menu = _get_menu_root(p_menu_root);
+	if (menu) {
+		ERR_FAIL_COND(p_idx < 0);
+		if (menu == [NSApp mainMenu]) { // Skip Apple menu.
+			p_idx++;
+		}
+		ERR_FAIL_COND(p_idx >= [menu numberOfItems]);
+		NSMenuItem *menu_item = [menu itemAtIndex:p_idx];
+		if (menu_item) {
+			GodotMenuItem *obj = [menu_item representedObject];
+			ERR_FAIL_COND(!obj);
+			obj->key_callback = p_key_callback;
 		}
 	}
 }
@@ -3476,6 +3509,8 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	menu_item = [main_menu addItemWithTitle:@"" action:nil keyEquivalent:@""];
 	[main_menu setSubmenu:apple_menu forItem:menu_item];
 	[main_menu setAutoenablesItems:NO];
+
+	menu_delegate = [[GodotMenuDelegate alloc] init];
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback

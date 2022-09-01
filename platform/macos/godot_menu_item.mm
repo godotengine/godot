@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  godot_menu_item.h                                                    */
+/*  godot_menu_item.mm                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_MENU_ITEM_H
-#define GODOT_MENU_ITEM_H
+#include "godot_menu_item.h"
 
-#include "servers/display_server.h"
-
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
-
-enum GlobalMenuCheckType {
-	CHECKABLE_TYPE_NONE,
-	CHECKABLE_TYPE_CHECK_BOX,
-	CHECKABLE_TYPE_RADIO_BUTTON,
-};
-
-@interface GodotMenuItem : NSObject {
-@public
-	Callable callback;
-	Callable key_callback;
-	Variant meta;
-	GlobalMenuCheckType checkable_type;
-	int max_states;
-	int state;
-	Ref<Image> img;
-}
-
+@implementation GodotMenuItem
 @end
-
-#endif // GODOT_MENU_ITEM_H
