@@ -2622,11 +2622,11 @@ Vector2 TextServerAdvanced::font_get_glyph_advance(const RID &p_font_rid, int64_
 	}
 
 	if (fd->msdf) {
-		return (gl[p_glyph].advance + ea) * (double)p_size / (double)fd->msdf_source_size;
+		return (gl[p_glyph | mod].advance + ea) * (double)p_size / (double)fd->msdf_source_size;
 	} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_DISABLED) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x > SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
-		return (gl[p_glyph].advance + ea).round();
+		return (gl[p_glyph | mod].advance + ea).round();
 	} else {
-		return gl[p_glyph].advance + ea;
+		return gl[p_glyph | mod].advance + ea;
 	}
 }
 
@@ -2669,9 +2669,9 @@ Vector2 TextServerAdvanced::font_get_glyph_offset(const RID &p_font_rid, const V
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 
 	if (fd->msdf) {
-		return gl[p_glyph].rect.position * (double)p_size.x / (double)fd->msdf_source_size;
+		return gl[p_glyph | mod].rect.position * (double)p_size.x / (double)fd->msdf_source_size;
 	} else {
-		return gl[p_glyph].rect.position;
+		return gl[p_glyph | mod].rect.position;
 	}
 }
 
@@ -2714,9 +2714,9 @@ Vector2 TextServerAdvanced::font_get_glyph_size(const RID &p_font_rid, const Vec
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
 
 	if (fd->msdf) {
-		return gl[p_glyph].rect.size * (double)p_size.x / (double)fd->msdf_source_size;
+		return gl[p_glyph | mod].rect.size * (double)p_size.x / (double)fd->msdf_source_size;
 	} else {
-		return gl[p_glyph].rect.size;
+		return gl[p_glyph | mod].rect.size;
 	}
 }
 
@@ -2757,7 +2757,7 @@ Rect2 TextServerAdvanced::font_get_glyph_uv_rect(const RID &p_font_rid, const Ve
 	}
 
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
-	return gl[p_glyph].uv_rect;
+	return gl[p_glyph | mod].uv_rect;
 }
 
 void TextServerAdvanced::font_set_glyph_uv_rect(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, const Rect2 &p_uv_rect) {
@@ -2797,7 +2797,7 @@ int64_t TextServerAdvanced::font_get_glyph_texture_idx(const RID &p_font_rid, co
 	}
 
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
-	return gl[p_glyph].texture_idx;
+	return gl[p_glyph | mod].texture_idx;
 }
 
 void TextServerAdvanced::font_set_glyph_texture_idx(const RID &p_font_rid, const Vector2i &p_size, int64_t p_glyph, int64_t p_texture_idx) {
@@ -2837,12 +2837,12 @@ RID TextServerAdvanced::font_get_glyph_texture_rid(const RID &p_font_rid, const 
 	}
 
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
-	ERR_FAIL_COND_V(gl[p_glyph].texture_idx < -1 || gl[p_glyph].texture_idx >= fd->cache[size]->textures.size(), RID());
+	ERR_FAIL_COND_V(gl[p_glyph | mod].texture_idx < -1 || gl[p_glyph | mod].texture_idx >= fd->cache[size]->textures.size(), RID());
 
 	if (RenderingServer::get_singleton() != nullptr) {
-		if (gl[p_glyph].texture_idx != -1) {
-			if (fd->cache[size]->textures[gl[p_glyph].texture_idx].dirty) {
-				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph].texture_idx];
+		if (gl[p_glyph | mod].texture_idx != -1) {
+			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
+				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
 				Ref<Image> img;
 				img.instantiate();
 				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
@@ -2856,7 +2856,7 @@ RID TextServerAdvanced::font_get_glyph_texture_rid(const RID &p_font_rid, const 
 				}
 				tex.dirty = false;
 			}
-			return fd->cache[size]->textures[gl[p_glyph].texture_idx].texture->get_rid();
+			return fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].texture->get_rid();
 		}
 	}
 
@@ -2885,12 +2885,12 @@ Size2 TextServerAdvanced::font_get_glyph_texture_size(const RID &p_font_rid, con
 	}
 
 	const HashMap<int32_t, FontGlyph> &gl = fd->cache[size]->glyph_map;
-	ERR_FAIL_COND_V(gl[p_glyph].texture_idx < -1 || gl[p_glyph].texture_idx >= fd->cache[size]->textures.size(), Size2());
+	ERR_FAIL_COND_V(gl[p_glyph | mod].texture_idx < -1 || gl[p_glyph | mod].texture_idx >= fd->cache[size]->textures.size(), Size2());
 
 	if (RenderingServer::get_singleton() != nullptr) {
-		if (gl[p_glyph].texture_idx != -1) {
-			if (fd->cache[size]->textures[gl[p_glyph].texture_idx].dirty) {
-				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph].texture_idx];
+		if (gl[p_glyph | mod].texture_idx != -1) {
+			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
+				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
 				Ref<Image> img;
 				img.instantiate();
 				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
@@ -2904,7 +2904,7 @@ Size2 TextServerAdvanced::font_get_glyph_texture_size(const RID &p_font_rid, con
 				}
 				tex.dirty = false;
 			}
-			return fd->cache[size]->textures[gl[p_glyph].texture_idx].texture->get_size();
+			return fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].texture->get_size();
 		}
 	}
 
