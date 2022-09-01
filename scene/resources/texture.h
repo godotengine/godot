@@ -922,7 +922,7 @@ private:
 
 	struct Frame {
 		Ref<Texture2D> texture;
-		float delay_sec = 0.0;
+		float duration = 1.0;
 	};
 
 	Frame frames[MAX_FRAMES];
@@ -930,7 +930,7 @@ private:
 	int current_frame = 0;
 	bool pause = false;
 	bool one_shot = false;
-	float fps = 4.0;
+	float speed_scale = 1.0;
 
 	float time = 0.0;
 
@@ -958,11 +958,11 @@ public:
 	void set_frame_texture(int p_frame, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_frame_texture(int p_frame) const;
 
-	void set_frame_delay(int p_frame, float p_delay_sec);
-	float get_frame_delay(int p_frame) const;
+	void set_frame_duration(int p_frame, float p_duration);
+	float get_frame_duration(int p_frame) const;
 
-	void set_fps(float p_fps);
-	float get_fps() const;
+	void set_speed_scale(float p_scale);
+	float get_speed_scale() const;
 
 	virtual int get_width() const override;
 	virtual int get_height() const override;
