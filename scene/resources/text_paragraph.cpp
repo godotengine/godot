@@ -77,7 +77,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_break_flags", "flags"), &TextParagraph::set_break_flags);
 	ClassDB::bind_method(D_METHOD("get_break_flags"), &TextParagraph::get_break_flags);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "break_flags", PROPERTY_HINT_FLAGS, "Mandatory,Word Bound,Grapheme Bound,Adaptive"), "set_break_flags", "get_break_flags");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "break_flags", PROPERTY_HINT_FLAGS, "Mandatory,Word Bound,Grapheme Bound,Adaptive,Trim Spaces"), "set_break_flags", "get_break_flags");
 
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "flags"), &TextParagraph::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &TextParagraph::get_justification_flags);

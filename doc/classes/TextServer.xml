@@ -1624,6 +1624,10 @@
 			Break the line between any unconnected graphemes.
 		</constant>
 		<constant name="BREAK_ADAPTIVE" value="8" enum="LineBreakFlag" is_bitfield="true">
+			Should be used only in conjunction with [constant BREAK_WORD_BOUND], break the line between any unconnected graphemes, if it's impossible to break it between the words.
+		</constant>
+		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true">
+			Remove edge spaces from the broken line segments.
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.

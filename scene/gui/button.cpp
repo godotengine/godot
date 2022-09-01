@@ -544,7 +544,7 @@ void Button::_bind_methods() {
 
 Button::Button(const String &p_text) {
 	text_buf.instantiate();
-	text_buf->set_break_flags(TextServer::BREAK_MANDATORY);
+	text_buf->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
 	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	set_text(p_text);
