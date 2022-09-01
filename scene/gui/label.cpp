@@ -805,10 +805,10 @@ int Label::get_visible_characters() const {
 
 void Label::set_visible_ratio(float p_ratio) {
 	if (visible_ratio != p_ratio) {
-		if (visible_ratio >= 1.0) {
+		if (p_ratio >= 1.0) {
 			visible_chars = -1;
 			visible_ratio = 1.0;
-		} else if (visible_ratio < 0.0) {
+		} else if (p_ratio < 0.0) {
 			visible_chars = 0;
 			visible_ratio = 0.0;
 		} else {
