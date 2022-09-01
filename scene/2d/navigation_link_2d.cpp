@@ -148,7 +148,7 @@ void NavigationLink2D::set_enabled(bool p_enabled) {
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
-		update();
+		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
 }
@@ -213,7 +213,7 @@ void NavigationLink2D::set_start_location(Vector2 p_location) {
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
-		update();
+		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
 }
@@ -236,7 +236,7 @@ void NavigationLink2D::set_end_location(Vector2 p_location) {
 
 #ifdef DEBUG_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
-		update();
+		queue_redraw();
 	}
 #endif // DEBUG_ENABLED
 }
