@@ -237,7 +237,7 @@ Copyright: 1991-2021, Unicode
 License: Unicode
 
 Files: ./thirdparty/ies/
-Comment: ies
+Comment: IES Light Profiles
 Copyright: 2016-2017, Rui
 License: MIT
 
