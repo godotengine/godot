@@ -59,36 +59,26 @@ VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
 }
 
-void FileDialog::_theme_changed() {
-	Color font_color = vbox->get_theme_color(SNAME("font_color"), SNAME("Button"));
-	Color font_hover_color = vbox->get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
-	Color font_focus_color = vbox->get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
-	Color font_pressed_color = vbox->get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
+void FileDialog::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
 
-	dir_up->add_theme_color_override("icon_normal_color", font_color);
-	dir_up->add_theme_color_override("icon_hover_color", font_hover_color);
-	dir_up->add_theme_color_override("icon_focus_color", font_focus_color);
-	dir_up->add_theme_color_override("icon_pressed_color", font_pressed_color);
+	theme_cache.parent_folder = get_theme_icon(SNAME("parent_folder"));
+	theme_cache.forward_folder = get_theme_icon(SNAME("forward_folder"));
+	theme_cache.back_folder = get_theme_icon(SNAME("back_folder"));
+	theme_cache.reload = get_theme_icon(SNAME("reload"));
+	theme_cache.toggle_hidden = get_theme_icon(SNAME("toggle_hidden"));
+	theme_cache.folder = get_theme_icon(SNAME("folder"));
+	theme_cache.file = get_theme_icon(SNAME("file"));
 
-	dir_prev->add_theme_color_override("icon_color_normal", font_color);
-	dir_prev->add_theme_color_override("icon_color_hover", font_hover_color);
-	dir_prev->add_theme_color_override("icon_focus_color", font_focus_color);
-	dir_prev->add_theme_color_override("icon_color_pressed", font_pressed_color);
+	theme_cache.folder_icon_modulate = get_theme_color(SNAME("folder_icon_modulate"));
+	theme_cache.file_icon_modulate = get_theme_color(SNAME("file_icon_modulate"));
+	theme_cache.files_disabled = get_theme_color(SNAME("files_disabled"));
 
-	dir_next->add_theme_color_override("icon_color_normal", font_color);
-	dir_next->add_theme_color_override("icon_color_hover", font_hover_color);
-	dir_next->add_theme_color_override("icon_focus_color", font_focus_color);
-	dir_next->add_theme_color_override("icon_color_pressed", font_pressed_color);
-
-	refresh->add_theme_color_override("icon_normal_color", font_color);
-	refresh->add_theme_color_override("icon_hover_color", font_hover_color);
-	refresh->add_theme_color_override("icon_focus_color", font_focus_color);
-	refresh->add_theme_color_override("icon_pressed_color", font_pressed_color);
-
-	show_hidden->add_theme_color_override("icon_normal_color", font_color);
-	show_hidden->add_theme_color_override("icon_hover_color", font_hover_color);
-	show_hidden->add_theme_color_override("icon_focus_color", font_focus_color);
-	show_hidden->add_theme_color_override("icon_pressed_color", font_pressed_color);
+	// TODO: Define own colors?
+	theme_cache.icon_normal_color = get_theme_color(SNAME("font_color"), SNAME("Button"));
+	theme_cache.icon_hover_color = get_theme_color(SNAME("font_hover_color"), SNAME("Button"));
+	theme_cache.icon_focus_color = get_theme_color(SNAME("font_focus_color"), SNAME("Button"));
+	theme_cache.icon_pressed_color = get_theme_color(SNAME("font_pressed_color"), SNAME("Button"));
 }
 
 void FileDialog::_notification(int p_what) {
@@ -99,18 +89,42 @@ void FileDialog::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_ENTER_TREE: {
-			dir_up->set_icon(vbox->get_theme_icon(SNAME("parent_folder"), SNAME("FileDialog")));
+		case NOTIFICATION_THEME_CHANGED: {
+			dir_up->set_icon(theme_cache.parent_folder);
 			if (vbox->is_layout_rtl()) {
-				dir_prev->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
-				dir_next->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
+				dir_prev->set_icon(theme_cache.forward_folder);
+				dir_next->set_icon(theme_cache.back_folder);
 			} else {
-				dir_prev->set_icon(vbox->get_theme_icon(SNAME("back_folder"), SNAME("FileDialog")));
-				dir_next->set_icon(vbox->get_theme_icon(SNAME("forward_folder"), SNAME("FileDialog")));
+				dir_prev->set_icon(theme_cache.back_folder);
+				dir_next->set_icon(theme_cache.forward_folder);
 			}
-			refresh->set_icon(vbox->get_theme_icon(SNAME("reload"), SNAME("FileDialog")));
-			show_hidden->set_icon(vbox->get_theme_icon(SNAME("toggle_hidden"), SNAME("FileDialog")));
-			_theme_changed();
+			refresh->set_icon(theme_cache.reload);
+			show_hidden->set_icon(theme_cache.toggle_hidden);
+
+			dir_up->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
+			dir_up->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
+			dir_up->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
+			dir_up->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+
+			dir_prev->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
+			dir_prev->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
+			dir_prev->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
+			dir_prev->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+
+			dir_next->add_theme_color_override("icon_color_normal", theme_cache.icon_normal_color);
+			dir_next->add_theme_color_override("icon_color_hover", theme_cache.icon_hover_color);
+			dir_next->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
+			dir_next->add_theme_color_override("icon_color_pressed", theme_cache.icon_pressed_color);
+
+			refresh->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
+			refresh->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
+			refresh->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
+			refresh->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
+
+			show_hidden->add_theme_color_override("icon_normal_color", theme_cache.icon_normal_color);
+			show_hidden->add_theme_color_override("icon_hover_color", theme_cache.icon_hover_color);
+			show_hidden->add_theme_color_override("icon_focus_color", theme_cache.icon_focus_color);
+			show_hidden->add_theme_color_override("icon_pressed_color", theme_cache.icon_pressed_color);
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -506,10 +520,6 @@ void FileDialog::update_file_list() {
 	}
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture2D> folder = vbox->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
-	Ref<Texture2D> file_icon = vbox->get_theme_icon(SNAME("file"), SNAME("FileDialog"));
-	const Color folder_color = vbox->get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
-	const Color file_color = vbox->get_theme_color(SNAME("file_icon_modulate"), SNAME("FileDialog"));
 	List<String> files;
 	List<String> dirs;
 
@@ -541,8 +551,8 @@ void FileDialog::update_file_list() {
 		String &dir_name = dirs.front()->get();
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
-		ti->set_icon(0, folder);
-		ti->set_icon_modulate(0, folder_color);
+		ti->set_icon(0, theme_cache.folder);
+		ti->set_icon_modulate(0, theme_cache.folder_icon_modulate);
 
 		Dictionary d;
 		d["name"] = dir_name;
@@ -601,12 +611,12 @@ void FileDialog::update_file_list() {
 				Ref<Texture2D> icon = get_icon_func(base_dir.path_join(files.front()->get()));
 				ti->set_icon(0, icon);
 			} else {
-				ti->set_icon(0, file_icon);
+				ti->set_icon(0, theme_cache.file);
 			}
-			ti->set_icon_modulate(0, file_color);
+			ti->set_icon_modulate(0, theme_cache.file_icon_modulate);
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, vbox->get_theme_color(SNAME("files_disabled"), SNAME("FileDialog")));
+				ti->set_custom_color(0, theme_cache.files_disabled);
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
@@ -1006,7 +1016,6 @@ FileDialog::FileDialog() {
 
 	vbox = memnew(VBoxContainer);
 	add_child(vbox, false, INTERNAL_MODE_FRONT);
-	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
 	set_title(TTRC("Save a File"));

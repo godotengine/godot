@@ -48,15 +48,12 @@ String PopupMenu::_get_accel_text(const Item &p_item) const {
 }
 
 Size2 PopupMenu::_get_contents_minimum_size() const {
-	int vseparation = get_theme_constant(SNAME("v_separation"));
-	int hseparation = get_theme_constant(SNAME("h_separation"));
-
-	Size2 minsize = get_theme_stylebox(SNAME("panel"))->get_minimum_size(); // Accounts for margin in the margin container
+	Size2 minsize = theme_cache.panel_style->get_minimum_size(); // Accounts for margin in the margin container
 	minsize.x += scroll_container->get_v_scroll_bar()->get_size().width * 2; // Adds a buffer so that the scrollbar does not render over the top of content
 
 	float max_w = 0.0;
 	float icon_w = 0.0;
-	int check_w = MAX(get_theme_icon(SNAME("checked"))->get_width(), get_theme_icon(SNAME("radio_checked"))->get_width()) + hseparation;
+	int check_w = MAX(theme_cache.checked->get_width(), theme_cache.radio_checked->get_width()) + theme_cache.h_separation;
 	int accel_max_w = 0;
 	bool has_check = false;
 
@@ -67,23 +64,23 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		size.height = _get_item_height(i);
 		icon_w = MAX(icon_size.width, icon_w);
 
-		size.width += items[i].indent * get_theme_constant(SNAME("indent"));
+		size.width += items[i].indent * theme_cache.indent;
 
 		if (items[i].checkable_type && !items[i].separator) {
 			has_check = true;
 		}
 
 		size.width += items[i].text_buf->get_size().x;
-		size.height += vseparation;
+		size.height += theme_cache.v_separation;
 
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
-			int accel_w = hseparation * 2;
+			int accel_w = theme_cache.h_separation * 2;
 			accel_w += items[i].accel_text_buf->get_size().x;
 			accel_max_w = MAX(accel_w, accel_max_w);
 		}
 
 		if (!items[i].submenu.is_empty()) {
-			size.width += get_theme_icon(SNAME("submenu"))->get_width();
+			size.width += theme_cache.submenu->get_width();
 		}
 
 		max_w = MAX(max_w, size.width);
@@ -91,7 +88,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		minsize.height += size.height;
 	}
 
-	int item_side_padding = get_theme_constant(SNAME("item_start_padding")) + get_theme_constant(SNAME("item_end_padding"));
+	int item_side_padding = theme_cache.item_start_padding + theme_cache.item_end_padding;
 	minsize.width += max_w + icon_w + accel_max_w + item_side_padding;
 
 	if (has_check) {
@@ -113,33 +110,31 @@ int PopupMenu::_get_item_height(int p_item) const {
 
 	int icon_height = items[p_item].get_icon_size().height;
 	if (items[p_item].checkable_type && !items[p_item].separator) {
-		icon_height = MAX(icon_height, MAX(get_theme_icon(SNAME("checked"))->get_height(), get_theme_icon(SNAME("radio_checked"))->get_height()));
+		icon_height = MAX(icon_height, MAX(theme_cache.checked->get_height(), theme_cache.radio_checked->get_height()));
 	}
 
 	int text_height = items[p_item].text_buf->get_size().height;
 	if (text_height == 0 && !items[p_item].separator) {
-		text_height = get_theme_font(SNAME("font"))->get_height(get_theme_font_size(SNAME("font_size")));
+		text_height = theme_cache.font->get_height(theme_cache.font_size);
 	}
 
 	int separator_height = 0;
 	if (items[p_item].separator) {
-		separator_height = MAX(get_theme_stylebox(SNAME("separator"))->get_minimum_size().height, MAX(get_theme_stylebox(SNAME("labeled_separator_left"))->get_minimum_size().height, get_theme_stylebox(SNAME("labeled_separator_right"))->get_minimum_size().height));
+		separator_height = MAX(theme_cache.separator_style->get_minimum_size().height, MAX(theme_cache.labeled_separator_left->get_minimum_size().height, theme_cache.labeled_separator_right->get_minimum_size().height));
 	}
 
 	return MAX(separator_height, MAX(text_height, icon_height));
 }
 
 int PopupMenu::_get_items_total_height() const {
-	int vsep = get_theme_constant(SNAME("v_separation"));
-
 	// Get total height of all items by taking max of icon height and font height
 	int items_total_height = 0;
 	for (int i = 0; i < items.size(); i++) {
-		items_total_height += _get_item_height(i) + vsep;
+		items_total_height += _get_item_height(i) + theme_cache.v_separation;
 	}
 
 	// Subtract a separator which is not needed for the last item.
-	return items_total_height - vsep;
+	return items_total_height - theme_cache.v_separation;
 }
 
 int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
@@ -147,18 +142,15 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 		return -1;
 	}
 
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel")); // Accounts for margin in the margin container
-
-	int vseparation = get_theme_constant(SNAME("v_separation"));
-
-	Point2 ofs = style->get_offset() + Point2(0, vseparation / 2);
+	// Accounts for margin in the margin container
+	Point2 ofs = theme_cache.panel_style->get_offset() + Point2(0, theme_cache.v_separation / 2);
 
 	if (ofs.y > p_over.y) {
 		return -1;
 	}
 
 	for (int i = 0; i < items.size(); i++) {
-		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
+		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
 
 		ofs.y += _get_item_height(i);
 
@@ -178,9 +170,6 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	if (submenu_popup->is_visible()) {
 		return; // Already visible.
 	}
-
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
-	int vsep = get_theme_constant(SNAME("v_separation"));
 
 	Point2 this_pos = get_position();
 	Rect2 this_rect(this_pos, get_size());
@@ -231,7 +220,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	// Set autohide areas.
 
 	Rect2 safe_area = this_rect;
-	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2;
+	safe_area.position.y += items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2;
 	safe_area.size.y = items[p_over]._height_cache;
 	DisplayServer::get_singleton()->window_set_popup_safe_rect(submenu_popup->get_window_id(), safe_area);
 
@@ -240,11 +229,11 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 
 	// Autohide area above the submenu item.
 	submenu_pum->clear_autohide_areas();
-	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + style->get_offset().height - vsep / 2));
+	submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y, this_rect.size.x, items[p_over]._ofs_cache + scroll_offset + theme_cache.panel_style->get_offset().height - theme_cache.v_separation / 2));
 
 	// If there is an area below the submenu item, add an autohide area there.
 	if (items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset <= control->get_size().height) {
-		int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + vsep / 2 + style->get_offset().height;
+		int from = items[p_over]._ofs_cache + items[p_over]._height_cache + scroll_offset + theme_cache.v_separation / 2 + theme_cache.panel_style->get_offset().height;
 		submenu_pum->add_autohide_area(Rect2(this_rect.position.x, this_rect.position.y + from, this_rect.size.x, this_rect.size.y - from));
 	}
 }
@@ -528,33 +517,16 @@ void PopupMenu::_draw_items() {
 	margin_size.height = margin_container->get_theme_constant(SNAME("margin_top")) + margin_container->get_theme_constant(SNAME("margin_bottom"));
 
 	// Space between the item content and the sides of popup menu.
-	int item_start_padding = get_theme_constant(SNAME("item_start_padding"));
-	int item_end_padding = get_theme_constant(SNAME("item_end_padding"));
-
 	bool rtl = control->is_layout_rtl();
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
-	Ref<StyleBox> hover = get_theme_stylebox(SNAME("hover"));
 	// In Item::checkable_type enum order (less the non-checkable member), with disabled repeated at the end.
-	Ref<Texture2D> check[] = { get_theme_icon(SNAME("checked")), get_theme_icon(SNAME("radio_checked")), get_theme_icon(SNAME("checked_disabled")), get_theme_icon(SNAME("radio_checked_disabled")) };
-	Ref<Texture2D> uncheck[] = { get_theme_icon(SNAME("unchecked")), get_theme_icon(SNAME("radio_unchecked")), get_theme_icon(SNAME("unchecked_disabled")), get_theme_icon(SNAME("radio_unchecked_disabled")) };
+	Ref<Texture2D> check[] = { theme_cache.checked, theme_cache.radio_checked, theme_cache.checked_disabled, theme_cache.radio_checked_disabled };
+	Ref<Texture2D> uncheck[] = { theme_cache.unchecked, theme_cache.radio_unchecked, theme_cache.unchecked_disabled, theme_cache.radio_unchecked_disabled };
 	Ref<Texture2D> submenu;
 	if (rtl) {
-		submenu = get_theme_icon(SNAME("submenu_mirrored"));
+		submenu = theme_cache.submenu_mirrored;
 	} else {
-		submenu = get_theme_icon(SNAME("submenu"));
+		submenu = theme_cache.submenu;
 	}
-
-	Ref<StyleBox> separator = get_theme_stylebox(SNAME("separator"));
-	Ref<StyleBox> labeled_separator_left = get_theme_stylebox(SNAME("labeled_separator_left"));
-	Ref<StyleBox> labeled_separator_right = get_theme_stylebox(SNAME("labeled_separator_right"));
-
-	int vseparation = get_theme_constant(SNAME("v_separation"));
-	int hseparation = get_theme_constant(SNAME("h_separation"));
-	Color font_color = get_theme_color(SNAME("font_color"));
-	Color font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
-	Color font_accelerator_color = get_theme_color(SNAME("font_accelerator_color"));
-	Color font_hover_color = get_theme_color(SNAME("font_hover_color"));
-	Color font_separator_color = get_theme_color(SNAME("font_separator_color"));
 
 	float scroll_width = scroll_container->get_v_scroll_bar()->is_visible_in_tree() ? scroll_container->get_v_scroll_bar()->get_size().width : 0;
 	float display_width = control->get_size().width - scroll_width;
@@ -574,7 +546,7 @@ void PopupMenu::_draw_items() {
 		}
 	}
 	if (icon_ofs > 0.0) {
-		icon_ofs += hseparation;
+		icon_ofs += theme_cache.h_separation;
 	}
 
 	float check_ofs = 0.0;
@@ -583,7 +555,7 @@ void PopupMenu::_draw_items() {
 			check_ofs = MAX(check_ofs, check[i]->get_width());
 			check_ofs = MAX(check_ofs, uncheck[i]->get_width());
 		}
-		check_ofs += hseparation;
+		check_ofs += theme_cache.h_separation;
 	}
 
 	Point2 ofs = Point2();
@@ -591,7 +563,7 @@ void PopupMenu::_draw_items() {
 	// Loop through all items and draw each.
 	for (int i = 0; i < items.size(); i++) {
 		// For the first item only add half a separation. For all other items, add a whole separation to the offset.
-		ofs.y += i > 0 ? vseparation : (float)vseparation / 2;
+		ofs.y += i > 0 ? theme_cache.v_separation : (float)theme_cache.v_separation / 2;
 
 		_shape_item(i);
 
@@ -601,47 +573,47 @@ void PopupMenu::_draw_items() {
 
 		if (i == mouse_over) {
 			if (rtl) {
-				hover->draw(ci, Rect2(item_ofs + Point2(scroll_width, -vseparation / 2), Size2(display_width, h + vseparation)));
+				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(scroll_width, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
 			} else {
-				hover->draw(ci, Rect2(item_ofs + Point2(0, -vseparation / 2), Size2(display_width, h + vseparation)));
+				theme_cache.hover_style->draw(ci, Rect2(item_ofs + Point2(0, -theme_cache.v_separation / 2), Size2(display_width, h + theme_cache.v_separation)));
 			}
 		}
 
 		String text = items[i].xl_text;
 
 		// Separator
-		item_ofs.x += items[i].indent * get_theme_constant(SNAME("indent"));
+		item_ofs.x += items[i].indent * theme_cache.indent;
 		if (items[i].separator) {
 			if (!text.is_empty() || !items[i].icon.is_null()) {
-				int content_size = items[i].text_buf->get_size().width + hseparation * 2;
+				int content_size = items[i].text_buf->get_size().width + theme_cache.h_separation * 2;
 				if (!items[i].icon.is_null()) {
-					content_size += icon_size.width + hseparation;
+					content_size += icon_size.width + theme_cache.h_separation;
 				}
 
 				int content_center = display_width / 2;
 				int content_left = content_center - content_size / 2;
 				int content_right = content_center + content_size / 2;
 				if (content_left > item_ofs.x) {
-					int sep_h = labeled_separator_left->get_center_size().height + labeled_separator_left->get_minimum_size().height;
+					int sep_h = theme_cache.labeled_separator_left->get_center_size().height + theme_cache.labeled_separator_left->get_minimum_size().height;
 					int sep_ofs = Math::floor((h - sep_h) / 2.0);
-					labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, content_left - item_ofs.x), sep_h)));
+					theme_cache.labeled_separator_left->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(MAX(0, content_left - item_ofs.x), sep_h)));
 				}
 				if (content_right < display_width) {
-					int sep_h = labeled_separator_right->get_center_size().height + labeled_separator_right->get_minimum_size().height;
+					int sep_h = theme_cache.labeled_separator_right->get_center_size().height + theme_cache.labeled_separator_right->get_minimum_size().height;
 					int sep_ofs = Math::floor((h - sep_h) / 2.0);
-					labeled_separator_right->draw(ci, Rect2(Point2(content_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - content_right), sep_h)));
+					theme_cache.labeled_separator_right->draw(ci, Rect2(Point2(content_right, item_ofs.y + sep_ofs), Size2(MAX(0, display_width - content_right), sep_h)));
 				}
 			} else {
-				int sep_h = separator->get_center_size().height + separator->get_minimum_size().height;
+				int sep_h = theme_cache.separator_style->get_center_size().height + theme_cache.separator_style->get_minimum_size().height;
 				int sep_ofs = Math::floor((h - sep_h) / 2.0);
-				separator->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(display_width, sep_h)));
+				theme_cache.separator_style->draw(ci, Rect2(item_ofs + Point2(0, sep_ofs), Size2(display_width, sep_h)));
 			}
 		}
 
 		Color icon_color(1, 1, 1, items[i].disabled && !items[i].separator ? 0.5 : 1);
 
 		// For non-separator items, add some padding for the content.
-		item_ofs.x += item_start_padding;
+		item_ofs.x += theme_cache.item_start_padding;
 
 		// Checkboxes
 		if (items[i].checkable_type && !items[i].separator) {
@@ -659,7 +631,7 @@ void PopupMenu::_draw_items() {
 		// Icon
 		if (!items[i].icon.is_null()) {
 			if (items[i].separator) {
-				separator_ofs -= (icon_size.width + hseparation) / 2;
+				separator_ofs -= (icon_size.width + theme_cache.h_separation) / 2;
 
 				if (rtl) {
 					items[i].icon->draw(ci, Size2(control->get_size().width - item_ofs.x - separator_ofs - icon_size.width, item_ofs.y) + Point2(0, Math::floor((h - icon_size.height) / 2.0)), icon_color);
@@ -678,61 +650,55 @@ void PopupMenu::_draw_items() {
 		// Submenu arrow on right hand side.
 		if (!items[i].submenu.is_empty()) {
 			if (rtl) {
-				submenu->draw(ci, Point2(scroll_width + style->get_margin(SIDE_LEFT) + item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(scroll_width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			} else {
-				submenu->draw(ci, Point2(display_width - style->get_margin(SIDE_RIGHT) - submenu->get_width() - item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
+				submenu->draw(ci, Point2(display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - submenu->get_width() - theme_cache.item_end_padding, item_ofs.y + Math::floor(h - submenu->get_height()) / 2), icon_color);
 			}
 		}
 
-		Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-		int outline_size = get_theme_constant(SNAME("outline_size"));
-
 		// Text
 		if (items[i].separator) {
-			Color font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
-			int separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
-
 			if (!text.is_empty()) {
 				Vector2 text_pos = Point2(separator_ofs, item_ofs.y + Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
 				if (!rtl && !items[i].icon.is_null()) {
-					text_pos.x += icon_size.width + hseparation;
+					text_pos.x += icon_size.width + theme_cache.h_separation;
 				}
 
-				if (separator_outline_size > 0 && font_separator_outline_color.a > 0) {
-					items[i].text_buf->draw_outline(ci, text_pos, separator_outline_size, font_separator_outline_color);
+				if (theme_cache.font_separator_outline_size > 0 && theme_cache.font_separator_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_separator_outline_size, theme_cache.font_separator_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, font_separator_color);
+				items[i].text_buf->draw(ci, text_pos, theme_cache.font_separator_color);
 			}
 		} else {
 			item_ofs.x += icon_ofs + check_ofs;
 
 			if (rtl) {
 				Vector2 text_pos = Size2(control->get_size().width - items[i].text_buf->get_size().width - item_ofs.x, item_ofs.y) + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (outline_size > 0 && font_outline_color.a > 0) {
-					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_color));
 			} else {
 				Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-				if (outline_size > 0 && font_outline_color.a > 0) {
-					items[i].text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+				if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+					items[i].text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 				}
-				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? font_disabled_color : (i == mouse_over ? font_hover_color : font_color));
+				items[i].text_buf->draw(ci, text_pos, items[i].disabled ? theme_cache.font_disabled_color : (i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_color));
 			}
 		}
 
 		// Accelerator / Shortcut
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			if (rtl) {
-				item_ofs.x = scroll_width + style->get_margin(SIDE_LEFT) + item_end_padding;
+				item_ofs.x = scroll_width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.item_end_padding;
 			} else {
-				item_ofs.x = display_width - style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - item_end_padding;
+				item_ofs.x = display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
 			}
 			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
-			if (outline_size > 0 && font_outline_color.a > 0) {
-				items[i].accel_text_buf->draw_outline(ci, text_pos, outline_size, font_outline_color);
+			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
+				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
-			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? font_hover_color : font_accelerator_color);
+			items[i].accel_text_buf->draw(ci, text_pos, i == mouse_over ? theme_cache.font_hover_color : theme_cache.font_accelerator_color);
 		}
 
 		// Cache the item vertical offset from the first item and the height.
@@ -744,9 +710,8 @@ void PopupMenu::_draw_items() {
 }
 
 void PopupMenu::_draw_background() {
-	Ref<StyleBox> style = get_theme_stylebox(SNAME("panel"));
 	RID ci2 = margin_container->get_canvas_item();
-	style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
+	theme_cache.panel_style->draw(ci2, Rect2(Point2(), margin_container->get_size()));
 }
 
 void PopupMenu::_minimum_lifetime_timeout() {
@@ -778,8 +743,8 @@ void PopupMenu::_shape_item(int p_item) {
 	if (items.write[p_item].dirty) {
 		items.write[p_item].text_buf->clear();
 
-		Ref<Font> font = get_theme_font(items[p_item].separator ? SNAME("font_separator") : SNAME("font"));
-		int font_size = get_theme_font_size(items[p_item].separator ? SNAME("font_separator_size") : SNAME("font_size"));
+		Ref<Font> font = items[p_item].separator ? theme_cache.font_separator : theme_cache.font;
+		int font_size = items[p_item].separator ? theme_cache.font_separator_size : theme_cache.font_size;
 
 		if (items[p_item].text_direction == Control::TEXT_DIRECTION_INHERITED) {
 			items.write[p_item].text_buf->set_direction(is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
@@ -819,6 +784,51 @@ void PopupMenu::remove_child_notify(Node *p_child) {
 	}
 	p_child->disconnect("menu_changed", callable_mp(this, &PopupMenu::_menu_changed));
 	_menu_changed();
+}
+
+void PopupMenu::_update_theme_item_cache() {
+	Popup::_update_theme_item_cache();
+
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+	theme_cache.hover_style = get_theme_stylebox(SNAME("hover"));
+
+	theme_cache.separator_style = get_theme_stylebox(SNAME("separator"));
+	theme_cache.labeled_separator_left = get_theme_stylebox(SNAME("labeled_separator_left"));
+	theme_cache.labeled_separator_right = get_theme_stylebox(SNAME("labeled_separator_right"));
+
+	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.indent = get_theme_constant(SNAME("indent"));
+	theme_cache.item_start_padding = get_theme_constant(SNAME("item_start_padding"));
+	theme_cache.item_end_padding = get_theme_constant(SNAME("item_end_padding"));
+
+	theme_cache.checked = get_theme_icon(SNAME("checked"));
+	theme_cache.checked_disabled = get_theme_icon(SNAME("checked_disabled"));
+	theme_cache.unchecked = get_theme_icon(SNAME("unchecked"));
+	theme_cache.unchecked_disabled = get_theme_icon(SNAME("unchecked_disabled"));
+	theme_cache.radio_checked = get_theme_icon(SNAME("radio_checked"));
+	theme_cache.radio_checked_disabled = get_theme_icon(SNAME("radio_checked_disabled"));
+	theme_cache.radio_unchecked = get_theme_icon(SNAME("radio_unchecked"));
+	theme_cache.radio_unchecked_disabled = get_theme_icon(SNAME("radio_unchecked_disabled"));
+
+	theme_cache.submenu = get_theme_icon(SNAME("submenu"));
+	theme_cache.submenu_mirrored = get_theme_icon(SNAME("submenu_mirrored"));
+
+	theme_cache.font = get_theme_font(SNAME("font"));
+	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
+	theme_cache.font_separator = get_theme_font(SNAME("font_separator"));
+	theme_cache.font_separator_size = get_theme_font_size(SNAME("font_separator_size"));
+
+	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
+	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
+	theme_cache.font_accelerator_color = get_theme_color(SNAME("font_accelerator_color"));
+	theme_cache.font_outline_size = get_theme_constant(SNAME("outline_size"));
+	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
+
+	theme_cache.font_separator_color = get_theme_color(SNAME("font_separator_color"));
+	theme_cache.font_separator_outline_size = get_theme_constant(SNAME("separator_outline_size"));
+	theme_cache.font_separator_outline_color = get_theme_color(SNAME("font_separator_outline_color"));
 }
 
 void PopupMenu::_notification(int p_what) {
@@ -909,11 +919,10 @@ void PopupMenu::_notification(int p_what) {
 				}
 
 				// Set margin on the margin container
-				Ref<StyleBox> panel_style = get_theme_stylebox(SNAME("panel"));
-				margin_container->add_theme_constant_override("margin_left", panel_style->get_margin(Side::SIDE_LEFT));
-				margin_container->add_theme_constant_override("margin_top", panel_style->get_margin(Side::SIDE_TOP));
-				margin_container->add_theme_constant_override("margin_right", panel_style->get_margin(Side::SIDE_RIGHT));
-				margin_container->add_theme_constant_override("margin_bottom", panel_style->get_margin(Side::SIDE_BOTTOM));
+				margin_container->add_theme_constant_override("margin_left", theme_cache.panel_style->get_margin(Side::SIDE_LEFT));
+				margin_container->add_theme_constant_override("margin_top", theme_cache.panel_style->get_margin(Side::SIDE_TOP));
+				margin_container->add_theme_constant_override("margin_right", theme_cache.panel_style->get_margin(Side::SIDE_RIGHT));
+				margin_container->add_theme_constant_override("margin_bottom", theme_cache.panel_style->get_margin(Side::SIDE_BOTTOM));
 			}
 		} break;
 	}

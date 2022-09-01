@@ -109,6 +109,25 @@ private:
 
 	bool invalidated = true;
 
+	struct ThemeCache {
+		Ref<Texture2D> parent_folder;
+		Ref<Texture2D> forward_folder;
+		Ref<Texture2D> back_folder;
+		Ref<Texture2D> reload;
+		Ref<Texture2D> toggle_hidden;
+		Ref<Texture2D> folder;
+		Ref<Texture2D> file;
+
+		Color folder_icon_modulate;
+		Color file_icon_modulate;
+		Color files_disabled;
+
+		Color icon_normal_color;
+		Color icon_hover_color;
+		Color icon_focus_color;
+		Color icon_pressed_color;
+	} theme_cache;
+
 	void update_dir();
 	void update_file_name();
 	void update_file_list();
@@ -143,7 +162,7 @@ private:
 	virtual void _post_popup() override;
 
 protected:
-	void _theme_changed();
+	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

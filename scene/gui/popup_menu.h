@@ -129,6 +129,49 @@ class PopupMenu : public Popup {
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> hover_style;
+
+		Ref<StyleBox> separator_style;
+		Ref<StyleBox> labeled_separator_left;
+		Ref<StyleBox> labeled_separator_right;
+
+		int v_separation = 0;
+		int h_separation = 0;
+		int indent = 0;
+		int item_start_padding = 0;
+		int item_end_padding = 0;
+
+		Ref<Texture2D> checked;
+		Ref<Texture2D> checked_disabled;
+		Ref<Texture2D> unchecked;
+		Ref<Texture2D> unchecked_disabled;
+		Ref<Texture2D> radio_checked;
+		Ref<Texture2D> radio_checked_disabled;
+		Ref<Texture2D> radio_unchecked;
+		Ref<Texture2D> radio_unchecked_disabled;
+
+		Ref<Texture2D> submenu;
+		Ref<Texture2D> submenu_mirrored;
+
+		Ref<Font> font;
+		int font_size = 0;
+		Ref<Font> font_separator;
+		int font_separator_size = 0;
+
+		Color font_color;
+		Color font_hover_color;
+		Color font_disabled_color;
+		Color font_accelerator_color;
+		int font_outline_size = 0;
+		Color font_outline_color;
+
+		Color font_separator_color;
+		int font_separator_outline_size = 0;
+		Color font_separator_outline_color;
+	} theme_cache;
+
 	void _draw_items();
 	void _draw_background();
 
@@ -137,6 +180,8 @@ class PopupMenu : public Popup {
 	void _menu_changed();
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	void _notification(int p_what);
