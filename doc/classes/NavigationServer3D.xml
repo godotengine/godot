@@ -133,6 +133,117 @@
 				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
 			</description>
 		</method>
+		<method name="link_create" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Create a new link between two locations on a map.
+			</description>
+		</method>
+		<method name="link_get_end_location" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the ending location of this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_get_enter_cost" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the [code]enter_cost[/code] of this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_get_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the navigation map [RID] the requested [code]link[/code] is currently assigned to.
+			</description>
+		</method>
+		<method name="link_get_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the navigation layers for this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_get_start_location" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the starting location of this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_get_travel_cost" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the [code]travel_cost[/code] of this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_is_bidirectional" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns whether this [code]link[/code] can be travelled in both directions.
+			</description>
+		</method>
+		<method name="link_set_bidirectional" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="bidirectional" type="bool" />
+			<description>
+				Sets whether this [code]link[/code] can be travelled in both directions.
+			</description>
+		</method>
+		<method name="link_set_end_location" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="location" type="Vector3" />
+			<description>
+				Sets the exit location for the [code]link[/code].
+			</description>
+		</method>
+		<method name="link_set_enter_cost" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="enter_cost" type="float" />
+			<description>
+				Sets the [code]enter_cost[/code] for this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_set_map" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Sets the navigation map [RID] for the link.
+			</description>
+		</method>
+		<method name="link_set_navigation_layers" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Set the links's navigation layers. This allows selecting links from a path request (when using [method NavigationServer3D.map_get_path]).
+			</description>
+		</method>
+		<method name="link_set_start_location" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="location" type="Vector3" />
+			<description>
+				Sets the entry location for this [code]link[/code].
+			</description>
+		</method>
+		<method name="link_set_travel_cost" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="travel_cost" type="float" />
+			<description>
+				Sets the [code]travel_cost[/code] for this [code]link[/code].
+			</description>
+		</method>
 		<method name="map_create" qualifiers="const">
 			<return type="RID" />
 			<description>
@@ -204,6 +315,20 @@
 				Returns the edge connection margin of the map. This distance is the minimum vertex distance needed to connect two edges from different regions.
 			</description>
 		</method>
+		<method name="map_get_link_connection_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the link connection radius of the map. This distance is the maximum range any link will search for navigation mesh polygons to connect to.
+			</description>
+		</method>
+		<method name="map_get_links" qualifiers="const">
+			<return type="RID[]" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation link [RID]s that are currently assigned to the requested navigation [code]map[/code].
+			</description>
+		</method>
 		<method name="map_get_path" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<param index="0" name="map" type="RID" />
@@ -258,6 +383,14 @@
 			<param index="1" name="margin" type="float" />
 			<description>
 				Set the map edge connection margin used to weld the compatible region edges.
+			</description>
+		</method>
+		<method name="map_set_link_connection_radius" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Set the map's link connection radius used to connect links to navigation polygons.
 			</description>
 		</method>
 		<method name="map_set_up" qualifiers="const">

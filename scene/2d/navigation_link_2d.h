@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  nav_region.h                                                         */
+/*  navigation_link_2d.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef NAVIGATION_LINK_2D_H
+#define NAVIGATION_LINK_2D_H
 
-#include "scene/resources/navigation_mesh.h"
+#include "scene/2d/node_2d.h"
 
-#include "nav_base.h"
-#include "nav_utils.h"
+class NavigationLink2D : public Node2D {
+	GDCLASS(NavigationLink2D, Node2D);
 
-class NavRegion : public NavBase {
-	NavMap *map = nullptr;
-	Transform3D transform;
-	Ref<NavigationMesh> mesh;
-	Vector<gd::Edge::Connection> connections;
+	bool enabled = true;
+	RID link = RID();
+	bool bidirectional = true;
+	uint32_t navigation_layers = 1;
+	Vector2 end_location = Vector2();
+	Vector2 start_location = Vector2();
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
 
-	bool polygons_dirty = true;
-
-	/// Cache
-	LocalVector<gd::Polygon> polygons;
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	NavRegion() {}
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#endif
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const { return enabled; }
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
+	void set_bidirectional(bool p_bidirectional);
+	bool is_bidirectional() const { return bidirectional; }
 
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const { return navigation_layers; }
 
-	void set_mesh(Ref<NavigationMesh> p_mesh);
-	const Ref<NavigationMesh> get_mesh() const {
-		return mesh;
-	}
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
 
-	Vector<gd::Edge::Connection> &get_connections() {
-		return connections;
-	}
-	int get_connections_count() const;
-	Vector3 get_connection_pathway_start(int p_connection_id) const;
-	Vector3 get_connection_pathway_end(int p_connection_id) const;
+	void set_start_location(Vector2 p_location);
+	Vector2 get_start_location() const { return start_location; }
 
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return polygons;
-	}
+	void set_end_location(Vector2 p_location);
+	Vector2 get_end_location() const { return end_location; }
 
-	bool sync();
+	void set_enter_cost(real_t p_enter_cost);
+	real_t get_enter_cost() const { return enter_cost; }
 
-private:
-	void update_polygons();
+	void set_travel_cost(real_t p_travel_cost);
+	real_t get_travel_cost() const { return travel_cost; }
+
+	TypedArray<String> get_configuration_warnings() const override;
+
+	NavigationLink2D();
+	~NavigationLink2D();
 };
 
-#endif // NAV_REGION_H
+#endif // NAVIGATION_LINK_2D_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  nav_region.h                                                         */
+/*  nav_base.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef NAV_BASE_H
+#define NAV_BASE_H
 
-#include "scene/resources/navigation_mesh.h"
-
-#include "nav_base.h"
+#include "nav_rid.h"
 #include "nav_utils.h"
 
-class NavRegion : public NavBase {
-	NavMap *map = nullptr;
-	Transform3D transform;
-	Ref<NavigationMesh> mesh;
-	Vector<gd::Edge::Connection> connections;
+class NavMap;
 
-	bool polygons_dirty = true;
-
-	/// Cache
-	LocalVector<gd::Polygon> polygons;
+class NavBase : public NavRid {
+protected:
+	uint32_t navigation_layers = 1;
+	float enter_cost = 0.0;
+	float travel_cost = 1.0;
 
 public:
-	NavRegion() {}
+	void set_navigation_layers(uint32_t p_navigation_layers) { navigation_layers = p_navigation_layers; }
+	uint32_t get_navigation_layers() const { return navigation_layers; }
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
+	void set_enter_cost(float p_enter_cost) { enter_cost = MAX(p_enter_cost, 0.0); }
+	float get_enter_cost() const { return enter_cost; }
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
-
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
-
-	void set_mesh(Ref<NavigationMesh> p_mesh);
-	const Ref<NavigationMesh> get_mesh() const {
-		return mesh;
-	}
-
-	Vector<gd::Edge::Connection> &get_connections() {
-		return connections;
-	}
-	int get_connections_count() const;
-	Vector3 get_connection_pathway_start(int p_connection_id) const;
-	Vector3 get_connection_pathway_end(int p_connection_id) const;
-
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return polygons;
-	}
-
-	bool sync();
-
-private:
-	void update_polygons();
+	void set_travel_cost(float p_travel_cost) { travel_cost = MAX(p_travel_cost, 0.0); }
+	float get_travel_cost() const { return travel_cost; }
 };
 
-#endif // NAV_REGION_H
+#endif // NAV_BASE_H

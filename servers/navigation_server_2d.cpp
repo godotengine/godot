@@ -53,6 +53,12 @@ NavigationServer2D *NavigationServer2D::singleton = nullptr;
 		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0)); \
 	}
 
+#define FORWARD_1_R_C(CONV_R, FUNC_NAME, T_0, D_0, CONV_0)                          \
+	NavigationServer2D::FUNC_NAME(T_0 D_0)                                          \
+			const {                                                                 \
+		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0))); \
+	}
+
 #define FORWARD_2_C(FUNC_NAME, T_0, D_0, T_1, D_1, CONV_0, CONV_1)                       \
 	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1)                                      \
 			const {                                                                      \
@@ -190,6 +196,22 @@ Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() co
 	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
 }
 
+void NavigationServer2D::set_debug_navigation_link_connection_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_link_connection_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_link_connection_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_color();
+}
+
+void NavigationServer2D::set_debug_navigation_link_connection_disabled_color(const Color &p_color) {
+	NavigationServer3D::get_singleton_mut()->set_debug_navigation_link_connection_disabled_color(p_color);
+}
+
+Color NavigationServer2D::get_debug_navigation_link_connection_disabled_color() const {
+	return NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_disabled_color();
+}
+
 void NavigationServer2D::set_debug_navigation_enable_edge_connections(const bool p_value) {
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_edge_connections(p_value);
 }
@@ -209,10 +231,13 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_get_cell_size", "map"), &NavigationServer2D::map_get_cell_size);
 	ClassDB::bind_method(D_METHOD("map_set_edge_connection_margin", "map", "margin"), &NavigationServer2D::map_set_edge_connection_margin);
 	ClassDB::bind_method(D_METHOD("map_get_edge_connection_margin", "map"), &NavigationServer2D::map_get_edge_connection_margin);
+	ClassDB::bind_method(D_METHOD("map_set_link_connection_radius", "map", "radius"), &NavigationServer2D::map_set_link_connection_radius);
+	ClassDB::bind_method(D_METHOD("map_get_link_connection_radius", "map"), &NavigationServer2D::map_get_link_connection_radius);
 	ClassDB::bind_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize", "navigation_layers"), &NavigationServer2D::map_get_path, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("map_get_closest_point", "map", "to_point"), &NavigationServer2D::map_get_closest_point);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_owner", "map", "to_point"), &NavigationServer2D::map_get_closest_point_owner);
 
+	ClassDB::bind_method(D_METHOD("map_get_links", "map"), &NavigationServer2D::map_get_links);
 	ClassDB::bind_method(D_METHOD("map_get_regions", "map"), &NavigationServer2D::map_get_regions);
 	ClassDB::bind_method(D_METHOD("map_get_agents", "map"), &NavigationServer2D::map_get_agents);
 
@@ -233,6 +258,22 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_connections_count", "region"), &NavigationServer2D::region_get_connections_count);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_start", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_start);
 	ClassDB::bind_method(D_METHOD("region_get_connection_pathway_end", "region", "connection"), &NavigationServer2D::region_get_connection_pathway_end);
+
+	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer2D::link_create);
+	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer2D::link_set_map);
+	ClassDB::bind_method(D_METHOD("link_get_map", "link"), &NavigationServer2D::link_get_map);
+	ClassDB::bind_method(D_METHOD("link_set_bidirectional", "link", "bidirectional"), &NavigationServer2D::link_set_bidirectional);
+	ClassDB::bind_method(D_METHOD("link_is_bidirectional", "link"), &NavigationServer2D::link_is_bidirectional);
+	ClassDB::bind_method(D_METHOD("link_set_navigation_layers", "link", "navigation_layers"), &NavigationServer2D::link_set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("link_get_navigation_layers", "link"), &NavigationServer2D::link_get_navigation_layers);
+	ClassDB::bind_method(D_METHOD("link_set_start_location", "link", "location"), &NavigationServer2D::link_set_start_location);
+	ClassDB::bind_method(D_METHOD("link_get_start_location", "link"), &NavigationServer2D::link_get_start_location);
+	ClassDB::bind_method(D_METHOD("link_set_end_location", "link", "location"), &NavigationServer2D::link_set_end_location);
+	ClassDB::bind_method(D_METHOD("link_get_end_location", "link"), &NavigationServer2D::link_get_end_location);
+	ClassDB::bind_method(D_METHOD("link_set_enter_cost", "link", "enter_cost"), &NavigationServer2D::link_set_enter_cost);
+	ClassDB::bind_method(D_METHOD("link_get_enter_cost", "link"), &NavigationServer2D::link_get_enter_cost);
+	ClassDB::bind_method(D_METHOD("link_set_travel_cost", "link", "travel_cost"), &NavigationServer2D::link_set_travel_cost);
+	ClassDB::bind_method(D_METHOD("link_get_travel_cost", "link"), &NavigationServer2D::link_get_travel_cost);
 
 	ClassDB::bind_method(D_METHOD("agent_create"), &NavigationServer2D::agent_create);
 	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
@@ -265,6 +306,8 @@ NavigationServer2D::~NavigationServer2D() {
 
 TypedArray<RID> FORWARD_0_C(get_maps);
 
+TypedArray<RID> FORWARD_1_C(map_get_links, RID, p_map, rid_to_rid);
+
 TypedArray<RID> FORWARD_1_C(map_get_regions, RID, p_map, rid_to_rid);
 
 TypedArray<RID> FORWARD_1_C(map_get_agents, RID, p_map, rid_to_rid);
@@ -288,6 +331,9 @@ real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
 
 void FORWARD_2_C(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_edge_connection_margin, RID, p_map, rid_to_rid);
+
+void FORWARD_2_C(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius, rid_to_rid, real_to_real);
+real_t FORWARD_1_C(map_get_link_connection_radius, RID, p_map, rid_to_rid);
 
 Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2, p_origin, Vector2, p_destination, bool, p_optimize, uint32_t, p_layers, rid_to_rid, v2_to_v3, v2_to_v3, bool_to_bool, uint32_to_uint32);
 
@@ -314,6 +360,23 @@ void NavigationServer2D::region_set_navpoly(RID p_region, Ref<NavigationPolygon>
 int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_start, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_end, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
+
+RID FORWARD_0_C(link_create);
+
+void FORWARD_2_C(link_set_map, RID, p_link, RID, p_map, rid_to_rid, rid_to_rid);
+RID FORWARD_1_C(link_get_map, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_bidirectional, RID, p_link, bool, p_bidirectional, rid_to_rid, bool_to_bool);
+bool FORWARD_1_C(link_is_bidirectional, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
+uint32_t FORWARD_1_C(link_get_navigation_layers, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_start_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
+Vector2 FORWARD_1_R_C(v3_to_v2, link_get_start_location, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_end_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
+Vector2 FORWARD_1_R_C(v3_to_v2, link_get_end_location, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_enter_cost, RID, p_link, real_t, p_enter_cost, rid_to_rid, real_to_real);
+real_t FORWARD_1_C(link_get_enter_cost, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_travel_cost, RID, p_link, real_t, p_travel_cost, rid_to_rid, real_to_real);
+real_t FORWARD_1_C(link_get_travel_cost, RID, p_link, rid_to_rid);
 
 RID NavigationServer2D::agent_create() const {
 	RID agent = NavigationServer3D::get_singleton()->agent_create();

@@ -54,6 +54,7 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
@@ -240,6 +241,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
+#include "scene/3d/navigation_link_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/node_3d.h"
@@ -577,6 +579,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationRegion3D);
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
+	GDREGISTER_CLASS(NavigationLink3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -934,6 +937,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
+	GDREGISTER_CLASS(NavigationLink2D);
 
 	OS::get_singleton()->yield(); // may take time to init
 

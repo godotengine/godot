@@ -31,6 +31,7 @@
 #include "nav_map.h"
 
 #include "core/object/worker_thread_pool.h"
+#include "nav_link.h"
 #include "nav_region.h"
 #include "rvo_agent.h"
 #include <algorithm>
@@ -49,6 +50,11 @@ void NavMap::set_cell_size(float p_cell_size) {
 
 void NavMap::set_edge_connection_margin(float p_edge_connection_margin) {
 	edge_connection_margin = p_edge_connection_margin;
+	regenerate_links = true;
+}
+
+void NavMap::set_link_connection_radius(float p_link_connection_radius) {
+	link_connection_radius = p_link_connection_radius;
 	regenerate_links = true;
 }
 
@@ -158,17 +164,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					continue;
 				}
 
-				float region_enter_cost = 0.0;
-				float region_travel_cost = least_cost_poly->poly->owner->get_travel_cost();
+				float poly_enter_cost = 0.0;
+				float poly_travel_cost = least_cost_poly->poly->owner->get_travel_cost();
 
-				if (prev_least_cost_poly != nullptr && !(prev_least_cost_poly->poly->owner->get_self() == least_cost_poly->poly->owner->get_self())) {
-					region_enter_cost = least_cost_poly->poly->owner->get_enter_cost();
+				if (prev_least_cost_poly != nullptr && (prev_least_cost_poly->poly->owner->get_self() != least_cost_poly->poly->owner->get_self())) {
+					poly_enter_cost = least_cost_poly->poly->owner->get_enter_cost();
 				}
 				prev_least_cost_poly = least_cost_poly;
 
 				Vector3 pathway[2] = { connection.pathway_start, connection.pathway_end };
 				const Vector3 new_entry = Geometry3D::get_closest_point_to_segment(least_cost_poly->entry, pathway);
-				const float new_distance = (least_cost_poly->entry.distance_to(new_entry) * region_travel_cost) + region_enter_cost + least_cost_poly->traveled_distance;
+				const float new_distance = (least_cost_poly->entry.distance_to(new_entry) * poly_travel_cost) + poly_enter_cost + least_cost_poly->traveled_distance;
 
 				int64_t already_visited_polygon_index = navigation_polys.find(gd::NavigationPoly(connection.polygon));
 
@@ -360,10 +366,15 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		// Add mid points
 		int np_id = least_cost_id;
 		while (np_id != -1 && navigation_polys[np_id].back_navigation_poly_id != -1) {
-			int prev = navigation_polys[np_id].back_navigation_edge;
-			int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
-			Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
-			path.push_back(point);
+			if (navigation_polys[np_id].back_navigation_edge != -1) {
+				int prev = navigation_polys[np_id].back_navigation_edge;
+				int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
+				Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
+				path.push_back(point);
+			} else {
+				path.push_back(navigation_polys[np_id].entry);
+			}
+
 			np_id = navigation_polys[np_id].back_navigation_poly_id;
 		}
 
@@ -475,6 +486,19 @@ void NavMap::remove_region(NavRegion *p_region) {
 	}
 }
 
+void NavMap::add_link(NavLink *p_link) {
+	links.push_back(p_link);
+	regenerate_links = true;
+}
+
+void NavMap::remove_link(NavLink *p_link) {
+	int64_t link_index = links.find(p_link);
+	if (link_index != -1) {
+		links.remove_at_unordered(link_index);
+		regenerate_links = true;
+	}
+}
+
 bool NavMap::has_agent(RvoAgent *agent) const {
 	return (agents.find(agent) != -1);
 }
@@ -522,6 +546,12 @@ void NavMap::sync() {
 
 	for (uint32_t r = 0; r < regions.size(); r++) {
 		if (regions[r]->sync()) {
+			regenerate_links = true;
+		}
+	}
+
+	for (uint32_t l = 0; l < links.size(); l++) {
+		if (links[l]->check_dirty()) {
 			regenerate_links = true;
 		}
 	}
@@ -651,7 +681,121 @@ void NavMap::sync() {
 				free_edge.polygon->edges[free_edge.edge].connections.push_back(new_connection);
 
 				// Add the connection to the region_connection map.
-				free_edge.polygon->owner->get_connections().push_back(new_connection);
+				((NavRegion *)free_edge.polygon->owner)->get_connections().push_back(new_connection);
+			}
+		}
+
+		uint32_t link_poly_idx = 0;
+		link_polygons.resize(links.size());
+
+		// Search for polygons within range of a nav link.
+		for (uint32_t l = 0; l < links.size(); l++) {
+			const NavLink *link = links[l];
+			const Vector3 start = link->get_start_location();
+			const Vector3 end = link->get_end_location();
+
+			gd::Polygon *closest_start_polygon = nullptr;
+			real_t closest_start_distance = link_connection_radius;
+			Vector3 closest_start_point;
+
+			gd::Polygon *closest_end_polygon = nullptr;
+			real_t closest_end_distance = link_connection_radius;
+			Vector3 closest_end_point;
+
+			// Create link to any polygons within the search radius of the start point.
+			for (uint32_t start_index = 0; start_index < polygons.size(); start_index++) {
+				gd::Polygon &start_poly = polygons[start_index];
+
+				// For each face check the distance to the start
+				for (uint32_t start_point_id = 2; start_point_id < start_poly.points.size(); start_point_id += 1) {
+					const Face3 start_face(start_poly.points[0].pos, start_poly.points[start_point_id - 1].pos, start_poly.points[start_point_id].pos);
+					const Vector3 start_point = start_face.get_closest_point_to(start);
+					const real_t start_distance = start_point.distance_to(start);
+
+					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
+					if (start_distance <= link_connection_radius && start_distance < closest_start_distance) {
+						closest_start_distance = start_distance;
+						closest_start_point = start_point;
+						closest_start_polygon = &start_poly;
+					}
+				}
+			}
+
+			// Find any polygons within the search radius of the end point.
+			for (uint32_t end_index = 0; end_index < polygons.size(); end_index++) {
+				gd::Polygon &end_poly = polygons[end_index];
+
+				// For each face check the distance to the end
+				for (uint32_t end_point_id = 2; end_point_id < end_poly.points.size(); end_point_id += 1) {
+					const Face3 end_face(end_poly.points[0].pos, end_poly.points[end_point_id - 1].pos, end_poly.points[end_point_id].pos);
+					const Vector3 end_point = end_face.get_closest_point_to(end);
+					const real_t end_distance = end_point.distance_to(end);
+
+					// Pick the polygon that is within our radius and is closer than anything we've seen yet.
+					if (end_distance <= link_connection_radius && end_distance < closest_end_distance) {
+						closest_end_distance = end_distance;
+						closest_end_point = end_point;
+						closest_end_polygon = &end_poly;
+					}
+				}
+			}
+
+			// If we have both a start and end point, then create a synthetic polygon to route through.
+			if (closest_start_polygon && closest_end_polygon) {
+				gd::Polygon &new_polygon = link_polygons[link_poly_idx++];
+				new_polygon.owner = link;
+
+				new_polygon.edges.clear();
+				new_polygon.edges.resize(4);
+				new_polygon.points.clear();
+				new_polygon.points.reserve(4);
+
+				// Build a set of vertices that create a thin polygon going from the start to the end point.
+				new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
+				new_polygon.points.push_back({ closest_start_point, get_point_key(closest_start_point) });
+				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
+				new_polygon.points.push_back({ closest_end_point, get_point_key(closest_end_point) });
+
+				Vector3 center;
+				for (int p = 0; p < 4; ++p) {
+					center += new_polygon.points[p].pos;
+				}
+				new_polygon.center = center / real_t(new_polygon.points.size());
+				new_polygon.clockwise = true;
+
+				// Setup connections to go forward in the link.
+				{
+					gd::Edge::Connection entry_connection;
+					entry_connection.polygon = &new_polygon;
+					entry_connection.edge = -1;
+					entry_connection.pathway_start = new_polygon.points[0].pos;
+					entry_connection.pathway_end = new_polygon.points[1].pos;
+					closest_start_polygon->edges[0].connections.push_back(entry_connection);
+
+					gd::Edge::Connection exit_connection;
+					exit_connection.polygon = closest_end_polygon;
+					exit_connection.edge = -1;
+					exit_connection.pathway_start = new_polygon.points[2].pos;
+					exit_connection.pathway_end = new_polygon.points[3].pos;
+					new_polygon.edges[2].connections.push_back(exit_connection);
+				}
+
+				// If the link is bi-directional, create connections from the end to the start.
+				if (link->is_bidirectional()) {
+					gd::Edge::Connection entry_connection;
+					entry_connection.polygon = &new_polygon;
+					entry_connection.edge = -1;
+					entry_connection.pathway_start = new_polygon.points[2].pos;
+					entry_connection.pathway_end = new_polygon.points[3].pos;
+					closest_end_polygon->edges[0].connections.push_back(entry_connection);
+
+					gd::Edge::Connection exit_connection;
+					exit_connection.polygon = closest_start_polygon;
+					exit_connection.edge = -1;
+					exit_connection.pathway_start = new_polygon.points[0].pos;
+					exit_connection.pathway_end = new_polygon.points[1].pos;
+					new_polygon.edges[0].connections.push_back(exit_connection);
+				}
 			}
 		}
 
