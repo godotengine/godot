@@ -91,6 +91,7 @@ static const char *enum_renames[][2] = {
 	{ "BUTTON_XBUTTON2", "MOUSE_BUTTON_XBUTTON2" }, // Globals
 	{ "CLEAR_MODE_ONLY_NEXT_FRAME", "CLEAR_MODE_ONCE" }, // SubViewport
 	{ "COMPRESS_PVRTC4", "COMPRESS_PVRTC1_4" }, // Image
+	{ "CONNECT_ONESHOT", "CONNECT_ONE_SHOT" }, // Object
 	{ "CUBEMAP_BACK", "CUBEMAP_LAYER_BACK" }, // RenderingServer
 	{ "CUBEMAP_BOTTOM", "CUBEMAP_LAYER_BOTTOM" }, // RenderingServer
 	{ "CUBEMAP_FRONT", "CUBEMAP_LAYER_FRONT" }, // RenderingServer

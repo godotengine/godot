@@ -3518,7 +3518,7 @@ void AnimationTrackEditor::set_root(Node *p_root) {
 	root = p_root;
 
 	if (root) {
-		root->connect("tree_exiting", callable_mp(this, &AnimationTrackEditor::_root_removed), CONNECT_ONESHOT);
+		root->connect("tree_exiting", callable_mp(this, &AnimationTrackEditor::_root_removed), CONNECT_ONE_SHOT);
 	}
 
 	_update_tracks();
