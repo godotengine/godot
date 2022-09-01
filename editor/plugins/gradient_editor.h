@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gradient_edit.h                                                      */
+/*  gradient_editor.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GRADIENT_EDIT_H
-#define GRADIENT_EDIT_H
+#ifndef GRADIENT_EDITOR_H
+#define GRADIENT_EDITOR_H
 
 #include "scene/gui/color_picker.h"
 #include "scene/gui/popup.h"
 #include "scene/resources/gradient.h"
 
-class GradientEdit : public Control {
-	GDCLASS(GradientEdit, Control);
+class GradientEditor : public Control {
+	GDCLASS(GradientEditor, Control);
 
 	PopupPanel *popup = nullptr;
 	ColorPicker *picker = nullptr;
@@ -46,6 +46,8 @@ class GradientEdit : public Control {
 	Vector<Gradient::Point> points;
 	Gradient::InterpolationMode interpolation_mode = Gradient::GRADIENT_INTERPOLATE_LINEAR;
 
+	bool editing = false;
+	Ref<Gradient> gradient;
 	Ref<Gradient> gradient_cache;
 	Ref<GradientTexture1D> preview_texture;
 
@@ -56,8 +58,10 @@ class GradientEdit : public Control {
 	int draw_spacing = BASE_SPACING;
 	int draw_point_width = BASE_POINT_WIDTH;
 
-	void _draw_checker(int x, int y, int w, int h);
+	void _gradient_changed();
+	void _ramp_changed();
 	void _color_changed(const Color &p_color);
+
 	int _get_point_from_pos(int x);
 	void _show_color_picker();
 
@@ -67,20 +71,26 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_gradient(const Ref<Gradient> &p_gradient);
+	void reverse_gradient();
+
 	void set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors);
+
 	Vector<float> get_offsets() const;
 	Vector<Color> get_colors() const;
 	void set_points(Vector<Gradient::Point> &p_points);
 	Vector<Gradient::Point> &get_points();
+
 	void set_interpolation_mode(Gradient::InterpolationMode p_interp_mode);
 	Gradient::InterpolationMode get_interpolation_mode();
+
 	ColorPicker *get_picker();
 	PopupPanel *get_popup();
 
 	virtual Size2 get_minimum_size() const override;
 
-	GradientEdit();
-	virtual ~GradientEdit();
+	GradientEditor();
+	virtual ~GradientEditor();
 };
 
-#endif // GRADIENT_EDIT_H
+#endif // GRADIENT_EDITOR_H

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gradient_edit.cpp                                                    */
+/*  gradient_editor.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,25 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gradient_edit.h"
+#include "gradient_editor.h"
 
 #include "core/os/keyboard.h"
+#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_undo_redo_manager.h"
 
-GradientEdit::GradientEdit() {
-	set_focus_mode(FOCUS_ALL);
-
-	popup = memnew(PopupPanel);
-	picker = memnew(ColorPicker);
-	popup->add_child(picker);
-
-	gradient_cache.instantiate();
-	preview_texture.instantiate();
-
-	preview_texture->set_width(1024);
-	add_child(popup, false, INTERNAL_MODE_FRONT);
+void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
+	gradient = p_gradient;
+	connect("ramp_changed", callable_mp(this, &GradientEditor::_ramp_changed));
+	gradient->connect("changed", callable_mp(this, &GradientEditor::_gradient_changed));
+	set_points(gradient->get_points());
+	set_interpolation_mode(gradient->get_interpolation_mode());
 }
 
-int GradientEdit::_get_point_from_pos(int x) {
+void GradientEditor::reverse_gradient() {
+	gradient->reverse();
+	set_points(gradient->get_points());
+	emit_signal(SNAME("ramp_changed"));
+	queue_redraw();
+}
+
+int GradientEditor::_get_point_from_pos(int x) {
 	int result = -1;
 	int total_w = get_size().width - get_size().height - draw_spacing;
 	float min_distance = 1e20;
@@ -62,7 +66,7 @@ int GradientEdit::_get_point_from_pos(int x) {
 	return result;
 }
 
-void GradientEdit::_show_color_picker() {
+void GradientEditor::_show_color_picker() {
 	if (grabbed == -1) {
 		return;
 	}
@@ -80,10 +84,106 @@ void GradientEdit::_show_color_picker() {
 	popup->popup();
 }
 
-GradientEdit::~GradientEdit() {
+void GradientEditor::_gradient_changed() {
+	if (editing) {
+		return;
+	}
+
+	editing = true;
+	Vector<Gradient::Point> points = gradient->get_points();
+	set_points(points);
+	set_interpolation_mode(gradient->get_interpolation_mode());
+	queue_redraw();
+	editing = false;
 }
 
-void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
+void GradientEditor::_ramp_changed() {
+	editing = true;
+	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
+	undo_redo->create_action(TTR("Gradient Edited"), UndoRedo::MERGE_ENDS);
+	undo_redo->add_do_method(gradient.ptr(), "set_offsets", get_offsets());
+	undo_redo->add_do_method(gradient.ptr(), "set_colors", get_colors());
+	undo_redo->add_do_method(gradient.ptr(), "set_interpolation_mode", get_interpolation_mode());
+	undo_redo->add_undo_method(gradient.ptr(), "set_offsets", gradient->get_offsets());
+	undo_redo->add_undo_method(gradient.ptr(), "set_colors", gradient->get_colors());
+	undo_redo->add_undo_method(gradient.ptr(), "set_interpolation_mode", gradient->get_interpolation_mode());
+	undo_redo->commit_action();
+	editing = false;
+}
+
+void GradientEditor::_color_changed(const Color &p_color) {
+	if (grabbed == -1) {
+		return;
+	}
+	points.write[grabbed].color = p_color;
+	queue_redraw();
+	emit_signal(SNAME("ramp_changed"));
+}
+
+void GradientEditor::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
+	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
+	points.clear();
+	for (int i = 0; i < p_offsets.size(); i++) {
+		Gradient::Point p;
+		p.offset = p_offsets[i];
+		p.color = p_colors[i];
+		points.push_back(p);
+	}
+
+	points.sort();
+	queue_redraw();
+}
+
+Vector<float> GradientEditor::get_offsets() const {
+	Vector<float> ret;
+	for (int i = 0; i < points.size(); i++) {
+		ret.push_back(points[i].offset);
+	}
+	return ret;
+}
+
+Vector<Color> GradientEditor::get_colors() const {
+	Vector<Color> ret;
+	for (int i = 0; i < points.size(); i++) {
+		ret.push_back(points[i].color);
+	}
+	return ret;
+}
+
+void GradientEditor::set_points(Vector<Gradient::Point> &p_points) {
+	if (points.size() != p_points.size()) {
+		grabbed = -1;
+	}
+	points.clear();
+	points = p_points;
+	points.sort();
+}
+
+Vector<Gradient::Point> &GradientEditor::get_points() {
+	return points;
+}
+
+void GradientEditor::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
+	interpolation_mode = p_interp_mode;
+}
+
+Gradient::InterpolationMode GradientEditor::get_interpolation_mode() {
+	return interpolation_mode;
+}
+
+ColorPicker *GradientEditor::get_picker() {
+	return picker;
+}
+
+PopupPanel *GradientEditor::get_popup() {
+	return popup;
+}
+
+Size2 GradientEditor::get_minimum_size() const {
+	return Size2(0, 60) * EDSCALE;
+}
+
+void GradientEditor::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	Ref<InputEventKey> k = p_event;
@@ -286,11 +386,11 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void GradientEdit::_notification(int p_what) {
+void GradientEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (!picker->is_connected("color_changed", callable_mp(this, &GradientEdit::_color_changed))) {
-				picker->connect("color_changed", callable_mp(this, &GradientEdit::_color_changed));
+			if (!picker->is_connected("color_changed", callable_mp(this, &GradientEditor::_color_changed))) {
+				picker->connect("color_changed", callable_mp(this, &GradientEditor::_color_changed));
 			}
 			[[fallthrough]];
 		}
@@ -369,78 +469,24 @@ void GradientEdit::_notification(int p_what) {
 	}
 }
 
-Size2 GradientEdit::get_minimum_size() const {
-	return Vector2(0, 16);
-}
-
-void GradientEdit::_color_changed(const Color &p_color) {
-	if (grabbed == -1) {
-		return;
-	}
-	points.write[grabbed].color = p_color;
-	queue_redraw();
-	emit_signal(SNAME("ramp_changed"));
-}
-
-void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> &p_colors) {
-	ERR_FAIL_COND(p_offsets.size() != p_colors.size());
-	points.clear();
-	for (int i = 0; i < p_offsets.size(); i++) {
-		Gradient::Point p;
-		p.offset = p_offsets[i];
-		p.color = p_colors[i];
-		points.push_back(p);
-	}
-
-	points.sort();
-	queue_redraw();
-}
-
-Vector<float> GradientEdit::get_offsets() const {
-	Vector<float> ret;
-	for (int i = 0; i < points.size(); i++) {
-		ret.push_back(points[i].offset);
-	}
-	return ret;
-}
-
-Vector<Color> GradientEdit::get_colors() const {
-	Vector<Color> ret;
-	for (int i = 0; i < points.size(); i++) {
-		ret.push_back(points[i].color);
-	}
-	return ret;
-}
-
-void GradientEdit::set_points(Vector<Gradient::Point> &p_points) {
-	if (points.size() != p_points.size()) {
-		grabbed = -1;
-	}
-	points.clear();
-	points = p_points;
-	points.sort();
-}
-
-Vector<Gradient::Point> &GradientEdit::get_points() {
-	return points;
-}
-
-void GradientEdit::set_interpolation_mode(Gradient::InterpolationMode p_interp_mode) {
-	interpolation_mode = p_interp_mode;
-}
-
-Gradient::InterpolationMode GradientEdit::get_interpolation_mode() {
-	return interpolation_mode;
-}
-
-ColorPicker *GradientEdit::get_picker() {
-	return picker;
-}
-
-PopupPanel *GradientEdit::get_popup() {
-	return popup;
-}
-
-void GradientEdit::_bind_methods() {
+void GradientEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
+}
+
+GradientEditor::GradientEditor() {
+	set_focus_mode(FOCUS_ALL);
+
+	popup = memnew(PopupPanel);
+	picker = memnew(ColorPicker);
+	popup->add_child(picker);
+	popup->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(GradientEditor::get_picker()));
+
+	gradient_cache.instantiate();
+	preview_texture.instantiate();
+
+	preview_texture->set_width(1024);
+	add_child(popup, false, INTERNAL_MODE_FRONT);
+}
+
+GradientEditor::~GradientEditor() {
 }
