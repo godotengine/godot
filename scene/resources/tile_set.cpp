@@ -118,7 +118,7 @@ void TileMapPattern::remove_cell(const Vector2i &p_coords, bool p_update_size) {
 
 	pattern.erase(p_coords);
 	if (p_update_size) {
-		size = Vector2i();
+		size = Size2i();
 		for (const KeyValue<Vector2i, TileMapCell> &E : pattern) {
 			size = size.max(E.key + Vector2i(1, 1));
 		}
@@ -157,11 +157,11 @@ TypedArray<Vector2i> TileMapPattern::get_used_cells() const {
 	return a;
 }
 
-Vector2i TileMapPattern::get_size() const {
+Size2i TileMapPattern::get_size() const {
 	return size;
 }
 
-void TileMapPattern::set_size(const Vector2i &p_size) {
+void TileMapPattern::set_size(const Size2i &p_size) {
 	for (const KeyValue<Vector2i, TileMapCell> &E : pattern) {
 		Vector2i coords = E.key;
 		if (p_size.x <= coords.x || p_size.y <= coords.y) {
@@ -178,7 +178,7 @@ bool TileMapPattern::is_empty() const {
 };
 
 void TileMapPattern::clear() {
-	size = Vector2i();
+	size = Size2i();
 	pattern.clear();
 	emit_changed();
 };

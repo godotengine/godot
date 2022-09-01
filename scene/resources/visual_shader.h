@@ -612,15 +612,15 @@ class VisualShaderNodeResizableBase : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeResizableBase, VisualShaderNode);
 
 protected:
-	Vector2 size = Size2(0, 0);
+	Size2 size = Size2(0, 0);
 	bool allow_v_resize = true;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_size(const Vector2 &p_size);
-	Vector2 get_size() const;
+	void set_size(const Size2 &p_size);
+	Size2 get_size() const;
 
 	bool is_allow_v_resize() const;
 	void set_allow_v_resize(bool p_enabled);
