@@ -250,7 +250,7 @@ Files generated from upstream source:
 ## ies
 
 - Upstream: https://github.com/ray-cast/IES
-- Version: master (d6d36e5fd648049ed4ade087d5427896a54c1a26, 2018)
+- Version: git (d6d36e5fd648049ed4ade087d5427896a54c1a26, 2018)
 - License: MIT
 
 See the standard from https://github.com/ray-cast/ies/blob/master/IES.pdf and from
