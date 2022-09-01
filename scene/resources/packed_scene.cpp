@@ -1645,6 +1645,7 @@ void PackedScene::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_bundled_scene"), &PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(D_METHOD("_get_bundled_scene"), &PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(D_METHOD("get_state"), &PackedScene::get_state);
+	ClassDB::bind_method(D_METHOD("set_path"), &PackedScene::set_path);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_bundled"), "_set_bundled_scene", "_get_bundled_scene");
 

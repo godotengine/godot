@@ -3109,6 +3109,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rset_unreliable_id", "peer_id", "property", "value"), &Node::rset_unreliable_id);
 
 	ClassDB::bind_method(D_METHOD("update_configuration_warning"), &Node::update_configuration_warning);
+	ClassDB::bind_method(D_METHOD("set_scene_inherited_state"), &Node::set_scene_inherited_state);
+
 
 	BIND_CONSTANT(NOTIFICATION_ENTER_TREE);
 	BIND_CONSTANT(NOTIFICATION_EXIT_TREE);
