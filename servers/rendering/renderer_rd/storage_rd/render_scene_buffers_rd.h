@@ -189,12 +189,8 @@ public:
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR, p_layer, 0);
 	}
 
-	_FORCE_INLINE_ RID get_depth_texture() const {
-		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH);
-	}
-	_FORCE_INLINE_ RID get_depth_texture(const uint32_t p_layer) {
-		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, p_layer, 0);
-	}
+	RID get_depth_texture();
+	RID get_depth_texture(const uint32_t p_layer);
 
 	// back buffer (color)
 	RID get_back_buffer_texture() const { return has_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) ? get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0) : RID(); } // We (re)use our blur texture here.
@@ -202,9 +198,9 @@ public:
 	// Velocity, currently only used by TAA (Clustered) but we'll be using this in other places soon too.
 
 	void ensure_velocity();
-	bool has_velocity_buffer(bool p_has_msaa) { return has_texture(RB_SCOPE_BUFFERS, p_has_msaa ? RB_TEX_VELOCITY_MSAA : RB_TEX_VELOCITY); }
+	bool has_velocity_buffer(bool p_has_msaa);
 	RID get_velocity_buffer(bool p_get_msaa);
-	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer) { return get_texture_slice(RB_SCOPE_BUFFERS, p_get_msaa ? RB_TEX_VELOCITY_MSAA : RB_TEX_VELOCITY, p_layer, 0); }
+	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Everything after this needs to be re-evaluated, this is all old implementation

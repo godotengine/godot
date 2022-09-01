@@ -828,7 +828,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD>
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS) {
 		if (RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture().is_valid()) {
 			RID shadow_atlas_texture = RendererRD::LightStorage::get_singleton()->directional_shadow_get_texture();
-			Size2 rtsize = texture_storage->render_target_get_size(render_target);
+			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
 			copy_effects->copy_to_fb_rect(shadow_atlas_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, true);
 		}
@@ -838,7 +838,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD>
 		RID decal_atlas = RendererRD::TextureStorage::get_singleton()->decal_atlas_get_texture();
 
 		if (decal_atlas.is_valid()) {
-			Size2 rtsize = texture_storage->render_target_get_size(render_target);
+			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
 			copy_effects->copy_to_fb_rect(decal_atlas, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
 		}
@@ -846,7 +846,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD>
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
 		if (p_render_buffers->luminance.current.is_valid()) {
-			Size2 rtsize = texture_storage->render_target_get_size(render_target);
+			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
 			copy_effects->copy_to_fb_rect(p_render_buffers->luminance.current, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize / 8), false, true);
 		}
@@ -859,13 +859,13 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD>
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
 		if (p_occlusion_buffer.is_valid()) {
-			Size2 rtsize = texture_storage->render_target_get_size(render_target);
+			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 			copy_effects->copy_to_fb_rect(texture_storage->texture_get_rd_texture(p_occlusion_buffer), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2i(Vector2(), rtsize), true, false);
 		}
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS && _render_buffers_get_velocity_texture(p_render_buffers).is_valid()) {
-		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+		Size2i rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(_render_buffers_get_velocity_texture(p_render_buffers), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 }

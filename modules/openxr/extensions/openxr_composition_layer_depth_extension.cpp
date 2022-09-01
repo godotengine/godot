@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_composition_layer_provider.h                                  */
+/*  openxr_composition_layer_depth_extension.cpp                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,18 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_PROVIDER_H
-#define OPENXR_COMPOSITION_LAYER_PROVIDER_H
+#include "openxr_composition_layer_depth_extension.h"
 
-#include "openxr_extension_wrapper.h"
-#include <openxr/openxr.h>
+OpenXRCompositionLayerDepthExtension *OpenXRCompositionLayerDepthExtension::singleton = nullptr;
 
-// Interface for OpenXR extensions that provide a composition layer.
-class OpenXRCompositionLayerProvider {
-public:
-	virtual XrCompositionLayerBaseHeader *get_composition_layer() = 0;
+OpenXRCompositionLayerDepthExtension *OpenXRCompositionLayerDepthExtension::get_singleton() {
+	return singleton;
+}
 
-	virtual ~OpenXRCompositionLayerProvider() {}
-};
+OpenXRCompositionLayerDepthExtension::OpenXRCompositionLayerDepthExtension(OpenXRAPI *p_openxr_api) :
+		OpenXRExtensionWrapper(p_openxr_api) {
+	singleton = this;
 
-#endif // OPENXR_COMPOSITION_LAYER_PROVIDER_H
+	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;
+}
+
+OpenXRCompositionLayerDepthExtension::~OpenXRCompositionLayerDepthExtension() {
+	singleton = nullptr;
+}
+
+bool OpenXRCompositionLayerDepthExtension::is_available() {
+	return available;
+}
+
+XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer() {
+	// Seems this is all done in our base layer... Just in case this changes...
+
+	return nullptr;
+}

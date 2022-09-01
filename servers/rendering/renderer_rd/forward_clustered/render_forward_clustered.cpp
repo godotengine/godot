@@ -2095,17 +2095,17 @@ void RenderForwardClustered::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD
 	RID render_target = p_render_buffers->get_render_target();
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SSAO && rb_data->ss_effects_data.ssao.ao_final.is_valid()) {
-		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+		Size2i rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(rb_data->ss_effects_data.ssao.ao_final, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, true);
 	}
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SSIL && rb_data->ss_effects_data.ssil.ssil_final.is_valid()) {
-		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+		Size2i rtsize = texture_storage->render_target_get_size(render_target);
 		copy_effects->copy_to_fb_rect(rb_data->ss_effects_data.ssil.ssil_final, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
 	}
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER && p_render_buffers->has_texture(RB_SCOPE_GI, RB_TEX_AMBIENT)) {
-		Size2 rtsize = texture_storage->render_target_get_size(render_target);
+		Size2i rtsize = texture_storage->render_target_get_size(render_target);
 		RID ambient_texture = p_render_buffers->get_texture(RB_SCOPE_GI, RB_TEX_AMBIENT);
 		RID reflection_texture = p_render_buffers->get_texture(RB_SCOPE_GI, RB_TEX_REFLECTION);
 		copy_effects->copy_to_fb_rect(ambient_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, true, reflection_texture, p_render_buffers->get_view_count() > 1);

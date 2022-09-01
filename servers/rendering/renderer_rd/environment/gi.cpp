@@ -1644,8 +1644,8 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 		RD::get_singleton()->compute_list_end();
 	}
 
-	Size2 rtsize = texture_storage->render_target_get_size(p_render_target);
-	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2(Vector2(), rtsize), true, false, false, false, RID(), p_view_count > 1);
+	Size2i rtsize = texture_storage->render_target_get_size(p_render_target);
+	copy_effects->copy_to_fb_rect(p_texture, texture_storage->render_target_get_rd_framebuffer(p_render_target), Rect2i(Point2i(), rtsize), true, false, false, false, RID(), p_view_count > 1);
 }
 
 void GI::SDFGI::debug_probes(RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {

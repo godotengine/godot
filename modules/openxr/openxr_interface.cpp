@@ -648,6 +648,22 @@ Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_as
 	return cm;
 }
 
+RID OpenXRInterface::get_color_texture() {
+	if (openxr_api) {
+		return openxr_api->get_color_texture();
+	} else {
+		return RID();
+	}
+}
+
+RID OpenXRInterface::get_depth_texture() {
+	if (openxr_api) {
+		return openxr_api->get_depth_texture();
+	} else {
+		return RID();
+	}
+}
+
 void OpenXRInterface::process() {
 	if (openxr_api) {
 		// do our normal process
@@ -707,6 +723,7 @@ bool OpenXRInterface::pre_draw_viewport(RID p_render_target) {
 Vector<BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) {
 	Vector<BlitToScreen> blit_to_screen;
 
+#ifndef ANDROID_ENABLED
 	// If separate HMD we should output one eye to screen
 	if (p_screen_rect != Rect2()) {
 		BlitToScreen blit;
@@ -732,6 +749,7 @@ Vector<BlitToScreen> OpenXRInterface::post_draw_viewport(RID p_render_target, co
 		blit.dst_rect = dst_rect;
 		blit_to_screen.push_back(blit);
 	}
+#endif
 
 	if (openxr_api) {
 		openxr_api->post_draw_viewport(p_render_target);

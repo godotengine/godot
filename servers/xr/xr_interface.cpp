@@ -241,6 +241,19 @@ RID XRInterface::get_vrs_texture() {
 }
 
 /** these are optional, so we want dummies **/
+
+RID XRInterface::get_color_texture() {
+	return RID();
+}
+
+RID XRInterface::get_depth_texture() {
+	return RID();
+}
+
+RID XRInterface::get_velocity_texture() {
+	return RID();
+}
+
 PackedStringArray XRInterface::get_suggested_tracker_names() const {
 	PackedStringArray arr;
 
