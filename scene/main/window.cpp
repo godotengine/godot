@@ -804,6 +804,25 @@ void Window::_notification(int p_what) {
 			_update_theme_item_cache();
 		} break;
 
+		case NOTIFICATION_PARENTED: {
+			Node *parent = get_parent();
+			if (!parent) {
+				break;
+			}
+
+			Control *c = Object::cast_to<Control>(parent);
+			if (c && (c->data.theme_owner || c->data.theme_owner_window)) {
+				Control::_propagate_theme_changed(this, c->data.theme_owner, c->data.theme_owner_window, false, true);
+				break;
+			}
+
+			Window *w = Object::cast_to<Window>(parent);
+			if (w && (w->theme_owner || w->theme_owner_window)) {
+				Control::_propagate_theme_changed(this, w->theme_owner, w->theme_owner_window, false, true);
+				break;
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			bool embedded = false;
 			{
@@ -856,9 +875,7 @@ void Window::_notification(int p_what) {
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
-			// Need to defer here, because theme owner information might be set in
-			// add_child_notify, which doesn't get called until right after this.
-			call_deferred(SNAME("notification"), NOTIFICATION_THEME_CHANGED);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1289,12 +1306,6 @@ Rect2i Window::get_usable_parent_rect() const {
 }
 
 void Window::add_child_notify(Node *p_child) {
-	// We propagate when this node uses a custom theme, so it can pass it on to its children.
-	if (theme_owner || theme_owner_window) {
-		// `p_notify` is false here as `NOTIFICATION_THEME_CHANGED` will be handled by `NOTIFICATION_ENTER_TREE`.
-		Control::_propagate_theme_changed(this, theme_owner, theme_owner_window, false, true);
-	}
-
 	if (is_inside_tree() && wrap_controls) {
 		child_controls_changed();
 	}
@@ -1303,7 +1314,7 @@ void Window::add_child_notify(Node *p_child) {
 void Window::remove_child_notify(Node *p_child) {
 	// If the removed child isn't inheriting any theme items through this node, then there's no need to propagate.
 	if (theme_owner || theme_owner_window) {
-		Control::_propagate_theme_changed(this, nullptr, nullptr, false, true);
+		Control::_propagate_theme_changed(p_child, nullptr, nullptr, false, true);
 	}
 
 	if (is_inside_tree() && wrap_controls) {

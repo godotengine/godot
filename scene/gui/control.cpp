@@ -3090,11 +3090,6 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 // Base object overrides.
 
 void Control::add_child_notify(Node *p_child) {
-	// We propagate when this node uses a custom theme, so it can pass it on to its children.
-	if (data.theme_owner || data.theme_owner_window) {
-		// `p_notify` is false here as `NOTIFICATION_THEME_CHANGED` will be handled by `NOTIFICATION_ENTER_TREE`.
-		_propagate_theme_changed(p_child, data.theme_owner, data.theme_owner_window, false, true);
-	}
 }
 
 void Control::remove_child_notify(Node *p_child) {
@@ -3111,10 +3106,27 @@ void Control::_notification(int p_notification) {
 			_update_theme_item_cache();
 		} break;
 
+		case NOTIFICATION_PARENTED: {
+			Node *parent = get_parent();
+			if (!parent) {
+				break;
+			}
+
+			Control *c = Object::cast_to<Control>(parent);
+			if (c && (c->data.theme_owner || c->data.theme_owner_window)) {
+				_propagate_theme_changed(this, c->data.theme_owner, c->data.theme_owner_window, false, true);
+				break;
+			}
+
+			Window *w = Object::cast_to<Window>(parent);
+			if (w && (w->theme_owner || w->theme_owner_window)) {
+				_propagate_theme_changed(this, w->theme_owner, w->theme_owner_window, false, true);
+				break;
+			}
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
-			// Need to defer here, because theme owner information might be set in
-			// add_child_notify, which doesn't get called until right after this.
-			call_deferred(SNAME("notification"), NOTIFICATION_THEME_CHANGED);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
 		case NOTIFICATION_POST_ENTER_TREE: {
