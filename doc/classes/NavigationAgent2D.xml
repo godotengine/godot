@@ -163,7 +163,7 @@
 		<signal name="velocity_computed">
 			<argument index="0" name="safe_velocity" type="Vector2" />
 			<description>
-				Notifies when the collision avoidance velocity is calculated after a call to [method set_velocity].
+				Notifies when the collision avoidance velocity is calculated after a call to [method set_velocity]. Only emitted when [member avoidance_enabled] is true.
 			</description>
 		</signal>
 	</signals>
