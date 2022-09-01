@@ -609,11 +609,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Dialogs
 
-	theme->set_constant("margin", "Dialogs", 8 * scale);
-	theme->set_constant("button_margin", "Dialogs", 32 * scale);
-
-	// AcceptDialog
-
+	// AcceptDialog is currently the base dialog, so this defines styles for all extending nodes.
+	theme->set_constant("margin", "AcceptDialog", 8 * scale);
+	theme->set_constant("button_margin", "AcceptDialog", 32 * scale);
 	theme->set_stylebox("panel", "AcceptDialog", make_flat_stylebox(style_popup_color, 0, 0, 0, 0));
 
 	// File Dialog
