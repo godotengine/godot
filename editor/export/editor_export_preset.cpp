@@ -324,6 +324,35 @@ EditorExportPreset::FileExportMode EditorExportPreset::get_file_export_mode(cons
 	return p_default;
 }
 
+void EditorExportPreset::add_patch(const String &p_path, int p_at_pos) {
+	if (p_at_pos < 0) {
+		patches.push_back(p_path);
+	} else {
+		patches.insert(p_at_pos, p_path);
+	}
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::remove_patch(int p_index) {
+	patches.remove_at(p_index);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patch(int p_index, const String &p_path) {
+	ERR_FAIL_INDEX(p_index, patches.size());
+	patches.write[p_index] = p_path;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_patch(int p_index) {
+	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
+	return patches[p_index];
+}
+
+Vector<String> EditorExportPreset::get_patches() const {
+	return patches;
+}
+
 void EditorExportPreset::set_custom_features(const String &p_custom_features) {
 	custom_features = p_custom_features;
 	EditorExport::singleton->save_presets();
