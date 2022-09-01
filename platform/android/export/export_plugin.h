@@ -230,6 +230,8 @@ public:
 
 	String join_list(List<String> parts, const String &separator) const;
 
+	void open_export_dir(const String& p_path, int err);
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 
 	Error export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, int p_flags);
