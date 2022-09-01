@@ -44,6 +44,7 @@
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_export_plugin.h"
+#include "scene/resources/packed_scene.h"
 
 static int _get_pad(int p_alignment, int p_n) {
 	int rest = p_n % p_alignment;
@@ -488,6 +489,295 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	}
 }
 
+bool EditorExportPlatform::_export_customize_dictionary(Dictionary &dict, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins) {
+	bool changed = false;
+
+	List<Variant> keys;
+	dict.get_key_list(&keys);
+	for (const Variant &K : keys) {
+		Variant v = dict[K];
+		switch (v.get_type()) {
+			case Variant::OBJECT: {
+				Ref<Resource> res = v;
+				if (res.is_valid()) {
+					for (uint32_t j = 0; j < customize_resources_plugins.size(); j++) {
+						Ref<Resource> new_res = customize_resources_plugins[j]->_customize_resource(res, "");
+						if (new_res.is_valid()) {
+							changed = true;
+							if (new_res != res) {
+								dict[K] = new_res;
+								res = new_res;
+							}
+							break;
+						}
+					}
+
+					// If it was not replaced, go through and see if there is something to replace.
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+						changed = true;
+					}
+				}
+
+			} break;
+			case Variant::DICTIONARY: {
+				Dictionary d = v;
+				if (_export_customize_dictionary(d, customize_resources_plugins)) {
+					changed = true;
+				}
+			} break;
+			case Variant::ARRAY: {
+				Array a = v;
+				if (_export_customize_array(a, customize_resources_plugins)) {
+					changed = true;
+				}
+			} break;
+			default: {
+			}
+		}
+	}
+	return changed;
+}
+
+bool EditorExportPlatform::_export_customize_array(Array &arr, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins) {
+	bool changed = false;
+
+	for (int i = 0; i < arr.size(); i++) {
+		Variant v = arr.get(i);
+		switch (v.get_type()) {
+			case Variant::OBJECT: {
+				Ref<Resource> res = v;
+				if (res.is_valid()) {
+					for (uint32_t j = 0; j < customize_resources_plugins.size(); j++) {
+						Ref<Resource> new_res = customize_resources_plugins[j]->_customize_resource(res, "");
+						if (new_res.is_valid()) {
+							changed = true;
+							if (new_res != res) {
+								arr.set(i, new_res);
+								res = new_res;
+							}
+							break;
+						}
+					}
+
+					// If it was not replaced, go through and see if there is something to replace.
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+						changed = true;
+					}
+				}
+			} break;
+			case Variant::DICTIONARY: {
+				Dictionary d = v;
+				if (_export_customize_dictionary(d, customize_resources_plugins)) {
+					changed = true;
+				}
+			} break;
+			case Variant::ARRAY: {
+				Array a = v;
+				if (_export_customize_array(a, customize_resources_plugins)) {
+					changed = true;
+				}
+			} break;
+			default: {
+			}
+		}
+	}
+	return changed;
+}
+
+bool EditorExportPlatform::_export_customize_object(Object *p_object, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins) {
+	bool changed = false;
+
+	List<PropertyInfo> props;
+	p_object->get_property_list(&props);
+	for (const PropertyInfo &E : props) {
+		switch (E.type) {
+			case Variant::OBJECT: {
+				Ref<Resource> res = p_object->get(E.name);
+				if (res.is_valid()) {
+					for (uint32_t j = 0; j < customize_resources_plugins.size(); j++) {
+						Ref<Resource> new_res = customize_resources_plugins[j]->_customize_resource(res, "");
+						if (new_res.is_valid()) {
+							changed = true;
+							if (new_res != res) {
+								p_object->set(E.name, new_res);
+								res = new_res;
+							}
+							break;
+						}
+					}
+
+					// If it was not replaced, go through and see if there is something to replace.
+					if (res.is_valid() && !res->get_path().is_resource_file() && _export_customize_object(res.ptr(), customize_resources_plugins), true) {
+						changed = true;
+					}
+				}
+
+			} break;
+			case Variant::DICTIONARY: {
+				Dictionary d = p_object->get(E.name);
+				if (_export_customize_dictionary(d, customize_resources_plugins)) {
+					// May have been generated, so set back just in case
+					p_object->set(E.name, d);
+					changed = true;
+				}
+			} break;
+			case Variant::ARRAY: {
+				Array a = p_object->get(E.name);
+				if (_export_customize_array(a, customize_resources_plugins)) {
+					// May have been generated, so set back just in case
+					p_object->set(E.name, a);
+					changed = true;
+				}
+			} break;
+			default: {
+			}
+		}
+	}
+	return changed;
+}
+
+bool EditorExportPlatform::_export_customize_scene_resources(Node *p_root, Node *p_node, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins) {
+	bool changed = false;
+
+	if (p_node == p_root || p_node->get_owner() == p_root) {
+		if (_export_customize_object(p_node, customize_resources_plugins)) {
+			changed = true;
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		if (_export_customize_scene_resources(p_root, p_node->get_child(i), customize_resources_plugins)) {
+			changed = true;
+		}
+	}
+
+	return changed;
+}
+
+String EditorExportPlatform::_export_customize(const String &p_path, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins, LocalVector<Ref<EditorExportPlugin>> &customize_scenes_plugins, HashMap<String, FileExportCache> &export_cache, const String &export_base_path, bool p_force_save) {
+	if (!p_force_save && customize_resources_plugins.is_empty() && customize_scenes_plugins.is_empty()) {
+		return p_path; // do none
+	}
+
+	// Check if a cache exists
+	if (export_cache.has(p_path)) {
+		FileExportCache &fec = export_cache[p_path];
+
+		if (fec.saved_path.is_empty() || FileAccess::exists(fec.saved_path)) {
+			// Destination file exists (was not erased) or not needed
+
+			uint64_t mod_time = FileAccess::get_modified_time(p_path);
+			if (fec.source_modified_time == mod_time) {
+				// Cached (modified time matches).
+				fec.used = true;
+				return fec.saved_path.is_empty() ? p_path : fec.saved_path;
+			}
+
+			String md5 = FileAccess::get_md5(p_path);
+			if (FileAccess::exists(p_path + ".import")) {
+				// Also consider the import file in the string
+				md5 += FileAccess::get_md5(p_path + ".import");
+			}
+			if (fec.source_md5 == md5) {
+				// Cached (md5 matches).
+				fec.source_modified_time = mod_time;
+				fec.used = true;
+				return fec.saved_path.is_empty() ? p_path : fec.saved_path;
+			}
+		}
+	}
+
+	FileExportCache fec;
+	fec.used = true;
+	fec.source_modified_time = FileAccess::get_modified_time(p_path);
+
+	String md5 = FileAccess::get_md5(p_path);
+	if (FileAccess::exists(p_path + ".import")) {
+		// Also consider the import file in the string
+		md5 += FileAccess::get_md5(p_path + ".import");
+	}
+
+	fec.source_md5 = md5;
+
+	// Check if it should convert
+
+	String type = ResourceLoader::get_resource_type(p_path);
+
+	bool modified = false;
+
+	String save_path;
+
+	if (type == "PackedScene") { // Its a scene.
+		Ref<PackedScene> ps = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE);
+		ERR_FAIL_COND_V(ps.is_null(), p_path);
+		Node *node = ps->instantiate();
+		ERR_FAIL_COND_V(node == nullptr, p_path);
+		if (customize_scenes_plugins.size()) {
+			for (uint32_t i = 0; i < customize_scenes_plugins.size(); i++) {
+				Node *customized = customize_scenes_plugins[i]->_customize_scene(node, p_path);
+				if (customized != nullptr) {
+					node = customized;
+					modified = true;
+				}
+			}
+		}
+		if (customize_resources_plugins.size()) {
+			if (_export_customize_scene_resources(node, node, customize_resources_plugins)) {
+				modified = true;
+			}
+		}
+
+		if (modified || p_force_save) {
+			// If modified, save it again. This is also used for TSCN -> SCN conversion on export.
+
+			String base_file = p_path.get_file().get_basename() + ".scn"; // use SCN for saving (binary) and repack (If conversting, TSCN PackedScene representation is inefficient, so repacking is also desired).
+			save_path = export_base_path.path_join("export-" + p_path.md5_text() + "-" + base_file);
+
+			Ref<PackedScene> s;
+			s.instantiate();
+			s->pack(node);
+			Error err = ResourceSaver::save(s, save_path);
+			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export scene file to: " + save_path);
+		}
+	} else {
+		Ref<Resource> res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+		ERR_FAIL_COND_V(res.is_null(), p_path);
+
+		if (customize_resources_plugins.size()) {
+			for (uint32_t i = 0; i < customize_resources_plugins.size(); i++) {
+				Ref<Resource> new_res = customize_resources_plugins[i]->_customize_resource(res, p_path);
+				if (new_res.is_valid()) {
+					modified = true;
+					if (new_res != res) {
+						res = new_res;
+					}
+					break;
+				}
+			}
+
+			if (_export_customize_object(res.ptr(), customize_resources_plugins)) {
+				modified = true;
+			}
+		}
+
+		if (modified || p_force_save) {
+			// If modified, save it again. This is also used for TRES -> RES conversion on export.
+
+			String base_file = p_path.get_file().get_basename() + ".res"; // use RES for saving (binary)
+			save_path = export_base_path.path_join("export-" + p_path.md5_text() + "-" + base_file);
+
+			Error err = ResourceSaver::save(res, save_path);
+			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export resource file to: " + save_path);
+		}
+	}
+
+	fec.saved_path = save_path;
+
+	export_cache[p_path] = fec;
+
+	return save_path.is_empty() ? p_path : save_path;
+}
+
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &p_preset, bool p_debug, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func) {
 	//figure out paths of files that will be exported
 	HashSet<String> paths;
@@ -601,6 +891,15 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	Error err = OK;
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 
+	struct SortByName {
+		bool operator()(const Ref<EditorExportPlugin> &left, const Ref<EditorExportPlugin> &right) const {
+			return left->_get_name() < right->_get_name();
+		}
+	};
+
+	// Always sort by name, to so if for some reason theya are re-arranged, it still works.
+	export_plugins.sort_custom<SortByName>();
+
 	for (int i = 0; i < export_plugins.size(); i++) {
 		export_plugins.write[i]->set_export_preset(p_preset);
 
@@ -623,6 +922,65 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	}
 
 	HashSet<String> features = get_features(p_preset, p_debug);
+	PackedStringArray features_psa;
+	for (const String &feature : features) {
+		features_psa.push_back(feature);
+	}
+
+	// Check if custom processing is needed
+	uint32_t custom_resources_hash = HASH_MURMUR3_SEED;
+	uint32_t custom_scene_hash = HASH_MURMUR3_SEED;
+
+	LocalVector<Ref<EditorExportPlugin>> customize_resources_plugins;
+	LocalVector<Ref<EditorExportPlugin>> customize_scenes_plugins;
+
+	for (int i = 0; i < export_plugins.size(); i++) {
+		if (export_plugins[i]->_begin_customize_resources(Ref<EditorExportPlatform>(this), features_psa)) {
+			customize_resources_plugins.push_back(export_plugins[i]);
+
+			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->_get_name().hash64(), custom_resources_hash);
+			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
+			custom_resources_hash = hash_murmur3_one_64(hash, custom_resources_hash);
+		}
+		if (export_plugins[i]->_begin_customize_scenes(Ref<EditorExportPlatform>(this), features_psa)) {
+			customize_scenes_plugins.push_back(export_plugins[i]);
+
+			custom_resources_hash = hash_murmur3_one_64(export_plugins[i]->_get_name().hash64(), custom_resources_hash);
+			uint64_t hash = export_plugins[i]->_get_customization_configuration_hash();
+			custom_scene_hash = hash_murmur3_one_64(hash, custom_scene_hash);
+		}
+	}
+
+	HashMap<String, FileExportCache> export_cache;
+	String export_base_path = ProjectSettings::get_singleton()->get_project_data_path().path_join("exported/") + itos(custom_resources_hash);
+
+	bool convert_text_to_binary = GLOBAL_GET("editor/export/convert_text_resources_to_binary");
+
+	if (convert_text_to_binary || customize_resources_plugins.size() || customize_scenes_plugins.size()) {
+		// See if we have something to open
+		Ref<FileAccess> f = FileAccess::open(export_base_path.path_join("file_cache"), FileAccess::READ);
+		if (f.is_valid()) {
+			String l = f->get_line();
+			while (l != String()) {
+				Vector<String> fields = l.split("::");
+				if (fields.size() == 4) {
+					FileExportCache fec;
+					String path = fields[0];
+					fec.source_md5 = fields[1].strip_edges();
+					fec.source_modified_time = fields[2].strip_edges().to_int();
+					fec.saved_path = fields[3];
+					fec.used = false; // Assume unused until used.
+					export_cache[path] = fec;
+				}
+				l = f->get_line();
+			}
+		} else {
+			// create the path
+			Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+			d->change_dir(ProjectSettings::get_singleton()->get_project_data_path());
+			d->make_dir_recursive("exported/" + itos(custom_resources_hash));
+		}
+	}
 
 	//store everything in the export medium
 	int idx = 0;
@@ -633,85 +991,133 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		String type = ResourceLoader::get_resource_type(path);
 
 		if (FileAccess::exists(path + ".import")) {
-			//file is imported, replace by what it imports
-			Ref<ConfigFile> config;
-			config.instantiate();
-			err = config->load(path + ".import");
-			if (err != OK) {
-				ERR_PRINT("Could not parse: '" + path + "', not exported.");
-				continue;
-			}
+			// Before doing this, try to see if it can be customized
 
-			String importer_type = config->get_value("remap", "importer");
+			String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, false);
 
-			if (importer_type == "keep") {
-				//just keep file as-is
-				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
-				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+			if (export_path != path) {
+				// It was actually customized..
+				// Since the original file is likely not recognized, just use the import system
+
+				Ref<ConfigFile> config;
+				config.instantiate();
+				err = config->load(path + ".import");
+				if (err != OK) {
+					ERR_PRINT("Could not parse: '" + path + "', not exported.");
+					continue;
+				}
+				config->set_value("remap", "type", ResourceLoader::get_resource_type(export_path));
+
+				// Erase all PAths
+				List<String> keys;
+				config->get_section_keys("remap", &keys);
+				for (const String &K : keys) {
+					if (E.begins_with("path")) {
+						config->erase_section_key("remap", K);
+					}
+				}
+				// Set actual converted path.
+				config->set_value("remap", "path", export_path);
+
+				// erase useless sections
+				config->erase_section("deps");
+				config->erase_section("params");
+
+				String import_text = config->encode_to_text();
+				CharString cs = import_text.utf8();
+				Vector<uint8_t> sarr;
+				sarr.resize(cs.size());
+				memcpy(sarr.ptrw(), cs.ptr(), sarr.size());
+
+				err = p_func(p_udata, path + ".import", sarr, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
+				// Now actual remapped file:
+				sarr = FileAccess::get_file_as_array(export_path);
+				err = p_func(p_udata, export_path, sarr, idx, total, enc_in_filters, enc_ex_filters, key);
+				if (err != OK) {
+					return err;
+				}
+			} else {
+				// file is imported and not customized, replace by what it imports
+				Ref<ConfigFile> config;
+				config.instantiate();
+				err = config->load(path + ".import");
+				if (err != OK) {
+					ERR_PRINT("Could not parse: '" + path + "', not exported.");
+					continue;
+				}
+
+				String importer_type = config->get_value("remap", "importer");
+
+				if (importer_type == "keep") {
+					//just keep file as-is
+					Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+					err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+
+					if (err != OK) {
+						return err;
+					}
+
+					continue;
+				}
+
+				List<String> remaps;
+				config->get_section_keys("remap", &remaps);
+
+				HashSet<String> remap_features;
+
+				for (const String &F : remaps) {
+					String remap = F;
+					String feature = remap.get_slice(".", 1);
+					if (features.has(feature)) {
+						remap_features.insert(feature);
+					}
+				}
+
+				if (remap_features.size() > 1) {
+					this->resolve_platform_feature_priorities(p_preset, remap_features);
+				}
+
+				err = OK;
+
+				for (const String &F : remaps) {
+					String remap = F;
+					if (remap == "path") {
+						String remapped_path = config->get_value("remap", remap);
+						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+						err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+					} else if (remap.begins_with("path.")) {
+						String feature = remap.get_slice(".", 1);
+
+						if (remap_features.has(feature)) {
+							String remapped_path = config->get_value("remap", remap);
+							Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+							err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+						}
+					}
+				}
 
 				if (err != OK) {
 					return err;
 				}
 
-				continue;
-			}
+				//also save the .import file
+				Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
+				err = p_func(p_udata, path + ".import", array, idx, total, enc_in_filters, enc_ex_filters, key);
 
-			List<String> remaps;
-			config->get_section_keys("remap", &remaps);
-
-			HashSet<String> remap_features;
-
-			for (const String &F : remaps) {
-				String remap = F;
-				String feature = remap.get_slice(".", 1);
-				if (features.has(feature)) {
-					remap_features.insert(feature);
+				if (err != OK) {
+					return err;
 				}
-			}
-
-			if (remap_features.size() > 1) {
-				this->resolve_platform_feature_priorities(p_preset, remap_features);
-			}
-
-			err = OK;
-
-			for (const String &F : remaps) {
-				String remap = F;
-				if (remap == "path") {
-					String remapped_path = config->get_value("remap", remap);
-					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-					err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
-				} else if (remap.begins_with("path.")) {
-					String feature = remap.get_slice(".", 1);
-
-					if (remap_features.has(feature)) {
-						String remapped_path = config->get_value("remap", remap);
-						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
-						err = p_func(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
-					}
-				}
-			}
-
-			if (err != OK) {
-				return err;
-			}
-
-			//also save the .import file
-			Vector<uint8_t> array = FileAccess::get_file_as_array(path + ".import");
-			err = p_func(p_udata, path + ".import", array, idx, total, enc_in_filters, enc_ex_filters, key);
-
-			if (err != OK) {
-				return err;
 			}
 
 		} else {
+			// Customize
+
 			bool do_export = true;
 			for (int i = 0; i < export_plugins.size(); i++) {
 				if (export_plugins[i]->get_script_instance()) { //script based
-					PackedStringArray features_psa;
-					for (const String &feature : features) {
-						features_psa.push_back(feature);
-					}
 					export_plugins.write[i]->_export_file_script(path, type, features_psa);
 				} else {
 					export_plugins.write[i]->_export_file(path, type, features);
@@ -748,8 +1154,18 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			}
 			//just store it as it comes
 			if (do_export) {
-				Vector<uint8_t> array = FileAccess::get_file_as_array(path);
-				err = p_func(p_udata, path, array, idx, total, enc_in_filters, enc_ex_filters, key);
+				// Customization only happens if plugins did not take care of it before
+				bool force_binary = convert_text_to_binary && (path.get_extension().to_lower() == "tres" || path.get_extension().to_lower() == "tscn");
+				String export_path = _export_customize(path, customize_resources_plugins, customize_scenes_plugins, export_cache, export_base_path, force_binary);
+
+				if (export_path != path) {
+					// Add a remap entry
+					path_remaps.push_back(path);
+					path_remaps.push_back(export_path);
+				}
+
+				Vector<uint8_t> array = FileAccess::get_file_as_array(export_path);
+				err = p_func(p_udata, export_path, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				if (err != OK) {
 					return err;
 				}
@@ -759,6 +1175,31 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		idx++;
 	}
 
+	if (convert_text_to_binary || customize_resources_plugins.size() || customize_scenes_plugins.size()) {
+		// End scene customization
+
+		String fcache = export_base_path.path_join("file_cache");
+		Ref<FileAccess> f = FileAccess::open(fcache, FileAccess::WRITE);
+
+		if (f.is_valid()) {
+			for (const KeyValue<String, FileExportCache> &E : export_cache) {
+				if (E.value.used) { // May be old, unused
+					String l = E.key + "::" + E.value.source_md5 + "::" + itos(E.value.source_modified_time) + "::" + E.value.saved_path;
+					f->store_line(l);
+				}
+			}
+		} else {
+			ERR_PRINT("Error opening export file cache: " + fcache);
+		}
+
+		for (uint32_t i = 0; i < customize_resources_plugins.size(); i++) {
+			customize_resources_plugins[i]->_end_customize_resources();
+		}
+
+		for (uint32_t i = 0; i < customize_scenes_plugins.size(); i++) {
+			customize_scenes_plugins[i]->_end_customize_scenes();
+		}
+	}
 	//save config!
 
 	Vector<String> custom_list;

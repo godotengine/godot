@@ -36,6 +36,7 @@
 class GDExtensionExportPlugin : public EditorExportPlugin {
 protected:
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
+	virtual String _get_name() const { return "GDExtension"; }
 };
 
 void GDExtensionExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {

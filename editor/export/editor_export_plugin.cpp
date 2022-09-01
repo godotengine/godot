@@ -138,6 +138,64 @@ void EditorExportPlugin::_export_end_script() {
 	GDVIRTUAL_CALL(_export_end);
 }
 
+// Customization
+
+bool EditorExportPlugin::_begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_begin_customize_resources, p_platform, p_features, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+Ref<Resource> EditorExportPlugin::_customize_resource(const Ref<Resource> &p_resource, const String &p_path) {
+	Ref<Resource> ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_customize_resource, p_resource, p_path, ret)) {
+		return ret;
+	}
+	return Ref<Resource>();
+}
+
+bool EditorExportPlugin::_begin_customize_scenes(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_begin_customize_scenes, p_platform, p_features, ret)) {
+		return ret;
+	}
+	return false;
+}
+
+Node *EditorExportPlugin::_customize_scene(Node *p_root, const String &p_path) {
+	Node *ret = nullptr;
+	if (GDVIRTUAL_REQUIRED_CALL(_customize_scene, p_root, p_path, ret)) {
+		return ret;
+	}
+	return nullptr;
+}
+
+uint64_t EditorExportPlugin::_get_customization_configuration_hash() const {
+	uint64_t ret = 0;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_customization_configuration_hash, ret)) {
+		return ret;
+	}
+	return 0;
+}
+
+void EditorExportPlugin::_end_customize_scenes() {
+	GDVIRTUAL_CALL(_end_customize_scenes);
+}
+
+void EditorExportPlugin::_end_customize_resources() {
+	GDVIRTUAL_CALL(_end_customize_resources);
+}
+
+String EditorExportPlugin::_get_name() const {
+	String ret;
+	if (GDVIRTUAL_REQUIRED_CALL(_get_name, ret)) {
+		return ret;
+	}
+	return "";
+}
+
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 
@@ -164,38 +222,20 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_export_file, "path", "type", "features");
 	GDVIRTUAL_BIND(_export_begin, "features", "is_debug", "path", "flags");
 	GDVIRTUAL_BIND(_export_end);
+
+	GDVIRTUAL_BIND(_begin_customize_resources, "platform", "features");
+	GDVIRTUAL_BIND(_customize_resource, "resource", "path");
+
+	GDVIRTUAL_BIND(_begin_customize_scenes, "platform", "features");
+	GDVIRTUAL_BIND(_customize_scene, "scene", "path");
+
+	GDVIRTUAL_BIND(_get_customization_configuration_hash);
+
+	GDVIRTUAL_BIND(_end_customize_scenes);
+	GDVIRTUAL_BIND(_end_customize_resources);
+
+	GDVIRTUAL_BIND(_get_name);
 }
 
 EditorExportPlugin::EditorExportPlugin() {
-}
-
-///////////////////////
-
-void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
-	String extension = p_path.get_extension().to_lower();
-	if (extension != "tres" && extension != "tscn") {
-		return;
-	}
-
-	bool convert = GLOBAL_GET("editor/export/convert_text_resources_to_binary");
-	if (!convert) {
-		return;
-	}
-	String tmp_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmpfile.res");
-	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
-	if (err != OK) {
-		DirAccess::remove_file_or_error(tmp_path);
-		ERR_FAIL();
-	}
-	Vector<uint8_t> data = FileAccess::get_file_as_array(tmp_path);
-	if (data.size() == 0) {
-		DirAccess::remove_file_or_error(tmp_path);
-		ERR_FAIL();
-	}
-	DirAccess::remove_file_or_error(tmp_path);
-	add_file(p_path + ".converted.res", data, true);
-}
-
-EditorExportTextSceneToBinaryPlugin::EditorExportTextSceneToBinaryPlugin() {
-	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", false);
 }
