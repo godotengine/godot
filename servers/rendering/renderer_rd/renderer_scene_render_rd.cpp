@@ -1473,7 +1473,7 @@ void RendererSceneRenderRD::_allocate_luminance_textures(RenderBuffers *rb) {
 
 		if (final) {
 			rb->luminance.current = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
+			rb->luminance.last_frame = RD::get_singleton()->texture_create(tf, RD::TextureView());
 			if (!_render_buffers_can_be_storage()) {
 				Vector<RID> fb;
 				fb.push_back(rb->luminance.current);
@@ -1483,6 +1483,8 @@ void RendererSceneRenderRD::_allocate_luminance_textures(RenderBuffers *rb) {
 			break;
 		}
 	}
+
+	rb->luminance.histogram = RD::get_singleton()->storage_buffer_create(256 * sizeof(uint32_t));
 }
 
 void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
@@ -1596,6 +1598,9 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 	}
 	rb->luminance.reduce.clear();
 
+	RD::get_singleton()->free(rb->luminance.histogram);
+	rb->luminance.histogram = RID();
+
 	if (rb->luminance.current_fb.is_valid()) {
 		RD::get_singleton()->free(rb->luminance.current_fb);
 		rb->luminance.current_fb = RID();
@@ -1604,6 +1609,8 @@ void RendererSceneRenderRD::_free_render_buffer_data(RenderBuffers *rb) {
 	if (rb->luminance.current.is_valid()) {
 		RD::get_singleton()->free(rb->luminance.current);
 		rb->luminance.current = RID();
+		RD::get_singleton()->free(rb->luminance.last_frame);
+		rb->luminance.last_frame = RID();
 	}
 
 	if (rb->ss_effects.linear_depth.is_valid()) {
@@ -1931,14 +1938,17 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		double step = environment_get_auto_exp_speed(p_render_data->environment) * time_step;
 		if (can_use_storage) {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.current, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
+			RendererCompositorRD::singleton->get_effects()->luminance_reduction(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.last_frame, rb->luminance.current, rb->luminance.histogram, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
 		} else {
 			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(rb->internal_texture, Size2i(rb->internal_width, rb->internal_height), rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, environment_get_min_luminance(p_render_data->environment), environment_get_max_luminance(p_render_data->environment), step, set_immediate);
 		}
+
 		// Swap final reduce with prev luminance.
-		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
 		if (!can_use_storage) {
+			SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
 			SWAP(rb->luminance.current_fb, rb->luminance.fb.write[rb->luminance.fb.size() - 1]);
+		} else {
+			SWAP(rb->luminance.current, rb->luminance.last_frame);
 		}
 
 		RenderingServerDefault::redraw_request(); // Redraw all the time if auto exposure rendering is on.

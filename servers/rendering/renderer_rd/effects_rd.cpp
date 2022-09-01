@@ -217,44 +217,45 @@ void EffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_dept
 	}
 }
 
-void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
+void EffectsRD::luminance_reduction(RID p_source_texture, const Size2i p_source_size, RID p_target, RID p_prev_luminance, RID p_histogram, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set) {
 	ERR_FAIL_COND_MSG(prefer_raster_effects, "Can't use compute version of luminance reduction with the mobile renderer.");
+	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
+	ERR_FAIL_NULL(uniform_set_cache);
 
 	luminance_reduce.push_constant.source_size[0] = p_source_size.x;
 	luminance_reduce.push_constant.source_size[1] = p_source_size.y;
-	luminance_reduce.push_constant.max_luminance = p_max_luminance;
-	luminance_reduce.push_constant.min_luminance = p_min_luminance;
+	luminance_reduce.push_constant.max_luminance = 1.0 / log2(p_max_luminance);
+	luminance_reduce.push_constant.min_luminance = log2(p_min_luminance);
 	luminance_reduce.push_constant.exposure_adjust = p_adjust;
 
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
-	for (int i = 0; i < p_reduce.size(); i++) {
-		if (i == 0) {
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_READ]);
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_texture), 0);
-		} else {
-			RD::get_singleton()->compute_list_add_barrier(compute_list); //needs barrier, wait until previous is done
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_READ]);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &luminance_reduce.push_constant, sizeof(LuminanceReducePushConstant));
 
-			if (i == p_reduce.size() - 1 && !p_set) {
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_WRITE]);
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_prev_luminance), 2);
-			} else {
-				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE]);
-			}
+	RD::Uniform u_histogram(RD::UNIFORM_TYPE_STORAGE_BUFFER, 0, { p_histogram });
 
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_reduce[i - 1]), 0);
-		}
+	RID shader = luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0);
 
-		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_reduce[i]), 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_histogram), 1);
 
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &luminance_reduce.push_constant, sizeof(LuminanceReducePushConstant));
+	RD::get_singleton()->compute_list_dispatch_threads(compute_list, luminance_reduce.push_constant.source_size[0], luminance_reduce.push_constant.source_size[1], 1);
 
-		RD::get_singleton()->compute_list_dispatch_threads(compute_list, luminance_reduce.push_constant.source_size[0], luminance_reduce.push_constant.source_size[1], 1);
+	RD::get_singleton()->compute_list_add_barrier(compute_list); //needs barrier, wait until previous is done
 
-		luminance_reduce.push_constant.source_size[0] = MAX(luminance_reduce.push_constant.source_size[0] / 8, 1);
-		luminance_reduce.push_constant.source_size[1] = MAX(luminance_reduce.push_constant.source_size[1] / 8, 1);
-	}
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_WRITE]);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &luminance_reduce.push_constant, sizeof(LuminanceReducePushConstant));
 
+	RD::Uniform u_target(RD::UNIFORM_TYPE_IMAGE, 0, { p_target });
+
+	shader = luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 1);
+
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_prev_luminance), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_histogram), 1);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 2, u_target), 2);
+
+	RD::get_singleton()->compute_list_dispatch(compute_list, 1, 1, 1);
 	RD::get_singleton()->compute_list_end();
 }
 
@@ -417,7 +418,7 @@ EffectsRD::EffectsRD(bool p_prefer_raster_effects) {
 		// Initialize luminance_reduce
 		Vector<String> luminance_reduce_modes;
 		luminance_reduce_modes.push_back("\n#define READ_TEXTURE\n");
-		luminance_reduce_modes.push_back("\n");
+		//luminance_reduce_modes.push_back("\n");
 		luminance_reduce_modes.push_back("\n#define WRITE_LUMINANCE\n");
 
 		luminance_reduce.shader.initialize(luminance_reduce_modes);

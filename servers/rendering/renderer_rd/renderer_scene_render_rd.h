@@ -527,6 +527,8 @@ private:
 		struct Luminance {
 			Vector<RID> reduce;
 			RID current;
+			RID histogram;
+			RID last_frame;
 
 			// used only on mobile renderer
 			Vector<RID> fb;
