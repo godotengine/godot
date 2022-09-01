@@ -186,21 +186,21 @@ ArrayOccluder3D::~ArrayOccluder3D() {
 
 /////////////////////////////////////////////////
 
-void QuadOccluder3D::set_size(const Vector2 &p_size) {
+void QuadOccluder3D::set_size(const Size2 &p_size) {
 	if (size == p_size) {
 		return;
 	}
 
-	size = p_size.max(Vector2());
+	size = p_size.max(Size2());
 	_update();
 }
 
-Vector2 QuadOccluder3D::get_size() const {
+Size2 QuadOccluder3D::get_size() const {
 	return size;
 }
 
 void QuadOccluder3D::_update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) {
-	Vector2 _size = Vector2(size.x / 2.0f, size.y / 2.0f);
+	Size2 _size = Size2(size.x / 2.0f, size.y / 2.0f);
 
 	r_vertices = {
 		Vector3(-_size.x, -_size.y, 0),

@@ -57,7 +57,7 @@ static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) 
 
 static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_manhattan, heuristic_euclidian, heuristic_octile, heuristic_chebyshev };
 
-void AStarGrid2D::set_size(const Vector2i &p_size) {
+void AStarGrid2D::set_size(const Size2i &p_size) {
 	ERR_FAIL_COND(p_size.x < 0 || p_size.y < 0);
 	if (p_size != size) {
 		size = p_size;
@@ -65,7 +65,7 @@ void AStarGrid2D::set_size(const Vector2i &p_size) {
 	}
 }
 
-Vector2i AStarGrid2D::get_size() const {
+Size2i AStarGrid2D::get_size() const {
 	return size;
 }
 
@@ -80,14 +80,14 @@ Vector2 AStarGrid2D::get_offset() const {
 	return offset;
 }
 
-void AStarGrid2D::set_cell_size(const Vector2 &p_cell_size) {
+void AStarGrid2D::set_cell_size(const Size2 &p_cell_size) {
 	if (!cell_size.is_equal_approx(p_cell_size)) {
 		cell_size = p_cell_size;
 		dirty = true;
 	}
 }
 
-Vector2 AStarGrid2D::get_cell_size() const {
+Size2 AStarGrid2D::get_cell_size() const {
 	return cell_size;
 }
 

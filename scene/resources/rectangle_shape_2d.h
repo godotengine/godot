@@ -36,7 +36,7 @@
 class RectangleShape2D : public Shape2D {
 	GDCLASS(RectangleShape2D, Shape2D);
 
-	Vector2 size;
+	Size2 size;
 	void _update_shape();
 
 protected:
@@ -47,8 +47,8 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-	void set_size(const Vector2 &p_size);
-	Vector2 get_size() const;
+	void set_size(const Size2 &p_size);
+	Size2 get_size() const;
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
 	virtual Rect2 get_rect() const override;

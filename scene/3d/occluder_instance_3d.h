@@ -88,15 +88,15 @@ class QuadOccluder3D : public Occluder3D {
 	GDCLASS(QuadOccluder3D, Occluder3D);
 
 private:
-	Vector2 size = Vector2(1.0f, 1.0f);
+	Size2 size = Vector2(1.0f, 1.0f);
 
 protected:
 	virtual void _update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) override;
 	static void _bind_methods();
 
 public:
-	Vector2 get_size() const;
-	void set_size(const Vector2 &p_size);
+	Size2 get_size() const;
+	void set_size(const Size2 &p_size);
 
 	QuadOccluder3D();
 	~QuadOccluder3D();

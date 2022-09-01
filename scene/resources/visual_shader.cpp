@@ -3855,11 +3855,11 @@ VisualShaderNodeUniform::VisualShaderNodeUniform() {
 
 ////////////// ResizeableBase
 
-void VisualShaderNodeResizableBase::set_size(const Vector2 &p_size) {
+void VisualShaderNodeResizableBase::set_size(const Size2 &p_size) {
 	size = p_size;
 }
 
-Vector2 VisualShaderNodeResizableBase::get_size() const {
+Size2 VisualShaderNodeResizableBase::get_size() const {
 	return size;
 }
 

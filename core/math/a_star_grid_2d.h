@@ -58,9 +58,9 @@ public:
 	};
 
 private:
-	Vector2i size;
+	Size2i size;
 	Vector2 offset;
-	Vector2 cell_size = Vector2(1, 1);
+	Size2 cell_size = Size2(1, 1);
 	bool dirty = false;
 
 	bool jumping_enabled = false;
@@ -136,14 +136,14 @@ protected:
 	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
 
 public:
-	void set_size(const Vector2i &p_size);
-	Vector2i get_size() const;
+	void set_size(const Size2i &p_size);
+	Size2i get_size() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
-	void set_cell_size(const Vector2 &p_cell_size);
-	Vector2 get_cell_size() const;
+	void set_cell_size(const Size2 &p_cell_size);
+	Size2 get_cell_size() const;
 
 	void update();
 
