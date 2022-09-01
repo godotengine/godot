@@ -264,7 +264,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (bitmask.is_valid()) {
 		check_rect = false;
 		if (!touched && Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
-			if (bitmask->get_bit(coord)) {
+			if (bitmask->get_bitv(coord)) {
 				touched = true;
 			}
 		}

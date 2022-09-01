@@ -201,7 +201,7 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, 
 
 		for (int i = 0; i < bm->get_size().width; i++) {
 			for (int j = 0; j < bm->get_size().height; j++) {
-				if (bm->get_bit(Point2i(i, j))) {
+				if (bm->get_bit(i, j)) {
 					w[j * (int)bm->get_size().width + i] = 255;
 				} else {
 					w[j * (int)bm->get_size().width + i] = 0;
