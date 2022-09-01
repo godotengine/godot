@@ -69,13 +69,49 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 	return vbox;
 }
 
+void EditorFileDialog::_update_theme_item_cache() {
+	ConfirmationDialog::_update_theme_item_cache();
+
+	theme_cache.parent_folder = get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons"));
+	theme_cache.forward_folder = get_theme_icon(SNAME("Forward"), SNAME("EditorIcons"));
+	theme_cache.back_folder = get_theme_icon(SNAME("Back"), SNAME("EditorIcons"));
+	theme_cache.reload = get_theme_icon(SNAME("Reload"), SNAME("EditorIcons"));
+	theme_cache.toggle_hidden = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
+	theme_cache.favorite = get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons"));
+	theme_cache.mode_thumbnails = get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons"));
+	theme_cache.mode_list = get_theme_icon(SNAME("FileList"), SNAME("EditorIcons"));
+	theme_cache.favorites_up = get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons"));
+	theme_cache.favorites_down = get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons"));
+
+	theme_cache.folder = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
+	theme_cache.folder_icon_modulate = get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
+
+	theme_cache.action_copy = get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons"));
+	theme_cache.action_delete = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
+	theme_cache.filesystem = get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons"));
+
+	theme_cache.folder_medium_thumbnail = get_theme_icon(SNAME("FolderMediumThumb"), SNAME("EditorIcons"));
+	theme_cache.file_medium_thumbnail = get_theme_icon(SNAME("FileMediumThumb"), SNAME("EditorIcons"));
+	theme_cache.folder_big_thumbnail = get_theme_icon(SNAME("FolderBigThumb"), SNAME("EditorIcons"));
+	theme_cache.file_big_thumbnail = get_theme_icon(SNAME("FileBigThumb"), SNAME("EditorIcons"));
+
+	theme_cache.progress[0] = get_theme_icon("Progress1", SNAME("EditorIcons"));
+	theme_cache.progress[1] = get_theme_icon("Progress2", SNAME("EditorIcons"));
+	theme_cache.progress[2] = get_theme_icon("Progress3", SNAME("EditorIcons"));
+	theme_cache.progress[3] = get_theme_icon("Progress4", SNAME("EditorIcons"));
+	theme_cache.progress[4] = get_theme_icon("Progress5", SNAME("EditorIcons"));
+	theme_cache.progress[5] = get_theme_icon("Progress6", SNAME("EditorIcons"));
+	theme_cache.progress[6] = get_theme_icon("Progress7", SNAME("EditorIcons"));
+	theme_cache.progress[7] = get_theme_icon("Progress8", SNAME("EditorIcons"));
+}
+
 void EditorFileDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY:
 		case NOTIFICATION_THEME_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_icons();
+			invalidate();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -86,7 +122,8 @@ void EditorFileDialog::_notification(int p_what) {
 					if (preview_wheel_index >= 8) {
 						preview_wheel_index = 0;
 					}
-					Ref<Texture2D> frame = item_list->get_theme_icon("Progress" + itos(preview_wheel_index + 1), SNAME("EditorIcons"));
+
+					Ref<Texture2D> frame = theme_cache.progress[preview_wheel_index];
 					preview->set_texture(frame);
 					preview_wheel_timeout = 0.1;
 				}
@@ -100,7 +137,6 @@ void EditorFileDialog::_notification(int p_what) {
 			}
 			set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
-			_update_icons();
 			// DO NOT CALL UPDATE FILE LIST HERE, ALL HUNDREDS OF HIDDEN DIALOGS WILL RESPOND, CALL INVALIDATE INSTEAD
 			invalidate();
 		} break;
@@ -289,49 +325,7 @@ void EditorFileDialog::_post_popup() {
 	}
 
 	if (is_visible()) {
-		Ref<Texture2D> folder = item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
-		const Color folder_color = item_list->get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
-		recent->clear();
-
-		bool res = (access == ACCESS_RESOURCES);
-		Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
-		Vector<String> recentd_paths;
-		Vector<String> recentd_names;
-
-		for (int i = 0; i < recentd.size(); i++) {
-			bool cres = recentd[i].begins_with("res://");
-			if (cres != res) {
-				continue;
-			}
-
-			if (!dir_access->dir_exists(recentd[i])) {
-				// Remove invalid directory from the list of Recent directories.
-				recentd.remove_at(i--);
-				continue;
-			}
-
-			// Compute recent directory display text.
-			String name = recentd[i];
-			if (res && name == "res://") {
-				name = "/";
-			} else {
-				if (name.ends_with("/")) {
-					name = name.substr(0, name.length() - 1);
-				}
-				name = name.get_file();
-			}
-			recentd_paths.append(recentd[i]);
-			recentd_names.append(name);
-		}
-
-		EditorNode::disambiguate_filenames(recentd_paths, recentd_names);
-
-		for (int i = 0; i < recentd_paths.size(); i++) {
-			recent->add_item(recentd_names[i], folder);
-			recent->set_item_metadata(-1, recentd_paths[i]);
-			recent->set_item_icon_modulate(-1, folder_color);
-		}
-		EditorSettings::get_singleton()->set_recent_dirs(recentd);
+		_update_recent();
 
 		local_history.clear();
 		local_history_pos = -1;
@@ -626,16 +620,16 @@ void EditorFileDialog::_item_list_item_rmb_clicked(int p_item, const Vector2 &p_
 	}
 
 	if (single_item_selected) {
-		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), TTR("Copy Path"), ITEM_MENU_COPY_PATH);
+		item_menu->add_icon_item(theme_cache.action_copy, TTR("Copy Path"), ITEM_MENU_COPY_PATH);
 	}
 	if (allow_delete) {
-		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), TTR("Delete"), ITEM_MENU_DELETE, Key::KEY_DELETE);
+		item_menu->add_icon_item(theme_cache.action_delete, TTR("Delete"), ITEM_MENU_DELETE, Key::KEY_DELETE);
 	}
 	if (single_item_selected) {
 		item_menu->add_separator();
 		Dictionary item_meta = item_list->get_item_metadata(p_item);
 		String item_text = item_meta["dir"] ? TTR("Open in File Manager") : TTR("Show in File Manager");
-		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), item_text, ITEM_MENU_SHOW_IN_EXPLORER);
+		item_menu->add_icon_item(theme_cache.filesystem, item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -663,11 +657,11 @@ void EditorFileDialog::_item_list_empty_clicked(const Vector2 &p_pos, MouseButto
 	item_menu->reset_size();
 
 	if (can_create_dir) {
-		item_menu->add_icon_item(item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog")), TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KeyModifierMask::CMD | Key::N);
+		item_menu->add_icon_item(theme_cache.folder, TTR("New Folder..."), ITEM_MENU_NEW_FOLDER, KeyModifierMask::CMD | Key::N);
 	}
-	item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")), TTR("Refresh"), ITEM_MENU_REFRESH, Key::F5);
+	item_menu->add_icon_item(theme_cache.reload, TTR("Refresh"), ITEM_MENU_REFRESH, Key::F5);
 	item_menu->add_separator();
-	item_menu->add_icon_item(item_list->get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_icon_item(theme_cache.filesystem, TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
 	item_menu->set_position(item_list->get_screen_position() + p_pos);
 	item_menu->reset_size();
@@ -773,11 +767,11 @@ void EditorFileDialog::update_file_list() {
 		item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 
 		if (thumbnail_size < 64) {
-			folder_thumbnail = item_list->get_theme_icon(SNAME("FolderMediumThumb"), SNAME("EditorIcons"));
-			file_thumbnail = item_list->get_theme_icon(SNAME("FileMediumThumb"), SNAME("EditorIcons"));
+			folder_thumbnail = theme_cache.folder_medium_thumbnail;
+			file_thumbnail = theme_cache.file_medium_thumbnail;
 		} else {
-			folder_thumbnail = item_list->get_theme_icon(SNAME("FolderBigThumb"), SNAME("EditorIcons"));
-			file_thumbnail = item_list->get_theme_icon(SNAME("FileBigThumb"), SNAME("EditorIcons"));
+			folder_thumbnail = theme_cache.folder_big_thumbnail;
+			file_thumbnail = theme_cache.file_big_thumbnail;
 		}
 
 		preview_vb->hide();
@@ -797,8 +791,6 @@ void EditorFileDialog::update_file_list() {
 
 	dir_access->list_dir_begin();
 
-	Ref<Texture2D> folder = item_list->get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
-	const Color folder_color = item_list->get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
 	List<String> files;
 	List<String> dirs;
 
@@ -838,7 +830,7 @@ void EditorFileDialog::update_file_list() {
 		if (display_mode == DISPLAY_THUMBNAILS) {
 			item_list->set_item_icon(-1, folder_thumbnail);
 		} else {
-			item_list->set_item_icon(-1, folder);
+			item_list->set_item_icon(-1, theme_cache.folder);
 		}
 
 		Dictionary d;
@@ -847,7 +839,7 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(-1, d);
-		item_list->set_item_icon_modulate(-1, folder_color);
+		item_list->set_item_icon_modulate(-1, theme_cache.folder_icon_modulate);
 
 		dirs.pop_front();
 	}
@@ -1120,6 +1112,7 @@ void EditorFileDialog::invalidate() {
 	if (is_visible()) {
 		update_file_list();
 		_update_favorites();
+		_update_recent();
 		invalidated = false;
 	} else {
 		invalidated = true;
@@ -1235,22 +1228,25 @@ void EditorFileDialog::_update_drives(bool p_select) {
 
 void EditorFileDialog::_update_icons() {
 	// Update icons.
-	mode_thumbnails->set_icon(item_list->get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
-	mode_list->set_icon(item_list->get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
-	if (is_layout_rtl()) {
-		dir_prev->set_icon(item_list->get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-		dir_next->set_icon(item_list->get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-	} else {
-		dir_prev->set_icon(item_list->get_theme_icon(SNAME("Back"), SNAME("EditorIcons")));
-		dir_next->set_icon(item_list->get_theme_icon(SNAME("Forward"), SNAME("EditorIcons")));
-	}
-	dir_up->set_icon(item_list->get_theme_icon(SNAME("ArrowUp"), SNAME("EditorIcons")));
-	refresh->set_icon(item_list->get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
-	favorite->set_icon(item_list->get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
-	show_hidden->set_icon(item_list->get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 
-	fav_up->set_icon(item_list->get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
-	fav_down->set_icon(item_list->get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));
+	mode_thumbnails->set_icon(theme_cache.mode_thumbnails);
+	mode_list->set_icon(theme_cache.mode_list);
+
+	if (is_layout_rtl()) {
+		dir_prev->set_icon(theme_cache.forward_folder);
+		dir_next->set_icon(theme_cache.back_folder);
+	} else {
+		dir_prev->set_icon(theme_cache.back_folder);
+		dir_next->set_icon(theme_cache.forward_folder);
+	}
+	dir_up->set_icon(theme_cache.parent_folder);
+
+	refresh->set_icon(theme_cache.reload);
+	favorite->set_icon(theme_cache.favorite);
+	show_hidden->set_icon(theme_cache.toggle_hidden);
+
+	fav_up->set_icon(theme_cache.favorites_up);
+	fav_down->set_icon(theme_cache.favorites_down);
 }
 
 void EditorFileDialog::_favorite_selected(int p_idx) {
@@ -1335,8 +1331,6 @@ void EditorFileDialog::_update_favorites() {
 	bool res = (access == ACCESS_RESOURCES);
 
 	String current = get_current_dir();
-	Ref<Texture2D> folder_icon = item_list->get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
-	const Color folder_color = item_list->get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
 	favorites->clear();
 
 	favorite->set_pressed(false);
@@ -1389,9 +1383,9 @@ void EditorFileDialog::_update_favorites() {
 	EditorNode::disambiguate_filenames(favorited_paths, favorited_names);
 
 	for (int i = 0; i < favorited_paths.size(); i++) {
-		favorites->add_item(favorited_names[i], folder_icon);
+		favorites->add_item(favorited_names[i], theme_cache.folder);
 		favorites->set_item_metadata(-1, favorited_paths[i]);
-		favorites->set_item_icon_modulate(-1, folder_color);
+		favorites->set_item_icon_modulate(-1, theme_cache.folder_icon_modulate);
 
 		if (i == current_favorite) {
 			favorite->set_pressed(true);
@@ -1433,6 +1427,50 @@ void EditorFileDialog::_favorite_pressed() {
 	EditorSettings::get_singleton()->set_favorites(favorited);
 
 	_update_favorites();
+}
+
+void EditorFileDialog::_update_recent() {
+	recent->clear();
+
+	bool res = (access == ACCESS_RESOURCES);
+	Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
+	Vector<String> recentd_paths;
+	Vector<String> recentd_names;
+
+	for (int i = 0; i < recentd.size(); i++) {
+		bool cres = recentd[i].begins_with("res://");
+		if (cres != res) {
+			continue;
+		}
+
+		if (!dir_access->dir_exists(recentd[i])) {
+			// Remove invalid directory from the list of Recent directories.
+			recentd.remove_at(i--);
+			continue;
+		}
+
+		// Compute recent directory display text.
+		String name = recentd[i];
+		if (res && name == "res://") {
+			name = "/";
+		} else {
+			if (name.ends_with("/")) {
+				name = name.substr(0, name.length() - 1);
+			}
+			name = name.get_file();
+		}
+		recentd_paths.append(recentd[i]);
+		recentd_names.append(name);
+	}
+
+	EditorNode::disambiguate_filenames(recentd_paths, recentd_names);
+
+	for (int i = 0; i < recentd_paths.size(); i++) {
+		recent->add_item(recentd_names[i], theme_cache.folder);
+		recent->set_item_metadata(-1, recentd_paths[i]);
+		recent->set_item_icon_modulate(-1, theme_cache.folder_icon_modulate);
+	}
+	EditorSettings::get_singleton()->set_recent_dirs(recentd);
 }
 
 void EditorFileDialog::_recent_selected(int p_idx) {

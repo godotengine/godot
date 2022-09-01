@@ -196,7 +196,7 @@ private:
 		Color clear_button_color;
 		Color clear_button_color_pressed;
 
-		int base_scale = 0;
+		float base_scale = 1.0;
 	} theme_cache;
 
 	bool _is_over_clear_button(const Point2 &p_pos) const;
