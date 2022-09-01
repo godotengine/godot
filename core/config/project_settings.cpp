@@ -41,7 +41,10 @@
 #include "core/os/keyboard.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+
+#ifdef TOOLS_ENABLED
 #include "modules/modules_enabled.gen.h" // For mono.
+#endif // TOOLS_ENABLED
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
@@ -75,6 +78,7 @@ String ProjectSettings::get_imported_files_path() const {
 	return get_project_data_path().path_join("imported");
 }
 
+#ifdef TOOLS_ENABLED
 // Returns the features that a project must have when opened with this build of Godot.
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
@@ -137,6 +141,7 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	features.sort();
 	return features;
 }
+#endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
 	if (resource_path.is_empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||
@@ -897,6 +902,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
+#ifdef TOOLS_ENABLED
 	PackedStringArray project_features = get_setting("application/config/features");
 	// If there is no feature list currently present, force one to generate.
 	if (project_features.is_empty()) {
@@ -924,6 +930,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 	project_features = _trim_to_supported_features(project_features);
 	set_setting("application/config/features", project_features);
+#endif // TOOLS_ENABLED
 
 	RBSet<_VCSort> vclist;
 
