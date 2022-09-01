@@ -331,6 +331,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_network_peer", "get_multiplayer_peer" }, // Multiplayer API
 	{ "get_network_unique_id", "get_unique_id" }, // Multiplayer API
 	{ "get_ok", "get_ok_button" }, // AcceptDialog
+	{ "get_oneshot", "get_one_shot" }, // AnimatedTexture
 	{ "get_option_visibility", "_get_option_visibility" }, // EditorImportPlugin
 	{ "get_parameter_default_value", "_get_parameter_default_value" }, // AnimationNode
 	{ "get_parameter_list", "_get_parameter_list" }, // AnimationNode
@@ -506,6 +507,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_mid_height", "set_height" }, // CapsuleMesh
 	{ "set_network_master", "set_multiplayer_authority" }, // Node
 	{ "set_network_peer", "set_multiplayer_peer" }, // Multiplayer API
+	{ "set_oneshot", "set_one_shot" }, // AnimatedTexture
 	{ "set_pause_mode", "set_process_mode" }, // Node
 	{ "set_physical_scancode", "set_physical_keycode" }, // InputEventKey
 	{ "set_refuse_new_network_connections", "set_refuse_new_connections" }, // Multiplayer API
@@ -747,6 +749,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetNetworkMaster", "GetMultiplayerAuthority" }, // Node
 	{ "GetNetworkPeer", "GetMultiplayerPeer" }, // Multiplayer API
 	{ "GetNetworkUniqueId", "GetUniqueId" }, // Multiplayer API
+	{ "GetOneshot", "GetOneShot" }, // AnimatedTexture
 	{ "GetOk", "GetOkButton" }, // AcceptDialog
 	{ "GetOptionVisibility", "_GetOptionVisibility" }, // EditorImportPlugin
 	{ "GetParameterDefaultValue", "_GetParameterDefaultValue" }, // AnimationNode
@@ -913,6 +916,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetMidHeight", "SetHeight" }, // CapsuleMesh
 	{ "SetNetworkMaster", "SetMultiplayerAuthority" }, // Node
 	{ "SetNetworkPeer", "SetMultiplayerPeer" }, // Multiplayer API
+	{ "SetOneshot", "SetOneShot" }, // AnimatedTexture
 	{ "SetPhysicalScancode", "SetPhysicalKeycode" }, // InputEventKey
 	{ "SetRefuseNewNetworkConnections", "SetRefuseNewConnections" }, // Multiplayer API
 	{ "SetRegion", "SetRegionEnabled" }, // Sprite2D, Sprite broke AtlasTexture
@@ -1051,6 +1055,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
 	{ "ofs", "offset" }, // Theme
+	{ "oneshot", "one_shot" }, // AnimatedTexture
 	{ "out_of_range_mode", "max_polyphony" }, // AudioStreamPlayer3D
 	{ "pause_mode", "process_mode" }, // Node
 	{ "physical_scancode", "physical_keycode" }, // InputEventKey
@@ -1144,6 +1149,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
 	{ "OffsetV", "DragVerticalOffset" }, // Camera2D
 	{ "Ofs", "Offset" }, // Theme
+	{ "Oneshot", "OneShot" }, // AnimatedTexture
 	{ "OutOfRangeMode", "MaxPolyphony" }, // AudioStreamPlayer3D
 	{ "PauseMode", "ProcessMode" }, // Node
 	{ "PhysicalScancode", "PhysicalKeycode" }, // InputEventKey

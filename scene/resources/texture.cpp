@@ -2632,7 +2632,7 @@ void AnimatedTexture::_update_proxy() {
 		if (time > frame_limit) {
 			current_frame++;
 			if (current_frame >= frame_count) {
-				if (oneshot) {
+				if (one_shot) {
 					current_frame = frame_count - 1;
 				} else {
 					current_frame = 0;
@@ -2684,13 +2684,13 @@ bool AnimatedTexture::get_pause() const {
 	return pause;
 }
 
-void AnimatedTexture::set_oneshot(bool p_oneshot) {
+void AnimatedTexture::set_one_shot(bool p_one_shot) {
 	RWLockWrite r(rw_lock);
-	oneshot = p_oneshot;
+	one_shot = p_one_shot;
 }
 
-bool AnimatedTexture::get_oneshot() const {
-	return oneshot;
+bool AnimatedTexture::get_one_shot() const {
+	return one_shot;
 }
 
 void AnimatedTexture::set_frame_texture(int p_frame, const Ref<Texture2D> &p_texture) {
@@ -2809,8 +2809,8 @@ void AnimatedTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "pause"), &AnimatedTexture::set_pause);
 	ClassDB::bind_method(D_METHOD("get_pause"), &AnimatedTexture::get_pause);
 
-	ClassDB::bind_method(D_METHOD("set_oneshot", "oneshot"), &AnimatedTexture::set_oneshot);
-	ClassDB::bind_method(D_METHOD("get_oneshot"), &AnimatedTexture::get_oneshot);
+	ClassDB::bind_method(D_METHOD("set_one_shot", "one_shot"), &AnimatedTexture::set_one_shot);
+	ClassDB::bind_method(D_METHOD("get_one_shot"), &AnimatedTexture::get_one_shot);
 
 	ClassDB::bind_method(D_METHOD("set_fps", "fps"), &AnimatedTexture::set_fps);
 	ClassDB::bind_method(D_METHOD("get_fps"), &AnimatedTexture::get_fps);
@@ -2824,7 +2824,7 @@ void AnimatedTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frames", PROPERTY_HINT_RANGE, "1," + itos(MAX_FRAMES), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_frames", "get_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_frame", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_frame", "get_current_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pause"), "set_pause", "get_pause");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oneshot"), "set_oneshot", "get_oneshot");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fps", PROPERTY_HINT_RANGE, "0,1024,0.1"), "set_fps", "get_fps");
 
 	for (int i = 0; i < MAX_FRAMES; i++) {
