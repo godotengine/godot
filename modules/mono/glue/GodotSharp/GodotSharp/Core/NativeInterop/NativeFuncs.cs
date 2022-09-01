@@ -176,10 +176,6 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
 
-        public static partial void godotsharp_variant_new_vector4(out godot_variant r_dest, in Vector4 p_vec4);
-
-        public static partial void godotsharp_variant_new_vector4i(out godot_variant r_dest, in Vector4i p_vec4i);
-
         public static partial void godotsharp_variant_new_basis(out godot_variant r_dest, in Basis p_basis);
 
         public static partial void godotsharp_variant_new_transform3d(out godot_variant r_dest, in Transform3D p_trans);
