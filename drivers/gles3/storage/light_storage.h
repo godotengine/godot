@@ -92,6 +92,7 @@ struct ReflectionProbe {
 	bool enable_shadows = false;
 	uint32_t cull_mask = (1 << 20) - 1;
 	float mesh_lod_threshold = 0.01;
+	float baked_exposure = 1.0;
 
 	Dependency dependency;
 };
@@ -103,6 +104,7 @@ struct Lightmap {
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
 	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
+	float baked_exposure = 1.0;
 	int32_t array_index = -1; //unassigned
 	PackedVector3Array points;
 	PackedColorArray point_sh;
@@ -297,6 +299,9 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
+	Lightmap *get_lightmap(RID p_rid) { return lightmap_owner.get_or_null(p_rid); };
+	bool owns_lightmap(RID p_rid) { return lightmap_owner.owns(p_rid); };
+
 	virtual RID lightmap_allocate() override;
 	virtual void lightmap_initialize(RID p_rid) override;
 	virtual void lightmap_free(RID p_rid) override;
@@ -305,6 +310,7 @@ public:
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) override;
 	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) override;
 	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) override;
+	virtual void lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) override;
 	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const override;
 	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const override;
 	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const override;

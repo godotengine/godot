@@ -41,11 +41,25 @@ float get_depth_at_pos(vec2 uv) {
 
 float get_blur_size(float depth) {
 	if (params.blur_near_active && depth < params.blur_near_begin) {
-		return -(1.0 - smoothstep(params.blur_near_end, params.blur_near_begin, depth)) * params.blur_size - DEPTH_GAP; //near blur is negative
+		if (params.use_physical_near) {
+			// Physically-based.
+			float d = abs(params.blur_near_begin - depth);
+			return -(d / (params.blur_near_begin - d)) * params.blur_size_near - DEPTH_GAP; // Near blur is negative.
+		} else {
+			// Non-physically-based.
+			return -(1.0 - smoothstep(params.blur_near_end, params.blur_near_begin, depth)) * params.blur_size - DEPTH_GAP; // Near blur is negative.
+		}
 	}
 
 	if (params.blur_far_active && depth > params.blur_far_begin) {
-		return smoothstep(params.blur_far_begin, params.blur_far_end, depth) * params.blur_size + DEPTH_GAP;
+		if (params.use_physical_far) {
+			// Physically-based.
+			float d = abs(params.blur_far_begin - depth);
+			return (d / (params.blur_far_begin + d)) * params.blur_size_far + DEPTH_GAP;
+		} else {
+			// Non-physically-based.
+			return smoothstep(params.blur_far_begin, params.blur_far_end, depth) * params.blur_size + DEPTH_GAP;
+		}
 	}
 
 	return 0.0;

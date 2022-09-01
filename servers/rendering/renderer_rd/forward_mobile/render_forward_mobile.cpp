@@ -469,7 +469,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	return render_pass_uniform_sets[p_index];
 }
 
-void RenderForwardMobile::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform) {
+void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform) {
 	// This probably needs to change...
 	scene_state.lightmaps_used = 0;
 	for (int i = 0; i < (int)p_lightmaps.size(); i++) {
@@ -482,6 +482,13 @@ void RenderForwardMobile::_setup_lightmaps(const PagedArray<RID> &p_lightmaps, c
 		Basis to_lm = lightmap_instance_get_transform(p_lightmaps[i]).basis.inverse() * p_cam_transform.basis;
 		to_lm = to_lm.inverse().transposed(); //will transform normals
 		RendererRD::MaterialStorage::store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+		scene_state.lightmaps[i].exposure_normalization = 1.0;
+		if (p_render_data->camera_attributes.is_valid()) {
+			float baked_exposure = RendererRD::LightStorage::get_singleton()->lightmap_get_baked_exposure_normalization(lightmap);
+			float enf = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+			scene_state.lightmaps[i].exposure_normalization = enf / baked_exposure;
+		}
+
 		scene_state.lightmap_ids[i] = p_lightmaps[i];
 		scene_state.lightmap_has_sh[i] = RendererRD::LightStorage::get_singleton()->lightmap_uses_spherical_harmonics(lightmap);
 
@@ -539,7 +546,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		if (render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES].is_null()) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
-		} else if (p_render_data->environment.is_valid() && (environment_get_glow_enabled(p_render_data->environment) || environment_get_auto_exposure(p_render_data->environment) || camera_effects_uses_dof(p_render_data->camera_effects))) {
+		} else if (p_render_data->environment.is_valid() && (environment_get_glow_enabled(p_render_data->environment) || RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) || RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes))) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
 		}
@@ -580,10 +587,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	scene_state.ubo.viewport_size[0] = screen_size.x;
 	scene_state.ubo.viewport_size[1] = screen_size.y;
+	scene_state.ubo.emissive_exposure_normalization = -1.0;
 
 	RD::get_singleton()->draw_command_begin_label("Render Setup");
 
-	_setup_lightmaps(*p_render_data->lightmaps, p_render_data->cam_transform);
+	_setup_lightmaps(p_render_data, *p_render_data->lightmaps, p_render_data->cam_transform);
 	_setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
 
 	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
@@ -594,6 +602,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	RID radiance_texture;
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
+	// We invert luminance_multiplier for sky so that we can combine it with exposure value.
+	float sky_energy_multiplier = 1.0 / _render_buffers_get_luminance_multiplier();
 
 	Color clear_color = p_default_bg_color;
 	bool keep_color = false;
@@ -602,13 +612,19 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
 	} else if (is_environment(p_render_data->environment)) {
 		RS::EnvironmentBG bg_mode = environment_get_background(p_render_data->environment);
-		float bg_energy = environment_get_bg_energy(p_render_data->environment);
+		float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_render_data->environment);
+		bg_energy_multiplier *= environment_get_bg_intensity(p_render_data->environment);
+
+		if (p_render_data->camera_attributes.is_valid()) {
+			bg_energy_multiplier *= RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+		}
+
 		switch (bg_mode) {
 			case RS::ENV_BG_CLEAR_COLOR: {
 				clear_color = p_default_bg_color;
-				clear_color.r *= bg_energy;
-				clear_color.g *= bg_energy;
-				clear_color.b *= bg_energy;
+				clear_color.r *= bg_energy_multiplier;
+				clear_color.g *= bg_energy_multiplier;
+				clear_color.b *= bg_energy_multiplier;
 				/*
 				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
@@ -618,9 +634,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			} break;
 			case RS::ENV_BG_COLOR: {
 				clear_color = environment_get_bg_color(p_render_data->environment);
-				clear_color.r *= bg_energy;
-				clear_color.g *= bg_energy;
-				clear_color.b *= bg_energy;
+				clear_color.r *= bg_energy_multiplier;
+				clear_color.g *= bg_energy_multiplier;
+				clear_color.b *= bg_energy_multiplier;
 				/*
 				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
@@ -653,11 +669,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				projection = correction * p_render_data->cam_projection;
 			}
 
-			sky.setup(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, projection, p_render_data->cam_transform, screen_size, this);
+			sky.setup(p_render_data->environment, p_render_data->render_buffers, *p_render_data->lights, p_render_data->camera_attributes, projection, p_render_data->cam_transform, screen_size, this);
+
+			sky_energy_multiplier *= bg_energy_multiplier;
 
 			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(p_render_data->environment, projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.update(p_render_data->environment, projection, p_render_data->cam_transform, time, sky_energy_multiplier);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
@@ -681,9 +699,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			Projection correction;
 			correction.set_depth_correction(true);
 			Projection projection = correction * p_render_data->cam_projection;
-			sky.update_res_buffers(p_render_data->environment, 1, &projection, p_render_data->cam_transform, time);
+			sky.update_res_buffers(p_render_data->environment, 1, &projection, p_render_data->cam_transform, time, sky_energy_multiplier);
 		} else {
-			sky.update_res_buffers(p_render_data->environment, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time);
+			sky.update_res_buffers(p_render_data->environment, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, sky_energy_multiplier);
 		}
 
 		RD::get_singleton()->draw_command_end_label(); // Setup Sky resolution buffers
@@ -780,9 +798,9 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				Projection correction;
 				correction.set_depth_correction(true);
 				Projection projection = correction * p_render_data->cam_projection;
-				sky.draw(draw_list, p_render_data->environment, framebuffer, 1, &projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.draw(draw_list, p_render_data->environment, framebuffer, 1, &projection, p_render_data->cam_transform, time, sky_energy_multiplier);
 			} else {
-				sky.draw(draw_list, p_render_data->environment, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, _render_buffers_get_luminance_multiplier());
+				sky.draw(draw_list, p_render_data->environment, framebuffer, p_render_data->view_count, p_render_data->view_projection, p_render_data->cam_transform, time, sky_energy_multiplier);
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Draw Sky Subpass
@@ -999,7 +1017,7 @@ void RenderForwardMobile::_render_shadow_end(uint32_t p_barrier) {
 
 /* */
 
-void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) {
+void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) {
 	RENDER_TIMESTAMP("Setup Rendering 3D Material");
 
 	RD::get_singleton()->draw_command_begin_label("Render 3D Material");
@@ -1009,6 +1027,7 @@ void RenderForwardMobile::_render_material(const Transform3D &p_cam_transform, c
 	scene_state.ubo.dual_paraboloid_side = 0;
 	scene_state.ubo.material_uv2_mode = false;
 	scene_state.ubo.opaque_prepass_threshold = 0.0f;
+	scene_state.ubo.emissive_exposure_normalization = p_exposure_normalization;
 
 	RenderDataRD render_data;
 	render_data.cam_projection = p_cam_projection;
@@ -1054,6 +1073,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 
 	scene_state.ubo.dual_paraboloid_side = 0;
 	scene_state.ubo.material_uv2_mode = true;
+	scene_state.ubo.emissive_exposure_normalization = -1.0;
 
 	RenderDataRD render_data;
 	render_data.instances = &p_instances;
@@ -1112,7 +1132,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture) {
+void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
 	// we don't do GI in low end..
 }
 
@@ -1650,8 +1670,9 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		RS::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
 		RS::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_render_data->environment);
 
-		float bg_energy = environment_get_bg_energy(p_render_data->environment);
-		scene_state.ubo.ambient_light_color_energy[3] = bg_energy;
+		float bg_energy_multiplier = environment_get_bg_energy_multiplier(p_render_data->environment);
+
+		scene_state.ubo.ambient_light_color_energy[3] = bg_energy_multiplier;
 
 		scene_state.ubo.ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_render_data->environment);
 
@@ -1660,9 +1681,9 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_render_data->environment);
 			color = color.srgb_to_linear();
 
-			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy;
-			scene_state.ubo.ambient_light_color_energy[1] = color.g * bg_energy;
-			scene_state.ubo.ambient_light_color_energy[2] = color.b * bg_energy;
+			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy_multiplier;
+			scene_state.ubo.ambient_light_color_energy[1] = color.g * bg_energy_multiplier;
+			scene_state.ubo.ambient_light_color_energy[2] = color.b * bg_energy_multiplier;
 			scene_state.ubo.use_ambient_light = true;
 			scene_state.ubo.use_ambient_cubemap = false;
 		} else {
@@ -1724,6 +1745,25 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
 		scene_state.ubo.ssao_enabled = false;
+	}
+
+	if (p_render_data->camera_attributes.is_valid()) {
+		scene_state.ubo.emissive_exposure_normalization = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes);
+		scene_state.ubo.IBL_exposure_normalization = 1.0;
+		if (is_environment(p_render_data->environment)) {
+			RID sky_rid = environment_get_sky(p_render_data->environment);
+			if (sky_rid.is_valid()) {
+				float current_exposure = RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes) * environment_get_bg_intensity(p_render_data->environment) / _render_buffers_get_luminance_multiplier();
+				scene_state.ubo.IBL_exposure_normalization = current_exposure / MAX(0.001, sky.sky_get_baked_exposure(sky_rid));
+			}
+		}
+	} else if (scene_state.ubo.emissive_exposure_normalization > 0.0) {
+		// This branch is triggered when using render_material().
+		// Emissive is set outside the function, so don't set it.
+		// IBL isn't used don't set it.
+	} else {
+		scene_state.ubo.emissive_exposure_normalization = 1.0;
+		scene_state.ubo.IBL_exposure_normalization = 1.0;
 	}
 
 	scene_state.ubo.roughness_limiter_enabled = p_opaque_render_buffers && screen_space_roughness_limiter_is_active();

@@ -527,7 +527,6 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_tangent", "surface_set_tangent" }, // ImmediateGeometry broke SurfaceTool
 	{ "set_text_align", "set_text_alignment" }, // Button
 	{ "set_timer_process_mode", "set_timer_process_callback" }, // Timer
-	{ "set_tonemap_auto_exposure", "set_tonemap_auto_exposure_enabled" }, // Environment
 	{ "set_translation", "set_position" }, // Node3D - this broke GLTFNode which is used rarely
 	{ "set_unit_offset", "set_progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "set_uv2", "surface_set_uv2" }, // ImmediateMesh broke Surffacetool
@@ -1247,12 +1246,12 @@ static const char *project_settings_renames[][2] = {
 	{ "rendering/quality/shading/force_lambert_over_burley.mobile", "rendering/shading/overrides/force_lambert_over_burley.mobile" },
 	{ "rendering/quality/shading/force_vertex_shading", "rendering/shading/overrides/force_vertex_shading" },
 	{ "rendering/quality/shading/force_vertex_shading.mobile", "rendering/shading/overrides/force_vertex_shading.mobile" },
-	{ "rendering/quality/shadow_atlas/quadrant_0_subdiv", "rendering/shadows/shadow_atlas/quadrant_0_subdiv" },
-	{ "rendering/quality/shadow_atlas/quadrant_1_subdiv", "rendering/shadows/shadow_atlas/quadrant_1_subdiv" },
-	{ "rendering/quality/shadow_atlas/quadrant_2_subdiv", "rendering/shadows/shadow_atlas/quadrant_2_subdiv" },
-	{ "rendering/quality/shadow_atlas/quadrant_3_subdiv", "rendering/shadows/shadow_atlas/quadrant_3_subdiv" },
-	{ "rendering/quality/shadow_atlas/size", "rendering/shadows/shadow_atlas/size" },
-	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/shadows/shadow_atlas/size.mobile" },
+	{ "rendering/quality/shadow_atlas/quadrant_0_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
+	{ "rendering/quality/shadow_atlas/quadrant_1_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
+	{ "rendering/quality/shadow_atlas/quadrant_2_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
+	{ "rendering/quality/shadow_atlas/quadrant_3_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_3_subdiv" },
+	{ "rendering/quality/shadow_atlas/size", "rendering/lights_and_shadows/shadow_atlas/size" },
+	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/lights_and_shadows/shadow_atlas/size.mobile" },
 	{ "rendering/vram_compression/import_bptc", "rendering/textures/vram_compression/import_bptc" },
 	{ "rendering/vram_compression/import_etc", "rendering/textures/vram_compression/import_etc" },
 	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2" },

@@ -55,6 +55,7 @@ class MaterialEditor : public Control {
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
 	Camera3D *camera = nullptr;
+	Ref<CameraAttributesPractical> camera_attributes;
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<BoxMesh> box_mesh;

@@ -105,6 +105,8 @@ directional_lights;
 
 struct Lightmap {
 	mat3 normal_xform;
+	vec3 pad;
+	float exposure_normalization;
 };
 
 layout(set = 0, binding = 9, std140) restrict readonly buffer Lightmaps {
@@ -139,6 +141,8 @@ struct SDFVoxelGICascadeData {
 	float to_probe;
 	ivec3 probe_world_offset;
 	float to_cell; // 1/bounds * grid_size
+	vec3 pad;
+	float exposure_normalization;
 };
 
 layout(set = 0, binding = 15, std140) uniform SDFGI {
@@ -251,7 +255,8 @@ struct SceneData {
 
 	bool pancake_shadows;
 	vec2 taa_jitter;
-	uvec2 pad2;
+	float emissive_exposure_normalization;
+	float IBL_exposure_normalization;
 };
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
@@ -340,6 +345,9 @@ struct VoxelGIData {
 	float normal_bias; // 4 - 88
 	bool blend_ambient; // 4 - 92
 	uint mipmaps; // 4 - 96
+
+	vec3 pad; // 12 - 108
+	float exposure_normalization; // 4 - 112
 };
 
 layout(set = 1, binding = 17, std140) uniform VoxelGIs {

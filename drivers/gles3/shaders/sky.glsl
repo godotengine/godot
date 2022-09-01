@@ -92,6 +92,7 @@ uniform mat4 orientation;
 uniform vec4 projection;
 uniform vec3 position;
 uniform float time;
+uniform float luminance_multiplier;
 
 uniform float fog_aerial_perspective;
 uniform vec3 fog_light_color;
@@ -148,6 +149,8 @@ void main() {
 #CODE : SKY
 
 	}
+
+	color *= luminance_multiplier;
 
 	// Convert to Linear for tonemapping so color matches scene shader better
 	color = srgb_to_linear(color);

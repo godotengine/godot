@@ -100,10 +100,9 @@ private:
 		float orientation[12]; // 48 - 48
 		float projections[RendererSceneRender::MAX_RENDER_VIEWS][4]; // 2 x 16 - 80
 		float position[3]; // 12 - 92
-		float multiplier; // 4 - 96
-		float time; // 4 - 100
-		float luminance_multiplier; // 4 - 104
-		float pad[2]; // 8 - 112 // Using pad to align on 16 bytes
+		float time; // 4 - 96
+		float pad[3]; // 12 - 108
+		float luminance_multiplier; // 4 - 112
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
@@ -143,7 +142,7 @@ private:
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const Projection *p_projections, const Basis &p_orientation, float p_multiplier, const Vector3 &p_position, float p_luminance_multiplier);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, uint32_t p_view_count, const Projection *p_projections, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
 
 public:
 	struct SkySceneState {
@@ -264,6 +263,7 @@ public:
 		bool dirty = false;
 		int processing_layer = 0;
 		Sky *dirty_list = nullptr;
+		float baked_exposure = 1.0;
 
 		//State to track when radiance cubemap needs updating
 		SkyMaterialData *prev_material = nullptr;
@@ -296,9 +296,9 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
+	void setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
 	void update(RID p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
-	void draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time); // only called by clustered renderer
+	void draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0); // only called by clustered renderer
 	void update_res_buffers(RID p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
 	void draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
 
@@ -306,6 +306,8 @@ public:
 	void update_dirty_skys();
 
 	RID sky_get_material(RID p_sky) const;
+	RID sky_get_radiance_texture_rd(RID p_sky) const;
+	float sky_get_baked_exposure(RID p_sky) const;
 
 	RID allocate_sky_rid();
 	void initialize_sky_rid(RID p_rid);
@@ -315,8 +317,6 @@ public:
 	void sky_set_mode(RID p_sky, RS::SkyMode p_mode);
 	void sky_set_material(RID p_sky, RID p_material);
 	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size);
-
-	RID sky_get_radiance_texture_rd(RID p_sky) const;
 };
 
 } // namespace RendererRD

@@ -403,6 +403,7 @@ public:
 	FUNC2(lightmap_set_probe_bounds, RID, const AABB &)
 	FUNC2(lightmap_set_probe_interior, RID, bool)
 	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
+	FUNC2(lightmap_set_baked_exposure_normalization, RID, float)
 	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
 	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
@@ -453,6 +454,7 @@ public:
 	FUNC2(voxel_gi_set_dynamic_range, RID, float)
 	FUNC2(voxel_gi_set_propagation, RID, float)
 	FUNC2(voxel_gi_set_energy, RID, float)
+	FUNC2(voxel_gi_set_baked_exposure_normalization, RID, float)
 	FUNC2(voxel_gi_set_bias, RID, float)
 	FUNC2(voxel_gi_set_normal_bias, RID, float)
 	FUNC2(voxel_gi_set_interior, RID, bool)
@@ -560,7 +562,7 @@ public:
 	FUNC2(camera_set_transform, RID, const Transform3D &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
-	FUNC2(camera_set_camera_effects, RID, RID)
+	FUNC2(camera_set_camera_attributes, RID, RID)
 	FUNC2(camera_set_use_vertical_aspect, RID, bool)
 
 	/* OCCLUDER */
@@ -668,7 +670,7 @@ public:
 	FUNC2(environment_set_sky_custom_fov, RID, float)
 	FUNC2(environment_set_sky_orientation, RID, const Basis &)
 	FUNC2(environment_set_bg_color, RID, const Color &)
-	FUNC2(environment_set_bg_energy, RID, float)
+	FUNC3(environment_set_bg_energy, RID, float, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
 	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
 
@@ -689,7 +691,7 @@ public:
 	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 	FUNC1(environment_glow_set_use_high_quality, bool)
 
-	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
+	FUNC4(environment_set_tonemap, RID, EnvironmentToneMapper, float, float)
 
 	FUNC7(environment_set_adjustment, RID, bool, float, float, float, bool, RID)
 
@@ -710,20 +712,27 @@ public:
 	FUNC1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
 	FUNC2(sub_surface_scattering_set_scale, float, float)
 
-	/* CAMERA EFFECTS */
-
-	FUNCRIDSPLIT(camera_effects)
-
-	FUNC2(camera_effects_set_dof_blur_quality, DOFBlurQuality, bool)
-	FUNC1(camera_effects_set_dof_blur_bokeh_shape, DOFBokehShape)
-
-	FUNC8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
-	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
-
 	FUNC1(positional_soft_shadow_filter_set_quality, ShadowQuality);
 	FUNC1(directional_soft_shadow_filter_set_quality, ShadowQuality);
 	FUNC1(decals_set_filter, RS::DecalFilter);
 	FUNC1(light_projectors_set_filter, RS::LightProjectorFilter);
+
+	/* CAMERA ATTRIBUTES */
+
+#undef server_name
+#undef ServerName
+//from now on, calls forwarded to this singleton
+#define ServerName RendererCameraAttributes
+#define server_name RSG::camera_attributes
+
+	FUNCRIDSPLIT(camera_attributes)
+
+	FUNC2(camera_attributes_set_dof_blur_quality, DOFBlurQuality, bool)
+	FUNC1(camera_attributes_set_dof_blur_bokeh_shape, DOFBokehShape)
+
+	FUNC8(camera_attributes_set_dof_blur, RID, bool, float, float, bool, float, float, float)
+	FUNC3(camera_attributes_set_exposure, RID, float, float)
+	FUNC6(camera_attributes_set_auto_exposure, RID, bool, float, float, float, float)
 
 	/* SCENARIO API */
 
@@ -736,7 +745,7 @@ public:
 	FUNCRIDSPLIT(scenario)
 
 	FUNC2(scenario_set_environment, RID, RID)
-	FUNC2(scenario_set_camera_effects, RID, RID)
+	FUNC2(scenario_set_camera_attributes, RID, RID)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */

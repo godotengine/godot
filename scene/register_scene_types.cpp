@@ -142,7 +142,7 @@
 #include "scene/resources/bit_map.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/box_shape_3d.h"
-#include "scene/resources/camera_effects.h"
+#include "scene/resources/camera_attributes.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/circle_shape_2d.h"
@@ -152,6 +152,7 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/default_theme/default_theme.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
@@ -836,7 +837,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PhysicsMaterial);
 	GDREGISTER_CLASS(World3D);
 	GDREGISTER_CLASS(Environment);
-	GDREGISTER_CLASS(CameraEffects);
+	GDREGISTER_VIRTUAL_CLASS(CameraAttributes);
+	GDREGISTER_CLASS(CameraAttributesPhysical);
+	GDREGISTER_CLASS(CameraAttributesPractical);
 	GDREGISTER_CLASS(World2D);
 	GDREGISTER_VIRTUAL_CLASS(Texture);
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);

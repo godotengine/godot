@@ -194,10 +194,13 @@
 			The emitted light's color. See [member emission_enabled].
 		</member>
 		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [VoxelGI] is used and this object is used in baked lighting.
+			If [code]true[/code], the body emits light. Emitting light makes the object appear brighter. The object can also cast light on other objects if a [VoxelGI], SDFGI, or [LightmapGI] is used and this object is used in baked lighting.
 		</member>
-		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
-			The emitted light's strength. See [member emission_enabled].
+		<member name="emission_energy_multiplier" type="float" setter="set_emission_energy_multiplier" getter="get_emission_energy_multiplier" default="1.0">
+			Multiplier for emitted light. See [member emission_enabled].
+		</member>
+		<member name="emission_intensity" type="float" setter="set_emission_intensity" getter="get_emission_intensity">
+			Luminance of emitted light, measured in nits (candela per square meter). Only available when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. The default is roughly equivalent to an indoor lightbulb.
 		</member>
 		<member name="emission_on_uv2" type="bool" setter="set_flag" getter="get_flag" default="false">
 			Use [code]UV2[/code] to read from the [member emission_texture].

@@ -63,21 +63,6 @@
 		<member name="ambient_light_source" type="int" setter="set_ambient_source" getter="get_ambient_source" enum="Environment.AmbientSource" default="0">
 			The ambient light source to use for rendering materials and global illumination.
 		</member>
-		<member name="auto_exposure_enabled" type="bool" setter="set_tonemap_auto_exposure_enabled" getter="is_tonemap_auto_exposure_enabled" default="false">
-			If [code]true[/code], enables the tonemapping auto exposure mode of the scene renderer. If [code]true[/code], the renderer will automatically determine the exposure setting to adapt to the scene's illumination and the observed light.
-		</member>
-		<member name="auto_exposure_max_luma" type="float" setter="set_tonemap_auto_exposure_max" getter="get_tonemap_auto_exposure_max" default="8.0">
-			The maximum luminance value for the auto exposure.
-		</member>
-		<member name="auto_exposure_min_luma" type="float" setter="set_tonemap_auto_exposure_min" getter="get_tonemap_auto_exposure_min" default="0.05">
-			The minimum luminance value for the auto exposure.
-		</member>
-		<member name="auto_exposure_scale" type="float" setter="set_tonemap_auto_exposure_grey" getter="get_tonemap_auto_exposure_grey" default="0.4">
-			The scale of the auto exposure effect. Affects the intensity of auto exposure.
-		</member>
-		<member name="auto_exposure_speed" type="float" setter="set_tonemap_auto_exposure_speed" getter="get_tonemap_auto_exposure_speed" default="0.5">
-			The speed of the auto exposure effect. Affects the time needed for the camera to perform auto exposure.
-		</member>
 		<member name="background_camera_feed_id" type="int" setter="set_camera_feed_id" getter="get_camera_feed_id" default="1">
 			The ID of the camera feed to show in the background.
 		</member>
@@ -87,8 +72,11 @@
 		<member name="background_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0, 0, 0, 1)">
 			The [Color] displayed for clear areas of the scene. Only effective when using the [constant BG_COLOR] background mode.
 		</member>
-		<member name="background_energy" type="float" setter="set_bg_energy" getter="get_bg_energy" default="1.0">
-			The power of the light emitted by the background.
+		<member name="background_energy_multiplier" type="float" setter="set_bg_energy_multiplier" getter="get_bg_energy_multiplier" default="1.0">
+			Multiplier for background energy. Increase to make background brighter, decrease to make background dimmer.
+		</member>
+		<member name="background_intensity" type="float" setter="set_bg_intensity" getter="get_bg_intensity" default="30000.0">
+			Luminance of background measured in nits (candela per square meter). Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is enabled. The default value is roughly equivalent to the sky at midday.
 		</member>
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
 			The background mode. See [enum BGMode] for possible values.

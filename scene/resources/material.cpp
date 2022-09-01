@@ -31,6 +31,8 @@
 #include "material.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
@@ -1504,13 +1506,27 @@ Color BaseMaterial3D::get_emission() const {
 	return emission;
 }
 
-void BaseMaterial3D::set_emission_energy(float p_emission_energy) {
-	emission_energy = p_emission_energy;
-	RS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy);
+void BaseMaterial3D::set_emission_energy_multiplier(float p_emission_energy_multiplier) {
+	emission_energy_multiplier = p_emission_energy_multiplier;
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		RS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy_multiplier * emission_intensity);
+	} else {
+		RS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy_multiplier);
+	}
 }
 
-float BaseMaterial3D::get_emission_energy() const {
-	return emission_energy;
+float BaseMaterial3D::get_emission_energy_multiplier() const {
+	return emission_energy_multiplier;
+}
+
+void BaseMaterial3D::set_emission_intensity(float p_emission_intensity) {
+	ERR_FAIL_COND_EDMSG(!GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units"), "Cannot set material emission intensity when Physical Light Units disabled.");
+	emission_intensity = p_emission_intensity;
+	RS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, emission_energy_multiplier * emission_intensity);
+}
+
+float BaseMaterial3D::get_emission_intensity() const {
+	return emission_intensity;
 }
 
 void BaseMaterial3D::set_normal_scale(float p_normal_scale) {
@@ -1883,6 +1899,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 	_validate_high_end("refraction", p_property);
 	_validate_high_end("subsurf_scatter", p_property);
 	_validate_high_end("heightmap", p_property);
+
+	if (p_property.name == "emission_intensity" && !GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 
 	if (p_property.name.begins_with("particles_anim_") && billboard_mode != BILLBOARD_PARTICLES) {
 		p_property.usage = PROPERTY_USAGE_NONE;
@@ -2463,8 +2483,11 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_emission", "emission"), &BaseMaterial3D::set_emission);
 	ClassDB::bind_method(D_METHOD("get_emission"), &BaseMaterial3D::get_emission);
 
-	ClassDB::bind_method(D_METHOD("set_emission_energy", "emission_energy"), &BaseMaterial3D::set_emission_energy);
-	ClassDB::bind_method(D_METHOD("get_emission_energy"), &BaseMaterial3D::get_emission_energy);
+	ClassDB::bind_method(D_METHOD("set_emission_energy_multiplier", "emission_energy_multiplier"), &BaseMaterial3D::set_emission_energy_multiplier);
+	ClassDB::bind_method(D_METHOD("get_emission_energy_multiplier"), &BaseMaterial3D::get_emission_energy_multiplier);
+
+	ClassDB::bind_method(D_METHOD("set_emission_intensity", "emission_energy_multiplier"), &BaseMaterial3D::set_emission_intensity);
+	ClassDB::bind_method(D_METHOD("get_emission_intensity"), &BaseMaterial3D::get_emission_intensity);
 
 	ClassDB::bind_method(D_METHOD("set_normal_scale", "normal_scale"), &BaseMaterial3D::set_normal_scale);
 	ClassDB::bind_method(D_METHOD("get_normal_scale"), &BaseMaterial3D::get_normal_scale);
@@ -2681,7 +2704,9 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("Emission", "emission_");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_enabled"), "set_feature", "get_feature", FEATURE_EMISSION);
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "emission", PROPERTY_HINT_COLOR_NO_ALPHA), "set_emission", "get_emission");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy", "get_emission_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_energy_multiplier", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_emission_energy_multiplier", "get_emission_energy_multiplier");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "emission_intensity", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:nt"), "set_emission_intensity", "get_emission_intensity");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "emission_operator", PROPERTY_HINT_ENUM, "Add,Multiply"), "set_emission_operator", "get_emission_operator");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "emission_on_uv2"), "set_flag", "get_flag", FLAG_EMISSION_ON_UV2);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "emission_texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture", TEXTURE_EMISSION);
@@ -2943,7 +2968,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	set_roughness(1.0);
 	set_metallic(0.0);
 	set_emission(Color(0, 0, 0));
-	set_emission_energy(1.0);
+	set_emission_energy_multiplier(1.0);
 	set_normal_scale(1);
 	set_rim(1.0);
 	set_rim_tint(0.5);
@@ -3095,6 +3120,8 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 			{ "depth_flip_tangent", "heightmap_flip_tangent" },
 			{ "depth_flip_binormal", "heightmap_flip_binormal" },
 			{ "depth_texture", "heightmap_texture" },
+
+			{ "emission_energy", "emission_energy_multiplier" },
 
 			{ nullptr, nullptr },
 		};

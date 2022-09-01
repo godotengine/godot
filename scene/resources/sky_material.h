@@ -41,14 +41,14 @@ private:
 	Color sky_top_color;
 	Color sky_horizon_color;
 	float sky_curve = 0.0f;
-	float sky_energy = 0.0f;
+	float sky_energy_multiplier = 0.0f;
 	Ref<Texture2D> sky_cover;
 	Color sky_cover_modulate;
 
 	Color ground_bottom_color;
 	Color ground_horizon_color;
 	float ground_curve = 0.0f;
-	float ground_energy = 0.0f;
+	float ground_energy_multiplier = 0.0f;
 
 	float sun_angle_max = 0.0f;
 	float sun_curve = 0.0f;
@@ -61,6 +61,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_sky_top_color(const Color &p_sky_top);
@@ -72,8 +73,8 @@ public:
 	void set_sky_curve(float p_curve);
 	float get_sky_curve() const;
 
-	void set_sky_energy(float p_energy);
-	float get_sky_energy() const;
+	void set_sky_energy_multiplier(float p_multiplier);
+	float get_sky_energy_multiplier() const;
 
 	void set_sky_cover(const Ref<Texture2D> &p_sky_cover);
 	Ref<Texture2D> get_sky_cover() const;
@@ -90,8 +91,8 @@ public:
 	void set_ground_curve(float p_curve);
 	float get_ground_curve() const;
 
-	void set_ground_energy(float p_energy);
-	float get_ground_energy() const;
+	void set_ground_energy_multiplier(float p_energy);
+	float get_ground_energy_multiplier() const;
 
 	void set_sun_angle_max(float p_angle);
 	float get_sun_angle_max() const;
@@ -138,6 +139,9 @@ public:
 	void set_filtering_enabled(bool p_enabled);
 	bool is_filtering_enabled() const;
 
+	void set_energy_multiplier(float p_multiplier);
+	float get_energy_multiplier() const;
+
 	virtual Shader::Mode get_shader_mode() const override;
 	virtual RID get_shader_rid() const override;
 	virtual RID get_rid() const override;
@@ -166,7 +170,7 @@ private:
 	float turbidity = 0.0f;
 	float sun_disk_scale = 0.0f;
 	Color ground_color;
-	float exposure = 0.0f;
+	float energy_multiplier = 1.0f;
 	bool use_debanding = true;
 	Ref<Texture2D> night_sky;
 	static void _update_shader();
@@ -174,6 +178,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	void set_rayleigh_coefficient(float p_rayleigh);
@@ -200,8 +205,11 @@ public:
 	void set_ground_color(Color p_ground_color);
 	Color get_ground_color() const;
 
-	void set_exposure(float p_exposure);
-	float get_exposure() const;
+	void set_energy_multiplier(float p_multiplier);
+	float get_energy_multiplier() const;
+
+	void set_exposure_value(float p_exposure);
+	float get_exposure_value() const;
 
 	void set_use_debanding(bool p_use_debanding);
 	bool get_use_debanding() const;

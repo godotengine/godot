@@ -30,6 +30,7 @@
 
 #include "material_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -161,6 +162,10 @@ MaterialEditor::MaterialEditor() {
 	// without much distortion.
 	camera->set_perspective(20, 0.1, 10);
 	camera->make_current();
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes.instantiate();
+		camera->set_attributes(camera_attributes);
+	}
 	viewport->add_child(camera);
 
 	light1 = memnew(DirectionalLight3D);

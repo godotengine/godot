@@ -117,7 +117,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
-	tonemap.push_constant.auto_exposure_grey = p_settings.auto_exposure_grey;
+	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
@@ -203,7 +203,7 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
 	tonemap.push_constant.exposure = p_settings.exposure;
 	tonemap.push_constant.white = p_settings.white;
-	tonemap.push_constant.auto_exposure_grey = p_settings.auto_exposure_grey;
+	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
 
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 

@@ -36,6 +36,7 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/resources/camera_attributes.h"
 #include "scene/resources/material.h"
 
 class MeshEditor : public SubViewportContainer {
@@ -50,6 +51,7 @@ class MeshEditor : public SubViewportContainer {
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
 	Camera3D *camera = nullptr;
+	Ref<CameraAttributesPractical> camera_attributes;
 
 	Ref<Mesh> mesh;
 

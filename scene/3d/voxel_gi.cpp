@@ -30,8 +30,10 @@
 
 #include "voxel_gi.h"
 
+#include "core/core_string_names.h"
 #include "mesh_instance_3d.h"
 #include "multimesh_instance_3d.h"
+#include "scene/resources/camera_attributes.h"
 #include "voxelizer.h"
 
 void VoxelGIData::_set_data(const Dictionary &p_data) {
@@ -281,6 +283,14 @@ Vector3 VoxelGI::get_extents() const {
 	return extents;
 }
 
+void VoxelGI::set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes) {
+	camera_attributes = p_camera_attributes;
+}
+
+Ref<CameraAttributes> VoxelGI::get_camera_attributes() const {
+	return camera_attributes;
+}
+
 void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
 	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_STATIC && mi->is_visible_in_tree()) {
@@ -370,9 +380,14 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 	p_from_node = p_from_node ? p_from_node : get_parent();
 	ERR_FAIL_NULL(p_from_node);
 
+	float exposure_normalization = 1.0;
+	if (camera_attributes.is_valid()) {
+		exposure_normalization = camera_attributes->calculate_exposure_normalization() * camera_attributes->get_exposure_multiplier();
+	}
+
 	Voxelizer baker;
 
-	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0));
+	baker.begin_bake(subdiv_value[subdiv], AABB(-extents, extents * 2.0), exposure_normalization);
 
 	List<PlotMesh> mesh_list;
 
@@ -428,6 +443,8 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		Vector<uint8_t> df = baker.get_sdf_3d_image();
 
+		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data->get_rid(), exposure_normalization);
+
 		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
 
 		set_probe_data(probe_data);
@@ -472,12 +489,16 @@ void VoxelGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &VoxelGI::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &VoxelGI::get_extents);
 
+	ClassDB::bind_method(D_METHOD("set_camera_attributes", "camera_attributes"), &VoxelGI::set_camera_attributes);
+	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &VoxelGI::get_camera_attributes);
+
 	ClassDB::bind_method(D_METHOD("bake", "from_node", "create_visual_debug"), &VoxelGI::bake, DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("debug_bake"), &VoxelGI::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("debug_bake"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdiv", PROPERTY_HINT_ENUM, "64,128,256,512"), "set_subdiv", "get_subdiv");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_NONE, "suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "data", PROPERTY_HINT_RESOURCE_TYPE, "VoxelGIData", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_probe_data", "get_probe_data");
 
 	BIND_ENUM_CONSTANT(SUBDIV_64);

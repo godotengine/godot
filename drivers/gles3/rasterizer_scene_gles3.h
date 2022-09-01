@@ -111,7 +111,7 @@ struct RenderDataGLES3 {
 	const PagedArray<RID> *lights = nullptr;
 	const PagedArray<RID> *reflection_probes = nullptr;
 	RID environment = RID();
-	RID camera_effects = RID();
+	RID camera_attributes = RID();
 	RID reflection_probe = RID();
 	int reflection_probe_pass = 0;
 
@@ -344,7 +344,7 @@ private:
 
 			float ambient_color_sky_mix;
 			uint32_t material_uv2_mode;
-			float pad2;
+			float emissive_exposure_normalization;
 			uint32_t use_ambient_light = 0;
 
 			uint32_t use_ambient_cubemap = 0;
@@ -357,7 +357,7 @@ private:
 			uint32_t directional_light_count;
 			float z_far;
 			float z_near;
-			float pad1;
+			float IBL_exposure_normalization;
 
 			uint32_t fog_enabled;
 			float fog_density;
@@ -537,6 +537,16 @@ protected:
 
 	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
 
+	/* Camera Attributes */
+
+	struct CameraAttributes {
+		float exposure_multiplier = 1.0;
+		float exposure_normalization = 1.0;
+	};
+
+	bool use_physical_light_units = false;
+	mutable RID_Owner<CameraAttributes, true> camera_attributes_owner;
+
 	/* Environment */
 
 	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
@@ -605,6 +615,7 @@ protected:
 		bool dirty = false;
 		int processing_layer = 0;
 		Sky *dirty_list = nullptr;
+		float baked_exposure = 1.0;
 
 		//State to track when radiance cubemap needs updating
 		GLES3::SkyMaterialData *prev_material;
@@ -615,12 +626,12 @@ protected:
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 
-	void _setup_sky(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
+	void _setup_sky(const RenderDataGLES3 *p_render_data, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
-	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform);
+	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
 	void _filter_sky_radiance(Sky *p_sky, int p_base_layer);
-	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform);
+	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
 	void _free_sky_data(Sky *p_sky);
 
 public:
@@ -665,6 +676,7 @@ public:
 	void sky_set_mode(RID p_sky, RS::SkyMode p_mode) override;
 	void sky_set_material(RID p_sky, RID p_material) override;
 	Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) override;
+	float sky_get_baked_exposure(RID p_sky) const;
 
 	/* ENVIRONMENT API */
 
@@ -686,13 +698,9 @@ public:
 
 	Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override;
 
-	RID camera_effects_allocate() override;
-	void camera_effects_initialize(RID p_rid) override;
-	void camera_effects_set_dof_blur_quality(RS::DOFBlurQuality p_quality, bool p_use_jitter) override;
-	void camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape p_shape) override;
-
-	void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) override;
-	void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) override;
+	_FORCE_INLINE_ bool is_using_physical_light_units() {
+		return use_physical_light_units;
+	}
 
 	void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 	void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
@@ -743,7 +751,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 

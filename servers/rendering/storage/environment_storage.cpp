@@ -30,8 +30,6 @@
 
 #include "environment_storage.h"
 
-uint64_t RendererEnvironmentStorage::auto_exposure_counter = 2;
-
 RID RendererEnvironmentStorage::environment_allocate() {
 	return environment_owner.allocate_rid();
 }
@@ -76,10 +74,11 @@ void RendererEnvironmentStorage::environment_set_bg_color(RID p_env, const Color
 	env->bg_color = p_color;
 }
 
-void RendererEnvironmentStorage::environment_set_bg_energy(RID p_env, float p_energy) {
+void RendererEnvironmentStorage::environment_set_bg_energy(RID p_env, float p_multiplier, float p_intensity) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
-	env->bg_energy = p_energy;
+	env->bg_energy_multiplier = p_multiplier;
+	env->bg_intensity = p_intensity;
 }
 
 void RendererEnvironmentStorage::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
@@ -128,10 +127,16 @@ Color RendererEnvironmentStorage::environment_get_bg_color(RID p_env) const {
 	return env->bg_color;
 }
 
-float RendererEnvironmentStorage::environment_get_bg_energy(RID p_env) const {
+float RendererEnvironmentStorage::environment_get_bg_energy_multiplier(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 1.0);
-	return env->bg_energy;
+	return env->bg_energy_multiplier;
+}
+
+float RendererEnvironmentStorage::environment_get_bg_intensity(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 1.0);
+	return env->bg_intensity;
 }
 
 int RendererEnvironmentStorage::environment_get_canvas_max_layer(RID p_env) const {
@@ -172,20 +177,12 @@ RS::EnvironmentReflectionSource RendererEnvironmentStorage::environment_get_refl
 
 // Tonemap
 
-void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
+void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND(!env);
 	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
-	if (!env->auto_exposure && p_auto_exposure) {
-		env->auto_exposure_version = ++auto_exposure_counter;
-	}
-	env->auto_exposure = p_auto_exposure;
 	env->white = p_white;
-	env->min_luminance = p_min_luminance;
-	env->max_luminance = p_max_luminance;
-	env->auto_exp_speed = p_auto_exp_speed;
-	env->auto_exp_scale = p_auto_exp_scale;
 }
 
 RS::EnvironmentToneMapper RendererEnvironmentStorage::environment_get_tone_mapper(RID p_env) const {
@@ -204,42 +201,6 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_COND_V(!env, 1.0);
 	return env->white;
-}
-
-bool RendererEnvironmentStorage::environment_get_auto_exposure(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, false);
-	return env->auto_exposure;
-}
-
-float RendererEnvironmentStorage::environment_get_min_luminance(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0.2);
-	return env->min_luminance;
-}
-
-float RendererEnvironmentStorage::environment_get_max_luminance(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 8.0);
-	return env->max_luminance;
-}
-
-float RendererEnvironmentStorage::environment_get_auto_exp_speed(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0.2);
-	return env->auto_exp_speed;
-}
-
-float RendererEnvironmentStorage::environment_get_auto_exp_scale(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0.5);
-	return env->auto_exp_scale;
-}
-
-uint64_t RendererEnvironmentStorage::environment_get_auto_exposure_version(RID p_env) const {
-	Environment *env = environment_owner.get_or_null(p_env);
-	ERR_FAIL_COND_V(!env, 0);
-	return env->auto_exposure_version;
 }
 
 // Fog

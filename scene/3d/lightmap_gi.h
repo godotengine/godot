@@ -36,6 +36,9 @@
 #include "scene/3d/lightmapper.h"
 #include "scene/3d/visual_instance_3d.h"
 
+class Sky;
+class CameraAttributes;
+
 class LightmapGIData : public Resource {
 	GDCLASS(LightmapGIData, Resource);
 	RES_BASE_EXTENSION("lmbake")
@@ -47,6 +50,7 @@ class LightmapGIData : public Resource {
 
 	RID lightmap;
 	AABB bounds;
+	float baked_exposure = 1.0;
 
 	struct User {
 		NodePath path;
@@ -83,8 +87,9 @@ public:
 	bool is_using_spherical_harmonics() const;
 
 	bool is_interior() const;
+	float get_baked_exposure() const;
 
-	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree);
+	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure);
 	PackedVector3Array get_capture_points() const;
 	PackedColorArray get_capture_sh() const;
 	PackedInt32Array get_capture_tetrahedra() const;
@@ -147,6 +152,7 @@ private:
 	float environment_custom_energy = 1.0;
 	bool directional = false;
 	GenerateProbes gen_probes = GENERATE_PROBES_DISABLED;
+	Ref<CameraAttributes> camera_attributes;
 
 	Ref<LightmapGIData> light_data;
 
@@ -259,6 +265,9 @@ public:
 
 	void set_generate_probes(GenerateProbes p_generate_probes);
 	GenerateProbes get_generate_probes() const;
+
+	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
+	Ref<CameraAttributes> get_camera_attributes() const;
 
 	AABB get_aabb() const override;
 

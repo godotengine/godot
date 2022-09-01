@@ -32,6 +32,8 @@ struct ProbeCascadeData {
 	float to_probe;
 	ivec3 probe_world_offset;
 	float to_cell; // 1/bounds * grid_size
+	vec3 pad;
+	float exposure_normalization;
 };
 
 layout(rgba16f, set = 0, binding = 9) uniform restrict writeonly image2D ambient_buffer;
@@ -83,6 +85,9 @@ struct VoxelGIData {
 	float normal_bias; // 4 - 88
 	bool blend_ambient; // 4 - 92
 	uint mipmaps; // 4 - 96
+
+	vec3 pad; // 12 - 108
+	float exposure_normalization; // 4 - 112
 };
 
 layout(set = 0, binding = 16, std140) uniform VoxelGIs {
@@ -241,7 +246,7 @@ void sdfvoxel_gi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_
 		pos_uvw.x += float(offset.z) * sdfgi.lightprobe_uv_offset.z;
 		diffuse = textureLod(sampler2DArray(lightprobe_texture, linear_sampler), pos_uvw, 0.0).rgb;
 
-		diffuse_accum += vec4(diffuse * weight, weight);
+		diffuse_accum += vec4(diffuse * weight * sdfgi.cascades[cascade].exposure_normalization, weight);
 
 		{
 			vec3 specular = vec3(0.0);
@@ -255,7 +260,7 @@ void sdfvoxel_gi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_
 				specular = mix(specular, textureLod(sampler2DArray(lightprobe_texture, linear_sampler), pos_uvw, 0.0).rgb, (roughness - 0.2) * 1.25);
 			}
 
-			specular_accum += specular * weight;
+			specular_accum += specular * weight * sdfgi.cascades[cascade].exposure_normalization;
 		}
 	}
 
@@ -574,7 +579,7 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 		}
 	}
 
-	light.rgb *= voxel_gi_instances.data[index].dynamic_range;
+	light.rgb *= voxel_gi_instances.data[index].dynamic_range * voxel_gi_instances.data[index].exposure_normalization;
 	if (!voxel_gi_instances.data[index].blend_ambient) {
 		light.a = 1.0;
 	}
@@ -583,7 +588,7 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 
 	//radiance
 	vec4 irr_light = voxel_cone_trace(voxel_gi_textures[index], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, voxel_gi_instances.data[index].bias);
-	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range;
+	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range * voxel_gi_instances.data[index].exposure_normalization;
 	if (!voxel_gi_instances.data[index].blend_ambient) {
 		irr_light.a = 1.0;
 	}

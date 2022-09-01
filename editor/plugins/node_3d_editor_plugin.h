@@ -765,6 +765,7 @@ private:
 	DirectionalLight3D *preview_sun = nullptr;
 	WorldEnvironment *preview_environment = nullptr;
 	Ref<Environment> environment;
+	Ref<CameraAttributesPhysical> camera_attributes;
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;

@@ -16,7 +16,7 @@ layout(push_constant, std430) uniform Blur {
 	float glow_exposure; // 04 - 36
 	float glow_white; // 04 - 40
 	float glow_luminance_cap; // 04 - 44
-	float glow_auto_exposure_grey; // 04 - 48
+	float glow_auto_exposure_scale; // 04 - 48
 
 	float luminance_multiplier; // 04 - 52
 	float res1; // 04 - 56
