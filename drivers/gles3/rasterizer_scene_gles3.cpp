@@ -568,7 +568,7 @@ void RasterizerSceneGLES3::_update_dirty_skys() {
 	dirty_sky_list = nullptr;
 }
 
-void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
+void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size) {
 	GLES3::LightStorage *light_storage = GLES3::LightStorage::get_singleton();
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 	ERR_FAIL_COND(p_render_data->environment.is_null());
@@ -1718,23 +1718,23 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
+void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RendererScene::RenderInfo *r_render_info) {
 	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
 	GLES3::Config *config = GLES3::Config::get_singleton();
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
-	RenderBuffers *rb = nullptr;
+	Ref<RenderSceneBuffersGLES3> rb;
 	if (p_render_buffers.is_valid()) {
-		rb = render_buffers_owner.get_or_null(p_render_buffers);
-		ERR_FAIL_COND(!rb);
+		rb = p_render_buffers;
+		ERR_FAIL_COND(rb.is_null());
 	}
 
 	// Assign render data
 	// Use the format from rendererRD
 	RenderDataGLES3 render_data;
 	{
-		render_data.render_buffers = p_render_buffers;
-		render_data.transparent_bg = rb->is_transparent;
+		render_data.render_buffers = rb;
+		render_data.transparent_bg = rb.is_valid() ? rb->is_transparent : false;
 		// Our first camera is used by default
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
@@ -1886,7 +1886,7 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
-			_setup_sky(&render_data, p_render_buffers, *render_data.lights, projection, render_data.cam_transform, screen_size);
+			_setup_sky(&render_data, *render_data.lights, projection, render_data.cam_transform, screen_size);
 
 			if (environment_get_sky(render_data.environment).is_valid()) {
 				if (environment_get_reflection_source(render_data.environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(render_data.environment) == RS::ENV_AMBIENT_SOURCE_SKY || (environment_get_reflection_source(render_data.environment) == RS::ENV_REFLECTION_SOURCE_BG && environment_get_background(render_data.environment) == RS::ENV_BG_SKY)) {
@@ -2005,8 +2005,8 @@ void RasterizerSceneGLES3::render_scene(RID p_render_buffers, const CameraData *
 
 	_render_list_template<PASS_MODE_COLOR_TRANSPARENT>(&render_list_params_alpha, &render_data, 0, render_list[RENDER_LIST_ALPHA].elements.size(), true);
 
-	if (p_render_buffers.is_valid()) {
-		_render_buffers_debug_draw(p_render_buffers, p_shadow_atlas, p_occluder_debug_tex);
+	if (rb.is_valid()) {
+		_render_buffers_debug_draw(rb, p_shadow_atlas, p_occluder_debug_tex);
 	}
 	glDisable(GL_BLEND);
 	texture_storage->render_target_disable_clear_request(rb->render_target);
@@ -2328,74 +2328,10 @@ void RasterizerSceneGLES3::set_debug_draw_mode(RS::ViewportDebugDraw p_debug_dra
 	debug_draw = p_debug_draw;
 }
 
-RID RasterizerSceneGLES3::render_buffers_create() {
-	RenderBuffers rb;
-	return render_buffers_owner.make_rid(rb);
-}
-
-void RasterizerSceneGLES3::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-
-	RenderBuffers *rb = render_buffers_owner.get_or_null(p_render_buffers);
-	ERR_FAIL_COND(!rb);
-
-	//rb->internal_width = p_internal_width; // ignore for now
-	//rb->internal_height = p_internal_height;
-	rb->width = p_width;
-	rb->height = p_height;
-	//rb->fsr_sharpness = p_fsr_sharpness;
-	rb->render_target = p_render_target;
-	//rb->msaa = p_msaa;
-	//rb->screen_space_aa = p_screen_space_aa;
-	//rb->use_debanding = p_use_debanding;
-	//rb->view_count = p_view_count;
-
-	_free_render_buffer_data(rb);
-
-	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
-
-	rb->is_transparent = rt->is_transparent;
-
-	// framebuffer
-	glGenFramebuffers(1, &rb->framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, rb->framebuffer);
-
-	glBindTexture(GL_TEXTURE_2D, rt->color);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
-
-	glGenTextures(1, &rb->depth_texture);
-	glBindTexture(GL_TEXTURE_2D, rb->depth_texture);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, rt->size.x, rt->size.y, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rb->depth_texture, 0);
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, texture_storage->system_fbo);
-
-	if (status != GL_FRAMEBUFFER_COMPLETE) {
-		_free_render_buffer_data(rb);
-		WARN_PRINT("Could not create 3D renderbuffer, status: " + texture_storage->get_framebuffer_error(status));
-		return;
-	}
-}
-
-void RasterizerSceneGLES3::_free_render_buffer_data(RenderBuffers *rb) {
-	if (rb->depth_texture) {
-		glDeleteTextures(1, &rb->depth_texture);
-		rb->depth_texture = 0;
-	}
-	if (rb->framebuffer) {
-		glDeleteFramebuffers(1, &rb->framebuffer);
-		rb->framebuffer = 0;
-	}
+Ref<RenderSceneBuffers> RasterizerSceneGLES3::render_buffers_create() {
+	Ref<RenderSceneBuffersGLES3> rb;
+	rb.instantiate();
+	return rb;
 }
 
 //clear render buffers
@@ -2423,7 +2359,7 @@ void RasterizerSceneGLES3::_free_render_buffer_data(RenderBuffers *rb) {
 	}
 */
 
-void RasterizerSceneGLES3::_render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
+void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES3> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer) {
 }
 
 void RasterizerSceneGLES3::gi_set_use_half_resolution(bool p_enable) {
@@ -2454,12 +2390,6 @@ bool RasterizerSceneGLES3::free(RID p_rid) {
 		ERR_FAIL_COND_V(!sky, false);
 		_free_sky_data(sky);
 		sky_owner.free(p_rid);
-	} else if (render_buffers_owner.owns(p_rid)) {
-		RenderBuffers *rb = render_buffers_owner.get_or_null(p_rid);
-		ERR_FAIL_COND_V(!rb, false);
-		_free_render_buffer_data(rb);
-		render_buffers_owner.free(p_rid);
-
 	} else if (light_instance_owner.owns(p_rid)) {
 		LightInstance *light_instance = light_instance_owner.get_or_null(p_rid);
 		ERR_FAIL_COND_V(!light_instance, false);

@@ -254,6 +254,7 @@ private:
 		uint32_t view_count;
 		RID framebuffer;
 		RID color;
+		Vector<RID> color_slices;
 		RID color_multisample; // Needed when MSAA is enabled.
 
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
@@ -589,6 +590,7 @@ public:
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
+	RID render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer);
 	RID render_target_get_rd_backbuffer(RID p_render_target);
 	RID render_target_get_rd_backbuffer_framebuffer(RID p_render_target);
 

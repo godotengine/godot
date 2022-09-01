@@ -37,6 +37,8 @@
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/utilities.h"
 
+#define RB_SCOPE_MOBILE SNAME("mobile")
+
 namespace RendererSceneRenderImplementation {
 
 class RenderForwardMobile : public RendererSceneRenderRD {
@@ -107,43 +109,38 @@ protected:
 
 	/* Render Buffer */
 
-	// We can have:
-	// - 4 subpasses combining the full render cycle
-	// - 3 subpasses + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
-	// - 2 subpasses + 1 normal pass for transparent + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
-	enum RenderBufferMobileFramebufferConfigType {
-		FB_CONFIG_ONE_PASS, // Single pass frame buffer for alpha pass
-		FB_CONFIG_TWO_SUBPASSES, // Opaque + Sky sub pass
-		FB_CONFIG_THREE_SUBPASSES, // Opaque + Sky + Alpha sub pass
-		FB_CONFIG_FOUR_SUBPASSES, // Opaque + Sky + Alpha sub pass + Tonemap pass
-		FB_CONFIG_MAX
+	class RenderBufferDataForwardMobile : public RenderBufferCustomDataRD {
+		GDCLASS(RenderBufferDataForwardMobile, RenderBufferCustomDataRD);
+
+	public:
+		// We can have:
+		// - 4 subpasses combining the full render cycle
+		// - 3 subpasses + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
+		// - 2 subpasses + 1 normal pass for transparent + 1 normal pass for tonemapping/glow/dof/etc (using fb for 2D buffer)
+		enum FramebufferConfigType {
+			FB_CONFIG_ONE_PASS, // Single pass frame buffer for alpha pass
+			FB_CONFIG_TWO_SUBPASSES, // Opaque + Sky sub pass
+			FB_CONFIG_THREE_SUBPASSES, // Opaque + Sky + Alpha sub pass
+			FB_CONFIG_FOUR_SUBPASSES, // Opaque + Sky + Alpha sub pass + Tonemap pass
+			FB_CONFIG_MAX
+		};
+
+		RID get_color_msaa() const { return render_buffers->get_texture(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA); }
+		RID get_color_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA, p_layer, 0); }
+
+		RID get_depth_msaa() const { return render_buffers->get_texture(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA); }
+		RID get_depth_msaa(uint32_t p_layer) { return render_buffers->get_texture_slice(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA, p_layer, 0); }
+
+		RID get_color_fbs(FramebufferConfigType p_config_type);
+		virtual void free_data() override;
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
+
+	private:
+		RenderSceneBuffersRD *render_buffers = nullptr;
+		RD::TextureSamples texture_samples = RD::TEXTURE_SAMPLES_1;
 	};
 
-	struct RenderBufferDataForwardMobile : public RenderBufferData {
-		RID color;
-		RID depth;
-		// RID normal_roughness_buffer;
-
-		RS::ViewportMSAA msaa;
-		RD::TextureSamples texture_samples;
-
-		RID color_msaa;
-		RID depth_msaa;
-		// RID normal_roughness_buffer_msaa;
-
-		RID vrs;
-
-		RID color_fbs[FB_CONFIG_MAX];
-		int width, height;
-		uint32_t view_count;
-
-		void clear();
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture);
-
-		~RenderBufferDataForwardMobile();
-	};
-
-	virtual RenderBufferData *_create_render_buffer_data() override;
+	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
 	/* Rendering */
 
@@ -218,15 +215,15 @@ protected:
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) override;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
+	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) override;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
 	uint64_t lightmap_texture_array_version = 0xFFFFFFFF;
 
 	virtual void _base_uniforms_changed() override;
 	void _update_render_base_uniform_set();
-	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) override;
-	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) override;
+	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
+	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) override;
 
 	void _fill_render_list(RenderListType p_render_list, const RenderDataRD *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _fill_element_info(RenderListType p_render_list, uint32_t p_offset = 0, int32_t p_max_elements = -1);

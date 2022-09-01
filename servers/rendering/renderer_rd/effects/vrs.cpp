@@ -91,47 +91,22 @@ void VRS::copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multi
 	RD::get_singleton()->draw_list_end();
 }
 
-void VRS::create_vrs_texture(const int p_base_width, const int p_base_height, const uint32_t p_view_count, RID &p_vrs_texture, RID &p_vrs_fb) {
-	// TODO find a way to skip this if VRS is not supported, but we don't have access to VulkanContext here, even though we're in vulkan.. hmmm
-
+Size2i VRS::get_vrs_texture_size(const Size2i p_base_size) const {
 	// TODO we should find some way to store this properly, we're assuming 16x16 as this seems to be the standard but in our vrs_capacities we
 	// obtain a minimum and maximum size, and we should choose something within this range and then make sure that is consistently set when creating
 	// our frame buffer. Also it is important that we make the resulting size we calculate down below available to the end user so they know the size
 	// of the VRS buffer to supply.
 	Size2i texel_size = Size2i(16, 16);
 
-	RD::TextureFormat tf;
-	if (p_view_count > 1) {
-		tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-	} else {
-		tf.texture_type = RD::TEXTURE_TYPE_2D;
+	int width = p_base_size.x / texel_size.x;
+	if (p_base_size.x % texel_size.x != 0) {
+		width++;
 	}
-	tf.format = RD::DATA_FORMAT_R8_UINT;
-	tf.width = p_base_width / texel_size.x;
-	if (p_base_width % texel_size.x != 0) {
-		tf.width++;
+	int height = p_base_size.y / texel_size.y;
+	if (p_base_size.y % texel_size.y != 0) {
+		height++;
 	}
-	tf.height = p_base_height / texel_size.y;
-	if (p_base_height % texel_size.y != 0) {
-		tf.height++;
-	}
-	tf.array_layers = p_view_count; // create a layer for every view
-	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-	tf.samples = RD::TEXTURE_SAMPLES_1;
-
-	p_vrs_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-	// by default VRS is assumed to be our VRS attachment, but if we need to write into it, we need a bit more control
-	Vector<RID> fb;
-	fb.push_back(p_vrs_texture);
-
-	RD::FramebufferPass pass;
-	pass.color_attachments.push_back(0);
-
-	Vector<RD::FramebufferPass> passes;
-	passes.push_back(pass);
-
-	p_vrs_fb = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, p_view_count);
+	return Size2i(width, height);
 }
 
 void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {

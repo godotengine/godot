@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vrs.h                                                                */
+/*  render_buffer_custom_data_rd.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VRS_RD_H
-#define VRS_RD_H
+#ifndef RENDER_BUFFER_CUSTOM_DATA_RD_H
+#define RENDER_BUFFER_CUSTOM_DATA_RD_H
 
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/effects/vrs.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
+#include "core/object/ref_counted.h"
 
-#include "servers/rendering_server.h"
+class RenderSceneBuffersRD;
 
-namespace RendererRD {
-
-class VRS {
-private:
-	enum VRSMode {
-		VRS_DEFAULT,
-		VRS_MULTIVIEW,
-		VRS_MAX,
-	};
-
-	/* we have no push constant here (yet)
-	struct VRSPushConstant {
-
-	};
-	*/
-
-	struct VRSShader {
-		// VRSPushConstant push_constant;
-		VrsShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[VRS_MAX];
-	} vrs_shader;
+class RenderBufferCustomDataRD : public RefCounted {
+	GDCLASS(RenderBufferCustomDataRD, RefCounted);
 
 public:
-	VRS();
-	~VRS();
+	virtual void configure(RenderSceneBuffersRD *p_render_buffers) = 0;
+	virtual void free_data() = 0; // called on cleanup
 
-	void copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multiview = false);
-
-	Size2i get_vrs_texture_size(const Size2i p_base_size) const;
-	void update_vrs_texture(RID p_vrs_fb, RID p_render_target);
+private:
 };
 
-} // namespace RendererRD
-
-#endif // VRS_RD_H
+#endif // RENDER_BUFFER_CUSTOM_DATA_RD_H

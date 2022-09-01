@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vrs.h                                                                */
+/*  render_scene_buffers.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VRS_RD_H
-#define VRS_RD_H
+#ifndef RENDER_SCENE_BUFFERS_H
+#define RENDER_SCENE_BUFFERS_H
 
-#include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/effects/vrs.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
-
+#include "core/object/ref_counted.h"
 #include "servers/rendering_server.h"
 
-namespace RendererRD {
+class RenderSceneBuffers : public RefCounted {
+	GDCLASS(RenderSceneBuffers, RefCounted);
 
-class VRS {
-private:
-	enum VRSMode {
-		VRS_DEFAULT,
-		VRS_MULTIVIEW,
-		VRS_MAX,
-	};
+protected:
+	static void _bind_methods();
 
-	/* we have no push constant here (yet)
-	struct VRSPushConstant {
-
-	};
-	*/
-
-	struct VRSShader {
-		// VRSPushConstant push_constant;
-		VrsShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[VRS_MAX];
-	} vrs_shader;
+	GDVIRTUAL10(_configure, RID, Size2i, Size2i, float, float, RS::ViewportMSAA, RenderingServer::ViewportScreenSpaceAA, bool, bool, uint32_t)
+	GDVIRTUAL1(_set_fsr_sharpness, float)
+	GDVIRTUAL1(_set_texture_mipmap_bias, float)
+	GDVIRTUAL1(_set_use_debanding, bool)
 
 public:
-	VRS();
-	~VRS();
+	RenderSceneBuffers(){};
+	virtual ~RenderSceneBuffers(){};
 
-	void copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multiview = false);
+	virtual void configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count);
 
-	Size2i get_vrs_texture_size(const Size2i p_base_size) const;
-	void update_vrs_texture(RID p_vrs_fb, RID p_render_target);
+	// for those settings that are unlikely to require buffers to be recreated, we'll add setters
+	virtual void set_fsr_sharpness(float p_fsr_sharpness);
+	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias);
+	virtual void set_use_debanding(bool p_use_debanding);
 };
 
-} // namespace RendererRD
-
-#endif // VRS_RD_H
+#endif // RENDER_SCENE_BUFFERS_H

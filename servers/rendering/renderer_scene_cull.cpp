@@ -2450,7 +2450,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 	return animated_material_found;
 }
 
-void RendererSceneCull::render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
+void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, bool p_use_taa, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
 #ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
@@ -2910,7 +2910,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	}
 }
 
-void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, RID p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows, RendererScene::RenderInfo *r_render_info) {
+void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_camera_data, const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, RID p_force_camera_attributes, uint32_t p_visible_layers, RID p_scenario, RID p_viewport, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, bool p_using_shadows, RendererScene::RenderInfo *r_render_info) {
 	Instance *render_reflection_probe = instance_owner.get_or_null(p_reflection_probe); //if null, not rendering to it
 
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
@@ -3270,8 +3270,6 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	for (uint32_t i = 0; i < cull.sdfgi.region_count; i++) {
 		render_sdfgi_data[i].instances.clear();
 	}
-
-	//	virtual void render_scene(RID p_render_buffers, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold,const RenderShadowData *p_render_shadows,int p_render_shadow_count,const RenderSDFGIData *p_render_sdfgi_regions,int p_render_sdfgi_region_count,const RenderSDFGIStaticLightData *p_render_sdfgi_static_lights=nullptr) = 0;
 }
 
 RID RendererSceneCull::_render_get_environment(RID p_camera, RID p_scenario) {
@@ -3295,7 +3293,7 @@ RID RendererSceneCull::_render_get_environment(RID p_camera, RID p_scenario) {
 	return RID();
 }
 
-void RendererSceneCull::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
+void RendererSceneCull::render_empty_scene(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
 #ifndef _3D_DISABLED
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
 
@@ -3383,7 +3381,8 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		RendererSceneRender::CameraData camera_data;
 		camera_data.set_camera(xform, cm, false, false);
 
-		_render_scene(&camera_data, RID(), environment, RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, p_step, mesh_lod_threshold, use_shadows);
+		Ref<RenderSceneBuffers> render_buffers;
+		_render_scene(&camera_data, render_buffers, environment, RID(), RSG::light_storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, RID(), shadow_atlas, reflection_probe->instance, p_step, mesh_lod_threshold, use_shadows);
 
 	} else {
 		//do roughness postprocess step until it believes it's done

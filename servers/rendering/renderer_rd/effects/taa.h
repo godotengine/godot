@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vrs.h                                                                */
+/*  taa.h                                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VRS_RD_H
-#define VRS_RD_H
+#ifndef TAA_RD_H
+#define TAA_RD_H
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/effects/vrs.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/taa_resolve.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
 
 namespace RendererRD {
 
-class VRS {
-private:
-	enum VRSMode {
-		VRS_DEFAULT,
-		VRS_MULTIVIEW,
-		VRS_MAX,
-	};
-
-	/* we have no push constant here (yet)
-	struct VRSPushConstant {
-
-	};
-	*/
-
-	struct VRSShader {
-		// VRSPushConstant push_constant;
-		VrsShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[VRS_MAX];
-	} vrs_shader;
-
+class TAA {
 public:
-	VRS();
-	~VRS();
+	TAA();
+	~TAA();
 
-	void copy_vrs(RID p_source_rd_texture, RID p_dest_framebuffer, bool p_multiview = false);
+	void msaa_resolve(Ref<RenderSceneBuffersRD> p_render_buffers);
+	void process(Ref<RenderSceneBuffersRD> p_render_buffers, RD::DataFormat p_format, float p_z_near, float p_z_far);
 
-	Size2i get_vrs_texture_size(const Size2i p_base_size) const;
-	void update_vrs_texture(RID p_vrs_fb, RID p_render_target);
+private:
+	struct TAAResolvePushConstant {
+		float resolution_width;
+		float resolution_height;
+		float disocclusion_threshold;
+		float disocclusion_scale;
+	};
+
+	TaaResolveShaderRD taa_shader;
+	RID shader_version;
+	RID pipeline;
+
+	void resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
 };
 
 } // namespace RendererRD
 
-#endif // VRS_RD_H
+#endif // TAA_RD_H

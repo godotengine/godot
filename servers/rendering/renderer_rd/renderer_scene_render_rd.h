@@ -37,18 +37,21 @@
 #include "servers/rendering/renderer_rd/cluster_builder_rd.h"
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
+#include "servers/rendering/renderer_rd/effects/fsr.h"
 #include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/environment/sky.h"
+#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
 struct RenderDataRD {
-	RID render_buffers;
+	Ref<RenderSceneBuffersRD> render_buffers;
 
 	Transform3D cam_transform;
 	Projection cam_projection;
@@ -104,15 +107,12 @@ protected:
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
+	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
 	double time = 0.0;
 	double time_step = 0.0;
 
-	struct RenderBufferData {
-		virtual void configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture) = 0;
-		virtual ~RenderBufferData() {}
-	};
-	virtual RenderBufferData *_create_render_buffer_data() = 0;
+	virtual void setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) = 0;
 
 	void _setup_lights(RenderDataRD *p_render_data, const PagedArray<RID> &p_lights, const Transform3D &p_camera_transform, RID p_shadow_atlas, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_positional_light_count, bool &r_directional_light_soft_shadows);
 	void _setup_decals(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform);
@@ -127,31 +127,28 @@ protected:
 
 	virtual void _render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region, float p_exposure_normalization) = 0;
 	virtual void _render_uv2(const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) = 0;
-	virtual void _render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) = 0;
+	virtual void _render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) = 0;
 	virtual void _render_particle_collider_heightfield(RID p_fb, const Transform3D &p_cam_transform, const Projection &p_cam_projection, const PagedArray<RenderGeometryInstance *> &p_instances) = 0;
 
-	void _debug_sdfgi_probes(RID p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
-	void _debug_draw_cluster(RID p_render_buffers);
-
-	RenderBufferData *render_buffers_get_data(RID p_render_buffers);
+	void _debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth);
+	void _debug_draw_cluster(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 	virtual void _base_uniforms_changed() = 0;
-	virtual RID _render_buffers_get_normal_texture(RID p_render_buffers) = 0;
-	virtual RID _render_buffers_get_velocity_texture(RID p_render_buffers) = 0;
+	virtual RID _render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) = 0;
+	virtual RID _render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) = 0;
 
-	void _process_ssao(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection);
-	void _process_ssr(RID p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
-	void _process_sss(RID p_render_buffers, const Projection &p_camera);
-	void _process_ssil(RID p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection, const Transform3D &p_transform);
+	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection);
+	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
+	void _process_sss(Ref<RenderSceneBuffersRD> p_render_buffers, const Projection &p_camera);
+	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection, const Transform3D &p_transform);
 
-	void _copy_framebuffer_to_ssil(RID p_render_buffers);
-	void _process_taa(RID p_render_buffers, RID p_velocity_buffer, float p_z_near, float p_z_far);
+	void _copy_framebuffer_to_ssil(Ref<RenderSceneBuffersRD> p_render_buffers);
 
 	bool _needs_post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _post_prepass_render(RenderDataRD *p_render_data, bool p_use_gi);
 	void _pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi);
 
-	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer, const RID *p_vrs_slices);
+	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
 
 	void _render_buffers_copy_screen_texture(const RenderDataRD *p_render_data);
 	void _render_buffers_copy_depth_texture(const RenderDataRD *p_render_data);
@@ -424,130 +421,21 @@ private:
 
 	bool use_physical_light_units = false;
 
-	/* RENDER BUFFERS */
+	/* Cluster builder */
 
 	ClusterBuilderSharedDataRD cluster_builder_shared;
 	ClusterBuilderRD *current_cluster_builder = nullptr;
 
-	struct RenderBuffers {
-		RenderBufferData *data = nullptr;
-		int internal_width = 0;
-		int internal_height = 0;
-		int width = 0;
-		int height = 0;
-		float fsr_sharpness = 0.2f;
-		RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
-		RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
-		bool use_taa = false;
-		bool use_debanding = false;
-		uint32_t view_count = 1;
+	/* RENDER BUFFERS */
 
-		RID render_target;
+	void _allocate_luminance_textures(Ref<RenderSceneBuffersRD> rb);
 
-		uint64_t auto_exposure_version = 1;
-
-		RID sss_texture; //texture for sss. This needs to be a different resolution than blur[0]
-		RID internal_texture; //main texture for rendering to, must be filled after done rendering
-		RID texture; //upscaled version of main texture (This uses the same resource as internal_texture if there is no upscaling)
-		RID depth_texture; //main depth texture
-		RID texture_fb; // framebuffer for the main texture, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
-		RID upscale_texture; //used when upscaling internal_texture (This uses the same resource as internal_texture if there is no upscaling)
-		RID vrs_texture; // texture for vrs.
-		RID vrs_fb; // framebuffer to write to our vrs texture
-
-		// Access to the layers for each of our views (specifically needed for applying post effects on stereoscopic images)
-		struct View {
-			RID view_texture; // texture slice for this view/layer
-			RID view_depth; // depth slice for this view/layer
-			RID view_fb; // framebuffer for this view/layer, ONLY USED FOR MOBILE RENDERER POST EFFECTS, DO NOT USE FOR RENDERING 3D!!!
-		};
-		Vector<View> views;
-
-		RendererRD::GI::SDFGI *sdfgi = nullptr;
-		RendererRD::GI::RenderBuffersGI rbgi;
-		RendererRD::Fog::VolumetricFog *volumetric_fog = nullptr;
-
-		ClusterBuilderRD *cluster_builder = nullptr;
-
-		//built-in textures used for ping pong image processing and blurring
-		struct Blur {
-			RID texture;
-
-			struct Mipmap {
-				RID texture;
-				int width;
-				int height;
-
-				// only used on mobile renderer
-				RID fb;
-				RID half_texture;
-				RID half_fb;
-			};
-
-			struct Layer {
-				Vector<Mipmap> mipmaps;
-			};
-
-			Vector<Layer> layers;
-		};
-
-		Blur blur[2]; //the second one starts from the first mipmap
-
-		struct WeightBuffers {
-			RID weight;
-			RID fb; // FB with both texture and weight writing into one level lower
-		};
-
-		// 2 full size, 2 half size
-		WeightBuffers weight_buffers[4]; // Only used in raster
-
-		RID depth_back_texture;
-		RID depth_back_fb; // only used on mobile
-
-		struct Luminance {
-			Vector<RID> reduce;
-			RID current;
-
-			// used only on mobile renderer
-			Vector<RID> fb;
-			RID current_fb;
-		} luminance;
-
-		struct SSEffects {
-			RID linear_depth;
-			Vector<RID> linear_depth_slices;
-
-			RID downsample_uniform_set;
-
-			Projection last_frame_projection;
-			Transform3D last_frame_transform;
-
-			RendererRD::SSEffects::SSAORenderBuffers ssao;
-			RendererRD::SSEffects::SSILRenderBuffers ssil;
-		} ss_effects;
-
-		RendererRD::SSEffects::SSRRenderBuffers ssr;
-
-		struct TAA {
-			RID history;
-			RID temp;
-			RID prev_velocity; // Last frame velocity buffer
-		} taa;
-	};
+	void _render_buffers_debug_draw(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
 
 	/* GI */
 	bool screen_space_roughness_limiter = false;
 	float screen_space_roughness_limiter_amount = 0.25;
 	float screen_space_roughness_limiter_limit = 0.18;
-
-	mutable RID_Owner<RenderBuffers> render_buffers_owner;
-
-	void _free_render_buffer_data(RenderBuffers *rb);
-	void _allocate_blur_textures(RenderBuffers *rb);
-	void _allocate_depth_backbuffer_textures(RenderBuffers *rb);
-	void _allocate_luminance_textures(RenderBuffers *rb);
-
-	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
 
 	/* Cluster */
 
@@ -727,10 +615,13 @@ private:
 	uint32_t volumetric_fog_depth = 128;
 	bool volumetric_fog_filter_active = true;
 
-	void _update_volumetric_fog(RID p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
+	void _update_volumetric_fog(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const Projection &p_cam_projection, const Transform3D &p_cam_transform, const Transform3D &p_prev_cam_inv_transform, RID p_shadow_atlas, int p_directional_light_count, bool p_use_directional_shadows, int p_positional_light_count, int p_voxel_gi_count, const PagedArray<RID> &p_fog_volumes);
 
 public:
 	static RendererSceneRenderRD *get_singleton() { return singleton; }
+
+	/* Cluster builder */
+	ClusterBuilderSharedDataRD *get_cluster_builder_shared() { return &cluster_builder_shared; }
 
 	/* GI */
 
@@ -774,10 +665,10 @@ public:
 
 	/* SDFGI UPDATE */
 
-	virtual void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
-	virtual int sdfgi_get_pending_region_count(RID p_render_buffers) const override;
-	virtual AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override;
-	virtual uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override;
+	virtual void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
+	virtual int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override;
+	virtual AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
+	virtual uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
 	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
 
 	/* SKY API */
@@ -1071,42 +962,14 @@ public:
 	virtual float _render_buffers_get_luminance_multiplier();
 	virtual RD::DataFormat _render_buffers_get_color_format();
 	virtual bool _render_buffers_can_be_storage();
-	virtual RID render_buffers_create() override;
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	virtual Ref<RenderSceneBuffers> render_buffers_create() override;
 	virtual void gi_set_use_half_resolution(bool p_enable) override;
 
-	RID render_buffers_get_depth_texture(RID p_render_buffers);
-	RID render_buffers_get_ao_texture(RID p_render_buffers);
-	RID render_buffers_get_ssil_texture(RID p_render_buffers);
-	RID render_buffers_get_back_buffer_texture(RID p_render_buffers);
-	RID render_buffers_get_back_depth_texture(RID p_render_buffers);
-	RID render_buffers_get_voxel_gi_buffer(RID p_render_buffers);
 	RID render_buffers_get_default_voxel_gi_buffer();
-	RID render_buffers_get_gi_ambient_texture(RID p_render_buffers);
-	RID render_buffers_get_gi_reflection_texture(RID p_render_buffers);
-
-	uint32_t render_buffers_get_sdfgi_cascade_count(RID p_render_buffers) const;
-	bool render_buffers_is_sdfgi_enabled(RID p_render_buffers) const;
-	RID render_buffers_get_sdfgi_irradiance_probes(RID p_render_buffers) const;
-	Vector3 render_buffers_get_sdfgi_cascade_offset(RID p_render_buffers, uint32_t p_cascade) const;
-	Vector3i render_buffers_get_sdfgi_cascade_probe_offset(RID p_render_buffers, uint32_t p_cascade) const;
-	float render_buffers_get_sdfgi_cascade_probe_size(RID p_render_buffers, uint32_t p_cascade) const;
-	float render_buffers_get_sdfgi_normal_bias(RID p_render_buffers) const;
-	uint32_t render_buffers_get_sdfgi_cascade_probe_count(RID p_render_buffers) const;
-	uint32_t render_buffers_get_sdfgi_cascade_size(RID p_render_buffers) const;
-	bool render_buffers_is_sdfgi_using_occlusion(RID p_render_buffers) const;
-	float render_buffers_get_sdfgi_energy(RID p_render_buffers) const;
-	RID render_buffers_get_sdfgi_occlusion_texture(RID p_render_buffers) const;
-
-	bool render_buffers_has_volumetric_fog(RID p_render_buffers) const;
-	RID render_buffers_get_volumetric_fog_texture(RID p_render_buffers);
-	RID render_buffers_get_volumetric_fog_sky_uniform_set(RID p_render_buffers);
-	float render_buffers_get_volumetric_fog_end(RID p_render_buffers);
-	float render_buffers_get_volumetric_fog_detail_spread(RID p_render_buffers);
 
 	virtual void update_uniform_sets(){};
 
-	virtual void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	virtual void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 
 	virtual void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 

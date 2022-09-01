@@ -45,6 +45,7 @@
 #include "shaders/cubemap_filter.glsl.gen.h"
 #include "shaders/sky.glsl.gen.h"
 #include "storage/material_storage.h"
+#include "storage/render_scene_buffers_gles3.h"
 #include "storage/utilities.h"
 
 enum RenderListType {
@@ -91,7 +92,7 @@ enum {
 };
 
 struct RenderDataGLES3 {
-	RID render_buffers = RID();
+	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
 
 	Transform3D cam_transform = Transform3D();
@@ -490,52 +491,11 @@ protected:
 	double time;
 	double time_step = 0;
 
-	struct RenderBuffers {
-		int internal_width = 0;
-		int internal_height = 0;
-		int width = 0;
-		int height = 0;
-		//float fsr_sharpness = 0.2f;
-		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
-		//RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
-		//bool use_debanding = false;
-		//uint32_t view_count = 1;
-
-		bool is_transparent = false;
-
-		RID render_target;
-		GLuint internal_texture = 0; // Used for rendering when post effects are enabled
-		GLuint depth_texture = 0; // Main depth texture
-		GLuint framebuffer = 0; // Main framebuffer, contains internal_texture and depth_texture or render_target->color and depth_texture
-
-		//built-in textures used for ping pong image processing and blurring
-		struct Blur {
-			RID texture;
-
-			struct Mipmap {
-				RID texture;
-				int width;
-				int height;
-				GLuint fbo;
-			};
-
-			Vector<Mipmap> mipmaps;
-		};
-
-		Blur blur[2]; //the second one starts from the first mipmap
-	};
-
 	bool screen_space_roughness_limiter = false;
 	float screen_space_roughness_limiter_amount = 0.25;
 	float screen_space_roughness_limiter_limit = 0.18;
 
-	mutable RID_Owner<RenderBuffers, true> render_buffers_owner;
-
-	void _free_render_buffer_data(RenderBuffers *rb);
-	void _allocate_blur_textures(RenderBuffers *rb);
-	void _allocate_depth_backbuffer_textures(RenderBuffers *rb);
-
-	void _render_buffers_debug_draw(RID p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
+	void _render_buffers_debug_draw(Ref<RenderSceneBuffersGLES3> p_render_buffers, RID p_shadow_atlas, RID p_occlusion_buffer);
 
 	/* Camera Attributes */
 
@@ -626,7 +586,7 @@ protected:
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 
-	void _setup_sky(const RenderDataGLES3 *p_render_data, RID p_render_buffers, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
+	void _setup_sky(const RenderDataGLES3 *p_render_data, const PagedArray<RID> &p_lights, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size);
 	void _invalidate_sky(Sky *p_sky);
 	void _update_dirty_skys();
 	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
@@ -657,14 +617,14 @@ public:
 
 	/* SDFGI UPDATE */
 
-	void sdfgi_update(RID p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
-	int sdfgi_get_pending_region_count(RID p_render_buffers) const override {
+	void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
+	int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override {
 		return 0;
 	}
-	AABB sdfgi_get_pending_region_bounds(RID p_render_buffers, int p_region) const override {
+	AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override {
 		return AABB();
 	}
-	uint32_t sdfgi_get_pending_region_cascade(RID p_render_buffers, int p_region) const override {
+	uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override {
 		return 0;
 	}
 
@@ -751,7 +711,7 @@ public:
 
 	void voxel_gi_set_quality(RS::VoxelGIQuality) override;
 
-	void render_scene(RID p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
+	void render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data = nullptr, RendererScene::RenderInfo *r_render_info = nullptr) override;
 	void render_material(const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, const PagedArray<RenderGeometryInstance *> &p_instances, RID p_framebuffer, const Rect2i &p_region) override;
 	void render_particle_collider_heightfield(RID p_collider, const Transform3D &p_transform, const PagedArray<RenderGeometryInstance *> &p_instances) override;
 
@@ -769,8 +729,7 @@ public:
 		return debug_draw;
 	}
 
-	RID render_buffers_create() override;
-	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_internal_width, int p_internal_height, int p_width, int p_height, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) override;
+	Ref<RenderSceneBuffers> render_buffers_create() override;
 	void gi_set_use_half_resolution(bool p_enable) override;
 
 	void screen_space_roughness_limiter_set_active(bool p_enable, float p_amount, float p_curve) override;

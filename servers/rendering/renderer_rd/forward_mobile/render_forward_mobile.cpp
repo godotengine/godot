@@ -69,102 +69,28 @@ void RenderForwardMobile::_map_forward_id(ForwardIDType p_type, ForwardID p_id, 
 
 /* Render buffer */
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::clear() {
-	if (color_msaa.is_valid()) {
-		RD::get_singleton()->free(color_msaa);
-		color_msaa = RID();
-	}
-
-	if (depth_msaa.is_valid()) {
-		RD::get_singleton()->free(depth_msaa);
-		depth_msaa = RID();
-	}
-
-	color = RID();
-	depth = RID();
-	for (int i = 0; i < FB_CONFIG_MAX; i++) {
-		color_fbs[i] = RID();
+void RenderForwardMobile::RenderBufferDataForwardMobile::free_data() {
+	// this should already be done but JIC..
+	if (render_buffers) {
+		render_buffers->clear_context(RB_SCOPE_MOBILE);
 	}
 }
 
-void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_buffer, RID p_depth_buffer, RID p_target_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa, bool p_use_taa, uint32_t p_view_count, RID p_vrs_texture) {
-	clear();
+void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RenderSceneBuffersRD *p_render_buffers) {
+	if (render_buffers) {
+		// JIC
+		free_data();
+	}
 
-	msaa = p_msaa;
-	vrs = p_vrs_texture;
+	render_buffers = p_render_buffers;
+	ERR_FAIL_NULL(render_buffers); // Huh? really?
 
-	Size2i target_size = RD::get_singleton()->texture_size(p_target_buffer);
+	RS::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
+	if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
+		// Create our MSAA textures...
 
-	width = p_width;
-	height = p_height;
-	bool is_scaled = (target_size.width != p_width) || (target_size.height != p_height);
-	view_count = p_view_count;
-
-	color = p_color_buffer;
-	depth = p_depth_buffer;
-
-	// We are creating 4 configurations here for our framebuffers.
-
-	if (p_msaa == RS::VIEWPORT_MSAA_DISABLED) {
-		Vector<RID> fb;
-		fb.push_back(p_color_buffer); // 0 - color buffer
-		fb.push_back(depth); // 1 - depth buffer
-		if (vrs.is_valid()) {
-			fb.push_back(vrs); // 2 - vrs texture
-		}
-
-		// Now define our subpasses
-		Vector<RD::FramebufferPass> passes;
-		RD::FramebufferPass pass;
-
-		// re-using the same attachments
-		pass.color_attachments.push_back(0);
-		pass.depth_attachment = 1;
-		if (vrs.is_valid()) {
-			pass.vrs_attachment = 2;
-		}
-
-		// - opaque pass
-		passes.push_back(pass);
-		color_fbs[FB_CONFIG_ONE_PASS] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
-
-		// - add sky pass
-		passes.push_back(pass);
-		color_fbs[FB_CONFIG_TWO_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
-
-		// - add alpha pass
-		passes.push_back(pass);
-		color_fbs[FB_CONFIG_THREE_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
-
-		if (!is_scaled) {
-			// - add blit to 2D pass
-			int target_buffer_id = fb.size();
-			fb.push_back(p_target_buffer); // 2/3 - target buffer
-
-			RD::FramebufferPass blit_pass;
-			blit_pass.color_attachments.push_back(target_buffer_id);
-			blit_pass.input_attachments.push_back(0);
-			passes.push_back(blit_pass); // this doesn't need VRS
-
-			color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
-		} else {
-			// can't do our blit pass if resolutions don't match
-			color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RID();
-		}
-	} else {
-		RD::DataFormat color_format = RenderForwardMobile::singleton->_render_buffers_get_color_format();
-
-		RD::TextureFormat tf;
-		if (view_count > 1) {
-			tf.texture_type = RD::TEXTURE_TYPE_2D_ARRAY;
-		} else {
-			tf.texture_type = RD::TEXTURE_TYPE_2D;
-		}
-		tf.format = color_format;
-		tf.width = p_width;
-		tf.height = p_height;
-		tf.array_layers = view_count; // create a layer for every view
-		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+		RD::DataFormat format = render_buffers->get_base_data_format();
+		uint32_t usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
 		const RD::TextureSamples ts[RS::VIEWPORT_MSAA_MAX] = {
 			RD::TEXTURE_SAMPLES_1,
@@ -173,79 +99,145 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RID p_color_b
 			RD::TEXTURE_SAMPLES_8,
 		};
 
-		texture_samples = ts[p_msaa];
-		tf.samples = texture_samples;
+		texture_samples = ts[msaa_3d];
 
-		color_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		render_buffers->create_texture(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
 
-		tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-		tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+		format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
+		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
 
-		depth_msaa = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		render_buffers->create_texture(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA, format, usage_bits, texture_samples);
+	}
+}
 
-		{
-			Vector<RID> fb;
-			fb.push_back(color_msaa); // 0 - msaa color buffer
-			fb.push_back(depth_msaa); // 1 - msaa depth buffer
-			if (vrs.is_valid()) {
-				fb.push_back(vrs); // 2 - vrs texture
+RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(FramebufferConfigType p_config_type) {
+	ERR_FAIL_NULL_V(render_buffers, RID());
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V(texture_storage, RID());
+
+	// We use our framebuffer cache here instead of building these in RenderBufferDataForwardMobile::configure
+	// This approach ensures we only build the framebuffers we actually need for this viewport.
+	// In the (near) future this means that if we cycle through a texture chain for our render target, we'll also support
+	// this.
+
+	RS::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
+	bool use_msaa = msaa_3d != RS::VIEWPORT_MSAA_DISABLED;
+
+	uint32_t view_count = render_buffers->get_view_count();
+
+	RID vrs_texture;
+	if (render_buffers->has_texture(RB_SCOPE_VRS, RB_TEXTURE)) {
+		vrs_texture = render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
+	}
+
+	Vector<RID> textures;
+	int color_buffer_id = 0;
+	textures.push_back(use_msaa ? get_color_msaa() : render_buffers->get_internal_texture()); // 0 - color buffer
+	textures.push_back(use_msaa ? get_depth_msaa() : render_buffers->get_depth_texture()); // 1 - depth buffer
+	if (vrs_texture.is_valid()) {
+		textures.push_back(vrs_texture); // 2 - vrs texture
+	}
+	if (use_msaa) {
+		color_buffer_id = textures.size();
+		textures.push_back(render_buffers->get_internal_texture()); // color buffer for resolve
+
+		// TODO add support for resolving depth buffer!!!
+	}
+
+	// Now define our subpasses
+	Vector<RD::FramebufferPass> passes;
+
+	// Define our base pass, we'll be re-using this
+	RD::FramebufferPass pass;
+	pass.color_attachments.push_back(0);
+	pass.depth_attachment = 1;
+	if (vrs_texture.is_valid()) {
+		pass.vrs_attachment = 2;
+	}
+
+	switch (p_config_type) {
+		case FB_CONFIG_ONE_PASS: {
+			// just one pass
+			if (use_msaa) {
+				// Add resolve
+				pass.resolve_attachments.push_back(color_buffer_id);
 			}
+			passes.push_back(pass);
 
-			// Now define our subpasses
-			Vector<RD::FramebufferPass> passes;
-			RD::FramebufferPass pass;
+			return FramebufferCacheRD::get_singleton()->get_cache_multipass(textures, passes, view_count);
+		} break;
+		case FB_CONFIG_TWO_SUBPASSES: {
+			// - opaque pass
+			passes.push_back(pass);
 
-			// re-using the same attachments
-			pass.color_attachments.push_back(0);
-			pass.depth_attachment = 1;
-			if (vrs.is_valid()) {
-				pass.vrs_attachment = 2;
+			// - add sky pass
+			if (use_msaa) {
+				// add resolve
+				pass.resolve_attachments.push_back(color_buffer_id);
 			}
+			passes.push_back(pass);
+
+			return FramebufferCacheRD::get_singleton()->get_cache_multipass(textures, passes, view_count);
+		} break;
+		case FB_CONFIG_THREE_SUBPASSES: {
+			// - opaque pass
+			passes.push_back(pass);
+
+			// - add sky pass
+			passes.push_back(pass);
+
+			// - add alpha pass
+			if (use_msaa) {
+				// add resolve
+				pass.resolve_attachments.push_back(color_buffer_id);
+			}
+			passes.push_back(pass);
+
+			return FramebufferCacheRD::get_singleton()->get_cache_multipass(textures, passes, view_count);
+		} break;
+		case FB_CONFIG_FOUR_SUBPASSES: {
+			Size2i target_size = render_buffers->get_target_size();
+			Size2i internal_size = render_buffers->get_internal_size();
+
+			// can't do our blit pass if resolutions don't match
+			ERR_FAIL_COND_V(target_size != internal_size, RID());
 
 			// - opaque pass
 			passes.push_back(pass);
 
 			// - add sky pass
-			int color_buffer_id = fb.size();
-			fb.push_back(color); // color buffer
-			passes.push_back(pass); // without resolve for our 3 + 4 subpass config
-			{
-				// but with resolve for our 2 subpass config
-				Vector<RD::FramebufferPass> two_passes;
-				two_passes.push_back(pass); // opaque subpass without resolve
-				pass.resolve_attachments.push_back(color_buffer_id);
-				two_passes.push_back(pass); // sky subpass with resolve
-
-				color_fbs[FB_CONFIG_TWO_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, two_passes, RenderingDevice::INVALID_ID, view_count);
-			}
-
-			// - add alpha pass (with resolve, we just added that above)
 			passes.push_back(pass);
-			color_fbs[FB_CONFIG_THREE_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
 
-			{
-				// we also need our one pass with resolve
-				Vector<RD::FramebufferPass> one_pass_with_resolve;
-				one_pass_with_resolve.push_back(pass); // note our pass configuration already has resolve..
-				color_fbs[FB_CONFIG_ONE_PASS] = RD::get_singleton()->framebuffer_create_multipass(fb, one_pass_with_resolve, RenderingDevice::INVALID_ID, view_count);
+			// - add alpha pass
+			if (use_msaa) {
+				// add resolve
+				pass.resolve_attachments.push_back(color_buffer_id);
 			}
+			passes.push_back(pass);
 
-			if (!is_scaled) {
-				// - add blit to 2D pass
-				int target_buffer_id = fb.size();
-				fb.push_back(p_target_buffer); // target buffer
-				RD::FramebufferPass blit_pass;
-				blit_pass.color_attachments.push_back(target_buffer_id);
-				blit_pass.input_attachments.push_back(color_buffer_id);
-				passes.push_back(blit_pass);
+			// - add blit to 2D pass
+			RID render_target = render_buffers->get_render_target();
+			ERR_FAIL_COND_V(render_target.is_null(), RID());
+			RID target_buffer = texture_storage->render_target_get_rd_texture(render_target);
+			ERR_FAIL_COND_V(target_buffer.is_null(), RID());
 
-				color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RD::get_singleton()->framebuffer_create_multipass(fb, passes, RenderingDevice::INVALID_ID, view_count);
-			} else {
-				// can't do our blit pass if resolutions don't match
-				color_fbs[FB_CONFIG_FOUR_SUBPASSES] = RID();
-			}
-		}
-	}
+			int target_buffer_id = textures.size();
+			textures.push_back(target_buffer); // target buffer
+
+			RD::FramebufferPass blit_pass;
+			blit_pass.input_attachments.push_back(color_buffer_id); // Read from our (resolved) color buffer
+			blit_pass.color_attachments.push_back(target_buffer_id); // Write into our target buffer
+			// this doesn't need VRS
+			passes.push_back(blit_pass);
+
+			return FramebufferCacheRD::get_singleton()->get_cache_multipass(textures, passes, view_count);
+		} break;
+		default:
+			break;
+	};
+
+	return RID();
 }
 
 RID RenderForwardMobile::reflection_probe_create_framebuffer(RID p_color, RID p_depth) {
@@ -274,12 +266,11 @@ RID RenderForwardMobile::reflection_probe_create_framebuffer(RID p_color, RID p_
 	return RD::get_singleton()->framebuffer_create_multipass(fb, passes);
 }
 
-RenderForwardMobile::RenderBufferDataForwardMobile::~RenderBufferDataForwardMobile() {
-	clear();
-}
+void RenderForwardMobile::setup_render_buffer_data(Ref<RenderSceneBuffersRD> p_render_buffers) {
+	Ref<RenderBufferDataForwardMobile> data;
+	data.instantiate();
 
-RendererSceneRenderRD::RenderBufferData *RenderForwardMobile::_create_render_buffer_data() {
-	return memnew(RenderBufferDataForwardMobile);
+	p_render_buffers->set_custom_data(RB_SCOPE_MOBILE, data);
 }
 
 bool RenderForwardMobile::free(RID p_rid) {
@@ -314,9 +305,11 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	//there should always be enough uniform buffers for render passes, otherwise bugs
 	ERR_FAIL_INDEX_V(p_index, (int)scene_state.uniform_buffers.size(), RID());
 
-	RenderBufferDataForwardMobile *rb = nullptr;
+	Ref<RenderBufferDataForwardMobile> rb_data;
+	Ref<RenderSceneBuffersRD> rb;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
-		rb = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
+		rb = p_render_data->render_buffers;
+		rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
 	}
 
 	// default render buffer and scene state uniform set
@@ -442,8 +435,12 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 9;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID dbt = rb ? render_buffers_get_back_depth_texture(p_render_data->render_buffers) : RID();
-		RID texture = (dbt.is_valid()) ? dbt : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_DEPTH);
+		RID texture;
+		if (rb.is_valid() && rb->has_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH)) {
+			texture = rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH);
+		} else {
+			texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_DEPTH);
+		}
 		u.append_id(texture);
 		uniforms.push_back(u);
 	}
@@ -451,7 +448,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 		RD::Uniform u;
 		u.binding = 10;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID bbt = rb ? render_buffers_get_back_buffer_texture(p_render_data->render_buffers) : RID();
+		RID bbt = rb_data.is_valid() ? rb->get_back_buffer_texture() : RID();
 		RID texture = bbt.is_valid() ? bbt : texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 		u.append_id(texture);
 		uniforms.push_back(u);
@@ -500,9 +497,9 @@ void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, co
 }
 
 void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color &p_default_bg_color) {
-	RenderBufferDataForwardMobile *render_buffer = nullptr;
+	Ref<RenderBufferDataForwardMobile> rb_data;
 	if (p_render_data->render_buffers.is_valid()) {
-		render_buffer = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
+		rb_data = p_render_data->render_buffers->get_custom_data(RB_SCOPE_MOBILE);
 	}
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
@@ -538,12 +535,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE][RS::VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME] = p_render_data->instances->size();
 	}
 
-	if (render_buffer) {
+	if (rb_data.is_valid()) {
 		// setup rendering to render buffer
-		screen_size.x = render_buffer->width;
-		screen_size.y = render_buffer->height;
+		screen_size = p_render_data->render_buffers->get_internal_size();
 
-		if (render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES].is_null()) {
+		if (rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES).is_null()) {
 			// can't do blit subpass
 			using_subpass_post_process = false;
 		} else if (p_render_data->environment.is_valid() && (environment_get_glow_enabled(p_render_data->environment) || RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) || RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes))) {
@@ -559,13 +555,13 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 		if (using_subpass_post_process) {
 			// all as subpasses
-			framebuffer = render_buffer->color_fbs[FB_CONFIG_FOUR_SUBPASSES];
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES);
 		} else if (using_subpass_transparent) {
 			// our tonemap pass is separate
-			framebuffer = render_buffer->color_fbs[FB_CONFIG_THREE_SUBPASSES];
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_THREE_SUBPASSES);
 		} else {
 			// only opaque and sky as subpasses
-			framebuffer = render_buffer->color_fbs[FB_CONFIG_TWO_SUBPASSES];
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_TWO_SUBPASSES);
 		}
 	} else if (p_render_data->reflection_probe.is_valid()) {
 		uint32_t resolution = reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
@@ -626,7 +622,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
+				if (p_render_data->render_buffers->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -638,7 +634,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				clear_color.g *= bg_energy_multiplier;
 				clear_color.b *= bg_energy_multiplier;
 				/*
-				if (render_buffers_has_volumetric_fog(p_render_data->render_buffers) || environment_get_fog_enabled(p_render_data->environment)) {
+				if (p_render_data->render_buffers->has_custom_data(RB_SCOPE_FOG) || environment_get_fog_enabled(p_render_data->environment)) {
 					draw_sky_fog_only = true;
 					RendererRD::MaterialStorage::get_singleton()->material_set_param(sky.sky_scene_state.fog_material, "clear_color", Variant(clear_color.srgb_to_linear()));
 				}
@@ -708,7 +704,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	}
 
 	RID nullrids[RendererSceneRender::MAX_RENDER_VIEWS];
-	_pre_opaque_render(p_render_data, false, false, false, nullrids, RID(), nullrids);
+	_pre_opaque_render(p_render_data, false, false, false, nullrids, RID());
 
 	uint32_t spec_constant_base_flags = 0;
 
@@ -728,7 +724,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 	}
 	{
-		if (render_buffer) {
+		if (rb_data.is_valid()) {
 			RD::get_singleton()->draw_command_begin_label("Render 3D Pass");
 		} else {
 			RD::get_singleton()->draw_command_begin_label("Render Reflection Probe Pass");
@@ -759,8 +755,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			// regular forward for now
 			Vector<Color> c;
 			c.push_back(clear_color.srgb_to_linear()); // our render buffer
-			if (render_buffer) {
-				if (render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			if (rb_data.is_valid()) {
+				if (p_render_data->render_buffers->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
 					c.push_back(clear_color.srgb_to_linear()); // our resolve buffer
 				}
 				if (using_subpass_post_process) {
@@ -859,8 +855,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			// note if we are using MSAA we should get an automatic resolve through our subpass configuration.
 
 			// blit to tonemap
-			if (render_buffer && using_subpass_post_process) {
-				_post_process_subpass(render_buffer->color, framebuffer, p_render_data);
+			if (rb_data.is_valid() && using_subpass_post_process) {
+				_post_process_subpass(p_render_data->render_buffers->get_internal_texture(), framebuffer, p_render_data);
 			}
 
 			RD::get_singleton()->draw_command_end_label(); // Render 3D Pass / Render Reflection Probe Pass
@@ -869,7 +865,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		} else {
 			RENDER_TIMESTAMP("Render Transparent");
 
-			framebuffer = render_buffer->color_fbs[FB_CONFIG_ONE_PASS];
+			framebuffer = rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_ONE_PASS);
 
 			// this may be needed if we re-introduced steps that change info, not sure which do so in the previous implementation
 			// _setup_environment(p_render_data, p_render_data->reflection_probe.is_valid(), screen_size, !p_render_data->reflection_probe.is_valid(), p_default_bg_color, false);
@@ -897,7 +893,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 	}
 
-	if (render_buffer && !using_subpass_post_process) {
+	if (rb_data.is_valid() && !using_subpass_post_process) {
 		RD::get_singleton()->draw_command_begin_label("Post process pass");
 
 		// If we need extra effects we do this in its own pass
@@ -908,7 +904,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		RD::get_singleton()->draw_command_end_label(); // Post process pass
 	}
 
-	if (render_buffer) {
+	if (rb_data.is_valid()) {
 		_disable_clear_request(p_render_data);
 	}
 }
@@ -1132,7 +1128,7 @@ void RenderForwardMobile::_render_uv2(const PagedArray<RenderGeometryInstance *>
 	RD::get_singleton()->draw_command_end_label();
 }
 
-void RenderForwardMobile::_render_sdfgi(RID p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
+void RenderForwardMobile::_render_sdfgi(Ref<RenderSceneBuffersRD> p_render_buffers, const Vector3i &p_from, const Vector3i &p_size, const AABB &p_bounds, const PagedArray<RenderGeometryInstance *> &p_instances, const RID &p_albedo_texture, const RID &p_emission_texture, const RID &p_emission_aniso_texture, const RID &p_geom_facing_texture, float p_exposure_normalization) {
 	// we don't do GI in low end..
 }
 
@@ -1364,15 +1360,11 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 	}
 }
 
-RID RenderForwardMobile::_render_buffers_get_normal_texture(RID p_render_buffers) {
-	// RenderBufferDataForwardMobile *rb = (RenderBufferDataForwardMobile *)render_buffers_get_data(p_render_buffers);
-
-	// We don't have this. This is for debugging
-	// return rb->normal_roughness_buffer;
+RID RenderForwardMobile::_render_buffers_get_normal_texture(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	return RID();
 }
 
-RID RenderForwardMobile::_render_buffers_get_velocity_texture(RID p_render_buffers) {
+RID RenderForwardMobile::_render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	return RID();
 }
 
@@ -1624,37 +1616,6 @@ void RenderForwardMobile::_setup_environment(const RenderDataRD *p_render_data, 
 
 	//time global variables
 	scene_state.ubo.time = time;
-
-	/*
-	scene_state.ubo.gi_upscale_for_msaa = false;
-	scene_state.ubo.volumetric_fog_enabled = false;
-	scene_state.ubo.fog_enabled = false;
-
-	if (p_render_data->render_buffers.is_valid()) {
-		RenderBufferDataForwardMobile *render_buffers = static_cast<RenderBufferDataForwardMobile *>(render_buffers_get_data(p_render_data->render_buffers));
-		if (render_buffers->msaa != RS::VIEWPORT_MSAA_DISABLED) {
-			scene_state.ubo.gi_upscale_for_msaa = true;
-		}
-
-		if (render_buffers_has_volumetric_fog(p_render_data->render_buffers)) {
-			scene_state.ubo.volumetric_fog_enabled = true;
-			float fog_end = render_buffers_get_volumetric_fog_end(p_render_data->render_buffers);
-			if (fog_end > 0.0) {
-				scene_state.ubo.volumetric_fog_inv_length = 1.0 / fog_end;
-			} else {
-				scene_state.ubo.volumetric_fog_inv_length = 1.0;
-			}
-
-			float fog_detail_spread = render_buffers_get_volumetric_fog_detail_spread(p_render_data->render_buffers); //reverse lookup
-			if (fog_detail_spread > 0.0) {
-				scene_state.ubo.volumetric_fog_detail_spread = 1.0 / fog_detail_spread;
-			} else {
-				scene_state.ubo.volumetric_fog_detail_spread = 1.0;
-			}
-		}
-	}
-
-	*/
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
 		scene_state.ubo.use_ambient_light = true;

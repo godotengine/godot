@@ -38,7 +38,10 @@
 #include "servers/rendering/renderer_rd/environment/gi.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/environment/volumetric_fog_process.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
 #include "servers/rendering/storage/utilities.h"
+
+#define RB_SCOPE_FOG SNAME("Fog")
 
 namespace RendererRD {
 
@@ -261,7 +264,10 @@ public:
 	void fog_instance_free(RID p_rid);
 
 	/* Volumetric FOG */
-	struct VolumetricFog {
+	class VolumetricFog : public RenderBufferCustomDataRD {
+		GDCLASS(VolumetricFog, RenderBufferCustomDataRD)
+
+	public:
 		enum {
 			MAX_TEMPORAL_FRAMES = 16
 		};
@@ -290,7 +296,10 @@ public:
 
 		int last_shadow_filter = -1;
 
-		VolumetricFog(const Vector3i &fog_size, RID p_sky_shader);
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void free_data() override{};
+
+		void init(const Vector3i &fog_size, RID p_sky_shader);
 		~VolumetricFog();
 	};
 
@@ -304,7 +313,7 @@ public:
 		uint32_t max_cluster_elements;
 		bool volumetric_fog_filter_active;
 		RID shadow_sampler;
-		RID voxel_gl_buffer;
+		RID voxel_gi_buffer;
 		RID shadow_atlas_depth;
 		RID omni_light_buffer;
 		RID spot_light_buffer;
@@ -312,11 +321,11 @@ public:
 		RID directional_light_buffer;
 
 		// Objects related to our render buffer
-		VolumetricFog *vfog;
+		Ref<VolumetricFog> vfog;
 		ClusterBuilderRD *cluster_builder;
 		GI *gi;
-		GI::SDFGI *sdfgi;
-		GI::RenderBuffersGI *rbgi;
+		Ref<GI::SDFGI> sdfgi;
+		Ref<GI::RenderBuffersGI> rbgi;
 		RID env;
 		SkyRD *sky;
 	};

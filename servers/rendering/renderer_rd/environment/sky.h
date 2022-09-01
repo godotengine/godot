@@ -42,6 +42,7 @@
 
 // Forward declare RendererSceneRenderRD so we can pass it into some of our methods, these classes are pretty tightly bound
 class RendererSceneRenderRD;
+class RenderSceneBuffersRD;
 
 namespace RendererRD {
 
@@ -296,7 +297,7 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	~SkyRD();
 
-	void setup(RID p_env, RID p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
+	void setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const PagedArray<RID> &p_lights, RID p_camera_attributes, const Projection &p_projection, const Transform3D &p_transform, const Size2i p_screen_size, RendererSceneRenderRD *p_scene_render);
 	void update(RID p_env, const Projection &p_projection, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
 	void draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth, RID p_fb, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0); // only called by clustered renderer
 	void update_res_buffers(RID p_env, uint32_t p_view_count, const Projection *p_projections, const Transform3D &p_transform, double p_time, float p_luminance_multiplier = 1.0);
