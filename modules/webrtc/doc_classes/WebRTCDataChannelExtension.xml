@@ -48,7 +48,7 @@
 			</description>
 		</method>
 		<method name="_get_packet" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="r_buffer" type="const uint8_t **" />
 			<param index="1" name="r_buffer_size" type="int32_t*" />
 			<description>
@@ -60,12 +60,12 @@
 			</description>
 		</method>
 		<method name="_get_ready_state" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="WebRTCDataChannel.ChannelState" />
 			<description>
 			</description>
 		</method>
 		<method name="_get_write_mode" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="WebRTCDataChannel.WriteMode" />
 			<description>
 			</description>
 		</method>
@@ -80,12 +80,12 @@
 			</description>
 		</method>
 		<method name="_poll" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<description>
 			</description>
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="p_buffer" type="const uint8_t*" />
 			<param index="1" name="p_buffer_size" type="int" />
 			<description>
@@ -93,7 +93,7 @@
 		</method>
 		<method name="_set_write_mode" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="p_write_mode" type="int" />
+			<param index="0" name="p_write_mode" type="int" enum="WebRTCDataChannel.WriteMode" />
 			<description>
 			</description>
 		</method>

@@ -152,40 +152,22 @@ void PacketPeer::_bind_methods() {
 
 /***************/
 
-int PacketPeerExtension::get_available_packet_count() const {
-	int count;
-	if (GDVIRTUAL_CALL(_get_available_packet_count, count)) {
-		return count;
-	}
-	WARN_PRINT_ONCE("PacketPeerExtension::_get_available_packet_count is unimplemented!");
-	return -1;
-}
-
 Error PacketPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
-	int err;
+	Error err;
 	if (GDVIRTUAL_CALL(_get_packet, r_buffer, &r_buffer_size, err)) {
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("PacketPeerExtension::_get_packet_native is unimplemented!");
 	return FAILED;
 }
 
 Error PacketPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-	int err;
+	Error err;
 	if (GDVIRTUAL_CALL(_put_packet, p_buffer, p_buffer_size, err)) {
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("PacketPeerExtension::_put_packet_native is unimplemented!");
 	return FAILED;
-}
-
-int PacketPeerExtension::get_max_packet_size() const {
-	int size;
-	if (GDVIRTUAL_CALL(_get_max_packet_size, size)) {
-		return size;
-	}
-	WARN_PRINT_ONCE("PacketPeerExtension::_get_max_packet_size is unimplemented!");
-	return 0;
 }
 
 void PacketPeerExtension::_bind_methods() {

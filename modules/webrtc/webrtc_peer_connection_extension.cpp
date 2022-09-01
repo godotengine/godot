@@ -42,24 +42,6 @@ void WebRTCPeerConnectionExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_close);
 }
 
-WebRTCPeerConnection::ConnectionState WebRTCPeerConnectionExtension::get_connection_state() const {
-	int state;
-	if (GDVIRTUAL_CALL(_get_connection_state, state)) {
-		return (ConnectionState)state;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_get_connection_state is unimplemented!");
-	return STATE_DISCONNECTED;
-}
-
-Error WebRTCPeerConnectionExtension::initialize(Dictionary p_config) {
-	int err;
-	if (GDVIRTUAL_CALL(_initialize, p_config, err)) {
-		return (Error)err;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_initialize is unimplemented!");
-	return ERR_UNCONFIGURED;
-}
-
 Ref<WebRTCDataChannel> WebRTCPeerConnectionExtension::create_data_channel(String p_label, Dictionary p_options) {
 	Object *ret = nullptr;
 	if (GDVIRTUAL_CALL(_create_data_channel, p_label, p_options, ret)) {
@@ -69,56 +51,4 @@ Ref<WebRTCDataChannel> WebRTCPeerConnectionExtension::create_data_channel(String
 	}
 	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_create_data_channel is unimplemented!");
 	return nullptr;
-}
-
-Error WebRTCPeerConnectionExtension::create_offer() {
-	int err;
-	if (GDVIRTUAL_CALL(_create_offer, err)) {
-		return (Error)err;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_create_offer is unimplemented!");
-	return ERR_UNCONFIGURED;
-}
-
-Error WebRTCPeerConnectionExtension::set_local_description(String p_type, String p_sdp) {
-	int err;
-	if (GDVIRTUAL_CALL(_set_local_description, p_type, p_sdp, err)) {
-		return (Error)err;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_set_local_description is unimplemented!");
-	return ERR_UNCONFIGURED;
-}
-
-Error WebRTCPeerConnectionExtension::set_remote_description(String p_type, String p_sdp) {
-	int err;
-	if (GDVIRTUAL_CALL(_set_remote_description, p_type, p_sdp, err)) {
-		return (Error)err;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_set_remote_description is unimplemented!");
-	return ERR_UNCONFIGURED;
-}
-
-Error WebRTCPeerConnectionExtension::add_ice_candidate(String p_sdp_mid_name, int p_sdp_mline_index, String p_sdp_name) {
-	int err;
-	if (GDVIRTUAL_CALL(_add_ice_candidate, p_sdp_mid_name, p_sdp_mline_index, p_sdp_name, err)) {
-		return (Error)err;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_add_ice_candidate is unimplemented!");
-	return ERR_UNCONFIGURED;
-}
-
-Error WebRTCPeerConnectionExtension::poll() {
-	int err;
-	if (GDVIRTUAL_CALL(_poll, err)) {
-		return (Error)err;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_poll is unimplemented!");
-	return ERR_UNCONFIGURED;
-}
-
-void WebRTCPeerConnectionExtension::close() {
-	if (GDVIRTUAL_CALL(_close)) {
-		return;
-	}
-	WARN_PRINT_ONCE("WebRTCPeerConnectionExtension::_close is unimplemented!");
 }
