@@ -179,6 +179,7 @@ private:
 	float fog_height = 0.0;
 	float fog_height_density = 0.0; //can be negative to invert effect
 	float fog_aerial_perspective = 0.0;
+	float fog_sky_affect = 1.0;
 
 	void _update_fog();
 
@@ -193,6 +194,7 @@ private:
 	float volumetric_fog_detail_spread = 2.0;
 	float volumetric_fog_gi_inject = 1.0;
 	float volumetric_fog_ambient_inject = 0.0;
+	float volumetric_fog_sky_affect = 1.0;
 	bool volumetric_fog_temporal_reproject = true;
 	float volumetric_fog_temporal_reproject_amount = 0.9;
 	void _update_volumetric_fog();
@@ -374,6 +376,8 @@ public:
 	float get_fog_height_density() const;
 	void set_fog_aerial_perspective(float p_aerial_perspective);
 	float get_fog_aerial_perspective() const;
+	void set_fog_sky_affect(float p_sky_affect);
+	float get_fog_sky_affect() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);
@@ -396,6 +400,8 @@ public:
 	float get_volumetric_fog_gi_inject() const;
 	void set_volumetric_fog_ambient_inject(float p_ambient_inject);
 	float get_volumetric_fog_ambient_inject() const;
+	void set_volumetric_fog_sky_affect(float p_sky_affect);
+	float get_volumetric_fog_sky_affect() const;
 	void set_volumetric_fog_temporal_reprojection_enabled(bool p_enable);
 	bool is_volumetric_fog_temporal_reprojection_enabled() const;
 	void set_volumetric_fog_temporal_reprojection_amount(float p_amount);

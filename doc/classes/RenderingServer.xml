@@ -1025,6 +1025,7 @@
 			<param index="6" name="height" type="float" />
 			<param index="7" name="height_density" type="float" />
 			<param index="8" name="aerial_perspective" type="float" />
+			<param index="9" name="sky_affect" type="float" />
 			<description>
 			</description>
 		</method>
@@ -1187,6 +1188,7 @@
 			<param index="10" name="temporal_reprojection" type="bool" />
 			<param index="11" name="temporal_reprojection_amount" type="float" />
 			<param index="12" name="ambient_inject" type="float" />
+			<param index="13" name="sky_affect" type="float" />
 			<description>
 			</description>
 		</method>

@@ -818,6 +818,15 @@ float Environment::get_fog_aerial_perspective() const {
 	return fog_aerial_perspective;
 }
 
+void Environment::set_fog_sky_affect(float p_sky_affect) {
+	fog_sky_affect = p_sky_affect;
+	_update_fog();
+}
+
+float Environment::get_fog_sky_affect() const {
+	return fog_sky_affect;
+}
+
 void Environment::_update_fog() {
 	RS::get_singleton()->environment_set_fog(
 			environment,
@@ -828,13 +837,28 @@ void Environment::_update_fog() {
 			fog_density,
 			fog_height,
 			fog_height_density,
-			fog_aerial_perspective);
+			fog_aerial_perspective,
+			fog_sky_affect);
 }
 
 // Volumetric Fog
 
 void Environment::_update_volumetric_fog() {
-	RS::get_singleton()->environment_set_volumetric_fog(environment, volumetric_fog_enabled, volumetric_fog_density, volumetric_fog_albedo, volumetric_fog_emission, volumetric_fog_emission_energy, volumetric_fog_anisotropy, volumetric_fog_length, volumetric_fog_detail_spread, volumetric_fog_gi_inject, volumetric_fog_temporal_reproject, volumetric_fog_temporal_reproject_amount, volumetric_fog_ambient_inject);
+	RS::get_singleton()->environment_set_volumetric_fog(
+			environment,
+			volumetric_fog_enabled,
+			volumetric_fog_density,
+			volumetric_fog_albedo,
+			volumetric_fog_emission,
+			volumetric_fog_emission_energy,
+			volumetric_fog_anisotropy,
+			volumetric_fog_length,
+			volumetric_fog_detail_spread,
+			volumetric_fog_gi_inject,
+			volumetric_fog_temporal_reproject,
+			volumetric_fog_temporal_reproject_amount,
+			volumetric_fog_ambient_inject,
+			volumetric_fog_sky_affect);
 }
 
 void Environment::set_volumetric_fog_enabled(bool p_enable) {
@@ -910,6 +934,15 @@ void Environment::set_volumetric_fog_ambient_inject(float p_ambient_inject) {
 }
 float Environment::get_volumetric_fog_ambient_inject() const {
 	return volumetric_fog_ambient_inject;
+}
+
+void Environment::set_volumetric_fog_sky_affect(float p_sky_affect) {
+	volumetric_fog_sky_affect = p_sky_affect;
+	_update_volumetric_fog();
+}
+
+float Environment::get_volumetric_fog_sky_affect() const {
+	return volumetric_fog_sky_affect;
 }
 
 void Environment::set_volumetric_fog_temporal_reprojection_enabled(bool p_enable) {
@@ -1375,6 +1408,9 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_aerial_perspective", "aerial_perspective"), &Environment::set_fog_aerial_perspective);
 	ClassDB::bind_method(D_METHOD("get_fog_aerial_perspective"), &Environment::get_fog_aerial_perspective);
 
+	ClassDB::bind_method(D_METHOD("set_fog_sky_affect", "sky_affect"), &Environment::set_fog_sky_affect);
+	ClassDB::bind_method(D_METHOD("get_fog_sky_affect"), &Environment::get_fog_sky_affect);
+
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_fog_light_color", "get_fog_light_color");
@@ -1383,6 +1419,7 @@ void Environment::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_fog_density", "get_fog_density");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_sky_affect", "get_fog_sky_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_lesser,or_greater"), "set_fog_height_density", "get_fog_height_density");
 
@@ -1406,6 +1443,8 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_gi_inject"), &Environment::get_volumetric_fog_gi_inject);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_ambient_inject", "enabled"), &Environment::set_volumetric_fog_ambient_inject);
 	ClassDB::bind_method(D_METHOD("get_volumetric_fog_ambient_inject"), &Environment::get_volumetric_fog_ambient_inject);
+	ClassDB::bind_method(D_METHOD("set_volumetric_fog_sky_affect", "sky_affect"), &Environment::set_volumetric_fog_sky_affect);
+	ClassDB::bind_method(D_METHOD("get_volumetric_fog_sky_affect"), &Environment::get_volumetric_fog_sky_affect);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_enabled", "enabled"), &Environment::set_volumetric_fog_temporal_reprojection_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_temporal_reprojection_enabled"), &Environment::is_volumetric_fog_temporal_reprojection_enabled);
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_temporal_reprojection_amount", "temporal_reprojection_amount"), &Environment::set_volumetric_fog_temporal_reprojection_amount);
@@ -1422,6 +1461,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_length", PROPERTY_HINT_RANGE, "0,1024,0.01,or_greater"), "set_volumetric_fog_length", "get_volumetric_fog_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_detail_spread", PROPERTY_HINT_EXP_EASING, "positive_only"), "set_volumetric_fog_detail_spread", "get_volumetric_fog_detail_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_ambient_inject", PROPERTY_HINT_RANGE, "0.0,16,0.01,exp"), "set_volumetric_fog_ambient_inject", "get_volumetric_fog_ambient_inject");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_volumetric_fog_sky_affect", "get_volumetric_fog_sky_affect");
 	ADD_SUBGROUP("Temporal Reprojection", "volumetric_fog_temporal_reprojection_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "volumetric_fog_temporal_reprojection_enabled"), "set_volumetric_fog_temporal_reprojection_enabled", "is_volumetric_fog_temporal_reprojection_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volumetric_fog_temporal_reprojection_amount", PROPERTY_HINT_RANGE, "0.5,0.99,0.001"), "set_volumetric_fog_temporal_reprojection_amount", "get_volumetric_fog_temporal_reprojection_amount");

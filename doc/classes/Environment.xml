@@ -82,7 +82,7 @@
 			The background mode. See [enum BGMode] for possible values.
 		</member>
 		<member name="fog_aerial_perspective" type="float" setter="set_fog_aerial_perspective" getter="get_fog_aerial_perspective" default="0.0">
-			Blend factor between the fog's color and the color of the background [Sky]. Must have [member background_mode] set to [constant BG_SKY].
+			If set above [code]0.0[/code] (exclusive), blends between the fog's color and the color of the background [Sky]. This has a small performance cost when set above [code]0.0[/code]. Must have [member background_mode] set to [constant BG_SKY].
 			This is useful to simulate [url=https://en.wikipedia.org/wiki/Aerial_perspective]aerial perspective[/url] in large scenes with low density fog. However, it is not very useful for high-density fog, as the sky will shine through. When set to [code]1.0[/code], the fog color comes completely from the [Sky]. If set to [code]0.0[/code], aerial perspective is disabled.
 		</member>
 		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.01">
@@ -102,6 +102,10 @@
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
 			The fog's brightness. Higher values result in brighter fog.
+		</member>
+		<member name="fog_sky_affect" type="float" setter="set_fog_sky_affect" getter="get_fog_sky_affect" default="1.0">
+			The factor to use when affecting the sky with non-volumetric fog. [code]1.0[/code] means that fog can fully obscure the sky. Lower values reduce the impact of fog on sky rendering, with [code]0.0[/code] not affecting sky rendering at all.
+			[b]Note:[/b] [member fog_sky_affect] has no visual effect if [member fog_aerial_perspective] is [code]1.0[/code].
 		</member>
 		<member name="fog_sun_scatter" type="float" setter="set_fog_sun_scatter" getter="get_fog_sun_scatter" default="0.0">
 			If set above [code]0.0[/code], renders the scene's directional light(s) in the fog color depending on the view angle. This can be used to give the impression that the sun is "piercing" through the fog.
@@ -314,6 +318,9 @@
 		</member>
 		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
 			The distance over which the volumetric fog is computed. Increase to compute fog over a greater range, decrease to add more detail when a long range is not needed. For best quality fog, keep this as low as possible.
+		</member>
+		<member name="volumetric_fog_sky_affect" type="float" setter="set_volumetric_fog_sky_affect" getter="get_volumetric_fog_sky_affect" default="1.0">
+			The factor to use when affecting the sky with volumetric fog. [code]1.0[/code] means that volumetric fog can fully obscure the sky. Lower values reduce the impact of volumetric fog on sky rendering, with [code]0.0[/code] not affecting sky rendering at all.
 		</member>
 		<member name="volumetric_fog_temporal_reprojection_amount" type="float" setter="set_volumetric_fog_temporal_reprojection_amount" getter="get_volumetric_fog_temporal_reprojection_amount" default="0.9">
 			The amount by which to blend the last frame with the current frame. A higher number results in smoother volumetric fog, but makes "ghosting" much worse. A lower value reduces ghosting but can result in the per-frame temporal jitter becoming visible.

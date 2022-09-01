@@ -83,20 +83,23 @@ layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalShaderUnifor
 global_shader_uniforms;
 
 layout(set = 0, binding = 2, std140) uniform SceneData {
-	bool volumetric_fog_enabled;
-	float volumetric_fog_inv_length;
-	float volumetric_fog_detail_spread;
+	bool volumetric_fog_enabled; // 4 - 4
+	float volumetric_fog_inv_length; // 4 - 8
+	float volumetric_fog_detail_spread; // 4 - 12
+	float volumetric_fog_sky_affect; // 4 - 16
 
-	float fog_aerial_perspective;
+	bool fog_enabled; // 4 - 20
+	float fog_sky_affect; // 4 - 24
+	float fog_density; // 4 - 28
+	float fog_sun_scatter; // 4 - 32
 
-	vec3 fog_light_color;
-	float fog_sun_scatter;
+	vec3 fog_light_color; // 12 - 44
+	float fog_aerial_perspective; // 4 - 48
 
-	bool fog_enabled;
-	float fog_density;
-
-	float z_far;
-	uint directional_light_count;
+	float z_far; // 4 - 52
+	uint directional_light_count; // 4 - 56
+	uint pad1; // 4 - 60
+	uint pad2; // 4 - 64
 }
 scene_data;
 
@@ -169,9 +172,7 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 		}
 	}
 
-	float fog_amount = clamp(1.0 - exp(-scene_data.z_far * scene_data.fog_density), 0.0, 1.0);
-
-	return vec4(fog_color, fog_amount);
+	return vec4(fog_color, 1.0);
 }
 
 void main() {
@@ -228,12 +229,12 @@ void main() {
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
 	if (scene_data.fog_enabled) {
 		vec4 fog = fog_process(cube_normal, frag_color.rgb);
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a * scene_data.fog_sky_affect);
 	}
 
 	if (scene_data.volumetric_fog_enabled) {
 		vec4 fog = volumetric_fog_process(uv);
-		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+		frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a * scene_data.volumetric_fog_sky_affect);
 	}
 
 	if (custom_fog.a > 0.0) {
