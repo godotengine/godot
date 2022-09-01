@@ -134,11 +134,11 @@ Vector3 Vector3::octahedron_tangent_decode(const Vector2 &p_oct, float *sign) {
 }
 
 Basis Vector3::outer(const Vector3 &p_with) const {
-	Vector3 row0(x * p_with.x, x * p_with.y, x * p_with.z);
-	Vector3 row1(y * p_with.x, y * p_with.y, y * p_with.z);
-	Vector3 row2(z * p_with.x, z * p_with.y, z * p_with.z);
-
-	return Basis(row0, row1, row2);
+	Basis basis;
+	basis.rows[0] = Vector3(x * p_with.x, x * p_with.y, x * p_with.z);
+	basis.rows[1] = Vector3(y * p_with.x, y * p_with.y, y * p_with.z);
+	basis.rows[2] = Vector3(z * p_with.x, z * p_with.y, z * p_with.z);
+	return basis;
 }
 
 bool Vector3::is_equal_approx(const Vector3 &p_v) const {

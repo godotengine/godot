@@ -426,7 +426,9 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	bone_shape->set_name("CollisionShape3D");
 
 	Transform3D capsule_transform;
-	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
+	capsule_transform.basis.rows[0] = Vector3(1, 0, 0);
+	capsule_transform.basis.rows[1] = Vector3(0, 0, 1);
+	capsule_transform.basis.rows[2] = Vector3(0, -1, 0);
 	bone_shape->set_transform(capsule_transform);
 
 	/// Get an up vector not collinear with child rest origin
