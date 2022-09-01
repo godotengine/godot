@@ -195,6 +195,15 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
+Variant Dictionary::find_key(const Variant &p_value) const {
+	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
+		if (E.value == p_value) {
+			return E.key;
+		}
+	}
+	return Variant();
+}
+
 bool Dictionary::erase(const Variant &p_key) {
 	ERR_FAIL_COND_V_MSG(_p->read_only, false, "Dictionary is in read-only state.");
 	if (p_key.get_type() == Variant::STRING_NAME) {
