@@ -93,7 +93,7 @@ namespace GodotTools.Build
 
         private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;
 
-        private void BuildMenuOptionPressed(int id)
+        private void BuildMenuOptionPressed(long id)
         {
             switch ((BuildMenuOptions)id)
             {
@@ -175,7 +175,7 @@ namespace GodotTools.Build
             AddChild(BuildOutputView);
         }
 
-        public override void _Notification(int what)
+        public override void _Notification(long what)
         {
             base._Notification(what);
 

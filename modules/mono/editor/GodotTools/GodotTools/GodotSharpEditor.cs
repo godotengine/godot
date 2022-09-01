@@ -111,7 +111,7 @@ namespace GodotTools
             _toolBarBuildButton.Show();
         }
 
-        private void _MenuOptionPressed(int id)
+        private void _MenuOptionPressed(long id)
         {
             switch ((MenuOptions)id)
             {
