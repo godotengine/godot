@@ -805,6 +805,10 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 
 	update_canvas_items();
 
+	for (ViewportTexture *E : viewport_textures) {
+		E->emit_changed();
+	}
+
 	emit_signal(SNAME("size_changed"));
 }
 
