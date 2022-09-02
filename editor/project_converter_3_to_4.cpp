@@ -513,7 +513,6 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_region_filter_clip", "set_region_filter_clip_enabled" }, // Sprite2D
 	{ "set_rotate", "set_rotates" }, // PathFollow2D
 	{ "set_scancode", "set_keycode" }, // InputEventKey
-	{ "set_shader_param", "set_shader_uniform" }, // ShaderMaterial
 	{ "set_shift", "set_shift_pressed" }, // InputEventWithModifiers
 	{ "set_size_override", "set_size_2d_override" }, // SubViewport broke ImageTexture
 	{ "set_size_override_stretch", "set_size_2d_override_stretch" }, // SubViewport
@@ -548,6 +547,10 @@ static const char *gdscript_function_renames[][2] = {
 	{ "update_gizmo", "update_gizmos" }, // Node3D
 	{ "viewport_set_use_arvr", "viewport_set_use_xr" }, // RenderingServer
 	{ "warp_mouse_position", "warp_mouse" }, // Input
+	{ "set_shader_param", "set_shader_parameter" }, // ShaderMaterial
+	{ "get_shader_param", "get_shader_parameter" }, // ShaderMaterial
+	{ "set_uniform_name", "set_parameter_name" }, // ParameterRef
+	{ "get_uniform_name", "get_parameter_name" }, // ParameterRef
 
 	// Builtin types
 	// Remember to add them to builtin_types_excluded_functions variable, because for now this functions cannot be listed
@@ -955,6 +958,10 @@ static const char *csharp_function_renames[][2] = {
 	{ "UpdateGizmo", "UpdateGizmos" }, // Node3D
 	{ "ViewportSetUseArvr", "ViewportSetUseXr" }, // RenderingServer
 	{ "WarpMousePosition", "WarpMouse" }, // Input
+	{ "SetShaderParam", "SetShaderParameter" }, // ShaderMaterial
+	{ "GetShaderParam", "GetShaderParameter" }, // ShaderMaterial
+	{ "SetUniformName", "SetParameterName" }, // ParameterRef
+	{ "GetUniformName", "GetParameterName" }, // ParameterRef
 
 	// Builtin types
 	//	{ "Empty", "IsEmpty" }, // Array - Used as custom rule  // Be careful, this will be used everywhere
@@ -1473,7 +1480,6 @@ static const char *class_renames[][2] = {
 	{ "VisualInstance", "VisualInstance3D" },
 	{ "VisualServer", "RenderingServer" },
 	{ "VisualShaderNodeCubeMap", "VisualShaderNodeCubemap" },
-	{ "VisualShaderNodeCubeMapUniform", "VisualShaderNodeCubemapUniform" },
 	{ "VisualShaderNodeScalarClamp", "VisualShaderNodeClamp" },
 	{ "VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant" },
 	{ "VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc" },
@@ -1482,7 +1488,6 @@ static const char *class_renames[][2] = {
 	{ "VisualShaderNodeScalarSmoothStep", "VisualShaderNodeSmoothStep" },
 	{ "VisualShaderNodeScalarSwitch", "VisualShaderNodeSwitch" },
 	{ "VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp" },
-	{ "VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform" },
 	{ "VisualShaderNodeTransformMult", "VisualShaderNode" },
 	{ "VisualShaderNodeVectorClamp", "VisualShaderNodeClamp" },
 	{ "VisualShaderNodeVectorInterp", "VisualShaderNodeMix" },
@@ -1490,6 +1495,16 @@ static const char *class_renames[][2] = {
 	{ "VisualShaderNodeVectorScalarSmoothStep", "VisualShaderNodeSmoothStep" },
 	{ "VisualShaderNodeVectorScalarStep", "VisualShaderNodeStep" },
 	{ "VisualShaderNodeVectorSmoothStep", "VisualShaderNodeSmoothStep" },
+	{ "VisualShaderNodeBooleanUniform", "VisualShaderNodeBooleanParameter" },
+	{ "VisualShaderNodeColorUniform", "VisualShaderNodeColorParameter" },
+	{ "VisualShaderNodeScalarUniform", "VisualShaderNodeFloatParameter" },
+	{ "VisualShaderNodeCubemapUniform", "VisualShaderNodeCubemapParameter" },
+	{ "VisualShaderNodeTextureUniform", "VisualShaderNodeTexture2DParameter" },
+	{ "VisualShaderNodeTextureUniformTriplanar", "VisualShaderNodeTextureParameterTriplanar" },
+	{ "VisualShaderNodeTransformUniform", "VisualShaderNodeTransformParameter" },
+	{ "VisualShaderNodeVec3Uniform", "VisualShaderNodeVec3Parameter" },
+	{ "VisualShaderNodeUniform", "VisualShaderNodeParameter" },
+	{ "VisualShaderNodeUniformRef", "VisualShaderNodeParameterRef" },
 	{ "WebRTCDataChannelGDNative", "WebRTCDataChannelExtension" },
 	{ "WebRTCMultiplayer", "WebRTCMultiplayerPeer" },
 	{ "WebRTCPeerConnectionGDNative", "WebRTCPeerConnectionExtension" },

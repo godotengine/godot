@@ -64,9 +64,9 @@ bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_valu
 			if (active) {
 				if (o->override.get_type() == Variant::OBJECT) {
 					RID tex_rid = p_value;
-					RS::get_singleton()->global_shader_uniform_set_override(*r, tex_rid);
+					RS::get_singleton()->global_shader_parameter_set_override(*r, tex_rid);
 				} else {
-					RS::get_singleton()->global_shader_uniform_set_override(*r, p_value);
+					RS::get_singleton()->global_shader_parameter_set_override(*r, p_value);
 				}
 			}
 			o->in_use = p_value.get_type() != Variant::NIL;
@@ -93,13 +93,13 @@ bool ShaderGlobalsOverride::_get(const StringName &p_name, Variant &r_ret) const
 
 void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const {
 	Vector<StringName> variables;
-	variables = RS::get_singleton()->global_shader_uniform_get_list();
+	variables = RS::get_singleton()->global_shader_parameter_get_list();
 	for (int i = 0; i < variables.size(); i++) {
 		PropertyInfo pinfo;
 		pinfo.name = "params/" + variables[i];
 		pinfo.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 
-		switch (RS::get_singleton()->global_shader_uniform_get_type(variables[i])) {
+		switch (RS::get_singleton()->global_shader_parameter_get_type(variables[i])) {
 			case RS::GLOBAL_VAR_TYPE_BOOL: {
 				pinfo.type = Variant::BOOL;
 			} break;
@@ -234,9 +234,9 @@ void ShaderGlobalsOverride::_activate() {
 			if (o->in_use && o->override.get_type() != Variant::NIL) {
 				if (o->override.get_type() == Variant::OBJECT) {
 					RID tex_rid = o->override;
-					RS::get_singleton()->global_shader_uniform_set_override(E.key, tex_rid);
+					RS::get_singleton()->global_shader_parameter_set_override(E.key, tex_rid);
 				} else {
-					RS::get_singleton()->global_shader_uniform_set_override(E.key, o->override);
+					RS::get_singleton()->global_shader_parameter_set_override(E.key, o->override);
 				}
 			}
 
@@ -258,7 +258,7 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 				for (const KeyValue<StringName, Override> &E : overrides) {
 					const Override *o = &E.value;
 					if (o->in_use) {
-						RS::get_singleton()->global_shader_uniform_set_override(E.key, Variant());
+						RS::get_singleton()->global_shader_parameter_set_override(E.key, Variant());
 					}
 				}
 			}

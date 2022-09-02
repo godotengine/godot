@@ -173,11 +173,11 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
-	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
+	virtual void get_shader_parameter_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_param) const = 0;
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index = 0) const = 0;
+	virtual void shader_set_default_texture_parameter(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
+	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index = 0) const = 0;
 
 	struct ShaderNativeSourceCode {
 		struct Version {
@@ -1255,10 +1255,10 @@ public:
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
-	virtual void instance_geometry_set_shader_uniform(RID p_instance, const StringName &, const Variant &p_value) = 0;
-	virtual Variant instance_geometry_get_shader_uniform(RID p_instance, const StringName &) const = 0;
-	virtual Variant instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &) const = 0;
-	virtual void instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
+	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
+	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
+	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 
 	/* Bake 3D objects */
 
@@ -1441,7 +1441,7 @@ public:
 
 	/* GLOBAL SHADER UNIFORMS */
 
-	enum GlobalShaderUniformType {
+	enum GlobalShaderParameterType {
 		GLOBAL_VAR_TYPE_BOOL,
 		GLOBAL_VAR_TYPE_BVEC2,
 		GLOBAL_VAR_TYPE_BVEC3,
@@ -1473,20 +1473,20 @@ public:
 		GLOBAL_VAR_TYPE_MAX
 	};
 
-	virtual void global_shader_uniform_add(const StringName &p_name, GlobalShaderUniformType p_type, const Variant &p_value) = 0;
-	virtual void global_shader_uniform_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_shader_uniform_get_list() const = 0;
+	virtual void global_shader_parameter_add(const StringName &p_name, GlobalShaderParameterType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_shader_parameter_get_list() const = 0;
 
-	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) = 0;
 
-	virtual Variant global_shader_uniform_get(const StringName &p_name) const = 0;
-	virtual GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const = 0;
+	virtual Variant global_shader_parameter_get(const StringName &p_name) const = 0;
+	virtual GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
 
-	virtual void global_shader_uniforms_load_settings(bool p_load_textures) = 0;
-	virtual void global_shader_uniforms_clear() = 0;
+	virtual void global_shader_parameters_load_settings(bool p_load_textures) = 0;
+	virtual void global_shader_parameters_clear() = 0;
 
-	static int global_shader_uniform_type_get_shader_datatype(GlobalShaderUniformType p_type);
+	static int global_shader_uniform_type_get_shader_datatype(GlobalShaderParameterType p_type);
 
 	/* FREE */
 
@@ -1583,11 +1583,11 @@ private:
 	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
 	TypedArray<Image> _texture_3d_get(RID p_texture) const;
-	TypedArray<Dictionary> _shader_get_shader_uniform_list(RID p_shader) const;
+	TypedArray<Dictionary> _shader_get_shader_parameter_list(RID p_shader) const;
 	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
-	TypedArray<Dictionary> _instance_geometry_get_shader_uniform_list(RID p_instance) const;
+	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };
@@ -1662,7 +1662,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
-VARIANT_ENUM_CAST(RenderingServer::GlobalShaderUniformType);
+VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);

@@ -642,21 +642,22 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTexture2DArray);
 	GDREGISTER_CLASS(VisualShaderNodeTexture3D);
 	GDREGISTER_CLASS(VisualShaderNodeCubemap);
-	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeUniform);
-	GDREGISTER_CLASS(VisualShaderNodeUniformRef);
-	GDREGISTER_CLASS(VisualShaderNodeFloatUniform);
-	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
-	GDREGISTER_CLASS(VisualShaderNodeBooleanUniform);
-	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
-	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
-	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
-	GDREGISTER_CLASS(VisualShaderNodeVec4Uniform);
-	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
-	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
-	GDREGISTER_CLASS(VisualShaderNodeTextureUniformTriplanar);
-	GDREGISTER_CLASS(VisualShaderNodeTexture2DArrayUniform);
-	GDREGISTER_CLASS(VisualShaderNodeTexture3DUniform);
-	GDREGISTER_CLASS(VisualShaderNodeCubemapUniform);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeParameter);
+	GDREGISTER_CLASS(VisualShaderNodeParameterRef);
+	GDREGISTER_CLASS(VisualShaderNodeFloatParameter);
+	GDREGISTER_CLASS(VisualShaderNodeIntParameter);
+	GDREGISTER_CLASS(VisualShaderNodeBooleanParameter);
+	GDREGISTER_CLASS(VisualShaderNodeColorParameter);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Parameter);
+	GDREGISTER_CLASS(VisualShaderNodeVec3Parameter);
+	GDREGISTER_CLASS(VisualShaderNodeVec4Parameter);
+	GDREGISTER_CLASS(VisualShaderNodeTransformParameter);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeTextureParameter);
+	GDREGISTER_CLASS(VisualShaderNodeTexture2DParameter);
+	GDREGISTER_CLASS(VisualShaderNodeTextureParameterTriplanar);
+	GDREGISTER_CLASS(VisualShaderNodeTexture2DArrayParameter);
+	GDREGISTER_CLASS(VisualShaderNodeTexture3DParameter);
+	GDREGISTER_CLASS(VisualShaderNodeCubemapParameter);
 	GDREGISTER_CLASS(VisualShaderNodeLinearSceneDepth);
 	GDREGISTER_CLASS(VisualShaderNodeIf);
 	GDREGISTER_CLASS(VisualShaderNodeSwitch);
@@ -1088,10 +1089,12 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
 	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
+	ClassDB::add_compatibility_class("World", "World3D");
+
+	// VisualShader classes.
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
-	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarClamp", "VisualShaderNodeClamp");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorClamp", "VisualShaderNodeClamp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarInterp", "VisualShaderNodeMix");
@@ -1105,7 +1108,17 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
-	ClassDB::add_compatibility_class("World", "World3D");
+
+	ClassDB::add_compatibility_class("VisualShaderNodeBooleanUniform", "VisualShaderNodeBooleanParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeColorUniform", "VisualShaderNodeColorParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeCubeMapUniform", "VisualShaderNodeCubeMapParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeTextureUniform", "VisualShaderNodeTexture2DParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeTextureUniformTriplanar", "VisualShaderNodeTextureParameterTriplanar");
+	ClassDB::add_compatibility_class("VisualShaderNodeTransformUniform", "VisualShaderNodeTransformParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeVec3Uniform", "VisualShaderNodeVec3Parameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeUniform", "VisualShaderNodeParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeUniformRef", "VisualShaderNodeParameterRef");
 
 	// Renamed during 4.0 alpha, added to ease transition between alphas.
 	ClassDB::add_compatibility_class("AudioStreamOGGVorbis", "AudioStreamOggVorbis");

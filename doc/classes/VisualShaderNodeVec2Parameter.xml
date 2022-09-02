@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeVec2Uniform" inherits="VisualShaderNodeUniform" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="VisualShaderNodeVec2Parameter" inherits="VisualShaderNodeParameter" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A [Vector2] uniform to be used within the visual shader graph.
+		A [Vector2] parameter to be used within the visual shader graph.
 	</brief_description>
 	<description>
 		Translated to [code]uniform vec2[/code] in the shader language.

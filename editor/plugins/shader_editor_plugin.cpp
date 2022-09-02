@@ -355,7 +355,7 @@ void ShaderTextEditor::_check_shader_mode() {
 }
 
 static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
-	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_variable);
+	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 

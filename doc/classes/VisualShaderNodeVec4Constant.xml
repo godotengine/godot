@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVec4Constant" inherits="VisualShaderNodeConstant" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A 4D vector (represented as a [Quaternion]) constant to be used within the visual shader graph.
+		A 4D vector constant to be used within the visual shader graph.
 	</brief_description>
 	<description>
-		A constant 4D vector (represented as a [Quaternion]), which can be used as an input node.
+		A constant 4D vector, which can be used as an input node.
 	</description>
 	<tutorials>
 	</tutorials>
