@@ -70,12 +70,23 @@ class MaterialEditor : public Control {
 
 	Ref<Material> material;
 
+	struct ThemeCache {
+		Ref<Texture2D> light_1_on;
+		Ref<Texture2D> light_1_off;
+		Ref<Texture2D> light_2_on;
+		Ref<Texture2D> light_2_off;
+		Ref<Texture2D> sphere_on;
+		Ref<Texture2D> sphere_off;
+		Ref<Texture2D> box_on;
+		Ref<Texture2D> box_off;
+		Ref<Texture2D> checkerboard;
+	} theme_cache;
+
 	void _button_pressed(Node *p_button);
-	bool first_enter;
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
-
 	static void _bind_methods();
 
 public:
