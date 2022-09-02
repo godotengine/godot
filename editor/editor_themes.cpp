@@ -1363,6 +1363,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("separation", "HSplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "VSplitContainer", default_margin_size * 2 * EDSCALE);
 
+	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * EDSCALE);
+	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * EDSCALE);
+
 	// Containers
 	theme->set_constant("separation", "BoxContainer", default_margin_size * EDSCALE);
 	theme->set_constant("separation", "HBoxContainer", default_margin_size * EDSCALE);
