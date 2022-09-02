@@ -635,6 +635,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
 	style_popup->set_shadow_color(shadow_color);
 	style_popup->set_shadow_size(4 * EDSCALE);
+	// Popups are separate windows by default in the editor. Windows currently don't support per-pixel transparency
+	// in 4.0, and even if it was, it may not always work in practice (e.g. running with compositing disabled).
+	style_popup->set_corner_radius_all(0);
 
 	Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 	style_popup_separator->set_color(separator_color);
@@ -975,9 +978,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	style_popup_menu->set_border_width_all(EDSCALE);
 	style_popup_menu->set_border_color(dark_color_2);
-	// Popups are separate windows by default in the editor. Windows currently don't support per-pixel transparency
-	// in 4.0, and even if it was, it may not always work in practice (e.g. running with compositing disabled).
-	style_popup_menu->set_corner_radius_all(0);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
 	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
