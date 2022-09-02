@@ -291,7 +291,7 @@ Size2 BoxContainer::get_minimum_size() const {
 void BoxContainer::_update_theme_item_cache() {
 	Container::_update_theme_item_cache();
 
-	theme_cache.separation = get_theme_constant(SNAME("separation")); //,vertical?"VBoxContainer":"HBoxContainer");
+	theme_cache.separation = get_theme_constant(SNAME("separation"));
 }
 
 void BoxContainer::_notification(int p_what) {
@@ -311,6 +311,12 @@ void BoxContainer::_notification(int p_what) {
 	}
 }
 
+void BoxContainer::_validate_property(PropertyInfo &p_property) const {
+	if (is_fixed && p_property.name == "vertical") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void BoxContainer::set_alignment(AlignmentMode p_alignment) {
 	if (alignment == p_alignment) {
 		return;
@@ -321,6 +327,17 @@ void BoxContainer::set_alignment(AlignmentMode p_alignment) {
 
 BoxContainer::AlignmentMode BoxContainer::get_alignment() const {
 	return alignment;
+}
+
+void BoxContainer::set_vertical(bool p_vertical) {
+	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
+	vertical = p_vertical;
+	update_minimum_size();
+	_resort();
+}
+
+bool BoxContainer::is_vertical() const {
+	return vertical;
 }
 
 Control *BoxContainer::add_spacer(bool p_begin) {
@@ -371,14 +388,17 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 void BoxContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_spacer", "begin"), &BoxContainer::add_spacer);
-	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
 	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &BoxContainer::set_alignment);
+	ClassDB::bind_method(D_METHOD("get_alignment"), &BoxContainer::get_alignment);
+	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &BoxContainer::set_vertical);
+	ClassDB::bind_method(D_METHOD("is_vertical"), &BoxContainer::is_vertical);
 
 	BIND_ENUM_CONSTANT(ALIGNMENT_BEGIN);
 	BIND_ENUM_CONSTANT(ALIGNMENT_CENTER);
 	BIND_ENUM_CONSTANT(ALIGNMENT_END);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment", "get_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
 
 MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control *p_control, bool p_expand) {

@@ -50,13 +50,19 @@ private:
 	void _resort();
 
 protected:
+	bool is_fixed = false;
+
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
 	int get_line_count() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -71,7 +77,7 @@ class HFlowContainer : public FlowContainer {
 
 public:
 	HFlowContainer() :
-			FlowContainer(false) {}
+			FlowContainer(false) { is_fixed = true; }
 };
 
 class VFlowContainer : public FlowContainer {
@@ -79,7 +85,7 @@ class VFlowContainer : public FlowContainer {
 
 public:
 	VFlowContainer() :
-			FlowContainer(true) {}
+			FlowContainer(true) { is_fixed = true; }
 };
 
 #endif // FLOW_CONTAINER_H

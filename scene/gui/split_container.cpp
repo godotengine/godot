@@ -55,6 +55,18 @@ Control *SplitContainer::_getch(int p_idx) const {
 	return nullptr;
 }
 
+Ref<Texture2D> SplitContainer::_get_grabber_icon() const {
+	if (is_fixed) {
+		return theme_cache.grabber_icon;
+	} else {
+		if (vertical) {
+			return theme_cache.grabber_icon_v;
+		} else {
+			return theme_cache.grabber_icon_h;
+		}
+	}
+}
+
 void SplitContainer::_resort() {
 	int axis = vertical ? 1 : 0;
 
@@ -76,7 +88,8 @@ void SplitContainer::_resort() {
 	bool second_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
 
 	// Determine the separation between items
-	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? theme_cache.grabber_icon->get_height() : theme_cache.grabber_icon->get_width()) : 0;
+	Ref<Texture2D> g = _get_grabber_icon();
+	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
 
 	// Compute the minimum size
 	Size2 ms_first = first->get_combined_minimum_size();
@@ -126,10 +139,9 @@ void SplitContainer::_resort() {
 }
 
 Size2 SplitContainer::get_minimum_size() const {
-	/* Calculate MINIMUM SIZE */
-
 	Size2i minimum;
-	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? theme_cache.grabber_icon->get_height() : theme_cache.grabber_icon->get_width()) : 0;
+	Ref<Texture2D> g = _get_grabber_icon();
+	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
 
 	for (int i = 0; i < 2; i++) {
 		if (!_getch(i)) {
@@ -164,6 +176,8 @@ void SplitContainer::_update_theme_item_cache() {
 	theme_cache.separation = get_theme_constant(SNAME("separation"));
 	theme_cache.autohide = get_theme_constant(SNAME("autohide"));
 	theme_cache.grabber_icon = get_theme_icon(SNAME("grabber"));
+	theme_cache.grabber_icon_h = get_theme_icon(SNAME("h_grabber"));
+	theme_cache.grabber_icon_v = get_theme_icon(SNAME("v_grabber"));
 }
 
 void SplitContainer::_notification(int p_what) {
@@ -211,6 +225,12 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
 		} break;
+	}
+}
+
+void SplitContainer::_validate_property(PropertyInfo &p_property) const {
+	if (is_fixed && p_property.name == "vertical") {
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -344,6 +364,17 @@ bool SplitContainer::is_collapsed() const {
 	return collapsed;
 }
 
+void SplitContainer::set_vertical(bool p_vertical) {
+	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
+	vertical = p_vertical;
+	update_minimum_size();
+	_resort();
+}
+
+bool SplitContainer::is_vertical() const {
+	return vertical;
+}
+
 Vector<int> SplitContainer::get_allowed_size_flags_horizontal() const {
 	Vector<int> flags;
 	flags.append(SIZE_FILL);
@@ -379,11 +410,15 @@ void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dragger_visibility", "mode"), &SplitContainer::set_dragger_visibility);
 	ClassDB::bind_method(D_METHOD("get_dragger_visibility"), &SplitContainer::get_dragger_visibility);
 
+	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &SplitContainer::set_vertical);
+	ClassDB::bind_method(D_METHOD("is_vertical"), &SplitContainer::is_vertical);
+
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::INT, "offset")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "split_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_split_offset", "get_split_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collapsed"), "set_collapsed", "is_collapsed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden and Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 
 	BIND_ENUM_CONSTANT(DRAGGER_VISIBLE);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN);

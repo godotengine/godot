@@ -272,8 +272,25 @@ void FlowContainer::_notification(int p_what) {
 	}
 }
 
+void FlowContainer::_validate_property(PropertyInfo &p_property) const {
+	if (is_fixed && p_property.name == "vertical") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 int FlowContainer::get_line_count() const {
 	return cached_line_count;
+}
+
+void FlowContainer::set_vertical(bool p_vertical) {
+	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
+	vertical = p_vertical;
+	update_minimum_size();
+	_resort();
+}
+
+bool FlowContainer::is_vertical() const {
+	return vertical;
 }
 
 FlowContainer::FlowContainer(bool p_vertical) {
@@ -282,4 +299,9 @@ FlowContainer::FlowContainer(bool p_vertical) {
 
 void FlowContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_count"), &FlowContainer::get_line_count);
+
+	ClassDB::bind_method(D_METHOD("set_vertical", "vertical"), &FlowContainer::set_vertical);
+	ClassDB::bind_method(D_METHOD("is_vertical"), &FlowContainer::is_vertical);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
