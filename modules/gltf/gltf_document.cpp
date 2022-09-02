@@ -435,7 +435,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 			node["scale"] = _vec3_to_arr(n->scale);
 		}
 
-		if (!n->position.is_equal_approx(Vector3())) {
+		if (!n->position.is_zero_approx()) {
 			node["translation"] = _vec3_to_arr(n->position);
 		}
 		if (n->children.size()) {

@@ -212,6 +212,13 @@
 				Returns [code]true[/code] if the vector is normalized, [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="is_zero_approx" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this vector's values are approximately zero, by running [method @GlobalScope.is_zero_approx] on each component.
+				This method is faster than using [method is_equal_approx] with one value as a zero vector.
+			</description>
+		</method>
 		<method name="length" qualifiers="const">
 			<return type="float" />
 			<description>

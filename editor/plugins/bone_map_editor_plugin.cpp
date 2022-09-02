@@ -681,7 +681,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		}
 		if (!found) {
 			for (int i = 0; i < search_path.size(); i++) {
-				if (Vector3(0, 0, 0).is_equal_approx(skeleton->get_bone_global_rest(search_path[i]).origin)) {
+				if (skeleton->get_bone_global_rest(search_path[i]).origin.is_zero_approx()) {
 					bone_idx = search_path[i]; // The bone existing at the origin is appropriate as a root.
 					found = true;
 					break;

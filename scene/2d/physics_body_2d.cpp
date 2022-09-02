@@ -1142,7 +1142,7 @@ bool CharacterBody2D::move_and_slide() {
 	on_ceiling = false;
 	on_wall = false;
 
-	if (!current_platform_velocity.is_equal_approx(Vector2())) {
+	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 		parameters.exclude_bodies.insert(platform_rid);
@@ -1241,7 +1241,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				break;
 			}
 
-			if (result.remainder.is_equal_approx(Vector2())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector2();
 				break;
 			}
@@ -1325,7 +1325,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 		sliding_enabled = true;
 		first_slide = false;
 
-		if (!collided || motion.is_equal_approx(Vector2())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 	}
@@ -1371,7 +1371,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
-			if (result.remainder.is_equal_approx(Vector2())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector2();
 				break;
 			}
@@ -1390,7 +1390,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 			}
 		}
 
-		if (!collided || motion.is_equal_approx(Vector2())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 
