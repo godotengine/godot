@@ -1184,7 +1184,7 @@ void Environment::_bind_methods() {
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1,degrees"), "set_sky_custom_fov", "get_sky_custom_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_lesser,or_greater,radians"), "set_sky_rotation", "get_sky_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians"), "set_sky_rotation", "get_sky_rotation");
 
 	// Ambient light
 
@@ -1420,8 +1420,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_density", PROPERTY_HINT_RANGE, "0,1,0.0001,or_greater"), "set_fog_density", "get_fog_density");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_aerial_perspective", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_aerial_perspective", "get_fog_aerial_perspective");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_sky_affect", "get_fog_sky_affect");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_lesser,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_lesser,or_greater"), "set_fog_height_density", "get_fog_height_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_less,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_less,or_greater"), "set_fog_height_density", "get_fog_height_density");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);

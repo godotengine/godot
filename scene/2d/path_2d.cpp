@@ -252,7 +252,7 @@ void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
 			max = path->get_curve()->get_baked_length();
 		}
 
-		p_property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
+		p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
 	}
 }
 
@@ -293,8 +293,8 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
 	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:px"), "set_progress", "get_progress");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:px"), "set_progress", "get_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");
