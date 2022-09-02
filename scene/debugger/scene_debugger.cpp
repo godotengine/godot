@@ -220,9 +220,31 @@ void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
 	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
 	ERR_FAIL_COND(!node);
 
+	HashMap<const Node *, Node *> duplimap;
+	Node *copy = node->duplicate_from_editor(duplimap);
+
+	// Handle Unique Nodes.
+	for (int i = 0; i < copy->get_child_count(false); i++) {
+		_set_node_owner_recursive(copy->get_child(i, false), copy);
+	}
+	// Root node cannot ever be unique name in its own Scene!
+	copy->set_unique_name_in_owner(false);
+
 	Ref<PackedScene> ps = memnew(PackedScene);
-	ps->pack(node);
+	ps->pack(copy);
 	ResourceSaver::save(ps, p_path);
+
+	memdelete(copy);
+}
+
+void SceneDebugger::_set_node_owner_recursive(Node *p_node, Node *p_owner) {
+	if (!p_node->get_owner()) {
+		p_node->set_owner(p_owner);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(false); i++) {
+		_set_node_owner_recursive(p_node->get_child(i, false), p_owner);
+	}
 }
 
 void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {
