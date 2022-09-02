@@ -567,6 +567,8 @@ void EditorHelp::_update_doc() {
 	class_desc->pop(); // font
 	class_desc->add_newline();
 
+	const String non_breaking_space = String::chr(160);
+
 	// Inheritance tree
 
 	// Ascendents
@@ -579,7 +581,7 @@ void EditorHelp::_update_doc() {
 
 		while (!inherits.is_empty()) {
 			_add_type_icon(inherits);
-			class_desc->add_text(" "); // Extra space, otherwise icon borrows hyperlink from _add_type().
+			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 			_add_type(inherits);
 
 			inherits = doc->class_list[inherits].inherits;
@@ -612,7 +614,7 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(" , ");
 				}
 				_add_type_icon(E.value.name);
-				class_desc->add_text(" "); // Extra space, otherwise icon borrows hyperlink from _add_type().
+				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 				_add_type(E.value.name);
 				prev = true;
 			}
