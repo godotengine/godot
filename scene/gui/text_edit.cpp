@@ -4786,6 +4786,9 @@ void TextEdit::add_gutter(int p_at) {
 	}
 
 	text.add_gutter(p_at);
+
+	_update_gutter_width();
+
 	emit_signal(SNAME("gutter_added"));
 	queue_redraw();
 }
@@ -4796,6 +4799,9 @@ void TextEdit::remove_gutter(int p_gutter) {
 	gutters.remove_at(p_gutter);
 
 	text.remove_gutter(p_gutter);
+
+	_update_gutter_width();
+
 	emit_signal(SNAME("gutter_removed"));
 	queue_redraw();
 }
