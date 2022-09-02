@@ -212,6 +212,10 @@ public:
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
 	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
 
+	virtual bool is_dark_mode_supported() const { return false; };
+	virtual bool is_dark_mode() const { return false; };
+	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
+
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
