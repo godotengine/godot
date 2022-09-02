@@ -36,6 +36,7 @@
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/sndio/audio_driver_sndio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
@@ -57,6 +58,10 @@ class OS_LinuxBSD : public OS_Unix {
 
 #ifdef ALSAMIDI_ENABLED
 	MIDIDriverALSAMidi driver_alsamidi;
+#endif
+
+#ifdef SNDIO_ENABLED
+	AudioDriverSndio driver_sndio;
 #endif
 
 #ifdef PULSEAUDIO_ENABLED

@@ -729,6 +729,10 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 OS_LinuxBSD::OS_LinuxBSD() {
 	main_loop = nullptr;
 
+#ifdef SNDIO_ENABLED
+	AudioDriverManager::add_driver(&driver_sndio);
+#endif
+
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
