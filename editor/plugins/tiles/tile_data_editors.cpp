@@ -448,7 +448,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 		} else if (drag_type == DRAG_TYPE_PAN) {
 			panning += mm->get_position() - drag_last_pos;
 			drag_last_pos = mm->get_position();
-			button_center_view->set_disabled(panning.is_equal_approx(Vector2()));
+			button_center_view->set_disabled(panning.is_zero_approx());
 		} else {
 			// Update hovered point.
 			_grab_polygon_point(mm->get_position(), xform, hovered_polygon_index, hovered_point_index);

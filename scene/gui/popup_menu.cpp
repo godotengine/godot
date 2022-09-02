@@ -431,7 +431,7 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> m = p_event;
 
 	if (m.is_valid()) {
-		if (m->get_velocity().is_equal_approx(Vector2())) {
+		if (m->get_velocity().is_zero_approx()) {
 			return;
 		}
 		activated_by_keyboard = false;

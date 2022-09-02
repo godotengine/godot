@@ -139,7 +139,7 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
 		// Center of panel.
 		panning = panning * zoom / previous_zoom;
 	}
-	button_center_view->set_disabled(panning.is_equal_approx(Vector2()));
+	button_center_view->set_disabled(panning.is_zero_approx());
 
 	previous_zoom = zoom;
 

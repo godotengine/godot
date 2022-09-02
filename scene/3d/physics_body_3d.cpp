@@ -1208,7 +1208,7 @@ bool CharacterBody3D::move_and_slide() {
 
 	last_motion = Vector3();
 
-	if (!current_platform_velocity.is_equal_approx(Vector3())) {
+	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
@@ -1315,7 +1315,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				break;
 			}
 
-			if (result.remainder.is_equal_approx(Vector3())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector3();
 				break;
 			}
@@ -1428,7 +1428,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					const PhysicsServer3D::MotionCollision &collision = result.collisions[0];
 
 					Vector3 slide_motion = result.remainder.slide(collision.normal);
-					if (collision_state.floor && !collision_state.wall && !motion_slide_up.is_equal_approx(Vector3())) {
+					if (collision_state.floor && !collision_state.wall && !motion_slide_up.is_zero_approx()) {
 						// Slide using the intersection between the motion plane and the floor plane,
 						// in order to keep the direction intact.
 						real_t motion_length = slide_motion.length();
@@ -1469,7 +1469,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			total_travel += result.travel;
 
 			// Apply Constant Speed.
-			if (p_was_on_floor && floor_constant_speed && can_apply_constant_speed && collision_state.floor && !motion.is_equal_approx(Vector3())) {
+			if (p_was_on_floor && floor_constant_speed && can_apply_constant_speed && collision_state.floor && !motion.is_zero_approx()) {
 				Vector3 travel_slide_up = total_travel.slide(up_direction);
 				motion = motion.normalized() * MAX(0, (motion_slide_up.length() - travel_slide_up.length()));
 			}
@@ -1492,7 +1492,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			collided = true;
 		}
 
-		if (!collided || motion.is_equal_approx(Vector3())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 
@@ -1533,7 +1533,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 			CollisionState result_state;
 			_set_collision_direction(result, result_state);
 
-			if (result.remainder.is_equal_approx(Vector3())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector3();
 				break;
 			}
@@ -1557,7 +1557,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 			}
 		}
 
-		if (!collided || motion.is_equal_approx(Vector3())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 
