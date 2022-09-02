@@ -1993,7 +1993,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 		// This is handled by the platform implementation on macOS,
 		// so only define the shortcut on other platforms
 #ifndef MACOS_ENABLED
-		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::Q)) {
+		if (k->get_keycode_with_modifiers() == (KeyModifierMask::META | Key::Q)) {
 			_dim_window();
 			get_tree()->quit();
 		}
@@ -2051,7 +2051,7 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 
 			} break;
 			case Key::F: {
-				if (k->is_command_pressed()) {
+				if (k->is_command_or_control_pressed()) {
 					this->search_box->grab_focus();
 				} else {
 					keycode_handled = false;
@@ -2628,21 +2628,21 @@ ProjectManager::ProjectManager() {
 		create_btn = memnew(Button);
 		create_btn->set_text(TTR("New Project"));
 		create_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD | Key::N));
+		create_btn->set_shortcut(ED_SHORTCUT("project_manager/new_project", TTR("New Project"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 		create_btn->connect("pressed", callable_mp(this, &ProjectManager::_new_project));
 		tree_vb->add_child(create_btn);
 
 		import_btn = memnew(Button);
 		import_btn->set_text(TTR("Import"));
 		import_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD | Key::I));
+		import_btn->set_shortcut(ED_SHORTCUT("project_manager/import_project", TTR("Import Project"), KeyModifierMask::CMD_OR_CTRL | Key::I));
 		import_btn->connect("pressed", callable_mp(this, &ProjectManager::_import_project));
 		tree_vb->add_child(import_btn);
 
 		scan_btn = memnew(Button);
 		scan_btn->set_text(TTR("Scan"));
 		scan_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD | Key::S));
+		scan_btn->set_shortcut(ED_SHORTCUT("project_manager/scan_projects", TTR("Scan Projects"), KeyModifierMask::CMD_OR_CTRL | Key::S));
 		scan_btn->connect("pressed", callable_mp(this, &ProjectManager::_scan_projects));
 		tree_vb->add_child(scan_btn);
 
@@ -2651,14 +2651,14 @@ ProjectManager::ProjectManager() {
 		open_btn = memnew(Button);
 		open_btn->set_text(TTR("Edit"));
 		open_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD | Key::E));
+		open_btn->set_shortcut(ED_SHORTCUT("project_manager/edit_project", TTR("Edit Project"), KeyModifierMask::CMD_OR_CTRL | Key::E));
 		open_btn->connect("pressed", callable_mp(this, &ProjectManager::_open_selected_projects_ask));
 		tree_vb->add_child(open_btn);
 
 		run_btn = memnew(Button);
 		run_btn->set_text(TTR("Run"));
 		run_btn->add_theme_constant_override("h_separation", btn_h_separation);
-		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD | Key::R));
+		run_btn->set_shortcut(ED_SHORTCUT("project_manager/run_project", TTR("Run Project"), KeyModifierMask::CMD_OR_CTRL | Key::R));
 		run_btn->connect("pressed", callable_mp(this, &ProjectManager::_run_project));
 		tree_vb->add_child(run_btn);
 

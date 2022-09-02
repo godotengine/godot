@@ -603,13 +603,13 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MouseButton::WHEEL_UP && (mb->is_command_pressed() || mb->is_shift_pressed())) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && (mb->is_command_or_control_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() + mb->get_factor());
 			}
 
 			return EditorPlugin::AFTER_GUI_INPUT_STOP; // Eaten.
-		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && (mb->is_command_pressed() || mb->is_shift_pressed())) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && (mb->is_command_or_control_pressed() || mb->is_shift_pressed())) {
 			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
 			}
@@ -629,7 +629,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 				} else if (mb->is_shift_pressed() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;
-				} else if (mb->is_command_pressed() && can_edit) {
+				} else if (mb->is_command_or_control_pressed() && can_edit) {
 					input_action = INPUT_PICK;
 				} else {
 					input_action = INPUT_PAINT;
@@ -746,7 +746,7 @@ EditorPlugin::AfterGUIInput GridMapEditor::forward_spatial_input_event(Camera3D 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		if (pan_gesture->is_alt_pressed() && (pan_gesture->is_command_pressed() || pan_gesture->is_shift_pressed())) {
+		if (pan_gesture->is_alt_pressed() && (pan_gesture->is_command_or_control_pressed() || pan_gesture->is_shift_pressed())) {
 			const real_t delta = pan_gesture->get_delta().y * 0.5;
 			accumulated_floor_delta += delta;
 			int step = 0;
@@ -807,7 +807,7 @@ void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
 	const Ref<InputEventMouseButton> mb = p_ie;
 
 	// Zoom in/out using Ctrl + mouse wheel
-	if (mb.is_valid() && mb->is_pressed() && mb->is_command_pressed()) {
+	if (mb.is_valid() && mb->is_pressed() && mb->is_command_or_control_pressed()) {
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::WHEEL_UP) {
 			size_slider->set_value(size_slider->get_value() + 0.2);
 		}

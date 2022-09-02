@@ -142,13 +142,33 @@ int64_t InputEventFromWindow::get_window_id() const {
 
 ///////////////////////////////////
 
-void InputEventWithModifiers::set_store_command(bool p_enabled) {
-	store_command = p_enabled;
+void InputEventWithModifiers::set_command_or_control_autoremap(bool p_enabled) {
+	command_or_control_autoremap = p_enabled;
+	if (command_or_control_autoremap) {
+#ifdef MACOS_ENABLED
+		ctrl_pressed = false;
+		meta_pressed = true;
+#else
+		ctrl_pressed = true;
+		meta_pressed = false;
+#endif
+	} else {
+		ctrl_pressed = false;
+		meta_pressed = false;
+	}
 	emit_changed();
 }
 
-bool InputEventWithModifiers::is_storing_command() const {
-	return store_command;
+bool InputEventWithModifiers::is_command_or_control_autoremap() const {
+	return command_or_control_autoremap;
+}
+
+bool InputEventWithModifiers::is_command_or_control_pressed() const {
+#ifdef MACOS_ENABLED
+	return meta_pressed;
+#else
+	return ctrl_pressed;
+#endif
 }
 
 void InputEventWithModifiers::set_shift_pressed(bool p_enabled) {
@@ -170,6 +190,7 @@ bool InputEventWithModifiers::is_alt_pressed() const {
 }
 
 void InputEventWithModifiers::set_ctrl_pressed(bool p_enabled) {
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Control directly!");
 	ctrl_pressed = p_enabled;
 	emit_changed();
 }
@@ -179,21 +200,13 @@ bool InputEventWithModifiers::is_ctrl_pressed() const {
 }
 
 void InputEventWithModifiers::set_meta_pressed(bool p_enabled) {
+	ERR_FAIL_COND_MSG(command_or_control_autoremap, "Command/Control autoremaping is enabled, cannot set Meta directly!");
 	meta_pressed = p_enabled;
 	emit_changed();
 }
 
 bool InputEventWithModifiers::is_meta_pressed() const {
 	return meta_pressed;
-}
-
-void InputEventWithModifiers::set_command_pressed(bool p_enabled) {
-	command_pressed = p_enabled;
-	emit_changed();
-}
-
-bool InputEventWithModifiers::is_command_pressed() const {
-	return command_pressed;
 }
 
 void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
@@ -216,6 +229,13 @@ Key InputEventWithModifiers::get_modifiers_mask() const {
 	}
 	if (is_meta_pressed()) {
 		mask |= KeyModifierMask::META;
+	}
+	if (is_command_or_control_autoremap()) {
+#ifdef MACOS_ENABLED
+		mask |= KeyModifierMask::META;
+#else
+		mask |= KeyModifierMask::CTRL;
+#endif
 	}
 	return mask;
 }
@@ -248,8 +268,10 @@ String InputEventWithModifiers::to_string() {
 }
 
 void InputEventWithModifiers::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_store_command", "enable"), &InputEventWithModifiers::set_store_command);
-	ClassDB::bind_method(D_METHOD("is_storing_command"), &InputEventWithModifiers::is_storing_command);
+	ClassDB::bind_method(D_METHOD("set_command_or_control_autoremap", "enable"), &InputEventWithModifiers::set_command_or_control_autoremap);
+	ClassDB::bind_method(D_METHOD("is_command_or_control_autoremap"), &InputEventWithModifiers::is_command_or_control_autoremap);
+
+	ClassDB::bind_method(D_METHOD("is_command_or_control_pressed"), &InputEventWithModifiers::is_command_or_control_pressed);
 
 	ClassDB::bind_method(D_METHOD("set_alt_pressed", "pressed"), &InputEventWithModifiers::set_alt_pressed);
 	ClassDB::bind_method(D_METHOD("is_alt_pressed"), &InputEventWithModifiers::is_alt_pressed);
@@ -263,34 +285,24 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_meta_pressed", "pressed"), &InputEventWithModifiers::set_meta_pressed);
 	ClassDB::bind_method(D_METHOD("is_meta_pressed"), &InputEventWithModifiers::is_meta_pressed);
 
-	ClassDB::bind_method(D_METHOD("set_command_pressed", "pressed"), &InputEventWithModifiers::set_command_pressed);
-	ClassDB::bind_method(D_METHOD("is_command_pressed"), &InputEventWithModifiers::is_command_pressed);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "store_command"), "set_store_command", "is_storing_command");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ctrl_pressed"), "set_ctrl_pressed", "is_ctrl_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta_pressed"), "set_meta_pressed", "is_meta_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_pressed"), "set_command_pressed", "is_command_pressed");
 }
 
 void InputEventWithModifiers::_validate_property(PropertyInfo &p_property) const {
-	if (store_command) {
-		// If we only want to Store "Command".
-#ifdef APPLE_STYLE_KEYS
-		// Don't store "Meta" on Mac.
+	if (command_or_control_autoremap) {
+		// Cannot be used with Meta/Command or Control!
 		if (p_property.name == "meta_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
-#else
-		// Don't store "Ctrl".
 		if (p_property.name == "ctrl_pressed") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
-#endif
 	} else {
-		// We don't want to store command, only ctrl or meta (on mac).
-		if (p_property.name == "command_pressed") {
+		if (p_property.name == "command_or_control_autoremap") {
 			p_property.usage ^= PROPERTY_USAGE_STORAGE;
 		}
 	}
@@ -399,14 +411,18 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
 	if ((p_keycode & KeyModifierMask::ALT) != Key::NONE) {
 		ie->set_alt_pressed(true);
 	}
-	if ((p_keycode & KeyModifierMask::CTRL) != Key::NONE) {
-		ie->set_ctrl_pressed(true);
-	}
-	if ((p_keycode & KeyModifierMask::CMD) != Key::NONE) {
-		ie->set_command_pressed(true);
-	}
-	if ((p_keycode & KeyModifierMask::META) != Key::NONE) {
-		ie->set_meta_pressed(true);
+	if ((p_keycode & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
+		ie->set_command_or_control_autoremap(true);
+		if ((p_keycode & KeyModifierMask::CTRL) != Key::NONE || (p_keycode & KeyModifierMask::META) != Key::NONE) {
+			WARN_PRINT("Invalid Key Modifiers: Command or Control autoremapping is enabled, Meta and Control values are ignored!");
+		}
+	} else {
+		if ((p_keycode & KeyModifierMask::CTRL) != Key::NONE) {
+			ie->set_ctrl_pressed(true);
+		}
+		if ((p_keycode & KeyModifierMask::META) != Key::NONE) {
+			ie->set_meta_pressed(true);
+		}
 	}
 
 	return ie;

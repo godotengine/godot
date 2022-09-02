@@ -199,9 +199,7 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=["#platform/macos"])
-    env.Append(
-        CPPDEFINES=["MACOS_ENABLED", "UNIX_ENABLED", "APPLE_STYLE_KEYS", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"]
-    )
+    env.Append(CPPDEFINES=["MACOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"])
     env.Append(
         LINKFLAGS=[
             "-framework",

@@ -1467,9 +1467,10 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 #ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
-			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
+			keycode = KeyModifierMask::META | Key::BACKSPACE;
 		}
 #endif
+
 		Ref<InputEventKey> ie;
 		if (keycode != Key::NONE) {
 			ie = InputEventKey::create_reference(keycode);
@@ -1500,7 +1501,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 #ifdef MACOS_ENABLED
 		// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 		if (keycode == Key::KEY_DELETE) {
-			keycode = KeyModifierMask::CMD | Key::BACKSPACE;
+			keycode = KeyModifierMask::META | Key::BACKSPACE;
 		}
 #endif
 
