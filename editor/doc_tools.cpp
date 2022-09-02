@@ -338,6 +338,183 @@ static Variant get_documentation_default_value(const StringName &p_class_name, c
 }
 
 void DocTools::generate(bool p_basic_types) {
+	// Display @GlobalScope and @GDScript above all else.
+	// Add global API (servers, engine singletons, global constants) and Variant utility functions.
+	{
+		String cname = "@GlobalScope";
+		class_list[cname] = DocData::ClassDoc();
+		DocData::ClassDoc &c = class_list[cname];
+		c.name = cname;
+
+		// Global constants.
+		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
+			DocData::ConstantDoc cd;
+			cd.name = CoreConstants::get_global_constant_name(i);
+			if (!CoreConstants::get_ignore_value_in_docs(i)) {
+				cd.value = itos(CoreConstants::get_global_constant_value(i));
+				cd.is_value_valid = true;
+			} else {
+				cd.is_value_valid = false;
+			}
+			cd.enumeration = CoreConstants::get_global_constant_enum(i);
+			c.constants.push_back(cd);
+		}
+
+		// Servers/engine singletons.
+		List<Engine::Singleton> singletons;
+		Engine::get_singleton()->get_singletons(&singletons);
+
+		// FIXME: this is kind of hackish...
+		for (const Engine::Singleton &s : singletons) {
+			DocData::PropertyDoc pd;
+			if (!s.ptr) {
+				continue;
+			}
+			pd.name = s.name;
+			pd.type = s.ptr->get_class();
+			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
+				pd.type = ClassDB::get_parent_class(pd.type);
+			}
+			c.properties.push_back(pd);
+		}
+
+		// Variant utility functions.
+		List<StringName> utility_functions;
+		Variant::get_utility_function_list(&utility_functions);
+		utility_functions.sort_custom<StringName::AlphCompare>();
+		for (const StringName &E : utility_functions) {
+			DocData::MethodDoc md;
+			md.name = E;
+			// Utility function's return type.
+			if (Variant::has_utility_function_return_value(E)) {
+				PropertyInfo pi;
+				pi.type = Variant::get_utility_function_return_type(E);
+				if (pi.type == Variant::NIL) {
+					pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+				}
+				DocData::ArgumentDoc ad;
+				DocData::argument_doc_from_arginfo(ad, pi);
+				md.return_type = ad.type;
+			}
+
+			// Utility function's arguments.
+			if (Variant::is_utility_function_vararg(E)) {
+				md.qualifiers = "vararg";
+			} else {
+				for (int i = 0; i < Variant::get_utility_function_argument_count(E); i++) {
+					PropertyInfo pi;
+					pi.type = Variant::get_utility_function_argument_type(E, i);
+					pi.name = Variant::get_utility_function_argument_name(E, i);
+					if (pi.type == Variant::NIL) {
+						pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+					}
+					DocData::ArgumentDoc ad;
+					DocData::argument_doc_from_arginfo(ad, pi);
+					md.arguments.push_back(ad);
+				}
+			}
+
+			c.methods.push_back(md);
+		}
+	}
+
+	// Add scripting language built-ins.
+	{
+		// We only add a doc entry for languages which actually define any built-in
+		// methods, constants, or annotations.
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptLanguage *lang = ScriptServer::get_language(i);
+			String cname = "@" + lang->get_name();
+			DocData::ClassDoc c;
+			c.name = cname;
+
+			// Get functions.
+			List<MethodInfo> minfo;
+			lang->get_public_functions(&minfo);
+
+			for (const MethodInfo &mi : minfo) {
+				DocData::MethodDoc md;
+				md.name = mi.name;
+
+				if (mi.flags & METHOD_FLAG_VARARG) {
+					if (!md.qualifiers.is_empty()) {
+						md.qualifiers += " ";
+					}
+					md.qualifiers += "vararg";
+				}
+
+				DocData::return_doc_from_retinfo(md, mi.return_val);
+
+				for (int j = 0; j < mi.arguments.size(); j++) {
+					DocData::ArgumentDoc ad;
+					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
+
+					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
+					if (darg_idx >= 0) {
+						Variant default_arg = mi.default_arguments[darg_idx];
+						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
+					}
+
+					md.arguments.push_back(ad);
+				}
+
+				c.methods.push_back(md);
+			}
+
+			// Get constants.
+			List<Pair<String, Variant>> cinfo;
+			lang->get_public_constants(&cinfo);
+
+			for (const Pair<String, Variant> &E : cinfo) {
+				DocData::ConstantDoc cd;
+				cd.name = E.first;
+				cd.value = E.second;
+				cd.is_value_valid = true;
+				c.constants.push_back(cd);
+			}
+
+			// Get annotations.
+			List<MethodInfo> ainfo;
+			lang->get_public_annotations(&ainfo);
+
+			for (const MethodInfo &ai : ainfo) {
+				DocData::MethodDoc atd;
+				atd.name = ai.name;
+
+				if (ai.flags & METHOD_FLAG_VARARG) {
+					if (!atd.qualifiers.is_empty()) {
+						atd.qualifiers += " ";
+					}
+					atd.qualifiers += "vararg";
+				}
+
+				DocData::return_doc_from_retinfo(atd, ai.return_val);
+
+				for (int j = 0; j < ai.arguments.size(); j++) {
+					DocData::ArgumentDoc ad;
+					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
+
+					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
+					if (darg_idx >= 0) {
+						Variant default_arg = ai.default_arguments[darg_idx];
+						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
+					}
+
+					atd.arguments.push_back(ad);
+				}
+
+				c.annotations.push_back(atd);
+			}
+
+			// Skip adding the lang if it doesn't expose anything (e.g. C#).
+			if (c.methods.is_empty() && c.constants.is_empty() && c.annotations.is_empty()) {
+				continue;
+			}
+
+			class_list[cname] = c;
+		}
+	}
+
 	// Add ClassDB-exposed classes.
 	{
 		List<StringName> classes;
@@ -502,7 +679,7 @@ void DocTools::generate(bool p_basic_types) {
 
 			for (const MethodInfo &E : method_list) {
 				if (E.name.is_empty() || (E.name[0] == '_' && !(E.flags & METHOD_FLAG_VIRTUAL))) {
-					continue; //hidden, don't count
+					continue; // Hidden, don't count.
 				}
 
 				if (skip_setter_getter_methods && setters_getters.has(E.name)) {
@@ -814,182 +991,6 @@ void DocTools::generate(bool p_basic_types) {
 			constant.value = value.get_type() == Variant::INT ? itos(value) : value.get_construct_string().replace("\n", " ");
 			constant.is_value_valid = true;
 			c.constants.push_back(constant);
-		}
-	}
-
-	// Add global API (servers, engine singletons, global constants) and Variant utility functions.
-	{
-		String cname = "@GlobalScope";
-		class_list[cname] = DocData::ClassDoc();
-		DocData::ClassDoc &c = class_list[cname];
-		c.name = cname;
-
-		// Global constants.
-		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
-			DocData::ConstantDoc cd;
-			cd.name = CoreConstants::get_global_constant_name(i);
-			if (!CoreConstants::get_ignore_value_in_docs(i)) {
-				cd.value = itos(CoreConstants::get_global_constant_value(i));
-				cd.is_value_valid = true;
-			} else {
-				cd.is_value_valid = false;
-			}
-			cd.enumeration = CoreConstants::get_global_constant_enum(i);
-			c.constants.push_back(cd);
-		}
-
-		// Servers/engine singletons.
-		List<Engine::Singleton> singletons;
-		Engine::get_singleton()->get_singletons(&singletons);
-
-		// FIXME: this is kind of hackish...
-		for (const Engine::Singleton &s : singletons) {
-			DocData::PropertyDoc pd;
-			if (!s.ptr) {
-				continue;
-			}
-			pd.name = s.name;
-			pd.type = s.ptr->get_class();
-			while (String(ClassDB::get_parent_class(pd.type)) != "Object") {
-				pd.type = ClassDB::get_parent_class(pd.type);
-			}
-			c.properties.push_back(pd);
-		}
-
-		// Variant utility functions.
-		List<StringName> utility_functions;
-		Variant::get_utility_function_list(&utility_functions);
-		utility_functions.sort_custom<StringName::AlphCompare>();
-		for (const StringName &E : utility_functions) {
-			DocData::MethodDoc md;
-			md.name = E;
-			// Utility function's return type.
-			if (Variant::has_utility_function_return_value(E)) {
-				PropertyInfo pi;
-				pi.type = Variant::get_utility_function_return_type(E);
-				if (pi.type == Variant::NIL) {
-					pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
-				}
-				DocData::ArgumentDoc ad;
-				DocData::argument_doc_from_arginfo(ad, pi);
-				md.return_type = ad.type;
-			}
-
-			// Utility function's arguments.
-			if (Variant::is_utility_function_vararg(E)) {
-				md.qualifiers = "vararg";
-			} else {
-				for (int i = 0; i < Variant::get_utility_function_argument_count(E); i++) {
-					PropertyInfo pi;
-					pi.type = Variant::get_utility_function_argument_type(E, i);
-					pi.name = Variant::get_utility_function_argument_name(E, i);
-					if (pi.type == Variant::NIL) {
-						pi.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
-					}
-					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, pi);
-					md.arguments.push_back(ad);
-				}
-			}
-
-			c.methods.push_back(md);
-		}
-	}
-
-	// Add scripting language built-ins.
-	{
-		// We only add a doc entry for languages which actually define any built-in
-		// methods, constants, or annotations.
-		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			ScriptLanguage *lang = ScriptServer::get_language(i);
-			String cname = "@" + lang->get_name();
-			DocData::ClassDoc c;
-			c.name = cname;
-
-			// Get functions.
-			List<MethodInfo> minfo;
-			lang->get_public_functions(&minfo);
-
-			for (const MethodInfo &mi : minfo) {
-				DocData::MethodDoc md;
-				md.name = mi.name;
-
-				if (mi.flags & METHOD_FLAG_VARARG) {
-					if (!md.qualifiers.is_empty()) {
-						md.qualifiers += " ";
-					}
-					md.qualifiers += "vararg";
-				}
-
-				DocData::return_doc_from_retinfo(md, mi.return_val);
-
-				for (int j = 0; j < mi.arguments.size(); j++) {
-					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, mi.arguments[j]);
-
-					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
-					if (darg_idx >= 0) {
-						Variant default_arg = mi.default_arguments[darg_idx];
-						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
-					}
-
-					md.arguments.push_back(ad);
-				}
-
-				c.methods.push_back(md);
-			}
-
-			// Get constants.
-			List<Pair<String, Variant>> cinfo;
-			lang->get_public_constants(&cinfo);
-
-			for (const Pair<String, Variant> &E : cinfo) {
-				DocData::ConstantDoc cd;
-				cd.name = E.first;
-				cd.value = E.second;
-				cd.is_value_valid = true;
-				c.constants.push_back(cd);
-			}
-
-			// Get annotations.
-			List<MethodInfo> ainfo;
-			lang->get_public_annotations(&ainfo);
-
-			for (const MethodInfo &ai : ainfo) {
-				DocData::MethodDoc atd;
-				atd.name = ai.name;
-
-				if (ai.flags & METHOD_FLAG_VARARG) {
-					if (!atd.qualifiers.is_empty()) {
-						atd.qualifiers += " ";
-					}
-					atd.qualifiers += "vararg";
-				}
-
-				DocData::return_doc_from_retinfo(atd, ai.return_val);
-
-				for (int j = 0; j < ai.arguments.size(); j++) {
-					DocData::ArgumentDoc ad;
-					DocData::argument_doc_from_arginfo(ad, ai.arguments[j]);
-
-					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
-					if (darg_idx >= 0) {
-						Variant default_arg = ai.default_arguments[darg_idx];
-						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
-					}
-
-					atd.arguments.push_back(ad);
-				}
-
-				c.annotations.push_back(atd);
-			}
-
-			// Skip adding the lang if it doesn't expose anything (e.g. C#).
-			if (c.methods.is_empty() && c.constants.is_empty() && c.annotations.is_empty()) {
-				continue;
-			}
-
-			class_list[cname] = c;
 		}
 	}
 }
