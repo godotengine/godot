@@ -57,7 +57,7 @@ void EditorVCSInterface::set_credentials(String p_username, String p_password, S
 }
 
 List<String> EditorVCSInterface::get_remotes() {
-	Array result;
+	TypedArray<Dictionary> result;
 	if (!GDVIRTUAL_CALL(_get_remotes, result)) {
 		UNIMPLEMENTED();
 		return {};
@@ -71,7 +71,7 @@ List<String> EditorVCSInterface::get_remotes() {
 }
 
 List<EditorVCSInterface::StatusFile> EditorVCSInterface::get_modified_files_data() {
-	Array result;
+	TypedArray<Dictionary> result;
 	if (!GDVIRTUAL_CALL(_get_modified_files_data, result)) {
 		UNIMPLEMENTED();
 		return {};
@@ -123,7 +123,7 @@ List<EditorVCSInterface::DiffFile> EditorVCSInterface::get_diff(String p_identif
 }
 
 List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_max_commits) {
-	Array result;
+	TypedArray<Dictionary> result;
 	if (!GDVIRTUAL_CALL(_get_previous_commits, p_max_commits, result)) {
 		UNIMPLEMENTED();
 		return {};
@@ -137,7 +137,7 @@ List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_
 }
 
 List<String> EditorVCSInterface::get_branch_list() {
-	Array result;
+	TypedArray<Dictionary> result;
 	if (!GDVIRTUAL_CALL(_get_branch_list, result)) {
 		UNIMPLEMENTED();
 		return {};
@@ -210,7 +210,7 @@ void EditorVCSInterface::fetch(String p_remote) {
 }
 
 List<EditorVCSInterface::DiffHunk> EditorVCSInterface::get_line_diff(String p_file_path, String p_text) {
-	Array result;
+	TypedArray<Dictionary> result;
 	if (!GDVIRTUAL_CALL(_get_line_diff, p_file_path, p_text, result)) {
 		UNIMPLEMENTED();
 		return {};
@@ -257,11 +257,11 @@ Dictionary EditorVCSInterface::create_diff_hunk(int p_old_start, int p_new_start
 	diff_hunk["old_lines"] = p_old_lines;
 	diff_hunk["new_start"] = p_new_start;
 	diff_hunk["old_start"] = p_old_start;
-	diff_hunk["diff_lines"] = Array();
+	diff_hunk["diff_lines"] = TypedArray<Dictionary>();
 	return diff_hunk;
 }
 
-Dictionary EditorVCSInterface::add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, Array p_line_diffs) {
+Dictionary EditorVCSInterface::add_line_diffs_into_diff_hunk(Dictionary p_diff_hunk, TypedArray<Dictionary> p_line_diffs) {
 	p_diff_hunk["diff_lines"] = p_line_diffs;
 	return p_diff_hunk;
 }
@@ -270,7 +270,7 @@ Dictionary EditorVCSInterface::create_diff_file(String p_new_file, String p_old_
 	Dictionary file_diff;
 	file_diff["new_file"] = p_new_file;
 	file_diff["old_file"] = p_old_file;
-	file_diff["diff_hunks"] = Array();
+	file_diff["diff_hunks"] = TypedArray<Dictionary>();
 	return file_diff;
 }
 
@@ -284,7 +284,7 @@ Dictionary EditorVCSInterface::create_commit(String p_msg, String p_author, Stri
 	return commit_info;
 }
 
-Dictionary EditorVCSInterface::add_diff_hunks_into_diff_file(Dictionary p_diff_file, Array p_diff_hunks) {
+Dictionary EditorVCSInterface::add_diff_hunks_into_diff_file(Dictionary p_diff_file, TypedArray<Dictionary> p_diff_hunks) {
 	p_diff_file["diff_hunks"] = p_diff_hunks;
 	return p_diff_file;
 }
@@ -312,7 +312,7 @@ EditorVCSInterface::DiffHunk EditorVCSInterface::_convert_diff_hunk(Dictionary p
 	dh.old_lines = p_diff_hunk["old_lines"];
 	dh.new_start = p_diff_hunk["new_start"];
 	dh.old_start = p_diff_hunk["old_start"];
-	Array diff_lines = p_diff_hunk["diff_lines"];
+	TypedArray<Dictionary> diff_lines = p_diff_hunk["diff_lines"];
 	for (int i = 0; i < diff_lines.size(); i++) {
 		DiffLine dl = _convert_diff_line(diff_lines[i]);
 		dh.diff_lines.push_back(dl);
@@ -324,7 +324,7 @@ EditorVCSInterface::DiffFile EditorVCSInterface::_convert_diff_file(Dictionary p
 	DiffFile df;
 	df.new_file = p_diff_file["new_file"];
 	df.old_file = p_diff_file["old_file"];
-	Array diff_hunks = p_diff_file["diff_hunks"];
+	TypedArray<Dictionary> diff_hunks = p_diff_file["diff_hunks"];
 	for (int i = 0; i < diff_hunks.size(); i++) {
 		DiffHunk dh = _convert_diff_hunk(diff_hunks[i]);
 		df.diff_hunks.push_back(dh);

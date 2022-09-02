@@ -1136,7 +1136,7 @@ int64_t TextServerExtension::shaped_text_get_spacing(const RID &p_shaped, TextSe
 	return 0;
 }
 
-bool TextServerExtension::shaped_text_add_string(const RID &p_shaped, const String &p_text, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
+bool TextServerExtension::shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
 	bool ret;
 	if (GDVIRTUAL_CALL(shaped_text_add_string, p_shaped, p_text, p_fonts, p_size, p_opentype_features, p_language, p_meta, ret)) {
 		return ret;
@@ -1176,7 +1176,7 @@ Variant TextServerExtension::shaped_get_span_meta(const RID &p_shaped, int64_t p
 	return false;
 }
 
-void TextServerExtension::shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features) {
+void TextServerExtension::shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features) {
 	GDVIRTUAL_CALL(shaped_set_span_update_font, p_shaped, p_index, p_fonts, p_size, p_opentype_features);
 }
 

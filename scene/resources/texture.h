@@ -422,9 +422,9 @@ class ImageTextureLayered : public TextureLayered {
 	int layers = 0;
 	bool mipmaps = false;
 
-	Error _create_from_images(const Array &p_images);
+	Error _create_from_images(const TypedArray<Image> &p_images);
 
-	Array _get_images() const;
+	TypedArray<Image> _get_images() const;
 
 protected:
 	static void _bind_methods();

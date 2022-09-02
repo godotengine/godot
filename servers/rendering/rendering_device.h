@@ -42,7 +42,7 @@ class RDSamplerState;
 class RDVertexAttribute;
 class RDShaderSource;
 class RDShaderSPIRV;
-class RDUniforms;
+class RDUniform;
 class RDPipelineRasterizationState;
 class RDPipelineMultisampleState;
 class RDPipelineDepthStencilState;
@@ -1314,7 +1314,7 @@ protected:
 	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode, const String &p_shader_name = "");
 	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name = "");
 
-	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	RID _uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
 	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 

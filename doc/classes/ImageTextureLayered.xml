@@ -9,7 +9,7 @@
 	<methods>
 		<method name="create_from_images">
 			<return type="int" enum="Error" />
-			<param index="0" name="images" type="Array" />
+			<param index="0" name="images" type="Image[]" />
 			<description>
 			</description>
 		</method>

@@ -53,11 +53,11 @@ void GLTFMesh::set_mesh(Ref<ImporterMesh> p_mesh) {
 	mesh = p_mesh;
 }
 
-Array GLTFMesh::get_instance_materials() {
+TypedArray<Material> GLTFMesh::get_instance_materials() {
 	return instance_materials;
 }
 
-void GLTFMesh::set_instance_materials(Array p_instance_materials) {
+void GLTFMesh::set_instance_materials(TypedArray<Material> p_instance_materials) {
 	instance_materials = p_instance_materials;
 }
 

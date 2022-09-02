@@ -765,11 +765,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			MeshesFound &mf = meshes_found.write[m_i];
 
 			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint() * mf.lightmap_scale;
-			Vector<RID> overrides;
+			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {
 				if (mf.overrides[i].is_valid()) {
-					overrides.write[i] = mf.overrides[i]->get_rid();
+					overrides[i] = mf.overrides[i]->get_rid();
 				}
 			}
 			TypedArray<Image> images = RS::get_singleton()->bake_render_uv2(mf.mesh->get_rid(), overrides, lightmap_size);

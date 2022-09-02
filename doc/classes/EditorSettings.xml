@@ -135,7 +135,7 @@
 		<method name="set_builtin_action_override">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
-			<param index="1" name="actions_list" type="Array" />
+			<param index="1" name="actions_list" type="InputEvent[]" />
 			<description>
 				Overrides the built-in editor action [param name] with the input actions defined in [param actions_list].
 			</description>

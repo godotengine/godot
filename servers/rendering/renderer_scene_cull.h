@@ -1064,7 +1064,7 @@ public:
 	void render_particle_colliders();
 	virtual void render_probes();
 
-	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);
+	TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 
 	//pass to scene render
 

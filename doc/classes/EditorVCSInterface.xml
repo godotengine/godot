@@ -53,7 +53,7 @@
 			</description>
 		</method>
 		<method name="_get_branch_list" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Gets an instance of an [Array] of [String]s containing available branch names in the VCS.
 			</description>
@@ -73,7 +73,7 @@
 			</description>
 		</method>
 		<method name="_get_line_diff" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="file_path" type="String" />
 			<param index="1" name="text" type="String" />
 			<description>
@@ -81,20 +81,20 @@
 			</description>
 		</method>
 		<method name="_get_modified_files_data" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of [Dictionary] items (see [method create_status_file]), each containing the status data of every modified file in the project folder.
 			</description>
 		</method>
 		<method name="_get_previous_commits" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<param index="0" name="max_commits" type="int" />
 			<description>
 				Returns an [Array] of [Dictionary] items (see [method create_commit]), each containing the data for a past commit.
 			</description>
 		</method>
 		<method name="_get_remotes" qualifiers="virtual">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of [String]s, each containing the name of a remote configured in the VCS.
 			</description>
@@ -175,7 +175,7 @@
 		<method name="add_diff_hunks_into_diff_file">
 			<return type="Dictionary" />
 			<param index="0" name="diff_file" type="Dictionary" />
-			<param index="1" name="diff_hunks" type="Array" />
+			<param index="1" name="diff_hunks" type="Dictionary[]" />
 			<description>
 				Helper function to add an array of [code]diff_hunks[/code] into a [code]diff_file[/code].
 			</description>
@@ -183,7 +183,7 @@
 		<method name="add_line_diffs_into_diff_hunk">
 			<return type="Dictionary" />
 			<param index="0" name="diff_hunk" type="Dictionary" />
-			<param index="1" name="line_diffs" type="Array" />
+			<param index="1" name="line_diffs" type="Dictionary[]" />
 			<description>
 				Helper function to add an array of [code]line_diffs[/code] into a [code]diff_hunk[/code].
 			</description>
