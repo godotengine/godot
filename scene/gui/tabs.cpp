@@ -47,6 +47,7 @@ Size2 Tabs::get_minimum_size() const {
 		Ref<Texture> tex = tabs[i].icon;
 		if (tex.is_valid()) {
 			ms.height = MAX(ms.height, tex->get_size().height);
+			ms.width += tex->get_size().width;
 			if (tabs[i].text != "") {
 				ms.width += get_constant("hseparation");
 			}
