@@ -59,18 +59,7 @@
 				} else {
 					// Otherwise redirect event to the engine.
 					if (DisplayServer::get_singleton()) {
-						DisplayServerMacOS::KeyEvent ke;
-
-						ke.window_id = DisplayServer::MAIN_WINDOW_ID;
-						ke.macos_state = [event modifierFlags];
-						ke.pressed = true;
-						ke.echo = [event isARepeat];
-						ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
-						ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-						ke.raw = false;
-						ke.unicode = 0;
-
-						reinterpret_cast<DisplayServerMacOS *>(DisplayServer::get_singleton())->push_to_key_event_buffer(ke);
+						[[[NSApplication sharedApplication] keyWindow] sendEvent:event];
 					}
 				}
 
