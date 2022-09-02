@@ -4,7 +4,8 @@
 		Plays positional sound in 2D space.
 	</brief_description>
 	<description>
-		Plays audio that dampens with distance from screen center.
+		Plays audio that dampens with distance from a given position.
+		By default, audio is heard from the screen center. This can be changed by adding a [Listener2D] node to the scene and enabling it by calling [method Listener2D.make_current] on it.
 		See also [AudioStreamPlayer] to play a sound non-positionally.
 		[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
@@ -61,6 +62,9 @@
 		</member>
 		<member name="max_distance" type="float" setter="set_max_distance" getter="get_max_distance" default="2000.0">
 			Maximum distance from which audio is still hearable.
+		</member>
+		<member name="panning_strength" type="float" setter="set_panning_strength" getter="get_panning_strength" default="1.0">
+			Scales the panning strength for this node by multiplying the base [member ProjectSettings.audio/2d_panning_strength] with this factor. Higher values will pan audio from left to right more dramatically than lower values.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.

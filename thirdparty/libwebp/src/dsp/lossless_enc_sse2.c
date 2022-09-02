@@ -239,7 +239,7 @@ static void AddVectorEq_SSE2(const uint32_t* a, uint32_t* out, int size) {
 
 static float CombinedShannonEntropy_SSE2(const int X[256], const int Y[256]) {
   int i;
-  double retval = 0.;
+  float retval = 0.f;
   int sumX = 0, sumXY = 0;
   const __m128i zero = _mm_setzero_si128();
 
@@ -273,7 +273,7 @@ static float CombinedShannonEntropy_SSE2(const int X[256], const int Y[256]) {
     }
   }
   retval += VP8LFastSLog2(sumX) + VP8LFastSLog2(sumXY);
-  return (float)retval;
+  return retval;
 }
 
 #else

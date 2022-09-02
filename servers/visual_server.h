@@ -362,6 +362,11 @@ public:
 		MULTIMESH_CUSTOM_DATA_MAX,
 	};
 
+	enum MultimeshPhysicsInterpolationQuality {
+		MULTIMESH_INTERP_QUALITY_FAST,
+		MULTIMESH_INTERP_QUALITY_HIGH,
+	};
+
 	virtual void multimesh_allocate(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, MultimeshColorFormat p_color_format, MultimeshCustomDataFormat p_data_format = MULTIMESH_CUSTOM_DATA_NONE) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
@@ -384,7 +389,7 @@ public:
 	// Interpolation
 	virtual void multimesh_set_as_bulk_array_interpolated(RID p_multimesh, const PoolVector<float> &p_array, const PoolVector<float> &p_array_prev) = 0;
 	virtual void multimesh_set_physics_interpolated(RID p_multimesh, bool p_interpolated) = 0;
-	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, int p_quality) = 0;
+	virtual void multimesh_set_physics_interpolation_quality(RID p_multimesh, MultimeshPhysicsInterpolationQuality p_quality) = 0;
 	virtual void multimesh_instance_reset_physics_interpolation(RID p_multimesh, int p_index) = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
@@ -867,6 +872,7 @@ public:
 	virtual void instance_set_base(RID p_instance, RID p_base) = 0;
 	virtual void instance_set_scenario(RID p_instance, RID p_scenario) = 0;
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask) = 0;
+	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center) = 0;
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
 	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated) = 0;
 	virtual void instance_reset_physics_interpolation(RID p_instance) = 0;
@@ -1236,6 +1242,7 @@ VARIANT_ENUM_CAST(VisualServer::Features);
 VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
+VARIANT_ENUM_CAST(VisualServer::MultimeshPhysicsInterpolationQuality);
 VARIANT_ENUM_CAST(VisualServer::LightBakeMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);

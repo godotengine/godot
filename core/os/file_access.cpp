@@ -117,6 +117,10 @@ FileAccess::CreateFunc FileAccess::get_create_func(AccessType p_access) {
 	return create_func[p_access];
 };
 
+FileAccess::AccessType FileAccess::get_access_type() const {
+	return _access_type;
+}
+
 String FileAccess::fix_path(const String &p_path) const {
 	//helper used by file accesses that use a single filesystem
 

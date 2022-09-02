@@ -37,6 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "editor/scene_create_dialog.h"
 #include "editor_feature_profile.h"
 #include "editor_node.h"
 #include "editor_resource_preview.h"
@@ -1376,46 +1377,14 @@ void FileSystemDock::_make_dir_confirm() {
 }
 
 void FileSystemDock::_make_scene_confirm() {
-	String scene_name = make_scene_dialog_text->get_text().strip_edges();
-
-	if (scene_name.length() == 0) {
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
-	}
-
-	String directory = path;
-	if (!directory.ends_with("/")) {
-		directory = directory.get_base_dir();
-	}
-
-	String extension = scene_name.get_extension();
-	List<String> extensions;
-	Ref<PackedScene> sd = memnew(PackedScene);
-	ResourceSaver::get_recognized_extensions(sd, &extensions);
-
-	bool extension_correct = false;
-	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get() == extension) {
-			extension_correct = true;
-			break;
-		}
-	}
-	if (!extension_correct) {
-		scene_name = scene_name.get_basename() + ".tscn";
-	}
-
-	scene_name = directory.plus_file(scene_name);
-
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-	if (da->file_exists(scene_name)) {
-		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
-		memdelete(da);
-		return;
-	}
-	memdelete(da);
+	const String scene_path = make_scene_dialog->get_scene_path();
 
 	int idx = editor->new_scene();
-	editor->get_editor_data().set_scene_path(idx, scene_name);
+	EditorNode::get_singleton()->get_editor_data().set_scene_path(idx, scene_path);
+	EditorNode::get_singleton()->set_edited_scene(make_scene_dialog->create_scene_root());
+	Vector<String> scenes;
+	scenes.push_back(scene_path);
+	EditorNode::get_singleton()->save_scene_list(scenes);
 }
 
 void FileSystemDock::_file_removed(String p_file) {
@@ -1915,10 +1884,12 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_NEW_SCENE: {
-			make_scene_dialog_text->set_text("new scene");
-			make_scene_dialog_text->select_all();
-			make_scene_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
-			make_scene_dialog_text->grab_focus();
+			String directory = path;
+			if (!directory.ends_with("/")) {
+				directory = directory.get_base_dir();
+			}
+			make_scene_dialog->config(directory);
+			make_scene_dialog->popup_centered();
 		} break;
 
 		case FILE_NEW_SCRIPT: {
@@ -2999,15 +2970,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	make_dir_dialog->register_text_enter(make_dir_dialog_text);
 	make_dir_dialog->connect("confirmed", this, "_make_dir_confirm");
 
-	make_scene_dialog = memnew(ConfirmationDialog);
-	make_scene_dialog->set_title(TTR("Create Scene"));
-	VBoxContainer *make_scene_dialog_vb = memnew(VBoxContainer);
-	make_scene_dialog->add_child(make_scene_dialog_vb);
-
-	make_scene_dialog_text = memnew(LineEdit);
-	make_scene_dialog_vb->add_margin_child(TTR("Name:"), make_scene_dialog_text);
+	make_scene_dialog = memnew(SceneCreateDialog);
 	add_child(make_scene_dialog);
-	make_scene_dialog->register_text_enter(make_scene_dialog_text);
 	make_scene_dialog->connect("confirmed", this, "_make_scene_confirm");
 
 	make_script_dialog = memnew(ScriptCreateDialog);

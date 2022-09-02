@@ -99,6 +99,7 @@ public:
 
 	void set_base_type(const String &p_base);
 	String get_base_type() const;
+	void select_base();
 
 	void set_preferred_search_result_type(const String &p_preferred_type);
 	String get_preferred_search_result_type();

@@ -286,7 +286,7 @@ public:
 
 	BIND3(multimesh_set_as_bulk_array_interpolated, RID, const PoolVector<float> &, const PoolVector<float> &)
 	BIND2(multimesh_set_physics_interpolated, RID, bool)
-	BIND2(multimesh_set_physics_interpolation_quality, RID, int)
+	BIND2(multimesh_set_physics_interpolation_quality, RID, MultimeshPhysicsInterpolationQuality)
 	BIND2(multimesh_instance_reset_physics_interpolation, RID, int)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
@@ -580,6 +580,7 @@ public:
 	BIND2(instance_set_base, RID, RID)
 	BIND2(instance_set_scenario, RID, RID)
 	BIND2(instance_set_layer_mask, RID, uint32_t)
+	BIND3(instance_set_pivot_data, RID, float, bool)
 	BIND2(instance_set_transform, RID, const Transform &)
 	BIND2(instance_set_interpolated, RID, bool)
 	BIND1(instance_reset_physics_interpolation, RID)

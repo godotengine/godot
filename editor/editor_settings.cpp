@@ -467,7 +467,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/files/auto_reload_scripts_on_external_change", false);
 
 	// Tools
-	_initial_set("text_editor/tools/create_signal_callbacks", true);
 	_initial_set("text_editor/tools/sort_members_outline_alphabetically", false);
 
 	// Cursor

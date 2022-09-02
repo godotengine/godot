@@ -64,7 +64,10 @@ void BaseButton::_gui_input(Ref<InputEvent> p_event) {
 
 	bool button_masked = mouse_button.is_valid() && ((1 << (mouse_button->get_button_index() - 1)) & button_mask) > 0;
 	if (button_masked || ui_accept) {
+		was_mouse_pressed = button_masked;
 		on_action_event(p_event);
+		was_mouse_pressed = false;
+
 		return;
 	}
 
@@ -388,6 +391,10 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
 }
 
+bool BaseButton::_was_pressed_by_mouse() const {
+	return was_mouse_pressed;
+}
+
 void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_gui_input"), &BaseButton::_gui_input);
 	ClassDB::bind_method(D_METHOD("_unhandled_input"), &BaseButton::_unhandled_input);
@@ -449,6 +456,7 @@ BaseButton::BaseButton() {
 	toggle_mode = false;
 	shortcut_in_tooltip = true;
 	keep_pressed_outside = false;
+	was_mouse_pressed = false;
 	status.pressed = false;
 	status.press_attempt = false;
 	status.hovering = false;

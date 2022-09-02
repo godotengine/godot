@@ -35,3 +35,8 @@ so they should work out of the box on Linux/macOS.
 ##### black
 - Python installation: make sure Python is added to the `PATH`
 - Install `black` - in any console: `pip3 install black`
+
+## Custom hooks
+
+The pre-commit hook will run any other script in `.git/hooks` whose filename
+matches `pre-commit-custom-*`, after the Godot ones.

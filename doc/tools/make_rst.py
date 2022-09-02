@@ -1008,6 +1008,12 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 tag_depth += 1
                 inside_code = True
                 escape_pre = True
+            elif cmd == "kbd":
+                tag_text = ":kbd:`"
+                tag_depth += 1
+            elif cmd == "/kbd":
+                tag_text = "`"
+                tag_depth -= 1
             elif cmd.startswith("enum "):
                 tag_text = make_enum(cmd[5:], state)
                 escape_pre = True

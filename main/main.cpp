@@ -509,10 +509,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
 			forwardable_cli_arguments[CLI_SCOPE_PROJECT].push_back(I->get());
 		}
-		if (I->get() == "--single-window" ||
-				I->get() == "--audio-driver" ||
+		if (I->get() == "--audio-driver" ||
 				I->get() == "--video-driver") {
-			forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+			if (I->next()) {
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
+				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
+			}
 		}
 #endif
 
@@ -1700,6 +1702,13 @@ bool Main::start() {
 		}
 	}
 
+	uint64_t minimum_time_msec = GLOBAL_DEF("application/boot_splash/minimum_display_time", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/minimum_display_time",
+			PropertyInfo(Variant::INT,
+					"application/boot_splash/minimum_display_time",
+					PROPERTY_HINT_RANGE,
+					"0,100,1,or_greater")); // No negative numbers.
+
 #ifdef TOOLS_ENABLED
 	if (doc_tool_path != "") {
 		Engine::get_singleton()->set_editor_hint(true); // Needed to instance editor-only classes for their default values
@@ -2181,6 +2190,14 @@ bool Main::start() {
 	}
 
 	OS::get_singleton()->set_main_loop(main_loop);
+
+	if (minimum_time_msec) {
+		uint64_t minimum_time = 1000 * minimum_time_msec;
+		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
+		if (elapsed_time < minimum_time) {
+			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
+		}
+	}
 
 	return true;
 }

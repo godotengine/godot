@@ -145,7 +145,7 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 	return -1;
 }
 
-void PopupMenu::_activate_submenu(int over) {
+void PopupMenu::_activate_submenu(int over, bool p_by_keyboard) {
 	Node *n = get_node(items[over].submenu);
 	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[over].submenu + ".");
 	Popup *pm = Object::cast_to<Popup>(n);
@@ -171,9 +171,14 @@ void PopupMenu::_activate_submenu(int over) {
 
 	PopupMenu *pum = Object::cast_to<PopupMenu>(pm);
 	if (pum) {
-		// If not triggered by the mouse, start the popup with its first item selected.
-		if (pum->get_item_count() > 0 && Input::get_singleton()->is_action_just_pressed("ui_accept")) {
-			pum->set_current_index(0);
+		// If not triggered by the mouse, start the popup with its first enabled item focused.
+		if (p_by_keyboard) {
+			for (int i = 0; i < pum->get_item_count(); i++) {
+				if (!pum->is_item_disabled(i)) {
+					pum->set_current_index(i);
+					break;
+				}
+			}
 		}
 
 		// Setting autohide areas *must* be done after `popup()` which can move the popup (to fit it into the viewport).
@@ -223,93 +228,95 @@ void PopupMenu::_scroll(float p_factor, const Point2 &p_over) {
 void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (p_event->is_action("ui_down") && p_event->is_pressed()) {
-		int search_from = mouse_over + 1;
-		if (search_from >= items.size()) {
-			search_from = 0;
-		}
-
-		bool match_found = false;
-		for (int i = search_from; i < items.size(); i++) {
-			if (i < 0 || i >= items.size()) {
-				continue;
+	if (!items.empty()) {
+		if (p_event->is_action("ui_down") && p_event->is_pressed()) {
+			int search_from = mouse_over + 1;
+			if (search_from >= items.size()) {
+				search_from = 0;
 			}
 
-			if (!items[i].separator && !items[i].disabled) {
-				mouse_over = i;
-				emit_signal("id_focused", i);
-				update();
-				accept_event();
-				match_found = true;
-				break;
-			}
-		}
+			bool match_found = false;
+			for (int i = search_from; i < items.size(); i++) {
+				if (i < 0 || i >= items.size()) {
+					continue;
+				}
 
-		if (!match_found) {
-			// If the last item is not selectable, try re-searching from the start.
-			for (int i = 0; i < search_from; i++) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal("id_focused", i);
 					update();
 					accept_event();
+					match_found = true;
 					break;
 				}
 			}
-		}
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
-		int search_from = mouse_over - 1;
-		if (search_from < 0) {
-			search_from = items.size() - 1;
-		}
 
-		bool match_found = false;
-		for (int i = search_from; i >= 0; i--) {
-			if (i >= items.size()) {
-				continue;
+			if (!match_found) {
+				// If the last item is not selectable, try re-searching from the start.
+				for (int i = 0; i < search_from; i++) {
+					if (!items[i].separator && !items[i].disabled) {
+						mouse_over = i;
+						emit_signal("id_focused", i);
+						update();
+						accept_event();
+						break;
+					}
+				}
+			}
+		} else if (p_event->is_action("ui_up") && p_event->is_pressed()) {
+			int search_from = mouse_over - 1;
+			if (search_from < 0) {
+				search_from = items.size() - 1;
 			}
 
-			if (!items[i].separator && !items[i].disabled) {
-				mouse_over = i;
-				emit_signal("id_focused", i);
-				update();
-				accept_event();
-				match_found = true;
-				break;
-			}
-		}
+			bool match_found = false;
+			for (int i = search_from; i >= 0; i--) {
+				if (i >= items.size()) {
+					continue;
+				}
 
-		if (!match_found) {
-			// If the first item is not selectable, try re-searching from the end.
-			for (int i = items.size() - 1; i >= search_from; i--) {
 				if (!items[i].separator && !items[i].disabled) {
 					mouse_over = i;
 					emit_signal("id_focused", i);
 					update();
 					accept_event();
+					match_found = true;
 					break;
 				}
 			}
-		}
-	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
-		Node *n = get_parent();
-		if (n && Object::cast_to<PopupMenu>(n)) {
-			hide();
-			accept_event();
-		}
-	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-			_activate_submenu(mouse_over);
-			accept_event();
-		}
-	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
-		if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
-			if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
-				_activate_submenu(mouse_over);
-			} else {
-				activate_item(mouse_over);
+
+			if (!match_found) {
+				// If the first item is not selectable, try re-searching from the end.
+				for (int i = items.size() - 1; i >= search_from; i--) {
+					if (!items[i].separator && !items[i].disabled) {
+						mouse_over = i;
+						emit_signal("id_focused", i);
+						update();
+						accept_event();
+						break;
+					}
+				}
 			}
-			accept_event();
+		} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+			Node *n = get_parent();
+			if (n && Object::cast_to<PopupMenu>(n)) {
+				hide();
+				accept_event();
+			}
+		} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator && items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+				_activate_submenu(mouse_over, true);
+				accept_event();
+			}
+		} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+			if (mouse_over >= 0 && mouse_over < items.size() && !items[mouse_over].separator) {
+				if (items[mouse_over].submenu != "" && submenu_over != mouse_over) {
+					_activate_submenu(mouse_over, true);
+				} else {
+					activate_item(mouse_over);
+				}
+				accept_event();
+			}
 		}
 	}
 
@@ -1049,7 +1056,14 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 }
 
 void PopupMenu::set_current_index(int p_idx) {
-	ERR_FAIL_INDEX(p_idx, items.size());
+	if (p_idx != -1) {
+		ERR_FAIL_INDEX(p_idx, items.size());
+	}
+
+	if (mouse_over == p_idx) {
+		return;
+	}
+
 	mouse_over = p_idx;
 	update();
 }
@@ -1476,6 +1490,8 @@ void PopupMenu::popup(const Rect2 &p_bounds) {
 }
 
 PopupMenu::PopupMenu() {
+	activated_by_keyboard = false;
+
 	mouse_over = -1;
 	submenu_over = -1;
 	initial_button_mask = 0;
