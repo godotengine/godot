@@ -805,6 +805,14 @@ void Window::_notification(int p_what) {
 			_update_theme_item_cache();
 		} break;
 
+		case NOTIFICATION_PARENTED: {
+			theme_owner->assign_theme_on_parented(this);
+		} break;
+
+		case NOTIFICATION_UNPARENTED: {
+			theme_owner->clear_theme_on_unparented(this);
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			bool embedded = false;
 			{
@@ -1290,23 +1298,12 @@ Rect2i Window::get_usable_parent_rect() const {
 }
 
 void Window::add_child_notify(Node *p_child) {
-	// We propagate when this node uses a custom theme, so it can pass it on to its children.
-	if (has_theme_owner_node()) {
-		// `p_notify` is false here as `NOTIFICATION_THEME_CHANGED` will be handled by `NOTIFICATION_ENTER_TREE`.
-		theme_owner->propagate_theme_changed(p_child, get_theme_owner_node(), false, true);
-	}
-
 	if (is_inside_tree() && wrap_controls) {
 		child_controls_changed();
 	}
 }
 
 void Window::remove_child_notify(Node *p_child) {
-	// If the removed child isn't inheriting any theme items through this node, then there's no need to propagate.
-	if (has_theme_owner_node()) {
-		theme_owner->propagate_theme_changed(p_child, nullptr, false, true);
-	}
-
 	if (is_inside_tree() && wrap_controls) {
 		child_controls_changed();
 	}

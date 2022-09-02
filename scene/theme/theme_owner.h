@@ -53,6 +53,8 @@ public:
 
 	// Theme propagation.
 
+	void assign_theme_on_parented(Node *p_for_node);
+	void clear_theme_on_unparented(Node *p_for_node);
 	void propagate_theme_changed(Node *p_to_node, Node *p_owner_node, bool p_notify, bool p_assign);
 
 	// Theme lookup.

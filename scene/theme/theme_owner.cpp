@@ -68,6 +68,43 @@ bool ThemeOwner::has_owner_node() const {
 
 // Theme propagation.
 
+void ThemeOwner::assign_theme_on_parented(Node *p_for_node) {
+	// We check if there are any themes affecting the parent. If that's the case
+	// its children also need to be affected.
+	// We don't notify here because `NOTIFICATION_THEME_CHANGED` will be handled
+	// a bit later by `NOTIFICATION_ENTER_TREE`.
+
+	Node *parent = p_for_node->get_parent();
+
+	Control *parent_c = Object::cast_to<Control>(parent);
+	if (parent_c && parent_c->has_theme_owner_node()) {
+		propagate_theme_changed(p_for_node, parent_c->get_theme_owner_node(), false, true);
+	} else {
+		Window *parent_w = Object::cast_to<Window>(parent);
+		if (parent_w && parent_w->has_theme_owner_node()) {
+			propagate_theme_changed(p_for_node, parent_w->get_theme_owner_node(), false, true);
+		}
+	}
+}
+
+void ThemeOwner::clear_theme_on_unparented(Node *p_for_node) {
+	// We check if there were any themes affecting the parent. If that's the case
+	// its children need were also affected and need to be updated.
+	// We don't notify because we're exiting the tree, and it's not important.
+
+	Node *parent = p_for_node->get_parent();
+
+	Control *parent_c = Object::cast_to<Control>(parent);
+	if (parent_c && parent_c->has_theme_owner_node()) {
+		propagate_theme_changed(p_for_node, nullptr, false, true);
+	} else {
+		Window *parent_w = Object::cast_to<Window>(parent);
+		if (parent_w && parent_w->has_theme_owner_node()) {
+			propagate_theme_changed(p_for_node, nullptr, false, true);
+		}
+	}
+}
+
 void ThemeOwner::propagate_theme_changed(Node *p_to_node, Node *p_owner_node, bool p_notify, bool p_assign) {
 	Control *c = Object::cast_to<Control>(p_to_node);
 	Window *w = c == nullptr ? Object::cast_to<Window>(p_to_node) : nullptr;

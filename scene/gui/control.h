@@ -327,9 +327,6 @@ protected:
 
 	// Base object overrides.
 
-	virtual void add_child_notify(Node *p_child) override;
-	virtual void remove_child_notify(Node *p_child) override;
-
 	void _notification(int p_notification);
 	static void _bind_methods();
 
