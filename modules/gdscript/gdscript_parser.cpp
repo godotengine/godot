@@ -686,17 +686,6 @@ void GDScriptParser::parse_class_name() {
 		current_class->identifier = parse_identifier();
 	}
 
-	// TODO: Move this to annotation
-	if (match(GDScriptTokenizer::Token::COMMA)) {
-		// Icon path.
-		if (consume(GDScriptTokenizer::Token::LITERAL, R"(Expected class icon path string after ",".)")) {
-			if (previous.literal.get_type() != Variant::STRING) {
-				push_error(vformat(R"(Only strings can be used for the class icon path, found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
-			}
-			current_class->icon_path = previous.literal;
-		}
-	}
-
 	if (match(GDScriptTokenizer::Token::EXTENDS)) {
 		// Allow extends on the same line.
 		parse_extends();
