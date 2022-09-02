@@ -60,6 +60,7 @@
 #endif
 
 #if defined(DBUS_ENABLED)
+#include "freedesktop_portal_desktop.h"
 #include "freedesktop_screensaver.h"
 #endif
 
@@ -118,6 +119,10 @@ class DisplayServerX11 : public DisplayServer {
 
 #ifdef SPEECHD_ENABLED
 	TTS_Linux *tts = nullptr;
+#endif
+
+#if defined(DBUS_ENABLED)
+	FreeDesktopPortalDesktop *portal_desktop = nullptr;
 #endif
 
 	struct WindowData {
@@ -318,6 +323,11 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
+#endif
+
+#if defined(DBUS_ENABLED)
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
 #endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;

@@ -681,14 +681,14 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS is using dark mode.
-				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is implemented on macOS, Windows and Linux.
 			</description>
 		</method>
 		<method name="is_dark_mode_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if OS supports dark mode.
-				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is implemented on macOS, Windows and Linux.
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
