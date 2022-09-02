@@ -333,14 +333,14 @@ namespace Godot
         /// <param name="to">The destination color for interpolation.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The resulting color of the interpolation.</returns>
-        public Color Lerp(Color to, float weight)
+        public Color Lerp(Color to, real_t weight)
         {
             return new Color
             (
-                Mathf.Lerp(r, to.r, weight),
-                Mathf.Lerp(g, to.g, weight),
-                Mathf.Lerp(b, to.b, weight),
-                Mathf.Lerp(a, to.a, weight)
+                (float)Mathf.Lerp(r, to.r, weight),
+                (float)Mathf.Lerp(g, to.g, weight),
+                (float)Mathf.Lerp(b, to.b, weight),
+                (float)Mathf.Lerp(a, to.a, weight)
             );
         }
 
@@ -355,10 +355,10 @@ namespace Godot
         {
             return new Color
             (
-                Mathf.Lerp(r, to.r, weight.r),
-                Mathf.Lerp(g, to.g, weight.g),
-                Mathf.Lerp(b, to.b, weight.b),
-                Mathf.Lerp(a, to.a, weight.a)
+                (float)Mathf.Lerp(r, to.r, weight.r),
+                (float)Mathf.Lerp(g, to.g, weight.g),
+                (float)Mathf.Lerp(b, to.b, weight.b),
+                (float)Mathf.Lerp(a, to.a, weight.a)
             );
         }
 
