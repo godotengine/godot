@@ -154,7 +154,6 @@ public:
 	struct ClassDoc {
 		String name;
 		String inherits;
-		String category; // FIXME: Wrongly used by VisualScriptPropertySelector, should be removed.
 		String brief_description;
 		String description;
 		Vector<TutorialDoc> tutorials;
