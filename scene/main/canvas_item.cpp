@@ -338,6 +338,7 @@ void CanvasItem::_notification(int p_what) {
 			}
 			if (window) {
 				window->disconnect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &CanvasItem::_window_visibility_changed));
+				window = nullptr;
 			}
 			global_invalid = true;
 			parent_visible_in_tree = false;
