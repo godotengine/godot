@@ -41,6 +41,7 @@
 class Viewport;
 class Label;
 class Panel;
+class ThemeOwner;
 
 class Control : public CanvasItem {
 	GDCLASS(Control, CanvasItem);
@@ -219,9 +220,8 @@ private:
 
 		// Theming.
 
+		ThemeOwner *theme_owner = nullptr;
 		Ref<Theme> theme;
-		Control *theme_owner = nullptr;
-		Window *theme_owner_window = nullptr;
 		StringName theme_type_variation;
 
 		bool bulk_theme_override = false;
@@ -261,7 +261,6 @@ private:
 	// Global relations.
 
 	friend class Viewport;
-	friend class Window;
 
 	// Positioning and sizing.
 
@@ -302,13 +301,6 @@ private:
 	void _theme_changed();
 	void _notify_theme_override_changed();
 	void _invalidate_theme_cache();
-
-	static void _propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_notify, bool p_assign);
-
-	template <class T>
-	static T get_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
-	static bool has_theme_item_in_types(Control *p_theme_owner, Window *p_theme_owner_window, Theme::DataType p_data_type, const StringName &p_name, List<StringName> p_theme_types);
-	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 	// Extra properties.
 
@@ -542,6 +534,10 @@ public:
 
 	// Theming.
 
+	void set_theme_owner_node(Node *p_node);
+	Node *get_theme_owner_node() const;
+	bool has_theme_owner_node() const;
+
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
 
@@ -586,10 +582,6 @@ public:
 	bool has_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	bool has_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 
-	static float fetch_theme_default_base_scale(Control *p_theme_owner, Window *p_theme_owner_window);
-	static Ref<Font> fetch_theme_default_font(Control *p_theme_owner, Window *p_theme_owner_window);
-	static int fetch_theme_default_font_size(Control *p_theme_owner, Window *p_theme_owner_window);
-
 	float get_theme_default_base_scale() const;
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
@@ -612,7 +604,7 @@ public:
 	virtual String get_tooltip(const Point2 &p_pos) const;
 	virtual Control *make_custom_tooltip(const String &p_text) const;
 
-	Control() {}
+	Control();
 	~Control();
 };
 
