@@ -444,9 +444,12 @@ if selected_platform in platform_list:
 
         scons_ver = env._get_major_minor_revision(scons_raw_version)
 
-        if scons_ver >= (4, 0, 0):
-            env.Tool("compilation_db")
-            env.Alias("compiledb", env.CompilationDatabase())
+        if scons_ver < (4, 0, 0):
+            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+            Exit(255)
+
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
     # manually by the user.
