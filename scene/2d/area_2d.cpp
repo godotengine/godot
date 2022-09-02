@@ -426,36 +426,36 @@ bool Area2D::is_monitorable() const {
 }
 
 TypedArray<Node2D> Area2D::get_overlapping_bodies() const {
-	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
 	TypedArray<Node2D> ret;
+	ERR_FAIL_COND_V_MSG(!monitoring, ret, "Can't find overlapping bodies when monitoring is off.");
 	ret.resize(body_map.size());
 	int idx = 0;
 	for (const KeyValue<ObjectID, BodyState> &E : body_map) {
 		Object *obj = ObjectDB::get_instance(E.key);
-		if (!obj) {
-			ret.resize(ret.size() - 1); //ops
-		} else {
-			ret[idx++] = obj;
+		if (obj) {
+			ret[idx] = obj;
+			idx++;
 		}
 	}
 
+	ret.resize(idx);
 	return ret;
 }
 
 TypedArray<Area2D> Area2D::get_overlapping_areas() const {
-	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
 	TypedArray<Area2D> ret;
+	ERR_FAIL_COND_V_MSG(!monitoring, ret, "Can't find overlapping areas when monitoring is off.");
 	ret.resize(area_map.size());
 	int idx = 0;
 	for (const KeyValue<ObjectID, AreaState> &E : area_map) {
 		Object *obj = ObjectDB::get_instance(E.key);
-		if (!obj) {
-			ret.resize(ret.size() - 1); //ops
-		} else {
-			ret[idx++] = obj;
+		if (obj) {
+			ret[idx] = obj;
+			idx++;
 		}
 	}
 
+	ret.resize(idx);
 	return ret;
 }
 
