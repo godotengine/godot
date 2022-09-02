@@ -5,9 +5,12 @@
 	</brief_description>
 	<description>
 		AudioEffectCapture is an AudioEffect which copies all audio frames from the attached audio effect bus into its internal ring buffer.
-		Application code should consume these audio frames from this ring buffer using [method get_buffer] and process it as needed, for example to capture data from a microphone, implement application defined effects, or to transmit audio over the network. When capturing audio data from a microphone, the format of the samples will be stereo 32-bit floating point PCM.
+		Application code should consume these audio frames from this ring buffer using [method get_buffer] and process it as needed, for example to capture data from an [AudioStreamMicrophone], implement application-defined effects, or to transmit audio over the network. When capturing audio data from a microphone, the format of the samples will be stereo 32-bit floating point PCM.
+		[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio Mic Record Demo">https://github.com/godotengine/godot-demo-projects/tree/master/audio/mic_record</link>
 	</tutorials>
 	<methods>
 		<method name="can_get_buffer" qualifiers="const">

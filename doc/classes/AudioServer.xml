@@ -33,6 +33,7 @@
 			<return type="Array" />
 			<description>
 				Returns the names of all audio input devices detected on the system.
+				[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
@@ -296,7 +297,8 @@
 			Number of available audio buses.
 		</member>
 		<member name="capture_device" type="String" setter="capture_set_device" getter="capture_get_device" default="&quot;Default&quot;">
-			Name of the current device for audio input (see [method get_device_list]). On systems with multiple audio inputs (such as analog, USB and HDMI audio), this can be used to select the audio input device. The value [code]"Default"[/code] will record audio on the system-wide default audio input. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
+			Name of the current device for audio input (see [method capture_get_device_list]). On systems with multiple audio inputs (such as analog, USB and HDMI audio), this can be used to select the audio input device. The value [code]"Default"[/code] will record audio on the system-wide default audio input. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
+			[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be [code]true[/code] for audio input to work. See also that setting's description for caveats related to permissions and operating system privacy settings.
 		</member>
 		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
 			Name of the current device for audio output (see [method get_device_list]). On systems with multiple audio outputs (such as analog, USB and HDMI audio), this can be used to select the audio output device. The value [code]"Default"[/code] will play audio on the system-wide default audio output. If an invalid device name is set, the value will be reverted back to [code]"Default"[/code].
