@@ -45,7 +45,7 @@
 #include <emscripten.h>
 #include <stdlib.h>
 
-#include "api/javascript_singleton.h"
+#include "api/javascript_bridge_singleton.h"
 #include "godot_js.h"
 
 void OS_Web::alert(const String &p_alert, const String &p_title) {
@@ -199,8 +199,8 @@ void OS_Web::update_pwa_state_callback() {
 	if (OS_Web::get_singleton()) {
 		OS_Web::get_singleton()->pwa_is_waiting = true;
 	}
-	if (JavaScript::get_singleton()) {
-		JavaScript::get_singleton()->emit_signal("pwa_update_available");
+	if (JavaScriptBridge::get_singleton()) {
+		JavaScriptBridge::get_singleton()->emit_signal("pwa_update_available");
 	}
 }
 
