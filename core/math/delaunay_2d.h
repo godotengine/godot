@@ -38,7 +38,8 @@ class Delaunay2D {
 public:
 	struct Triangle {
 		int points[3];
-		bool bad = false;
+		Vector2 circum_centre;
+		real_t circum_radius_squared;
 		Triangle() {}
 		Triangle(int p_a, int p_b, int p_c) {
 			points[0] = p_a;
@@ -48,50 +49,50 @@ public:
 	};
 
 	struct Edge {
-		int edge[2];
+		int points[2];
 		bool bad = false;
 		Edge() {}
 		Edge(int p_a, int p_b) {
-			edge[0] = p_a;
-			edge[1] = p_b;
+			// Store indices in a sorted manner to avoid having to check both orientations later.
+			if (p_a > p_b) {
+				points[0] = p_b;
+				points[1] = p_a;
+			} else {
+				points[0] = p_a;
+				points[1] = p_b;
+			}
 		}
 	};
 
-	static bool circum_circle_contains(const Vector<Vector2> &p_vertices, const Triangle &p_triangle, int p_vertex) {
-		Vector2 p1 = p_vertices[p_triangle.points[0]];
-		Vector2 p2 = p_vertices[p_triangle.points[1]];
-		Vector2 p3 = p_vertices[p_triangle.points[2]];
+	static void get_circum_circle(const Vector<Vector2> &p_vertices, const Triangle &p_triangle, Vector2 &r_circum_center, real_t &r_radius_squared) {
+		Vector2 a = p_vertices[p_triangle.points[1]] - p_vertices[p_triangle.points[0]];
+		Vector2 b = p_vertices[p_triangle.points[2]] - p_vertices[p_triangle.points[0]];
 
-		real_t ab = p1.x * p1.x + p1.y * p1.y;
-		real_t cd = p2.x * p2.x + p2.y * p2.y;
-		real_t ef = p3.x * p3.x + p3.y * p3.y;
+		Vector2 O = (b * a.length_squared() - a * b.length_squared()) / (a.cross(b) * 2.0f);
 
-		Vector2 circum(
-				(ab * (p3.y - p2.y) + cd * (p1.y - p3.y) + ef * (p2.y - p1.y)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y)),
-				(ab * (p3.x - p2.x) + cd * (p1.x - p3.x) + ef * (p2.x - p1.x)) / (p1.y * (p3.x - p2.x) + p2.y * (p1.x - p3.x) + p3.y * (p2.x - p1.x)));
+		// Rotating by 90°.
+		real_t temp = O.y;
+		O.y = -O.x;
+		O.x = temp;
 
-		circum *= 0.5;
-		float r = p1.distance_squared_to(circum);
-		float d = p_vertices[p_vertex].distance_squared_to(circum);
-		return d <= r;
+		r_radius_squared = O.length_squared();
+		r_circum_center = O + p_vertices[p_triangle.points[0]];
 	}
 
-	static bool edge_compare(const Vector<Vector2> &p_vertices, const Edge &p_a, const Edge &p_b) {
-		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[0]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[1]])) {
-			return true;
-		}
+	static Triangle create_triangle(const Vector<Vector2> &p_vertices, const int &p_a, const int &p_b, const int &p_c) {
+		Triangle result(p_a, p_b, p_c);
 
-		if (p_vertices[p_a.edge[0]].is_equal_approx(p_vertices[p_b.edge[1]]) && p_vertices[p_a.edge[1]].is_equal_approx(p_vertices[p_b.edge[0]])) {
-			return true;
-		}
+		// Get the values of the circumcircle and store them inside the triangle object.
+		get_circum_circle(p_vertices, result, result.circum_centre, result.circum_radius_squared);
 
-		return false;
+		return result;
 	}
 
 	static Vector<Triangle> triangulate(const Vector<Vector2> &p_points) {
 		Vector<Vector2> points = p_points;
 		Vector<Triangle> triangles;
 
+		// Get the bounding rect.
 		Rect2 rect;
 		for (int i = 0; i < p_points.size(); i++) {
 			if (i == 0) {
@@ -101,62 +102,65 @@ public:
 			}
 		}
 
-		float delta_max = MAX(rect.size.width, rect.size.height);
+		real_t delta_max = MAX(rect.size.width, rect.size.height);
 		Vector2 center = rect.get_center();
 
+		// Construct the bounding triangle out of the rectangle.
 		points.push_back(Vector2(center.x - 20 * delta_max, center.y - delta_max));
 		points.push_back(Vector2(center.x, center.y + 20 * delta_max));
 		points.push_back(Vector2(center.x + 20 * delta_max, center.y - delta_max));
 
-		triangles.push_back(Triangle(p_points.size() + 0, p_points.size() + 1, p_points.size() + 2));
+		Triangle bounding_triangle = create_triangle(points, p_points.size() + 0, p_points.size() + 1, p_points.size() + 2);
+		triangles.push_back(bounding_triangle);
 
 		for (int i = 0; i < p_points.size(); i++) {
 			Vector<Edge> polygon;
 
-			for (int j = 0; j < triangles.size(); j++) {
-				if (circum_circle_contains(points, triangles[j], i)) {
-					triangles.write[j].bad = true;
-					polygon.push_back(Edge(triangles[j].points[0], triangles[j].points[1]));
-					polygon.push_back(Edge(triangles[j].points[1], triangles[j].points[2]));
-					polygon.push_back(Edge(triangles[j].points[2], triangles[j].points[0]));
+			// Save the edges of the triangles, circumcircles of which contain the i-th vertex.
+			// Delete the triangles themselves.
+			for (int j = triangles.size() - 1; j >= 0; j--) {
+				if (points[i].distance_squared_to(triangles[j].circum_centre) >= triangles[j].circum_radius_squared) {
+					continue;
 				}
+
+				polygon.push_back(Edge(triangles[j].points[0], triangles[j].points[1]));
+				polygon.push_back(Edge(triangles[j].points[1], triangles[j].points[2]));
+				polygon.push_back(Edge(triangles[j].points[2], triangles[j].points[0]));
+
+				triangles.remove_at(j);
 			}
 
-			for (int j = 0; j < triangles.size(); j++) {
-				if (triangles[j].bad) {
-					triangles.remove_at(j);
-					j--;
-				}
-			}
-
-			for (int j = 0; j < polygon.size(); j++) {
-				for (int k = j + 1; k < polygon.size(); k++) {
-					if (edge_compare(points, polygon[j], polygon[k])) {
-						polygon.write[j].bad = true;
-						polygon.write[k].bad = true;
-					}
-				}
-			}
-
+			// Create a triangle for every unique edge.
 			for (int j = 0; j < polygon.size(); j++) {
 				if (polygon[j].bad) {
 					continue;
 				}
-				triangles.push_back(Triangle(polygon[j].edge[0], polygon[j].edge[1], i));
+
+				for (int k = j + 1; k < polygon.size(); k++) {
+					if (polygon[k].points[0] != polygon[j].points[0] || polygon[k].points[1] != polygon[j].points[1]) {
+						continue;
+					}
+
+					polygon.write[j].bad = true;
+					polygon.write[k].bad = true;
+
+					break; // Since no more than two triangles can share an edge, no more than two edges can share vertices.
+				}
+
+				// Create triangles out of good edges.
+				if (!polygon[j].bad) {
+					triangles.push_back(create_triangle(points, polygon[j].points[0], polygon[j].points[1], i));
+				}
 			}
 		}
 
-		for (int i = 0; i < triangles.size(); i++) {
-			bool invalid = false;
+		// Filter out the triangles containing the vertices of the bounding triangle.
+		for (int i = triangles.size() - 1; i >= 0; i--) {
 			for (int j = 0; j < 3; j++) {
 				if (triangles[i].points[j] >= p_points.size()) {
-					invalid = true;
+					triangles.remove_at(i);
 					break;
 				}
-			}
-			if (invalid) {
-				triangles.remove_at(i);
-				i--;
 			}
 		}
 
