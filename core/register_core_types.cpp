@@ -87,6 +87,8 @@ static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 static Ref<NativeExtensionResourceLoader> resource_loader_native_extension;
+static Ref<ResourceFormatSaverJSON> resource_saver_json;
+static Ref<ResourceFormatLoaderJSON> resource_loader_json;
 
 static core_bind::ResourceLoader *_resource_loader = nullptr;
 static core_bind::ResourceSaver *_resource_saver = nullptr;
@@ -210,6 +212,12 @@ void register_core_types() {
 	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
 	resource_format_loader_crypto.instantiate();
 	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+
+	resource_loader_json.instantiate();
+	ResourceLoader::add_resource_format_loader(resource_loader_json);
+
+	resource_saver_json.instantiate();
+	ResourceSaver::add_resource_format_saver(resource_saver_json);
 
 	GDREGISTER_CLASS(MainLoop);
 	GDREGISTER_CLASS(Translation);
@@ -386,6 +394,12 @@ void unregister_core_types() {
 	resource_format_saver_crypto.unref();
 	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
 	resource_format_loader_crypto.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_saver_json);
+	resource_saver_json.unref();
+
+	ResourceLoader::remove_resource_format_loader(resource_loader_json);
+	resource_loader_json.unref();
 
 	if (ip) {
 		memdelete(ip);
