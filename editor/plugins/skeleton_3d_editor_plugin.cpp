@@ -711,7 +711,6 @@ void Skeleton3DEditor::create_editors() {
 	ne->add_control_to_menu_panel(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
-	skeleton_options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
@@ -824,7 +823,6 @@ void Skeleton3DEditor::create_editors() {
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			create_editors();
 			update_joint_tree();
 			update_editors();
 
@@ -844,6 +842,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			add_theme_constant_override("separation", 0);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			skeleton_options->set_icon(get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 			edit_mode_button->set_icon(get_theme_icon(SNAME("ToolBoneSelect"), SNAME("EditorIcons")));
 			key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
 			key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
@@ -928,6 +927,8 @@ void fragment() {
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 	handles_mesh.instantiate();
 	handles_mesh_instance->set_mesh(handles_mesh);
+
+	create_editors();
 }
 
 void Skeleton3DEditor::update_bone_original() {
