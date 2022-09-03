@@ -43,3 +43,13 @@ This option ensures the packages will be added to the specified local NuGet
 source and that conflicting versions of the package are removed from the
 NuGet cache. It's recommended to always use this option when building the
 C# solutions during development to avoid mistakes.
+
+# Double Precision Support (REAL_T_IS_DOUBLE)
+
+Follow the above instructions but build Godot with the float=64 argument to scons
+
+When building the NuGet packages, specify `--float=64` - for example:
+```sh
+./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin \
+    --push-nupkgs-local ~/MyLocalNugetSource --float=64
+```
