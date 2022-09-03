@@ -53,6 +53,7 @@ class SceneTreeTimer : public RefCounted {
 
 	double time_left = 0.0;
 	bool process_always = true;
+	bool process_in_physics = false;
 	bool ignore_time_scale = false;
 
 protected:
@@ -64,6 +65,9 @@ public:
 
 	void set_process_always(bool p_process_always);
 	bool is_process_always();
+
+	void set_process_in_physics(bool p_process_in_physics);
+	bool is_process_in_physics();
 
 	void set_ignore_time_scale(bool p_ignore);
 	bool is_ignore_time_scale();
@@ -176,6 +180,7 @@ private:
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
 	void node_renamed(Node *p_node);
+	void process_timers(float p_delta, bool p_physics_frame);
 	void process_tweens(float p_delta, bool p_physics_frame);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
@@ -365,7 +370,7 @@ public:
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true);
+	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
 	Ref<Tween> create_tween();
 	TypedArray<Tween> get_processed_tweens();
 
