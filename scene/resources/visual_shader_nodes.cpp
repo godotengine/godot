@@ -1636,10 +1636,14 @@ String VisualShaderNodeLinearSceneDepth::get_output_port_name(int p_port) const 
 	return "linear depth";
 }
 
+bool VisualShaderNodeLinearSceneDepth::has_output_port_preview(int p_port) const {
+	return false;
+}
+
 String VisualShaderNodeLinearSceneDepth::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 
-	code += "	float _log_depth = texture(DEPTH_TEXTURE, SCREEN_UV).x;\n";
+	code += "	float _log_depth = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).x;\n";
 	code += "	vec3 _depth_ndc = vec3(SCREEN_UV * 2.0 - 1.0, _log_depth);\n";
 	code += "	vec4 _depth_view = INV_PROJECTION_MATRIX * vec4(_depth_ndc, 1.0);\n";
 	code += "	_depth_view.xyz /= _depth_view.w;";
@@ -7194,6 +7198,10 @@ String VisualShaderNodeDistanceFade::get_output_port_name(int p_port) const {
 	return "amount";
 }
 
+bool VisualShaderNodeDistanceFade::has_output_port_preview(int p_port) const {
+	return false;
+}
+
 String VisualShaderNodeDistanceFade::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
 	code += vformat("	%s = clamp(smoothstep(%s, %s,-VERTEX.z),0.0,1.0);\n", p_output_vars[0], p_input_vars[0], p_input_vars[1]);
@@ -7233,6 +7241,10 @@ VisualShaderNodeProximityFade::PortType VisualShaderNodeProximityFade::get_outpu
 
 String VisualShaderNodeProximityFade::get_output_port_name(int p_port) const {
 	return "fade";
+}
+
+bool VisualShaderNodeProximityFade::has_output_port_preview(int p_port) const {
+	return false;
 }
 
 String VisualShaderNodeProximityFade::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
