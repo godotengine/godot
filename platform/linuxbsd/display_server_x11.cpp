@@ -5013,15 +5013,22 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	cursor_set_shape(CURSOR_BUSY);
 
-	XEvent xevent;
+	Vector<XEvent> save_events;
 	while (XPending(x11_display) > 0) {
+		XEvent xevent{ 0 };
 		XNextEvent(x11_display, &xevent);
 		if (xevent.type == ConfigureNotify) {
 			_window_changed(&xevent);
-		} else if (xevent.type == MapNotify) {
-			// Have we failed to set fullscreen while the window was unmapped?
-			_validate_mode_on_map(main_window);
+		} else {
+			// Don't discard this event, we must resend it...
+			save_events.push_back(xevent);
 		}
+	}
+
+	// Resend events that would have been dropped by the early event queue
+	// processing we just performed.
+	for (XEvent &ev : save_events) {
+		XSendEvent(x11_display, ev.xany.window, False, 0, &ev);
 	}
 
 	events_thread.start(_poll_events_thread, this);
