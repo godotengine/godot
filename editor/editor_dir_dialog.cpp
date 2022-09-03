@@ -172,7 +172,7 @@ void EditorDirDialog::_make_dir_confirm() {
 		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
 	} else {
 		opened_paths.insert(dir);
-		//reload(dir.plus_file(makedirname->get_text()));
+		//reload(dir.path_join(makedirname->get_text()));
 		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
 	}
 	makedirname->set_text(""); // reset label

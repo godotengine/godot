@@ -31,14 +31,17 @@
 #ifndef MESH_STORAGE_DUMMY_H
 #define MESH_STORAGE_DUMMY_H
 
+#include "core/templates/local_vector.h"
+#include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/mesh_storage.h"
-#include "servers/rendering/storage/utilities.h"
 
 namespace RendererDummy {
 
 class MeshStorage : public RendererMeshStorage {
 private:
-	struct DummyMesh : public RID {
+	static MeshStorage *singleton;
+
+	struct DummyMesh {
 		Vector<RS::SurfaceData> surfaces;
 		int blend_shape_count;
 		RS::BlendShapeMode blend_shape_mode;
@@ -48,16 +51,20 @@ private:
 	mutable RID_Owner<DummyMesh> mesh_owner;
 
 public:
+	static MeshStorage *get_singleton() {
+		return singleton;
+	};
+
+	MeshStorage();
+	~MeshStorage();
+
 	/* MESH API */
 
-	virtual RID mesh_allocate() override {
-		return mesh_owner.allocate_rid();
-	}
+	bool owns_mesh(RID p_rid) { return mesh_owner.owns(p_rid); };
 
-	virtual void mesh_initialize(RID p_rid) override {
-		mesh_owner.initialize_rid(p_rid, DummyMesh());
-	}
-	virtual void mesh_free(RID p_rid) override {}
+	virtual RID mesh_allocate() override;
+	virtual void mesh_initialize(RID p_rid) override;
+	virtual void mesh_free(RID p_rid) override;
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) override {}
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) override { return false; }
@@ -98,7 +105,6 @@ public:
 	virtual int mesh_get_surface_count(RID p_mesh) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!m, 0);
-		print_line(m->surfaces.size());
 		return m->surfaces.size();
 	}
 

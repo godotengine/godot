@@ -55,6 +55,7 @@
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
 			If [code]true[/code], saved color presets are visible.
 		</member>
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" overrides="BoxContainer" default="true" />
 	</members>
 	<signals>
 		<signal name="color_changed">

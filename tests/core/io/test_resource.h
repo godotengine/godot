@@ -74,8 +74,8 @@ TEST_CASE("[Resource] Saving and loading") {
 	Ref<Resource> child_resource = memnew(Resource);
 	child_resource->set_name("I'm a child resource");
 	resource->set_meta("other_resource", child_resource);
-	const String save_path_binary = OS::get_singleton()->get_cache_path().plus_file("resource.res");
-	const String save_path_text = OS::get_singleton()->get_cache_path().plus_file("resource.tres");
+	const String save_path_binary = OS::get_singleton()->get_cache_path().path_join("resource.res");
+	const String save_path_text = OS::get_singleton()->get_cache_path().path_join("resource.tres");
 	ResourceSaver::save(resource, save_path_binary);
 	ResourceSaver::save(resource, save_path_text);
 

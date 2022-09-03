@@ -48,8 +48,8 @@
 _FORCE_INLINE_ String OS_MacOS::get_framework_executable(const String &p_path) {
 	// Append framework executable name, or return as is if p_path is not a framework.
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (da->dir_exists(p_path) && da->file_exists(p_path.plus_file(p_path.get_file().get_basename()))) {
-		return p_path.plus_file(p_path.get_file().get_basename());
+	if (da->dir_exists(p_path) && da->file_exists(p_path.path_join(p_path.get_file().get_basename()))) {
+		return p_path.path_join(p_path.get_file().get_basename());
 	} else {
 		return p_path;
 	}
@@ -155,12 +155,12 @@ Error OS_MacOS::open_dynamic_library(const String p_path, void *&p_library_handl
 
 	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from within the executable path.
-		path = get_framework_executable(get_executable_path().get_base_dir().plus_file(p_path.get_file()));
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join(p_path.get_file()));
 	}
 
 	if (!FileAccess::exists(path)) {
 		// Load .dylib or framework from a standard macOS location.
-		path = get_framework_executable(get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(p_path.get_file()));
+		path = get_framework_executable(get_executable_path().get_base_dir().path_join("../Frameworks").path_join(p_path.get_file()));
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
@@ -187,7 +187,7 @@ String OS_MacOS::get_config_path() const {
 		}
 	}
 	if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file("Library/Application Support");
+		return get_environment("HOME").path_join("Library/Application Support");
 	}
 	return ".";
 }
@@ -214,7 +214,7 @@ String OS_MacOS::get_cache_path() const {
 		}
 	}
 	if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file("Library/Caches");
+		return get_environment("HOME").path_join("Library/Caches");
 	}
 	return get_config_path();
 }

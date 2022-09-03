@@ -510,7 +510,7 @@ namespace Godot.Collections
             if (_convertToVariantCallback == null || _convertToManagedCallback == null)
             {
                 throw new InvalidOperationException(
-                    $"The array element type is not supported for conversion to Variant: '{typeof(T).FullName}'");
+                    $"The array element type is not supported for conversion to Variant: '{typeof(T).FullName}'.");
             }
         }
 

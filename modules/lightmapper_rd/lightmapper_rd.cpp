@@ -670,7 +670,7 @@ LightmapperRD::BakeError LightmapperRD::_dilate(RenderingDevice *rd, Ref<RDShade
 	return BAKE_OK;
 }
 
-LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata) {
+LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata, float p_exposure_normalization) {
 	if (p_step_function) {
 		p_step_function(0.0, RTR("Begin Bake"), p_bake_userdata, true);
 	}
@@ -1165,6 +1165,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
 		rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
 
+		push_constant.environment_xform[11] = p_exposure_normalization;
+
 		for (int i = 0; i < atlas_slices; i++) {
 			push_constant.atlas_slice = i;
 			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
@@ -1172,6 +1174,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 			//no barrier, let them run all together
 		}
 		rd->compute_list_end(); //done
+
+		push_constant.environment_xform[11] = 0.0;
 	}
 
 #ifdef DEBUG_TEXTURES

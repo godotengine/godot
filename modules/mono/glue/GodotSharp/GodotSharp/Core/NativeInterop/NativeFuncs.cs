@@ -22,11 +22,11 @@ namespace Godot.NativeInterop
         public static void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             if (initialized)
-                throw new InvalidOperationException("Already initialized");
+                throw new InvalidOperationException("Already initialized.");
             initialized = true;
 
             if (unmanagedCallbacksSize != sizeof(UnmanagedCallbacks))
-                throw new ArgumentException("Unmanaged callbacks size mismatch");
+                throw new ArgumentException("Unmanaged callbacks size mismatch.", nameof(unmanagedCallbacksSize));
 
             _unmanagedCallbacks = Unsafe.AsRef<UnmanagedCallbacks>((void*)unmanagedCallbacks);
         }
@@ -175,10 +175,6 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_variant_new_object(out godot_variant r_dest, IntPtr p_obj);
 
         public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
-
-        public static partial void godotsharp_variant_new_vector4(out godot_variant r_dest, in Vector4 p_vec4);
-
-        public static partial void godotsharp_variant_new_vector4i(out godot_variant r_dest, in Vector4i p_vec4i);
 
         public static partial void godotsharp_variant_new_basis(out godot_variant r_dest, in Basis p_basis);
 
@@ -435,6 +431,15 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_string_simplify_path(in godot_string p_self,
             out godot_string r_simplified_path);
+
+        public static partial void godotsharp_string_to_camel_case(in godot_string p_self,
+            out godot_string r_camel_case);
+
+        public static partial void godotsharp_string_to_pascal_case(in godot_string p_self,
+            out godot_string r_pascal_case);
+
+        public static partial void godotsharp_string_to_snake_case(in godot_string p_self,
+            out godot_string r_snake_case);
 
         // NodePath
 

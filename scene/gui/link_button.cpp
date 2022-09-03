@@ -33,8 +33,8 @@
 #include "core/string/translation.h"
 
 void LinkButton::_shape() {
-	Ref<Font> font = get_theme_font(SNAME("font"));
-	int font_size = get_theme_font_size(SNAME("font_size"));
+	Ref<Font> font = theme_cache.font;
+	int font_size = theme_cache.font_size;
 
 	text_buf->clear();
 	if (text_direction == Control::TEXT_DIRECTION_INHERITED) {
@@ -54,7 +54,7 @@ void LinkButton::set_text(const String &p_text) {
 	xl_text = atr(text);
 	_shape();
 	update_minimum_size();
-	update();
+	queue_redraw();
 }
 
 String LinkButton::get_text() const {
@@ -65,7 +65,7 @@ void LinkButton::set_structured_text_bidi_override(TextServer::StructuredTextPar
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -76,7 +76,7 @@ TextServer::StructuredTextParser LinkButton::get_structured_text_bidi_override()
 void LinkButton::set_structured_text_bidi_override_options(Array p_args) {
 	st_args = p_args;
 	_shape();
-	update();
+	queue_redraw();
 }
 
 Array LinkButton::get_structured_text_bidi_override_options() const {
@@ -88,7 +88,7 @@ void LinkButton::set_text_direction(Control::TextDirection p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -100,7 +100,7 @@ void LinkButton::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		_shape();
-		update();
+		queue_redraw();
 	}
 }
 
@@ -114,7 +114,7 @@ void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 	}
 
 	underline_mode = p_underline_mode;
-	update();
+	queue_redraw();
 }
 
 LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
@@ -125,23 +125,43 @@ Size2 LinkButton::get_minimum_size() const {
 	return text_buf->get_size();
 }
 
+void LinkButton::_update_theme_item_cache() {
+	BaseButton::_update_theme_item_cache();
+
+	theme_cache.focus = get_theme_stylebox(SNAME("focus"));
+
+	theme_cache.font_color = get_theme_color(SNAME("font_color"));
+	theme_cache.font_focus_color = get_theme_color(SNAME("font_focus_color"));
+	theme_cache.font_pressed_color = get_theme_color(SNAME("font_pressed_color"));
+	theme_cache.font_hover_color = get_theme_color(SNAME("font_hover_color"));
+	theme_cache.font_hover_pressed_color = get_theme_color(SNAME("font_hover_pressed_color"));
+	theme_cache.font_disabled_color = get_theme_color(SNAME("font_disabled_color"));
+
+	theme_cache.font = get_theme_font(SNAME("font"));
+	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
+	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
+	theme_cache.font_outline_color = get_theme_color(SNAME("font_outline_color"));
+
+	theme_cache.underline_spacing = get_theme_constant(SNAME("underline_spacing"));
+}
+
 void LinkButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			xl_text = atr(text);
 			_shape();
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
 			_shape();
 			update_minimum_size();
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -153,9 +173,9 @@ void LinkButton::_notification(int p_what) {
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
 					if (has_focus()) {
-						color = get_theme_color(SNAME("font_focus_color"));
+						color = theme_cache.font_focus_color;
 					} else {
-						color = get_theme_color(SNAME("font_color"));
+						color = theme_cache.font_color;
 					}
 
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
@@ -163,35 +183,35 @@ void LinkButton::_notification(int p_what) {
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
 					if (has_theme_color(SNAME("font_pressed_color"))) {
-						color = get_theme_color(SNAME("font_pressed_color"));
+						color = theme_cache.font_pressed_color;
 					} else {
-						color = get_theme_color(SNAME("font_color"));
+						color = theme_cache.font_color;
 					}
 
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_HOVER: {
-					color = get_theme_color(SNAME("font_hover_color"));
+					color = theme_cache.font_hover_color;
 					do_underline = underline_mode != UNDERLINE_MODE_NEVER;
 
 				} break;
 				case DRAW_DISABLED: {
-					color = get_theme_color(SNAME("font_disabled_color"));
+					color = theme_cache.font_disabled_color;
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 
 				} break;
 			}
 
 			if (has_focus()) {
-				Ref<StyleBox> style = get_theme_stylebox(SNAME("focus"));
+				Ref<StyleBox> style = theme_cache.focus;
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
 			int width = text_buf->get_line_width();
 
-			Color font_outline_color = get_theme_color(SNAME("font_outline_color"));
-			int outline_size = get_theme_constant(SNAME("outline_size"));
+			Color font_outline_color = theme_cache.font_outline_color;
+			int outline_size = theme_cache.outline_size;
 			if (is_layout_rtl()) {
 				if (outline_size > 0 && font_outline_color.a > 0) {
 					text_buf->draw_outline(get_canvas_item(), Vector2(size.width - width, 0), outline_size, font_outline_color);
@@ -205,7 +225,7 @@ void LinkButton::_notification(int p_what) {
 			}
 
 			if (do_underline) {
-				int underline_spacing = get_theme_constant(SNAME("underline_spacing")) + text_buf->get_line_underline_position();
+				int underline_spacing = theme_cache.underline_spacing + text_buf->get_line_underline_position();
 				int y = text_buf->get_line_ascent() + underline_spacing;
 
 				if (is_layout_rtl()) {

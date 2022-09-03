@@ -52,6 +52,12 @@ class AcceptDialog : public Window {
 	bool hide_on_ok = true;
 	bool close_on_escape = true;
 
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+		int margin = 0;
+		int button_margin = 0;
+	} theme_cache;
+
 	void _custom_action(const String &p_action);
 	void _update_child_rects();
 
@@ -62,6 +68,7 @@ class AcceptDialog : public Window {
 
 protected:
 	virtual Size2 _get_contents_minimum_size() const override;
+	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

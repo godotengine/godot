@@ -103,9 +103,14 @@ void MenuButton::pressed() {
 	popup->set_position(gp);
 	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), size));
 
-	// If not triggered by the mouse, start the popup with its first item selected.
-	if (popup->get_item_count() > 0 && !_was_pressed_by_mouse()) {
-		popup->set_current_index(0);
+	// If not triggered by the mouse, start the popup with its first enabled item focused.
+	if (!_was_pressed_by_mouse()) {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			if (!popup->is_item_disabled(i)) {
+				popup->set_current_index(i);
+				break;
+			}
+		}
 	}
 
 	popup->popup();
@@ -161,7 +166,10 @@ void MenuButton::_notification(int p_what) {
 			if (menu_btn_other && menu_btn_other != this && menu_btn_other->is_switch_on_hover() && !menu_btn_other->is_disabled() &&
 					(get_parent()->is_ancestor_of(menu_btn_other) || menu_btn_other->get_parent()->is_ancestor_of(popup))) {
 				popup->hide();
+
 				menu_btn_other->pressed();
+				// As the popup wasn't triggered by a mouse click, the item focus needs to be removed manually.
+				menu_btn_other->get_popup()->set_current_index(-1);
 			}
 		} break;
 	}

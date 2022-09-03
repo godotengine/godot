@@ -100,8 +100,8 @@ public:
 	real_t get_max_value() const { return _max_value; }
 	void set_max_value(real_t p_max);
 
-	real_t interpolate(real_t p_offset) const;
-	real_t interpolate_local_nocheck(int p_index, real_t p_local_offset) const;
+	real_t sample(real_t p_offset) const;
+	real_t sample_local_nocheck(int p_index, real_t p_local_offset) const;
 
 	void clean_dupes();
 
@@ -123,7 +123,7 @@ public:
 	void bake();
 	int get_bake_resolution() const { return _bake_resolution; }
 	void set_bake_resolution(int p_resolution);
-	real_t interpolate_baked(real_t p_offset) const;
+	real_t sample_baked(real_t p_offset) const;
 
 	void ensure_default_setup(real_t p_min, real_t p_max);
 
@@ -208,14 +208,14 @@ public:
 	void remove_point(int p_index);
 	void clear_points();
 
-	Vector2 interpolate(int p_index, real_t p_offset) const;
-	Vector2 interpolatef(real_t p_findex) const;
+	Vector2 sample(int p_index, real_t p_offset) const;
+	Vector2 samplef(real_t p_findex) const;
 
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
 
 	real_t get_baked_length() const;
-	Vector2 interpolate_baked(real_t p_offset, bool p_cubic = false) const;
+	Vector2 sample_baked(real_t p_offset, bool p_cubic = false) const;
 	PackedVector2Array get_baked_points() const; //useful for going through
 	Vector2 get_closest_point(const Vector2 &p_to_point) const;
 	real_t get_closest_offset(const Vector2 &p_to_point) const;
@@ -285,8 +285,8 @@ public:
 	void remove_point(int p_index);
 	void clear_points();
 
-	Vector3 interpolate(int p_index, real_t p_offset) const;
-	Vector3 interpolatef(real_t p_findex) const;
+	Vector3 sample(int p_index, real_t p_offset) const;
+	Vector3 samplef(real_t p_findex) const;
 
 	void set_bake_interval(real_t p_tolerance);
 	real_t get_bake_interval() const;
@@ -294,9 +294,9 @@ public:
 	bool is_up_vector_enabled() const;
 
 	real_t get_baked_length() const;
-	Vector3 interpolate_baked(real_t p_offset, bool p_cubic = false) const;
-	real_t interpolate_baked_tilt(real_t p_offset) const;
-	Vector3 interpolate_baked_up_vector(real_t p_offset, bool p_apply_tilt = false) const;
+	Vector3 sample_baked(real_t p_offset, bool p_cubic = false) const;
+	real_t sample_baked_tilt(real_t p_offset) const;
+	Vector3 sample_baked_up_vector(real_t p_offset, bool p_apply_tilt = false) const;
 	PackedVector3Array get_baked_points() const; //useful for going through
 	Vector<real_t> get_baked_tilts() const; //useful for going through
 	PackedVector3Array get_baked_up_vectors() const;

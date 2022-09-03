@@ -85,6 +85,12 @@ public:
 	/// Returns the edge connection margin of this map.
 	virtual real_t map_get_edge_connection_margin(RID p_map) const = 0;
 
+	/// Set the map link connection radius used to attach links to the nav mesh.
+	virtual void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) const = 0;
+
+	/// Returns the link connection radius of this map.
+	virtual real_t map_get_link_connection_radius(RID p_map) const = 0;
+
 	/// Returns the navigation path to reach the destination from the origin.
 	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const = 0;
 
@@ -93,6 +99,7 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const = 0;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const = 0;
 
+	virtual TypedArray<RID> map_get_links(RID p_map) const = 0;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const = 0;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const = 0;
 
@@ -132,6 +139,37 @@ public:
 	virtual int region_get_connections_count(RID p_region) const = 0;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const = 0;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const = 0;
+
+	/// Creates a new link between locations in the nav map.
+	virtual RID link_create() const = 0;
+
+	/// Set the map of this link.
+	virtual void link_set_map(RID p_link, RID p_map) const = 0;
+	virtual RID link_get_map(RID p_link) const = 0;
+
+	/// Set whether this link travels in both directions.
+	virtual void link_set_bidirectional(RID p_link, bool p_bidirectional) const = 0;
+	virtual bool link_is_bidirectional(RID p_link) const = 0;
+
+	/// Set the link's layers.
+	virtual void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) const = 0;
+	virtual uint32_t link_get_navigation_layers(RID p_link) const = 0;
+
+	/// Set the start location of the link.
+	virtual void link_set_start_location(RID p_link, Vector3 p_location) const = 0;
+	virtual Vector3 link_get_start_location(RID p_link) const = 0;
+
+	/// Set the end location of the link.
+	virtual void link_set_end_location(RID p_link, Vector3 p_location) const = 0;
+	virtual Vector3 link_get_end_location(RID p_link) const = 0;
+
+	/// Set the enter cost of the link.
+	virtual void link_set_enter_cost(RID p_link, real_t p_enter_cost) const = 0;
+	virtual real_t link_get_enter_cost(RID p_link) const = 0;
+
+	/// Set the travel cost of the link.
+	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) const = 0;
+	virtual real_t link_get_travel_cost(RID p_link) const = 0;
 
 	/// Creates the agent.
 	virtual RID agent_create() const = 0;
@@ -209,29 +247,38 @@ public:
 	virtual ~NavigationServer3D();
 
 #ifdef DEBUG_ENABLED
+private:
 	bool debug_enabled = false;
 	bool debug_dirty = true;
 	void _emit_navigation_debug_changed_signal();
-
-	void set_debug_enabled(bool p_enabled);
-	bool get_debug_enabled() const;
 
 	Color debug_navigation_edge_connection_color = Color(1.0, 0.0, 1.0, 1.0);
 	Color debug_navigation_geometry_edge_color = Color(0.5, 1.0, 1.0, 1.0);
 	Color debug_navigation_geometry_face_color = Color(0.5, 1.0, 1.0, 0.4);
 	Color debug_navigation_geometry_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
 	Color debug_navigation_geometry_face_disabled_color = Color(0.5, 0.5, 0.5, 0.4);
+	Color debug_navigation_link_connection_color = Color(1.0, 0.5, 1.0, 1.0);
+	Color debug_navigation_link_connection_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
+
 	bool debug_navigation_enable_edge_connections = true;
 	bool debug_navigation_enable_edge_connections_xray = true;
 	bool debug_navigation_enable_edge_lines = true;
 	bool debug_navigation_enable_edge_lines_xray = true;
 	bool debug_navigation_enable_geometry_face_random_color = true;
+	bool debug_navigation_enable_link_connections = true;
+	bool debug_navigation_enable_link_connections_xray = true;
 
 	Ref<StandardMaterial3D> debug_navigation_geometry_edge_material;
 	Ref<StandardMaterial3D> debug_navigation_geometry_face_material;
 	Ref<StandardMaterial3D> debug_navigation_geometry_edge_disabled_material;
 	Ref<StandardMaterial3D> debug_navigation_geometry_face_disabled_material;
 	Ref<StandardMaterial3D> debug_navigation_edge_connections_material;
+	Ref<StandardMaterial3D> debug_navigation_link_connections_material;
+	Ref<StandardMaterial3D> debug_navigation_link_connections_disabled_material;
+
+public:
+	void set_debug_enabled(bool p_enabled);
+	bool get_debug_enabled() const;
 
 	void set_debug_navigation_edge_connection_color(const Color &p_color);
 	Color get_debug_navigation_edge_connection_color() const;
@@ -248,6 +295,12 @@ public:
 	void set_debug_navigation_geometry_face_disabled_color(const Color &p_color);
 	Color get_debug_navigation_geometry_face_disabled_color() const;
 
+	void set_debug_navigation_link_connection_color(const Color &p_color);
+	Color get_debug_navigation_link_connection_color() const;
+
+	void set_debug_navigation_link_connection_disabled_color(const Color &p_color);
+	Color get_debug_navigation_link_connection_disabled_color() const;
+
 	void set_debug_navigation_enable_edge_connections(const bool p_value);
 	bool get_debug_navigation_enable_edge_connections() const;
 
@@ -263,11 +316,19 @@ public:
 	void set_debug_navigation_enable_geometry_face_random_color(const bool p_value);
 	bool get_debug_navigation_enable_geometry_face_random_color() const;
 
+	void set_debug_navigation_enable_link_connections(const bool p_value);
+	bool get_debug_navigation_enable_link_connections() const;
+
+	void set_debug_navigation_enable_link_connections_xray(const bool p_value);
+	bool get_debug_navigation_enable_link_connections_xray() const;
+
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_face_disabled_material();
 	Ref<StandardMaterial3D> get_debug_navigation_geometry_edge_disabled_material();
 	Ref<StandardMaterial3D> get_debug_navigation_edge_connections_material();
+	Ref<StandardMaterial3D> get_debug_navigation_link_connections_material();
+	Ref<StandardMaterial3D> get_debug_navigation_link_connections_disabled_material();
 #endif // DEBUG_ENABLED
 };
 

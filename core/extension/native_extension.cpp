@@ -36,7 +36,7 @@
 #include "core/os/os.h"
 
 String NativeExtension::get_extension_list_config_file() {
-	return ProjectSettings::get_singleton()->get_project_data_path().plus_file("extension_list.cfg");
+	return ProjectSettings::get_singleton()->get_project_data_path().path_join("extension_list.cfg");
 }
 
 class NativeExtensionMethodBind : public MethodBind {
@@ -421,7 +421,7 @@ Ref<Resource> NativeExtensionResourceLoader::load(const String &p_path, const St
 	}
 
 	if (!library_path.is_resource_file() && !library_path.is_absolute_path()) {
-		library_path = p_path.get_base_dir().plus_file(library_path);
+		library_path = p_path.get_base_dir().path_join(library_path);
 	}
 
 	Ref<NativeExtension> lib;

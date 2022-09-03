@@ -76,12 +76,19 @@ public:
 	/// Returns the edge connection margin of this map.
 	virtual real_t map_get_edge_connection_margin(RID p_map) const;
 
+	/// Set the map link connection radius used to attach links to the nav mesh.
+	virtual void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) const;
+
+	/// Returns the link connection radius of this map.
+	virtual real_t map_get_link_connection_radius(RID p_map) const;
+
 	/// Returns the navigation path to reach the destination from the origin.
 	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
 
+	virtual TypedArray<RID> map_get_links(RID p_map) const;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const;
 
@@ -118,6 +125,37 @@ public:
 	virtual int region_get_connections_count(RID p_region) const;
 	virtual Vector2 region_get_connection_pathway_start(RID p_region, int p_connection_id) const;
 	virtual Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const;
+
+	/// Creates a new link between locations in the nav map.
+	virtual RID link_create() const;
+
+	/// Set the map of this link.
+	virtual void link_set_map(RID p_link, RID p_map) const;
+	virtual RID link_get_map(RID p_link) const;
+
+	/// Set whether this link travels in both directions.
+	virtual void link_set_bidirectional(RID p_link, bool p_bidirectional) const;
+	virtual bool link_is_bidirectional(RID p_link) const;
+
+	/// Set the link's layers.
+	virtual void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) const;
+	virtual uint32_t link_get_navigation_layers(RID p_link) const;
+
+	/// Set the start location of the link.
+	virtual void link_set_start_location(RID p_link, Vector2 p_location) const;
+	virtual Vector2 link_get_start_location(RID p_link) const;
+
+	/// Set the end location of the link.
+	virtual void link_set_end_location(RID p_link, Vector2 p_location) const;
+	virtual Vector2 link_get_end_location(RID p_link) const;
+
+	/// Set the enter cost of the link.
+	virtual void link_set_enter_cost(RID p_link, real_t p_enter_cost) const;
+	virtual real_t link_get_enter_cost(RID p_link) const;
+
+	/// Set the travel cost of the link.
+	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) const;
+	virtual real_t link_get_travel_cost(RID p_link) const;
 
 	/// Creates the agent.
 	virtual RID agent_create() const;
@@ -197,6 +235,12 @@ public:
 
 	void set_debug_navigation_geometry_face_disabled_color(const Color &p_color);
 	Color get_debug_navigation_geometry_face_disabled_color() const;
+
+	void set_debug_navigation_link_connection_color(const Color &p_color);
+	Color get_debug_navigation_link_connection_color() const;
+
+	void set_debug_navigation_link_connection_disabled_color(const Color &p_color);
+	Color get_debug_navigation_link_connection_disabled_color() const;
 
 	void set_debug_navigation_enable_edge_connections(const bool p_value);
 	bool get_debug_navigation_enable_edge_connections() const;

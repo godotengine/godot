@@ -86,14 +86,31 @@ class ScrollBar : public Range {
 	double target_scroll = 0.0;
 	bool smooth_scroll_enabled = false;
 
+	struct ThemeCache {
+		Ref<StyleBox> scroll_style;
+		Ref<StyleBox> scroll_focus_style;
+		Ref<StyleBox> scroll_offset_style;
+		Ref<StyleBox> grabber_style;
+		Ref<StyleBox> grabber_hl_style;
+		Ref<StyleBox> grabber_pressed_style;
+
+		Ref<Texture2D> increment_icon;
+		Ref<Texture2D> increment_hl_icon;
+		Ref<Texture2D> increment_pressed_icon;
+		Ref<Texture2D> decrement_icon;
+		Ref<Texture2D> decrement_hl_icon;
+		Ref<Texture2D> decrement_pressed_icon;
+	} theme_cache;
+
 	void _drag_node_exit();
 	void _drag_node_input(const Ref<InputEvent> &p_input);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
-	void _notification(int p_what);
+	virtual void _update_theme_item_cache() override;
 
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:

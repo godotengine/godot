@@ -87,6 +87,7 @@ private:
 	};
 
 	HashMap<Ref<Material>, MaterialCache> material_cache;
+	float exposure_normalization = 1.0;
 	AABB original_bounds;
 	AABB po2_bounds;
 	int axis_cell_size[3] = {};
@@ -111,7 +112,7 @@ private:
 	void _sort();
 
 public:
-	void begin_bake(int p_subdiv, const AABB &p_bounds);
+	void begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_normalization);
 	void plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
 	void end_bake();
 

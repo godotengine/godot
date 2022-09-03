@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 
 #include "emws_client.h"
 
@@ -82,12 +82,12 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	String str = "ws://";
 
 	if (p_custom_headers.size()) {
-		WARN_PRINT_ONCE("Custom headers are not supported in HTML5 platform.");
+		WARN_PRINT_ONCE("Custom headers are not supported in Web platform.");
 	}
 	if (p_ssl) {
 		str = "wss://";
 		if (ssl_cert.is_valid()) {
-			WARN_PRINT_ONCE("Custom SSL certificate is not supported in HTML5 platform.");
+			WARN_PRINT_ONCE("Custom SSL certificate is not supported in Web platform.");
 		}
 	}
 	str += p_host + ":" + itos(p_port) + p_path;
@@ -126,11 +126,11 @@ void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
 }
 
 IPAddress EMWSClient::get_connected_host() const {
-	ERR_FAIL_V_MSG(IPAddress(), "Not supported in HTML5 export.");
+	ERR_FAIL_V_MSG(IPAddress(), "Not supported in Web export.");
 }
 
 uint16_t EMWSClient::get_connected_port() const {
-	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
+	ERR_FAIL_V_MSG(0, "Not supported in Web export.");
 }
 
 int EMWSClient::get_max_packet_size() const {
@@ -156,4 +156,4 @@ EMWSClient::~EMWSClient() {
 	}
 }
 
-#endif // JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED

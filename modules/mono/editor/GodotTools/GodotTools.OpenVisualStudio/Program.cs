@@ -249,8 +249,8 @@ namespace GodotTools.OpenVisualStudio
             // Thread call was rejected, so try again.
             int IOleMessageFilter.RetryRejectedCall(IntPtr hTaskCallee, int dwTickCount, int dwRejectType)
             {
+                // flag = SERVERCALL_RETRYLATER
                 if (dwRejectType == 2)
-                    // flag = SERVERCALL_RETRYLATER
                 {
                     // Retry the thread call immediately if return >= 0 & < 100
                     return 99;

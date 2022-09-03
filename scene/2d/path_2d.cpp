@@ -47,7 +47,7 @@ Rect2 Path2D::_edit_get_rect() const {
 	for (int i = 0; i < curve->get_point_count(); i++) {
 		for (int j = 0; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			Vector2 p = curve->interpolate(i, frac);
+			Vector2 p = curve->sample(i, frac);
 			aabb.expand_to(p);
 		}
 	}
@@ -70,7 +70,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 
 		for (int j = 1; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			s[1] = curve->interpolate(i, frac);
+			s[1] = curve->sample(i, frac);
 
 			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
 			if (p.distance_to(p_point) <= p_tolerance) {
@@ -112,7 +112,7 @@ void Path2D::_notification(int p_what) {
 			for (int i = 0; i < curve->get_point_count(); i++) {
 				for (int j = 0; j < 8; j++) {
 					real_t frac = j * (1.0 / 8.0);
-					Vector2 p = curve->interpolate(i, frac);
+					Vector2 p = curve->sample(i, frac);
 					_cached_draw_pts.set(count++, p);
 				}
 			}
@@ -131,7 +131,7 @@ void Path2D::_curve_changed() {
 		return;
 	}
 
-	update();
+	queue_redraw();
 }
 
 void Path2D::set_curve(const Ref<Curve2D> &p_curve) {
@@ -175,7 +175,7 @@ void PathFollow2D::_update_transform() {
 	if (path_length == 0) {
 		return;
 	}
-	Vector2 pos = c->interpolate_baked(progress, cubic);
+	Vector2 pos = c->sample_baked(progress, cubic);
 
 	if (rotates) {
 		real_t ahead = progress + lookahead;
@@ -195,14 +195,14 @@ void PathFollow2D::_update_transform() {
 			}
 		}
 
-		Vector2 ahead_pos = c->interpolate_baked(ahead, cubic);
+		Vector2 ahead_pos = c->sample_baked(ahead, cubic);
 
 		Vector2 tangent_to_curve;
 		if (ahead_pos == pos) {
 			// This will happen at the end of non-looping or non-closed paths.
 			// We'll try a look behind instead, in order to get a meaningful angle.
 			tangent_to_curve =
-					(pos - c->interpolate_baked(progress - lookahead, cubic)).normalized();
+					(pos - c->sample_baked(progress - lookahead, cubic)).normalized();
 		} else {
 			tangent_to_curve = (ahead_pos - pos).normalized();
 		}
@@ -252,7 +252,7 @@ void PathFollow2D::_validate_property(PropertyInfo &p_property) const {
 			max = path->get_curve()->get_baked_length();
 		}
 
-		p_property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
+		p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
 	}
 }
 
@@ -293,8 +293,8 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_lookahead", "lookahead"), &PathFollow2D::set_lookahead);
 	ClassDB::bind_method(D_METHOD("get_lookahead"), &PathFollow2D::get_lookahead);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:px"), "set_progress", "get_progress");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:px"), "set_progress", "get_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");

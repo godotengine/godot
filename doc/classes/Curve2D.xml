@@ -43,7 +43,7 @@
 			<return type="float" />
 			<param index="0" name="to_point" type="Vector2" />
 			<description>
-				Returns the closest offset to [param to_point]. This offset is meant to be used in [method interpolate_baked].
+				Returns the closest offset to [param to_point]. This offset is meant to be used in [method sample_baked].
 				[param to_point] must be in this curve's local space.
 			</description>
 		</method>
@@ -76,7 +76,14 @@
 				Returns the position of the vertex [param idx]. If the index is out of bounds, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
-		<method name="interpolate" qualifiers="const">
+		<method name="remove_point">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Deletes the point [code]idx[/code] from the curve. Sends an error to the console if [code]idx[/code] is out of bounds.
+			</description>
+		</method>
+		<method name="sample" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="t" type="float" />
@@ -85,7 +92,7 @@
 				If [param idx] is out of bounds it is truncated to the first or last vertex, and [param t] is ignored. If the curve has no points, the function sends an error to the console, and returns [code](0, 0)[/code].
 			</description>
 		</method>
-		<method name="interpolate_baked" qualifiers="const">
+		<method name="sample_baked" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="offset" type="float" />
 			<param index="1" name="cubic" type="bool" default="false" />
@@ -95,18 +102,11 @@
 				Cubic interpolation tends to follow the curves better, but linear is faster (and often, precise enough).
 			</description>
 		</method>
-		<method name="interpolatef" qualifiers="const">
+		<method name="samplef" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="fofs" type="float" />
 			<description>
-				Returns the position at the vertex [param fofs]. It calls [method interpolate] using the integer part of [param fofs] as [code]idx[/code], and its fractional part as [code]t[/code].
-			</description>
-		</method>
-		<method name="remove_point">
-			<return type="void" />
-			<param index="0" name="idx" type="int" />
-			<description>
-				Deletes the point [param idx] from the curve. Sends an error to the console if [param idx] is out of bounds.
+				Returns the position at the vertex [param fofs]. It calls [method sample] using the integer part of [param fofs] as [code]idx[/code], and its fractional part as [code]t[/code].
 			</description>
 		</method>
 		<method name="set_point_in">

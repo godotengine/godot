@@ -47,6 +47,9 @@ namespace Godot
         /// <summary>
         /// Access quaternion components using their index.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is not 0, 1, 2 or 3.
+        /// </exception>
         /// <value>
         /// <c>[0]</c> is equivalent to <see cref="x"/>,
         /// <c>[1]</c> is equivalent to <see cref="y"/>,
@@ -314,7 +317,7 @@ namespace Godot
 #if DEBUG
             if (!IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
 #endif
             var basis = new Basis(this);
@@ -330,7 +333,7 @@ namespace Godot
 #if DEBUG
             if (!IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
 #endif
             return new Quaternion(-x, -y, -z, w);
@@ -374,11 +377,11 @@ namespace Godot
 #if DEBUG
             if (!IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
             if (!to.IsNormalized())
             {
-                throw new ArgumentException("Argument is not normalized", nameof(to));
+                throw new ArgumentException("Argument is not normalized.", nameof(to));
             }
 #endif
 
@@ -543,7 +546,7 @@ namespace Godot
 #if DEBUG
             if (!axis.IsNormalized())
             {
-                throw new ArgumentException("Argument is not normalized", nameof(axis));
+                throw new ArgumentException("Argument is not normalized.", nameof(axis));
             }
 #endif
 
@@ -599,7 +602,7 @@ namespace Godot
 #if DEBUG
             if (!quaternion.IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
 #endif
             var u = new Vector3(quaternion.x, quaternion.y, quaternion.z);

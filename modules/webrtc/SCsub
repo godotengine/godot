@@ -5,7 +5,7 @@ Import("env_modules")
 
 env_webrtc = env_modules.Clone()
 
-if env["platform"] == "javascript":
+if env["platform"] == "web":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_webrtc.js"])
 

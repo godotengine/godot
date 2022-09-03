@@ -122,7 +122,7 @@ public:
 			}
 		}
 
-		// Return interpolated value.
+		// Return sampled value.
 		if (points[middle].offset > p_offset) {
 			middle--;
 		}

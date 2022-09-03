@@ -79,7 +79,7 @@ static String _include_function(const String &p_path, void *userpointer) {
 
 	String include = p_path;
 	if (include.is_relative_path()) {
-		include = base_path->plus_file(include);
+		include = base_path->path_join(include);
 	}
 
 	Ref<FileAccess> file_inc = FileAccess::open(include, FileAccess::READ, &err);

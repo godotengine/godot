@@ -1020,7 +1020,7 @@
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="index" type="int" />
-			<param index="2" name="fonts" type="Array" />
+			<param index="2" name="fonts" type="RID[]" />
 			<param index="3" name="size" type="int" />
 			<param index="4" name="opentype_features" type="Dictionary" />
 			<description>
@@ -1042,7 +1042,7 @@
 			<return type="bool" />
 			<param index="0" name="shaped" type="RID" />
 			<param index="1" name="text" type="String" />
-			<param index="2" name="fonts" type="Array" />
+			<param index="2" name="fonts" type="RID[]" />
 			<param index="3" name="size" type="int" />
 			<param index="4" name="opentype_features" type="Dictionary" />
 			<param index="5" name="language" type="String" />

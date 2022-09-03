@@ -75,7 +75,7 @@ layout(push_constant, std430) uniform Params {
 
 	float exposure;
 	float white;
-	float auto_exposure_grey;
+	float auto_exposure_scale;
 	float luminance_multiplier;
 
 	vec2 pixel_size;
@@ -440,7 +440,7 @@ void main() {
 
 #ifndef SUBPASS
 	if (params.use_auto_exposure) {
-		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_grey);
+		exposure *= 1.0 / (texelFetch(source_auto_exposure, ivec2(0, 0), 0).r * params.luminance_multiplier / params.auto_exposure_scale);
 	}
 #endif
 

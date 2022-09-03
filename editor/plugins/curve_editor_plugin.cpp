@@ -87,7 +87,7 @@ void CurveEditor::set_curve(Ref<Curve> curve) {
 	_hover_point = -1;
 	_selected_tangent = TANGENT_NONE;
 
-	update();
+	queue_redraw();
 
 	// Note: if you edit a curve, then set another, and try to undo,
 	// it will normally apply on the previous curve, but you won't see it
@@ -311,7 +311,7 @@ void CurveEditor::on_preset_item_selected(int preset_id) {
 }
 
 void CurveEditor::_curve_changed() {
-	update();
+	queue_redraw();
 	// Point count can change in case of undo
 	if (_selected_point >= _curve_ref->get_point_count()) {
 		set_selected_point(-1);
@@ -512,14 +512,14 @@ void CurveEditor::toggle_linear(TangentIndex tangent) {
 void CurveEditor::set_selected_point(int index) {
 	if (index != _selected_point) {
 		_selected_point = index;
-		update();
+		queue_redraw();
 	}
 }
 
 void CurveEditor::set_hover_point_index(int index) {
 	if (index != _hover_point) {
 		_hover_point = index;
-		update();
+		queue_redraw();
 	}
 }
 
@@ -579,7 +579,7 @@ template <typename T>
 static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
 	if (curve.get_point_count() <= 1) {
 		// Not enough points to make a curve, so it's just a straight line
-		float y = curve.interpolate(0);
+		float y = curve.sample(0);
 		plot_func(Vector2(0, y), Vector2(1.f, y), true);
 
 	} else {
@@ -603,7 +603,7 @@ static void plot_curve_accurate(const Curve &curve, float step, T plot_func) {
 
 			for (float x = step; x < len; x += step) {
 				pos.x = a.x + x;
-				pos.y = curve.interpolate_local_nocheck(i - 1, x);
+				pos.y = curve.sample_local_nocheck(i - 1, x);
 				plot_func(prev_pos, pos, true);
 				prev_pos = pos;
 			}
@@ -817,7 +817,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 	int prev_y = 0;
 	for (int x = 0; x < im.get_width(); ++x) {
 		float t = static_cast<float>(x) / im.get_width();
-		float v = (curve.interpolate_baked(t) - curve.get_min_value()) / range_y;
+		float v = (curve.sample_baked(t) - curve.get_min_value()) / range_y;
 		int y = CLAMP(im.get_height() - v * im.get_height(), 0, im.get_height());
 
 		// Plot point

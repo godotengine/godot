@@ -104,6 +104,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_accent_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+			</description>
+		</method>
 		<method name="get_display_cutouts" qualifiers="const">
 			<return type="Rect2[]" />
 			<description>
@@ -148,9 +155,10 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="tag" type="Variant" default="null" />
-			<param index="4" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="5" name="index" type="int" default="-1" />
+			<param index="3" name="key_callback" type="Callable" />
+			<param index="4" name="tag" type="Variant" default="null" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
@@ -168,9 +176,10 @@
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
 			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="6" name="index" type="int" default="-1" />
+			<param index="4" name="key_callback" type="Callable" />
+			<param index="5" name="tag" type="Variant" default="null" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
@@ -188,9 +197,10 @@
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
 			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="6" name="index" type="int" default="-1" />
+			<param index="4" name="key_callback" type="Callable" />
+			<param index="5" name="tag" type="Variant" default="null" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
@@ -208,9 +218,10 @@
 			<param index="1" name="icon" type="Texture2D" />
 			<param index="2" name="label" type="String" />
 			<param index="3" name="callback" type="Callable" />
-			<param index="4" name="tag" type="Variant" default="null" />
-			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="6" name="index" type="int" default="-1" />
+			<param index="4" name="key_callback" type="Callable" />
+			<param index="5" name="tag" type="Variant" default="null" />
+			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="7" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
@@ -228,9 +239,10 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="tag" type="Variant" default="null" />
-			<param index="4" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="5" name="index" type="int" default="-1" />
+			<param index="3" name="key_callback" type="Callable" />
+			<param index="4" name="tag" type="Variant" default="null" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
@@ -249,9 +261,10 @@
 			<param index="2" name="max_states" type="int" />
 			<param index="3" name="default_state" type="int" />
 			<param index="4" name="callback" type="Callable" />
-			<param index="5" name="tag" type="Variant" default="null" />
-			<param index="6" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="7" name="index" type="int" default="-1" />
+			<param index="5" name="key_callback" type="Callable" />
+			<param index="6" name="tag" type="Variant" default="null" />
+			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="8" name="index" type="int" default="-1" />
 			<description>
 				Adds a new item with text [param labe] to the global menu with ID [param menu_root].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
@@ -270,9 +283,10 @@
 			<param index="0" name="menu_root" type="String" />
 			<param index="1" name="label" type="String" />
 			<param index="2" name="callback" type="Callable" />
-			<param index="3" name="tag" type="Variant" default="null" />
-			<param index="4" name="accelerator" type="int" enum="Key" default="0" />
-			<param index="5" name="index" type="int" default="-1" />
+			<param index="3" name="key_callback" type="Callable" />
+			<param index="4" name="tag" type="Variant" default="null" />
+			<param index="5" name="accelerator" type="int" enum="Key" default="0" />
+			<param index="6" name="index" type="int" default="-1" />
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
@@ -381,6 +395,15 @@
 			<param index="1" name="text" type="String" />
 			<description>
 				Returns the index of the item with the specified [param text]. Index is automatically assigned to each item by the engine. Index can not be set manually.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_get_item_key_callback" qualifiers="const">
+			<return type="Callable" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<description>
+				Returns the callback of the item accelerator at index [param idx].
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -502,7 +525,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="callback" type="Callable" />
 			<description>
-				Sets the callback of the item at index [param idx]. Callback is emitted when an item is pressed or its accelerator is activated.
+				Sets the callback of the item at index [param idx]. Callback is emitted when an item is pressed.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -554,6 +577,16 @@
 			<param index="2" name="level" type="int" />
 			<description>
 				Sets the horizontal offset of the item at the given [param idx].
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
+		<method name="global_menu_set_item_key_callback">
+			<return type="void" />
+			<param index="0" name="menu_root" type="String" />
+			<param index="1" name="idx" type="int" />
+			<param index="2" name="key_callback" type="Callable" />
+			<description>
+				Sets the callback of the item at index [param idx]. Callback is emitted when its accelerator is activated.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -642,6 +675,20 @@
 		<method name="ime_get_text" qualifiers="const">
 			<return type="String" />
 			<description>
+			</description>
+		</method>
+		<method name="is_dark_mode" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OS is using dark mode.
+				[b]Note:[/b] This method is implemented on macOS, Windows and Linux.
+			</description>
+		</method>
+		<method name="is_dark_mode_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if OS supports dark mode.
+				[b]Note:[/b] This method is implemented on macOS, Windows and Linux.
 			</description>
 		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
@@ -760,7 +807,7 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the current refresh rate of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
-				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On HTML5, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On Web, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
 				To fallback to a default refresh rate if the method fails, try:
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
@@ -864,7 +911,7 @@
 				- [code]name[/code] is voice name.
 				- [code]id[/code] is voice identifier.
 				- [code]language[/code] is language code in [code]lang_Variant[/code] format. [code]lang[/code] part is a 2 or 3-letter code based on the ISO-639 standard, in lowercase. And [code]Variant[/code] part is an engine dependent string describing country, region or/and dialect.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_get_voices_for_language" qualifiers="const">
@@ -872,35 +919,35 @@
 			<param index="0" name="language" type="String" />
 			<description>
 				Returns an [PackedStringArray] of voice identifiers for the [param language].
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_is_paused" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the synthesizer is in a paused state.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_is_speaking" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the synthesizer is generating speech, or have utterance waiting in the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_pause">
 			<return type="void" />
 			<description>
 				Puts the synthesizer into a paused state.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_resume">
 			<return type="void" />
 			<description>
 				Resumes the synthesizer if it was paused.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_set_utterance_callback">
@@ -912,7 +959,7 @@
 				- [code]TTS_UTTERANCE_STARTED[/code], [code]TTS_UTTERANCE_ENDED[/code], and [code]TTS_UTTERANCE_CANCELED[/code] callable's method should take one [int] parameter, the utterance id.
 				- [code]TTS_UTTERANCE_BOUNDARY[/code] callable's method should take two [int] parameters, the index of the character and the utterance id.
 				[b]Note:[/b] The granularity of the boundary callbacks is engine dependent.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_speak">
@@ -933,14 +980,14 @@
 				- [param utterance_id] is passed as a parameter to the callback functions.
 				[b]Note:[/b] On Windows and Linux, utterance [param text] can use SSML markup. SSML support is engine and voice dependent. If the engine does not support SSML, you should strip out all XML markup before calling [method tts_speak].
 				[b]Note:[/b] The granularity of pitch, rate, and volume is engine and voice dependent. Values may be truncated.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="tts_stop">
 			<return type="void" />
 			<description>
 				Stops synthesis in progress and removes all utterances from the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="virtual_keyboard_get_height" qualifiers="const">
@@ -971,7 +1018,7 @@
 				[param max_length] limits the number of characters that can be entered if different from [code]-1[/code].
 				[param cursor_start] can optionally define the current text cursor position if [param cursor_end] is not set.
 				[param cursor_start] and [param cursor_end] can optionally define the current text selection.
-				[b]Note:[/b] This method is implemented on Android, iOS and HTML5.
+				[b]Note:[/b] This method is implemented on Android, iOS and Web.
 			</description>
 		</method>
 		<method name="warp_mouse">
@@ -1396,7 +1443,7 @@
 		</constant>
 		<constant name="KEYBOARD_TYPE_PASSWORD" value="6" enum="VirtualKeyboardType">
 			Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
-			[b]Note:[/b] This is not supported on HTML5. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
+			[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
 		</constant>
 		<constant name="KEYBOARD_TYPE_URL" value="7" enum="VirtualKeyboardType">
 			Virtual keyboard with additional keys to assist with typing URLs.

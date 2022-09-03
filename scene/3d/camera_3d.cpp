@@ -31,6 +31,7 @@
 #include "camera_3d.h"
 
 #include "collision_object_3d.h"
+#include "core/core_string_names.h"
 #include "core/math/projection.h"
 #include "scene/main/viewport.h"
 
@@ -71,6 +72,17 @@ void Camera3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 	}
+
+	if (attributes.is_valid()) {
+		const CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
+		if (physical_attributes) {
+			if (p_property.name == "near" || p_property.name == "far" || p_property.name == "fov" || p_property.name == "keep_aspect") {
+				p_property.usage = PROPERTY_USAGE_READ_ONLY | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR;
+			}
+		}
+	}
+
+	Node3D::_validate_property(p_property);
 }
 
 void Camera3D::_update_camera() {
@@ -400,18 +412,44 @@ Ref<Environment> Camera3D::get_environment() const {
 	return environment;
 }
 
-void Camera3D::set_effects(const Ref<CameraEffects> &p_effects) {
-	effects = p_effects;
-	if (effects.is_valid()) {
-		RS::get_singleton()->camera_set_camera_effects(camera, effects->get_rid());
-	} else {
-		RS::get_singleton()->camera_set_camera_effects(camera, RID());
+void Camera3D::set_attributes(const Ref<CameraAttributes> &p_attributes) {
+	if (attributes.is_valid()) {
+		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
+		if (physical_attributes) {
+			attributes->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+		}
 	}
-	_update_camera_mode();
+
+	attributes = p_attributes;
+
+	if (attributes.is_valid()) {
+		CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
+		if (physical_attributes) {
+			attributes->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Camera3D::_attributes_changed));
+			_attributes_changed();
+		}
+
+		RS::get_singleton()->camera_set_camera_attributes(camera, attributes->get_rid());
+	} else {
+		RS::get_singleton()->camera_set_camera_attributes(camera, RID());
+	}
+
+	notify_property_list_changed();
 }
 
-Ref<CameraEffects> Camera3D::get_effects() const {
-	return effects;
+Ref<CameraAttributes> Camera3D::get_attributes() const {
+	return attributes;
+}
+
+void Camera3D::_attributes_changed() {
+	CameraAttributesPhysical *physical_attributes = Object::cast_to<CameraAttributesPhysical>(attributes.ptr());
+	ERR_FAIL_COND(!physical_attributes);
+
+	fov = physical_attributes->get_fov();
+	near = physical_attributes->get_near();
+	far = physical_attributes->get_far();
+	keep_aspect = KEEP_HEIGHT;
+	_update_camera_mode();
 }
 
 void Camera3D::set_keep_aspect_mode(KeepAspect p_aspect) {
@@ -479,8 +517,8 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera3D::get_cull_mask);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera3D::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera3D::get_environment);
-	ClassDB::bind_method(D_METHOD("set_effects", "env"), &Camera3D::set_effects);
-	ClassDB::bind_method(D_METHOD("get_effects"), &Camera3D::get_effects);
+	ClassDB::bind_method(D_METHOD("set_attributes", "env"), &Camera3D::set_attributes);
+	ClassDB::bind_method(D_METHOD("get_attributes"), &Camera3D::get_attributes);
 	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode", "mode"), &Camera3D::set_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera3D::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera3D::set_doppler_tracking);
@@ -498,7 +536,7 @@ void Camera3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_effects", "get_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_attributes", "get_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");

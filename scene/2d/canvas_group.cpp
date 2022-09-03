@@ -36,7 +36,7 @@ void CanvasGroup::set_fit_margin(real_t p_fit_margin) {
 	fit_margin = p_fit_margin;
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 
-	update();
+	queue_redraw();
 }
 
 real_t CanvasGroup::get_fit_margin() const {
@@ -49,7 +49,7 @@ void CanvasGroup::set_clear_margin(real_t p_clear_margin) {
 	clear_margin = p_clear_margin;
 	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, clear_margin, use_mipmaps);
 
-	update();
+	queue_redraw();
 }
 
 real_t CanvasGroup::get_clear_margin() const {

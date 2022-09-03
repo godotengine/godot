@@ -25,7 +25,7 @@ struct LightData { //this structure needs to be as packed as possible
 	highp float soft_shadow_size; // for spot, it's the size in uv coordinates of the light, for omni it's the span angle
 	highp float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
-	mediump float shadow_volumetric_fog_fade;
+	mediump float volumetric_fog_energy;
 	uint bake_mode;
 	highp vec4 projector_rect; //projector rect in srgb decal atlas
 };
@@ -44,7 +44,7 @@ struct ReflectionData {
 	bool exterior;
 	bool box_project;
 	uint ambient_mode;
-	uint pad;
+	float exposure_normalization;
 	//0-8 is intensity,8-9 is ambient, mode
 	highp mat4 local_matrix; // up to here for spot and omni, rest is for directional
 	// notes: for ambientblend, use distance to edge to blend between already existing global environment
@@ -52,7 +52,7 @@ struct ReflectionData {
 
 struct DirectionalLightData {
 	mediump vec3 direction;
-	mediump float energy;
+	highp float energy; // needs to be highp to avoid NaNs being created with high energy values (i.e. when using physical light units and over-exposing the image)
 	mediump vec3 color;
 	mediump float size;
 	mediump float specular;
@@ -65,7 +65,7 @@ struct DirectionalLightData {
 	highp float fade_to;
 	uvec2 pad;
 	uint bake_mode;
-	mediump float shadow_volumetric_fog_fade;
+	mediump float volumetric_fog_energy;
 	highp vec4 shadow_bias;
 	highp vec4 shadow_normal_bias;
 	highp vec4 shadow_transmittance_bias;

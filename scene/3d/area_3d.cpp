@@ -473,19 +473,19 @@ bool Area3D::is_monitoring() const {
 }
 
 TypedArray<Node3D> Area3D::get_overlapping_bodies() const {
-	ERR_FAIL_COND_V(!monitoring, Array());
-	Array ret;
+	TypedArray<Node3D> ret;
+	ERR_FAIL_COND_V_MSG(!monitoring, ret, "Can't find overlapping bodies when monitoring is off.");
 	ret.resize(body_map.size());
 	int idx = 0;
 	for (const KeyValue<ObjectID, BodyState> &E : body_map) {
 		Object *obj = ObjectDB::get_instance(E.key);
-		if (!obj) {
-			ret.resize(ret.size() - 1); //ops
-		} else {
-			ret[idx++] = obj;
+		if (obj) {
+			ret[idx] = obj;
+			idx++;
 		}
 	}
 
+	ret.resize(idx);
 	return ret;
 }
 
@@ -506,19 +506,18 @@ bool Area3D::is_monitorable() const {
 }
 
 TypedArray<Area3D> Area3D::get_overlapping_areas() const {
-	ERR_FAIL_COND_V(!monitoring, Array());
-	Array ret;
+	TypedArray<Area3D> ret;
+	ERR_FAIL_COND_V_MSG(!monitoring, ret, "Can't find overlapping areas when monitoring is off.");
 	ret.resize(area_map.size());
 	int idx = 0;
 	for (const KeyValue<ObjectID, AreaState> &E : area_map) {
 		Object *obj = ObjectDB::get_instance(E.key);
-		if (!obj) {
-			ret.resize(ret.size() - 1); //ops
-		} else {
-			ret[idx++] = obj;
+		if (obj) {
+			ret[idx] = obj;
+			idx++;
 		}
 	}
-
+	ret.resize(idx);
 	return ret;
 }
 
@@ -728,7 +727,7 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_point_distance_scale", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,exp"), "set_gravity_point_distance_scale", "get_gravity_point_distance_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity_point_center", PROPERTY_HINT_NONE, "suffix:m"), "set_gravity_point_center", "get_gravity_point_center");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity_direction"), "set_gravity_direction", "get_gravity_direction");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity", PROPERTY_HINT_RANGE, U"-32,32,0.001,or_lesser,or_greater,suffix:m/s\u00B2"), "set_gravity", "get_gravity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity", PROPERTY_HINT_RANGE, U"-32,32,0.001,or_less,or_greater,suffix:m/s\u00B2"), "set_gravity", "get_gravity");
 
 	ADD_GROUP("Linear Damp", "linear_damp_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "linear_damp_space_override", PROPERTY_HINT_ENUM, "Disabled,Combine,Combine-Replace,Replace,Replace-Combine", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_linear_damp_space_override_mode", "get_linear_damp_space_override_mode");

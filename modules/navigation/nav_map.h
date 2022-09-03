@@ -40,9 +40,9 @@
 
 #include <KdTree.h>
 
+class NavLink;
 class NavRegion;
 class RvoAgent;
-class NavRegion;
 
 class NavMap : public NavRid {
 	/// Map Up
@@ -55,10 +55,18 @@ class NavMap : public NavRid {
 	/// This value is used to detect the near edges to connect.
 	real_t edge_connection_margin = 0.25;
 
+	/// This value is used to limit how far links search to find polygons to connect to.
+	real_t link_connection_radius = 1.0;
+
 	bool regenerate_polygons = true;
 	bool regenerate_links = true;
 
+	/// Map regions
 	LocalVector<NavRegion *> regions;
+
+	/// Map links
+	LocalVector<NavLink *> links;
+	LocalVector<gd::Polygon> link_polygons;
 
 	/// Map polygons
 	LocalVector<gd::Polygon> polygons;
@@ -100,6 +108,11 @@ public:
 		return edge_connection_margin;
 	}
 
+	void set_link_connection_radius(float p_link_connection_radius);
+	float get_link_connection_radius() const {
+		return link_connection_radius;
+	}
+
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
 
 	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
@@ -113,6 +126,12 @@ public:
 	void remove_region(NavRegion *p_region);
 	const LocalVector<NavRegion *> &get_regions() const {
 		return regions;
+	}
+
+	void add_link(NavLink *p_link);
+	void remove_link(NavLink *p_link);
+	const LocalVector<NavLink *> &get_links() const {
+		return links;
 	}
 
 	bool has_agent(RvoAgent *agent) const;

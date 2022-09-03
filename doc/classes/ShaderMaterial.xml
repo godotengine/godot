@@ -10,14 +10,14 @@
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_shader_uniform" qualifiers="const">
+		<method name="get_shader_parameter" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="param" type="StringName" />
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
 			</description>
 		</method>
-		<method name="set_shader_uniform">
+		<method name="set_shader_parameter">
 			<return type="void" />
 			<param index="0" name="param" type="StringName" />
 			<param index="1" name="value" type="Variant" />

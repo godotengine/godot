@@ -148,6 +148,33 @@ private:
 	bool disable_overwrite_warning = false;
 	bool invalidated = true;
 
+	struct ThemeCache {
+		Ref<Texture2D> parent_folder;
+		Ref<Texture2D> forward_folder;
+		Ref<Texture2D> back_folder;
+		Ref<Texture2D> reload;
+		Ref<Texture2D> toggle_hidden;
+		Ref<Texture2D> favorite;
+		Ref<Texture2D> mode_thumbnails;
+		Ref<Texture2D> mode_list;
+		Ref<Texture2D> favorites_up;
+		Ref<Texture2D> favorites_down;
+
+		Ref<Texture2D> folder;
+		Color folder_icon_modulate;
+
+		Ref<Texture2D> action_copy;
+		Ref<Texture2D> action_delete;
+		Ref<Texture2D> filesystem;
+
+		Ref<Texture2D> folder_medium_thumbnail;
+		Ref<Texture2D> file_medium_thumbnail;
+		Ref<Texture2D> folder_big_thumbnail;
+		Ref<Texture2D> file_big_thumbnail;
+
+		Ref<Texture2D> progress[8]{};
+	} theme_cache;
+
 	void update_dir();
 	void update_file_name();
 	void update_file_list();
@@ -161,6 +188,7 @@ private:
 	void _favorite_move_up();
 	void _favorite_move_down();
 
+	void _update_recent();
 	void _recent_selected(int p_idx);
 
 	void _item_selected(int p_item);
@@ -206,6 +234,8 @@ private:
 	bool _is_open_should_be_disabled();
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

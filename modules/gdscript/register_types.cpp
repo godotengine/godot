@@ -88,6 +88,8 @@ public:
 		// TODO: Re-add compiled GDScript on export.
 		return;
 	}
+
+	virtual String _get_name() const override { return "GDScript"; }
 };
 
 static void _editor_init() {

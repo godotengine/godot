@@ -61,7 +61,7 @@
 			<return type="void" />
 			<param index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
 			<param index="1" name="arrays" type="Array" />
-			<param index="2" name="blend_shapes" type="Array" default="[]" />
+			<param index="2" name="blend_shapes" type="Array[]" default="[]" />
 			<param index="3" name="lods" type="Dictionary" default="{}" />
 			<param index="4" name="compress_flags" type="int" default="0" />
 			<description>

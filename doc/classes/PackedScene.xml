@@ -92,7 +92,7 @@
 			<return type="Node" />
 			<param index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0" />
 			<description>
-				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_INSTANCED] notification on the root node.
+				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_SCENE_INSTANTIATED] notification on the root node.
 			</description>
 		</method>
 		<method name="pack">

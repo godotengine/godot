@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 #nullable enable
 
@@ -60,19 +61,22 @@ namespace Godot
             {
                 get
                 {
-                    string s = base.Message;
-
-                    if (string.IsNullOrEmpty(s))
+                    StringBuilder sb;
+                    if (string.IsNullOrEmpty(base.Message))
                     {
-                        s = Arg_NativeConstructorNotFoundException;
+                        sb = new(Arg_NativeConstructorNotFoundException);
+                    }
+                    else
+                    {
+                        sb = new(base.Message);
                     }
 
                     if (!string.IsNullOrEmpty(_nativeClassName))
                     {
-                        s += " " + string.Format("(Class '{0}')", _nativeClassName);
+                        sb.Append($" (Method '{_nativeClassName}')");
                     }
 
-                    return s;
+                    return sb.ToString();
                 }
             }
         }
@@ -115,19 +119,22 @@ namespace Godot
             {
                 get
                 {
-                    string s = base.Message;
-
-                    if (string.IsNullOrEmpty(s))
+                    StringBuilder sb;
+                    if (string.IsNullOrEmpty(base.Message))
                     {
-                        s = Arg_NativeMethodBindNotFoundException;
+                        sb = new(Arg_NativeMethodBindNotFoundException);
+                    }
+                    else
+                    {
+                        sb = new(base.Message);
                     }
 
                     if (!string.IsNullOrEmpty(_nativeMethodName))
                     {
-                        s += " " + string.Format("(Method '{0}')", _nativeMethodName);
+                        sb.Append($" (Method '{_nativeMethodName}')");
                     }
 
-                    return s;
+                    return sb.ToString();
                 }
             }
         }

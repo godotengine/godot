@@ -198,17 +198,17 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		}
 	}
 
-	Vector3 pos = c->interpolate_baked(progress, cubic);
+	Vector3 pos = c->sample_baked(progress, cubic);
 	Transform3D t = get_transform();
 	// Vector3 pos_offset = Vector3(h_offset, v_offset, 0); not used in all cases
 	// will be replaced by "Vector3(h_offset, v_offset, 0)" where it was formerly used
 
 	if (rotation_mode == ROTATION_ORIENTED) {
-		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
+		Vector3 forward = c->sample_baked(o_next, cubic) - pos;
 
 		// Try with the previous position
 		if (forward.length_squared() < CMP_EPSILON2) {
-			forward = pos - c->interpolate_baked(o_prev, cubic);
+			forward = pos - c->sample_baked(o_prev, cubic);
 		}
 
 		if (forward.length_squared() < CMP_EPSILON2) {
@@ -217,10 +217,10 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			forward.normalize();
 		}
 
-		Vector3 up = c->interpolate_baked_up_vector(progress, true);
+		Vector3 up = c->sample_baked_up_vector(progress, true);
 
 		if (o_next < progress) {
-			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
+			Vector3 up1 = c->sample_baked_up_vector(o_next, true);
 			Vector3 axis = up.cross(up1);
 
 			if (axis.length_squared() < CMP_EPSILON2) {
@@ -249,10 +249,10 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		t.origin = pos;
 		if (p_update_xyz_rot && prev_offset != progress) { // Only update rotation if some parameter has changed - i.e. not on addition to scene tree.
 			real_t sample_distance = bi * 0.01;
-			Vector3 t_prev_pos_a = c->interpolate_baked(prev_offset - sample_distance, cubic);
-			Vector3 t_prev_pos_b = c->interpolate_baked(prev_offset + sample_distance, cubic);
-			Vector3 t_cur_pos_a = c->interpolate_baked(progress - sample_distance, cubic);
-			Vector3 t_cur_pos_b = c->interpolate_baked(progress + sample_distance, cubic);
+			Vector3 t_prev_pos_a = c->sample_baked(prev_offset - sample_distance, cubic);
+			Vector3 t_prev_pos_b = c->sample_baked(prev_offset + sample_distance, cubic);
+			Vector3 t_cur_pos_a = c->sample_baked(progress - sample_distance, cubic);
+			Vector3 t_cur_pos_b = c->sample_baked(progress + sample_distance, cubic);
 			Vector3 t_prev = (t_prev_pos_a - t_prev_pos_b).normalized();
 			Vector3 t_cur = (t_cur_pos_a - t_cur_pos_b).normalized();
 
@@ -277,7 +277,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			}
 
 			// do the additional tilting
-			real_t tilt_angle = c->interpolate_baked_tilt(progress);
+			real_t tilt_angle = c->sample_baked_tilt(progress);
 			Vector3 tilt_axis = t_cur; // not sure what tilt is supposed to do, is this correct??
 
 			if (likely(!Math::is_zero_approx(Math::abs(tilt_angle)))) {
@@ -337,7 +337,7 @@ void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
 			max = path->get_curve()->get_baked_length();
 		}
 
-		p_property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
+		p_property.hint_string = "0," + rtos(max) + ",0.01,or_less,or_greater";
 	}
 }
 
@@ -380,8 +380,8 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_lesser,or_greater,suffix:m"), "set_progress", "get_progress");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_lesser,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:m"), "set_progress", "get_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");

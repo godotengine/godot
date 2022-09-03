@@ -191,11 +191,8 @@ public:
 
 	void unparent_bone_and_rest(int p_bone);
 
-	Vector<int> get_bone_children(int p_bone);
-	void set_bone_children(int p_bone, Vector<int> p_children);
-	void add_bone_child(int p_bone, int p_child);
-	void remove_bone_child(int p_bone, int p_child);
-	Vector<int> get_parentless_bones();
+	Vector<int> get_bone_children(int p_bone) const;
+	Vector<int> get_parentless_bones() const;
 
 	int get_bone_count() const;
 

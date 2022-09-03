@@ -31,7 +31,7 @@ layout(push_constant, std430) uniform Params {
 	float glow_exposure;
 	float glow_white;
 	float glow_luminance_cap;
-	float glow_auto_exposure_grey;
+	float glow_auto_exposure_scale;
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
@@ -185,7 +185,7 @@ void main() {
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 #ifdef GLOW_USE_AUTO_EXPOSURE
 
-		color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / params.glow_auto_exposure_grey;
+		color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / params.glow_auto_exposure_scale;
 #endif
 		color *= params.glow_exposure;
 

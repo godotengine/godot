@@ -260,7 +260,7 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 
 		if (!p_class->extends_path.is_empty()) {
 			if (p_class->extends_path.is_relative_path()) {
-				p_class->extends_path = class_type.script_path.get_base_dir().plus_file(p_class->extends_path).simplify_path();
+				p_class->extends_path = class_type.script_path.get_base_dir().path_join(p_class->extends_path).simplify_path();
 			}
 			Ref<GDScriptParserRef> parser = get_parser_for(p_class->extends_path);
 			if (parser.is_null()) {
@@ -2726,6 +2726,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 				result.builtin_type = Variant::INT;
 				result.native_type = base.native_type;
 				result.enum_type = base.enum_type;
+				result.enum_values = base.enum_values;
 				p_identifier->set_datatype(result);
 				return;
 			} else {
@@ -3185,7 +3186,7 @@ void GDScriptAnalyzer::reduce_preload(GDScriptParser::PreloadNode *p_preload) {
 		p_preload->resolved_path = p_preload->path->reduced_value;
 		// TODO: Save this as script dependency.
 		if (p_preload->resolved_path.is_relative_path()) {
-			p_preload->resolved_path = parser->script_path.get_base_dir().plus_file(p_preload->resolved_path);
+			p_preload->resolved_path = parser->script_path.get_base_dir().path_join(p_preload->resolved_path);
 		}
 		p_preload->resolved_path = p_preload->resolved_path.simplify_path();
 		if (!FileAccess::exists(p_preload->resolved_path)) {

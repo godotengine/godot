@@ -33,7 +33,7 @@
 
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
-#include "scene/resources/camera_effects.h"
+#include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 
 class Camera3D : public Node3D {
@@ -64,11 +64,11 @@ private:
 
 	ProjectionType mode = PROJECTION_PERSPECTIVE;
 
-	real_t fov = 0.0;
+	real_t fov = 75.0;
 	real_t size = 1.0;
 	Vector2 frustum_offset;
-	real_t near = 0.0;
-	real_t far = 0.0;
+	real_t near = 0.05;
+	real_t far = 4000.0;
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
@@ -81,7 +81,8 @@ private:
 	uint32_t layers = 0xfffff;
 
 	Ref<Environment> environment;
-	Ref<CameraEffects> effects;
+	Ref<CameraAttributes> attributes;
+	void _attributes_changed();
 
 	// void _camera_make_current(Node *p_camera);
 	friend class Viewport;
@@ -159,8 +160,8 @@ public:
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
 
-	void set_effects(const Ref<CameraEffects> &p_effects);
-	Ref<CameraEffects> get_effects() const;
+	void set_attributes(const Ref<CameraAttributes> &p_effects);
+	Ref<CameraAttributes> get_attributes() const;
 
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;

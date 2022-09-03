@@ -19,7 +19,7 @@ namespace Godot
         /// Returns an empty resource if no <see cref="ResourceFormatLoader"/> could handle the file.
         /// </summary>
         /// <exception cref="InvalidCastException">
-        /// Thrown when the given the loaded resource can't be casted to the given type <typeparamref name="T"/>.
+        /// The loaded resource can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
         public static T Load<T>(string path, string typeHint = null, CacheMode cacheMode = CacheMode.Reuse) where T : class

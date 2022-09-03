@@ -63,7 +63,7 @@ TEST_CASE("[Geometry3D] Closest Distance Between Segments") {
 				p_1(p_p_1), p_2(p_p_2), p_3(p_p_3), p_4(p_p_4), want(p_want){};
 	};
 	Vector<Case> tt;
-	tt.push_back(Case(Vector3(1, -2, 0), Vector3(1, 2, 0), Vector3(-1, 2, 0), Vector3(-1, -2, 0), 0.0f));
+	tt.push_back(Case(Vector3(1, -2, 0), Vector3(1, 2, 0), Vector3(-1, 2, 0), Vector3(-1, -2, 0), 2.0f));
 	for (int i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
 		float out = Geometry3D::get_closest_distance_between_segments(current_case.p_1, current_case.p_2, current_case.p_3, current_case.p_4);

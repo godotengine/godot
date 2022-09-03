@@ -408,7 +408,7 @@ void AppxPackager::finish() {
 	// Create and add block map file
 	EditorNode::progress_task_step("export", "Creating block map...", 4);
 
-	const String &tmp_blockmap_file_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
+	const String &tmp_blockmap_file_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmpblockmap.xml");
 	make_block_map(tmp_blockmap_file_path);
 
 	{
@@ -425,7 +425,7 @@ void AppxPackager::finish() {
 
 	EditorNode::progress_task_step("export", "Setting content types...", 5);
 
-	const String &tmp_content_types_file_path = EditorPaths::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
+	const String &tmp_content_types_file_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmpcontenttypes.xml");
 	make_content_types(tmp_content_types_file_path);
 
 	{

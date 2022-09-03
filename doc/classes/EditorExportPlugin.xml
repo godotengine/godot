@@ -10,6 +10,51 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_begin_customize_resources" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="features" type="PackedStringArray" />
+			<description>
+				Return true if this plugin will customize resources based on the platform and features used.
+			</description>
+		</method>
+		<method name="_begin_customize_scenes" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="features" type="PackedStringArray" />
+			<description>
+				Return true if this plugin will customize scenes based on the platform and features used.
+			</description>
+		</method>
+		<method name="_customize_resource" qualifiers="virtual">
+			<return type="Resource" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Customize a resource. If changes are made to it, return the same or a new resource. Otherwise, return [code]null[/code].
+				The [i]path[/i] argument is only used when customizing an actual file, otherwise this means that this resource is part of another one and it will be empty.
+			</description>
+		</method>
+		<method name="_customize_scene" qualifiers="virtual">
+			<return type="Node" />
+			<param index="0" name="scene" type="Node" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Customize a scene. If changes are made to it, return the same or a new scene. Otherwise, return [code]null[/code]. If a new scene is returned, it is up to you to dispose of the old one.
+			</description>
+		</method>
+		<method name="_end_customize_resources" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				This is called when the customization process for resources ends.
+			</description>
+		</method>
+		<method name="_end_customize_scenes" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				This is called when the customization process for scenes ends.
+			</description>
+		</method>
 		<method name="_export_begin" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="features" type="PackedStringArray" />
@@ -34,6 +79,18 @@
 			<description>
 				Virtual method to be overridden by the user. Called for each exported file, providing arguments that can be used to identify the file. [param path] is the path of the file, [param type] is the [Resource] represented by the file (e.g. [PackedScene]) and [param features] is the list of features for the export.
 				Calling [method skip] inside this callback will make the file not included in the export.
+			</description>
+		</method>
+		<method name="_get_customization_configuration_hash" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Return the name identifier of this plugin (for future identification by the exporter).
 			</description>
 		</method>
 		<method name="add_file">

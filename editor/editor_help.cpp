@@ -44,6 +44,29 @@
 
 DocTools *EditorHelp::doc = nullptr;
 
+void EditorHelp::_update_theme() {
+	text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
+	title_color = get_theme_color(SNAME("title_color"), SNAME("EditorHelp"));
+	headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
+	comment_color = get_theme_color(SNAME("comment_color"), SNAME("EditorHelp"));
+	symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
+	value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
+	qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
+	type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
+
+	class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
+	class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
+
+	doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
+	doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+
+	doc_title_font_size = get_theme_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"));
+}
+
 void EditorHelp::_search(bool p_search_previous) {
 	if (p_search_previous) {
 		find_bar->search_prev();
@@ -214,6 +237,27 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		}
 	}
 	class_desc->pop();
+}
+
+void EditorHelp::_add_type_icon(const String &p_type, int p_size) {
+	Ref<Texture2D> icon;
+	if (has_theme_icon(p_type, SNAME("EditorIcons"))) {
+		icon = get_theme_icon(p_type, SNAME("EditorIcons"));
+	} else if (ClassDB::class_exists(p_type) && ClassDB::is_parent_class(p_type, "Object")) {
+		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+	} else {
+		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
+	}
+
+	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
+	if (p_size > 0) {
+		// Ensures icon scales proportionally on both axis, based on icon height.
+		float ratio = p_size / float(size.height);
+		size.width *= ratio;
+		size.height *= ratio;
+	}
+
+	class_desc->add_image(icon, size.width, size.height);
 }
 
 String EditorHelp::_fix_constant(const String &p_constant) const {
@@ -502,18 +546,10 @@ void EditorHelp::_update_doc() {
 	method_line.clear();
 	section_line.clear();
 
+	_update_theme();
 	String link_color_text = title_color.to_html(false);
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
-
-	Ref<Texture2D> icon;
-	if (has_theme_icon(edited_class, SNAME("EditorIcons"))) {
-		icon = get_theme_icon(edited_class, SNAME("EditorIcons"));
-	} else if (ClassDB::class_exists(edited_class) && ClassDB::is_parent_class(edited_class, "Object")) {
-		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	} else {
-		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
-	}
 
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
@@ -521,7 +557,7 @@ void EditorHelp::_update_doc() {
 	class_desc->push_font_size(doc_title_font_size);
 	class_desc->push_color(title_color);
 	class_desc->add_text(TTR("Class:") + " ");
-	class_desc->add_image(icon, icon->get_width(), icon->get_height());
+	_add_type_icon(edited_class, doc_title_font_size);
 	class_desc->add_text(" ");
 	class_desc->push_color(headline_color);
 	_add_text(edited_class);
@@ -530,6 +566,8 @@ void EditorHelp::_update_doc() {
 	class_desc->pop(); // font size
 	class_desc->pop(); // font
 	class_desc->add_newline();
+
+	const String non_breaking_space = String::chr(160);
 
 	// Inheritance tree
 
@@ -542,6 +580,8 @@ void EditorHelp::_update_doc() {
 		String inherits = cd.inherits;
 
 		while (!inherits.is_empty()) {
+			_add_type_icon(inherits);
+			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 			_add_type(inherits);
 
 			inherits = doc->class_list[inherits].inherits;
@@ -573,7 +613,8 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 					class_desc->add_text(" , ");
 				}
-
+				_add_type_icon(E.value.name);
+				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 				_add_type(E.value.name);
 				prev = true;
 			}
@@ -1890,7 +1931,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			}
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture2D> texture = ResourceLoader::load(base_path.plus_file(image), "Texture2D");
+			Ref<Texture2D> texture = ResourceLoader::load(base_path.path_join(image), "Texture2D");
 			if (texture.is_valid()) {
 				p_rt->add_image(texture);
 			}
@@ -1907,7 +1948,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		} else if (tag.begins_with("font=")) {
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
+			Ref<Font> font = ResourceLoader::load(base_path.path_join(fnt), "Font");
 			if (font.is_valid()) {
 				p_rt->push_font(font);
 			} else {
@@ -1970,29 +2011,10 @@ void EditorHelp::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			_class_desc_resized(true);
+			if (is_inside_tree()) {
+				_class_desc_resized(true);
+			}
 			update_toggle_scripts_button();
-
-			text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
-			title_color = get_theme_color(SNAME("title_color"), SNAME("EditorHelp"));
-			headline_color = get_theme_color(SNAME("headline_color"), SNAME("EditorHelp"));
-			comment_color = get_theme_color(SNAME("comment_color"), SNAME("EditorHelp"));
-			symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
-			value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
-			qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
-			type_color = get_theme_color(SNAME("type_color"), SNAME("EditorHelp"));
-
-			class_desc->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
-			class_desc->add_theme_constant_override("line_separation", get_theme_constant(SNAME("line_separation"), SNAME("EditorHelp")));
-			class_desc->add_theme_constant_override("table_h_separation", get_theme_constant(SNAME("table_h_separation"), SNAME("EditorHelp")));
-			class_desc->add_theme_constant_override("table_v_separation", get_theme_constant(SNAME("table_v_separation"), SNAME("EditorHelp")));
-
-			doc_font = get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-			doc_bold_font = get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-			doc_title_font = get_theme_font(SNAME("doc_title"), SNAME("EditorFonts"));
-			doc_code_font = get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-
-			doc_title_font_size = get_theme_font_size(SNAME("doc_title_size"), SNAME("EditorFonts"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -2073,7 +2095,7 @@ void EditorHelp::update_toggle_scripts_button() {
 	} else {
 		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
 	}
-	toggle_scripts_button->set_tooltip(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 
 void EditorHelp::_bind_methods() {
@@ -2170,6 +2192,7 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 			rich_text->clear();
@@ -2251,6 +2274,7 @@ void FindBar::popup_search() {
 
 void FindBar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			find_prev->set_icon(get_theme_icon(SNAME("MoveUp"), SNAME("EditorIcons")));
 			find_next->set_icon(get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons")));

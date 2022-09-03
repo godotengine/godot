@@ -75,6 +75,9 @@ namespace Godot
         /// The third column is the <see cref="origin"/> vector.
         /// </summary>
         /// <param name="column">Which column vector.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="column"/> is not 0, 1 or 2.
+        /// </exception>
         public Vector2 this[int column]
         {
             get

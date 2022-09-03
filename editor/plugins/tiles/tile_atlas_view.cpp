@@ -139,7 +139,7 @@ void TileAtlasView::_update_zoom_and_panning(bool p_zoom_on_mouse_pos) {
 		// Center of panel.
 		panning = panning * zoom / previous_zoom;
 	}
-	button_center_view->set_disabled(panning.is_equal_approx(Vector2()));
+	button_center_view->set_disabled(panning.is_zero_approx());
 
 	previous_zoom = zoom;
 
@@ -160,7 +160,7 @@ void TileAtlasView::_center_view() {
 }
 
 void TileAtlasView::_base_tiles_root_control_gui_input(const Ref<InputEvent> &p_event) {
-	base_tiles_root_control->set_tooltip("");
+	base_tiles_root_control->set_tooltip_text("");
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
@@ -169,7 +169,7 @@ void TileAtlasView::_base_tiles_root_control_gui_input(const Ref<InputEvent> &p_
 		if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 			coords = tile_set_atlas_source->get_tile_at_coords(coords);
 			if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
-				base_tiles_root_control->set_tooltip(vformat(TTR("Source: %d\nAtlas coordinates: %s\nAlternative: 0"), source_id, coords));
+				base_tiles_root_control->set_tooltip_text(vformat(TTR("Source: %d\nAtlas coordinates: %s\nAlternative: 0"), source_id, coords));
 			}
 		}
 	}
@@ -319,7 +319,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 }
 
 void TileAtlasView::_alternative_tiles_root_control_gui_input(const Ref<InputEvent> &p_event) {
-	alternative_tiles_root_control->set_tooltip("");
+	alternative_tiles_root_control->set_tooltip_text("");
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
@@ -328,7 +328,7 @@ void TileAtlasView::_alternative_tiles_root_control_gui_input(const Ref<InputEve
 		Vector2i coords = Vector2i(coords3.x, coords3.y);
 		int alternative_id = coords3.z;
 		if (coords != TileSetSource::INVALID_ATLAS_COORDS && alternative_id != TileSetSource::INVALID_TILE_ALTERNATIVE) {
-			alternative_tiles_root_control->set_tooltip(vformat(TTR("Source: %d\nAtlas coordinates: %s\nAlternative: %d"), source_id, coords, alternative_id));
+			alternative_tiles_root_control->set_tooltip_text(vformat(TTR("Source: %d\nAtlas coordinates: %s\nAlternative: %d"), source_id, coords, alternative_id));
 		}
 	}
 }
@@ -404,12 +404,12 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 	_update_zoom_and_panning();
 
 	// Update.
-	base_tiles_draw->update();
-	base_tiles_texture_grid->update();
-	base_tiles_shape_grid->update();
-	alternatives_draw->update();
-	background_left->update();
-	background_right->update();
+	base_tiles_draw->queue_redraw();
+	base_tiles_texture_grid->queue_redraw();
+	base_tiles_shape_grid->queue_redraw();
+	alternatives_draw->queue_redraw();
+	background_left->queue_redraw();
+	background_right->queue_redraw();
 }
 
 float TileAtlasView::get_zoom() const {
@@ -493,13 +493,13 @@ Rect2i TileAtlasView::get_alternative_tile_rect(const Vector2i p_coords, int p_a
 	return alternative_tiles_rect_cache[p_coords][p_alternative_tile];
 }
 
-void TileAtlasView::update() {
-	base_tiles_draw->update();
-	base_tiles_texture_grid->update();
-	base_tiles_shape_grid->update();
-	alternatives_draw->update();
-	background_left->update();
-	background_right->update();
+void TileAtlasView::queue_redraw() {
+	base_tiles_draw->queue_redraw();
+	base_tiles_texture_grid->queue_redraw();
+	base_tiles_shape_grid->queue_redraw();
+	alternatives_draw->queue_redraw();
+	background_left->queue_redraw();
+	background_right->queue_redraw();
 }
 
 void TileAtlasView::_notification(int p_what) {
@@ -542,7 +542,7 @@ TileAtlasView::TileAtlasView() {
 	button_center_view->connect("pressed", callable_mp(this, &TileAtlasView::_center_view));
 	button_center_view->set_flat(true);
 	button_center_view->set_disabled(true);
-	button_center_view->set_tooltip(TTR("Center View"));
+	button_center_view->set_tooltip_text(TTR("Center View"));
 	add_child(button_center_view);
 
 	panner.instantiate();

@@ -32,11 +32,13 @@
 #define WINDOW_H
 
 #include "scene/main/viewport.h"
+#include "scene/resources/theme.h"
 
 class Control;
 class Font;
+class Shortcut;
 class StyleBox;
-class Theme;
+class ThemeOwner;
 
 class Window : public Viewport {
 	GDCLASS(Window, Viewport)
@@ -134,11 +136,19 @@ private:
 	Window *exclusive_child = nullptr;
 	HashSet<Window *> transient_children;
 
-	friend class Control;
+	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
-	Control *theme_owner = nullptr;
-	Window *theme_owner_window = nullptr;
 	StringName theme_type_variation;
+
+	mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
+	mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
+	mutable HashMap<StringName, Theme::ThemeFontMap> theme_font_cache;
+	mutable HashMap<StringName, Theme::ThemeFontSizeMap> theme_font_size_cache;
+	mutable HashMap<StringName, Theme::ThemeColorMap> theme_color_cache;
+	mutable HashMap<StringName, Theme::ThemeConstantMap> theme_constant_cache;
+
+	void _theme_changed();
+	void _invalidate_theme_cache();
 
 	Viewport *embedder = nullptr;
 
@@ -151,9 +161,13 @@ private:
 	void _event_callback(DisplayServer::WindowEvent p_event);
 	virtual bool _can_consume_input_events() const override;
 
+	Ref<Shortcut> debugger_stop_shortcut;
+
 protected:
 	Viewport *_get_embedder() const;
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
+
+	virtual void _update_theme_item_cache();
 
 	virtual void _post_popup() {}
 	virtual Size2 _get_contents_minimum_size() const;
@@ -168,7 +182,6 @@ public:
 	enum {
 		NOTIFICATION_VISIBILITY_CHANGED = 30,
 		NOTIFICATION_POST_POPUP = 31,
-		// This doesn't need to be paired with `NOTIFICATION_ENTER_TREE`.
 		NOTIFICATION_THEME_CHANGED = 32
 	};
 
@@ -255,13 +268,15 @@ public:
 	void popup_centered(const Size2i &p_minsize = Size2i());
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
+	void set_theme_owner_node(Node *p_node);
+	Node *get_theme_owner_node() const;
+	bool has_theme_owner_node() const;
+
 	void set_theme(const Ref<Theme> &p_theme);
 	Ref<Theme> get_theme() const;
-	void _theme_changed();
 
 	void set_theme_type_variation(const StringName &p_theme_type);
 	StringName get_theme_type_variation() const;
-	_FORCE_INLINE_ void _get_theme_type_dependencies(const StringName &p_theme_type, List<StringName> *p_list) const;
 
 	Size2 get_contents_minimum_size() const;
 

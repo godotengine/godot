@@ -88,15 +88,6 @@
 				[b]Note:[/b] When [method delay_usec] is called on the main thread, it will freeze the project and will prevent it from redrawing and registering input until the delay has passed. When using [method delay_usec] as part of an [EditorPlugin] or [EditorScript], it will freeze the editor but won't freeze the project if it is currently running (since the project is an independent child process).
 			</description>
 		</method>
-		<method name="dump_resources_to_file">
-			<return type="void" />
-			<param index="0" name="file" type="String" />
-			<description>
-				Dumps all used resources to file (only works in debug).
-				Entry format per line: "Resource Type : Resource Location".
-				At the end of the file is a statistic of all used Resource Types.
-			</description>
-		</method>
 		<method name="execute">
 			<return type="int" />
 			<param index="0" name="path" type="String" />
@@ -297,7 +288,7 @@
 				On BSD-based operating systems, this is [code]"FreeBSD"[/code], [code]"NetBSD"[/code], [code]"OpenBSD"[/code], or [code]"BSD"[/code] as a fallback.
 				On Android, this is [code]"Android"[/code].
 				On iOS, this is [code]"iOS"[/code].
-				On the web, this is [code]"HTML5"[/code].
+				On the web, this is [code]"Web"[/code].
 				[b]Note:[/b] Custom builds of the engine may support additional platforms, such as consoles, yielding other return values.
 				[codeblocks]
 				[gdscript]
@@ -312,7 +303,7 @@
 				        print("Android")
 				    "iOS":
 				        print("iOS")
-				    "HTML5":
+				    "Web":
 				        print("Web")
 				[/gdscript]
 				[csharp]
@@ -338,7 +329,7 @@
 				    case "iOS":
 				        GD.Print("iOS");
 				        break;
-				    case "HTML5":
+				    case "Web":
 				        GD.Print("Web");
 				        break;
 				}
@@ -363,7 +354,7 @@
 			<return type="String" />
 			<description>
 				Returns the name of the CPU model on the host machine (e.g. "Intel(R) Core(TM) i7-6700K CPU @ 4.00GHz").
-				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android, HTML5 and UWP, [method get_processor_name] returns an empty string.
+				[b]Note:[/b] This method is only implemented on Windows, macOS, Linux and iOS. On Android, Web and UWP, [method get_processor_name] returns an empty string.
 			</description>
 		</method>
 		<method name="get_restart_on_exit_arguments" qualifiers="const">
@@ -423,7 +414,7 @@
 			<description>
 				Returns a string that is unique to the device.
 				[b]Note:[/b] This string may change without notice if the user reinstalls/upgrades their operating system or changes their hardware. This means it should generally not be used to encrypt persistent data as the data saved before an unexpected ID change would become inaccessible. The returned string may also be falsified using external programs, so do not rely on the string returned by [method get_unique_id] for security purposes.
-				[b]Note:[/b] Returns an empty string on HTML5 and UWP, as this method isn't implemented on those platforms yet.
+				[b]Note:[/b] Returns an empty string on Web and UWP, as this method isn't implemented on those platforms yet.
 			</description>
 		</method>
 		<method name="get_user_data_dir" qualifiers="const">
@@ -494,7 +485,7 @@
 		<method name="is_userfs_persistent" qualifiers="const">
 			<return type="bool" />
 			<description>
-				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the HTML5 platform, where this persistence may be unavailable.
+				If [code]true[/code], the [code]user://[/code] file system is persistent, so that its state is the same after a player quits and starts the game again. Relevant to the Web platform, where this persistence may be unavailable.
 			</description>
 		</method>
 		<method name="kill">
@@ -524,33 +515,6 @@
 			<description>
 				Initialises the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-			</description>
-		</method>
-		<method name="print_all_resources">
-			<return type="void" />
-			<param index="0" name="tofile" type="String" default="&quot;&quot;" />
-			<description>
-				Shows all resources in the game. Optionally, the list can be written to a file by specifying a file path in [param tofile].
-			</description>
-		</method>
-		<method name="print_all_textures_by_size">
-			<return type="void" />
-			<description>
-				Shows the list of loaded textures sorted by size in memory.
-			</description>
-		</method>
-		<method name="print_resources_by_type">
-			<return type="void" />
-			<param index="0" name="types" type="PackedStringArray" />
-			<description>
-				Shows the number of resources loaded by the game of the given types.
-			</description>
-		</method>
-		<method name="print_resources_in_use">
-			<return type="void" />
-			<param index="0" name="short" type="bool" default="false" />
-			<description>
-				Shows all resources currently used by the game.
 			</description>
 		</method>
 		<method name="request_permission">
@@ -610,7 +574,7 @@
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
-				[b]Note:[/b] This method is implemented on Android, iOS, HTML5, Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
 			</description>
 		</method>
 	</methods>
@@ -627,7 +591,7 @@
 			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
 		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
-			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on HTML5.
+			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

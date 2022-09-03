@@ -378,19 +378,19 @@ public:
 	GDVIRTUAL3(shaped_text_set_spacing, RID, SpacingType, int64_t);
 	GDVIRTUAL2RC(int64_t, shaped_text_get_spacing, RID, SpacingType);
 
-	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
+	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
 	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1) override;
 	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
-	GDVIRTUAL7R(bool, shaped_text_add_string, RID, const String &, const Array &, int64_t, const Dictionary &, const String &, const Variant &);
+	GDVIRTUAL7R(bool, shaped_text_add_string, RID, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
 	GDVIRTUAL5R(bool, shaped_text_add_object, RID, const Variant &, const Size2 &, InlineAlignment, int64_t);
 	GDVIRTUAL4R(bool, shaped_text_resize_object, RID, const Variant &, const Size2 &, InlineAlignment);
 
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const override;
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const override;
-	virtual void shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const Array &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary()) override;
+	virtual void shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary()) override;
 	GDVIRTUAL1RC(int64_t, shaped_get_span_count, RID);
 	GDVIRTUAL2RC(Variant, shaped_get_span_meta, RID, int64_t);
-	GDVIRTUAL5(shaped_set_span_update_font, RID, int64_t, const Array &, int64_t, const Dictionary &);
+	GDVIRTUAL5(shaped_set_span_update_font, RID, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
 
 	virtual RID shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const override;
 	virtual RID shaped_text_get_parent(const RID &p_shaped) const override;

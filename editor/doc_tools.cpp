@@ -41,6 +41,7 @@
 #include "core/version.h"
 #include "editor/editor_settings.h"
 #include "scene/resources/theme.h"
+#include "scene/theme/theme_db.h"
 
 // Used for a hack preserving Mono properties on non-Mono builds.
 #include "modules/modules_enabled.gen.h" // For mono.
@@ -567,29 +568,29 @@ void DocTools::generate(bool p_basic_types) {
 			{
 				List<StringName> l;
 
-				Theme::get_default()->get_color_list(cname, &l);
+				ThemeDB::get_singleton()->get_default_theme()->get_color_list(cname, &l);
 				for (const StringName &E : l) {
 					DocData::ThemeItemDoc tid;
 					tid.name = E;
 					tid.type = "Color";
 					tid.data_type = "color";
-					tid.default_value = Variant(Theme::get_default()->get_color(E, cname)).get_construct_string().replace("\n", " ");
+					tid.default_value = Variant(ThemeDB::get_singleton()->get_default_theme()->get_color(E, cname)).get_construct_string().replace("\n", " ");
 					c.theme_properties.push_back(tid);
 				}
 
 				l.clear();
-				Theme::get_default()->get_constant_list(cname, &l);
+				ThemeDB::get_singleton()->get_default_theme()->get_constant_list(cname, &l);
 				for (const StringName &E : l) {
 					DocData::ThemeItemDoc tid;
 					tid.name = E;
 					tid.type = "int";
 					tid.data_type = "constant";
-					tid.default_value = itos(Theme::get_default()->get_constant(E, cname));
+					tid.default_value = itos(ThemeDB::get_singleton()->get_default_theme()->get_constant(E, cname));
 					c.theme_properties.push_back(tid);
 				}
 
 				l.clear();
-				Theme::get_default()->get_font_list(cname, &l);
+				ThemeDB::get_singleton()->get_default_theme()->get_font_list(cname, &l);
 				for (const StringName &E : l) {
 					DocData::ThemeItemDoc tid;
 					tid.name = E;
@@ -599,7 +600,7 @@ void DocTools::generate(bool p_basic_types) {
 				}
 
 				l.clear();
-				Theme::get_default()->get_font_size_list(cname, &l);
+				ThemeDB::get_singleton()->get_default_theme()->get_font_size_list(cname, &l);
 				for (const StringName &E : l) {
 					DocData::ThemeItemDoc tid;
 					tid.name = E;
@@ -609,7 +610,7 @@ void DocTools::generate(bool p_basic_types) {
 				}
 
 				l.clear();
-				Theme::get_default()->get_icon_list(cname, &l);
+				ThemeDB::get_singleton()->get_default_theme()->get_icon_list(cname, &l);
 				for (const StringName &E : l) {
 					DocData::ThemeItemDoc tid;
 					tid.name = E;
@@ -619,7 +620,7 @@ void DocTools::generate(bool p_basic_types) {
 				}
 
 				l.clear();
-				Theme::get_default()->get_stylebox_list(cname, &l);
+				ThemeDB::get_singleton()->get_default_theme()->get_stylebox_list(cname, &l);
 				for (const StringName &E : l) {
 					DocData::ThemeItemDoc tid;
 					tid.name = E;
@@ -1070,7 +1071,7 @@ Error DocTools::load_classes(const String &p_dir) {
 	while (!path.is_empty()) {
 		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
-			Error err2 = parser->open(p_dir.plus_file(path));
+			Error err2 = parser->open(p_dir.path_join(path));
 			if (err2) {
 				return err2;
 			}
@@ -1379,7 +1380,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		}
 
 		Error err;
-		String save_file = save_path.plus_file(c.name + ".xml");
+		String save_file = save_path.path_join(c.name + ".xml");
 		Ref<FileAccess> f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");

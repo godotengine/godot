@@ -85,6 +85,7 @@ World2D::World2D() {
 	NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 1));
 	NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1));
+	NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_DEF("navigation/2d/default_link_connection_radius", 4));
 }
 
 World2D::~World2D() {

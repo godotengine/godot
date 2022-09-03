@@ -34,14 +34,33 @@
 #include "servers/rendering_server.h"
 
 Size2 CheckButton::get_icon_size() const {
-	Ref<Texture2D> on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");
-	Ref<Texture2D> off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
-	Size2 tex_size = Size2(0, 0);
-	if (!on.is_null()) {
-		tex_size = Size2(on->get_width(), on->get_height());
+	Ref<Texture2D> on_tex;
+	Ref<Texture2D> off_tex;
+
+	if (is_layout_rtl()) {
+		if (is_disabled()) {
+			on_tex = theme_cache.checked_disabled_mirrored;
+			off_tex = theme_cache.unchecked_disabled_mirrored;
+		} else {
+			on_tex = theme_cache.checked_mirrored;
+			off_tex = theme_cache.unchecked_mirrored;
+		}
+	} else {
+		if (is_disabled()) {
+			on_tex = theme_cache.checked_disabled;
+			off_tex = theme_cache.unchecked_disabled;
+		} else {
+			on_tex = theme_cache.checked;
+			off_tex = theme_cache.unchecked;
+		}
 	}
-	if (!off.is_null()) {
-		tex_size = Size2(MAX(tex_size.width, off->get_width()), MAX(tex_size.height, off->get_height()));
+
+	Size2 tex_size = Size2(0, 0);
+	if (!on_tex.is_null()) {
+		tex_size = Size2(on_tex->get_width(), on_tex->get_height());
+	}
+	if (!off_tex.is_null()) {
+		tex_size = Size2(MAX(tex_size.width, off_tex->get_width()), MAX(tex_size.height, off_tex->get_height()));
 	}
 
 	return tex_size;
@@ -52,12 +71,28 @@ Size2 CheckButton::get_minimum_size() const {
 	Size2 tex_size = get_icon_size();
 	minsize.width += tex_size.width;
 	if (get_text().length() > 0) {
-		minsize.width += MAX(0, get_theme_constant(SNAME("h_separation")));
+		minsize.width += MAX(0, theme_cache.h_separation);
 	}
-	Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
-	minsize.height = MAX(minsize.height, tex_size.height + sb->get_margin(SIDE_TOP) + sb->get_margin(SIDE_BOTTOM));
+	minsize.height = MAX(minsize.height, tex_size.height + theme_cache.normal_style->get_margin(SIDE_TOP) + theme_cache.normal_style->get_margin(SIDE_BOTTOM));
 
 	return minsize;
+}
+
+void CheckButton::_update_theme_item_cache() {
+	Button::_update_theme_item_cache();
+
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.check_v_adjust = get_theme_constant(SNAME("check_v_adjust"));
+	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
+
+	theme_cache.checked = get_theme_icon(SNAME("on"));
+	theme_cache.unchecked = get_theme_icon(SNAME("off"));
+	theme_cache.checked_disabled = get_theme_icon(SNAME("on_disabled"));
+	theme_cache.unchecked_disabled = get_theme_icon(SNAME("off_disabled"));
+	theme_cache.checked_mirrored = get_theme_icon(SNAME("on_mirrored"));
+	theme_cache.unchecked_mirrored = get_theme_icon(SNAME("off_mirrored"));
+	theme_cache.checked_disabled_mirrored = get_theme_icon(SNAME("on_disabled_mirrored"));
+	theme_cache.unchecked_disabled_mirrored = get_theme_icon(SNAME("off_disabled_mirrored"));
 }
 
 void CheckButton::_notification(int p_what) {
@@ -78,34 +113,41 @@ void CheckButton::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			bool rtl = is_layout_rtl();
 
-			Ref<Texture2D> on;
+			Ref<Texture2D> on_tex;
+			Ref<Texture2D> off_tex;
+
 			if (rtl) {
-				on = Control::get_theme_icon(is_disabled() ? "on_disabled_mirrored" : "on_mirrored");
+				if (is_disabled()) {
+					on_tex = theme_cache.checked_disabled_mirrored;
+					off_tex = theme_cache.unchecked_disabled_mirrored;
+				} else {
+					on_tex = theme_cache.checked_mirrored;
+					off_tex = theme_cache.unchecked_mirrored;
+				}
 			} else {
-				on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");
-			}
-			Ref<Texture2D> off;
-			if (rtl) {
-				off = Control::get_theme_icon(is_disabled() ? "off_disabled_mirrored" : "off_mirrored");
-			} else {
-				off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
+				if (is_disabled()) {
+					on_tex = theme_cache.checked_disabled;
+					off_tex = theme_cache.unchecked_disabled;
+				} else {
+					on_tex = theme_cache.checked;
+					off_tex = theme_cache.unchecked;
+				}
 			}
 
-			Ref<StyleBox> sb = get_theme_stylebox(SNAME("normal"));
 			Vector2 ofs;
 			Size2 tex_size = get_icon_size();
 
 			if (rtl) {
-				ofs.x = sb->get_margin(SIDE_LEFT);
+				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 			} else {
-				ofs.x = get_size().width - (tex_size.width + sb->get_margin(SIDE_RIGHT));
+				ofs.x = get_size().width - (tex_size.width + theme_cache.normal_style->get_margin(SIDE_RIGHT));
 			}
-			ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant(SNAME("check_v_adjust"));
+			ofs.y = (get_size().height - tex_size.height) / 2 + theme_cache.check_v_adjust;
 
 			if (is_pressed()) {
-				on->draw(ci, ofs);
+				on_tex->draw(ci, ofs);
 			} else {
-				off->draw(ci, ofs);
+				off_tex->draw(ci, ofs);
 			}
 		} break;
 	}

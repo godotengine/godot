@@ -172,7 +172,7 @@ bool CodeSignCodeResources::add_file1(const String &p_root, const String &p_path
 	f.name = p_path;
 	f.optional = (found == CRMatch::CR_MATCH_OPTIONAL);
 	f.nested = false;
-	f.hash = hash_sha1_base64(p_root.plus_file(p_path));
+	f.hash = hash_sha1_base64(p_root.path_join(p_path));
 	print_verbose(vformat("CodeSign/CodeResources: File(V1) %s hash1:%s", f.name, f.hash));
 
 	files1.push_back(f);
@@ -182,7 +182,7 @@ bool CodeSignCodeResources::add_file1(const String &p_root, const String &p_path
 bool CodeSignCodeResources::add_file2(const String &p_root, const String &p_path) {
 	CRMatch found = match_rules2(p_path);
 	if (found == CRMatch::CR_MATCH_NESTED) {
-		return add_nested_file(p_root, p_path, p_root.plus_file(p_path));
+		return add_nested_file(p_root, p_path, p_root.path_join(p_path));
 	}
 	if (found != CRMatch::CR_MATCH_YES && found != CRMatch::CR_MATCH_OPTIONAL) {
 		return true; // No match.
@@ -192,8 +192,8 @@ bool CodeSignCodeResources::add_file2(const String &p_root, const String &p_path
 	f.name = p_path;
 	f.optional = (found == CRMatch::CR_MATCH_OPTIONAL);
 	f.nested = false;
-	f.hash = hash_sha1_base64(p_root.plus_file(p_path));
-	f.hash2 = hash_sha256_base64(p_root.plus_file(p_path));
+	f.hash = hash_sha1_base64(p_root.path_join(p_path));
+	f.hash2 = hash_sha256_base64(p_root.path_join(p_path));
 
 	print_verbose(vformat("CodeSign/CodeResources: File(V2) %s hash1:%s hash2:%s", f.name, f.hash, f.hash2));
 
@@ -214,17 +214,17 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 
 	Vector<String> files_to_add;
 	if (LipO::is_lipo(p_exepath)) {
-		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file("_lipo");
+		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
 		ERR_FAIL_COND_V_MSG(err != OK, false, vformat("CodeSign/CodeResources: Failed to create \"%s\" subfolder.", tmp_path_name));
 		LipO lip;
 		if (lip.open_file(p_exepath)) {
 			for (int i = 0; i < lip.get_arch_count(); i++) {
-				if (!lip.extract_arch(i, tmp_path_name.plus_file("_rqexe_" + itos(i)))) {
+				if (!lip.extract_arch(i, tmp_path_name.path_join("_rqexe_" + itos(i)))) {
 					CLEANUP();
 					ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Failed to extract thin binary.");
 				}
-				files_to_add.push_back(tmp_path_name.plus_file("_rqexe_" + itos(i)));
+				files_to_add.push_back(tmp_path_name.path_join("_rqexe_" + itos(i)));
 			}
 		}
 	} else if (MachO::is_macho(p_exepath)) {
@@ -285,7 +285,7 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const String &p_path, const String &p_main_exe_path) {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(da.is_null(), false);
-	Error err = da->change_dir(p_root.plus_file(p_path));
+	Error err = da->change_dir(p_root.path_join(p_path));
 	ERR_FAIL_COND_V(err != OK, false);
 
 	bool ret = true;
@@ -293,27 +293,27 @@ bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const Str
 	String n = da->get_next();
 	while (n != String()) {
 		if (n != "." && n != "..") {
-			String path = p_root.plus_file(p_path).plus_file(n);
+			String path = p_root.path_join(p_path).path_join(n);
 			if (path == p_main_exe_path) {
 				n = da->get_next();
 				continue; // Skip main executable.
 			}
 			if (da->current_is_dir()) {
-				CRMatch found = match_rules2(p_path.plus_file(n));
+				CRMatch found = match_rules2(p_path.path_join(n));
 				String fmw_ver = "Current"; // Framework version (default).
 				String info_path;
 				String main_exe;
 				bool bundle = false;
-				if (da->file_exists(path.plus_file("Contents/Info.plist"))) {
-					info_path = path.plus_file("Contents/Info.plist");
-					main_exe = path.plus_file("Contents/MacOS");
+				if (da->file_exists(path.path_join("Contents/Info.plist"))) {
+					info_path = path.path_join("Contents/Info.plist");
+					main_exe = path.path_join("Contents/MacOS");
 					bundle = true;
-				} else if (da->file_exists(path.plus_file(vformat("Versions/%s/Resources/Info.plist", fmw_ver)))) {
-					info_path = path.plus_file(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
-					main_exe = path.plus_file(vformat("Versions/%s", fmw_ver));
+				} else if (da->file_exists(path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver)))) {
+					info_path = path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
+					main_exe = path.path_join(vformat("Versions/%s", fmw_ver));
 					bundle = true;
-				} else if (da->file_exists(path.plus_file("Info.plist"))) {
-					info_path = path.plus_file("Info.plist");
+				} else if (da->file_exists(path.path_join("Info.plist"))) {
+					info_path = path.path_join("Info.plist");
 					main_exe = path;
 					bundle = true;
 				}
@@ -322,20 +322,20 @@ bool CodeSignCodeResources::add_folder_recursive(const String &p_root, const Str
 					PList info_plist;
 					if (info_plist.load_file(info_path)) {
 						if (info_plist.get_root()->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && info_plist.get_root()->data_dict.has("CFBundleExecutable")) {
-							main_exe = main_exe.plus_file(String::utf8(info_plist.get_root()->data_dict["CFBundleExecutable"]->data_string.get_data()));
+							main_exe = main_exe.path_join(String::utf8(info_plist.get_root()->data_dict["CFBundleExecutable"]->data_string.get_data()));
 						} else {
 							ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Invalid Info.plist, no exe name.");
 						}
 					} else {
 						ERR_FAIL_V_MSG(false, "CodeSign/CodeResources: Invalid Info.plist, can't load.");
 					}
-					ret = ret && add_nested_file(p_root, p_path.plus_file(n), main_exe);
+					ret = ret && add_nested_file(p_root, p_path.path_join(n), main_exe);
 				} else {
-					ret = ret && add_folder_recursive(p_root, p_path.plus_file(n), p_main_exe_path);
+					ret = ret && add_folder_recursive(p_root, p_path.path_join(n), p_main_exe_path);
 				}
 			} else {
-				ret = ret && add_file1(p_root, p_path.plus_file(n));
-				ret = ret && add_file2(p_root, p_path.plus_file(n));
+				ret = ret && add_file1(p_root, p_path.path_join(n));
+				ret = ret && add_file2(p_root, p_path.path_join(n));
 			}
 		}
 
@@ -1222,7 +1222,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 			}
 
 			if (info_plist.get_root()->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && info_plist.get_root()->data_dict.has("CFBundleExecutable")) {
-				main_exe = p_exe_path.plus_file(String::utf8(info_plist.get_root()->data_dict["CFBundleExecutable"]->data_string.get_data()));
+				main_exe = p_exe_path.path_join(String::utf8(info_plist.get_root()->data_dict["CFBundleExecutable"]->data_string.get_data()));
 			} else {
 				r_error_msg = TTR("Invalid Info.plist, no exe name.");
 				ERR_FAIL_V_MSG(FAILED, "CodeSign: Invalid Info.plist, no exe name.");
@@ -1244,7 +1244,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	Vector<String> files_to_sign;
 	if (LipO::is_lipo(main_exe)) {
 		print_verbose(vformat("CodeSign: Executable is fat, extracting..."));
-		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file("_lipo");
+		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
 		if (err != OK) {
 			r_error_msg = vformat(TTR("Failed to create \"%s\" subfolder."), tmp_path_name);
@@ -1253,12 +1253,12 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 		LipO lip;
 		if (lip.open_file(main_exe)) {
 			for (int i = 0; i < lip.get_arch_count(); i++) {
-				if (!lip.extract_arch(i, tmp_path_name.plus_file("_exe_" + itos(i)))) {
+				if (!lip.extract_arch(i, tmp_path_name.path_join("_exe_" + itos(i)))) {
 					CLEANUP();
 					r_error_msg = TTR("Failed to extract thin binary.");
 					ERR_FAIL_V_MSG(FAILED, "CodeSign: Failed to extract thin binary.");
 				}
-				files_to_sign.push_back(tmp_path_name.plus_file("_exe_" + itos(i)));
+				files_to_sign.push_back(tmp_path_name.path_join("_exe_" + itos(i)));
 			}
 		}
 	} else if (MachO::is_macho(main_exe)) {
@@ -1338,15 +1338,15 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 			r_error_msg = TTR("Failed to process nested resources.");
 			ERR_FAIL_V_MSG(FAILED, "CodeSign: Failed to process nested resources.");
 		}
-		Error err = da->make_dir_recursive(p_bundle_path.plus_file("_CodeSignature"));
+		Error err = da->make_dir_recursive(p_bundle_path.path_join("_CodeSignature"));
 		if (err != OK) {
 			CLEANUP();
 			r_error_msg = TTR("Failed to create _CodeSignature subfolder.");
 			ERR_FAIL_V_MSG(FAILED, "CodeSign: Failed to create _CodeSignature subfolder.");
 		}
-		cr.save_to_file(p_bundle_path.plus_file("_CodeSignature").plus_file("CodeResources"));
-		res_hash1 = file_hash_sha1(p_bundle_path.plus_file("_CodeSignature").plus_file("CodeResources"));
-		res_hash2 = file_hash_sha256(p_bundle_path.plus_file("_CodeSignature").plus_file("CodeResources"));
+		cr.save_to_file(p_bundle_path.path_join("_CodeSignature").path_join("CodeResources"));
+		res_hash1 = file_hash_sha1(p_bundle_path.path_join("_CodeSignature").path_join("CodeResources"));
+		res_hash2 = file_hash_sha256(p_bundle_path.path_join("_CodeSignature").path_join("CodeResources"));
 		if (res_hash1.is_empty() || res_hash2.is_empty()) {
 			CLEANUP();
 			r_error_msg = TTR("Failed to get CodeResources hash.");
@@ -1530,18 +1530,18 @@ Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String
 		String bundle_path;
 		bool bundle = false;
 		bool ios_bundle = false;
-		if (da->file_exists(p_path.plus_file("Contents/Info.plist"))) {
-			info_path = p_path.plus_file("Contents/Info.plist");
-			main_exe = p_path.plus_file("Contents/MacOS");
-			bundle_path = p_path.plus_file("Contents");
+		if (da->file_exists(p_path.path_join("Contents/Info.plist"))) {
+			info_path = p_path.path_join("Contents/Info.plist");
+			main_exe = p_path.path_join("Contents/MacOS");
+			bundle_path = p_path.path_join("Contents");
 			bundle = true;
-		} else if (da->file_exists(p_path.plus_file(vformat("Versions/%s/Resources/Info.plist", fmw_ver)))) {
-			info_path = p_path.plus_file(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
-			main_exe = p_path.plus_file(vformat("Versions/%s", fmw_ver));
-			bundle_path = p_path.plus_file(vformat("Versions/%s", fmw_ver));
+		} else if (da->file_exists(p_path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver)))) {
+			info_path = p_path.path_join(vformat("Versions/%s/Resources/Info.plist", fmw_ver));
+			main_exe = p_path.path_join(vformat("Versions/%s", fmw_ver));
+			bundle_path = p_path.path_join(vformat("Versions/%s", fmw_ver));
 			bundle = true;
-		} else if (da->file_exists(p_path.plus_file("Info.plist"))) {
-			info_path = p_path.plus_file("Info.plist");
+		} else if (da->file_exists(p_path.path_join("Info.plist"))) {
+			info_path = p_path.path_join("Info.plist");
 			main_exe = p_path;
 			bundle_path = p_path;
 			bundle = true;

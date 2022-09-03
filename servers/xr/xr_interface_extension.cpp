@@ -358,9 +358,5 @@ RID XRInterfaceExtension::get_render_target_texture(RID p_render_target) {
 RID XRInterfaceExtension::get_render_target_depth(RID p_render_target) {
 	// TODO implement this, the problem is that our depth texture isn't part of our render target as it is used for 3D rendering only
 	// but we don't have access to our render buffers from here....
-	RendererSceneRenderRD * rd_scene = ?????;
-	ERR_FAIL_NULL_V_MSG(rd_scene, RID(), "Renderer scene render not setup");
-
-	return rd_scene->render_buffers_get_depth_texture(????????????);
 }
 */

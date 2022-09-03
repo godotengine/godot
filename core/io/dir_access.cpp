@@ -106,7 +106,7 @@ static Error _erase_recursive(DirAccess *da) {
 			if (err) {
 				return err;
 			}
-			err = da->remove(da->get_current_dir().plus_file(E));
+			err = da->remove(da->get_current_dir().path_join(E));
 			if (err) {
 				return err;
 			}
@@ -116,7 +116,7 @@ static Error _erase_recursive(DirAccess *da) {
 	}
 
 	for (const String &E : files) {
-		Error err = da->remove(da->get_current_dir().plus_file(E));
+		Error err = da->remove(da->get_current_dir().path_join(E));
 		if (err) {
 			return err;
 		}
@@ -138,7 +138,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	if (p_dir.is_relative_path()) {
 		//append current
-		full_dir = get_current_dir().plus_file(p_dir);
+		full_dir = get_current_dir().path_join(p_dir);
 
 	} else {
 		full_dir = p_dir;
@@ -172,7 +172,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	String curpath = base;
 	for (int i = 0; i < subdirs.size(); i++) {
-		curpath = curpath.plus_file(subdirs[i]);
+		curpath = curpath.path_join(subdirs[i]);
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {
 			ERR_FAIL_V_MSG(err, "Could not create directory: " + curpath);
@@ -354,8 +354,8 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod
 	String n = get_next();
 	while (!n.is_empty()) {
 		if (n != "." && n != "..") {
-			if (p_copy_links && is_link(get_current_dir().plus_file(n))) {
-				create_link(read_link(get_current_dir().plus_file(n)), p_to + n);
+			if (p_copy_links && is_link(get_current_dir().path_join(n))) {
+				create_link(read_link(get_current_dir().path_join(n)), p_to + n);
 			} else if (current_is_dir()) {
 				dirs.push_back(n);
 			} else {
@@ -364,7 +364,7 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod
 					list_dir_end();
 					return ERR_BUG;
 				}
-				Error err = copy(get_current_dir().plus_file(n), p_to + rel_path, p_chmod_flags);
+				Error err = copy(get_current_dir().path_join(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
 					return err;

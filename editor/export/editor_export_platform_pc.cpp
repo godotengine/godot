@@ -185,9 +185,9 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 			String src_path = ProjectSettings::get_singleton()->globalize_path(so_files[i].path);
 			String target_path;
 			if (so_files[i].target.is_empty()) {
-				target_path = p_path.get_base_dir().plus_file(src_path.get_file());
+				target_path = p_path.get_base_dir().path_join(src_path.get_file());
 			} else {
-				target_path = p_path.get_base_dir().plus_file(so_files[i].target).plus_file(src_path.get_file());
+				target_path = p_path.get_base_dir().path_join(so_files[i].target).path_join(src_path.get_file());
 			}
 
 			if (da->dir_exists(src_path)) {

@@ -66,6 +66,11 @@ private:
 
 		uint32_t use_jitter;
 		float jitter_seed;
+		uint32_t use_physical_near;
+		uint32_t use_physical_far;
+
+		float blur_size_near;
+		float blur_size_far;
 		uint32_t pad[2];
 	};
 
@@ -111,8 +116,8 @@ public:
 	BokehDOF(bool p_prefer_raster_effects);
 	~BokehDOF();
 
-	void bokeh_dof_compute(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
-	void bokeh_dof_raster(const BokehBuffers &p_buffers, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_dof_blur_amount, RenderingServer::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
+	void bokeh_dof_compute(const BokehBuffers &p_buffers, RID p_camera_attributes, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
+	void bokeh_dof_raster(const BokehBuffers &p_buffers, RID p_camera_attributes, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 };
 
 } // namespace RendererRD

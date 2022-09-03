@@ -9,7 +9,7 @@ namespace GodotTools
     {
         private Timer _watchTimer;
 
-        public override void _Notification(int what)
+        public override void _Notification(long what)
         {
             if (what == Node.NotificationWmWindowFocusIn)
             {

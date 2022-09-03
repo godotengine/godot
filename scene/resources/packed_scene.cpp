@@ -279,25 +279,36 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
 								if (res->is_local_to_scene()) {
-									HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = resources_local_to_scene.find(res);
-
-									if (E) {
-										value = E->value;
+									// In a situation where a local-to-scene resource is used in a child node of a non-editable instance,
+									// we need to avoid the parent scene from overriding the resource potentially also used in the root
+									// of the instantiated scene. That would to the instance having two different instances of the resource.
+									// Since at this point it's too late to propagate the resource instance in the parent scene to all the relevant
+									// nodes in the instance (and that would require very complex bookkepping), what we do instead is
+									// tampering the resource object already there with the values from the node in the parent scene and
+									// then tell this node to reference that resource.
+									if (n.instance >= 0) {
+										Ref<Resource> node_res = node->get(snames[nprops[j].name]);
+										if (node_res.is_valid()) {
+											node_res->copy_from(res);
+											node_res->configure_for_local_scene(node, resources_local_to_scene);
+											value = node_res;
+										}
 									} else {
+										HashMap<Ref<Resource>, Ref<Resource>>::Iterator E = resources_local_to_scene.find(res);
 										Node *base = i == 0 ? node : ret_nodes[0];
-
-										if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
-											//for the main scene, use the resource as is
-											res->configure_for_local_scene(base, resources_local_to_scene);
-											resources_local_to_scene[res] = res;
-
+										if (E) {
+											value = E->value;
 										} else {
-											//for instances, a copy must be made
-											Node *base2 = i == 0 ? node : ret_nodes[0];
-											Ref<Resource> local_dupe = res->duplicate_for_local_scene(base2, resources_local_to_scene);
-											resources_local_to_scene[res] = local_dupe;
-											res = local_dupe;
-											value = local_dupe;
+											if (p_edit_state == GEN_EDIT_STATE_MAIN) {
+												//for the main scene, use the resource as is
+												res->configure_for_local_scene(base, resources_local_to_scene);
+												resources_local_to_scene[res] = res;
+											} else {
+												//for instances, a copy must be made
+												Ref<Resource> local_dupe = res->duplicate_for_local_scene(base, resources_local_to_scene);
+												resources_local_to_scene[res] = local_dupe;
+												value = local_dupe;
+											}
 										}
 									}
 									//must make a copy, because this res is local to scene
@@ -398,7 +409,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 	}
 
 	for (KeyValue<Ref<Resource>, Ref<Resource>> &E : resources_local_to_scene) {
-		E.value->setup_local_to_scene();
+		if (E.value->get_local_scene() == ret_nodes[0]) {
+			E.value->setup_local_to_scene();
+		}
 	}
 
 	//do connections
@@ -1742,7 +1755,7 @@ Node *PackedScene::instantiate(GenEditState p_edit_state) const {
 		s->set_scene_file_path(get_path());
 	}
 
-	s->notification(Node::NOTIFICATION_INSTANCED);
+	s->notification(Node::NOTIFICATION_SCENE_INSTANTIATED);
 
 	return s;
 }

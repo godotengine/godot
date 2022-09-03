@@ -31,17 +31,7 @@
 #include "theme.h"
 
 #include "core/string/print_string.h"
-
-// Universal Theme resources used when no other theme has the item.
-Ref<Theme> Theme::default_theme;
-Ref<Theme> Theme::project_default_theme;
-
-// Universal default values, final fallback for every theme.
-float Theme::fallback_base_scale = 1.0;
-Ref<Texture2D> Theme::fallback_icon;
-Ref<StyleBox> Theme::fallback_style;
-Ref<Font> Theme::fallback_font;
-int Theme::fallback_font_size = 16;
+#include "scene/theme/theme_db.h"
 
 // Dynamic properties.
 bool Theme::_set(const StringName &p_name, const Variant &p_value) {
@@ -185,64 +175,7 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-// Universal fallback Theme resources.
-Ref<Theme> Theme::get_default() {
-	return default_theme;
-}
-
-void Theme::set_default(const Ref<Theme> &p_default) {
-	default_theme = p_default;
-}
-
-Ref<Theme> Theme::get_project_default() {
-	return project_default_theme;
-}
-
-void Theme::set_project_default(const Ref<Theme> &p_project_default) {
-	project_default_theme = p_project_default;
-}
-
-// Universal fallback values for theme item types.
-void Theme::set_fallback_base_scale(float p_base_scale) {
-	fallback_base_scale = p_base_scale;
-}
-
-void Theme::set_fallback_icon(const Ref<Texture2D> &p_icon) {
-	fallback_icon = p_icon;
-}
-
-void Theme::set_fallback_style(const Ref<StyleBox> &p_style) {
-	fallback_style = p_style;
-}
-
-void Theme::set_fallback_font(const Ref<Font> &p_font) {
-	fallback_font = p_font;
-}
-
-void Theme::set_fallback_font_size(int p_font_size) {
-	fallback_font_size = p_font_size;
-}
-
-float Theme::get_fallback_base_scale() {
-	return fallback_base_scale;
-}
-
-Ref<Texture2D> Theme::get_fallback_icon() {
-	return fallback_icon;
-}
-
-Ref<StyleBox> Theme::get_fallback_style() {
-	return fallback_style;
-}
-
-Ref<Font> Theme::get_fallback_font() {
-	return fallback_font;
-}
-
-int Theme::get_fallback_font_size() {
-	return fallback_font_size;
-}
-
+// Static helpers.
 bool Theme::is_valid_type_name(const String &p_name) {
 	for (int i = 0; i < p_name.length(); i++) {
 		if (!is_ascii_identifier_char(p_name[i])) {
@@ -351,7 +284,7 @@ Ref<Texture2D> Theme::get_icon(const StringName &p_name, const StringName &p_the
 	if (icon_map.has(p_theme_type) && icon_map[p_theme_type].has(p_name) && icon_map[p_theme_type][p_name].is_valid()) {
 		return icon_map[p_theme_type][p_name];
 	} else {
-		return fallback_icon;
+		return ThemeDB::get_singleton()->get_fallback_icon();
 	}
 }
 
@@ -461,7 +394,7 @@ Ref<StyleBox> Theme::get_stylebox(const StringName &p_name, const StringName &p_
 	if (style_map.has(p_theme_type) && style_map[p_theme_type].has(p_name) && style_map[p_theme_type][p_name].is_valid()) {
 		return style_map[p_theme_type][p_name];
 	} else {
-		return fallback_style;
+		return ThemeDB::get_singleton()->get_fallback_stylebox();
 	}
 }
 
@@ -573,7 +506,7 @@ Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_theme_ty
 	} else if (has_default_font()) {
 		return default_font;
 	} else {
-		return fallback_font;
+		return ThemeDB::get_singleton()->get_fallback_font();
 	}
 }
 
@@ -676,7 +609,7 @@ int Theme::get_font_size(const StringName &p_name, const StringName &p_theme_typ
 	} else if (has_default_font_size()) {
 		return default_font_size;
 	} else {
-		return fallback_font_size;
+		return ThemeDB::get_singleton()->get_fallback_font_size();
 	}
 }
 

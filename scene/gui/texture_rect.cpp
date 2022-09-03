@@ -150,7 +150,7 @@ void TextureRect::_bind_methods() {
 
 void TextureRect::_texture_changed() {
 	if (texture.is_valid()) {
-		update();
+		queue_redraw();
 		update_minimum_size();
 	}
 }
@@ -170,7 +170,7 @@ void TextureRect::set_texture(const Ref<Texture2D> &p_tex) {
 		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &TextureRect::_texture_changed));
 	}
 
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -184,7 +184,7 @@ void TextureRect::set_ignore_texture_size(bool p_ignore) {
 	}
 
 	ignore_texture_size = p_ignore;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -198,7 +198,7 @@ void TextureRect::set_stretch_mode(StretchMode p_mode) {
 	}
 
 	stretch_mode = p_mode;
-	update();
+	queue_redraw();
 }
 
 TextureRect::StretchMode TextureRect::get_stretch_mode() const {
@@ -211,7 +211,7 @@ void TextureRect::set_flip_h(bool p_flip) {
 	}
 
 	hflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool TextureRect::is_flipped_h() const {
@@ -224,7 +224,7 @@ void TextureRect::set_flip_v(bool p_flip) {
 	}
 
 	vflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool TextureRect::is_flipped_v() const {

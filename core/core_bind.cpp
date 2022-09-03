@@ -437,114 +437,6 @@ bool OS::is_stdout_verbose() const {
 	return ::OS::get_singleton()->is_stdout_verbose();
 }
 
-struct OSCoreBindImg {
-	String path;
-	Size2 size;
-	int fmt = 0;
-	ObjectID id;
-	int vram = 0;
-	bool operator<(const OSCoreBindImg &p_img) const { return vram == p_img.vram ? id < p_img.id : vram > p_img.vram; }
-};
-
-void OS::print_all_textures_by_size() {
-	List<OSCoreBindImg> imgs;
-	uint64_t total = 0;
-	{
-		List<Ref<Resource>> rsrc;
-		ResourceCache::get_cached_resources(&rsrc);
-
-		for (Ref<Resource> &res : rsrc) {
-			if (!res->is_class("Texture")) {
-				continue;
-			}
-
-			Size2 size = res->call("get_size");
-			int fmt = res->call("get_format");
-
-			OSCoreBindImg img;
-			img.size = size;
-			img.fmt = fmt;
-			img.path = res->get_path();
-			img.vram = Image::get_image_data_size(img.size.width, img.size.height, Image::Format(img.fmt));
-			img.id = res->get_instance_id();
-			total += img.vram;
-			imgs.push_back(img);
-		}
-	}
-
-	imgs.sort();
-
-	if (imgs.size() == 0) {
-		print_line("No textures seem used in this project.");
-	} else {
-		print_line("Textures currently in use, sorted by VRAM usage:\n"
-				   "Path - VRAM usage (Dimensions)");
-	}
-
-	for (const OSCoreBindImg &img : imgs) {
-		print_line(vformat("%s - %s %s",
-				img.path,
-				String::humanize_size(img.vram),
-				img.size));
-	}
-
-	print_line(vformat("Total VRAM usage: %s.", String::humanize_size(total)));
-}
-
-void OS::print_resources_by_type(const Vector<String> &p_types) {
-	ERR_FAIL_COND_MSG(p_types.size() == 0,
-			"At least one type should be provided to print resources by type.");
-
-	print_line(vformat("Resources currently in use for the following types: %s", p_types));
-
-	RBMap<String, int> type_count;
-	List<Ref<Resource>> resources;
-	ResourceCache::get_cached_resources(&resources);
-
-	for (const Ref<Resource> &r : resources) {
-		bool found = false;
-
-		for (int i = 0; i < p_types.size(); i++) {
-			if (r->is_class(p_types[i])) {
-				found = true;
-			}
-		}
-		if (!found) {
-			continue;
-		}
-
-		if (!type_count.has(r->get_class())) {
-			type_count[r->get_class()] = 0;
-		}
-
-		type_count[r->get_class()]++;
-
-		print_line(vformat("%s: %s", r->get_class(), r->get_path()));
-
-		List<StringName> metas;
-		r->get_meta_list(&metas);
-		for (const StringName &meta : metas) {
-			print_line(vformat("  %s: %s", meta, r->get_meta(meta)));
-		}
-	}
-
-	for (const KeyValue<String, int> &E : type_count) {
-		print_line(vformat("%s count: %d", E.key, E.value));
-	}
-}
-
-void OS::print_all_resources(const String &p_to_file) {
-	::OS::get_singleton()->print_all_resources(p_to_file);
-}
-
-void OS::print_resources_in_use(bool p_short) {
-	::OS::get_singleton()->print_resources_in_use(p_short);
-}
-
-void OS::dump_resources_to_file(const String &p_file) {
-	::OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
-}
-
 Error OS::move_to_trash(const String &p_path) const {
 	return ::OS::get_singleton()->move_to_trash(p_path);
 }
@@ -663,10 +555,6 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_debug_build"), &OS::is_debug_build);
 
-	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &OS::dump_resources_to_file);
-	ClassDB::bind_method(D_METHOD("print_resources_in_use", "short"), &OS::print_resources_in_use, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("print_all_resources", "tofile"), &OS::print_all_resources, DEFVAL(""));
-
 	ClassDB::bind_method(D_METHOD("get_static_memory_usage"), &OS::get_static_memory_usage);
 	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"), &OS::get_static_memory_peak_usage);
 
@@ -677,9 +565,6 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &OS::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &OS::get_cache_dir);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &OS::get_unique_id);
-
-	ClassDB::bind_method(D_METHOD("print_all_textures_by_size"), &OS::print_all_textures_by_size);
-	ClassDB::bind_method(D_METHOD("print_resources_by_type", "types"), &OS::print_resources_by_type);
 
 	ClassDB::bind_method(D_METHOD("get_keycode_string", "code"), &OS::get_keycode_string);
 	ClassDB::bind_method(D_METHOD("is_keycode_unicode", "code"), &OS::is_keycode_unicode);

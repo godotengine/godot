@@ -30,6 +30,8 @@
 
 #include "voxelizer.h"
 
+#include "core/config/project_settings.h"
+
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
 	if (p_pos.is_equal_approx(p_vtx[0])) {
 		r_uv = p_uv[0];
@@ -348,7 +350,10 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 		Ref<Texture2D> emission_tex = mat->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 
 		Color emission_col = mat->get_emission();
-		float emission_energy = mat->get_emission_energy();
+		float emission_energy = mat->get_emission_energy_multiplier() * exposure_normalization;
+		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			emission_energy *= mat->get_emission_intensity();
+		}
 
 		Ref<Image> img_emission;
 
@@ -608,10 +613,11 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 	}
 }
 
-void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
+void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_normalization) {
 	sorted = false;
 	original_bounds = p_bounds;
 	cell_subdiv = p_subdiv;
+	exposure_normalization = p_exposure_normalization;
 	bake_cells.resize(1);
 	material_cache.clear();
 

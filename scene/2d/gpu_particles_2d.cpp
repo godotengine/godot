@@ -30,6 +30,7 @@
 
 #include "gpu_particles_2d.h"
 
+#include "core/core_string_names.h"
 #include "scene/resources/particle_process_material.h"
 
 #ifdef TOOLS_ENABLED
@@ -99,7 +100,7 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 
 	RS::get_singleton()->particles_set_custom_aabb(particles, aabb);
 
-	update();
+	queue_redraw();
 }
 
 void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
@@ -141,7 +142,7 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 void GPUParticles2D::set_trail_enabled(bool p_enabled) {
 	trail_enabled = p_enabled;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
-	update();
+	queue_redraw();
 
 	RS::get_singleton()->particles_set_transform_align(particles, p_enabled ? RS::PARTICLES_TRANSFORM_ALIGN_Y_TO_VELOCITY : RS::PARTICLES_TRANSFORM_ALIGN_DISABLED);
 }
@@ -150,7 +151,7 @@ void GPUParticles2D::set_trail_length(double p_seconds) {
 	ERR_FAIL_COND(p_seconds < 0.001);
 	trail_length = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_length);
-	update();
+	queue_redraw();
 }
 
 void GPUParticles2D::set_trail_sections(int p_sections) {
@@ -158,7 +159,7 @@ void GPUParticles2D::set_trail_sections(int p_sections) {
 	ERR_FAIL_COND(p_sections > 128);
 
 	trail_sections = p_sections;
-	update();
+	queue_redraw();
 }
 
 void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
@@ -166,13 +167,13 @@ void GPUParticles2D::set_trail_section_subdivisions(int p_subdivisions) {
 	ERR_FAIL_COND(p_subdivisions > 1024);
 
 	trail_section_subdivisions = p_subdivisions;
-	update();
+	queue_redraw();
 }
 
 #ifdef TOOLS_ENABLED
 void GPUParticles2D::set_show_visibility_rect(bool p_show_visibility_rect) {
 	show_visibility_rect = p_show_visibility_rect;
-	update();
+	queue_redraw();
 }
 #endif
 
@@ -331,9 +332,17 @@ Rect2 GPUParticles2D::capture_rect() const {
 }
 
 void GPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
+	if (texture.is_valid()) {
+		texture->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GPUParticles2D::_texture_changed));
+	}
+
 	texture = p_texture;
+
+	if (texture.is_valid()) {
+		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &GPUParticles2D::_texture_changed));
+	}
 	_update_collision_size();
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> GPUParticles2D::get_texture() const {
@@ -360,6 +369,14 @@ void GPUParticles2D::_attach_sub_emitter() {
 		if (sen && sen != this) {
 			RS::get_singleton()->particles_set_subemitter(particles, sen->particles);
 		}
+	}
+}
+
+void GPUParticles2D::_texture_changed() {
+	// Changes to the texture need to trigger an update to make
+	// the editor redraw the sprite with the updated texture.
+	if (texture.is_valid()) {
+		queue_redraw();
 	}
 }
 
@@ -480,12 +497,21 @@ void GPUParticles2D::_notification(int p_what) {
 					Vector2(-size.x / 2.0, size.y / 2.0)
 				};
 
-				Vector<Vector2> uvs = {
-					Vector2(0, 0),
-					Vector2(1, 0),
-					Vector2(1, 1),
-					Vector2(0, 1)
-				};
+				Vector<Vector2> uvs;
+				AtlasTexture *atlas_texure = Object::cast_to<AtlasTexture>(*texture);
+				if (atlas_texure && atlas_texure->get_atlas().is_valid()) {
+					Rect2 region_rect = atlas_texure->get_region();
+					Size2 atlas_size = atlas_texure->get_atlas()->get_size();
+					uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, region_rect.position.y / atlas_size.y));
+					uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, region_rect.position.y / atlas_size.y));
+					uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
+					uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
+				} else {
+					uvs.push_back(Vector2(0, 0));
+					uvs.push_back(Vector2(1, 0));
+					uvs.push_back(Vector2(1, 1));
+					uvs.push_back(Vector2(0, 1));
+				}
 
 				Vector<int> indices = { 0, 1, 2, 0, 2, 3 };
 

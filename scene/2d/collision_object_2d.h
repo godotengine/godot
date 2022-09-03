@@ -103,6 +103,10 @@ protected:
 	void set_body_mode(PhysicsServer2D::BodyMode p_mode);
 
 	GDVIRTUAL3(_input_event, Viewport *, Ref<InputEvent>, int)
+	GDVIRTUAL0(_mouse_enter)
+	GDVIRTUAL0(_mouse_exit)
+	GDVIRTUAL1(_mouse_shape_enter, int)
+	GDVIRTUAL1(_mouse_shape_exit, int)
 public:
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;

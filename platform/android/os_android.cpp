@@ -362,7 +362,7 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 }
 
 String OS_Android::get_config_path() const {
-	return get_user_data_dir().plus_file("config");
+	return get_user_data_dir().path_join("config");
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {

@@ -150,14 +150,14 @@ void EditorPath::update_path() {
 			}
 
 			current_object_label->set_text(" " + name); // An extra space so the text is not too close of the icon.
-			set_tooltip(obj->get_class());
+			set_tooltip_text(obj->get_class());
 		}
 	}
 }
 
 void EditorPath::clear_path() {
 	set_disabled(true);
-	set_tooltip("");
+	set_tooltip_text("");
 
 	current_object_label->set_text("");
 	current_object_icon->set_texture(nullptr);
@@ -182,6 +182,7 @@ void EditorPath::_id_pressed(int p_idx) {
 
 void EditorPath::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
@@ -230,5 +231,5 @@ EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	sub_objects_menu->connect("about_to_popup", callable_mp(this, &EditorPath::_about_to_show));
 	sub_objects_menu->connect("id_pressed", callable_mp(this, &EditorPath::_id_pressed));
 
-	set_tooltip(TTR("Open a list of sub-resources."));
+	set_tooltip_text(TTR("Open a list of sub-resources."));
 }

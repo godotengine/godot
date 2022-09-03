@@ -110,7 +110,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_reset->set_flat(true);
 	bake_hbox->add_child(button_reset);
 	// No button text, we only use a revert icon which is set when entering the tree.
-	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
+	button_reset->set_tooltip_text(TTR("Clear the navigation mesh."));
 	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
 	bake_info = memnew(Label);

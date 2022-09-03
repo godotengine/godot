@@ -14,8 +14,7 @@ comprehensive set of [common tools](https://godotengine.org/features), so that u
 without having to reinvent the wheel. Games can be exported with one click to a
 number of platforms, including the major desktop platforms (Linux, macOS,
 Windows), mobile platforms (Android, iOS), as well as Web-based platforms
-(HTML5) and
-[consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
+and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
 
 ## Free, open source and community-driven
 

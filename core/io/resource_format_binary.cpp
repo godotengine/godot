@@ -421,7 +421,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+						path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().path_join(path));
 					}
 
 					if (remaps.find(path)) {
@@ -683,7 +683,7 @@ Error ResourceLoaderBinary::load() {
 
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().plus_file(external_resources[i].path));
+			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().path_join(external_resources[i].path));
 		}
 
 		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
@@ -1329,7 +1329,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		bool relative = false;
 		if (!path.begins_with("res://")) {
-			path = local_path.plus_file(path).simplify_path();
+			path = local_path.path_join(path).simplify_path();
 			relative = true;
 		}
 

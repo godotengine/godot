@@ -35,6 +35,7 @@
 #include "default_theme_icons.gen.h"
 #include "scene/resources/font.h"
 #include "scene/resources/theme.h"
+#include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
 
 #include "modules/modules_enabled.gen.h" // For svg.
@@ -608,11 +609,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Dialogs
 
-	theme->set_constant("margin", "Dialogs", 8 * scale);
-	theme->set_constant("button_margin", "Dialogs", 32 * scale);
-
-	// AcceptDialog
-
+	// AcceptDialog is currently the base dialog, so this defines styles for all extending nodes.
+	theme->set_constant("margin", "AcceptDialog", 8 * scale);
+	theme->set_constant("button_margin", "AcceptDialog", 32 * scale);
 	theme->set_stylebox("panel", "AcceptDialog", make_flat_stylebox(style_popup_color, 0, 0, 0, 0));
 
 	// File Dialog
@@ -830,6 +829,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
 	theme->set_stylebox("panel", "TabContainer", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
+	theme->set_stylebox("tabbar_background", "TabContainer", make_empty_stylebox(0, 0, 0, 0));
 
 	theme->set_icon("increment", "TabContainer", icons["scroll_button_right"]);
 	theme->set_icon("increment_highlight", "TabContainer", icons["scroll_button_right_hl"]);
@@ -996,9 +996,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Containers
 
+	theme->set_icon("h_grabber", "SplitContainer", icons["hsplitter"]);
+	theme->set_icon("v_grabber", "SplitContainer", icons["vsplitter"]);
 	theme->set_icon("grabber", "VSplitContainer", icons["vsplitter"]);
 	theme->set_icon("grabber", "HSplitContainer", icons["hsplitter"]);
 
+	theme->set_constant("separation", "BoxContainer", 4 * scale);
 	theme->set_constant("separation", "HBoxContainer", 4 * scale);
 	theme->set_constant("separation", "VBoxContainer", 4 * scale);
 	theme->set_constant("margin_left", "MarginContainer", 0 * scale);
@@ -1007,10 +1010,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("margin_bottom", "MarginContainer", 0 * scale);
 	theme->set_constant("h_separation", "GridContainer", 4 * scale);
 	theme->set_constant("v_separation", "GridContainer", 4 * scale);
+	theme->set_constant("separation", "SplitContainer", 12 * scale);
 	theme->set_constant("separation", "HSplitContainer", 12 * scale);
 	theme->set_constant("separation", "VSplitContainer", 12 * scale);
+	theme->set_constant("autohide", "SplitContainer", 1 * scale);
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
+	theme->set_constant("h_separation", "FlowContainer", 4 * scale);
+	theme->set_constant("v_separation", "FlowContainer", 4 * scale);
 	theme->set_constant("h_separation", "HFlowContainer", 4 * scale);
 	theme->set_constant("v_separation", "HFlowContainer", 4 * scale);
 	theme->set_constant("h_separation", "VFlowContainer", 4 * scale);
@@ -1101,18 +1108,11 @@ void make_default_theme(float p_scale, Ref<Font> p_font, TextServer::SubpixelPos
 
 	fill_default_theme(t, default_font, bold_font, bold_italics_font, italics_font, default_icon, default_style, default_scale);
 
-	Theme::set_default(t);
-	Theme::set_fallback_base_scale(default_scale);
-	Theme::set_fallback_icon(default_icon);
-	Theme::set_fallback_style(default_style);
-	Theme::set_fallback_font(default_font);
-	Theme::set_fallback_font_size(default_font_size * default_scale);
-}
+	ThemeDB::get_singleton()->set_default_theme(t);
 
-void clear_default_theme() {
-	Theme::set_project_default(nullptr);
-	Theme::set_default(nullptr);
-	Theme::set_fallback_icon(nullptr);
-	Theme::set_fallback_style(nullptr);
-	Theme::set_fallback_font(nullptr);
+	ThemeDB::get_singleton()->set_fallback_base_scale(default_scale);
+	ThemeDB::get_singleton()->set_fallback_icon(default_icon);
+	ThemeDB::get_singleton()->set_fallback_stylebox(default_style);
+	ThemeDB::get_singleton()->set_fallback_font(default_font);
+	ThemeDB::get_singleton()->set_fallback_font_size(default_font_size * default_scale);
 }

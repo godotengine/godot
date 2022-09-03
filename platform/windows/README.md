@@ -1,6 +1,6 @@
 # Windows platform port
 
-This folder contains the C++ and JavaScript code for the Windows platform port.
+This folder contains the C++ code for the Windows platform port.
 
 See also [`misc/dist/windows`](/misc/dist/windows) folder for additional files
 used by this platform.

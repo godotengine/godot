@@ -11,13 +11,13 @@ public partial class _CLASS_ : _BASE_
     // Get the gravity from the project settings to be synced with RigidBody nodes.
     public float gravity = ProjectSettings.GetSetting("physics/2d/default_gravity").AsSingle();
 
-    public override void _PhysicsProcess(float delta)
+    public override void _PhysicsProcess(double delta)
     {
         Vector2 velocity = Velocity;
 
         // Add the gravity.
         if (!IsOnFloor())
-            velocity.y += gravity * delta;
+            velocity.y += gravity * (float)delta;
 
         // Handle Jump.
         if (Input.IsActionJustPressed("ui_accept") && IsOnFloor())

@@ -52,7 +52,7 @@ void EditorPropertyNil::update_property() {
 
 EditorPropertyNil::EditorPropertyNil() {
 	Label *label = memnew(Label);
-	label->set_text("[null]");
+	label->set_text("<null>");
 	add_child(label);
 }
 
@@ -167,7 +167,8 @@ void EditorPropertyMultilineText::update_property() {
 
 void EditorPropertyMultilineText::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			Ref<Texture2D> df = get_theme_icon(SNAME("DistractionFree"), SNAME("EditorIcons"));
 			open_big_text->set_icon(df);
 
@@ -321,6 +322,7 @@ void EditorPropertyTextEnum::_bind_methods() {
 
 void EditorPropertyTextEnum::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_button->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
 			accept_button->set_icon(get_theme_icon(SNAME("ImportCheck"), SNAME("EditorIcons")));
@@ -394,7 +396,7 @@ void EditorPropertyLocale::_locale_pressed() {
 void EditorPropertyLocale::update_property() {
 	String locale_code = get_edited_object()->get(get_edited_property());
 	locale->set_text(locale_code);
-	locale->set_tooltip(locale_code);
+	locale->set_tooltip_text(locale_code);
 }
 
 void EditorPropertyLocale::setup(const String &p_hint_text) {
@@ -402,6 +404,7 @@ void EditorPropertyLocale::setup(const String &p_hint_text) {
 
 void EditorPropertyLocale::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			locale_edit->set_icon(get_theme_icon(SNAME("Translation"), SNAME("EditorIcons")));
 		} break;
@@ -482,7 +485,7 @@ void EditorPropertyPath::_path_pressed() {
 void EditorPropertyPath::update_property() {
 	String full_path = get_edited_object()->get(get_edited_property());
 	path->set_text(full_path);
-	path->set_tooltip(full_path);
+	path->set_tooltip_text(full_path);
 }
 
 void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global) {
@@ -497,6 +500,7 @@ void EditorPropertyPath::set_save_mode() {
 
 void EditorPropertyPath::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			path_edit->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 		} break;
@@ -828,26 +832,35 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	bool first = true;
 	uint32_t current_val;
 	for (int i = 0; i < p_options.size(); i++) {
+		// An empty option is not considered a "flag".
 		String option = p_options[i].strip_edges();
-		if (!option.is_empty()) {
-			CheckBox *cb = memnew(CheckBox);
-			cb->set_text(option);
-			cb->set_clip_text(true);
-			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(i));
-			add_focusable(cb);
-			vbox->add_child(cb);
-			flags.push_back(cb);
-			Vector<String> text_split = p_options[i].split(":");
-			if (text_split.size() != 1) {
-				current_val = text_split[1].to_int();
-			} else {
-				current_val = 1 << i;
-			}
-			flag_values.push_back(current_val);
-			if (first) {
-				set_label_reference(cb);
-				first = false;
-			}
+		if (option.is_empty()) {
+			continue;
+		}
+		const int flag_index = flags.size(); // Index of the next element (added by the code below).
+
+		// Value for a flag can be explicitly overridden.
+		Vector<String> text_split = p_options[i].split(":");
+		if (text_split.size() != 1) {
+			current_val = text_split[1].to_int();
+		} else {
+			current_val = 1 << i;
+		}
+		flag_values.push_back(current_val);
+
+		// Create a CheckBox for the current flag.
+		CheckBox *cb = memnew(CheckBox);
+		cb->set_text(option);
+		cb->set_clip_text(true);
+		cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
+		add_focusable(cb);
+		vbox->add_child(cb);
+		flags.push_back(cb);
+
+		// Can't use `i == 0` because we want to find the first none-empty option.
+		if (first) {
+			set_label_reference(cb);
+			first = false;
 		}
 	}
 }
@@ -947,7 +960,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		bool expand_was_hovered = expand_hovered;
 		expand_hovered = expand_rect.has_point(mm->get_position());
 		if (expand_hovered != expand_was_hovered) {
-			update();
+			queue_redraw();
 		}
 
 		if (!expand_hovered) {
@@ -955,7 +968,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 				if (flag_rects[i].has_point(mm->get_position())) {
 					// Used to highlight the hovered flag in the layers grid.
 					hovered_index = i;
-					update();
+					queue_redraw();
 					return;
 				}
 			}
@@ -964,7 +977,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		// Remove highlight when no square is hovered.
 		if (hovered_index != -1) {
 			hovered_index = -1;
-			update();
+			queue_redraw();
 		}
 
 		return;
@@ -982,11 +995,11 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			emit_signal(SNAME("flag_changed"), value);
-			update();
+			queue_redraw();
 		} else if (expand_hovered) {
 			expanded = !expanded;
 			update_minimum_size();
-			update();
+			queue_redraw();
 		}
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
@@ -1127,11 +1140,11 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (expand_hovered) {
 				expand_hovered = false;
-				update();
+				queue_redraw();
 			}
 			if (hovered_index != -1) {
 				hovered_index = -1;
-				update();
+				queue_redraw();
 			}
 		} break;
 	}
@@ -1139,7 +1152,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 void EditorPropertyLayersGrid::set_flag(uint32_t p_flag) {
 	value = p_flag;
-	update();
+	queue_redraw();
 }
 
 void EditorPropertyLayersGrid::_bind_methods() {
@@ -1149,6 +1162,7 @@ void EditorPropertyLayersGrid::_bind_methods() {
 
 void EditorPropertyLayers::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button->set_normal_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			button->set_pressed_texture(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
@@ -1271,7 +1285,7 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 	} else {
 		grid->value |= (1 << p_menu);
 	}
-	grid->update();
+	grid->queue_redraw();
 	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
 	_grid_changed(grid->value);
 }
@@ -1377,7 +1391,7 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_disabled(false);
 		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
-		edit->set_text(TTR("[Empty]"));
+		edit->set_text(TTR("<empty>"));
 		edit->set_disabled(true);
 		edit->set_icon(Ref<Texture2D>());
 	}
@@ -1518,13 +1532,13 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 			// Ensure the easing doesn't appear as being dragged
 			dragging = false;
-			easing_draw->update();
+			easing_draw->queue_redraw();
 		}
 
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			dragging = mb->is_pressed();
 			// Update to display the correct dragging color
-			easing_draw->update();
+			easing_draw->queue_redraw();
 		}
 	}
 
@@ -1564,7 +1578,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = CLAMP(val, -1'000'000, 1'000'000);
 
 		emit_changed(get_edited_property(), val);
-		easing_draw->update();
+		easing_draw->queue_redraw();
 	}
 }
 
@@ -1616,14 +1630,14 @@ void EditorPropertyEasing::_draw_easing() {
 }
 
 void EditorPropertyEasing::update_property() {
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_set_preset(int p_preset) {
 	static const float preset_value[EASING_MAX] = { 0.0, 1.0, 2.0, 0.5, -2.0, -0.5 };
 
 	emit_changed(get_edited_property(), preset_value[p_preset]);
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_setup_spin() {
@@ -1662,7 +1676,7 @@ void EditorPropertyEasing::_spin_focus_exited() {
 	spin->hide();
 	// Ensure the easing doesn't appear as being dragged
 	dragging = false;
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
@@ -1672,7 +1686,8 @@ void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
 
 void EditorPropertyEasing::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			preset->clear();
 			preset->add_icon_item(get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")), "Linear", EASING_LINEAR);
 			preset->add_icon_item(get_theme_icon(SNAME("CurveIn"), SNAME("EditorIcons")), "Ease In", EASING_IN);
@@ -1769,6 +1784,7 @@ void EditorPropertyVector2::_update_ratio() {
 
 void EditorPropertyVector2::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -1878,6 +1894,7 @@ void EditorPropertyRect2::update_property() {
 
 void EditorPropertyRect2::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2045,6 +2062,7 @@ Vector3 EditorPropertyVector3::get_vector() {
 
 void EditorPropertyVector3::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -2179,6 +2197,7 @@ void EditorPropertyVector2i::_update_ratio() {
 
 void EditorPropertyVector2i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -2288,6 +2307,7 @@ void EditorPropertyRect2i::update_property() {
 
 void EditorPropertyRect2i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2428,6 +2448,7 @@ void EditorPropertyVector3i::_update_ratio() {
 
 void EditorPropertyVector3i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			linked->set_normal_texture(get_theme_icon(SNAME("Unlinked"), SNAME("EditorIcons")));
 			linked->set_pressed_texture(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
@@ -2539,6 +2560,7 @@ void EditorPropertyPlane::update_property() {
 
 void EditorPropertyPlane::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2692,6 +2714,7 @@ void EditorPropertyQuaternion::_warning_pressed() {
 
 void EditorPropertyQuaternion::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2846,6 +2869,7 @@ void EditorPropertyVector4::update_property() {
 
 void EditorPropertyVector4::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -2937,6 +2961,7 @@ void EditorPropertyVector4i::update_property() {
 
 void EditorPropertyVector4i::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 4; i++) {
@@ -3031,6 +3056,7 @@ void EditorPropertyAABB::update_property() {
 
 void EditorPropertyAABB::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 6; i++) {
@@ -3113,6 +3139,7 @@ void EditorPropertyTransform2D::update_property() {
 
 void EditorPropertyTransform2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 6; i++) {
@@ -3209,6 +3236,7 @@ void EditorPropertyBasis::update_property() {
 
 void EditorPropertyBasis::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 9; i++) {
@@ -3306,6 +3334,7 @@ void EditorPropertyTransform3D::update_using_transform(Transform3D p_transform) 
 
 void EditorPropertyTransform3D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 12; i++) {
@@ -3411,6 +3440,7 @@ void EditorPropertyProjection::update_using_transform(Projection p_transform) {
 
 void EditorPropertyProjection::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			const Color *colors = _get_property_colors();
 			for (int i = 0; i < 16; i++) {
@@ -3481,6 +3511,7 @@ void EditorPropertyColor::_picker_opening() {
 
 void EditorPropertyColor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			picker->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), SNAME("Editor"))));
 		} break;
@@ -3493,14 +3524,14 @@ void EditorPropertyColor::update_property() {
 
 	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
 	if (picker->is_editing_alpha()) {
-		picker->set_tooltip(vformat(
+		picker->set_tooltip_text(vformat(
 				"R: %s\nG: %s\nB: %s\nA: %s",
 				rtos(color.r).pad_decimals(2),
 				rtos(color.g).pad_decimals(2),
 				rtos(color.b).pad_decimals(2),
 				rtos(color.a).pad_decimals(2)));
 	} else {
-		picker->set_tooltip(vformat(
+		picker->set_tooltip_text(vformat(
 				"R: %s\nG: %s\nB: %s",
 				rtos(color.r).pad_decimals(2),
 				rtos(color.g).pad_decimals(2),
@@ -3658,7 +3689,7 @@ void EditorPropertyNodePath::update_property() {
 		p = get_edited_object()->get(get_edited_property());
 	}
 
-	assign->set_tooltip(p);
+	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
@@ -3704,6 +3735,7 @@ void EditorPropertyNodePath::setup(const NodePath &p_base_hint, Vector<StringNam
 
 void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Texture2D> t = get_theme_icon(SNAME("Clear"), SNAME("EditorIcons"));
 			clear->set_icon(t);
@@ -3929,7 +3961,7 @@ void EditorPropertyResource::_update_property_bg() {
 	}
 
 	updating_theme = false;
-	update();
+	queue_redraw();
 }
 
 void EditorPropertyResource::_update_preferred_shader() {
@@ -4115,6 +4147,7 @@ void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
 
 void EditorPropertyResource::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (!updating_theme) {
 				_update_property_bg();
@@ -4149,8 +4182,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 }
 
 struct EditorPropertyRangeHint {
-	bool greater = true;
-	bool lesser = true;
+	bool or_greater = true;
+	bool or_less = true;
 	double min = -99999.0;
 	double max = 99999.0;
 	double step = 1.0;
@@ -4168,8 +4201,8 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
 				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
 
-		hint.greater = false; // If using ranged, assume false by default.
-		hint.lesser = false;
+		hint.or_greater = false; // If using ranged, assume false by default.
+		hint.or_less = false;
 
 		hint.min = slices[0].to_float();
 		hint.max = slices[1].to_float();
@@ -4182,9 +4215,9 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		for (int i = 2; i < slices.size(); i++) {
 			String slice = slices[i].strip_edges();
 			if (slice == "or_greater") {
-				hint.greater = true;
-			} else if (slice == "or_lesser") {
-				hint.lesser = true;
+				hint.or_greater = true;
+			} else if (slice == "or_less") {
+				hint.or_less = true;
 			} else if (slice == "no_slider") {
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
@@ -4281,7 +4314,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser, hint.suffix);
+				editor->setup(hint.min, hint.max, hint.step, hint.or_greater, hint.or_less, hint.suffix);
 
 				return editor;
 			}
@@ -4309,7 +4342,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.radians);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians);
 
 				return editor;
 			}

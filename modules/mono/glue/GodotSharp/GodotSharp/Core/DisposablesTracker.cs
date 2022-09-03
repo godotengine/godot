@@ -83,13 +83,13 @@ namespace Godot
         public static void UnregisterGodotObject(Object godotObject, WeakReference<Object> weakReferenceToSelf)
         {
             if (!GodotObjectInstances.TryRemove(weakReferenceToSelf, out _))
-                throw new ArgumentException("Godot Object not registered", nameof(weakReferenceToSelf));
+                throw new ArgumentException("Godot Object not registered.", nameof(weakReferenceToSelf));
         }
 
         public static void UnregisterDisposable(WeakReference<IDisposable> weakReference)
         {
             if (!OtherInstances.TryRemove(weakReference, out _))
-                throw new ArgumentException("Disposable not registered", nameof(weakReference));
+                throw new ArgumentException("Disposable not registered.", nameof(weakReference));
         }
     }
 }

@@ -629,7 +629,7 @@ public:
 	_FORCE_INLINE_ bool test_axis(const Vector3 &p_axis) {
 		Vector3 axis = p_axis;
 
-		if (axis.is_equal_approx(Vector3())) {
+		if (axis.is_zero_approx()) {
 			// strange case, try an upwards separator
 			axis = Vector3(0.0, 1.0, 0.0);
 		}

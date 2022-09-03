@@ -94,7 +94,7 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 		light += cone_weights[i] * cone_light.rgb;
 	}
 
-	light *= voxel_gi_instances.data[index].dynamic_range;
+	light *= voxel_gi_instances.data[index].dynamic_range * voxel_gi_instances.data[index].exposure_normalization;
 	out_diff += vec4(light * blend, blend);
 
 	//irradiance
@@ -102,7 +102,7 @@ void voxel_gi_compute(uint index, vec3 position, vec3 normal, vec3 ref_vec, mat3
 	if (voxel_gi_instances.data[index].blend_ambient) {
 		irr_light.rgb = mix(environment, irr_light.rgb, min(1.0, irr_light.a / 0.95));
 	}
-	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range;
+	irr_light.rgb *= voxel_gi_instances.data[index].dynamic_range * voxel_gi_instances.data[index].exposure_normalization;
 	//irr_light=vec3(0.0);
 
 	out_spec += vec4(irr_light.rgb * blend, blend);
@@ -189,7 +189,7 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 		pos_uvw.x += float(offset.z) * sdfgi.lightprobe_uv_offset.z;
 		diffuse = textureLod(sampler2DArray(sdfgi_lightprobe_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), pos_uvw, 0.0).rgb;
 
-		diffuse_accum += vec4(diffuse * weight, weight);
+		diffuse_accum += vec4(diffuse * weight * sdfgi.cascades[cascade].exposure_normalization, weight);
 
 		if (use_specular) {
 			vec3 specular = vec3(0.0);
@@ -203,7 +203,7 @@ void sdfgi_process(uint cascade, vec3 cascade_pos, vec3 cam_pos, vec3 cam_normal
 				specular = mix(specular, textureLod(sampler2DArray(sdfgi_lightprobe_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), pos_uvw, 0.0).rgb, (roughness - 0.5) * 2.0);
 			}
 
-			specular_accum += specular * weight;
+			specular_accum += specular * weight * sdfgi.cascades[cascade].exposure_normalization;
 		}
 	}
 

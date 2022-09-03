@@ -151,6 +151,7 @@ void AbstractPolygon2DEditor::_menu_option(int p_option) {
 
 void AbstractPolygon2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			button_create->set_icon(get_theme_icon(SNAME("CurveCreate"), SNAME("EditorIcons")));
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
@@ -234,13 +235,13 @@ void AbstractPolygon2DEditor::disable_polygon_editing(bool p_disable, String p_r
 	button_delete->set_disabled(p_disable);
 
 	if (p_disable) {
-		button_create->set_tooltip(p_reason);
-		button_edit->set_tooltip(p_reason);
-		button_delete->set_tooltip(p_reason);
+		button_create->set_tooltip_text(p_reason);
+		button_edit->set_tooltip_text(p_reason);
+		button_delete->set_tooltip_text(p_reason);
 	} else {
-		button_create->set_tooltip(TTR("Create points."));
-		button_edit->set_tooltip(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
-		button_delete->set_tooltip(TTR("Erase points."));
+		button_create->set_tooltip_text(TTR("Create points."));
+		button_edit->set_tooltip_text(TTR("Edit points.\nLMB: Move Point\nRMB: Erase Point"));
+		button_delete->set_tooltip_text(TTR("Erase points."));
 	}
 }
 

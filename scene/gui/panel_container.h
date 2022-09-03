@@ -36,7 +36,12 @@
 class PanelContainer : public Container {
 	GDCLASS(PanelContainer, Container);
 
+	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+	} theme_cache;
+
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 
 public:

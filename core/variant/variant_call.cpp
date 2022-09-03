@@ -1506,6 +1506,9 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, repeat, sarray("count"), varray());
 	bind_method(String, insert, sarray("position", "what"), varray());
 	bind_method(String, capitalize, sarray(), varray());
+	bind_method(String, to_camel_case, sarray(), varray());
+	bind_method(String, to_pascal_case, sarray(), varray());
+	bind_method(String, to_snake_case, sarray(), varray());
 	bind_method(String, split, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
 	bind_method(String, rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray(true, 0));
 	bind_method(String, split_floats, sarray("delimiter", "allow_empty"), varray(true));
@@ -1523,7 +1526,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, rstrip, sarray("chars"), varray());
 	bind_method(String, get_extension, sarray(), varray());
 	bind_method(String, get_basename, sarray(), varray());
-	bind_method(String, plus_file, sarray("file"), varray());
+	bind_method(String, path_join, sarray("file"), varray());
 	bind_method(String, unicode_at, sarray("at"), varray());
 	bind_method(String, indent, sarray("prefix"), varray());
 	bind_method(String, dedent, sarray(), varray());
@@ -1602,6 +1605,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, normalized, sarray(), varray());
 	bind_method(Vector2, is_normalized, sarray(), varray());
 	bind_method(Vector2, is_equal_approx, sarray("to"), varray());
+	bind_method(Vector2, is_zero_approx, sarray(), varray());
 	bind_method(Vector2, posmod, sarray("mod"), varray());
 	bind_method(Vector2, posmodv, sarray("modv"), varray());
 	bind_method(Vector2, project, sarray("b"), varray());
@@ -1690,6 +1694,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, normalized, sarray(), varray());
 	bind_method(Vector3, is_normalized, sarray(), varray());
 	bind_method(Vector3, is_equal_approx, sarray("to"), varray());
+	bind_method(Vector3, is_zero_approx, sarray(), varray());
 	bind_method(Vector3, inverse, sarray(), varray());
 	bind_method(Vector3, clamp, sarray("min", "max"), varray());
 	bind_method(Vector3, snapped, sarray("step"), varray());
@@ -1753,6 +1758,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, dot, sarray("with"), varray());
 	bind_method(Vector4, inverse, sarray(), varray());
 	bind_method(Vector4, is_equal_approx, sarray("with"), varray());
+	bind_method(Vector4, is_zero_approx, sarray(), varray());
 
 	/* Vector4i */
 
@@ -1966,7 +1972,6 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, translated_local, sarray("offset"), varray());
 	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
-	bind_method(Transform3D, spherical_interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 
@@ -2012,6 +2017,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Dictionary, merge, sarray("dictionary", "overwrite"), varray(false));
 	bind_method(Dictionary, has, sarray("key"), varray());
 	bind_method(Dictionary, has_all, sarray("keys"), varray());
+	bind_method(Dictionary, find_key, sarray("value"), varray());
 	bind_method(Dictionary, erase, sarray("key"), varray());
 	bind_method(Dictionary, hash, sarray(), varray());
 	bind_method(Dictionary, keys, sarray(), varray());

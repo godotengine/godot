@@ -150,7 +150,7 @@
 			<description>
 				Returns the [Font] property defined by [param name] and [param theme_type], if it exists.
 				Returns the default theme font if the property doesn't exist and the default theme font is set up (see [member default_font]). Use [method has_font] to check for existence of the property and [method has_default_font] to check for existence of the default theme font.
-				Returns the engine fallback font value, if neither exist.
+				Returns the engine fallback font value, if neither exist (see [member ThemeDB.fallback_font]).
 			</description>
 		</method>
 		<method name="get_font_list" qualifiers="const">
@@ -167,7 +167,7 @@
 			<description>
 				Returns the font size property defined by [param name] and [param theme_type], if it exists.
 				Returns the default theme font size if the property doesn't exist and the default theme font size is set up (see [member default_font_size]). Use [method has_font_size] to check for existence of the property and [method has_default_font_size] to check for existence of the default theme font.
-				Returns the engine fallback font size value, if neither exist.
+				Returns the engine fallback font size value, if neither exist (see [member ThemeDB.fallback_font_size]).
 			</description>
 		</method>
 		<method name="get_font_size_list" qualifiers="const">
@@ -195,7 +195,7 @@
 			<param index="1" name="theme_type" type="StringName" />
 			<description>
 				Returns the icon property defined by [param name] and [param theme_type], if it exists.
-				Returns the engine fallback icon value if the property doesn't exist. Use [method has_icon] to check for existence.
+				Returns the engine fallback icon value if the property doesn't exist (see [member ThemeDB.fallback_icon]). Use [method has_icon] to check for existence.
 			</description>
 		</method>
 		<method name="get_icon_list" qualifiers="const">
@@ -217,7 +217,7 @@
 			<param index="1" name="theme_type" type="StringName" />
 			<description>
 				Returns the [StyleBox] property defined by [param name] and [param theme_type], if it exists.
-				Returns the engine fallback stylebox value if the property doesn't exist. Use [method has_stylebox] to check for existence.
+				Returns the engine fallback stylebox value if the property doesn't exist (see [member ThemeDB.fallback_stylebox]). Use [method has_stylebox] to check for existence.
 			</description>
 		</method>
 		<method name="get_stylebox_list" qualifiers="const">
@@ -240,7 +240,7 @@
 			<param index="2" name="theme_type" type="StringName" />
 			<description>
 				Returns the theme property of [param data_type] defined by [param name] and [param theme_type], if it exists.
-				Returns the engine fallback icon value if the property doesn't exist. Use [method has_theme_item] to check for existence.
+				Returns the engine fallback icon value if the property doesn't exist (see [ThemeDB]). Use [method has_theme_item] to check for existence.
 				[b]Note:[/b] This method is analogous to calling the corresponding data type specific method, but can be used for more generalized logic.
 			</description>
 		</method>
@@ -542,15 +542,15 @@
 	</methods>
 	<members>
 		<member name="default_base_scale" type="float" setter="set_default_base_scale" getter="get_default_base_scale" default="0.0">
-			The default base scale factor of this theme resource. Used by some controls to scale their visual properties based on the global scale factor. If this value is set to [code]0.0[/code], the global scale factor is used.
+			The default base scale factor of this theme resource. Used by some controls to scale their visual properties based on the global scale factor. If this value is set to [code]0.0[/code], the global scale factor is used (see [member ThemeDB.fallback_base_scale]).
 			Use [method has_default_base_scale] to check if this value is valid.
 		</member>
 		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
-			The default font of this theme resource. Used as the default value when trying to fetch a font resource that doesn't exist in this theme or is in invalid state. If the default font is also missing or invalid, the engine fallback value is used.
+			The default font of this theme resource. Used as the default value when trying to fetch a font resource that doesn't exist in this theme or is in invalid state. If the default font is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font]).
 			Use [method has_default_font] to check if this value is valid.
 		</member>
 		<member name="default_font_size" type="int" setter="set_default_font_size" getter="get_default_font_size" default="-1">
-			The default font size of this theme resource. Used as the default value when trying to fetch a font size value that doesn't exist in this theme or is in invalid state. If the default font size is also missing or invalid, the engine fallback value is used.
+			The default font size of this theme resource. Used as the default value when trying to fetch a font size value that doesn't exist in this theme or is in invalid state. If the default font size is also missing or invalid, the engine fallback value is used (see [member ThemeDB.fallback_font_size]).
 			Values below [code]0[/code] are invalid and can be used to unset the property. Use [method has_default_font_size] to check if this value is valid.
 		</member>
 	</members>

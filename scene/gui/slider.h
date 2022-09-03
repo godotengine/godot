@@ -49,11 +49,24 @@ class Slider : public Range {
 	bool editable = true;
 	bool scrollable = true;
 
+	struct ThemeCache {
+		Ref<StyleBox> slider_style;
+		Ref<StyleBox> grabber_area_style;
+		Ref<StyleBox> grabber_area_hl_style;
+
+		Ref<Texture2D> grabber_icon;
+		Ref<Texture2D> grabber_hl_icon;
+		Ref<Texture2D> grabber_disabled_icon;
+		Ref<Texture2D> tick_icon;
+	} theme_cache;
+
 protected:
+	bool ticks_on_borders = false;
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
-	bool ticks_on_borders = false;
 
 public:
 	virtual Size2 get_minimum_size() const override;

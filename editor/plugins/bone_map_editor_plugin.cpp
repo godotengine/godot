@@ -294,7 +294,7 @@ void BoneMapper::create_editor() {
 
 	clear_mapping_button = memnew(Button);
 	clear_mapping_button->set_icon(get_theme_icon(SNAME("Clear"), SNAME("EditorIcons")));
-	clear_mapping_button->set_tooltip(TTR("Clear mappings in current group."));
+	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
 	clear_mapping_button->connect("pressed", callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
 
@@ -609,7 +609,7 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 }
 
 BoneMapper::BoneSegregation BoneMapper::guess_bone_segregation(String p_bone_name) {
-	String fixed_bn = p_bone_name.camelcase_to_underscore().to_lower();
+	String fixed_bn = p_bone_name.to_snake_case();
 
 	LocalVector<String> left_words;
 	left_words.push_back("(?<![a-zA-Z])left");
@@ -681,7 +681,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		}
 		if (!found) {
 			for (int i = 0; i < search_path.size(); i++) {
-				if (Vector3(0, 0, 0).is_equal_approx(skeleton->get_bone_global_rest(search_path[i]).origin)) {
+				if (skeleton->get_bone_global_rest(search_path[i]).origin.is_zero_approx()) {
 					bone_idx = search_path[i]; // The bone existing at the origin is appropriate as a root.
 					found = true;
 					break;

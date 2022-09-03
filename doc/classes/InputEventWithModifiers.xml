@@ -14,13 +14,15 @@
 			State of the [kbd]Alt[/kbd] modifier.
 		</member>
 		<member name="command_pressed" type="bool" setter="set_command_pressed" getter="is_command_pressed" default="false">
-			State of the [kbd]Cmd[/kbd] modifier.
+			State of the [kbd]Cmd[/kbd] modifier. On macOS, this is equivalent to [member meta_pressed]. On other platforms, this is equivalent to [member ctrl_pressed].
+			This modifier should be preferred to [member ctrl_pressed] or [member meta_pressed] for system shortcuts, as it maintains better cross-platform compatibility.
 		</member>
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.
 		</member>
 		<member name="meta_pressed" type="bool" setter="set_meta_pressed" getter="is_meta_pressed" default="false">
-			State of the [kbd]Meta[/kbd] modifier.
+			State of the [kbd]Meta[/kbd] modifier. On Windows and Linux, this represents the Windows key (sometimes called "meta" or "super" on Linux). On macOS, this represents the Command key, and is equivalent to [member command_pressed].
+			For better cross-system compatibility, use [member command_pressed] instead.
 		</member>
 		<member name="shift_pressed" type="bool" setter="set_shift_pressed" getter="is_shift_pressed" default="false">
 			State of the [kbd]Shift[/kbd] modifier.

@@ -485,7 +485,8 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 void EditorPropertyArray::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
@@ -508,7 +509,7 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
 					dropping = true;
-					edit->update();
+					edit->queue_redraw();
 				}
 			}
 		} break;
@@ -516,7 +517,7 @@ void EditorPropertyArray::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
-				edit->update();
+				edit->queue_redraw();
 			}
 		} break;
 	}
@@ -1110,7 +1111,7 @@ void EditorPropertyDictionary::update_property() {
 			if (i < amount) {
 				String cs = key.get_construct_string();
 				prop->set_label(key.get_construct_string());
-				prop->set_tooltip(cs);
+				prop->set_tooltip_text(cs);
 				change_index = i + offset;
 			} else if (i == amount) {
 				prop->set_label(TTR("New Key:"));
@@ -1165,7 +1166,8 @@ void EditorPropertyDictionary::_object_id_selected(const StringName &p_property,
 
 void EditorPropertyDictionary::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			change_type->clear();
 			for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 				if (i == Variant::CALLABLE || i == Variant::SIGNAL || i == Variant::RID) {
@@ -1359,7 +1361,7 @@ void EditorPropertyLocalizableString::update_property() {
 
 			String cs = key.get_construct_string();
 			prop->set_label(cs);
-			prop->set_tooltip(cs);
+			prop->set_tooltip_text(cs);
 			remove_index = i + offset;
 
 			prop->set_selectable(false);
@@ -1403,7 +1405,8 @@ void EditorPropertyLocalizableString::_object_id_selected(const StringName &p_pr
 
 void EditorPropertyLocalizableString::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED:
+		case NOTIFICATION_ENTER_TREE: {
 			if (Object::cast_to<Button>(button_add_item)) {
 				button_add_item->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			}

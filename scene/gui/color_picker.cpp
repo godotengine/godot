@@ -63,8 +63,8 @@ void ColorPicker::_notification(int p_what) {
 				}
 			}
 #endif
-		} break;
-
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			btn_pick->set_icon(get_theme_icon(SNAME("screen_picker"), SNAME("ColorPicker")));
 			btn_add_preset->set_icon(get_theme_icon(SNAME("add_preset")));
@@ -303,7 +303,7 @@ void ColorPicker::set_edit_alpha(bool p_show) {
 	}
 
 	_update_color();
-	sample->update();
+	sample->queue_redraw();
 }
 
 bool ColorPicker::is_editing_alpha() const {
@@ -458,15 +458,15 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 
 	_update_text_value();
 
-	sample->update();
-	uv_edit->update();
-	w_edit->update();
+	sample->queue_redraw();
+	uv_edit->queue_redraw();
+	w_edit->queue_redraw();
 	for (int i = 0; i < current_slider_count; i++) {
-		sliders[i]->update();
+		sliders[i]->queue_redraw();
 	}
-	alpha_slider->update();
-	wheel->update();
-	wheel_uv->update();
+	alpha_slider->queue_redraw();
+	wheel->queue_redraw();
+	wheel_uv->queue_redraw();
 	updating = false;
 }
 
@@ -536,7 +536,7 @@ void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	btn_preset->set_preset_color(p_color);
 	btn_preset->set_custom_minimum_size(Size2(p_size, p_size));
 	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input).bind(p_color));
-	btn_preset->set_tooltip(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
+	btn_preset->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
 	preset_container->add_child(btn_preset);
 }
 
@@ -853,7 +853,7 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 	} else if (p_which == 2) {
 		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
 		if (actual_shape == SHAPE_VHS_CIRCLE || actual_shape == SHAPE_OKHSL_CIRCLE) {
-			circle_mat->set_shader_uniform("v", v);
+			circle_mat->set_shader_parameter("v", v);
 		}
 	}
 }
@@ -1236,7 +1236,7 @@ ColorPicker::ColorPicker() :
 	btn_pick->set_flat(true);
 	hb_smpl->add_child(btn_pick);
 	btn_pick->set_toggle_mode(true);
-	btn_pick->set_tooltip(RTR("Pick a color from the editor window."));
+	btn_pick->set_tooltip_text(RTR("Pick a color from the editor window."));
 	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
@@ -1276,7 +1276,7 @@ ColorPicker::ColorPicker() :
 	text_type = memnew(Button);
 	hhb->add_child(text_type);
 	text_type->set_text("#");
-	text_type->set_tooltip(RTR("Switch between hexadecimal and code values."));
+	text_type->set_tooltip_text(RTR("Switch between hexadecimal and code values."));
 	if (Engine::get_singleton()->is_editor_hint()) {
 		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
@@ -1337,7 +1337,7 @@ ColorPicker::ColorPicker() :
 
 	btn_add_preset = memnew(Button);
 	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	btn_add_preset->set_tooltip(RTR("Add current color as a preset."));
+	btn_add_preset->set_tooltip_text(RTR("Add current color as a preset."));
 	btn_add_preset->connect("pressed", callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 }
@@ -1359,7 +1359,7 @@ void ColorPickerButton::_about_to_popup() {
 
 void ColorPickerButton::_color_changed(const Color &p_color) {
 	color = p_color;
-	update();
+	queue_redraw();
 	emit_signal(SNAME("color_changed"), color);
 }
 
@@ -1439,7 +1439,7 @@ void ColorPickerButton::set_pick_color(const Color &p_color) {
 		picker->set_pick_color(p_color);
 	}
 
-	update();
+	queue_redraw();
 }
 
 Color ColorPickerButton::get_pick_color() const {

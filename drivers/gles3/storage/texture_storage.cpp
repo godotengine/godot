@@ -1564,6 +1564,19 @@ void TextureStorage::render_target_clear_used(RID p_render_target) {
 	rt->used_in_frame = false;
 }
 
+void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (p_msaa == rt->msaa) {
+		return;
+	}
+
+	WARN_PRINT("2D MSAA is not yet supported for GLES3.");
+	_clear_render_target(rt);
+	rt->msaa = p_msaa;
+	_update_render_target(rt);
+}
+
 void TextureStorage::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);

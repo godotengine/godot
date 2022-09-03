@@ -33,6 +33,7 @@
 
 #include "core/object/ref_counted.h"
 
+#include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
@@ -104,16 +105,18 @@ protected:
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
-	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
-	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
-	virtual int get_available_bytes() const override;
+	GDVIRTUAL3R(Error, _put_data, GDNativeConstPtr<const uint8_t>, int, GDNativePtr<int>);
 
-	GDVIRTUAL3R(int, _put_data, GDNativeConstPtr<const uint8_t>, int, GDNativePtr<int>);
-	GDVIRTUAL3R(int, _put_partial_data, GDNativeConstPtr<const uint8_t>, int, GDNativePtr<int>);
-	GDVIRTUAL3R(int, _get_data, GDNativePtr<uint8_t>, int, GDNativePtr<int>);
-	GDVIRTUAL3R(int, _get_partial_data, GDNativePtr<uint8_t>, int, GDNativePtr<int>);
-	GDVIRTUAL0RC(int, _get_available_bytes);
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+	GDVIRTUAL3R(Error, _put_partial_data, GDNativeConstPtr<const uint8_t>, int, GDNativePtr<int>);
+
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	GDVIRTUAL3R(Error, _get_data, GDNativePtr<uint8_t>, int, GDNativePtr<int>);
+
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
+	GDVIRTUAL3R(Error, _get_partial_data, GDNativePtr<uint8_t>, int, GDNativePtr<int>);
+
+	EXBIND0RC(int, get_available_bytes);
 };
 
 class StreamPeerBuffer : public StreamPeer {

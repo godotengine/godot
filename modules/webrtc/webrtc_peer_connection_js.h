@@ -31,7 +31,7 @@
 #ifndef WEBRTC_PEER_CONNECTION_JS_H
 #define WEBRTC_PEER_CONNECTION_JS_H
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 
 #include "webrtc_peer_connection.h"
 
