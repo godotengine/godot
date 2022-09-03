@@ -46,7 +46,8 @@ private:
 		float sky_custom_fov = 0.0;
 		Basis sky_orientation;
 		Color bg_color;
-		float bg_energy = 1.0;
+		float bg_energy_multiplier = 1.0;
+		float bg_intensity = 1.0; // Measured in nits or candela/m^2. Default to 1.0 so this doesn't impact rendering when Physical Light Units disabled.
 		int canvas_max_layer = 0;
 		RS::EnvironmentAmbientSource ambient_source = RS::ENV_AMBIENT_SOURCE_BG;
 		Color ambient_light;
@@ -58,12 +59,6 @@ private:
 		RS::EnvironmentToneMapper tone_mapper;
 		float exposure = 1.0;
 		float white = 1.0;
-		bool auto_exposure = false;
-		float min_luminance = 0.2;
-		float max_luminance = 8.0;
-		float auto_exp_speed = 0.2;
-		float auto_exp_scale = 0.5;
-		uint64_t auto_exposure_version = 0;
 
 		// Fog
 		bool fog_enabled = false;
@@ -71,6 +66,7 @@ private:
 		float fog_light_energy = 1.0;
 		float fog_sun_scatter = 0.0;
 		float fog_density = 0.01;
+		float fog_sky_affect = 1.0;
 		float fog_height = 0.0;
 		float fog_height_density = 0.0; //can be negative to invert effect
 		float fog_aerial_perspective = 0.0;
@@ -86,6 +82,7 @@ private:
 		float volumetric_fog_detail_spread = 2.0;
 		float volumetric_fog_gi_inject = 1.0;
 		float volumetric_fog_ambient_inject = 0.0;
+		float volumetric_fog_sky_affect = 1.0;
 		bool volumetric_fog_temporal_reprojection = true;
 		float volumetric_fog_temporal_reprojection_amount = 0.9;
 
@@ -149,8 +146,6 @@ private:
 		RID color_correction = RID();
 	};
 
-	static uint64_t auto_exposure_counter;
-
 	mutable RID_Owner<Environment, true> environment_owner;
 
 public:
@@ -168,7 +163,7 @@ public:
 	void environment_set_sky_custom_fov(RID p_env, float p_scale);
 	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
 	void environment_set_bg_color(RID p_env, const Color &p_color);
-	void environment_set_bg_energy(RID p_env, float p_energy);
+	void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value);
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
 	void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG);
 // FIXME: Disabled during Vulkan refactoring, should be ported.
@@ -181,7 +176,8 @@ public:
 	float environment_get_sky_custom_fov(RID p_env) const;
 	Basis environment_get_sky_orientation(RID p_env) const;
 	Color environment_get_bg_color(RID p_env) const;
-	float environment_get_bg_energy(RID p_env) const;
+	float environment_get_bg_energy_multiplier(RID p_env) const;
+	float environment_get_bg_intensity(RID p_env) const;
 	int environment_get_canvas_max_layer(RID p_env) const;
 	RS::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const;
 	Color environment_get_ambient_light(RID p_env) const;
@@ -190,30 +186,25 @@ public:
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
 
 	// Tonemap
-	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
+	void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white);
 	RS::EnvironmentToneMapper environment_get_tone_mapper(RID p_env) const;
 	float environment_get_exposure(RID p_env) const;
 	float environment_get_white(RID p_env) const;
-	bool environment_get_auto_exposure(RID p_env) const;
-	float environment_get_min_luminance(RID p_env) const;
-	float environment_get_max_luminance(RID p_env) const;
-	float environment_get_auto_exp_speed(RID p_env) const;
-	float environment_get_auto_exp_scale(RID p_env) const;
-	uint64_t environment_get_auto_exposure_version(RID p_env) const;
 
 	// Fog
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective);
+	void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect);
 	bool environment_get_fog_enabled(RID p_env) const;
 	Color environment_get_fog_light_color(RID p_env) const;
 	float environment_get_fog_light_energy(RID p_env) const;
 	float environment_get_fog_sun_scatter(RID p_env) const;
 	float environment_get_fog_density(RID p_env) const;
+	float environment_get_fog_sky_affect(RID p_env) const;
 	float environment_get_fog_height(RID p_env) const;
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
 
 	// Volumetric Fog
-	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject);
+	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect);
 	bool environment_get_volumetric_fog_enabled(RID p_env) const;
 	float environment_get_volumetric_fog_density(RID p_env) const;
 	Color environment_get_volumetric_fog_scattering(RID p_env) const;
@@ -223,6 +214,7 @@ public:
 	float environment_get_volumetric_fog_length(RID p_env) const;
 	float environment_get_volumetric_fog_detail_spread(RID p_env) const;
 	float environment_get_volumetric_fog_gi_inject(RID p_env) const;
+	float environment_get_volumetric_fog_sky_affect(RID p_env) const;
 	bool environment_get_volumetric_fog_temporal_reprojection(RID p_env) const;
 	float environment_get_volumetric_fog_temporal_reprojection_amount(RID p_env) const;
 	float environment_get_volumetric_fog_ambient_inject(RID p_env) const;

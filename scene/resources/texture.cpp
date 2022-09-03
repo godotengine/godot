@@ -294,7 +294,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(x, y);
 	}
 
 	return true;
@@ -561,7 +561,7 @@ bool PortableCompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(x, y);
 	}
 
 	return true;
@@ -1017,7 +1017,7 @@ bool CompressedTexture2D::is_pixel_opaque(int p_x, int p_y) const {
 		x = CLAMP(x, 0, aw);
 		y = CLAMP(y, 0, ah);
 
-		return alpha_cache->get_bit(Point2(x, y));
+		return alpha_cache->get_bit(x, y);
 	}
 
 	return true;
@@ -1866,11 +1866,11 @@ void CurveTexture::_update() {
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
 				if (texture_mode == TEXTURE_MODE_RGB) {
-					wd[i * 3 + 0] = curve.interpolate_baked(t);
+					wd[i * 3 + 0] = curve.sample_baked(t);
 					wd[i * 3 + 1] = wd[i * 3 + 0];
 					wd[i * 3 + 2] = wd[i * 3 + 0];
 				} else {
-					wd[i] = curve.interpolate_baked(t);
+					wd[i] = curve.sample_baked(t);
 				}
 			}
 
@@ -2054,7 +2054,7 @@ void CurveXYZTexture::_update() {
 			Curve &curve_x = **_curve_x;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i * 3 + 0] = curve_x.interpolate_baked(t);
+				wd[i * 3 + 0] = curve_x.sample_baked(t);
 			}
 
 		} else {
@@ -2067,7 +2067,7 @@ void CurveXYZTexture::_update() {
 			Curve &curve_y = **_curve_y;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i * 3 + 1] = curve_y.interpolate_baked(t);
+				wd[i * 3 + 1] = curve_y.sample_baked(t);
 			}
 
 		} else {
@@ -2080,7 +2080,7 @@ void CurveXYZTexture::_update() {
 			Curve &curve_z = **_curve_z;
 			for (int i = 0; i < _width; ++i) {
 				float t = i / static_cast<float>(_width);
-				wd[i * 3 + 2] = curve_z.interpolate_baked(t);
+				wd[i * 3 + 2] = curve_z.sample_baked(t);
 			}
 
 		} else {
@@ -2955,7 +2955,7 @@ ImageTextureLayered::LayeredType ImageTextureLayered::get_layered_type() const {
 	return layered_type;
 }
 
-Error ImageTextureLayered::_create_from_images(const Array &p_images) {
+Error ImageTextureLayered::_create_from_images(const TypedArray<Image> &p_images) {
 	Vector<Ref<Image>> images;
 	for (int i = 0; i < p_images.size(); i++) {
 		Ref<Image> img = p_images[i];
@@ -2966,8 +2966,8 @@ Error ImageTextureLayered::_create_from_images(const Array &p_images) {
 	return create_from_images(images);
 }
 
-Array ImageTextureLayered::_get_images() const {
-	Array images;
+TypedArray<Image> ImageTextureLayered::_get_images() const {
+	TypedArray<Image> images;
 	for (int i = 0; i < layers; i++) {
 		images.push_back(get_layer_data(i));
 	}
@@ -3054,7 +3054,7 @@ void ImageTextureLayered::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_get_images"), &ImageTextureLayered::_get_images);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_images", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "create_from_images", "_get_images");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_images", PROPERTY_HINT_ARRAY_TYPE, "Image", PROPERTY_USAGE_INTERNAL), "create_from_images", "_get_images");
 }
 
 ImageTextureLayered::ImageTextureLayered(LayeredType p_layered_type) {

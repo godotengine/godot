@@ -55,13 +55,27 @@ private:
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
 	bool mouse_inside = false;
 
+	struct ThemeCache {
+		int separation = 0;
+		int autohide = 0;
+		Ref<Texture2D> grabber_icon;
+		Ref<Texture2D> grabber_icon_h;
+		Ref<Texture2D> grabber_icon_v;
+	} theme_cache;
+
 	Control *_getch(int p_idx) const;
 
+	Ref<Texture2D> _get_grabber_icon() const;
 	void _resort();
 
 protected:
+	bool is_fixed = false;
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
 public:
@@ -74,6 +88,9 @@ public:
 
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
+
+	void set_vertical(bool p_vertical);
+	bool is_vertical() const;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
@@ -92,7 +109,7 @@ class HSplitContainer : public SplitContainer {
 
 public:
 	HSplitContainer() :
-			SplitContainer(false) {}
+			SplitContainer(false) { is_fixed = true; }
 };
 
 class VSplitContainer : public SplitContainer {
@@ -100,7 +117,7 @@ class VSplitContainer : public SplitContainer {
 
 public:
 	VSplitContainer() :
-			SplitContainer(true) {}
+			SplitContainer(true) { is_fixed = true; }
 };
 
 #endif // SPLIT_CONTAINER_H

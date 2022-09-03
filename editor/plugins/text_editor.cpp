@@ -339,15 +339,15 @@ void TextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
 			tx->toggle_foldable_line(tx->get_caret_line());
-			tx->update();
+			tx->queue_redraw();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
 			tx->fold_all_lines();
-			tx->update();
+			tx->queue_redraw();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
 			tx->unfold_all_lines();
-			tx->update();
+			tx->queue_redraw();
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();

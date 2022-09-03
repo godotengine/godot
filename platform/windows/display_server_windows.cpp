@@ -37,6 +37,11 @@
 #include "scene/resources/texture.h"
 
 #include <avrt.h>
+#include <dwmapi.h>
+
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
 
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -2391,6 +2396,20 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_PAINT: {
 			Main::force_redraw();
 		} break;
+		case WM_SETTINGCHANGE: {
+			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
+				if (is_dark_mode_supported()) {
+					BOOL value = is_dark_mode();
+					::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+				}
+			}
+		} break;
+		case WM_THEMECHANGED: {
+			if (is_dark_mode_supported()) {
+				BOOL value = is_dark_mode();
+				::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+			}
+		} break;
 		case WM_SYSCOMMAND: // Intercept system commands.
 		{
 			switch (wParam) // Check system calls.
@@ -3501,6 +3520,11 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			wd.pre_fs_valid = true;
 		}
 
+		if (is_dark_mode_supported()) {
+			BOOL value = is_dark_mode();
+			::DwmSetWindowAttribute(wd.hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+		}
+
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
 			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
@@ -3587,6 +3611,14 @@ WTInfoPtr DisplayServerWindows::wintab_WTInfo = nullptr;
 WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
 WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
+// UXTheme API.
+bool DisplayServerWindows::ux_theme_available = false;
+IsDarkModeAllowedForAppPtr DisplayServerWindows::IsDarkModeAllowedForApp = nullptr;
+ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
+GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromColorSetEx = nullptr;
+GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
+GetImmersiveUserColorSetPreferencePtr DisplayServerWindows::GetImmersiveUserColorSetPreference = nullptr;
+
 // Windows Ink API.
 bool DisplayServerWindows::winink_available = false;
 GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
@@ -3597,6 +3629,23 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_SYSTEM_DPI_AWARE = 1,
 	SHC_PROCESS_PER_MONITOR_DPI_AWARE = 2
 } SHC_PROCESS_DPI_AWARENESS;
+
+bool DisplayServerWindows::is_dark_mode_supported() const {
+	return ux_theme_available && IsDarkModeAllowedForApp();
+}
+
+bool DisplayServerWindows::is_dark_mode() const {
+	return ux_theme_available && ShouldAppsUseDarkMode();
+}
+
+Color DisplayServerWindows::get_accent_color() const {
+	if (!ux_theme_available) {
+		return Color(0, 0, 0, 0);
+	}
+
+	int argb = GetImmersiveColorFromColorSetEx((UINT)GetImmersiveUserColorSetPreference(false, false), GetImmersiveColorTypeFromName(L"ImmersiveSystemAccent"), false, 0);
+	return Color((argb & 0xFF) / 255.f, ((argb & 0xFF00) >> 8) / 255.f, ((argb & 0xFF0000) >> 16) / 255.f, ((argb & 0xFF000000) >> 24) / 255.f);
+}
 
 int DisplayServerWindows::tablet_get_driver_count() const {
 	return tablet_drivers.size();
@@ -3654,6 +3703,18 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
+	// Load UXTheme
+	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
+	if (ux_theme_lib) {
+		IsDarkModeAllowedForApp = (IsDarkModeAllowedForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
+		ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
+		GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
+		GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
+		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
+
+		ux_theme_available = IsDarkModeAllowedForApp && ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+	}
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");

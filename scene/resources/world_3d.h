@@ -32,11 +32,11 @@
 #define WORLD_3D_H
 
 #include "core/io/resource.h"
-#include "scene/resources/camera_effects.h"
 #include "scene/resources/environment.h"
 #include "servers/physics_server_3d.h"
 #include "servers/rendering_server.h"
 
+class CameraAttributes;
 class Camera3D;
 class VisibleOnScreenNotifier3D;
 struct SpatialIndexer;
@@ -51,7 +51,7 @@ private:
 
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;
-	Ref<CameraEffects> camera_effects;
+	Ref<CameraAttributes> camera_attributes;
 
 	HashSet<Camera3D *> cameras;
 
@@ -74,8 +74,8 @@ public:
 	void set_fallback_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_fallback_environment() const;
 
-	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
-	Ref<CameraEffects> get_camera_effects() const;
+	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
+	Ref<CameraAttributes> get_camera_attributes() const;
 
 	_FORCE_INLINE_ const HashSet<Camera3D *> &get_cameras() const { return cameras; }
 

@@ -1239,7 +1239,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					code += ")";
 					if (is_screen_texture && actions.apply_luminance_multiplier) {
-						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
+						code = "(" + code + " / vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
 				} break;
 				case SL::OP_INDEX: {
@@ -1349,7 +1349,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 }
 
 ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
-	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_type);
+	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_type);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 

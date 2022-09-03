@@ -49,7 +49,7 @@ namespace GodotTools.Build
             {
                 // Check that the root node is the expected one
                 if (rootNode.Name != nuGetConfigRootName)
-                    throw new Exception("Invalid root Xml node for NuGet.Config. " +
+                    throw new FormatException("Invalid root Xml node for NuGet.Config. " +
                                         $"Expected '{nuGetConfigRootName}' got '{rootNode.Name}'.");
             }
 

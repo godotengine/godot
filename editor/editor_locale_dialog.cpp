@@ -493,7 +493,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				{
 					lang_code = memnew(LineEdit);
 					lang_code->set_max_length(3);
-					lang_code->set_tooltip("Language");
+					lang_code->set_tooltip_text("Language");
 					vb_language->add_child(lang_code);
 				}
 				hb_locale->add_child(vb_language);
@@ -509,7 +509,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				{
 					script_code = memnew(LineEdit);
 					script_code->set_max_length(4);
-					script_code->set_tooltip("Script");
+					script_code->set_tooltip_text("Script");
 					vb_script->add_child(script_code);
 				}
 				hb_locale->add_child(vb_script);
@@ -525,7 +525,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				{
 					country_code = memnew(LineEdit);
 					country_code->set_max_length(2);
-					country_code->set_tooltip("Country");
+					country_code->set_tooltip_text("Country");
 					vb_country->add_child(country_code);
 				}
 				hb_locale->add_child(vb_country);
@@ -542,7 +542,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 					variant_code = memnew(LineEdit);
 					variant_code->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 					variant_code->set_placeholder("Variant");
-					variant_code->set_tooltip("Variant");
+					variant_code->set_tooltip_text("Variant");
 					vb_variant->add_child(variant_code);
 				}
 				hb_locale->add_child(vb_variant);

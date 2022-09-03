@@ -152,6 +152,7 @@ bool EditorPropertyFontOTObject::_property_get_revert(const StringName &p_name, 
 
 void EditorPropertyFontMetaOverride::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (Object::cast_to<Button>(button_add)) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -289,7 +290,7 @@ void EditorPropertyFontMetaOverride::update_property() {
 			} else {
 				prop->set_label(TranslationServer::get_singleton()->get_locale_name(name));
 			}
-			prop->set_tooltip(name);
+			prop->set_tooltip_text(name);
 			prop->set_selectable(false);
 
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyFontMetaOverride::_property_changed));
@@ -378,6 +379,14 @@ EditorPropertyFontMetaOverride::EditorPropertyFontMetaOverride(bool p_script) {
 /*************************************************************************/
 /* EditorPropertyOTVariation                                             */
 /*************************************************************************/
+
+void EditorPropertyOTVariation::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+		} break;
+	}
+}
 
 void EditorPropertyOTVariation::_property_changed(const String &p_property, Variant p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("keys")) {
@@ -478,7 +487,7 @@ void EditorPropertyOTVariation::update_property() {
 
 			String name = TS->tag_to_name(name_tag);
 			prop->set_label(name.capitalize());
-			prop->set_tooltip(name);
+			prop->set_tooltip_text(name);
 			prop->set_selectable(false);
 
 			prop->connect("property_changed", callable_mp(this, &EditorPropertyOTVariation::_property_changed));
@@ -538,6 +547,7 @@ EditorPropertyOTVariation::EditorPropertyOTVariation() {
 
 void EditorPropertyOTFeatures::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (Object::cast_to<Button>(button_add)) {
 				button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -756,7 +766,7 @@ void EditorPropertyOTFeatures::update_property() {
 					disp_name = vformat("%s (%s)", disp_name, info["label"].operator String());
 				}
 				prop->set_label(disp_name);
-				prop->set_tooltip(name);
+				prop->set_tooltip_text(name);
 				prop->set_selectable(false);
 
 				prop->connect("property_changed", callable_mp(this, &EditorPropertyOTFeatures::_property_changed));
@@ -932,7 +942,7 @@ Size2 FontPreview::get_minimum_size() const {
 
 void FontPreview::set_data(const Ref<Font> &p_f) {
 	prev_font = p_f;
-	update();
+	queue_redraw();
 }
 
 FontPreview::FontPreview() {

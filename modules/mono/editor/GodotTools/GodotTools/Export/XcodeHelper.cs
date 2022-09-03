@@ -16,7 +16,7 @@ namespace GodotTools.Export
                     _XcodePath = FindXcode();
 
                     if (_XcodePath == null)
-                        throw new Exception("Could not find Xcode");
+                        throw new FileNotFoundException("Could not find Xcode.");
                 }
 
                 return _XcodePath;

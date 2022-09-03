@@ -649,6 +649,9 @@ namespace Godot
         /// Access whole columns in the form of <see cref="Vector4"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="column"/> is not 0, 1, 2 or 3.
+        /// </exception>
         public Vector4 this[int column]
         {
             get
@@ -664,7 +667,7 @@ namespace Godot
                     case 3:
                         return w;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -684,7 +687,7 @@ namespace Godot
                         w = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }
@@ -694,6 +697,9 @@ namespace Godot
         /// </summary>
         /// <param name="column">Which column vector.</param>
         /// <param name="row">Which row of the column.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="column"/> or <paramref name="row"/> are not 0, 1, 2 or 3.
+        /// </exception>
         public real_t this[int column, int row]
         {
             get
@@ -709,7 +715,7 @@ namespace Godot
                     case 3:
                         return w[row];
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -729,7 +735,7 @@ namespace Godot
                         w[row] = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }

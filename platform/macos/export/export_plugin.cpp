@@ -305,7 +305,7 @@ void EditorExportPlatformMacOS::_make_icon(const Ref<Image> &p_icon, Vector<uint
 		if (icon_infos[i].is_png) {
 			// Encode PNG icon.
 			it->set_image(copy);
-			String path = EditorPaths::get_singleton()->get_cache_dir().plus_file("icon.png");
+			String path = EditorPaths::get_singleton()->get_cache_dir().path_join("icon.png");
 			ResourceSaver::save(it, path);
 
 			{
@@ -766,7 +766,7 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 	dir_access->list_dir_begin();
 	String current_file{ dir_access->get_next() };
 	while (!current_file.is_empty()) {
-		String current_file_path{ p_path.plus_file(current_file) };
+		String current_file_path{ p_path.path_join(current_file) };
 
 		if (current_file == ".." || current_file == ".") {
 			current_file = dir_access->get_next();
@@ -980,9 +980,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		tmp_app_path_name = p_path;
 		scr_path = p_path.get_basename() + ".command";
 	} else {
-		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name);
-		tmp_app_path_name = tmp_base_path_name.plus_file(tmp_app_dir_name);
-		scr_path = tmp_base_path_name.plus_file(pkg_name + ".command");
+		tmp_base_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name);
+		tmp_app_path_name = tmp_base_path_name.path_join(tmp_app_dir_name);
+		scr_path = tmp_base_path_name.path_join(pkg_name + ".command");
 	}
 
 	print_verbose("Exporting to " + tmp_app_path_name);
@@ -1189,7 +1189,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Relative symlinks are not supported on this OS, the exported project might be broken!"));
 #endif
 			// Handle symlinks in the archive.
-			file = tmp_app_path_name.plus_file(file);
+			file = tmp_app_path_name.path_join(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
 				if (err != OK) {
@@ -1273,7 +1273,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			print_verbose("ADDING: " + file + " size: " + itos(data.size()));
 
 			// Write it into our application bundle.
-			file = tmp_app_path_name.plus_file(file);
+			file = tmp_app_path_name.path_join(file);
 			if (err == OK) {
 				err = tmp_app_dir->make_dir_recursive(file.get_base_dir());
 				if (err != OK) {
@@ -1332,9 +1332,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		bool sign_enabled = (p_preset->get("codesign/codesign").operator int() > 0);
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
-		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + "_helper.entitlements");
+		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + "_helper.entitlements");
 		if (sign_enabled && (ent_path.is_empty())) {
-			ent_path = EditorPaths::get_singleton()->get_cache_dir().plus_file(pkg_name + ".entitlements");
+			ent_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + ".entitlements");
 
 			Ref<FileAccess> ent_f = FileAccess::open(ent_path, FileAccess::WRITE);
 			if (ent_f.is_valid()) {
@@ -1529,7 +1529,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
 					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
 				} else {
-					String path_in_app = tmp_app_path_name.plus_file(shared_objects[i].target).plus_file(src_path.get_file());
+					String path_in_app = tmp_app_path_name.path_join(shared_objects[i].target).path_join(src_path.get_file());
 					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, false);
 				}
 				if (err != OK) {
@@ -1630,7 +1630,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 }
 
 void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const String &p_root_path, const String &p_folder, const String &p_pkg_name) {
-	String dir = p_folder.is_empty() ? p_root_path : p_root_path.plus_file(p_folder);
+	String dir = p_folder.is_empty() ? p_root_path : p_root_path.path_join(p_folder);
 
 	Ref<DirAccess> da = DirAccess::open(dir);
 	da->list_dir_begin();
@@ -1660,7 +1660,7 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,
-					p_folder.plus_file(f).utf8().get_data(),
+					p_folder.path_join(f).utf8().get_data(),
 					&zipfi,
 					nullptr,
 					0,
@@ -1682,7 +1682,7 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 			zipWriteInFileInZip(p_zip, target.utf8().get_data(), target.utf8().size());
 			zipCloseFileInZip(p_zip);
 		} else if (da->current_is_dir()) {
-			_zip_folder_recursive(p_zip, p_root_path, p_folder.plus_file(f), p_pkg_name);
+			_zip_folder_recursive(p_zip, p_root_path, p_folder.path_join(f), p_pkg_name);
 		} else {
 			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
 
@@ -1705,7 +1705,7 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 			zipfi.internal_fa = 0;
 
 			zipOpenNewFileInZip4(p_zip,
-					p_folder.plus_file(f).utf8().get_data(),
+					p_folder.path_join(f).utf8().get_data(),
 					&zipfi,
 					nullptr,
 					0,
@@ -1723,9 +1723,9 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 					0x0314, // "version made by", 0x03 - Unix, 0x14 - ZIP specification version 2.0, required to store Unix file permissions
 					0);
 
-			Ref<FileAccess> fa = FileAccess::open(dir.plus_file(f), FileAccess::READ);
+			Ref<FileAccess> fa = FileAccess::open(dir.path_join(f), FileAccess::READ);
 			if (fa.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.plus_file(f)));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("ZIP Creation"), vformat(TTR("Could not open file to read from path \"%s\"."), dir.path_join(f)));
 				return;
 			}
 			const int bufsize = 16384;

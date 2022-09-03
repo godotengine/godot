@@ -17,7 +17,7 @@
 		</method>
 		<method name="create">
 			<return type="void" />
-			<param index="0" name="size" type="Vector2" />
+			<param index="0" name="size" type="Vector2i" />
 			<description>
 				Creates a bitmap with the specified size, filled with [code]false[/code].
 			</description>
@@ -32,13 +32,21 @@
 		</method>
 		<method name="get_bit" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<description>
+				Returns bitmap's value at the specified position.
+			</description>
+		</method>
+		<method name="get_bitv" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Returns bitmap's value at the specified position.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
-			<return type="Vector2" />
+			<return type="Vector2i" />
 			<description>
 				Returns bitmap's dimensions.
 			</description>
@@ -52,14 +60,14 @@
 		<method name="grow_mask">
 			<return type="void" />
 			<param index="0" name="pixels" type="int" />
-			<param index="1" name="rect" type="Rect2" />
+			<param index="1" name="rect" type="Rect2i" />
 			<description>
 				Applies morphological dilation or erosion to the bitmap. If [param pixels] is positive, dilation is applied to the bitmap. If [param pixels] is negative, erosion is applied to the bitmap. [param rect] defines the area where the morphological operation is applied. Pixels located outside the [param rect] are unaffected by [method grow_mask].
 			</description>
 		</method>
 		<method name="opaque_to_polygons" qualifiers="const">
 			<return type="PackedVector2Array[]" />
-			<param index="0" name="rect" type="Rect2" />
+			<param index="0" name="rect" type="Rect2i" />
 			<param index="1" name="epsilon" type="float" default="2.0" />
 			<description>
 				Creates an [Array] of polygons covering a rectangular portion of the bitmap. It uses a marching squares algorithm, followed by Ramer-Douglas-Peucker (RDP) reduction of the number of vertices. Each polygon is described as a [PackedVector2Array] of its vertices.
@@ -72,25 +80,34 @@
 		</method>
 		<method name="resize">
 			<return type="void" />
-			<param index="0" name="new_size" type="Vector2" />
+			<param index="0" name="new_size" type="Vector2i" />
 			<description>
 				Resizes the image to [param new_size].
 			</description>
 		</method>
 		<method name="set_bit">
 			<return type="void" />
-			<param index="0" name="position" type="Vector2" />
-			<param index="1" name="bit" type="bool" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="bit" type="bool" />
 			<description>
 				Sets the bitmap's element at the specified position, to the specified value.
 			</description>
 		</method>
 		<method name="set_bit_rect">
 			<return type="void" />
-			<param index="0" name="rect" type="Rect2" />
+			<param index="0" name="rect" type="Rect2i" />
 			<param index="1" name="bit" type="bool" />
 			<description>
 				Sets a rectangular portion of the bitmap to the specified value.
+			</description>
+		</method>
+		<method name="set_bitv">
+			<return type="void" />
+			<param index="0" name="position" type="Vector2i" />
+			<param index="1" name="bit" type="bool" />
+			<description>
+				Sets the bitmap's element at the specified position, to the specified value.
 			</description>
 		</method>
 	</methods>

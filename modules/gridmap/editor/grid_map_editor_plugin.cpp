@@ -1011,6 +1011,13 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 	}
 }
 
+void GridMapEditor::_update_theme() {
+	options->set_icon(get_theme_icon(SNAME("GridMap"), SNAME("EditorIcons")));
+	search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	mode_thumbnail->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
+	mode_list->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
+}
+
 void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -1031,6 +1038,7 @@ void GridMapEditor::_notification(int p_what) {
 
 			_update_selection_transform();
 			_update_paste_indicator();
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1071,10 +1079,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_theme_icon(SNAME("GridMap"), SNAME("EditorIcons")));
-			search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			mode_thumbnail->set_icon(get_theme_icon(SNAME("FileThumbnail"), SNAME("EditorIcons")));
-			mode_list->set_icon(get_theme_icon(SNAME("FileList"), SNAME("EditorIcons")));
+			_update_theme();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {

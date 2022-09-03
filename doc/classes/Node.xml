@@ -856,8 +856,8 @@
 		<constant name="NOTIFICATION_UNPARENTED" value="19">
 			Notification received when a node is unparented (parent removed it from the list of children).
 		</constant>
-		<constant name="NOTIFICATION_INSTANCED" value="20">
-			Notification received when the node is instantiated.
+		<constant name="NOTIFICATION_SCENE_INSTANTIATED" value="20">
+			Notification received by scene owner when its scene is instantiated.
 		</constant>
 		<constant name="NOTIFICATION_DRAG_BEGIN" value="21">
 			Notification received when a drag operation begins. All nodes receive this notification, not only the dragged one.

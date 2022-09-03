@@ -157,7 +157,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 	if (p_dir.is_relative_path()) {
-		p_dir = current_dir.plus_file(p_dir);
+		p_dir = current_dir.path_join(p_dir);
 	}
 
 	p_dir = p_dir.replace("/", "\\");
@@ -213,7 +213,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 	GLOBAL_LOCK_FUNCTION
 
 	if (!p_file.is_absolute_path()) {
-		p_file = get_current_dir().plus_file(p_file);
+		p_file = get_current_dir().path_join(p_file);
 	}
 
 	p_file = fix_path(p_file);
@@ -232,7 +232,7 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_dir.is_relative_path()) {
-		p_dir = get_current_dir().plus_file(p_dir);
+		p_dir = get_current_dir().path_join(p_dir);
 	}
 
 	p_dir = fix_path(p_dir);
@@ -247,13 +247,13 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 Error DirAccessWindows::rename(String p_path, String p_new_path) {
 	if (p_path.is_relative_path()) {
-		p_path = get_current_dir().plus_file(p_path);
+		p_path = get_current_dir().path_join(p_path);
 	}
 
 	p_path = fix_path(p_path);
 
 	if (p_new_path.is_relative_path()) {
-		p_new_path = get_current_dir().plus_file(p_new_path);
+		p_new_path = get_current_dir().path_join(p_new_path);
 	}
 
 	p_new_path = fix_path(p_new_path);
@@ -291,7 +291,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 
 Error DirAccessWindows::remove(String p_path) {
 	if (p_path.is_relative_path()) {
-		p_path = get_current_dir().plus_file(p_path);
+		p_path = get_current_dir().path_join(p_path);
 	}
 
 	p_path = fix_path(p_path);

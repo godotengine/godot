@@ -13,7 +13,7 @@
 			If set to [code]true[/code], shapes of type [constant PhysicsServer2D.SHAPE_SEPARATION_RAY] are used to detect collisions and can stop the motion. Can be useful when snapping to the ground.
 			If set to [code]false[/code], shapes of type [constant PhysicsServer2D.SHAPE_SEPARATION_RAY] are only used for separation when overlapping with other bodies. That's the main use for separation ray shapes.
 		</member>
-		<member name="exclude_bodies" type="Array" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
+		<member name="exclude_bodies" type="RID[]" setter="set_exclude_bodies" getter="get_exclude_bodies" default="[]">
 			Optional array of body [RID] to exclude from collision.
 		</member>
 		<member name="exclude_objects" type="Array" setter="set_exclude_objects" getter="get_exclude_objects" default="[]">

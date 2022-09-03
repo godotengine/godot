@@ -89,21 +89,22 @@ void GradientTexture2DEditorRect::gui_input(const Ref<InputEvent> &p_event) {
 
 void GradientTexture2DEditorRect::set_texture(Ref<GradientTexture2D> &p_texture) {
 	texture = p_texture;
-	texture->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+	texture->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 }
 
 void GradientTexture2DEditorRect::set_snap_enabled(bool p_snap_enabled) {
 	snap_enabled = p_snap_enabled;
-	update();
+	queue_redraw();
 }
 
 void GradientTexture2DEditorRect::set_snap_size(float p_snap_size) {
 	snap_size = p_snap_size;
-	update();
+	queue_redraw();
 }
 
 void GradientTexture2DEditorRect::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			checkerboard->set_texture(get_theme_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 		} break;
@@ -213,6 +214,7 @@ void GradientTexture2DEditor::set_texture(Ref<GradientTexture2D> &p_texture) {
 
 void GradientTexture2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			reverse_button->set_icon(get_theme_icon(SNAME("ReverseGradient"), SNAME("EditorIcons")));
 			snap_button->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
@@ -227,14 +229,14 @@ GradientTexture2DEditor::GradientTexture2DEditor() {
 	add_child(toolbar);
 
 	reverse_button = memnew(Button);
-	reverse_button->set_tooltip(TTR("Swap Gradient Fill Points"));
+	reverse_button->set_tooltip_text(TTR("Swap Gradient Fill Points"));
 	toolbar->add_child(reverse_button);
 	reverse_button->connect("pressed", callable_mp(this, &GradientTexture2DEditor::_reverse_button_pressed));
 
 	toolbar->add_child(memnew(VSeparator));
 
 	snap_button = memnew(Button);
-	snap_button->set_tooltip(TTR("Toggle Grid Snap"));
+	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
 	snap_button->connect("toggled", callable_mp(this, &GradientTexture2DEditor::_set_snap_enabled));

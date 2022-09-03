@@ -38,8 +38,8 @@
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
 Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
-	Array ids;
-	Array ids_ctx_plural;
+	TypedArray<String> ids;
+	TypedArray<Array> ids_ctx_plural;
 
 	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
 		// Add user's extracted translatable messages.

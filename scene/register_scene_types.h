@@ -33,7 +33,6 @@
 
 void register_scene_types();
 void unregister_scene_types();
-
-void initialize_theme();
+void register_scene_singletons();
 
 #endif // REGISTER_SCENE_TYPES_H

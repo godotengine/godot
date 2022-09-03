@@ -102,17 +102,6 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	// Universal Theme resources used when no other theme has the item.
-	static Ref<Theme> default_theme;
-	static Ref<Theme> project_default_theme;
-
-	// Universal default values, final fallback for every theme.
-	static float fallback_base_scale;
-	static Ref<Texture2D> fallback_icon;
-	static Ref<StyleBox> fallback_style;
-	static Ref<Font> fallback_font;
-	static int fallback_font_size;
-
 	// Default values configurable for each individual theme.
 	float default_base_scale = 0.0;
 	Ref<Font> default_font;
@@ -126,24 +115,6 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	static Ref<Theme> get_default();
-	static void set_default(const Ref<Theme> &p_default);
-
-	static Ref<Theme> get_project_default();
-	static void set_project_default(const Ref<Theme> &p_project_default);
-
-	static void set_fallback_base_scale(float p_base_scale);
-	static void set_fallback_icon(const Ref<Texture2D> &p_icon);
-	static void set_fallback_style(const Ref<StyleBox> &p_style);
-	static void set_fallback_font(const Ref<Font> &p_font);
-	static void set_fallback_font_size(int p_font_size);
-
-	static float get_fallback_base_scale();
-	static Ref<Texture2D> get_fallback_icon();
-	static Ref<StyleBox> get_fallback_style();
-	static Ref<Font> get_fallback_font();
-	static int get_fallback_font_size();
-
 	static bool is_valid_type_name(const String &p_name);
 	static bool is_valid_item_name(const String &p_name);
 

@@ -64,13 +64,13 @@ void TextureLayeredEditor::_texture_changed() {
 	if (!is_visible()) {
 		return;
 	}
-	update();
+	queue_redraw();
 }
 
 void TextureLayeredEditor::_update_material() {
-	materials[0]->set_shader_uniform("layer", layer->get_value());
-	materials[2]->set_shader_uniform("layer", layer->get_value());
-	materials[texture->get_layered_type()]->set_shader_uniform("tex", texture->get_rid());
+	materials[0]->set_shader_parameter("layer", layer->get_value());
+	materials[2]->set_shader_parameter("layer", layer->get_value());
+	materials[texture->get_layered_type()]->set_shader_parameter("tex", texture->get_rid());
 
 	Vector3 v(1, 1, 1);
 	v.normalize();
@@ -79,10 +79,10 @@ void TextureLayeredEditor::_update_material() {
 	b.rotate(Vector3(1, 0, 0), x_rot);
 	b.rotate(Vector3(0, 1, 0), y_rot);
 
-	materials[1]->set_shader_uniform("normal", v);
-	materials[1]->set_shader_uniform("rot", b);
-	materials[2]->set_shader_uniform("normal", v);
-	materials[2]->set_shader_uniform("rot", b);
+	materials[1]->set_shader_parameter("normal", v);
+	materials[1]->set_shader_parameter("rot", b);
+	materials[2]->set_shader_parameter("normal", v);
+	materials[2]->set_shader_parameter("rot", b);
 
 	String format = Image::get_format_name(texture->get_format());
 
@@ -190,7 +190,7 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 		}
 
 		texture->connect("changed", callable_mp(this, &TextureLayeredEditor::_texture_changed));
-		update();
+		queue_redraw();
 		texture_rect->set_material(materials[texture->get_layered_type()]);
 		setting = true;
 		if (texture->get_layered_type() == TextureLayered::LAYERED_TYPE_2D_ARRAY) {

@@ -1852,13 +1852,13 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				base_xform = path->get_global_transform();
 			}
 
-			Vector3 current_point = curve->interpolate_baked(0);
-			Vector3 next_point = curve->interpolate_baked(extrusion_step);
+			Vector3 current_point = curve->sample_baked(0);
+			Vector3 next_point = curve->sample_baked(extrusion_step);
 			Vector3 current_up = Vector3(0, 1, 0);
 			Vector3 direction = next_point - current_point;
 
 			if (path_joined) {
-				Vector3 last_point = curve->interpolate_baked(curve->get_baked_length());
+				Vector3 last_point = curve->sample_baked(curve->get_baked_length());
 				direction = next_point - last_point;
 			}
 
@@ -1869,7 +1869,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				case PATH_ROTATION_PATH:
 					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->interpolate_baked_up_vector(0);
+					current_up = curve->sample_baked_up_vector(0);
 					break;
 			}
 
@@ -1931,9 +1931,9 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						}
 					}
 
-					Vector3 previous_point = curve->interpolate_baked(previous_offset);
-					Vector3 current_point = curve->interpolate_baked(current_offset);
-					Vector3 next_point = curve->interpolate_baked(next_offset);
+					Vector3 previous_point = curve->sample_baked(previous_offset);
+					Vector3 current_point = curve->sample_baked(current_offset);
+					Vector3 next_point = curve->sample_baked(next_offset);
 					Vector3 current_up = Vector3(0, 1, 0);
 					Vector3 direction = next_point - previous_point;
 					Vector3 current_dir = (current_point - previous_point).normalized();
@@ -1956,7 +1956,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 						case PATH_ROTATION_PATH:
 							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->interpolate_baked_up_vector(current_offset);
+							current_up = curve->sample_baked_up_vector(current_offset);
 							break;
 					}
 

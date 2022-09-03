@@ -98,6 +98,13 @@ float GI::voxel_gi_get_energy(RID p_voxel_gi) const {
 	return 0.0;
 }
 
+void GI::voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) {
+}
+
+float GI::voxel_gi_get_baked_exposure_normalization(RID p_voxel_gi) const {
+	return 1.0;
+}
+
 void GI::voxel_gi_set_bias(RID p_voxel_gi, float p_range) {
 }
 

@@ -70,6 +70,12 @@ public:
 
 	float get_outer_cone_angle();
 	void set_outer_cone_angle(float p_outer_cone_angle);
+
+	static Ref<GLTFLight> from_node(const Light3D *p_light);
+	Light3D *to_node() const;
+
+	static Ref<GLTFLight> from_dictionary(const Dictionary p_dictionary);
+	Dictionary to_dictionary() const;
 };
 
 #endif // GLTF_LIGHT_H

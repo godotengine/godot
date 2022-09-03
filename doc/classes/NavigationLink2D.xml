@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationLink2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Creates a link between two locations that [NavigationServer2D] can route agents through.
+	</brief_description>
+	<description>
+		Creates a link between two locations that [NavigationServer2D] can route agents through.  Links can be used to express navigation methods that aren't just traveling along the surface of the navigation mesh, like zip-lines, teleporters, or jumping across gaps.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_navigation_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bidirectional" type="bool" setter="set_bidirectional" getter="is_bidirectional" default="true">
+			Whether this link can be traveled in both directions or only from [member start_location] to [member end_location].
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			Whether this link is currently active. If [code]false[/code], [method NavigationServer2D.map_get_path] will ignore this link.
+		</member>
+		<member name="end_location" type="Vector2" setter="set_end_location" getter="get_end_location" default="Vector2(0, 0)">
+			Ending position of the link.
+			This position will search out the nearest polygon in the navigation mesh to attach to.
+			The distance the link will search is controlled by [method NavigationServer2D.map_set_link_connection_radius].
+		</member>
+		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
+			When pathfinding enters this link from another regions navmesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			A bitfield determining all navigation layers the link belongs to. These navigation layers will be checked when requesting a path with [method NavigationServer2D.map_get_path].
+		</member>
+		<member name="start_location" type="Vector2" setter="set_start_location" getter="get_start_location" default="Vector2(0, 0)">
+			Starting position of the link.
+			This position will search out the nearest polygon in the navigation mesh to attach to.
+			The distance the link will search is controlled by [method NavigationServer2D.map_set_link_connection_radius].
+		</member>
+		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
+			When pathfinding moves along the link the traveled distance is multiplied with [code]travel_cost[/code] for determining the shortest path.
+		</member>
+	</members>
+</class>

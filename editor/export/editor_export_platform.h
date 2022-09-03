@@ -40,6 +40,8 @@ struct EditorProgress;
 #include "scene/gui/rich_text_label.h"
 #include "scene/main/node.h"
 
+class EditorExportPlugin;
+
 class EditorExportPlatform : public RefCounted {
 	GDCLASS(EditorExportPlatform, RefCounted);
 
@@ -98,6 +100,20 @@ private:
 	void _edit_filter_list(HashSet<String> &r_list, const String &p_filter, bool exclude);
 
 	static Error _add_shared_object(void *p_userdata, const SharedObject &p_so);
+
+	struct FileExportCache {
+		uint64_t source_modified_time = 0;
+		String source_md5;
+		String saved_path;
+		bool used = false;
+	};
+
+	bool _export_customize_dictionary(Dictionary &dict, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins);
+	bool _export_customize_array(Array &array, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins);
+	bool _export_customize_object(Object *p_object, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins);
+	bool _export_customize_scene_resources(Node *p_root, Node *p_node, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins);
+
+	String _export_customize(const String &p_path, LocalVector<Ref<EditorExportPlugin>> &customize_resources_plugins, LocalVector<Ref<EditorExportPlugin>> &customize_scenes_plugins, HashMap<String, FileExportCache> &export_cache, const String &export_base_path, bool p_force_save);
 
 protected:
 	struct ExportNotifier {

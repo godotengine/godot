@@ -32,6 +32,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
+			The [CameraAttributes] resource that specifies exposure levels to bake at. Auto-exposure and non exposure properties will be ignored. Exposure settings should be used to reduce the dynamic range present when baking. If exposure is too high, the [VoxelGI] will have banding artifacts or may have over-exposure artifacts.
+		</member>
 		<member name="data" type="VoxelGIData" setter="set_probe_data" getter="get_probe_data">
 			The [VoxelGIData] resource that holds the data for this [VoxelGI].
 		</member>

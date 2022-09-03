@@ -33,6 +33,8 @@
 #include "core/config/project_settings.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
+#include "scene/resources/camera_attributes.h"
+#include "scene/resources/environment.h"
 #include "scene/scene_string_names.h"
 #include "servers/navigation_server_3d.h"
 
@@ -98,17 +100,17 @@ Ref<Environment> World3D::get_fallback_environment() const {
 	return fallback_environment;
 }
 
-void World3D::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
-	camera_effects = p_camera_effects;
-	if (camera_effects.is_valid()) {
-		RS::get_singleton()->scenario_set_camera_effects(scenario, camera_effects->get_rid());
+void World3D::set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes) {
+	camera_attributes = p_camera_attributes;
+	if (camera_attributes.is_valid()) {
+		RS::get_singleton()->scenario_set_camera_attributes(scenario, camera_attributes->get_rid());
 	} else {
-		RS::get_singleton()->scenario_set_camera_effects(scenario, RID());
+		RS::get_singleton()->scenario_set_camera_attributes(scenario, RID());
 	}
 }
 
-Ref<CameraEffects> World3D::get_camera_effects() const {
-	return camera_effects;
+Ref<CameraAttributes> World3D::get_camera_attributes() const {
+	return camera_attributes;
 }
 
 PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
@@ -123,12 +125,12 @@ void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_environment"), &World3D::get_environment);
 	ClassDB::bind_method(D_METHOD("set_fallback_environment", "env"), &World3D::set_fallback_environment);
 	ClassDB::bind_method(D_METHOD("get_fallback_environment"), &World3D::get_fallback_environment);
-	ClassDB::bind_method(D_METHOD("set_camera_effects", "effects"), &World3D::set_camera_effects);
-	ClassDB::bind_method(D_METHOD("get_camera_effects"), &World3D::get_camera_effects);
+	ClassDB::bind_method(D_METHOD("set_camera_attributes", "attributes"), &World3D::set_camera_attributes);
+	ClassDB::bind_method(D_METHOD("get_camera_attributes"), &World3D::get_camera_attributes);
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World3D::get_direct_space_state);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_effects", PROPERTY_HINT_RESOURCE_TYPE, "CameraEffects"), "set_camera_effects", "get_camera_effects");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
@@ -151,6 +153,7 @@ World3D::World3D() {
 	NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.25));
 	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25));
+	NavigationServer3D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0));
 }
 
 World3D::~World3D() {

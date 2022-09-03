@@ -1733,7 +1733,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	ERR_FAIL_INDEX_V(p_format.samples, TEXTURE_SAMPLES_MAX, RID());
 
-	image_create_info.samples = rasterization_sample_count[p_format.samples];
+	image_create_info.samples = _ensure_supported_sample_count(p_format.samples);
 	image_create_info.tiling = (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
 
 	// Usage.
@@ -1884,6 +1884,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	texture.mipmaps = image_create_info.mipLevels;
 	texture.base_mipmap = 0;
 	texture.base_layer = 0;
+	texture.is_resolve_buffer = p_format.is_resolve_buffer;
 	texture.usage_flags = p_format.usage_bits;
 	texture.samples = p_format.samples;
 	texture.allowed_shared_formats = p_format.shareable_formats;
@@ -3425,7 +3426,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 		description.pNext = nullptr;
 		description.flags = 0;
 		description.format = vulkan_formats[p_attachments[i].format];
-		description.samples = rasterization_sample_count[p_attachments[i].samples];
+		description.samples = _ensure_supported_sample_count(p_attachments[i].samples);
 
 		bool is_sampled = p_attachments[i].usage_flags & TEXTURE_USAGE_SAMPLING_BIT;
 		bool is_storage = p_attachments[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
@@ -3546,7 +3547,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 							break;
 						}
 					}
-				} else {
+				}
+				if (!used_last) {
 					for (int j = 0; j < p_passes[last_pass].color_attachments.size(); j++) {
 						if (p_passes[last_pass].color_attachments[j] == i) {
 							used_last = true;
@@ -4116,7 +4118,11 @@ RID RenderingDeviceVulkan::framebuffer_create(const Vector<RID> &p_texture_attac
 		} else if (texture && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
 			pass.vrs_attachment = i;
 		} else {
-			pass.color_attachments.push_back(texture ? i : FramebufferPass::ATTACHMENT_UNUSED);
+			if (texture && texture->is_resolve_buffer) {
+				pass.resolve_attachments.push_back(i);
+			} else {
+				pass.color_attachments.push_back(texture ? i : FramebufferPass::ATTACHMENT_UNUSED);
+			}
 		}
 	}
 
@@ -6567,7 +6573,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	multisample_state_create_info.pNext = nullptr;
 	multisample_state_create_info.flags = 0;
 
-	multisample_state_create_info.rasterizationSamples = rasterization_sample_count[p_multisample_state.sample_count];
+	multisample_state_create_info.rasterizationSamples = _ensure_supported_sample_count(p_multisample_state.sample_count);
 	multisample_state_create_info.sampleShadingEnable = p_multisample_state.enable_sample_shading;
 	multisample_state_create_info.minSampleShading = p_multisample_state.min_sample_shading;
 	Vector<VkSampleMask> sample_mask;
@@ -7353,7 +7359,9 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 			// If it is the first we're likely populating our VRS texture.
 			// Bit dirty but...
 			if (!texture || (!(texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) && !(i != 0 && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT))) {
-				color_count++;
+				if (!texture || !texture->is_resolve_buffer) {
+					color_count++;
+				}
 			}
 		}
 		ERR_FAIL_COND_V_MSG(p_clear_color_values.size() != color_count, INVALID_ID, "Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer color attachments (" + itos(color_count) + ").");
@@ -8991,6 +8999,25 @@ void RenderingDeviceVulkan::_begin_frame() {
 	frames[frame].timestamp_result_count = frames[frame].timestamp_count;
 	frames[frame].timestamp_count = 0;
 	frames[frame].index = Engine::get_singleton()->get_frames_drawn();
+}
+
+VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(TextureSamples p_requested_sample_count) const {
+	VkSampleCountFlags sample_count_flags = limits.framebufferColorSampleCounts & limits.framebufferDepthSampleCounts;
+
+	if (sample_count_flags & rasterization_sample_count[p_requested_sample_count]) {
+		// The requested sample count is supported.
+		return rasterization_sample_count[p_requested_sample_count];
+	} else {
+		// Find the closest lower supported sample count.
+		VkSampleCountFlagBits sample_count = rasterization_sample_count[p_requested_sample_count];
+		while (sample_count > VK_SAMPLE_COUNT_1_BIT) {
+			if (sample_count_flags & rasterization_sample_count[sample_count]) {
+				return sample_count;
+			}
+			sample_count = (VkSampleCountFlagBits)(sample_count >> 1);
+		}
+	}
+	return VK_SAMPLE_COUNT_1_BIT;
 }
 
 void RenderingDeviceVulkan::swap_buffers() {

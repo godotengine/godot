@@ -438,7 +438,7 @@ private:
 				ProjectSettings::CustomMap edited_settings;
 				edited_settings["application/config/name"] = project_name->get_text().strip_edges();
 
-				if (current->save_custom(dir2.plus_file("project.godot"), edited_settings, Vector<String>(), true) != OK) {
+				if (current->save_custom(dir2.path_join("project.godot"), edited_settings, Vector<String>(), true) != OK) {
 					set_message(TTR("Couldn't edit project.godot in project path."), MESSAGE_ERROR);
 				}
 			}
@@ -486,12 +486,12 @@ private:
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
 					initial_settings["application/config/icon"] = "res://icon.svg";
 
-					if (ProjectSettings::get_singleton()->save_custom(dir.plus_file("project.godot"), initial_settings, Vector<String>(), false) != OK) {
+					if (ProjectSettings::get_singleton()->save_custom(dir.path_join("project.godot"), initial_settings, Vector<String>(), false) != OK) {
 						set_message(TTR("Couldn't create project.godot in project path."), MESSAGE_ERROR);
 					} else {
 						// Store default project icon in SVG format.
 						Error err;
-						Ref<FileAccess> fa_icon = FileAccess::open(dir.plus_file("icon.svg"), FileAccess::WRITE, &err);
+						Ref<FileAccess> fa_icon = FileAccess::open(dir.path_join("icon.svg"), FileAccess::WRITE, &err);
 						fa_icon->store_string(get_default_project_icon());
 
 						if (err != OK) {
@@ -556,7 +556,7 @@ private:
 							String rel_path = path.substr(zip_root.length());
 
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							da->make_dir(dir.plus_file(rel_path));
+							da->make_dir(dir.path_join(rel_path));
 						} else {
 							Vector<uint8_t> data;
 							data.resize(info.uncompressed_size);
@@ -568,7 +568,7 @@ private:
 							ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
 							unzCloseCurrentFile(pkg);
 
-							Ref<FileAccess> f = FileAccess::open(dir.plus_file(rel_path), FileAccess::WRITE);
+							Ref<FileAccess> f = FileAccess::open(dir.path_join(rel_path), FileAccess::WRITE);
 							if (f.is_valid()) {
 								f->store_buffer(data.ptr(), data.size());
 							} else {
@@ -962,12 +962,12 @@ public:
 		switch (p_what) {
 			case NOTIFICATION_MOUSE_ENTER: {
 				hover = true;
-				update();
+				queue_redraw();
 			} break;
 
 			case NOTIFICATION_MOUSE_EXIT: {
 				hover = false;
-				update();
+				queue_redraw();
 			} break;
 
 			case NOTIFICATION_DRAW: {
@@ -1126,7 +1126,7 @@ ProjectList::ProjectList() {
 
 	_icon_load_index = 0;
 	project_opening_initiated = false;
-	_config_path = EditorPaths::get_singleton()->get_data_dir().plus_file("projects.cfg");
+	_config_path = EditorPaths::get_singleton()->get_data_dir().path_join("projects.cfg");
 }
 
 ProjectList::~ProjectList() {
@@ -1185,7 +1185,7 @@ void ProjectList::load_project_icon(int p_index) {
 
 // Load project data from p_property_key and return it in a ProjectList::Item. p_favorite is passed directly into the Item.
 ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_favorite) {
-	String conf = p_path.plus_file("project.godot");
+	String conf = p_path.path_join("project.godot");
 	bool grayed = false;
 	bool missing = false;
 
@@ -1221,7 +1221,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		// when editing a project (but not when running it).
 		last_edited = FileAccess::get_modified_time(conf);
 
-		String fscache = p_path.plus_file(".fscache");
+		String fscache = p_path.path_join(".fscache");
 		if (FileAccess::exists(fscache)) {
 			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
 			if (cache_modified > last_edited) {
@@ -1321,7 +1321,7 @@ void ProjectList::update_dock_menu() {
 				}
 				favs_added = 0;
 			}
-			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), i);
+			DisplayServer::get_singleton()->global_menu_add_item("_dock", _projects[i].project_name + " ( " + _projects[i].path + " )", callable_mp(this, &ProjectList::_global_menu_open_project), Callable(), i);
 			total_added++;
 		}
 	}
@@ -1341,7 +1341,7 @@ void ProjectList::_global_menu_open_project(const Variant &p_tag) {
 	int idx = (int)p_tag;
 
 	if (idx >= 0 && idx < _projects.size()) {
-		String conf = _projects[idx].path.plus_file("project.godot");
+		String conf = _projects[idx].path.path_join("project.godot");
 		List<String> args;
 		args.push_back(conf);
 		OS::get_singleton()->create_instance(args);
@@ -1362,7 +1362,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	hb->connect("draw", callable_mp(this, &ProjectList::_panel_draw).bind(hb));
 	hb->connect("gui_input", callable_mp(this, &ProjectList::_panel_input).bind(hb));
 	hb->add_theme_constant_override("separation", 10 * EDSCALE);
-	hb->set_tooltip(item.description);
+	hb->set_tooltip_text(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_name("FavoriteBox");
@@ -1445,9 +1445,9 @@ void ProjectList::create_project_item_control(int p_index) {
 
 		if (!item.missing) {
 			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
-			show->set_tooltip(TTR("Show in File Manager"));
+			show->set_tooltip_text(TTR("Show in File Manager"));
 		} else {
-			show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
+			show->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 		}
 
 		Label *fpath = memnew(Label(item.path));
@@ -1682,7 +1682,7 @@ void ProjectList::select_project(int p_index) {
 	_selected_project_paths.clear();
 
 	for (int i = 0; i < previous_selected_items.size(); ++i) {
-		previous_selected_items[i].control->update();
+		previous_selected_items[i].control->queue_redraw();
 	}
 
 	toggle_select(p_index);
@@ -1728,7 +1728,7 @@ void ProjectList::toggle_select(int p_index) {
 	} else {
 		_selected_project_paths.insert(item.path);
 	}
-	item.control->update();
+	item.control->queue_redraw();
 }
 
 void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
@@ -1860,7 +1860,7 @@ void ProjectManager::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			settings_hb->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT);
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -2106,13 +2106,13 @@ void ProjectManager::_confirm_update_settings() {
 
 void ProjectManager::_open_selected_projects() {
 	// Show loading text to tell the user that the project manager is busy loading.
-	// This is especially important for the HTML5 project manager.
+	// This is especially important for the Web project manager.
 	loading_label->show();
 
 	const HashSet<String> &selected_list = _project_list->get_selected_project_keys();
 
 	for (const String &path : selected_list) {
-		String conf = path.plus_file("project.godot");
+		String conf = path.path_join("project.godot");
 
 		if (!FileAccess::exists(conf)) {
 			dialog_error->set_text(vformat(TTR("Can't open project at '%s'."), path));
@@ -2162,7 +2162,7 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 
 	// Update the project settings or don't open
-	const String conf = project.path.plus_file("project.godot");
+	const String conf = project.path.path_join("project.godot");
 	const int config_version = project.version;
 	PackedStringArray unsupported_features = project.unsupported_features;
 
@@ -2235,7 +2235,7 @@ void ProjectManager::_run_project_confirm() {
 		const String &path = selected_list[i].path;
 
 		// `.substr(6)` on `ProjectSettings::get_singleton()->get_imported_files_path()` strips away the leading "res://".
-		if (!DirAccess::exists(path.plus_file(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
+		if (!DirAccess::exists(path.path_join(ProjectSettings::get_singleton()->get_imported_files_path().substr(6)))) {
 			run_error_diag->set_text(TTR("Can't run project: Assets need to be imported.\nPlease edit the project to trigger the initial import."));
 			run_error_diag->popup_centered();
 			continue;
@@ -2280,7 +2280,7 @@ void ProjectManager::_scan_dir(const String &path) {
 	String n = da->get_next();
 	while (!n.is_empty()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
-			_scan_dir(da->get_current_dir().plus_file(n));
+			_scan_dir(da->get_current_dir().path_join(n));
 		} else if (n == "project.godot") {
 			_project_list->add_project(da->get_current_dir(), false);
 		}
@@ -2570,7 +2570,7 @@ ProjectManager::ProjectManager() {
 
 		search_box = memnew(LineEdit);
 		search_box->set_placeholder(TTR("Filter Projects"));
-		search_box->set_tooltip(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
+		search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 		search_box->connect("text_changed", callable_mp(this, &ProjectManager::_on_search_term_changed));
 		search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		hb->add_child(search_box);
@@ -2710,7 +2710,7 @@ ProjectManager::ProjectManager() {
 		// Fade the version label to be less prominent, but still readable.
 		version_btn->set_self_modulate(Color(1, 1, 1, 0.6));
 		version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-		version_btn->set_tooltip(TTR("Click to copy."));
+		version_btn->set_tooltip_text(TTR("Click to copy."));
 		version_btn->connect("pressed", callable_mp(this, &ProjectManager::_version_button_pressed));
 		spacer_vb->add_child(version_btn);
 

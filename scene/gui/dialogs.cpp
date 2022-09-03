@@ -50,6 +50,14 @@ void AcceptDialog::_parent_focused() {
 	}
 }
 
+void AcceptDialog::_update_theme_item_cache() {
+	Window::_update_theme_item_cache();
+
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+	theme_cache.margin = get_theme_constant(SNAME("margin"));
+	theme_cache.button_margin = get_theme_constant(SNAME("button_margin"));
+}
+
 void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -69,7 +77,10 @@ void AcceptDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			bg->add_theme_style_override("panel", bg->get_theme_stylebox(SNAME("panel"), SNAME("AcceptDialog")));
+			bg->add_theme_style_override("panel", theme_cache.panel_style);
+
+			label->set_begin(Point2(theme_cache.margin, theme_cache.margin));
+			label->set_end(Point2(-theme_cache.margin, -theme_cache.button_margin - 10));
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -185,12 +196,12 @@ void AcceptDialog::_update_child_rects() {
 	if (label->get_text().is_empty()) {
 		label_size.height = 0;
 	}
-	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
+
 	Size2 size = get_size();
 	Size2 hminsize = hbc->get_combined_minimum_size();
 
-	Vector2 cpos(margin, margin + label_size.height);
-	Vector2 csize(size.x - margin * 2, size.y - margin * 3 - hminsize.y - label_size.height);
+	Vector2 cpos(theme_cache.margin, theme_cache.margin + label_size.height);
+	Vector2 csize(size.x - theme_cache.margin * 2, size.y - theme_cache.margin * 3 - hminsize.y - label_size.height);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -206,7 +217,7 @@ void AcceptDialog::_update_child_rects() {
 		c->set_size(csize);
 	}
 
-	cpos.y += csize.y + margin;
+	cpos.y += csize.y + theme_cache.margin;
 	csize.y = hminsize.y;
 
 	hbc->set_position(cpos);
@@ -217,7 +228,6 @@ void AcceptDialog::_update_child_rects() {
 }
 
 Size2 AcceptDialog::_get_contents_minimum_size() const {
-	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
 	Size2 minsize = label->get_combined_minimum_size();
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -238,8 +248,8 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	Size2 hminsize = hbc->get_combined_minimum_size();
 	minsize.x = MAX(hminsize.x, minsize.x);
 	minsize.y += hminsize.y;
-	minsize.x += margin * 2;
-	minsize.y += margin * 3; //one as separation between hbc and child
+	minsize.x += theme_cache.margin * 2;
+	minsize.y += theme_cache.margin * 3; //one as separation between hbc and child
 
 	Size2 wmsize = get_min_size();
 	minsize.x = MAX(wmsize.x, minsize.x);
@@ -350,14 +360,9 @@ AcceptDialog::AcceptDialog() {
 
 	hbc = memnew(HBoxContainer);
 
-	int margin = hbc->get_theme_constant(SNAME("margin"), SNAME("Dialogs"));
-	int button_margin = hbc->get_theme_constant(SNAME("button_margin"), SNAME("Dialogs"));
-
 	label = memnew(Label);
 	label->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
 	label->set_anchor(SIDE_BOTTOM, Control::ANCHOR_END);
-	label->set_begin(Point2(margin, margin));
-	label->set_end(Point2(-margin, -button_margin - 10));
 	add_child(label, false, INTERNAL_MODE_FRONT);
 
 	add_child(hbc, false, INTERNAL_MODE_FRONT);

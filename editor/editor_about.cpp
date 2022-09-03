@@ -38,18 +38,22 @@
 // The metadata key used to store and retrieve the version text to copy to the clipboard.
 static const String META_TEXT_TO_COPY = "text_to_copy";
 
+void EditorAbout::_theme_changed() {
+	const Ref<Font> font = get_theme_font(SNAME("source"), SNAME("EditorFonts"));
+	const int font_size = get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts"));
+	_tpl_text->add_theme_font_override("normal_font", font);
+	_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
+	_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
+	_license_text->add_theme_font_override("normal_font", font);
+	_license_text->add_theme_font_size_override("normal_font_size", font_size);
+	_license_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
+	_logo->set_texture(get_theme_icon(SNAME("Logo"), SNAME("EditorIcons")));
+}
+
 void EditorAbout::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			const Ref<Font> font = get_theme_font(SNAME("source"), SNAME("EditorFonts"));
-			const int font_size = get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts"));
-			_tpl_text->add_theme_font_override("normal_font", font);
-			_tpl_text->add_theme_font_size_override("normal_font_size", font_size);
-			_tpl_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
-			_license_text->add_theme_font_override("normal_font", font);
-			_license_text->add_theme_font_size_override("normal_font_size", font_size);
-			_license_text->add_theme_constant_override("line_separation", 4 * EDSCALE);
-			_logo->set_texture(get_theme_icon(SNAME("Logo"), SNAME("EditorIcons")));
+		case NOTIFICATION_ENTER_TREE: {
+			_theme_changed();
 		} break;
 	}
 }
@@ -116,6 +120,7 @@ EditorAbout::EditorAbout() {
 	set_hide_on_ok(true);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
+	vbc->connect("theme_changed", callable_mp(this, &EditorAbout::_theme_changed));
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hbc->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -142,7 +147,7 @@ EditorAbout::EditorAbout() {
 	// Set the text to copy in metadata as it slightly differs from the button's text.
 	version_btn->set_meta(META_TEXT_TO_COPY, "v" VERSION_FULL_BUILD + hash);
 	version_btn->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
-	version_btn->set_tooltip(TTR("Click to copy."));
+	version_btn->set_tooltip_text(TTR("Click to copy."));
 	version_btn->connect("pressed", callable_mp(this, &EditorAbout::_version_button_pressed));
 	version_info_vbc->add_child(version_btn);
 

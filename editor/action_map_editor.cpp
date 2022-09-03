@@ -577,6 +577,7 @@ String InputEventConfigurationDialog::_get_device_string(int p_device) const {
 
 void InputEventConfigurationDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			input_list_search->set_right_icon(input_list_search->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
@@ -731,9 +732,9 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	store_command_checkbox->set_pressed(true);
 	store_command_checkbox->set_text(TTR("Store Command"));
 #ifdef APPLE_STYLE_KEYS
-	store_command_checkbox->set_tooltip(TTR("Toggles between serializing 'command' and 'meta'. Used for compatibility with Windows/Linux style keyboard."));
+	store_command_checkbox->set_tooltip_text(TTR("Toggles between serializing 'command' and 'meta'. Used for compatibility with Windows/Linux style keyboard."));
 #else
-	store_command_checkbox->set_tooltip(TTR("Toggles between serializing 'command' and 'control'. Used for compatibility with Apple Style keyboards."));
+	store_command_checkbox->set_tooltip_text(TTR("Toggles between serializing 'command' and 'control'. Used for compatibility with Apple Style keyboards."));
 #endif
 	mod_container->add_child(store_command_checkbox);
 
@@ -744,7 +745,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	physical_key_checkbox = memnew(CheckBox);
 	physical_key_checkbox->set_text(TTR("Use Physical Keycode"));
-	physical_key_checkbox->set_tooltip(TTR("Stores the physical position of the key on the keyboard rather than the key's value. Used for compatibility with non-latin layouts.\nThis should generally be enabled for most game shortcuts, but not in non-game applications."));
+	physical_key_checkbox->set_tooltip_text(TTR("Stores the physical position of the key on the keyboard rather than the key's value. Used for compatibility with non-latin layouts.\nThis should generally be enabled for most game shortcuts, but not in non-game applications."));
 	physical_key_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
 	physical_key_checkbox->hide();
 	additional_options_container->add_child(physical_key_checkbox);
@@ -804,7 +805,7 @@ String ActionMapEditor::_check_new_action_name(const String &p_name) {
 
 void ActionMapEditor::_add_edit_text_changed(const String &p_name) {
 	String error = _check_new_action_name(p_name);
-	add_button->set_tooltip(error);
+	add_button->set_tooltip_text(error);
 	add_button->set_disabled(!error.is_empty());
 }
 
@@ -1057,6 +1058,7 @@ void ActionMapEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 
 void ActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			if (!actions_cache.is_empty()) {

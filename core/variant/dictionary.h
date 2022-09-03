@@ -66,6 +66,7 @@ public:
 
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
+	Variant find_key(const Variant &p_value) const;
 
 	bool erase(const Variant &p_key);
 

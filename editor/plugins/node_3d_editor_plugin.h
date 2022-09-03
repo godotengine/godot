@@ -433,7 +433,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void update_surface() { surface->update(); }
+	void update_surface() { surface->queue_redraw(); }
 	void update_transform_gizmo_view();
 
 	void set_can_preview(Camera3D *p_preview);
@@ -765,6 +765,7 @@ private:
 	DirectionalLight3D *preview_sun = nullptr;
 	WorldEnvironment *preview_environment = nullptr;
 	Ref<Environment> environment;
+	Ref<CameraAttributesPhysical> camera_attributes;
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;
@@ -777,6 +778,8 @@ private:
 
 	void _add_sun_to_scene(bool p_already_added_environment = false);
 	void _add_environment_to_scene(bool p_already_added_sun = false);
+
+	void _update_theme();
 
 protected:
 	void _notification(int p_what);

@@ -22,7 +22,7 @@
 			<return type="void" />
 			<param index="0" name="primitive" type="int" enum="Mesh.PrimitiveType" />
 			<param index="1" name="arrays" type="Array" />
-			<param index="2" name="blend_shapes" type="Array" default="[]" />
+			<param index="2" name="blend_shapes" type="Array[]" default="[]" />
 			<param index="3" name="lods" type="Dictionary" default="{}" />
 			<param index="4" name="material" type="Material" default="null" />
 			<param index="5" name="name" type="String" default="&quot;&quot;" />

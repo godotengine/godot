@@ -548,14 +548,6 @@ void godotsharp_variant_new_transform2d(godot_variant *r_dest, const Transform2D
 	memnew_placement(r_dest, Variant(*p_t2d));
 }
 
-void godotsharp_variant_new_vector4(godot_variant *r_dest, const Vector4 *p_vec4) {
-	memnew_placement(r_dest, Variant(*p_vec4));
-}
-
-void godotsharp_variant_new_vector4i(godot_variant *r_dest, const Vector4i *p_vec4i) {
-	memnew_placement(r_dest, Variant(*p_vec4i));
-}
-
 void godotsharp_variant_new_basis(godot_variant *r_dest, const Basis *p_basis) {
 	memnew_placement(r_dest, Variant(*p_basis));
 }
@@ -1096,6 +1088,18 @@ void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_
 	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
 }
 
+void godotsharp_string_to_camel_case(const String *p_self, String *r_camel_case) {
+	memnew_placement(r_camel_case, String(p_self->to_camel_case()));
+}
+
+void godotsharp_string_to_pascal_case(const String *p_self, String *r_pascal_case) {
+	memnew_placement(r_pascal_case, String(p_self->to_pascal_case()));
+}
+
+void godotsharp_string_to_snake_case(const String *p_self, String *r_snake_case) {
+	memnew_placement(r_snake_case, String(p_self->to_snake_case()));
+}
+
 void godotsharp_node_path_get_as_property_path(const NodePath *p_ptr, NodePath *r_dest) {
 	memnew_placement(r_dest, NodePath(p_ptr->get_as_property_path()));
 }
@@ -1307,7 +1311,7 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 #endif
 	// Can't call 'Object::to_string()' here, as that can end up calling 'ToString' again resulting in an endless circular loop.
 	memnew_placement(r_str,
-			String("[" + p_ptr->get_class() + ":" + itos(p_ptr->get_instance_id()) + "]"));
+			String("<" + p_ptr->get_class() + "#" + itos(p_ptr->get_instance_id()) + ">"));
 }
 
 #ifdef __cplusplus
@@ -1365,8 +1369,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_new_node_path,
 	(void *)godotsharp_variant_new_object,
 	(void *)godotsharp_variant_new_transform2d,
-	(void *)godotsharp_variant_new_vector4,
-	(void *)godotsharp_variant_new_vector4i,
 	(void *)godotsharp_variant_new_basis,
 	(void *)godotsharp_variant_new_transform3d,
 	(void *)godotsharp_variant_new_projection,
@@ -1471,6 +1473,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_string_sha256_buffer,
 	(void *)godotsharp_string_sha256_text,
 	(void *)godotsharp_string_simplify_path,
+	(void *)godotsharp_string_to_camel_case,
+	(void *)godotsharp_string_to_pascal_case,
+	(void *)godotsharp_string_to_snake_case,
 	(void *)godotsharp_node_path_get_as_property_path,
 	(void *)godotsharp_node_path_get_concatenated_names,
 	(void *)godotsharp_node_path_get_concatenated_subnames,

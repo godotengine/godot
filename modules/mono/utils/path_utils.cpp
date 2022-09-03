@@ -205,7 +205,7 @@ String relative_to_impl(const String &p_path, const String &p_relative_to) {
 			return p_path;
 		}
 
-		return String("..").plus_file(relative_to_impl(p_path, base_dir));
+		return String("..").path_join(relative_to_impl(p_path, base_dir));
 	}
 }
 

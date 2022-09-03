@@ -67,19 +67,19 @@ String EditorPaths::get_self_contained_file() const {
 }
 
 String EditorPaths::get_export_templates_dir() const {
-	return get_data_dir().plus_file(export_templates_folder);
+	return get_data_dir().path_join(export_templates_folder);
 }
 
 String EditorPaths::get_project_settings_dir() const {
-	return get_project_data_dir().plus_file("editor");
+	return get_project_data_dir().path_join("editor");
 }
 
 String EditorPaths::get_text_editor_themes_dir() const {
-	return get_config_dir().plus_file(text_editor_themes_folder);
+	return get_config_dir().path_join(text_editor_themes_folder);
 }
 
 String EditorPaths::get_script_templates_dir() const {
-	return get_config_dir().plus_file(script_templates_folder);
+	return get_config_dir().path_join(script_templates_folder);
 }
 
 String EditorPaths::get_project_script_templates_dir() const {
@@ -87,7 +87,7 @@ String EditorPaths::get_project_script_templates_dir() const {
 }
 
 String EditorPaths::get_feature_profiles_dir() const {
-	return get_config_dir().plus_file(feature_profiles_folder);
+	return get_config_dir().path_join(feature_profiles_folder);
 }
 
 void EditorPaths::create() {
@@ -119,8 +119,8 @@ EditorPaths::EditorPaths() {
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 
 	// On macOS, look outside .app bundle, since .app bundle is read-only.
-	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.plus_file("..").simplify_path().ends_with("Contents")) {
-		exe_path = exe_path.plus_file("../../..").simplify_path();
+	if (OS::get_singleton()->has_feature("macos") && exe_path.ends_with("MacOS") && exe_path.path_join("..").simplify_path().ends_with("Contents")) {
+		exe_path = exe_path.path_join("../../..").simplify_path();
 	}
 	{
 		Ref<DirAccess> d = DirAccess::create_for_path(exe_path);
@@ -141,24 +141,24 @@ EditorPaths::EditorPaths() {
 	if (self_contained) {
 		// editor is self contained, all in same folder
 		data_path = exe_path;
-		data_dir = data_path.plus_file("editor_data");
+		data_dir = data_path.path_join("editor_data");
 		config_path = exe_path;
 		config_dir = data_dir;
 		cache_path = exe_path;
-		cache_dir = data_dir.plus_file("cache");
+		cache_dir = data_dir.path_join("cache");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
-		data_dir = data_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		data_dir = data_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		// Can be different from data_path e.g. on Linux or macOS.
 		config_path = OS::get_singleton()->get_config_path();
-		config_dir = config_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+		config_dir = config_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		// Can be different from above paths, otherwise a subfolder of data_dir.
 		cache_path = OS::get_singleton()->get_cache_path();
 		if (cache_path == data_path) {
-			cache_dir = data_dir.plus_file("cache");
+			cache_dir = data_dir.path_join("cache");
 		} else {
-			cache_dir = cache_path.plus_file(OS::get_singleton()->get_godot_dir_name());
+			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
 	}
 
@@ -232,7 +232,7 @@ EditorPaths::EditorPaths() {
 		}
 
 		// Check that the project data directory '.gdignore' file exists
-		String project_data_gdignore_file_path = project_data_dir.plus_file(".gdignore");
+		String project_data_gdignore_file_path = project_data_dir.path_join(".gdignore");
 		if (!FileAccess::exists(project_data_gdignore_file_path)) {
 			// Add an empty .gdignore file to avoid scan.
 			Ref<FileAccess> f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);

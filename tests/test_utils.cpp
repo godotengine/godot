@@ -34,7 +34,7 @@
 
 String TestUtils::get_data_path(const String &p_file) {
 	String data_path = "../tests/data";
-	return get_executable_dir().plus_file(data_path.plus_file(p_file));
+	return get_executable_dir().path_join(data_path.path_join(p_file));
 }
 
 String TestUtils::get_executable_dir() {

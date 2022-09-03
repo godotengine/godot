@@ -106,7 +106,7 @@ platform_arg = ARGUMENTS.get("platform", ARGUMENTS.get("p", False))
 
 if platform_arg == "android":
     custom_tools = ["clang", "clang++", "as", "ar", "link"]
-elif platform_arg == "javascript":
+elif platform_arg == "web":
     # Use generic POSIX build toolchain for Emscripten.
     custom_tools = ["cc", "c++", "ar", "link", "textfile", "zip"]
 elif os.name == "nt" and methods.get_cmdline_bool("use_mingw", False):
@@ -444,9 +444,12 @@ if selected_platform in platform_list:
 
         scons_ver = env._get_major_minor_revision(scons_raw_version)
 
-        if scons_ver >= (4, 0, 0):
-            env.Tool("compilation_db")
-            env.Alias("compiledb", env.CompilationDatabase())
+        if scons_ver < (4, 0, 0):
+            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+            Exit(255)
+
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
     # manually by the user.

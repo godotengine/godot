@@ -46,6 +46,7 @@
 
 void SceneCreateDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			select_node_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 			node_type_2d->set_icon(get_theme_icon(SNAME("Node2D"), SNAME("EditorIcons")));
@@ -110,7 +111,7 @@ void SceneCreateDialog::update_dialog() {
 	}
 
 	if (is_valid) {
-		scene_name = directory.plus_file(scene_name);
+		scene_name = directory.path_join(scene_name);
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->file_exists(scene_name)) {
 			update_error(file_error_label, MSG_ERROR, TTR("File already exists."));

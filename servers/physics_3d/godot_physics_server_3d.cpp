@@ -760,7 +760,7 @@ void GodotPhysicsServer3D::body_set_constant_force(RID p_body, const Vector3 &p_
 	ERR_FAIL_COND(!body);
 
 	body->set_constant_force(p_force);
-	if (!p_force.is_equal_approx(Vector3())) {
+	if (!p_force.is_zero_approx()) {
 		body->wakeup();
 	}
 }
@@ -776,7 +776,7 @@ void GodotPhysicsServer3D::body_set_constant_torque(RID p_body, const Vector3 &p
 	ERR_FAIL_COND(!body);
 
 	body->set_constant_torque(p_torque);
-	if (!p_torque.is_equal_approx(Vector3())) {
+	if (!p_torque.is_zero_approx()) {
 		body->wakeup();
 	}
 }

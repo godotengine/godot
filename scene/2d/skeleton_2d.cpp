@@ -126,7 +126,7 @@ void Bone2D::_notification(int p_what) {
 				return;
 			}
 
-			update();
+			queue_redraw();
 #endif // TOOLS_ENABLED
 		} break;
 
@@ -143,12 +143,12 @@ void Bone2D::_notification(int p_what) {
 				return;
 			}
 
-			update();
+			queue_redraw();
 
 			if (get_parent()) {
 				Bone2D *parent_bone = Object::cast_to<Bone2D>(get_parent());
 				if (parent_bone) {
-					parent_bone->update();
+					parent_bone->queue_redraw();
 				}
 			}
 #endif // TOOLS_ENABLED
@@ -365,7 +365,7 @@ bool Bone2D::_editor_get_bone_shape(Vector<Vector2> *p_shape, Vector<Vector2> *p
 
 void Bone2D::_editor_set_show_bone_gizmo(bool p_show_gizmo) {
 	_editor_show_bone_gizmo = p_show_gizmo;
-	update();
+	queue_redraw();
 }
 
 bool Bone2D::_editor_get_show_bone_gizmo() const {
@@ -493,7 +493,7 @@ void Bone2D::set_length(real_t p_length) {
 	length = p_length;
 
 #ifdef TOOLS_ENABLED
-	update();
+	queue_redraw();
 #endif // TOOLS_ENABLED
 }
 
@@ -505,7 +505,7 @@ void Bone2D::set_bone_angle(real_t p_angle) {
 	bone_angle = p_angle;
 
 #ifdef TOOLS_ENABLED
-	update();
+	queue_redraw();
 #endif // TOOLS_ENABLED
 }
 

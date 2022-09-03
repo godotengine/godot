@@ -2943,10 +2943,6 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_code_completion_enabled(true);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
 
-			// Need to flush here since `NOTIFICATION_THEME_CHANGED` is called deferred from `NOTIFICATION_ENTER_TREE`,
-			// and `update_code_completion_options` requires access to the theme's font size.
-			MessageQueue::get_singleton()->flush();
-
 			code_edit->update_code_completion_options();
 			code_edit->set_code_completion_selected_index(1);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
@@ -3249,7 +3245,7 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 		code_edit->set_text("this is some text");
 
 		Point2 caret_pos = code_edit->get_caret_draw_pos();
-		caret_pos.x += 58;
+		caret_pos.x += 60;
 		SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::NONE, MouseButton::NONE, Key::NONE);
 		CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
 

@@ -333,6 +333,7 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 
 void TileSetEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			sources_delete_button->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			sources_add_button->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
@@ -694,7 +695,7 @@ TileSetEditor::TileSetEditor() {
 
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(true);
-	source_sort_button->set_tooltip(TTR("Sort sources"));
+	source_sort_button->set_tooltip_text(TTR("Sort sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
 	p->connect("id_pressed", callable_mp(this, &TileSetEditor::_set_source_sort));

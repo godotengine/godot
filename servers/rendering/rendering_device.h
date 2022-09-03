@@ -42,7 +42,7 @@ class RDSamplerState;
 class RDVertexAttribute;
 class RDShaderSource;
 class RDShaderSPIRV;
-class RDUniforms;
+class RDUniform;
 class RDPipelineRasterizationState;
 class RDPipelineMultisampleState;
 class RDPipelineDepthStencilState;
@@ -462,6 +462,33 @@ public:
 		TextureSamples samples;
 		uint32_t usage_bits;
 		Vector<DataFormat> shareable_formats;
+		bool is_resolve_buffer = false;
+
+		bool operator==(const TextureFormat &b) const {
+			if (format != b.format) {
+				return false;
+			} else if (width != b.width) {
+				return false;
+			} else if (height != b.height) {
+				return false;
+			} else if (depth != b.depth) {
+				return false;
+			} else if (array_layers != b.array_layers) {
+				return false;
+			} else if (mipmaps != b.mipmaps) {
+				return false;
+			} else if (texture_type != b.texture_type) {
+				return false;
+			} else if (samples != b.samples) {
+				return false;
+			} else if (usage_bits != b.usage_bits) {
+				return false;
+			} else if (shareable_formats != b.shareable_formats) {
+				return false;
+			} else {
+				return true;
+			}
+		}
 
 		TextureFormat() {
 			format = DATA_FORMAT_R8_UNORM;
@@ -1287,7 +1314,7 @@ protected:
 	Vector<uint8_t> _shader_compile_binary_from_spirv(const Ref<RDShaderSPIRV> &p_bytecode, const String &p_shader_name = "");
 	RID _shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv, const String &p_shader_name = "");
 
-	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
+	RID _uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
 
 	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier = BARRIER_MASK_ALL);
 

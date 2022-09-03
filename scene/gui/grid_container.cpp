@@ -31,6 +31,13 @@
 #include "grid_container.h"
 #include "core/templates/rb_set.h"
 
+void GridContainer::_update_theme_item_cache() {
+	Container::_update_theme_item_cache();
+
+	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
+}
+
 void GridContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -38,9 +45,6 @@ void GridContainer::_notification(int p_what) {
 			RBMap<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
 			RBSet<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
 			RBSet<int> row_expanded; // Rows which have the SIZE_EXPAND flag set.
-
-			int hsep = get_theme_constant(SNAME("h_separation"));
-			int vsep = get_theme_constant(SNAME("v_separation"));
 
 			// Compute the per-column/per-row data.
 			int valid_controls_index = 0;
@@ -98,8 +102,8 @@ void GridContainer::_notification(int p_what) {
 					remaining_space.height -= E.value;
 				}
 			}
-			remaining_space.height -= vsep * MAX(max_row - 1, 0);
-			remaining_space.width -= hsep * MAX(max_col - 1, 0);
+			remaining_space.height -= theme_cache.v_separation * MAX(max_row - 1, 0);
+			remaining_space.width -= theme_cache.h_separation * MAX(max_col - 1, 0);
 
 			bool can_fit = false;
 			while (!can_fit && col_expanded.size() > 0) {
@@ -202,7 +206,7 @@ void GridContainer::_notification(int p_what) {
 						col_ofs = 0;
 					}
 					if (row > 0) {
-						row_ofs += (row_expanded.has(row - 1) ? row_expand : row_minh[row - 1]) + vsep;
+						row_ofs += (row_expanded.has(row - 1) ? row_expand : row_minh[row - 1]) + theme_cache.v_separation;
 
 						if (row_expanded.has(row - 1) && row - 1 < row_remaining_pixel_index) {
 							// Apply the remaining pixel of the previous row.
@@ -224,11 +228,11 @@ void GridContainer::_notification(int p_what) {
 				if (rtl) {
 					Point2 p(col_ofs - s.width, row_ofs);
 					fit_child_in_rect(c, Rect2(p, s));
-					col_ofs -= s.width + hsep;
+					col_ofs -= s.width + theme_cache.h_separation;
 				} else {
 					Point2 p(col_ofs, row_ofs);
 					fit_child_in_rect(c, Rect2(p, s));
-					col_ofs += s.width + hsep;
+					col_ofs += s.width + theme_cache.h_separation;
 				}
 			}
 		} break;
@@ -271,9 +275,6 @@ Size2 GridContainer::get_minimum_size() const {
 	RBMap<int, int> col_minw;
 	RBMap<int, int> row_minh;
 
-	int hsep = get_theme_constant(SNAME("h_separation"));
-	int vsep = get_theme_constant(SNAME("v_separation"));
-
 	int max_row = 0;
 	int max_col = 0;
 
@@ -313,8 +314,8 @@ Size2 GridContainer::get_minimum_size() const {
 		ms.height += E.value;
 	}
 
-	ms.height += vsep * max_row;
-	ms.width += hsep * max_col;
+	ms.height += theme_cache.v_separation * max_row;
+	ms.width += theme_cache.h_separation * max_col;
 
 	return ms;
 }

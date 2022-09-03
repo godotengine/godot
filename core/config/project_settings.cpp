@@ -41,7 +41,10 @@
 #include "core/os/keyboard.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
+
+#ifdef TOOLS_ENABLED
 #include "modules/modules_enabled.gen.h" // For mono.
+#endif // TOOLS_ENABLED
 
 const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
 
@@ -72,9 +75,10 @@ String ProjectSettings::get_safe_project_name() const {
 }
 
 String ProjectSettings::get_imported_files_path() const {
-	return get_project_data_path().plus_file("imported");
+	return get_project_data_path().path_join("imported");
 }
 
+#ifdef TOOLS_ENABLED
 // Returns the features that a project must have when opened with this build of Godot.
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
@@ -137,6 +141,7 @@ const PackedStringArray ProjectSettings::_trim_to_supported_features(const Packe
 	features.sort();
 	return features;
 }
+#endif // TOOLS_ENABLED
 
 String ProjectSettings::localize_path(const String &p_path) const {
 	if (resource_path.is_empty() || p_path.begins_with("res://") || p_path.begins_with("user://") ||
@@ -157,12 +162,12 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		// in an absolute path that just happens to contain this string but points to a
 		// different folder (e.g. "/my/project" as resource_path would be contained in
 		// "/my/project_data", even though the latter is not part of res://.
-		// `plus_file("")` is an easy way to ensure we have a trailing '/'.
-		const String res_path = resource_path.plus_file("");
+		// `path_join("")` is an easy way to ensure we have a trailing '/'.
+		const String res_path = resource_path.path_join("");
 
 		// DirAccess::get_current_dir() is not guaranteed to return a path that with a trailing '/',
 		// so we must make sure we have it as well in order to compare with 'res_path'.
-		cwd = cwd.plus_file("");
+		cwd = cwd.path_join("");
 
 		if (!cwd.begins_with(res_path)) {
 			return p_path;
@@ -472,7 +477,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.cfg"));
+			_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
 		}
 		return err;
 	}
@@ -500,14 +505,14 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #ifdef MACOS_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_filename + ".pck"));
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"));
 		}
 #endif
 
 		if (!found) {
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
-			found = _load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) || _load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"));
+			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck")) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"));
 		}
 
 		if (!found) {
@@ -523,7 +528,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 				// Load overrides from the PCK and the executable location.
 				// Optional, we don't mind if either fails.
 				_load_settings_text("res://override.cfg");
-				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
+				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
 			}
 			return err;
 		}
@@ -556,10 +561,10 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// Set the resource path early so things can be resolved when loading.
 		resource_path = current_dir;
 		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
-		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
+		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.plus_file("override.cfg"));
+			_load_settings_text(current_dir.path_join("override.cfg"));
 			found = true;
 			break;
 		}
@@ -685,7 +690,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
-			last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
+			last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
 			return OK;
 		}
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
@@ -764,9 +769,9 @@ void ProjectSettings::clear(const String &p_name) {
 }
 
 Error ProjectSettings::save() {
-	Error error = save_custom(get_resource_path().plus_file("project.godot"));
+	Error error = save_custom(get_resource_path().path_join("project.godot"));
 	if (error == OK) {
-		last_save_time = FileAccess::get_modified_time(get_resource_path().plus_file("project.godot"));
+		last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
 	}
 	return error;
 }
@@ -897,6 +902,7 @@ Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other par
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
+#ifdef TOOLS_ENABLED
 	PackedStringArray project_features = get_setting("application/config/features");
 	// If there is no feature list currently present, force one to generate.
 	if (project_features.is_empty()) {
@@ -911,7 +917,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		}
 	}
 	// Check for the existence of a csproj file.
-	if (FileAccess::exists(get_resource_path().plus_file(get_safe_project_name() + ".csproj"))) {
+	if (FileAccess::exists(get_resource_path().path_join(get_safe_project_name() + ".csproj"))) {
 		// If there is a csproj file, add the C# feature if it doesn't already exist.
 		if (!project_features.has("C#")) {
 			project_features.append("C#");
@@ -924,6 +930,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 	project_features = _trim_to_supported_features(project_features);
 	set_setting("application/config/features", project_features);
+#endif // TOOLS_ENABLED
 
 	RBSet<_VCSort> vclist;
 

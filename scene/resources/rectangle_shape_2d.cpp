@@ -41,7 +41,7 @@ void RectangleShape2D::_update_shape() {
 bool RectangleShape2D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "extents") { // Compatibility with Godot 3.x.
 		// Convert to `size`, twice as big.
-		set_size((Vector2)p_value * 2);
+		set_size((Size2)p_value * 2);
 		return true;
 	}
 	return false;
@@ -57,13 +57,13 @@ bool RectangleShape2D::_get(const StringName &p_name, Variant &r_property) const
 }
 #endif // DISABLE_DEPRECATED
 
-void RectangleShape2D::set_size(const Vector2 &p_size) {
+void RectangleShape2D::set_size(const Size2 &p_size) {
 	ERR_FAIL_COND_MSG(p_size.x < 0 || p_size.y < 0, "RectangleShape2D size cannot be negative.");
 	size = p_size;
 	_update_shape();
 }
 
-Vector2 RectangleShape2D::get_size() const {
+Size2 RectangleShape2D::get_size() const {
 	return size;
 }
 
@@ -106,6 +106,6 @@ void RectangleShape2D::_bind_methods() {
 
 RectangleShape2D::RectangleShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->rectangle_shape_create()) {
-	size = Vector2(20, 20);
+	size = Size2(20, 20);
 	_update_shape();
 }

@@ -215,11 +215,11 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			if (FileAccess::exists(res_path)) {
 				num_file_conflicts += 1;
 				ti->set_custom_color(0, tree->get_theme_color(SNAME("error_color"), SNAME("Editor")));
-				ti->set_tooltip(0, vformat(TTR("%s (already exists)"), res_path));
+				ti->set_tooltip_text(0, vformat(TTR("%s (already exists)"), res_path));
 				ti->set_checked(0, false);
 				ti->propagate_check(0);
 			} else {
-				ti->set_tooltip(0, res_path);
+				ti->set_tooltip_text(0, res_path);
 			}
 
 			ti->set_metadata(0, res_path);

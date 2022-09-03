@@ -185,7 +185,6 @@ private:
 		RUN_PROJECT_MANAGER,
 		RUN_VCS_METADATA,
 		RUN_VCS_SETTINGS,
-		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
 		SETTINGS_UPDATE_WHEN_CHANGED,
 		SETTINGS_UPDATE_ALWAYS,
@@ -335,15 +334,17 @@ private:
 	PopupMenu *export_as_menu = nullptr;
 	Button *export_button = nullptr;
 	Button *prev_scene = nullptr;
+	Button *search_button = nullptr;
+	TextureProgressBar *audio_vu = nullptr;
+
+	PanelContainer *launch_pad = nullptr;
 	Button *play_button = nullptr;
 	Button *pause_button = nullptr;
 	Button *stop_button = nullptr;
-	Button *run_settings_button = nullptr;
 	Button *play_scene_button = nullptr;
 	Button *play_custom_scene_button = nullptr;
-	Button *search_button = nullptr;
+	PanelContainer *write_movie_panel = nullptr;
 	Button *write_movie_button = nullptr;
-	TextureProgressBar *audio_vu = nullptr;
 
 	Timer *screenshot_timer = nullptr;
 
@@ -426,6 +427,7 @@ private:
 	int dock_popup_selected_idx = -1;
 	int dock_select_rect_over_idx = -1;
 
+	PanelContainer *tabbar_panel = nullptr;
 	HBoxContainer *tabbar_container = nullptr;
 	Button *distraction_free = nullptr;
 	Button *scene_tab_add = nullptr;
@@ -580,6 +582,8 @@ private:
 	void _quick_opened();
 	void _quick_run();
 	void _open_command_palette();
+
+	void _write_movie_toggled(bool p_enabled);
 
 	void _run(bool p_current = false, const String &p_custom = "");
 	void _run_native(const Ref<EditorExportPreset> &p_preset);

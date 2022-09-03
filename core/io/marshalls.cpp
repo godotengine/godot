@@ -510,7 +510,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					(*r_len) += sizeof(double) * 16;
 				}
 			} else {
-				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 62, ERR_INVALID_DATA);
+				ERR_FAIL_COND_V((size_t)len < sizeof(float) * 16, ERR_INVALID_DATA);
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
 						val.matrix[i][j] = decode_float(&buf[(i * 4 + j) * sizeof(float)]);

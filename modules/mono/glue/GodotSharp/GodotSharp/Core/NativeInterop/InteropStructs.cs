@@ -130,14 +130,14 @@ namespace Godot.NativeInterop
             [FieldOffset(0)] public AABB* _aabb;
             [FieldOffset(0)] public Basis* _basis;
             [FieldOffset(0)] public Transform3D* _transform3D;
-            [FieldOffset(0)] public Vector4* _vector4;
-            [FieldOffset(0)] public Vector4i* _vector4i;
             [FieldOffset(0)] public Projection* _projection;
             [FieldOffset(0)] private godot_variant_data_mem _mem;
 
             // The following fields are not in the C++ union, but this is how they're stored in _mem.
             [FieldOffset(0)] public godot_string_name _m_string_name;
             [FieldOffset(0)] public godot_string _m_string;
+            [FieldOffset(0)] public Vector4 _m_vector4;
+            [FieldOffset(0)] public Vector4i _m_vector4i;
             [FieldOffset(0)] public Vector3 _m_vector3;
             [FieldOffset(0)] public Vector3i _m_vector3i;
             [FieldOffset(0)] public Vector2 _m_vector2;
@@ -232,18 +232,6 @@ namespace Godot.NativeInterop
             get => _data._transform3D;
         }
 
-        public readonly unsafe Vector4* Vector4
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data._vector4;
-        }
-
-        public readonly unsafe Vector4i* Vector4i
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data._vector4i;
-        }
-
         public readonly unsafe Projection* Projection
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -264,6 +252,22 @@ namespace Godot.NativeInterop
             readonly get => _data._m_string;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _data._m_string = value;
+        }
+
+        public Vector4 Vector4
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_vector4;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_vector4 = value;
+        }
+
+        public Vector4i Vector4i
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => _data._m_vector4i;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _data._m_vector4i = value;
         }
 
         public Vector3 Vector3
@@ -406,6 +410,8 @@ namespace Godot.NativeInterop
                 case Variant.Type.Rect2i:
                 case Variant.Type.Vector3:
                 case Variant.Type.Vector3i:
+                case Variant.Type.Vector4:
+                case Variant.Type.Vector4i:
                 case Variant.Type.Plane:
                 case Variant.Type.Quaternion:
                 case Variant.Type.Color:

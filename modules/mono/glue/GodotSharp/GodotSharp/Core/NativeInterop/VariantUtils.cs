@@ -37,6 +37,12 @@ namespace Godot.NativeInterop
         public static godot_variant CreateFromVector3i(Vector3i from)
             => new() { Type = Variant.Type.Vector3i, Vector3i = from };
 
+        public static godot_variant CreateFromVector4(Vector4 from)
+            => new() { Type = Variant.Type.Vector4, Vector4 = from };
+
+        public static godot_variant CreateFromVector4i(Vector4i from)
+            => new() { Type = Variant.Type.Vector4i, Vector4i = from };
+
         public static godot_variant CreateFromRect2(Rect2 from)
             => new() { Type = Variant.Type.Rect2, Rect2 = from };
 
@@ -55,18 +61,6 @@ namespace Godot.NativeInterop
         public static godot_variant CreateFromTransform2D(Transform2D from)
         {
             NativeFuncs.godotsharp_variant_new_transform2d(out godot_variant ret, from);
-            return ret;
-        }
-
-        public static godot_variant CreateFromVector4(Vector4 from)
-        {
-            NativeFuncs.godotsharp_variant_new_vector4(out godot_variant ret, from);
-            return ret;
-        }
-
-        public static godot_variant CreateFromVector4i(Vector4i from)
-        {
-            NativeFuncs.godotsharp_variant_new_vector4i(out godot_variant ret, from);
             return ret;
         }
 
@@ -386,12 +380,12 @@ namespace Godot.NativeInterop
 
         public static unsafe Vector4 ConvertToVector4(in godot_variant p_var)
             => p_var.Type == Variant.Type.Vector4 ?
-                *p_var.Vector4 :
+                p_var.Vector4 :
                 NativeFuncs.godotsharp_variant_as_vector4(p_var);
 
         public static unsafe Vector4i ConvertToVector4i(in godot_variant p_var)
             => p_var.Type == Variant.Type.Vector4i ?
-                *p_var.Vector4i :
+                p_var.Vector4i :
                 NativeFuncs.godotsharp_variant_as_vector4i(p_var);
 
         public static unsafe Basis ConvertToBasis(in godot_variant p_var)

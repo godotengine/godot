@@ -171,7 +171,7 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
 
             if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
-                throw new ArgumentException("An element with the same key already exists", nameof(key));
+                throw new ArgumentException("An element with the same key already exists.", nameof(key));
 
             godot_variant variantValue = (godot_variant)value.NativeVar;
             NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);
@@ -381,13 +381,13 @@ namespace Godot.Collections
             if (_convertKeyToVariantCallback == null || _convertKeyToManagedCallback == null)
             {
                 throw new InvalidOperationException(
-                    $"The dictionary key type is not supported for conversion to Variant: '{typeof(TKey).FullName}'");
+                    $"The dictionary key type is not supported for conversion to Variant: '{typeof(TKey).FullName}'.");
             }
 
             if (_convertValueToVariantCallback == null || _convertValueToManagedCallback == null)
             {
                 throw new InvalidOperationException(
-                    $"The dictionary value type is not supported for conversion to Variant: '{typeof(TValue).FullName}'");
+                    $"The dictionary value type is not supported for conversion to Variant: '{typeof(TValue).FullName}'.");
             }
         }
 
@@ -556,7 +556,7 @@ namespace Godot.Collections
             var self = (godot_dictionary)_underlyingDict.NativeValue;
 
             if (NativeFuncs.godotsharp_dictionary_contains_key(ref self, variantKey).ToBool())
-                throw new ArgumentException("An element with the same key already exists", nameof(key));
+                throw new ArgumentException("An element with the same key already exists.", nameof(key));
 
             using var variantValue = _convertValueToVariantCallback(value);
             NativeFuncs.godotsharp_dictionary_add(ref self, variantKey, variantValue);

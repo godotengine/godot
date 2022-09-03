@@ -612,6 +612,10 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_find_owner", "shape_index"), &CollisionObject2D::shape_find_owner);
 
 	GDVIRTUAL_BIND(_input_event, "viewport", "event", "shape_idx");
+	GDVIRTUAL_BIND(_mouse_enter);
+	GDVIRTUAL_BIND(_mouse_exit);
+	GDVIRTUAL_BIND(_mouse_shape_enter, "shape_idx");
+	GDVIRTUAL_BIND(_mouse_shape_exit, "shape_idx");
 
 	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "viewport", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::INT, "shape_idx")));
 	ADD_SIGNAL(MethodInfo("mouse_entered"));

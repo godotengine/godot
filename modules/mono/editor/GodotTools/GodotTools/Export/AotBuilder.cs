@@ -76,13 +76,20 @@ namespace GodotTools.Export
             else
             {
                 string arch = "";
-                if (features.Contains("x86_64")) {
+                if (features.Contains("x86_64"))
+                {
                     arch = "x86_64";
-                } else if (features.Contains("x86_32")) {
+                }
+                else if (features.Contains("x86_32"))
+                {
                     arch = "x86_32";
-                } else if (features.Contains("arm64")) {
+                }
+                else if (features.Contains("arm64"))
+                {
                     arch = "arm64";
-                } else if (features.Contains("arm32")) {
+                }
+                else if (features.Contains("arm32"))
+                {
                     arch = "arm32";
                 }
                 CompileAssembliesForDesktop(exporter, platform, isDebug, arch, aotOpts, aotTempDir, outputDataDir, assembliesPrepared, bclDir);
@@ -212,7 +219,7 @@ namespace GodotTools.Export
 
                     int clangExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("clang"), clangArgs);
                     if (clangExitCode != 0)
-                        throw new Exception($"Command 'clang' exited with code: {clangExitCode}");
+                        throw new InvalidOperationException($"Command 'clang' exited with code: {clangExitCode}.");
 
                     objFilePathsForiOSArch[arch].Add(objFilePath);
                 }
@@ -318,7 +325,7 @@ MONO_AOT_MODE_LAST = 1000,
 
                 int arExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("ar"), arArgs);
                 if (arExitCode != 0)
-                    throw new Exception($"Command 'ar' exited with code: {arExitCode}");
+                    throw new InvalidOperationException($"Command 'ar' exited with code: {arExitCode}.");
 
                 arFilePathsForAllArchs.Add(arOutputFilePath);
             }
@@ -336,7 +343,7 @@ MONO_AOT_MODE_LAST = 1000,
 
             int lipoExitCode = OS.ExecuteCommand(XcodeHelper.FindXcodeTool("lipo"), lipoArgs);
             if (lipoExitCode != 0)
-                throw new Exception($"Command 'lipo' exited with code: {lipoExitCode}");
+                throw new InvalidOperationException($"Command 'lipo' exited with code: {lipoExitCode}.");
 
             // TODO: Add the AOT lib and interpreter libs as device only to suppress warnings when targeting the simulator
 
@@ -436,7 +443,7 @@ MONO_AOT_MODE_LAST = 1000,
                 }
                 else if (!Directory.Exists(androidToolchain))
                 {
-                    throw new FileNotFoundException("Android toolchain not found: " + androidToolchain);
+                    throw new FileNotFoundException($"Android toolchain not found: '{androidToolchain}'.");
                 }
 
                 var androidToolPrefixes = new Dictionary<string, string>
@@ -533,12 +540,12 @@ MONO_AOT_MODE_LAST = 1000,
                 Console.WriteLine($"Running: \"{process.StartInfo.FileName}\" {process.StartInfo.Arguments}");
 
                 if (!process.Start())
-                    throw new Exception("Failed to start process for Mono AOT compiler");
+                    throw new InvalidOperationException("Failed to start process for Mono AOT compiler.");
 
                 process.WaitForExit();
 
                 if (process.ExitCode != 0)
-                    throw new Exception($"Mono AOT compiler exited with code: {process.ExitCode}");
+                    throw new InvalidOperationException($"Mono AOT compiler exited with code: {process.ExitCode}.");
             }
         }
 

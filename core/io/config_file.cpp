@@ -32,6 +32,7 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
+#include "core/string/string_builder.h"
 #include "core/variant/variant_parser.h"
 
 PackedStringArray ConfigFile::_get_sections() const {
@@ -128,6 +129,28 @@ void ConfigFile::erase_section_key(const String &p_section, const String &p_key)
 	if (values[p_section].is_empty()) {
 		values.erase(p_section);
 	}
+}
+
+String ConfigFile::encode_to_text() const {
+	StringBuilder sb;
+	bool first = true;
+	for (const KeyValue<String, HashMap<String, Variant>> &E : values) {
+		if (first) {
+			first = false;
+		} else {
+			sb.append("\n");
+		}
+		if (!E.key.is_empty()) {
+			sb.append("[" + E.key + "]\n\n");
+		}
+
+		for (const KeyValue<String, Variant> &F : E.value) {
+			String vstr;
+			VariantWriter::write_to_string(F.value, vstr);
+			sb.append(F.key.property_name_encode() + "=" + vstr + "\n");
+		}
+	}
+	return sb.as_string();
 }
 
 Error ConfigFile::save(const String &p_path) {
@@ -295,6 +318,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 void ConfigFile::clear() {
 	values.clear();
 }
+
 void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_value", "section", "key", "value"), &ConfigFile::set_value);
 	ClassDB::bind_method(D_METHOD("get_value", "section", "key", "default"), &ConfigFile::get_value, DEFVAL(Variant()));
@@ -311,6 +335,8 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
+
+	ClassDB::bind_method(D_METHOD("encode_to_text"), &ConfigFile::encode_to_text);
 
 	BIND_METHOD_ERR_RETURN_DOC("load", ERR_FILE_CANT_OPEN);
 

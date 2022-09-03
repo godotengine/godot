@@ -69,7 +69,6 @@ public:
 
 	/* Texture API */
 
-	DummyTexture *get_texture(RID p_rid) { return texture_owner.get_or_null(p_rid); };
 	bool owns_texture(RID p_rid) { return texture_owner.owns(p_rid); };
 
 	virtual RID texture_allocate() override {
@@ -159,6 +158,7 @@ public:
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override {}
 	virtual bool render_target_was_used(RID p_render_target) override { return false; }
 	virtual void render_target_set_as_unused(RID p_render_target) override {}
+	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override {}
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
 	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }

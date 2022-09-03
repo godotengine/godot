@@ -120,8 +120,9 @@ void ScriptCreateDialog::_notification(int p_what) {
 			} else {
 				language_menu->select(default_language);
 			}
-		} break;
 
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 				Ref<Texture2D> language_icon = get_theme_icon(ScriptServer::get_language(i)->get_type(), SNAME("EditorIcons"));
@@ -823,7 +824,7 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 	Vector<ScriptLanguage::ScriptTemplate> user_templates;
 	String extension = language->get_extension();
 
-	String dir_path = p_dir.plus_file(p_object);
+	String dir_path = p_dir.path_join(p_object);
 
 	Ref<DirAccess> d = DirAccess::open(dir_path);
 	if (d.is_valid()) {
@@ -859,7 +860,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 
 	// Parse file for meta-information and script content
 	Error err;
-	Ref<FileAccess> file = FileAccess::open(p_path.plus_file(p_filename), FileAccess::READ, &err);
+	Ref<FileAccess> file = FileAccess::open(p_path.path_join(p_filename), FileAccess::READ, &err);
 	if (!err) {
 		while (!file->eof_reached()) {
 			String line = file->get_line();
@@ -897,7 +898,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 
 	// Get name from file name if no name in meta information
 	if (script_template.name == String()) {
-		script_template.name = p_filename.get_basename().replace("_", " ").capitalize();
+		script_template.name = p_filename.get_basename().capitalize();
 	}
 
 	return script_template;

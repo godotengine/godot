@@ -542,7 +542,7 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_lesser,or_greater"));
+	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_less,or_greater"));
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
@@ -750,7 +750,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 
 		float blend = xfade_time == 0 ? 0 : (prev_xfading / xfade_time);
 		if (xfade_curve.is_valid()) {
-			blend = xfade_curve->interpolate(blend);
+			blend = xfade_curve->sample(blend);
 		}
 
 		if (from_start && !p_seek && switched) { //just switched, seek to start of current
@@ -810,7 +810,7 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_from_start", "from_start"), &AnimationNodeTransition::set_from_start);
 	ClassDB::bind_method(D_METHOD("is_from_start"), &AnimationNodeTransition::is_from_start);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_RANGE, "0,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_enabled_inputs", "get_enabled_inputs");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_inputs", PROPERTY_HINT_RANGE, "0,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_enabled_inputs", "get_enabled_inputs");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "from_start"), "set_from_start", "is_from_start");

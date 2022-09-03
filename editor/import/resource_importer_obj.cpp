@@ -129,7 +129,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			if (p.is_absolute_path()) {
 				path = p;
 			} else {
-				path = base_path.plus_file(p);
+				path = base_path.path_join(p);
 			}
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
@@ -149,7 +149,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			if (p.is_absolute_path()) {
 				path = p;
 			} else {
-				path = base_path.plus_file(p);
+				path = base_path.path_join(p);
 			}
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
@@ -169,7 +169,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			if (p.is_absolute_path()) {
 				path = p;
 			} else {
-				path = base_path.plus_file(p);
+				path = base_path.path_join(p);
 			}
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
@@ -184,7 +184,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_bump", "").replace("\\", "/").strip_edges();
-			String path = base_path.plus_file(p);
+			String path = base_path.path_join(p);
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
 
@@ -405,7 +405,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				HashMap<String, Ref<StandardMaterial3D>> lib;
 				String lib_path = current_material_library;
 				if (lib_path.is_relative_path()) {
-					lib_path = p_path.get_base_dir().plus_file(current_material_library);
+					lib_path = p_path.get_base_dir().path_join(current_material_library);
 				}
 				Error err = _parse_material_library(lib_path, lib, r_missing_deps);
 				if (err == OK) {

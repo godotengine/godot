@@ -182,27 +182,27 @@ void BoneTransformEditor::_update_properties() {
 				if (split[2] == "enabled") {
 					enabled_checkbox->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					enabled_checkbox->update_property();
-					enabled_checkbox->update();
+					enabled_checkbox->queue_redraw();
 				}
 				if (split[2] == "position") {
 					position_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					position_property->update_property();
-					position_property->update();
+					position_property->queue_redraw();
 				}
 				if (split[2] == "rotation") {
 					rotation_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					rotation_property->update_property();
-					rotation_property->update();
+					rotation_property->queue_redraw();
 				}
 				if (split[2] == "scale") {
 					scale_property->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					scale_property->update_property();
-					scale_property->update();
+					scale_property->queue_redraw();
 				}
 				if (split[2] == "rest") {
 					rest_matrix->set_read_only(E.usage & PROPERTY_USAGE_READ_ONLY);
 					rest_matrix->update_property();
-					rest_matrix->update();
+					rest_matrix->queue_redraw();
 				}
 			}
 		}
@@ -426,12 +426,14 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 	bone_shape->set_name("CollisionShape3D");
 
 	Transform3D capsule_transform;
-	capsule_transform.basis = Basis(Vector3(1, 0, 0), Vector3(0, 0, 1), Vector3(0, -1, 0));
+	capsule_transform.basis.rows[0] = Vector3(1, 0, 0);
+	capsule_transform.basis.rows[1] = Vector3(0, 0, 1);
+	capsule_transform.basis.rows[2] = Vector3(0, -1, 0);
 	bone_shape->set_transform(capsule_transform);
 
 	/// Get an up vector not collinear with child rest origin
 	Vector3 up = Vector3(0, 1, 0);
-	if (up.cross(child_rest.origin).is_equal_approx(Vector3())) {
+	if (up.cross(child_rest.origin).is_zero_approx()) {
 		up = Vector3(0, 0, 1);
 	}
 
@@ -690,8 +692,6 @@ void Skeleton3DEditor::update_editors() {
 
 void Skeleton3DEditor::create_editors() {
 	set_h_size_flags(SIZE_EXPAND_FILL);
-	add_theme_constant_override("separation", 0);
-
 	set_focus_mode(FOCUS_ALL);
 
 	Node3DEditor *ne = Node3DEditor::get_singleton();
@@ -733,7 +733,7 @@ void Skeleton3DEditor::create_editors() {
 	edit_mode_button->set_flat(true);
 	edit_mode_button->set_toggle_mode(true);
 	edit_mode_button->set_focus_mode(FOCUS_NONE);
-	edit_mode_button->set_tooltip(TTR("Edit Mode\nShow buttons on joints."));
+	edit_mode_button->set_tooltip_text(TTR("Edit Mode\nShow buttons on joints."));
 	edit_mode_button->connect("toggled", callable_mp(this, &Skeleton3DEditor::edit_mode_toggled));
 
 	edit_mode = false;
@@ -754,7 +754,7 @@ void Skeleton3DEditor::create_editors() {
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_pressed(false);
 	key_loc_button->set_focus_mode(FOCUS_NONE);
-	key_loc_button->set_tooltip(TTR("Translation mask for inserting keys."));
+	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
@@ -762,7 +762,7 @@ void Skeleton3DEditor::create_editors() {
 	key_rot_button->set_toggle_mode(true);
 	key_rot_button->set_pressed(true);
 	key_rot_button->set_focus_mode(FOCUS_NONE);
-	key_rot_button->set_tooltip(TTR("Rotation mask for inserting keys."));
+	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
@@ -770,14 +770,14 @@ void Skeleton3DEditor::create_editors() {
 	key_scale_button->set_toggle_mode(true);
 	key_scale_button->set_pressed(false);
 	key_scale_button->set_focus_mode(FOCUS_NONE);
-	key_scale_button->set_tooltip(TTR("Scale mask for inserting keys."));
+	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
 	key_insert_button->set_flat(true);
 	key_insert_button->set_focus_mode(FOCUS_NONE);
 	key_insert_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(false));
-	key_insert_button->set_tooltip(TTR("Insert key of bone poses already exist track."));
+	key_insert_button->set_tooltip_text(TTR("Insert key of bone poses already exist track."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_to_existing_tracks", TTR("Insert Key (Existing Tracks)"), Key::INSERT));
 	animation_hb->add_child(key_insert_button);
 
@@ -785,7 +785,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button->set_flat(true);
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
-	key_insert_all_button->set_tooltip(TTR("Insert key of all bone poses."));
+	key_insert_all_button->set_tooltip_text(TTR("Insert key of all bone poses."));
 	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);
 
@@ -823,20 +823,11 @@ void Skeleton3DEditor::create_editors() {
 
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			edit_mode_button->set_icon(get_theme_icon(SNAME("ToolBoneSelect"), SNAME("EditorIcons")));
-			key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
-			key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
-			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
-			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
-			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
-			break;
-		}
 		case NOTIFICATION_ENTER_TREE: {
 			create_editors();
 			update_joint_tree();
 			update_editors();
+
 			joint_tree->connect("item_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_selection_changed));
 			joint_tree->connect("item_mouse_selected", callable_mp(this, &Skeleton3DEditor::_joint_tree_rmb_select));
 #ifdef TOOLS_ENABLED
@@ -845,8 +836,23 @@ void Skeleton3DEditor::_notification(int p_what) {
 			skeleton->connect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
 			skeleton->connect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 #endif
-			break;
-		}
+
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
+		} break;
+		case NOTIFICATION_READY: {
+			// Will trigger NOTIFICATION_THEME_CHANGED, but won't cause any loops if called here.
+			add_theme_constant_override("separation", 0);
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			edit_mode_button->set_icon(get_theme_icon(SNAME("ToolBoneSelect"), SNAME("EditorIcons")));
+			key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
+			key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
+			key_scale_button->set_icon(get_theme_icon(SNAME("KeyScale"), SNAME("EditorIcons")));
+			key_insert_button->set_icon(get_theme_icon(SNAME("Key"), SNAME("EditorIcons")));
+			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
+
+			update_joint_tree();
+		} break;
 	}
 }
 
@@ -915,8 +921,8 @@ void fragment() {
 )");
 	handle_material->set_shader(handle_shader);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("EditorBoneHandle"), SNAME("EditorIcons"));
-	handle_material->set_shader_uniform("point_size", handle->get_width());
-	handle_material->set_shader_uniform("texture_albedo", handle);
+	handle_material->set_shader_parameter("point_size", handle->get_width());
+	handle_material->set_shader_parameter("texture_albedo", handle);
 
 	handles_mesh_instance = memnew(MeshInstance3D);
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);

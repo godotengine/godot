@@ -17,6 +17,8 @@ files = [
     "godot_window.mm",
     "key_mapping_macos.mm",
     "godot_main_macos.mm",
+    "godot_menu_delegate.mm",
+    "godot_menu_item.mm",
     "dir_access_macos.mm",
     "tts_macos.mm",
     "joypad_macos.cpp",

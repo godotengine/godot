@@ -190,14 +190,7 @@ void Viewport::_sub_window_register(Window *p_window) {
 }
 
 void Viewport::_sub_window_update(Window *p_window) {
-	int index = -1;
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
-		if (gui.sub_windows[i].window == p_window) {
-			index = i;
-			break;
-		}
-	}
-
+	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
 
 	const SubWindow &sw = gui.sub_windows[index];
@@ -257,14 +250,7 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 		return;
 	}
 
-	int index = -1;
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
-		if (gui.sub_windows[i].window == p_window) {
-			index = i;
-			break;
-		}
-	}
-
+	int index = _sub_window_find(p_window);
 	ERR_FAIL_COND(index == -1);
 
 	if (p_window->get_flag(Window::FLAG_NO_FOCUS)) {
@@ -312,13 +298,11 @@ void Viewport::_sub_window_grab_focus(Window *p_window) {
 }
 
 void Viewport::_sub_window_remove(Window *p_window) {
-	for (int i = 0; i < gui.sub_windows.size(); i++) {
-		if (gui.sub_windows[i].window == p_window) {
-			RS::get_singleton()->free(gui.sub_windows[i].canvas_item);
-			gui.sub_windows.remove_at(i);
-			break;
-		}
-	}
+	int index = _sub_window_find(p_window);
+	ERR_FAIL_COND(index == -1);
+
+	RS::get_singleton()->free(gui.sub_windows[index].canvas_item);
+	gui.sub_windows.remove_at(index);
 
 	if (gui.sub_windows.size() == 0) {
 		RS::get_singleton()->free(subwindow_canvas);
@@ -326,25 +310,44 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	}
 
 	if (gui.subwindow_focused == p_window) {
+		Window *new_focused_window;
 		Window *parent_visible = p_window->get_parent_visible_window();
 
 		gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 
 		gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 
-		if (parent_visible && parent_visible != this) {
-			gui.subwindow_focused = parent_visible;
-			gui.subwindow_focused->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
+		if (parent_visible) {
+			new_focused_window = parent_visible;
+		} else {
+			new_focused_window = Object::cast_to<Window>(this);
+		}
+
+		if (new_focused_window) {
+			int new_focused_index = _sub_window_find(new_focused_window);
+			if (new_focused_index != -1) {
+				gui.subwindow_focused = new_focused_window;
+			} else {
+				gui.subwindow_focused = nullptr;
+			}
+
+			new_focused_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 		} else {
 			gui.subwindow_focused = nullptr;
-			Window *this_window = Object::cast_to<Window>(this);
-			if (this_window) {
-				this_window->_event_callback(DisplayServer::WINDOW_EVENT_FOCUS_IN);
-			}
 		}
 	}
 
 	RenderingServer::get_singleton()->viewport_set_parent_viewport(p_window->viewport, p_window->parent ? p_window->parent->viewport : RID());
+}
+
+int Viewport::_sub_window_find(Window *p_window) {
+	for (int i = 0; i < gui.sub_windows.size(); i++) {
+		if (gui.sub_windows[i].window == p_window) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void Viewport::_notification(int p_what) {
@@ -802,6 +805,10 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 
 	update_canvas_items();
 
+	for (ViewportTexture *E : viewport_textures) {
+		E->emit_changed();
+	}
+
 	emit_signal(SNAME("size_changed"));
 }
 
@@ -1023,7 +1030,7 @@ void Viewport::_update_canvas_items(Node *p_node) {
 
 		CanvasItem *ci = Object::cast_to<CanvasItem>(p_node);
 		if (ci) {
-			ci->update();
+			ci->queue_redraw();
 		}
 	}
 
@@ -2197,7 +2204,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	gui.key_focus = p_control;
 	emit_signal(SNAME("gui_focus_changed"), p_control);
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
-	p_control->update();
+	p_control->queue_redraw();
 }
 
 void Viewport::_gui_accept_event() {
@@ -2865,7 +2872,7 @@ void Viewport::gui_release_focus() {
 		Control *f = gui.key_focus;
 		gui.key_focus = nullptr;
 		f->notification(Control::NOTIFICATION_FOCUS_EXIT, true);
-		f->update();
+		f->queue_redraw();
 	}
 }
 
@@ -2873,17 +2880,30 @@ Control *Viewport::gui_get_focus_owner() {
 	return gui.key_focus;
 }
 
-void Viewport::set_msaa(MSAA p_msaa) {
+void Viewport::set_msaa_2d(MSAA p_msaa) {
 	ERR_FAIL_INDEX(p_msaa, MSAA_MAX);
-	if (msaa == p_msaa) {
+	if (msaa_2d == p_msaa) {
 		return;
 	}
-	msaa = p_msaa;
-	RS::get_singleton()->viewport_set_msaa(viewport, RS::ViewportMSAA(p_msaa));
+	msaa_2d = p_msaa;
+	RS::get_singleton()->viewport_set_msaa_2d(viewport, RS::ViewportMSAA(p_msaa));
 }
 
-Viewport::MSAA Viewport::get_msaa() const {
-	return msaa;
+Viewport::MSAA Viewport::get_msaa_2d() const {
+	return msaa_2d;
+}
+
+void Viewport::set_msaa_3d(MSAA p_msaa) {
+	ERR_FAIL_INDEX(p_msaa, MSAA_MAX);
+	if (msaa_3d == p_msaa) {
+		return;
+	}
+	msaa_3d = p_msaa;
+	RS::get_singleton()->viewport_set_msaa_3d(viewport, RS::ViewportMSAA(p_msaa));
+}
+
+Viewport::MSAA Viewport::get_msaa_3d() const {
+	return msaa_3d;
 }
 
 void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
@@ -3675,8 +3695,11 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transparent_background", "enable"), &Viewport::set_transparent_background);
 	ClassDB::bind_method(D_METHOD("has_transparent_background"), &Viewport::has_transparent_background);
 
-	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
-	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
+	ClassDB::bind_method(D_METHOD("set_msaa_2d", "msaa"), &Viewport::set_msaa_2d);
+	ClassDB::bind_method(D_METHOD("get_msaa_2d"), &Viewport::get_msaa_2d);
+
+	ClassDB::bind_method(D_METHOD("set_msaa_3d", "msaa"), &Viewport::set_msaa_3d);
+	ClassDB::bind_method(D_METHOD("get_msaa_3d"), &Viewport::get_msaa_3d);
 
 	ClassDB::bind_method(D_METHOD("set_screen_space_aa", "screen_space_aa"), &Viewport::set_screen_space_aa);
 	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &Viewport::get_screen_space_aa);
@@ -3816,7 +3839,8 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_transforms_to_pixel"), "set_snap_2d_transforms_to_pixel", "is_snap_2d_transforms_to_pixel_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snap_2d_vertices_to_pixel"), "set_snap_2d_vertices_to_pixel", "is_snap_2d_vertices_to_pixel_enabled");
 	ADD_GROUP("Rendering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa", "get_msaa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_2d", "get_msaa_2d");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_3d", "get_msaa_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_taa"), "set_use_taa", "is_using_taa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");

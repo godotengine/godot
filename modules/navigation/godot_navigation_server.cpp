@@ -210,6 +210,20 @@ real_t GodotNavigationServer::map_get_edge_connection_margin(RID p_map) const {
 	return map->get_edge_connection_margin();
 }
 
+COMMAND_2(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND(map == nullptr);
+
+	map->set_link_connection_radius(p_connection_radius);
+}
+
+real_t GodotNavigationServer::map_get_link_connection_radius(RID p_map) const {
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND_V(map == nullptr, 0);
+
+	return map->get_link_connection_radius();
+}
+
 Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
@@ -243,6 +257,20 @@ RID GodotNavigationServer::map_get_closest_point_owner(RID p_map, const Vector3 
 	ERR_FAIL_COND_V(map == nullptr, RID());
 
 	return map->get_closest_point_owner(p_point);
+}
+
+TypedArray<RID> GodotNavigationServer::map_get_links(RID p_map) const {
+	TypedArray<RID> link_rids;
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_COND_V(map == nullptr, link_rids);
+
+	const LocalVector<NavLink *> links = map->get_links();
+	link_rids.resize(links.size());
+
+	for (uint32_t i = 0; i < links.size(); i++) {
+		link_rids[i] = links[i]->get_self();
+	}
+	return link_rids;
 }
 
 TypedArray<RID> GodotNavigationServer::map_get_regions(RID p_map) const {
@@ -417,6 +445,131 @@ Vector3 GodotNavigationServer::region_get_connection_pathway_end(RID p_region, i
 	return region->get_connection_pathway_end(p_connection_id);
 }
 
+RID GodotNavigationServer::link_create() const {
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
+	MutexLock lock(mut_this->operations_mutex);
+	RID rid = link_owner.make_rid();
+	NavLink *link = link_owner.get_or_null(rid);
+	link->set_self(rid);
+	return rid;
+}
+
+COMMAND_2(link_set_map, RID, p_link, RID, p_map) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	if (link->get_map() != nullptr) {
+		if (link->get_map()->get_self() == p_map) {
+			return; // Pointless
+		}
+
+		link->get_map()->remove_link(link);
+		link->set_map(nullptr);
+	}
+
+	if (p_map.is_valid()) {
+		NavMap *map = map_owner.get_or_null(p_map);
+		ERR_FAIL_COND(map == nullptr);
+
+		map->add_link(link);
+		link->set_map(map);
+	}
+}
+
+RID GodotNavigationServer::link_get_map(const RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, RID());
+
+	if (link->get_map()) {
+		return link->get_map()->get_self();
+	}
+	return RID();
+}
+
+COMMAND_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_bidirectional(p_bidirectional);
+}
+
+bool GodotNavigationServer::link_is_bidirectional(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, false);
+
+	return link->is_bidirectional();
+}
+
+COMMAND_2(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_navigation_layers(p_navigation_layers);
+}
+
+uint32_t GodotNavigationServer::link_get_navigation_layers(const RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, 0);
+
+	return link->get_navigation_layers();
+}
+
+COMMAND_2(link_set_start_location, RID, p_link, Vector3, p_location) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_start_location(p_location);
+}
+
+Vector3 GodotNavigationServer::link_get_start_location(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, Vector3());
+
+	return link->get_start_location();
+}
+
+COMMAND_2(link_set_end_location, RID, p_link, Vector3, p_location) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_end_location(p_location);
+}
+
+Vector3 GodotNavigationServer::link_get_end_location(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, Vector3());
+
+	return link->get_end_location();
+}
+
+COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_enter_cost(p_enter_cost);
+}
+
+real_t GodotNavigationServer::link_get_enter_cost(const RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, 0);
+
+	return link->get_enter_cost();
+}
+
+COMMAND_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_travel_cost(p_travel_cost);
+}
+
+real_t GodotNavigationServer::link_get_travel_cost(const RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, 0);
+
+	return link->get_travel_cost();
+}
+
 RID GodotNavigationServer::agent_create() const {
 	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
 	MutexLock lock(mut_this->operations_mutex);
@@ -549,6 +702,13 @@ COMMAND_1(free, RID, p_object) {
 			regions[i]->set_map(nullptr);
 		}
 
+		// Removes any assigned links
+		LocalVector<NavLink *> links = map->get_links();
+		for (uint32_t i = 0; i < links.size(); i++) {
+			map->remove_link(links[i]);
+			links[i]->set_map(nullptr);
+		}
+
 		// Remove any assigned agent
 		LocalVector<RvoAgent *> agents = map->get_agents();
 		for (uint32_t i = 0; i < agents.size(); i++) {
@@ -571,6 +731,17 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		region_owner.free(p_object);
+
+	} else if (link_owner.owns(p_object)) {
+		NavLink *link = link_owner.get_or_null(p_object);
+
+		// Removes this link from the map if assigned
+		if (link->get_map() != nullptr) {
+			link->get_map()->remove_link(link);
+			link->set_map(nullptr);
+		}
+
+		link_owner.free(p_object);
 
 	} else if (agent_owner.owns(p_object)) {
 		RvoAgent *agent = agent_owner.get_or_null(p_object);

@@ -2,7 +2,7 @@ BASEDIR = $(CURDIR)
 CLASSES = $(BASEDIR)/classes/ $(BASEDIR)/../modules/
 OUTPUTDIR = $(BASEDIR)/_build
 TOOLSDIR = $(BASEDIR)/tools
-JSDIR = $(BASEDIR)/../platform/javascript
+JSDIR = $(BASEDIR)/../platform/web
 LANGARG ?= en
 LANGCMD = -l $(LANGARG)
 

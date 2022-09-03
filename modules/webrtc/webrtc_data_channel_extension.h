@@ -33,6 +33,7 @@
 
 #include "webrtc_data_channel.h"
 
+#include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
@@ -44,53 +45,33 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual void set_write_mode(WriteMode mode) override;
-	virtual WriteMode get_write_mode() const override;
-	virtual bool was_string_packet() const override;
+	EXBIND0R(Error, poll);
+	EXBIND0(close);
 
-	virtual ChannelState get_ready_state() const override;
-	virtual String get_label() const override;
-	virtual bool is_ordered() const override;
-	virtual int get_id() const override;
-	virtual int get_max_packet_life_time() const override;
-	virtual int get_max_retransmits() const override;
-	virtual String get_protocol() const override;
-	virtual bool is_negotiated() const override;
-	virtual int get_buffered_amount() const override;
+	EXBIND1(set_write_mode, WriteMode);
+	EXBIND0RC(WriteMode, get_write_mode);
 
-	virtual Error poll() override;
-	virtual void close() override;
+	EXBIND0RC(bool, was_string_packet);
+
+	EXBIND0RC(ChannelState, get_ready_state);
+	EXBIND0RC(String, get_label);
+	EXBIND0RC(bool, is_ordered);
+	EXBIND0RC(int, get_id);
+	EXBIND0RC(int, get_max_packet_life_time);
+	EXBIND0RC(int, get_max_retransmits);
+	EXBIND0RC(String, get_protocol);
+	EXBIND0RC(bool, is_negotiated);
+	EXBIND0RC(int, get_buffered_amount);
 
 	/** Inherited from PacketPeer: **/
-	virtual int get_available_packet_count() const override;
+	EXBIND0RC(int, get_available_packet_count);
+	EXBIND0RC(int, get_max_packet_size);
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
-	virtual int get_max_packet_size() const override;
-
 	/** GDExtension **/
-	GDVIRTUAL0RC(int, _get_available_packet_count);
-	GDVIRTUAL2R(int, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
-	GDVIRTUAL2R(int, _put_packet, GDNativeConstPtr<const uint8_t>, int);
-	GDVIRTUAL0RC(int, _get_max_packet_size);
-
-	GDVIRTUAL0R(int, _poll);
-	GDVIRTUAL0(_close);
-
-	GDVIRTUAL1(_set_write_mode, int);
-	GDVIRTUAL0RC(int, _get_write_mode);
-
-	GDVIRTUAL0RC(bool, _was_string_packet);
-
-	GDVIRTUAL0RC(int, _get_ready_state);
-	GDVIRTUAL0RC(String, _get_label);
-	GDVIRTUAL0RC(bool, _is_ordered);
-	GDVIRTUAL0RC(int, _get_id);
-	GDVIRTUAL0RC(int, _get_max_packet_life_time);
-	GDVIRTUAL0RC(int, _get_max_retransmits);
-	GDVIRTUAL0RC(String, _get_protocol);
-	GDVIRTUAL0RC(bool, _is_negotiated);
-	GDVIRTUAL0RC(int, _get_buffered_amount);
+	GDVIRTUAL2R(Error, _get_packet, GDNativeConstPtr<const uint8_t *>, GDNativePtr<int>);
+	GDVIRTUAL2R(Error, _put_packet, GDNativeConstPtr<const uint8_t>, int);
 
 	WebRTCDataChannelExtension() {}
 };

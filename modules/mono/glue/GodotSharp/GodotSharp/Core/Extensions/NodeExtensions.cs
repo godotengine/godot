@@ -36,7 +36,7 @@ namespace Godot
         /// <seealso cref="GetNodeOrNull{T}(NodePath)"/>
         /// <param name="path">The path to the node to fetch.</param>
         /// <exception cref="InvalidCastException">
-        /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
+        /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>
@@ -100,7 +100,7 @@ namespace Godot
         /// parameter in <see cref="AddChild(Node, bool, InternalMode)"/>).
         /// </param>
         /// <exception cref="InvalidCastException">
-        /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
+        /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>
@@ -142,7 +142,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="GetOwnerOrNull{T}"/>
         /// <exception cref="InvalidCastException">
-        /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
+        /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>
@@ -176,7 +176,7 @@ namespace Godot
         /// </summary>
         /// <seealso cref="GetParentOrNull{T}"/>
         /// <exception cref="InvalidCastException">
-        /// Thrown when the given the fetched node can't be casted to the given type <typeparamref name="T"/>.
+        /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
         /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
         /// <returns>

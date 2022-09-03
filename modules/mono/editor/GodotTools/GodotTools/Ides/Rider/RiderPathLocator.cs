@@ -42,7 +42,7 @@ namespace GodotTools.Ides.Rider
                 {
                     return CollectAllRiderPathsLinux();
                 }
-                throw new Exception("Unexpected OS.");
+                throw new InvalidOperationException("Unexpected OS.");
             }
             catch (Exception e)
             {
@@ -216,7 +216,7 @@ namespace GodotTools.Ides.Rider
                 return "../../build.txt";
             if (OS.IsMacOS)
                 return "Contents/Resources/build.txt";
-            throw new Exception("Unknown OS.");
+            throw new InvalidOperationException("Unknown OS.");
         }
 
         [SupportedOSPlatform("windows")]

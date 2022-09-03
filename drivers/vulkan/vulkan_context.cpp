@@ -1436,6 +1436,24 @@ bool VulkanContext::_use_validation_layers() {
 	return Engine::get_singleton()->is_validation_layers_enabled();
 }
 
+VkExtent2D VulkanContext::_compute_swapchain_extent(const VkSurfaceCapabilitiesKHR &p_surf_capabilities, int *p_window_width, int *p_window_height) const {
+	// Width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
+	if (p_surf_capabilities.currentExtent.width == 0xFFFFFFFF) {
+		// If the surface size is undefined, the size is set to the size
+		// of the images requested, which must fit within the minimum and
+		// maximum values.
+		VkExtent2D extent = {};
+		extent.width = CLAMP((uint32_t)(*p_window_width), p_surf_capabilities.minImageExtent.width, p_surf_capabilities.maxImageExtent.width);
+		extent.height = CLAMP((uint32_t)(*p_window_height), p_surf_capabilities.minImageExtent.height, p_surf_capabilities.maxImageExtent.height);
+		return extent;
+	} else {
+		// If the surface size is defined, the swap chain size must match.
+		*p_window_width = p_surf_capabilities.currentExtent.width;
+		*p_window_height = p_surf_capabilities.currentExtent.height;
+		return p_surf_capabilities.currentExtent;
+	}
+}
+
 Error VulkanContext::_window_create(DisplayServer::WindowID p_window_id, DisplayServer::VSyncMode p_vsync_mode, VkSurfaceKHR p_surface, int p_width, int p_height) {
 	ERR_FAIL_COND_V(windows.has(p_window_id), ERR_INVALID_PARAMETER);
 
@@ -1576,32 +1594,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 
-	VkExtent2D swapchainExtent;
-	// Width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-	if (surfCapabilities.currentExtent.width == 0xFFFFFFFF) {
-		// If the surface size is undefined, the size is set to the size
-		// of the images requested, which must fit within the minimum and
-		// maximum values.
-		swapchainExtent.width = window->width;
-		swapchainExtent.height = window->height;
-
-		if (swapchainExtent.width < surfCapabilities.minImageExtent.width) {
-			swapchainExtent.width = surfCapabilities.minImageExtent.width;
-		} else if (swapchainExtent.width > surfCapabilities.maxImageExtent.width) {
-			swapchainExtent.width = surfCapabilities.maxImageExtent.width;
-		}
-
-		if (swapchainExtent.height < surfCapabilities.minImageExtent.height) {
-			swapchainExtent.height = surfCapabilities.minImageExtent.height;
-		} else if (swapchainExtent.height > surfCapabilities.maxImageExtent.height) {
-			swapchainExtent.height = surfCapabilities.maxImageExtent.height;
-		}
-	} else {
-		// If the surface size is defined, the swap chain size must match.
-		swapchainExtent = surfCapabilities.currentExtent;
-		window->width = surfCapabilities.currentExtent.width;
-		window->height = surfCapabilities.currentExtent.height;
-	}
+	VkExtent2D swapchainExtent = _compute_swapchain_extent(surfCapabilities, &window->width, &window->height);
 
 	if (window->width == 0 || window->height == 0) {
 		free(presentModes);

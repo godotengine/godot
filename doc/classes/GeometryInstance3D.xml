@@ -9,9 +9,9 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_instance_shader_uniform" qualifiers="const">
+		<method name="get_instance_shader_parameter" qualifiers="const">
 			<return type="Variant" />
-			<param index="0" name="uniform" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
@@ -22,9 +22,9 @@
 				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
 			</description>
 		</method>
-		<method name="set_instance_shader_uniform">
+		<method name="set_instance_shader_parameter">
 			<return type="void" />
-			<param index="0" name="uniform" type="StringName" />
+			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
 			</description>

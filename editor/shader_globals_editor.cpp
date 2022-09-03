@@ -80,7 +80,7 @@ protected:
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-		Variant existing = RS::get_singleton()->global_shader_uniform_get(p_name);
+		Variant existing = RS::get_singleton()->global_shader_parameter_get(p_name);
 
 		if (existing.get_type() == Variant::NIL) {
 			return false;
@@ -89,9 +89,9 @@ protected:
 		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_undo_redo();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
-		undo_redo->add_do_method(RS::get_singleton(), "global_shader_uniform_set", p_name, p_value);
-		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_uniform_set", p_name, existing);
-		RS::GlobalShaderUniformType type = RS::get_singleton()->global_shader_uniform_get_type(p_name);
+		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
+		undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_set", p_name, existing);
+		RS::GlobalShaderParameterType type = RS::get_singleton()->global_shader_parameter_get_type(p_name);
 		Dictionary gv;
 		gv["type"] = global_var_type_names[type];
 		if (type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
@@ -118,17 +118,17 @@ protected:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		r_ret = RS::get_singleton()->global_shader_uniform_get(p_name);
+		r_ret = RS::get_singleton()->global_shader_parameter_get(p_name);
 		return r_ret.get_type() != Variant::NIL;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
 		Vector<StringName> variables;
-		variables = RS::get_singleton()->global_shader_uniform_get_list();
+		variables = RS::get_singleton()->global_shader_parameter_get_list();
 		for (int i = 0; i < variables.size(); i++) {
 			PropertyInfo pinfo;
 			pinfo.name = variables[i];
 
-			switch (RS::get_singleton()->global_shader_uniform_get_type(variables[i])) {
+			switch (RS::get_singleton()->global_shader_parameter_get_type(variables[i])) {
 				case RS::GLOBAL_VAR_TYPE_BOOL: {
 					pinfo.type = Variant::BOOL;
 				} break;
@@ -242,7 +242,7 @@ public:
 	}
 };
 
-static Variant create_var(RS::GlobalShaderUniformType p_type) {
+static Variant create_var(RS::GlobalShaderParameterType p_type) {
 	switch (p_type) {
 		case RS::GLOBAL_VAR_TYPE_BOOL: {
 			return false;
@@ -381,8 +381,8 @@ void ShaderGlobalsEditor::_variable_added() {
 		return;
 	}
 
-	if (RenderingServer::get_singleton()->global_shader_uniform_get(var).get_type() != Variant::NIL) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader uniform '%s' already exists'"), var));
+	if (RenderingServer::get_singleton()->global_shader_parameter_get(var).get_type() != Variant::NIL) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR("Global shader parameter '%s' already exists'"), var));
 		return;
 	}
 
@@ -396,11 +396,11 @@ void ShaderGlobalsEditor::_variable_added() {
 
 	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-	Variant value = create_var(RS::GlobalShaderUniformType(variable_type->get_selected()));
+	Variant value = create_var(RS::GlobalShaderParameterType(variable_type->get_selected()));
 
-	undo_redo->create_action(TTR("Add Shader Global Uniform"));
-	undo_redo->add_do_method(RS::get_singleton(), "global_shader_uniform_add", var, RS::GlobalShaderUniformType(variable_type->get_selected()), value);
-	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_uniform_remove", var);
+	undo_redo->create_action(TTR("Add Shader Global Parameter"));
+	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_add", var, RS::GlobalShaderParameterType(variable_type->get_selected()), value);
+	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_remove", var);
 	Dictionary gv;
 	gv["type"] = global_var_type_names[variable_type->get_selected()];
 	gv["value"] = value;
@@ -415,9 +415,9 @@ void ShaderGlobalsEditor::_variable_added() {
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
 	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
-	undo_redo->create_action(TTR("Add Shader Global Uniform"));
-	undo_redo->add_do_method(RS::get_singleton(), "global_shader_uniform_remove", p_variable);
-	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_uniform_add", p_variable, RS::get_singleton()->global_shader_uniform_get_type(p_variable), RS::get_singleton()->global_shader_uniform_get(p_variable));
+	undo_redo->create_action(TTR("Add Shader Global Parameter"));
+	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_remove", p_variable);
+	undo_redo->add_undo_method(RS::get_singleton(), "global_shader_parameter_add", p_variable, RS::get_singleton()->global_shader_parameter_get_type(p_variable), RS::get_singleton()->global_shader_parameter_get(p_variable));
 
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, Variant());
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "shader_globals/" + p_variable, ProjectSettings::get_singleton()->get("shader_globals/" + p_variable));

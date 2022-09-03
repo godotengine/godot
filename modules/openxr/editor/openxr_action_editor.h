@@ -49,6 +49,7 @@ private:
 	OptionButton *action_type = nullptr;
 	Button *rem_action = nullptr;
 
+	void _theme_changed();
 	void _on_action_name_changed(const String p_new_text);
 	void _on_action_localized_name_changed(const String p_new_text);
 	void _on_item_selected(int p_idx);

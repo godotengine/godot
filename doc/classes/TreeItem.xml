@@ -16,9 +16,9 @@
 			<param index="1" name="button" type="Texture2D" />
 			<param index="2" name="id" type="int" default="-1" />
 			<param index="3" name="disabled" type="bool" default="false" />
-			<param index="4" name="tooltip" type="String" default="&quot;&quot;" />
+			<param index="4" name="tooltip_text" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip].
+				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -96,12 +96,12 @@
 				Returns the id for the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
-		<method name="get_button_tooltip" qualifiers="const">
+		<method name="get_button_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="button_idx" type="int" />
 			<description>
-				Returns the tooltip string for the button at index [param button_idx] in column [param column].
+				Returns the tooltip text for the button at index [param button_idx] in column [param column].
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
@@ -308,11 +308,11 @@
 				Returns item's text base writing direction.
 			</description>
 		</method>
-		<method name="get_tooltip" qualifiers="const">
+		<method name="get_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
 			<description>
-				Returns the given column's tooltip.
+				Returns the given column's tooltip text.
 			</description>
 		</method>
 		<method name="get_tree" qualifiers="const">
@@ -639,7 +639,7 @@
 				Sets item's text base writing direction.
 			</description>
 		</method>
-		<method name="set_tooltip">
+		<method name="set_tooltip_text">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
 			<param index="1" name="tooltip" type="String" />

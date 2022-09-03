@@ -198,7 +198,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2> &p_polygon) {
 		_build_polygon();
 		_update_in_shape_owner();
 	}
-	update();
+	queue_redraw();
 	update_configuration_warnings();
 }
 
@@ -213,7 +213,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 		_build_polygon();
 		_update_in_shape_owner();
 	}
-	update();
+	queue_redraw();
 	update_configuration_warnings();
 }
 
@@ -264,7 +264,7 @@ TypedArray<String> CollisionPolygon2D::get_configuration_warnings() const {
 
 void CollisionPolygon2D::set_disabled(bool p_disabled) {
 	disabled = p_disabled;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_disabled(owner_id, p_disabled);
 	}
@@ -276,7 +276,7 @@ bool CollisionPolygon2D::is_disabled() const {
 
 void CollisionPolygon2D::set_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
-	update();
+	queue_redraw();
 	if (parent) {
 		parent->shape_owner_set_one_way_collision(owner_id, p_enable);
 	}

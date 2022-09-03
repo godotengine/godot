@@ -93,7 +93,7 @@ namespace GodotTools.Build
 
         private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;
 
-        private void BuildMenuOptionPressed(int id)
+        private void BuildMenuOptionPressed(long id)
         {
             switch ((BuildMenuOptions)id)
             {
@@ -139,7 +139,7 @@ namespace GodotTools.Build
 
             _errorsBtn = new Button
             {
-                HintTooltip = "Show Errors".TTR(),
+                TooltipText = "Show Errors".TTR(),
                 Icon = GetThemeIcon("StatusError", "EditorIcons"),
                 ExpandIcon = false,
                 ToggleMode = true,
@@ -151,7 +151,7 @@ namespace GodotTools.Build
 
             _warningsBtn = new Button
             {
-                HintTooltip = "Show Warnings".TTR(),
+                TooltipText = "Show Warnings".TTR(),
                 Icon = GetThemeIcon("NodeWarning", "EditorIcons"),
                 ExpandIcon = false,
                 ToggleMode = true,
@@ -175,7 +175,7 @@ namespace GodotTools.Build
             AddChild(BuildOutputView);
         }
 
-        public override void _Notification(int what)
+        public override void _Notification(long what)
         {
             base._Notification(what);
 

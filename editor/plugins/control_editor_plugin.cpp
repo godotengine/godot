@@ -69,14 +69,14 @@ void ControlPositioningWarning::_update_toggler() {
 	Ref<Texture2D> arrow;
 	if (hint_label->is_visible()) {
 		arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
-		set_tooltip(TTR("Collapse positioning hint."));
+		set_tooltip_text(TTR("Collapse positioning hint."));
 	} else {
 		if (is_layout_rtl()) {
 			arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
 		} else {
 			arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
 		}
-		set_tooltip(TTR("Expand positioning hint."));
+		set_tooltip_text(TTR("Expand positioning hint."));
 	}
 
 	hint_icon->set_texture(arrow);
@@ -102,6 +102,7 @@ void ControlPositioningWarning::gui_input(const Ref<InputEvent> &p_event) {
 
 void ControlPositioningWarning::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED:
 			_update_warning();
 			_update_toggler();
@@ -491,6 +492,7 @@ void ControlEditorPopupButton::_popup_visibility_changed(bool p_visible) {
 
 void ControlEditorPopupButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			arrow_icon = get_theme_icon("select_arrow", "Tree");
 		} break;
@@ -521,7 +523,7 @@ ControlEditorPopupButton::ControlEditorPopupButton() {
 	set_focus_mode(FOCUS_NONE);
 
 	popup_panel = memnew(PopupPanel);
-	popup_panel->set_theme_type_variation("ControlEditorPopupButton");
+	popup_panel->set_theme_type_variation("ControlEditorPopupPanel");
 	add_child(popup_panel);
 	popup_panel->connect("about_to_popup", callable_mp(this, &ControlEditorPopupButton::_popup_visibility_changed).bind(true));
 	popup_panel->connect("popup_hide", callable_mp(this, &ControlEditorPopupButton::_popup_visibility_changed).bind(false));
@@ -536,7 +538,7 @@ void ControlEditorPresetPicker::_add_row_button(HBoxContainer *p_row, const int 
 	Button *b = memnew(Button);
 	b->set_custom_minimum_size(Size2i(36, 36) * EDSCALE);
 	b->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	b->set_tooltip(p_name);
+	b->set_tooltip_text(p_name);
 	b->set_flat(true);
 	p_row->add_child(b);
 	b->connect("pressed", callable_mp(this, &ControlEditorPresetPicker::_preset_button_pressed).bind(p_preset));
@@ -556,6 +558,7 @@ void AnchorPresetPicker::_preset_button_pressed(const int p_preset) {
 
 void AnchorPresetPicker::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			preset_buttons[PRESET_TOP_LEFT]->set_icon(get_theme_icon(SNAME("ControlAlignTopLeft"), SNAME("EditorIcons")));
 			preset_buttons[PRESET_CENTER_TOP]->set_icon(get_theme_icon(SNAME("ControlAlignCenterTop"), SNAME("EditorIcons")));
@@ -655,15 +658,16 @@ void SizeFlagPresetPicker::set_allowed_flags(Vector<SizeFlags> &p_flags) {
 
 	expand_button->set_disabled(!p_flags.has(SIZE_EXPAND));
 	if (p_flags.has(SIZE_EXPAND)) {
-		expand_button->set_tooltip(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+		expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	} else {
 		expand_button->set_pressed(false);
-		expand_button->set_tooltip(TTR("Some parents of the selected nodes do not support the Expand flag."));
+		expand_button->set_tooltip_text(TTR("Some parents of the selected nodes do not support the Expand flag."));
 	}
 }
 
 void SizeFlagPresetPicker::_notification(int p_notification) {
 	switch (p_notification) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (vertical) {
 				preset_buttons[SIZE_SHRINK_BEGIN]->set_icon(get_theme_icon(SNAME("ControlAlignCenterTop"), SNAME("EditorIcons")));
@@ -706,7 +710,7 @@ SizeFlagPresetPicker::SizeFlagPresetPicker(bool p_vertical) {
 	expand_button = memnew(CheckBox);
 	expand_button->set_flat(true);
 	expand_button->set_text(TTR("Align with Expand"));
-	expand_button->set_tooltip(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
+	expand_button->set_tooltip_text(TTR("Enable to also set the Expand flag.\nDisable to only set Shrink/Fill flags."));
 	main_vb->add_child(expand_button);
 }
 
@@ -970,6 +974,7 @@ void ControlEditorToolbar::_selection_changed() {
 
 void ControlEditorToolbar::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			anchors_button->set_icon(get_theme_icon(SNAME("ControlLayout"), SNAME("EditorIcons")));
 			anchor_mode_button->set_icon(get_theme_icon(SNAME("Anchor"), SNAME("EditorIcons")));
@@ -983,7 +988,7 @@ ControlEditorToolbar::ControlEditorToolbar() {
 
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
-	anchors_button->set_tooltip(TTR("Presets for the anchor and offset values of a Control node."));
+	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));
 	add_child(anchors_button);
 
 	Label *anchors_label = memnew(Label);
@@ -999,20 +1004,20 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	Button *keep_ratio_button = memnew(Button);
 	keep_ratio_button->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 	keep_ratio_button->set_text(TTR("Set to Current Ratio"));
-	keep_ratio_button->set_tooltip(TTR("Adjust anchors and offsets to match the current rect size."));
+	keep_ratio_button->set_tooltip_text(TTR("Adjust anchors and offsets to match the current rect size."));
 	anchors_button->get_popup_hbox()->add_child(keep_ratio_button);
 	keep_ratio_button->connect("pressed", callable_mp(this, &ControlEditorToolbar::_anchors_to_current_ratio));
 
 	anchor_mode_button = memnew(Button);
 	anchor_mode_button->set_flat(true);
 	anchor_mode_button->set_toggle_mode(true);
-	anchor_mode_button->set_tooltip(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
+	anchor_mode_button->set_tooltip_text(TTR("When active, moving Control nodes changes their anchors instead of their offsets."));
 	add_child(anchor_mode_button);
 	anchor_mode_button->connect("toggled", callable_mp(this, &ControlEditorToolbar::_anchor_mode_toggled));
 
 	// Container tools.
 	containers_button = memnew(ControlEditorPopupButton);
-	containers_button->set_tooltip(TTR("Sizing settings for children of a Container node."));
+	containers_button->set_tooltip_text(TTR("Sizing settings for children of a Container node."));
 	add_child(containers_button);
 
 	Label *container_h_label = memnew(Label);

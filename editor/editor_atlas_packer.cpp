@@ -81,7 +81,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 				int l = k == 0 ? 2 : k - 1;
 				Vector<Point2i> points = Geometry2D::bresenham_line(v[k], v[l]);
 				for (Point2i point : points) {
-					src_bitmap->set_bit(point, true);
+					src_bitmap->set_bitv(point, true);
 				}
 			}
 		}
@@ -128,7 +128,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 							continue;
 						}
 
-						if (src_bitmap->get_bit(Vector2(px, py))) {
+						if (src_bitmap->get_bit(px, py)) {
 							found_pixel = true;
 						}
 					}

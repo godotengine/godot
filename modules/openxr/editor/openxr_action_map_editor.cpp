@@ -52,6 +52,7 @@ void OpenXRActionMapEditor::_bind_methods() {
 
 void OpenXRActionMapEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < tabs->get_child_count(); i++) {
 				Control *tab = static_cast<Control *>(tabs->get_child(i));
@@ -315,13 +316,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 
 	add_action_set = memnew(Button);
 	add_action_set->set_text(TTR("Add Action Set"));
-	add_action_set->set_tooltip(TTR("Add an action set."));
+	add_action_set->set_tooltip_text(TTR("Add an action set."));
 	add_action_set->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_action_set));
 	top_hb->add_child(add_action_set);
 
 	add_interaction_profile = memnew(Button);
 	add_interaction_profile->set_text(TTR("Add profile"));
-	add_interaction_profile->set_tooltip(TTR("Add an interaction profile."));
+	add_interaction_profile->set_tooltip_text(TTR("Add an interaction profile."));
 	add_interaction_profile->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_add_interaction_profile));
 	top_hb->add_child(add_interaction_profile);
 
@@ -330,13 +331,13 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save"));
-	save_as->set_tooltip(TTR("Save this OpenXR action map."));
+	save_as->set_tooltip_text(TTR("Save this OpenXR action map."));
 	save_as->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_save_action_map));
 	top_hb->add_child(save_as);
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Reset to Default"));
-	_default->set_tooltip(TTR("Reset to default OpenXR action map."));
+	_default->set_tooltip_text(TTR("Reset to default OpenXR action map."));
 	_default->connect("pressed", callable_mp(this, &OpenXRActionMapEditor::_on_reset_to_default_layout));
 	top_hb->add_child(_default);
 

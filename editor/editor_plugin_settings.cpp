@@ -102,7 +102,7 @@ void EditorPluginSettings::update_plugins() {
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(0, name);
-				item->set_tooltip(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
+				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
 				item->set_metadata(0, path);
 				item->set_text(1, version);
 				item->set_metadata(1, script);
@@ -178,8 +178,8 @@ Vector<String> EditorPluginSettings::_get_plugins(const String &p_dir) {
 			continue;
 		}
 
-		const String full_path = p_dir.plus_file(path);
-		const String plugin_config = full_path.plus_file("plugin.cfg");
+		const String full_path = p_dir.path_join(path);
+		const String plugin_config = full_path.path_join("plugin.cfg");
 		if (FileAccess::exists(plugin_config)) {
 			plugins.push_back(plugin_config);
 		} else {

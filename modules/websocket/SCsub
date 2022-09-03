@@ -7,7 +7,7 @@ env_ws = env_modules.Clone()
 
 thirdparty_obj = []
 
-if env["platform"] == "javascript":
+if env["platform"] == "web":
     # Our JavaScript/C++ interface.
     env.AddJSLibraries(["library_godot_websocket.js"])
 

@@ -17,14 +17,14 @@
 		<member name="ground_curve" type="float" setter="set_ground_curve" getter="get_ground_curve" default="0.02">
 			How quickly the [member ground_horizon_color] fades into the [member ground_bottom_color].
 		</member>
-		<member name="ground_energy" type="float" setter="set_ground_energy" getter="get_ground_energy" default="1.0">
-			Amount of energy contribution from the ground.
+		<member name="ground_energy_multiplier" type="float" setter="set_ground_energy_multiplier" getter="get_ground_energy_multiplier" default="1.0">
+			Multiplier for ground color. A higher value will make the ground brighter.
 		</member>
 		<member name="ground_horizon_color" type="Color" setter="set_ground_horizon_color" getter="get_ground_horizon_color" default="Color(0.6463, 0.6558, 0.6708, 1)">
 			Color of the ground at the horizon. Blends with [member ground_bottom_color].
 		</member>
 		<member name="sky_cover" type="Texture2D" setter="set_sky_cover" getter="get_sky_cover">
-			The sky cover texture to use. This texture must use an equirectangular projection (similar to [PanoramaSkyMaterial]). The texture's colors will be [i]added[/i] to the existing sky color, and will be multiplied by [member sky_energy] and [member sky_cover_modulate]. This is mainly suited to displaying stars at night, but it can also be used to display clouds at day or night (with a non-physically-accurate look).
+			The sky cover texture to use. This texture must use an equirectangular projection (similar to [PanoramaSkyMaterial]). The texture's colors will be [i]added[/i] to the existing sky color, and will be multiplied by [member sky_energy_multiplier] and [member sky_cover_modulate]. This is mainly suited to displaying stars at night, but it can also be used to display clouds at day or night (with a non-physically-accurate look).
 		</member>
 		<member name="sky_cover_modulate" type="Color" setter="set_sky_cover_modulate" getter="get_sky_cover_modulate" default="Color(1, 1, 1, 1)">
 			The tint to apply to the [member sky_cover] texture. This can be used to change the sky cover's colors or opacity independently of the sky energy, which is useful for day/night or weather transitions. Only effective if a texture is defined in [member sky_cover].
@@ -32,8 +32,8 @@
 		<member name="sky_curve" type="float" setter="set_sky_curve" getter="get_sky_curve" default="0.15">
 			How quickly the [member sky_horizon_color] fades into the [member sky_top_color].
 		</member>
-		<member name="sky_energy" type="float" setter="set_sky_energy" getter="get_sky_energy" default="1.0">
-			Amount of energy contribution from the sky.
+		<member name="sky_energy_multiplier" type="float" setter="set_sky_energy_multiplier" getter="get_sky_energy_multiplier" default="1.0">
+			Multiplier for sky color. A higher value will make the sky brighter.
 		</member>
 		<member name="sky_horizon_color" type="Color" setter="set_sky_horizon_color" getter="get_sky_horizon_color" default="Color(0.6463, 0.6558, 0.6708, 1)">
 			Color of the sky at the horizon. Blends with [member sky_top_color].

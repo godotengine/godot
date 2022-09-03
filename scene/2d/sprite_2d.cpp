@@ -146,7 +146,7 @@ void Sprite2D::set_texture(const Ref<Texture2D> &p_texture) {
 		texture->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Sprite2D::_texture_changed));
 	}
 
-	update();
+	queue_redraw();
 	emit_signal(SceneStringNames::get_singleton()->texture_changed);
 	item_rect_changed();
 }
@@ -157,7 +157,7 @@ Ref<Texture2D> Sprite2D::get_texture() const {
 
 void Sprite2D::set_centered(bool p_center) {
 	centered = p_center;
-	update();
+	queue_redraw();
 	item_rect_changed();
 }
 
@@ -167,7 +167,7 @@ bool Sprite2D::is_centered() const {
 
 void Sprite2D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
-	update();
+	queue_redraw();
 	item_rect_changed();
 }
 
@@ -177,7 +177,7 @@ Point2 Sprite2D::get_offset() const {
 
 void Sprite2D::set_flip_h(bool p_flip) {
 	hflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool Sprite2D::is_flipped_h() const {
@@ -186,7 +186,7 @@ bool Sprite2D::is_flipped_h() const {
 
 void Sprite2D::set_flip_v(bool p_flip) {
 	vflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool Sprite2D::is_flipped_v() const {
@@ -199,7 +199,7 @@ void Sprite2D::set_region_enabled(bool p_region_enabled) {
 	}
 
 	region_enabled = p_region_enabled;
-	update();
+	queue_redraw();
 	notify_property_list_changed();
 }
 
@@ -225,7 +225,7 @@ Rect2 Sprite2D::get_region_rect() const {
 
 void Sprite2D::set_region_filter_clip_enabled(bool p_region_filter_clip_enabled) {
 	region_filter_clip_enabled = p_region_filter_clip_enabled;
-	update();
+	queue_redraw();
 }
 
 bool Sprite2D::is_region_filter_clip_enabled() const {
@@ -262,7 +262,7 @@ Vector2i Sprite2D::get_frame_coords() const {
 void Sprite2D::set_vframes(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of vframes cannot be smaller than 1.");
 	vframes = p_amount;
-	update();
+	queue_redraw();
 	item_rect_changed();
 	notify_property_list_changed();
 }
@@ -274,7 +274,7 @@ int Sprite2D::get_vframes() const {
 void Sprite2D::set_hframes(int p_amount) {
 	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of hframes cannot be smaller than 1.");
 	hframes = p_amount;
-	update();
+	queue_redraw();
 	item_rect_changed();
 	notify_property_list_changed();
 }
@@ -388,7 +388,7 @@ void Sprite2D::_texture_changed() {
 	// Changes to the texture need to trigger an update to make
 	// the editor redraw the sprite with the updated texture.
 	if (texture.is_valid()) {
-		update();
+		queue_redraw();
 	}
 }
 

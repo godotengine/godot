@@ -33,13 +33,10 @@
 
 #include "core/math/projection.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/fsr_upscale.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/luminance_reduce_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/roughness_limiter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/subsurface_scattering.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/taa_resolve.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
@@ -47,42 +44,6 @@
 class EffectsRD {
 private:
 	bool prefer_raster_effects;
-
-	enum FSRUpscalePass {
-		FSR_UPSCALE_PASS_EASU = 0,
-		FSR_UPSCALE_PASS_RCAS = 1
-	};
-
-	struct FSRUpscalePushConstant {
-		float resolution_width;
-		float resolution_height;
-		float upscaled_width;
-		float upscaled_height;
-		float sharpness;
-		int pass;
-		int _unused0, _unused1;
-	};
-
-	struct FSRUpscale {
-		FSRUpscalePushConstant push_constant;
-		FsrUpscaleShaderRD shader;
-		RID shader_version;
-		RID pipeline;
-	} FSR_upscale;
-
-	struct TAAResolvePushConstant {
-		float resolution_width;
-		float resolution_height;
-		float disocclusion_threshold;
-		float disocclusion_scale;
-	};
-
-	struct TAAResolve {
-		TAAResolvePushConstant push_constant;
-		TaaResolveShaderRD shader;
-		RID shader_version;
-		RID pipeline;
-	} TAA_resolve;
 
 	enum LuminanceReduceMode {
 		LUMINANCE_REDUCE_READ,
@@ -142,27 +103,6 @@ private:
 		RID pipeline;
 
 	} roughness_limiter;
-
-	struct SubSurfaceScatteringPushConstant {
-		int32_t screen_size[2];
-		float camera_z_far;
-		float camera_z_near;
-
-		uint32_t vertical;
-		uint32_t orthogonal;
-		float unit_size;
-		float scale;
-
-		float depth_scale;
-		uint32_t pad[3];
-	};
-
-	struct SubSurfaceScattering {
-		SubSurfaceScatteringPushConstant push_constant;
-		SubsurfaceScatteringShaderRD shader;
-		RID shader_version;
-		RID pipelines[3]; //3 quality levels
-	} sss;
 
 	enum SortMode {
 		SORT_MODE_BLOCK,
@@ -230,15 +170,10 @@ private:
 public:
 	bool get_prefer_raster_effects();
 
-	void fsr_upscale(RID p_source_rd_texture, RID p_secondary_texture, RID p_destination_texture, const Size2i &p_internal_size, const Size2i &p_size, float p_fsr_upscale_sharpness);
-	void taa_resolve(RID p_frame, RID p_temp, RID p_depth, RID p_velocity, RID p_prev_velocity, RID p_history, Size2 p_resolution, float p_z_near, float p_z_far);
-
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
-
-	void sub_surface_scattering(RID p_diffuse, RID p_diffuse2, RID p_depth, const Projection &p_camera, const Size2i &p_screen_size, float p_scale, float p_depth_scale, RS::SubSurfaceScatteringQuality p_quality);
 
 	void sort_buffer(RID p_uniform_set, int p_size);
 

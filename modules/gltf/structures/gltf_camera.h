@@ -63,6 +63,12 @@ public:
 	void set_depth_far(real_t p_val) { depth_far = p_val; }
 	real_t get_depth_near() const { return depth_near; }
 	void set_depth_near(real_t p_val) { depth_near = p_val; }
+
+	static Ref<GLTFCamera> from_node(const Camera3D *p_light);
+	Camera3D *to_node() const;
+
+	static Ref<GLTFCamera> from_dictionary(const Dictionary p_dictionary);
+	Dictionary to_dictionary() const;
 };
 
 #endif // GLTF_CAMERA_H

@@ -22,7 +22,7 @@
 			<return type="Animation" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns the [Animation] with the key [param name], or [code]null[/code] if none is found.
+				Returns the [Animation] with the key [param name]. If the animation does not exist, [code]null[/code] is returned and an error is logged.
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">

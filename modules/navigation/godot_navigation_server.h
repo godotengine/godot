@@ -36,6 +36,7 @@
 #include "core/templates/rid_owner.h"
 #include "servers/navigation_server_3d.h"
 
+#include "nav_link.h"
 #include "nav_map.h"
 #include "nav_region.h"
 #include "rvo_agent.h"
@@ -71,6 +72,7 @@ class GodotNavigationServer : public NavigationServer3D {
 
 	LocalVector<SetCommand *> commands;
 
+	mutable RID_Owner<NavLink> link_owner;
 	mutable RID_Owner<NavMap> map_owner;
 	mutable RID_Owner<NavRegion> region_owner;
 	mutable RID_Owner<RvoAgent> agent_owner;
@@ -100,6 +102,9 @@ public:
 	COMMAND_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin);
 	virtual real_t map_get_edge_connection_margin(RID p_map) const override;
 
+	COMMAND_2(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius);
+	virtual real_t map_get_link_connection_radius(RID p_map) const override;
+
 	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const override;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const override;
@@ -107,6 +112,7 @@ public:
 	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const override;
 
+	virtual TypedArray<RID> map_get_links(RID p_map) const override;
 	virtual TypedArray<RID> map_get_regions(RID p_map) const override;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const override;
 
@@ -131,6 +137,22 @@ public:
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
+
+	virtual RID link_create() const override;
+	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
+	virtual RID link_get_map(RID p_link) const override;
+	COMMAND_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional);
+	virtual bool link_is_bidirectional(RID p_link) const override;
+	COMMAND_2(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers);
+	virtual uint32_t link_get_navigation_layers(RID p_link) const override;
+	COMMAND_2(link_set_start_location, RID, p_link, Vector3, p_location);
+	virtual Vector3 link_get_start_location(RID p_link) const override;
+	COMMAND_2(link_set_end_location, RID, p_link, Vector3, p_location);
+	virtual Vector3 link_get_end_location(RID p_link) const override;
+	COMMAND_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost);
+	virtual real_t link_get_enter_cost(RID p_link) const override;
+	COMMAND_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost);
+	virtual real_t link_get_travel_cost(RID p_link) const override;
 
 	virtual RID agent_create() const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);

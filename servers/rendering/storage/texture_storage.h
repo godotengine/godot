@@ -133,6 +133,7 @@ public:
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) = 0;
 	virtual bool render_target_was_used(RID p_render_target) = 0;
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
+	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) = 0;
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
 	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;

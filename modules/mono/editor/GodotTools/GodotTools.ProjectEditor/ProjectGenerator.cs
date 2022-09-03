@@ -15,7 +15,7 @@ namespace GodotTools.ProjectEditor
         public static ProjectRootElement GenGameProject(string name)
         {
             if (name.Length == 0)
-                throw new ArgumentException("Project name is empty", nameof(name));
+                throw new ArgumentException("Project name is empty.", nameof(name));
 
             var root = ProjectRootElement.Create(NewProjectFileOptions.None);
 
@@ -37,7 +37,7 @@ namespace GodotTools.ProjectEditor
         public static string GenAndSaveGameProject(string dir, string name)
         {
             if (name.Length == 0)
-                throw new ArgumentException("Project name is empty", nameof(name));
+                throw new ArgumentException("Project name is empty.", nameof(name));
 
             string path = Path.Combine(dir, name + ".csproj");
 

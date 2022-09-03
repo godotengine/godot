@@ -85,7 +85,7 @@ bool AnimationLibrary::has_animation(const StringName &p_name) const {
 }
 
 Ref<Animation> AnimationLibrary::get_animation(const StringName &p_name) const {
-	ERR_FAIL_COND_V(!animations.has(p_name), Ref<Animation>());
+	ERR_FAIL_COND_V_MSG(!animations.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 
 	return animations[p_name];
 }

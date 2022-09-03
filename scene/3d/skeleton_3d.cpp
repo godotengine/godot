@@ -315,9 +315,7 @@ void Skeleton3D::_notification(int p_what) {
 					rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].pose_global * skin->get_bind_pose(i));
 				}
 			}
-#ifdef TOOLS_ENABLED
 			emit_signal(SceneStringNames::get_singleton()->pose_updated);
-#endif // TOOLS_ENABLED
 		} break;
 
 #ifndef _3D_DISABLED
@@ -603,18 +601,25 @@ void Skeleton3D::unparent_bone_and_rest(int p_bone) {
 int Skeleton3D::get_bone_parent(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, -1);
-
+	if (process_order_dirty) {
+		const_cast<Skeleton3D *>(this)->_update_process_order();
+	}
 	return bones[p_bone].parent;
 }
 
-Vector<int> Skeleton3D::get_bone_children(int p_bone) {
+Vector<int> Skeleton3D::get_bone_children(int p_bone) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX_V(p_bone, bone_size, Vector<int>());
+	if (process_order_dirty) {
+		const_cast<Skeleton3D *>(this)->_update_process_order();
+	}
 	return bones[p_bone].child_bones;
 }
 
-Vector<int> Skeleton3D::get_parentless_bones() {
-	_update_process_order();
+Vector<int> Skeleton3D::get_parentless_bones() const {
+	if (process_order_dirty) {
+		const_cast<Skeleton3D *>(this)->_update_process_order();
+	}
 	return parentless_bones;
 }
 

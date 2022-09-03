@@ -102,7 +102,7 @@ private:
 	double inactive_time = 0.0;
 	double frame_remainder = 0.0;
 	int cycle = 0;
-	bool redraw = false;
+	bool do_redraw = false;
 
 	RID mesh;
 	RID multimesh;
@@ -186,7 +186,7 @@ private:
 
 	void _update_mesh_texture();
 
-	void _set_redraw(bool p_redraw);
+	void _set_do_redraw(bool p_do_redraw);
 
 	void _texture_changed();
 
