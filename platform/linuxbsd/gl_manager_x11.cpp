@@ -127,10 +127,6 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	GLXFBConfig fbconfig = nullptr;
 	XVisualInfo *vi = nullptr;
 
-	gl_display.x_swa.event_mask = StructureNotifyMask;
-	gl_display.x_swa.border_pixel = 0;
-	gl_display.x_valuemask = CWBorderPixel | CWColormap | CWEventMask;
-
 	if (OS::get_singleton()->is_layered_allowed()) {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs_layered, &fbcount);
 		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
@@ -156,12 +152,6 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		XFree(fbc);
 
 		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
-
-		gl_display.x_swa.background_pixmap = None;
-		gl_display.x_swa.background_pixel = 0;
-		gl_display.x_swa.border_pixmap = None;
-		gl_display.x_valuemask |= CWBackPixel;
-
 	} else {
 		GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
 		ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
@@ -189,8 +179,6 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 		} break;
 	}
 
-	gl_display.x_swa.colormap = XCreateColormap(x11_display, RootWindow(x11_display, vi->screen), vi->visual, AllocNone);
-
 	XSync(x11_display, False);
 	XSetErrorHandler(oldHandler);
 
@@ -203,6 +191,10 @@ Error GLManager_X11::_create_context(GLDisplay &gl_display) {
 	XFree(vi);
 
 	return OK;
+}
+
+XVisualInfo GLManager_X11::get_vi(Display *p_display) {
+	return _displays[_find_or_create_display(p_display)].x_vi;
 }
 
 Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
@@ -223,8 +215,6 @@ Error GLManager_X11::window_create(DisplayServer::WindowID p_window_id, ::Window
 
 	// the display could be invalid .. check NYI
 	GLDisplay &gl_display = _displays[win.gldisplay_id];
-	//const XVisualInfo &vi = gl_display.x_vi;
-	//XSetWindowAttributes &swa = gl_display.x_swa;
 	::Display *x11_display = gl_display.x11_display;
 	::Window &x11_window = win.x11_window;
 
@@ -313,6 +303,16 @@ void GLManager_X11::swap_buffers() {
 	if (!_current_window->in_use) {
 		WARN_PRINT("current window not in use!");
 		return;
+	}
+
+	// On X11, when enabled, transparancy is always active, so clear alpha manually.
+	if (OS::get_singleton()->is_layered_allowed()) {
+		if (!DisplayServer::get_singleton()->window_get_flag(DisplayServer::WINDOW_FLAG_TRANSPARENT, _current_window->window_id)) {
+			glColorMask(false, false, false, true);
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+			glColorMask(true, true, true, true);
+		}
 	}
 
 	//	print_line("\tswap_buffers");

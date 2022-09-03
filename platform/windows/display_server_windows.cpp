@@ -1312,7 +1312,28 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			// FIXME: Implement.
+			if (p_enabled) {
+				//enable per-pixel alpha
+
+				DWM_BLURBEHIND bb = { 0 };
+				HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+				bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+				bb.hRgnBlur = hRgn;
+				bb.fEnable = TRUE;
+				DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+
+				wd.layered_window = true;
+			} else {
+				//disable per-pixel alpha
+				wd.layered_window = false;
+
+				DWM_BLURBEHIND bb = { 0 };
+				HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+				bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+				bb.hRgnBlur = hRgn;
+				bb.fEnable = FALSE;
+				DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+			}
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
@@ -1344,7 +1365,7 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 			return wd.always_on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			// FIXME: Implement.
+			return wd.layered_window;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;

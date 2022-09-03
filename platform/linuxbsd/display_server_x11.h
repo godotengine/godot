@@ -159,6 +159,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool minimized = false;
 		bool maximized = false;
 		bool is_popup = false;
+		bool layered_window = false;
 
 		Rect2i parent_safe_rect;
 
@@ -250,8 +251,6 @@ class DisplayServerX11 : public DisplayServer {
 	Cursor null_cursor;
 	CursorShape current_cursor = CURSOR_ARROW;
 	HashMap<CursorShape, Vector<Variant>> cursors_cache;
-
-	bool layered_window = false;
 
 	String rendering_driver;
 	void set_wm_fullscreen(bool p_enabled);
