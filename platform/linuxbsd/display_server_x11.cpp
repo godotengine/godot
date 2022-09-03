@@ -2221,7 +2221,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			wd.layered_window = p_enabled;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
@@ -2274,7 +2274,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			return wd.layered_window;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
@@ -4426,13 +4426,41 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	//Create window
 
-	long visualMask = VisualScreenMask;
-	int numberOfVisuals;
-	XVisualInfo vInfoTemplate = {};
-	vInfoTemplate.screen = DefaultScreen(x11_display);
-	XVisualInfo *visualInfo = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+	XVisualInfo visualInfo;
+	bool vi_selected = false;
 
-	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, vInfoTemplate.screen), visualInfo->visual, AllocNone);
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		visualInfo = gl_manager->get_vi(x11_display);
+		vi_selected = true;
+	}
+#endif
+
+	if (!vi_selected) {
+		long visualMask = VisualScreenMask;
+		int numberOfVisuals;
+		XVisualInfo vInfoTemplate = {};
+		vInfoTemplate.screen = DefaultScreen(x11_display);
+		XVisualInfo *vi_list = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+		ERR_FAIL_COND_V(!vi_list, INVALID_WINDOW_ID);
+
+		visualInfo = vi_list[0];
+		if (OS::get_singleton()->is_layered_allowed()) {
+			for (int i = 0; i < numberOfVisuals; i++) {
+				XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi_list[i].visual);
+				if (!pict_format) {
+					continue;
+				}
+				visualInfo = vi_list[i];
+				if (pict_format->direct.alphaMask > 0) {
+					break;
+				}
+			}
+		}
+		XFree(vi_list);
+	}
+
+	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, visualInfo.screen), visualInfo.visual, AllocNone);
 
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colormap;
@@ -4441,6 +4469,13 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
+
+	if (OS::get_singleton()->is_layered_allowed()) {
+		windowAttributes.background_pixmap = None;
+		windowAttributes.background_pixel = 0;
+		windowAttributes.border_pixmap = None;
+		valuemask |= CWBackPixel;
+	}
 
 	WindowID id = window_id_counter++;
 	WindowData &wd = windows[id];
@@ -4465,7 +4500,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	}
 
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4602,8 +4637,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		XSync(x11_display, False);
 		//XSetErrorHandler(oldHandler);
-
-		XFree(visualInfo);
 	}
 
 	window_set_mode(p_mode, id);

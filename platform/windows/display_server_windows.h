@@ -352,7 +352,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	struct WindowData {
 		HWND hWnd;
-		//layered window
 
 		Vector<Vector2> mpath;
 
@@ -392,10 +391,6 @@ class DisplayServerWindows : public DisplayServer {
 		Vector2 last_tilt;
 		bool last_pen_inverted = false;
 
-		HBITMAP hBitmap; //DIB section for layered window
-		uint8_t *dib_data = nullptr;
-		Size2 dib_size;
-		HDC hDC_dib;
 		Size2 min_size;
 		Size2 max_size;
 		int width = 0, height = 0;

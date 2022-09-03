@@ -108,19 +108,6 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
-	//	if (OS::get_singleton()->is_layered_allowed()) {
-	//		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-	//clear alpha
-	//			glColorMask(false, false, false, true);
-	//			glClearColor(0.5, 0, 0, 1);
-	//			glClear(GL_COLOR_BUFFER_BIT);
-	//			glColorMask(true, true, true, true);
-	//		}
-	//	}
-
-	//	glClearColor(1, 0, 0, 1);
-	//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
 	if (p_swap_buffers) {
 		DisplayServer::get_singleton()->swap_buffers();
 	} else {

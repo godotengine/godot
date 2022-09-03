@@ -1555,17 +1555,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
-
-	// FIXME: Restore support.
-#if 0
-	//OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
-	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
-#endif
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
-		OS::get_singleton()->_allow_layered = false;
 	}
 
 	if (rtm == -1) {
