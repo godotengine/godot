@@ -8,57 +8,35 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="get_additional_rotation" qualifiers="const">
-			<return type="Vector3" />
-			<description>
-				Returns the amount of extra rotation that is applied to the bone after the LookAt modification executes.
-			</description>
-		</method>
-		<method name="get_lock_rotation_plane" qualifiers="const">
-			<return type="int" />
-			<description>
-				Returns the plane that the LookAt modification is limiting rotation to.
-			</description>
-		</method>
-		<method name="get_lock_rotation_to_plane" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns whether the LookAt modification is limiting rotation to a single plane in 3D space.
-			</description>
-		</method>
-		<method name="set_additional_rotation">
-			<return type="void" />
-			<param index="0" name="additional_rotation" type="Vector3" />
-			<description>
-				Sets the amount of extra rotation to be applied after the LookAt modification executes. This allows you to adjust the finished result.
-			</description>
-		</method>
-		<method name="set_lock_rotation_plane">
-			<return type="void" />
-			<param index="0" name="plane" type="int" />
-			<description>
-			</description>
-		</method>
-		<method name="set_lock_rotation_to_plane">
-			<return type="void" />
-			<param index="0" name="lock_to_plane" type="bool" />
-			<description>
-				When [code]true[/code], the LookAt modification will limit its rotation to a single plane in 3D space. The plane used can be configured using the [code]set_lock_rotation_plane[/code] function.
-			</description>
-		</method>
-	</methods>
 	<members>
-		<member name="bone_index" type="int" setter="set_bone_index" getter="get_bone_index" default="-2">
-			The bone index of the bone that should be operated on by this modification.
-			When possible, this will also update the [member bone_name] based on data provided by the [Skeleton3D].
+		<member name="additional_rotation" type="Vector3" setter="set_additional_rotation" getter="get_additional_rotation" default="Vector3(0, 0, 0)">
+			The amount of extra rotation that is applied to the bone after the LookAt modification executes.
 		</member>
-		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
-			The name of the bone that should be operated on by this modification.
-			When possible, this will also update the [member bone_index] based on data provided by the [Skeleton3D].
+		<member name="bone" type="String" setter="set_bone" getter="get_bone" default="&quot;&quot;">
+			The name of the bone that should be rotated by this modification.
 		</member>
-		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
-			The NodePath to the node that is the target for the modification.
+		<member name="lock_rotation_plane" type="int" setter="set_lock_rotation_plane" getter="get_lock_rotation_plane" enum="SkeletonModification3DLookAt.LockRotationPlane" default="0">
+			The plane that the LookAt modification is limiting rotation to. If set to anything other than ROTATION_UNLOCKED, the LookAt modification will limit its rotation to this single plane in 3D space.
+		</member>
+		<member name="target_bone" type="String" setter="set_target_bone" getter="get_target_bone" default="&quot;&quot;">
+			The name of the target bone this [member bone] will aim towards.
+		</member>
+		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+			The NodePath to the node that this [member bone] will aim towards.
 		</member>
 	</members>
+	<constants>
+		<constant name="ROTATION_UNLOCKED" value="0" enum="LockRotationPlane">
+			This bone will not be constrained.
+		</constant>
+		<constant name="ROTATION_PLANE_X" value="1" enum="LockRotationPlane">
+			This bone will be constrained to the X-axis.
+		</constant>
+		<constant name="ROTATION_PLANE_Y" value="2" enum="LockRotationPlane">
+			This bone will be constrained to the X-axis.
+		</constant>
+		<constant name="ROTATION_PLANE_Z" value="3" enum="LockRotationPlane">
+			This bone will be constrained to the X-axis.
+		</constant>
+	</constants>
 </class>

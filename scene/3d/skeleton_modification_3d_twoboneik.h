@@ -39,20 +39,22 @@ class SkeletonModification3DTwoBoneIK : public SkeletonModification3D {
 
 private:
 	NodePath target_node;
-	ObjectID target_node_cache;
+	String target_bone;
+	mutable Variant target_cache;
 
-	bool use_tip_node = false;
 	NodePath tip_node;
-	ObjectID tip_node_cache;
+	String tip_bone;
+	mutable Variant tip_cache;
 
-	bool use_pole_node = false;
 	NodePath pole_node;
-	ObjectID pole_node_cache;
+	String pole_bone;
+	mutable Variant pole_cache;
 
-	String joint_one_bone_name = "";
-	int joint_one_bone_idx = -1;
-	String joint_two_bone_name = "";
-	int joint_two_bone_idx = -1;
+	mutable int bone_idx = UNCACHED_BONE_IDX;
+	String joint_one_bone_name;
+	mutable int joint_one_bone_idx = UNCACHED_BONE_IDX;
+	String joint_two_bone_name;
+	mutable int joint_two_bone_idx = UNCACHED_BONE_IDX;
 
 	bool auto_calculate_joint_length = false;
 	real_t joint_one_length = -1;
@@ -61,28 +63,27 @@ private:
 	real_t joint_one_roll = 0;
 	real_t joint_two_roll = 0;
 
-	void update_cache_target();
-	void update_cache_tip();
-	void update_cache_pole();
-
 protected:
-	void _notification(int32_t p_what);
+	void execute(real_t delta) override;
 	static void _bind_methods();
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	bool _set(const StringName &p_path, const Variant &p_value);
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void skeleton_changed(Skeleton3D *skeleton) override;
+	bool is_property_hidden(String property_name) const override;
+	bool is_bone_property(String property_name) const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 public:
+	void set_target_bone(const String &p_target_node);
+	String get_target_bone() const;
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
 
-	void set_use_tip_node(const bool p_use_tip_node);
-	bool get_use_tip_node() const;
+	void set_tip_bone(const String &p_tip_bone);
+	String get_tip_bone() const;
 	void set_tip_node(const NodePath &p_tip_node);
 	NodePath get_tip_node() const;
 
-	void set_use_pole_node(const bool p_use_pole_node);
-	bool get_use_pole_node() const;
+	void set_pole_bone(const String &p_pole_bone);
+	String get_pole_bone() const;
 	void set_pole_node(const NodePath &p_pole_node);
 	NodePath get_pole_node() const;
 
@@ -90,17 +91,13 @@ public:
 	bool get_auto_calculate_joint_length() const;
 	void calculate_joint_lengths();
 
-	void set_joint_one_bone_name(String p_bone_name);
-	String get_joint_one_bone_name() const;
-	void set_joint_one_bone_idx(int p_bone_idx);
-	int get_joint_one_bone_idx() const;
+	void set_joint_one_bone(String p_bone_name);
+	String get_joint_one_bone() const;
 	void set_joint_one_length(real_t p_length);
 	real_t get_joint_one_length() const;
 
-	void set_joint_two_bone_name(String p_bone_name);
-	String get_joint_two_bone_name() const;
-	void set_joint_two_bone_idx(int p_bone_idx);
-	int get_joint_two_bone_idx() const;
+	void set_joint_two_bone(String p_bone_name);
+	String get_joint_two_bone() const;
 	void set_joint_two_length(real_t p_length);
 	real_t get_joint_two_length() const;
 

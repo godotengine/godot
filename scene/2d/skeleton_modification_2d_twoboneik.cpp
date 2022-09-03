@@ -35,75 +35,12 @@
 #include "editor/editor_settings.h"
 #endif // TOOLS_ENABLED
 
-bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Variant &p_value) {
-	String path = p_path;
-
-	if (path == "joint_one_bone_idx") {
-		set_joint_one_bone_idx(p_value);
-	} else if (path == "joint_one_bone2d_node") {
-		set_joint_one_bone2d_node(p_value);
-	} else if (path == "joint_two_bone_idx") {
-		set_joint_two_bone_idx(p_value);
-	} else if (path == "joint_two_bone2d_node") {
-		set_joint_two_bone2d_node(p_value);
-	}
-
-#ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
-		set_editor_draw_gizmo(p_value);
-	} else if (path.begins_with("editor/draw_min_max")) {
-		set_editor_draw_min_max(p_value);
-	}
-#endif // TOOLS_ENABLED
-
-	return true;
-}
-
-bool SkeletonModification2DTwoBoneIK::_get(const StringName &p_path, Variant &r_ret) const {
-	String path = p_path;
-
-	if (path == "joint_one_bone_idx") {
-		r_ret = get_joint_one_bone_idx();
-	} else if (path == "joint_one_bone2d_node") {
-		r_ret = get_joint_one_bone2d_node();
-	} else if (path == "joint_two_bone_idx") {
-		r_ret = get_joint_two_bone_idx();
-	} else if (path == "joint_two_bone2d_node") {
-		r_ret = get_joint_two_bone2d_node();
-	}
-
-#ifdef TOOLS_ENABLED
-	if (path.begins_with("editor/draw_gizmo")) {
-		r_ret = get_editor_draw_gizmo();
-	} else if (path.begins_with("editor/draw_min_max")) {
-		r_ret = get_editor_draw_min_max();
-	}
-#endif // TOOLS_ENABLED
-
-	return true;
-}
-
-void SkeletonModification2DTwoBoneIK::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::INT, "joint_one_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "joint_one_bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
-
-	p_list->push_back(PropertyInfo(Variant::INT, "joint_two_bone_idx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	p_list->push_back(PropertyInfo(Variant::NODE_PATH, "joint_two_bone2d_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT));
-
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_gizmo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-		p_list->push_back(PropertyInfo(Variant::BOOL, "editor/draw_min_max", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
-	}
-#endif // TOOLS_ENABLED
-}
-
-void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
-	if (!enabled || !is_setup) {
+void SkeletonModification2DTwoBoneIK::draw_editor_gizmo() {
+	Skeleton2D *skeleton = get_skeleton();
+	if (!skeleton) {
 		return;
 	}
-
-	Bone2D *operation_bone_one = skeleton->get_bone(joint_one_bone_idx);
+	Bone2D *operation_bone_one = _cache_bone(joint_one_bone_node_cache, joint_one_bone_node);
 	if (!operation_bone_one) {
 		return;
 	}
@@ -126,116 +63,28 @@ void SkeletonModification2DTwoBoneIK::_draw_editor_gizmo() {
 		skeleton->draw_line(Vector2(0, 0), Vector2(Math::cos(angle), sin(angle)) * (operation_bone_one->get_length() * 0.5), bone_ik_color, 2.0);
 	}
 
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		if (editor_draw_min_max) {
-			if (target_maximum_distance != 0.0 || target_minimum_distance != 0.0) {
-				Vector2 target_direction = Vector2(0, 1);
-				if (target_node_cache.is_valid()) {
-					skeleton->draw_set_transform(Vector2(0, 0), 0.0);
-					Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-					target_direction = operation_bone_one->get_global_position().direction_to(target->get_global_position());
-				}
-
-				skeleton->draw_circle(target_direction * target_minimum_distance, 8, bone_ik_color);
-				skeleton->draw_circle(target_direction * target_maximum_distance, 8, bone_ik_color);
-				skeleton->draw_line(target_direction * target_minimum_distance, target_direction * target_maximum_distance, bone_ik_color, 2.0);
-			}
+	if (target_maximum_distance != 0.0 || target_minimum_distance != 0.0) {
+		Vector2 target_direction = Vector2(0, 1);
+		_cache_node(target_node_cache, target_node);
+		Node2D *target = Object::cast_to<Node2D>((Object *)target_node_cache);
+		if (target) {
+			skeleton->draw_set_transform(Vector2(0, 0), 0.0);
+			target_direction = operation_bone_one->get_global_position().direction_to(target->get_global_position());
 		}
-	}
-#endif // TOOLS_ENABLED
-}
 
-void SkeletonModification2DTwoBoneIK::update_target_cache() {
-	if (!is_setup) {
-		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
-		return;
-	}
-
-	target_node_cache = ObjectID();
-	if (skeleton) {
-		if (skeleton->is_inside_tree()) {
-			if (skeleton->has_node(target_node)) {
-				Node *node = skeleton->get_node(target_node);
-				ERR_FAIL_COND_MSG(!node || skeleton == node,
-						"Cannot update target cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update target cache: node is not in the scene tree!");
-				target_node_cache = node->get_instance_id();
-			}
-		}
-	}
-}
-
-void SkeletonModification2DTwoBoneIK::update_joint_one_bone2d_cache() {
-	if (!is_setup) {
-		ERR_PRINT_ONCE("Cannot update joint one Bone2D cache: modification is not properly setup!");
-		return;
-	}
-
-	joint_one_bone2d_node_cache = ObjectID();
-	if (skeleton) {
-		if (skeleton->is_inside_tree()) {
-			if (skeleton->has_node(joint_one_bone2d_node)) {
-				Node *node = skeleton->get_node(joint_one_bone2d_node);
-				ERR_FAIL_COND_MSG(!node || skeleton == node,
-						"Cannot update update joint one Bone2D cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update update joint one Bone2D cache: node is not in the scene tree!");
-				joint_one_bone2d_node_cache = node->get_instance_id();
-
-				Bone2D *bone = Object::cast_to<Bone2D>(node);
-				if (bone) {
-					joint_one_bone_idx = bone->get_index_in_skeleton();
-				} else {
-					ERR_FAIL_MSG("update joint one Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
-				}
-			}
-		}
-	}
-}
-
-void SkeletonModification2DTwoBoneIK::update_joint_two_bone2d_cache() {
-	if (!is_setup) {
-		ERR_PRINT_ONCE("Cannot update joint two Bone2D cache: modification is not properly setup!");
-		return;
-	}
-
-	joint_two_bone2d_node_cache = ObjectID();
-	if (skeleton) {
-		if (skeleton->is_inside_tree()) {
-			if (skeleton->has_node(joint_two_bone2d_node)) {
-				Node *node = skeleton->get_node(joint_two_bone2d_node);
-				ERR_FAIL_COND_MSG(!node || skeleton == node,
-						"Cannot update update joint two Bone2D cache: node is this modification's skeleton or cannot be found!");
-				ERR_FAIL_COND_MSG(!node->is_inside_tree(),
-						"Cannot update update joint two Bone2D cache: node is not in scene tree!");
-				joint_two_bone2d_node_cache = node->get_instance_id();
-
-				Bone2D *bone = Object::cast_to<Bone2D>(node);
-				if (bone) {
-					joint_two_bone_idx = bone->get_index_in_skeleton();
-				} else {
-					ERR_FAIL_MSG("update joint two Bone2D cache: Nodepath to Bone2D is not a Bone2D node!");
-				}
-			}
-		}
+		skeleton->draw_circle(target_direction * target_minimum_distance, 8, bone_ik_color);
+		skeleton->draw_circle(target_direction * target_maximum_distance, 8, bone_ik_color);
+		skeleton->draw_line(target_direction * target_minimum_distance, target_direction * target_maximum_distance, bone_ik_color, 2.0);
 	}
 }
 
 void SkeletonModification2DTwoBoneIK::set_target_node(const NodePath &p_target_node) {
 	target_node = p_target_node;
-	update_target_cache();
+	target_node_cache = Variant();
 }
 
 NodePath SkeletonModification2DTwoBoneIK::get_target_node() const {
 	return target_node;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_one_bone2d_node(const NodePath &p_target_node) {
-	joint_one_bone2d_node = p_target_node;
-	update_joint_one_bone2d_cache();
-	notify_property_list_changed();
 }
 
 void SkeletonModification2DTwoBoneIK::set_target_minimum_distance(float p_distance) {
@@ -264,79 +113,23 @@ bool SkeletonModification2DTwoBoneIK::get_flip_bend_direction() const {
 	return flip_bend_direction;
 }
 
-NodePath SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node() const {
-	return joint_one_bone2d_node;
+void SkeletonModification2DTwoBoneIK::set_joint_one_bone_node(const NodePath &p_target_node) {
+	joint_one_bone_node = p_target_node;
+	joint_one_bone_node_cache = Variant();
 }
 
-void SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node(const NodePath &p_target_node) {
-	joint_two_bone2d_node = p_target_node;
-	update_joint_two_bone2d_cache();
-	notify_property_list_changed();
+NodePath SkeletonModification2DTwoBoneIK::get_joint_one_bone_node() const {
+	return joint_one_bone_node;
 }
 
-NodePath SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node() const {
-	return joint_two_bone2d_node;
+void SkeletonModification2DTwoBoneIK::set_joint_two_bone_node(const NodePath &p_target_node) {
+	joint_two_bone_node = p_target_node;
+	joint_two_bone_node_cache = Variant();
 }
 
-void SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx(int p_bone_idx) {
-	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
-
-	if (is_setup) {
-		if (skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			joint_one_bone_idx = p_bone_idx;
-			joint_one_bone2d_node_cache = skeleton->get_bone(p_bone_idx)->get_instance_id();
-			joint_one_bone2d_node = skeleton->get_path_to(skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
-			joint_one_bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint one...");
-		joint_one_bone_idx = p_bone_idx;
-	}
-
-	notify_property_list_changed();
+NodePath SkeletonModification2DTwoBoneIK::get_joint_two_bone_node() const {
+	return joint_two_bone_node;
 }
-
-int SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx() const {
-	return joint_one_bone_idx;
-}
-
-void SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx(int p_bone_idx) {
-	ERR_FAIL_COND_MSG(p_bone_idx < 0, "Bone index is out of range: The index is too low!");
-
-	if (is_setup) {
-		if (skeleton) {
-			ERR_FAIL_INDEX_MSG(p_bone_idx, skeleton->get_bone_count(), "Passed-in Bone index is out of range!");
-			joint_two_bone_idx = p_bone_idx;
-			joint_two_bone2d_node_cache = skeleton->get_bone(p_bone_idx)->get_instance_id();
-			joint_two_bone2d_node = skeleton->get_path_to(skeleton->get_bone(p_bone_idx));
-		} else {
-			WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
-			joint_two_bone_idx = p_bone_idx;
-		}
-	} else {
-		WARN_PRINT("TwoBoneIK: Cannot verify the joint bone index for joint two...");
-		joint_two_bone_idx = p_bone_idx;
-	}
-
-	notify_property_list_changed();
-}
-
-int SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx() const {
-	return joint_two_bone_idx;
-}
-
-#ifdef TOOLS_ENABLED
-void SkeletonModification2DTwoBoneIK::set_editor_draw_min_max(bool p_draw) {
-	editor_draw_min_max = p_draw;
-}
-
-bool SkeletonModification2DTwoBoneIK::get_editor_draw_min_max() const {
-	return editor_draw_min_max;
-}
-#endif // TOOLS_ENABLED
 
 void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_node", "target_nodepath"), &SkeletonModification2DTwoBoneIK::set_target_node);
@@ -349,139 +142,92 @@ void SkeletonModification2DTwoBoneIK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_bend_direction", "flip_direction"), &SkeletonModification2DTwoBoneIK::set_flip_bend_direction);
 	ClassDB::bind_method(D_METHOD("get_flip_bend_direction"), &SkeletonModification2DTwoBoneIK::get_flip_bend_direction);
 
-	ClassDB::bind_method(D_METHOD("set_joint_one_bone2d_node", "bone2d_node"), &SkeletonModification2DTwoBoneIK::set_joint_one_bone2d_node);
-	ClassDB::bind_method(D_METHOD("get_joint_one_bone2d_node"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone2d_node);
-	ClassDB::bind_method(D_METHOD("set_joint_one_bone_idx", "bone_idx"), &SkeletonModification2DTwoBoneIK::set_joint_one_bone_idx);
-	ClassDB::bind_method(D_METHOD("get_joint_one_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone_idx);
+	ClassDB::bind_method(D_METHOD("set_joint_one_bone_node", "bone_node"), &SkeletonModification2DTwoBoneIK::set_joint_one_bone_node);
+	ClassDB::bind_method(D_METHOD("get_joint_one_bone_node"), &SkeletonModification2DTwoBoneIK::get_joint_one_bone_node);
+	ClassDB::bind_method(D_METHOD("set_joint_two_bone_node", "bone_node"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone_node);
+	ClassDB::bind_method(D_METHOD("get_joint_two_bone_node"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone_node);
 
-	ClassDB::bind_method(D_METHOD("set_joint_two_bone2d_node", "bone2d_node"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone2d_node);
-	ClassDB::bind_method(D_METHOD("get_joint_two_bone2d_node"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone2d_node);
-	ClassDB::bind_method(D_METHOD("set_joint_two_bone_idx", "bone_idx"), &SkeletonModification2DTwoBoneIK::set_joint_two_bone_idx);
-	ClassDB::bind_method(D_METHOD("get_joint_two_bone_idx"), &SkeletonModification2DTwoBoneIK::get_joint_two_bone_idx);
-
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_nodepath", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node2D"), "set_target_node", "get_target_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "target_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CanvasItem"), "set_target_node", "get_target_node");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_minimum_distance", PROPERTY_HINT_RANGE, "0,100000000,0.01,suffix:m"), "set_target_minimum_distance", "get_target_minimum_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_maximum_distance", PROPERTY_HINT_NONE, "0,100000000,0.01,suffix:m"), "set_target_maximum_distance", "get_target_maximum_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_bend_direction", PROPERTY_HINT_NONE, ""), "set_flip_bend_direction", "get_flip_bend_direction");
-	ADD_GROUP("", "");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "joint_one_bone_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT), "set_joint_one_bone_node", "get_joint_one_bone_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "joint_two_bone_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Bone2D", PROPERTY_USAGE_DEFAULT), "set_joint_two_bone_node", "get_joint_two_bone_node");
 }
 
 SkeletonModification2DTwoBoneIK::SkeletonModification2DTwoBoneIK() {
-	is_setup = false;
-	enabled = true;
-	editor_draw_gizmo = true;
 }
 
 SkeletonModification2DTwoBoneIK::~SkeletonModification2DTwoBoneIK() {
 }
 
-void SkeletonModification2DTwoBoneIK::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			set_process_internal(false);
-			set_physics_process_internal(false);
-			if (get_execution_mode() == 0) {
-				set_process_internal(true);
-			} else if (get_execution_mode() == 1) {
-				set_physics_process_internal(true);
-			}
-			skeleton = cast_to<Skeleton2D>(get_node_or_null(get_skeleton_path()));
-			is_setup = true;
-			update_target_cache();
-			update_joint_one_bone2d_cache();
-			update_joint_two_bone2d_cache();
-		} break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
-			[[fallthrough]];
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!is_setup) {
-				ERR_PRINT_ONCE("Modification is not setup.");
-			}
-			if (!skeleton) {
-				ERR_PRINT_ONCE("Modification does not have a skeleton path.");
-			}
-			if (!enabled) {
-				return;
-			}
-			if (target_node_cache.is_null()) {
-				WARN_PRINT_ONCE("Target cache is out of date. Attempting to update...");
-				update_target_cache();
-				return;
-			}
+void SkeletonModification2DTwoBoneIK::execute(real_t p_delta) {
+	SkeletonModification2D::execute(p_delta);
 
-			if (joint_one_bone2d_node_cache.is_null() && !joint_one_bone2d_node.is_empty()) {
-				WARN_PRINT_ONCE("Joint one Bone2D node cache is out of date. Attempting to update...");
-				update_joint_one_bone2d_cache();
-			}
-			if (joint_two_bone2d_node_cache.is_null() && !joint_two_bone2d_node.is_empty()) {
-				WARN_PRINT_ONCE("Joint two Bone2D node cache is out of date. Attempting to update...");
-				update_joint_two_bone2d_cache();
-			}
-
-			Node2D *target = Object::cast_to<Node2D>(ObjectDB::get_instance(target_node_cache));
-			if (!target || !target->is_inside_tree()) {
-				ERR_PRINT_ONCE("Target node is not in the scene tree. Cannot execute modification!");
-				return;
-			}
-
-			Bone2D *joint_one_bone = skeleton->get_bone(joint_one_bone_idx);
-			if (joint_one_bone == nullptr) {
-				ERR_PRINT_ONCE("Joint one bone_idx does not point to a valid bone! Cannot execute modification!");
-				return;
-			}
-
-			Bone2D *joint_two_bone = skeleton->get_bone(joint_two_bone_idx);
-			if (joint_two_bone == nullptr) {
-				ERR_PRINT_ONCE("Joint two bone_idx does not point to a valid bone! Cannot execute modification!");
-				return;
-			}
-
-			// Adopted from the links below:
-			// http://theorangeduck.com/page/simple-two-joint
-			// https://www.alanzucconi.com/2018/05/02/ik-2d-2/
-			// With modifications by TwistedTwigleg
-			Vector2 target_difference = target->get_global_position() - joint_one_bone->get_global_position();
-			float joint_one_to_target = target_difference.length();
-			float angle_atan = target_difference.angle();
-
-			float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().x, joint_one_bone->get_global_scale().y);
-			float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
-			bool override_angles_due_to_out_of_range = false;
-
-			if (joint_one_to_target < target_minimum_distance) {
-				joint_one_to_target = target_minimum_distance;
-			}
-			if (joint_one_to_target > target_maximum_distance && target_maximum_distance > 0.0) {
-				joint_one_to_target = target_maximum_distance;
-			}
-
-			if (bone_one_length + bone_two_length < joint_one_to_target) {
-				override_angles_due_to_out_of_range = true;
-			}
-
-			if (!override_angles_due_to_out_of_range) {
-				float angle_0 = Math::acos(((joint_one_to_target * joint_one_to_target) + (bone_one_length * bone_one_length) - (bone_two_length * bone_two_length)) / (2.0 * joint_one_to_target * bone_one_length));
-				float angle_1 = Math::acos(((bone_two_length * bone_two_length) + (bone_one_length * bone_one_length) - (joint_one_to_target * joint_one_to_target)) / (2.0 * bone_two_length * bone_one_length));
-
-				if (flip_bend_direction) {
-					angle_0 = -angle_0;
-					angle_1 = -angle_1;
-				}
-
-				if (isnan(angle_0) || isnan(angle_1)) {
-					// We cannot solve for this angle! Do nothing to avoid setting the rotation (and scale) to NaN.
-				} else {
-					joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
-					joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
-				}
-			} else {
-				joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
-				joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
-			}
-
-			skeleton->set_bone_local_pose_override(joint_one_bone_idx, joint_one_bone->get_transform(), 1.0, true);
-			skeleton->set_bone_local_pose_override(joint_two_bone_idx, joint_two_bone->get_transform(), 1.0, true);
-
-		} break;
+	Bone2D *joint_one_bone = _cache_bone(joint_one_bone_node_cache, joint_one_bone_node);
+	Bone2D *joint_two_bone = _cache_bone(joint_two_bone_node_cache, joint_two_bone_node);
+	if (!_cache_node(target_node_cache, target_node) ||
+			!joint_one_bone || !joint_two_bone) {
+		WARN_PRINT_ONCE("2DTwoBoneIK unable to get nodes");
+		return;
 	}
+	Vector2 target_position = get_target_position(target_node_cache);
+
+	// Adopted from the links below:
+	// http://theorangeduck.com/page/simple-two-joint
+	// https://www.alanzucconi.com/2018/05/02/ik-2d-2/
+	// With modifications by TwistedTwigleg
+	Vector2 target_difference = target_position - joint_one_bone->get_global_position();
+	float joint_one_to_target = target_difference.length();
+	float angle_atan = target_difference.angle();
+
+	float bone_one_length = joint_one_bone->get_length() * MIN(joint_one_bone->get_global_scale().x, joint_one_bone->get_global_scale().y);
+	float bone_two_length = joint_two_bone->get_length() * MIN(joint_two_bone->get_global_scale().x, joint_two_bone->get_global_scale().y);
+	bool override_angles_due_to_out_of_range = false;
+
+	if (joint_one_to_target < target_minimum_distance) {
+		joint_one_to_target = target_minimum_distance;
+	}
+	if (joint_one_to_target > target_maximum_distance && target_maximum_distance > 0.0) {
+		joint_one_to_target = target_maximum_distance;
+	}
+
+	if (bone_one_length + bone_two_length < joint_one_to_target) {
+		override_angles_due_to_out_of_range = true;
+	}
+
+	if (!override_angles_due_to_out_of_range) {
+		float angle_0 = Math::acos(((joint_one_to_target * joint_one_to_target) + (bone_one_length * bone_one_length) - (bone_two_length * bone_two_length)) / (2.0 * joint_one_to_target * bone_one_length));
+		float angle_1 = Math::acos(((bone_two_length * bone_two_length) + (bone_one_length * bone_one_length) - (joint_one_to_target * joint_one_to_target)) / (2.0 * bone_two_length * bone_one_length));
+
+		if (flip_bend_direction) {
+			angle_0 = -angle_0;
+			angle_1 = -angle_1;
+		}
+
+		if (isfinite(angle_0) && isfinite(angle_1)) {
+			joint_one_bone->set_global_rotation(angle_atan - angle_0 - joint_one_bone->get_bone_angle());
+			joint_two_bone->set_rotation(-Math_PI - angle_1 - joint_two_bone->get_bone_angle() + joint_one_bone->get_bone_angle());
+		}
+	} else {
+		joint_one_bone->set_global_rotation(angle_atan - joint_one_bone->get_bone_angle());
+		joint_two_bone->set_global_rotation(angle_atan - joint_two_bone->get_bone_angle());
+	}
+}
+
+TypedArray<String> SkeletonModification2DTwoBoneIK::get_configuration_warnings() const {
+	TypedArray<String> ret = SkeletonModification2D::get_configuration_warnings();
+	if (!get_skeleton()) {
+		return ret;
+	}
+	if (!_cache_node(target_node_cache, target_node)) {
+		ret.append(vformat("Target node %s was not found.", (String)target_node));
+	}
+	if (!_cache_bone(joint_one_bone_node_cache, joint_one_bone_node)) {
+		ret.append(vformat("Joint one bone %s was not found.", joint_one_bone_node));
+	}
+	if (!_cache_bone(joint_two_bone_node_cache, joint_two_bone_node)) {
+		ret.append(vformat("Joint two bone %s was not found.", joint_two_bone_node));
+	}
+	return ret;
 }

@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "skeleton_modification_2d.h"
+#include "scene/scene_string_names.h"
+
 #include "scene/2d/skeleton_2d.h"
 
 #include "scene/2d/collision_object_2d.h"
@@ -43,16 +45,32 @@
 // Modification2D
 ///////////////////////////////////////
 
-void SkeletonModification2D::_draw_editor_gizmo() {
-	GDVIRTUAL_CALL(_draw_editor_gizmo);
+void SkeletonModification2D::_validate_property(PropertyInfo &p_property) const {
+	if (is_property_hidden(p_property.name)) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 void SkeletonModification2D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
+	if (is_inside_tree()) {
+		set_process_internal(enabled && (!Engine::get_singleton()->is_editor_hint() || run_in_editor));
+	}
 }
 
-bool SkeletonModification2D::get_enabled() {
+bool SkeletonModification2D::get_enabled() const {
 	return enabled;
+}
+
+void SkeletonModification2D::set_run_in_editor(bool p_enabled_in_editor) {
+	run_in_editor = p_enabled_in_editor;
+	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree()) {
+		set_process_internal(enabled && run_in_editor);
+	}
+}
+
+bool SkeletonModification2D::get_run_in_editor() const {
+	return run_in_editor;
 }
 
 float SkeletonModification2D::clamp_angle(float p_angle, float p_min_bound, float p_max_bound, bool p_invert) {
@@ -91,9 +109,160 @@ float SkeletonModification2D::clamp_angle(float p_angle, float p_min_bound, floa
 	return p_angle;
 }
 
+NodePath SkeletonModification2D::get_skeleton_path() const {
+	return skeleton_path;
+}
+
+void SkeletonModification2D::set_skeleton_path(NodePath p_path) {
+	if (p_path.is_empty()) {
+		p_path = NodePath("..");
+	}
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && get_skeleton()) {
+		get_skeleton()->disconnect(SceneStringNames::get_singleton()->draw, Callable(this, SNAME("draw_editor_gizmo")));
+	}
+#endif
+	skeleton_path = p_path;
+	skeleton_change_queued = true;
+	cached_skeleton = Variant();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint() && get_skeleton()) {
+		get_skeleton()->connect(SceneStringNames::get_singleton()->draw, Callable(this, SNAME("draw_editor_gizmo")));
+	}
+	update_configuration_warnings();
+#endif
+}
+
+Skeleton2D *SkeletonModification2D::get_skeleton() const {
+	Skeleton2D *skeleton_node = cast_to<Skeleton2D>(cached_skeleton);
+	if (skeleton_node == nullptr) {
+		skeleton_node = cast_to<Skeleton2D>(get_node_or_null(skeleton_path));
+		cached_skeleton = skeleton_node;
+	}
+	return skeleton_node;
+}
+
+void SkeletonModification2D::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			set_process_internal(enabled && (!Engine::get_singleton()->is_editor_hint() || run_in_editor));
+			cached_skeleton = Variant();
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				call_deferred(SNAME("update_configuration_warnings"));
+			}
+#endif
+		} break;
+		case NOTIFICATION_READY: {
+#ifdef TOOLS_ENABLED
+			Skeleton2D *skel = get_skeleton();
+			if (Engine::get_singleton()->is_editor_hint() && skel) {
+				skel->connect(SceneStringNames::get_singleton()->draw, Callable(this, SNAME("draw_editor_gizmo")));
+			}
+#endif
+		} break;
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			ERR_FAIL_COND(!enabled);
+			execute(get_process_delta_time());
+		} break;
+	}
+}
+
+void SkeletonModification2D::_do_gizmo_draw() {
+#ifdef TOOLS_ENABLED
+	if (editor_gizmo_dirty && Engine::get_singleton()->is_editor_hint()) {
+		draw_editor_gizmo();
+		Skeleton2D *skel = get_skeleton();
+		if (skel) {
+			skel->draw_set_transform(Vector2(0, 0));
+		}
+		editor_gizmo_dirty = false;
+	}
+#endif // TOOLS_ENABLED
+}
+
+void SkeletonModification2D::draw_editor_gizmo() {
+	GDVIRTUAL_CALL(_draw_editor_gizmo);
+}
+
+void SkeletonModification2D::set_editor_gizmo_dirty(bool p_dirty) {
+#ifdef TOOLS_ENABLED
+	if (!editor_gizmo_dirty && p_dirty && Engine::get_singleton()->is_editor_hint()) {
+		editor_gizmo_dirty = p_dirty;
+		Skeleton2D *skeleton = get_skeleton();
+		if (skeleton) {
+			skeleton->queue_redraw();
+		}
+	} else {
+		editor_gizmo_dirty = p_dirty;
+	}
+#endif
+}
+
+Variant SkeletonModification2D::resolve_node(const NodePath &target_node_path) const {
+	Node *resolved_node = get_node(target_node_path);
+	if (cast_to<CanvasItem>(resolved_node)) {
+		return Variant(resolved_node);
+	}
+	return Variant(false);
+}
+
+Variant SkeletonModification2D::resolve_bone(const NodePath &target_node_path) const {
+	Node *resolved_node = get_node(target_node_path);
+	if (cast_to<Bone2D>(resolved_node)) {
+		return Variant(resolved_node);
+	}
+	return Variant(false);
+}
+
+bool SkeletonModification2D::_cache_node(Variant &cache, const NodePath &target_node_path) const {
+	if (cache.get_type() == Variant::NIL) {
+		cache = resolve_node(target_node_path);
+	}
+	return cache.get_type() == Variant::OBJECT;
+}
+
+Bone2D *SkeletonModification2D::_cache_bone(Variant &cache, const NodePath &target_node_path) const {
+	if (cache.get_type() == Variant::NIL) {
+		cache = resolve_node(target_node_path);
+	}
+	if (cache.get_type() == Variant::OBJECT) {
+		return cast_to<Bone2D>((Object *)cache);
+	}
+	return nullptr;
+}
+
+Transform2D SkeletonModification2D::get_target_transform(Variant resolved_target) const {
+	if (resolved_target.get_type() == Variant::OBJECT) {
+		CanvasItem *resolved_node = cast_to<CanvasItem>((Object *)resolved_target);
+		return resolved_node->get_global_transform();
+	}
+	ERR_FAIL_V_MSG(Transform2D(), "Looking up transform of unresolved target.");
+}
+
+real_t SkeletonModification2D::get_target_rotation(Variant resolved_target) const {
+	if (resolved_target.get_type() == Variant::OBJECT) {
+		CanvasItem *resolved_node = cast_to<CanvasItem>((Object *)resolved_target);
+		return resolved_node->get_global_transform().get_rotation();
+	}
+	ERR_FAIL_V_MSG(0.0f, "Looking up quaternion of unresolved target.");
+}
+
+Vector2 SkeletonModification2D::get_target_position(Variant resolved_target) const {
+	if (resolved_target.get_type() == Variant::OBJECT) {
+		CanvasItem *resolved_node = cast_to<CanvasItem>((Object *)resolved_target);
+		return resolved_node->get_global_transform().get_origin();
+	}
+	ERR_FAIL_V_MSG(Vector2(), "Looking up quaternion of unresolved target.");
+}
+
 void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_bone, float p_min_bound, float p_max_bound,
 		bool p_constraint_enabled, bool p_constraint_in_localspace, bool p_constraint_inverted) {
 	if (!p_operation_bone) {
+		return;
+	}
+	Skeleton2D *skeleton = get_skeleton();
+	if (!skeleton) {
 		return;
 	}
 
@@ -151,43 +320,49 @@ void SkeletonModification2D::editor_draw_angle_constraints(Bone2D *p_operation_b
 	}
 }
 
-void SkeletonModification2D::set_is_setup(bool p_setup) {
-	is_setup = p_setup;
-}
-
-bool SkeletonModification2D::get_is_setup() const {
-	return is_setup;
-}
-
-void SkeletonModification2D::set_execution_mode(int p_mode) {
-	execution_mode = p_mode;
-}
-
-int SkeletonModification2D::get_execution_mode() const {
-	return execution_mode;
-}
-
-void SkeletonModification2D::set_editor_draw_gizmo(bool p_draw_gizmo) {
-	editor_draw_gizmo = p_draw_gizmo;
-}
-
-bool SkeletonModification2D::get_editor_draw_gizmo() const {
-	return editor_draw_gizmo;
-}
-
 void SkeletonModification2D::_bind_methods() {
-	GDVIRTUAL_BIND(_draw_editor_gizmo)
+	GDVIRTUAL_BIND(_execute, "delta");
+	GDVIRTUAL_BIND(_draw_editor_gizmo);
+	GDVIRTUAL_BIND(_is_property_hidden, "property_name");
 
+	ClassDB::bind_method(D_METHOD("set_skeleton_path", "path"), &SkeletonModification2D::set_skeleton_path);
+	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &SkeletonModification2D::get_skeleton_path);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &SkeletonModification2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("get_enabled"), &SkeletonModification2D::get_enabled);
-	ClassDB::bind_method(D_METHOD("set_is_setup", "is_setup"), &SkeletonModification2D::set_is_setup);
-	ClassDB::bind_method(D_METHOD("get_is_setup"), &SkeletonModification2D::get_is_setup);
-	ClassDB::bind_method(D_METHOD("set_execution_mode", "execution_mode"), &SkeletonModification2D::set_execution_mode);
-	ClassDB::bind_method(D_METHOD("get_execution_mode"), &SkeletonModification2D::get_execution_mode);
+	ClassDB::bind_method(D_METHOD("set_run_in_editor", "enabled_in_editor"), &SkeletonModification2D::set_run_in_editor);
+	ClassDB::bind_method(D_METHOD("get_run_in_editor"), &SkeletonModification2D::get_run_in_editor);
+	ClassDB::bind_method(D_METHOD("execute", "delta"), &SkeletonModification2D::execute);
+	ClassDB::bind_method(D_METHOD("draw_editor_gizmo"), &SkeletonModification2D::_do_gizmo_draw);
+	ClassDB::bind_method(D_METHOD("set_editor_gizmo_dirty", "is_dirty"), &SkeletonModification2D::set_editor_gizmo_dirty);
+
 	ClassDB::bind_method(D_METHOD("clamp_angle", "angle", "min", "max", "invert"), &SkeletonModification2D::clamp_angle);
-	ClassDB::bind_method(D_METHOD("set_editor_draw_gizmo", "draw_gizmo"), &SkeletonModification2D::set_editor_draw_gizmo);
-	ClassDB::bind_method(D_METHOD("get_editor_draw_gizmo"), &SkeletonModification2D::get_editor_draw_gizmo);
+	ClassDB::bind_method(D_METHOD("editor_draw_angle_constraints", "p_operation_bone", "min_bound", "max_bound", "constraint_enabled", "constraint_in_localspace", "constraint_inverted"), &SkeletonModification2D::editor_draw_angle_constraints);
+
+	ClassDB::bind_method(D_METHOD("resolve_node", "target_node_path"), &SkeletonModification2D::resolve_node);
+	ClassDB::bind_method(D_METHOD("resolve_bone", "target_bone_path"), &SkeletonModification2D::resolve_bone);
+	ClassDB::bind_method(D_METHOD("get_target_transform", "resolved_target"), &SkeletonModification2D::get_target_transform);
+	ClassDB::bind_method(D_METHOD("get_target_rotation", "resolved_target"), &SkeletonModification2D::get_target_rotation);
+	ClassDB::bind_method(D_METHOD("get_target_position", "resolved_target"), &SkeletonModification2D::get_target_position);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process, physics_process"), "set_execution_mode", "get_execution_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "run_in_editor"), "set_run_in_editor", "get_run_in_editor");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton_path"), "set_skeleton_path", "get_skeleton_path");
+}
+
+void SkeletonModification2D::execute(real_t p_delta) {
+	GDVIRTUAL_CALL(_execute, p_delta);
+}
+
+bool SkeletonModification2D::is_property_hidden(String p_property_name) const {
+	bool ret = false;
+	const_cast<SkeletonModification2D *>(this)->GDVIRTUAL_CALL(_is_property_hidden, p_property_name, ret);
+	return ret;
+}
+
+TypedArray<String> SkeletonModification2D::get_configuration_warnings() const {
+	TypedArray<String> ret = Node::get_configuration_warnings();
+	if (!get_skeleton()) {
+		ret.push_back("Modification skeleton_path must point to a Skeleton2D node.");
+	}
+	return ret;
 }

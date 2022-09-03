@@ -42,13 +42,11 @@ class SkeletonModification2DLookAt : public SkeletonModification2D {
 	GDCLASS(SkeletonModification2DLookAt, SkeletonModification2D);
 
 private:
-	int bone_idx = -1;
-	NodePath bone2d_node;
-	ObjectID bone2d_node_cache;
+	NodePath bone_node;
+	mutable Variant bone_node_cache;
 
 	NodePath target_node;
-	ObjectID target_node_cache;
-	Node2D *target_node_reference = nullptr;
+	mutable Variant target_node_cache;
 
 	float additional_rotation = 0;
 	bool enable_constraint = false;
@@ -57,23 +55,16 @@ private:
 	bool constraint_angle_invert = false;
 	bool constraint_in_localspace = true;
 
-	void update_bone2d_cache();
-	void update_target_cache();
-
 protected:
 	static void _bind_methods();
-	bool _set(const StringName &p_path, const Variant &p_value);
-	bool _get(const StringName &p_path, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void execute(real_t delta) override;
+	void draw_editor_gizmo() override;
+	bool is_property_hidden(String property_name) const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 public:
-	void _notification(int p_what);
-	void _draw_editor_gizmo() override;
-
-	void set_bone2d_node(const NodePath &p_target_node);
-	NodePath get_bone2d_node() const;
-	void set_bone_index(int p_idx);
-	int get_bone_index() const;
+	void set_bone_node(const NodePath &p_target_node);
+	NodePath get_bone_node() const;
 
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;

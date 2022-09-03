@@ -151,8 +151,6 @@ public:
 	void set_bone_local_pose_override(int p_bone_idx, Transform2D p_override, real_t p_amount, bool p_persistent = true);
 	Transform2D get_bone_local_pose_override(int p_bone_idx);
 
-	void execute_modifications(real_t p_delta, int p_execution_mode);
-
 	Skeleton2D();
 	~Skeleton2D();
 };

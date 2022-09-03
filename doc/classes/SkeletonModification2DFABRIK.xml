@@ -13,35 +13,28 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_fabrik_joint_bone2d_node" qualifiers="const">
+		<method name="get_joint_bone_node" qualifiers="const">
 			<return type="NodePath" />
 			<param index="0" name="joint_idx" type="int" />
 			<description>
 				Returns the [Bone2D] node assigned to the FABRIK joint at [param joint_idx].
 			</description>
 		</method>
-		<method name="get_fabrik_joint_bone_index" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="joint_idx" type="int" />
-			<description>
-				Returns the index of the [Bone2D] node assigned to the FABRIK joint at [param joint_idx].
-			</description>
-		</method>
-		<method name="get_fabrik_joint_magnet_position" qualifiers="const">
+		<method name="get_joint_magnet_position" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="joint_idx" type="int" />
 			<description>
 				Returns the magnet position vector for the joint at [param joint_idx].
 			</description>
 		</method>
-		<method name="get_fabrik_joint_use_target_rotation" qualifiers="const">
+		<method name="get_joint_use_target_rotation" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="joint_idx" type="int" />
 			<description>
 				Returns whether the joint is using the target's rotation rather than allowing FABRIK to rotate the joint. This option only applies to the tip/final joint in the chain.
 			</description>
 		</method>
-		<method name="set_fabrik_joint_bone2d_node">
+		<method name="set_joint_bone_node">
 			<return type="void" />
 			<param index="0" name="joint_idx" type="int" />
 			<param index="1" name="bone2d_nodepath" type="NodePath" />
@@ -49,15 +42,7 @@
 				Sets the [Bone2D] node assigned to the FABRIK joint at [param joint_idx].
 			</description>
 		</method>
-		<method name="set_fabrik_joint_bone_index">
-			<return type="void" />
-			<param index="0" name="joint_idx" type="int" />
-			<param index="1" name="bone_idx" type="int" />
-			<description>
-				Sets the bone index, [param bone_idx], of the FABRIK joint at [param joint_idx]. When possible, this will also update the [code]bone2d_node[/code] of the FABRIK joint based on data provided by the linked skeleton.
-			</description>
-		</method>
-		<method name="set_fabrik_joint_magnet_position">
+		<method name="set_joint_magnet_position">
 			<return type="void" />
 			<param index="0" name="joint_idx" type="int" />
 			<param index="1" name="magnet_position" type="Vector2" />
@@ -65,7 +50,7 @@
 				Sets the magnet position vector for the joint at [param joint_idx].
 			</description>
 		</method>
-		<method name="set_fabrik_joint_use_target_rotation">
+		<method name="set_joint_use_target_rotation">
 			<return type="void" />
 			<param index="0" name="joint_idx" type="int" />
 			<param index="1" name="use_target_rotation" type="bool" />
@@ -76,10 +61,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="fabrik_data_chain_length" type="int" setter="set_fabrik_data_chain_length" getter="get_fabrik_data_chain_length" default="0">
-			The number of FABRIK joints in the FABRIK modification.
+		<member name="joint_count" type="int" setter="set_joint_count" getter="get_joint_count" default="0">
+			The number of joints in the joint array for this FABRIK chain.
 		</member>
-		<member name="target_nodepath" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
+		<member name="target_node" type="NodePath" setter="set_target_node" getter="get_target_node" default="NodePath(&quot;&quot;)">
 			The NodePath to the node that is the target for the FABRIK modification. This node is what the FABRIK chain will attempt to rotate the bone chain to.
 		</member>
 	</members>

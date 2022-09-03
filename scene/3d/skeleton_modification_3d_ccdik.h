@@ -47,7 +47,7 @@ private:
 
 	struct CCDIK_Joint_Data {
 		String bone_name = "";
-		int bone_idx = -1;
+		mutable int bone_idx = UNCACHED_BONE_IDX;
 		int ccdik_axis = 0;
 
 		bool enable_constraint = false;
@@ -58,52 +58,57 @@ private:
 
 	LocalVector<CCDIK_Joint_Data> ccdik_data_chain;
 	NodePath target_node;
-	ObjectID target_node_cache;
+	String target_bone;
+	mutable Variant target_cache;
 
 	NodePath tip_node;
-	ObjectID tip_node_cache;
+	String tip_bone;
+	mutable Variant tip_cache;
 
 	bool use_high_quality_solve = true;
 
-	void update_target_cache();
-	void update_tip_cache();
-
-	void _execute_ccdik_joint(int p_joint_idx, Node3D *p_target, Node3D *p_tip);
+	void _execute_ccdik_joint(int p_joint_idx, const Transform3D &p_target_transform, const Transform3D &p_tip_transform);
 
 protected:
 	static void _bind_methods();
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void skeleton_changed(Skeleton3D *skeleton) override;
+	void execute(real_t p_delta) override;
+	bool is_property_hidden(String property_name) const override;
+	bool is_bone_property(String property_name) const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 public:
-	void _notification(int p_what);
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
+	void set_target_bone(const String &p_target_bone);
+	String get_target_bone() const;
 
 	void set_tip_node(const NodePath &p_tip_node);
 	NodePath get_tip_node() const;
+	void set_tip_bone(const String &p_tip_bone);
+	String get_tip_bone() const;
 
 	void set_use_high_quality_solve(bool p_solve);
 	bool get_use_high_quality_solve() const;
 
-	String get_ccdik_joint_bone_name(int p_joint_idx) const;
-	void set_ccdik_joint_bone_name(int p_joint_idx, String p_bone_name);
-	int get_ccdik_joint_bone_index(int p_joint_idx) const;
-	void set_ccdik_joint_bone_index(int p_joint_idx, int p_bone_idx);
-	int get_ccdik_joint_ccdik_axis(int p_joint_idx) const;
-	void set_ccdik_joint_ccdik_axis(int p_joint_idx, int p_axis);
-	bool get_ccdik_joint_enable_constraint(int p_joint_idx) const;
-	void set_ccdik_joint_enable_constraint(int p_joint_idx, bool p_enable);
-	real_t get_ccdik_joint_constraint_angle_min(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_min(int p_joint_idx, real_t p_angle_min);
-	real_t get_ccdik_joint_constraint_angle_max(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_angle_max(int p_joint_idx, real_t p_angle_max);
-	bool get_ccdik_joint_constraint_invert(int p_joint_idx) const;
-	void set_ccdik_joint_constraint_invert(int p_joint_idx, bool p_invert);
+	String get_joint_bone(int p_joint_idx) const;
+	void set_joint_bone(int p_joint_idx, String p_bone_name);
+	int get_joint_ccdik_axis(int p_joint_idx) const;
+	void set_joint_ccdik_axis(int p_joint_idx, int p_axis);
+	bool get_joint_enable_constraint(int p_joint_idx) const;
+	void set_joint_enable_constraint(int p_joint_idx, bool p_enable);
+	real_t get_joint_constraint_angle_min(int p_joint_idx) const;
+	void set_joint_constraint_angle_min(int p_joint_idx, real_t p_angle_min);
+	real_t get_joint_constraint_angle_max(int p_joint_idx) const;
+	void set_joint_constraint_angle_max(int p_joint_idx, real_t p_angle_max);
+	bool get_joint_constraint_invert(int p_joint_idx) const;
+	void set_joint_constraint_invert(int p_joint_idx, bool p_invert);
 
-	int get_ccdik_data_chain_length();
-	void set_ccdik_data_chain_length(int p_new_length);
+	int get_joint_count();
+	void set_joint_count(int p_ccdik_chain_length);
 
 	SkeletonModification3DCCDIK();
 	~SkeletonModification3DCCDIK();

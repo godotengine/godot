@@ -43,9 +43,8 @@ class SkeletonModification2DJiggle : public SkeletonModification2D {
 
 private:
 	struct Jiggle_Joint_Data2D {
-		int bone_idx = -1;
-		NodePath bone2d_node;
-		ObjectID bone2d_node_cache;
+		NodePath bone_node;
+		mutable Variant bone_node_cache;
 
 		bool override_defaults = false;
 		float stiffness = 3;
@@ -66,8 +65,7 @@ private:
 	Vector<Jiggle_Joint_Data2D> jiggle_data_chain;
 
 	NodePath target_node;
-	ObjectID target_node_cache;
-	void update_target_cache();
+	mutable Variant target_node_cache;
 
 	float stiffness = 3;
 	float mass = 0.75;
@@ -78,19 +76,19 @@ private:
 	bool use_colliders = false;
 	uint32_t collision_mask = 1;
 
-	void jiggle_joint_update_bone2d_cache(int p_joint_idx);
-	void _execute_jiggle_joint(int p_joint_idx, Node2D *p_target, float p_delta);
+	void _execute_jiggle_joint(int p_joint_idx, Vector2 p_target_position, float p_delta);
 	void _update_jiggle_joint_data();
+	void _execute_joint_collision(Ref<World2D> world_2d, int p_joint_idx);
 
 protected:
 	static void _bind_methods();
 	bool _set(const StringName &p_path, const Variant &p_value);
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void execute(real_t p_delta) override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 public:
-	void _notification(int p_what);
-
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
 
@@ -110,26 +108,26 @@ public:
 	void set_collision_mask(int p_mask);
 	int get_collision_mask() const;
 
-	int get_jiggle_data_chain_length();
-	void set_jiggle_data_chain_length(int p_new_length);
+	int get_joint_count();
+	void set_joint_count(int p_new_length);
 
-	void set_jiggle_joint_bone2d_node(int p_joint_idx, const NodePath &p_target_node);
-	NodePath get_jiggle_joint_bone2d_node(int p_joint_idx) const;
-	void set_jiggle_joint_bone_index(int p_joint_idx, int p_bone_idx);
-	int get_jiggle_joint_bone_index(int p_joint_idx) const;
+	void set_joint_bone_node(int p_joint_idx, const NodePath &p_target_node);
+	NodePath get_joint_bone_node(int p_joint_idx) const;
 
-	void set_jiggle_joint_override(int p_joint_idx, bool p_override);
-	bool get_jiggle_joint_override(int p_joint_idx) const;
-	void set_jiggle_joint_stiffness(int p_joint_idx, float p_stiffness);
-	float get_jiggle_joint_stiffness(int p_joint_idx) const;
-	void set_jiggle_joint_mass(int p_joint_idx, float p_mass);
-	float get_jiggle_joint_mass(int p_joint_idx) const;
-	void set_jiggle_joint_damping(int p_joint_idx, float p_damping);
-	float get_jiggle_joint_damping(int p_joint_idx) const;
-	void set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
-	bool get_jiggle_joint_use_gravity(int p_joint_idx) const;
-	void set_jiggle_joint_gravity(int p_joint_idx, Vector2 p_gravity);
-	Vector2 get_jiggle_joint_gravity(int p_joint_idx) const;
+	void set_joint_override(int p_joint_idx, bool p_override);
+	bool get_joint_override(int p_joint_idx) const;
+	void set_joint_stiffness(int p_joint_idx, float p_stiffness);
+	float get_joint_stiffness(int p_joint_idx) const;
+	void set_joint_mass(int p_joint_idx, float p_mass);
+	float get_joint_mass(int p_joint_idx) const;
+	void set_joint_damping(int p_joint_idx, float p_damping);
+	float get_joint_damping(int p_joint_idx) const;
+	void set_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
+	bool get_joint_use_gravity(int p_joint_idx) const;
+	void set_joint_gravity(int p_joint_idx, Vector2 p_gravity);
+	Vector2 get_joint_gravity(int p_joint_idx) const;
+
+	void _notification(int p_what);
 
 	SkeletonModification2DJiggle();
 	~SkeletonModification2DJiggle();

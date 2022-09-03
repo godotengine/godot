@@ -11,6 +11,11 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_cached_bone_node">
+			<return type="Node2D" />
+			<description>
+			</description>
+		</method>
 		<method name="get_joint" qualifiers="const">
 			<return type="Joint2D" />
 			<description>
@@ -28,10 +33,7 @@
 		<member name="auto_configure_joint" type="bool" setter="set_auto_configure_joint" getter="get_auto_configure_joint" default="true">
 			If [code]true[/code], the [code]PhysicalBone2D[/code] node will automatically configure the first [Joint2D] child node. The automatic configuration is limited to setting up the node properties and positioning the [Joint2D].
 		</member>
-		<member name="bone2d_index" type="int" setter="set_bone2d_index" getter="get_bone2d_index" default="-1">
-			The index of the [Bone2D] node that this [code]PhysicalBone2D[/code] node is supposed to be simulating.
-		</member>
-		<member name="bone2d_nodepath" type="NodePath" setter="set_bone2d_nodepath" getter="get_bone2d_nodepath" default="NodePath(&quot;&quot;)">
+		<member name="bone_node" type="NodePath" setter="set_bone_node" getter="get_bone_node" default="NodePath(&quot;&quot;)">
 			The [NodePath] to the [Bone2D] node that this [code]PhysicalBone2D[/code] node is supposed to be simulating.
 		</member>
 		<member name="follow_bone_when_simulating" type="bool" setter="set_follow_bone_when_simulating" getter="get_follow_bone_when_simulating" default="false">

@@ -41,7 +41,7 @@ class SkeletonModification3DJiggle : public SkeletonModification3D {
 private:
 	struct Jiggle_Joint_Data {
 		String bone_name = "";
-		int bone_idx = -1;
+		mutable int bone_idx = UNCACHED_BONE_IDX;
 
 		bool override_defaults = false;
 		real_t stiffness = 3;
@@ -62,7 +62,8 @@ private:
 	};
 
 	NodePath target_node;
-	ObjectID target_node_cache;
+	String target_bone;
+	mutable Variant target_cache;
 	LocalVector<Jiggle_Joint_Data> jiggle_data_chain;
 
 	real_t stiffness = 3;
@@ -71,23 +72,31 @@ private:
 	bool use_gravity = false;
 	Vector3 gravity = Vector3(0, -6.0, 0);
 
+	bool initialized_dynamic_position = false;
 	bool use_colliders = false;
 	uint32_t collision_mask = 1;
 
 	void update_cache();
-	void _execute_jiggle_joint(int p_joint_idx, Node3D *p_target, real_t p_delta);
+	void _execute_jiggle_joint(int p_joint_idx, Transform3D parent_transform, Vector3 target_position, real_t p_delta);
 	void _update_jiggle_joint_data();
+	void _execute_joint_collision(Ref<World3D> world_3d, int p_joint_idx);
 
 protected:
 	static void _bind_methods();
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	void _notification(int32_t p_what);
+	void skeleton_changed(Skeleton3D *skeleton) override;
+	void execute(real_t p_delta) override;
+	bool is_property_hidden(String property_name) const override;
+	bool is_bone_property(String property_name) const override;
+	TypedArray<String> get_configuration_warnings() const override;
 
 public:
 	void set_target_node(const NodePath &p_target_node);
 	NodePath get_target_node() const;
+	void set_target_bone(const String &p_target_node);
+	String get_target_bone() const;
 
 	void set_stiffness(real_t p_stiffness);
 	real_t get_stiffness() const;
@@ -106,28 +115,28 @@ public:
 	void set_collision_mask(int p_mask);
 	int get_collision_mask() const;
 
-	int get_jiggle_data_chain_length();
-	void set_jiggle_data_chain_length(int p_new_length);
+	int get_joint_count();
+	void set_joint_count(int p_new_length);
 
-	void set_jiggle_joint_bone_name(int p_joint_idx, String p_name);
-	String get_jiggle_joint_bone_name(int p_joint_idx) const;
-	void set_jiggle_joint_bone_index(int p_joint_idx, int p_idx);
-	int get_jiggle_joint_bone_index(int p_joint_idx) const;
+	void set_joint_bone(int p_joint_idx, String p_name);
+	String get_joint_bone(int p_joint_idx) const;
 
-	void set_jiggle_joint_override(int p_joint_idx, bool p_override);
-	bool get_jiggle_joint_override(int p_joint_idx) const;
-	void set_jiggle_joint_stiffness(int p_joint_idx, real_t p_stiffness);
-	real_t get_jiggle_joint_stiffness(int p_joint_idx) const;
-	void set_jiggle_joint_mass(int p_joint_idx, real_t p_mass);
-	real_t get_jiggle_joint_mass(int p_joint_idx) const;
-	void set_jiggle_joint_damping(int p_joint_idx, real_t p_damping);
-	real_t get_jiggle_joint_damping(int p_joint_idx) const;
-	void set_jiggle_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
-	bool get_jiggle_joint_use_gravity(int p_joint_idx) const;
-	void set_jiggle_joint_gravity(int p_joint_idx, Vector3 p_gravity);
-	Vector3 get_jiggle_joint_gravity(int p_joint_idx) const;
-	void set_jiggle_joint_roll(int p_joint_idx, real_t p_roll);
-	real_t get_jiggle_joint_roll(int p_joint_idx) const;
+	void set_joint_override(int p_joint_idx, bool p_override);
+	bool get_joint_override(int p_joint_idx) const;
+	void set_joint_stiffness(int p_joint_idx, real_t p_stiffness);
+	real_t get_joint_stiffness(int p_joint_idx) const;
+	void set_joint_mass(int p_joint_idx, real_t p_mass);
+	real_t get_joint_mass(int p_joint_idx) const;
+	void set_joint_damping(int p_joint_idx, real_t p_damping);
+	real_t get_joint_damping(int p_joint_idx) const;
+	void set_joint_use_gravity(int p_joint_idx, bool p_use_gravity);
+	bool get_joint_use_gravity(int p_joint_idx) const;
+	void set_joint_gravity(int p_joint_idx, Vector3 p_gravity);
+	Vector3 get_joint_gravity(int p_joint_idx) const;
+	void set_joint_roll(int p_joint_idx, real_t p_roll);
+	real_t get_joint_roll(int p_joint_idx) const;
+
+	void _notification(int p_what);
 
 	SkeletonModification3DJiggle();
 	~SkeletonModification3DJiggle();
