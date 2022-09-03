@@ -115,8 +115,8 @@ public:
 	ShaderTextEditor();
 };
 
-class ShaderEditor : public MarginContainer {
-	GDCLASS(ShaderEditor, MarginContainer);
+class TextShaderEditor : public MarginContainer {
+	GDCLASS(TextShaderEditor, MarginContainer);
 
 	enum {
 		EDIT_UNDO,
@@ -204,7 +204,7 @@ public:
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 
-	ShaderEditor();
+	TextShaderEditor();
 };
 
 class ShaderEditorPlugin : public EditorPlugin {
@@ -213,7 +213,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 	struct EditedShader {
 		Ref<Shader> shader;
 		Ref<ShaderInclude> shader_inc;
-		ShaderEditor *shader_editor = nullptr;
+		TextShaderEditor *shader_editor = nullptr;
 		VisualShaderEditor *visual_shader_editor = nullptr;
 	};
 
@@ -265,7 +265,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void selected_notify() override;
 
-	ShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
+	TextShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
 	VisualShaderEditor *get_visual_shader_editor(const Ref<Shader> &p_for_shader);
 
 	virtual void save_external_data() override;

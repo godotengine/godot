@@ -623,7 +623,7 @@ ShaderTextEditor::ShaderTextEditor() {
 
 /*** SCRIPT EDITOR ******/
 
-void ShaderEditor::_menu_option(int p_option) {
+void TextShaderEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case EDIT_UNDO: {
 			shader_editor->get_text_editor()->undo();
@@ -714,7 +714,7 @@ void ShaderEditor::_menu_option(int p_option) {
 	}
 }
 
-void ShaderEditor::_notification(int p_what) {
+void TextShaderEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
@@ -728,7 +728,7 @@ void ShaderEditor::_notification(int p_what) {
 	}
 }
 
-void ShaderEditor::_editor_settings_changed() {
+void TextShaderEditor::_editor_settings_changed() {
 	shader_editor->update_editor_settings();
 
 	shader_editor->get_text_editor()->add_theme_constant_override("line_spacing", EditorSettings::get_singleton()->get("text_editor/appearance/whitespace/line_spacing"));
@@ -736,35 +736,35 @@ void ShaderEditor::_editor_settings_changed() {
 	shader_editor->get_text_editor()->set_draw_executing_lines_gutter(false);
 }
 
-void ShaderEditor::_show_warnings_panel(bool p_show) {
+void TextShaderEditor::_show_warnings_panel(bool p_show) {
 	warnings_panel->set_visible(p_show);
 }
 
-void ShaderEditor::_warning_clicked(Variant p_line) {
+void TextShaderEditor::_warning_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
 		shader_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
 	}
 }
 
-void ShaderEditor::_bind_methods() {
-	ClassDB::bind_method("_show_warnings_panel", &ShaderEditor::_show_warnings_panel);
-	ClassDB::bind_method("_warning_clicked", &ShaderEditor::_warning_clicked);
+void TextShaderEditor::_bind_methods() {
+	ClassDB::bind_method("_show_warnings_panel", &TextShaderEditor::_show_warnings_panel);
+	ClassDB::bind_method("_warning_clicked", &TextShaderEditor::_warning_clicked);
 
 	ADD_SIGNAL(MethodInfo("validation_changed"));
 }
 
-void ShaderEditor::ensure_select_current() {
+void TextShaderEditor::ensure_select_current() {
 }
 
-void ShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+void TextShaderEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	shader_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
-void ShaderEditor::_project_settings_changed() {
+void TextShaderEditor::_project_settings_changed() {
 	_update_warnings(true);
 }
 
-void ShaderEditor::_update_warnings(bool p_validate) {
+void TextShaderEditor::_update_warnings(bool p_validate) {
 	bool changed = false;
 
 	bool warnings_enabled = GLOBAL_GET("debug/shader_language/warnings/enable").booleanize();
@@ -801,7 +801,7 @@ void ShaderEditor::_update_warnings(bool p_validate) {
 	}
 }
 
-void ShaderEditor::_check_for_external_edit() {
+void TextShaderEditor::_check_for_external_edit() {
 	bool use_autoreload = bool(EDITOR_GET("text_editor/behavior/files/auto_reload_scripts_on_external_change"));
 
 	if (shader_inc.is_valid()) {
@@ -828,7 +828,7 @@ void ShaderEditor::_check_for_external_edit() {
 	}
 }
 
-void ShaderEditor::_reload_shader_from_disk() {
+void TextShaderEditor::_reload_shader_from_disk() {
 	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader.is_valid());
 
@@ -839,7 +839,7 @@ void ShaderEditor::_reload_shader_from_disk() {
 	shader_editor->reload_text();
 }
 
-void ShaderEditor::_reload_shader_include_from_disk() {
+void TextShaderEditor::_reload_shader_include_from_disk() {
 	Ref<ShaderInclude> rel_shader_include = ResourceLoader::load(shader_inc->get_path(), shader_inc->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 	ERR_FAIL_COND(!rel_shader_include.is_valid());
 
@@ -850,7 +850,7 @@ void ShaderEditor::_reload_shader_include_from_disk() {
 	shader_editor->reload_text();
 }
 
-void ShaderEditor::_reload() {
+void TextShaderEditor::_reload() {
 	if (shader.is_valid()) {
 		_reload_shader_from_disk();
 	} else if (shader_inc.is_valid()) {
@@ -858,7 +858,7 @@ void ShaderEditor::_reload() {
 	}
 }
 
-void ShaderEditor::edit(const Ref<Shader> &p_shader) {
+void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader()) {
 		return;
 	}
@@ -873,7 +873,7 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 	shader_editor->set_edited_shader(shader);
 }
 
-void ShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
+void TextShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
 	if (p_shader_inc.is_null()) {
 		return;
 	}
@@ -888,7 +888,7 @@ void ShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
 	shader_editor->set_edited_shader_include(p_shader_inc);
 }
 
-void ShaderEditor::save_external_data(const String &p_str) {
+void TextShaderEditor::save_external_data(const String &p_str) {
 	if (shader.is_null() && shader_inc.is_null()) {
 		disk_changed->hide();
 		return;
@@ -916,15 +916,15 @@ void ShaderEditor::save_external_data(const String &p_str) {
 	disk_changed->hide();
 }
 
-void ShaderEditor::validate_script() {
+void TextShaderEditor::validate_script() {
 	shader_editor->_validate_script();
 }
 
-bool ShaderEditor::is_unsaved() const {
+bool TextShaderEditor::is_unsaved() const {
 	return shader_editor->get_text_editor()->get_saved_version() != shader_editor->get_text_editor()->get_version();
 }
 
-void ShaderEditor::apply_shaders() {
+void TextShaderEditor::apply_shaders() {
 	String editor_code = shader_editor->get_text_editor()->get_text();
 	if (shader.is_valid()) {
 		String shader_code = shader->get_code();
@@ -948,7 +948,7 @@ void ShaderEditor::apply_shaders() {
 	dependencies_version = shader_editor->get_dependencies_version();
 }
 
-void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
+void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
@@ -990,7 +990,7 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 }
 
-void ShaderEditor::_update_bookmark_list() {
+void TextShaderEditor::_update_bookmark_list() {
 	bookmarks_menu->clear();
 
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
@@ -1017,7 +1017,7 @@ void ShaderEditor::_update_bookmark_list() {
 	}
 }
 
-void ShaderEditor::_bookmark_item_pressed(int p_idx) {
+void TextShaderEditor::_bookmark_item_pressed(int p_idx) {
 	if (p_idx < 4) { // Any item before the separator.
 		_menu_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
@@ -1025,7 +1025,7 @@ void ShaderEditor::_bookmark_item_pressed(int p_idx) {
 	}
 }
 
-void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
+void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
 	if (p_selection) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
@@ -1049,7 +1049,7 @@ void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->popup();
 }
 
-ShaderEditor::ShaderEditor() {
+TextShaderEditor::TextShaderEditor() {
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
 	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
@@ -1059,28 +1059,28 @@ ShaderEditor::ShaderEditor() {
 
 	shader_editor = memnew(ShaderTextEditor);
 
-	shader_editor->connect("script_validated", callable_mp(this, &ShaderEditor::_script_validated));
+	shader_editor->connect("script_validated", callable_mp(this, &TextShaderEditor::_script_validated));
 
 	shader_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	shader_editor->add_theme_constant_override("separation", 0);
 	shader_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-	shader_editor->connect("show_warnings_panel", callable_mp(this, &ShaderEditor::_show_warnings_panel));
-	shader_editor->connect("script_changed", callable_mp(this, &ShaderEditor::apply_shaders));
-	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &ShaderEditor::_editor_settings_changed));
-	ProjectSettingsEditor::get_singleton()->connect("confirmed", callable_mp(this, &ShaderEditor::_project_settings_changed));
+	shader_editor->connect("show_warnings_panel", callable_mp(this, &TextShaderEditor::_show_warnings_panel));
+	shader_editor->connect("script_changed", callable_mp(this, &TextShaderEditor::apply_shaders));
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextShaderEditor::_editor_settings_changed));
+	ProjectSettingsEditor::get_singleton()->connect("confirmed", callable_mp(this, &TextShaderEditor::_project_settings_changed));
 
 	shader_editor->get_text_editor()->set_code_hint_draw_below(EditorSettings::get_singleton()->get("text_editor/completion/put_callhint_tooltip_below_current_line"));
 
 	shader_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	shader_editor->get_text_editor()->set_context_menu_enabled(false);
-	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ShaderEditor::_text_edit_gui_input));
+	shader_editor->get_text_editor()->connect("gui_input", callable_mp(this, &TextShaderEditor::_text_edit_gui_input));
 
 	shader_editor->update_editor_settings();
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
+	context_menu->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -1108,7 +1108,7 @@ ShaderEditor::ShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/duplicate_selection"), EDIT_DUPLICATE_SELECTION);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_text_completion_query"), EDIT_COMPLETE);
-	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
+	edit_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);
@@ -1119,13 +1119,13 @@ ShaderEditor::ShaderEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
+	search_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
-	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
+	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
 
 	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	goto_menu->get_popup()->add_separator();
@@ -1135,14 +1135,14 @@ ShaderEditor::ShaderEditor() {
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
-	bookmarks_menu->connect("about_to_popup", callable_mp(this, &ShaderEditor::_update_bookmark_list));
-	bookmarks_menu->connect("index_pressed", callable_mp(this, &ShaderEditor::_bookmark_item_pressed));
+	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextShaderEditor::_update_bookmark_list));
+	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextShaderEditor::_bookmark_item_pressed));
 
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
 	help_menu->set_switch_on_hover(true);
 	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
-	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditor::_menu_option));
+	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
 
 	add_child(main_container);
 	main_container->add_child(hbc);
@@ -1170,7 +1170,7 @@ ShaderEditor::ShaderEditor() {
 	warnings_panel->set_selection_enabled(true);
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
-	warnings_panel->connect("meta_clicked", callable_mp(this, &ShaderEditor::_warning_clicked));
+	warnings_panel->connect("meta_clicked", callable_mp(this, &TextShaderEditor::_warning_clicked));
 	editor_box->add_child(warnings_panel);
 	shader_editor->set_warnings_panel(warnings_panel);
 
@@ -1186,11 +1186,11 @@ ShaderEditor::ShaderEditor() {
 	dl->set_text(TTR("This shader has been modified on disk.\nWhat action should be taken?"));
 	vbc->add_child(dl);
 
-	disk_changed->connect("confirmed", callable_mp(this, &ShaderEditor::_reload));
+	disk_changed->connect("confirmed", callable_mp(this, &TextShaderEditor::_reload));
 	disk_changed->set_ok_button_text(TTR("Reload"));
 
 	disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");
-	disk_changed->connect("custom_action", callable_mp(this, &ShaderEditor::save_external_data));
+	disk_changed->connect("custom_action", callable_mp(this, &TextShaderEditor::save_external_data));
 
 	add_child(disk_changed);
 
@@ -1250,7 +1250,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 
 void ShaderEditorPlugin::_update_shader_list_status() {
 	for (int i = 0; i < shader_list->get_item_count(); i++) {
-		ShaderEditor *se = Object::cast_to<ShaderEditor>(shader_tabs->get_tab_control(i));
+		TextShaderEditor *se = Object::cast_to<TextShaderEditor>(shader_tabs->get_tab_control(i));
 		if (se) {
 			if (se->was_compilation_successful()) {
 				shader_list->set_item_tag_icon(i, Ref<Texture2D>());
@@ -1285,7 +1285,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			}
 		}
 		es.shader_inc = Ref<ShaderInclude>(si);
-		es.shader_editor = memnew(ShaderEditor);
+		es.shader_editor = memnew(TextShaderEditor);
 		es.shader_editor->edit(si);
 		shader_tabs->add_child(es.shader_editor);
 		es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list));
@@ -1305,7 +1305,7 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 			shader_tabs->add_child(es.visual_shader_editor);
 			es.visual_shader_editor->edit(vs.ptr());
 		} else {
-			es.shader_editor = memnew(ShaderEditor);
+			es.shader_editor = memnew(TextShaderEditor);
 			shader_tabs->add_child(es.shader_editor);
 			es.shader_editor->edit(s);
 			es.shader_editor->connect("validation_changed", callable_mp(this, &ShaderEditorPlugin::_update_shader_list));
@@ -1330,7 +1330,7 @@ void ShaderEditorPlugin::make_visible(bool p_visible) {
 void ShaderEditorPlugin::selected_notify() {
 }
 
-ShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_shader) {
+TextShaderEditor *ShaderEditorPlugin::get_shader_editor(const Ref<Shader> &p_for_shader) {
 	for (uint32_t i = 0; i < edited_shaders.size(); i++) {
 		if (edited_shaders[i].shader == p_for_shader) {
 			return edited_shaders[i].shader_editor;
