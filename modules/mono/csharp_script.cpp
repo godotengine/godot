@@ -1754,20 +1754,16 @@ void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_f
 }
 
 void CSharpInstance::connect_event_signals() {
-	CSharpScript *top = script.ptr();
-	while (top != nullptr) {
-		for (CSharpScript::EventSignalInfo &signal : top->get_script_event_signals()) {
-			String signal_name = signal.name;
+	// The script signals list includes the signals declared in base scripts.
+	for (CSharpScript::EventSignalInfo &signal : script->get_script_event_signals()) {
+		String signal_name = signal.name;
 
-			// TODO: Use pooling for ManagedCallable instances.
-			EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
+		// TODO: Use pooling for ManagedCallable instances.
+		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
 
-			Callable callable(event_signal_callable);
-			connected_event_signals.push_back(callable);
-			owner->connect(signal_name, callable);
-		}
-
-		top = top->base_script.ptr();
+		Callable callable(event_signal_callable);
+		connected_event_signals.push_back(callable);
+		owner->connect(signal_name, callable);
 	}
 }
 
