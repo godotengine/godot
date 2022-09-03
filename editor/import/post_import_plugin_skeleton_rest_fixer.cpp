@@ -90,16 +90,9 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			}
 		}
 
-		// Apply node transforms.
+		// Get global transform.
+		Transform3D global_transform;
 		if (bool(p_options["retarget/rest_fixer/apply_node_transforms"])) {
-			LocalVector<Transform3D> old_skeleton_rest;
-			LocalVector<Transform3D> old_skeleton_global_rest;
-			for (int i = 0; i < src_skeleton->get_bone_count(); i++) {
-				old_skeleton_rest.push_back(src_skeleton->get_bone_rest(i));
-				old_skeleton_global_rest.push_back(src_skeleton->get_bone_global_rest(i));
-			}
-
-			Transform3D global_transform;
 			Node *pr = src_skeleton;
 			while (pr) {
 				Node3D *pr3d = Object::cast_to<Node3D>(pr);
@@ -109,6 +102,47 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				}
 				pr = pr->get_parent();
 			}
+			global_transform.origin = Vector3(); // Translation by a Node is not a bone animation, so the retargeted model should be at the origin.
+		}
+
+		// Calc IBM difference.
+		LocalVector<Vector<Transform3D>> ibm_diffs;
+		{
+			TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
+			while (nodes.size()) {
+				ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
+				ERR_CONTINUE(!mi);
+
+				Ref<Skin> skin = mi->get_skin();
+				ERR_CONTINUE(!skin.is_valid());
+
+				Node *node = mi->get_node(mi->get_skeleton_path());
+				ERR_CONTINUE(!node);
+
+				Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
+				if (!mesh_skeleton || mesh_skeleton != src_skeleton) {
+					continue;
+				}
+
+				Vector<Transform3D> ibm_diff;
+				ibm_diff.resize(src_skeleton->get_bone_count());
+				Transform3D *ibm_diff_w = ibm_diff.ptrw();
+
+				int skin_len = skin->get_bind_count();
+				for (int i = 0; i < skin_len; i++) {
+					StringName bn = skin->get_bind_name(i);
+					int bone_idx = src_skeleton->find_bone(bn);
+					if (bone_idx >= 0) {
+						ibm_diff_w[bone_idx] = global_transform * src_skeleton->get_bone_global_rest(bone_idx) * skin->get_bind_pose(i);
+					}
+				}
+
+				ibm_diffs.push_back(ibm_diff);
+			}
+		}
+
+		// Apply node transforms.
+		if (bool(p_options["retarget/rest_fixer/apply_node_transforms"])) {
 			Vector3 scl = global_transform.basis.get_scale_local();
 
 			Vector<int> bones_to_process = src_skeleton->get_parentless_bones();
@@ -148,38 +182,42 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
 							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-							if (node) {
-								Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-								if (track_skeleton && track_skeleton == src_skeleton) {
-									StringName bn = anim->track_get_path(i).get_subname(0);
-									if (bn) {
-										int bone_idx = src_skeleton->find_bone(bn);
-										int key_len = anim->track_get_key_count(i);
-										if (anim->track_get_type(i) == Animation::TYPE_POSITION_3D) {
-											if (bones_to_process.has(bone_idx)) {
-												for (int j = 0; j < key_len; j++) {
-													Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
-													anim->track_set_key_value(i, j, global_transform.basis.xform(ps) + global_transform.origin);
-												}
-											} else {
-												for (int j = 0; j < key_len; j++) {
-													Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
-													anim->track_set_key_value(i, j, ps * scl);
-												}
-											}
-										} else if (bones_to_process.has(bone_idx)) {
-											if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
-												for (int j = 0; j < key_len; j++) {
-													Quaternion qt = static_cast<Quaternion>(anim->track_get_key_value(i, j));
-													anim->track_set_key_value(i, j, global_transform.basis.get_rotation_quaternion() * qt);
-												}
-											} else {
-												for (int j = 0; j < key_len; j++) {
-													Basis sc = Basis().scaled(static_cast<Vector3>(anim->track_get_key_value(i, j)));
-													anim->track_set_key_value(i, j, (global_transform.basis * sc).get_scale());
-												}
-											}
-										}
+							ERR_CONTINUE(!node);
+
+							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+							if (!track_skeleton || track_skeleton != src_skeleton) {
+								continue;
+							}
+
+							StringName bn = anim->track_get_path(i).get_subname(0);
+							if (!bn) {
+								continue;
+							}
+
+							int bone_idx = src_skeleton->find_bone(bn);
+							int key_len = anim->track_get_key_count(i);
+							if (anim->track_get_type(i) == Animation::TYPE_POSITION_3D) {
+								if (bones_to_process.has(bone_idx)) {
+									for (int j = 0; j < key_len; j++) {
+										Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
+										anim->track_set_key_value(i, j, global_transform.basis.xform(ps) + global_transform.origin);
+									}
+								} else {
+									for (int j = 0; j < key_len; j++) {
+										Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
+										anim->track_set_key_value(i, j, ps * scl);
+									}
+								}
+							} else if (bones_to_process.has(bone_idx)) {
+								if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
+									for (int j = 0; j < key_len; j++) {
+										Quaternion qt = static_cast<Quaternion>(anim->track_get_key_value(i, j));
+										anim->track_set_key_value(i, j, global_transform.basis.get_rotation_quaternion() * qt);
+									}
+								} else {
+									for (int j = 0; j < key_len; j++) {
+										Basis sc = Basis().scaled(static_cast<Vector3>(anim->track_get_key_value(i, j)));
+										anim->track_set_key_value(i, j, (global_transform.basis * sc).get_scale());
 									}
 								}
 							}
@@ -220,24 +258,26 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						}
 					}
 
-					if (found_skeleton) {
-						// Search and insert rot track if it doesn't exist.
-						for (int prof_idx = 0; prof_idx < prof_skeleton->get_bone_count(); prof_idx++) {
-							String bone_name = is_renamed ? prof_skeleton->get_bone_name(prof_idx) : String(bone_map->get_skeleton_bone_name(prof_skeleton->get_bone_name(prof_idx)));
-							if (bone_name == String()) {
-								continue;
-							}
-							int src_idx = src_skeleton->find_bone(bone_name);
-							if (src_idx == -1) {
-								continue;
-							}
-							String insert_path = track_path + ":" + bone_name;
-							int rot_track = anim->find_track(insert_path, Animation::TYPE_ROTATION_3D);
-							if (rot_track == -1) {
-								int track = anim->add_track(Animation::TYPE_ROTATION_3D);
-								anim->track_set_path(track, insert_path);
-								anim->rotation_track_insert_key(track, 0, src_skeleton->get_bone_rest(src_idx).basis.get_rotation_quaternion());
-							}
+					if (!found_skeleton) {
+						continue;
+					}
+
+					// Search and insert rot track if it doesn't exist.
+					for (int prof_idx = 0; prof_idx < prof_skeleton->get_bone_count(); prof_idx++) {
+						String bone_name = is_renamed ? prof_skeleton->get_bone_name(prof_idx) : String(bone_map->get_skeleton_bone_name(prof_skeleton->get_bone_name(prof_idx)));
+						if (bone_name.is_empty()) {
+							continue;
+						}
+						int src_idx = src_skeleton->find_bone(bone_name);
+						if (src_idx == -1) {
+							continue;
+						}
+						String insert_path = track_path + ":" + bone_name;
+						int rot_track = anim->find_track(insert_path, Animation::TYPE_ROTATION_3D);
+						if (rot_track == -1) {
+							int track = anim->add_track(Animation::TYPE_ROTATION_3D);
+							anim->track_set_path(track, insert_path);
+							anim->rotation_track_insert_key(track, 0, src_skeleton->get_bone_rest(src_idx).basis.get_rotation_quaternion());
 						}
 					}
 				}
@@ -385,19 +425,23 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
 							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-							if (node) {
-								Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-								if (track_skeleton && track_skeleton == src_skeleton) {
-									StringName bn = anim->track_get_path(i).get_concatenated_subnames();
-									if (bn == scale_base_bone_name) {
-										int key_len = anim->track_get_key_count(i);
-										for (int j = 0; j < key_len; j++) {
-											Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
-											pos.y += base_adjustment;
-											anim->track_set_key_value(i, j, pos);
-										}
-									}
-								}
+							ERR_CONTINUE(!node);
+
+							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+							if (!track_skeleton || track_skeleton != src_skeleton) {
+								continue;
+							}
+
+							StringName bn = anim->track_get_path(i).get_concatenated_subnames();
+							if (bn != scale_base_bone_name) {
+								continue;
+							}
+
+							int key_len = anim->track_get_key_count(i);
+							for (int j = 0; j < key_len; j++) {
+								Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+								pos.y += base_adjustment;
+								anim->track_set_key_value(i, j, pos);
 							}
 						}
 					}
@@ -441,16 +485,18 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 						String track_path = String(anim->track_get_path(i).get_concatenated_names());
 						Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-						if (node) {
-							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-							if (track_skeleton && track_skeleton == src_skeleton) {
-								real_t mlt = 1 / src_skeleton->get_motion_scale();
-								int key_len = anim->track_get_key_count(i);
-								for (int j = 0; j < key_len; j++) {
-									Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
-									anim->track_set_key_value(i, j, pos * mlt);
-								}
-							}
+						ERR_CONTINUE(!node);
+
+						Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+						if (!track_skeleton || track_skeleton != src_skeleton) {
+							continue;
+						}
+
+						real_t mlt = 1 / src_skeleton->get_motion_scale();
+						int key_len = anim->track_get_key_count(i);
+						for (int j = 0; j < key_len; j++) {
+							Vector3 pos = static_cast<Vector3>(anim->track_get_key_value(i, j));
+							anim->track_set_key_value(i, j, pos * mlt);
 						}
 					}
 				}
@@ -518,6 +564,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 				while (nodes.size()) {
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(nodes.pop_back());
+					ERR_CONTINUE(!ap);
 					List<StringName> anims;
 					ap->get_animation_list(&anims);
 					for (const StringName &name : anims) {
@@ -534,53 +581,57 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 							String track_path = String(anim->track_get_path(i).get_concatenated_names());
 							Node *node = (ap->get_node(ap->get_root()))->get_node(NodePath(track_path));
-							if (node) {
-								Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
-								if (track_skeleton && track_skeleton == src_skeleton) {
-									StringName bn = anim->track_get_path(i).get_subname(0);
-									if (bn) {
-										int bone_idx = src_skeleton->find_bone(bn);
+							ERR_CONTINUE(!node);
 
-										Transform3D old_rest = old_skeleton_rest[bone_idx];
-										Transform3D new_rest = src_skeleton->get_bone_rest(bone_idx);
-										Transform3D old_pg;
-										Transform3D new_pg;
-										int parent_idx = src_skeleton->get_bone_parent(bone_idx);
-										if (parent_idx >= 0) {
-											old_pg = old_skeleton_global_rest[parent_idx];
-											new_pg = src_skeleton->get_bone_global_rest(parent_idx);
-										}
+							Skeleton3D *track_skeleton = Object::cast_to<Skeleton3D>(node);
+							if (!track_skeleton || track_skeleton != src_skeleton) {
+								continue;
+							}
 
-										int key_len = anim->track_get_key_count(i);
-										if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
-											Quaternion old_rest_q = old_rest.basis.get_rotation_quaternion();
-											Quaternion new_rest_q = new_rest.basis.get_rotation_quaternion();
-											Quaternion old_pg_q = old_pg.basis.get_rotation_quaternion();
-											Quaternion new_pg_q = new_pg.basis.get_rotation_quaternion();
-											for (int j = 0; j < key_len; j++) {
-												Quaternion qt = static_cast<Quaternion>(anim->track_get_key_value(i, j));
-												anim->track_set_key_value(i, j, new_pg_q.inverse() * old_pg_q * qt * old_rest_q.inverse() * old_pg_q.inverse() * new_pg_q * new_rest_q);
-											}
-										} else if (anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
-											Basis old_rest_b = old_rest.basis;
-											Basis new_rest_b = new_rest.basis;
-											Basis old_pg_b = old_pg.basis;
-											Basis new_pg_b = new_pg.basis;
-											for (int j = 0; j < key_len; j++) {
-												Basis sc = Basis().scaled(static_cast<Vector3>(anim->track_get_key_value(i, j)));
-												anim->track_set_key_value(i, j, (new_pg_b.inverse() * old_pg_b * sc * old_rest_b.inverse() * old_pg_b.inverse() * new_pg_b * new_rest_b).get_scale());
-											}
-										} else {
-											Vector3 old_rest_o = old_rest.origin;
-											Vector3 new_rest_o = new_rest.origin;
-											Quaternion old_pg_q = old_pg.basis.get_rotation_quaternion();
-											Quaternion new_pg_q = new_pg.basis.get_rotation_quaternion();
-											for (int j = 0; j < key_len; j++) {
-												Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
-												anim->track_set_key_value(i, j, new_pg_q.xform_inv(old_pg_q.xform(ps - old_rest_o)) + new_rest_o);
-											}
-										}
-									}
+							StringName bn = anim->track_get_path(i).get_subname(0);
+							if (!bn) {
+								continue;
+							}
+
+							int bone_idx = src_skeleton->find_bone(bn);
+
+							Transform3D old_rest = old_skeleton_rest[bone_idx];
+							Transform3D new_rest = src_skeleton->get_bone_rest(bone_idx);
+							Transform3D old_pg;
+							Transform3D new_pg;
+							int parent_idx = src_skeleton->get_bone_parent(bone_idx);
+							if (parent_idx >= 0) {
+								old_pg = old_skeleton_global_rest[parent_idx];
+								new_pg = src_skeleton->get_bone_global_rest(parent_idx);
+							}
+
+							int key_len = anim->track_get_key_count(i);
+							if (anim->track_get_type(i) == Animation::TYPE_ROTATION_3D) {
+								Quaternion old_rest_q = old_rest.basis.get_rotation_quaternion();
+								Quaternion new_rest_q = new_rest.basis.get_rotation_quaternion();
+								Quaternion old_pg_q = old_pg.basis.get_rotation_quaternion();
+								Quaternion new_pg_q = new_pg.basis.get_rotation_quaternion();
+								for (int j = 0; j < key_len; j++) {
+									Quaternion qt = static_cast<Quaternion>(anim->track_get_key_value(i, j));
+									anim->track_set_key_value(i, j, new_pg_q.inverse() * old_pg_q * qt * old_rest_q.inverse() * old_pg_q.inverse() * new_pg_q * new_rest_q);
+								}
+							} else if (anim->track_get_type(i) == Animation::TYPE_SCALE_3D) {
+								Basis old_rest_b = old_rest.basis;
+								Basis new_rest_b = new_rest.basis;
+								Basis old_pg_b = old_pg.basis;
+								Basis new_pg_b = new_pg.basis;
+								for (int j = 0; j < key_len; j++) {
+									Basis sc = Basis().scaled(static_cast<Vector3>(anim->track_get_key_value(i, j)));
+									anim->track_set_key_value(i, j, (new_pg_b.inverse() * old_pg_b * sc * old_rest_b.inverse() * old_pg_b.inverse() * new_pg_b * new_rest_b).get_scale());
+								}
+							} else {
+								Vector3 old_rest_o = old_rest.origin;
+								Vector3 new_rest_o = new_rest.origin;
+								Quaternion old_pg_q = old_pg.basis.get_rotation_quaternion();
+								Quaternion new_pg_q = new_pg.basis.get_rotation_quaternion();
+								for (int j = 0; j < key_len; j++) {
+									Vector3 ps = static_cast<Vector3>(anim->track_get_key_value(i, j));
+									anim->track_set_key_value(i, j, new_pg_q.xform_inv(old_pg_q.xform(ps - old_rest_o)) + new_rest_o);
 								}
 							}
 						}
@@ -595,26 +646,35 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 			// Fix skin.
 			{
 				TypedArray<Node> nodes = p_base_scene->find_children("*", "ImporterMeshInstance3D");
+				int skin_idx = 0;
 				while (nodes.size()) {
 					ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(nodes.pop_back());
+					ERR_CONTINUE(!mi);
+
 					Ref<Skin> skin = mi->get_skin();
-					if (skin.is_valid()) {
-						Node *node = mi->get_node(mi->get_skeleton_path());
-						if (node) {
-							Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
-							if (mesh_skeleton && node == src_skeleton) {
-								int skin_len = skin->get_bind_count();
-								for (int i = 0; i < skin_len; i++) {
-									StringName bn = skin->get_bind_name(i);
-									int bone_idx = src_skeleton->find_bone(bn);
-									if (bone_idx >= 0) {
-										Transform3D new_rest = silhouette_diff[i] * src_skeleton->get_bone_global_rest(bone_idx);
-										skin->set_bind_pose(i, new_rest.inverse());
-									}
-								}
-							}
+					ERR_CONTINUE(!skin.is_valid());
+
+					Node *node = mi->get_node(mi->get_skeleton_path());
+					ERR_CONTINUE(!node);
+
+					Skeleton3D *mesh_skeleton = Object::cast_to<Skeleton3D>(node);
+					if (!mesh_skeleton || mesh_skeleton != src_skeleton) {
+						continue;
+					}
+
+					Vector<Transform3D> ibm_diff = ibm_diffs[skin_idx];
+
+					int skin_len = skin->get_bind_count();
+					for (int i = 0; i < skin_len; i++) {
+						StringName bn = skin->get_bind_name(i);
+						int bone_idx = src_skeleton->find_bone(bn);
+						if (bone_idx >= 0) {
+							Transform3D new_rest = silhouette_diff[i] * src_skeleton->get_bone_global_rest(bone_idx);
+							skin->set_bind_pose(i, new_rest.inverse() * ibm_diff[bone_idx]);
 						}
 					}
+
+					skin_idx++;
 				}
 			}
 
