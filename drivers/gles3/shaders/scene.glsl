@@ -16,6 +16,7 @@ DISABLE_LIGHT_OMNI = false
 DISABLE_LIGHT_SPOT = false
 DISABLE_FOG = false
 USE_RADIANCE_MAP = true
+USE_MULTIVIEW = false
 
 
 #[vertex]
@@ -153,6 +154,15 @@ layout(std140) uniform SceneData { // ubo:2
 }
 scene_data;
 
+#ifdef USE_MULTIVIEW
+layout(std140) uniform MultiviewData { // ubo:8
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
+}
+multiview_data;
+#endif
+
 uniform highp mat4 world_transform;
 
 #ifdef USE_LIGHTMAP
@@ -250,8 +260,14 @@ void main() {
 #if defined(OVERRIDE_POSITION)
 	highp vec4 position;
 #endif
-	highp mat4 projection_matrix = scene_data.projection_matrix;
-	highp mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+
+#ifdef USE_MULTIVIEW
+	mat4 projection_matrix = multiview_data.projection_matrix_view[ViewIndex];
+	mat4 inv_projection_matrix = multiview_data.inv_projection_matrix_view[ViewIndex];
+#else
+	mat4 projection_matrix = scene_data.projection_matrix;
+	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+#endif //USE_MULTIVIEW
 
 #ifdef USE_INSTANCING
 	vec4 instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
@@ -338,7 +354,6 @@ void main() {
 
 /* clang-format off */
 #[fragment]
-
 
 // Default to SPECULAR_SCHLICK_GGX.
 #if !defined(SPECULAR_DISABLED) && !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_TOON)
@@ -463,6 +478,15 @@ layout(std140) uniform SceneData { // ubo:2
 }
 scene_data;
 
+#ifdef USE_MULTIVIEW
+layout(std140) uniform MultiviewData { // ubo:8
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
+}
+multiview_data;
+#endif
+
 /* clang-format off */
 
 #GLOBALS
@@ -530,8 +554,13 @@ uniform highp samplerCubeShadow positional_shadow; // texunit:-4
 
 #endif // !defined(DISABLE_LIGHT_OMNI) && !defined(DISABLE_LIGHT_SPOT)
 
-uniform highp sampler2D screen_texture; // texunit:-5
+#ifdef USE_MULTIVIEW
+uniform highp sampler2DArray depth_buffer; // texunit:-6
+uniform highp sampler2DArray screen_texture; // texunit:-5
+#else
 uniform highp sampler2D depth_buffer; // texunit:-6
+uniform highp sampler2D screen_texture; // texunit:-5
+#endif
 
 uniform highp mat4 world_transform;
 uniform mediump float opaque_prepass_threshold;
@@ -884,7 +913,11 @@ vec4 fog_process(vec3 vertex) {
 void main() {
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
+#ifdef USE_MULTIVIEW
+	vec3 view = -normalize(vertex_interp - multiview_data.eye_offset[ViewIndex].xyz);
+#else
 	vec3 view = -normalize(vertex_interp);
+#endif
 	vec3 albedo = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
