@@ -647,7 +647,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				SceneTree *st = SceneTree::get_singleton();
 				if (st && st->is_debugging_navigation_hint()) {
 					if (!nm.navmesh_debug_instance.is_valid()) {
+#ifndef DISABLE_DEPRECATED
 						RID navmesh_debug_rid = navmesh->get_debug_mesh()->get_rid();
+#else
+						RID navmesh_debug_rid = navmesh->_get_debug_mesh()->get_rid();
+#endif
 						nm.navmesh_debug_instance = RS::get_singleton()->instance_create();
 						RS::get_singleton()->instance_set_base(nm.navmesh_debug_instance, navmesh_debug_rid);
 						RS::get_singleton()->mesh_surface_set_material(navmesh_debug_rid, 0, st->get_debug_navigation_material()->get_rid());
