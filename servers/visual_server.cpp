@@ -2703,6 +2703,7 @@ VisualServer::VisualServer() {
 
 	GLOBAL_DEF("rendering/batching/options/use_batching", true);
 	GLOBAL_DEF_RST("rendering/batching/options/use_batching_in_editor", true);
+	GLOBAL_DEF_RST("rendering/batching/options/multiple_buffer_batching", false);
 	GLOBAL_DEF("rendering/batching/options/single_rect_fallback", false);
 	GLOBAL_DEF("rendering/batching/parameters/max_join_item_commands", 16);
 	GLOBAL_DEF("rendering/batching/parameters/colored_vertex_format_threshold", 0.25f);

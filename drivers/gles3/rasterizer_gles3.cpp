@@ -420,6 +420,11 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 	} else {
 		glFinish();
 	}
+
+	bool multiple_buffer_batching = GLOBAL_GET("rendering/batching/options/multiple_buffer_batching");
+	if (multiple_buffer_batching) {
+		canvas->canvas_adapt();
+	}
 }
 
 void RasterizerGLES3::finalize() {
