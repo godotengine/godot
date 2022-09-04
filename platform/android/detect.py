@@ -3,6 +3,11 @@ import sys
 import platform
 import subprocess
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -17,8 +22,6 @@ def can_build():
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable, EnumVariable
-
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
@@ -74,7 +77,7 @@ def install_ndk_if_needed(env):
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
