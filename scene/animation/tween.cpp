@@ -487,6 +487,7 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 			Quaternion i = p_initial_val;
 			Quaternion d = p_delta_val;
 			Quaternion r = i * d;
+
 			r = i.slerp(r, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
 			return r;
 		}
@@ -525,20 +526,9 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 		case Variant::TRANSFORM3D: {
 			Transform3D i = p_initial_val;
 			Transform3D d = p_delta_val;
-			Transform3D r;
+			Transform3D r = i * d;
 
-			APPLY_EQUATION(basis.rows[0][0]);
-			APPLY_EQUATION(basis.rows[0][1]);
-			APPLY_EQUATION(basis.rows[0][2]);
-			APPLY_EQUATION(basis.rows[1][0]);
-			APPLY_EQUATION(basis.rows[1][1]);
-			APPLY_EQUATION(basis.rows[1][2]);
-			APPLY_EQUATION(basis.rows[2][0]);
-			APPLY_EQUATION(basis.rows[2][1]);
-			APPLY_EQUATION(basis.rows[2][2]);
-			APPLY_EQUATION(origin.x);
-			APPLY_EQUATION(origin.y);
-			APPLY_EQUATION(origin.z);
+			r = i.interpolate_with(r, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
 			return r;
 		}
 
@@ -592,6 +582,12 @@ Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) 
 					f.columns[2][1] - i.columns[2][1]);
 		}
 
+		case Variant::QUATERNION: {
+			Quaternion i = p_intial_val;
+			Quaternion f = p_final_val;
+			return i.inverse() * f;
+		}
+
 		case Variant::AABB: {
 			AABB i = p_intial_val;
 			AABB f = p_final_val;
@@ -615,18 +611,7 @@ Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) 
 		case Variant::TRANSFORM3D: {
 			Transform3D i = p_intial_val;
 			Transform3D f = p_final_val;
-			return Transform3D(f.basis.rows[0][0] - i.basis.rows[0][0],
-					f.basis.rows[0][1] - i.basis.rows[0][1],
-					f.basis.rows[0][2] - i.basis.rows[0][2],
-					f.basis.rows[1][0] - i.basis.rows[1][0],
-					f.basis.rows[1][1] - i.basis.rows[1][1],
-					f.basis.rows[1][2] - i.basis.rows[1][2],
-					f.basis.rows[2][0] - i.basis.rows[2][0],
-					f.basis.rows[2][1] - i.basis.rows[2][1],
-					f.basis.rows[2][2] - i.basis.rows[2][2],
-					f.origin.x - i.origin.x,
-					f.origin.y - i.origin.y,
-					f.origin.z - i.origin.z);
+			return i.inverse() * f;
 		}
 
 		default: {

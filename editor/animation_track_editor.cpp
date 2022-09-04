@@ -6059,7 +6059,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 						Variant delta_v;
 						Variant::sub(to_v, from_v, delta_v);
 						double duration = to_t - from_t;
-						double fixed_duration = duration - 0.01; // Prevent to overwrap keys...
+						double fixed_duration = duration - UNIT_EPSILON; // Prevent to overwrap keys...
 						for (double delta_t = dur_step; delta_t < fixed_duration; delta_t += dur_step) {
 							Pair<real_t, Variant> keydata;
 							keydata.first = from_t + delta_t;
