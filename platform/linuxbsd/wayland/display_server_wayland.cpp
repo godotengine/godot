@@ -1588,6 +1588,7 @@ void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data,
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_MOUSE:
+		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_SUBWINDOWS:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CLIPBOARD_PRIMARY: {
