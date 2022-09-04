@@ -103,6 +103,12 @@ class DisplayServerWayland : public DisplayServer {
 		Ref<InputEvent> event;
 	};
 
+	class WaylandDropFilesEventMessage : public WaylandMessage {
+	public:
+		WindowID id;
+		Vector<String> files;
+	};
+
 	struct WaylandGlobals {
 		struct wl_shm *wl_shm = nullptr;
 		uint32_t wl_shm_name = 0;
@@ -158,6 +164,7 @@ class DisplayServerWayland : public DisplayServer {
 		Callable rect_changed_callback;
 		Callable window_event_callback;
 		Callable input_event_callback;
+		Callable drop_files_callback;
 
 		// Metadata.
 		String title;
@@ -250,11 +257,19 @@ class DisplayServerWayland : public DisplayServer {
 
 		uint32_t last_key_pressed_serial = 0;
 
-		// Clipboard.
 		struct wl_data_device *wl_data_device = nullptr;
 
+		// Drag and drop.
+		struct wl_data_offer *wl_data_offer_dnd = nullptr;
+		uint32_t dnd_enter_serial = 0;
+
+		WindowID dnd_current_window_id = INVALID_WINDOW_ID;
+
+		// Clipboard.
 		struct wl_data_source *wl_data_source_selection = nullptr;
 		struct wl_data_offer *wl_data_offer_selection = nullptr;
+
+		Vector<uint8_t> selection_data;
 
 		// Primary selection.
 		struct zwp_primary_selection_device_v1 *wp_primary_selection_device = nullptr;
@@ -262,7 +277,6 @@ class DisplayServerWayland : public DisplayServer {
 		struct zwp_primary_selection_source_v1 *wp_primary_selection_source = nullptr;
 		struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer = nullptr;
 
-		Vector<uint8_t> selection_data;
 		Vector<uint8_t> primary_data;
 	};
 
@@ -309,7 +323,7 @@ class DisplayServerWayland : public DisplayServer {
 
 	Thread events_thread;
 
-	String _string_read_fd(int fd) const;
+	static String _string_read_fd(int fd);
 
 	String _wl_data_offer_read(wl_data_offer *wl_data_offer) const;
 	String _wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const;

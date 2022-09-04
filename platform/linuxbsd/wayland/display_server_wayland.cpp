@@ -86,7 +86,7 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	}
 }
 
-String DisplayServerWayland::_string_read_fd(int fd) const {
+String DisplayServerWayland::_string_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
 	uint32_t chunk_size = 2048;
 
@@ -98,18 +98,18 @@ String DisplayServerWayland::_string_read_fd(int fd) const {
 	while (true) {
 		ssize_t last_bytes_read = read(fd, data.ptr() + bytes_read, chunk_size);
 		if (last_bytes_read < 0) {
-			ERR_PRINT(vformat("Clipboard: read error %d.", errno));
+			ERR_PRINT(vformat("Read error %d.", errno));
 			return "";
 		}
 
 		if (last_bytes_read == 0) {
 			// We're done, we've reached the EOF.
-			DEBUG_LOG_WAYLAND(vformat("Clipboard: done reading %d bytes.", bytes_read));
+			DEBUG_LOG_WAYLAND(vformat("Done reading %d bytes.", bytes_read));
 			close(fd);
 			break;
 		}
 
-		DEBUG_LOG_WAYLAND(vformat("Clipboard: read chunk of %d bytes.", last_bytes_read));
+		DEBUG_LOG_WAYLAND(vformat("Read chunk of %d bytes.", last_bytes_read));
 
 		bytes_read += last_bytes_read;
 
@@ -124,7 +124,6 @@ String DisplayServerWayland::_string_read_fd(int fd) const {
 
 String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) const {
 	if (!wl_data_offer) {
-		// The clipboard's empty, return an empty string.
 		return "";
 	}
 
@@ -149,7 +148,6 @@ String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) c
 
 String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const {
 	if (!wp_primary_selection_offer) {
-		// The clipboard's empty, return an empty string.
 		return "";
 	}
 
@@ -1238,22 +1236,79 @@ void DisplayServerWayland::_wl_keyboard_on_repeat_info(void *data, struct wl_key
 }
 
 void DisplayServerWayland::_wl_data_device_on_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
-	// This method is purposely left unimplemented as we don't care about the
-	// offered MIME type, as we only want `text/plain` data.
+	ERR_FAIL_NULL(data);
 
-	// TODO: Perhaps we could try to detect other text types such as `TEXT`?
+	wl_data_offer_add_listener(id, &wl_data_offer_listener, data);
 }
 
 void DisplayServerWayland::_wl_data_device_on_enter(void *data, struct wl_data_device *wl_data_device, uint32_t serial, struct wl_surface *surface, wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	for (KeyValue<WindowID, WindowData> &E : ss->wls->windows) {
+		WindowData &wd = E.value;
+
+		if (wd.wl_surface == surface) {
+			ss->dnd_current_window_id = E.key;
+			break;
+		}
+	}
+
+	ss->dnd_enter_serial = serial;
+
+	wl_data_offer_set_actions(id, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
+
+	ss->wl_data_offer_dnd = id;
 }
 
 void DisplayServerWayland::_wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->dnd_current_window_id = INVALID_WINDOW_ID;
+
+	if (ss->wl_data_offer_dnd) {
+		wl_data_offer_destroy(ss->wl_data_offer_dnd);
+		ss->wl_data_offer_dnd = nullptr;
+	}
 }
 
 void DisplayServerWayland::_wl_data_device_on_motion(void *data, struct wl_data_device *wl_data_device, uint32_t time, wl_fixed_t x, wl_fixed_t y) {
 }
 
 void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_device *wl_data_device) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	int fds[2];
+	if (pipe(fds) == 0) {
+		wl_data_offer_receive(ss->wl_data_offer_dnd, "text/uri-list", fds[1]);
+
+		// Let the compositor know about the pipe, but don't handle any event. For
+		// some cursed reason both leave and drop events are released at the same
+		// time, although both of them clean up the offer. I'm still not sure why.
+		wl_display_flush(ss->wls->display);
+
+		// Close the write end of the pipe, which we don't need and would otherwise
+		// just stall our next `read`s.
+		close(fds[1]);
+
+		Ref<WaylandDropFilesEventMessage> msg;
+		msg.instantiate();
+
+		msg->id = ss->dnd_current_window_id;
+
+		msg->files = _string_read_fd(fds[0]).split("\n", false);
+		for (int i = 0; i < msg->files.size(); i++) {
+			msg->files.write[i] = msg->files[i].replace("file://", "").uri_decode().strip_edges();
+		}
+
+		ss->wls->message_queue.push_back(msg);
+	}
+
+	wl_data_offer_finish(ss->wl_data_offer_dnd);
+	wl_data_offer_destroy(ss->wl_data_offer_dnd);
+	ss->wl_data_offer_dnd = nullptr;
 }
 
 void DisplayServerWayland::_wl_data_device_on_selection(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id) {
@@ -1268,6 +1323,12 @@ void DisplayServerWayland::_wl_data_device_on_selection(void *data, struct wl_da
 }
 
 void DisplayServerWayland::_wl_data_offer_on_offer(void *data, struct wl_data_offer *wl_data_offer, const char *mime_type) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (strcmp(mime_type, "text/uri-list") == 0) {
+		wl_data_offer_accept(wl_data_offer, ss->dnd_enter_serial, mime_type);
+	}
 }
 
 void DisplayServerWayland::_wl_data_offer_on_source_actions(void *data, struct wl_data_offer *wl_data_offer, uint32_t source_actions) {
@@ -1313,8 +1374,9 @@ void DisplayServerWayland::_wl_data_source_on_cancelled(void *data, struct wl_da
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	wl_data_source_destroy(wl_data_source);
+
 	if (wl_data_source == ss->wl_data_source_selection) {
-		wl_data_source_destroy(ss->wl_data_source_selection);
 		ss->wl_data_source_selection = nullptr;
 
 		ss->selection_data.clear();
@@ -2017,8 +2079,12 @@ void DisplayServerWayland::window_set_input_text_callback(const Callable &p_call
 }
 
 void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_drop_files_callback callable %s window %d", p_callable, p_window));
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+	WindowData &wd = wls.windows[p_window];
+
+	wd.drop_files_callback = p_callable;
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
@@ -2502,6 +2568,22 @@ void DisplayServerWayland::process_events() {
 			Ref<InputEvent> ev = inputev_msg->event;
 
 			Input::get_singleton()->parse_input_event(inputev_msg->event);
+		}
+
+		Ref<WaylandDropFilesEventMessage> dropfiles_msg = msg;
+
+		if (dropfiles_msg.is_valid() && wls.windows.has(dropfiles_msg->id)) {
+			WindowData wd = wls.windows[dropfiles_msg->id];
+
+			if (wd.drop_files_callback.is_valid()) {
+				Variant var_files = dropfiles_msg->files;
+				Variant *arg = &var_files;
+
+				Variant ret;
+				Callable::CallError ce;
+
+				wd.drop_files_callback.callp((const Variant **)&arg, 1, ret, ce);
+			}
 		}
 
 		wls.message_queue.pop_front();
