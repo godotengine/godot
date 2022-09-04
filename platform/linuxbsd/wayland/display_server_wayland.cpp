@@ -821,10 +821,7 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	ERR_FAIL_NULL(wls);
 
 	// Restore the cursor with our own cursor surface.
-	struct wl_cursor_image *cursor_image = wls->cursor_images[wls->cursor_shape];
-	if (cursor_image) {
-		wl_pointer_set_cursor(wl_pointer, serial, ss->cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
-	}
+	_seat_state_override_cursor_shape(*ss, wls->cursor_shape);
 
 	PointerData &pd = ss->pointer_data_buffer;
 
@@ -2398,11 +2395,11 @@ DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServ
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
+	MutexLock mutex_lock(wls.mutex);
+
 	if (p_shape == wls.cursor_shape) {
 		return;
 	}
-
-	MutexLock mutex_lock(wls.mutex);
 
 	wls.cursor_shape = p_shape;
 
