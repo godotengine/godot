@@ -129,7 +129,7 @@ void main() {
 
 #ifdef GLOW_USE_AUTO_EXPOSURE
 
-		frag_color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / blur.glow_auto_exposure_grey;
+		frag_color /= texelFetch(source_auto_exposure, ivec2(0, 0), 0).r / blur.glow_auto_exposure_scale;
 #endif
 		frag_color *= blur.glow_exposure;
 

@@ -38,7 +38,7 @@ void TextureProgressBar::set_under_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	under = p_texture;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -52,7 +52,7 @@ void TextureProgressBar::set_over_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	over = p_texture;
-	update();
+	queue_redraw();
 	if (under.is_null()) {
 		update_minimum_size();
 	}
@@ -70,7 +70,7 @@ void TextureProgressBar::set_stretch_margin(Side p_side, int p_size) {
 	}
 
 	stretch_margin[p_side] = p_size;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -85,7 +85,7 @@ void TextureProgressBar::set_nine_patch_stretch(bool p_stretch) {
 	}
 
 	nine_patch_stretch = p_stretch;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -113,7 +113,7 @@ void TextureProgressBar::set_progress_texture(const Ref<Texture2D> &p_texture) {
 	}
 
 	progress = p_texture;
-	update();
+	queue_redraw();
 	update_minimum_size();
 }
 
@@ -127,7 +127,7 @@ void TextureProgressBar::set_progress_offset(Point2 p_offset) {
 	}
 
 	progress_offset = p_offset;
-	update();
+	queue_redraw();
 }
 
 Point2 TextureProgressBar::get_progress_offset() const {
@@ -140,7 +140,7 @@ void TextureProgressBar::set_tint_under(const Color &p_tint) {
 	}
 
 	tint_under = p_tint;
-	update();
+	queue_redraw();
 }
 
 Color TextureProgressBar::get_tint_under() const {
@@ -153,7 +153,7 @@ void TextureProgressBar::set_tint_progress(const Color &p_tint) {
 	}
 
 	tint_progress = p_tint;
-	update();
+	queue_redraw();
 }
 
 Color TextureProgressBar::get_tint_progress() const {
@@ -166,7 +166,7 @@ void TextureProgressBar::set_tint_over(const Color &p_tint) {
 	}
 
 	tint_over = p_tint;
-	update();
+	queue_redraw();
 }
 
 Color TextureProgressBar::get_tint_over() const {
@@ -591,7 +591,7 @@ void TextureProgressBar::set_fill_mode(int p_fill) {
 	}
 
 	mode = (FillMode)p_fill;
-	update();
+	queue_redraw();
 }
 
 int TextureProgressBar::get_fill_mode() {
@@ -611,7 +611,7 @@ void TextureProgressBar::set_radial_initial_angle(float p_angle) {
 	}
 
 	rad_init_angle = p_angle;
-	update();
+	queue_redraw();
 }
 
 float TextureProgressBar::get_radial_initial_angle() {
@@ -626,7 +626,7 @@ void TextureProgressBar::set_fill_degrees(float p_angle) {
 	}
 
 	rad_max_degrees = angle_clamped;
-	update();
+	queue_redraw();
 }
 
 float TextureProgressBar::get_fill_degrees() {
@@ -639,7 +639,7 @@ void TextureProgressBar::set_radial_center_offset(const Point2 &p_off) {
 	}
 
 	rad_center_off = p_off;
-	update();
+	queue_redraw();
 }
 
 Point2 TextureProgressBar::get_radial_center_offset() {

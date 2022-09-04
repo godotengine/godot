@@ -412,16 +412,17 @@ def use_windows_spawn_fix(self, platform=None):
 
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        proc = subprocess.Popen(
-            cmdline,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            startupinfo=startupinfo,
-            shell=False,
-            env=env,
-            text=True,
-        )
+        popen_args = {
+            "stdin": subprocess.PIPE,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "startupinfo": startupinfo,
+            "shell": False,
+            "env": env,
+        }
+        if sys.version_info >= (3, 7, 0):
+            popen_args["text"] = True
+        proc = subprocess.Popen(cmdline, **popen_args)
         _, err = proc.communicate()
         rv = proc.wait()
         if rv:
@@ -705,7 +706,7 @@ def generate_vs_project(env, num_jobs):
             # required for Visual Studio to understand that it needs to generate an NMAKE
             # project. Do not modify without knowing what you are doing.
             PLATFORMS = ["Win32", "x64"]
-            PLATFORM_IDS = ["32", "64"]
+            PLATFORM_IDS = ["x86_32", "x86_64"]
             CONFIGURATIONS = ["debug", "release", "release_debug"]
             CONFIGURATION_IDS = ["tools", "opt", "opt.tools"]
 

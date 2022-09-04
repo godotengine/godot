@@ -148,6 +148,9 @@ namespace Godot
         /// Access whole columns in the form of <see cref="Vector3"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="column"/> is not 0, 1, 2 or 3.
+        /// </exception>
         /// <value>The basis column.</value>
         public Vector3 this[int column]
         {
@@ -366,8 +369,8 @@ namespace Godot
         /// but are more efficient for some internal calculations.
         /// </summary>
         /// <param name="index">Which row.</param>
-        /// <exception cref="IndexOutOfRangeException">
-        /// Thrown when the <paramref name="index"/> is not 0, 1 or 2.
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is not 0, 1 or 2.
         /// </exception>
         /// <returns>One of <c>Row0</c>, <c>Row1</c>, or <c>Row2</c>.</returns>
         public Vector3 GetRow(int index)
@@ -391,8 +394,8 @@ namespace Godot
         /// </summary>
         /// <param name="index">Which row.</param>
         /// <param name="value">The vector to set the row to.</param>
-        /// <exception cref="IndexOutOfRangeException">
-        /// Thrown when the <paramref name="index"/> is not 0, 1 or 2.
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is not 0, 1 or 2.
         /// </exception>
         public void SetRow(int index, Vector3 value)
         {
@@ -496,6 +499,15 @@ namespace Godot
                 cofac10 * detInv, cofac11 * detInv, cofac12 * detInv,
                 cofac20 * detInv, cofac21 * detInv, cofac22 * detInv
             );
+        }
+
+        internal Basis Lerp(Basis to, real_t weight)
+        {
+            Basis b = this;
+            b.Row0 = Row0.Lerp(to.Row0, weight);
+            b.Row1 = Row1.Lerp(to.Row1, weight);
+            b.Row2 = Row2.Lerp(to.Row2, weight);
+            return b;
         }
 
         /// <summary>

@@ -205,7 +205,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 						}
 					}
 
-					update();
+					queue_redraw();
 
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
@@ -274,7 +274,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	notify_property_list_changed();
 	_reset_timeout();
-	update();
+	queue_redraw();
 	update_configuration_warnings();
 }
 
@@ -304,7 +304,7 @@ void AnimatedSprite2D::set_frame(int p_frame) {
 
 	frame = p_frame;
 	_reset_timeout();
-	update();
+	queue_redraw();
 
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
@@ -329,7 +329,7 @@ double AnimatedSprite2D::get_speed_scale() const {
 
 void AnimatedSprite2D::set_centered(bool p_center) {
 	centered = p_center;
-	update();
+	queue_redraw();
 	item_rect_changed();
 }
 
@@ -339,7 +339,7 @@ bool AnimatedSprite2D::is_centered() const {
 
 void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
-	update();
+	queue_redraw();
 	item_rect_changed();
 }
 
@@ -349,7 +349,7 @@ Point2 AnimatedSprite2D::get_offset() const {
 
 void AnimatedSprite2D::set_flip_h(bool p_flip) {
 	hflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool AnimatedSprite2D::is_flipped_h() const {
@@ -358,7 +358,7 @@ bool AnimatedSprite2D::is_flipped_h() const {
 
 void AnimatedSprite2D::set_flip_v(bool p_flip) {
 	vflip = p_flip;
-	update();
+	queue_redraw();
 }
 
 bool AnimatedSprite2D::is_flipped_v() const {
@@ -368,7 +368,7 @@ bool AnimatedSprite2D::is_flipped_v() const {
 void AnimatedSprite2D::_res_changed() {
 	set_frame(frame);
 
-	update();
+	queue_redraw();
 }
 
 void AnimatedSprite2D::set_playing(bool p_playing) {
@@ -433,7 +433,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	_reset_timeout();
 	set_frame(0);
 	notify_property_list_changed();
-	update();
+	queue_redraw();
 }
 
 StringName AnimatedSprite2D::get_animation() const {

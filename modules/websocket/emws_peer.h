@@ -31,7 +31,7 @@
 #ifndef EMWS_PEER_H
 #define EMWS_PEER_H
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 
 #include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
@@ -88,6 +88,6 @@ public:
 	~EMWSPeer();
 };
 
-#endif // JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED
 
 #endif // EMWS_PEER_H

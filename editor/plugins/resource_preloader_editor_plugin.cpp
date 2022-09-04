@@ -196,7 +196,7 @@ void ResourcePreloaderEditor::_update_library() {
 
 		String type = r->get_class();
 		ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(type, "Object"));
-		ti->set_tooltip(0, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + type);
+		ti->set_tooltip_text(0, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + type);
 
 		ti->set_text(1, r->get_path());
 		ti->set_editable(1, false);
@@ -356,7 +356,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew(Button);
-	load->set_tooltip(TTR("Load Resource"));
+	load->set_tooltip_text(TTR("Load Resource"));
 	hbc->add_child(load);
 
 	paste = memnew(Button);

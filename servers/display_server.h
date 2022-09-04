@@ -122,19 +122,20 @@ public:
 		FEATURE_KEEP_SCREEN_ON,
 		FEATURE_CLIPBOARD_PRIMARY,
 		FEATURE_TEXT_TO_SPEECH,
+		FEATURE_EXTEND_TO_TITLE,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
 	virtual String get_name() const = 0;
 
-	virtual int global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual int global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual int global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual int global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual int global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual int global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
-	virtual int global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
 	virtual int global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index = -1);
+	virtual int global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
+	virtual int global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback = Callable(), const Callable &p_key_callback = Callable(), const Variant &p_tag = Variant(), Key p_accel = Key::NONE, int p_index = -1);
 	virtual int global_menu_add_separator(const String &p_menu_root, int p_index = -1);
 
 	virtual int global_menu_get_item_index_from_text(const String &p_menu_root, const String &p_text) const;
@@ -144,6 +145,7 @@ public:
 	virtual bool global_menu_is_item_checkable(const String &p_menu_root, int p_idx) const;
 	virtual bool global_menu_is_item_radio_checkable(const String &p_menu_root, int p_idx) const;
 	virtual Callable global_menu_get_item_callback(const String &p_menu_root, int p_idx) const;
+	virtual Callable global_menu_get_item_key_callback(const String &p_menu_root, int p_idx) const;
 	virtual Variant global_menu_get_item_tag(const String &p_menu_root, int p_idx) const;
 	virtual String global_menu_get_item_text(const String &p_menu_root, int p_idx) const;
 	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx) const;
@@ -159,6 +161,7 @@ public:
 	virtual void global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
 	virtual void global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable);
 	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback);
+	virtual void global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback);
 	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag);
 	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text);
 	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu);
@@ -208,6 +211,10 @@ public:
 
 	virtual void tts_set_utterance_callback(TTSUtteranceEvent p_event, const Callable &p_callable);
 	virtual void tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id, int p_pos = 0);
+
+	virtual bool is_dark_mode_supported() const { return false; };
+	virtual bool is_dark_mode() const { return false; };
+	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
 
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
@@ -289,6 +296,7 @@ public:
 		WINDOW_FLAG_TRANSPARENT,
 		WINDOW_FLAG_NO_FOCUS,
 		WINDOW_FLAG_POPUP,
+		WINDOW_FLAG_EXTEND_TO_TITLE,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -300,6 +308,7 @@ public:
 		WINDOW_FLAG_TRANSPARENT_BIT = (1 << WINDOW_FLAG_TRANSPARENT),
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
+		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());
@@ -371,12 +380,17 @@ public:
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
+	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); };
+
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
 	virtual bool can_any_window_draw() const = 0;
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window = MAIN_WINDOW_ID);
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window = MAIN_WINDOW_ID);
+
+	virtual bool window_maximize_on_title_dbl_click() const { return false; }
+	virtual bool window_minimize_on_title_dbl_click() const { return false; }
 
 	// necessary for GL focus, may be able to use one of the existing functions for this, not sure yet
 	virtual void gl_window_make_current(DisplayServer::WindowID p_window_id);

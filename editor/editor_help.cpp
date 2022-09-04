@@ -239,6 +239,27 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	class_desc->pop();
 }
 
+void EditorHelp::_add_type_icon(const String &p_type, int p_size) {
+	Ref<Texture2D> icon;
+	if (has_theme_icon(p_type, SNAME("EditorIcons"))) {
+		icon = get_theme_icon(p_type, SNAME("EditorIcons"));
+	} else if (ClassDB::class_exists(p_type) && ClassDB::is_parent_class(p_type, "Object")) {
+		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+	} else {
+		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
+	}
+
+	Vector2i size = Vector2i(icon->get_width(), icon->get_height());
+	if (p_size > 0) {
+		// Ensures icon scales proportionally on both axis, based on icon height.
+		float ratio = p_size / float(size.height);
+		size.width *= ratio;
+		size.height *= ratio;
+	}
+
+	class_desc->add_image(icon, size.width, size.height);
+}
+
 String EditorHelp::_fix_constant(const String &p_constant) const {
 	if (p_constant.strip_edges() == "4294967295") {
 		return "0xFFFFFFFF";
@@ -530,22 +551,13 @@ void EditorHelp::_update_doc() {
 
 	DocData::ClassDoc cd = doc->class_list[edited_class]; // Make a copy, so we can sort without worrying.
 
-	Ref<Texture2D> icon;
-	if (has_theme_icon(edited_class, SNAME("EditorIcons"))) {
-		icon = get_theme_icon(edited_class, SNAME("EditorIcons"));
-	} else if (ClassDB::class_exists(edited_class) && ClassDB::is_parent_class(edited_class, "Object")) {
-		icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
-	} else {
-		icon = get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"));
-	}
-
 	// Class name
 	section_line.push_back(Pair<String, int>(TTR("Top"), 0));
 	class_desc->push_font(doc_title_font);
 	class_desc->push_font_size(doc_title_font_size);
 	class_desc->push_color(title_color);
 	class_desc->add_text(TTR("Class:") + " ");
-	class_desc->add_image(icon, icon->get_width(), icon->get_height());
+	_add_type_icon(edited_class, doc_title_font_size);
 	class_desc->add_text(" ");
 	class_desc->push_color(headline_color);
 	_add_text(edited_class);
@@ -554,6 +566,8 @@ void EditorHelp::_update_doc() {
 	class_desc->pop(); // font size
 	class_desc->pop(); // font
 	class_desc->add_newline();
+
+	const String non_breaking_space = String::chr(160);
 
 	// Inheritance tree
 
@@ -566,6 +580,8 @@ void EditorHelp::_update_doc() {
 		String inherits = cd.inherits;
 
 		while (!inherits.is_empty()) {
+			_add_type_icon(inherits);
+			class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 			_add_type(inherits);
 
 			inherits = doc->class_list[inherits].inherits;
@@ -597,7 +613,8 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 					class_desc->add_text(" , ");
 				}
-
+				_add_type_icon(E.value.name);
+				class_desc->add_text(non_breaking_space); // Otherwise icon borrows hyperlink from _add_type().
 				_add_type(E.value.name);
 				prev = true;
 			}
@@ -1914,7 +1931,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			}
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture2D> texture = ResourceLoader::load(base_path.plus_file(image), "Texture2D");
+			Ref<Texture2D> texture = ResourceLoader::load(base_path.path_join(image), "Texture2D");
 			if (texture.is_valid()) {
 				p_rt->add_image(texture);
 			}
@@ -1931,7 +1948,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		} else if (tag.begins_with("font=")) {
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
+			Ref<Font> font = ResourceLoader::load(base_path.path_join(fnt), "Font");
 			if (font.is_valid()) {
 				p_rt->push_font(font);
 			} else {
@@ -2078,7 +2095,7 @@ void EditorHelp::update_toggle_scripts_button() {
 	} else {
 		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
 	}
-	toggle_scripts_button->set_tooltip(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 
 void EditorHelp::_bind_methods() {

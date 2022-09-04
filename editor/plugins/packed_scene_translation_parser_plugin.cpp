@@ -123,7 +123,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlugin() {
 	// Scene Node's properties containing strings that will be fetched for translation.
 	lookup_properties.insert("text");
-	lookup_properties.insert("hint_tooltip");
+	lookup_properties.insert("tooltip_text");
 	lookup_properties.insert("placeholder_text");
 	lookup_properties.insert("items");
 	lookup_properties.insert("title");

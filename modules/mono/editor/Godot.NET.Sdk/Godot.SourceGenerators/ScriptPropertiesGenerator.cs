@@ -112,7 +112,8 @@ namespace Godot.SourceGenerators
 
             var propertySymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Property)
-                .Cast<IPropertySymbol>();
+                .Cast<IPropertySymbol>()
+                .Where(s => !s.IsIndexer);
 
             var fieldSymbols = members
                 .Where(s => !s.IsStatic && s.Kind == SymbolKind.Field && !s.IsImplicitlyDeclared)

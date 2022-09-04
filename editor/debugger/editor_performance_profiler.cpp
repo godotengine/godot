@@ -61,7 +61,7 @@ void EditorPerformanceProfiler::Monitor::update_value(float p_value) {
 		} break;
 	}
 	item->set_text(1, label);
-	item->set_tooltip(1, tooltip);
+	item->set_tooltip_text(1, tooltip);
 
 	if (p_value > max) {
 		max = p_value;
@@ -73,7 +73,7 @@ void EditorPerformanceProfiler::Monitor::reset() {
 	max = 0.0f;
 	if (item) {
 		item->set_text(1, "");
-		item->set_tooltip(1, "");
+		item->set_tooltip_text(1, "");
 	}
 }
 
@@ -92,7 +92,7 @@ String EditorPerformanceProfiler::_create_label(float p_value, Performance::Moni
 }
 
 void EditorPerformanceProfiler::_monitor_select() {
-	monitor_draw->update();
+	monitor_draw->queue_redraw();
 }
 
 void EditorPerformanceProfiler::_monitor_draw() {
@@ -283,12 +283,12 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 					float spacing = float(point_sep) / float(columns);
 					marker_frame = (rect.size.x - point.x) / spacing;
 				}
-				monitor_draw->update();
+				monitor_draw->queue_redraw();
 				return;
 			}
 		}
 		marker_key = "";
-		monitor_draw->update();
+		monitor_draw->queue_redraw();
 	}
 }
 
@@ -308,7 +308,7 @@ void EditorPerformanceProfiler::reset() {
 	_build_monitor_tree();
 	marker_key = "";
 	marker_frame = 0;
-	monitor_draw->update();
+	monitor_draw->queue_redraw();
 }
 
 void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_names) {
@@ -357,7 +357,7 @@ void EditorPerformanceProfiler::add_profile_frame(const Vector<float> &p_values)
 		E.value.update_value(data);
 	}
 	marker_frame++;
-	monitor_draw->update();
+	monitor_draw->queue_redraw();
 }
 
 List<float> *EditorPerformanceProfiler::get_monitor_data(const StringName &p_name) {

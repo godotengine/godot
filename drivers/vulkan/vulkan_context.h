@@ -266,6 +266,8 @@ protected:
 
 	Error _get_preferred_validation_layers(uint32_t *count, const char *const **names);
 
+	virtual VkExtent2D _compute_swapchain_extent(const VkSurfaceCapabilitiesKHR &p_surf_capabilities, int *p_window_width, int *p_window_height) const;
+
 public:
 	// Extension calls.
 	VkResult vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass);

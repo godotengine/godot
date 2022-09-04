@@ -40,7 +40,7 @@
 void ShapeCast2D::set_target_position(const Vector2 &p_point) {
 	target_position = p_point;
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint())) {
-		update();
+		queue_redraw();
 	}
 }
 
@@ -132,7 +132,7 @@ real_t ShapeCast2D::get_closest_collision_unsafe_fraction() const {
 
 void ShapeCast2D::set_enabled(bool p_enabled) {
 	enabled = p_enabled;
-	update();
+	queue_redraw();
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
 		set_physics_process_internal(p_enabled);
 	}
@@ -152,7 +152,7 @@ void ShapeCast2D::set_shape(const Ref<Shape2D> &p_shape) {
 		shape_rid = shape->get_rid();
 	}
 	update_configuration_warnings();
-	update();
+	queue_redraw();
 }
 
 Ref<Shape2D> ShapeCast2D::get_shape() const {
@@ -182,7 +182,7 @@ bool ShapeCast2D::get_exclude_parent_body() const {
 }
 
 void ShapeCast2D::_redraw_shape() {
-	update();
+	queue_redraw();
 }
 
 void ShapeCast2D::_notification(int p_what) {
@@ -325,7 +325,7 @@ void ShapeCast2D::_update_shapecast_state() {
 	collided = !result.is_empty();
 
 	if (prev_collision_state != collided) {
-		update();
+		queue_redraw();
 	}
 }
 

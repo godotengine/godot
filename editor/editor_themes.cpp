@@ -182,7 +182,7 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 	style->set_bg_color(p_color);
 	// Adjust level of detail based on the corners' effective sizes.
-	style->set_corner_detail(Math::ceil(1.5 * p_corner_width * EDSCALE));
+	style->set_corner_detail(Math::ceil(0.8 * p_corner_width * EDSCALE));
 	style->set_corner_radius_all(p_corner_width * EDSCALE);
 	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
 	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
@@ -476,6 +476,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_color = mono_color.lerp(base_color, 0.25);
 	const Color font_hover_color = mono_color.lerp(base_color, 0.125);
 	const Color font_focus_color = mono_color.lerp(base_color, 0.125);
+	const Color font_hover_pressed_color = font_hover_color.lerp(accent_color, 0.74);
 	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
 	const Color font_readonly_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_placeholder_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.6);
@@ -592,7 +593,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_default = make_flat_stylebox(base_color, default_margin_size, default_margin_size, default_margin_size, default_margin_size, corner_width);
 	style_default->set_border_width_all(border_width);
 	style_default->set_border_color(base_color);
-	style_default->set_draw_center(true);
 
 	// Button and widgets
 	const float extra_spacing = EDITOR_GET("interface/theme/additional_spacing");
@@ -634,6 +634,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
 	style_popup->set_shadow_color(shadow_color);
 	style_popup->set_shadow_size(4 * EDSCALE);
+	// Popups are separate windows by default in the editor. Windows currently don't support per-pixel transparency
+	// in 4.0, and even if it was, it may not always work in practice (e.g. running with compositing disabled).
+	style_popup->set_corner_radius_all(0);
 
 	Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 	style_popup_separator->set_color(separator_color);
@@ -655,45 +658,44 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// TabBar
 
-	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
+	Ref<StyleBoxFlat> style_tab_base = style_widget->duplicate();
 
+	style_tab_base->set_border_width_all(0);
+	// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
+	// This also makes the top highlight look better.
+	style_tab_base->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_tab_base->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
+	// We can't prevent them with both rounded corners and non-zero border width, though
+	style_tab_base->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
+	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
+	style_tab_base->set_expand_margin_size(SIDE_LEFT, -border_width);
+
+	style_tab_base->set_default_margin(SIDE_LEFT, widget_default_margin.x + 5 * EDSCALE);
+	style_tab_base->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 5 * EDSCALE);
+	style_tab_base->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
+	style_tab_base->set_default_margin(SIDE_TOP, widget_default_margin.y);
+
+	Ref<StyleBoxFlat> style_tab_selected = style_tab_base->duplicate();
+
+	style_tab_selected->set_bg_color(base_color);
 	// Add a highlight line at the top of the selected tab.
-	style_tab_selected->set_border_width_all(0);
-	style_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x - border_width);
 	style_tab_selected->set_border_width(SIDE_TOP, Math::round(2 * EDSCALE));
 	// Make the highlight line prominent, but not too prominent as to not be distracting.
 	Color tab_highlight = dark_color_2.lerp(accent_color, 0.75);
 	style_tab_selected->set_border_color(tab_highlight);
-	// Don't round the top corners to avoid creating a small blank space between the tabs and the main panel.
-	// This also makes the top highlight look better.
 	style_tab_selected->set_corner_radius_all(0);
 
-	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
-	// We can't prevent them with both rounded corners and non-zero border width, though
-	style_tab_selected->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
-
-	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
-	style_tab_selected->set_expand_margin_size(SIDE_LEFT, -border_width);
-
-	style_tab_selected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
-	style_tab_selected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
-	style_tab_selected->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
-	style_tab_selected->set_default_margin(SIDE_TOP, widget_default_margin.y);
-	style_tab_selected->set_bg_color(base_color);
-
-	Ref<StyleBoxFlat> style_tab_unselected = style_tab_selected->duplicate();
-	style_tab_unselected->set_bg_color(dark_color_1);
+	Ref<StyleBoxFlat> style_tab_unselected = style_tab_base->duplicate();
 	style_tab_unselected->set_expand_margin_size(SIDE_BOTTOM, 0);
+	style_tab_unselected->set_bg_color(dark_color_1);
 	// Add some spacing between unselected tabs to make them easier to distinguish from each other
 	style_tab_unselected->set_border_color(Color(0, 0, 0, 0));
-	style_tab_unselected->set_border_width(SIDE_LEFT, Math::round(1 * EDSCALE));
-	style_tab_unselected->set_border_width(SIDE_RIGHT, Math::round(1 * EDSCALE));
-	style_tab_unselected->set_default_margin(SIDE_LEFT, widget_default_margin.x + 2 * EDSCALE);
-	style_tab_unselected->set_default_margin(SIDE_RIGHT, widget_default_margin.x + 2 * EDSCALE);
 
-	Ref<StyleBoxFlat> style_tab_disabled = style_tab_selected->duplicate();
-	style_tab_disabled->set_bg_color(disabled_bg_color);
+	Ref<StyleBoxFlat> style_tab_disabled = style_tab_base->duplicate();
 	style_tab_disabled->set_expand_margin_size(SIDE_BOTTOM, 0);
+	style_tab_disabled->set_bg_color(disabled_bg_color);
 	style_tab_disabled->set_border_color(disabled_bg_color);
 
 	// Editor background
@@ -739,8 +741,26 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("ScriptEditorPanel", "EditorStyles", make_empty_stylebox(default_margin_size, 0, default_margin_size, default_margin_size));
 	theme->set_stylebox("ScriptEditor", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
 
-	// Play button group
-	theme->set_stylebox("PlayButtonPanel", "EditorStyles", style_empty);
+	// Launch Pad and Play buttons
+	Ref<StyleBoxFlat> style_launch_pad = make_flat_stylebox(dark_color_1, 2 * EDSCALE, 0, 2 * EDSCALE, 0, corner_width);
+	style_launch_pad->set_corner_radius_all(corner_radius * EDSCALE);
+	theme->set_stylebox("LaunchPadNormal", "EditorStyles", style_launch_pad);
+	Ref<StyleBoxFlat> style_launch_pad_movie = style_launch_pad->duplicate();
+	style_launch_pad_movie->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
+	style_launch_pad_movie->set_border_color(accent_color);
+	style_launch_pad_movie->set_border_width_all(Math::round(2 * EDSCALE));
+	theme->set_stylebox("LaunchPadMovieMode", "EditorStyles", style_launch_pad_movie);
+
+	theme->set_stylebox("MovieWriterButtonNormal", "EditorStyles", make_empty_stylebox(0, 0, 0, 0));
+	Ref<StyleBoxFlat> style_write_movie_button = style_widget_pressed->duplicate();
+	style_write_movie_button->set_bg_color(accent_color);
+	style_write_movie_button->set_corner_radius_all(corner_radius * EDSCALE);
+	style_write_movie_button->set_default_margin(SIDE_TOP, 0);
+	style_write_movie_button->set_default_margin(SIDE_BOTTOM, 0);
+	style_write_movie_button->set_default_margin(SIDE_LEFT, 0);
+	style_write_movie_button->set_default_margin(SIDE_RIGHT, 0);
+	style_write_movie_button->set_expand_margin_size(SIDE_RIGHT, 2 * EDSCALE);
+	theme->set_stylebox("MovieWriterButtonPressed", "EditorStyles", style_write_movie_button);
 
 	theme->set_stylebox("normal", "MenuButton", style_menu);
 	theme->set_stylebox("hover", "MenuButton", style_widget_hover);
@@ -750,6 +770,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "MenuButton", font_color);
 	theme->set_color("font_hover_color", "MenuButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "MenuButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "MenuButton", font_focus_color);
 
 	theme->set_stylebox("MenuHover", "EditorStyles", style_widget_hover);
@@ -763,6 +784,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "Button", font_color);
 	theme->set_color("font_hover_color", "Button", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "Button", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "Button", font_focus_color);
 	theme->set_color("font_pressed_color", "Button", accent_color);
 	theme->set_color("font_disabled_color", "Button", font_disabled_color);
@@ -815,6 +837,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "MenuBar", font_color);
 	theme->set_color("font_hover_color", "MenuBar", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "MenuBar", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "MenuBar", font_focus_color);
 	theme->set_color("font_pressed_color", "MenuBar", accent_color);
 	theme->set_color("font_disabled_color", "MenuBar", font_disabled_color);
@@ -851,6 +874,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "OptionButton", font_color);
 	theme->set_color("font_hover_color", "OptionButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "OptionButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "OptionButton", font_focus_color);
 	theme->set_color("font_pressed_color", "OptionButton", accent_color);
 	theme->set_color("font_disabled_color", "OptionButton", font_disabled_color);
@@ -885,6 +909,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "CheckButton", font_color);
 	theme->set_color("font_hover_color", "CheckButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "CheckButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "CheckButton", font_focus_color);
 	theme->set_color("font_pressed_color", "CheckButton", accent_color);
 	theme->set_color("font_disabled_color", "CheckButton", font_disabled_color);
@@ -921,6 +946,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_color("font_color", "CheckBox", font_color);
 	theme->set_color("font_hover_color", "CheckBox", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "CheckBox", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "CheckBox", font_focus_color);
 	theme->set_color("font_pressed_color", "CheckBox", accent_color);
 	theme->set_color("font_disabled_color", "CheckBox", font_disabled_color);
@@ -949,9 +975,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	style_popup_menu->set_border_width_all(EDSCALE);
 	style_popup_menu->set_border_color(dark_color_2);
-	// Popups are separate windows by default in the editor. Windows currently don't support per-pixel transparency
-	// in 4.0, and even if it was, it may not always work in practice (e.g. running with compositing disabled).
-	style_popup_menu->set_corner_radius_all(0);
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
 	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
@@ -1192,6 +1215,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// TabBar & TabContainer
+	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
+	style_tabbar_background->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
+	style_tabbar_background->set_corner_detail(corner_width);
+	style_tabbar_background->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
+	style_tabbar_background->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
+	theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
+
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
 	theme->set_stylebox("tab_unselected", "TabContainer", style_tab_unselected);
 	theme->set_stylebox("tab_disabled", "TabContainer", style_tab_disabled);
@@ -1227,14 +1257,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
+	style_content_panel->set_border_width(Side::SIDE_TOP, 0);
+	style_content_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
+	style_content_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
 	// compensate the border
 	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
-	// Display border to visually split the body of the container from its possible backgrounds.
-	style_content_panel->set_border_width(Side::SIDE_TOP, Math::round(2 * EDSCALE));
-	style_content_panel->set_border_color(dark_color_2);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
@@ -1325,6 +1355,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("selection_color", "TextEdit", selection_color);
 	theme->set_constant("line_spacing", "TextEdit", 4 * EDSCALE);
 
+	theme->set_icon("h_grabber", "SplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
+	theme->set_icon("v_grabber", "SplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 
@@ -1478,6 +1510,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("focus", "LinkButton", style_empty);
 	theme->set_color("font_color", "LinkButton", font_color);
 	theme->set_color("font_hover_color", "LinkButton", font_hover_color);
+	theme->set_color("font_hover_pressed_color", "LinkButton", font_hover_pressed_color);
 	theme->set_color("font_focus_color", "LinkButton", font_focus_color);
 	theme->set_color("font_pressed_color", "LinkButton", accent_color);
 	theme->set_color("font_disabled_color", "LinkButton", font_disabled_color);
@@ -1508,8 +1541,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	control_editor_popup_style->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE);
 	control_editor_popup_style->set_border_width_all(0);
 
-	theme->set_stylebox("panel", "ControlEditorPopupButton", control_editor_popup_style);
-	theme->set_type_variation("ControlEditorPopupButton", "PopupPanel");
+	theme->set_stylebox("panel", "ControlEditorPopupPanel", control_editor_popup_style);
+	theme->set_type_variation("ControlEditorPopupPanel", "PopupPanel");
 
 	// SpinBox
 	theme->set_icon("updown", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdown"), SNAME("EditorIcons")));
@@ -1616,6 +1649,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	graphsbselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
 	graphsbcomment->set_border_width(SIDE_TOP, 24 * EDSCALE);
 	graphsbcommentselected->set_border_width(SIDE_TOP, 24 * EDSCALE);
+
+	graphsb->set_corner_detail(corner_radius * EDSCALE);
+	graphsbselected->set_corner_detail(corner_radius * EDSCALE);
+	graphsbcomment->set_corner_detail(corner_radius * EDSCALE);
+	graphsbcommentselected->set_corner_detail(corner_radius * EDSCALE);
 
 	theme->set_stylebox("frame", "GraphNode", graphsb);
 	theme->set_stylebox("selected_frame", "GraphNode", graphsbselected);

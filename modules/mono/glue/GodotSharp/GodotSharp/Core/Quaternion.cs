@@ -47,6 +47,9 @@ namespace Godot
         /// <summary>
         /// Access quaternion components using their index.
         /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is not 0, 1, 2 or 3.
+        /// </exception>
         /// <value>
         /// <c>[0]</c> is equivalent to <see cref="x"/>,
         /// <c>[1]</c> is equivalent to <see cref="y"/>,
@@ -132,7 +135,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a cubic spherical interpolation between quaternions <paramref name="preA"/>, this quaternion,
+        /// Performs a spherical cubic interpolation between quaternions <paramref name="preA"/>, this quaternion,
         /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
         /// </summary>
         /// <param name="b">The destination quaternion.</param>
@@ -140,12 +143,128 @@ namespace Godot
         /// <param name="postB">A quaternion after <paramref name="b"/>.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated quaternion.</returns>
-        public Quaternion CubicSlerp(Quaternion b, Quaternion preA, Quaternion postB, real_t weight)
+        public Quaternion SphericalCubicInterpolate(Quaternion b, Quaternion preA, Quaternion postB, real_t weight)
         {
-            real_t t2 = (1.0f - weight) * weight * 2f;
-            Quaternion sp = Slerp(b, weight);
-            Quaternion sq = preA.Slerpni(postB, weight);
-            return sp.Slerpni(sq, t2);
+#if DEBUG
+            if (!IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized");
+            }
+            if (!b.IsNormalized())
+            {
+                throw new ArgumentException("Argument is not normalized", nameof(b));
+            }
+#endif
+
+            // Align flip phases.
+            Quaternion fromQ = new Basis(this).GetRotationQuaternion();
+            Quaternion preQ = new Basis(preA).GetRotationQuaternion();
+            Quaternion toQ = new Basis(b).GetRotationQuaternion();
+            Quaternion postQ = new Basis(postB).GetRotationQuaternion();
+
+            // Flip quaternions to shortest path if necessary.
+            bool flip1 = Math.Sign(fromQ.Dot(preQ)) < 0;
+            preQ = flip1 ? -preQ : preQ;
+            bool flip2 = Math.Sign(fromQ.Dot(toQ)) < 0;
+            toQ = flip2 ? -toQ : toQ;
+            bool flip3 = flip2 ? toQ.Dot(postQ) <= 0 : Math.Sign(toQ.Dot(postQ)) < 0;
+            postQ = flip3 ? -postQ : postQ;
+
+            // Calc by Expmap in fromQ space.
+            Quaternion lnFrom = new Quaternion(0, 0, 0, 0);
+            Quaternion lnTo = (fromQ.Inverse() * toQ).Log();
+            Quaternion lnPre = (fromQ.Inverse() * preQ).Log();
+            Quaternion lnPost = (fromQ.Inverse() * postQ).Log();
+            Quaternion ln = new Quaternion(
+                Mathf.CubicInterpolate(lnFrom.x, lnTo.x, lnPre.x, lnPost.x, weight),
+                Mathf.CubicInterpolate(lnFrom.y, lnTo.y, lnPre.y, lnPost.y, weight),
+                Mathf.CubicInterpolate(lnFrom.z, lnTo.z, lnPre.z, lnPost.z, weight),
+                0);
+            Quaternion q1 = fromQ * ln.Exp();
+
+            // Calc by Expmap in toQ space.
+            lnFrom = (toQ.Inverse() * fromQ).Log();
+            lnTo = new Quaternion(0, 0, 0, 0);
+            lnPre = (toQ.Inverse() * preQ).Log();
+            lnPost = (toQ.Inverse() * postQ).Log();
+            ln = new Quaternion(
+                Mathf.CubicInterpolate(lnFrom.x, lnTo.x, lnPre.x, lnPost.x, weight),
+                Mathf.CubicInterpolate(lnFrom.y, lnTo.y, lnPre.y, lnPost.y, weight),
+                Mathf.CubicInterpolate(lnFrom.z, lnTo.z, lnPre.z, lnPost.z, weight),
+                0);
+            Quaternion q2 = toQ * ln.Exp();
+
+            // To cancel error made by Expmap ambiguity, do blends.
+            return q1.Slerp(q2, weight);
+        }
+
+        /// <summary>
+        /// Performs a spherical cubic interpolation between quaternions <paramref name="preA"/>, this quaternion,
+        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
+        /// It can perform smoother interpolation than <see cref="SphericalCubicInterpolate"/>
+        /// by the time values.
+        /// </summary>
+        /// <param name="b">The destination quaternion.</param>
+        /// <param name="preA">A quaternion before this quaternion.</param>
+        /// <param name="postB">A quaternion after <paramref name="b"/>.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="bT"></param>
+        /// <param name="preAT"></param>
+        /// <param name="postBT"></param>
+        /// <returns>The interpolated quaternion.</returns>
+        public Quaternion SphericalCubicInterpolateInTime(Quaternion b, Quaternion preA, Quaternion postB, real_t weight, real_t bT, real_t preAT, real_t postBT)
+        {
+#if DEBUG
+            if (!IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized");
+            }
+            if (!b.IsNormalized())
+            {
+                throw new ArgumentException("Argument is not normalized", nameof(b));
+            }
+#endif
+
+            // Align flip phases.
+            Quaternion fromQ = new Basis(this).GetRotationQuaternion();
+            Quaternion preQ = new Basis(preA).GetRotationQuaternion();
+            Quaternion toQ = new Basis(b).GetRotationQuaternion();
+            Quaternion postQ = new Basis(postB).GetRotationQuaternion();
+
+            // Flip quaternions to shortest path if necessary.
+            bool flip1 = Math.Sign(fromQ.Dot(preQ)) < 0;
+            preQ = flip1 ? -preQ : preQ;
+            bool flip2 = Math.Sign(fromQ.Dot(toQ)) < 0;
+            toQ = flip2 ? -toQ : toQ;
+            bool flip3 = flip2 ? toQ.Dot(postQ) <= 0 : Math.Sign(toQ.Dot(postQ)) < 0;
+            postQ = flip3 ? -postQ : postQ;
+
+            // Calc by Expmap in fromQ space.
+            Quaternion lnFrom = new Quaternion(0, 0, 0, 0);
+            Quaternion lnTo = (fromQ.Inverse() * toQ).Log();
+            Quaternion lnPre = (fromQ.Inverse() * preQ).Log();
+            Quaternion lnPost = (fromQ.Inverse() * postQ).Log();
+            Quaternion ln = new Quaternion(
+                Mathf.CubicInterpolateInTime(lnFrom.x, lnTo.x, lnPre.x, lnPost.x, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.y, lnTo.y, lnPre.y, lnPost.y, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.z, lnTo.z, lnPre.z, lnPost.z, weight, bT, preAT, postBT),
+                0);
+            Quaternion q1 = fromQ * ln.Exp();
+
+            // Calc by Expmap in toQ space.
+            lnFrom = (toQ.Inverse() * fromQ).Log();
+            lnTo = new Quaternion(0, 0, 0, 0);
+            lnPre = (toQ.Inverse() * preQ).Log();
+            lnPost = (toQ.Inverse() * postQ).Log();
+            ln = new Quaternion(
+                Mathf.CubicInterpolateInTime(lnFrom.x, lnTo.x, lnPre.x, lnPost.x, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.y, lnTo.y, lnPre.y, lnPost.y, weight, bT, preAT, postBT),
+                Mathf.CubicInterpolateInTime(lnFrom.z, lnTo.z, lnPre.z, lnPost.z, weight, bT, preAT, postBT),
+                0);
+            Quaternion q2 = toQ * ln.Exp();
+
+            // To cancel error made by Expmap ambiguity, do blends.
+            return q1.Slerp(q2, weight);
         }
 
         /// <summary>
@@ -156,6 +275,34 @@ namespace Godot
         public real_t Dot(Quaternion b)
         {
             return (x * b.x) + (y * b.y) + (z * b.z) + (w * b.w);
+        }
+
+        public Quaternion Exp()
+        {
+            Vector3 v = new Vector3(x, y, z);
+            real_t theta = v.Length();
+            v = v.Normalized();
+            if (theta < Mathf.Epsilon || !v.IsNormalized())
+            {
+                return new Quaternion(0, 0, 0, 1);
+            }
+            return new Quaternion(v, theta);
+        }
+
+        public real_t GetAngle()
+        {
+            return 2 * Mathf.Acos(w);
+        }
+
+        public Vector3 GetAxis()
+        {
+            if (Mathf.Abs(w) > 1 - Mathf.Epsilon)
+            {
+                return new Vector3(x, y, z);
+            }
+
+            real_t r = 1 / Mathf.Sqrt(1 - w * w);
+            return new Vector3(x * r, y * r, z * r);
         }
 
         /// <summary>
@@ -170,7 +317,7 @@ namespace Godot
 #if DEBUG
             if (!IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
 #endif
             var basis = new Basis(this);
@@ -186,7 +333,7 @@ namespace Godot
 #if DEBUG
             if (!IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
 #endif
             return new Quaternion(-x, -y, -z, w);
@@ -199,6 +346,12 @@ namespace Godot
         public bool IsNormalized()
         {
             return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
+        }
+
+        public Quaternion Log()
+        {
+            Vector3 v = GetAxis() * GetAngle();
+            return new Quaternion(v.x, v.y, v.z, 0);
         }
 
         /// <summary>
@@ -224,16 +377,16 @@ namespace Godot
 #if DEBUG
             if (!IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
             if (!to.IsNormalized())
             {
-                throw new ArgumentException("Argument is not normalized", nameof(to));
+                throw new ArgumentException("Argument is not normalized.", nameof(to));
             }
 #endif
 
             // Calculate cosine.
-            real_t cosom = x * to.x + y * to.y + z * to.z + w * to.w;
+            real_t cosom = Dot(to);
 
             var to1 = new Quaternion();
 
@@ -241,17 +394,11 @@ namespace Godot
             if (cosom < 0.0)
             {
                 cosom = -cosom;
-                to1.x = -to.x;
-                to1.y = -to.y;
-                to1.z = -to.z;
-                to1.w = -to.w;
+                to1 = -to;
             }
             else
             {
-                to1.x = to.x;
-                to1.y = to.y;
-                to1.z = to.z;
-                to1.w = to.w;
+                to1 = to;
             }
 
             real_t sinom, scale0, scale1;
@@ -292,6 +439,17 @@ namespace Godot
         /// <returns>The resulting quaternion of the interpolation.</returns>
         public Quaternion Slerpni(Quaternion to, real_t weight)
         {
+#if DEBUG
+            if (!IsNormalized())
+            {
+                throw new InvalidOperationException("Quaternion is not normalized");
+            }
+            if (!to.IsNormalized())
+            {
+                throw new ArgumentException("Argument is not normalized", nameof(to));
+            }
+#endif
+
             real_t dot = Dot(to);
 
             if (Mathf.Abs(dot) > 0.9999f)
@@ -388,7 +546,7 @@ namespace Godot
 #if DEBUG
             if (!axis.IsNormalized())
             {
-                throw new ArgumentException("Argument is not normalized", nameof(axis));
+                throw new ArgumentException("Argument is not normalized.", nameof(axis));
             }
 #endif
 
@@ -444,7 +602,7 @@ namespace Godot
 #if DEBUG
             if (!quaternion.IsNormalized())
             {
-                throw new InvalidOperationException("Quaternion is not normalized");
+                throw new InvalidOperationException("Quaternion is not normalized.");
             }
 #endif
             var u = new Vector3(quaternion.x, quaternion.y, quaternion.z);

@@ -155,7 +155,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		const SceneDebuggerTree::RemoteNode &node = p_tree->nodes[i];
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
-		item->set_tooltip(0, TTR("Type:") + " " + node.type_name);
+		item->set_tooltip_text(0, TTR("Type:") + " " + node.type_name);
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(node.type_name, "");
 		if (icon.is_valid()) {
 			item->set_icon(0, icon);

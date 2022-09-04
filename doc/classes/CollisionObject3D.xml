@@ -21,6 +21,18 @@
 				[b]Note:[/b] [method _input_event] requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
 			</description>
 		</method>
+		<method name="_mouse_enter" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the mouse pointer enters any of this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+			</description>
+		</method>
+		<method name="_mouse_exit" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the mouse pointer exits all this object's shapes. Requires [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CollisionObject3D] won't cause this function to be called.
+			</description>
+		</method>
 		<method name="create_shape_owner">
 			<return type="int" />
 			<param index="0" name="owner" type="Object" />

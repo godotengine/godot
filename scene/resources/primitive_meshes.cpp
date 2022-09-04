@@ -32,6 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "scene/resources/theme.h"
+#include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
@@ -1821,7 +1822,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 
 			float r = radius;
 			if (curve.is_valid() && curve->get_point_count() > 0) {
-				r *= curve->interpolate_baked(v);
+				r *= curve->sample_baked(v);
 			}
 			float x = sin(u * Math_TAU);
 			float z = cos(u * Math_TAU);
@@ -1862,7 +1863,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 	// add top
 	float scale_pos = 1.0;
 	if (curve.is_valid() && curve->get_point_count() > 0) {
-		scale_pos = curve->interpolate_baked(0);
+		scale_pos = curve->sample_baked(0);
 	}
 
 	if (scale_pos > CMP_EPSILON) {
@@ -1924,7 +1925,7 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 
 	float scale_neg = 1.0;
 	if (curve.is_valid() && curve->get_point_count() > 0) {
-		scale_neg = curve->interpolate_baked(1.0);
+		scale_neg = curve->sample_baked(1.0);
 	}
 
 	// add bottom
@@ -2137,7 +2138,7 @@ void RibbonTrailMesh::_create_mesh_array(Array &p_arr) const {
 		float s = size;
 
 		if (curve.is_valid() && curve->get_point_count() > 0) {
-			s *= curve->interpolate_baked(v);
+			s *= curve->sample_baked(v);
 		}
 
 		points.push_back(Vector3(-s * 0.5, y, 0));
@@ -2984,13 +2985,13 @@ Ref<Font> TextMesh::_get_font_or_default() const {
 	}
 
 	// Check the project-defined Theme resource.
-	if (Theme::get_project_default().is_valid()) {
+	if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
 		List<StringName> theme_types;
-		Theme::get_project_default()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+		ThemeDB::get_singleton()->get_project_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
 
 		for (const StringName &E : theme_types) {
-			if (Theme::get_project_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				return Theme::get_project_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
+				return ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 			}
 		}
 	}
@@ -2998,17 +2999,17 @@ Ref<Font> TextMesh::_get_font_or_default() const {
 	// Lastly, fall back on the items defined in the default Theme, if they exist.
 	{
 		List<StringName> theme_types;
-		Theme::get_default()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
+		ThemeDB::get_singleton()->get_default_theme()->get_type_dependencies(get_class_name(), StringName(), &theme_types);
 
 		for (const StringName &E : theme_types) {
-			if (Theme::get_default()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
-				return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
+				return ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
 			}
 		}
 	}
 
 	// If they don't exist, use any type to return the default/empty value.
-	return Theme::get_default()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
+	return ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
 }
 
 void TextMesh::set_font_size(int p_size) {

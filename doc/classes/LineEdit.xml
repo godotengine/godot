@@ -379,7 +379,7 @@
 		</constant>
 		<constant name="KEYBOARD_TYPE_PASSWORD" value="6" enum="VirtualKeyboardType">
 			Virtual keyboard for entering a password. On most platforms, this should disable autocomplete and autocapitalization.
-			[b]Note:[/b] This is not supported on HTML5. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
+			[b]Note:[/b] This is not supported on Web. Instead, this behaves identically to [constant KEYBOARD_TYPE_DEFAULT].
 		</constant>
 		<constant name="KEYBOARD_TYPE_URL" value="7" enum="VirtualKeyboardType">
 			Virtual keyboard with additional keys to assist with typing URLs.

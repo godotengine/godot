@@ -32,26 +32,7 @@
 #define GRADIENT_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
-#include "scene/gui/gradient_edit.h"
-
-class GradientEditor : public GradientEdit {
-	GDCLASS(GradientEditor, GradientEdit);
-
-	bool editing;
-	Ref<Gradient> gradient;
-
-	void _gradient_changed();
-	void _ramp_changed();
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual Size2 get_minimum_size() const override;
-	void set_gradient(const Ref<Gradient> &p_gradient);
-	void reverse_gradient();
-	GradientEditor();
-};
+#include "gradient_editor.h"
 
 class GradientReverseButton : public BaseButton {
 	GDCLASS(GradientReverseButton, BaseButton);

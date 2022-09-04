@@ -635,7 +635,7 @@ void AnimationLibraryEditor::update_tree() {
 		String al_path = al->get_path();
 		if (!al_path.is_resource_file()) {
 			libitem->set_text(1, TTR("[built-in]"));
-			libitem->set_tooltip(1, al_path);
+			libitem->set_tooltip_text(1, al_path);
 			int srpos = al_path.find("::");
 			if (srpos != -1) {
 				String base = al_path.substr(0, srpos);
@@ -687,7 +687,7 @@ void AnimationLibraryEditor::update_tree() {
 			String anim_path = anim->get_path();
 			if (!anim_path.is_resource_file()) {
 				anitem->set_text(1, TTR("[built-in]"));
-				anitem->set_tooltip(1, anim_path);
+				anitem->set_tooltip_text(1, anim_path);
 				int srpos = anim_path.find("::");
 				if (srpos != -1) {
 					String base = anim_path.substr(0, srpos);

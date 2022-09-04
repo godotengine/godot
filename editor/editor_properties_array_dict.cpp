@@ -509,7 +509,7 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
 					dropping = true;
-					edit->update();
+					edit->queue_redraw();
 				}
 			}
 		} break;
@@ -517,7 +517,7 @@ void EditorPropertyArray::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
-				edit->update();
+				edit->queue_redraw();
 			}
 		} break;
 	}
@@ -1111,7 +1111,7 @@ void EditorPropertyDictionary::update_property() {
 			if (i < amount) {
 				String cs = key.get_construct_string();
 				prop->set_label(key.get_construct_string());
-				prop->set_tooltip(cs);
+				prop->set_tooltip_text(cs);
 				change_index = i + offset;
 			} else if (i == amount) {
 				prop->set_label(TTR("New Key:"));
@@ -1361,7 +1361,7 @@ void EditorPropertyLocalizableString::update_property() {
 
 			String cs = key.get_construct_string();
 			prop->set_label(cs);
-			prop->set_tooltip(cs);
+			prop->set_tooltip_text(cs);
 			remove_index = i + offset;
 
 			prop->set_selectable(false);

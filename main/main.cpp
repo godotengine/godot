@@ -63,6 +63,7 @@
 #include "scene/main/window.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/theme/theme_db.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
@@ -129,6 +130,7 @@ static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
+static ThemeDB *theme_db = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -154,6 +156,8 @@ static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+static int converter_max_kb_file = 4 * 1024; // 4MB
+static int converter_max_line_length = 100000;
 
 HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
@@ -271,6 +275,16 @@ void finalize_navigation_server() {
 
 	memdelete(navigation_server_2d);
 	navigation_server_2d = nullptr;
+}
+
+void initialize_theme_db() {
+	theme_db = memnew(ThemeDB);
+	theme_db->initialize_theme();
+}
+
+void finalize_theme_db() {
+	memdelete(theme_db);
+	theme_db = nullptr;
 }
 
 //#define DEBUG_INIT
@@ -391,8 +405,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                               <path> should be absolute or relative to the project directory, and include the filename for the binary (e.g. 'builds/game.exe'). The target directory should exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>               Same as --export, but using the debug template.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>                Same as --export, but only export the game pack for the given preset. The <path> extension determines whether it will be in PCK or ZIP format.\n");
-	OS::get_singleton()->print("  --convert-3to4                               Converts project from Godot 3.x to Godot 4.x.\n");
-	OS::get_singleton()->print("  --validate-conversion-3to4                   Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
+	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]              Converts project from Godot 3.x to Godot 4.x.\n");
+	OS::get_singleton()->print("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]  Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --doctool [<path>]                           Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                                 Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                            Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
@@ -475,7 +489,8 @@ Error Main::test_setup() {
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
-	initialize_theme();
+	initialize_theme_db();
+	register_scene_singletons();
 
 	ERR_FAIL_COND_V(TextServerManager::get_singleton()->get_interface_count() == 0, ERR_CANT_CREATE);
 
@@ -525,6 +540,8 @@ void Main::test_cleanup() {
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	finalize_theme_db();
 
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -1071,10 +1088,32 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
+
+			if (I->next() && !I->next()->get().begins_with("-")) {
+				if (itos(I->next()->get().to_int()) == I->next()->get()) {
+					converter_max_kb_file = I->next()->get().to_int();
+				}
+				if (I->next()->next() && !I->next()->next()->get().begins_with("-")) {
+					if (itos(I->next()->next()->get().to_int()) == I->next()->next()->get()) {
+						converter_max_line_length = I->next()->next()->get().to_int();
+					}
+				}
+			}
 		} else if (I->get() == "--validate-conversion-3to4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
 			main_args.push_back(I->get());
+
+			if (I->next() && !I->next()->get().begins_with("-")) {
+				if (itos(I->next()->get().to_int()) == I->next()->get()) {
+					converter_max_kb_file = I->next()->get().to_int();
+				}
+				if (I->next()->next() && !I->next()->next()->get().begins_with("-")) {
+					if (itos(I->next()->next()->get().to_int()) == I->next()->next()->get()) {
+						converter_max_line_length = I->next()->next()->get().to_int();
+					}
+				}
+			}
 		} else if (I->get() == "--doctool") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
@@ -1516,17 +1555,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
-
-	// FIXME: Restore support.
-#if 0
-	//OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
-	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
-#endif
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
-		OS::get_singleton()->_allow_layered = false;
 	}
 
 	if (rtm == -1) {
@@ -1903,7 +1936,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: Setup Logo");
 
-#if defined(JAVASCRIPT_ENABLED) || defined(ANDROID_ENABLED)
+#if defined(WEB_ENABLED) || defined(ANDROID_ENABLED)
 	bool show_logo = false;
 #else
 	bool show_logo = true;
@@ -2126,7 +2159,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	register_platform_apis();
 
 	// Theme needs modules to be initialized so that sub-resources can be loaded.
-	initialize_theme();
+	initialize_theme_db();
+	register_scene_singletons();
 
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
@@ -2169,7 +2203,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// able to load resources, load the global shader variables.
 		// If running on editor, don't load the textures because the editor
 		// may want to import them first. Editor will reload those later.
-		rendering_server->global_shader_uniforms_load_settings(!editor);
+		rendering_server->global_shader_parameters_load_settings(!editor);
 	}
 
 	_start_success = true;
@@ -2326,7 +2360,7 @@ bool Main::start() {
 			// Custom modules are always located by absolute path.
 			String path = _doc_data_class_paths[i].path;
 			if (path.is_relative_path()) {
-				path = doc_tool_path.plus_file(path);
+				path = doc_tool_path.path_join(path);
 			}
 			String name = _doc_data_class_paths[i].name;
 			doc_data_classes[name] = path;
@@ -2344,7 +2378,7 @@ bool Main::start() {
 			}
 		}
 
-		String index_path = doc_tool_path.plus_file("doc/classes");
+		String index_path = doc_tool_path.path_join("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		Ref<DirAccess> da = DirAccess::create_for_path(index_path);
 		err = da->make_dir_recursive(index_path);
@@ -2378,12 +2412,12 @@ bool Main::start() {
 	}
 
 	if (converting_project) {
-		int exit_code = ProjectConverter3To4().convert();
+		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).convert();
 		OS::get_singleton()->set_exit_code(exit_code);
 		return false;
 	}
 	if (validating_converting_project) {
-		int exit_code = ProjectConverter3To4().validate_conversion();
+		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).validate_conversion();
 		OS::get_singleton()->set_exit_code(exit_code);
 		return false;
 	}
@@ -2714,11 +2748,11 @@ bool Main::start() {
 
 						if (sep == -1) {
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							local_game_path = da->get_current_dir().plus_file(local_game_path);
+							local_game_path = da->get_current_dir().path_join(local_game_path);
 						} else {
 							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da.is_valid()) {
-								local_game_path = da->get_current_dir().plus_file(
+								local_game_path = da->get_current_dir().path_join(
 										local_game_path.substr(sep + 1, local_game_path.length()));
 							}
 						}
@@ -3096,7 +3130,7 @@ void Main::cleanup(bool p_force) {
 	RenderingServer::get_singleton()->sync();
 
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
-	rendering_server->global_shader_uniforms_clear();
+	rendering_server->global_shader_parameters_clear();
 
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
@@ -3119,6 +3153,8 @@ void Main::cleanup(bool p_force) {
 	unregister_platform_apis();
 	unregister_driver_types();
 	unregister_scene_types();
+
+	finalize_theme_db();
 
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);

@@ -148,7 +148,7 @@ PhysicsDirectBodyState2D::PhysicsDirectBodyState2D() {}
 
 ///////////////////////////////////////////////////////
 
-Ref<PhysicsRayQueryParameters2D> PhysicsRayQueryParameters2D::create(Vector2 p_from, Vector2 p_to, uint32_t p_mask, const Vector<RID> &p_exclude) {
+Ref<PhysicsRayQueryParameters2D> PhysicsRayQueryParameters2D::create(Vector2 p_from, Vector2 p_to, uint32_t p_mask, const TypedArray<RID> &p_exclude) {
 	Ref<PhysicsRayQueryParameters2D> params;
 	params.instantiate();
 	params->set_from(p_from);
@@ -158,25 +158,25 @@ Ref<PhysicsRayQueryParameters2D> PhysicsRayQueryParameters2D::create(Vector2 p_f
 	return params;
 }
 
-void PhysicsRayQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsRayQueryParameters2D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsRayQueryParameters2D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsRayQueryParameters2D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
 
 void PhysicsRayQueryParameters2D::_bind_methods() {
-	ClassDB::bind_static_method("PhysicsRayQueryParameters2D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters2D::create, DEFVAL(UINT32_MAX), DEFVAL(Vector<RID>()));
+	ClassDB::bind_static_method("PhysicsRayQueryParameters2D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters2D::create, DEFVAL(UINT32_MAX), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsRayQueryParameters2D::set_from);
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsRayQueryParameters2D::get_from);
@@ -210,19 +210,19 @@ void PhysicsRayQueryParameters2D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
-void PhysicsPointQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsPointQueryParameters2D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsPointQueryParameters2D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsPointQueryParameters2D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
@@ -269,19 +269,19 @@ void PhysicsShapeQueryParameters2D::set_shape_rid(const RID &p_shape) {
 	}
 }
 
-void PhysicsShapeQueryParameters2D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsShapeQueryParameters2D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsShapeQueryParameters2D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsShapeQueryParameters2D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
@@ -461,21 +461,21 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 
 ///////////////////////////////
 
-Vector<RID> PhysicsTestMotionParameters2D::get_exclude_bodies() const {
-	Vector<RID> exclude;
+TypedArray<RID> PhysicsTestMotionParameters2D::get_exclude_bodies() const {
+	TypedArray<RID> exclude;
 	exclude.resize(parameters.exclude_bodies.size());
 
 	int body_index = 0;
 	for (RID body : parameters.exclude_bodies) {
-		exclude.write[body_index++] = body;
+		exclude[body_index++] = body;
 	}
 
 	return exclude;
 }
 
-void PhysicsTestMotionParameters2D::set_exclude_bodies(const Vector<RID> &p_exclude) {
-	for (RID body : p_exclude) {
-		parameters.exclude_bodies.insert(body);
+void PhysicsTestMotionParameters2D::set_exclude_bodies(const TypedArray<RID> &p_exclude) {
+	for (int i = 0; i < p_exclude.size(); i++) {
+		parameters.exclude_bodies.insert(p_exclude[i]);
 	}
 }
 

@@ -209,7 +209,7 @@ private:
 public:
 	int get_width() const; ///< Get image width
 	int get_height() const; ///< Get image height
-	Vector2i get_size() const;
+	Size2i get_size() const;
 	bool has_mipmaps() const;
 	int get_mipmap_count() const;
 

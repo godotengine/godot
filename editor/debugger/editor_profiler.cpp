@@ -318,7 +318,7 @@ void EditorProfiler::_update_plot() {
 	graph_texture->update(img);
 
 	graph->set_texture(graph_texture);
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorProfiler::_update_frame() {
@@ -356,7 +356,7 @@ void EditorProfiler::_update_frame() {
 			item->set_metadata(1, it.script);
 			item->set_metadata(2, it.line);
 			item->set_text_alignment(2, HORIZONTAL_ALIGNMENT_RIGHT);
-			item->set_tooltip(0, it.name + "\n" + it.script + ":" + itos(it.line));
+			item->set_tooltip_text(0, it.name + "\n" + it.script + ":" + itos(it.line));
 
 			float time = dtime == DISPLAY_SELF_TIME ? it.self : it.total;
 
@@ -421,7 +421,7 @@ void EditorProfiler::_graph_tex_draw() {
 
 void EditorProfiler::_graph_tex_mouse_exit() {
 	hover_metric = -1;
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorProfiler::_cursor_metric_changed(double) {
@@ -429,7 +429,7 @@ void EditorProfiler::_cursor_metric_changed(double) {
 		return;
 	}
 
-	graph->update();
+	graph->queue_redraw();
 	_update_frame();
 }
 
@@ -480,13 +480,13 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		graph->update();
+		graph->queue_redraw();
 	}
 }
 
 void EditorProfiler::disable_seeking() {
 	seeking = false;
-	graph->update();
+	graph->queue_redraw();
 }
 
 void EditorProfiler::_combo_changed(int) {
@@ -607,7 +607,7 @@ EditorProfiler::EditorProfiler() {
 	display_time = memnew(OptionButton);
 	display_time->add_item(TTR("Inclusive"));
 	display_time->add_item(TTR("Self"));
-	display_time->set_tooltip(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
+	display_time->set_tooltip_text(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));
 	display_time->connect("item_selected", callable_mp(this, &EditorProfiler::_combo_changed));
 
 	hb->add_child(display_time);

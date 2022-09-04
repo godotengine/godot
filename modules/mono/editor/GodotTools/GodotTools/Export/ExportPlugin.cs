@@ -67,7 +67,7 @@ namespace GodotTools.Export
             }
         }
 
-        public override void _ExportBegin(string[] features, bool isDebug, string path, int flags)
+        public override void _ExportBegin(string[] features, bool isDebug, string path, long flags)
         {
             base._ExportBegin(features, isDebug, path, flags);
 
@@ -90,7 +90,7 @@ namespace GodotTools.Export
             }
         }
 
-        private void _ExportBeginImpl(string[] features, bool isDebug, string path, int flags)
+        private void _ExportBeginImpl(string[] features, bool isDebug, string path, long flags)
         {
             _ = flags; // Unused
 
@@ -98,21 +98,21 @@ namespace GodotTools.Export
                 return;
 
             if (!DeterminePlatformFromFeatures(features, out string platform))
-                throw new NotSupportedException("Target platform not supported");
+                throw new NotSupportedException("Target platform not supported.");
 
             if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS }
                     .Contains(platform))
             {
-                throw new NotImplementedException("Target platform not yet implemented");
+                throw new NotImplementedException("Target platform not yet implemented.");
             }
 
             string outputDir = new FileInfo(path).Directory?.FullName ??
-                               throw new FileNotFoundException("Output base directory not found");
+                               throw new FileNotFoundException("Output base directory not found.");
 
             string buildConfig = isDebug ? "ExportDebug" : "ExportRelease";
 
             // TODO: This works for now, as we only implemented support for x86 family desktop so far, but it needs to be fixed
-            string arch = features.Contains("64") ? "x86_64" : "x86";
+            string arch = features.Contains("x86_64") ? "x86_64" : "x86";
 
             string ridOS = DetermineRuntimeIdentifierOS(platform);
             string ridArch = DetermineRuntimeIdentifierArch(arch);
@@ -131,7 +131,7 @@ namespace GodotTools.Export
             if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
                     runtimeIdentifier, publishOutputTempDir))
             {
-                throw new Exception("Failed to build project");
+                throw new InvalidOperationException("Failed to build project.");
             }
 
             string soExt = ridOS switch

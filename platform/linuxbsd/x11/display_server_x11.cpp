@@ -349,6 +349,28 @@ void DisplayServerX11::tts_stop() {
 
 #endif
 
+#ifdef DBUS_ENABLED
+
+bool DisplayServerX11::is_dark_mode_supported() const {
+	return portal_desktop->is_supported();
+}
+
+bool DisplayServerX11::is_dark_mode() const {
+	switch (portal_desktop->get_appearance_color_scheme()) {
+		case 1:
+			// Prefers dark theme.
+			return true;
+		case 2:
+			// Prefers light theme.
+			return false;
+		default:
+			// Preference unknown.
+			return false;
+	}
+}
+
+#endif
+
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -1522,11 +1544,15 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 
 		XSetTransientForHint(x11_display, wd_window.x11_window, None);
 
+		XWindowAttributes xwa;
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, wd_parent.x11_window, &xwa);
+
 		// Set focus to parent sub window to avoid losing all focus when closing a nested sub-menu.
 		// RevertToPointerRoot is used to make sure we don't lose all focus in case
 		// a subwindow and its parent are both destroyed.
 		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
-			if (!wd_parent.no_focus && !wd_window.is_popup) {
+			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup) {
 				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
 			}
 		}
@@ -1819,6 +1845,47 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 	return retval;
 }
 
+bool DisplayServerX11::_window_minimize_check(WindowID p_window) const {
+	const WindowData &wd = windows[p_window];
+
+	// Using ICCCM -- Inter-Client Communication Conventions Manual
+	Atom property = XInternAtom(x11_display, "WM_STATE", True);
+	if (property == None) {
+		return false;
+	}
+
+	Atom type;
+	int format;
+	unsigned long len;
+	unsigned long remaining;
+	unsigned char *data = nullptr;
+
+	int result = XGetWindowProperty(
+			x11_display,
+			wd.x11_window,
+			property,
+			0,
+			32,
+			False,
+			AnyPropertyType,
+			&type,
+			&format,
+			&len,
+			&remaining,
+			&data);
+
+	if (result == Success && data) {
+		long *state = (long *)data;
+		if (state[0] == WM_IconicState) {
+			XFree(data);
+			return true;
+		}
+		XFree(data);
+	}
+
+	return false;
+}
+
 bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
@@ -1865,6 +1932,18 @@ bool DisplayServerX11::_window_fullscreen_check(WindowID p_window) const {
 	return retval;
 }
 
+void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
+	// Check if we applied any window modes that didn't take effect while unmapped
+	const WindowData &wd = windows[p_window];
+	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
+		_set_wm_fullscreen(p_window, true);
+	} else if (wd.maximized && !_window_maximize_check(p_window, "_NET_WM_STATE")) {
+		_set_wm_maximized(p_window, true);
+	} else if (wd.minimized && !_window_minimize_check(p_window)) {
+		_set_wm_minimized(p_window, true);
+	}
+}
+
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 	return _window_maximize_check(p_window, "_NET_WM_ALLOWED_ACTIONS");
@@ -1899,6 +1978,37 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 			usleep(10000);
 		}
 	}
+	wd.maximized = p_enabled;
+}
+
+void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
+	WindowData &wd = windows[p_window];
+	// Using ICCCM -- Inter-Client Communication Conventions Manual
+	XEvent xev;
+	Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = wd.x11_window;
+	xev.xclient.message_type = wm_change;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_hidden = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = wd.x11_window;
+	xev.xclient.message_type = wm_state;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+	xev.xclient.data.l[1] = wm_hidden;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	wd.minimized = p_enabled;
 }
 
 void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
@@ -1980,32 +2090,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			//do nothing
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
-			//Un-Minimize
-			// Using ICCCM -- Inter-Client Communication Conventions Manual
-			XEvent xev;
-			Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
-
-			memset(&xev, 0, sizeof(xev));
-			xev.type = ClientMessage;
-			xev.xclient.window = wd.x11_window;
-			xev.xclient.message_type = wm_change;
-			xev.xclient.format = 32;
-			xev.xclient.data.l[0] = WM_NormalState;
-
-			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-
-			Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
-			Atom wm_hidden = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
-
-			memset(&xev, 0, sizeof(xev));
-			xev.type = ClientMessage;
-			xev.xclient.window = wd.x11_window;
-			xev.xclient.message_type = wm_state;
-			xev.xclient.format = 32;
-			xev.xclient.data.l[0] = _NET_WM_STATE_ADD;
-			xev.xclient.data.l[1] = wm_hidden;
-
-			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+			_set_wm_minimized(p_window, false);
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
@@ -2034,31 +2119,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			//do nothing
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
-			// Using ICCCM -- Inter-Client Communication Conventions Manual
-			XEvent xev;
-			Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
-
-			memset(&xev, 0, sizeof(xev));
-			xev.type = ClientMessage;
-			xev.xclient.window = wd.x11_window;
-			xev.xclient.message_type = wm_change;
-			xev.xclient.format = 32;
-			xev.xclient.data.l[0] = WM_IconicState;
-
-			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
-
-			Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
-			Atom wm_hidden = XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
-
-			memset(&xev, 0, sizeof(xev));
-			xev.type = ClientMessage;
-			xev.xclient.window = wd.x11_window;
-			xev.xclient.message_type = wm_state;
-			xev.xclient.format = 32;
-			xev.xclient.data.l[0] = _NET_WM_STATE_ADD;
-			xev.xclient.data.l[1] = wm_hidden;
-
-			XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+			_set_wm_minimized(p_window, true);
 		} break;
 		case WINDOW_MODE_EXCLUSIVE_FULLSCREEN:
 		case WINDOW_MODE_FULLSCREEN: {
@@ -2093,40 +2154,9 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 		return WINDOW_MODE_MAXIMIZED;
 	}
 
-	{ // Test minimized.
-		// Using ICCCM -- Inter-Client Communication Conventions Manual
-		Atom property = XInternAtom(x11_display, "WM_STATE", True);
-		if (property == None) {
-			return WINDOW_MODE_WINDOWED;
-		}
-
-		Atom type;
-		int format;
-		unsigned long len;
-		unsigned long remaining;
-		unsigned char *data = nullptr;
-
-		int result = XGetWindowProperty(
-				x11_display,
-				wd.x11_window,
-				property,
-				0,
-				32,
-				False,
-				AnyPropertyType,
-				&type,
-				&format,
-				&len,
-				&remaining,
-				&data);
-
-		if (result == Success && data) {
-			long *state = (long *)data;
-			if (state[0] == WM_IconicState) {
-				XFree(data);
-				return WINDOW_MODE_MINIMIZED;
-			}
-			XFree(data);
+	{
+		if (_window_minimize_check(p_window)) {
+			return WINDOW_MODE_MINIMIZED;
 		}
 	}
 
@@ -2191,7 +2221,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			wd.layered_window = p_enabled;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
@@ -2244,7 +2274,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			return wd.layered_window;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
@@ -3646,12 +3676,19 @@ void DisplayServerX11::process_events() {
 
 				const WindowData &wd = windows[window_id];
 
+				XWindowAttributes xwa;
+				XSync(x11_display, False);
+				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
-				if (!wd.no_focus && !wd.is_popup) {
+				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
 					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 				}
+
+				// Have we failed to set fullscreen while the window was unmapped?
+				_validate_mode_on_map(window_id);
 			} break;
 
 			case Expose: {
@@ -3671,8 +3708,7 @@ void DisplayServerX11::process_events() {
 			case VisibilityNotify: {
 				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu (%u), state=%u \n", frame, event.xvisibility.window, window_id, event.xvisibility.state);
 
-				XVisibilityEvent *visibility = (XVisibilityEvent *)&event;
-				windows[window_id].minimized = (visibility->state == VisibilityFullyObscured);
+				windows[window_id].minimized = _window_minimize_check(window_id);
 			} break;
 
 			case LeaveNotify: {
@@ -4390,13 +4426,41 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	//Create window
 
-	long visualMask = VisualScreenMask;
-	int numberOfVisuals;
-	XVisualInfo vInfoTemplate = {};
-	vInfoTemplate.screen = DefaultScreen(x11_display);
-	XVisualInfo *visualInfo = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+	XVisualInfo visualInfo;
+	bool vi_selected = false;
 
-	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, vInfoTemplate.screen), visualInfo->visual, AllocNone);
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		visualInfo = gl_manager->get_vi(x11_display);
+		vi_selected = true;
+	}
+#endif
+
+	if (!vi_selected) {
+		long visualMask = VisualScreenMask;
+		int numberOfVisuals;
+		XVisualInfo vInfoTemplate = {};
+		vInfoTemplate.screen = DefaultScreen(x11_display);
+		XVisualInfo *vi_list = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+		ERR_FAIL_COND_V(!vi_list, INVALID_WINDOW_ID);
+
+		visualInfo = vi_list[0];
+		if (OS::get_singleton()->is_layered_allowed()) {
+			for (int i = 0; i < numberOfVisuals; i++) {
+				XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi_list[i].visual);
+				if (!pict_format) {
+					continue;
+				}
+				visualInfo = vi_list[i];
+				if (pict_format->direct.alphaMask > 0) {
+					break;
+				}
+			}
+		}
+		XFree(vi_list);
+	}
+
+	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, visualInfo.screen), visualInfo.visual, AllocNone);
 
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colormap;
@@ -4405,6 +4469,13 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
+
+	if (OS::get_singleton()->is_layered_allowed()) {
+		windowAttributes.background_pixmap = None;
+		windowAttributes.background_pixel = 0;
+		windowAttributes.border_pixmap = None;
+		valuemask |= CWBackPixel;
+	}
 
 	WindowID id = window_id_counter++;
 	WindowData &wd = windows[id];
@@ -4429,7 +4500,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	}
 
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4566,8 +4637,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		XSync(x11_display, False);
 		//XSetErrorHandler(oldHandler);
-
-		XFree(visualInfo);
 	}
 
 	window_set_mode(p_mode, id);
@@ -4977,12 +5046,22 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	cursor_set_shape(CURSOR_BUSY);
 
-	XEvent xevent;
+	Vector<XEvent> save_events;
 	while (XPending(x11_display) > 0) {
+		XEvent xevent{ 0 };
 		XNextEvent(x11_display, &xevent);
 		if (xevent.type == ConfigureNotify) {
 			_window_changed(&xevent);
+		} else {
+			// Don't discard this event, we must resend it...
+			save_events.push_back(xevent);
 		}
+	}
+
+	// Resend events that would have been dropped by the early event queue
+	// processing we just performed.
+	for (XEvent &ev : save_events) {
+		XSendEvent(x11_display, ev.xany.window, False, 0, &ev);
 	}
 
 	events_thread.start(_poll_events_thread, this);
@@ -4992,6 +5071,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #ifdef DBUS_ENABLED
 	screensaver = memnew(FreeDesktopScreenSaver);
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
+	portal_desktop = memnew(FreeDesktopPortalDesktop);
 #endif
 
 	r_error = OK;
@@ -5077,6 +5158,7 @@ DisplayServerX11::~DisplayServerX11() {
 
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);
+	memdelete(portal_desktop);
 #endif
 }
 

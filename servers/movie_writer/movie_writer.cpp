@@ -191,7 +191,7 @@ void MovieWriter::end() {
 	if (movie_path.is_relative_path()) {
 		// Print absolute path to make finding the file easier,
 		// and to make it clickable in terminal emulators that support this.
-		movie_path = ProjectSettings::get_singleton()->globalize_path("res://").plus_file(movie_path);
+		movie_path = ProjectSettings::get_singleton()->globalize_path("res://").path_join(movie_path);
 	}
 	print_line(vformat("Done recording movie at path: %s", movie_path));
 

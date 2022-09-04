@@ -173,11 +173,11 @@ public:
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual void shader_set_path_hint(RID p_shader, const String &p_path) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
-	virtual void shader_get_shader_uniform_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
-	virtual Variant shader_get_param_default(RID p_shader, const StringName &p_param) const = 0;
+	virtual void get_shader_parameter_list(RID p_shader, List<PropertyInfo> *p_param_list) const = 0;
+	virtual Variant shader_get_parameter_default(RID p_shader, const StringName &p_param) const = 0;
 
-	virtual void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
-	virtual RID shader_get_default_texture_param(RID p_shader, const StringName &p_name, int p_index = 0) const = 0;
+	virtual void shader_set_default_texture_parameter(RID p_shader, const StringName &p_name, RID p_texture, int p_index = 0) = 0;
+	virtual RID shader_get_default_texture_parameter(RID p_shader, const StringName &p_name, int p_index = 0) const = 0;
 
 	struct ShaderNativeSourceCode {
 		struct Version {
@@ -416,6 +416,7 @@ public:
 	enum LightParam {
 		LIGHT_PARAM_ENERGY,
 		LIGHT_PARAM_INDIRECT_ENERGY,
+		LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY,
 		LIGHT_PARAM_SPECULAR,
 		LIGHT_PARAM_RANGE,
 		LIGHT_PARAM_SIZE,
@@ -432,8 +433,8 @@ public:
 		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
 		LIGHT_PARAM_SHADOW_OPACITY,
 		LIGHT_PARAM_SHADOW_BLUR,
-		LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
+		LIGHT_PARAM_INTENSITY,
 		LIGHT_PARAM_MAX
 	};
 
@@ -590,6 +591,7 @@ public:
 	virtual void voxel_gi_set_dynamic_range(RID p_voxel_gi, float p_range) = 0;
 	virtual void voxel_gi_set_propagation(RID p_voxel_gi, float p_range) = 0;
 	virtual void voxel_gi_set_energy(RID p_voxel_gi, float p_energy) = 0;
+	virtual void voxel_gi_set_baked_exposure_normalization(RID p_voxel_gi, float p_baked_exposure) = 0;
 	virtual void voxel_gi_set_bias(RID p_voxel_gi, float p_bias) = 0;
 	virtual void voxel_gi_set_normal_bias(RID p_voxel_gi, float p_range) = 0;
 	virtual void voxel_gi_set_interior(RID p_voxel_gi, bool p_enable) = 0;
@@ -610,6 +612,7 @@ public:
 	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) = 0;
 	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) = 0;
 	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) = 0;
+	virtual void lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) = 0;
 	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const = 0;
 	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const = 0;
 	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const = 0;
@@ -762,7 +765,7 @@ public:
 	virtual void camera_set_transform(RID p_camera, const Transform3D &p_transform) = 0;
 	virtual void camera_set_cull_mask(RID p_camera, uint32_t p_layers) = 0;
 	virtual void camera_set_environment(RID p_camera, RID p_env) = 0;
-	virtual void camera_set_camera_effects(RID p_camera, RID p_camera_effects) = 0;
+	virtual void camera_set_camera_attributes(RID p_camera, RID p_camera_attributes) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
 	/* VIEWPORT API */
@@ -874,7 +877,8 @@ public:
 		VIEWPORT_MSAA_MAX,
 	};
 
-	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
+	virtual void viewport_set_msaa_3d(RID p_viewport, ViewportMSAA p_msaa) = 0;
+	virtual void viewport_set_msaa_2d(RID p_viewport, ViewportMSAA p_msaa) = 0;
 
 	enum ViewportScreenSpaceAA {
 		VIEWPORT_SCREEN_SPACE_AA_DISABLED,
@@ -1010,7 +1014,7 @@ public:
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale) = 0;
 	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) = 0;
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
-	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
+	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
 
@@ -1034,7 +1038,7 @@ public:
 		ENV_TONE_MAPPER_ACES
 	};
 
-	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
+	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) = 0;
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
@@ -1116,9 +1120,9 @@ public:
 
 	virtual void environment_set_sdfgi_frames_to_update_light(EnvironmentSDFGIFramesToUpdateLight p_update) = 0;
 
-	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective) = 0;
+	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_aerial_perspective, float p_sky_affect) = 0;
 
-	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject) = 0;
+	virtual void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) = 0;
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) = 0;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) = 0;
 
@@ -1138,7 +1142,7 @@ public:
 
 	/* CAMERA EFFECTS */
 
-	virtual RID camera_effects_create() = 0;
+	virtual RID camera_attributes_create() = 0;
 
 	enum DOFBlurQuality {
 		DOF_BLUR_QUALITY_VERY_LOW,
@@ -1147,7 +1151,7 @@ public:
 		DOF_BLUR_QUALITY_HIGH,
 	};
 
-	virtual void camera_effects_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;
+	virtual void camera_attributes_set_dof_blur_quality(DOFBlurQuality p_quality, bool p_use_jitter) = 0;
 
 	enum DOFBokehShape {
 		DOF_BOKEH_BOX,
@@ -1155,10 +1159,11 @@ public:
 		DOF_BOKEH_CIRCLE
 	};
 
-	virtual void camera_effects_set_dof_blur_bokeh_shape(DOFBokehShape p_shape) = 0;
+	virtual void camera_attributes_set_dof_blur_bokeh_shape(DOFBokehShape p_shape) = 0;
 
-	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
-	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
+	virtual void camera_attributes_set_dof_blur(RID p_camera_attributes, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
+	virtual void camera_attributes_set_exposure(RID p_camera_attributes, float p_multiplier, float p_exposure_normalization) = 0;
+	virtual void camera_attributes_set_auto_exposure(RID p_camera_attributes, bool p_enable, float p_min_sensitivity, float p_max_sensitivity, float p_speed, float p_scale) = 0;
 
 	/* SCENARIO API */
 
@@ -1166,7 +1171,7 @@ public:
 
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
-	virtual void scenario_set_camera_effects(RID p_scenario, RID p_camera_effects) = 0;
+	virtual void scenario_set_camera_attributes(RID p_scenario, RID p_camera_attributes) = 0;
 
 	/* INSTANCING API */
 
@@ -1218,7 +1223,7 @@ public:
 
 	PackedInt64Array _instances_cull_aabb_bind(const AABB &p_aabb, RID p_scenario = RID()) const;
 	PackedInt64Array _instances_cull_ray_bind(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
-	PackedInt64Array _instances_cull_convex_bind(const Array &p_convex, RID p_scenario = RID()) const;
+	PackedInt64Array _instances_cull_convex_bind(const TypedArray<Plane> &p_convex, RID p_scenario = RID()) const;
 
 	enum InstanceFlags {
 		INSTANCE_FLAG_USE_BAKED_LIGHT,
@@ -1250,10 +1255,10 @@ public:
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias) = 0;
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency) = 0;
 
-	virtual void instance_geometry_set_shader_uniform(RID p_instance, const StringName &, const Variant &p_value) = 0;
-	virtual Variant instance_geometry_get_shader_uniform(RID p_instance, const StringName &) const = 0;
-	virtual Variant instance_geometry_get_shader_uniform_default_value(RID p_instance, const StringName &) const = 0;
-	virtual void instance_geometry_get_shader_uniform_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
+	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
+	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
+	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
 
 	/* Bake 3D objects */
 
@@ -1264,7 +1269,7 @@ public:
 		BAKE_CHANNEL_EMISSION
 	};
 
-	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
 
 	/* CANVAS (2D) */
 
@@ -1436,7 +1441,7 @@ public:
 
 	/* GLOBAL SHADER UNIFORMS */
 
-	enum GlobalShaderUniformType {
+	enum GlobalShaderParameterType {
 		GLOBAL_VAR_TYPE_BOOL,
 		GLOBAL_VAR_TYPE_BVEC2,
 		GLOBAL_VAR_TYPE_BVEC3,
@@ -1468,20 +1473,20 @@ public:
 		GLOBAL_VAR_TYPE_MAX
 	};
 
-	virtual void global_shader_uniform_add(const StringName &p_name, GlobalShaderUniformType p_type, const Variant &p_value) = 0;
-	virtual void global_shader_uniform_remove(const StringName &p_name) = 0;
-	virtual Vector<StringName> global_shader_uniform_get_list() const = 0;
+	virtual void global_shader_parameter_add(const StringName &p_name, GlobalShaderParameterType p_type, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_shader_parameter_get_list() const = 0;
 
-	virtual void global_shader_uniform_set(const StringName &p_name, const Variant &p_value) = 0;
-	virtual void global_shader_uniform_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_shader_parameter_set_override(const StringName &p_name, const Variant &p_value) = 0;
 
-	virtual Variant global_shader_uniform_get(const StringName &p_name) const = 0;
-	virtual GlobalShaderUniformType global_shader_uniform_get_type(const StringName &p_name) const = 0;
+	virtual Variant global_shader_parameter_get(const StringName &p_name) const = 0;
+	virtual GlobalShaderParameterType global_shader_parameter_get_type(const StringName &p_name) const = 0;
 
-	virtual void global_shader_uniforms_load_settings(bool p_load_textures) = 0;
-	virtual void global_shader_uniforms_clear() = 0;
+	virtual void global_shader_parameters_load_settings(bool p_load_textures) = 0;
+	virtual void global_shader_parameters_clear() = 0;
 
-	static int global_shader_uniform_type_get_shader_datatype(GlobalShaderUniformType p_type);
+	static int global_shader_uniform_type_get_shader_datatype(GlobalShaderParameterType p_type);
 
 	/* FREE */
 
@@ -1578,11 +1583,11 @@ private:
 	RID _texture_3d_create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const TypedArray<Image> &p_data);
 	void _texture_3d_update(RID p_texture, const TypedArray<Image> &p_data);
 	TypedArray<Image> _texture_3d_get(RID p_texture) const;
-	TypedArray<Dictionary> _shader_get_shader_uniform_list(RID p_shader) const;
+	TypedArray<Dictionary> _shader_get_shader_parameter_list(RID p_shader) const;
 	RID _mesh_create_from_surfaces(const TypedArray<Dictionary> &p_surfaces, int p_blend_shape_count);
 	void _mesh_add_surface(RID p_mesh, const Dictionary &p_surface);
 	Dictionary _mesh_get_surface(RID p_mesh, int p_idx);
-	TypedArray<Dictionary> _instance_geometry_get_shader_uniform_list(RID p_instance) const;
+	TypedArray<Dictionary> _instance_geometry_get_shader_parameter_list(RID p_instance) const;
 	TypedArray<Image> _bake_render_uv2(RID p_base, const TypedArray<RID> &p_material_overrides, const Size2i &p_image_size);
 	void _particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses);
 };
@@ -1657,7 +1662,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasLightMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
-VARIANT_ENUM_CAST(RenderingServer::GlobalShaderUniformType);
+VARIANT_ENUM_CAST(RenderingServer::GlobalShaderParameterType);
 VARIANT_ENUM_CAST(RenderingServer::RenderingInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 VARIANT_ENUM_CAST(RenderingServer::CanvasTextureChannel);

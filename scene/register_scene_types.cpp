@@ -54,6 +54,7 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
@@ -142,7 +143,7 @@
 #include "scene/resources/bit_map.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/box_shape_3d.h"
-#include "scene/resources/camera_effects.h"
+#include "scene/resources/camera_attributes.h"
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/circle_shape_2d.h"
@@ -152,6 +153,7 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/default_theme/default_theme.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient.h"
 #include "scene/resources/height_map_shape_3d.h"
@@ -193,12 +195,14 @@
 #include "scene/resources/sky.h"
 #include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape_3d.h"
+#include "scene/resources/style_box.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/text_file.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/theme.h"
 #include "scene/resources/tile_set.h"
 #include "scene/resources/video_stream.h"
 #include "scene/resources/visual_shader.h"
@@ -210,6 +214,7 @@
 #include "scene/resources/world_boundary_shape_2d.h"
 #include "scene/resources/world_boundary_shape_3d.h"
 #include "scene/scene_string_names.h"
+#include "scene/theme/theme_db.h"
 
 #include "scene/main/shader_globals_override.h"
 
@@ -236,6 +241,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
+#include "scene/3d/navigation_link_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/node_3d.h"
@@ -374,14 +380,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VSeparator);
 	GDREGISTER_CLASS(TextureButton);
 	GDREGISTER_CLASS(Container);
-	GDREGISTER_ABSTRACT_CLASS(BoxContainer);
+	GDREGISTER_CLASS(BoxContainer);
 	GDREGISTER_CLASS(HBoxContainer);
 	GDREGISTER_CLASS(VBoxContainer);
 	GDREGISTER_CLASS(GridContainer);
 	GDREGISTER_CLASS(CenterContainer);
 	GDREGISTER_CLASS(ScrollContainer);
 	GDREGISTER_CLASS(PanelContainer);
-	GDREGISTER_ABSTRACT_CLASS(FlowContainer);
+	GDREGISTER_CLASS(FlowContainer);
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
 
@@ -418,7 +424,7 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(MarginContainer);
 	GDREGISTER_CLASS(SubViewportContainer);
-	GDREGISTER_ABSTRACT_CLASS(SplitContainer);
+	GDREGISTER_CLASS(SplitContainer);
 	GDREGISTER_CLASS(HSplitContainer);
 	GDREGISTER_CLASS(VSplitContainer);
 
@@ -573,6 +579,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationRegion3D);
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
+	GDREGISTER_CLASS(NavigationLink3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -611,6 +618,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeColorFunc);
 	GDREGISTER_CLASS(VisualShaderNodeTransformFunc);
 	GDREGISTER_CLASS(VisualShaderNodeUVFunc);
+	GDREGISTER_CLASS(VisualShaderNodeUVPolarCoord);
 	GDREGISTER_CLASS(VisualShaderNodeDotProduct);
 	GDREGISTER_CLASS(VisualShaderNodeVectorLen);
 	GDREGISTER_CLASS(VisualShaderNodeDeterminant);
@@ -634,21 +642,23 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTexture2DArray);
 	GDREGISTER_CLASS(VisualShaderNodeTexture3D);
 	GDREGISTER_CLASS(VisualShaderNodeCubemap);
-	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeUniform);
-	GDREGISTER_CLASS(VisualShaderNodeUniformRef);
-	GDREGISTER_CLASS(VisualShaderNodeFloatUniform);
-	GDREGISTER_CLASS(VisualShaderNodeIntUniform);
-	GDREGISTER_CLASS(VisualShaderNodeBooleanUniform);
-	GDREGISTER_CLASS(VisualShaderNodeColorUniform);
-	GDREGISTER_CLASS(VisualShaderNodeVec2Uniform);
-	GDREGISTER_CLASS(VisualShaderNodeVec3Uniform);
-	GDREGISTER_CLASS(VisualShaderNodeVec4Uniform);
-	GDREGISTER_CLASS(VisualShaderNodeTransformUniform);
-	GDREGISTER_CLASS(VisualShaderNodeTextureUniform);
-	GDREGISTER_CLASS(VisualShaderNodeTextureUniformTriplanar);
-	GDREGISTER_CLASS(VisualShaderNodeTexture2DArrayUniform);
-	GDREGISTER_CLASS(VisualShaderNodeTexture3DUniform);
-	GDREGISTER_CLASS(VisualShaderNodeCubemapUniform);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeParameter);
+	GDREGISTER_CLASS(VisualShaderNodeParameterRef);
+	GDREGISTER_CLASS(VisualShaderNodeFloatParameter);
+	GDREGISTER_CLASS(VisualShaderNodeIntParameter);
+	GDREGISTER_CLASS(VisualShaderNodeBooleanParameter);
+	GDREGISTER_CLASS(VisualShaderNodeColorParameter);
+	GDREGISTER_CLASS(VisualShaderNodeVec2Parameter);
+	GDREGISTER_CLASS(VisualShaderNodeVec3Parameter);
+	GDREGISTER_CLASS(VisualShaderNodeVec4Parameter);
+	GDREGISTER_CLASS(VisualShaderNodeTransformParameter);
+	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeTextureParameter);
+	GDREGISTER_CLASS(VisualShaderNodeTexture2DParameter);
+	GDREGISTER_CLASS(VisualShaderNodeTextureParameterTriplanar);
+	GDREGISTER_CLASS(VisualShaderNodeTexture2DArrayParameter);
+	GDREGISTER_CLASS(VisualShaderNodeTexture3DParameter);
+	GDREGISTER_CLASS(VisualShaderNodeCubemapParameter);
+	GDREGISTER_CLASS(VisualShaderNodeLinearSceneDepth);
 	GDREGISTER_CLASS(VisualShaderNodeIf);
 	GDREGISTER_CLASS(VisualShaderNodeSwitch);
 	GDREGISTER_CLASS(VisualShaderNodeFresnel);
@@ -658,6 +668,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeCompare);
 	GDREGISTER_CLASS(VisualShaderNodeMultiplyAdd);
 	GDREGISTER_CLASS(VisualShaderNodeBillboard);
+	GDREGISTER_CLASS(VisualShaderNodeDistanceFade);
+	GDREGISTER_CLASS(VisualShaderNodeProximityFade);
+	GDREGISTER_CLASS(VisualShaderNodeRandomRange);
+	GDREGISTER_CLASS(VisualShaderNodeRemap);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNodeVarying);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingSetter);
 	GDREGISTER_CLASS(VisualShaderNodeVaryingGetter);
@@ -827,7 +841,9 @@ void register_scene_types() {
 	GDREGISTER_CLASS(PhysicsMaterial);
 	GDREGISTER_CLASS(World3D);
 	GDREGISTER_CLASS(Environment);
-	GDREGISTER_CLASS(CameraEffects);
+	GDREGISTER_VIRTUAL_CLASS(CameraAttributes);
+	GDREGISTER_CLASS(CameraAttributesPhysical);
+	GDREGISTER_CLASS(CameraAttributesPractical);
 	GDREGISTER_CLASS(World2D);
 	GDREGISTER_VIRTUAL_CLASS(Texture);
 	GDREGISTER_VIRTUAL_CLASS(Texture2D);
@@ -922,6 +938,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
+	GDREGISTER_CLASS(NavigationLink2D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1072,10 +1089,12 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisibilityNotifier2D", "VisibleOnScreenNotifier2D");
 	ClassDB::add_compatibility_class("VisibilityNotifier3D", "VisibleOnScreenNotifier3D");
 	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
+	ClassDB::add_compatibility_class("World", "World3D");
+
+	// VisualShader classes.
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
-	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarClamp", "VisualShaderNodeClamp");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorClamp", "VisualShaderNodeClamp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarInterp", "VisualShaderNodeMix");
@@ -1089,7 +1108,17 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarTransformMult", "VisualShaderNodeTransformOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarDerivativeFunc", "VisualShaderNodeDerivativeFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeVectorDerivativeFunc", "VisualShaderNodeDerivativeFunc");
-	ClassDB::add_compatibility_class("World", "World3D");
+
+	ClassDB::add_compatibility_class("VisualShaderNodeBooleanUniform", "VisualShaderNodeBooleanParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeColorUniform", "VisualShaderNodeColorParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeCubeMapUniform", "VisualShaderNodeCubeMapParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeTextureUniform", "VisualShaderNodeTexture2DParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeTextureUniformTriplanar", "VisualShaderNodeTextureParameterTriplanar");
+	ClassDB::add_compatibility_class("VisualShaderNodeTransformUniform", "VisualShaderNodeTransformParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeVec3Uniform", "VisualShaderNodeVec3Parameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeUniform", "VisualShaderNodeParameter");
+	ClassDB::add_compatibility_class("VisualShaderNodeUniformRef", "VisualShaderNodeParameterRef");
 
 	// Renamed during 4.0 alpha, added to ease transition between alphas.
 	ClassDB::add_compatibility_class("AudioStreamOGGVorbis", "AudioStreamOggVorbis");
@@ -1124,62 +1153,8 @@ void register_scene_types() {
 	SceneDebugger::initialize();
 }
 
-void initialize_theme() {
-	// Allow creating the default theme at a different scale to suit higher/lower base resolutions.
-	float default_theme_scale = GLOBAL_DEF("gui/theme/default_theme_scale", 1.0);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_theme_scale", PropertyInfo(Variant::FLOAT, "gui/theme/default_theme_scale", PROPERTY_HINT_RANGE, "0.5,8,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-
-	String theme_path = GLOBAL_DEF_RST("gui/theme/custom", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom", PropertyInfo(Variant::STRING, "gui/theme/custom", PROPERTY_HINT_FILE, "*.tres,*.res,*.theme", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-
-	String font_path = GLOBAL_DEF_RST("gui/theme/custom_font", "");
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/custom_font", PropertyInfo(Variant::STRING, "gui/theme/custom_font", PROPERTY_HINT_FILE, "*.tres,*.res", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-
-	TextServer::FontAntialiasing font_antialiasing = (TextServer::FontAntialiasing)(int)GLOBAL_DEF_RST("gui/theme/default_font_antialiasing", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_antialiasing", PropertyInfo(Variant::INT, "gui/theme/default_font_antialiasing", PROPERTY_HINT_ENUM, "None,Grayscale,LCD sub-pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-
-	TextServer::Hinting font_hinting = (TextServer::Hinting)(int)GLOBAL_DEF_RST("gui/theme/default_font_hinting", TextServer::HINTING_LIGHT);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_hinting", PropertyInfo(Variant::INT, "gui/theme/default_font_hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-
-	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)GLOBAL_DEF_RST("gui/theme/default_font_subpixel_positioning", TextServer::SUBPIXEL_POSITIONING_AUTO);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/default_font_subpixel_positioning", PropertyInfo(Variant::INT, "gui/theme/default_font_subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One half of a pixel,One quarter of a pixel", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
-
-	const bool font_msdf = GLOBAL_DEF_RST("gui/theme/default_font_multichannel_signed_distance_field", false);
-	const bool font_generate_mipmaps = GLOBAL_DEF_RST("gui/theme/default_font_generate_mipmaps", false);
-
-	GLOBAL_DEF_RST("gui/theme/lcd_subpixel_layout", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/theme/lcd_subpixel_layout", PropertyInfo(Variant::INT, "gui/theme/lcd_subpixel_layout", PROPERTY_HINT_ENUM, "Disabled,Horizontal RGB,Horizontal BGR,Vertical RGB,Vertical BGR"));
-	ProjectSettings::get_singleton()->set_restart_if_changed("gui/theme/lcd_subpixel_layout", false);
-
-	Ref<Font> font;
-	if (!font_path.is_empty()) {
-		font = ResourceLoader::load(font_path);
-		if (!font.is_valid()) {
-			ERR_PRINT("Error loading custom font '" + font_path + "'");
-		}
-	}
-
-	// Always make the default theme to avoid invalid default font/icon/style in the given theme.
-	if (RenderingServer::get_singleton()) {
-		make_default_theme(default_theme_scale, font, font_subpixel_positioning, font_hinting, font_antialiasing, font_msdf, font_generate_mipmaps);
-	}
-
-	if (!theme_path.is_empty()) {
-		Ref<Theme> theme = ResourceLoader::load(theme_path);
-		if (theme.is_valid()) {
-			Theme::set_project_default(theme);
-			if (font.is_valid()) {
-				Theme::set_fallback_font(font);
-			}
-		} else {
-			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
-		}
-	}
-}
-
 void unregister_scene_types() {
 	SceneDebugger::deinitialize();
-	clear_default_theme();
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_texture_layered);
 	resource_loader_texture_layered.unref();
@@ -1220,4 +1195,10 @@ void unregister_scene_types() {
 	CanvasItemMaterial::finish_shaders();
 	ColorPicker::finish_shaders();
 	SceneStringNames::free();
+}
+
+void register_scene_singletons() {
+	GDREGISTER_CLASS(ThemeDB);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("ThemeDB", ThemeDB::get_singleton()));
 }

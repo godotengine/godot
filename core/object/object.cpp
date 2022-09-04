@@ -811,7 +811,7 @@ String Object::to_string() {
 		_extension->to_string(_extension_instance, &ret);
 		return ret;
 	}
-	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
+	return "<" + get_class() + "#" + itos(get_instance_id()) + ">";
 }
 
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {

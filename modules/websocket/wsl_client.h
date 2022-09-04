@@ -31,7 +31,7 @@
 #ifndef WSL_CLIENT_H
 #define WSL_CLIENT_H
 
-#ifndef JAVASCRIPT_ENABLED
+#ifndef WEB_ENABLED
 
 #include "core/error/error_list.h"
 #include "core/io/stream_peer_ssl.h"
@@ -86,6 +86,6 @@ public:
 	~WSLClient();
 };
 
-#endif // JAVASCRIPT_ENABLED
+#endif // WEB_ENABLED
 
 #endif // WSL_CLIENT_H

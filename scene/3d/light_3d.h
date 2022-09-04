@@ -40,6 +40,7 @@ public:
 	enum Param {
 		PARAM_ENERGY = RS::LIGHT_PARAM_ENERGY,
 		PARAM_INDIRECT_ENERGY = RS::LIGHT_PARAM_INDIRECT_ENERGY,
+		PARAM_VOLUMETRIC_FOG_ENERGY = RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY,
 		PARAM_SPECULAR = RS::LIGHT_PARAM_SPECULAR,
 		PARAM_RANGE = RS::LIGHT_PARAM_RANGE,
 		PARAM_SIZE = RS::LIGHT_PARAM_SIZE,
@@ -56,8 +57,8 @@ public:
 		PARAM_SHADOW_PANCAKE_SIZE = RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
 		PARAM_SHADOW_OPACITY = RS::LIGHT_PARAM_SHADOW_OPACITY,
 		PARAM_SHADOW_BLUR = RS::LIGHT_PARAM_SHADOW_BLUR,
-		PARAM_SHADOW_VOLUMETRIC_FOG_FADE = RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE,
 		PARAM_TRANSMITTANCE_BIAS = RS::LIGHT_PARAM_TRANSMITTANCE_BIAS,
+		PARAM_INTENSITY = RS::LIGHT_PARAM_INTENSITY,
 		PARAM_MAX = RS::LIGHT_PARAM_MAX
 	};
 
@@ -83,6 +84,8 @@ private:
 	void _update_visibility();
 	BakeMode bake_mode = BAKE_DYNAMIC;
 	Ref<Texture2D> projector;
+	Color correlated_color = Color(1.0, 1.0, 1.0);
+	float temperature = 6500.0;
 
 	// bind helpers
 
@@ -138,6 +141,10 @@ public:
 
 	void set_projector(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_projector() const;
+
+	void set_temperature(const float p_temperature);
+	float get_temperature() const;
+	Color get_correlated_color() const;
 
 	virtual AABB get_aabb() const override;
 

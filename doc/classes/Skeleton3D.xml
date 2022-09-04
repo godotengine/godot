@@ -71,7 +71,7 @@
 				Force updates the bone transform for the bone at [param bone_idx] and all of its children.
 			</description>
 		</method>
-		<method name="get_bone_children">
+		<method name="get_bone_children" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
@@ -172,7 +172,7 @@
 				Returns the modification stack attached to this skeleton, if one exists.
 			</description>
 		</method>
-		<method name="get_parentless_bones">
+		<method name="get_parentless_bones" qualifiers="const">
 			<return type="PackedInt32Array" />
 			<description>
 				Returns an array with all of the bones that are parentless. Another way to look at this is that it returns the indexes of all the bones that are not dependent or modified by other bones in the Skeleton.

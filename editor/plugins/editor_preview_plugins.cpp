@@ -201,7 +201,7 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, 
 
 		for (int i = 0; i < bm->get_size().width; i++) {
 			for (int j = 0; j < bm->get_size().height; j++) {
-				if (bm->get_bit(Point2i(i, j))) {
+				if (bm->get_bit(i, j)) {
 					w[j * (int)bm->get_size().width + i] = 255;
 				} else {
 					w[j * (int)bm->get_size().width + i] = 0;
@@ -255,7 +255,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate(const Ref<Resource> &p_f
 Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &p_path, const Size2 &p_size) const {
 	String temp_path = EditorPaths::get_singleton()->get_cache_dir();
 	String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
-	cache_base = temp_path.plus_file("resthumb-" + cache_base);
+	cache_base = temp_path.path_join("resthumb-" + cache_base);
 
 	//does not have it, try to load a cached thumbnail
 
@@ -341,6 +341,12 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	RS::get_singleton()->viewport_attach_camera(viewport, camera);
 	RS::get_singleton()->camera_set_transform(camera, Transform3D(Basis(), Vector3(0, 0, 3)));
 	RS::get_singleton()->camera_set_perspective(camera, 45, 0.1, 10);
+
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes = RS::get_singleton()->camera_attributes_create();
+		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
+		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
+	}
 
 	light = RS::get_singleton()->directional_light_create();
 	light_instance = RS::get_singleton()->instance_create2(light, scenario);
@@ -440,6 +446,7 @@ EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
 	RS::get_singleton()->free(light2);
 	RS::get_singleton()->free(light_instance2);
 	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(camera_attributes);
 	RS::get_singleton()->free(scenario);
 }
 
@@ -743,6 +750,12 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	//RS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
 	RS::get_singleton()->camera_set_orthogonal(camera, 1.0, 0.01, 1000.0);
 
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes = RS::get_singleton()->camera_attributes_create();
+		RS::get_singleton()->camera_attributes_set_exposure(camera_attributes, 1.0, 0.000032552); // Matches default CameraAttributesPhysical to work well with default DirectionalLight3Ds.
+		RS::get_singleton()->camera_set_camera_attributes(camera, camera_attributes);
+	}
+
 	light = RS::get_singleton()->directional_light_create();
 	light_instance = RS::get_singleton()->instance_create2(light, scenario);
 	RS::get_singleton()->instance_set_transform(light_instance, Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
@@ -768,6 +781,7 @@ EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
 	RS::get_singleton()->free(light2);
 	RS::get_singleton()->free(light_instance2);
 	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(camera_attributes);
 	RS::get_singleton()->free(scenario);
 }
 

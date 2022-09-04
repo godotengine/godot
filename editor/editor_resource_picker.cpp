@@ -61,8 +61,8 @@ void EditorResourcePicker::_update_resource() {
 
 		if (edited_resource == Ref<Resource>()) {
 			assign_button->set_icon(Ref<Texture2D>());
-			assign_button->set_text(TTR("[empty]"));
-			assign_button->set_tooltip("");
+			assign_button->set_text(TTR("<empty>"));
+			assign_button->set_tooltip_text("");
 		} else {
 			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), "Object"));
 
@@ -73,13 +73,13 @@ void EditorResourcePicker::_update_resource() {
 			} else {
 				assign_button->set_text(edited_resource->get_class());
 			}
-			assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+			assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 
 			// Preview will override the above, so called at the end.
 			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(edited_resource, this, "_update_resource_preview", edited_resource->get_instance_id());
 		}
 	} else if (edited_resource.is_valid()) {
-		assign_button->set_tooltip(resource_path + TTR("Type:") + " " + edited_resource->get_class());
+		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 	}
 
 	assign_button->set_disabled(!editable && !edited_resource.is_valid());
@@ -108,7 +108,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
-				assign_button->set_custom_minimum_size(Size2(MIN(1, assign_button_min_size.x), MIN(thumbnail_size, assign_button_min_size.y)));
+				assign_button->set_custom_minimum_size(Size2(MAX(1, assign_button_min_size.x), MAX(thumbnail_size, assign_button_min_size.y)));
 			}
 
 			preview_rect->set_texture(p_preview);
@@ -775,14 +775,14 @@ void EditorResourcePicker::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 			if (editable && _is_drop_valid(get_viewport()->gui_get_drag_data())) {
 				dropping = true;
-				assign_button->update();
+				assign_button->queue_redraw();
 			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
 			if (dropping) {
 				dropping = false;
-				assign_button->update();
+				assign_button->queue_redraw();
 			}
 		} break;
 	}
@@ -1049,7 +1049,7 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 					Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 					if (preview.is_valid()) {
 						if (preview->get_version() != last_preview_version) {
-							stream_preview_rect->update();
+							stream_preview_rect->queue_redraw();
 							last_preview_version = preview->get_version();
 						}
 					}
@@ -1083,10 +1083,10 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 						}
 					}
 
-					stream_preview_rect->update();
+					stream_preview_rect->queue_redraw();
 				} else {
 					if (tagged_frame_offset_count != 0) {
-						stream_preview_rect->update();
+						stream_preview_rect->queue_redraw();
 					}
 					tagged_frame_offset_count = 0;
 				}
@@ -1107,13 +1107,13 @@ void EditorAudioStreamPicker::_update_resource() {
 		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 1.5));
 	}
 
-	stream_preview_rect->update();
+	stream_preview_rect->queue_redraw();
 }
 
 void EditorAudioStreamPicker::_preview_draw() {
 	Ref<AudioStream> audio_stream = get_edited_resource();
 	if (!audio_stream.is_valid()) {
-		get_assign_button()->set_text(TTR("[empty]"));
+		get_assign_button()->set_text(TTR("<empty>"));
 		return;
 	}
 

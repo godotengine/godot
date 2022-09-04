@@ -52,7 +52,7 @@ void EditorPropertyNil::update_property() {
 
 EditorPropertyNil::EditorPropertyNil() {
 	Label *label = memnew(Label);
-	label->set_text("[null]");
+	label->set_text("<null>");
 	add_child(label);
 }
 
@@ -396,7 +396,7 @@ void EditorPropertyLocale::_locale_pressed() {
 void EditorPropertyLocale::update_property() {
 	String locale_code = get_edited_object()->get(get_edited_property());
 	locale->set_text(locale_code);
-	locale->set_tooltip(locale_code);
+	locale->set_tooltip_text(locale_code);
 }
 
 void EditorPropertyLocale::setup(const String &p_hint_text) {
@@ -485,7 +485,7 @@ void EditorPropertyPath::_path_pressed() {
 void EditorPropertyPath::update_property() {
 	String full_path = get_edited_object()->get(get_edited_property());
 	path->set_text(full_path);
-	path->set_tooltip(full_path);
+	path->set_tooltip_text(full_path);
 }
 
 void EditorPropertyPath::setup(const Vector<String> &p_extensions, bool p_folder, bool p_global) {
@@ -832,26 +832,35 @@ void EditorPropertyFlags::setup(const Vector<String> &p_options) {
 	bool first = true;
 	uint32_t current_val;
 	for (int i = 0; i < p_options.size(); i++) {
+		// An empty option is not considered a "flag".
 		String option = p_options[i].strip_edges();
-		if (!option.is_empty()) {
-			CheckBox *cb = memnew(CheckBox);
-			cb->set_text(option);
-			cb->set_clip_text(true);
-			cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(i));
-			add_focusable(cb);
-			vbox->add_child(cb);
-			flags.push_back(cb);
-			Vector<String> text_split = p_options[i].split(":");
-			if (text_split.size() != 1) {
-				current_val = text_split[1].to_int();
-			} else {
-				current_val = 1 << i;
-			}
-			flag_values.push_back(current_val);
-			if (first) {
-				set_label_reference(cb);
-				first = false;
-			}
+		if (option.is_empty()) {
+			continue;
+		}
+		const int flag_index = flags.size(); // Index of the next element (added by the code below).
+
+		// Value for a flag can be explicitly overridden.
+		Vector<String> text_split = p_options[i].split(":");
+		if (text_split.size() != 1) {
+			current_val = text_split[1].to_int();
+		} else {
+			current_val = 1 << i;
+		}
+		flag_values.push_back(current_val);
+
+		// Create a CheckBox for the current flag.
+		CheckBox *cb = memnew(CheckBox);
+		cb->set_text(option);
+		cb->set_clip_text(true);
+		cb->connect("pressed", callable_mp(this, &EditorPropertyFlags::_flag_toggled).bind(flag_index));
+		add_focusable(cb);
+		vbox->add_child(cb);
+		flags.push_back(cb);
+
+		// Can't use `i == 0` because we want to find the first none-empty option.
+		if (first) {
+			set_label_reference(cb);
+			first = false;
 		}
 	}
 }
@@ -951,7 +960,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		bool expand_was_hovered = expand_hovered;
 		expand_hovered = expand_rect.has_point(mm->get_position());
 		if (expand_hovered != expand_was_hovered) {
-			update();
+			queue_redraw();
 		}
 
 		if (!expand_hovered) {
@@ -959,7 +968,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 				if (flag_rects[i].has_point(mm->get_position())) {
 					// Used to highlight the hovered flag in the layers grid.
 					hovered_index = i;
-					update();
+					queue_redraw();
 					return;
 				}
 			}
@@ -968,7 +977,7 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 		// Remove highlight when no square is hovered.
 		if (hovered_index != -1) {
 			hovered_index = -1;
-			update();
+			queue_redraw();
 		}
 
 		return;
@@ -986,11 +995,11 @@ void EditorPropertyLayersGrid::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			emit_signal(SNAME("flag_changed"), value);
-			update();
+			queue_redraw();
 		} else if (expand_hovered) {
 			expanded = !expanded;
 			update_minimum_size();
-			update();
+			queue_redraw();
 		}
 	}
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
@@ -1131,11 +1140,11 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (expand_hovered) {
 				expand_hovered = false;
-				update();
+				queue_redraw();
 			}
 			if (hovered_index != -1) {
 				hovered_index = -1;
-				update();
+				queue_redraw();
 			}
 		} break;
 	}
@@ -1143,7 +1152,7 @@ void EditorPropertyLayersGrid::_notification(int p_what) {
 
 void EditorPropertyLayersGrid::set_flag(uint32_t p_flag) {
 	value = p_flag;
-	update();
+	queue_redraw();
 }
 
 void EditorPropertyLayersGrid::_bind_methods() {
@@ -1276,7 +1285,7 @@ void EditorPropertyLayers::_menu_pressed(int p_menu) {
 	} else {
 		grid->value |= (1 << p_menu);
 	}
-	grid->update();
+	grid->queue_redraw();
 	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
 	_grid_changed(grid->value);
 }
@@ -1382,7 +1391,7 @@ void EditorPropertyObjectID::update_property() {
 		edit->set_disabled(false);
 		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
-		edit->set_text(TTR("[Empty]"));
+		edit->set_text(TTR("<empty>"));
 		edit->set_disabled(true);
 		edit->set_icon(Ref<Texture2D>());
 	}
@@ -1462,7 +1471,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 	}
 
 	if (angle_in_radians) {
-		val = Math::deg2rad(val);
+		val = Math::deg_to_rad(val);
 	}
 	emit_changed(get_edited_property(), val);
 }
@@ -1470,7 +1479,7 @@ void EditorPropertyFloat::_value_changed(double val) {
 void EditorPropertyFloat::update_property() {
 	double val = get_edited_object()->get(get_edited_property());
 	if (angle_in_radians) {
-		val = Math::rad2deg(val);
+		val = Math::rad_to_deg(val);
 	}
 	setting = true;
 	spin->set_value(val);
@@ -1523,13 +1532,13 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 			// Ensure the easing doesn't appear as being dragged
 			dragging = false;
-			easing_draw->update();
+			easing_draw->queue_redraw();
 		}
 
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			dragging = mb->is_pressed();
 			// Update to display the correct dragging color
-			easing_draw->update();
+			easing_draw->queue_redraw();
 		}
 	}
 
@@ -1569,7 +1578,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = CLAMP(val, -1'000'000, 1'000'000);
 
 		emit_changed(get_edited_property(), val);
-		easing_draw->update();
+		easing_draw->queue_redraw();
 	}
 }
 
@@ -1621,14 +1630,14 @@ void EditorPropertyEasing::_draw_easing() {
 }
 
 void EditorPropertyEasing::update_property() {
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_set_preset(int p_preset) {
 	static const float preset_value[EASING_MAX] = { 0.0, 1.0, 2.0, 0.5, -2.0, -0.5 };
 
 	emit_changed(get_edited_property(), preset_value[p_preset]);
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::_setup_spin() {
@@ -1667,7 +1676,7 @@ void EditorPropertyEasing::_spin_focus_exited() {
 	spin->hide();
 	// Ensure the easing doesn't appear as being dragged
 	dragging = false;
-	easing_draw->update();
+	easing_draw->queue_redraw();
 }
 
 void EditorPropertyEasing::setup(bool p_positive_only, bool p_flip) {
@@ -1992,9 +2001,9 @@ void EditorPropertyVector3::_value_changed(double val, const String &p_name) {
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
 	if (angle_in_radians) {
-		v3.x = Math::deg2rad(v3.x);
-		v3.y = Math::deg2rad(v3.y);
-		v3.z = Math::deg2rad(v3.z);
+		v3.x = Math::deg_to_rad(v3.x);
+		v3.y = Math::deg_to_rad(v3.y);
+		v3.z = Math::deg_to_rad(v3.z);
 	}
 	emit_changed(get_edited_property(), v3, p_name);
 }
@@ -2026,9 +2035,9 @@ void EditorPropertyVector3::_update_ratio() {
 
 void EditorPropertyVector3::update_using_vector(Vector3 p_vector) {
 	if (angle_in_radians) {
-		p_vector.x = Math::rad2deg(p_vector.x);
-		p_vector.y = Math::rad2deg(p_vector.y);
-		p_vector.z = Math::rad2deg(p_vector.z);
+		p_vector.x = Math::rad_to_deg(p_vector.x);
+		p_vector.y = Math::rad_to_deg(p_vector.y);
+		p_vector.z = Math::rad_to_deg(p_vector.z);
 	}
 	setting = true;
 	spin[0]->set_value(p_vector.x);
@@ -2043,9 +2052,9 @@ Vector3 EditorPropertyVector3::get_vector() {
 	v3.y = spin[1]->get_value();
 	v3.z = spin[2]->get_value();
 	if (angle_in_radians) {
-		v3.x = Math::deg2rad(v3.x);
-		v3.y = Math::deg2rad(v3.y);
-		v3.z = Math::deg2rad(v3.z);
+		v3.x = Math::deg_to_rad(v3.x);
+		v3.y = Math::deg_to_rad(v3.y);
+		v3.z = Math::deg_to_rad(v3.z);
 	}
 
 	return v3;
@@ -2647,9 +2656,9 @@ void EditorPropertyQuaternion::_custom_value_changed(double val) {
 	edit_euler.z = euler[2]->get_value();
 
 	Vector3 v;
-	v.x = Math::deg2rad(edit_euler.x);
-	v.y = Math::deg2rad(edit_euler.y);
-	v.z = Math::deg2rad(edit_euler.z);
+	v.x = Math::deg_to_rad(edit_euler.x);
+	v.y = Math::deg_to_rad(edit_euler.y);
+	v.z = Math::deg_to_rad(edit_euler.z);
 
 	Quaternion temp_q = Quaternion(v);
 	spin[0]->set_value(temp_q.x);
@@ -2689,9 +2698,9 @@ void EditorPropertyQuaternion::update_property() {
 	spin[3]->set_value(val.w);
 	if (!is_grabbing_euler()) {
 		Vector3 v = val.normalized().get_euler_yxz();
-		edit_euler.x = Math::rad2deg(v.x);
-		edit_euler.y = Math::rad2deg(v.y);
-		edit_euler.z = Math::rad2deg(v.z);
+		edit_euler.x = Math::rad_to_deg(v.x);
+		edit_euler.y = Math::rad_to_deg(v.y);
+		edit_euler.z = Math::rad_to_deg(v.z);
 		euler[0]->set_value(edit_euler.x);
 		euler[1]->set_value(edit_euler.y);
 		euler[2]->set_value(edit_euler.z);
@@ -3515,14 +3524,14 @@ void EditorPropertyColor::update_property() {
 
 	// Add a tooltip to display each channel's values without having to click the ColorPickerButton
 	if (picker->is_editing_alpha()) {
-		picker->set_tooltip(vformat(
+		picker->set_tooltip_text(vformat(
 				"R: %s\nG: %s\nB: %s\nA: %s",
 				rtos(color.r).pad_decimals(2),
 				rtos(color.g).pad_decimals(2),
 				rtos(color.b).pad_decimals(2),
 				rtos(color.a).pad_decimals(2)));
 	} else {
-		picker->set_tooltip(vformat(
+		picker->set_tooltip_text(vformat(
 				"R: %s\nG: %s\nB: %s",
 				rtos(color.r).pad_decimals(2),
 				rtos(color.g).pad_decimals(2),
@@ -3680,7 +3689,7 @@ void EditorPropertyNodePath::update_property() {
 		p = get_edited_object()->get(get_edited_property());
 	}
 
-	assign->set_tooltip(p);
+	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
@@ -3952,7 +3961,7 @@ void EditorPropertyResource::_update_property_bg() {
 	}
 
 	updating_theme = false;
-	update();
+	queue_redraw();
 }
 
 void EditorPropertyResource::_update_preferred_shader() {
@@ -4173,8 +4182,8 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, const Varian
 }
 
 struct EditorPropertyRangeHint {
-	bool greater = true;
-	bool lesser = true;
+	bool or_greater = true;
+	bool or_less = true;
 	double min = -99999.0;
 	double max = 99999.0;
 	double step = 1.0;
@@ -4192,8 +4201,8 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
 				vformat("Invalid PROPERTY_HINT_RANGE with hint \"%s\": Missing required min and/or max values.", p_hint_text));
 
-		hint.greater = false; // If using ranged, assume false by default.
-		hint.lesser = false;
+		hint.or_greater = false; // If using ranged, assume false by default.
+		hint.or_less = false;
 
 		hint.min = slices[0].to_float();
 		hint.max = slices[1].to_float();
@@ -4206,9 +4215,9 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 		for (int i = 2; i < slices.size(); i++) {
 			String slice = slices[i].strip_edges();
 			if (slice == "or_greater") {
-				hint.greater = true;
-			} else if (slice == "or_lesser") {
-				hint.lesser = true;
+				hint.or_greater = true;
+			} else if (slice == "or_less") {
+				hint.or_less = true;
 			} else if (slice == "no_slider") {
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
@@ -4305,7 +4314,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
-				editor->setup(hint.min, hint.max, hint.step, hint.greater, hint.lesser, hint.suffix);
+				editor->setup(hint.min, hint.max, hint.step, hint.or_greater, hint.or_less, hint.suffix);
 
 				return editor;
 			}
@@ -4333,7 +4342,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
 
 				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, default_float_step);
-				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.greater, hint.lesser, hint.suffix, hint.radians);
+				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.exp_range, hint.or_greater, hint.or_less, hint.suffix, hint.radians);
 
 				return editor;
 			}

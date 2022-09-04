@@ -94,16 +94,20 @@ namespace Godot.SourceGenerators.Sample
         [Export] private NodePath field_NodePath = new NodePath("foo");
         [Export] private RID field_RID;
 
-        [Export] private Godot.Collections.Dictionary field_GodotDictionary =
+        [Export]
+        private Godot.Collections.Dictionary field_GodotDictionary =
             new() { { "foo", 10 }, { Vector2.Up, Colors.Chocolate } };
 
-        [Export] private Godot.Collections.Array field_GodotArray =
+        [Export]
+        private Godot.Collections.Array field_GodotArray =
             new() { "foo", 10, Vector2.Up, Colors.Chocolate };
 
-        [Export] private Godot.Collections.Dictionary<string, bool> field_GodotGenericDictionary =
+        [Export]
+        private Godot.Collections.Dictionary<string, bool> field_GodotGenericDictionary =
             new() { { "foo", true }, { "bar", false } };
 
-        [Export] private Godot.Collections.Array<int> field_GodotGenericArray =
+        [Export]
+        private Godot.Collections.Array<int> field_GodotGenericArray =
             new() { 0, 1, 2, 3, 4, 5, 6 };
     }
 }

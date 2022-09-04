@@ -22,11 +22,11 @@ namespace Godot.NativeInterop
         public static void Initialize(IntPtr unmanagedCallbacks, int unmanagedCallbacksSize)
         {
             if (initialized)
-                throw new InvalidOperationException("Already initialized");
+                throw new InvalidOperationException("Already initialized.");
             initialized = true;
 
             if (unmanagedCallbacksSize != sizeof(UnmanagedCallbacks))
-                throw new ArgumentException("Unmanaged callbacks size mismatch");
+                throw new ArgumentException("Unmanaged callbacks size mismatch.", nameof(unmanagedCallbacksSize));
 
             _unmanagedCallbacks = Unsafe.AsRef<UnmanagedCallbacks>((void*)unmanagedCallbacks);
         }
@@ -175,10 +175,6 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_variant_new_object(out godot_variant r_dest, IntPtr p_obj);
 
         public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
-
-        public static partial void godotsharp_variant_new_vector4(out godot_variant r_dest, in Vector4 p_vec4);
-
-        public static partial void godotsharp_variant_new_vector4i(out godot_variant r_dest, in Vector4i p_vec4i);
 
         public static partial void godotsharp_variant_new_basis(out godot_variant r_dest, in Basis p_basis);
 
@@ -436,6 +432,15 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_string_simplify_path(in godot_string p_self,
             out godot_string r_simplified_path);
 
+        public static partial void godotsharp_string_to_camel_case(in godot_string p_self,
+            out godot_string r_camel_case);
+
+        public static partial void godotsharp_string_to_pascal_case(in godot_string p_self,
+            out godot_string r_pascal_case);
+
+        public static partial void godotsharp_string_to_snake_case(in godot_string p_self,
+            out godot_string r_snake_case);
+
         // NodePath
 
         public static partial void godotsharp_node_path_get_as_property_path(in godot_node_path p_self,
@@ -461,7 +466,7 @@ namespace Godot.NativeInterop
 
         // GD, etc
 
-        internal static partial void godotsharp_bytes2var(in godot_packed_byte_array p_bytes,
+        internal static partial void godotsharp_bytes_to_var(in godot_packed_byte_array p_bytes,
             godot_bool p_allow_objects,
             out godot_variant r_ret);
 
@@ -504,12 +509,12 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_str(in godot_array p_what, out godot_string r_ret);
 
-        internal static partial void godotsharp_str2var(in godot_string p_str, out godot_variant r_ret);
+        internal static partial void godotsharp_str_to_var(in godot_string p_str, out godot_variant r_ret);
 
-        internal static partial void godotsharp_var2bytes(in godot_variant p_what, godot_bool p_full_objects,
+        internal static partial void godotsharp_var_to_bytes(in godot_variant p_what, godot_bool p_full_objects,
             out godot_packed_byte_array r_bytes);
 
-        internal static partial void godotsharp_var2str(in godot_variant p_var, out godot_string r_ret);
+        internal static partial void godotsharp_var_to_str(in godot_variant p_var, out godot_string r_ret);
 
         internal static partial void godotsharp_pusherror(in godot_string p_str);
 

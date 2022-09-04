@@ -35,6 +35,7 @@
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
+#include "core/variant/typed_array.h"
 
 class EditorTranslationParserPlugin : public RefCounted {
 	GDCLASS(EditorTranslationParserPlugin, RefCounted);
@@ -42,7 +43,7 @@ class EditorTranslationParserPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3(_parse_file, String, Array, Array)
+	GDVIRTUAL3(_parse_file, String, TypedArray<String>, TypedArray<Array>)
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
 
 public:

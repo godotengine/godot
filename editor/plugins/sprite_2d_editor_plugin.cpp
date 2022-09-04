@@ -128,7 +128,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
-			debug_uv->update();
+			debug_uv->queue_redraw();
 
 		} break;
 		case MENU_OPTION_CONVERT_TO_POLYGON_2D: {
@@ -137,7 +137,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
-			debug_uv->update();
+			debug_uv->queue_redraw();
 		} break;
 		case MENU_OPTION_CREATE_COLLISION_POLY_2D: {
 			debug_uv_dialog->set_ok_button_text(TTR("Create CollisionPolygon2D"));
@@ -145,7 +145,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
-			debug_uv->update();
+			debug_uv->queue_redraw();
 
 		} break;
 		case MENU_OPTION_CREATE_LIGHT_OCCLUDER_2D: {
@@ -154,7 +154,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 			_update_mesh_data();
 			debug_uv_dialog->popup_centered();
-			debug_uv->update();
+			debug_uv->queue_redraw();
 
 		} break;
 	}
@@ -302,7 +302,7 @@ void Sprite2DEditor::_update_mesh_data() {
 		}
 	}
 
-	debug_uv->update();
+	debug_uv->queue_redraw();
 }
 
 void Sprite2DEditor::_create_node() {

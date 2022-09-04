@@ -67,11 +67,11 @@ public:
 	// This should be called for each page, even for pages that no packets ended on.
 	void push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data);
 
-	void set_packet_data(const Array &p_data);
-	Array get_packet_data() const;
+	void set_packet_data(const TypedArray<Array> &p_data);
+	TypedArray<Array> get_packet_data() const;
 
-	void set_packet_granule_positions(const Array &p_granule_positions);
-	Array get_packet_granule_positions() const;
+	void set_packet_granule_positions(const PackedInt64Array &p_granule_positions);
+	PackedInt64Array get_packet_granule_positions() const;
 
 	// Sets a sampling rate associated with this object. OggPacketSequence doesn't understand codecs,
 	// so this value is naively stored as a convenience.

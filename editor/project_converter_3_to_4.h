@@ -35,37 +35,43 @@
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
+#include "core/templates/local_vector.h"
+
+class RegEx;
 
 class ProjectConverter3To4 {
 public:
 	class RegExContainer;
 
 private:
-	void rename_enums(String &file_content);
-	Vector<String> check_for_rename_enums(Vector<String> &file_content);
+	uint64_t maximum_file_size;
+	uint64_t maximum_line_length;
 
-	void rename_classes(String &file_content);
-	Vector<String> check_for_rename_classes(Vector<String> &file_content);
+	void rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
 
-	void rename_gdscript_functions(String &file_content, const RegExContainer &reg_container, bool builtin);
-	Vector<String> check_for_rename_gdscript_functions(Vector<String> &file_content, const RegExContainer &reg_container, bool builtin);
+	void rename_classes(Vector<String> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_classes(Vector<String> &lines, const RegExContainer &reg_container);
+
+	void rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin);
+	Vector<String> check_for_rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin);
 	void process_gdscript_line(String &line, const RegExContainer &reg_container, bool builtin);
 
-	void rename_csharp_functions(String &file_content);
-	Vector<String> check_for_rename_csharp_functions(Vector<String> &file_content);
-	void process_csharp_line(String &line);
+	void rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container);
+	void process_csharp_line(String &line, const RegExContainer &reg_container);
 
-	void rename_csharp_attributes(String &file_content);
-	Vector<String> check_for_rename_csharp_attributes(Vector<String> &file_content);
+	void rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container);
 
-	void rename_gdscript_keywords(String &file_content);
-	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &file_content);
+	void rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
+	Vector<String> check_for_rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container);
 
-	void custom_rename(String &file_content, String from, String to);
-	Vector<String> check_for_custom_rename(Vector<String> &file_content, String from, String to);
+	void custom_rename(Vector<String> &lines, String from, String to);
+	Vector<String> check_for_custom_rename(Vector<String> &lines, String from, String to);
 
-	void rename_common(const char *array[][2], String &file_content);
-	Vector<String> check_for_rename_common(const char *array[][2], Vector<String> &file_content);
+	void rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
+	Vector<String> check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines);
 
 	Vector<String> check_for_files();
 
@@ -77,15 +83,17 @@ private:
 
 	String line_formatter(int current_line, String from, String to, String line);
 	String simple_line_formatter(int current_line, String old_line, String line);
+	String collect_string_from_vector(Vector<String> &vector);
 
 	bool test_single_array(const char *array[][2], bool ignore_second_check = false);
-	bool test_conversion_single_additional(String name, String expected, void (ProjectConverter3To4::*func)(String &), String what);
-	bool test_conversion_single_additional_builtin(String name, String expected, void (ProjectConverter3To4::*func)(String &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin);
-	bool test_conversion_single_normal(String name, String expected, const char *array[][2], String what);
+	bool test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin);
+	bool test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &), String what, const RegExContainer &reg_container);
+	bool test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what);
 	bool test_array_names();
-	bool test_conversion(const RegExContainer &reg_container);
+	bool test_conversion(RegExContainer &reg_container);
 
 public:
+	ProjectConverter3To4(int, int);
 	int validate_conversion();
 	int convert();
 };

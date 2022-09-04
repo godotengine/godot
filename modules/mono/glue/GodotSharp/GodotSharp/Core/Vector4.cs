@@ -57,8 +57,8 @@ namespace Godot
         /// <summary>
         /// Access vector components using their index.
         /// </summary>
-        /// <exception cref="IndexOutOfRangeException">
-        /// Thrown when the given the <paramref name="index"/> is not 0, 1, 2 or 3.
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is not 0, 1, 2 or 3.
         /// </exception>
         /// <value>
         /// <c>[0]</c> is equivalent to <see cref="x"/>,
@@ -81,7 +81,7 @@ namespace Godot
                     case 3:
                         return w;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             set
@@ -101,7 +101,7 @@ namespace Godot
                         w = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
         }
@@ -189,6 +189,31 @@ namespace Godot
                 Mathf.CubicInterpolate(y, b.y, preA.y, postB.y, weight),
                 Mathf.CubicInterpolate(y, b.z, preA.z, postB.z, weight),
                 Mathf.CubicInterpolate(w, b.w, preA.w, postB.w, weight)
+            );
+        }
+
+        /// <summary>
+        /// Performs a cubic interpolation between vectors <paramref name="preA"/>, this vector,
+        /// <paramref name="b"/>, and <paramref name="postB"/>, by the given amount <paramref name="weight"/>.
+        /// It can perform smoother interpolation than <see cref="CubicInterpolate"/>
+        /// by the time values.
+        /// </summary>
+        /// <param name="b">The destination vector.</param>
+        /// <param name="preA">A vector before this vector.</param>
+        /// <param name="postB">A vector after <paramref name="b"/>.</param>
+        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
+        /// <param name="t"></param>
+        /// <param name="preAT"></param>
+        /// <param name="postBT"></param>
+        /// <returns>The interpolated vector.</returns>
+        public Vector4 CubicInterpolateInTime(Vector4 b, Vector4 preA, Vector4 postB, real_t weight, real_t t, real_t preAT, real_t postBT)
+        {
+            return new Vector4
+            (
+                Mathf.CubicInterpolateInTime(x, b.x, preA.x, postB.x, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(y, b.y, preA.y, postB.y, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(y, b.z, preA.z, postB.z, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(w, b.w, preA.w, postB.w, weight, t, preAT, postBT)
             );
         }
 

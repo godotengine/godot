@@ -226,7 +226,7 @@ namespace Godot
             {
                 fovyDegrees = GetFovy(fovyDegrees, (real_t)1.0 / aspect);
             }
-            real_t radians = Mathf.Deg2Rad(fovyDegrees / (real_t)2.0);
+            real_t radians = Mathf.DegToRad(fovyDegrees / (real_t)2.0);
             real_t deltaZ = zFar - zNear;
             real_t sine = Mathf.Sin(radians);
 
@@ -256,7 +256,7 @@ namespace Godot
                 fovyDegrees = GetFovy(fovyDegrees, (real_t)1.0 / aspect);
             }
 
-            real_t ymax = zNear * Mathf.Tan(Mathf.Deg2Rad(fovyDegrees / (real_t)2.0));
+            real_t ymax = zNear * Mathf.Tan(Mathf.DegToRad(fovyDegrees / (real_t)2.0));
             real_t xmax = ymax * aspect;
             real_t frustumshift = (intraocularDist / (real_t)2.0) * zNear / convergenceDist;
             real_t left;
@@ -313,18 +313,18 @@ namespace Godot
             Plane rightPlane = new Plane(x.w - x.x, y.w - y.x, z.w - z.x, -w.w + w.x).Normalized();
             if (z.x == 0 && z.y == 0)
             {
-                return Mathf.Rad2Deg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x))) * (real_t)2.0;
+                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x))) * (real_t)2.0;
             }
             else
             {
                 Plane leftPlane = new Plane(x.w + x.x, y.w + y.x, z.w + z.x, w.w + w.x).Normalized();
-                return Mathf.Rad2Deg(Mathf.Acos(Mathf.Abs(leftPlane.Normal.x))) + Mathf.Rad2Deg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x)));
+                return Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(leftPlane.Normal.x))) + Mathf.RadToDeg(Mathf.Acos(Mathf.Abs(rightPlane.Normal.x)));
             }
         }
 
         public static real_t GetFovy(real_t fovx, real_t aspect)
         {
-            return Mathf.Rad2Deg(Mathf.Atan(aspect * Mathf.Tan(Mathf.Deg2Rad(fovx) * (real_t)0.5)) * (real_t)2.0);
+            return Mathf.RadToDeg(Mathf.Atan(aspect * Mathf.Tan(Mathf.DegToRad(fovx) * (real_t)0.5)) * (real_t)2.0);
         }
 
         public real_t GetLodMultiplier()
@@ -649,6 +649,9 @@ namespace Godot
         /// Access whole columns in the form of <see cref="Vector4"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="column"/> is not 0, 1, 2 or 3.
+        /// </exception>
         public Vector4 this[int column]
         {
             get
@@ -664,7 +667,7 @@ namespace Godot
                     case 3:
                         return w;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -684,7 +687,7 @@ namespace Godot
                         w = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }
@@ -694,6 +697,9 @@ namespace Godot
         /// </summary>
         /// <param name="column">Which column vector.</param>
         /// <param name="row">Which row of the column.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="column"/> or <paramref name="row"/> are not 0, 1, 2 or 3.
+        /// </exception>
         public real_t this[int column, int row]
         {
             get
@@ -709,7 +715,7 @@ namespace Godot
                     case 3:
                         return w[row];
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
             set
@@ -729,7 +735,7 @@ namespace Godot
                         w[row] = value;
                         return;
                     default:
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException(nameof(column));
                 }
             }
         }

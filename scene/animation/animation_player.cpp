@@ -1151,7 +1151,7 @@ void AnimationPlayer::_animation_update_transforms() {
 				}
 #endif
 
-				static_cast<Node2D *>(pa->object)->set_rotation(Math::deg2rad((double)pa->value_accum));
+				static_cast<Node2D *>(pa->object)->set_rotation(Math::deg_to_rad((double)pa->value_accum));
 			} break;
 			case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
@@ -1501,7 +1501,7 @@ bool AnimationPlayer::has_animation(const StringName &p_name) const {
 }
 
 Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
-	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: %s.", p_name));
+	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 
 	const AnimationData &data = animation_set[p_name];
 

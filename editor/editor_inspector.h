@@ -117,8 +117,6 @@ private:
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
 
-	mutable String tooltip_text;
-
 	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
@@ -199,8 +197,6 @@ public:
 	void set_object_and_property(Object *p_object, const StringName &p_property);
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
-	String get_tooltip_text() const;
-
 	void set_draw_top_bg(bool p_draw) { draw_top_bg = p_draw; }
 
 	bool can_revert_to_default() const { return can_revert; }
@@ -254,17 +250,12 @@ class EditorInspectorCategory : public Control {
 	Ref<Texture2D> icon;
 	String label;
 
-	mutable String tooltip_text;
-
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();
 
 public:
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
-
-	String get_tooltip_text() const;
 
 	EditorInspectorCategory();
 };
@@ -547,7 +538,7 @@ class EditorInspector : public ScrollContainer {
 
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
-	void _check_meta_name(String name);
+	void _check_meta_name(const String &p_name);
 
 protected:
 	static void _bind_methods();

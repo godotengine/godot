@@ -1092,7 +1092,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 
 	if (trimed_whitespace) {
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1110,7 +1110,7 @@ void CodeTextEditor::insert_final_newline() {
 		text_editor->set_line(final_line, line);
 
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1154,7 +1154,7 @@ void CodeTextEditor::convert_indent_to_spaces() {
 	if (changed_indentation) {
 		text_editor->set_caret_column(cursor_column);
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1203,7 +1203,7 @@ void CodeTextEditor::convert_indent_to_tabs() {
 	if (changed_indentation) {
 		text_editor->set_caret_column(cursor_column);
 		text_editor->end_complex_operation();
-		text_editor->update();
+		text_editor->queue_redraw();
 	}
 }
 
@@ -1295,7 +1295,7 @@ void CodeTextEditor::move_lines_up() {
 		text_editor->set_caret_line(next_id);
 	}
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::move_lines_down() {
@@ -1341,7 +1341,7 @@ void CodeTextEditor::move_lines_down() {
 		text_editor->set_caret_line(next_id);
 	}
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::_delete_line(int p_line) {
@@ -1418,7 +1418,7 @@ void CodeTextEditor::duplicate_selection() {
 	}
 
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
@@ -1495,7 +1495,7 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		text_editor->set_caret_column(col);
 	}
 	text_editor->end_complex_operation();
-	text_editor->update();
+	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::goto_line(int p_line) {
@@ -1862,7 +1862,7 @@ void CodeTextEditor::update_toggle_scripts_button() {
 	} else {
 		toggle_scripts_button->set_icon(get_theme_icon(ScriptEditor::get_singleton()->is_scripts_panel_toggled() ? SNAME("Back") : SNAME("Forward"), SNAME("EditorIcons")));
 	}
-	toggle_scripts_button->set_tooltip(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
+	toggle_scripts_button->set_tooltip_text(vformat("%s (%s)", TTR("Toggle Scripts Panel"), ED_GET_SHORTCUT("script_editor/toggle_scripts_panel")->get_as_text()));
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -1955,7 +1955,7 @@ CodeTextEditor::CodeTextEditor() {
 	error_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	error_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	error_button->connect("pressed", callable_mp(this, &CodeTextEditor::_error_button_pressed));
-	error_button->set_tooltip(TTR("Errors"));
+	error_button->set_tooltip_text(TTR("Errors"));
 	set_error_count(0);
 
 	// Warnings
@@ -1965,14 +1965,14 @@ CodeTextEditor::CodeTextEditor() {
 	warning_button->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
 	warning_button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	warning_button->connect("pressed", callable_mp(this, &CodeTextEditor::_warning_button_pressed));
-	warning_button->set_tooltip(TTR("Warnings"));
+	warning_button->set_tooltip_text(TTR("Warnings"));
 	set_warning_count(0);
 
 	// Line and column
 	line_and_col_txt = memnew(Label);
 	status_bar->add_child(line_and_col_txt);
 	line_and_col_txt->set_v_size_flags(SIZE_EXPAND | SIZE_SHRINK_CENTER);
-	line_and_col_txt->set_tooltip(TTR("Line and column numbers."));
+	line_and_col_txt->set_tooltip_text(TTR("Line and column numbers."));
 	line_and_col_txt->set_mouse_filter(MOUSE_FILTER_STOP);
 
 	text_editor->connect("gui_input", callable_mp(this, &CodeTextEditor::_text_editor_gui_input));

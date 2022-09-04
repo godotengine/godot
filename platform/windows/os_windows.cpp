@@ -237,7 +237,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 
 	if (!FileAccess::exists(path)) {
 		//this code exists so gdnative can load .dll files from within the executable path
-		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
+		path = get_executable_path().get_base_dir().path_join(p_path.get_file());
 	}
 
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
@@ -902,7 +902,7 @@ void OS_Windows::run() {
 
 	main_loop->initialize();
 
-	while (!force_quit) {
+	while (true) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 		if (Main::iteration()) {
 			break;
@@ -1071,13 +1071,13 @@ String OS_Windows::get_user_data_dir() const {
 			if (custom_dir.is_empty()) {
 				custom_dir = appname;
 			}
-			return get_data_path().plus_file(custom_dir).replace("\\", "/");
+			return get_data_path().path_join(custom_dir).replace("\\", "/");
 		} else {
-			return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file(appname).replace("\\", "/");
+			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname).replace("\\", "/");
 		}
 	}
 
-	return get_data_path().plus_file(get_godot_dir_name()).plus_file("app_userdata").plus_file("[unnamed project]");
+	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
 }
 
 String OS_Windows::get_unique_id() const {
@@ -1131,8 +1131,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	ticks_start = 0;
 	main_loop = nullptr;
 	process_map = nullptr;
-
-	force_quit = false;
 
 	hInstance = _hInstance;
 #ifdef STDOUT_FILE

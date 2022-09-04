@@ -703,6 +703,7 @@ class BindingsGenerator {
 
 	const String _get_generic_type_parameters(const TypeInterface &p_itype, const List<TypeReference> &p_generic_type_parameters);
 
+	StringName _get_type_name_from_meta(Variant::Type p_type, GodotTypeInfo::Metadata p_meta);
 	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 

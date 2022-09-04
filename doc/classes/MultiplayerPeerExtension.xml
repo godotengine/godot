@@ -16,7 +16,7 @@
 			</description>
 		</method>
 		<method name="_get_connection_status" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="MultiplayerPeer.ConnectionStatus" />
 			<description>
 				Called when the connection status is requested on the [MultiplayerPeer] (see [method MultiplayerPeer.get_connection_status]).
 			</description>
@@ -28,7 +28,7 @@
 			</description>
 		</method>
 		<method name="_get_packet" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="r_buffer" type="const uint8_t **" />
 			<param index="1" name="r_buffer_size" type="int32_t*" />
 			<description>
@@ -54,7 +54,7 @@
 			</description>
 		</method>
 		<method name="_get_transfer_mode" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>
 				Called when the transfer mode to use is read on this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_mode]).
 			</description>
@@ -78,13 +78,13 @@
 			</description>
 		</method>
 		<method name="_poll" qualifiers="virtual">
-			<return type="int" />
+			<return type="void" />
 			<description>
 				Called when the [MultiplayerAPI] is polled. See [method MultiplayerAPI.poll].
 			</description>
 		</method>
 		<method name="_put_packet" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="p_buffer" type="const uint8_t*" />
 			<param index="1" name="p_buffer_size" type="int" />
 			<description>
@@ -92,7 +92,7 @@
 			</description>
 		</method>
 		<method name="_put_packet_script" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="p_buffer" type="PackedByteArray" />
 			<description>
 				Called when a packet needs to be sent by the [MultiplayerAPI], if [method _put_packet] isn't implemented. Use this when extending this class via GDScript.
@@ -121,7 +121,7 @@
 		</method>
 		<method name="_set_transfer_mode" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="p_mode" type="int" />
+			<param index="0" name="p_mode" type="int" enum="MultiplayerPeer.TransferMode" />
 			<description>
 				Called when the transfer mode is set on this [MultiplayerPeer] (see [member MultiplayerPeer.transfer_mode]).
 			</description>

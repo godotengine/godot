@@ -74,11 +74,11 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="dict2inst">
+		<method name="dict_to_inst">
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
-				Converts a dictionary (previously created with [method inst2dict]) back to an instance. Useful for deserializing.
+				Converts a [param dictionary] (previously created with [method inst_to_dict]) back to an Object instance. Useful for deserializing.
 			</description>
 		</method>
 		<method name="get_stack">
@@ -102,15 +102,15 @@
 				[b]Note:[/b] Not supported for calling from threads. Instead, this will return an empty array.
 			</description>
 		</method>
-		<method name="inst2dict">
+		<method name="inst_to_dict">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
-				Returns the passed instance converted to a dictionary (useful for serializing).
+				Returns the passed [param instance] converted to a Dictionary (useful for serializing).
 				[codeblock]
 				var foo = "bar"
 				func _ready():
-				    var d = inst2dict(self)
+				    var d = inst_to_dict(self)
 				    print(d.keys())
 				    print(d.values())
 				[/codeblock]
@@ -505,7 +505,7 @@
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
 				Export a numeric property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
-				If hints [code]"or_greater"[/code] and [code]"or_lesser"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"no_slider"[/code] hint will hide the slider element of the editor widget.
+				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"no_slider"[/code] hint will hide the slider element of the editor widget.
 				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
 				[codeblock]
@@ -514,7 +514,7 @@
 				@export_range(-10, 20, 0.2) var number: float
 
 				@export_range(0, 100, 1, "or_greater") var power_percent
-				@export_range(0, 100, 1, "or_greater", "or_lesser") var health_delta
+				@export_range(0, 100, 1, "or_greater", "or_less") var health_delta
 
 				@export_range(-3.14, 3.14, 0.001, "radians") var angle_radians
 				@export_range(0, 360, 1, "degrees") var angle_degrees

@@ -57,13 +57,13 @@ void AudioStreamImportSettings::_notification(int p_what) {
 			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 
-			_indicator->update();
-			_preview->update();
+			_indicator->queue_redraw();
+			_preview->queue_redraw();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
 			_current = _player->get_playback_position();
-			_indicator->update();
+			_indicator->queue_redraw();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -167,7 +167,7 @@ void AudioStreamImportSettings::_draw_preview() {
 
 void AudioStreamImportSettings::_preview_changed(ObjectID p_which) {
 	if (stream.is_valid() && stream->get_instance_id() == p_which) {
-		_preview->update();
+		_preview->queue_redraw();
 	}
 }
 
@@ -179,8 +179,8 @@ void AudioStreamImportSettings::_preview_zoom_in() {
 	zoom_bar->set_page(page_size * 0.5);
 	zoom_bar->set_value(zoom_bar->get_value() + page_size * 0.25);
 
-	_preview->update();
-	_indicator->update();
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettings::_preview_zoom_out() {
@@ -191,8 +191,8 @@ void AudioStreamImportSettings::_preview_zoom_out() {
 	zoom_bar->set_page(MIN(zoom_bar->get_max(), page_size * 2.0));
 	zoom_bar->set_value(zoom_bar->get_value() - page_size * 0.5);
 
-	_preview->update();
-	_indicator->update();
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettings::_preview_zoom_reset() {
@@ -202,22 +202,22 @@ void AudioStreamImportSettings::_preview_zoom_reset() {
 	zoom_bar->set_max(stream->get_length());
 	zoom_bar->set_page(zoom_bar->get_max());
 	zoom_bar->set_value(0);
-	_preview->update();
-	_indicator->update();
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettings::_preview_zoom_offset_changed(double) {
-	_preview->update();
-	_indicator->update();
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettings::_audio_changed() {
 	if (!is_visible()) {
 		return;
 	}
-	_preview->update();
-	_indicator->update();
-	color_rect->update();
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
+	color_rect->queue_redraw();
 }
 
 void AudioStreamImportSettings::_play() {
@@ -238,7 +238,7 @@ void AudioStreamImportSettings::_stop() {
 	_player->stop();
 	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 	_current = 0;
-	_indicator->update();
+	_indicator->queue_redraw();
 	set_process(false);
 }
 
@@ -246,7 +246,7 @@ void AudioStreamImportSettings::_on_finished() {
 	_play_button->set_icon(get_theme_icon(SNAME("MainPlay"), SNAME("EditorIcons")));
 	if (!_pausing) {
 		_current = 0;
-		_indicator->update();
+		_indicator->queue_redraw();
 	} else {
 		_pausing = false;
 	}
@@ -310,7 +310,7 @@ void AudioStreamImportSettings::_draw_indicator() {
 
 void AudioStreamImportSettings::_on_indicator_mouse_exited() {
 	_hovering_beat = -1;
-	_indicator->update();
+	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettings::_on_input_indicator(Ref<InputEvent> p_event) {
@@ -353,11 +353,11 @@ void AudioStreamImportSettings::_on_input_indicator(Ref<InputEvent> p_event) {
 				int new_hovering_beat = _get_beat_at_pos(mm->get_position().x);
 				if (new_hovering_beat != _hovering_beat) {
 					_hovering_beat = new_hovering_beat;
-					_indicator->update();
+					_indicator->queue_redraw();
 				}
 			} else if (_hovering_beat != -1) {
 				_hovering_beat = -1;
-				_indicator->update();
+				_indicator->queue_redraw();
 			}
 		}
 	}
@@ -391,7 +391,7 @@ void AudioStreamImportSettings::_seek_to(real_t p_x) {
 	_current = zoom_bar->get_value() + p_x / _preview->get_rect().size.x * zoom_bar->get_page();
 	_current = CLAMP(_current, 0, stream->get_length());
 	_player->seek(_current);
-	_indicator->update();
+	_indicator->queue_redraw();
 }
 
 void AudioStreamImportSettings::edit(const String &p_path, const String &p_importer, const Ref<AudioStream> &p_stream) {
@@ -410,9 +410,9 @@ void AudioStreamImportSettings::edit(const String &p_path, const String &p_impor
 
 	if (!stream.is_null()) {
 		stream->connect("changed", callable_mp(this, &AudioStreamImportSettings::_audio_changed));
-		_preview->update();
-		_indicator->update();
-		color_rect->update();
+		_preview->queue_redraw();
+		_indicator->queue_redraw();
+		color_rect->queue_redraw();
 	} else {
 		hide();
 	}
@@ -500,9 +500,9 @@ void AudioStreamImportSettings::_settings_changed() {
 
 	updating_settings = false;
 
-	_preview->update();
-	_indicator->update();
-	color_rect->update();
+	_preview->queue_redraw();
+	_indicator->queue_redraw();
+	color_rect->queue_redraw();
 }
 
 void AudioStreamImportSettings::_reimport() {
@@ -526,7 +526,7 @@ AudioStreamImportSettings::AudioStreamImportSettings() {
 	loop_hb->add_theme_constant_override("separation", 4 * EDSCALE);
 	loop = memnew(CheckBox);
 	loop->set_text(TTR("Enable"));
-	loop->set_tooltip(TTR("Enable looping."));
+	loop->set_tooltip_text(TTR("Enable looping."));
 	loop->connect("toggled", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	loop_hb->add_child(loop);
 	loop_hb->add_spacer();
@@ -535,7 +535,7 @@ AudioStreamImportSettings::AudioStreamImportSettings() {
 	loop_offset->set_max(10000);
 	loop_offset->set_step(0.001);
 	loop_offset->set_suffix("sec");
-	loop_offset->set_tooltip(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
+	loop_offset->set_tooltip_text(TTR("Loop offset (from beginning). Note that if BPM is set, this setting will be ignored."));
 	loop_offset->connect("value_changed", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	loop_hb->add_child(loop_offset);
 	main_vbox->add_margin_child(TTR("Loop:"), loop_hb);
@@ -549,14 +549,14 @@ AudioStreamImportSettings::AudioStreamImportSettings() {
 	bpm_edit = memnew(SpinBox);
 	bpm_edit->set_max(400);
 	bpm_edit->set_step(0.01);
-	bpm_edit->set_tooltip(TTR("Configure the Beats Per Measure (tempo) used for the interactive streams.\nThis is required in order to configure beat information."));
+	bpm_edit->set_tooltip_text(TTR("Configure the Beats Per Measure (tempo) used for the interactive streams.\nThis is required in order to configure beat information."));
 	bpm_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_edit);
 	interactive_hb->add_spacer();
 	bar_beats_label = memnew(Label(TTR("Beats/Bar:")));
 	interactive_hb->add_child(bar_beats_label);
 	bar_beats_edit = memnew(SpinBox);
-	bar_beats_edit->set_tooltip(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
+	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
 	bar_beats_edit->set_min(2);
 	bar_beats_edit->set_max(32);
 	bar_beats_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
@@ -567,7 +567,7 @@ AudioStreamImportSettings::AudioStreamImportSettings() {
 	beats_enabled->connect("toggled", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_enabled);
 	beats_edit = memnew(SpinBox);
-	beats_edit->set_tooltip(TTR("Configure the amount of Beats used for music-aware looping. If zero, it will be autodetected from the length.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure looping works properly."));
+	beats_edit->set_tooltip_text(TTR("Configure the amount of Beats used for music-aware looping. If zero, it will be autodetected from the length.\nIt is recommended to set this value (either manually or by clicking on a beat number in the preview) to ensure looping works properly."));
 	beats_edit->set_max(99999);
 	beats_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_edit);

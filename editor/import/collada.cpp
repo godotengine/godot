@@ -131,7 +131,7 @@ Transform3D Collada::Node::compute_transform(const Collada &state) const {
 		switch (xf.op) {
 			case XForm::OP_ROTATE: {
 				if (xf.data.size() >= 4) {
-					xform_step.rotate(Vector3(xf.data[0], xf.data[1], xf.data[2]), Math::deg2rad(xf.data[3]));
+					xform_step.rotate(Vector3(xf.data[0], xf.data[1], xf.data[2]), Math::deg_to_rad(xf.data[3]));
 				}
 			} break;
 			case XForm::OP_SCALE: {
@@ -289,7 +289,7 @@ void Collada::_parse_image(XMLParser &parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (!path.contains("://") && path.is_relative_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.uri_decode()));
+			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().path_join(path.uri_decode()));
 		}
 	} else {
 		while (parser.read() == OK) {
@@ -302,7 +302,7 @@ void Collada::_parse_image(XMLParser &parser) {
 
 					if (!path.contains("://") && path.is_relative_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
+						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().path_join(path));
 
 					} else if (path.find("file:///") == 0) {
 						path = path.replace_first("file:///", "");

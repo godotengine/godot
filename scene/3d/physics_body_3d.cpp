@@ -1088,7 +1088,7 @@ void RigidBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5m\u00B2"), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:m"), "set_center_of_mass", "get_center_of_mass");
 	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
@@ -1208,7 +1208,7 @@ bool CharacterBody3D::move_and_slide() {
 
 	last_motion = Vector3();
 
-	if (!current_platform_velocity.is_equal_approx(Vector3())) {
+	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
@@ -1315,7 +1315,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				break;
 			}
 
-			if (result.remainder.is_equal_approx(Vector3())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector3();
 				break;
 			}
@@ -1428,7 +1428,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 					const PhysicsServer3D::MotionCollision &collision = result.collisions[0];
 
 					Vector3 slide_motion = result.remainder.slide(collision.normal);
-					if (collision_state.floor && !collision_state.wall && !motion_slide_up.is_equal_approx(Vector3())) {
+					if (collision_state.floor && !collision_state.wall && !motion_slide_up.is_zero_approx()) {
 						// Slide using the intersection between the motion plane and the floor plane,
 						// in order to keep the direction intact.
 						real_t motion_length = slide_motion.length();
@@ -1469,7 +1469,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			total_travel += result.travel;
 
 			// Apply Constant Speed.
-			if (p_was_on_floor && floor_constant_speed && can_apply_constant_speed && collision_state.floor && !motion.is_equal_approx(Vector3())) {
+			if (p_was_on_floor && floor_constant_speed && can_apply_constant_speed && collision_state.floor && !motion.is_zero_approx()) {
 				Vector3 travel_slide_up = total_travel.slide(up_direction);
 				motion = motion.normalized() * MAX(0, (motion_slide_up.length() - travel_slide_up.length()));
 			}
@@ -1492,7 +1492,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			collided = true;
 		}
 
-		if (!collided || motion.is_equal_approx(Vector3())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 
@@ -1533,7 +1533,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 			CollisionState result_state;
 			_set_collision_direction(result, result_state);
 
-			if (result.remainder.is_equal_approx(Vector3())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector3();
 				break;
 			}
@@ -1557,7 +1557,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 			}
 		}
 
-		if (!collided || motion.is_equal_approx(Vector3())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 
@@ -2284,13 +2284,13 @@ bool PhysicalBone3D::ConeJointData::_set(const StringName &p_name, const Variant
 	}
 
 	if ("joint_constraints/swing_span" == p_name) {
-		swing_span = Math::deg2rad(real_t(p_value));
+		swing_span = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_SWING_SPAN, swing_span);
 		}
 
 	} else if ("joint_constraints/twist_span" == p_name) {
-		twist_span = Math::deg2rad(real_t(p_value));
+		twist_span = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->cone_twist_joint_set_param(j, PhysicsServer3D::CONE_TWIST_JOINT_TWIST_SPAN, twist_span);
 		}
@@ -2326,9 +2326,9 @@ bool PhysicalBone3D::ConeJointData::_get(const StringName &p_name, Variant &r_re
 	}
 
 	if ("joint_constraints/swing_span" == p_name) {
-		r_ret = Math::rad2deg(swing_span);
+		r_ret = Math::rad_to_deg(swing_span);
 	} else if ("joint_constraints/twist_span" == p_name) {
-		r_ret = Math::rad2deg(twist_span);
+		r_ret = Math::rad_to_deg(twist_span);
 	} else if ("joint_constraints/bias" == p_name) {
 		r_ret = bias;
 	} else if ("joint_constraints/softness" == p_name) {
@@ -2346,7 +2346,7 @@ void PhysicalBone3D::ConeJointData::_get_property_list(List<PropertyInfo> *p_lis
 	JointData::_get_property_list(p_list);
 
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/swing_span"), PROPERTY_HINT_RANGE, "-180,180,0.01"));
-	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/twist_span"), PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_lesser,or_greater"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/twist_span"), PROPERTY_HINT_RANGE, "-40000,40000,0.1,or_less,or_greater"));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/bias"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/softness"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
 	p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("joint_constraints/relaxation"), PROPERTY_HINT_RANGE, "0.01,16.0,0.01"));
@@ -2364,13 +2364,13 @@ bool PhysicalBone3D::HingeJointData::_set(const StringName &p_name, const Varian
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		angular_limit_upper = Math::deg2rad(real_t(p_value));
+		angular_limit_upper = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER, angular_limit_upper);
 		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		angular_limit_lower = Math::deg2rad(real_t(p_value));
+		angular_limit_lower = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->hinge_joint_set_param(j, PhysicsServer3D::HINGE_JOINT_LIMIT_LOWER, angular_limit_lower);
 		}
@@ -2408,9 +2408,9 @@ bool PhysicalBone3D::HingeJointData::_get(const StringName &p_name, Variant &r_r
 	if ("joint_constraints/angular_limit_enabled" == p_name) {
 		r_ret = angular_limit_enabled;
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_upper);
+		r_ret = Math::rad_to_deg(angular_limit_upper);
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_lower);
+		r_ret = Math::rad_to_deg(angular_limit_lower);
 	} else if ("joint_constraints/angular_limit_bias" == p_name) {
 		r_ret = angular_limit_bias;
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
@@ -2471,13 +2471,13 @@ bool PhysicalBone3D::SliderJointData::_set(const StringName &p_name, const Varia
 		}
 
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		angular_limit_upper = Math::deg2rad(real_t(p_value));
+		angular_limit_upper = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_UPPER, angular_limit_upper);
 		}
 
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		angular_limit_lower = Math::deg2rad(real_t(p_value));
+		angular_limit_lower = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->slider_joint_set_param(j, PhysicsServer3D::SLIDER_JOINT_ANGULAR_LIMIT_LOWER, angular_limit_lower);
 		}
@@ -2523,9 +2523,9 @@ bool PhysicalBone3D::SliderJointData::_get(const StringName &p_name, Variant &r_
 	} else if ("joint_constraints/linear_limit_damping" == p_name) {
 		r_ret = linear_limit_damping;
 	} else if ("joint_constraints/angular_limit_upper" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_upper);
+		r_ret = Math::rad_to_deg(angular_limit_upper);
 	} else if ("joint_constraints/angular_limit_lower" == p_name) {
-		r_ret = Math::rad2deg(angular_limit_lower);
+		r_ret = Math::rad_to_deg(angular_limit_lower);
 	} else if ("joint_constraints/angular_limit_softness" == p_name) {
 		r_ret = angular_limit_softness;
 	} else if ("joint_constraints/angular_limit_restitution" == p_name) {
@@ -2649,13 +2649,13 @@ bool PhysicalBone3D::SixDOFJointData::_set(const StringName &p_name, const Varia
 		}
 
 	} else if ("angular_limit_upper" == var_name) {
-		axis_data[axis].angular_limit_upper = Math::deg2rad(real_t(p_value));
+		axis_data[axis].angular_limit_upper = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_UPPER_LIMIT, axis_data[axis].angular_limit_upper);
 		}
 
 	} else if ("angular_limit_lower" == var_name) {
-		axis_data[axis].angular_limit_lower = Math::deg2rad(real_t(p_value));
+		axis_data[axis].angular_limit_lower = Math::deg_to_rad(real_t(p_value));
 		if (j.is_valid()) {
 			PhysicsServer3D::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer3D::G6DOF_JOINT_ANGULAR_LOWER_LIMIT, axis_data[axis].angular_limit_lower);
 		}
@@ -2765,9 +2765,9 @@ bool PhysicalBone3D::SixDOFJointData::_get(const StringName &p_name, Variant &r_
 	} else if ("angular_limit_enabled" == var_name) {
 		r_ret = axis_data[axis].angular_limit_enabled;
 	} else if ("angular_limit_upper" == var_name) {
-		r_ret = Math::rad2deg(axis_data[axis].angular_limit_upper);
+		r_ret = Math::rad_to_deg(axis_data[axis].angular_limit_upper);
 	} else if ("angular_limit_lower" == var_name) {
-		r_ret = Math::rad2deg(axis_data[axis].angular_limit_lower);
+		r_ret = Math::rad_to_deg(axis_data[axis].angular_limit_lower);
 	} else if ("angular_limit_softness" == var_name) {
 		r_ret = axis_data[axis].angular_limit_softness;
 	} else if ("angular_restitution" == var_name) {
@@ -2997,7 +2997,7 @@ void PhysicalBone3D::_bind_methods() {
 	ADD_GROUP("Joint", "joint_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "joint_type", PROPERTY_HINT_ENUM, "None,PinJoint,ConeJoint,HingeJoint,SliderJoint,6DOFJoint"), "set_joint_type", "get_joint_type");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "joint_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_joint_offset", "get_joint_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_lesser,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "joint_rotation", PROPERTY_HINT_RANGE, "-360,360,0.01,or_less,or_greater,radians"), "set_joint_rotation", "get_joint_rotation");
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "body_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_body_offset", "get_body_offset");
 

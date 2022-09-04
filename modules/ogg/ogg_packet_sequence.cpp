@@ -41,7 +41,7 @@ void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByte
 	data_version++;
 }
 
-void OggPacketSequence::set_packet_data(const Array &p_data) {
+void OggPacketSequence::set_packet_data(const TypedArray<Array> &p_data) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
 	page_data.clear();
 	for (int page_idx = 0; page_idx < p_data.size(); page_idx++) {
@@ -54,8 +54,8 @@ void OggPacketSequence::set_packet_data(const Array &p_data) {
 	}
 }
 
-Array OggPacketSequence::get_packet_data() const {
-	Array ret;
+TypedArray<Array> OggPacketSequence::get_packet_data() const {
+	TypedArray<Array> ret;
 	for (const Vector<PackedByteArray> &page : page_data) {
 		Array page_variant;
 		for (const PackedByteArray &packet : page) {
@@ -66,7 +66,7 @@ Array OggPacketSequence::get_packet_data() const {
 	return ret;
 }
 
-void OggPacketSequence::set_packet_granule_positions(const Array &p_granule_positions) {
+void OggPacketSequence::set_packet_granule_positions(const PackedInt64Array &p_granule_positions) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
 	page_granule_positions.clear();
 	for (int page_idx = 0; page_idx < p_granule_positions.size(); page_idx++) {
@@ -75,8 +75,8 @@ void OggPacketSequence::set_packet_granule_positions(const Array &p_granule_posi
 	}
 }
 
-Array OggPacketSequence::get_packet_granule_positions() const {
-	Array ret;
+PackedInt64Array OggPacketSequence::get_packet_granule_positions() const {
+	PackedInt64Array ret;
 	for (int64_t granule_pos : page_granule_positions) {
 		ret.push_back(granule_pos);
 	}
@@ -127,8 +127,8 @@ void OggPacketSequence::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_length"), &OggPacketSequence::get_length);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "packet_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_data", "get_packet_data");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "granule_positions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_granule_positions", "get_packet_granule_positions");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "packet_data", PROPERTY_HINT_ARRAY_TYPE, "PackedByteArray", PROPERTY_USAGE_NO_EDITOR), "set_packet_data", "get_packet_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "granule_positions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_packet_granule_positions", "get_packet_granule_positions");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sampling_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_sampling_rate", "get_sampling_rate");
 }
 

@@ -91,6 +91,7 @@ class EditorMaterialPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
+	RID camera_attributes;
 	Semaphore preview_done;
 
 	void _generate_frame_started();
@@ -133,6 +134,7 @@ class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 	RID light2;
 	RID light_instance2;
 	RID camera;
+	RID camera_attributes;
 	Semaphore preview_done;
 
 	void _generate_frame_started();

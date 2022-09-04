@@ -34,7 +34,7 @@
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	texture_normal = p_texture;
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> TouchScreenButton::get_texture_normal() const {
@@ -43,7 +43,7 @@ Ref<Texture2D> TouchScreenButton::get_texture_normal() const {
 
 void TouchScreenButton::set_texture_pressed(const Ref<Texture2D> &p_texture_pressed) {
 	texture_pressed = p_texture_pressed;
-	update();
+	queue_redraw();
 }
 
 Ref<Texture2D> TouchScreenButton::get_texture_pressed() const {
@@ -60,16 +60,16 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 	if (shape.is_valid()) {
-		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 
 	shape = p_shape;
 
 	if (shape.is_valid()) {
-		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
 	}
 
-	update();
+	queue_redraw();
 }
 
 Ref<Shape2D> TouchScreenButton::get_shape() const {
@@ -78,7 +78,7 @@ Ref<Shape2D> TouchScreenButton::get_shape() const {
 
 void TouchScreenButton::set_shape_centered(bool p_shape_centered) {
 	shape_centered = p_shape_centered;
-	update();
+	queue_redraw();
 }
 
 bool TouchScreenButton::is_shape_visible() const {
@@ -87,7 +87,7 @@ bool TouchScreenButton::is_shape_visible() const {
 
 void TouchScreenButton::set_shape_visible(bool p_shape_visible) {
 	shape_visible = p_shape_visible;
-	update();
+	queue_redraw();
 }
 
 bool TouchScreenButton::is_shape_centered() const {
@@ -140,7 +140,7 @@ void TouchScreenButton::_notification(int p_what) {
 			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY) {
 				return;
 			}
-			update();
+			queue_redraw();
 
 			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_process_input(is_visible_in_tree());
@@ -264,7 +264,7 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (bitmask.is_valid()) {
 		check_rect = false;
 		if (!touched && Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
-			if (bitmask->get_bit(coord)) {
+			if (bitmask->get_bitv(coord)) {
 				touched = true;
 			}
 		}
@@ -292,7 +292,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 	}
 
 	emit_signal(SNAME("pressed"));
-	update();
+	queue_redraw();
 }
 
 void TouchScreenButton::_release(bool p_exiting_tree) {
@@ -311,7 +311,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 	if (!p_exiting_tree) {
 		emit_signal(SNAME("released"));
-		update();
+		queue_redraw();
 	}
 }
 
@@ -339,7 +339,7 @@ Rect2 TouchScreenButton::get_anchorable_rect() const {
 
 void TouchScreenButton::set_visibility_mode(VisibilityMode p_mode) {
 	visibility = p_mode;
-	update();
+	queue_redraw();
 }
 
 TouchScreenButton::VisibilityMode TouchScreenButton::get_visibility_mode() const {

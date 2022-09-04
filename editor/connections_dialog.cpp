@@ -460,7 +460,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	unbind_count = memnew(SpinBox);
-	unbind_count->set_tooltip(TTR("Allows to drop arguments sent by signal emitter."));
+	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
 	unbind_count->connect("value_changed", callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
@@ -481,13 +481,13 @@ ConnectDialog::ConnectDialog() {
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
 	deferred->set_text(TTR("Deferred"));
-	deferred->set_tooltip(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
+	deferred->set_tooltip_text(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
 	vbc_right->add_child(deferred);
 
 	oneshot = memnew(CheckBox);
 	oneshot->set_h_size_flags(0);
 	oneshot->set_text(TTR("Oneshot"));
-	oneshot->set_tooltip(TTR("Disconnects the signal after its first emission."));
+	oneshot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
 	vbc_right->add_child(oneshot);
 
 	cdbinds = memnew(ConnectDialogBinds);
@@ -753,22 +753,12 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	}
 
 	Dictionary subst;
-
-	String s = node_name.capitalize().replace(" ", "");
-	subst["NodeName"] = s;
-	if (!s.is_empty()) {
-		s[0] = s.to_lower()[0];
-	}
-	subst["nodeName"] = s;
-	subst["node_name"] = node_name.capitalize().replace(" ", "_").to_lower();
-
-	s = signal_name.capitalize().replace(" ", "");
-	subst["SignalName"] = s;
-	if (!s.is_empty()) {
-		s[0] = s.to_lower()[0];
-	}
-	subst["signalName"] = s;
-	subst["signal_name"] = signal_name.capitalize().replace(" ", "_").to_lower();
+	subst["NodeName"] = node_name.to_pascal_case();
+	subst["nodeName"] = node_name.to_camel_case();
+	subst["node_name"] = node_name.to_snake_case();
+	subst["SignalName"] = signal_name.to_pascal_case();
+	subst["signalName"] = signal_name.to_camel_case();
+	subst["signal_name"] = signal_name.to_snake_case();
 
 	String dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
 
@@ -1070,7 +1060,7 @@ void ConnectionsDock::update_tree() {
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
-				signal_item->set_tooltip(0, String(signal_name) + "::" + signaldesc + "::" + descr);
+				signal_item->set_tooltip_text(0, String(signal_name) + "::" + signaldesc + "::" + descr);
 			}
 
 			// List existing connections.

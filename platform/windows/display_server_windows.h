@@ -152,6 +152,12 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
+typedef bool(WINAPI *IsDarkModeAllowedForAppPtr)();
+typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
+typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
+typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
+typedef int(WINAPI *GetImmersiveUserColorSetPreferencePtr)(bool bForceCheckRegistry, bool bSkipCheckOnFail);
+
 // Windows Ink API
 #ifndef POINTER_STRUCTURES
 
@@ -278,6 +284,14 @@ class DisplayServerWindows : public DisplayServer {
 
 	_THREAD_SAFE_CLASS_
 
+	// UXTheme API
+	static bool ux_theme_available;
+	static IsDarkModeAllowedForAppPtr IsDarkModeAllowedForApp;
+	static ShouldAppsUseDarkModePtr ShouldAppsUseDarkMode;
+	static GetImmersiveColorFromColorSetExPtr GetImmersiveColorFromColorSetEx;
+	static GetImmersiveColorTypeFromNamePtr GetImmersiveColorTypeFromName;
+	static GetImmersiveUserColorSetPreferencePtr GetImmersiveUserColorSetPreference;
+
 	// WinTab API
 	static bool wintab_available;
 	static WTOpenPtr wintab_WTOpen;
@@ -338,7 +352,6 @@ class DisplayServerWindows : public DisplayServer {
 
 	struct WindowData {
 		HWND hWnd;
-		//layered window
 
 		Vector<Vector2> mpath;
 
@@ -378,10 +391,6 @@ class DisplayServerWindows : public DisplayServer {
 		Vector2 last_tilt;
 		bool last_pen_inverted = false;
 
-		HBITMAP hBitmap; //DIB section for layered window
-		uint8_t *dib_data = nullptr;
-		Size2 dib_size;
-		HDC hDC_dib;
 		Size2 min_size;
 		Size2 max_size;
 		int width = 0, height = 0;
@@ -484,6 +493,10 @@ public:
 	virtual void tts_pause() override;
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
+
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+	virtual Color get_accent_color() const override;
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;

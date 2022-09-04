@@ -56,7 +56,7 @@ void Gradient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color", "point", "color"), &Gradient::set_color);
 	ClassDB::bind_method(D_METHOD("get_color", "point"), &Gradient::get_color);
 
-	ClassDB::bind_method(D_METHOD("interpolate", "offset"), &Gradient::get_color_at_offset);
+	ClassDB::bind_method(D_METHOD("sample", "offset"), &Gradient::get_color_at_offset);
 
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Gradient::get_points_count);
 

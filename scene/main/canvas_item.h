@@ -110,7 +110,7 @@ private:
 	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
 	void _handle_visibility_change(bool p_visible);
 
-	void _update_callback();
+	void _redraw_callback();
 
 	void _enter_canvas();
 	void _exit_canvas();
@@ -197,7 +197,7 @@ public:
 	void show();
 	void hide();
 
-	void update();
+	void queue_redraw();
 
 	void set_clip_children(bool p_enabled);
 	bool is_clipping_children() const;

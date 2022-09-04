@@ -54,6 +54,7 @@
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_link_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/ray_cast_3d.h"
@@ -1295,7 +1296,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 
 	//min_p = p_arc_xform.affine_inverse().xform(min_p);
 	float a = (Math_PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
-	return Math::rad2deg(a);
+	return Math::rad_to_deg(a);
 }
 
 void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -1365,7 +1366,8 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
 
-	Color color = light->get_color();
+	Color color = light->get_color().srgb_to_linear() * light->get_correlated_color().srgb_to_linear();
+	color = color.linear_to_srgb();
 	// Make the gizmo color as bright as possible for better visibility
 	color.set_hsv(color.get_h(), color.get_s(), 1);
 
@@ -1421,8 +1423,8 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 120; i++) {
 			// Create a circle
-			const float ra = Math::deg2rad((float)(i * 3));
-			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const float ra = Math::deg_to_rad((float)(i * 3));
+			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
 			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -1458,13 +1460,13 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		SpotLight3D *sl = Object::cast_to<SpotLight3D>(light);
 
 		float r = sl->get_param(Light3D::PARAM_RANGE);
-		float w = r * Math::sin(Math::deg2rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
-		float d = r * Math::cos(Math::deg2rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
+		float w = r * Math::sin(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
+		float d = r * Math::cos(Math::deg_to_rad(sl->get_param(Light3D::PARAM_SPOT_ANGLE)));
 
 		for (int i = 0; i < 120; i++) {
 			// Draw a circle
-			const float ra = Math::deg2rad((float)(i * 3));
-			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const float ra = Math::deg_to_rad((float)(i * 3));
+			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
 			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
@@ -1545,8 +1547,8 @@ void AudioStreamPlayer3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo
 	float closest_angle = 1e20;
 
 	for (int i = 0; i < 180; i++) {
-		float a = Math::deg2rad((float)i);
-		float an = Math::deg2rad((float)(i + 1));
+		float a = Math::deg_to_rad((float)i);
+		float an = Math::deg_to_rad((float)(i + 1));
 
 		Vector3 from(Math::sin(a), 0, -Math::cos(a));
 		Vector3 to(Math::sin(an), 0, -Math::cos(an));
@@ -1628,8 +1630,8 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 120; i++) {
 			// Create a circle.
-			const float ra = Math::deg2rad((float)(i * 3));
-			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const float ra = Math::deg_to_rad((float)(i * 3));
+			const float rb = Math::deg_to_rad((float)((i + 1) * 3));
 			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -1671,8 +1673,8 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (player->is_emission_angle_enabled()) {
 		const float pc = player->get_emission_angle();
-		const float ofs = -Math::cos(Math::deg2rad(pc));
-		const float radius = Math::sin(Math::deg2rad(pc));
+		const float ofs = -Math::cos(Math::deg_to_rad(pc));
+		const float radius = Math::sin(Math::deg_to_rad(pc));
 
 		Vector<Vector3> points_primary;
 		points_primary.resize(200);
@@ -1707,7 +1709,7 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points_secondary, material_secondary);
 
 		Vector<Vector3> handles;
-		const float ha = Math::deg2rad(player->get_emission_angle());
+		const float ha = Math::deg_to_rad(player->get_emission_angle());
 		handles.push_back(Vector3(Math::sin(ha), 0, -Math::cos(ha)));
 		p_gizmo->add_handles(handles, get_material("handles"));
 	}
@@ -1872,7 +1874,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			// The real FOV is halved for accurate representation
 			float fov = camera->get_fov() / 2.0;
 
-			Vector3 side = Vector3(Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)));
+			Vector3 side = Vector3(Math::sin(Math::deg_to_rad(fov)), 0, -Math::cos(Math::deg_to_rad(fov)));
 			Vector3 nside = side;
 			nside.x = -nside.x;
 			Vector3 up = Vector3(0, side.x, 0);
@@ -2643,8 +2645,8 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	float r = car_wheel->get_radius();
 	const int skip = 10;
 	for (int i = 0; i <= 360; i += skip) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + skip);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + skip);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -3272,8 +3274,8 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> points;
 
 		for (int i = 0; i <= 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -4517,8 +4519,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<Vector3> points;
 
 		for (int i = 0; i <= 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
@@ -4589,8 +4591,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Vector3 d(0, height * 0.5 - radius, 0);
 		for (int i = 0; i < 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
@@ -4660,8 +4662,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Vector3 d(0, height * 0.5, 0);
 		for (int i = 0; i < 360; i++) {
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
+			float ra = Math::deg_to_rad((float)i);
+			float rb = Math::deg_to_rad((float)i + 1);
 			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * radius;
 			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * radius;
 
@@ -4998,6 +5000,175 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 }
 
+////
+
+NavigationLink3DGizmoPlugin::NavigationLink3DGizmoPlugin() {
+	create_material("navigation_link_material", NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_color());
+	create_material("navigation_link_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_disabled_color());
+	create_handle_material("handles");
+}
+
+bool NavigationLink3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<NavigationLink3D>(p_spatial) != nullptr;
+}
+
+String NavigationLink3DGizmoPlugin::get_gizmo_name() const {
+	return "NavigationLink3D";
+}
+
+int NavigationLink3DGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void NavigationLink3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+
+	RID nav_map = link->get_world_3d()->get_navigation_map();
+	real_t search_radius = NavigationServer3D::get_singleton()->map_get_link_connection_radius(nav_map);
+	Vector3 up_vector = NavigationServer3D::get_singleton()->map_get_up(nav_map);
+	Vector3::Axis up_axis = up_vector.max_axis_index();
+
+	Vector3 start_location = link->get_start_location();
+	Vector3 end_location = link->get_end_location();
+
+	Ref<Material> link_material = get_material("navigation_link_material", p_gizmo);
+	Ref<Material> link_material_disabled = get_material("navigation_link_material_disabled", p_gizmo);
+	Ref<Material> handles_material = get_material("handles");
+
+	p_gizmo->clear();
+
+	// Draw line between the points.
+	Vector<Vector3> lines;
+	lines.append(start_location);
+	lines.append(end_location);
+
+	// Draw start location search radius
+	for (int i = 0; i < 30; i++) {
+		// Create a circle
+		const float ra = Math::deg_to_rad((float)(i * 12));
+		const float rb = Math::deg_to_rad((float)((i + 1) * 12));
+		const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * search_radius;
+		const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * search_radius;
+
+		// Draw axis-aligned circle
+		switch (up_axis) {
+			case Vector3::AXIS_X:
+				lines.append(start_location + Vector3(0, a.x, a.y));
+				lines.append(start_location + Vector3(0, b.x, b.y));
+				break;
+			case Vector3::AXIS_Y:
+				lines.append(start_location + Vector3(a.x, 0, a.y));
+				lines.append(start_location + Vector3(b.x, 0, b.y));
+				break;
+			case Vector3::AXIS_Z:
+				lines.append(start_location + Vector3(a.x, a.y, 0));
+				lines.append(start_location + Vector3(b.x, b.y, 0));
+				break;
+		}
+	}
+
+	// Draw end location search radius
+	for (int i = 0; i < 30; i++) {
+		// Create a circle
+		const float ra = Math::deg_to_rad((float)(i * 12));
+		const float rb = Math::deg_to_rad((float)((i + 1) * 12));
+		const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * search_radius;
+		const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * search_radius;
+
+		// Draw axis-aligned circle
+		switch (up_axis) {
+			case Vector3::AXIS_X:
+				lines.append(end_location + Vector3(0, a.x, a.y));
+				lines.append(end_location + Vector3(0, b.x, b.y));
+				break;
+			case Vector3::AXIS_Y:
+				lines.append(end_location + Vector3(a.x, 0, a.y));
+				lines.append(end_location + Vector3(b.x, 0, b.y));
+				break;
+			case Vector3::AXIS_Z:
+				lines.append(end_location + Vector3(a.x, a.y, 0));
+				lines.append(end_location + Vector3(b.x, b.y, 0));
+				break;
+		}
+	}
+
+	p_gizmo->add_lines(lines, link->is_enabled() ? link_material : link_material_disabled);
+	p_gizmo->add_collision_segments(lines);
+
+	Vector<Vector3> handles;
+	handles.append(start_location);
+	handles.append(end_location);
+	p_gizmo->add_handles(handles, handles_material);
+}
+
+String NavigationLink3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	return p_id == 0 ? TTR("Start Location") : TTR("End Location");
+}
+
+Variant NavigationLink3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+	return p_id == 0 ? link->get_start_location() : link->get_end_location();
+}
+
+void NavigationLink3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+
+	Transform3D gt = link->get_global_transform();
+	Transform3D gi = gt.affine_inverse();
+
+	Transform3D ct = p_camera->get_global_transform();
+	Vector3 cam_dir = ct.basis.get_column(Vector3::AXIS_Z);
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 location = p_id == 0 ? link->get_start_location() : link->get_end_location();
+	Plane move_plane = Plane(cam_dir, gt.xform(location));
+
+	Vector3 intersection;
+	if (!move_plane.intersects_ray(ray_from, ray_dir, &intersection)) {
+		return;
+	}
+
+	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+		double snap = Node3DEditor::get_singleton()->get_translate_snap();
+		intersection.snap(Vector3(snap, snap, snap));
+	}
+
+	location = gi.xform(intersection);
+	if (p_id == 0) {
+		link->set_start_location(location);
+	} else if (p_id == 1) {
+		link->set_end_location(location);
+	}
+}
+
+void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
+	NavigationLink3D *link = Object::cast_to<NavigationLink3D>(p_gizmo->get_spatial_node());
+
+	if (p_cancel) {
+		if (p_id == 0) {
+			link->set_start_location(p_restore);
+		} else {
+			link->set_end_location(p_restore);
+		}
+		return;
+	}
+
+	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	if (p_id == 0) {
+		ur->create_action(TTR("Change Start Location"));
+		ur->add_do_method(link, "set_start_location", link->get_start_location());
+		ur->add_undo_method(link, "set_start_location", p_restore);
+	} else {
+		ur->create_action(TTR("Change End Location"));
+		ur->add_do_method(link, "set_end_location", link->get_end_location());
+		ur->add_undo_method(link, "set_end_location", p_restore);
+	}
+
+	ur->commit_action();
+}
+
 //////
 
 #define BODY_A_RADIUS 0.25
@@ -5203,8 +5374,8 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 
 	//swing
 	for (int i = 0; i < 360; i += 10) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 10);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + 10);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
@@ -5221,12 +5392,12 @@ void JointGizmosDrawer::draw_cone(const Transform3D &p_offset, const Basis &p_ba
 	r_points.push_back(p_offset.translated_local(p_base.xform(Vector3(1, 0, 0))).origin);
 
 	/// Twist
-	float ts = Math::rad2deg(p_twist);
+	float ts = Math::rad_to_deg(p_twist);
 	ts = MIN(ts, 720);
 
 	for (int i = 0; i < int(ts); i += 5) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 5);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + 5);
 		float c = i / 720.0;
 		float cn = (i + 5) / 720.0;
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w * c;

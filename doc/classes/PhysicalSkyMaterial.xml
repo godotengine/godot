@@ -11,8 +11,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="exposure" type="float" setter="set_exposure" getter="get_exposure" default="0.1">
-			Sets the exposure of the sky. Higher exposure values make the entire sky brighter.
+		<member name="energy_multiplier" type="float" setter="set_energy_multiplier" getter="get_energy_multiplier" default="1.0">
 		</member>
 		<member name="ground_color" type="Color" setter="set_ground_color" getter="get_ground_color" default="Color(0.1, 0.07, 0.034, 1)">
 			Modulates the [Color] on the bottom half of the sky to represent the ground.

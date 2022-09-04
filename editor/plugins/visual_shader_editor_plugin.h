@@ -89,7 +89,7 @@ private:
 		HashMap<int, InputPort> input_ports;
 		HashMap<int, Port> output_ports;
 		VBoxContainer *preview_box = nullptr;
-		LineEdit *uniform_name = nullptr;
+		LineEdit *parameter_name = nullptr;
 		CodeEdit *expression_edit = nullptr;
 		CurveEditor *curve_editors[3] = { nullptr, nullptr, nullptr };
 	};
@@ -110,7 +110,7 @@ public:
 	void set_connections(const List<VisualShader::Connection> &p_connections);
 	void register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node);
 	void register_output_port(int p_id, int p_port, TextureButton *p_button);
-	void register_uniform_name(int p_id, LineEdit *p_uniform_name);
+	void register_parameter_name(int p_id, LineEdit *p_parameter_name);
 	void register_default_input_button(int p_node_id, int p_port_id, Button *p_button);
 	void register_expression_edit(int p_node_id, CodeEdit *p_expression_edit);
 	void register_curve_editor(int p_node_id, int p_index, CurveEditor *p_curve_editor);
@@ -129,8 +129,8 @@ public:
 	void set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position);
 	void refresh_node_ports(VisualShader::Type p_type, int p_node);
 	void set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value);
-	void update_uniform_refs();
-	void set_uniform_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
+	void update_parameter_refs();
+	void set_parameter_name(VisualShader::Type p_type, int p_node_id, const String &p_name);
 	void update_curve(int p_node_id);
 	void update_curve_xyz(int p_node_id);
 	void set_expression(VisualShader::Type p_type, int p_node_id, const String &p_expression);
@@ -269,8 +269,8 @@ class VisualShaderEditor : public VBoxContainer {
 		CLEAR_COPY_BUFFER,
 		SEPARATOR2, // ignore
 		FLOAT_CONSTANTS,
-		CONVERT_CONSTANTS_TO_UNIFORMS,
-		CONVERT_UNIFORMS_TO_CONSTANTS,
+		CONVERT_CONSTANTS_TO_PARAMETERS,
+		CONVERT_PARAMETERS_TO_CONSTANTS,
 		SEPARATOR3, // ignore
 		SET_COMMENT_TITLE,
 		SET_COMMENT_DESCRIPTION,
@@ -340,7 +340,7 @@ class VisualShaderEditor : public VBoxContainer {
 	int curve_xyz_node_option_idx;
 	List<String> keyword_list;
 
-	List<VisualShaderNodeUniformRef> uniform_refs;
+	List<VisualShaderNodeParameterRef> uniform_refs;
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
@@ -390,14 +390,14 @@ class VisualShaderEditor : public VBoxContainer {
 	int from_slot = -1;
 
 	HashSet<int> selected_constants;
-	HashSet<int> selected_uniforms;
+	HashSet<int> selected_parameters;
 	int selected_comment = -1;
 	int selected_float_constant = -1;
 
-	void _convert_constants_to_uniforms(bool p_vice_versa);
+	void _convert_constants_to_parameters(bool p_vice_versa);
 	void _replace_node(VisualShader::Type p_type_id, int p_node_id, const StringName &p_from, const StringName &p_to);
 	void _update_constant(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
-	void _update_uniform(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
+	void _update_parameter(VisualShader::Type p_type_id, int p_node_id, Variant p_var, int p_preview_port);
 
 	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
@@ -413,8 +413,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _comment_desc_confirm();
 	void _comment_desc_text_changed();
 
-	void _uniform_line_edit_changed(const String &p_text, int p_node_id);
-	void _uniform_line_edit_focus_out(Object *line_edit, int p_node_id);
+	void _parameter_line_edit_changed(const String &p_text, int p_node_id);
+	void _parameter_line_edit_focus_out(Object *line_edit, int p_node_id);
 
 	void _port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output);
 
@@ -449,7 +449,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _custom_mode_toggled(bool p_enabled);
 
 	void _input_select_item(Ref<VisualShaderNodeInput> input, String name);
-	void _uniform_select_item(Ref<VisualShaderNodeUniformRef> p_uniform, String p_name);
+	void _parameter_ref_select_item(Ref<VisualShaderNodeParameterRef> p_parameter_ref, String p_name);
 	void _varying_select_item(Ref<VisualShaderNodeVarying> p_varying, String p_name);
 
 	void _float_constant_selected(int p_which);
@@ -498,8 +498,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	bool _is_available(int p_mode);
 	void _update_created_node(GraphNode *node);
-	void _update_uniforms(bool p_update_refs);
-	void _update_uniform_refs(HashSet<String> &p_names);
+	void _update_parameters(bool p_update_refs);
+	void _update_parameter_refs(HashSet<String> &p_names);
 	void _update_varyings();
 
 	void _visibility_changed();

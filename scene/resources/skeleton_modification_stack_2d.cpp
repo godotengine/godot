@@ -138,7 +138,7 @@ void SkeletonModificationStack2D::set_editor_gizmos_dirty(bool p_dirty) {
 	if (!editor_gizmo_dirty && p_dirty) {
 		editor_gizmo_dirty = p_dirty;
 		if (skeleton) {
-			skeleton->update();
+			skeleton->queue_redraw();
 		}
 	} else {
 		editor_gizmo_dirty = p_dirty;

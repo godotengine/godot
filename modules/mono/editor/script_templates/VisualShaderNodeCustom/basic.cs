@@ -20,37 +20,37 @@ public partial class VisualShaderNode_CLASS_ : _BASE_
         return "";
     }
 
-    public override int _GetReturnIconType()
+    public override long _GetReturnIconType()
     {
         return 0;
     }
 
-    public override int _GetInputPortCount()
+    public override long _GetInputPortCount()
     {
         return 0;
     }
 
-    public override string _GetInputPortName(int port)
+    public override string _GetInputPortName(long port)
     {
         return "";
     }
 
-    public override int _GetInputPortType(int port)
+    public override long _GetInputPortType(long port)
     {
         return 0;
     }
 
-    public override int _GetOutputPortCount()
+    public override long _GetOutputPortCount()
     {
         return 1;
     }
 
-    public override string _GetOutputPortName(int port)
+    public override string _GetOutputPortName(long port)
     {
         return "result";
     }
 
-    public override int _GetOutputPortType(int port)
+    public override long _GetOutputPortType(long port)
     {
         return 0;
     }

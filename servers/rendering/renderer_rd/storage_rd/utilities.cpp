@@ -155,8 +155,8 @@ void Utilities::base_update_dependency(RID p_base, DependencyTracker *p_instance
 		Dependency *dependency = TextureStorage::get_singleton()->decal_get_dependency(p_base);
 		p_instance->update_dependency(dependency);
 	} else if (GI::get_singleton()->owns_voxel_gi(p_base)) {
-		GI::VoxelGI *gip = GI::get_singleton()->get_voxel_gi(p_base);
-		p_instance->update_dependency(&gip->dependency);
+		Dependency *dependency = GI::get_singleton()->voxel_gi_get_dependency(p_base);
+		p_instance->update_dependency(dependency);
 	} else if (LightStorage::get_singleton()->owns_lightmap(p_base)) {
 		Dependency *dependency = LightStorage::get_singleton()->lightmap_get_dependency(p_base);
 		p_instance->update_dependency(dependency);

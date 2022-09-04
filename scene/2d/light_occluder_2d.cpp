@@ -153,7 +153,7 @@ OccluderPolygon2D::~OccluderPolygon2D() {
 
 void LightOccluder2D::_poly_changed() {
 #ifdef DEBUG_ENABLED
-	update();
+	queue_redraw();
 #endif
 }
 
@@ -229,7 +229,7 @@ void LightOccluder2D::set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polyg
 	if (occluder_polygon.is_valid()) {
 		occluder_polygon->connect("changed", callable_mp(this, &LightOccluder2D::_poly_changed));
 	}
-	update();
+	queue_redraw();
 #endif
 }
 

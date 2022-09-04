@@ -145,7 +145,7 @@ void GodotPhysicsDirectBodyState3D::add_constant_torque(const Vector3 &p_torque)
 }
 
 void GodotPhysicsDirectBodyState3D::set_constant_force(const Vector3 &p_force) {
-	if (!p_force.is_equal_approx(Vector3())) {
+	if (!p_force.is_zero_approx()) {
 		body->wakeup();
 	}
 	body->set_constant_force(p_force);
@@ -156,7 +156,7 @@ Vector3 GodotPhysicsDirectBodyState3D::get_constant_force() const {
 }
 
 void GodotPhysicsDirectBodyState3D::set_constant_torque(const Vector3 &p_torque) {
-	if (!p_torque.is_equal_approx(Vector3())) {
+	if (!p_torque.is_zero_approx()) {
 		body->wakeup();
 	}
 	body->set_constant_torque(p_torque);

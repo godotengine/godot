@@ -36,7 +36,7 @@ bool StyleBoxPreview::grid_preview_enabled = true;
 
 void StyleBoxPreview::_grid_preview_toggled(bool p_active) {
 	grid_preview_enabled = p_active;
-	preview->update();
+	preview->queue_redraw();
 }
 
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
@@ -66,7 +66,7 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 }
 
 void StyleBoxPreview::_sb_changed() {
-	preview->update();
+	preview->queue_redraw();
 }
 
 void StyleBoxPreview::_notification(int p_what) {

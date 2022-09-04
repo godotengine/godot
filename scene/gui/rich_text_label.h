@@ -83,6 +83,7 @@ public:
 	};
 
 protected:
+	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -511,6 +512,46 @@ private:
 	int fixed_width = -1;
 
 	bool fit_content_height = false;
+
+	struct ThemeCache {
+		Ref<StyleBox> normal_style;
+		Ref<StyleBox> focus_style;
+		Ref<StyleBox> progress_bg_style;
+		Ref<StyleBox> progress_fg_style;
+
+		int line_separation;
+
+		Ref<Font> normal_font;
+		int normal_font_size;
+
+		Color default_color;
+		Color font_selected_color;
+		Color selection_color;
+		Color font_outline_color;
+		Color font_shadow_color;
+		int shadow_outline_size;
+		int shadow_offset_x;
+		int shadow_offset_y;
+		int outline_size;
+		Color outline_color;
+
+		Ref<Font> bold_font;
+		int bold_font_size;
+		Ref<Font> bold_italics_font;
+		int bold_italics_font_size;
+		Ref<Font> italics_font;
+		int italics_font_size;
+		Ref<Font> mono_font;
+		int mono_font_size;
+
+		int table_h_separation;
+		int table_v_separation;
+		Color table_odd_row_bg;
+		Color table_even_row_bg;
+		Color table_border;
+
+		float base_scale = 1.0;
+	} theme_cache;
 
 public:
 	String get_parsed_text() const;

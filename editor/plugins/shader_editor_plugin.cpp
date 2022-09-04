@@ -355,7 +355,7 @@ void ShaderTextEditor::_check_shader_mode() {
 }
 
 static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_variable) {
-	RS::GlobalShaderUniformType gvt = RS::get_singleton()->global_shader_uniform_get_type(p_variable);
+	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_variable);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
@@ -1398,12 +1398,12 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 	switch (p_index) {
 		case FILE_NEW: {
 			String base_path = FileSystemDock::get_singleton()->get_current_path().get_base_dir();
-			shader_create_dialog->config(base_path.plus_file("new_shader"), false, false, 0);
+			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, 0);
 			shader_create_dialog->popup_centered();
 		} break;
 		case FILE_NEW_INCLUDE: {
 			String base_path = FileSystemDock::get_singleton()->get_current_path().get_base_dir();
-			shader_create_dialog->config(base_path.plus_file("new_shader"), false, false, 2);
+			shader_create_dialog->config(base_path.path_join("new_shader"), false, false, 2);
 			shader_create_dialog->popup_centered();
 		} break;
 		case FILE_OPEN: {

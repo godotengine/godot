@@ -36,7 +36,7 @@
 #include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 
-class VisualShaderNodeUniform;
+class VisualShaderNodeParameter;
 class VisualShaderNode;
 
 class VisualShader : public Shader {
@@ -229,7 +229,7 @@ public: // internal methods
 	String generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &r_default_tex_params) const;
 
 	String validate_port_name(const String &p_port_name, VisualShaderNode *p_node, int p_port_id, bool p_output) const;
-	String validate_uniform_name(const String &p_name, const Ref<VisualShaderNodeUniform> &p_uniform) const;
+	String validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const;
 
 	VisualShader();
 };
@@ -499,8 +499,8 @@ public:
 	VisualShaderNodeOutput();
 };
 
-class VisualShaderNodeUniform : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeUniform, VisualShaderNode);
+class VisualShaderNodeParameter : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeParameter, VisualShaderNode);
 
 public:
 	enum Qualifier {
@@ -511,7 +511,7 @@ public:
 	};
 
 private:
-	String uniform_name = "";
+	String parameter_name = "";
 	Qualifier qualifier = QUAL_NONE;
 	bool global_code_generated = false;
 
@@ -520,8 +520,8 @@ protected:
 	String _get_qual_str() const;
 
 public:
-	void set_uniform_name(const String &p_name);
-	String get_uniform_name() const;
+	void set_parameter_name(const String &p_name);
+	String get_parameter_name() const;
 
 	void set_qualifier(Qualifier p_qual);
 	Qualifier get_qualifier() const;
@@ -535,44 +535,44 @@ public:
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
-	VisualShaderNodeUniform();
+	VisualShaderNodeParameter();
 };
 
-VARIANT_ENUM_CAST(VisualShaderNodeUniform::Qualifier)
+VARIANT_ENUM_CAST(VisualShaderNodeParameter::Qualifier)
 
-class VisualShaderNodeUniformRef : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeUniformRef, VisualShaderNode);
+class VisualShaderNodeParameterRef : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeParameterRef, VisualShaderNode);
 
 public:
-	enum UniformType {
-		UNIFORM_TYPE_FLOAT,
-		UNIFORM_TYPE_INT,
-		UNIFORM_TYPE_BOOLEAN,
-		UNIFORM_TYPE_VECTOR2,
-		UNIFORM_TYPE_VECTOR3,
-		UNIFORM_TYPE_VECTOR4,
-		UNIFORM_TYPE_TRANSFORM,
-		UNIFORM_TYPE_COLOR,
+	enum ParameterType {
+		PARAMETER_TYPE_FLOAT,
+		PARAMETER_TYPE_INT,
+		PARAMETER_TYPE_BOOLEAN,
+		PARAMETER_TYPE_VECTOR2,
+		PARAMETER_TYPE_VECTOR3,
+		PARAMETER_TYPE_VECTOR4,
+		PARAMETER_TYPE_TRANSFORM,
+		PARAMETER_TYPE_COLOR,
 		UNIFORM_TYPE_SAMPLER,
 	};
 
-	struct Uniform {
+	struct Parameter {
 		String name;
-		UniformType type;
+		ParameterType type;
 	};
 
 private:
 	RID shader_rid;
-	String uniform_name = "[None]";
-	UniformType uniform_type = UniformType::UNIFORM_TYPE_FLOAT;
+	String parameter_name = "[None]";
+	ParameterType param_type = ParameterType::PARAMETER_TYPE_FLOAT;
 
 protected:
 	static void _bind_methods();
 
 public:
-	static void add_uniform(RID p_shader_rid, const String &p_name, UniformType p_type);
-	static void clear_uniforms(RID p_shader_rid);
-	static bool has_uniform(RID p_shader_rid, const String &p_name);
+	static void add_parameter(RID p_shader_rid, const String &p_name, ParameterType p_type);
+	static void clear_parameters(RID p_shader_rid);
+	static bool has_parameter(RID p_shader_rid, const String &p_name);
 
 public:
 	virtual String get_caption() const override;
@@ -587,40 +587,40 @@ public:
 
 	void set_shader_rid(const RID &p_shader);
 
-	void set_uniform_name(const String &p_name);
-	String get_uniform_name() const;
+	void set_parameter_name(const String &p_name);
+	String get_parameter_name() const;
 
-	void update_uniform_type();
+	void update_parameter_type();
 
-	void _set_uniform_type(int p_uniform_type);
-	int _get_uniform_type() const;
+	void _set_parameter_type(int p_parameter_type);
+	int _get_parameter_type() const;
 
-	int get_uniforms_count() const;
-	String get_uniform_name_by_index(int p_idx) const;
-	UniformType get_uniform_type_by_name(const String &p_name) const;
-	UniformType get_uniform_type_by_index(int p_idx) const;
+	int get_parameters_count() const;
+	String get_parameter_name_by_index(int p_idx) const;
+	ParameterType get_parameter_type_by_name(const String &p_name) const;
+	ParameterType get_parameter_type_by_index(int p_idx) const;
 	PortType get_port_type_by_index(int p_idx) const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
-	VisualShaderNodeUniformRef();
+	VisualShaderNodeParameterRef();
 };
 
 class VisualShaderNodeResizableBase : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeResizableBase, VisualShaderNode);
 
 protected:
-	Vector2 size = Size2(0, 0);
+	Size2 size = Size2(0, 0);
 	bool allow_v_resize = true;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_size(const Vector2 &p_size);
-	Vector2 get_size() const;
+	void set_size(const Size2 &p_size);
+	Size2 get_size() const;
 
 	bool is_allow_v_resize() const;
 	void set_allow_v_resize(bool p_enabled);

@@ -66,7 +66,7 @@ void VisibleOnScreenNotifier2D::set_rect(const Rect2 &p_rect) {
 	if (is_inside_tree()) {
 		RS::get_singleton()->canvas_item_set_visibility_notifier(get_canvas_item(), true, rect, callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier2D::_visibility_exit));
 	}
-	update();
+	queue_redraw();
 }
 
 Rect2 VisibleOnScreenNotifier2D::get_rect() const {

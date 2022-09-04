@@ -42,7 +42,7 @@ class GLTFMesh : public Resource {
 private:
 	Ref<ImporterMesh> mesh;
 	Vector<float> blend_weights;
-	Array instance_materials;
+	TypedArray<Material> instance_materials;
 
 protected:
 	static void _bind_methods();
@@ -52,8 +52,8 @@ public:
 	void set_mesh(Ref<ImporterMesh> p_mesh);
 	Vector<float> get_blend_weights();
 	void set_blend_weights(Vector<float> p_blend_weights);
-	Array get_instance_materials();
-	void set_instance_materials(Array p_instance_materials);
+	TypedArray<Material> get_instance_materials();
+	void set_instance_materials(TypedArray<Material> p_instance_materials);
 };
 
 #endif // GLTF_MESH_H

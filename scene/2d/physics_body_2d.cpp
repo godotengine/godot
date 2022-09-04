@@ -1024,7 +1024,7 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_RANGE, "0.01,1000,0.01,or_greater,exp,suffix:kg"), "set_mass", "get_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "inertia", PROPERTY_HINT_RANGE, U"0,1000,0.01,or_greater,exp,suffix:kg\u22C5px\u00B2"), "set_inertia", "get_inertia");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "center_of_mass_mode", PROPERTY_HINT_ENUM, "Auto,Custom", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_center_of_mass_mode", "get_center_of_mass_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_lesser,or_greater,suffix:px"), "set_center_of_mass", "get_center_of_mass");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "center_of_mass", PROPERTY_HINT_RANGE, "-10,10,0.01,or_less,or_greater,suffix:px"), "set_center_of_mass", "get_center_of_mass");
 	ADD_LINKED_PROPERTY("center_of_mass_mode", "center_of_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material_override", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material_override", "get_physics_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
@@ -1142,7 +1142,7 @@ bool CharacterBody2D::move_and_slide() {
 	on_ceiling = false;
 	on_wall = false;
 
-	if (!current_platform_velocity.is_equal_approx(Vector2())) {
+	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
 		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 		parameters.exclude_bodies.insert(platform_rid);
@@ -1241,7 +1241,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				break;
 			}
 
-			if (result.remainder.is_equal_approx(Vector2())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector2();
 				break;
 			}
@@ -1325,7 +1325,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 		sliding_enabled = true;
 		first_slide = false;
 
-		if (!collided || motion.is_equal_approx(Vector2())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 	}
@@ -1371,7 +1371,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
-			if (result.remainder.is_equal_approx(Vector2())) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector2();
 				break;
 			}
@@ -1390,7 +1390,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 			}
 		}
 
-		if (!collided || motion.is_equal_approx(Vector2())) {
+		if (!collided || motion.is_zero_approx()) {
 			break;
 		}
 

@@ -138,7 +138,7 @@ void GodotPhysicsDirectBodyState2D::add_constant_torque(real_t p_torque) {
 }
 
 void GodotPhysicsDirectBodyState2D::set_constant_force(const Vector2 &p_force) {
-	if (!p_force.is_equal_approx(Vector2())) {
+	if (!p_force.is_zero_approx()) {
 		body->wakeup();
 	}
 	body->set_constant_force(p_force);

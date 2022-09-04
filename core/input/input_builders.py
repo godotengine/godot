@@ -50,7 +50,7 @@ def make_default_controller_mappings(target, source, env):
         "Mac OS X": "#ifdef MACOS_ENABLED",
         "Android": "#if defined(__ANDROID__)",
         "iOS": "#ifdef IOS_ENABLED",
-        "Javascript": "#ifdef JAVASCRIPT_ENABLED",
+        "Web": "#ifdef WEB_ENABLED",
         "UWP": "#ifdef UWP_ENABLED",
     }
 

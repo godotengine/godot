@@ -175,7 +175,7 @@ public:
 	Ref<Shortcut> get_shortcut(const String &p_name) const;
 	void get_shortcut_list(List<String> *r_shortcuts);
 
-	void set_builtin_action_override(const String &p_name, const Array &p_events);
+	void set_builtin_action_override(const String &p_name, const TypedArray<InputEvent> &p_events);
 	const Array get_builtin_action_overrides(const String &p_name) const;
 
 	void notify_changes();

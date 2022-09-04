@@ -68,6 +68,12 @@ void Popup::_deinitialize_visible_parents() {
 	}
 }
 
+void Popup::_update_theme_item_cache() {
+	Window::_update_theme_item_cache();
+
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+}
+
 void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -186,8 +192,6 @@ Popup::~Popup() {
 }
 
 Size2 PopupPanel::_get_contents_minimum_size() const {
-	Ref<StyleBox> p = get_theme_stylebox(SNAME("panel"), get_class_name());
-
 	Size2 ms;
 
 	for (int i = 0; i < get_child_count(); i++) {
@@ -205,14 +209,12 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 		ms.y = MAX(cms.y, ms.y);
 	}
 
-	return ms + p->get_minimum_size();
+	return ms + theme_cache.panel_style->get_minimum_size();
 }
 
 void PopupPanel::_update_child_rects() {
-	Ref<StyleBox> p = get_theme_stylebox(SNAME("panel"), get_class_name());
-
-	Vector2 cpos(p->get_offset());
-	Vector2 csize(get_size() - p->get_minimum_size());
+	Vector2 cpos(theme_cache.panel_style->get_offset());
+	Vector2 csize(get_size() - theme_cache.panel_style->get_minimum_size());
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
@@ -234,15 +236,17 @@ void PopupPanel::_update_child_rects() {
 	}
 }
 
+void PopupPanel::_update_theme_item_cache() {
+	Popup::_update_theme_item_cache();
+
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+}
+
 void PopupPanel::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY:
 		case NOTIFICATION_THEME_CHANGED: {
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
-		} break;
-
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_READY: {
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), get_class_name()));
+			panel->add_theme_style_override("panel", theme_cache.panel_style);
 			_update_child_rects();
 		} break;
 

@@ -9,6 +9,34 @@
 	<tutorials>
 		<link title="KHR_lights_punctual GLTF extension spec">https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_lights_punctual</link>
 	</tutorials>
+	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFLight" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFLight instance by parsing the given [Dictionary].
+			</description>
+		</method>
+		<method name="from_node" qualifiers="static">
+			<return type="GLTFLight" />
+			<param index="0" name="light_node" type="Light3D" />
+			<description>
+				Create a new GLTFLight instance from the given Godot [Light3D] node.
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFLight instance into a [Dictionary].
+			</description>
+		</method>
+		<method name="to_node" qualifiers="const">
+			<return type="Light3D" />
+			<description>
+				Converts this GLTFLight instance into a Godot [Light3D] node.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			The [Color] of the light. Defaults to white. A black color causes the light to have no effect.

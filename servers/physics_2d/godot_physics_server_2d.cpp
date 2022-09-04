@@ -848,7 +848,7 @@ void GodotPhysicsServer2D::body_set_constant_force(RID p_body, const Vector2 &p_
 	ERR_FAIL_COND(!body);
 
 	body->set_constant_force(p_force);
-	if (!p_force.is_equal_approx(Vector2())) {
+	if (!p_force.is_zero_approx()) {
 		body->wakeup();
 	}
 }

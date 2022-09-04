@@ -154,7 +154,7 @@ Mesh::BlendShapeMode ImporterMesh::get_blend_shape_mode() const {
 	return blend_shape_mode;
 }
 
-void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
+void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, const Ref<Material> &p_material, const String &p_name, const uint32_t p_flags) {
 	ERR_FAIL_COND(p_blend_shapes.size() != blend_shapes.size());
 	ERR_FAIL_COND(p_arrays.size() != Mesh::ARRAY_MAX);
 	Surface s;
@@ -301,9 +301,9 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			}
 		}
 
-		float normal_merge_threshold = Math::cos(Math::deg2rad(p_normal_merge_angle));
-		float normal_pre_split_threshold = Math::cos(Math::deg2rad(MIN(180.0f, p_normal_split_angle * 2.0f)));
-		float normal_split_threshold = Math::cos(Math::deg2rad(p_normal_split_angle));
+		float normal_merge_threshold = Math::cos(Math::deg_to_rad(p_normal_merge_angle));
+		float normal_pre_split_threshold = Math::cos(Math::deg_to_rad(MIN(180.0f, p_normal_split_angle * 2.0f)));
+		float normal_split_threshold = Math::cos(Math::deg_to_rad(p_normal_split_angle));
 		const Vector3 *normals_ptr = normals.ptr();
 
 		HashMap<Vector3, LocalVector<Pair<int, int>>> unique_vertices;
@@ -1230,7 +1230,7 @@ void ImporterMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_blend_shape_mode", "mode"), &ImporterMesh::set_blend_shape_mode);
 	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"), &ImporterMesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material", "name", "flags"), &ImporterMesh::add_surface, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_surface", "primitive", "arrays", "blend_shapes", "lods", "material", "name", "flags"), &ImporterMesh::add_surface, DEFVAL(TypedArray<Array>()), DEFVAL(Dictionary()), DEFVAL(Ref<Material>()), DEFVAL(String()), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &ImporterMesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("get_surface_primitive_type", "surface_idx"), &ImporterMesh::get_surface_primitive_type);

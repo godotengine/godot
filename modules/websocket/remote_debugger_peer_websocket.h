@@ -33,7 +33,7 @@
 
 #include "core/debugger/remote_debugger_peer.h"
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 #include "emws_client.h"
 #else
 #include "wsl_client.h"

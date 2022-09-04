@@ -44,7 +44,7 @@ private:
 	// GLTF has no default camera values, they should always be specified in
 	// the GLTF file. Here we default to Godot's default camera settings.
 	bool perspective = true;
-	real_t fov = Math::deg2rad(75.0);
+	real_t fov = Math::deg_to_rad(75.0);
 	real_t size_mag = 0.5;
 	real_t depth_far = 4000.0;
 	real_t depth_near = 0.05;
@@ -63,6 +63,12 @@ public:
 	void set_depth_far(real_t p_val) { depth_far = p_val; }
 	real_t get_depth_near() const { return depth_near; }
 	void set_depth_near(real_t p_val) { depth_near = p_val; }
+
+	static Ref<GLTFCamera> from_node(const Camera3D *p_light);
+	Camera3D *to_node() const;
+
+	static Ref<GLTFCamera> from_dictionary(const Dictionary p_dictionary);
+	Dictionary to_dictionary() const;
 };
 
 #endif // GLTF_CAMERA_H

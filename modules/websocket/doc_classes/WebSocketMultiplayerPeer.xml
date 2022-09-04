@@ -27,7 +27,7 @@
 				Configures the buffer sizes for this WebSocket peer. Default values can be specified in the Project Settings under [code]network/limits[/code]. For server, values are meant per connected peer.
 				The first two parameters define the size and queued packets limits of the input buffer, the last two of the output buffer.
 				Buffer sizes are expressed in KiB, so [code]4 = 2^12 = 4096 bytes[/code]. All parameters will be rounded up to the nearest power of two.
-				[b]Note:[/b] HTML5 exports only use the input buffer since the output one is managed by browsers.
+				[b]Note:[/b] Web exports only use the input buffer since the output one is managed by browsers.
 			</description>
 		</method>
 	</methods>

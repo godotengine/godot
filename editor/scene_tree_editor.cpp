@@ -354,7 +354,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
 
-		item->set_tooltip(0, tooltip);
+		item->set_tooltip_text(0, tooltip);
 	} else if (p_node != get_scene_node() && !p_node->get_scene_file_path().is_empty() && can_open_instance) {
 		item->add_button(0, get_theme_icon(SNAME("InstanceOptions"), SNAME("EditorIcons")), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 
@@ -363,7 +363,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
 
-		item->set_tooltip(0, tooltip);
+		item->set_tooltip_text(0, tooltip);
 	} else {
 		StringName type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
 		if (type == StringName()) {
@@ -375,7 +375,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			tooltip += "\n\n" + p_node->get_editor_description();
 		}
 
-		item->set_tooltip(0, tooltip);
+		item->set_tooltip_text(0, tooltip);
 	}
 
 	if (can_open_instance && undo_redo.is_valid()) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
@@ -386,9 +386,17 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		Ref<Script> script = p_node->get_script();
 		if (!script.is_null()) {
-			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path());
+			String additional_notes;
+			// Can't set tooltip after adding button, need to do it before.
+			if (script->is_tool()) {
+				additional_notes += "\n" + TTR("This script is currently running in the editor.");
+			}
+			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path() + additional_notes);
 			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == script) {
 				item->set_button_color(0, item->get_button_count(0) - 1, Color(1, 1, 1, 0.5));
+			}
+			if (script->is_tool()) {
+				item->set_button_color(0, item->get_button_count(0) - 1, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
 			}
 		}
 
@@ -505,7 +513,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
 		visible = p_node->call("is_visible");
-		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
+		CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 	} else if (p_node->is_class("Node3D")) {
 		visible = p_node->call("is_visible");
 	}

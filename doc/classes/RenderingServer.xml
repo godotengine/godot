@@ -21,34 +21,32 @@
 		<method name="bake_render_uv2">
 			<return type="Image[]" />
 			<param index="0" name="base" type="RID" />
-			<param index="1" name="material_overrides" type="Array" />
+			<param index="1" name="material_overrides" type="RID[]" />
 			<param index="2" name="image_size" type="Vector2i" />
 			<description>
 			</description>
 		</method>
-		<method name="camera_create">
+		<method name="camera_attributes_create">
 			<return type="RID" />
 			<description>
-				Creates a camera and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] RenderingServer functions.
+				Creates a camera attributes object and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_attributes_[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="camera_effects_create">
-			<return type="RID" />
-			<description>
-			</description>
-		</method>
-		<method name="camera_effects_set_custom_exposure">
+		<method name="camera_attributes_set_auto_exposure">
 			<return type="void" />
-			<param index="0" name="camera_effects" type="RID" />
+			<param index="0" name="camera_attributes" type="RID" />
 			<param index="1" name="enable" type="bool" />
-			<param index="2" name="exposure" type="float" />
+			<param index="2" name="min_sensitivity" type="float" />
+			<param index="3" name="max_sensitivity" type="float" />
+			<param index="4" name="speed" type="float" />
+			<param index="5" name="scale" type="float" />
 			<description>
 			</description>
 		</method>
-		<method name="camera_effects_set_dof_blur">
+		<method name="camera_attributes_set_dof_blur">
 			<return type="void" />
-			<param index="0" name="camera_effects" type="RID" />
+			<param index="0" name="camera_attributes" type="RID" />
 			<param index="1" name="far_enable" type="bool" />
 			<param index="2" name="far_distance" type="float" />
 			<param index="3" name="far_transition" type="float" />
@@ -59,20 +57,46 @@
 			<description>
 			</description>
 		</method>
-		<method name="camera_effects_set_dof_blur_bokeh_shape">
+		<method name="camera_attributes_set_dof_blur_bokeh_shape">
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="RenderingServer.DOFBokehShape" />
 			<description>
 			</description>
 		</method>
-		<method name="camera_effects_set_dof_blur_quality">
+		<method name="camera_attributes_set_dof_blur_quality">
 			<return type="void" />
 			<param index="0" name="quality" type="int" enum="RenderingServer.DOFBlurQuality" />
 			<param index="1" name="use_jitter" type="bool" />
 			<description>
 			</description>
 		</method>
-		<method name="camera_set_camera_effects">
+		<method name="camera_attributes_set_exposure">
+			<return type="void" />
+			<param index="0" name="camera_attributes" type="RID" />
+			<param index="1" name="multiplier" type="float" />
+			<param index="2" name="normalization" type="float" />
+			<description>
+				Sets the exposure values that will be used by the renderers. The normalization amount is used to bake a given Exposure Value (EV) into rendering calculations to reduce the dynamic range of the scene.
+				The normalization factor can be calculated from exposure value (EV100) as follows:
+				[codeblock]
+				func get_exposure_normalization(float ev100):
+				    			    return 1.0 / (pow(2.0, ev100) * 1.2)
+				[/codeblock]
+				The exposure value can be calculated from aperture (in f-stops), shutter speed (in seconds), and sensitivity (in ISO) as follows:
+				[codeblock]
+				func get_exposure(float aperture, float shutter_speed, float sensitivity):
+				    return log2((aperture * aperture) / shutterSpeed * (100.0 / sensitivity))
+				[/codeblock]
+			</description>
+		</method>
+		<method name="camera_create">
+			<return type="RID" />
+			<description>
+				Creates a camera and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+			</description>
+		</method>
+		<method name="camera_set_camera_attributes">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
 			<param index="1" name="effects" type="RID" />
@@ -976,7 +1000,8 @@
 		<method name="environment_set_bg_energy">
 			<return type="void" />
 			<param index="0" name="env" type="RID" />
-			<param index="1" name="energy" type="float" />
+			<param index="1" name="multiplier" type="float" />
+			<param index="2" name="exposure_value" type="float" />
 			<description>
 				Sets the intensity of the background color.
 			</description>
@@ -1000,6 +1025,7 @@
 			<param index="6" name="height" type="float" />
 			<param index="7" name="height_density" type="float" />
 			<param index="8" name="aerial_perspective" type="float" />
+			<param index="9" name="sky_affect" type="float" />
 			<description>
 			</description>
 		</method>
@@ -1143,11 +1169,6 @@
 			<param index="1" name="tone_mapper" type="int" enum="RenderingServer.EnvironmentToneMapper" />
 			<param index="2" name="exposure" type="float" />
 			<param index="3" name="white" type="float" />
-			<param index="4" name="auto_exposure" type="bool" />
-			<param index="5" name="min_luminance" type="float" />
-			<param index="6" name="max_luminance" type="float" />
-			<param index="7" name="auto_exp_speed" type="float" />
-			<param index="8" name="auto_exp_grey" type="float" />
 			<description>
 				Sets the variables to be used with the "tonemap" post-process effect. See [Environment] for more details.
 			</description>
@@ -1167,6 +1188,7 @@
 			<param index="10" name="temporal_reprojection" type="bool" />
 			<param index="11" name="temporal_reprojection_amount" type="float" />
 			<param index="12" name="ambient_inject" type="float" />
+			<param index="13" name="sky_affect" type="float" />
 			<description>
 			</description>
 		</method>
@@ -1250,6 +1272,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_shader_parameter_list" qualifiers="const">
+			<return type="Dictionary[]" />
+			<param index="0" name="shader" type="RID" />
+			<description>
+				Returns the parameters of a shader.
+			</description>
+		</method>
 		<method name="get_test_cube">
 			<return type="RID" />
 			<description>
@@ -1303,45 +1332,45 @@
 				If [param half_resolution] is [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting. See also [member ProjectSettings.rendering/global_illumination/gi/use_half_resolution].
 			</description>
 		</method>
-		<method name="global_shader_uniform_add">
+		<method name="global_shader_parameter_add">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
-			<param index="1" name="type" type="int" enum="RenderingServer.GlobalShaderUniformType" />
+			<param index="1" name="type" type="int" enum="RenderingServer.GlobalShaderParameterType" />
 			<param index="2" name="default_value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="global_shader_uniform_get" qualifiers="const">
+		<method name="global_shader_parameter_get" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_shader_uniform_get_list" qualifiers="const">
+		<method name="global_shader_parameter_get_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
 			</description>
 		</method>
-		<method name="global_shader_uniform_get_type" qualifiers="const">
-			<return type="int" enum="RenderingServer.GlobalShaderUniformType" />
+		<method name="global_shader_parameter_get_type" qualifiers="const">
+			<return type="int" enum="RenderingServer.GlobalShaderParameterType" />
 			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_shader_uniform_remove">
+		<method name="global_shader_parameter_remove">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="global_shader_uniform_set">
+		<method name="global_shader_parameter_set">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
 			</description>
 		</method>
-		<method name="global_shader_uniform_set_override">
+		<method name="global_shader_parameter_set_override">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
@@ -1401,21 +1430,21 @@
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 			</description>
 		</method>
-		<method name="instance_geometry_get_shader_uniform" qualifiers="const">
+		<method name="instance_geometry_get_shader_parameter" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="instance_geometry_get_shader_uniform_default_value" qualifiers="const">
+		<method name="instance_geometry_get_shader_parameter_default_value" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
 			<description>
 			</description>
 		</method>
-		<method name="instance_geometry_get_shader_uniform_list" qualifiers="const">
+		<method name="instance_geometry_get_shader_parameter_list" qualifiers="const">
 			<return type="Dictionary[]" />
 			<param index="0" name="instance" type="RID" />
 			<description>
@@ -1470,7 +1499,7 @@
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance3D.material_override].
 			</description>
 		</method>
-		<method name="instance_geometry_set_shader_uniform">
+		<method name="instance_geometry_set_shader_parameter">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="parameter" type="StringName" />
@@ -1601,7 +1630,7 @@
 		</method>
 		<method name="instances_cull_convex" qualifiers="const">
 			<return type="PackedInt64Array" />
-			<param index="0" name="convex" type="Array" />
+			<param index="0" name="convex" type="Plane[]" />
 			<param index="1" name="scenario" type="RID" />
 			<description>
 				Returns an array of object IDs intersecting with the provided convex shape. Only visual 3D nodes are considered, such as [MeshInstance3D] or [DirectionalLight3D]. Use [method @GlobalScope.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World3D] you want to query. This forces an update for all resources queued to update.
@@ -1765,6 +1794,14 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="lightmap" type="RID" />
 			<description>
+			</description>
+		</method>
+		<method name="lightmap_set_baked_exposure_normalization">
+			<return type="void" />
+			<param index="0" name="lightmap" type="RID" />
+			<param index="1" name="baked_exposure" type="float" />
+			<description>
+				Used to inform the renderer what exposure normalization value was used while baking the lightmap. This value will be used and modulated at run time to ensure that the lightmap maintains a consistent level of exposure even if the scene-wide exposure normalization is changed at run time. For more information see [method camera_attributes_set_exposure].
 			</description>
 		</method>
 		<method name="lightmap_set_probe_bounds">
@@ -2665,7 +2702,7 @@
 				The scenario is the 3D world that all the visual instances exist in.
 			</description>
 		</method>
-		<method name="scenario_set_camera_effects">
+		<method name="scenario_set_camera_attributes">
 			<return type="void" />
 			<param index="0" name="scenario" type="RID" />
 			<param index="1" name="effects" type="RID" />
@@ -2734,28 +2771,21 @@
 				Returns a shader's code.
 			</description>
 		</method>
-		<method name="shader_get_default_texture_param" qualifiers="const">
+		<method name="shader_get_default_texture_parameter" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="shader" type="RID" />
-			<param index="1" name="param" type="StringName" />
+			<param index="1" name="name" type="StringName" />
 			<param index="2" name="index" type="int" default="0" />
 			<description>
 				Returns a default texture from a shader searched by name.
 				[b]Note:[/b] If the sampler array is used use [param index] to access the specified texture.
 			</description>
 		</method>
-		<method name="shader_get_param_default" qualifiers="const">
+		<method name="shader_get_parameter_default" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="shader" type="RID" />
-			<param index="1" name="param" type="StringName" />
+			<param index="1" name="name" type="StringName" />
 			<description>
-			</description>
-		</method>
-		<method name="shader_get_shader_uniform_list" qualifiers="const">
-			<return type="Dictionary[]" />
-			<param index="0" name="shader" type="RID" />
-			<description>
-				Returns the parameters of a shader.
 			</description>
 		</method>
 		<method name="shader_set_code">
@@ -2765,10 +2795,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="shader_set_default_texture_param">
+		<method name="shader_set_default_texture_parameter">
 			<return type="void" />
 			<param index="0" name="shader" type="RID" />
-			<param index="1" name="param" type="StringName" />
+			<param index="1" name="name" type="StringName" />
 			<param index="2" name="texture" type="RID" />
 			<param index="3" name="index" type="int" default="0" />
 			<description>
@@ -3208,12 +3238,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="viewport_set_msaa">
+		<method name="viewport_set_msaa_2d">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the anti-aliasing mode. See [enum ViewportMSAA] for options.
+				Sets the multisample anti-aliasing mode for 2D/Canvas. See [enum ViewportMSAA] for options.
+			</description>
+		</method>
+		<method name="viewport_set_msaa_3d">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
+			<description>
+				Sets the multisample anti-aliasing mode for 3D. See [enum ViewportMSAA] for options.
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_culling_build_quality">
@@ -3470,6 +3508,14 @@
 			<return type="Transform3D" />
 			<param index="0" name="voxel_gi" type="RID" />
 			<description>
+			</description>
+		</method>
+		<method name="voxel_gi_set_baked_exposure_normalization">
+			<return type="void" />
+			<param index="0" name="voxel_gi" type="RID" />
+			<param index="1" name="baked_exposure" type="float" />
+			<description>
+				Used to inform the renderer what exposure normalization value was used while baking the voxel gi. This value will be used and modulated at run time to ensure that the voxel gi maintains a consistent level of exposure even if the scene-wide exposure normalization is changed at run time. For more information see [method camera_attributes_set_exposure].
 			</description>
 		</method>
 		<method name="voxel_gi_set_bias">
@@ -3784,64 +3830,65 @@
 			Is a spot light.
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
-			The light's energy.
+			The light's energy multiplier.
 		</constant>
 		<constant name="LIGHT_PARAM_INDIRECT_ENERGY" value="1" enum="LightParam">
 			The light's indirect energy multiplier (final indirect energy is [constant LIGHT_PARAM_ENERGY] * [constant LIGHT_PARAM_INDIRECT_ENERGY]).
 		</constant>
-		<constant name="LIGHT_PARAM_SPECULAR" value="2" enum="LightParam">
+		<constant name="LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY" value="2" enum="LightParam">
+			The light's volumetric fog energy multiplier (final volumetric fog energy is [constant LIGHT_PARAM_ENERGY] * [constant LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY]).
+		</constant>
+		<constant name="LIGHT_PARAM_SPECULAR" value="3" enum="LightParam">
 			The light's influence on specularity.
 		</constant>
-		<constant name="LIGHT_PARAM_RANGE" value="3" enum="LightParam">
+		<constant name="LIGHT_PARAM_RANGE" value="4" enum="LightParam">
 			The light's range.
 		</constant>
-		<constant name="LIGHT_PARAM_SIZE" value="4" enum="LightParam">
+		<constant name="LIGHT_PARAM_SIZE" value="5" enum="LightParam">
 			The size of the light when using spot light or omni light. The angular size of the light when using directional light.
 		</constant>
-		<constant name="LIGHT_PARAM_ATTENUATION" value="5" enum="LightParam">
+		<constant name="LIGHT_PARAM_ATTENUATION" value="6" enum="LightParam">
 			The light's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="6" enum="LightParam">
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="7" enum="LightParam">
 			The spotlight's angle.
 		</constant>
-		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="7" enum="LightParam">
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="8" enum="LightParam">
 			The spotlight's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="8" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="9" enum="LightParam">
 			Max distance that shadows will be rendered.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="9" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="LightParam">
 			Proportion of shadow atlas occupied by the first split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="10" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="LightParam">
 			Proportion of shadow atlas occupied by the second split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="11" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="LightParam">
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="12" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="13" enum="LightParam">
 			Proportion of shadow max distance where the shadow will start to fade out.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="13" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="14" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="14" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="15" enum="LightParam">
 			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="15" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="16" enum="LightParam">
 			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_OPACITY" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_OPACITY" value="17" enum="LightParam">
 			The light's shadow opacity. Values lower than [code]1.0[/code] make the light appear through shadows. This can be used to fake global illumination at a low performance cost.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="17" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="18" enum="LightParam">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
-		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE" value="18" enum="LightParam">
 		</constant>
 		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="19" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="20" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
@@ -4567,63 +4614,63 @@
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is counterclockwise.
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalShaderParameterType">
 		</constant>
-		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalShaderUniformType">
+		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalShaderParameterType">
 		</constant>
 		<constant name="RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME" value="0" enum="RenderingInfo">
 		</constant>

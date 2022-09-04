@@ -30,6 +30,7 @@
 
 #include "mesh_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "editor/editor_scale.h"
 
 void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
@@ -48,20 +49,22 @@ void MeshEditor::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void MeshEditor::_update_theme_item_cache() {
+	SubViewportContainer::_update_theme_item_cache();
+
+	theme_cache.light_1_on = get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons"));
+	theme_cache.light_1_off = get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons"));
+	theme_cache.light_2_on = get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons"));
+	theme_cache.light_2_off = get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons"));
+}
+
 void MeshEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			//get_scene()->connect("node_removed",this,"_node_removed");
-
-			if (first_enter) {
-				//it's in propertyeditor so. could be moved around
-
-				light_1_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight1"), SNAME("EditorIcons")));
-				light_1_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight1Off"), SNAME("EditorIcons")));
-				light_2_switch->set_normal_texture(get_theme_icon(SNAME("MaterialPreviewLight2"), SNAME("EditorIcons")));
-				light_2_switch->set_pressed_texture(get_theme_icon(SNAME("MaterialPreviewLight2Off"), SNAME("EditorIcons")));
-				first_enter = false;
-			}
+		case NOTIFICATION_THEME_CHANGED: {
+			light_1_switch->set_normal_texture(theme_cache.light_1_on);
+			light_1_switch->set_pressed_texture(theme_cache.light_1_off);
+			light_2_switch->set_normal_texture(theme_cache.light_2_on);
+			light_2_switch->set_pressed_texture(theme_cache.light_2_off);
 		} break;
 	}
 }
@@ -77,8 +80,8 @@ void MeshEditor::edit(Ref<Mesh> p_mesh) {
 	mesh = p_mesh;
 	mesh_instance->set_mesh(mesh);
 
-	rot_x = Math::deg2rad(-15.0);
-	rot_y = Math::deg2rad(30.0);
+	rot_x = Math::deg_to_rad(-15.0);
+	rot_y = Math::deg_to_rad(30.0);
 	_update_rotation();
 
 	AABB aabb = mesh->get_aabb();
@@ -112,12 +115,17 @@ MeshEditor::MeshEditor() {
 	viewport->set_world_3d(world_3d); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
-	viewport->set_msaa(Viewport::MSAA_4X);
+	viewport->set_msaa_3d(Viewport::MSAA_4X);
 	set_stretch(true);
 	camera = memnew(Camera3D);
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
 	viewport->add_child(camera);
+
+	if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+		camera_attributes.instantiate();
+		camera->set_attributes(camera_attributes);
+	}
 
 	light1 = memnew(DirectionalLight3D);
 	light1->set_transform(Transform3D().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
@@ -153,8 +161,6 @@ MeshEditor::MeshEditor() {
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed).bind(light_2_switch));
-
-	first_enter = true;
 
 	rot_x = 0;
 	rot_y = 0;

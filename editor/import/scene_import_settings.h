@@ -74,6 +74,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	SubViewport *base_viewport = nullptr;
 
 	Camera3D *camera = nullptr;
+	Ref<CameraAttributesPractical> camera_attributes;
 	bool first_aabb = false;
 	AABB contents_aabb;
 

@@ -375,7 +375,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-void SceneShaderForwardClustered::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture, int p_index) {
+void SceneShaderForwardClustered::ShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
 	if (!p_texture.is_valid()) {
 		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
 			default_texture_params[p_name].erase(p_index);
@@ -448,7 +448,7 @@ void SceneShaderForwardClustered::ShaderData::get_instance_param_list(List<Rende
 	}
 }
 
-bool SceneShaderForwardClustered::ShaderData::is_param_texture(const StringName &p_param) const {
+bool SceneShaderForwardClustered::ShaderData::is_parameter_texture(const StringName &p_param) const {
 	if (!uniforms.has(p_param)) {
 		return false;
 	}

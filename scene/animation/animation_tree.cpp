@@ -602,6 +602,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							track_value->object = child;
 						}
 
+						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
+
 						track_value->subpath = leftover_path;
 						track_value->object_id = track_value->object->get_instance_id();
 
@@ -804,6 +806,10 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 					default: {
 					}
 				}
+			} else if (track_cache_type == Animation::TYPE_VALUE) {
+				// If it has at least one angle interpolation, it also uses angle interpolation for blending.
+				TrackCacheValue *track_value = memnew(TrackCacheValue);
+				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 			}
 
 			track->setup_pass = setup_pass;
@@ -1353,8 +1359,28 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->value = t->init_value;
 							}
 
-							Variant::sub(value, t->init_value, value);
-							Variant::blend(t->value, value, blend, t->value);
+							// Special case for angle interpolation.
+							if (t->is_using_angle) {
+								// For blending consistency, it prevents rotation of more than 180 degrees from init_value.
+								// This is the same as for Quaternion blends.
+								float rot_a = t->value;
+								float rot_b = value;
+								float rot_init = t->init_value;
+								rot_a = Math::fposmod(rot_a, (float)Math_TAU);
+								rot_b = Math::fposmod(rot_b, (float)Math_TAU);
+								rot_init = Math::fposmod(rot_init, (float)Math_TAU);
+								if (rot_init < Math_PI) {
+									rot_a = rot_a > rot_init + Math_PI ? rot_a - Math_TAU : rot_a;
+									rot_b = rot_b > rot_init + Math_PI ? rot_b - Math_TAU : rot_b;
+								} else {
+									rot_a = rot_a < rot_init - Math_PI ? rot_a + Math_TAU : rot_a;
+									rot_b = rot_b < rot_init - Math_PI ? rot_b + Math_TAU : rot_b;
+								}
+								t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
+							} else {
+								Variant::sub(value, t->init_value, value);
+								Variant::blend(t->value, value, blend, t->value);
+							}
 						} else {
 							if (blend < CMP_EPSILON) {
 								continue; //nothing to blend
@@ -1528,7 +1554,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						}
 
-						real_t db = Math::linear2db(MAX(blend, 0.00001));
+						real_t db = Math::linear_to_db(MAX(blend, 0.00001));
 						if (t->object->has_method(SNAME("set_unit_db"))) {
 							t->object->call(SNAME("set_unit_db"), db);
 						} else {

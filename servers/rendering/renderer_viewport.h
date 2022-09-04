@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
+#include "storage/render_scene_buffers.h"
 
 class RendererViewport {
 public:
@@ -64,9 +65,10 @@ public:
 		RS::ViewportUpdateMode update_mode = RenderingServer::VIEWPORT_UPDATE_WHEN_VISIBLE;
 		RID render_target;
 		RID render_target_texture;
-		RID render_buffers;
+		Ref<RenderSceneBuffers> render_buffers;
 
-		RS::ViewportMSAA msaa = RenderingServer::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportMSAA msaa_2d = RenderingServer::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportMSAA msaa_3d = RenderingServer::VIEWPORT_MSAA_DISABLED;
 		RS::ViewportScreenSpaceAA screen_space_aa = RenderingServer::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 		bool use_taa = false;
 		bool use_debanding = false;
@@ -157,7 +159,6 @@ public:
 			measure_render_time = false;
 
 			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
-			msaa = RS::VIEWPORT_MSAA_DISABLED;
 			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 			use_debanding = false;
 			use_occlusion_culling = false;
@@ -250,7 +251,8 @@ public:
 	void viewport_set_positional_shadow_atlas_size(RID p_viewport, int p_size, bool p_16_bits = true);
 	void viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
-	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
+	void viewport_set_msaa_2d(RID p_viewport, RS::ViewportMSAA p_msaa);
+	void viewport_set_msaa_3d(RID p_viewport, RS::ViewportMSAA p_msaa);
 	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 	void viewport_set_use_taa(RID p_viewport, bool p_use_taa);
 	void viewport_set_use_debanding(RID p_viewport, bool p_use_debanding);

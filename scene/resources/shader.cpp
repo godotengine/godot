@@ -107,7 +107,7 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 	_update_shader();
 
 	List<PropertyInfo> local;
-	RenderingServer::get_singleton()->shader_get_shader_uniform_list(shader, &local);
+	RenderingServer::get_singleton()->get_shader_parameter_list(shader, &local);
 	params_cache.clear();
 	params_cache_dirty = false;
 
@@ -138,35 +138,35 @@ RID Shader::get_rid() const {
 	return shader;
 }
 
-void Shader::set_default_texture_param(const StringName &p_param, const Ref<Texture2D> &p_texture, int p_index) {
+void Shader::set_default_texture_parameter(const StringName &p_name, const Ref<Texture2D> &p_texture, int p_index) {
 	if (p_texture.is_valid()) {
-		if (!default_textures.has(p_param)) {
-			default_textures[p_param] = HashMap<int, Ref<Texture2D>>();
+		if (!default_textures.has(p_name)) {
+			default_textures[p_name] = HashMap<int, Ref<Texture2D>>();
 		}
-		default_textures[p_param][p_index] = p_texture;
-		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, p_texture->get_rid(), p_index);
+		default_textures[p_name][p_index] = p_texture;
+		RS::get_singleton()->shader_set_default_texture_parameter(shader, p_name, p_texture->get_rid(), p_index);
 	} else {
-		if (default_textures.has(p_param) && default_textures[p_param].has(p_index)) {
-			default_textures[p_param].erase(p_index);
+		if (default_textures.has(p_name) && default_textures[p_name].has(p_index)) {
+			default_textures[p_name].erase(p_index);
 
-			if (default_textures[p_param].is_empty()) {
-				default_textures.erase(p_param);
+			if (default_textures[p_name].is_empty()) {
+				default_textures.erase(p_name);
 			}
 		}
-		RS::get_singleton()->shader_set_default_texture_param(shader, p_param, RID(), p_index);
+		RS::get_singleton()->shader_set_default_texture_parameter(shader, p_name, RID(), p_index);
 	}
 
 	emit_changed();
 }
 
-Ref<Texture2D> Shader::get_default_texture_param(const StringName &p_param, int p_index) const {
-	if (default_textures.has(p_param) && default_textures[p_param].has(p_index)) {
-		return default_textures[p_param][p_index];
+Ref<Texture2D> Shader::get_default_texture_parameter(const StringName &p_name, int p_index) const {
+	if (default_textures.has(p_name) && default_textures[p_name].has(p_index)) {
+		return default_textures[p_name][p_index];
 	}
 	return Ref<Texture2D>();
 }
 
-void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
+void Shader::get_default_texture_parameter_list(List<StringName> *r_textures) const {
 	for (const KeyValue<StringName, HashMap<int, Ref<Texture2D>>> &E : default_textures) {
 		r_textures->push_back(E.key);
 	}
@@ -176,8 +176,8 @@ bool Shader::is_text_shader() const {
 	return true;
 }
 
-bool Shader::has_uniform(const StringName &p_param) const {
-	return params_cache.has("shader_uniform/" + p_param);
+bool Shader::has_parameter(const StringName &p_name) const {
+	return params_cache.has("shader_parameter/" + p_name);
 }
 
 void Shader::_update_shader() const {
@@ -189,10 +189,10 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_code", "code"), &Shader::set_code);
 	ClassDB::bind_method(D_METHOD("get_code"), &Shader::get_code);
 
-	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture", "index"), &Shader::set_default_texture_param, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("get_default_texture_param", "param", "index"), &Shader::get_default_texture_param, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_default_texture_parameter", "name", "texture", "index"), &Shader::set_default_texture_parameter, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_default_texture_parameter", "name", "index"), &Shader::get_default_texture_parameter, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("has_uniform", "name"), &Shader::has_uniform);
+	ClassDB::bind_method(D_METHOD("has_parameter", "name"), &Shader::has_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 

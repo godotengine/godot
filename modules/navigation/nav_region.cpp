@@ -40,14 +40,6 @@ void NavRegion::set_map(NavMap *p_map) {
 	}
 }
 
-void NavRegion::set_navigation_layers(uint32_t p_navigation_layers) {
-	navigation_layers = p_navigation_layers;
-}
-
-uint32_t NavRegion::get_navigation_layers() const {
-	return navigation_layers;
-}
-
 void NavRegion::set_transform(Transform3D p_transform) {
 	transform = p_transform;
 	polygons_dirty = true;

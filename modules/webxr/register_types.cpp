@@ -33,7 +33,7 @@
 #include "webxr_interface.h"
 #include "webxr_interface_js.h"
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 Ref<WebXRInterfaceJS> webxr;
 #endif
 
@@ -44,7 +44,7 @@ void initialize_webxr_module(ModuleInitializationLevel p_level) {
 
 	GDREGISTER_ABSTRACT_CLASS(WebXRInterface);
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 	webxr.instantiate();
 	XRServer::get_singleton()->add_interface(webxr);
 #endif
@@ -55,7 +55,7 @@ void uninitialize_webxr_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-#ifdef JAVASCRIPT_ENABLED
+#ifdef WEB_ENABLED
 	if (webxr.is_valid()) {
 		// uninitialise our interface if it is initialised
 		if (webxr->is_initialized()) {

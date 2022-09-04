@@ -45,6 +45,7 @@ enum GlobalMenuCheckType {
 @interface GodotMenuItem : NSObject {
 @public
 	Callable callback;
+	Callable key_callback;
 	Variant meta;
 	GlobalMenuCheckType checkable_type;
 	int max_states;
@@ -52,9 +53,6 @@ enum GlobalMenuCheckType {
 	Ref<Image> img;
 }
 
-@end
-
-@implementation GodotMenuItem
 @end
 
 #endif // GODOT_MENU_ITEM_H

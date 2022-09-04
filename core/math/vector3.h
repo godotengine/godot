@@ -142,6 +142,7 @@ struct _NO_DISCARD_ Vector3 {
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	bool is_equal_approx(const Vector3 &p_v) const;
+	bool is_zero_approx() const;
 
 	/* Operators */
 

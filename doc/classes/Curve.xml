@@ -74,25 +74,25 @@
 				Returns the right tangent angle (in degrees) for the point at [param index].
 			</description>
 		</method>
-		<method name="interpolate" qualifiers="const">
+		<method name="remove_point">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Removes the point at [code]index[/code] from the curve.
+			</description>
+		</method>
+		<method name="sample" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="offset" type="float" />
 			<description>
 				Returns the Y value for the point that would exist at the X position [param offset] along the curve.
 			</description>
 		</method>
-		<method name="interpolate_baked" qualifiers="const">
+		<method name="sample_baked" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="offset" type="float" />
 			<description>
 				Returns the Y value for the point that would exist at the X position [param offset] along the curve using the baked cache. Bakes the curve's points if not already baked.
-			</description>
-		</method>
-		<method name="remove_point">
-			<return type="void" />
-			<param index="0" name="index" type="int" />
-			<description>
-				Removes the point at [param index] from the curve.
 			</description>
 		</method>
 		<method name="set_point_left_mode">

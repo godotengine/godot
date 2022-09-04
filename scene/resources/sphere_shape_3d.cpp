@@ -38,8 +38,8 @@ Vector<Vector3> SphereShape3D::get_debug_mesh_lines() const {
 	Vector<Vector3> points;
 
 	for (int i = 0; i <= 360; i++) {
-		float ra = Math::deg2rad((float)i);
-		float rb = Math::deg2rad((float)i + 1);
+		float ra = Math::deg_to_rad((float)i);
+		float rb = Math::deg_to_rad((float)i + 1);
 		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
 		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 

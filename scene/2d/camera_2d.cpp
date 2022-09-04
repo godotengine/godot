@@ -39,7 +39,7 @@ void Camera2D::_update_scroll() {
 	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		update(); //will just be drawn
+		queue_redraw(); //will just be drawn
 		return;
 	}
 
@@ -392,7 +392,7 @@ void Camera2D::_make_current(Object *p_which) {
 		current = true;
 		if (is_inside_tree()) {
 			get_viewport()->_camera_2d_set(this);
-			update();
+			queue_redraw();
 		}
 	} else {
 		current = false;
@@ -400,7 +400,7 @@ void Camera2D::_make_current(Object *p_which) {
 			if (get_viewport()->get_camera_2d() == this) {
 				get_viewport()->_camera_2d_set(nullptr);
 			}
-			update();
+			queue_redraw();
 		}
 	}
 }
@@ -461,7 +461,7 @@ bool Camera2D::is_limit_smoothing_enabled() const {
 void Camera2D::set_drag_margin(Side p_side, real_t p_drag_margin) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	drag_margin[p_side] = p_drag_margin;
-	update();
+	queue_redraw();
 }
 
 real_t Camera2D::get_drag_margin(Side p_side) const {
@@ -625,7 +625,7 @@ Node *Camera2D::get_custom_viewport() const {
 void Camera2D::set_screen_drawing_enabled(bool enable) {
 	screen_drawing_enabled = enable;
 #ifdef TOOLS_ENABLED
-	update();
+	queue_redraw();
 #endif
 }
 
@@ -636,7 +636,7 @@ bool Camera2D::is_screen_drawing_enabled() const {
 void Camera2D::set_limit_drawing_enabled(bool enable) {
 	limit_drawing_enabled = enable;
 #ifdef TOOLS_ENABLED
-	update();
+	queue_redraw();
 #endif
 }
 
@@ -647,7 +647,7 @@ bool Camera2D::is_limit_drawing_enabled() const {
 void Camera2D::set_margin_drawing_enabled(bool enable) {
 	margin_drawing_enabled = enable;
 #ifdef TOOLS_ENABLED
-	update();
+	queue_redraw();
 #endif
 }
 

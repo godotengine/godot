@@ -58,6 +58,7 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 
 	light.param[RS::LIGHT_PARAM_ENERGY] = 1.0;
 	light.param[RS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light.param[RS::LIGHT_PARAM_VOLUMETRIC_FOG_ENERGY] = 1.0;
 	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
 	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
@@ -74,7 +75,6 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
 	light.param[RS::LIGHT_PARAM_SHADOW_BLUR] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
-	light.param[RS::LIGHT_PARAM_SHADOW_VOLUMETRIC_FOG_FADE] = 0.1;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 
 	light_owner.initialize_rid(p_light, light);
@@ -318,7 +318,7 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 	switch (light->type) {
 		case RS::LIGHT_SPOT: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float size = Math::tan(Math::deg2rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			float size = Math::tan(Math::deg_to_rad(light->param[RS::LIGHT_PARAM_SPOT_ANGLE])) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
 		};
 		case RS::LIGHT_OMNI: {
@@ -422,13 +422,17 @@ float LightStorage::reflection_probe_get_mesh_lod_threshold(RID p_probe) const {
 /* LIGHTMAP CAPTURE */
 
 RID LightStorage::lightmap_allocate() {
-	return RID();
+	return lightmap_owner.allocate_rid();
 }
 
 void LightStorage::lightmap_initialize(RID p_rid) {
+	lightmap_owner.initialize_rid(p_rid, Lightmap());
 }
 
 void LightStorage::lightmap_free(RID p_rid) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_rid);
+	lightmap->dependency.deleted_notify(p_rid);
+	lightmap_owner.free(p_rid);
 }
 
 void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
@@ -441,6 +445,9 @@ void LightStorage::lightmap_set_probe_interior(RID p_lightmap, bool p_interior) 
 }
 
 void LightStorage::lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
+}
+
+void LightStorage::lightmap_set_baked_exposure_normalization(RID p_lightmap, float p_exposure) {
 }
 
 PackedVector3Array LightStorage::lightmap_get_probe_capture_points(RID p_lightmap) const {

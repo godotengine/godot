@@ -32,17 +32,17 @@
 #define WORLD_ENVIRONMENT_H
 
 #include "scene/main/node.h"
-#include "scene/resources/camera_effects.h"
+#include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 
 class WorldEnvironment : public Node {
 	GDCLASS(WorldEnvironment, Node);
 
 	Ref<Environment> environment;
-	Ref<CameraEffects> camera_effects;
+	Ref<CameraAttributes> camera_attributes;
 
 	void _update_current_environment();
-	void _update_current_camera_effects();
+	void _update_current_camera_attributes();
 
 protected:
 	void _notification(int p_what);
@@ -52,8 +52,8 @@ public:
 	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
 
-	void set_camera_effects(const Ref<CameraEffects> &p_camera_effects);
-	Ref<CameraEffects> get_camera_effects() const;
+	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
+	Ref<CameraAttributes> get_camera_attributes() const;
 
 	TypedArray<String> get_configuration_warnings() const override;
 

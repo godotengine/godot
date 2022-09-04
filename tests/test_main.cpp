@@ -85,6 +85,7 @@
 #include "tests/core/variant/test_variant.h"
 #include "tests/scene/test_animation.h"
 #include "tests/scene/test_audio_stream_wav.h"
+#include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
@@ -99,7 +100,7 @@
 
 #include "tests/test_macros.h"
 
-#include "scene/resources/default_theme/default_theme.h"
+#include "scene/theme/theme_db.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -179,6 +180,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	PhysicsServer2D *physics_server_2d = nullptr;
 	NavigationServer3D *navigation_server_3d = nullptr;
 	NavigationServer2D *navigation_server_2d = nullptr;
+	ThemeDB *theme_db = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		SignalWatcher::get_singleton()->_clear_signals();
@@ -217,7 +219,8 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
 
-			make_default_theme(1.0, Ref<Font>());
+			theme_db = memnew(ThemeDB);
+			theme_db->initialize_theme_noproject();
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();
@@ -247,7 +250,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memdelete(SceneTree::get_singleton());
 		}
 
-		clear_default_theme();
+		if (theme_db) {
+			memdelete(theme_db);
+			theme_db = nullptr;
+		}
 
 		if (navigation_server_3d) {
 			memdelete(navigation_server_3d);
@@ -277,7 +283,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 		if (RenderingServer::get_singleton()) {
 			RenderingServer::get_singleton()->sync();
-			RenderingServer::get_singleton()->global_shader_uniforms_clear();
+			RenderingServer::get_singleton()->global_shader_parameters_clear();
 			RenderingServer::get_singleton()->finish();
 			memdelete(RenderingServer::get_singleton());
 		}

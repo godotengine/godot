@@ -345,6 +345,9 @@ File extracted from upstream release tarball:
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
 
+Some changes have been made in order to fix Windows on ARM build errors.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+
 
 ## meshoptimizer
 
@@ -374,6 +377,9 @@ Files extracted from upstream repository:
 - `minimp3.h`
 - `minimp3_ex.h`
 - `LICENSE`
+
+Some changes have been made in order to fix Windows on ARM build errors.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 
 
 ## miniupnpc

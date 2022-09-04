@@ -117,7 +117,7 @@ union TileMapCell {
 class TileMapPattern : public Resource {
 	GDCLASS(TileMapPattern, Resource);
 
-	Vector2i size;
+	Size2i size;
 	HashMap<Vector2i, TileMapCell> pattern;
 
 	void _set_tile_data(const Vector<int> &p_data);
@@ -140,8 +140,8 @@ public:
 
 	TypedArray<Vector2i> get_used_cells() const;
 
-	Vector2i get_size() const;
-	void set_size(const Vector2i &p_size);
+	Size2i get_size() const;
+	void set_size(const Size2i &p_size);
 	bool is_empty() const;
 
 	void clear();

@@ -67,7 +67,7 @@ protected:
 	static void _bind_methods();
 	static EditorInterface *singleton;
 
-	TypedArray<Texture2D> _make_mesh_previews(const Array &p_meshes, int p_preview_size);
+	TypedArray<Texture2D> _make_mesh_previews(const TypedArray<Mesh> &p_meshes, int p_preview_size);
 
 public:
 	static EditorInterface *get_singleton() { return singleton; }

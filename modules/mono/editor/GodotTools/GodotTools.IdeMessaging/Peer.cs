@@ -78,7 +78,7 @@ namespace GodotTools.IdeMessaging
             clientStream.WriteTimeout = ClientWriteTimeout;
 
             clientReader = new StreamReader(clientStream, Encoding.UTF8);
-            clientWriter = new StreamWriter(clientStream, Encoding.UTF8) {NewLine = "\n"};
+            clientWriter = new StreamWriter(clientStream, Encoding.UTF8) { NewLine = "\n" };
         }
 
         public async Task Process()

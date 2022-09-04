@@ -40,6 +40,7 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/theme/theme_db.h"
 
 constexpr double REFRESH_TIMER = 1.5;
 
@@ -55,7 +56,7 @@ void ThemeEditorPreview::add_preview_overlay(Control *p_overlay) {
 void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 	p_at->notification(NOTIFICATION_THEME_CHANGED);
 	p_at->update_minimum_size();
-	p_at->update();
+	p_at->queue_redraw();
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Control *a = Object::cast_to<Control>(p_at->get_child(i));
 		if (a) {
@@ -173,7 +174,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 	if (mm.is_valid()) {
 		Vector2 mp = preview_content->get_local_mouse_position();
 		hovered_control = _find_hovered_control(preview_content, mp);
-		picker_overlay->update();
+		picker_overlay->queue_redraw();
 	}
 
 	// Forward input to the scroll container underneath to allow scrolling.
@@ -182,7 +183,7 @@ void ThemeEditorPreview::_gui_input_picker_overlay(const Ref<InputEvent> &p_even
 
 void ThemeEditorPreview::_reset_picker_overlay() {
 	hovered_control = nullptr;
-	picker_overlay->update();
+	picker_overlay->queue_redraw();
 }
 
 void ThemeEditorPreview::_notification(int p_what) {
@@ -227,7 +228,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 	preview_toolbar->add_child(picker_button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
-	picker_button->set_tooltip(TTR("Toggle the control picker, allowing to visually select control types for edit."));
+	picker_button->set_tooltip_text(TTR("Toggle the control picker, allowing to visually select control types for edit."));
 	picker_button->connect("pressed", callable_mp(this, &ThemeEditorPreview::_picker_button_cbk));
 
 	MarginContainer *preview_body = memnew(MarginContainer);
@@ -240,7 +241,7 @@ ThemeEditorPreview::ThemeEditorPreview() {
 
 	MarginContainer *preview_root = memnew(MarginContainer);
 	preview_container->add_child(preview_root);
-	preview_root->set_theme(Theme::get_default());
+	preview_root->set_theme(ThemeDB::get_singleton()->get_default_theme());
 	preview_root->set_clip_contents(true);
 	preview_root->set_custom_minimum_size(Size2(450, 0) * EDSCALE);
 	preview_root->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -517,7 +518,7 @@ SceneThemeEditorPreview::SceneThemeEditorPreview() {
 
 	reload_scene_button = memnew(Button);
 	reload_scene_button->set_flat(true);
-	reload_scene_button->set_tooltip(TTR("Reload the scene to reflect its most actual state."));
+	reload_scene_button->set_tooltip_text(TTR("Reload the scene to reflect its most actual state."));
 	preview_toolbar->add_child(reload_scene_button);
 	reload_scene_button->connect("pressed", callable_mp(this, &SceneThemeEditorPreview::_reload_scene));
 }

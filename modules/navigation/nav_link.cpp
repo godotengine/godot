@@ -1,0 +1,60 @@
+/*************************************************************************/
+/*  nav_link.cpp                                                         */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
+#include "nav_link.h"
+
+#include "nav_map.h"
+
+void NavLink::set_map(NavMap *p_map) {
+	map = p_map;
+	link_dirty = true;
+}
+
+void NavLink::set_bidirectional(bool p_bidirectional) {
+	bidirectional = p_bidirectional;
+	link_dirty = true;
+}
+
+void NavLink::set_start_location(const Vector3 p_location) {
+	start_location = p_location;
+	link_dirty = true;
+}
+
+void NavLink::set_end_location(const Vector3 p_location) {
+	end_location = p_location;
+	link_dirty = true;
+}
+
+bool NavLink::check_dirty() {
+	const bool was_dirty = link_dirty;
+
+	link_dirty = false;
+	return was_dirty;
+}

@@ -33,6 +33,7 @@
 
 #include "webrtc_peer_connection.h"
 
+#include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/script_language.h"
 #include "core/variant/native_ptr.h"
@@ -44,27 +45,21 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual ConnectionState get_connection_state() const override;
-
-	virtual Error initialize(Dictionary p_config = Dictionary()) override;
+	// FIXME Can't be directly exposed due to issues in exchanging Ref(s) between godot and extensions.
+	// See godot-cpp GH-652 .
 	virtual Ref<WebRTCDataChannel> create_data_channel(String p_label, Dictionary p_options = Dictionary()) override;
-	virtual Error create_offer() override;
-	virtual Error set_remote_description(String type, String sdp) override;
-	virtual Error set_local_description(String type, String sdp) override;
-	virtual Error add_ice_candidate(String p_sdp_mid_name, int p_sdp_mline_index, String p_sdp_name) override;
-	virtual Error poll() override;
-	virtual void close() override;
+	GDVIRTUAL2R(Object *, _create_data_channel, String, Dictionary);
+	// EXBIND2R(Ref<WebRTCDataChannel>, create_data_channel, String, Dictionary);
 
 	/** GDExtension **/
-	GDVIRTUAL0RC(int, _get_connection_state);
-	GDVIRTUAL1R(int, _initialize, Dictionary);
-	GDVIRTUAL2R(Object *, _create_data_channel, String, Dictionary);
-	GDVIRTUAL0R(int, _create_offer);
-	GDVIRTUAL2R(int, _set_remote_description, String, String);
-	GDVIRTUAL2R(int, _set_local_description, String, String);
-	GDVIRTUAL3R(int, _add_ice_candidate, String, int, String);
-	GDVIRTUAL0R(int, _poll);
-	GDVIRTUAL0(_close);
+	EXBIND0RC(ConnectionState, get_connection_state);
+	EXBIND1R(Error, initialize, Dictionary);
+	EXBIND0R(Error, create_offer);
+	EXBIND2R(Error, set_remote_description, String, String);
+	EXBIND2R(Error, set_local_description, String, String);
+	EXBIND3R(Error, add_ice_candidate, String, int, String);
+	EXBIND0R(Error, poll);
+	EXBIND0(close);
 
 	WebRTCPeerConnectionExtension() {}
 };

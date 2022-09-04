@@ -1787,7 +1787,7 @@ String stringify_vector(const T &vec, int recursion_count) {
 String Variant::stringify(int recursion_count) const {
 	switch (type) {
 		case NIL:
-			return "null";
+			return "<null>";
 		case BOOL:
 			return _data._bool ? "true" : "false";
 		case INT:
@@ -1904,12 +1904,12 @@ String Variant::stringify(int recursion_count) const {
 		case OBJECT: {
 			if (_get_obj().obj) {
 				if (!_get_obj().id.is_ref_counted() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					return "[Freed Object]";
+					return "<Freed Object>";
 				}
 
 				return _get_obj().obj->to_string();
 			} else {
-				return "[Object:null]";
+				return "<Object#null>";
 			}
 
 		} break;
@@ -1926,7 +1926,7 @@ String Variant::stringify(int recursion_count) const {
 			return "RID(" + itos(s.get_id()) + ")";
 		} break;
 		default: {
-			return "[" + get_type_name(type) + "]";
+			return "<" + get_type_name(type) + ">";
 		}
 	}
 

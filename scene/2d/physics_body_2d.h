@@ -373,9 +373,9 @@ private:
 	bool slide_on_ceiling = true;
 	int max_slides = 4;
 	int platform_layer = 0;
-	real_t floor_max_angle = Math::deg2rad((real_t)45.0);
+	real_t floor_max_angle = Math::deg_to_rad((real_t)45.0);
 	real_t floor_snap_length = 1;
-	real_t wall_min_slide_angle = Math::deg2rad((real_t)15.0);
+	real_t wall_min_slide_angle = Math::deg_to_rad((real_t)15.0);
 	Vector2 up_direction = Vector2(0.0, -1.0);
 	uint32_t platform_floor_layers = UINT32_MAX;
 	uint32_t platform_wall_layers = 0;

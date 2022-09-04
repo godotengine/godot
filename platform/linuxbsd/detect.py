@@ -40,7 +40,7 @@ def get_opts():
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
         BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable("dbus", "Detect and use D-Bus to handle screensaver", True),
+        BoolVariable("dbus", "Detect and use D-Bus to handle screensaver and portal desktop settings", True),
         BoolVariable("speechd", "Detect and use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("fontconfig", "Detect and use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
@@ -406,7 +406,9 @@ def configure(env):
         import subprocess
         import re
 
-        linker_version_str = subprocess.check_output([env.subst(env["LINK"]), "-Wl,--version"]).decode("utf-8")
+        linker_version_str = subprocess.check_output(
+            [env.subst(env["LINK"]), "-Wl,--version"] + env.subst(env["LINKFLAGS"])
+        ).decode("utf-8")
         gnu_ld_version = re.search("^GNU ld [^$]*(\d+\.\d+)$", linker_version_str, re.MULTILINE)
         if not gnu_ld_version:
             print(

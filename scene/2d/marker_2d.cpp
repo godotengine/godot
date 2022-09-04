@@ -86,7 +86,7 @@ bool Marker2D::_edit_use_rect() const {
 void Marker2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			update();
+			queue_redraw();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -102,7 +102,7 @@ void Marker2D::_notification(int p_what) {
 
 void Marker2D::set_gizmo_extents(real_t p_extents) {
 	gizmo_extents = p_extents;
-	update();
+	queue_redraw();
 }
 
 real_t Marker2D::get_gizmo_extents() const {
