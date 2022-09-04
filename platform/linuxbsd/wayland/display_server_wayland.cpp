@@ -608,6 +608,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
+		globals.xdg_decoration_manager = (struct zxdg_decoration_manager_v1 *)wl_registry_bind(wl_registry, name, &zxdg_decoration_manager_v1_interface, 1);
+		globals.xdg_decoration_manager_name = name;
+		return;
+	}
+
 	if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
 		globals.wp_pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_constraints_v1_interface, 1);
 		globals.wp_pointer_constraints_name = name;
@@ -652,6 +658,12 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	if (name == globals.xdg_wm_base_name) {
 		xdg_wm_base_destroy(globals.xdg_wm_base);
 		globals.xdg_wm_base = nullptr;
+		return;
+	}
+
+	if (name == globals.xdg_decoration_manager_name) {
+		zxdg_decoration_manager_v1_destroy(globals.xdg_decoration_manager);
+		globals.xdg_decoration_manager = nullptr;
 		return;
 	}
 
@@ -1505,6 +1517,12 @@ void DisplayServerWayland::_xdg_popup_on_repositioned(void *data, struct xdg_pop
 	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on repositioned", ((WindowData *)data)->id));
 }
 
+void DisplayServerWayland::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
+	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
+		WARN_PRINT_ONCE("Client side decorations are not yet supported!");
+	}
+}
+
 void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
@@ -1863,6 +1881,14 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			DEBUG_LOG_WAYLAND(vformat("Created popup at %s", wd.rect.position));
 		} else {
 			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
+
+			if (wls.globals.xdg_decoration_manager) {
+				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
+				zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
+
+				zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+			}
+
 			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
 
 			if (wd.parent != INVALID_WINDOW_ID) {
@@ -1967,6 +1993,10 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 
 	if (wd.xdg_popup) {
 		xdg_popup_destroy(wd.xdg_popup);
+	}
+
+	if (wd.xdg_toplevel_decoration) {
+		zxdg_toplevel_decoration_v1_destroy(wd.xdg_toplevel_decoration);
 	}
 
 	if (wd.xdg_toplevel) {
@@ -2712,6 +2742,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	ERR_FAIL_COND_MSG(!wls.globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
 	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
 
+	if (!wls.globals.xdg_decoration_manager) {
+		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported!");
+	}
+
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
 
@@ -2928,6 +2962,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.globals.wp_relative_pointer_manager) {
 		zwp_relative_pointer_manager_v1_destroy(wls.globals.wp_relative_pointer_manager);
+	}
+
+	if (wls.globals.xdg_decoration_manager) {
+		zxdg_decoration_manager_v1_destroy(wls.globals.xdg_decoration_manager);
 	}
 
 	if (wls.globals.xdg_wm_base) {

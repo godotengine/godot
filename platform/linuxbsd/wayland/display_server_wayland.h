@@ -50,6 +50,7 @@
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/wayland.gen.h"
+#include "protocol/xdg_decoration.gen.h"
 #include "protocol/xdg_shell.gen.h"
 
 // FIXME: Since this platform is called linuxbsd, can we avoid this include?
@@ -122,6 +123,9 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
+		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
+		uint32_t xdg_decoration_manager_name = 0;
+
 		struct zwp_primary_selection_device_manager_v1 *wp_primary_selection_device_manager = nullptr;
 		uint32_t wp_primary_selection_device_manager_name = 0;
 
@@ -144,6 +148,8 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
+
+		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
 		struct xdg_popup *xdg_popup = nullptr;
 		struct xdg_positioner *xdg_positioner = nullptr;
@@ -408,6 +414,8 @@ class DisplayServerWayland : public DisplayServer {
 	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
 
 	// wayland-protocols event handlers.
+	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
+
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *zwp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
 	static void _wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer);
@@ -505,6 +513,10 @@ class DisplayServerWayland : public DisplayServer {
 	};
 
 	// wayland-protocols event listeners.
+	static constexpr struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {
+		.configure = _xdg_toplevel_decoration_on_configure,
+	};
+
 	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
 		.relative_motion = _wp_relative_pointer_on_relative_motion,
 	};

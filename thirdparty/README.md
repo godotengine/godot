@@ -749,6 +749,7 @@ Files extracted from upstream source:
 - `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
 - `unstable/primary-selection/primary-selection-unstable-v1.xml`
 - `unstable/relative-pointer/relative-pointer-unstable-v1.xml`
+- `unstable/xdg-decoration/xdg-decoration-unstable-v1.xml`
 - `COPYING`
 
 
