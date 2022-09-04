@@ -723,7 +723,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 	Image::Format real_format;
 	Ref<Image> img = _get_gl_image_and_format(p_image, p_image->get_format(), texture->flags, real_format, format, internal_format, type, compressed, srgb, texture->is_npot_repeat_mipmap);
 
-	if (config.shrink_textures_x2 && (p_image->has_mipmaps() || !p_image->is_compressed()) && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
+	if (config.shrink_textures_x2 && (img->has_mipmaps() || !img->is_compressed()) && !(texture->flags & VS::TEXTURE_FLAG_USED_FOR_STREAMING)) {
 		texture->alloc_height = MAX(1, texture->alloc_height / 2);
 		texture->alloc_width = MAX(1, texture->alloc_width / 2);
 
@@ -809,7 +809,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture, const Ref<Image> &p
 
 //set swizle for older format compatibility
 #ifdef GLES_OVER_GL
-	switch (texture->format) {
+	switch (real_format) {
 		case Image::FORMAT_L8: {
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_G, GL_RED);
