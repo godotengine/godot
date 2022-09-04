@@ -72,6 +72,7 @@
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
 #include "rendering_server.h"
+#include "servers/extensions/physics_server_2d_extension.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "servers/rendering/shader_types.h"
 #include "text/text_server_dummy.h"
@@ -133,6 +134,16 @@ void register_server_types() {
 	GDREGISTER_CLASS(AudioServer);
 
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer2D);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsServer2DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState2DExtension);
+	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectSpaceState2DExtension);
+
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionRayResult, "Vector2 position;Vector2 normal;RID rid;ObjectID collider_id;Object *collider;int shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionShapeResult, "RID rid;ObjectID collider_id;Object *collider;int shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionShapeRestInfo, "Vector2 point;Vector2 normal;RID rid;ObjectID collider_id;int shape;Vector2 linear_velocity");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionMotionResult, "Vector2 travel;Vector2 remainder;Vector2 collision_point;Vector2 collision_normal;Vector2 collider_velocity;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;int collision_local_shape;ObjectID collider_id;RID collider;int collider_shape");
+	GDREGISTER_NATIVE_STRUCT(PhysicsServer2DExtensionStateCallback, "void *instance;void (*callback)(void *p_instance, PhysicsDirectBodyState2D *p_state)");
+
 	GDREGISTER_ABSTRACT_CLASS(PhysicsServer3D);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsServer3DExtension);
 	GDREGISTER_VIRTUAL_CLASS(PhysicsDirectBodyState3DExtension);
