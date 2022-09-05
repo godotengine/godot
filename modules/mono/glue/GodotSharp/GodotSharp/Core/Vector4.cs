@@ -187,7 +187,7 @@ namespace Godot
             (
                 Mathf.CubicInterpolate(x, b.x, preA.x, postB.x, weight),
                 Mathf.CubicInterpolate(y, b.y, preA.y, postB.y, weight),
-                Mathf.CubicInterpolate(y, b.z, preA.z, postB.z, weight),
+                Mathf.CubicInterpolate(z, b.z, preA.z, postB.z, weight),
                 Mathf.CubicInterpolate(w, b.w, preA.w, postB.w, weight)
             );
         }
@@ -212,7 +212,7 @@ namespace Godot
             (
                 Mathf.CubicInterpolateInTime(x, b.x, preA.x, postB.x, weight, t, preAT, postBT),
                 Mathf.CubicInterpolateInTime(y, b.y, preA.y, postB.y, weight, t, preAT, postBT),
-                Mathf.CubicInterpolateInTime(y, b.z, preA.z, postB.z, weight, t, preAT, postBT),
+                Mathf.CubicInterpolateInTime(z, b.z, preA.z, postB.z, weight, t, preAT, postBT),
                 Mathf.CubicInterpolateInTime(w, b.w, preA.w, postB.w, weight, t, preAT, postBT)
             );
         }
@@ -258,7 +258,7 @@ namespace Godot
         /// <returns>The dot product of the two vectors.</returns>
         public real_t Dot(Vector4 with)
         {
-            return (x * with.x) + (y * with.y) + (z * with.z) + (w + with.w);
+            return (x * with.x) + (y * with.y) + (z * with.z) + (w * with.w);
         }
 
         /// <summary>
@@ -455,6 +455,7 @@ namespace Godot
         /// This can also be used to round to an arbitrary number of decimals.
         /// </summary>
         /// <param name="step">A vector value representing the step size to snap to.</param>
+        /// <returns>The snapped vector.</returns>
         public Vector4 Snapped(Vector4 step)
         {
             return new Vector4(
@@ -628,6 +629,56 @@ namespace Godot
             vec.y /= divisorv.y;
             vec.z /= divisorv.z;
             vec.w /= divisorv.w;
+            return vec;
+        }
+
+        /// <summary>
+        /// Gets the remainder of each component of the <see cref="Vector4"/>
+        /// with the components of the given <see cref="real_t"/>.
+        /// This operation uses truncated division, which is often not desired
+        /// as it does not work well with negative numbers.
+        /// Consider using <see cref="PosMod(real_t)"/> instead
+        /// if you want to handle negative numbers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print(new Vector4(10, -20, 30, 40) % 7); // Prints "(3, -6, 2, 5)"
+        /// </code>
+        /// </example>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisor">The divisor value.</param>
+        /// <returns>The remainder vector.</returns>
+        public static Vector4 operator %(Vector4 vec, real_t divisor)
+        {
+            vec.x %= divisor;
+            vec.y %= divisor;
+            vec.z %= divisor;
+            vec.w %= divisor;
+            return vec;
+        }
+
+        /// <summary>
+        /// Gets the remainder of each component of the <see cref="Vector4"/>
+        /// with the components of the given <see cref="Vector4"/>.
+        /// This operation uses truncated division, which is often not desired
+        /// as it does not work well with negative numbers.
+        /// Consider using <see cref="PosMod(Vector4)"/> instead
+        /// if you want to handle negative numbers.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print(new Vector4(10, -20, 30, 10) % new Vector4(7, 8, 9, 10)); // Prints "(3, -4, 3, 0)"
+        /// </code>
+        /// </example>
+        /// <param name="vec">The dividend vector.</param>
+        /// <param name="divisorv">The divisor vector.</param>
+        /// <returns>The remainder vector.</returns>
+        public static Vector4 operator %(Vector4 vec, Vector4 divisorv)
+        {
+            vec.x %= divisorv.x;
+            vec.y %= divisorv.y;
+            vec.z %= divisorv.z;
+            vec.w %= divisorv.w;
             return vec;
         }
 
