@@ -1,9 +1,0 @@
-#ifndef STR_BECNHMARK_REGISTER_TYPES_H
-#define STR_BECNHMARK_REGISTER_TYPES_H
-
-#include "modules/register_module_types.h"
-
-void initialize_Str_word_wrap_benchmark_module(ModuleInitializationLevel p_level);
-void uninitialize_Str_word_wrap_benchmark_module(ModuleInitializationLevel p_level);
-
-#endif
