@@ -601,11 +601,11 @@ msgstr "Valor del Controlador"
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
 msgid "Application"
-msgstr "Aplicação"
+msgstr "Aplicación"
 
 #: core/project_settings.cpp main/main.cpp
 msgid "Config"
-msgstr "Configuração"
+msgstr "Configuración"
 
 #: core/project_settings.cpp
 msgid "Project Settings Override"
