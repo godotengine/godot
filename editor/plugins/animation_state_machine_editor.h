@@ -117,6 +117,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName snap_y;
 
 	bool connecting = false;
+	bool connection_follows_cursor = false;
 	StringName connecting_from;
 	Vector2 connecting_to;
 	StringName connecting_to_node;
