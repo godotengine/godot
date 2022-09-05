@@ -353,7 +353,20 @@ void GraphEdit::_graph_node_raised(Node *p_gn) {
 	} else {
 		gn->raise();
 	}
-	emit_signal(SNAME("node_selected"), p_gn);
+}
+
+void GraphEdit::_graph_node_selected(Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	ERR_FAIL_COND(!gn);
+
+	emit_signal(SNAME("node_selected"), gn);
+}
+
+void GraphEdit::_graph_node_deselected(Node *p_gn) {
+	GraphNode *gn = Object::cast_to<GraphNode>(p_gn);
+	ERR_FAIL_COND(!gn);
+
+	emit_signal(SNAME("node_deselected"), gn);
 }
 
 void GraphEdit::_graph_node_moved(Node *p_gn) {
@@ -383,6 +396,8 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved).bind(gn));
+		gn->connect("selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
+		gn->connect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
 		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
@@ -409,6 +424,8 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
+		gn->disconnect("selected", callable_mp(this, &GraphEdit::_graph_node_selected));
+		gn->disconnect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
 		gn->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 
@@ -1170,24 +1187,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box) {
-				if (!gn->is_selected() && box_selection_mode_additive) {
-					emit_signal(SNAME("node_selected"), gn);
-				} else if (gn->is_selected() && !box_selection_mode_additive) {
-					emit_signal(SNAME("node_deselected"), gn);
-				}
-				if (gn->is_selectable()) {
-					gn->set_selected(box_selection_mode_additive);
-				}
+				gn->set_selected(box_selection_mode_additive);
 			} else {
-				bool select = (previous_selected.find(gn) != nullptr);
-				if (gn->is_selected() && !select) {
-					emit_signal(SNAME("node_deselected"), gn);
-				} else if (!gn->is_selected() && select) {
-					emit_signal(SNAME("node_selected"), gn);
-				}
-				if (gn->is_selectable()) {
-					gn->set_selected(select);
-				}
+				gn->set_selected(previous_selected.find(gn) != nullptr);
 			}
 		}
 
@@ -1206,13 +1208,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						continue;
 					}
 
-					bool select = (gn->is_selectable() && previous_selected.find(gn) != nullptr);
-					if (gn->is_selected() && !select) {
-						emit_signal(SNAME("node_deselected"), gn);
-					} else if (!gn->is_selected() && select) {
-						emit_signal(SNAME("node_selected"), gn);
-					}
-					gn->set_selected(select);
+					gn->set_selected(previous_selected.find(gn) != nullptr);
 				}
 				top_layer->queue_redraw();
 				minimap->queue_redraw();
@@ -1235,7 +1231,6 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						Rect2 r = gn->get_rect();
 						r.size *= zoom;
 						if (r.has_point(b->get_position())) {
-							emit_signal(SNAME("node_deselected"), gn);
 							gn->set_selected(false);
 						}
 					}
@@ -1270,18 +1265,21 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
 			GraphNode *gn = nullptr;
 
+			// Find node which was clicked on.
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *gn_selected = Object::cast_to<GraphNode>(get_child(i));
 
-				if (gn_selected) {
-					if (gn_selected->is_resizing()) {
-						continue;
-					}
+				if (!gn_selected) {
+					continue;
+				}
 
-					if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
-						gn = gn_selected;
-						break;
-					}
+				if (gn_selected->is_resizing()) {
+					continue;
+				}
+
+				if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
+					gn = gn_selected;
+					break;
 				}
 			}
 
@@ -1290,26 +1288,22 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					return;
 				}
 
+				// Left-clicked on a node, select it.
 				dragging = true;
 				drag_accum = Vector2();
 				just_selected = !gn->is_selected();
 				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
-						if (o_gn) {
-							if (o_gn == gn) {
-								o_gn->set_selected(o_gn->is_selectable());
-							} else {
-								if (o_gn->is_selected()) {
-									emit_signal(SNAME("node_deselected"), o_gn);
-								}
-								o_gn->set_selected(false);
-							}
+						if (!o_gn) {
+							continue;
 						}
+
+						o_gn->set_selected(o_gn == gn);
 					}
 				}
 
-				gn->set_selected(gn->is_selectable());
+				gn->set_selected(true);
 				for (int i = 0; i < get_child_count(); i++) {
 					GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 					if (!o_gn) {
@@ -1332,6 +1326,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					return;
 				}
 
+				// Left-clicked on empty space, start box select.
 				box_selecting = true;
 				box_selecting_from = b->get_position();
 				if (b->is_ctrl_pressed()) {
@@ -1364,9 +1359,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 						if (!gn2) {
 							continue;
 						}
-						if (gn2->is_selected()) {
-							emit_signal(SNAME("node_deselected"), gn2);
-						}
+
 						gn2->set_selected(false);
 					}
 				}
@@ -1374,6 +1367,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && box_selecting) {
+			// Box selection ended. Nodes were selected during mouse movement.
 			box_selecting = false;
 			box_selecting_rect = Rect2();
 			previous_selected.clear();
