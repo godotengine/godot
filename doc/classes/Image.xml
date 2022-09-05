@@ -76,8 +76,12 @@
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<param index="2" name="lossy_quality" type="float" default="0.7" />
+			<param index="3" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
-				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available. See [enum CompressMode] and [enum CompressSource] constants.
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				The [param mode] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
+				The [param lossy_quality] parameter is optional for compressors that support it.
+				For ASTC compression, the [param astc_format] parameter must be supplied.
 			</description>
 		</method>
 		<method name="compress_from_channels">
@@ -85,7 +89,12 @@
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
 			<param index="2" name="lossy_quality" type="float" default="0.7" />
+			<param index="3" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
+				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
+				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT and ETC2 formats. For other formats (non DXT or ETC2), this argument is ignored.
+				The [param lossy_quality] parameter is optional for compressors that support it.
+				For ASTC compression, the [param astc_format] parameter must be supplied.
 			</description>
 		</method>
 		<method name="compute_image_metrics">
@@ -658,7 +667,19 @@
 		</constant>
 		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
 		</constant>
-		<constant name="FORMAT_MAX" value="35" enum="Format">
+		<constant name="FORMAT_ASTC_4x4" value="35" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texutre Compression[/url]. This implements the 4x4 (high quality) mode.
+		</constant>
+		<constant name="FORMAT_ASTC_4x4_HDR" value="36" enum="Format">
+			Same format as [constant FORMAT_ASTC_4x4], but with the hint to let the GPU know it is used for HDR.
+		</constant>
+		<constant name="FORMAT_ASTC_8x8" value="37" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texutre Compression[/url]. This implements the 8x8 (low quality) mode.
+		</constant>
+		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
+			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
+		</constant>
+		<constant name="FORMAT_MAX" value="39" enum="Format">
 			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
@@ -721,6 +742,12 @@
 		</constant>
 		<constant name="COMPRESS_SOURCE_NORMAL" value="2" enum="CompressSource">
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
+		</constant>
+		<constant name="ASTC_FORMAT_4x4" value="0" enum="ASTCFormat">
+			Hint to indicate that the high quality 4x4 ASTC compression format should be used.
+		</constant>
+		<constant name="ASTC_FORMAT_8x8" value="1" enum="ASTCFormat">
+			Hint to indicate that the low quality 8x8 ASTC compression format should be used.
 		</constant>
 	</constants>
 </class>
