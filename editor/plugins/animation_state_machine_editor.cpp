@@ -1023,11 +1023,9 @@ void AnimationNodeStateMachineEditor::_add_menu_type(int p_index) {
 	}
 
 	updating = true;
-	undo_redo->create_action(TTR("Add Node"));
+	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, node, add_node_pos);
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
 	connecting_to_node = name;
 	_add_transition(true);
 	undo_redo->commit_action();
@@ -1051,11 +1049,9 @@ void AnimationNodeStateMachineEditor::_add_animation_type(int p_index) {
 	}
 
 	updating = true;
-	undo_redo->create_action(TTR("Add Node"));
+	undo_redo->create_action(TTR("Add Node and Transition"));
 	undo_redo->add_do_method(state_machine.ptr(), "add_node", name, anim, add_node_pos);
 	undo_redo->add_undo_method(state_machine.ptr(), "remove_node", name);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
 	connecting_to_node = name;
 	_add_transition(true);
 	undo_redo->commit_action();
@@ -1083,16 +1079,16 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 
 		if (!p_nested_action) {
 			updating = true;
+			undo_redo->create_action(TTR("Add Transition"));
 		}
 
-		undo_redo->create_action(TTR("Add Transition"));
 		undo_redo->add_do_method(state_machine.ptr(), "add_transition", connecting_from, connecting_to_node, tr);
 		undo_redo->add_undo_method(state_machine.ptr(), "remove_transition", connecting_from, connecting_to_node);
 		undo_redo->add_do_method(this, "_update_graph");
 		undo_redo->add_undo_method(this, "_update_graph");
-		undo_redo->commit_action();
 
 		if (!p_nested_action) {
+			undo_redo->commit_action();
 			updating = false;
 		}
 
