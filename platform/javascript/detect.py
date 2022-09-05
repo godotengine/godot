@@ -157,9 +157,9 @@ def configure(env):
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
     env["ARCOM"] = "${TEMPFILE(ARCOM_POSIX)}"
 
-    # All intermediate files are just LLVM bitcode.
+    # All intermediate files are just object files.
     env["OBJPREFIX"] = ""
-    env["OBJSUFFIX"] = ".bc"
+    env["OBJSUFFIX"] = ".o"
     env["PROGPREFIX"] = ""
     # Program() output consists of multiple files, so specify suffixes manually at builder.
     env["PROGSUFFIX"] = ""
