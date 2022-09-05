@@ -260,6 +260,11 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		}
 		Variant p = get(E.name);
 
+		if (E.name == "script") {
+			r->set(E.name, p); // Do not ever duplicate Script property.
+			continue;
+		}
+
 		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
 			r->set(E.name, p.duplicate(p_subresources));
 		} else if (p.get_type() == Variant::OBJECT && (p_subresources || (E.usage & PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE))) {
