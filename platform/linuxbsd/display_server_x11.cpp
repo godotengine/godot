@@ -4900,6 +4900,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	show_window(main_window);
+	XSync(x11_display, False);
+	_validate_mode_on_map(main_window);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -5046,24 +5048,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	cursor_set_shape(CURSOR_BUSY);
 
-	Vector<XEvent> save_events;
-	while (XPending(x11_display) > 0) {
-		XEvent xevent{ 0 };
-		XNextEvent(x11_display, &xevent);
-		if (xevent.type == ConfigureNotify) {
-			_window_changed(&xevent);
-		} else {
-			// Don't discard this event, we must resend it...
-			save_events.push_back(xevent);
-		}
+	// Search the X11 event queue for ConfigureNotify events and process all
+	// that are currently queued early, so we can get the final window size
+	// for correctly drawing of the bootsplash.
+	XEvent config_event;
+	while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+		_window_changed(&config_event);
 	}
-
-	// Resend events that would have been dropped by the early event queue
-	// processing we just performed.
-	for (XEvent &ev : save_events) {
-		XSendEvent(x11_display, ev.xany.window, False, 0, &ev);
-	}
-
 	events_thread.start(_poll_events_thread, this);
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);
