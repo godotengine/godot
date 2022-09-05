@@ -136,6 +136,15 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
+Variant Dictionary::find_key(const Variant &p_value) const {
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		if (E.value() == p_value) {
+			return E.key();
+		}
+	}
+	return Variant();
+}
+
 bool Dictionary::erase(const Variant &p_key) {
 	return _p->variant_map.erase(p_key);
 }
