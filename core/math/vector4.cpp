@@ -80,15 +80,26 @@ real_t Vector4::length() const {
 }
 
 void Vector4::normalize() {
-	*this /= length();
+	real_t lengthsq = length_squared();
+	if (lengthsq == 0) {
+		x = y = z = w = 0;
+	} else {
+		real_t length = Math::sqrt(lengthsq);
+		x /= length;
+		y /= length;
+		z /= length;
+		w /= length;
+	}
 }
 
 Vector4 Vector4::normalized() const {
-	return *this / length();
+	Vector4 v = *this;
+	v.normalize();
+	return v;
 }
 
 bool Vector4::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1, (real_t)UNIT_EPSILON); // Use less epsilon.
+	return Math::is_equal_approx(length_squared(), (real_t)1, (real_t)UNIT_EPSILON);
 }
 
 real_t Vector4::distance_to(const Vector4 &p_to) const {
@@ -187,3 +198,5 @@ Vector4 Vector4::clamp(const Vector4 &p_min, const Vector4 &p_max) const {
 Vector4::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ", " + String::num_real(z, false) + ", " + String::num_real(w, false) + ")";
 }
+
+static_assert(sizeof(Vector4) == 4 * sizeof(real_t));
