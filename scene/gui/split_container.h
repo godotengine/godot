@@ -44,7 +44,6 @@ public:
 	};
 
 private:
-	bool should_clamp_split_offset = false;
 	int split_offset = 0;
 	int middle_sep = 0;
 	bool vertical = false;
@@ -66,6 +65,7 @@ private:
 	Control *_getch(int p_idx) const;
 
 	Ref<Texture2D> _get_grabber_icon() const;
+	void _compute_middle_sep(bool p_clamp);
 	void _resort();
 
 protected:
