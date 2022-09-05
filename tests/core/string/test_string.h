@@ -1533,6 +1533,11 @@ TEST_CASE("[String] Strip edges") {
 	CHECK(s.strip_edges(true, true) == "Test Test");
 }
 
+TEST_CASE("[String] Strip bbcode") {
+	String s = "[color=#ffffff]Test[/color]";
+	CHECK(s.strip_bbcode() == "Test");
+}
+
 TEST_CASE("[String] Trim") {
 	String s = "aaaTestbbb";
 	CHECK(s.trim_prefix("aaa") == "Testbbb");
