@@ -820,6 +820,7 @@ VARIANT_ENUM_CAST(PhysicsServer2D::BodyState);
 VARIANT_ENUM_CAST(PhysicsServer2D::CCDMode);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::JointType);
+VARIANT_ENUM_CAST(PhysicsServer2D::PinJointParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::DampedSpringParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer2D::ProcessInfo);

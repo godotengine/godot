@@ -1058,6 +1058,8 @@
 		</constant>
 		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
 		</constant>
+		<constant name="PIN_JOINT_SOFTNESS" value="0" enum="PinJointParam">
+		</constant>
 		<constant name="DAMPED_SPRING_REST_LENGTH" value="0" enum="DampedSpringParam">
 			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
 		</constant>
