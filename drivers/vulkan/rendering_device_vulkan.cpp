@@ -996,8 +996,11 @@ void RenderingDeviceVulkan::get_compressed_image_format_block_dimensions(DataFor
 		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
 		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK: // Again, not sure about astc.
-		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
-		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK: {
+			r_w = 4;
+			r_h = 4;
+		} break;
+		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK: // Unsupported
 		case DATA_FORMAT_ASTC_5x4_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_5x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_5x5_SRGB_BLOCK:
@@ -1008,10 +1011,16 @@ void RenderingDeviceVulkan::get_compressed_image_format_block_dimensions(DataFor
 		case DATA_FORMAT_ASTC_8x5_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_8x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_8x6_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x6_SRGB_BLOCK: {
+			r_w = 4;
+			r_h = 4;
+		} break;
 		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
-		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK: {
+			r_w = 8;
+			r_h = 8;
+		} break;
+		case DATA_FORMAT_ASTC_10x5_UNORM_BLOCK: // Unsupported
 		case DATA_FORMAT_ASTC_10x5_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_10x6_SRGB_BLOCK:
@@ -1101,7 +1110,7 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
-			return 8; // Wrong.
+			return 16;
 		default: {
 		}
 	}
@@ -1123,6 +1132,10 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
 			return 1;
+		case DATA_FORMAT_ASTC_8x8_SRGB_BLOCK:
+		case DATA_FORMAT_ASTC_8x8_UNORM_BLOCK: {
+			return 2;
+		}
 		default: {
 		}
 	}
