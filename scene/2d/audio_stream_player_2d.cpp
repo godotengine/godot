@@ -284,6 +284,9 @@ bool AudioStreamPlayer2D::is_playing() const {
 			return true;
 		}
 	}
+	if (setplay.get() >= 0) {
+		return true; // play() has been called this frame, but no playback exists just yet.
+	}
 	return false;
 }
 
