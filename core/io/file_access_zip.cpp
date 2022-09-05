@@ -234,7 +234,7 @@ ZipArchive::~ZipArchive() {
 	packages.clear();
 }
 
-Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessZip::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);

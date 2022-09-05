@@ -38,6 +38,7 @@ const int ERROR_CODE = 77;
 
 #include "modules/regex/regex.h"
 
+#include "core/io/dir_access.h"
 #include "core/os/time.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
@@ -2229,22 +2230,23 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 	Vector<String> directories_to_check = Vector<String>();
 	directories_to_check.push_back("res://");
 
-	core_bind::Directory dir = core_bind::Directory();
 	while (!directories_to_check.is_empty()) {
 		String path = directories_to_check.get(directories_to_check.size() - 1); // Is there any pop_back function?
-		directories_to_check.resize(directories_to_check.size() - 1); // Remove last element.
-		if (dir.open(path) == OK) {
-			dir.set_include_hidden(true);
-			dir.list_dir_begin();
-			String current_dir = dir.get_current_dir();
-			String file_name = dir.get_next();
+		directories_to_check.resize(directories_to_check.size() - 1); // Remove last element
+
+		Ref<DirAccess> dir = DirAccess::create_for_path(path);
+		if (dir.is_valid()) {
+			dir->set_include_hidden(true);
+			dir->list_dir_begin();
+			String current_dir = dir->get_current_dir();
+			String file_name = dir->_get_next();
 
 			while (file_name != "") {
 				if (file_name == ".git" || file_name == ".import" || file_name == ".godot") {
-					file_name = dir.get_next();
+					file_name = dir->_get_next();
 					continue;
 				}
-				if (dir.current_is_dir()) {
+				if (dir->current_is_dir()) {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
@@ -2255,7 +2257,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 						collected_files.append(current_dir.path_join(file_name));
 					}
 				}
-				file_name = dir.get_next();
+				file_name = dir->_get_next();
 			}
 		} else {
 			print_verbose("Failed to open " + path);
