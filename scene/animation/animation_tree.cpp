@@ -1006,9 +1006,9 @@ void AnimationTree::_process_graph(double p_delta) {
 			real_t weight = as.blend;
 			bool seeked = as.seeked;
 			int pingponged = as.pingponged;
+			bool calc_root = !seeked || as.seek_root;
 #ifndef _3D_DISABLED
 			bool backward = signbit(delta);
-			bool calc_root = !seeked || as.seek_root;
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
