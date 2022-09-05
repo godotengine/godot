@@ -2663,9 +2663,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 							vertices_ptr[p_idx] = point;
 							normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
 							if (has_depth) {
-								uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -max_p.y, -min_p.y, real_t(0.4), real_t(0.0)));
+								uvs_ptr[p_idx] = Vector2(Math::remap(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(point.y, -max_p.y, -min_p.y, real_t(0.4), real_t(0.0)));
 							} else {
-								uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -max_p.y, -min_p.y, real_t(1.0), real_t(0.0)));
+								uvs_ptr[p_idx] = Vector2(Math::remap(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(point.y, -max_p.y, -min_p.y, real_t(1.0), real_t(0.0)));
 							}
 							tangents_ptr[p_idx * 4 + 0] = 1.0;
 							tangents_ptr[p_idx * 4 + 1] = 0.0;
@@ -2680,7 +2680,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 								Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
 								vertices_ptr[p_idx] = point;
 								normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
-								uvs_ptr[p_idx] = Vector2(Math::range_lerp(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(point.y, -max_p.y, -min_p.y, real_t(0.8), real_t(0.4)));
+								uvs_ptr[p_idx] = Vector2(Math::remap(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(point.y, -max_p.y, -min_p.y, real_t(0.8), real_t(0.4)));
 								tangents_ptr[p_idx * 4 + 0] = -1.0;
 								tangents_ptr[p_idx * 4 + 1] = 0.0;
 								tangents_ptr[p_idx * 4 + 2] = 0.0;
@@ -2721,9 +2721,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 									vertices_ptr[p_idx + m] = quad_faces[m];
 									normals_ptr[p_idx + m] = Vector3(d.y, d.x, 0.0);
 									if (m < 2) {
-										uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.8 : 0.9);
+										uvs_ptr[p_idx + m] = Vector2(Math::remap(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.8 : 0.9);
 									} else {
-										uvs_ptr[p_idx + m] = Vector2(Math::range_lerp(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.9 : 1.0);
+										uvs_ptr[p_idx + m] = Vector2(Math::remap(u_pos, 0, ps_info.length, real_t(0.0), real_t(1.0)), (ps_info.ccw) ? 0.9 : 1.0);
 									}
 									tangents_ptr[(p_idx + m) * 4 + 0] = d.x;
 									tangents_ptr[(p_idx + m) * 4 + 1] = -d.y;
@@ -2760,9 +2760,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 						vertices_ptr[p_idx + k] = quad_faces[k];
 						normals_ptr[p_idx + k] = Vector3(0.0, 0.0, 1.0);
 						if (has_depth) {
-							uvs_ptr[p_idx + k] = Vector2(Math::range_lerp(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(quad_faces[k].y, -max_p.y, -min_p.y, real_t(0.4), real_t(0.0)));
+							uvs_ptr[p_idx + k] = Vector2(Math::remap(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(quad_faces[k].y, -max_p.y, -min_p.y, real_t(0.4), real_t(0.0)));
 						} else {
-							uvs_ptr[p_idx + k] = Vector2(Math::range_lerp(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::range_lerp(quad_faces[k].y, -max_p.y, -min_p.y, real_t(1.0), real_t(0.0)));
+							uvs_ptr[p_idx + k] = Vector2(Math::remap(quad_faces[k].x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(quad_faces[k].y, -max_p.y, -min_p.y, real_t(1.0), real_t(0.0)));
 						}
 						tangents_ptr[(p_idx + k) * 4 + 0] = 1.0;
 						tangents_ptr[(p_idx + k) * 4 + 1] = 0.0;
