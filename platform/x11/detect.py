@@ -238,13 +238,25 @@ def configure(env):
     version = get_compiler_version(env) or [-1, -1]
     if using_gcc(env):
         if version[0] >= 6:
-            env.Append(CCFLAGS=["-fpie"])
-            env.Append(LINKFLAGS=["-no-pie"])
+            if env["perfetto"]:
+                # Required so the GDNative libraries can resolve
+                # the Perfetto symbols in the main executable
+                env.Append(CCFLAGS=["-fpic"])
+                env.Append(LINKFLAGS=["-rdynamic"])
+            else:
+                env.Append(CCFLAGS=["-fpie"])
+                env.Append(LINKFLAGS=["-no-pie"])
     # Do the same for clang should be fine with Clang 4 and higher
     if using_clang(env):
         if version[0] >= 4:
-            env.Append(CCFLAGS=["-fpie"])
-            env.Append(LINKFLAGS=["-no-pie"])
+            if env["perfetto"]:
+                # Required so the GDNative libraries can resolve
+                # the Perfetto symbols in the main executable
+                env.Append(CCFLAGS=["-fpic"])
+                env.Append(LINKFLAGS=["-rdynamic"])
+            else:
+                env.Append(CCFLAGS=["-fpie"])
+                env.Append(LINKFLAGS=["-no-pie"])
 
     ## Dependencies
 

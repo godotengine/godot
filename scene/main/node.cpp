@@ -1050,8 +1050,18 @@ StringName Node::get_name() const {
 }
 
 void Node::_set_name_nocheck(const StringName &p_name) {
+#ifdef ENABLE_PERFETTO
+	_assign_name(p_name);
+#else
+	data.name = p_name;
+#endif
+}
+
+#ifdef ENABLE_PERFETTO
+void Node::_assign_name(const StringName &p_name) {
 	data.name = p_name;
 }
+#endif
 
 void Node::set_name(const String &p_name) {
 	String name = p_name.validate_node_name();
@@ -1061,7 +1071,11 @@ void Node::set_name(const String &p_name) {
 	if (data.unique_name_in_owner && data.owner) {
 		_release_unique_name_in_owner();
 	}
+#ifdef ENABLE_PERFETTO
+	_assign_name(name);
+#else
 	data.name = name;
+#endif
 
 	if (data.parent) {
 		data.parent->_validate_child_name(this);
@@ -1108,7 +1122,11 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		StringName name = p_child->data.name;
 		_generate_serial_child_name(p_child, name);
+#ifdef ENABLE_PERFETTO
+		p_child->_assign_name(name);
+#else
 		p_child->data.name = name;
+#endif
 
 	} else {
 		//this approach to autoset node names is fast but not as readable
@@ -1138,7 +1156,11 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 		if (!unique) {
 			ERR_FAIL_COND(!node_hrcr_count.ref());
 			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
+#ifdef ENABLE_PERFETTO
+			p_child->_assign_name(name);
+#else
 			p_child->data.name = name;
+#endif
 		}
 	}
 }
@@ -1262,7 +1284,11 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//add a child node quickly, without name validation
 
+#ifdef ENABLE_PERFETTO
+	p_child->_assign_name(p_name);
+#else
 	p_child->data.name = p_name;
+#endif
 	p_child->data.pos = data.children.size();
 	data.children.push_back(p_child);
 	p_child->data.parent = this;

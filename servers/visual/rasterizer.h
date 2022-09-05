@@ -134,6 +134,11 @@ public:
 
 		float depth; //used for sorting
 
+#ifdef ENABLE_PERFETTO
+		CharString name;
+		CharString path;
+#endif
+
 		SelfList<InstanceBase> dependency_item;
 
 		InstanceBase *lightmap_capture;
@@ -340,6 +345,11 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
 
+#ifdef ENABLE_PERFETTO
+	virtual void mesh_set_name(RID p_mesh, const String &p_name) = 0;
+	virtual void mesh_set_path(RID p_mesh, const String &p_path) = 0;
+#endif
+
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const = 0;
 
 	virtual void mesh_clear(RID p_mesh) = 0;
@@ -396,6 +406,11 @@ public:
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
 
+#ifdef ENABLE_PERFETTO
+	virtual void multimesh_set_name(RID p_multimesh, const String &p_name);
+	virtual void multimesh_set_path(RID p_multimesh, const String &p_path);
+#endif
+
 	virtual RID _multimesh_create() = 0;
 	virtual void _multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) = 0;
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const = 0;
@@ -413,6 +428,11 @@ public:
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int _multimesh_get_visible_instances(RID p_multimesh) const = 0;
 	virtual AABB _multimesh_get_aabb(RID p_multimesh) const = 0;
+
+#ifdef ENABLE_PERFETTO
+	virtual void _multimesh_set_name(RID p_multimesh, const String &p_name) = 0;
+	virtual void _multimesh_set_path(RID p_multimesh, const String &p_path) = 0;
+#endif
 
 	// Multimesh is responsible for allocating / destroying an MMInterpolator object.
 	// This allows shared functionality for interpolation across backends.
@@ -629,6 +649,11 @@ public:
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual AABB particles_get_current_aabb(RID p_particles) = 0;
 	virtual AABB particles_get_aabb(RID p_particles) const = 0;
+
+#ifdef ENABLE_PERFETTO
+	virtual void particles_set_name(RID p_particles, const String &p_name) = 0;
+	virtual void particles_set_path(RID p_particles, const String &p_path) = 0;
+#endif
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform) = 0;
 
@@ -961,6 +986,11 @@ public:
 		mutable Rect2 rect;
 		RID material;
 		RID skeleton;
+
+#ifdef ENABLE_PERFETTO
+		CharString name;
+		CharString path;
+#endif
 
 		//VS::MaterialBlendMode blend_mode;
 		int32_t light_mask;

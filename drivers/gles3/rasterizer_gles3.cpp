@@ -33,6 +33,8 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+#include "godot_profiler.h"
+
 RasterizerStorage *RasterizerGLES3::get_storage() {
 	return storage;
 }
@@ -403,6 +405,7 @@ void RasterizerGLES3::output_lens_distorted_to_screen(RID p_render_target, const
 }
 
 void RasterizerGLES3::end_frame(bool p_swap_buffers) {
+	TRACE_EVENT("godot_rendering", "end_frame");
 	if (OS::get_singleton()->is_layered_allowed()) {
 		if (!OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
 			//clear alpha
@@ -416,8 +419,10 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 	ShaderGLES3::advance_async_shaders_compilation();
 
 	if (p_swap_buffers) {
+		TRACE_EVENT("godot_rendering", "swap_buffers");
 		OS::get_singleton()->swap_buffers();
 	} else {
+		TRACE_EVENT("godot_rendering", "glFinish");
 		glFinish();
 	}
 }

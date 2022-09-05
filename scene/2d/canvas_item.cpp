@@ -581,6 +581,9 @@ void CanvasItem::_notification(int p_what) {
 			if (!block_transform_notify && !xform_change.in_list()) {
 				get_tree()->xform_change_list.add(&xform_change);
 			}
+#ifdef ENABLE_PERFETTO
+			VisualServer::get_singleton()->canvas_item_set_path(canvas_item, get_path());
+#endif
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			if (!is_inside_tree()) {
@@ -628,6 +631,13 @@ void CanvasItem::update() {
 
 	MessageQueue::get_singleton()->push_call(this, "_update_callback");
 }
+
+#ifdef ENABLE_PERFETTO
+void CanvasItem::_assign_name(const StringName &p_name) {
+	Node::_assign_name(p_name);
+	VisualServer::get_singleton()->canvas_item_set_name(canvas_item, p_name);
+}
+#endif
 
 void CanvasItem::set_modulate(const Color &p_modulate) {
 	if (modulate == p_modulate) {

@@ -240,6 +240,10 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifdef ENABLE_PERFETTO
+	virtual void _assign_name(const StringName &p_name);
+#endif
+
 public:
 	enum {
 		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique

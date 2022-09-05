@@ -33,9 +33,13 @@
 #include "visual_server_raster.h"
 #include "visual_server_viewport.h"
 
+#include "godot_profiler.h"
+
 static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
 
 void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
+	TRACE_EVENT("godot_rendering", "render_canvas_item_tree", "name", p_canvas_item->name.get_data(), "path", p_canvas_item->path.get_data());
+
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
@@ -227,6 +231,8 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Ite
 }
 
 void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect, int p_canvas_layer_id) {
+	TRACE_EVENT("godot_rendering", "render_canvas");
+
 	VSG::canvas_render->canvas_begin();
 
 	if (p_canvas->children_order_dirty) {
@@ -432,6 +438,21 @@ void VisualServerCanvas::canvas_item_set_self_modulate(RID p_item, const Color &
 
 	canvas_item->self_modulate = p_color;
 }
+
+#ifdef ENABLE_PERFETTO
+void VisualServerCanvas::canvas_item_set_name(RID p_item, const String &p_name) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	canvas_item->name = p_name.utf8();
+}
+void VisualServerCanvas::canvas_item_set_path(RID p_item, const String &p_path) {
+	Item *canvas_item = canvas_item_owner.getornull(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	canvas_item->path = p_path.utf8();
+}
+#endif
 
 void VisualServerCanvas::canvas_item_set_draw_behind_parent(RID p_item, bool p_enable) {
 	Item *canvas_item = canvas_item_owner.getornull(p_item);

@@ -199,6 +199,18 @@ RID PrimitiveMesh::get_rid() const {
 	return mesh;
 }
 
+#ifdef ENABLE_PERFETTO
+void PrimitiveMesh::set_name(const String &p_name) {
+	VS::get_singleton()->mesh_set_name(mesh, p_name);
+	Resource::set_name(p_name);
+}
+
+void PrimitiveMesh::set_path(const String &p_path, bool p_take_over) {
+	VS::get_singleton()->mesh_set_path(mesh, p_path);
+	Resource::set_path(p_path, p_take_over);
+}
+#endif
+
 void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update"), &PrimitiveMesh::_update);
 

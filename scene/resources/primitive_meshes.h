@@ -80,6 +80,11 @@ public:
 	virtual AABB get_aabb() const;
 	virtual RID get_rid() const;
 
+#ifdef ENABLE_PERFETTO
+	virtual void set_name(const String &p_name);
+	virtual void set_path(const String &p_path, bool p_take_over = false);
+#endif
+
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 

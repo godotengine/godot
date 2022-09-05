@@ -130,6 +130,11 @@ public:
 
 	virtual RID get_rid() const;
 
+#ifdef ENABLE_PERFETTO
+	void set_name(const String &p_name);
+	void set_path(const String &p_path, bool p_take_over = false);
+#endif
+
 	MultiMesh();
 	~MultiMesh();
 };

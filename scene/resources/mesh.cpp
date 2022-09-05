@@ -1032,6 +1032,19 @@ void ArrayMesh::add_surface_from_mesh_data(const Geometry::MeshData &p_mesh_data
 RID ArrayMesh::get_rid() const {
 	return mesh;
 }
+
+#ifdef ENABLE_PERFETTO
+void ArrayMesh::set_name(const String &p_name) {
+	VS::get_singleton()->mesh_set_name(mesh, p_name);
+	Resource::set_name(p_name);
+}
+
+void ArrayMesh::set_path(const String &p_path, bool p_take_over) {
+	VS::get_singleton()->mesh_set_path(mesh, p_path);
+	Resource::set_path(p_path, p_take_over);
+}
+#endif
+
 AABB ArrayMesh::get_aabb() const {
 	return aabb;
 }

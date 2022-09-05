@@ -430,6 +430,11 @@ public:
 	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {}
 	AABB mesh_get_custom_aabb(RID p_mesh) const { return AABB(); }
 
+#ifdef ENABLE_PERFETTO
+	void mesh_set_name(RID p_mesh, const String &p_name) {}
+	void mesh_set_path(RID p_mesh, const String &p_path) {}
+#endif
+
 	AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const { return AABB(); }
 	void mesh_clear(RID p_mesh) {}
 
@@ -455,6 +460,11 @@ public:
 	AABB _multimesh_get_aabb(RID p_multimesh) const { return AABB(); }
 
 	MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const { return nullptr; }
+
+#ifdef ENABLE_PERFETTO
+	void _multimesh_set_name(RID p_multimesh, const String &p_name) {}
+	void _multimesh_set_path(RID p_multimesh, const String &p_path) {}
+#endif
 
 	/* IMMEDIATE API */
 
@@ -695,6 +705,11 @@ public:
 	void particles_request_process(RID p_particles) {}
 	AABB particles_get_current_aabb(RID p_particles) { return AABB(); }
 	AABB particles_get_aabb(RID p_particles) const { return AABB(); }
+
+#ifdef ENABLE_PERFETTO
+	void particles_set_name(RID p_particles, const String &p_name) {}
+	void particles_set_path(RID p_particles, const String &p_path) {}
+#endif
 
 	void particles_set_emission_transform(RID p_particles, const Transform &p_transform) {}
 

@@ -259,6 +259,11 @@ public:
 	BIND2(mesh_set_custom_aabb, RID, const AABB &)
 	BIND1RC(AABB, mesh_get_custom_aabb, RID)
 
+#ifdef ENABLE_PERFETTO
+	BIND2(mesh_set_name, RID, const String &)
+	BIND2(mesh_set_path, RID, const String &)
+#endif
+
 	BIND1(mesh_clear, RID)
 
 	/* MULTIMESH API */
@@ -276,6 +281,11 @@ public:
 
 	BIND1RC(RID, multimesh_get_mesh, RID)
 	BIND1RC(AABB, multimesh_get_aabb, RID)
+
+#ifdef ENABLE_PERFETTO
+	BIND2(multimesh_set_name, RID, const String &)
+	BIND2(multimesh_set_path, RID, const String &)
+#endif
 
 	BIND2RC(Transform, multimesh_instance_get_transform, RID, int)
 	BIND2RC(Transform2D, multimesh_instance_get_transform_2d, RID, int)
@@ -444,6 +454,11 @@ public:
 
 	BIND2(particles_set_draw_passes, RID, int)
 	BIND3(particles_set_draw_pass_mesh, RID, int, RID)
+
+#ifdef ENABLE_PERFETTO
+	BIND2(particles_set_name, RID, const String &)
+	BIND2(particles_set_path, RID, const String &)
+#endif
 
 	BIND1R(AABB, particles_get_current_aabb, RID)
 	BIND2(particles_set_emission_transform, RID, const Transform &)
@@ -694,6 +709,10 @@ public:
 	BIND3(canvas_item_set_custom_rect, RID, bool, const Rect2 &)
 	BIND2(canvas_item_set_modulate, RID, const Color &)
 	BIND2(canvas_item_set_self_modulate, RID, const Color &)
+#ifdef ENABLE_PERFETTO
+	BIND2(canvas_item_set_name, RID, const String &)
+	BIND2(canvas_item_set_path, RID, const String &)
+#endif
 
 	BIND2(canvas_item_set_draw_behind_parent, RID, bool)
 

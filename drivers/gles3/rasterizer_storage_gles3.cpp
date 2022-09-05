@@ -4239,6 +4239,23 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 
 	return aabb;
 }
+
+#ifdef ENABLE_PERFETTO
+void RasterizerStorageGLES3::mesh_set_name(RID p_mesh, const String &p_name) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->name = p_name.utf8();
+}
+
+void RasterizerStorageGLES3::mesh_set_path(RID p_mesh, const String &p_path) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->path = p_path.ascii();
+}
+#endif
+
 void RasterizerStorageGLES3::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -4918,6 +4935,22 @@ RasterizerStorage::MMInterpolator *RasterizerStorageGLES3::_multimesh_get_interp
 
 	return &multimesh->interpolator;
 }
+
+#ifdef ENABLE_PERFETTO
+void RasterizerStorageGLES3::_multimesh_set_name(RID p_multimesh, const String &p_name) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+
+	multimesh->name = p_name.utf8();
+}
+
+void RasterizerStorageGLES3::_multimesh_set_path(RID p_multimesh, const String &p_path) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+
+	multimesh->path = p_path.utf8();
+}
+#endif
 
 void RasterizerStorageGLES3::update_dirty_multimeshes() {
 	while (multimesh_update_list.first()) {
@@ -6429,6 +6462,22 @@ AABB RasterizerStorageGLES3::particles_get_aabb(RID p_particles) const {
 	return particles->custom_aabb;
 }
 
+#ifdef ENABLE_PERFETTO
+void RasterizerStorageGLES3::particles_set_name(RID p_particles, const String &p_name) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->name = p_name.utf8();
+}
+
+void RasterizerStorageGLES3::particles_set_path(RID p_particles, const String &p_path) {
+	Particles *particles = particles_owner.getornull(p_particles);
+	ERR_FAIL_COND(!particles);
+
+	particles->path = p_path.utf8();
+}
+#endif
+
 void RasterizerStorageGLES3::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
@@ -6764,6 +6813,11 @@ void RasterizerStorageGLES3::instance_add_dependency(RID p_base, RasterizerScene
 			ERR_FAIL();
 		}
 	}
+
+#ifdef ENABLE_PERFETTO
+	p_instance->name = inst->name;
+	p_instance->path = inst->path;
+#endif
 
 	inst->instance_list.add(&p_instance->dependency_item);
 }

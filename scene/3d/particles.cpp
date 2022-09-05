@@ -79,6 +79,13 @@ void Particles::set_one_shot(bool p_one_shot) {
 	}
 }
 
+#ifdef ENABLE_PERFETTO
+void Particles::set_name(const String &p_name) {
+	VisualServer::get_singleton()->particles_set_name(particles, p_name);
+	GeometryInstance::set_name(p_name);
+}
+#endif
+
 void Particles::set_pre_process_time(float p_time) {
 	pre_process_time = p_time;
 	VS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
@@ -314,6 +321,12 @@ void Particles::_notification(int p_what) {
 			set_process_internal(false);
 		}
 	}
+
+#ifdef ENABLE_PERFETTO
+	if (p_what == NOTIFICATION_PATH_CHANGED) {
+		VisualServer::get_singleton()->particles_set_path(particles, get_path());
+	}
+#endif
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		// make sure particles are updated before rendering occurs if they were active before

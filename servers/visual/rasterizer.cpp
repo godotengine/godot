@@ -556,3 +556,12 @@ int RasterizerStorage::multimesh_get_visible_instances(RID p_multimesh) const {
 AABB RasterizerStorage::multimesh_get_aabb(RID p_multimesh) const {
 	return _multimesh_get_aabb(p_multimesh);
 }
+
+#ifdef ENABLE_PERFETTO
+void RasterizerStorage::multimesh_set_name(RID p_multimesh, const String &p_name) {
+	_multimesh_set_name(p_multimesh, p_name);
+}
+void RasterizerStorage::multimesh_set_path(RID p_multimesh, const String &p_path) {
+	_multimesh_set_path(p_multimesh, p_path);
+}
+#endif
