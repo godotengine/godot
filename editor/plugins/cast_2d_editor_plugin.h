@@ -42,7 +42,7 @@ class Cast2DEditor : public Control {
 
 	Ref<EditorUndoRedoManager> undo_redo;
 	CanvasItemEditor *canvas_item_editor = nullptr;
-	Node2D *node;
+	Node2D *node = nullptr;
 
 	bool pressed = false;
 	Point2 original_target_position;
