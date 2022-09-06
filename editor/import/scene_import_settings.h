@@ -192,7 +192,7 @@ class SceneImportSettings : public ConfirmationDialog {
 
 	bool editing_animation = false;
 
-	Timer *update_view_timer;
+	Timer *update_view_timer = nullptr;
 
 protected:
 	void _notification(int p_what);

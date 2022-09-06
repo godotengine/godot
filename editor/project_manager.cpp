@@ -1901,11 +1901,13 @@ void ProjectManager::_notification(int p_what) {
 			filter_option->select(default_sorting);
 			_project_list->set_order_option(default_sorting);
 
+#ifndef ANDROID_ENABLED
 			if (_project_list->get_project_count() >= 1) {
 				// Focus on the search box immediately to allow the user
 				// to search without having to reach for their mouse
 				search_box->grab_focus();
 			}
+#endif
 
 			if (asset_library) {
 				// Removes extra border margins.
@@ -2443,6 +2445,7 @@ void ProjectManager::_on_order_option_changed(int p_idx) {
 }
 
 void ProjectManager::_on_tab_changed(int p_tab) {
+#ifndef ANDROID_ENABLED
 	if (p_tab == 0) { // Projects
 		// Automatically grab focus when the user moves from the Templates tab
 		// back to the Projects tab.
@@ -2451,6 +2454,7 @@ void ProjectManager::_on_tab_changed(int p_tab) {
 
 	// The Templates tab's search field is focused on display in the asset
 	// library editor plugin code.
+#endif
 }
 
 void ProjectManager::_on_search_term_changed(const String &p_term) {

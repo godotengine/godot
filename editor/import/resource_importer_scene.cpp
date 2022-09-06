@@ -368,6 +368,185 @@ static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r
 	}
 }
 
+struct ScalableNodeCollection {
+	HashSet<Node3D *> node_3ds;
+	HashSet<Ref<ImporterMesh>> importer_meshes;
+	HashSet<Ref<Skin>> skins;
+	HashSet<Ref<Animation>> animations;
+};
+
+void _rescale_importer_mesh(Vector3 p_scale, Ref<ImporterMesh> p_mesh, bool is_shadow = false) {
+	// MESH and SKIN data divide, to compensate for object position multiplying.
+
+	const int surf_count = p_mesh->get_surface_count();
+	const int blendshape_count = p_mesh->get_blend_shape_count();
+	struct LocalSurfData {
+		Mesh::PrimitiveType prim = {};
+		Array arr;
+		Array bsarr;
+		Dictionary lods;
+		String name;
+		Ref<Material> mat;
+		int fmt_compress_flags = 0;
+	};
+
+	Vector<LocalSurfData> surf_data_by_mesh;
+
+	Vector<String> blendshape_names;
+	for (int bsidx = 0; bsidx < blendshape_count; bsidx++) {
+		blendshape_names.append(p_mesh->get_blend_shape_name(bsidx));
+	}
+
+	for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
+		Mesh::PrimitiveType prim = p_mesh->get_surface_primitive_type(surf_idx);
+		const int fmt_compress_flags = p_mesh->get_surface_format(surf_idx);
+		Array arr = p_mesh->get_surface_arrays(surf_idx);
+		String name = p_mesh->get_surface_name(surf_idx);
+		Dictionary lods = Dictionary();
+		Ref<Material> mat = p_mesh->get_surface_material(surf_idx);
+		{
+			Vector<Vector3> vertex_array = arr[ArrayMesh::ARRAY_VERTEX];
+			for (int vert_arr_i = 0; vert_arr_i < vertex_array.size(); vert_arr_i++) {
+				vertex_array.write[vert_arr_i] = vertex_array[vert_arr_i] * p_scale;
+			}
+			arr[ArrayMesh::ARRAY_VERTEX] = vertex_array;
+		}
+		Array blendshapes;
+		for (int bsidx = 0; bsidx < blendshape_count; bsidx++) {
+			Array current_bsarr = p_mesh->get_surface_blend_shape_arrays(surf_idx, bsidx);
+			Vector<Vector3> current_bs_vertex_array = current_bsarr[ArrayMesh::ARRAY_VERTEX];
+			int current_bs_vert_arr_len = current_bs_vertex_array.size();
+			for (int32_t bs_vert_arr_i = 0; bs_vert_arr_i < current_bs_vert_arr_len; bs_vert_arr_i++) {
+				current_bs_vertex_array.write[bs_vert_arr_i] = current_bs_vertex_array[bs_vert_arr_i] * p_scale;
+			}
+			current_bsarr[ArrayMesh::ARRAY_VERTEX] = current_bs_vertex_array;
+			blendshapes.push_back(current_bsarr);
+		}
+
+		LocalSurfData surf_data_dictionary = LocalSurfData();
+		surf_data_dictionary.prim = prim;
+		surf_data_dictionary.arr = arr;
+		surf_data_dictionary.bsarr = blendshapes;
+		surf_data_dictionary.lods = lods;
+		surf_data_dictionary.fmt_compress_flags = fmt_compress_flags;
+		surf_data_dictionary.name = name;
+		surf_data_dictionary.mat = mat;
+
+		surf_data_by_mesh.push_back(surf_data_dictionary);
+	}
+
+	p_mesh->clear();
+
+	for (int bsidx = 0; bsidx < blendshape_count; bsidx++) {
+		p_mesh->add_blend_shape(blendshape_names[bsidx]);
+	}
+
+	for (int surf_idx = 0; surf_idx < surf_count; surf_idx++) {
+		const Mesh::PrimitiveType prim = surf_data_by_mesh[surf_idx].prim;
+		const Array arr = surf_data_by_mesh[surf_idx].arr;
+		const Array bsarr = surf_data_by_mesh[surf_idx].bsarr;
+		const Dictionary lods = surf_data_by_mesh[surf_idx].lods;
+		const int fmt_compress_flags = surf_data_by_mesh[surf_idx].fmt_compress_flags;
+		const String name = surf_data_by_mesh[surf_idx].name;
+		const Ref<Material> mat = surf_data_by_mesh[surf_idx].mat;
+
+		p_mesh->add_surface(prim, arr, bsarr, lods, mat, name, fmt_compress_flags);
+	}
+
+	if (!is_shadow && p_mesh->get_shadow_mesh() != p_mesh && p_mesh->get_shadow_mesh().is_valid()) {
+		_rescale_importer_mesh(p_scale, p_mesh->get_shadow_mesh(), true);
+	}
+}
+
+void _rescale_skin(Vector3 p_scale, Ref<Skin> p_skin) {
+	// MESH and SKIN data divide, to compensate for object position multiplying.
+	for (int i = 0; i < p_skin->get_bind_count(); i++) {
+		Transform3D transform = p_skin->get_bind_pose(i);
+		p_skin->set_bind_pose(i, Transform3D(transform.basis, p_scale * transform.origin));
+	}
+}
+
+void _rescale_animation(Vector3 p_scale, Ref<Animation> p_animation) {
+	for (int track_idx = 0; track_idx < p_animation->get_track_count(); track_idx++) {
+		if (p_animation->track_get_type(track_idx) == Animation::TYPE_POSITION_3D) {
+			for (int key_idx = 0; key_idx < p_animation->track_get_key_count(track_idx); key_idx++) {
+				Vector3 value = p_animation->track_get_key_value(track_idx, key_idx);
+				value = p_scale * value;
+				p_animation->track_set_key_value(track_idx, key_idx, value);
+			}
+		}
+	}
+}
+
+void _apply_basis_to_scalable_node_collection(ScalableNodeCollection &p_dictionary, Vector3 p_scale) {
+	for (Node3D *node_3d : p_dictionary.node_3ds) {
+		if (node_3d) {
+			node_3d->set_position(p_scale * node_3d->get_position());
+
+			Skeleton3D *skeleton_3d = Object::cast_to<Skeleton3D>(node_3d);
+			if (skeleton_3d) {
+				for (int i = 0; i < skeleton_3d->get_bone_count(); i++) {
+					Transform3D rest = skeleton_3d->get_bone_rest(i);
+					skeleton_3d->set_bone_rest(i, Transform3D(rest.basis, p_scale * rest.origin));
+					skeleton_3d->set_bone_pose_position(i, p_scale * rest.origin);
+				}
+			}
+		}
+	}
+	for (Ref<ImporterMesh> mesh : p_dictionary.importer_meshes) {
+		_rescale_importer_mesh(p_scale, mesh, false);
+	}
+	for (Ref<Skin> skin : p_dictionary.skins) {
+		_rescale_skin(p_scale, skin);
+	}
+	for (Ref<Animation> animation : p_dictionary.animations) {
+		_rescale_animation(p_scale, animation);
+	}
+}
+
+void _populate_scalable_nodes_collection(Node *p_node, ScalableNodeCollection &p_dictionary) {
+	if (!p_node) {
+		return;
+	}
+	Node3D *node_3d = Object::cast_to<Node3D>(p_node);
+	if (node_3d) {
+		p_dictionary.node_3ds.insert(node_3d);
+		ImporterMeshInstance3D *mesh_instance_3d = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		if (mesh_instance_3d) {
+			Ref<ImporterMesh> mesh = mesh_instance_3d->get_mesh();
+			if (mesh.is_valid()) {
+				p_dictionary.importer_meshes.insert(mesh);
+			}
+			Ref<Skin> skin = mesh_instance_3d->get_skin();
+			if (skin.is_valid()) {
+				p_dictionary.skins.insert(skin);
+			}
+		}
+	}
+	AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_node);
+	if (animation_player) {
+		List<StringName> animation_list;
+		animation_player->get_animation_list(&animation_list);
+
+		for (const StringName &E : animation_list) {
+			Ref<Animation> animation = animation_player->get_animation(E);
+			p_dictionary.animations.insert(animation);
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
+		_populate_scalable_nodes_collection(child, p_dictionary);
+	}
+}
+
+void _apply_permanent_rotation_scale_to_node(Node *p_node) {
+	Transform3D transform = Object::cast_to<Node3D>(p_node)->get_transform();
+	ScalableNodeCollection scalable_node_collection;
+	_populate_scalable_nodes_collection(p_node, scalable_node_collection);
+	_apply_basis_to_scalable_node_collection(scalable_node_collection, transform.basis.get_scale());
+}
+
 Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames) {
 	// Children first.
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -1678,6 +1857,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 		script_ext_hint += "*." + E;
 	}
 
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
@@ -2144,6 +2324,21 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		return err;
 	}
 
+	bool apply_root = true;
+	if (p_options.has("nodes/apply_root_scale")) {
+		apply_root = p_options["nodes/apply_root_scale"];
+	}
+	real_t root_scale = 1;
+	if (p_options.has("nodes/root_scale")) {
+		root_scale = p_options["nodes/root_scale"];
+	}
+	if (Object::cast_to<Node3D>(scene)) {
+		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
+	}
+	if (apply_root) {
+		_apply_permanent_rotation_scale_to_node(scene);
+		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale).inverse());
+	}
 	Dictionary subresources = p_options["_subresources"];
 
 	Dictionary node_data;
@@ -2197,12 +2392,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 
 	if (root_script.is_valid()) {
 		scene->set_script(Variant(root_script));
-	}
-
-	float root_scale = 1.0;
-	if (Object::cast_to<Node3D>(scene)) {
-		root_scale = p_options["nodes/root_scale"];
-		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
 	}
 
 	if (p_options["nodes/root_name"] != "Scene Root") {

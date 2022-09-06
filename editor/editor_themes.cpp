@@ -666,9 +666,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_base->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 	style_tab_base->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
-	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
-	// We can't prevent them with both rounded corners and non-zero border width, though
-	style_tab_base->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
 	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
 	style_tab_base->set_expand_margin_size(SIDE_LEFT, -border_width);
 
@@ -1209,17 +1206,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_selected_color", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("v_separation", "ItemList", widget_default_margin.y - EDSCALE);
+	theme->set_constant("v_separation", "ItemList", force_even_vsep * 0.5 * EDSCALE);
 	theme->set_constant("h_separation", "ItemList", 6 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", 6 * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// TabBar & TabContainer
-	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
-	style_tabbar_background->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
-	style_tabbar_background->set_corner_detail(corner_width);
-	style_tabbar_background->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
-	style_tabbar_background->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
+	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0, corner_radius * EDSCALE);
+	style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 	theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
 
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
@@ -1230,8 +1225,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
 	theme->set_stylebox("button_pressed", "TabBar", style_menu);
 	theme->set_stylebox("button_highlight", "TabBar", style_menu);
-	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
-	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_color("font_selected_color", "TabContainer", font_color);
 	theme->set_color("font_unselected_color", "TabContainer", font_disabled_color);
 	theme->set_color("font_selected_color", "TabBar", font_color);
@@ -1251,21 +1244,27 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
+	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
 
-	// Content of each tab
+	// Content of each tab.
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	style_content_panel->set_border_width(Side::SIDE_TOP, 0);
 	style_content_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
 	style_content_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
-	// compensate the border
+	// Compensate for the border.
 	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
 	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
+
+	// Bottom panel.
+	Ref<StyleBoxFlat> style_bottom_panel = style_content_panel->duplicate();
+	style_bottom_panel->set_corner_radius_all(corner_radius * EDSCALE);
+	theme->set_stylebox("BottomPanel", "EditorStyles", style_bottom_panel);
 
 	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
 	theme->set_type_variation("TabContainerOdd", "TabContainer");
@@ -1345,7 +1344,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "TextEdit", style_line_edit);
 	theme->set_stylebox("focus", "TextEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "TextEdit", style_line_edit_disabled);
-	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_icon("tab", "TextEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
 	theme->set_icon("space", "TextEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
 	theme->set_color("font_color", "TextEdit", font_color);
