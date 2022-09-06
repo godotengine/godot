@@ -40,6 +40,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
+			set_stream_paused(false);
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -64,6 +65,10 @@ void AudioStreamPlayer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			set_stream_paused(true);
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
 			for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 				AudioServer::get_singleton()->stop_playback_stream(playback);
 			}
