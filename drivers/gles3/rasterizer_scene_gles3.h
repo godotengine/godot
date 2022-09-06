@@ -597,7 +597,7 @@ protected:
 public:
 	static RasterizerSceneGLES3 *get_singleton() { return singleton; }
 
-	RasterizerCanvasGLES3 *canvas;
+	RasterizerCanvasGLES3 *canvas = nullptr;
 
 	RenderGeometryInstance *geometry_instance_create(RID p_base) override;
 	void geometry_instance_free(RenderGeometryInstance *p_geometry_instance) override;

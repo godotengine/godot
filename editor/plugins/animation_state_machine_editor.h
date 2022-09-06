@@ -100,8 +100,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Vector2 add_node_pos;
 
-	ConfirmationDialog *delete_window;
-	Tree *delete_tree;
+	ConfirmationDialog *delete_window = nullptr;
+	Tree *delete_tree = nullptr;
 
 	bool box_selecting = false;
 	Point2 box_selecting_from;

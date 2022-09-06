@@ -186,7 +186,7 @@ public:
 class SizeFlagPresetPicker : public ControlEditorPresetPicker {
 	GDCLASS(SizeFlagPresetPicker, ControlEditorPresetPicker);
 
-	CheckBox *expand_button;
+	CheckBox *expand_button = nullptr;
 
 	bool vertical = false;
 
