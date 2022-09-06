@@ -1563,7 +1563,7 @@ void RendererSceneCull::_update_instance(Instance *p_instance) {
 		}
 	}
 
-	if (p_instance->aabb.has_no_surface()) {
+	if (!p_instance->aabb.has_surface()) {
 		return;
 	}
 

@@ -2671,7 +2671,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 	Rect2i src_rect;
 	Rect2i dest_rect;
 	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
-	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
 
@@ -2717,7 +2717,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 	Rect2i src_rect;
 	Rect2i dest_rect;
 	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
-	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
 
@@ -2762,7 +2762,7 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const 
 	Rect2i src_rect;
 	Rect2i dest_rect;
 	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
-	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
 
@@ -2802,7 +2802,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 	Rect2i src_rect;
 	Rect2i dest_rect;
 	_get_clipped_src_and_dest_rects(p_src, p_src_rect, p_dest, src_rect, dest_rect);
-	if (src_rect.has_no_area() || dest_rect.has_no_area()) {
+	if (!src_rect.has_area() || !dest_rect.has_area()) {
 		return;
 	}
 
@@ -2862,7 +2862,7 @@ void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
-	if (r.has_no_area()) {
+	if (!r.has_area()) {
 		return;
 	}
 
