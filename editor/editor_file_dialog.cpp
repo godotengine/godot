@@ -84,7 +84,7 @@ void EditorFileDialog::_update_theme_item_cache() {
 	theme_cache.favorites_down = get_theme_icon(SNAME("MoveDown"), SNAME("EditorIcons"));
 
 	theme_cache.folder = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
-	theme_cache.folder_icon_modulate = get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
+	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	theme_cache.action_copy = get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons"));
 	theme_cache.action_delete = get_theme_icon(SNAME("Remove"), SNAME("EditorIcons"));
@@ -839,7 +839,7 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(-1, d);
-		item_list->set_item_icon_modulate(-1, theme_cache.folder_icon_modulate);
+		item_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
 
 		dirs.pop_front();
 	}
@@ -1385,7 +1385,7 @@ void EditorFileDialog::_update_favorites() {
 	for (int i = 0; i < favorited_paths.size(); i++) {
 		favorites->add_item(favorited_names[i], theme_cache.folder);
 		favorites->set_item_metadata(-1, favorited_paths[i]);
-		favorites->set_item_icon_modulate(-1, theme_cache.folder_icon_modulate);
+		favorites->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
 
 		if (i == current_favorite) {
 			favorite->set_pressed(true);
@@ -1468,7 +1468,7 @@ void EditorFileDialog::_update_recent() {
 	for (int i = 0; i < recentd_paths.size(); i++) {
 		recent->add_item(recentd_names[i], theme_cache.folder);
 		recent->set_item_metadata(-1, recentd_paths[i]);
-		recent->set_item_icon_modulate(-1, theme_cache.folder_icon_modulate);
+		recent->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
 	}
 	EditorSettings::get_singleton()->set_recent_dirs(recentd);
 }

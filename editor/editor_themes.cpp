@@ -894,15 +894,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("hover", "CheckButton", style_menu);
 	theme->set_stylebox("hover_pressed", "CheckButton", style_menu);
 
-	theme->set_icon("on", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), SNAME("EditorIcons")));
-	theme->set_icon("on_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("off", "CheckButton", theme->get_icon(SNAME("GuiToggleOff"), SNAME("EditorIcons")));
-	theme->set_icon("off_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("checked", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), SNAME("EditorIcons")));
+	theme->set_icon("checked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked", "CheckButton", theme->get_icon(SNAME("GuiToggleOff"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabled"), SNAME("EditorIcons")));
 
-	theme->set_icon("on_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("on_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabledMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("off_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("off_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabledMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("checked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("checked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabledMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabledMirrored"), SNAME("EditorIcons")));
 
 	theme->set_color("font_color", "CheckButton", font_color);
 	theme->set_color("font_hover_color", "CheckButton", font_hover_color);
@@ -918,7 +918,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_disabled_color", "CheckButton", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
-	theme->set_constant("check_v_adjust", "CheckButton", 0 * EDSCALE);
+	theme->set_constant("check_v_offset", "CheckButton", 0 * EDSCALE);
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
@@ -955,7 +955,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_disabled_color", "CheckBox", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
-	theme->set_constant("check_v_adjust", "CheckBox", 0 * EDSCALE);
+	theme->set_constant("check_v_offset", "CheckBox", 0 * EDSCALE);
 
 	// PopupDialog
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
@@ -1095,7 +1095,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Make Trees easier to distinguish from other controls by using a darker background color.
 	style_tree_bg->set_bg_color(dark_color_1.lerp(dark_color_2, 0.5));
 	style_tree_bg->set_border_color(dark_color_3);
-	theme->set_stylebox("bg", "Tree", style_tree_bg);
+	theme->set_stylebox("panel", "Tree", style_tree_bg);
 
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));
@@ -1106,7 +1106,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("arrow_collapsed_mirrored", "Tree", theme->get_icon(SNAME("GuiTreeArrowLeft"), SNAME("EditorIcons")));
 	theme->set_icon("updown", "Tree", theme->get_icon(SNAME("GuiTreeUpdown"), SNAME("EditorIcons")));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon(SNAME("GuiDropdown"), SNAME("EditorIcons")));
-	theme->set_stylebox("bg_focus", "Tree", style_widget_focus);
+	theme->set_stylebox("focus", "Tree", style_widget_focus);
 	theme->set_stylebox("custom_button", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_hover", "Tree", style_widget);
@@ -1197,12 +1197,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_width_all(border_width);
 	style_itemlist_cursor->set_border_color(highlight_color);
+	theme->set_stylebox("panel", "ItemList", style_itemlist_bg);
+	theme->set_stylebox("focus", "ItemList", style_widget_focus);
 	theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("cursor_unfocused", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("selected_focus", "ItemList", style_tree_focus);
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
-	theme->set_stylebox("bg_focus", "ItemList", style_widget_focus);
-	theme->set_stylebox("bg", "ItemList", style_itemlist_bg);
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_selected_color", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
@@ -1547,8 +1547,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("updown_disabled", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), SNAME("EditorIcons")));
 
 	// ProgressBar
-	theme->set_stylebox("bg", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
-	theme->set_stylebox("fg", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
+	theme->set_stylebox("background", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
+	theme->set_stylebox("fill", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
 	theme->set_color("font_color", "ProgressBar", font_color);
 
 	// GraphEdit
@@ -1694,7 +1694,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
-	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
+	theme->set_color("folder_icon_color", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_disabled_color);
 
 	// ColorPicker

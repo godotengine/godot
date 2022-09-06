@@ -77,7 +77,7 @@ void CheckBox::_update_theme_item_cache() {
 	Button::_update_theme_item_cache();
 
 	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
-	theme_cache.check_v_adjust = get_theme_constant(SNAME("check_v_adjust"));
+	theme_cache.check_v_offset = get_theme_constant(SNAME("check_v_offset"));
 	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
 
 	theme_cache.checked = get_theme_icon(SNAME("checked"));
@@ -134,7 +134,7 @@ void CheckBox::_notification(int p_what) {
 			} else {
 				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 			}
-			ofs.y = int((get_size().height - get_icon_size().height) / 2) + theme_cache.check_v_adjust;
+			ofs.y = int((get_size().height - get_icon_size().height) / 2) + theme_cache.check_v_offset;
 
 			if (is_pressed()) {
 				on_tex->draw(ci, ofs);

@@ -39,8 +39,8 @@ class ProgressBar : public Range {
 	bool percent_visible = true;
 
 	struct ThemeCache {
-		Ref<StyleBox> bg_style;
-		Ref<StyleBox> fg_style;
+		Ref<StyleBox> background_style;
+		Ref<StyleBox> fill_style;
 
 		Ref<Font> font;
 		int font_size = 0;

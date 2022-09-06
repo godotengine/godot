@@ -483,12 +483,14 @@ private:
 	void propagate_set_columns(TreeItem *p_item);
 
 	struct ThemeCache {
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> focus_style;
+
 		Ref<Font> font;
 		Ref<Font> tb_font;
 		int font_size = 0;
 		int tb_font_size = 0;
-		Ref<StyleBox> bg;
-		Ref<StyleBox> bg_focus;
+
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;

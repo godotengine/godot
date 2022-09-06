@@ -1676,8 +1676,8 @@ void RichTextLabel::_update_theme_item_cache() {
 
 	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
 	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
-	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("bg"), SNAME("ProgressBar"));
-	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fg"), SNAME("ProgressBar"));
+	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("background"), SNAME("ProgressBar"));
+	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fill"), SNAME("ProgressBar"));
 
 	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
 

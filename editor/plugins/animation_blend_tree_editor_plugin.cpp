@@ -800,7 +800,7 @@ void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 }
 
 void AnimationNodeBlendTreeEditor::_update_theme() {
-	error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 	error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 }
 

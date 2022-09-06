@@ -49,10 +49,10 @@
 		<theme_item name="font_size" data_type="font_size" type="int">
 			Font size used to draw the fill percentage if [member percent_visible] is [code]true[/code].
 		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
+		<theme_item name="background" data_type="style" type="StyleBox">
 			The style of the background.
 		</theme_item>
-		<theme_item name="fg" data_type="style" type="StyleBox">
+		<theme_item name="fill" data_type="style" type="StyleBox">
 			The style of the progress (i.e. the part that fills the bar).
 		</theme_item>
 	</theme_items>

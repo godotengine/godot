@@ -33,13 +33,13 @@
 #include "scene/resources/text_line.h"
 
 Size2 ProgressBar::get_minimum_size() const {
-	Size2 minimum_size = theme_cache.bg_style->get_minimum_size();
-	minimum_size.height = MAX(minimum_size.height, theme_cache.fg_style->get_minimum_size().height);
-	minimum_size.width = MAX(minimum_size.width, theme_cache.fg_style->get_minimum_size().width);
+	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
+	minimum_size.height = MAX(minimum_size.height, theme_cache.fill_style->get_minimum_size().height);
+	minimum_size.width = MAX(minimum_size.width, theme_cache.fill_style->get_minimum_size().width);
 	if (percent_visible) {
 		String txt = "100%";
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
-		minimum_size.height = MAX(minimum_size.height, theme_cache.bg_style->get_minimum_size().height + tl.get_size().y);
+		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
 		minimum_size.width = MAX(minimum_size.width, 1);
 		minimum_size.height = MAX(minimum_size.height, 1);
@@ -50,8 +50,8 @@ Size2 ProgressBar::get_minimum_size() const {
 void ProgressBar::_update_theme_item_cache() {
 	Range::_update_theme_item_cache();
 
-	theme_cache.bg_style = get_theme_stylebox(SNAME("bg"));
-	theme_cache.fg_style = get_theme_stylebox(SNAME("fg"));
+	theme_cache.background_style = get_theme_stylebox(SNAME("background"));
+	theme_cache.fill_style = get_theme_stylebox(SNAME("fill"));
 
 	theme_cache.font = get_theme_font(SNAME("font"));
 	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
@@ -63,14 +63,14 @@ void ProgressBar::_update_theme_item_cache() {
 void ProgressBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			draw_style_box(theme_cache.bg_style, Rect2(Point2(), get_size()));
+			draw_style_box(theme_cache.background_style, Rect2(Point2(), get_size()));
 
 			float r = get_as_ratio();
 
 			switch (mode) {
 				case FILL_BEGIN_TO_END:
 				case FILL_END_TO_BEGIN: {
-					int mp = theme_cache.fg_style->get_minimum_size().width;
+					int mp = theme_cache.fill_style->get_minimum_size().width;
 					int p = round(r * (get_size().width - mp));
 					// We want FILL_BEGIN_TO_END to map to right to left when UI layout is RTL,
 					// and left to right otherwise. And likewise for FILL_END_TO_BEGIN.
@@ -78,23 +78,23 @@ void ProgressBar::_notification(int p_what) {
 					if (p > 0) {
 						if (right_to_left) {
 							int p_remaining = round((1.0 - r) * (get_size().width - mp));
-							draw_style_box(theme_cache.fg_style, Rect2(Point2(p_remaining, 0), Size2(p + theme_cache.fg_style->get_minimum_size().width, get_size().height)));
+							draw_style_box(theme_cache.fill_style, Rect2(Point2(p_remaining, 0), Size2(p + theme_cache.fill_style->get_minimum_size().width, get_size().height)));
 						} else {
-							draw_style_box(theme_cache.fg_style, Rect2(Point2(0, 0), Size2(p + theme_cache.fg_style->get_minimum_size().width, get_size().height)));
+							draw_style_box(theme_cache.fill_style, Rect2(Point2(0, 0), Size2(p + theme_cache.fill_style->get_minimum_size().width, get_size().height)));
 						}
 					}
 				} break;
 				case FILL_TOP_TO_BOTTOM:
 				case FILL_BOTTOM_TO_TOP: {
-					int mp = theme_cache.fg_style->get_minimum_size().height;
+					int mp = theme_cache.fill_style->get_minimum_size().height;
 					int p = round(r * (get_size().height - mp));
 
 					if (p > 0) {
 						if (mode == FILL_TOP_TO_BOTTOM) {
-							draw_style_box(theme_cache.fg_style, Rect2(Point2(0, 0), Size2(get_size().width, p + theme_cache.fg_style->get_minimum_size().height)));
+							draw_style_box(theme_cache.fill_style, Rect2(Point2(0, 0), Size2(get_size().width, p + theme_cache.fill_style->get_minimum_size().height)));
 						} else {
 							int p_remaining = round((1.0 - r) * (get_size().height - mp));
-							draw_style_box(theme_cache.fg_style, Rect2(Point2(0, p_remaining), Size2(get_size().width, p + theme_cache.fg_style->get_minimum_size().height)));
+							draw_style_box(theme_cache.fill_style, Rect2(Point2(0, p_remaining), Size2(get_size().width, p + theme_cache.fill_style->get_minimum_size().height)));
 						}
 					}
 				} break;

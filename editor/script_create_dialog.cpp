@@ -134,7 +134,7 @@ void ScriptCreateDialog::_notification(int p_what) {
 			path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 			parent_browse_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
 			parent_search_button->set_icon(get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
-			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 	}
 }
