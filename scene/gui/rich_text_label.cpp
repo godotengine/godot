@@ -1693,7 +1693,6 @@ void RichTextLabel::_update_theme_item_cache() {
 	theme_cache.shadow_offset_x = get_theme_constant(SNAME("shadow_offset_x"));
 	theme_cache.shadow_offset_y = get_theme_constant(SNAME("shadow_offset_y"));
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.outline_color = get_theme_color(SNAME("outline_color"));
 
 	theme_cache.bold_font = get_theme_font(SNAME("bold_font"));
 	theme_cache.bold_font_size = get_theme_font_size(SNAME("bold_font_size"));
@@ -3941,7 +3940,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int fs = theme_cache.normal_font_size * 3;
 			Ref<Font> f = theme_cache.normal_font;
 			Color color = theme_cache.default_color;
-			Color outline_color = theme_cache.outline_color;
+			Color outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.outline_size;
 			Rect2 dropcap_margins = Rect2();
 

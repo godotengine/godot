@@ -139,7 +139,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
-	theme->set_stylebox("panel_fg", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
 	// Button
 
