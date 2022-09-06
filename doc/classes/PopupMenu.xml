@@ -182,7 +182,7 @@
 				Removes all items from the [PopupMenu].
 			</description>
 		</method>
-		<method name="get_current_index" qualifiers="const">
+		<method name="get_focused_item" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the index of the currently focused item. Returns [code]-1[/code] if no item is focused.
@@ -332,7 +332,7 @@
 				Moves the scroll view to make the item at the given [param index] visible.
 			</description>
 		</method>
-		<method name="set_current_index">
+		<method name="set_focused_item">
 			<return type="void" />
 			<param index="0" name="index" type="int" />
 			<description>

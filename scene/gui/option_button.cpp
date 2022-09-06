@@ -238,7 +238,7 @@ void OptionButton::pressed() {
 	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
 	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
 		if (!_was_pressed_by_mouse()) {
-			popup->set_current_index(current);
+			popup->set_focused_item(current);
 		} else {
 			popup->scroll_to_item(current);
 		}
@@ -246,7 +246,7 @@ void OptionButton::pressed() {
 		for (int i = 0; i < popup->get_item_count(); i++) {
 			if (!popup->is_item_disabled(i)) {
 				if (!_was_pressed_by_mouse()) {
-					popup->set_current_index(i);
+					popup->set_focused_item(i);
 				} else {
 					popup->scroll_to_item(i);
 				}
