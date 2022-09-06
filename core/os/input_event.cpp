@@ -49,25 +49,25 @@ bool InputEvent::is_action(const StringName &p_action, bool p_exact_match) const
 }
 
 bool InputEvent::is_action_pressed(const StringName &p_action, bool p_allow_echo, bool p_exact_match) const {
-	bool pressed;
+	bool pressed = false;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, &pressed, nullptr, nullptr);
 	return valid && pressed && (p_allow_echo || !is_echo());
 }
 
 bool InputEvent::is_action_released(const StringName &p_action, bool p_exact_match) const {
-	bool pressed;
+	bool pressed = false;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, &pressed, nullptr, nullptr);
 	return valid && !pressed;
 }
 
 float InputEvent::get_action_strength(const StringName &p_action, bool p_exact_match) const {
-	float strength;
+	float strength = 0.0f;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, nullptr, &strength, nullptr);
 	return valid ? strength : 0.0f;
 }
 
 float InputEvent::get_action_raw_strength(const StringName &p_action, bool p_exact_match) const {
-	float raw_strength;
+	float raw_strength = 0.0f;
 	bool valid = InputMap::get_singleton()->event_get_action_status(Ref<InputEvent>((InputEvent *)this), p_action, p_exact_match, nullptr, nullptr, &raw_strength);
 	return valid ? raw_strength : 0.0f;
 }
