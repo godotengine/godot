@@ -176,11 +176,11 @@ class VisualShaderEditor : public VBoxContainer {
 	PopupMenu *varying_options = nullptr;
 	Button *preview_shader = nullptr;
 
-	OptionButton *edit_type = nullptr;
-	OptionButton *edit_type_standard = nullptr;
-	OptionButton *edit_type_particles = nullptr;
-	OptionButton *edit_type_sky = nullptr;
-	OptionButton *edit_type_fog = nullptr;
+	DropdownButton *edit_type = nullptr;
+	DropdownButton *edit_type_standard = nullptr;
+	DropdownButton *edit_type_particles = nullptr;
+	DropdownButton *edit_type_sky = nullptr;
+	DropdownButton *edit_type_fog = nullptr;
 	CheckBox *custom_mode_box = nullptr;
 	bool custom_mode_enabled = false;
 
@@ -205,9 +205,9 @@ class VisualShaderEditor : public VBoxContainer {
 	MenuButton *tools = nullptr;
 
 	ConfirmationDialog *add_varying_dialog = nullptr;
-	OptionButton *varying_type = nullptr;
+	DropdownButton *varying_type = nullptr;
 	LineEdit *varying_name = nullptr;
-	OptionButton *varying_mode = nullptr;
+	DropdownButton *varying_mode = nullptr;
 	Label *varying_error_label = nullptr;
 
 	ConfirmationDialog *remove_varying_dialog = nullptr;
@@ -532,7 +532,7 @@ public:
 
 class EditorPropertyVisualShaderMode : public EditorProperty {
 	GDCLASS(EditorPropertyVisualShaderMode, EditorProperty);
-	OptionButton *options = nullptr;
+	DropdownButton *options = nullptr;
 
 	void _option_selected(int p_which);
 

@@ -34,8 +34,8 @@
 #include "box_container.h"
 #include "core/io/dir_access.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
 class FileDialog : public ConfirmationDialog {
@@ -75,11 +75,11 @@ private:
 	LineEdit *dir = nullptr;
 	HBoxContainer *drives_container = nullptr;
 	HBoxContainer *shortcuts_container = nullptr;
-	OptionButton *drives = nullptr;
+	DropdownButton *drives = nullptr;
 	Tree *tree = nullptr;
 	HBoxContainer *file_box = nullptr;
 	LineEdit *file = nullptr;
-	OptionButton *filter = nullptr;
+	DropdownButton *filter = nullptr;
 	AcceptDialog *mkdirerr = nullptr;
 	AcceptDialog *exterr = nullptr;
 	Ref<DirAccess> dir_access;

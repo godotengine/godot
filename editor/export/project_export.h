@@ -42,7 +42,7 @@ class EditorInspector;
 class EditorPropertyPath;
 class ItemList;
 class MenuButton;
-class OptionButton;
+class DropdownButton;
 class RichTextLabel;
 class TabContainer;
 class Tree;
@@ -71,7 +71,7 @@ private:
 	AcceptDialog *result_dialog = nullptr;
 	ConfirmationDialog *delete_confirm = nullptr;
 
-	OptionButton *export_filter = nullptr;
+	DropdownButton *export_filter = nullptr;
 	LineEdit *include_filters = nullptr;
 	LineEdit *exclude_filters = nullptr;
 	Tree *include_files = nullptr;
@@ -86,7 +86,7 @@ private:
 	LineEdit *custom_features = nullptr;
 	RichTextLabel *custom_feature_display = nullptr;
 
-	OptionButton *script_mode = nullptr;
+	DropdownButton *script_mode = nullptr;
 	LineEdit *script_key = nullptr;
 	Label *script_key_error = nullptr;
 

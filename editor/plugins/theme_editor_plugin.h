@@ -35,9 +35,9 @@
 #include "editor/plugins/theme_editor_preview.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
@@ -333,7 +333,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 	LeadingStylebox leading_stylebox;
 
-	OptionButton *theme_type_list = nullptr;
+	DropdownButton *theme_type_list = nullptr;
 	Button *add_type_button = nullptr;
 
 	CheckButton *show_default_items_button = nullptr;

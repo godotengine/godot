@@ -38,9 +38,9 @@
 #include "scene/3d/node_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/resources/packed_scene.h"
 
@@ -269,7 +269,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		Ref<PackedScene> sd = memnew(PackedScene);
 		ResourceSaver::get_recognized_extensions(sd, &extensions);
 
-		scene_extension_picker = memnew(OptionButton);
+		scene_extension_picker = memnew(DropdownButton);
 		hb->add_child(scene_extension_picker);
 		for (const String &E : extensions) {
 			scene_extension_picker->add_item("." + E);

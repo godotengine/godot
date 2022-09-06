@@ -36,8 +36,8 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/spin_box.h"
@@ -533,7 +533,7 @@ class EditorInspector : public ScrollContainer {
 
 	ConfirmationDialog *add_meta_dialog = nullptr;
 	LineEdit *add_meta_name = nullptr;
-	OptionButton *add_meta_type = nullptr;
+	DropdownButton *add_meta_type = nullptr;
 	Label *add_meta_error = nullptr;
 
 	void _add_meta_confirm();

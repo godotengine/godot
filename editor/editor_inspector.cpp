@@ -4012,7 +4012,7 @@ void EditorInspector::_show_add_meta_dialog() {
 		add_meta_name->set_custom_minimum_size(Size2(200 * EDSCALE, 1));
 		hbc->add_child(add_meta_name);
 		hbc->add_child(memnew(Label(TTR("Type:"))));
-		add_meta_type = memnew(OptionButton);
+		add_meta_type = memnew(DropdownButton);
 		for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 			if (i == Variant::NIL || i == Variant::RID || i == Variant::CALLABLE || i == Variant::SIGNAL) {
 				continue; //not editable by inspector.

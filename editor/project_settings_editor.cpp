@@ -604,12 +604,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	property_box->connect("text_changed", callable_mp(this, &ProjectSettingsEditor::_property_box_changed));
 	custom_properties->add_child(property_box);
 
-	feature_box = memnew(OptionButton);
+	feature_box = memnew(DropdownButton);
 	feature_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	feature_box->connect("item_selected", callable_mp(this, &ProjectSettingsEditor::_feature_selected));
 	custom_properties->add_child(feature_box);
 
-	type_box = memnew(OptionButton);
+	type_box = memnew(DropdownButton);
 	type_box->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	custom_properties->add_child(type_box);
 

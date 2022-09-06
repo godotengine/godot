@@ -91,6 +91,7 @@
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/graph_edit.h"
@@ -104,7 +105,6 @@
 #include "scene/gui/menu_bar.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/nine_patch_rect.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
@@ -411,7 +411,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(CodeHighlighter);
 
 	GDREGISTER_ABSTRACT_CLASS(TreeItem);
-	GDREGISTER_CLASS(OptionButton);
+	GDREGISTER_CLASS(DropdownButton);
 	GDREGISTER_CLASS(SpinBox);
 	GDREGISTER_CLASS(ColorPicker);
 	GDREGISTER_CLASS(ColorPickerButton);
@@ -1033,6 +1033,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
 	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
 	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
+	ClassDB::add_compatibility_class("OptionButton", "DropdownButton");
 	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");

@@ -1414,6 +1414,7 @@ static const char *class_renames[][2] = {
 	{ "NetworkedMultiplayerPeer", "MultiplayerPeer" },
 	{ "Occluder", "OccluderInstance3D" },
 	{ "OmniLight", "OmniLight3D" },
+	{ "OptionButton", "DropdownButton" },
 	{ "PHashTranslation", "OptimizedTranslation" },
 	{ "PacketPeerGDNative", "PacketPeerExtension" },
 	{ "PanoramaSky", "Sky" },

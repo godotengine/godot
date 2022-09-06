@@ -703,7 +703,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	device_label->set_text(TTR("Device:"));
 	device_container->add_child(device_label);
 
-	device_id_option = memnew(OptionButton);
+	device_id_option = memnew(DropdownButton);
 	device_id_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	for (int i = -1; i < 8; i++) {
 		device_id_option->add_item(_get_device_string(i));

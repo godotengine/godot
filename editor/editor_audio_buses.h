@@ -35,9 +35,9 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
@@ -69,7 +69,7 @@ class EditorAudioBus : public PanelContainer {
 		TextureProgressBar *vu_r = nullptr;
 	} channel[CHANNELS_MAX];
 
-	OptionButton *send = nullptr;
+	DropdownButton *send = nullptr;
 
 	PopupMenu *effect_options = nullptr;
 	PopupMenu *bus_popup = nullptr;

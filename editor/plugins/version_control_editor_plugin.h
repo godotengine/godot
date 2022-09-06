@@ -69,10 +69,10 @@ private:
 
 	PopupMenu *version_control_actions = nullptr;
 	ConfirmationDialog *metadata_dialog = nullptr;
-	OptionButton *metadata_selection = nullptr;
+	DropdownButton *metadata_selection = nullptr;
 	AcceptDialog *set_up_dialog = nullptr;
 	CheckButton *toggle_vcs_choice = nullptr;
-	OptionButton *set_up_choice = nullptr;
+	DropdownButton *set_up_choice = nullptr;
 	LineEdit *project_path_input = nullptr;
 	Button *select_project_path_button = nullptr;
 	VBoxContainer *set_up_vbc = nullptr;
@@ -86,7 +86,7 @@ private:
 	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
 	Label *set_up_warning_text = nullptr;
 
-	OptionButton *commit_list_size_button = nullptr;
+	DropdownButton *commit_list_size_button = nullptr;
 
 	AcceptDialog *branch_create_confirm = nullptr;
 	LineEdit *branch_create_name_input = nullptr;
@@ -106,14 +106,14 @@ private:
 	Tree *unstaged_files = nullptr;
 	Tree *commit_list = nullptr;
 
-	OptionButton *branch_select = nullptr;
+	DropdownButton *branch_select = nullptr;
 	Button *branch_remove_button = nullptr;
 	AcceptDialog *branch_remove_confirm = nullptr;
 
 	Button *fetch_button = nullptr;
 	Button *pull_button = nullptr;
 	Button *push_button = nullptr;
-	OptionButton *remote_select = nullptr;
+	DropdownButton *remote_select = nullptr;
 	Button *remote_remove_button = nullptr;
 	AcceptDialog *remote_remove_confirm = nullptr;
 	MenuButton *extra_options = nullptr;
@@ -134,7 +134,7 @@ private:
 	Button *version_control_dock_button = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
-	OptionButton *diff_view_type_select = nullptr;
+	DropdownButton *diff_view_type_select = nullptr;
 	bool show_commit_diff_header = false;
 	List<EditorVCSInterface::DiffFile> diff_content;
 

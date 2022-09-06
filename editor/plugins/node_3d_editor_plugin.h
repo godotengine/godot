@@ -662,7 +662,7 @@ private:
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
 	LineEdit *xform_scale[3];
-	OptionButton *xform_type = nullptr;
+	DropdownButton *xform_type = nullptr;
 
 	VBoxContainer *settings_vbc = nullptr;
 	SpinBox *settings_fov = nullptr;

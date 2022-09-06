@@ -1450,7 +1450,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_main->add_child(search_hb2);
 
 	search_hb2->add_child(memnew(Label(TTR("Sort:") + " ")));
-	sort = memnew(OptionButton);
+	sort = memnew(DropdownButton);
 	for (int i = 0; i < SORT_MAX; i++) {
 		sort->add_item(TTRGET(sort_text[i]));
 	}
@@ -1464,7 +1464,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(VSeparator));
 
 	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
-	categories = memnew(OptionButton);
+	categories = memnew(DropdownButton);
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1474,7 +1474,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(memnew(VSeparator));
 
 	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
-	repository = memnew(OptionButton);
+	repository = memnew(DropdownButton);
 
 	_update_repository_options();
 

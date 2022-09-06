@@ -90,7 +90,7 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 	action_localized_name->connect("text_changed", callable_mp(this, &OpenXRActionEditor::_on_action_localized_name_changed));
 	add_child(action_localized_name);
 
-	action_type = memnew(OptionButton);
+	action_type = memnew(DropdownButton);
 	action_type->add_item("Bool", OpenXRAction::OPENXR_ACTION_BOOL);
 	action_type->add_item("Float", OpenXRAction::OPENXR_ACTION_FLOAT);
 	action_type->add_item("Vector2", OpenXRAction::OPENXR_ACTION_VECTOR2);

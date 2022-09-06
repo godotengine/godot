@@ -36,9 +36,9 @@
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
@@ -76,7 +76,7 @@ public:
 
 class EditorPropertyAnchorsPreset : public EditorProperty {
 	GDCLASS(EditorPropertyAnchorsPreset, EditorProperty);
-	OptionButton *options = nullptr;
+	DropdownButton *options = nullptr;
 
 	void _option_selected(int p_which);
 
@@ -100,7 +100,7 @@ class EditorPropertySizeFlags : public EditorProperty {
 		SIZE_FLAGS_PRESET_CUSTOM,
 	};
 
-	OptionButton *flag_presets = nullptr;
+	DropdownButton *flag_presets = nullptr;
 	CheckBox *flag_expand = nullptr;
 	VBoxContainer *flag_options = nullptr;
 	Vector<CheckBox *> flag_checks;

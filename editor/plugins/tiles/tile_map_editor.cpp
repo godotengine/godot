@@ -4000,7 +4000,7 @@ TileMapEditor::TileMapEditor() {
 	tile_map_toolbar->add_spacer();
 
 	// Layer selector.
-	layers_selection_button = memnew(OptionButton);
+	layers_selection_button = memnew(DropdownButton);
 	layers_selection_button->set_custom_minimum_size(Size2(200, 0));
 	layers_selection_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	layers_selection_button->set_tooltip_text(TTR("TileMap Layers"));

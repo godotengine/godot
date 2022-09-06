@@ -39,7 +39,7 @@ class HBoxContainer;
 class VBoxContainer;
 class LineEdit;
 class Tree;
-class OptionButton;
+class DropdownButton;
 class EditorUndoRedoManager;
 
 class EditorLocaleDialog : public ConfirmationDialog {
@@ -52,7 +52,7 @@ class EditorLocaleDialog : public ConfirmationDialog {
 
 	HBoxContainer *hb_locale = nullptr;
 	VBoxContainer *vb_script_list = nullptr;
-	OptionButton *filter_mode = nullptr;
+	DropdownButton *filter_mode = nullptr;
 	Button *edit_filters = nullptr;
 	Button *advanced = nullptr;
 	LineEdit *lang_code = nullptr;

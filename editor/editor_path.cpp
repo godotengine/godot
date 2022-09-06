@@ -195,7 +195,7 @@ void EditorPath::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
-			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("OptionButton")));
+			sub_objects_icon->set_texture(get_theme_icon(SNAME("arrow"), SNAME("DropdownButton")));
 			current_object_label->add_theme_font_override("font", get_theme_font(SNAME("main"), SNAME("EditorFonts")));
 		} break;
 

@@ -35,9 +35,9 @@
 #include "editor/plugins/editor_preview_plugins.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
@@ -101,7 +101,7 @@ private:
 
 	HBoxContainer *drives_container = nullptr;
 	HBoxContainer *shortcuts_container = nullptr;
-	OptionButton *drives = nullptr;
+	DropdownButton *drives = nullptr;
 	ItemList *item_list = nullptr;
 	PopupMenu *item_menu = nullptr;
 	TextureRect *preview = nullptr;
@@ -109,7 +109,7 @@ private:
 	HSplitContainer *list_hb = nullptr;
 	HBoxContainer *file_box = nullptr;
 	LineEdit *file = nullptr;
-	OptionButton *filter = nullptr;
+	DropdownButton *filter = nullptr;
 	AcceptDialog *error_dialog = nullptr;
 	Ref<DirAccess> dir_access;
 	ConfirmationDialog *confirm_save = nullptr;

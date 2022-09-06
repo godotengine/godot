@@ -339,7 +339,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	edit_custom_layout->hide();
 	add_child(edit_custom_layout);
 
-	option_button = memnew(OptionButton);
+	option_button = memnew(DropdownButton);
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	option_button->set_clip_text(true);
 	option_button->set_flat(true);
@@ -791,7 +791,7 @@ void EditorPropertyEnum::_bind_methods() {
 }
 
 EditorPropertyEnum::EditorPropertyEnum() {
-	options = memnew(OptionButton);
+	options = memnew(DropdownButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
 	add_child(options);

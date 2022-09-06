@@ -6672,7 +6672,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->connect("value_changed", callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
 
-	snap_mode = memnew(OptionButton);
+	snap_mode = memnew(DropdownButton);
 	snap_mode->add_item(TTR("Seconds"));
 	snap_mode->add_item(TTR("FPS"));
 	bottom_hb->add_child(snap_mode);
@@ -6851,7 +6851,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	GridContainer *ease_grid = memnew(GridContainer);
 	ease_grid->set_columns(2);
 	ease_dialog->add_child(ease_grid);
-	transition_selection = memnew(OptionButton);
+	transition_selection = memnew(DropdownButton);
 	transition_selection->add_item("Linear", Tween::TRANS_LINEAR);
 	transition_selection->add_item("Sine", Tween::TRANS_SINE);
 	transition_selection->add_item("Quint", Tween::TRANS_QUINT);
@@ -6864,7 +6864,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	transition_selection->add_item("Bounce", Tween::TRANS_BOUNCE);
 	transition_selection->add_item("Back", Tween::TRANS_BACK);
 	transition_selection->select(Tween::TRANS_LINEAR); // Default
-	ease_selection = memnew(OptionButton);
+	ease_selection = memnew(DropdownButton);
 	ease_selection->add_item("In", Tween::EASE_IN);
 	ease_selection->add_item("Out", Tween::EASE_OUT);
 	ease_selection->add_item("InOut", Tween::EASE_IN_OUT);

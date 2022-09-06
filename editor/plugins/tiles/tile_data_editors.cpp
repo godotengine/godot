@@ -1625,7 +1625,7 @@ void TileDataTerrainsEditor::_update_terrain_selector() {
 
 		// Kind of a hack to set icons.
 		// We could provide a way to modify that in the EditorProperty.
-		OptionButton *option_button = Object::cast_to<OptionButton>(terrain_property_editor->get_child(0));
+		DropdownButton *option_button = Object::cast_to<DropdownButton>(terrain_property_editor->get_child(0));
 		for (int terrain = 0; terrain < tile_set->get_terrains_count(terrain_set); terrain++) {
 			option_button->set_item_icon(terrain + 1, icons[terrain_set][terrain]);
 		}

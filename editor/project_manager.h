@@ -61,7 +61,7 @@ class ProjectManager : public Control {
 
 	LineEdit *search_box = nullptr;
 	Label *loading_label = nullptr;
-	OptionButton *filter_option = nullptr;
+	DropdownButton *filter_option = nullptr;
 
 	Button *create_btn = nullptr;
 	Button *import_btn = nullptr;
@@ -97,7 +97,7 @@ class ProjectManager : public Control {
 	AcceptDialog *dialog_error = nullptr;
 	ProjectDialog *npdialog = nullptr;
 
-	OptionButton *language_btn = nullptr;
+	DropdownButton *language_btn = nullptr;
 	LinkButton *version_btn = nullptr;
 
 	void _open_asset_library();

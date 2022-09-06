@@ -35,8 +35,8 @@
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 
@@ -78,7 +78,7 @@ private:
 	VBoxContainer *additional_options_container = nullptr;
 
 	HBoxContainer *device_container = nullptr;
-	OptionButton *device_id_option = nullptr;
+	DropdownButton *device_id_option = nullptr;
 
 	HBoxContainer *mod_container = nullptr; // Contains the subcontainer and the store command checkbox.
 

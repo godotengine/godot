@@ -596,7 +596,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	// Type.
 
-	type_menu = memnew(OptionButton);
+	type_menu = memnew(DropdownButton);
 	type_menu->set_custom_minimum_size(Size2(250, 0) * EDSCALE);
 	type_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Type:"))));
@@ -636,7 +636,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	// Modes.
 
-	mode_menu = memnew(OptionButton);
+	mode_menu = memnew(DropdownButton);
 	for (const String &type_name : ShaderTypes::get_singleton()->get_types_list()) {
 		mode_menu->add_item(type_name.capitalize());
 	}
@@ -646,7 +646,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 
 	// Templates.
 
-	template_menu = memnew(OptionButton);
+	template_menu = memnew(DropdownButton);
 	gc->add_child(memnew(Label(TTR("Template:"))));
 	gc->add_child(template_menu);
 	template_menu->connect("item_selected", callable_mp(this, &ShaderCreateDialog::_template_changed));

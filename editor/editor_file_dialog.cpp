@@ -1760,7 +1760,7 @@ EditorFileDialog::EditorFileDialog() {
 	shortcuts_container = memnew(HBoxContainer);
 	pathhb->add_child(shortcuts_container);
 
-	drives = memnew(OptionButton);
+	drives = memnew(DropdownButton);
 	drives->connect("item_selected", callable_mp(this, &EditorFileDialog::_select_drive));
 	pathhb->add_child(drives);
 
@@ -1864,7 +1864,7 @@ EditorFileDialog::EditorFileDialog() {
 	file->set_stretch_ratio(4);
 	file->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	file_box->add_child(file);
-	filter = memnew(OptionButton);
+	filter = memnew(DropdownButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // Too many extensions overflow it.

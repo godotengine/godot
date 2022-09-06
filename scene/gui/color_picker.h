@@ -35,10 +35,10 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
@@ -118,7 +118,7 @@ private:
 	Button *btn_add_preset = nullptr;
 	Button *btn_pick = nullptr;
 
-	OptionButton *mode_option_button = nullptr;
+	DropdownButton *mode_option_button = nullptr;
 
 	HSlider *sliders[SLIDER_COUNT];
 	SpinBox *values[SLIDER_COUNT];

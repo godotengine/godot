@@ -1264,7 +1264,7 @@ ColorPicker::ColorPicker() :
 	HBoxContainer *hhb = memnew(HBoxContainer);
 	vbr->add_child(hhb);
 
-	mode_option_button = memnew(OptionButton);
+	mode_option_button = memnew(DropdownButton);
 
 	hhb->add_child(mode_option_button);
 	add_mode(new ColorModeRGB(this));

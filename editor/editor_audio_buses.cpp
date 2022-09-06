@@ -909,7 +909,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_allow_reselect(true);
 	effects->connect("gui_input", callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
-	send = memnew(OptionButton);
+	send = memnew(DropdownButton);
 	send->set_clip_text(true);
 	send->connect("item_selected", callable_mp(this, &EditorAudioBus::_send_selected));
 	vb->add_child(send);

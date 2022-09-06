@@ -947,7 +947,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	top_hb->add_child(memnew(Label(TTR("Blend:"))));
-	interpolation = memnew(OptionButton);
+	interpolation = memnew(DropdownButton);
 	top_hb->add_child(interpolation);
 	interpolation->connect("item_selected", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 

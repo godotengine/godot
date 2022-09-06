@@ -65,8 +65,8 @@ class ProjectSettingsEditor : public AcceptDialog {
 
 	HBoxContainer *custom_properties = nullptr;
 	LineEdit *property_box = nullptr;
-	OptionButton *feature_box = nullptr;
-	OptionButton *type_box = nullptr;
+	DropdownButton *feature_box = nullptr;
+	DropdownButton *type_box = nullptr;
 	Button *add_button = nullptr;
 	Button *del_button = nullptr;
 

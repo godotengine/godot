@@ -33,7 +33,7 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/dropdown_button.h"
 
 class ImportDefaultsEditorSettings;
 class EditorInspector;
@@ -41,7 +41,7 @@ class EditorInspector;
 class ImportDefaultsEditor : public VBoxContainer {
 	GDCLASS(ImportDefaultsEditor, VBoxContainer)
 
-	OptionButton *importers = nullptr;
+	DropdownButton *importers = nullptr;
 	Button *save_defaults = nullptr;
 	Button *reset_defaults = nullptr;
 

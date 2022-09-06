@@ -101,7 +101,7 @@ private:
 	TextureRect *install_status_rect;
 	EditorFileDialog *fdialog;
 	EditorFileDialog *fdialog_install;
-	OptionButton *vcs_metadata_selection;
+	DropdownButton *vcs_metadata_selection;
 	String zip_path;
 	String zip_title;
 	AcceptDialog *dialog_error;
@@ -902,7 +902,7 @@ public:
 		l = memnew(Label);
 		l->set_text(TTR("Version Control Metadata:"));
 		default_files_container->add_child(l);
-		vcs_metadata_selection = memnew(OptionButton);
+		vcs_metadata_selection = memnew(DropdownButton);
 		vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
 		vcs_metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
 		vcs_metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
@@ -2590,7 +2590,7 @@ ProjectManager::ProjectManager() {
 		sort_label->set_text(TTR("Sort:"));
 		hb->add_child(sort_label);
 
-		filter_option = memnew(OptionButton);
+		filter_option = memnew(DropdownButton);
 		filter_option->set_clip_text(true);
 		filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		filter_option->connect("item_selected", callable_mp(this, &ProjectManager::_on_order_option_changed));
@@ -2723,7 +2723,7 @@ ProjectManager::ProjectManager() {
 		Control *h_spacer = memnew(Control);
 		settings_hb->add_child(h_spacer);
 
-		language_btn = memnew(OptionButton);
+		language_btn = memnew(DropdownButton);
 		language_btn->set_flat(true);
 		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);

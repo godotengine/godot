@@ -33,7 +33,7 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/style_box.h"
 

@@ -84,7 +84,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 		RESOURCE_SAVE
 	};
 
-	OptionButton *animation = nullptr;
+	DropdownButton *animation = nullptr;
 	Button *stop = nullptr;
 	Button *play = nullptr;
 	Button *play_from = nullptr;
@@ -99,7 +99,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	SpinBox *frame = nullptr;
 	LineEdit *scale = nullptr;
 	LineEdit *name = nullptr;
-	OptionButton *library = nullptr;
+	DropdownButton *library = nullptr;
 	Label *name_title = nullptr;
 	Ref<EditorUndoRedoManager> undo_redo;
 
@@ -117,7 +117,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	struct BlendEditor {
 		AcceptDialog *dialog = nullptr;
 		Tree *tree = nullptr;
-		OptionButton *next = nullptr;
+		DropdownButton *next = nullptr;
 
 	} blend_editor;
 

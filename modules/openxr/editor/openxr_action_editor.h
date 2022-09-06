@@ -34,8 +34,8 @@
 #include "../action_map/openxr_action.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/text_edit.h"
 
 class OpenXRActionEditor : public HBoxContainer {
@@ -46,7 +46,7 @@ private:
 
 	LineEdit *action_name = nullptr;
 	LineEdit *action_localized_name = nullptr;
-	OptionButton *action_type = nullptr;
+	DropdownButton *action_type = nullptr;
 	Button *rem_action = nullptr;
 
 	void _theme_changed();

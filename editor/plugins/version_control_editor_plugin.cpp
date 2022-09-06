@@ -1000,7 +1000,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	l->set_text(TTR("Create VCS metadata files for:"));
 	metadata_hb->add_child(l);
 
-	metadata_selection = memnew(OptionButton);
+	metadata_selection = memnew(DropdownButton);
 	metadata_selection->set_custom_minimum_size(Size2(100, 20));
 	metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
 	metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
@@ -1035,7 +1035,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_vcs_label->set_text(TTR("VCS Provider"));
 	set_up_hbc->add_child(set_up_vcs_label);
 
-	set_up_choice = memnew(OptionButton);
+	set_up_choice = memnew(DropdownButton);
 	set_up_choice->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_hbc->add_child(set_up_choice);
 
@@ -1337,7 +1337,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	commit_list_hbc->add_child(commit_list_label);
 
-	commit_list_size_button = memnew(OptionButton);
+	commit_list_size_button = memnew(DropdownButton);
 	commit_list_size_button->set_tooltip_text(TTR("Commit list size"));
 	commit_list_size_button->add_item("10");
 	commit_list_size_button->set_item_metadata(0, 10);
@@ -1368,7 +1368,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	menu_bar->set_v_size_flags(Control::SIZE_FILL);
 	version_commit_dock->add_child(menu_bar);
 
-	branch_select = memnew(OptionButton);
+	branch_select = memnew(DropdownButton);
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
@@ -1413,7 +1413,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_create_name_input->connect(SNAME("text_changed"), callable_mp(this, &VersionControlEditorPlugin::_update_branch_create_button));
 	branch_create_hbc->add_child(branch_create_name_input);
 
-	remote_select = memnew(OptionButton);
+	remote_select = memnew(DropdownButton);
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_select->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
@@ -1557,7 +1557,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	view->set_text(TTR("View:"));
 	diff_heading->add_child(view);
 
-	diff_view_type_select = memnew(OptionButton);
+	diff_view_type_select = memnew(DropdownButton);
 	diff_view_type_select->add_item(TTR("Split"), DIFF_VIEW_TYPE_SPLIT);
 	diff_view_type_select->add_item(TTR("Unified"), DIFF_VIEW_TYPE_UNIFIED);
 	diff_view_type_select->connect(SNAME("item_selected"), callable_mp(this, &VersionControlEditorPlugin::_display_diff));

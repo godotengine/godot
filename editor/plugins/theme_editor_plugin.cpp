@@ -3381,7 +3381,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	type_list_label->set_text(TTR("Type:"));
 	type_list_hb->add_child(type_list_label);
 
-	theme_type_list = memnew(OptionButton);
+	theme_type_list = memnew(DropdownButton);
 	theme_type_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	theme_type_list->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	type_list_hb->add_child(theme_type_list);

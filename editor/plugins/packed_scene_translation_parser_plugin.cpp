@@ -31,7 +31,7 @@
 #include "packed_scene_translation_parser_plugin.h"
 
 #include "core/io/resource_loader.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/resources/packed_scene.h"
 
 void PackedSceneEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
@@ -87,9 +87,9 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 					parsed_strings.append_array(temp);
 					r_ids_ctx_plural->append_array(ids_context_plural);
 				}
-			} else if ((node_type == "MenuButton" || node_type == "OptionButton") && property_name == "items") {
+			} else if ((node_type == "MenuButton" || node_type == "DropdownButton") && property_name == "items") {
 				Vector<String> str_values = property_value;
-				int incr_value = node_type == "MenuButton" ? PopupMenu::ITEM_PROPERTY_SIZE : OptionButton::ITEM_PROPERTY_SIZE;
+				int incr_value = node_type == "MenuButton" ? PopupMenu::ITEM_PROPERTY_SIZE : DropdownButton::ITEM_PROPERTY_SIZE;
 				for (int k = 0; k < str_values.size(); k += incr_value) {
 					String desc = str_values[k].get_slice(";", 1).strip_edges();
 					if (!desc.is_empty()) {

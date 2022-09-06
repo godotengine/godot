@@ -593,7 +593,7 @@ EditorProfiler::EditorProfiler() {
 
 	hb->add_child(memnew(Label(TTR("Measure:"))));
 
-	display_mode = memnew(OptionButton);
+	display_mode = memnew(DropdownButton);
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Average Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
@@ -604,7 +604,7 @@ EditorProfiler::EditorProfiler() {
 
 	hb->add_child(memnew(Label(TTR("Time:"))));
 
-	display_time = memnew(OptionButton);
+	display_time = memnew(DropdownButton);
 	display_time->add_item(TTR("Inclusive"));
 	display_time->add_item(TTR("Self"));
 	display_time->set_tooltip_text(TTR("Inclusive: Includes time from other functions called by this function.\nUse this to spot bottlenecks.\n\nSelf: Only count the time spent in the function itself, not in other functions called by that function.\nUse this to find individual functions to optimize."));

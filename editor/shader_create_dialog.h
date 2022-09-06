@@ -34,9 +34,9 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
 class EditorFileDialog;
@@ -57,9 +57,9 @@ class ShaderCreateDialog : public ConfirmationDialog {
 	Label *path_error_label = nullptr;
 	Label *builtin_warning_label = nullptr;
 	PanelContainer *status_panel = nullptr;
-	OptionButton *type_menu = nullptr;
-	OptionButton *mode_menu = nullptr;
-	OptionButton *template_menu = nullptr;
+	DropdownButton *type_menu = nullptr;
+	DropdownButton *mode_menu = nullptr;
+	DropdownButton *template_menu = nullptr;
 	CheckBox *internal = nullptr;
 	LineEdit *file_path = nullptr;
 	Button *path_button = nullptr;

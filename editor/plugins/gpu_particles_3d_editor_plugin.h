@@ -50,7 +50,7 @@ protected:
 
 	ConfirmationDialog *emission_dialog = nullptr;
 	SpinBox *emission_amount = nullptr;
-	OptionButton *emission_fill = nullptr;
+	DropdownButton *emission_fill = nullptr;
 
 	Vector<Face3> geometry;
 

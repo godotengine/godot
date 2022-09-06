@@ -286,7 +286,7 @@ private:
 	Control *theme_base = nullptr;
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
-	OptionButton *rendering_driver = nullptr;
+	DropdownButton *rendering_driver = nullptr;
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 

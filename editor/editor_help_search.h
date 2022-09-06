@@ -35,7 +35,7 @@
 #include "editor/code_editor.h"
 #include "editor/editor_help.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/tree.h"
 
 class EditorHelpSearch : public ConfirmationDialog {
@@ -59,7 +59,7 @@ class EditorHelpSearch : public ConfirmationDialog {
 	LineEdit *search_box = nullptr;
 	Button *case_sensitive_button = nullptr;
 	Button *hierarchy_button = nullptr;
-	OptionButton *filter_combo = nullptr;
+	DropdownButton *filter_combo = nullptr;
 	Tree *results_tree = nullptr;
 	bool old_search = false;
 	String old_term;

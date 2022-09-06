@@ -824,12 +824,12 @@ void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
 }
 
 void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
-	if (!has_theme_icon(SNAME("arrow"), SNAME("OptionButton"))) {
+	if (!has_theme_icon(SNAME("arrow"), SNAME("DropdownButton"))) {
 		return;
 	}
 
 	RID ci = tile_data_editor_dropdown_button->get_canvas_item();
-	Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("OptionButton"));
+	Ref<Texture2D> arrow = Control::get_theme_icon(SNAME("arrow"), SNAME("DropdownButton"));
 	Color clr = Color(1, 1, 1);
 	if (get_theme_constant(SNAME("modulate_arrow"))) {
 		switch (tile_data_editor_dropdown_button->get_draw_mode()) {
@@ -855,9 +855,9 @@ void TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw() {
 
 	Point2 ofs;
 	if (is_layout_rtl()) {
-		ofs = Point2(get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
+		ofs = Point2(get_theme_constant(SNAME("arrow_margin"), SNAME("DropdownButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
 	} else {
-		ofs = Point2(size.width - arrow->get_width() - get_theme_constant(SNAME("arrow_margin"), SNAME("OptionButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
+		ofs = Point2(size.width - arrow->get_width() - get_theme_constant(SNAME("arrow_margin"), SNAME("DropdownButton")), int(Math::abs((size.height - arrow->get_height()) / 2)));
 	}
 	arrow->draw(ci, ofs, clr);
 }

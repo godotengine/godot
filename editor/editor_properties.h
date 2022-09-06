@@ -100,7 +100,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	HBoxContainer *default_layout = nullptr;
 	HBoxContainer *edit_custom_layout = nullptr;
 
-	OptionButton *option_button = nullptr;
+	DropdownButton *option_button = nullptr;
 	Button *edit_button = nullptr;
 
 	LineEdit *custom_value_edit = nullptr;
@@ -250,7 +250,7 @@ public:
 
 class EditorPropertyEnum : public EditorProperty {
 	GDCLASS(EditorPropertyEnum, EditorProperty);
-	OptionButton *options = nullptr;
+	DropdownButton *options = nullptr;
 
 	void _option_selected(int p_which);
 

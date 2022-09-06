@@ -6947,7 +6947,7 @@ EditorNode::EditorNode() {
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
 
-	rendering_driver = memnew(OptionButton);
+	rendering_driver = memnew(DropdownButton);
 
 	// Hide the renderer selection dropdown until OpenGL support is more mature.
 	// The renderer can still be changed in the project settings or using `--rendering-driver opengl3`.

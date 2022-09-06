@@ -215,46 +215,46 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "LinkButton", 0);
 	theme->set_constant("underline_spacing", "LinkButton", 2 * scale);
 
-	// OptionButton
-	theme->set_stylebox("focus", "OptionButton", focus);
+	// DropdownButton
+	theme->set_stylebox("focus", "DropdownButton", focus);
 
 	Ref<StyleBox> sb_optbutton_normal = make_flat_stylebox(style_normal_color, 2 * default_margin, default_margin, 21, default_margin);
 	Ref<StyleBox> sb_optbutton_hover = make_flat_stylebox(style_hover_color, 2 * default_margin, default_margin, 21, default_margin);
 	Ref<StyleBox> sb_optbutton_pressed = make_flat_stylebox(style_pressed_color, 2 * default_margin, default_margin, 21, default_margin);
 	Ref<StyleBox> sb_optbutton_disabled = make_flat_stylebox(style_disabled_color, 2 * default_margin, default_margin, 21, default_margin);
 
-	theme->set_stylebox("normal", "OptionButton", sb_optbutton_normal);
-	theme->set_stylebox("hover", "OptionButton", sb_optbutton_hover);
-	theme->set_stylebox("pressed", "OptionButton", sb_optbutton_pressed);
-	theme->set_stylebox("disabled", "OptionButton", sb_optbutton_disabled);
+	theme->set_stylebox("normal", "DropdownButton", sb_optbutton_normal);
+	theme->set_stylebox("hover", "DropdownButton", sb_optbutton_hover);
+	theme->set_stylebox("pressed", "DropdownButton", sb_optbutton_pressed);
+	theme->set_stylebox("disabled", "DropdownButton", sb_optbutton_disabled);
 
 	Ref<StyleBox> sb_optbutton_normal_mirrored = make_flat_stylebox(style_normal_color, 21, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_hover_mirrored = make_flat_stylebox(style_hover_color, 21, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_pressed_mirrored = make_flat_stylebox(style_pressed_color, 21, default_margin, 2 * default_margin, default_margin);
 	Ref<StyleBox> sb_optbutton_disabled_mirrored = make_flat_stylebox(style_disabled_color, 21, default_margin, 2 * default_margin, default_margin);
 
-	theme->set_stylebox("normal_mirrored", "OptionButton", sb_optbutton_normal_mirrored);
-	theme->set_stylebox("hover_mirrored", "OptionButton", sb_optbutton_hover_mirrored);
-	theme->set_stylebox("pressed_mirrored", "OptionButton", sb_optbutton_pressed_mirrored);
-	theme->set_stylebox("disabled_mirrored", "OptionButton", sb_optbutton_disabled_mirrored);
+	theme->set_stylebox("normal_mirrored", "DropdownButton", sb_optbutton_normal_mirrored);
+	theme->set_stylebox("hover_mirrored", "DropdownButton", sb_optbutton_hover_mirrored);
+	theme->set_stylebox("pressed_mirrored", "DropdownButton", sb_optbutton_pressed_mirrored);
+	theme->set_stylebox("disabled_mirrored", "DropdownButton", sb_optbutton_disabled_mirrored);
 
-	theme->set_icon("arrow", "OptionButton", icons["option_button_arrow"]);
+	theme->set_icon("arrow", "DropdownButton", icons["option_button_arrow"]);
 
-	theme->set_font("font", "OptionButton", Ref<Font>());
-	theme->set_font_size("font_size", "OptionButton", -1);
+	theme->set_font("font", "DropdownButton", Ref<Font>());
+	theme->set_font_size("font_size", "DropdownButton", -1);
 
-	theme->set_color("font_color", "OptionButton", control_font_color);
-	theme->set_color("font_pressed_color", "OptionButton", control_font_pressed_color);
-	theme->set_color("font_hover_color", "OptionButton", control_font_hover_color);
-	theme->set_color("font_hover_pressed_color", "OptionButton", control_font_pressed_color);
-	theme->set_color("font_focus_color", "OptionButton", control_font_focus_color);
-	theme->set_color("font_disabled_color", "OptionButton", control_font_disabled_color);
-	theme->set_color("font_outline_color", "OptionButton", Color(1, 1, 1));
+	theme->set_color("font_color", "DropdownButton", control_font_color);
+	theme->set_color("font_pressed_color", "DropdownButton", control_font_pressed_color);
+	theme->set_color("font_hover_color", "DropdownButton", control_font_hover_color);
+	theme->set_color("font_hover_pressed_color", "DropdownButton", control_font_pressed_color);
+	theme->set_color("font_focus_color", "DropdownButton", control_font_focus_color);
+	theme->set_color("font_disabled_color", "DropdownButton", control_font_disabled_color);
+	theme->set_color("font_outline_color", "DropdownButton", Color(1, 1, 1));
 
-	theme->set_constant("h_separation", "OptionButton", 2 * scale);
-	theme->set_constant("arrow_margin", "OptionButton", 4 * scale);
-	theme->set_constant("outline_size", "OptionButton", 0);
-	theme->set_constant("modulate_arrow", "OptionButton", false);
+	theme->set_constant("h_separation", "DropdownButton", 2 * scale);
+	theme->set_constant("arrow_margin", "DropdownButton", 4 * scale);
+	theme->set_constant("outline_size", "DropdownButton", 0);
+	theme->set_constant("modulate_arrow", "DropdownButton", false);
 
 	// MenuButton
 

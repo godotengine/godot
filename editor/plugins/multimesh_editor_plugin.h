@@ -57,7 +57,7 @@ class MultiMeshEditor : public Control {
 	SceneTreeDialog *std = nullptr;
 
 	ConfirmationDialog *populate_dialog = nullptr;
-	OptionButton *populate_axis = nullptr;
+	DropdownButton *populate_axis = nullptr;
 	HSlider *populate_rotate_random = nullptr;
 	HSlider *populate_tilt_random = nullptr;
 	SpinBox *populate_scale_random = nullptr;

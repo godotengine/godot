@@ -34,9 +34,9 @@
 #include "core/object/script_language.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
 class CreateDialog;
@@ -55,8 +55,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	LineEdit *parent_name = nullptr;
 	Button *parent_browse_button = nullptr;
 	Button *parent_search_button = nullptr;
-	OptionButton *language_menu = nullptr;
-	OptionButton *template_menu = nullptr;
+	DropdownButton *language_menu = nullptr;
+	DropdownButton *template_menu = nullptr;
 	LineEdit *file_path = nullptr;
 	LineEdit *internal_name = nullptr;
 	Button *path_button = nullptr;

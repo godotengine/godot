@@ -626,7 +626,7 @@ ImportDock::ImportDock() {
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
 	content->add_margin_child(TTR("Import As:"), hb);
-	import_as = memnew(OptionButton);
+	import_as = memnew(DropdownButton);
 	import_as->set_disabled(true);
 	import_as->set_fit_to_longest_item(false);
 	import_as->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  option_button.cpp                                                    */
+/*  dropdown_button.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "option_button.h"
+#include "dropdown_button.h"
 
 #include "core/string/print_string.h"
 
 static const int NONE_SELECTED = -1;
 
-Size2 OptionButton::get_minimum_size() const {
+Size2 DropdownButton::get_minimum_size() const {
 	Size2 minsize;
 	if (fit_to_longest_item) {
 		minsize = _cached_size;
@@ -56,7 +56,7 @@ Size2 OptionButton::get_minimum_size() const {
 	return minsize;
 }
 
-void OptionButton::_update_theme_item_cache() {
+void DropdownButton::_update_theme_item_cache() {
 	Button::_update_theme_item_cache();
 
 	theme_cache.normal = get_theme_stylebox(SNAME("normal"));
@@ -75,7 +75,7 @@ void OptionButton::_update_theme_item_cache() {
 	theme_cache.modulate_arrow = get_theme_constant(SNAME("modulate_arrow"));
 }
 
-void OptionButton::_notification(int p_what) {
+void DropdownButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			if (has_theme_icon(SNAME("arrow"))) {
@@ -154,7 +154,7 @@ void OptionButton::_notification(int p_what) {
 	}
 }
 
-bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
+bool DropdownButton::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
 		String property = components[2];
@@ -181,7 +181,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 	return false;
 }
 
-bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
+bool DropdownButton::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0] == "popup") {
 		String property = components[2];
@@ -196,7 +196,7 @@ bool OptionButton::_get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
+void DropdownButton::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < popup->get_item_count(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, vformat("popup/item_%d/text", i)));
 
@@ -217,15 +217,15 @@ void OptionButton::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void OptionButton::_focused(int p_which) {
+void DropdownButton::_focused(int p_which) {
 	emit_signal(SNAME("item_focused"), p_which);
 }
 
-void OptionButton::_selected(int p_which) {
+void DropdownButton::_selected(int p_which) {
 	_select(p_which, true);
 }
 
-void OptionButton::pressed() {
+void DropdownButton::pressed() {
 	if (popup->is_visible()) {
 		popup->hide();
 		return;
@@ -259,7 +259,7 @@ void OptionButton::pressed() {
 	popup->popup();
 }
 
-void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
+void DropdownButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
 	bool first_selectable = !has_selectable_items();
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
 	if (first_selectable) {
@@ -268,7 +268,7 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 	_queue_refresh_cache();
 }
 
-void OptionButton::add_item(const String &p_label, int p_id) {
+void DropdownButton::add_item(const String &p_label, int p_id) {
 	bool first_selectable = !has_selectable_items();
 	popup->add_radio_check_item(p_label, p_id);
 	if (first_selectable) {
@@ -277,7 +277,7 @@ void OptionButton::add_item(const String &p_label, int p_id) {
 	_queue_refresh_cache();
 }
 
-void OptionButton::set_item_text(int p_idx, const String &p_text) {
+void DropdownButton::set_item_text(int p_idx, const String &p_text) {
 	popup->set_item_text(p_idx, p_text);
 
 	if (current == p_idx) {
@@ -286,7 +286,7 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	_queue_refresh_cache();
 }
 
-void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
+void DropdownButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx) {
@@ -295,31 +295,31 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	_queue_refresh_cache();
 }
 
-void OptionButton::set_item_id(int p_idx, int p_id) {
+void DropdownButton::set_item_id(int p_idx, int p_id) {
 	popup->set_item_id(p_idx, p_id);
 }
 
-void OptionButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
+void DropdownButton::set_item_metadata(int p_idx, const Variant &p_metadata) {
 	popup->set_item_metadata(p_idx, p_metadata);
 }
 
-void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
+void DropdownButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	popup->set_item_tooltip(p_idx, p_tooltip);
 }
 
-void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
+void DropdownButton::set_item_disabled(int p_idx, bool p_disabled) {
 	popup->set_item_disabled(p_idx, p_disabled);
 }
 
-String OptionButton::get_item_text(int p_idx) const {
+String DropdownButton::get_item_text(int p_idx) const {
 	return popup->get_item_text(p_idx);
 }
 
-Ref<Texture2D> OptionButton::get_item_icon(int p_idx) const {
+Ref<Texture2D> DropdownButton::get_item_icon(int p_idx) const {
 	return popup->get_item_icon(p_idx);
 }
 
-int OptionButton::get_item_id(int p_idx) const {
+int DropdownButton::get_item_id(int p_idx) const {
 	if (p_idx == NONE_SELECTED) {
 		return NONE_SELECTED;
 	}
@@ -327,26 +327,26 @@ int OptionButton::get_item_id(int p_idx) const {
 	return popup->get_item_id(p_idx);
 }
 
-int OptionButton::get_item_index(int p_id) const {
+int DropdownButton::get_item_index(int p_id) const {
 	return popup->get_item_index(p_id);
 }
 
-Variant OptionButton::get_item_metadata(int p_idx) const {
+Variant DropdownButton::get_item_metadata(int p_idx) const {
 	return popup->get_item_metadata(p_idx);
 }
 
-String OptionButton::get_item_tooltip(int p_idx) const {
+String DropdownButton::get_item_tooltip(int p_idx) const {
 	return popup->get_item_tooltip(p_idx);
 }
 
-bool OptionButton::is_item_disabled(int p_idx) const {
+bool DropdownButton::is_item_disabled(int p_idx) const {
 	return popup->is_item_disabled(p_idx);
 }
 
-bool OptionButton::is_item_separator(int p_idx) const {
+bool DropdownButton::is_item_separator(int p_idx) const {
 	return popup->is_item_separator(p_idx);
 }
-void OptionButton::set_item_count(int p_count) {
+void DropdownButton::set_item_count(int p_count) {
 	ERR_FAIL_COND(p_count < 0);
 
 	int count_old = get_item_count();
@@ -366,7 +366,7 @@ void OptionButton::set_item_count(int p_count) {
 	notify_property_list_changed();
 }
 
-bool OptionButton::has_selectable_items() const {
+bool DropdownButton::has_selectable_items() const {
 	for (int i = 0; i < get_item_count(); i++) {
 		if (!is_item_disabled(i) && !is_item_separator(i)) {
 			return true;
@@ -374,7 +374,7 @@ bool OptionButton::has_selectable_items() const {
 	}
 	return false;
 }
-int OptionButton::get_selectable_item(bool p_from_last) const {
+int DropdownButton::get_selectable_item(bool p_from_last) const {
 	if (!p_from_last) {
 		for (int i = 0; i < get_item_count(); i++) {
 			if (!is_item_disabled(i) && !is_item_separator(i)) {
@@ -391,11 +391,11 @@ int OptionButton::get_selectable_item(bool p_from_last) const {
 	return -1;
 }
 
-int OptionButton::get_item_count() const {
+int DropdownButton::get_item_count() const {
 	return popup->get_item_count();
 }
 
-void OptionButton::set_fit_to_longest_item(bool p_fit) {
+void DropdownButton::set_fit_to_longest_item(bool p_fit) {
 	if (p_fit == fit_to_longest_item) {
 		return;
 	}
@@ -404,22 +404,22 @@ void OptionButton::set_fit_to_longest_item(bool p_fit) {
 	_refresh_size_cache();
 }
 
-bool OptionButton::is_fit_to_longest_item() const {
+bool DropdownButton::is_fit_to_longest_item() const {
 	return fit_to_longest_item;
 }
 
-void OptionButton::add_separator(const String &p_text) {
+void DropdownButton::add_separator(const String &p_text) {
 	popup->add_separator(p_text);
 }
 
-void OptionButton::clear() {
+void DropdownButton::clear() {
 	popup->clear();
 	set_text("");
 	current = NONE_SELECTED;
 	_refresh_size_cache();
 }
 
-void OptionButton::_select(int p_which, bool p_emit) {
+void DropdownButton::_select(int p_which, bool p_emit) {
 	if (p_which == current) {
 		return;
 	}
@@ -449,14 +449,14 @@ void OptionButton::_select(int p_which, bool p_emit) {
 	}
 }
 
-void OptionButton::_select_int(int p_which) {
+void DropdownButton::_select_int(int p_which) {
 	if (p_which < NONE_SELECTED || p_which >= popup->get_item_count()) {
 		return;
 	}
 	_select(p_which, false);
 }
 
-void OptionButton::_refresh_size_cache() {
+void DropdownButton::_refresh_size_cache() {
 	cache_refresh_pending = false;
 
 	if (!fit_to_longest_item) {
@@ -470,28 +470,28 @@ void OptionButton::_refresh_size_cache() {
 	update_minimum_size();
 }
 
-void OptionButton::_queue_refresh_cache() {
+void DropdownButton::_queue_refresh_cache() {
 	if (cache_refresh_pending) {
 		return;
 	}
 	cache_refresh_pending = true;
 
-	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferredp(nullptr, 0);
+	callable_mp(this, &DropdownButton::_refresh_size_cache).call_deferredp(nullptr, 0);
 }
 
-void OptionButton::select(int p_idx) {
+void DropdownButton::select(int p_idx) {
 	_select(p_idx, false);
 }
 
-int OptionButton::get_selected() const {
+int DropdownButton::get_selected() const {
 	return current;
 }
 
-int OptionButton::get_selected_id() const {
+int DropdownButton::get_selected_id() const {
 	return get_item_id(current);
 }
 
-Variant OptionButton::get_selected_metadata() const {
+Variant DropdownButton::get_selected_metadata() const {
 	int idx = get_selected();
 	if (idx < 0) {
 		return Variant();
@@ -499,7 +499,7 @@ Variant OptionButton::get_selected_metadata() const {
 	return get_item_metadata(current);
 }
 
-void OptionButton::remove_item(int p_idx) {
+void DropdownButton::remove_item(int p_idx) {
 	popup->remove_item(p_idx);
 	if (current == p_idx) {
 		_select(NONE_SELECTED);
@@ -507,54 +507,54 @@ void OptionButton::remove_item(int p_idx) {
 	_queue_refresh_cache();
 }
 
-PopupMenu *OptionButton::get_popup() const {
+PopupMenu *DropdownButton::get_popup() const {
 	return popup;
 }
 
-void OptionButton::get_translatable_strings(List<String> *p_strings) const {
+void DropdownButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
 
-void OptionButton::_validate_property(PropertyInfo &p_property) const {
+void DropdownButton::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "text" || p_property.name == "icon") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
-void OptionButton::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &OptionButton::add_item, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &OptionButton::add_icon_item, DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &OptionButton::set_item_text);
-	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "texture"), &OptionButton::set_item_icon);
-	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &OptionButton::set_item_disabled);
-	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
-	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
-	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
-	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
-	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
-	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
-	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
-	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
-	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
-	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
-	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
-	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
-	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
-	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
-	ClassDB::bind_method(D_METHOD("get_selected_id"), &OptionButton::get_selected_id);
-	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &OptionButton::get_selected_metadata);
-	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &OptionButton::remove_item);
-	ClassDB::bind_method(D_METHOD("_select_int", "idx"), &OptionButton::_select_int);
+void DropdownButton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_item", "label", "id"), &DropdownButton::add_item, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id"), &DropdownButton::add_icon_item, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &DropdownButton::set_item_text);
+	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "texture"), &DropdownButton::set_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_disabled", "idx", "disabled"), &DropdownButton::set_item_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &DropdownButton::set_item_id);
+	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &DropdownButton::set_item_metadata);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &DropdownButton::set_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &DropdownButton::get_item_text);
+	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &DropdownButton::get_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &DropdownButton::get_item_id);
+	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &DropdownButton::get_item_index);
+	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &DropdownButton::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &DropdownButton::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &DropdownButton::is_item_disabled);
+	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &DropdownButton::is_item_separator);
+	ClassDB::bind_method(D_METHOD("add_separator", "text"), &DropdownButton::add_separator, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("clear"), &DropdownButton::clear);
+	ClassDB::bind_method(D_METHOD("select", "idx"), &DropdownButton::select);
+	ClassDB::bind_method(D_METHOD("get_selected"), &DropdownButton::get_selected);
+	ClassDB::bind_method(D_METHOD("get_selected_id"), &DropdownButton::get_selected_id);
+	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &DropdownButton::get_selected_metadata);
+	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &DropdownButton::remove_item);
+	ClassDB::bind_method(D_METHOD("_select_int", "idx"), &DropdownButton::_select_int);
 
-	ClassDB::bind_method(D_METHOD("get_popup"), &OptionButton::get_popup);
+	ClassDB::bind_method(D_METHOD("get_popup"), &DropdownButton::get_popup);
 
-	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &OptionButton::set_item_count);
-	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);
-	ClassDB::bind_method(D_METHOD("has_selectable_items"), &OptionButton::has_selectable_items);
-	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &OptionButton::get_selectable_item, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("set_fit_to_longest_item", "fit"), &OptionButton::set_fit_to_longest_item);
-	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &OptionButton::is_fit_to_longest_item);
+	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &DropdownButton::set_item_count);
+	ClassDB::bind_method(D_METHOD("get_item_count"), &DropdownButton::get_item_count);
+	ClassDB::bind_method(D_METHOD("has_selectable_items"), &DropdownButton::has_selectable_items);
+	ClassDB::bind_method(D_METHOD("get_selectable_item", "from_last"), &DropdownButton::get_selectable_item, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_fit_to_longest_item", "fit"), &DropdownButton::set_fit_to_longest_item);
+	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &DropdownButton::is_fit_to_longest_item);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
@@ -564,7 +564,7 @@ void OptionButton::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_focused", PropertyInfo(Variant::INT, "index")));
 }
 
-OptionButton::OptionButton(const String &p_text) :
+DropdownButton::DropdownButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
@@ -573,11 +573,11 @@ OptionButton::OptionButton(const String &p_text) :
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup, false, INTERNAL_MODE_FRONT);
-	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
-	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
+	popup->connect("index_pressed", callable_mp(this, &DropdownButton::_selected));
+	popup->connect("id_focused", callable_mp(this, &DropdownButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed).bind(false));
 	_refresh_size_cache();
 }
 
-OptionButton::~OptionButton() {
+DropdownButton::~DropdownButton() {
 }

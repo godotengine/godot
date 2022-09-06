@@ -39,7 +39,7 @@ class CreateDialog;
 class EditorFileDialog;
 class Label;
 class LineEdit;
-class OptionButton;
+class DropdownButton;
 class PanelContainer;
 
 class SceneCreateDialog : public ConfirmationDialog {
@@ -76,7 +76,7 @@ private:
 	CreateDialog *select_node_dialog = nullptr;
 
 	LineEdit *scene_name_edit = nullptr;
-	OptionButton *scene_extension_picker = nullptr;
+	DropdownButton *scene_extension_picker = nullptr;
 	LineEdit *root_name_edit = nullptr;
 
 	PanelContainer *status_panel = nullptr;

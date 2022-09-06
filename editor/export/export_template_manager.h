@@ -37,7 +37,7 @@ class ExportTemplateVersion;
 class FileDialog;
 class HTTPRequest;
 class MenuButton;
-class OptionButton;
+class DropdownButton;
 class ProgressBar;
 class Tree;
 
@@ -61,7 +61,7 @@ class ExportTemplateManager : public AcceptDialog {
 	Button *current_uninstall_button = nullptr;
 
 	VBoxContainer *install_options_vb = nullptr;
-	OptionButton *mirrors_list = nullptr;
+	DropdownButton *mirrors_list = nullptr;
 
 	enum MirrorAction {
 		VISIT_WEB_MIRROR,

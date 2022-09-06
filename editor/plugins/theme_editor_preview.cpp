@@ -347,8 +347,8 @@ DefaultThemeEditorPreview::DefaultThemeEditorPreview() {
 	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
 
-	OptionButton *test_option_button = memnew(OptionButton);
-	test_option_button->add_item("OptionButton");
+	DropdownButton *test_option_button = memnew(DropdownButton);
+	test_option_button->add_item("DropdownButton");
 	test_option_button->add_separator();
 	test_option_button->add_item(TTR("Has"));
 	test_option_button->add_item(TTR("Many"));

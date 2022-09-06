@@ -1013,7 +1013,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	vb->add_child(hb_tools);
 	hb_tools->add_child(memnew(Label(TTR("Snap Mode:"))));
 
-	snap_mode_button = memnew(OptionButton);
+	snap_mode_button = memnew(DropdownButton);
 	hb_tools->add_child(snap_mode_button);
 	snap_mode_button->add_item(TTR("None"), 0);
 	snap_mode_button->add_item(TTR("Pixel Snap"), 1);

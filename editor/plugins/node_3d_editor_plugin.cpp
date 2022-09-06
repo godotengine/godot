@@ -8104,7 +8104,7 @@ Node3DEditor::Node3DEditor() {
 	l->set_text(TTR("Transform Type"));
 	xform_vbc->add_child(l);
 
-	xform_type = memnew(OptionButton);
+	xform_type = memnew(DropdownButton);
 	xform_type->set_h_size_flags(SIZE_EXPAND_FILL);
 	xform_type->add_item(TTR("Pre"));
 	xform_type->add_item(TTR("Post"));

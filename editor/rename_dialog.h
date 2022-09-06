@@ -38,7 +38,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
 
@@ -90,8 +90,8 @@ class RenameDialog : public ConfirmationDialog {
 	SpinBox *spn_count_step = nullptr;
 	SpinBox *spn_count_padding = nullptr;
 
-	OptionButton *opt_style = nullptr;
-	OptionButton *opt_case = nullptr;
+	DropdownButton *opt_style = nullptr;
+	DropdownButton *opt_case = nullptr;
 
 	Label *lbl_preview_title = nullptr;
 	Label *lbl_preview = nullptr;

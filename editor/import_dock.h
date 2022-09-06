@@ -37,8 +37,8 @@
 #include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 
 class ImportDockParameters;
@@ -46,7 +46,7 @@ class ImportDock : public VBoxContainer {
 	GDCLASS(ImportDock, VBoxContainer);
 
 	Label *imported = nullptr;
-	OptionButton *import_as = nullptr;
+	DropdownButton *import_as = nullptr;
 	MenuButton *preset = nullptr;
 	EditorInspector *import_opts = nullptr;
 

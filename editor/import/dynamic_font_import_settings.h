@@ -35,8 +35,8 @@
 
 #include "core/templates/rb_set.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"

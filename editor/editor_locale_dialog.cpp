@@ -35,8 +35,8 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
 void EditorLocaleDialog::_bind_methods() {
@@ -393,7 +393,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 	{
 		HBoxContainer *hb_filter = memnew(HBoxContainer);
 		{
-			filter_mode = memnew(OptionButton);
+			filter_mode = memnew(DropdownButton);
 			filter_mode->add_item(TTR("Show All Locales"), SHOW_ALL_LOCALES);
 			filter_mode->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);

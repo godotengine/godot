@@ -254,7 +254,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 	lbl_style->set_text(TTR("Style"));
 	hbc_style->add_child(lbl_style);
 
-	opt_style = memnew(OptionButton);
+	opt_style = memnew(DropdownButton);
 	opt_style->add_item(TTR("Keep"));
 	opt_style->add_item(TTR("PascalCase to snake_case"));
 	opt_style->add_item(TTR("snake_case to PascalCase"));
@@ -269,7 +269,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, Ref<EditorUndoR
 	lbl_case->set_text(TTR("Case"));
 	hbc_case->add_child(lbl_case);
 
-	opt_case = memnew(OptionButton);
+	opt_case = memnew(DropdownButton);
 	opt_case->add_item(TTR("Keep"));
 	opt_case->add_item(TTR("To Lowercase"));
 	opt_case->add_item(TTR("To Uppercase"));

@@ -1708,7 +1708,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->set_disabled(true);
 	hb->add_child(tool_anim);
 
-	animation = memnew(OptionButton);
+	animation = memnew(DropdownButton);
 	hb->add_child(animation);
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
 	animation->set_tooltip_text(TTR("Display list of animations in player."));
@@ -1779,7 +1779,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	name = memnew(LineEdit);
 	name_hb->add_child(name);
 	name->set_h_size_flags(SIZE_EXPAND_FILL);
-	library = memnew(OptionButton);
+	library = memnew(DropdownButton);
 	name_hb->add_child(library);
 	library->hide();
 	vb->add_child(name_hb);
@@ -1801,7 +1801,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	blend_editor.tree = memnew(Tree);
 	blend_editor.tree->set_columns(2);
 	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
-	blend_editor.next = memnew(OptionButton);
+	blend_editor.next = memnew(DropdownButton);
 	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
 	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
 	updating_blends = false;

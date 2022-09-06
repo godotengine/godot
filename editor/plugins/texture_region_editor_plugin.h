@@ -53,7 +53,7 @@ class TextureRegionEditor : public AcceptDialog {
 	};
 
 	friend class TextureRegionEditorPlugin;
-	OptionButton *snap_mode_button = nullptr;
+	DropdownButton *snap_mode_button = nullptr;
 	Button *zoom_in = nullptr;
 	Button *zoom_reset = nullptr;
 	Button *zoom_out = nullptr;

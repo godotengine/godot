@@ -299,7 +299,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	Control *script_opt_spacer = memnew(Control);
 	grid->add_child(script_opt_spacer);
 
-	script_option_edit = memnew(OptionButton);
+	script_option_edit = memnew(DropdownButton);
 	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptLanguage *lang = ScriptServer::get_language(i);

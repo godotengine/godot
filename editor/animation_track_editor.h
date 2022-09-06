@@ -39,8 +39,8 @@
 #include "scene/3d/node_3d.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/control.h"
+#include "scene/gui/dropdown_button.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
@@ -315,7 +315,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	TextureRect *zoom_icon = nullptr;
 	Button *snap = nullptr;
 	Button *bezier_edit_icon = nullptr;
-	OptionButton *snap_mode = nullptr;
+	DropdownButton *snap_mode = nullptr;
 
 	Button *imported_anim_warning = nullptr;
 	void _show_imported_anim_warning();
@@ -477,8 +477,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *scale = nullptr;
 
 	ConfirmationDialog *ease_dialog = nullptr;
-	OptionButton *transition_selection = nullptr;
-	OptionButton *ease_selection = nullptr;
+	DropdownButton *transition_selection = nullptr;
+	DropdownButton *ease_selection = nullptr;
 	SpinBox *ease_fps = nullptr;
 
 	void _select_all_tracks_for_copy();

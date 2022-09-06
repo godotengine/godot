@@ -206,7 +206,7 @@ void EditorPropertyAnchorsPreset::setup(const Vector<String> &p_options) {
 }
 
 EditorPropertyAnchorsPreset::EditorPropertyAnchorsPreset() {
-	options = memnew(OptionButton);
+	options = memnew(DropdownButton);
 	options->set_clip_text(true);
 	options->set_flat(true);
 	add_child(options);
@@ -388,7 +388,7 @@ EditorPropertySizeFlags::EditorPropertySizeFlags() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 
-	flag_presets = memnew(OptionButton);
+	flag_presets = memnew(DropdownButton);
 	flag_presets->set_clip_text(true);
 	flag_presets->set_flat(true);
 	vb->add_child(flag_presets);

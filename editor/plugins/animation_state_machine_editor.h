@@ -60,8 +60,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	HBoxContainer *tool_erase_hb = nullptr;
 	Button *tool_erase = nullptr;
 
-	OptionButton *transition_mode = nullptr;
-	OptionButton *play_mode = nullptr;
+	DropdownButton *transition_mode = nullptr;
+	DropdownButton *play_mode = nullptr;
 
 	PanelContainer *panel = nullptr;
 
