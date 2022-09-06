@@ -233,6 +233,14 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("StatusSuccess");
 		exceptions.insert("StatusWarning");
 		exceptions.insert("OverbrightIndicator");
+
+		// Prevents Code Editor icons from changing
+		exceptions.insert("GuiTab");
+		exceptions.insert("GuiSpace");
+		exceptions.insert("GuiEllipsis");
+		exceptions.insert("TextEditFold");
+		exceptions.insert("TextEditFolded");
+		exceptions.insert("TextEditorPlay");
 	}
 
 	// These ones should be converted even if we are using a dark theme.
@@ -986,8 +994,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_icon("tab", "TextEdit", theme->get_icon("GuiTab", "EditorIcons"));
 	theme->set_icon("space", "TextEdit", theme->get_icon("GuiSpace", "EditorIcons"));
-	theme->set_icon("folded", "TextEdit", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
-	theme->set_icon("fold", "TextEdit", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
+	theme->set_icon("folded", "TextEdit", theme->get_icon("TextEditFolded", "EditorIcons"));
+	theme->set_icon("fold", "TextEdit", theme->get_icon("TextEditFold", "EditorIcons"));
 	theme->set_color("font_color", "TextEdit", font_color);
 	theme->set_color("font_color_readonly", "TextEdit", font_color_readonly);
 	theme->set_color("caret_color", "TextEdit", font_color);
@@ -1322,7 +1330,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const float mono_value = mono_color.r;
 	const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
 	const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
-	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.7);
+	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.27);
 
 	// editor main color
 	const Color main_color = dark_theme ? Color(0.34, 0.7, 1.0) : Color(0.02, 0.5, 1.0);
