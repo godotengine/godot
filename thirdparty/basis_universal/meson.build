@@ -16,7 +16,7 @@ _basis_universal_srcs = files(
     'encoder/basisu_resampler.cpp',
     'encoder/basisu_ssim.cpp',
     'encoder/basisu_uastc_enc.cpp',
-    'encoder/jpgd.cpp',
+    #'encoder/jpgd.cpp',
     'encoder/pvpngreader.cpp',
 
     # this was guarded by tools enabled, but it seems to be incorrect
