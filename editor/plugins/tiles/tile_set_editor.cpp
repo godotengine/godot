@@ -89,6 +89,10 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	ERR_FAIL_COND_V(!tile_set.is_valid(), false);
 
+	if (read_only) {
+		return false;
+	}
+
 	if (p_from == sources_list) {
 		Dictionary d = p_data;
 
@@ -223,7 +227,7 @@ void TileSetEditor::_source_selected(int p_source_index) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 
 	// Update the selected source.
-	sources_delete_button->set_disabled(p_source_index < 0);
+	sources_delete_button->set_disabled(p_source_index < 0 || read_only);
 
 	if (p_source_index >= 0) {
 		int source_id = sources_list->get_item_metadata(p_source_index);
@@ -356,8 +360,19 @@ void TileSetEditor::_notification(int p_what) {
 				if (tile_set.is_valid()) {
 					tile_set->set_edited(true);
 				}
+
+				read_only = false;
+				if (tile_set.is_valid()) {
+					read_only = EditorNode::get_singleton()->is_resource_read_only(tile_set);
+				}
+
 				_update_sources_list();
 				_update_patterns_list();
+
+				sources_add_button->set_disabled(read_only);
+				sources_advanced_menu_button->set_disabled(read_only);
+				source_sort_button->set_disabled(read_only);
+
 				tile_set_changed_needs_update = false;
 			}
 		} break;
@@ -366,6 +381,10 @@ void TileSetEditor::_notification(int p_what) {
 
 void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(!tile_set.is_valid());
+
+	if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+		return;
+	}
 
 	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
 		Vector<int> selected = patterns_item_list->get_selected_items();
@@ -667,7 +686,12 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 }
 
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
-	if (p_tile_set == tile_set) {
+	bool new_read_only_state = false;
+	if (tile_set.is_valid()) {
+		new_read_only_state = EditorNode::get_singleton()->is_resource_read_only(p_tile_set);
+	}
+
+	if (p_tile_set == tile_set && new_read_only_state == read_only) {
 		return;
 	}
 
@@ -679,8 +703,15 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	// Change the edited object.
 	tile_set = p_tile_set;
 
-	// Add the listener again.
+	// Read-only status is false by default
+	read_only = new_read_only_state;
+
+	// Add the listener again and check for read-only status.
 	if (tile_set.is_valid()) {
+		sources_add_button->set_disabled(read_only);
+		sources_advanced_menu_button->set_disabled(read_only);
+		source_sort_button->set_disabled(read_only);
+
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
 		if (first_edit) {
 			first_edit = false;
@@ -690,10 +721,6 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 		}
 		_update_patterns_list();
 	}
-
-	tile_set_atlas_source_editor->hide();
-	tile_set_scenes_collection_source_editor->hide();
-	no_source_selected_label->show();
 }
 
 TileSetEditor::TileSetEditor() {

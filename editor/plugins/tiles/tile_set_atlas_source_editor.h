@@ -113,6 +113,8 @@ public:
 	};
 
 private:
+	bool read_only = false;
+
 	Ref<TileSet> tile_set;
 	TileSetAtlasSource *tile_set_atlas_source = nullptr;
 	int tile_set_atlas_source_id = TileSet::INVALID_SOURCE;
@@ -209,7 +211,7 @@ private:
 	HBoxContainer *tool_settings = nullptr;
 	HBoxContainer *tool_settings_tile_data_toolbar_container = nullptr;
 	Button *tools_settings_erase_button = nullptr;
-	MenuButton *tool_advanced_menu_buttom = nullptr;
+	MenuButton *tool_advanced_menu_button = nullptr;
 
 	// Selection.
 	RBSet<TileSelection> selection;
