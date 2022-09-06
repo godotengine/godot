@@ -1130,6 +1130,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("StreamTexture2DArray", "CompressedTexture2DArray");
 	ClassDB::add_compatibility_class("StreamTexture3D", "CompressedTexture3D");
 	ClassDB::add_compatibility_class("StreamTextureLayered", "CompressedTextureLayered");
+	ClassDB::add_compatibility_class("VisualShaderNodeFloatUniform", "VisualShaderNodeFloatParameter");
 #endif /* DISABLE_DEPRECATED */
 
 	OS::get_singleton()->yield(); // may take time to init
