@@ -145,6 +145,8 @@ void EditorFileDialog::_notification(int p_what) {
 			if (!is_visible()) {
 				set_process_shortcut_input(false);
 			}
+
+			invalidate(); // For consistency with the standard FileDialog.
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
@@ -304,10 +306,6 @@ void EditorFileDialog::_post_popup() {
 	}
 	set_current_dir(current);
 
-	if (invalidated) {
-		update_file_list();
-		invalidated = false;
-	}
 	if (mode == FILE_MODE_SAVE_FILE) {
 		file->grab_focus();
 	} else {
@@ -320,19 +318,13 @@ void EditorFileDialog::_post_popup() {
 		file_box->set_visible(true);
 	}
 
-	if (is_visible() && !get_current_file().is_empty()) {
+	if (!get_current_file().is_empty()) {
 		_request_single_thumbnail(get_current_dir().path_join(get_current_file()));
 	}
 
-	if (is_visible()) {
-		_update_recent();
-
-		local_history.clear();
-		local_history_pos = -1;
-		_push_history();
-
-		_update_favorites();
-	}
+	local_history.clear();
+	local_history_pos = -1;
+	_push_history();
 
 	set_process_shortcut_input(true);
 }
