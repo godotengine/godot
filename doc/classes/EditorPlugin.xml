@@ -303,7 +303,7 @@
 
 				func _enter_tree():
 				    plugin_control = preload("my_plugin_control.tscn").instantiate()
-				    get_editor_interface().get_editor_main_control().add_child(plugin_control)
+				    get_editor_interface().get_editor_main_screen().add_child(plugin_control)
 				    plugin_control.hide()
 
 				func _has_main_screen():

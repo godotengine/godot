@@ -4049,7 +4049,7 @@ void ScriptEditorPlugin::edited_scene_changed() {
 
 ScriptEditorPlugin::ScriptEditorPlugin() {
 	script_editor = memnew(ScriptEditor);
-	EditorNode::get_singleton()->get_main_control()->add_child(script_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(script_editor);
 	script_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	script_editor->hide();

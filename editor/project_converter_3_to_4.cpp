@@ -295,7 +295,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_d", "get_distance" }, // LineShape2D
 	{ "get_drag_data", "_get_drag_data" }, // Control
 	{ "get_drag_data_fw", "_get_drag_data_fw" }, // ScriptEditor
-	{ "get_editor_viewport", "get_viewport" }, // EditorPlugin
+	{ "get_editor_viewport", "get_editor_main_screen" }, // EditorPlugin
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
 	{ "get_endian_swap", "is_big_endian" }, // File
 	{ "get_error_string", "get_error_message" }, // JSON
