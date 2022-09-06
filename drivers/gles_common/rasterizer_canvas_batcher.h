@@ -1335,7 +1335,7 @@ PREAMBLE(bool)::_prefill_line(RasterizerCanvas::Item::CommandLine *p_line, FillS
 
 	// if the color has changed we need a new batch
 	// (only single color line batches supported so far)
-	if (r_fill_state.curr_batch->color != bcol) {
+	if (!change_batch && r_fill_state.curr_batch->color != bcol) {
 		change_batch = true;
 	}
 
