@@ -1302,8 +1302,14 @@
 		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
 			The [PhysicsServer2D] singleton.
 		</member>
+		<member name="PhysicsServer2DManager" type="PhysicsServer2DManager" setter="" getter="">
+			The [PhysicsServer2DManager] singleton.
+		</member>
 		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
 			The [PhysicsServer3D] singleton.
+		</member>
+		<member name="PhysicsServer3DManager" type="PhysicsServer3DManager" setter="" getter="">
+			The [PhysicsServer3DManager] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.

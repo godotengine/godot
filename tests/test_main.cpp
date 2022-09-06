@@ -207,10 +207,10 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			RenderingServerDefault::get_singleton()->init();
 			RenderingServerDefault::get_singleton()->set_render_loop_enabled(false);
 
-			physics_server_3d = PhysicsServer3DManager::new_default_server();
+			physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 			physics_server_3d->init();
 
-			physics_server_2d = PhysicsServer2DManager::new_default_server();
+			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			physics_server_2d->init();
 
 			navigation_server_3d = NavigationServer3DManager::new_default_server();

@@ -766,16 +766,18 @@ public:
 	real_t get_collision_unsafe_fraction() const;
 };
 
-typedef PhysicsServer2D *(*CreatePhysicsServer2DCallback)();
+class PhysicsServer2DManager : public Object {
+	GDCLASS(PhysicsServer2DManager, Object);
 
-class PhysicsServer2DManager {
+	static PhysicsServer2DManager *singleton;
+
 	struct ClassInfo {
 		String name;
-		CreatePhysicsServer2DCallback create_callback = nullptr;
+		Callable create_callback;
 
 		ClassInfo() {}
 
-		ClassInfo(String p_name, CreatePhysicsServer2DCallback p_create_callback) :
+		ClassInfo(String p_name, Callable p_create_callback) :
 				name(p_name),
 				create_callback(p_create_callback) {}
 
@@ -789,24 +791,30 @@ class PhysicsServer2DManager {
 		}
 	};
 
-	static Vector<ClassInfo> physics_2d_servers;
-	static int default_server_id;
-	static int default_server_priority;
+	Vector<ClassInfo> physics_2d_servers;
+	int default_server_id = -1;
+	int default_server_priority = -1;
+
+	void on_servers_changed();
+
+protected:
+	static void _bind_methods();
 
 public:
 	static const String setting_property_name;
 
-private:
-	static void on_servers_changed();
+	static PhysicsServer2DManager *get_singleton();
 
-public:
-	static void register_server(const String &p_name, CreatePhysicsServer2DCallback p_creat_callback);
-	static void set_default_server(const String &p_name, int p_priority = 0);
-	static int find_server_id(const String &p_name);
-	static int get_servers_count();
-	static String get_server_name(int p_id);
-	static PhysicsServer2D *new_default_server();
-	static PhysicsServer2D *new_server(const String &p_name);
+	void register_server(const String &p_name, const Callable &p_create_callback);
+	void set_default_server(const String &p_name, int p_priority = 0);
+	int find_server_id(const String &p_name);
+	int get_servers_count();
+	String get_server_name(int p_id);
+	PhysicsServer2D *new_default_server();
+	PhysicsServer2D *new_server(const String &p_name);
+
+	PhysicsServer2DManager();
+	~PhysicsServer2DManager();
 };
 
 VARIANT_ENUM_CAST(PhysicsServer2D::ShapeType);
