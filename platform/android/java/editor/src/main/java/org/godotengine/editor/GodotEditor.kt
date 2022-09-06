@@ -77,6 +77,12 @@ open class GodotEditor : FullScreenGodotApp() {
 		}
 
 		super.onCreate(savedInstanceState)
+
+		// Enable long press, panning and scaling gestures
+		godotFragment?.mView?.inputHandler?.apply {
+			enableLongPress(enableLongPressGestures())
+			enablePanningAndScalingGestures(enablePanAndScaleGestures())
+		}
 	}
 
 	private fun updateCommandLineParams(args: Array<String>?) {
@@ -147,6 +153,16 @@ open class GodotEditor : FullScreenGodotApp() {
 	 * The Godot Android Editor sets its own orientation via its AndroidManifest
 	 */
 	protected open fun overrideOrientationRequest() = true
+
+	/**
+	 * Enable long press gestures for the Godot Android editor.
+	 */
+	protected open fun enableLongPressGestures() = true
+
+	/**
+	 * Enable pan and scale gestures for the Godot Android editor.
+	 */
+	protected open fun enablePanAndScaleGestures() = true
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)

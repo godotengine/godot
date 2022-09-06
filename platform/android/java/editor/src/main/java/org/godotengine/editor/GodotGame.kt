@@ -35,4 +35,8 @@ package org.godotengine.editor
  */
 class GodotGame : GodotEditor() {
 	override fun overrideOrientationRequest() = false
+
+	override fun enableLongPressGestures() = false
+
+	override fun enablePanAndScaleGestures() = false
 }

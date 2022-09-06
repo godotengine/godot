@@ -212,7 +212,9 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 		OS::get_singleton()->force_process_input();
 	}
 
+#ifndef ANDROID_ENABLED
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
+#endif
 	return cancelled;
 }
 
