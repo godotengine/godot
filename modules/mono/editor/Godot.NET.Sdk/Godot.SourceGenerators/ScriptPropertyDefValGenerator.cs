@@ -243,7 +243,7 @@ namespace Godot.SourceGenerators
                     source.Append(" = ");
                     source.Append(exportedMember.Value ?? "default");
                     source.Append(";\n");
-                    source.Append("        values.Add(GodotInternal.PropName_");
+                    source.Append("        values.Add(PropertyName.");
                     source.Append(exportedMember.Name);
                     source.Append(", ");
                     source.Append(defaultValueLocalName);
