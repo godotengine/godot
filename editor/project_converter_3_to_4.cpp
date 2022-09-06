@@ -547,6 +547,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "update_gizmo", "update_gizmos" }, // Node3D
 	{ "viewport_set_use_arvr", "viewport_set_use_xr" }, // RenderingServer
 	{ "warp_mouse_position", "warp_mouse" }, // Input
+	{ "world_to_map", "local_to_map" }, // TileMap, GridMap
 	{ "set_shader_param", "set_shader_parameter" }, // ShaderMaterial
 	{ "get_shader_param", "get_shader_parameter" }, // ShaderMaterial
 	{ "set_uniform_name", "set_parameter_name" }, // ParameterRef
@@ -959,6 +960,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "UpdateGizmo", "UpdateGizmos" }, // Node3D
 	{ "ViewportSetUseArvr", "ViewportSetUseXr" }, // RenderingServer
 	{ "WarpMousePosition", "WarpMouse" }, // Input
+	{ "WorldToMap", "LocalToMap" }, // TileMap, GridMap
 	{ "SetShaderParam", "SetShaderParameter" }, // ShaderMaterial
 	{ "GetShaderParam", "GetShaderParameter" }, // ShaderMaterial
 	{ "SetUniformName", "SetParameterName" }, // ParameterRef
@@ -2434,7 +2436,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid & test_conversion_gdscript_builtin("set_cell_item(a, b)", "set_cell_item(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_gdscript_builtin("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_gdscript_builtin("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid & test_conversion_gdscript_builtin("map_to_world(a, b,c)", "map_to_world(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_gdscript_builtin("map_to_world(a, b,c)", "map_to_local(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid & test_conversion_gdscript_builtin("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_gdscript_builtin("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -3462,14 +3464,16 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 			}
 		}
 	}
-	//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
+	//  map_to_world(a, b, c)  ->   map_to_local(Vector3i(a, b, c))
 	if (line.contains("map_to_world(")) {
 		int start = line.find("map_to_world(");
 		int end = get_end_parenthess(line.substr(start)) + 1;
 		if (end > -1) {
 			Vector<String> parts = parse_arguments(line.substr(start, end));
 			if (parts.size() == 3) {
-				line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+				line = line.substr(0, start) + "map_to_local(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			} else if (parts.size() == 1) {
+				line = line.substr(0, start) + "map_to_local(" + parts[0] + ")" + line.substr(end + start);
 			}
 		}
 	}
