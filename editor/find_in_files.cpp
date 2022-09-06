@@ -431,8 +431,7 @@ void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
 }
 
 String FindInFilesDialog::get_search_text() const {
-	String text = _search_text_line_edit->get_text();
-	return text.strip_edges();
+	return _search_text_line_edit->get_text();
 }
 
 String FindInFilesDialog::get_replace_text() const {
