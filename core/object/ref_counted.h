@@ -227,6 +227,8 @@ public:
 		ref(memnew(T));
 	}
 
+	static String get_class_static() { return T::get_class_static(); };
+
 	Ref() {}
 
 	~Ref() {

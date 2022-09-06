@@ -392,7 +392,7 @@ Ref<Shape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
 		ConvexDecompositionSettings settings;
 		settings.max_convex_hulls = 1;
-		Vector<Ref<Shape3D>> decomposed = convex_decompose(settings);
+		TypedArray<Ref<Shape3D>> decomposed = convex_decompose(settings);
 		if (decomposed.size() == 1) {
 			return decomposed[0];
 		} else {
@@ -748,11 +748,11 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-Vector<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p_settings) const {
-	ERR_FAIL_COND_V(!convex_decomposition_function, Vector<Ref<Shape3D>>());
+TypedArray<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p_settings) const {
+	ERR_FAIL_COND_V(!convex_decomposition_function, TypedArray<Ref<Shape3D>>());
 
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
-	ERR_FAIL_COND_V(!tm.is_valid(), Vector<Ref<Shape3D>>());
+	ERR_FAIL_COND_V(!tm.is_valid(), TypedArray<Ref<Shape3D>>());
 
 	const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
 	int triangle_count = triangles.size();
@@ -773,7 +773,7 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose(const ConvexDecompositionSettings &p
 
 	Vector<Vector<Vector3>> decomposed = convex_decomposition_function((real_t *)vertices.ptr(), vertex_count, indices.ptr(), triangle_count, p_settings, nullptr);
 
-	Vector<Ref<Shape3D>> ret;
+	TypedArray<Ref<Shape3D>> ret;
 
 	for (int i = 0; i < decomposed.size(); i++) {
 		Ref<ConvexPolygonShape3D> shape;
