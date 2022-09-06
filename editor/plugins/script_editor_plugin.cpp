@@ -2544,6 +2544,18 @@ void ScriptEditor::apply_scripts() const {
 	}
 }
 
+void ScriptEditor::discard_scripts_changes() {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (!se) {
+			continue;
+		}
+		se->discard_changes();
+	}
+
+	_update_script_names();
+}
+
 void ScriptEditor::reload_scripts() {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -3443,6 +3455,19 @@ Vector<Ref<Script>> ScriptEditor::get_open_scripts() const {
 	}
 
 	return out_scripts;
+}
+
+Vector<String> ScriptEditor::get_unsaved_script_names() const {
+	Vector<String> out_names = Vector<String>();
+
+	for (int i = 0; i < tab_container->get_child_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_child(i));
+		if (se && se->is_unsaved() && se->get_edited_resource() != nullptr) {
+			out_names.push_back(se->get_name());
+		}
+	}
+
+	return out_names;
 }
 
 TypedArray<ScriptEditorBase> ScriptEditor::_get_open_script_editors() const {

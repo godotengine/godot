@@ -196,6 +196,11 @@ void TextEditor::apply_code() {
 	text_file->set_text(code_editor->get_text_editor()->get_text());
 }
 
+void TextEditor::discard_changes() {
+	code_editor->get_text_editor()->set_text(text_file->get_text());
+	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
+}
+
 bool TextEditor::is_unsaved() {
 	const bool unsaved =
 			code_editor->get_text_editor()->get_version() != code_editor->get_text_editor()->get_saved_version() ||

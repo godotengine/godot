@@ -2945,6 +2945,69 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER:
 		case RELOAD_CURRENT_PROJECT: {
+			int p_option_discard_scripts;
+			String p_text;
+			switch (p_option) {
+				case FILE_QUIT: {
+					p_option_discard_scripts = FILE_QUIT_AND_DISCARD_SCRIPTS;
+					p_text = TTR("Save changes to the following script(s) before quitting?");
+				} break;
+				case RUN_PROJECT_MANAGER: {
+					p_option_discard_scripts = RUN_PROJECT_MANAGER_AND_DISCARD_SCRIPTS;
+					p_text = TTR("Save changes to the following script(s) before opening Project Manager?");
+				} break;
+				case RELOAD_CURRENT_PROJECT: {
+					p_option_discard_scripts = RELOAD_CURRENT_PROJECT_AND_DISCARD_SCRIPTS;
+					p_text = TTR("Save changes to the following script(s) before reloading the project?");
+				} break;
+			}
+			if (!p_confirmed) {
+				Vector<String> unsaved_script_names = ScriptEditor::get_singleton()->get_unsaved_script_names();
+				if (unsaved_script_names.is_empty()) {
+					_menu_option_confirm(p_option_discard_scripts, false);
+				} else {
+					String unsaved_scripts;
+					for (int i = 0; i < unsaved_script_names.size(); i++) {
+						unsaved_scripts += "\n            " + unsaved_script_names[i];
+					}
+
+					save_confirmation->get_ok_button()->set_text(TTR("Save & Quit"));
+					save_confirmation->set_text((p_text) + unsaved_scripts);
+					save_confirmation->popup_centered();
+				}
+				break;
+			}
+
+			// User has chosen to save scripts before quit.
+			editor_data.get_editor("Script")->save_external_data();
+			_menu_option_confirm(p_option_discard_scripts, false);
+		} break;
+		case FILE_QUIT_AND_DISCARD_SCRIPTS:
+		case RUN_PROJECT_MANAGER_AND_DISCARD_SCRIPTS:
+		case RELOAD_CURRENT_PROJECT_AND_DISCARD_SCRIPTS: {
+			int p_option_file_close_all;
+			String save_confirmation_ok_text;
+			String save_confirmation_text;
+			switch (p_option) {
+				case FILE_QUIT_AND_DISCARD_SCRIPTS: {
+					p_option_file_close_all = FILE_CLOSE_ALL_AND_QUIT;
+					save_confirmation_ok_text = TTR("Save & Quit");
+					save_confirmation_text = TTR("Save changes to the following scene(s) before quitting?");
+				} break;
+				case RUN_PROJECT_MANAGER_AND_DISCARD_SCRIPTS: {
+					p_option_file_close_all = FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER;
+					save_confirmation_ok_text = TTR("Save & Quit");
+					save_confirmation_text = TTR("Save changes to the following scene(s) before opening Project Manager?");
+				} break;
+				case RELOAD_CURRENT_PROJECT_AND_DISCARD_SCRIPTS: {
+					p_option_file_close_all = FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT;
+					save_confirmation_ok_text = TTR("Save & Reload");
+					save_confirmation_text = TTR("Save changes to the following scene(s) before reloading?");
+				} break;
+			}
+
+			ScriptEditor::get_singleton()->discard_scripts_changes();
+
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
@@ -2952,13 +3015,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					break;
 				} else {
 					if (save_each) {
-						if (p_option == RELOAD_CURRENT_PROJECT) {
-							_menu_option_confirm(FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT, false);
-						} else if (p_option == FILE_QUIT) {
-							_menu_option_confirm(FILE_CLOSE_ALL_AND_QUIT, false);
-						} else {
-							_menu_option_confirm(FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER, false);
-						}
+						_menu_option_confirm(p_option_file_close_all, false);
 					} else {
 						String unsaved_scenes;
 						int i = _next_unsaved_scene(true, 0);
@@ -2966,13 +3023,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 							unsaved_scenes += "\n            " + editor_data.get_edited_scene_root(i)->get_scene_file_path();
 							i = _next_unsaved_scene(true, ++i);
 						}
-						if (p_option == RELOAD_CURRENT_PROJECT) {
-							save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-							save_confirmation->set_text(TTR("Save changes to the following scene(s) before reloading?") + unsaved_scenes);
-						} else {
-							save_confirmation->set_ok_button_text(TTR("Save & Quit"));
-							save_confirmation->set_text((p_option == FILE_QUIT ? TTR("Save changes to the following scene(s) before quitting?") : TTR("Save changes to the following scene(s) before opening Project Manager?")) + unsaved_scenes);
-						}
+						save_confirmation->set_ok_button_text(save_confirmation_ok_text);
+						save_confirmation->set_text(save_confirmation_text + unsaved_scenes);
 						save_confirmation->popup_centered();
 					}
 				}
@@ -3244,12 +3296,30 @@ void EditorNode::_discard_changes(const String &p_str) {
 				save_confirmation->hide();
 			}
 		} break;
-		case FILE_QUIT: {
+		case FILE_QUIT:
+		case RUN_PROJECT_MANAGER:
+		case RELOAD_CURRENT_PROJECT: {
+			// User has chosen to discard script edits on quit.
+			int p_option_discard_scripts;
+			switch (current_menu_option) {
+				case FILE_QUIT: {
+					p_option_discard_scripts = FILE_QUIT_AND_DISCARD_SCRIPTS;
+				} break;
+				case RUN_PROJECT_MANAGER: {
+					p_option_discard_scripts = RUN_PROJECT_MANAGER_AND_DISCARD_SCRIPTS;
+				} break;
+				case RELOAD_CURRENT_PROJECT: {
+					p_option_discard_scripts = RELOAD_CURRENT_PROJECT_AND_DISCARD_SCRIPTS;
+				} break;
+			}
+			_menu_option_confirm(p_option_discard_scripts, false);
+		} break;
+		case FILE_QUIT_AND_DISCARD_SCRIPTS: {
 			_menu_option_confirm(RUN_STOP, true);
 			_exit_editor(EXIT_SUCCESS);
 
 		} break;
-		case RUN_PROJECT_MANAGER: {
+		case RUN_PROJECT_MANAGER_AND_DISCARD_SCRIPTS: {
 			_menu_option_confirm(RUN_STOP, true);
 			_exit_editor(EXIT_SUCCESS);
 			String exec = OS::get_singleton()->get_executable_path();
@@ -3265,7 +3335,7 @@ void EditorNode::_discard_changes(const String &p_str) {
 			Error err = OS::get_singleton()->create_instance(args);
 			ERR_FAIL_COND(err);
 		} break;
-		case RELOAD_CURRENT_PROJECT: {
+		case RELOAD_CURRENT_PROJECT_AND_DISCARD_SCRIPTS: {
 			restart_editor();
 		} break;
 	}

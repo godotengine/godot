@@ -136,6 +136,7 @@ public:
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 
 	virtual void apply_code() = 0;
+	virtual void discard_changes() = 0;
 	virtual Ref<Resource> get_edited_resource() const = 0;
 	virtual Vector<String> get_functions() = 0;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) = 0;
@@ -477,6 +478,7 @@ public:
 	bool toggle_scripts_panel();
 	bool is_scripts_panel_toggled();
 	void apply_scripts() const;
+	void discard_scripts_changes();
 	void reload_scripts();
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
@@ -497,6 +499,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;
+	Vector<String> get_unsaved_script_names() const;
 
 	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 

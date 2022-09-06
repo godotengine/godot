@@ -205,6 +205,7 @@ public:
 	void update_toggle_scripts_button() override;
 
 	virtual void apply_code() override;
+	virtual void discard_changes() override;
 	virtual Ref<Resource> get_edited_resource() const override;
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
 	virtual void enable_editor() override;

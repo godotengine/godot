@@ -133,6 +133,14 @@ void ScriptTextEditor::apply_code() {
 	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
 }
 
+void ScriptTextEditor::discard_changes() {
+	if (script.is_null()) {
+		return;
+	}
+	code_editor->get_text_editor()->set_text(script->get_source_code());
+	code_editor->get_text_editor()->get_syntax_highlighter()->update_cache();
+}
+
 Ref<Resource> ScriptTextEditor::get_edited_resource() const {
 	return script;
 }

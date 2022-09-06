@@ -114,6 +114,7 @@ public:
 	virtual void enable_editor() override;
 	virtual void reload_text() override;
 	virtual void apply_code() override;
+	virtual void discard_changes() override;
 	virtual bool is_unsaved() override;
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
