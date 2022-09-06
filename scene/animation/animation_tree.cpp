@@ -1378,8 +1378,13 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 								t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
 							} else {
-								Variant::sub(value, t->init_value, value);
-								Variant::blend(t->value, value, blend, t->value);
+								if (t->init_value.get_type() == Variant::BOOL) {
+									value = Animation::subtract_variant(value.operator real_t(), t->init_value.operator real_t());
+									t->value = Animation::blend_variant(t->value.operator real_t(), value.operator real_t(), blend);
+								} else {
+									value = Animation::subtract_variant(value, t->init_value);
+									t->value = Animation::blend_variant(t->value, value, blend);
+								}
 							}
 						} else {
 							if (blend < CMP_EPSILON) {
@@ -1698,7 +1703,11 @@ void AnimationTree::_process_graph(double p_delta) {
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+					if (t->init_value.get_type() == Variant::BOOL) {
+						t->object->set_indexed(t->subpath, t->value.operator real_t() >= 0.5);
+					} else {
+						t->object->set_indexed(t->subpath, t->value);
+					}
 
 				} break;
 				case Animation::TYPE_BEZIER: {

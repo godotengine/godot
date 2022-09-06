@@ -251,27 +251,6 @@ static GDNativeBool gdnative_variant_booleanize(const GDNativeVariantPtr p_self)
 	return self->booleanize();
 }
 
-static void gdnative_variant_sub(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, GDNativeVariantPtr r_dst) {
-	const Variant *a = (const Variant *)p_a;
-	const Variant *b = (const Variant *)p_b;
-	memnew_placement(r_dst, Variant);
-	Variant::sub(*a, *b, *(Variant *)r_dst);
-}
-
-static void gdnative_variant_blend(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst) {
-	const Variant *a = (const Variant *)p_a;
-	const Variant *b = (const Variant *)p_b;
-	memnew_placement(r_dst, Variant);
-	Variant::blend(*a, *b, p_c, *(Variant *)r_dst);
-}
-
-static void gdnative_variant_interpolate(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst) {
-	const Variant *a = (const Variant *)p_a;
-	const Variant *b = (const Variant *)p_b;
-	memnew_placement(r_dst, Variant);
-	Variant::interpolate(*a, *b, p_c, *(Variant *)r_dst);
-}
-
 static void gdnative_variant_duplicate(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep) {
 	const Variant *self = (const Variant *)p_self;
 	memnew_placement(r_ret, Variant(self->duplicate(p_deep)));
@@ -970,9 +949,6 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 	gdni.variant_recursive_hash = gdnative_variant_recursive_hash;
 	gdni.variant_hash_compare = gdnative_variant_hash_compare;
 	gdni.variant_booleanize = gdnative_variant_booleanize;
-	gdni.variant_sub = gdnative_variant_sub;
-	gdni.variant_blend = gdnative_variant_blend;
-	gdni.variant_interpolate = gdnative_variant_interpolate;
 	gdni.variant_duplicate = gdnative_variant_duplicate;
 	gdni.variant_stringify = gdnative_variant_stringify;
 
