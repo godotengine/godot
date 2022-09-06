@@ -585,6 +585,7 @@ void TileSetAtlasSourceEditor::_update_atlas_source_inspector() {
 	// Update visibility.
 	bool inspector_visible = tools_button_group->get_pressed_button() == tool_setup_atlas_source_button;
 	atlas_source_inspector->set_visible(inspector_visible);
+	atlas_source_inspector->set_read_only(read_only);
 }
 
 void TileSetAtlasSourceEditor::_update_tile_inspector() {
@@ -599,6 +600,7 @@ void TileSetAtlasSourceEditor::_update_tile_inspector() {
 		tile_inspector->hide();
 		tile_inspector_no_tile_selected_label->hide();
 	}
+	tile_inspector->set_read_only(read_only);
 }
 
 void TileSetAtlasSourceEditor::_update_tile_data_editors() {
@@ -970,19 +972,19 @@ void TileSetAtlasSourceEditor::_update_toolbar() {
 			current_tile_data_editor_toolbar->hide();
 		}
 		tools_settings_erase_button->show();
-		tool_advanced_menu_buttom->show();
+		tool_advanced_menu_button->show();
 	} else if (tools_button_group->get_pressed_button() == tool_select_button) {
 		if (current_tile_data_editor_toolbar) {
 			current_tile_data_editor_toolbar->hide();
 		}
 		tools_settings_erase_button->hide();
-		tool_advanced_menu_buttom->hide();
+		tool_advanced_menu_button->hide();
 	} else if (tools_button_group->get_pressed_button() == tool_paint_button) {
 		if (current_tile_data_editor_toolbar) {
 			current_tile_data_editor_toolbar->show();
 		}
 		tools_settings_erase_button->hide();
-		tool_advanced_menu_buttom->hide();
+		tool_advanced_menu_button->hide();
 	}
 }
 
@@ -2188,7 +2190,12 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
-	if (p_tile_set == tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == tile_set_atlas_source_id) {
+	bool new_read_only_state = false;
+	if (p_tile_set.is_valid()) {
+		new_read_only_state = EditorNode::get_singleton()->is_resource_read_only(p_tile_set);
+	}
+
+	if (p_tile_set == tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == tile_set_atlas_source_id && new_read_only_state == read_only) {
 		return;
 	}
 
@@ -2205,10 +2212,22 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	tile_set_atlas_source = p_tile_set_atlas_source;
 	tile_set_atlas_source_id = p_source_id;
 
-	// Add the listener again.
+	// Read-only is off by default.
+	read_only = new_read_only_state;
+
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
 	}
+
+	if (read_only && tools_button_group->get_pressed_button() == tool_paint_button) {
+		tool_paint_button->set_pressed(false);
+		tool_setup_atlas_source_button->set_pressed(true);
+	}
+
+	// Disable buttons in read-only mode.
+	tool_paint_button->set_disabled(read_only);
+	tools_settings_erase_button->set_disabled(read_only);
+	tool_advanced_menu_button->set_disabled(read_only);
 
 	// Update everything.
 	_update_source_inspector();
@@ -2344,7 +2363,7 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 			tools_settings_erase_button->set_icon(get_theme_icon(SNAME("Eraser"), SNAME("EditorIcons")));
 
-			tool_advanced_menu_buttom->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
+			tool_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 			resize_handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
 			resize_handle_disabled = get_theme_icon(SNAME("EditorHandleDisabled"), SNAME("EditorIcons"));
@@ -2352,6 +2371,18 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (tile_set_changed_needs_update) {
+				// Read-only is off by default
+				read_only = false;
+				// Add the listener again and check for read-only status.
+				if (tile_set.is_valid()) {
+					read_only = EditorNode::get_singleton()->is_resource_read_only(tile_set);
+				}
+
+				// Disable buttons in read-only mode.
+				tool_paint_button->set_disabled(read_only);
+				tools_settings_erase_button->set_disabled(read_only);
+				tool_advanced_menu_button->set_disabled(read_only);
+
 				// Update everything.
 				_update_source_inspector();
 
@@ -2516,12 +2547,12 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tools_settings_erase_button->set_shortcut_context(this);
 	tool_settings->add_child(tools_settings_erase_button);
 
-	tool_advanced_menu_buttom = memnew(MenuButton);
-	tool_advanced_menu_buttom->set_flat(true);
-	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
-	tool_advanced_menu_buttom->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
-	tool_advanced_menu_buttom->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
-	tool_settings->add_child(tool_advanced_menu_buttom);
+	tool_advanced_menu_button = memnew(MenuButton);
+	tool_advanced_menu_button->set_flat(true);
+	tool_advanced_menu_button->get_popup()->add_item(TTR("Create Tiles in Non-Transparent Texture Regions"), ADVANCED_AUTO_CREATE_TILES);
+	tool_advanced_menu_button->get_popup()->add_item(TTR("Remove Tiles in Fully Transparent Texture Regions"), ADVANCED_AUTO_REMOVE_TILES);
+	tool_advanced_menu_button->get_popup()->connect("id_pressed", callable_mp(this, &TileSetAtlasSourceEditor::_menu_option));
+	tool_settings->add_child(tool_advanced_menu_button);
 
 	_update_toolbar();
 

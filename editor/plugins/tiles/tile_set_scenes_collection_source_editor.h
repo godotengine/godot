@@ -91,6 +91,8 @@ private:
 	};
 
 private:
+	bool read_only = false;
+
 	Ref<TileSet> tile_set;
 	TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
 	int tile_set_source_id = -1;
