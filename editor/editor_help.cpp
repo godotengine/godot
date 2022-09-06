@@ -1695,6 +1695,8 @@ EditorHelpBit::EditorHelpBit() {
 }
 
 FindBar::FindBar() {
+	results_count = 0;
+
 	search_text = memnew(LineEdit);
 	add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
