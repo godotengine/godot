@@ -1420,6 +1420,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// AcceptDialog
 	theme->set_stylebox("panel", "AcceptDialog", style_window_title);
+	theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
 
 	// HScrollBar
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);
