@@ -5,17 +5,17 @@ DEPENDENCIES += [DEP_MBEDTLS, DEP_ZLIB, DEP_ZSTD, DEP_MINIZIP, DEP_MISC]
 ################################################################################
 
 # random misc sources, we are going to build these as a small static lib
-_core_misc_srcs = files([
+_core_misc_srcs = files(
     # c sources
-    '../thirdparty/misc/fastlz.c',
-    '../thirdparty/misc/r128.c',
-    '../thirdparty/misc/smaz.c',
+#    '../thirdparty/misc/fastlz.c',
+#    '../thirdparty/misc/r128.c',
+#    '../thirdparty/misc/smaz.c',
     # cpp sources
     '../thirdparty/misc/pcg.cpp',
-    '../thirdparty/misc/polypartition.cpp',
-    '../thirdparty/misc/clipper.cpp',
-    '../thirdparty/misc/smolv.cpp',
-])
+ #   '../thirdparty/misc/polypartition.cpp',
+ #   '../thirdparty/misc/clipper.cpp',
+ #   '../thirdparty/misc/smolv.cpp',
+)
 
 _core_misc_c_args = []
 _core_misc_cpp_args = []
