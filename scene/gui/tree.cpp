@@ -2405,7 +2405,7 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 				TreeItem *old_it = cache.hover_item;
 				int old_col = cache.hover_cell;
 
-				int col, h, section;
+				int col = 0, h = 0, section = 0;
 				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
 
 				if (drop_mode_flags) {
