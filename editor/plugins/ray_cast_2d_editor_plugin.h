@@ -41,7 +41,7 @@ class RayCast2DEditor : public Control {
 
 	UndoRedo *undo_redo = nullptr;
 	CanvasItemEditor *canvas_item_editor = nullptr;
-	RayCast2D *node;
+	RayCast2D *node = nullptr;
 
 	bool pressed = false;
 	Point2 original_cast_to;
