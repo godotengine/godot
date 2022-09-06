@@ -243,6 +243,8 @@ int FlowContainer::get_line_count() const {
 
 FlowContainer::FlowContainer(bool p_vertical) {
 	vertical = p_vertical;
+	cached_size = 0;
+	cached_line_count = 0;
 }
 
 void FlowContainer::_bind_methods() {
