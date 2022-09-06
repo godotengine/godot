@@ -289,8 +289,8 @@ bool ConnectDialog::get_deferred() const {
 	return deferred->is_pressed();
 }
 
-bool ConnectDialog::get_oneshot() const {
-	return oneshot->is_pressed();
+bool ConnectDialog::get_one_shot() const {
+	return one_shot->is_pressed();
 }
 
 /*
@@ -325,7 +325,7 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 	bool b_oneshot = (p_cd.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
 
 	deferred->set_pressed(b_deferred);
-	oneshot->set_pressed(b_oneshot);
+	one_shot->set_pressed(b_oneshot);
 
 	MethodInfo r_signal;
 	Ref<Script> source_script = source->get_script();
@@ -484,11 +484,11 @@ ConnectDialog::ConnectDialog() {
 	deferred->set_tooltip_text(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
 	vbc_right->add_child(deferred);
 
-	oneshot = memnew(CheckBox);
-	oneshot->set_h_size_flags(0);
-	oneshot->set_text(TTR("Oneshot"));
-	oneshot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
-	vbc_right->add_child(oneshot);
+	one_shot = memnew(CheckBox);
+	one_shot->set_h_size_flags(0);
+	one_shot->set_text(TTR("Oneshot"));
+	one_shot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
+	vbc_right->add_child(one_shot);
 
 	cdbinds = memnew(ConnectDialogBinds);
 
@@ -564,7 +564,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		cd.binds = connect_dialog->get_binds();
 	}
 	bool b_deferred = connect_dialog->get_deferred();
-	bool b_oneshot = connect_dialog->get_oneshot();
+	bool b_oneshot = connect_dialog->get_one_shot();
 	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONESHOT : 0);
 
 	// Conditions to add function: must have a script and must not have the method already
