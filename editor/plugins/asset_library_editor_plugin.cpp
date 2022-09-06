@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/json.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
@@ -1602,7 +1602,7 @@ bool AssetLibraryEditorPlugin::is_available() {
 	// directly from GitHub which does not set CORS.
 	return false;
 #else
-	return StreamPeerSSL::is_available();
+	return StreamPeerTLS::is_available();
 #endif
 }
 

@@ -34,8 +34,8 @@
 #ifndef WEB_ENABLED
 
 #include "core/error/error_list.h"
-#include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_tls.h"
 #include "websocket_client.h"
 #include "wsl_peer.h"
 #include "wslay/wslay.h"

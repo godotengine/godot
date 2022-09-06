@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.cpp                                                  */
+/*  stream_peer_tls.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,42 +28,42 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "stream_peer_ssl.h"
+#include "stream_peer_tls.h"
 
 #include "core/config/engine.h"
 
-StreamPeerSSL *(*StreamPeerSSL::_create)() = nullptr;
+StreamPeerTLS *(*StreamPeerTLS::_create)() = nullptr;
 
-StreamPeerSSL *StreamPeerSSL::create() {
+StreamPeerTLS *StreamPeerTLS::create() {
 	if (_create) {
 		return _create();
 	}
 	return nullptr;
 }
 
-bool StreamPeerSSL::available = false;
+bool StreamPeerTLS::available = false;
 
-bool StreamPeerSSL::is_available() {
+bool StreamPeerTLS::is_available() {
 	return available;
 }
 
-void StreamPeerSSL::set_blocking_handshake_enabled(bool p_enabled) {
+void StreamPeerTLS::set_blocking_handshake_enabled(bool p_enabled) {
 	blocking_handshake = p_enabled;
 }
 
-bool StreamPeerSSL::is_blocking_handshake_enabled() const {
+bool StreamPeerTLS::is_blocking_handshake_enabled() const {
 	return blocking_handshake;
 }
 
-void StreamPeerSSL::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
-	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "private_key", "certificate", "chain"), &StreamPeerSSL::accept_stream, DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname", "valid_certificate"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
-	ClassDB::bind_method(D_METHOD("get_stream"), &StreamPeerSSL::get_stream);
-	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
-	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &StreamPeerSSL::set_blocking_handshake_enabled);
-	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &StreamPeerSSL::is_blocking_handshake_enabled);
+void StreamPeerTLS::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerTLS::poll);
+	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "private_key", "certificate", "chain"), &StreamPeerTLS::accept_stream, DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname", "valid_certificate"), &StreamPeerTLS::connect_to_stream, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTLS::get_status);
+	ClassDB::bind_method(D_METHOD("get_stream"), &StreamPeerTLS::get_stream);
+	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerTLS::disconnect_from_stream);
+	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &StreamPeerTLS::set_blocking_handshake_enabled);
+	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &StreamPeerTLS::is_blocking_handshake_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 

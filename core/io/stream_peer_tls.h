@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.h                                                    */
+/*  stream_peer_tls.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_SSL_H
-#define STREAM_PEER_SSL_H
+#ifndef STREAM_PEER_TLS_H
+#define STREAM_PEER_TLS_H
 
 #include "core/crypto/crypto.h"
 #include "core/io/stream_peer.h"
 
-class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL, StreamPeer);
+class StreamPeerTLS : public StreamPeer {
+	GDCLASS(StreamPeerTLS, StreamPeer);
 
 protected:
-	static StreamPeerSSL *(*_create)();
+	static StreamPeerTLS *(*_create)();
 	static void _bind_methods();
 
 	static bool available;
@@ -65,13 +65,13 @@ public:
 
 	virtual void disconnect_from_stream() = 0;
 
-	static StreamPeerSSL *create();
+	static StreamPeerTLS *create();
 
 	static bool is_available();
 
-	StreamPeerSSL() {}
+	StreamPeerTLS() {}
 };
 
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
+VARIANT_ENUM_CAST(StreamPeerTLS::Status);
 
-#endif // STREAM_PEER_SSL_H
+#endif // STREAM_PEER_TLS_H

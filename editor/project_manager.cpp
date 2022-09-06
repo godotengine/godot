@@ -35,7 +35,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/zip_io.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

@@ -288,11 +288,11 @@ void WSLClient::poll() {
 			break;
 		case StreamPeerTCP::STATUS_CONNECTED: {
 			_ip_candidates.clear();
-			Ref<StreamPeerSSL> ssl;
+			Ref<StreamPeerTLS> ssl;
 			if (_use_ssl) {
 				if (_connection == _tcp) {
 					// Start SSL handshake
-					ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+					ssl = Ref<StreamPeerTLS>(StreamPeerTLS::create());
 					ERR_FAIL_COND_MSG(ssl.is_null(), "SSL is not available in this build.");
 					ssl->set_blocking_handshake_enabled(false);
 					if (ssl->connect_to_stream(_tcp, verify_ssl, _host, ssl_cert) != OK) {
@@ -302,13 +302,13 @@ void WSLClient::poll() {
 					}
 					_connection = ssl;
 				} else {
-					ssl = static_cast<Ref<StreamPeerSSL>>(_connection);
+					ssl = static_cast<Ref<StreamPeerTLS>>(_connection);
 					ERR_FAIL_COND(ssl.is_null()); // Bug?
 					ssl->poll();
 				}
-				if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
+				if (ssl->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
 					return; // Need more polling.
-				} else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+				} else if (ssl->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
 					disconnect_from_host();
 					_on_error();
 					return; // Error.
