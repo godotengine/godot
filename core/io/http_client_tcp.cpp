@@ -94,6 +94,10 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 	} else {
 		// Host contains hostname and needs to be resolved to IP.
 		resolving = IP::get_singleton()->resolve_hostname_queue_item(server_host);
+		if (resolving == IP::RESOLVER_INVALID_ID) {
+			status = STATUS_CANT_RESOLVE;
+			return ERR_CANT_RESOLVE;
+		}
 		status = STATUS_RESOLVING;
 	}
 
