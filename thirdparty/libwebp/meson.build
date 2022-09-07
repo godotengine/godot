@@ -124,6 +124,8 @@ if get_option('builtin_libwebp')
 
     if host_machine.cpu_family() == 'x86_64'
         webp_simd_files = files('sharpyuv/sharpyuv_sse2.c')
+     elif host_machine.cpu_family() == 'aarch64'
+         webp_simd_files = files('sharpyuv/sharpyuv_neon.c')
      else
         error('Unsupported platform')
      endif
