@@ -157,24 +157,15 @@ void EditorColorMap::create() {
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
-	style->set_margin_size(SIDE_LEFT, p_left * EDSCALE);
-	style->set_margin_size(SIDE_RIGHT, p_right * EDSCALE);
-	style->set_margin_size(SIDE_BOTTOM, p_bottom * EDSCALE);
-	style->set_margin_size(SIDE_TOP, p_top * EDSCALE);
-	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	style->set_margin_size_individual(p_left * EDSCALE, p_top * EDSCALE, p_right * EDSCALE, p_bottom * EDSCALE);
+	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	style->set_draw_center(p_draw_center);
 	return style;
 }
 
 static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxEmpty> style(memnew(StyleBoxEmpty));
-	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	return style;
 }
 
@@ -184,10 +175,7 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	// Adjust level of detail based on the corners' effective sizes.
 	style->set_corner_detail(Math::ceil(0.8 * p_corner_width * EDSCALE));
 	style->set_corner_radius_all(p_corner_width * EDSCALE);
-	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	// Work around issue about antialiased edges being blurrier (GH-35279).
 	style->set_anti_aliased(false);
 	return style;
@@ -600,10 +588,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Vector2 widget_default_margin = Vector2(extra_spacing + 6, extra_spacing + default_margin_size + 1) * EDSCALE;
 
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
-	style_widget->set_default_margin(SIDE_LEFT, widget_default_margin.x);
-	style_widget->set_default_margin(SIDE_TOP, widget_default_margin.y);
-	style_widget->set_default_margin(SIDE_RIGHT, widget_default_margin.x);
-	style_widget->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
+	style_widget->set_default_margin_individual(widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y);
 	style_widget->set_bg_color(dark_color_1);
 	style_widget->set_border_color(dark_color_2);
 
@@ -626,10 +611,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Style for windows, popups, etc..
 	Ref<StyleBoxFlat> style_popup = style_default->duplicate();
 	const int popup_margin_size = default_margin_size * EDSCALE * 3;
-	style_popup->set_default_margin(SIDE_LEFT, popup_margin_size);
-	style_popup->set_default_margin(SIDE_TOP, popup_margin_size);
-	style_popup->set_default_margin(SIDE_RIGHT, popup_margin_size);
-	style_popup->set_default_margin(SIDE_BOTTOM, popup_margin_size);
+	style_popup->set_default_margin_all(popup_margin_size);
 	style_popup->set_border_color(contrast_color_1);
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
 	style_popup->set_shadow_color(shadow_color);
@@ -922,10 +904,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
-	sb_checkbox->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE);
+	sb_checkbox->set_default_margin_all(default_margin_size * EDSCALE);
 
 	theme->set_stylebox("normal", "CheckBox", sb_checkbox);
 	theme->set_stylebox("pressed", "CheckBox", sb_checkbox);
@@ -965,10 +944,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Use 1 pixel for the sides, since if 0 is used, the highlight of hovered items is drawn
 	// on top of the popup border. This causes a 'gap' in the panel border when an item is highlighted,
 	// and it looks weird. 1px solves this.
-	style_popup_menu->set_default_margin(SIDE_LEFT, EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_TOP, 2 * EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_RIGHT, EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_BOTTOM, 2 * EDSCALE);
+	style_popup_menu->set_default_margin_individual(EDSCALE, 2 * EDSCALE, EDSCALE, 2 * EDSCALE);
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	style_popup_menu->set_border_width_all(EDSCALE);
 	style_popup_menu->set_border_color(dark_color_2);
@@ -1024,10 +1000,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		sub_inspector_bg->set_bg_color(dark_color_1.lerp(si_base_color, 0.08));
 		sub_inspector_bg->set_border_width_all(2 * EDSCALE);
 		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
-		sub_inspector_bg->set_default_margin(SIDE_LEFT, 4 * EDSCALE);
-		sub_inspector_bg->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
-		sub_inspector_bg->set_default_margin(SIDE_BOTTOM, 4 * EDSCALE);
-		sub_inspector_bg->set_default_margin(SIDE_TOP, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin_all(4 * EDSCALE);
 		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
 		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
 
@@ -1255,10 +1228,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_content_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
 	style_content_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
 	// Compensate for the border.
-	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
+	style_content_panel->set_default_margin_individual(margin_size_extra * EDSCALE, (2 + margin_size_extra) * EDSCALE, margin_size_extra * EDSCALE, margin_size_extra * EDSCALE);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
 
 	// Bottom panel.
@@ -1279,10 +1249,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// This stylebox is used in 3d and 2d viewports (no borders).
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
-	style_content_panel_vp->set_default_margin(SIDE_LEFT, border_width * 2);
-	style_content_panel_vp->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
-	style_content_panel_vp->set_default_margin(SIDE_RIGHT, border_width * 2);
-	style_content_panel_vp->set_default_margin(SIDE_BOTTOM, border_width * 2);
+	style_content_panel_vp->set_default_margin_individual(border_width * 2, default_margin_size * EDSCALE, border_width * 2, border_width * 2);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
 	// This stylebox is used by preview tabs in the Theme Editor.
@@ -1522,10 +1489,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// is only relevant for default tooltips.
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
 	style_tooltip->set_shadow_size(0);
-	style_tooltip->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE * 0.5);
+	style_tooltip->set_default_margin_all(default_margin_size * EDSCALE * 0.5);
 	style_tooltip->set_bg_color(dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
 	style_tooltip->set_border_width_all(0);
 	theme->set_color("font_color", "TooltipLabel", font_hover_color);

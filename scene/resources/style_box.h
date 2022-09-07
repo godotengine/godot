@@ -57,7 +57,10 @@ public:
 	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
 
 	void set_default_margin(Side p_side, float p_value);
+	void set_default_margin_all(float p_value);
+	void set_default_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_default_margin(Side p_side) const;
+
 	float get_margin(Side p_side) const;
 	virtual Size2 get_center_size() const;
 
@@ -112,6 +115,8 @@ public:
 	float get_expand_margin_size(Side p_expand_side) const;
 
 	void set_margin_size(Side p_side, float p_size);
+	void set_margin_size_all(float p_size);
+	void set_margin_size_individual(float p_left, float p_top, float p_right, float p_bottom);
 	float get_margin_size(Side p_side) const;
 
 	void set_region_rect(const Rect2 &p_region_rect);
