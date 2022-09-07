@@ -34,6 +34,19 @@
 #include "scene/gui/viewport_container.h"
 #include "scene/resources/particles_material.h"
 
+void MaterialEditor::_gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid() && (mm->get_button_mask() & BUTTON_MASK_LEFT)) {
+		rot.x -= mm->get_relative().y * 0.01;
+		rot.y -= mm->get_relative().x * 0.01;
+
+		rot.x = CLAMP(rot.x, -Math_PI / 2, Math_PI / 2);
+		_update_rotation();
+	}
+}
+
 void MaterialEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		//get_scene()->connect("node_removed",this,"_node_removed");
@@ -63,6 +76,13 @@ void MaterialEditor::_notification(int p_what) {
 	}
 }
 
+void MaterialEditor::_update_rotation() {
+	Transform t;
+	t.basis.rotate(Vector3(0, 1, 0), -rot.y);
+	t.basis.rotate(Vector3(1, 0, 0), -rot.x);
+	rotation->set_transform(t);
+}
+
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
 	material = p_material;
 	camera->set_environment(p_env);
@@ -72,6 +92,10 @@ void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_en
 	} else {
 		hide();
 	}
+
+	rot.x = Math::deg2rad(-15.0);
+	rot.y = Math::deg2rad(30.0);
+	_update_rotation();
 }
 
 void MaterialEditor::_button_pressed(Node *p_button) {
@@ -101,6 +125,7 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 }
 
 void MaterialEditor::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_gui_input"), &MaterialEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_button_pressed"), &MaterialEditor::_button_pressed);
 }
 
@@ -119,7 +144,7 @@ MaterialEditor::MaterialEditor() {
 	viewport->set_msaa(Viewport::MSAA_4X);
 
 	camera = memnew(Camera);
-	camera->set_transform(Transform(Basis(), Vector3(0, 0, 3)));
+	camera->set_transform(Transform(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
 	camera->make_current();
 	viewport->add_child(camera);
@@ -133,18 +158,17 @@ MaterialEditor::MaterialEditor() {
 	light2->set_color(Color(0.7, 0.7, 0.7));
 	viewport->add_child(light2);
 
+	rotation = memnew(Spatial);
+	viewport->add_child(rotation);
+
 	sphere_instance = memnew(MeshInstance);
-	viewport->add_child(sphere_instance);
+	rotation->add_child(sphere_instance);
 
 	box_instance = memnew(MeshInstance);
-	viewport->add_child(box_instance);
+	rotation->add_child(box_instance);
 
-	Transform box_xform;
-	box_xform.basis.rotate(Vector3(1, 0, 0), Math::deg2rad(25.0));
-	box_xform.basis = box_xform.basis * Basis().rotated(Vector3(0, 1, 0), Math::deg2rad(-25.0));
-	box_xform.basis.scale(Vector3(0.8, 0.8, 0.8));
-	box_xform.origin.y = 0.2;
-	box_instance->set_transform(box_xform);
+	box_instance->set_transform(Transform(Basis() * 0.25, Vector3() * 0.25));
+	sphere_instance->set_transform(Transform(Basis() * 0.375, Vector3() * 0.375));
 
 	sphere_mesh.instance();
 	sphere_instance->set_mesh(sphere_mesh);
