@@ -126,7 +126,9 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
+static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
+static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
@@ -223,25 +225,24 @@ static String get_full_version_string() {
 	return String(VERSION_FULL_BUILD) + hash;
 }
 
-// FIXME: Could maybe be moved to PhysicsServer3DManager and PhysicsServer2DManager directly
-// to have less code in main.cpp.
+// FIXME: Could maybe be moved to have less code in main.cpp.
 void initialize_physics() {
 	/// 3D Physics Server
-	physics_server_3d = PhysicsServer3DManager::new_server(
+	physics_server_3d = PhysicsServer3DManager::get_singleton()->new_server(
 			ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
 	if (!physics_server_3d) {
 		// Physics server not found, Use the default physics
-		physics_server_3d = PhysicsServer3DManager::new_default_server();
+		physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 	}
 	ERR_FAIL_COND(!physics_server_3d);
 	physics_server_3d->init();
 
-	/// 2D Physics server
-	physics_server_2d = PhysicsServer2DManager::new_server(
-			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::setting_property_name));
+	// 2D Physics server
+	physics_server_2d = PhysicsServer2DManager::get_singleton()->new_server(
+			ProjectSettings::get_singleton()->get(PhysicsServer2DManager::get_singleton()->setting_property_name));
 	if (!physics_server_2d) {
 		// Physics server not found, Use the default physics
-		physics_server_2d = PhysicsServer2DManager::new_default_server();
+		physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 	}
 	ERR_FAIL_COND(!physics_server_2d);
 	physics_server_2d->init();
@@ -450,6 +451,9 @@ Error Main::test_setup() {
 		tsman->add_interface(ts);
 	}
 
+	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+	physics_server_2d_manager = memnew(PhysicsServer2DManager);
+
 	// From `Main::setup2()`.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
@@ -554,6 +558,12 @@ void Main::test_cleanup() {
 	}
 	if (tsman) {
 		memdelete(tsman);
+	}
+	if (physics_server_3d_manager) {
+		memdelete(physics_server_3d_manager);
+	}
+	if (physics_server_2d_manager) {
+		memdelete(physics_server_2d_manager);
 	}
 	if (globals) {
 		memdelete(globals);
@@ -1555,17 +1565,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
 
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
-
-	// FIXME: Restore support.
-#if 0
-	//OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
-	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
-#endif
+	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed
 		OS::get_singleton()->_allow_hidpi = true;
-		OS::get_singleton()->_allow_layered = false;
 	}
 
 	if (rtm == -1) {
@@ -1788,6 +1792,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		ts.instantiate();
 		tsman->add_interface(ts);
 	}
+
+	physics_server_3d_manager = memnew(PhysicsServer3DManager);
+	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
@@ -3162,6 +3169,9 @@ void Main::cleanup(bool p_force) {
 
 	finalize_theme_db();
 
+	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
+	finalize_physics();
+
 	NativeExtensionManager::get_singleton()->deinitialize_extensions(NativeExtension::INITIALIZATION_LEVEL_SERVERS);
 	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	unregister_server_types();
@@ -3183,7 +3193,6 @@ void Main::cleanup(bool p_force) {
 
 	OS::get_singleton()->finalize();
 
-	finalize_physics();
 	finalize_navigation_server();
 	finalize_display();
 
@@ -3211,6 +3220,12 @@ void Main::cleanup(bool p_force) {
 	}
 	if (tsman) {
 		memdelete(tsman);
+	}
+	if (physics_server_3d_manager) {
+		memdelete(physics_server_3d_manager);
+	}
+	if (physics_server_2d_manager) {
+		memdelete(physics_server_2d_manager);
 	}
 	if (globals) {
 		memdelete(globals);

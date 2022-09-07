@@ -311,7 +311,6 @@ void InspectorDock::_prepare_history() {
 
 	history_menu->get_popup()->clear();
 
-	Ref<Texture2D> base_icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 	HashSet<ObjectID> already;
 	for (int i = editor_history->get_history_len() - 1; i >= history_to; i--) {
 		ObjectID id = editor_history->get_history_obj(i);
@@ -325,13 +324,12 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "");
-		if (icon.is_null()) {
-			icon = base_icon;
-		}
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "Object");
 
 		String text;
-		if (Object::cast_to<Resource>(obj)) {
+		if (obj->has_method("_get_editor_name")) {
+			text = obj->call("_get_editor_name");
+		} else if (Object::cast_to<Resource>(obj)) {
 			Resource *r = Object::cast_to<Resource>(obj);
 			if (r->get_path().is_resource_file()) {
 				text = r->get_path().get_file();
@@ -349,14 +347,14 @@ void InspectorDock::_prepare_history() {
 		}
 
 		if (i == editor_history->get_history_pos() && current) {
-			text = "[" + text + "]";
+			text += " " + TTR("(Current)");
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
 }
 
 void InspectorDock::_select_history(int p_idx) {
-	//push it to the top, it is not correct, but it's more useful
+	// Push it to the top, it is not correct, but it's more useful.
 	ObjectID id = EditorNode::get_singleton()->get_editor_selection_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
 	if (!obj) {

@@ -133,15 +133,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the area of the <see cref="AABB"/>.
-        /// </summary>
-        /// <returns>The area.</returns>
-        public real_t GetArea()
-        {
-            return _size.x * _size.y * _size.z;
-        }
-
-        /// <summary>
         /// Gets the position of one of the 8 endpoints of the <see cref="AABB"/>.
         /// </summary>
         /// <param name="idx">Which endpoint to get.</param>
@@ -321,6 +312,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the volume of the <see cref="AABB"/>.
+        /// </summary>
+        /// <returns>The volume.</returns>
+        public real_t GetVolume()
+        {
+            return _size.x * _size.y * _size.z;
+        }
+
+        /// <summary>
         /// Returns a copy of the <see cref="AABB"/> grown a given amount of units towards all the sides.
         /// </summary>
         /// <param name="by">The amount to grow by.</param>
@@ -337,30 +337,6 @@ namespace Godot
             res._size.z += 2.0f * by;
 
             return res;
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> is flat or empty,
-        /// or <see langword="false"/> otherwise.
-        /// </summary>
-        /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has area.
-        /// </returns>
-        public bool HasNoArea()
-        {
-            return _size.x <= 0f || _size.y <= 0f || _size.z <= 0f;
-        }
-
-        /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="AABB"/> has no surface (no size),
-        /// or <see langword="false"/> otherwise.
-        /// </summary>
-        /// <returns>
-        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has area.
-        /// </returns>
-        public bool HasNoSurface()
-        {
-            return _size.x <= 0f && _size.y <= 0f && _size.z <= 0f;
         }
 
         /// <summary>
@@ -387,6 +363,34 @@ namespace Godot
                 return false;
 
             return true;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the <see cref="AABB"/>
+        /// has a surface or a length, and <see langword="false"/>
+        /// if the <see cref="AABB"/> is empty (all components
+        /// of <see cref="Size"/> are zero or negative).
+        /// </summary>
+        /// <returns>
+        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has surface.
+        /// </returns>
+        public bool HasSurface()
+        {
+            return _size.x > 0.0f || _size.y > 0.0f || _size.z > 0.0f;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the <see cref="AABB"/> has
+        /// area, and <see langword="false"/> if the <see cref="AABB"/>
+        /// is linear, empty, or has a negative <see cref="Size"/>.
+        /// See also <see cref="GetVolume"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see langword="bool"/> for whether or not the <see cref="AABB"/> has volume.
+        /// </returns>
+        public bool HasVolume()
+        {
+            return _size.x > 0.0f && _size.y > 0.0f && _size.z > 0.0f;
         }
 
         /// <summary>

@@ -173,14 +173,16 @@ namespace Godot.SourceGenerators
                 godotSignalDelegates.Add(new(signalName, signalDelegateSymbol, invokeMethodData.Value));
             }
 
-            source.Append("    private partial class GodotInternal {\n");
+            source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
+
+            source.Append($"    public new class SignalName : {symbol.BaseType.FullQualifiedName()}.SignalName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
             foreach (var signalDelegate in godotSignalDelegates)
             {
                 string signalName = signalDelegate.Name;
-                source.Append("        public static readonly StringName SignalName_");
+                source.Append("        public new static readonly StringName ");
                 source.Append(signalName);
                 source.Append(" = \"");
                 source.Append(signalName);
@@ -193,8 +195,6 @@ namespace Godot.SourceGenerators
 
             if (godotSignalDelegates.Count > 0)
             {
-                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
-
                 const string listType = "System.Collections.Generic.List<global::Godot.Bridge.MethodInfo>";
 
                 source.Append("    internal new static ")
@@ -215,9 +215,9 @@ namespace Godot.SourceGenerators
 
                 source.Append("        return signals;\n");
                 source.Append("    }\n");
-
-                source.Append("#pragma warning restore CS0109\n");
             }
+
+            source.Append("#pragma warning restore CS0109\n");
 
             // Generate signal event
 
@@ -291,7 +291,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
         {
-            source.Append("        signals.Add(new(name: GodotInternal.SignalName_")
+            source.Append("        signals.Add(new(name: SignalName.")
                 .Append(methodInfo.Name)
                 .Append(", returnVal: ");
 
@@ -400,7 +400,7 @@ namespace Godot.SourceGenerators
             string signalName = signal.Name;
             var invokeMethodData = signal.InvokeMethodData;
 
-            source.Append("        if (signal == GodotInternal.SignalName_");
+            source.Append("        if (signal == SignalName.");
             source.Append(signalName);
             source.Append(" && argCount == ");
             source.Append(invokeMethodData.ParamTypes.Length);

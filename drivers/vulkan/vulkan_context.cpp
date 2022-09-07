@@ -1706,10 +1706,10 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	// Find a supported composite alpha mode - one of these is guaranteed to be set.
 	VkCompositeAlphaFlagBitsKHR compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[4] = {
-		VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 		VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
 		VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
 		VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+		VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 	};
 	for (uint32_t i = 0; i < ARRAY_SIZE(compositeAlphaFlags); i++) {
 		if (surfCapabilities.supportedCompositeAlpha & compositeAlphaFlags[i]) {

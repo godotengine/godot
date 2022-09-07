@@ -36,8 +36,8 @@
 #include "websocket_server.h"
 #include "wsl_peer.h"
 
-#include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 
 class WSLServer : public WebSocketServer {

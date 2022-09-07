@@ -122,14 +122,16 @@ namespace Godot.SourceGenerators
             var godotClassProperties = propertySymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
             var godotClassFields = fieldSymbols.WhereIsGodotCompatibleType(typeCache).ToArray();
 
-            source.Append("    private partial class GodotInternal {\n");
+            source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
+
+            source.Append($"    public new class PropertyName : {symbol.BaseType.FullQualifiedName()}.PropertyName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
             foreach (var property in godotClassProperties)
             {
                 string propertyName = property.PropertySymbol.Name;
-                source.Append("        public static readonly StringName PropName_");
+                source.Append("        public new static readonly StringName ");
                 source.Append(propertyName);
                 source.Append(" = \"");
                 source.Append(propertyName);
@@ -139,7 +141,7 @@ namespace Godot.SourceGenerators
             foreach (var field in godotClassFields)
             {
                 string fieldName = field.FieldSymbol.Name;
-                source.Append("        public static readonly StringName PropName_");
+                source.Append("        public new static readonly StringName ");
                 source.Append(fieldName);
                 source.Append(" = \"");
                 source.Append(fieldName);
@@ -214,8 +216,6 @@ namespace Godot.SourceGenerators
 
                 // Generate GetGodotPropertyList
 
-                source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
-
                 string dictionaryType = "System.Collections.Generic.List<global::Godot.Bridge.PropertyInfo>";
 
                 source.Append("    internal new static ")
@@ -289,7 +289,7 @@ namespace Godot.SourceGenerators
             if (!isFirstEntry)
                 source.Append("else ");
 
-            source.Append("if (name == GodotInternal.PropName_")
+            source.Append("if (name == PropertyName.")
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            ")
@@ -313,7 +313,7 @@ namespace Godot.SourceGenerators
             if (!isFirstEntry)
                 source.Append("else ");
 
-            source.Append("if (name == GodotInternal.PropName_")
+            source.Append("if (name == PropertyName.")
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            value = ")
@@ -342,7 +342,7 @@ namespace Godot.SourceGenerators
         {
             source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
                 .Append((int)propertyInfo.Type)
-                .Append(", name: GodotInternal.PropName_")
+                .Append(", name: PropertyName.")
                 .Append(propertyInfo.Name)
                 .Append(", hint: (Godot.PropertyHint)")
                 .Append((int)propertyInfo.Hint)

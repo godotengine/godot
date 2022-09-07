@@ -289,8 +289,8 @@ bool ConnectDialog::get_deferred() const {
 	return deferred->is_pressed();
 }
 
-bool ConnectDialog::get_oneshot() const {
-	return oneshot->is_pressed();
+bool ConnectDialog::get_one_shot() const {
+	return one_shot->is_pressed();
 }
 
 /*
@@ -322,10 +322,10 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 	_update_ok_enabled();
 
 	bool b_deferred = (p_cd.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
-	bool b_oneshot = (p_cd.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
+	bool b_oneshot = (p_cd.flags & CONNECT_ONE_SHOT) == CONNECT_ONE_SHOT;
 
 	deferred->set_pressed(b_deferred);
-	oneshot->set_pressed(b_oneshot);
+	one_shot->set_pressed(b_oneshot);
 
 	MethodInfo r_signal;
 	Ref<Script> source_script = source->get_script();
@@ -484,11 +484,11 @@ ConnectDialog::ConnectDialog() {
 	deferred->set_tooltip_text(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
 	vbc_right->add_child(deferred);
 
-	oneshot = memnew(CheckBox);
-	oneshot->set_h_size_flags(0);
-	oneshot->set_text(TTR("Oneshot"));
-	oneshot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
-	vbc_right->add_child(oneshot);
+	one_shot = memnew(CheckBox);
+	one_shot->set_h_size_flags(0);
+	one_shot->set_text(TTR("Oneshot"));
+	one_shot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
+	vbc_right->add_child(one_shot);
 
 	cdbinds = memnew(ConnectDialogBinds);
 
@@ -564,8 +564,8 @@ void ConnectionsDock::_make_or_edit_connection() {
 		cd.binds = connect_dialog->get_binds();
 	}
 	bool b_deferred = connect_dialog->get_deferred();
-	bool b_oneshot = connect_dialog->get_oneshot();
-	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONESHOT : 0);
+	bool b_oneshot = connect_dialog->get_one_shot();
+	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0);
 
 	// Conditions to add function: must have a script and must not have the method already
 	// (in the class, the script itself, or inherited).
@@ -1083,8 +1083,8 @@ void ConnectionsDock::update_tree() {
 				if (cd.flags & CONNECT_DEFERRED) {
 					path += " (deferred)";
 				}
-				if (cd.flags & CONNECT_ONESHOT) {
-					path += " (oneshot)";
+				if (cd.flags & CONNECT_ONE_SHOT) {
+					path += " (one-shot)";
 				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";

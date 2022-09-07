@@ -143,7 +143,7 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 		// Make unique skeleton.
 		if (bool(p_options["retarget/bone_renamer/unique_node/make_unique"])) {
 			String unique_name = String(p_options["retarget/bone_renamer/unique_node/skeleton_name"]);
-			ERR_FAIL_COND_MSG(unique_name == String(), "Skeleton unique name cannot be empty.");
+			ERR_FAIL_COND_MSG(unique_name.is_empty(), "Skeleton unique name cannot be empty.");
 
 			TypedArray<Node> nodes = p_base_scene->find_children("*", "AnimationPlayer");
 			while (nodes.size()) {

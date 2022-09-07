@@ -1680,7 +1680,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 
 		case Variant::OBJECT: {
-			Object *obj = p_variant;
+			Object *obj = p_variant.get_validated_object();
 
 			if (!obj) {
 				p_store_string_func(p_store_string_ud, "null");

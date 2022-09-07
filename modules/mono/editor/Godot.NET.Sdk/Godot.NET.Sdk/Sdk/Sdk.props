@@ -62,7 +62,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GodotRealTIsDouble Condition=" '$(GodotRealTIsDouble)' == '' ">false</GodotRealTIsDouble>
+    <GodotFloat64 Condition=" '$(GodotFloat64)' == '' ">false</GodotFloat64>
   </PropertyGroup>
 
   <!-- Godot DefineConstants. -->

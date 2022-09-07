@@ -110,7 +110,7 @@
 			<return type="CryptoKey" />
 			<param index="0" name="size" type="int" />
 			<description>
-				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerSSL.accept_stream].
+				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerTLS.accept_stream].
 			</description>
 		</method>
 		<method name="generate_self_signed_certificate">

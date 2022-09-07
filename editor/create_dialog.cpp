@@ -665,7 +665,7 @@ void CreateDialog::_save_and_update_favorite_list() {
 			for (int i = 0; i < favorite_list.size(); i++) {
 				String l = favorite_list[i];
 				String name = l.get_slicec(' ', 0);
-				if (!(ClassDB::class_exists(name) || ScriptServer::is_global_class(name))) {
+				if (!EditorNode::get_editor_data().is_type_recognized(name)) {
 					continue;
 				}
 				f->store_line(l);
@@ -692,7 +692,7 @@ void CreateDialog::_load_favorites_and_history() {
 			String l = f->get_line().strip_edges();
 			String name = l.get_slicec(' ', 0);
 
-			if ((ClassDB::class_exists(name) || ScriptServer::is_global_class(name)) && !_is_class_disabled_by_feature_profile(name)) {
+			if (EditorNode::get_editor_data().is_type_recognized(name) && !_is_class_disabled_by_feature_profile(name)) {
 				recent->add_item(l, EditorNode::get_singleton()->get_class_icon(name, icon_fallback));
 			}
 		}

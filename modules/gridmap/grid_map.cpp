@@ -497,18 +497,18 @@ int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
 	return 0;
 }
 
-Vector3i GridMap::world_to_map(const Vector3 &p_world_position) const {
+Vector3i GridMap::local_to_map(const Vector3 &p_world_position) const {
 	Vector3 map_position = (p_world_position / cell_size).floor();
 	return Vector3i(map_position);
 }
 
-Vector3 GridMap::map_to_world(const Vector3i &p_map_position) const {
+Vector3 GridMap::map_to_local(const Vector3i &p_map_position) const {
 	Vector3 offset = _get_offset();
-	Vector3 world_pos(
+	Vector3 local_position(
 			p_map_position.x * cell_size.x + offset.x,
 			p_map_position.y * cell_size.y + offset.y,
 			p_map_position.z * cell_size.z + offset.z);
-	return world_pos;
+	return local_position;
 }
 
 void GridMap::_octant_transform(const OctantKey &p_key) {
@@ -1047,8 +1047,8 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_basis_with_orthogonal_index", "index"), &GridMap::get_basis_with_orthogonal_index);
 	ClassDB::bind_method(D_METHOD("get_orthogonal_index_from_basis", "basis"), &GridMap::get_orthogonal_index_from_basis);
 
-	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &GridMap::world_to_map);
-	ClassDB::bind_method(D_METHOD("map_to_world", "map_position"), &GridMap::map_to_world);
+	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
 
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);

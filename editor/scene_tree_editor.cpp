@@ -387,17 +387,18 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		Ref<Script> script = p_node->get_script();
 		if (!script.is_null()) {
 			String additional_notes;
+			Color button_color = Color(1, 1, 1);
 			// Can't set tooltip after adding button, need to do it before.
 			if (script->is_tool()) {
 				additional_notes += "\n" + TTR("This script is currently running in the editor.");
+				button_color = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
+			}
+			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == script) {
+				additional_notes += "\n" + TTR("This script is a custom type.");
+				button_color.a = 0.5;
 			}
 			item->add_button(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path() + additional_notes);
-			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == script) {
-				item->set_button_color(0, item->get_button_count(0) - 1, Color(1, 1, 1, 0.5));
-			}
-			if (script->is_tool()) {
-				item->set_button_color(0, item->get_button_count(0) - 1, get_theme_color(SNAME("accent_color"), SNAME("Editor")));
-			}
+			item->set_button_color(0, item->get_button_count(0) - 1, button_color);
 		}
 
 		if (p_node->is_class("CanvasItem")) {

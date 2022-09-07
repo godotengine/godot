@@ -32,7 +32,7 @@
 
 #include "http_client_tcp.h"
 
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/version.h"
 
 HTTPClient *HTTPClientTCP::_create_func() {
@@ -94,6 +94,10 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 	} else {
 		// Host contains hostname and needs to be resolved to IP.
 		resolving = IP::get_singleton()->resolve_hostname_queue_item(server_host);
+		if (resolving == IP::RESOLVER_INVALID_ID) {
+			status = STATUS_CANT_RESOLVE;
+			return ERR_CANT_RESOLVE;
+		}
 		status = STATUS_RESOLVING;
 	}
 
@@ -104,8 +108,8 @@ void HTTPClientTCP::set_connection(const Ref<StreamPeer> &p_connection) {
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
 	if (ssl) {
-		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerSSL>(p_connection.ptr()),
-				"Connection is not a reference to a valid StreamPeerSSL object.");
+		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerTLS>(p_connection.ptr()),
+				"Connection is not a reference to a valid StreamPeerTLS object.");
 	}
 
 	if (connection == p_connection) {
@@ -354,10 +358,10 @@ Error HTTPClientTCP::poll() {
 							} break;
 						}
 					} else if (ssl) {
-						Ref<StreamPeerSSL> ssl;
+						Ref<StreamPeerTLS> ssl;
 						if (!handshaking) {
-							// Connect the StreamPeerSSL and start handshaking.
-							ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+							// Connect the StreamPeerTLS and start handshaking.
+							ssl = Ref<StreamPeerTLS>(StreamPeerTLS::create());
 							ssl->set_blocking_handshake_enabled(false);
 							Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
 							if (err != OK) {
@@ -369,7 +373,7 @@ Error HTTPClientTCP::poll() {
 							handshaking = true;
 						} else {
 							// We are already handshaking, which means we can use your already active SSL connection.
-							ssl = static_cast<Ref<StreamPeerSSL>>(connection);
+							ssl = static_cast<Ref<StreamPeerTLS>>(connection);
 							if (ssl.is_null()) {
 								close();
 								status = STATUS_SSL_HANDSHAKE_ERROR;
@@ -379,13 +383,13 @@ Error HTTPClientTCP::poll() {
 							ssl->poll(); // Try to finish the handshake.
 						}
 
-						if (ssl->get_status() == StreamPeerSSL::STATUS_CONNECTED) {
+						if (ssl->get_status() == StreamPeerTLS::STATUS_CONNECTED) {
 							// Handshake has been successful.
 							handshaking = false;
 							ip_candidates.clear();
 							status = STATUS_CONNECTED;
 							return OK;
-						} else if (ssl->get_status() != StreamPeerSSL::STATUS_HANDSHAKING) {
+						} else if (ssl->get_status() != StreamPeerTLS::STATUS_HANDSHAKING) {
 							// Handshake has failed.
 							close();
 							status = STATUS_SSL_HANDSHAKE_ERROR;
@@ -418,9 +422,9 @@ Error HTTPClientTCP::poll() {
 		case STATUS_CONNECTED: {
 			// Check if we are still connected.
 			if (ssl) {
-				Ref<StreamPeerSSL> tmp = connection;
+				Ref<StreamPeerTLS> tmp = connection;
 				tmp->poll();
-				if (tmp->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+				if (tmp->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
 					status = STATUS_CONNECTION_ERROR;
 					return ERR_CONNECTION_ERROR;
 				}

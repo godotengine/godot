@@ -633,7 +633,7 @@
 		<constant name="CONNECT_PERSIST" value="2" enum="ConnectFlags">
 			Persisting connections are saved when the object is serialized to file.
 		</constant>
-		<constant name="CONNECT_ONESHOT" value="4" enum="ConnectFlags">
+		<constant name="CONNECT_ONE_SHOT" value="4" enum="ConnectFlags">
 			One-shot connections disconnect themselves after emission.
 		</constant>
 		<constant name="CONNECT_REFERENCE_COUNTED" value="8" enum="ConnectFlags">

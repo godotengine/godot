@@ -234,15 +234,17 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the <see cref="Rect2"/> is flat or empty,
-        /// or <see langword="false"/> otherwise.
+        /// Returns <see langword="true"/> if the <see cref="Rect2"/> has
+        /// area, and <see langword="false"/> if the <see cref="Rect2"/>
+        /// is linear, empty, or has a negative <see cref="Size"/>.
+        /// See also <see cref="GetArea"/>.
         /// </summary>
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="Rect2"/> has area.
         /// </returns>
-        public bool HasNoArea()
+        public bool HasArea()
         {
-            return _size.x <= 0 || _size.y <= 0;
+            return _size.x > 0.0f && _size.y > 0.0f;
         }
 
         /// <summary>

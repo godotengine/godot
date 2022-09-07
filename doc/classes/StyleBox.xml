@@ -97,6 +97,13 @@
 				Sets the default value of the specified [enum Side] to [param offset] pixels.
 			</description>
 		</method>
+		<method name="set_default_margin_all">
+			<return type="void" />
+			<param index="0" name="offset" type="float" />
+			<description>
+				Sets the default margin to [param offset] pixels for all sides.
+			</description>
+		</method>
 		<method name="test_mask" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2" />

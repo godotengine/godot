@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  javascript_singleton.cpp                                             */
+/*  javascript_bridge_singleton.cpp                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "api/javascript_singleton.h"
+#include "api/javascript_bridge_singleton.h"
 
 #include "emscripten.h"
 #include "os_web.h"
@@ -62,7 +62,7 @@ extern int godot_js_wrapper_create_object(const char *p_method, void **p_args, i
 
 class JavaScriptObjectImpl : public JavaScriptObject {
 private:
-	friend class JavaScript;
+	friend class JavaScriptBridge;
 
 	int _js_id = 0;
 	Callable _callable;
@@ -272,20 +272,20 @@ void JavaScriptObjectImpl::_callback(void *p_ref, int p_args_id, int p_argc) {
 	}
 }
 
-Ref<JavaScriptObject> JavaScript::create_callback(const Callable &p_callable) {
+Ref<JavaScriptObject> JavaScriptBridge::create_callback(const Callable &p_callable) {
 	Ref<JavaScriptObjectImpl> out = memnew(JavaScriptObjectImpl);
 	out->_callable = p_callable;
 	out->_js_id = godot_js_wrapper_create_cb(out.ptr(), JavaScriptObjectImpl::_callback);
 	return out;
 }
 
-Ref<JavaScriptObject> JavaScript::get_interface(const String &p_interface) {
+Ref<JavaScriptObject> JavaScriptBridge::get_interface(const String &p_interface) {
 	int js_id = godot_js_wrapper_interface_get(p_interface.utf8().get_data());
 	ERR_FAIL_COND_V_MSG(!js_id, Ref<JavaScriptObject>(), "No interface '" + p_interface + "' registered.");
 	return Ref<JavaScriptObject>(memnew(JavaScriptObjectImpl(js_id)));
 }
 
-Variant JavaScript::_create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+Variant JavaScriptBridge::_create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	if (p_argcount < 1) {
 		r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument = 0;
@@ -328,7 +328,7 @@ void *resize_PackedByteArray_and_open_write(void *p_arr, void *r_write, int p_le
 	return arr->ptrw();
 }
 
-Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
+Variant JavaScriptBridge::eval(const String &p_code, bool p_use_global_exec_context) {
 	union js_eval_ret js_data;
 	PackedByteArray arr;
 	VectorWriteProxy<uint8_t> arr_write;
@@ -354,13 +354,13 @@ Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
 }
 #endif // JAVASCRIPT_EVAL_ENABLED
 
-void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
+void JavaScriptBridge::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 	godot_js_os_download_buffer(p_arr.ptr(), p_arr.size(), p_name.utf8().get_data(), p_mime.utf8().get_data());
 }
 
-bool JavaScript::pwa_needs_update() const {
+bool JavaScriptBridge::pwa_needs_update() const {
 	return OS_Web::get_singleton()->pwa_needs_update();
 }
-Error JavaScript::pwa_update() {
+Error JavaScriptBridge::pwa_update() {
 	return OS_Web::get_singleton()->pwa_update();
 }

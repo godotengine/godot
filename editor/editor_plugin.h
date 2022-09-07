@@ -72,7 +72,7 @@ protected:
 public:
 	static EditorInterface *get_singleton() { return singleton; }
 
-	Control *get_editor_main_control();
+	VBoxContainer *get_editor_main_screen();
 	void edit_resource(const Ref<Resource> &p_resource);
 	void edit_node(Node *p_node);
 	void edit_script(const Ref<Script> &p_script, int p_line = -1, int p_col = 0, bool p_grab_focus = true);

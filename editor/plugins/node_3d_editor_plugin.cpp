@@ -2624,14 +2624,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 				cpu_time_label->add_theme_color_override(
 						"font_color",
 						frame_time_gradient->get_color_at_offset(
-								Math::range_lerp(cpu_time, 0, 30, 0, 1)));
+								Math::remap(cpu_time, 0, 30, 0, 1)));
 
 				gpu_time_label->set_text(vformat(TTR("GPU Time: %s ms"), rtos(gpu_time).pad_decimals(2)));
 				// Middle point is at 15 ms.
 				gpu_time_label->add_theme_color_override(
 						"font_color",
 						frame_time_gradient->get_color_at_offset(
-								Math::range_lerp(gpu_time, 0, 30, 0, 1)));
+								Math::remap(gpu_time, 0, 30, 0, 1)));
 
 				const double fps = 1000.0 / gpu_time;
 				fps_label->set_text(vformat(TTR("FPS: %d"), fps));
@@ -2639,7 +2639,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				fps_label->add_theme_color_override(
 						"font_color",
 						frame_time_gradient->get_color_at_offset(
-								Math::range_lerp(fps, 110, 10, 0, 1)));
+								Math::remap(fps, 110, 10, 0, 1)));
 			}
 
 			bool show_cinema = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
@@ -8449,7 +8449,7 @@ void Node3DEditor::remove_gizmo_plugin(Ref<EditorNode3DGizmoPlugin> p_plugin) {
 Node3DEditorPlugin::Node3DEditorPlugin() {
 	spatial_editor = memnew(Node3DEditor);
 	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_control()->add_child(spatial_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
 
 	spatial_editor->hide();
 }

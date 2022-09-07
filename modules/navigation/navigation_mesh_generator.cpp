@@ -572,12 +572,8 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[2] = bmax[2];
 
 	AABB baking_aabb = p_nav_mesh->get_filter_baking_aabb();
-
-	bool aabb_has_no_volume = baking_aabb.has_no_volume();
-
-	if (!aabb_has_no_volume) {
+	if (baking_aabb.has_volume()) {
 		Vector3 baking_aabb_offset = p_nav_mesh->get_filter_baking_aabb_offset();
-
 		cfg.bmin[0] = baking_aabb.position[0] + baking_aabb_offset.x;
 		cfg.bmin[1] = baking_aabb.position[1] + baking_aabb_offset.y;
 		cfg.bmin[2] = baking_aabb.position[2] + baking_aabb_offset.z;

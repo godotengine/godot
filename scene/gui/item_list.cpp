@@ -655,7 +655,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed()) {
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
-		pos -= theme_cache.bg_style->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 		pos.y += scroll_bar->get_value();
 
 		if (is_layout_rtl()) {
@@ -985,8 +985,8 @@ void ItemList::_update_theme_item_cache() {
 	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
 	theme_cache.v_separation = get_theme_constant(SNAME("v_separation"));
 
-	theme_cache.bg_style = get_theme_stylebox(SNAME("bg"));
-	theme_cache.bg_focus_style = get_theme_stylebox(SNAME("bg_focus"));
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
 
 	theme_cache.font = get_theme_font(SNAME("font"));
 	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
@@ -1025,13 +1025,13 @@ void ItemList::_notification(int p_what) {
 			int mw = scroll_bar->get_minimum_size().x;
 			scroll_bar->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -mw);
 			scroll_bar->set_anchor_and_offset(SIDE_RIGHT, ANCHOR_END, 0);
-			scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.bg_style->get_margin(SIDE_TOP));
-			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.bg_style->get_margin(SIDE_BOTTOM));
+			scroll_bar->set_anchor_and_offset(SIDE_TOP, ANCHOR_BEGIN, theme_cache.panel_style->get_margin(SIDE_TOP));
+			scroll_bar->set_anchor_and_offset(SIDE_BOTTOM, ANCHOR_END, -theme_cache.panel_style->get_margin(SIDE_BOTTOM));
 
 			Size2 size = get_size();
-			int width = size.width - theme_cache.bg_style->get_minimum_size().width;
+			int width = size.width - theme_cache.panel_style->get_minimum_size().width;
 
-			draw_style_box(theme_cache.bg_style, Rect2(Point2(), size));
+			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
 
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
@@ -1047,7 +1047,7 @@ void ItemList::_notification(int p_what) {
 
 			if (has_focus()) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-				draw_style_box(theme_cache.bg_focus_style, Rect2(Point2(), size));
+				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 
@@ -1109,7 +1109,7 @@ void ItemList::_notification(int p_what) {
 					items.write[i].min_rect_cache.size = minsize;
 				}
 
-				int fit_size = size.x - theme_cache.bg_style->get_minimum_size().width - mw;
+				int fit_size = size.x - theme_cache.panel_style->get_minimum_size().width - mw;
 
 				//2-attempt best fit
 				current_columns = 0x7FFFFFFF;
@@ -1160,10 +1160,10 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (all_fit) {
-						float page = MAX(0, size.height - theme_cache.bg_style->get_minimum_size().height);
+						float page = MAX(0, size.height - theme_cache.panel_style->get_minimum_size().height);
 						float max = MAX(page, ofs.y + max_h);
 						if (auto_height) {
-							auto_height_value = ofs.y + max_h + theme_cache.bg_style->get_minimum_size().height;
+							auto_height_value = ofs.y + max_h + theme_cache.panel_style->get_minimum_size().height;
 						}
 						scroll_bar->set_max(max);
 						scroll_bar->set_page(page);
@@ -1204,7 +1204,7 @@ void ItemList::_notification(int p_what) {
 
 			ensure_selected_visible = false;
 
-			Vector2 base_ofs = theme_cache.bg_style->get_offset();
+			Vector2 base_ofs = theme_cache.panel_style->get_offset();
 			base_ofs.y -= int(scroll_bar->get_value());
 
 			const Rect2 clip(-base_ofs, size); // visible frame, don't need to draw outside of there
@@ -1442,7 +1442,7 @@ void ItemList::_notification(int p_what) {
 				}
 
 				const int y = base_ofs.y + separators[i];
-				draw_line(Vector2(theme_cache.bg_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
+				draw_line(Vector2(theme_cache.panel_style->get_margin(SIDE_LEFT), y), Vector2(width, y), theme_cache.guide_color);
 			}
 		} break;
 	}
@@ -1454,7 +1454,7 @@ void ItemList::_scroll_changed(double) {
 
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	Vector2 pos = p_pos;
-	pos -= theme_cache.bg_style->get_offset();
+	pos -= theme_cache.panel_style->get_offset();
 	pos.y += scroll_bar->get_value();
 
 	if (is_layout_rtl()) {
@@ -1491,7 +1491,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 	}
 
 	Vector2 pos = p_pos;
-	pos -= theme_cache.bg_style->get_offset();
+	pos -= theme_cache.panel_style->get_offset();
 	pos.y += scroll_bar->get_value();
 
 	if (is_layout_rtl()) {

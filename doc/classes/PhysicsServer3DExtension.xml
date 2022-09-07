@@ -604,6 +604,21 @@
 			<description>
 			</description>
 		</method>
+		<method name="_end_sync" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_finish" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_flush_queries" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
 		<method name="_free_rid" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="rid" type="RID" />
@@ -682,6 +697,16 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
 			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_init" qualifiers="virtual">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="_is_flushing_queries" qualifiers="virtual const">
+			<return type="bool" />
 			<description>
 			</description>
 		</method>
@@ -898,6 +923,17 @@
 		</method>
 		<method name="_sphere_shape_create" qualifiers="virtual">
 			<return type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_step" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="step" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_sync" qualifiers="virtual">
+			<return type="void" />
 			<description>
 			</description>
 		</method>

@@ -10,9 +10,9 @@
     <!--
     Define constant to determine whether the real_t type in Godot is double precision or not.
     By default this is false, like the official Godot builds. If someone is using a custom
-    Godot build where real_t is double, they can override the GodotRealTIsDouble property.
+    Godot build where real_t is double, they can override the GodotFloat64 property.
     -->
-    <DefineConstants Condition=" '$(GodotRealTIsDouble)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
+    <DefineConstants Condition=" '$(GodotFloat64)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
   <!-- C# source generators -->

@@ -983,16 +983,18 @@ public:
 	real_t get_collision_depth(int p_collision_index = 0) const;
 };
 
-typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();
+class PhysicsServer3DManager : public Object {
+	GDCLASS(PhysicsServer3DManager, Object);
 
-class PhysicsServer3DManager {
+	static PhysicsServer3DManager *singleton;
+
 	struct ClassInfo {
 		String name;
-		CreatePhysicsServer3DCallback create_callback = nullptr;
+		Callable create_callback;
 
 		ClassInfo() {}
 
-		ClassInfo(String p_name, CreatePhysicsServer3DCallback p_create_callback) :
+		ClassInfo(String p_name, Callable p_create_callback) :
 				name(p_name),
 				create_callback(p_create_callback) {}
 
@@ -1006,24 +1008,30 @@ class PhysicsServer3DManager {
 		}
 	};
 
-	static Vector<ClassInfo> physics_servers;
-	static int default_server_id;
-	static int default_server_priority;
+	Vector<ClassInfo> physics_servers;
+	int default_server_id = -1;
+	int default_server_priority = -1;
+
+	void on_servers_changed();
+
+protected:
+	static void _bind_methods();
 
 public:
 	static const String setting_property_name;
 
-private:
-	static void on_servers_changed();
+	static PhysicsServer3DManager *get_singleton();
 
-public:
-	static void register_server(const String &p_name, CreatePhysicsServer3DCallback p_creat_callback);
-	static void set_default_server(const String &p_name, int p_priority = 0);
-	static int find_server_id(const String &p_name);
-	static int get_servers_count();
-	static String get_server_name(int p_id);
-	static PhysicsServer3D *new_default_server();
-	static PhysicsServer3D *new_server(const String &p_name);
+	void register_server(const String &p_name, const Callable &p_create_callback);
+	void set_default_server(const String &p_name, int p_priority = 0);
+	int find_server_id(const String &p_name);
+	int get_servers_count();
+	String get_server_name(int p_id);
+	PhysicsServer3D *new_default_server();
+	PhysicsServer3D *new_server(const String &p_name);
+
+	PhysicsServer3DManager();
+	~PhysicsServer3DManager();
 };
 
 VARIANT_ENUM_CAST(PhysicsServer3D::ShapeType);

@@ -81,6 +81,7 @@ public:
 		s->vertex_count = p_surface.vertex_count;
 		s->index_data = p_surface.index_data;
 		s->index_count = p_surface.index_count;
+		s->skin_data = p_surface.skin_data;
 	}
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override { return 0; }
@@ -98,6 +99,7 @@ public:
 	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!m, RS::SurfaceData());
+		ERR_FAIL_INDEX_V(p_surface, m->surfaces.size(), RS::SurfaceData());
 		RS::SurfaceData s = m->surfaces[p_surface];
 		return s;
 	}

@@ -42,7 +42,7 @@ class NavigationLink2DEditor : public Control {
 
 	Ref<EditorUndoRedoManager> undo_redo;
 	CanvasItemEditor *canvas_item_editor = nullptr;
-	NavigationLink2D *node;
+	NavigationLink2D *node = nullptr;
 
 	bool start_grabbed = false;
 	Vector2 original_start_location;

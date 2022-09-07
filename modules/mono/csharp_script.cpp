@@ -784,6 +784,13 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		for (Object *obj : script->instances) {
 			script->pending_reload_instances.insert(obj->get_instance_id());
 
+			// Since this script instance wasn't a placeholder, add it to the list of placeholders
+			// that will have to be eventually replaced with a script instance in case it turns into one.
+			// This list is not cleared after the reload and the collected instances only leave
+			// the list if the script is instantiated or if it was a tool script but becomes a
+			// non-tool script in a rebuild.
+			script->pending_replace_placeholders.insert(obj->get_instance_id());
+
 			RefCounted *rc = Object::cast_to<RefCounted>(obj);
 			if (rc) {
 				rc_instances.push_back(Ref<RefCounted>(rc));
@@ -836,6 +843,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			obj->set_script(Ref<RefCounted>()); // Remove script and existing script instances (placeholder are not removed before domain reload)
 		}
 
+		script->was_tool_before_reload = script->tool;
 		script->_clear();
 	}
 
@@ -924,24 +932,34 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 				ScriptInstance *si = obj->get_script_instance();
 
+				// Check if the script must be instantiated or kept as a placeholder
+				// when the script may not be a tool (see #65266)
+				bool replace_placeholder = script->pending_replace_placeholders.has(obj->get_instance_id());
+				if (!script->is_tool() && script->was_tool_before_reload) {
+					// The script was a tool before the rebuild so the removal was intentional.
+					replace_placeholder = false;
+					script->pending_replace_placeholders.erase(obj->get_instance_id());
+				}
+
 #ifdef TOOLS_ENABLED
 				if (si) {
 					// If the script instance is not null, then it must be a placeholder.
 					// Non-placeholder script instances are removed in godot_icall_Object_Disposed.
 					CRASH_COND(!si->is_placeholder());
 
-					if (script->is_tool() || ScriptServer::is_scripting_enabled()) {
-						// Replace placeholder with a script instance
+					if (replace_placeholder || script->is_tool() || ScriptServer::is_scripting_enabled()) {
+						// Replace placeholder with a script instance.
 
 						CSharpScript::StateBackup &state_backup = script->pending_reload_state[obj_id];
 
-						// Backup placeholder script instance state before replacing it with a script instance
+						// Backup placeholder script instance state before replacing it with a script instance.
 						si->get_property_state(state_backup.properties);
 
 						ScriptInstance *script_instance = script->instance_create(obj);
 
 						if (script_instance) {
 							script->placeholders.erase(static_cast<PlaceHolderScriptInstance *>(si));
+							script->pending_replace_placeholders.erase(obj->get_instance_id());
 							obj->set_script_instance(script_instance);
 						}
 					}
@@ -951,8 +969,24 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 #else
 				CRASH_COND(si != nullptr);
 #endif
-				// Re-create script instance
-				obj->set_script(script); // will create the script instance as well
+
+				// Re-create the script instance.
+				if (replace_placeholder || script->is_tool() || ScriptServer::is_scripting_enabled()) {
+					// Create script instance or replace placeholder with a script instance.
+					ScriptInstance *script_instance = script->instance_create(obj);
+
+					if (script_instance) {
+						script->pending_replace_placeholders.erase(obj->get_instance_id());
+						obj->set_script_instance(script_instance);
+						continue;
+					}
+				}
+				// The script instance could not be instantiated or wasn't in the list of placeholders to replace.
+				obj->set_script(script);
+#if DEBUG_ENABLED
+				// If we reached here, the instantiated script must be a placeholder.
+				CRASH_COND(!obj->get_script_instance()->is_placeholder());
+#endif
 			}
 		}
 
@@ -1754,20 +1788,16 @@ void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_f
 }
 
 void CSharpInstance::connect_event_signals() {
-	CSharpScript *top = script.ptr();
-	while (top != nullptr) {
-		for (CSharpScript::EventSignalInfo &signal : top->get_script_event_signals()) {
-			String signal_name = signal.name;
+	// The script signals list includes the signals declared in base scripts.
+	for (CSharpScript::EventSignalInfo &signal : script->get_script_event_signals()) {
+		String signal_name = signal.name;
 
-			// TODO: Use pooling for ManagedCallable instances.
-			EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
+		// TODO: Use pooling for ManagedCallable instances.
+		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
 
-			Callable callable(event_signal_callable);
-			connected_event_signals.push_back(callable);
-			owner->connect(signal_name, callable);
-		}
-
-		top = top->base_script.ptr();
+		Callable callable(event_signal_callable);
+		connected_event_signals.push_back(callable);
+		owner->connect(signal_name, callable);
 	}
 }
 

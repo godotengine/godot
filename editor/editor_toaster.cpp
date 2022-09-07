@@ -284,7 +284,7 @@ void EditorToaster::_draw_button() {
 void EditorToaster::_draw_progress(Control *panel) {
 	if (toasts.has(panel) && toasts[panel].remaining_time > 0 && toasts[panel].duration > 0) {
 		Size2 size = panel->get_size();
-		size.x *= MIN(1, Math::range_lerp(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
+		size.x *= MIN(1, Math::remap(toasts[panel].remaining_time, 0, toasts[panel].duration, 0, 2));
 
 		Ref<StyleBoxFlat> stylebox;
 		switch (toasts[panel].severity) {
@@ -498,10 +498,7 @@ EditorToaster::EditorToaster() {
 
 	Ref<StyleBoxFlat> boxes[] = { info_panel_style_background, warning_panel_style_background, error_panel_style_background };
 	for (int i = 0; i < 3; i++) {
-		boxes[i]->set_default_margin(SIDE_LEFT, int(stylebox_radius * 2.5));
-		boxes[i]->set_default_margin(SIDE_RIGHT, int(stylebox_radius * 2.5));
-		boxes[i]->set_default_margin(SIDE_TOP, 3);
-		boxes[i]->set_default_margin(SIDE_BOTTOM, 3);
+		boxes[i]->set_default_margin_individual(int(stylebox_radius * 2.5), 3, int(stylebox_radius * 2.5), 3);
 	}
 
 	// Theming (progress).

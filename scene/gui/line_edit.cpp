@@ -734,7 +734,7 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (Engine::get_singleton()->is_editor_hint() && !get_tree()->is_node_being_edited(this)) {
 				set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-				set_caret_blink_speed(EDITOR_GET("text_editor/appearance/caret/caret_blink_speed"));
+				set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 
 				if (!EditorSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed))) {
 					EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &LineEdit::_editor_settings_changed));
@@ -777,7 +777,7 @@ void LineEdit::_notification(int p_what) {
 			if (caret_blinking) {
 				caret_blink_timer += get_process_delta_time();
 
-				if (caret_blink_timer >= caret_blink_speed) {
+				if (caret_blink_timer >= caret_blink_interval) {
 					caret_blink_timer = 0.0;
 					_toggle_draw_caret();
 				}
@@ -1392,13 +1392,13 @@ void LineEdit::set_caret_force_displayed(const bool p_enabled) {
 	queue_redraw();
 }
 
-float LineEdit::get_caret_blink_speed() const {
-	return caret_blink_speed;
+float LineEdit::get_caret_blink_interval() const {
+	return caret_blink_interval;
 }
 
-void LineEdit::set_caret_blink_speed(const float p_speed) {
-	ERR_FAIL_COND(p_speed <= 0);
-	caret_blink_speed = p_speed;
+void LineEdit::set_caret_blink_interval(const float p_interval) {
+	ERR_FAIL_COND(p_interval <= 0);
+	caret_blink_interval = p_interval;
 }
 
 void LineEdit::_reset_caret_blink_timer() {
@@ -2037,7 +2037,7 @@ PopupMenu *LineEdit::get_menu() const {
 void LineEdit::_editor_settings_changed() {
 #ifdef TOOLS_ENABLED
 	set_caret_blink_enabled(EDITOR_GET("text_editor/appearance/caret/caret_blink"));
-	set_caret_blink_speed(EDITOR_GET("text_editor/appearance/caret/caret_blink_speed"));
+	set_caret_blink_interval(EDITOR_GET("text_editor/appearance/caret/caret_blink_interval"));
 #endif
 }
 
@@ -2274,7 +2274,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 }
 
 void LineEdit::_validate_property(PropertyInfo &p_property) const {
-	if (!caret_blink_enabled && p_property.name == "caret_blink_speed") {
+	if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -2317,8 +2317,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_caret_mid_grapheme_enabled"), &LineEdit::is_caret_mid_grapheme_enabled);
 	ClassDB::bind_method(D_METHOD("set_caret_force_displayed", "enabled"), &LineEdit::set_caret_force_displayed);
 	ClassDB::bind_method(D_METHOD("is_caret_force_displayed"), &LineEdit::is_caret_force_displayed);
-	ClassDB::bind_method(D_METHOD("set_caret_blink_speed", "blink_speed"), &LineEdit::set_caret_blink_speed);
-	ClassDB::bind_method(D_METHOD("get_caret_blink_speed"), &LineEdit::get_caret_blink_speed);
+	ClassDB::bind_method(D_METHOD("set_caret_blink_interval", "interval"), &LineEdit::set_caret_blink_interval);
+	ClassDB::bind_method(D_METHOD("get_caret_blink_interval"), &LineEdit::get_caret_blink_interval);
 	ClassDB::bind_method(D_METHOD("set_max_length", "chars"), &LineEdit::set_max_length);
 	ClassDB::bind_method(D_METHOD("get_max_length"), &LineEdit::get_max_length);
 	ClassDB::bind_method(D_METHOD("insert_text_at_caret", "text"), &LineEdit::insert_text_at_caret);
@@ -2419,7 +2419,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_speed", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_speed", "get_caret_blink_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "caret_blink_interval", PROPERTY_HINT_RANGE, "0.1,10,0.01"), "set_caret_blink_interval", "get_caret_blink_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "caret_column", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_caret_column", "get_caret_column");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_force_displayed"), "set_caret_force_displayed", "is_caret_force_displayed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
