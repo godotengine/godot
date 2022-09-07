@@ -312,10 +312,10 @@ class VisualShaderEditor : public VBoxContainer {
 		bool is_custom = false;
 		int temp_idx = 0;
 
-		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), const Vector<Variant> &p_ops = Vector<Variant>(), int p_return_type = -1, int p_mode = -1, int p_func = -1, bool p_highend = false) {
+		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_type = String(), const String &p_description = String(), const Vector<Variant> &p_ops = Vector<Variant>(), int p_return_type = -1, int p_mode = -1, int p_func = -1, bool p_highend = false) {
 			name = p_name;
 			type = p_type;
-			category = p_category + "/" + p_sub_category;
+			category = p_category;
 			description = p_description;
 			ops = p_ops;
 			return_type = p_return_type;
