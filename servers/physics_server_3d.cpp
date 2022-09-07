@@ -1046,9 +1046,7 @@ PhysicsServer3D::~PhysicsServer3D() {
 	singleton = nullptr;
 }
 
-Vector<PhysicsServer3DManager::ClassInfo> PhysicsServer3DManager::physics_servers;
-int PhysicsServer3DManager::default_server_id = -1;
-int PhysicsServer3DManager::default_server_priority = -1;
+PhysicsServer3DManager *PhysicsServer3DManager::singleton = nullptr;
 const String PhysicsServer3DManager::setting_property_name(PNAME("physics/3d/physics_engine"));
 
 void PhysicsServer3DManager::on_servers_changed() {
@@ -1059,10 +1057,19 @@ void PhysicsServer3DManager::on_servers_changed() {
 	ProjectSettings::get_singleton()->set_custom_property_info(setting_property_name, PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
 }
 
-void PhysicsServer3DManager::register_server(const String &p_name, CreatePhysicsServer3DCallback p_creat_callback) {
-	ERR_FAIL_COND(!p_creat_callback);
+void PhysicsServer3DManager::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("register_server", "name", "create_callback"), &PhysicsServer3DManager::register_server);
+	ClassDB::bind_method(D_METHOD("set_default_server", "name", "priority"), &PhysicsServer3DManager::set_default_server);
+}
+
+PhysicsServer3DManager *PhysicsServer3DManager::get_singleton() {
+	return singleton;
+}
+
+void PhysicsServer3DManager::register_server(const String &p_name, const Callable &p_create_callback) {
+	//ERR_FAIL_COND(!p_create_callback.is_valid());
 	ERR_FAIL_COND(find_server_id(p_name) != -1);
-	physics_servers.push_back(ClassInfo(p_name, p_creat_callback));
+	physics_servers.push_back(ClassInfo(p_name, p_create_callback));
 	on_servers_changed();
 }
 
@@ -1095,7 +1102,11 @@ String PhysicsServer3DManager::get_server_name(int p_id) {
 
 PhysicsServer3D *PhysicsServer3DManager::new_default_server() {
 	ERR_FAIL_COND_V(default_server_id == -1, nullptr);
-	return physics_servers[default_server_id].create_callback();
+	Variant ret;
+	Callable::CallError ce;
+	physics_servers[default_server_id].create_callback.callp(nullptr, 0, ret, ce);
+	ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+	return Object::cast_to<PhysicsServer3D>(ret.get_validated_object());
 }
 
 PhysicsServer3D *PhysicsServer3DManager::new_server(const String &p_name) {
@@ -1103,6 +1114,18 @@ PhysicsServer3D *PhysicsServer3DManager::new_server(const String &p_name) {
 	if (id == -1) {
 		return nullptr;
 	} else {
-		return physics_servers[id].create_callback();
+		Variant ret;
+		Callable::CallError ce;
+		physics_servers[id].create_callback.callp(nullptr, 0, ret, ce);
+		ERR_FAIL_COND_V(ce.error != Callable::CallError::CALL_OK, nullptr);
+		return Object::cast_to<PhysicsServer3D>(ret.get_validated_object());
 	}
+}
+
+PhysicsServer3DManager::PhysicsServer3DManager() {
+	singleton = this;
+}
+
+PhysicsServer3DManager::~PhysicsServer3DManager() {
+	singleton = nullptr;
 }
