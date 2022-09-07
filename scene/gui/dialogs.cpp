@@ -59,9 +59,16 @@ void AcceptDialog::_update_theme_item_cache() {
 
 void AcceptDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_VISIBILITY_CHANGED: {
+		case NOTIFICATION_POST_ENTER_TREE: {
 			if (is_visible()) {
 				get_ok_button()->grab_focus();
+			}
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				if (get_ok_button()->is_inside_tree()) {
+					get_ok_button()->grab_focus();
+				}
 				_update_child_rects();
 
 				parent_visible = get_parent_visible_window();
