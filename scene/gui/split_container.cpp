@@ -82,9 +82,8 @@ void SplitContainer::_compute_middle_sep(bool p_clamp) {
 	int ms_second = second->get_combined_minimum_size()[axis];
 
 	// Determine the separation between items.
-	Ref<Texture2D> g = get_theme_icon(SNAME("grabber"));
-	int sep = get_theme_constant(SNAME("separation"));
-	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
+	Ref<Texture2D> g = _get_grabber_icon();
+	int sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(theme_cache.separation, vertical ? g->get_height() : g->get_width()) : 0;
 
 	// Compute the wished separation_point.
 	int wished_middle_sep = 0;

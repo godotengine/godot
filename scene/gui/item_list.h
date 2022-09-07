@@ -123,8 +123,8 @@ private:
 		int h_separation = 0;
 		int v_separation = 0;
 
-		Ref<StyleBox> bg_style;
-		Ref<StyleBox> bg_focus_style;
+		Ref<StyleBox> panel_style;
+		Ref<StyleBox> focus_style;
 
 		Ref<Font> font;
 		int font_size = 0;

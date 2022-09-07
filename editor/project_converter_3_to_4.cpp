@@ -1032,10 +1032,12 @@ static const char *gdscript_properties_renames[][2] = {
 	//	{ "filename", "scene_file_path" }, // Node
 	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "bbcode_text", "text" }, // RichTextLabel
+	{ "bg", "panel" }, // Theme
+	{ "bg_focus", "focus" }, // Theme
 	{ "caret_blink_speed", "caret_blink_interval" }, // TextEdit, LineEdit
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
 	{ "caret_position", "caret_column" }, // LineEdit
-	{ "check_vadjust", "check_v_adjust" }, // Theme
+	{ "check_vadjust", "check_v_offset" }, // Theme
 	{ "close_h_ofs", "close_h_offset" }, // Theme
 	{ "close_v_ofs", "close_v_offset" }, // Theme
 	{ "commentfocus", "comment_focus" }, // Theme
@@ -1053,6 +1055,9 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "focus_neighbour_left", "focus_neighbor_left" }, // Control
 	{ "focus_neighbour_right", "focus_neighbor_right" }, // Control
 	{ "focus_neighbour_top", "focus_neighbor_top" }, // Control
+	{ "file_icon_modulate", "file_icon_color" }, // Theme
+	{ "files_disabled", "file_disabled_color" }, // Theme
+	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
 	{ "gravity_distance_scale", "gravity_point_distance_scale" }, // Area2D
 	{ "gravity_vec", "gravity_direction" }, // Area2D
@@ -1067,7 +1072,11 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "mid_height", "height" }, // CapsuleMesh
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
+	{ "off", "unchecked" }, // Theme
+	{ "off_disabled", "unchecked_disabled" }, // Theme
 	{ "ofs", "offset" }, // Theme
+	{ "on", "checked" }, // Theme
+	{ "on_disabled", "checked_disabled" }, // Theme
 	{ "oneshot", "one_shot" }, // AnimatedTexture
 	{ "out_of_range_mode", "max_polyphony" }, // AudioStreamPlayer3D
 	{ "pause_mode", "process_mode" }, // Node

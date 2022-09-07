@@ -89,7 +89,7 @@ void ShaderCreateDialog::_update_theme() {
 	}
 
 	path_button->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 }
 
 void ShaderCreateDialog::_update_language_info() {

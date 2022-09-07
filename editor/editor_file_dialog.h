@@ -161,7 +161,7 @@ private:
 		Ref<Texture2D> favorites_down;
 
 		Ref<Texture2D> folder;
-		Color folder_icon_modulate;
+		Color folder_icon_color;
 
 		Ref<Texture2D> action_copy;
 		Ref<Texture2D> action_delete;

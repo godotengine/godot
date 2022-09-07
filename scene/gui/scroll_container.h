@@ -70,7 +70,7 @@ private:
 	bool follow_focus = false;
 
 	struct ThemeCache {
-		Ref<StyleBox> bg_style;
+		Ref<StyleBox> panel_style;
 	} theme_cache;
 
 	void _cancel_drag();

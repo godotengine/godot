@@ -139,7 +139,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
-	theme->set_stylebox("panel_fg", "Panel", make_flat_stylebox(style_normal_color, 0, 0, 0, 0));
 
 	// Button
 
@@ -318,7 +317,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "CheckBox", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckBox", 4 * scale);
-	theme->set_constant("check_v_adjust", "CheckBox", 0 * scale);
+	theme->set_constant("check_v_offset", "CheckBox", 0 * scale);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
 	// CheckButton
@@ -336,15 +335,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("hover_pressed", "CheckButton", cb_empty);
 	theme->set_stylebox("focus", "CheckButton", focus);
 
-	theme->set_icon("on", "CheckButton", icons["toggle_on"]);
-	theme->set_icon("on_disabled", "CheckButton", icons["toggle_on_disabled"]);
-	theme->set_icon("off", "CheckButton", icons["toggle_off"]);
-	theme->set_icon("off_disabled", "CheckButton", icons["toggle_off_disabled"]);
+	theme->set_icon("checked", "CheckButton", icons["toggle_on"]);
+	theme->set_icon("checked_disabled", "CheckButton", icons["toggle_on_disabled"]);
+	theme->set_icon("unchecked", "CheckButton", icons["toggle_off"]);
+	theme->set_icon("unchecked_disabled", "CheckButton", icons["toggle_off_disabled"]);
 
-	theme->set_icon("on_mirrored", "CheckButton", icons["toggle_on_mirrored"]);
-	theme->set_icon("on_disabled_mirrored", "CheckButton", icons["toggle_on_disabled_mirrored"]);
-	theme->set_icon("off_mirrored", "CheckButton", icons["toggle_off_mirrored"]);
-	theme->set_icon("off_disabled_mirrored", "CheckButton", icons["toggle_off_disabled_mirrored"]);
+	theme->set_icon("checked_mirrored", "CheckButton", icons["toggle_on_mirrored"]);
+	theme->set_icon("checked_disabled_mirrored", "CheckButton", icons["toggle_on_disabled_mirrored"]);
+	theme->set_icon("unchecked_mirrored", "CheckButton", icons["toggle_off_mirrored"]);
+	theme->set_icon("unchecked_disabled_mirrored", "CheckButton", icons["toggle_off_disabled_mirrored"]);
 
 	theme->set_font("font", "CheckButton", Ref<Font>());
 	theme->set_font_size("font_size", "CheckButton", -1);
@@ -358,7 +357,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_outline_color", "CheckButton", Color(1, 1, 1));
 
 	theme->set_constant("h_separation", "CheckButton", 4 * scale);
-	theme->set_constant("check_v_adjust", "CheckButton", 0 * scale);
+	theme->set_constant("check_v_offset", "CheckButton", 0 * scale);
 	theme->set_constant("outline_size", "CheckButton", 0);
 
 	// Label
@@ -423,8 +422,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// ProgressBar
 
-	theme->set_stylebox("bg", "ProgressBar", make_flat_stylebox(style_disabled_color, 2, 2, 2, 2, 6));
-	theme->set_stylebox("fg", "ProgressBar", make_flat_stylebox(style_progress_color, 2, 2, 2, 2, 6));
+	theme->set_stylebox("background", "ProgressBar", make_flat_stylebox(style_disabled_color, 2, 2, 2, 2, 6));
+	theme->set_stylebox("fill", "ProgressBar", make_flat_stylebox(style_progress_color, 2, 2, 2, 2, 6));
 
 	theme->set_font("font", "ProgressBar", Ref<Font>());
 	theme->set_font_size("font_size", "ProgressBar", -1);
@@ -588,7 +587,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<StyleBoxEmpty> empty;
 	empty.instantiate();
-	theme->set_stylebox("bg", "ScrollContainer", empty);
+	theme->set_stylebox("panel", "ScrollContainer", empty);
 
 	// Window
 
@@ -623,9 +622,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("toggle_hidden", "FileDialog", icons["visibility_visible"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
-	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("file_icon_modulate", "FileDialog", Color(1, 1, 1));
-	theme->set_color("files_disabled", "FileDialog", Color(1, 1, 1, 0.25));
+	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
+	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
+	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
 
 	// Popup
 
@@ -737,8 +736,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Tree
 
-	theme->set_stylebox("bg", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
-	theme->set_stylebox("bg_focus", "Tree", focus);
+	theme->set_stylebox("panel", "Tree", make_flat_stylebox(style_normal_color, 4, 4, 4, 5));
+	theme->set_stylebox("focus", "Tree", focus);
 	theme->set_stylebox("selected", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("selected_focus", "Tree", make_flat_stylebox(style_selected_color));
 	theme->set_stylebox("cursor", "Tree", focus);
@@ -791,8 +790,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// ItemList
 
-	theme->set_stylebox("bg", "ItemList", make_flat_stylebox(style_normal_color));
-	theme->set_stylebox("bg_focus", "ItemList", focus);
+	theme->set_stylebox("panel", "ItemList", make_flat_stylebox(style_normal_color));
+	theme->set_stylebox("focus", "ItemList", focus);
 	theme->set_constant("h_separation", "ItemList", 4);
 	theme->set_constant("v_separation", "ItemList", 2);
 	theme->set_constant("icon_margin", "ItemList", 4);

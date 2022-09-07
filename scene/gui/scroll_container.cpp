@@ -76,14 +76,14 @@ Size2 ScrollContainer::get_minimum_size() const {
 		min_size.x += v_scroll->get_minimum_size().x;
 	}
 
-	min_size += theme_cache.bg_style->get_minimum_size();
+	min_size += theme_cache.panel_style->get_minimum_size();
 	return min_size;
 }
 
 void ScrollContainer::_update_theme_item_cache() {
 	Container::_update_theme_item_cache();
 
-	theme_cache.bg_style = get_theme_stylebox(SNAME("bg"));
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
 }
 
 void ScrollContainer::_cancel_drag() {
@@ -276,8 +276,8 @@ void ScrollContainer::_reposition_children() {
 	Size2 size = get_size();
 	Point2 ofs;
 
-	size -= theme_cache.bg_style->get_minimum_size();
-	ofs += theme_cache.bg_style->get_offset();
+	size -= theme_cache.panel_style->get_minimum_size();
+	ofs += theme_cache.panel_style->get_offset();
 	bool rtl = is_layout_rtl();
 
 	if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) { //scrolls may have been moved out for reasons
@@ -341,7 +341,7 @@ void ScrollContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			draw_style_box(theme_cache.bg_style, Rect2(Vector2(), get_size()));
+			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -416,7 +416,7 @@ void ScrollContainer::_notification(int p_what) {
 
 void ScrollContainer::update_scrollbars() {
 	Size2 size = get_size();
-	size -= theme_cache.bg_style->get_minimum_size();
+	size -= theme_cache.panel_style->get_minimum_size();
 
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();

@@ -558,12 +558,6 @@
 		<theme_item name="updown" data_type="icon" type="Texture2D">
 			The updown arrow icon to display for the [constant TreeItem.CELL_MODE_RANGE] mode cell.
 		</theme_item>
-		<theme_item name="bg" data_type="style" type="StyleBox">
-			Default [StyleBox] for the [Tree], i.e. used when the control is not being focused.
-		</theme_item>
-		<theme_item name="bg_focus" data_type="style" type="StyleBox">
-			[StyleBox] used when the [Tree] is being focused.
-		</theme_item>
 		<theme_item name="button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] used when a button in the tree is pressed.
 		</theme_item>
@@ -581,6 +575,12 @@
 		</theme_item>
 		<theme_item name="custom_button_pressed" data_type="style" type="StyleBox">
 			[StyleBox] for a [constant TreeItem.CELL_MODE_CUSTOM] mode cell when it's pressed.
+		</theme_item>
+		<theme_item name="focus" data_type="style" type="StyleBox">
+			The focused style for the [Tree], drawn on top of everything.
+		</theme_item>
+		<theme_item name="panel" data_type="style" type="StyleBox">
+			The background style for the [Tree].
 		</theme_item>
 		<theme_item name="selected" data_type="style" type="StyleBox">
 			[StyleBox] for the selected items, used when the [Tree] is not being focused.
