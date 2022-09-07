@@ -9011,7 +9011,7 @@ VkSampleCountFlagBits RenderingDeviceVulkan::_ensure_supported_sample_count(Text
 		// Find the closest lower supported sample count.
 		VkSampleCountFlagBits sample_count = rasterization_sample_count[p_requested_sample_count];
 		while (sample_count > VK_SAMPLE_COUNT_1_BIT) {
-			if (sample_count_flags & rasterization_sample_count[sample_count]) {
+			if (sample_count_flags & sample_count) {
 				return sample_count;
 			}
 			sample_count = (VkSampleCountFlagBits)(sample_count >> 1);
