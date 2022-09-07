@@ -22,71 +22,13 @@ namespace GodotTools.Build
         public static string GodotFallbackFolderPath
             => Path.Combine(GodotSharpDirs.MonoUserDir, "GodotNuGetFallbackFolder");
 
-        private static void AddFallbackFolderToNuGetConfig(string nuGetConfigPath, string name, string path)
-        {
-            var xmlDoc = new XmlDocument();
-            xmlDoc.Load(nuGetConfigPath);
-
-            const string nuGetConfigRootName = "configuration";
-
-            var rootNode = xmlDoc.DocumentElement;
-
-            if (rootNode == null)
-            {
-                // No root node, create it
-                rootNode = xmlDoc.CreateElement(nuGetConfigRootName);
-                xmlDoc.AppendChild(rootNode);
-
-                // Since this can be considered pretty much a new NuGet.Config, add the default nuget.org source as well
-                XmlElement nugetOrgSourceEntry = xmlDoc.CreateElement("add");
-                nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("key")).Value = "nuget.org";
-                nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("value")).Value =
-                    "https://api.nuget.org/v3/index.json";
-                nugetOrgSourceEntry.Attributes.Append(xmlDoc.CreateAttribute("protocolVersion")).Value = "3";
-                rootNode.AppendChild(xmlDoc.CreateElement("packageSources")).AppendChild(nugetOrgSourceEntry);
-            }
-            else
-            {
-                // Check that the root node is the expected one
-                if (rootNode.Name != nuGetConfigRootName)
-                    throw new FormatException("Invalid root Xml node for NuGet.Config. " +
-                                        $"Expected '{nuGetConfigRootName}' got '{rootNode.Name}'.");
-            }
-
-            var fallbackFoldersNode = rootNode["fallbackPackageFolders"] ??
-                                      rootNode.AppendChild(xmlDoc.CreateElement("fallbackPackageFolders"));
-
-            // Check if it already has our fallback package folder
-            for (var xmlNode = fallbackFoldersNode.FirstChild; xmlNode != null; xmlNode = xmlNode.NextSibling)
-            {
-                if (xmlNode.NodeType != XmlNodeType.Element)
-                    continue;
-
-                var xmlElement = (XmlElement)xmlNode;
-                if (xmlElement.Name == "add" &&
-                    xmlElement.Attributes["key"]?.Value == name &&
-                    xmlElement.Attributes["value"]?.Value == path)
-                {
-                    return;
-                }
-            }
-
-            XmlElement newEntry = xmlDoc.CreateElement("add");
-            newEntry.Attributes.Append(xmlDoc.CreateAttribute("key")).Value = name;
-            newEntry.Attributes.Append(xmlDoc.CreateAttribute("value")).Value = path;
-
-            fallbackFoldersNode.AppendChild(newEntry);
-
-            xmlDoc.Save(nuGetConfigPath);
-        }
-
         /// <summary>
-        /// Returns all the paths where the user NuGet.Config files can be found.
+        /// Returns all the paths where the Godot.Offline.Config files can be found.
         /// Does not determine whether the returned files exist or not.
         /// </summary>
-        private static string[] GetAllUserNuGetConfigFilePaths()
+        private static string[] GetAllGodotNuGetConfigFilePaths()
         {
-            // Where to find 'NuGet/NuGet.Config':
+            // Where to find 'NuGet/config/Godot.Offline.Config':
             //
             // - Mono/.NETFramework (standalone NuGet):
             //     Uses Environment.SpecialFolder.ApplicationData
@@ -98,10 +40,12 @@ namespace GodotTools.Build
 
             string applicationData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
+            const string configFileName = "Godot.Offline.Config";
+
             if (Utils.OS.IsWindows)
             {
                 // %APPDATA% for both
-                return new[] { Path.Combine(applicationData, "NuGet", "NuGet.Config") };
+                return new[] { Path.Combine(applicationData, "NuGet", "config", configFileName) };
             }
 
             var paths = new string[2];
@@ -111,20 +55,20 @@ namespace GodotTools.Build
             string dotnetCliHome = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
             if (!string.IsNullOrEmpty(dotnetCliHome))
             {
-                paths[0] = Path.Combine(dotnetCliHome, ".nuget", "NuGet", "NuGet.Config");
+                paths[0] = Path.Combine(dotnetCliHome, ".nuget", "NuGet", "config", configFileName);
             }
             else
             {
                 string home = Environment.GetEnvironmentVariable("HOME");
                 if (string.IsNullOrEmpty(home))
                     throw new InvalidOperationException("Required environment variable 'HOME' is not set.");
-                paths[0] = Path.Combine(home, ".nuget", "NuGet", "NuGet.Config");
+                paths[0] = Path.Combine(home, ".nuget", "NuGet", "config", configFileName);
             }
 
             // Mono/.NETFramework (standalone NuGet)
 
             // ApplicationData is $HOME/.config on Linux/macOS
-            paths[1] = Path.Combine(applicationData, "NuGet", "NuGet.Config");
+            paths[1] = Path.Combine(applicationData, "NuGet", "config", configFileName);
 
             return paths;
         }
@@ -141,28 +85,26 @@ namespace GodotTools.Build
         // The nuspec is not lower case inside the nupkg but must be made lower case when extracted.
 
         /// <summary>
-        /// Adds the specified fallback folder to the user NuGet.Config files,
+        /// Adds the specified fallback folder to the Godot.Offline.Config files,
         /// for both standalone NuGet (Mono/.NETFramework) and dotnet CLI NuGet.
         /// </summary>
-        public static void AddFallbackFolderToUserNuGetConfigs(string name, string path)
+        public static void AddFallbackFolderToGodotNuGetConfigs(string name, string path)
         {
-            foreach (string nuGetConfigPath in GetAllUserNuGetConfigFilePaths())
+            // Make sure the fallback folder exists to avoid error:
+            // MSB4018: The "ResolvePackageAssets" task failed unexpectedly.
+            System.IO.Directory.CreateDirectory(path);
+
+            foreach (string nuGetConfigPath in GetAllGodotNuGetConfigFilePaths())
             {
-                if (!System.IO.File.Exists(nuGetConfigPath))
-                {
-                    // It doesn't exist, so we create a default one
-                    const string defaultConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                string defaultConfig = @$"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-  <packageSources>
-    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
-  </packageSources>
+  <fallbackPackageFolders>
+    <add key=""{name}"" value=""{path}"" />
+  </fallbackPackageFolders>
 </configuration>
 ";
-                    System.IO.Directory.CreateDirectory(Path.GetDirectoryName(nuGetConfigPath));
-                    System.IO.File.WriteAllText(nuGetConfigPath, defaultConfig, Encoding.UTF8); // UTF-8 with BOM
-                }
-
-                AddFallbackFolderToNuGetConfig(nuGetConfigPath, name, path);
+                System.IO.Directory.CreateDirectory(Path.GetDirectoryName(nuGetConfigPath));
+                System.IO.File.WriteAllText(nuGetConfigPath, defaultConfig, Encoding.UTF8); // UTF-8 with BOM
             }
         }
 
@@ -189,6 +131,7 @@ namespace GodotTools.Build
             string destDir = Path.Combine(fallbackFolder, packageIdLower, packageVersionLower);
             string nupkgDestPath = Path.Combine(destDir, $"{packageIdLower}.{packageVersionLower}.nupkg");
             string nupkgSha512DestPath = Path.Combine(destDir, $"{packageIdLower}.{packageVersionLower}.nupkg.sha512");
+            string nupkgMetadataDestPath = Path.Combine(destDir, ".nupkg.metadata");
 
             if (File.Exists(nupkgDestPath) && File.Exists(nupkgSha512DestPath))
                 return; // Already added (for speed we don't check if every file is properly extracted)
@@ -197,12 +140,18 @@ namespace GodotTools.Build
 
             // Generate .nupkg.sha512 file
 
-            using (var alg = SHA512.Create())
-            {
-                alg.ComputeHash(File.ReadAllBytes(nupkgPath));
-                string base64Hash = Convert.ToBase64String(alg.Hash);
-                File.WriteAllText(nupkgSha512DestPath, base64Hash);
-            }
+            byte[] hash = SHA512.HashData(File.ReadAllBytes(nupkgPath));
+            string base64Hash = Convert.ToBase64String(hash);
+            File.WriteAllText(nupkgSha512DestPath, base64Hash);
+
+            // Generate .nupkg.metadata file
+            // Spec: https://github.com/NuGet/Home/wiki/Nupkg-Metadata-File
+
+            File.WriteAllText(nupkgMetadataDestPath, @$"{{
+    ""version"": 2,
+    ""contentHash"": ""{base64Hash}"",
+    ""source"": null
+}}");
 
             // Extract nupkg
             ExtractNupkg(destDir, nupkgPath, packageId, packageVersion);
@@ -251,7 +200,7 @@ namespace GodotTools.Build
                         entryFullName.EndsWith(".nupkg.sha512", StringComparison.OrdinalIgnoreCase) ||
                         entryFullName.EndsWith(".nupkg.metadata", StringComparison.OrdinalIgnoreCase) ||
                         // Nuspec at root level. We already extracted it previously but in lower case.
-                        entryFullName.IndexOf('/') == -1 && entryFullName.EndsWith(".nuspec"))
+                        !entryFullName.Contains('/') && entryFullName.EndsWith(".nuspec"))
                     {
                         continue;
                     }
@@ -297,6 +246,8 @@ namespace GodotTools.Build
         {
             ("Godot.NET.Sdk", GeneratedGodotNupkgsVersions.GodotNETSdk),
             ("Godot.SourceGenerators", GeneratedGodotNupkgsVersions.GodotSourceGenerators),
+            ("GodotSharp", GeneratedGodotNupkgsVersions.GodotSharp),
+            ("GodotSharpEditor", GeneratedGodotNupkgsVersions.GodotSharp),
         };
     }
 }

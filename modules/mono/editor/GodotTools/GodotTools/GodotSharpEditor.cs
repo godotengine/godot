@@ -123,7 +123,7 @@ namespace GodotTools
                     try
                     {
                         string fallbackFolder = NuGetUtils.GodotFallbackFolderPath;
-                        NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
+                        NuGetUtils.AddFallbackFolderToGodotNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
                             fallbackFolder);
                         NuGetUtils.AddBundledPackagesToFallbackFolder(fallbackFolder);
                     }
@@ -497,7 +497,7 @@ namespace GodotTools
             try
             {
                 // At startup we make sure NuGet.Config files have our Godot NuGet fallback folder included
-                NuGetUtils.AddFallbackFolderToUserNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
+                NuGetUtils.AddFallbackFolderToGodotNuGetConfigs(NuGetUtils.GodotFallbackFolderName,
                     NuGetUtils.GodotFallbackFolderPath);
             }
             catch (Exception e)
