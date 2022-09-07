@@ -24,8 +24,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils
-          sudo update-alternatives --remove-all clang-format
+          sudo apt-get install -qq dos2unix clang-format-13 libxml2-utils python3-pip moreutils
+          sudo update-alternatives --remove-all clang-format || true
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
           sudo pip3 install black==22.3.0 pygments
 
