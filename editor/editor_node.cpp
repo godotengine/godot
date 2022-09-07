@@ -3256,8 +3256,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 			for (const String &a : Main::get_forwardable_cli_arguments(Main::CLI_SCOPE_TOOL)) {
 				args.push_back(a);
 			}
-			args.push_back("--path");
-			args.push_back(exec.get_base_dir());
+
+			String exec_base_dir = exec.get_base_dir();
+			if (!exec_base_dir.is_empty()) {
+				args.push_back("--path");
+				args.push_back(exec_base_dir);
+			}
 			args.push_back("--project-manager");
 
 			Error err = OS::get_singleton()->create_instance(args);
