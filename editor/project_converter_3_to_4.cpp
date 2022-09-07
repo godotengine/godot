@@ -242,11 +242,11 @@ static const char *gdscript_function_renames[][2] = {
 	{ "commit_handle", "_commit_handle" }, // EditorNode3DGizmo
 	{ "convex_hull_2d", "convex_hull" }, // Geometry2D
 	{ "create_gizmo", "_create_gizmo" }, // EditorNode3DGizmoPlugin
-	{ "cursor_get_blink_speed", "get_caret_blink_speed" }, // TextEdit
+	{ "cursor_get_blink_speed", "get_caret_blink_interval" }, // TextEdit
 	{ "cursor_get_column", "get_caret_column" }, // TextEdit
 	{ "cursor_get_line", "get_caret_line" }, // TextEdit
 	{ "cursor_set_blink_enabled", "set_caret_blink_enabled" }, // TextEdit
-	{ "cursor_set_blink_speed", "set_caret_blink_speed" }, // TextEdit
+	{ "cursor_set_blink_speed", "set_caret_blink_interval" }, // TextEdit
 	{ "cursor_set_column", "set_caret_column" }, // TextEdit
 	{ "cursor_set_line", "set_caret_line" }, // TextEdit
 	{ "damped_spring_joint_create", "joint_make_damped_spring" }, // PhysicsServer2D
@@ -671,11 +671,11 @@ static const char *csharp_function_renames[][2] = {
 	{ "ClipPolylineWithPolygon2d", "ClipPolylineWithPolygon" }, //Geometry2D
 	{ "CommitHandle", "_CommitHandle" }, // EditorNode3DGizmo
 	{ "ConvexHull2d", "ConvexHull" }, // Geometry2D
-	{ "CursorGetBlinkSpeed", "GetCaretBlinkSpeed" }, // TextEdit
+	{ "CursorGetBlinkSpeed", "GetCaretBlinkInterval" }, // TextEdit
 	{ "CursorGetColumn", "GetCaretColumn" }, // TextEdit
 	{ "CursorGetLine", "GetCaretLine" }, // TextEdit
 	{ "CursorSetBlinkEnabled", "SetCaretBlinkEnabled" }, // TextEdit
-	{ "CursorSetBlinkSpeed", "SetCaretBlinkSpeed" }, // TextEdit
+	{ "CursorSetBlinkSpeed", "SetCaretBlinkInterval" }, // TextEdit
 	{ "CursorSetColumn", "SetCaretColumn" }, // TextEdit
 	{ "CursorSetLine", "SetCaretLine" }, // TextEdit
 	{ "DampedSpringJointCreate", "JointMakeDampedSpring" }, // PhysicsServer2D
@@ -1031,6 +1031,7 @@ static const char *gdscript_properties_renames[][2] = {
 	//	{ "filename", "scene_file_path" }, // Node
 	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "bbcode_text", "text" }, // RichTextLabel
+	{ "caret_blink_speed", "caret_blink_interval" }, // TextEdit, LineEdit
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
 	{ "caret_position", "caret_column" }, // LineEdit
 	{ "check_vadjust", "check_v_adjust" }, // Theme
@@ -1126,6 +1127,7 @@ static const char *csharp_properties_renames[][2] = {
 	//	{ "Znear", "Near" }, // Camera3D
 	{ "AsNormalmap", "AsNormalMap" }, // NoiseTexture
 	{ "BbcodeText", "Text" }, // RichTextLabel
+	{ "CaretBlinkSpeed", "CaretBlinkInterval" }, // TextEdit, LineEdit
 	{ "CaretMovingByRightClick", "CaretMoveOnRightClick" }, // TextEdit
 	{ "CaretPosition", "CaretColumn" }, // LineEdit
 	{ "CheckVadjust", "CheckVAdjust" }, // Theme
