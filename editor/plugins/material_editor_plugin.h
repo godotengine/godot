@@ -45,11 +45,14 @@ class SubViewportContainer;
 class MaterialEditor : public Control {
 	GDCLASS(MaterialEditor, Control);
 
+	Vector2 rot = Vector2();
+
 	HBoxContainer *layout_2d = nullptr;
 	ColorRect *rect_instance = nullptr;
 
 	SubViewportContainer *vc = nullptr;
 	SubViewport *viewport = nullptr;
+	Node3D *rotation = nullptr;
 	MeshInstance3D *sphere_instance = nullptr;
 	MeshInstance3D *box_instance = nullptr;
 	DirectionalLight3D *light1 = nullptr;
@@ -87,7 +90,8 @@ class MaterialEditor : public Control {
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
-	static void _bind_methods();
+	void gui_input(const Ref<InputEvent> &p_event) override;
+	void _update_rotation();
 
 public:
 	void edit(Ref<Material> p_material, const Ref<Environment> &p_env);
