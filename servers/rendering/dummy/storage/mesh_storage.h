@@ -99,6 +99,7 @@ public:
 	virtual RS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const override {
 		DummyMesh *m = mesh_owner.get_or_null(p_mesh);
 		ERR_FAIL_COND_V(!m, RS::SurfaceData());
+		ERR_FAIL_INDEX_V(p_surface, m->surfaces.size(), RS::SurfaceData());
 		RS::SurfaceData s = m->surfaces[p_surface];
 		return s;
 	}
