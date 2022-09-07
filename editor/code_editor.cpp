@@ -94,6 +94,7 @@ void FindReplaceBar::_notification(int p_what) {
 			hide_button->set_hover_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 			hide_button->set_pressed_texture(get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
 			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			search_idle_timer->set_wait_time(EDITOR_GET("text_editor/completion/search_idle_delay"));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -572,6 +573,13 @@ void FindReplaceBar::_editor_text_changed() {
 }
 
 void FindReplaceBar::_search_text_changed(const String &p_text) {
+	search_idle_timer->start();
+}
+
+void FindReplaceBar::_search_idle_timer_timeout() {
+	if (!is_visible_in_tree()) {
+		return;
+	}
 	results_count = -1;
 	results_count_to_current = -1;
 	needs_to_count_results = true;
@@ -712,6 +720,12 @@ FindReplaceBar::FindReplaceBar() {
 	whole_words->set_text(TTR("Whole Words"));
 	whole_words->set_focus_mode(FOCUS_NONE);
 	whole_words->connect("toggled", callable_mp(this, &FindReplaceBar::_search_options_changed));
+
+	search_idle_timer = memnew(Timer);
+	add_child(search_idle_timer);
+	search_idle_timer->set_one_shot(true);
+	search_idle_timer->set_wait_time(EDITOR_GET("text_editor/completion/search_idle_delay"));
+	search_idle_timer->connect("timeout", callable_mp(this, &FindReplaceBar::_search_idle_timer_timeout));
 
 	// replace toolbar
 	replace_text = memnew(LineEdit);

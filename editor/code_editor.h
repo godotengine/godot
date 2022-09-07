@@ -69,6 +69,7 @@ class FindReplaceBar : public HBoxContainer {
 	CheckBox *case_sensitive = nullptr;
 	CheckBox *whole_words = nullptr;
 	TextureButton *hide_button = nullptr;
+	Timer *search_idle_timer = nullptr;
 
 	LineEdit *replace_text = nullptr;
 	Button *replace = nullptr;
@@ -110,6 +111,8 @@ protected:
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(uint32_t p_flags, int p_from_line, int p_from_col);
+
+	void _search_idle_timer_timeout();
 
 	void _replace();
 	void _replace_all();

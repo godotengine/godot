@@ -769,6 +769,9 @@
 		<member name="text_editor/completion/put_callhint_tooltip_below_current_line" type="bool" setter="" getter="">
 			If [code]true[/code], the code completion tooltip will appear below the current line unless there is no space on screen below the current line. If [code]false[/code], the code completion tooltip will appear above the current line.
 		</member>
+		<member name="text_editor/completion/search_idle_delay" type="float" setter="" getter="">
+			The delay in seconds after which the script editor should search for the pattern in the Find bar when the user stops typing in it.
+		</member>
 		<member name="text_editor/completion/use_single_quotes" type="bool" setter="" getter="">
 			If [code]true[/code], performs string autocompletion with single quotes. If [code]false[/code], performs string autocompletion with double quotes (which matches the [url=https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url]).
 		</member>
