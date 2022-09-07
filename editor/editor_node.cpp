@@ -3095,14 +3095,14 @@ void EditorNode::_screenshot(bool p_use_utc) {
 }
 
 void EditorNode::_save_screenshot(NodePath p_path) {
-	Control *editor_main_control = EditorInterface::get_singleton()->get_editor_main_control();
-	ERR_FAIL_COND_MSG(!editor_main_control, "Cannot get editor main control.");
-	Viewport *viewport = editor_main_control->get_viewport();
-	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor main control viewport.");
+	Control *editor_main_screen = EditorInterface::get_singleton()->get_editor_main_screen();
+	ERR_FAIL_COND_MSG(!editor_main_screen, "Cannot get the editor main screen control.");
+	Viewport *viewport = editor_main_screen->get_viewport();
+	ERR_FAIL_COND_MSG(!viewport, "Cannot get a viewport from the editor main screen.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
-	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor main control viewport texture.");
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
-	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor main control viewport texture image.");
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
@@ -3286,8 +3286,8 @@ void EditorNode::_update_file_menu_closed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), false);
 }
 
-Control *EditorNode::get_main_control() {
-	return main_control;
+VBoxContainer *EditorNode::get_main_screen_control() {
+	return main_screen_vbox;
 }
 
 void EditorNode::_editor_select(int p_which) {
@@ -6583,10 +6583,11 @@ EditorNode::EditorNode() {
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 
-	main_control = memnew(VBoxContainer);
-	main_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_control->add_theme_constant_override("separation", 0);
-	scene_root_parent->add_child(main_control);
+	main_screen_vbox = memnew(VBoxContainer);
+	main_screen_vbox->set_name("MainScreen");
+	main_screen_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_screen_vbox->add_theme_constant_override("separation", 0);
+	scene_root_parent->add_child(main_screen_vbox);
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU);
 	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
