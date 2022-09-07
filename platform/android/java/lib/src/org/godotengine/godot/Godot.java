@@ -57,6 +57,7 @@ import android.content.SharedPreferences.Editor;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.Sensor;
@@ -71,6 +72,7 @@ import android.os.Looper;
 import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -88,6 +90,7 @@ import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
@@ -112,6 +115,8 @@ import java.util.Locale;
 import javax.microedition.khronos.opengles.GL10;
 
 public class Godot extends Fragment implements SensorEventListener, IDownloaderClient {
+	private static final String TAG = Godot.class.getSimpleName();
+
 	static final int MAX_SINGLETONS = 64;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
@@ -376,7 +381,12 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		final String[] current_command_line = command_line;
 		mView.queueEvent(() -> {
-			GodotLib.setup(current_command_line);
+			if (!GodotLib.setup(current_command_line)) {
+				godot_initialized = false;
+				Log.e(TAG, "Unable to setup the Godot engine! Aborting...");
+				alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit);
+				return;
+			}
 
 			// Must occur after GodotLib.setup has completed.
 			for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
@@ -460,13 +470,27 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void alert(final String message, final String title) {
+		alert(message, title, null);
+	}
+
+	private void alert(@StringRes int messageResId, @StringRes int titleResId, @Nullable Runnable okCallback) {
+		Resources res = getResources();
+		alert(res.getString(messageResId), res.getString(titleResId), okCallback);
+	}
+
+	private void alert(final String message, final String title, @Nullable Runnable okCallback) {
 		final Activity activity = getActivity();
 		runOnUiThread(() -> {
 			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 			builder.setMessage(message).setTitle(title);
 			builder.setPositiveButton(
 					"OK",
-					(dialog, id) -> dialog.cancel());
+					(dialog, id) -> {
+						if (okCallback != null) {
+							okCallback.run();
+						}
+						dialog.cancel();
+					});
 			AlertDialog dialog = builder.create();
 			dialog.show();
 		});

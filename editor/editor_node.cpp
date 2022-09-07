@@ -3062,8 +3062,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 			for (int i = 0; i < forwardable_args.size(); i++) {
 				args.push_back(forwardable_args[i]);
 			}
-			args.push_back("--path");
-			args.push_back(exec.get_base_dir());
+
+			String exec_base_dir = exec.get_base_dir();
+			if (!exec_base_dir.empty()) {
+				args.push_back("--path");
+				args.push_back(exec_base_dir);
+			}
 			args.push_back("--project-manager");
 
 			OS::ProcessID pid = 0;
