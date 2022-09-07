@@ -62,7 +62,7 @@ private:
 	bool selected = false;
 	bool require = false;
 
-	TextureRect *circle;
+	TextureRect *circle = nullptr;
 
 	void fetch_textures();
 
@@ -87,8 +87,8 @@ class BoneMapperItem : public VBoxContainer {
 
 	Ref<BoneMap> bone_map;
 
-	EditorPropertyText *skeleton_bone_selector;
-	Button *picker_button;
+	EditorPropertyText *skeleton_bone_selector = nullptr;
+	Button *picker_button = nullptr;
 
 	void _update_property();
 	void _open_picker();
@@ -135,24 +135,24 @@ public:
 class BoneMapper : public VBoxContainer {
 	GDCLASS(BoneMapper, VBoxContainer);
 
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 	Ref<BoneMap> bone_map;
 
-	EditorPropertyResource *profile_selector;
+	EditorPropertyResource *profile_selector = nullptr;
 
 	Vector<BoneMapperItem *> bone_mapper_items;
 
-	Button *clear_mapping_button;
+	Button *clear_mapping_button = nullptr;
 
-	VBoxContainer *mapper_item_vbox;
+	VBoxContainer *mapper_item_vbox = nullptr;
 
 	int current_group_idx = 0;
 	int current_bone_idx = -1;
 
-	AspectRatioContainer *bone_mapper_field;
-	EditorPropertyEnum *profile_group_selector;
-	ColorRect *profile_bg;
-	TextureRect *profile_texture;
+	AspectRatioContainer *bone_mapper_field = nullptr;
+	EditorPropertyEnum *profile_group_selector = nullptr;
+	ColorRect *profile_bg = nullptr;
+	TextureRect *profile_texture = nullptr;
 	Vector<BoneMapperButton *> bone_mapper_buttons;
 
 	void create_editor();
@@ -201,9 +201,9 @@ public:
 class BoneMapEditor : public VBoxContainer {
 	GDCLASS(BoneMapEditor, VBoxContainer);
 
-	Skeleton3D *skeleton;
+	Skeleton3D *skeleton = nullptr;
 	Ref<BoneMap> bone_map;
-	BoneMapper *bone_mapper;
+	BoneMapper *bone_mapper = nullptr;
 
 	void fetch_objects();
 	void clear_editors();
@@ -219,7 +219,7 @@ public:
 
 class EditorInspectorPluginBoneMap : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginBoneMap, EditorInspectorPlugin);
-	BoneMapEditor *editor;
+	BoneMapEditor *editor = nullptr;
 
 public:
 	virtual bool can_handle(Object *p_object) override;

@@ -828,13 +828,13 @@ void TileMap::_update_dirty_quadrants() {
 
 		// Update the coords cache.
 		for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
-			q->self()->map_to_world.clear();
-			q->self()->world_to_map.clear();
+			q->self()->map_to_local.clear();
+			q->self()->local_to_map.clear();
 			for (const Vector2i &E : q->self()->cells) {
 				Vector2i pk = E;
-				Vector2i pk_world_coords = map_to_world(pk);
-				q->self()->map_to_world[pk] = pk_world_coords;
-				q->self()->world_to_map[pk_world_coords] = pk;
+				Vector2i pk_local_coords = map_to_local(pk);
+				q->self()->map_to_local[pk] = pk_local_coords;
+				q->self()->local_to_map[pk_local_coords] = pk;
 			}
 		}
 
@@ -852,7 +852,7 @@ void TileMap::_update_dirty_quadrants() {
 		for (SelfList<TileMapQuadrant> *q = dirty_quadrant_list.first(); q; q = q->next()) {
 			rs->canvas_item_clear(q->self()->debug_canvas_item);
 			Transform2D xform;
-			xform.set_origin(map_to_world(q->self()->coords * get_effective_quadrant_size(layer)));
+			xform.set_origin(map_to_local(q->self()->coords * get_effective_quadrant_size(layer)));
 			rs->canvas_item_set_transform(q->self()->debug_canvas_item, xform);
 
 			_rendering_draw_quadrant_debug(q->self());
@@ -978,10 +978,10 @@ void TileMap::_recompute_rect_cache() {
 	for (unsigned int layer = 0; layer < layers.size(); layer++) {
 		for (const KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
 			Rect2 r;
-			r.position = map_to_world(E.key * get_effective_quadrant_size(layer));
-			r.expand_to(map_to_world((E.key + Vector2i(1, 0)) * get_effective_quadrant_size(layer)));
-			r.expand_to(map_to_world((E.key + Vector2i(1, 1)) * get_effective_quadrant_size(layer)));
-			r.expand_to(map_to_world((E.key + Vector2i(0, 1)) * get_effective_quadrant_size(layer)));
+			r.position = map_to_local(E.key * get_effective_quadrant_size(layer));
+			r.expand_to(map_to_local((E.key + Vector2i(1, 0)) * get_effective_quadrant_size(layer)));
+			r.expand_to(map_to_local((E.key + Vector2i(1, 1)) * get_effective_quadrant_size(layer)));
+			r.expand_to(map_to_local((E.key + Vector2i(0, 1)) * get_effective_quadrant_size(layer)));
 			if (first) {
 				r_total = r;
 				first = false;
@@ -1010,7 +1010,7 @@ void TileMap::_rendering_notification(int p_what) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
-					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
+					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
 						Transform2D xform;
 						xform.set_origin(E_cell.key);
 						for (const RID &occluder : q.occluders) {
@@ -1030,7 +1030,7 @@ void TileMap::_rendering_notification(int p_what) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
-					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
+					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
 						Transform2D xform;
 						xform.set_origin(E_cell.key);
 						for (const RID &occluder : q.occluders) {
@@ -1126,7 +1126,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		}
 
 		// Iterate over the cells of the quadrant.
-		for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
+		for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
 			TileMapCell c = get_cell(q.layer, E_cell.value, true);
 
 			TileSetSource *source;
@@ -1151,7 +1151,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					int z_index = tile_data->get_z_index();
 
 					// Quandrant pos.
-					Vector2 position = map_to_world(q.coords * get_effective_quadrant_size(q.layer));
+					Vector2 position = map_to_local(q.coords * get_effective_quadrant_size(q.layer));
 					if (is_y_sort_enabled() && layers[q.layer].y_sort_enabled) {
 						// When Y-sorting, the quandrant size is sure to be 1, we can thus offset the CanvasItem.
 						position.y += layers[q.layer].y_sort_origin + tile_data->get_y_sort_origin();
@@ -1223,14 +1223,14 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		int index = -(int64_t)0x80000000; //always must be drawn below children.
 
 		for (int layer = 0; layer < (int)layers.size(); layer++) {
-			// Sort the quadrants coords per world coordinates
-			RBMap<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator> world_to_map;
+			// Sort the quadrants coords per local coordinates.
+			RBMap<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator> local_to_map;
 			for (const KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
-				world_to_map[map_to_world(E.key)] = E.key;
+				local_to_map[map_to_local(E.key)] = E.key;
 			}
 
-			// Sort the quadrants
-			for (const KeyValue<Vector2i, Vector2i> &E : world_to_map) {
+			// Sort the quadrants.
+			for (const KeyValue<Vector2i, Vector2i> &E : local_to_map) {
 				TileMapQuadrant &q = layers[layer].quadrant_map[E.value];
 				for (const RID &ci : q.canvas_items) {
 					RS::get_singleton()->canvas_item_set_draw_index(ci, index++);
@@ -1270,7 +1270,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 	// Draw a placeholder for scenes needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
-	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
+	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 	for (const Vector2i &E_cell : p_quadrant->cells) {
 		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell, true);
 
@@ -1302,7 +1302,7 @@ void TileMap::_rendering_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 					// Draw a placeholder tile.
 					Transform2D xform;
-					xform.set_origin(map_to_world(E_cell) - quadrant_pos);
+					xform.set_origin(map_to_local(E_cell) - quadrant_pos);
 					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 					rs->canvas_item_add_circle(p_quadrant->debug_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
 				}
@@ -1423,7 +1423,7 @@ void TileMap::_physics_notification(int p_what) {
 
 						for (RID body : q.bodies) {
 							Transform2D xform;
-							xform.set_origin(map_to_world(bodies_coords[body]));
+							xform.set_origin(map_to_local(bodies_coords[body]));
 							xform = global_transform * xform;
 							PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 						}
@@ -1446,7 +1446,7 @@ void TileMap::_physics_notification(int p_what) {
 
 						for (RID body : q.bodies) {
 							Transform2D xform;
-							xform.set_origin(map_to_world(bodies_coords[body]));
+							xform.set_origin(map_to_local(bodies_coords[body]));
 							xform = new_transform * xform;
 
 							PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
@@ -1516,7 +1516,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 						ps->body_set_space(body, space);
 
 						Transform2D xform;
-						xform.set_origin(map_to_world(E_cell));
+						xform.set_origin(map_to_local(E_cell));
 						xform = global_transform * xform;
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 
@@ -1602,7 +1602,7 @@ void TileMap::_physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	Vector<Color> color;
 	color.push_back(debug_collision_color);
 
-	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
+	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 	Transform2D qudrant_xform;
 	qudrant_xform.set_origin(quadrant_pos);
 	Transform2D global_transform_inv = (get_global_transform() * qudrant_xform).affine_inverse();
@@ -1641,7 +1641,7 @@ void TileMap::_navigation_notification(int p_what) {
 									continue;
 								}
 								Transform2D tile_transform;
-								tile_transform.set_origin(map_to_world(E_region.key));
+								tile_transform.set_origin(map_to_local(E_region.key));
 								NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
 							}
 						}
@@ -1709,7 +1709,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 
 						if (navpoly.is_valid()) {
 							Transform2D tile_transform;
-							tile_transform.set_origin(map_to_world(E_cell));
+							tile_transform.set_origin(map_to_local(E_cell));
 
 							RID region = NavigationServer2D::get_singleton()->region_create();
 							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
@@ -1769,7 +1769,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	Color color = get_tree()->get_debug_navigation_color();
 	RandomPCG rand;
 
-	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
+	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 
 	for (const Vector2i &E_cell : p_quadrant->cells) {
 		TileMapCell c = get_cell(p_quadrant->layer, E_cell, true);
@@ -1792,7 +1792,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 				}
 
 				Transform2D xform;
-				xform.set_origin(map_to_world(E_cell) - quadrant_pos);
+				xform.set_origin(map_to_local(E_cell) - quadrant_pos);
 				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 
 				for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
@@ -1866,10 +1866,10 @@ void TileMap::_scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_
 						Control *scene_as_control = Object::cast_to<Control>(scene);
 						Node2D *scene_as_node2d = Object::cast_to<Node2D>(scene);
 						if (scene_as_control) {
-							scene_as_control->set_position(map_to_world(E_cell) + scene_as_control->get_position());
+							scene_as_control->set_position(map_to_local(E_cell) + scene_as_control->get_position());
 						} else if (scene_as_node2d) {
 							Transform2D xform;
-							xform.set_origin(map_to_world(E_cell));
+							xform.set_origin(map_to_local(E_cell));
 							scene_as_node2d->set_transform(xform * scene_as_node2d->get_transform());
 						}
 						q.scenes[E_cell] = scene->get_name();
@@ -1903,7 +1903,7 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 	// Draw a placeholder for scenes needing one.
 	RenderingServer *rs = RenderingServer::get_singleton();
-	Vector2 quadrant_pos = map_to_world(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
+	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
 	for (const Vector2i &E_cell : p_quadrant->cells) {
 		const TileMapCell &c = get_cell(p_quadrant->layer, E_cell, true);
 
@@ -1933,7 +1933,7 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 					// Draw a placeholder tile.
 					Transform2D xform;
-					xform.set_origin(map_to_world(E_cell) - quadrant_pos);
+					xform.set_origin(map_to_local(E_cell) - quadrant_pos);
 					rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, xform);
 					rs->canvas_item_add_circle(p_quadrant->debug_canvas_item, Vector2(), MIN(tile_set->get_tile_size().x, tile_set->get_tile_size().y) / 4.0, color);
 				}
@@ -2822,7 +2822,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 		while (q_list_element) {
 			TileMapQuadrant &q = *q_list_element->self();
 			// Iterate over the cells of the quadrant.
-			for (const KeyValue<Vector2i, Vector2i> &E_cell : q.world_to_map) {
+			for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
 				TileMapCell c = get_cell(q.layer, E_cell.value, true);
 
 				TileSetSource *source;
@@ -2981,7 +2981,7 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
+Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {
 	// SHOULD RETURN THE CENTER OF THE CELL
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2());
 
@@ -3058,10 +3058,10 @@ Vector2 TileMap::map_to_world(const Vector2i &p_pos) const {
 	return (ret + Vector2(0.5, 0.5)) * tile_set->get_tile_size();
 }
 
-Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
+Vector2i TileMap::local_to_map(const Vector2 &p_local_position) const {
 	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2i());
 
-	Vector2 ret = p_pos;
+	Vector2 ret = p_local_position;
 	ret /= tile_set->get_tile_size();
 
 	TileSet::TileShape tile_shape = tile_set->get_tile_shape();
@@ -3086,7 +3086,7 @@ Vector2i TileMap::world_to_map(const Vector2 &p_pos) const {
 		ret.x /= overlapping_ratio;
 	}
 
-	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the world position accordingly.
+	// For each half-offset shape, we check if we are in the corner of the tile, and thus should correct the local position accordingly.
 	if (tile_shape == TileSet::TILE_SHAPE_HALF_OFFSET_SQUARE || tile_shape == TileSet::TILE_SHAPE_HEXAGON || tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
 		// Technically, those 3 shapes are equivalent, as they are basically half-offset, but with different levels or overlap.
 		// square = no overlap, hexagon = 0.25 overlap, isometric = 0.5 overlap
@@ -3771,7 +3771,7 @@ void TileMap::draw_cells_outline(Control *p_control, RBSet<Vector2i> p_cells, Co
 	TileSet::TileShape shape = tile_set->get_tile_shape();
 
 	for (const Vector2i &E : p_cells) {
-		Vector2 center = map_to_world(E);
+		Vector2 center = map_to_local(E);
 
 #define DRAW_SIDE_IF_NEEDED(side, polygon_index_from, polygon_index_to)                     \
 	if (!p_cells.has(get_neighbor_cell(E, side))) {                                         \
@@ -3901,8 +3901,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_cells", "layer"), &TileMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
-	ClassDB::bind_method(D_METHOD("map_to_world", "map_position"), &TileMap::map_to_world);
-	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &TileMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &TileMap::map_to_local);
+	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &TileMap::local_to_map);
 
 	ClassDB::bind_method(D_METHOD("get_neighbor_cell", "coords", "neighbor"), &TileMap::get_neighbor_cell);
 

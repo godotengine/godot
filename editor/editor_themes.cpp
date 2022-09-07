@@ -157,24 +157,15 @@ void EditorColorMap::create() {
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
-	style->set_margin_size(SIDE_LEFT, p_left * EDSCALE);
-	style->set_margin_size(SIDE_RIGHT, p_right * EDSCALE);
-	style->set_margin_size(SIDE_BOTTOM, p_bottom * EDSCALE);
-	style->set_margin_size(SIDE_TOP, p_top * EDSCALE);
-	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	style->set_margin_size_individual(p_left * EDSCALE, p_top * EDSCALE, p_right * EDSCALE, p_bottom * EDSCALE);
+	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	style->set_draw_center(p_draw_center);
 	return style;
 }
 
 static Ref<StyleBoxEmpty> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBoxEmpty> style(memnew(StyleBoxEmpty));
-	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	return style;
 }
 
@@ -184,10 +175,7 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	// Adjust level of detail based on the corners' effective sizes.
 	style->set_corner_detail(Math::ceil(0.8 * p_corner_width * EDSCALE));
 	style->set_corner_radius_all(p_corner_width * EDSCALE);
-	style->set_default_margin(SIDE_LEFT, p_margin_left * EDSCALE);
-	style->set_default_margin(SIDE_RIGHT, p_margin_right * EDSCALE);
-	style->set_default_margin(SIDE_BOTTOM, p_margin_bottom * EDSCALE);
-	style->set_default_margin(SIDE_TOP, p_margin_top * EDSCALE);
+	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	// Work around issue about antialiased edges being blurrier (GH-35279).
 	style->set_anti_aliased(false);
 	return style;
@@ -600,10 +588,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Vector2 widget_default_margin = Vector2(extra_spacing + 6, extra_spacing + default_margin_size + 1) * EDSCALE;
 
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
-	style_widget->set_default_margin(SIDE_LEFT, widget_default_margin.x);
-	style_widget->set_default_margin(SIDE_TOP, widget_default_margin.y);
-	style_widget->set_default_margin(SIDE_RIGHT, widget_default_margin.x);
-	style_widget->set_default_margin(SIDE_BOTTOM, widget_default_margin.y);
+	style_widget->set_default_margin_individual(widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y);
 	style_widget->set_bg_color(dark_color_1);
 	style_widget->set_border_color(dark_color_2);
 
@@ -626,10 +611,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Style for windows, popups, etc..
 	Ref<StyleBoxFlat> style_popup = style_default->duplicate();
 	const int popup_margin_size = default_margin_size * EDSCALE * 3;
-	style_popup->set_default_margin(SIDE_LEFT, popup_margin_size);
-	style_popup->set_default_margin(SIDE_TOP, popup_margin_size);
-	style_popup->set_default_margin(SIDE_RIGHT, popup_margin_size);
-	style_popup->set_default_margin(SIDE_BOTTOM, popup_margin_size);
+	style_popup->set_default_margin_all(popup_margin_size);
 	style_popup->set_border_color(contrast_color_1);
 	const Color shadow_color = Color(0, 0, 0, dark_theme ? 0.3 : 0.1);
 	style_popup->set_shadow_color(shadow_color);
@@ -666,9 +648,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tab_base->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 	style_tab_base->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 
-	// Prevent visible artifacts and cover the top-left rounded corner of the panel below the tab if selected
-	// We can't prevent them with both rounded corners and non-zero border width, though
-	style_tab_base->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
 	// When using a border width greater than 0, visually line up the left of the selected tab with the underlying panel.
 	style_tab_base->set_expand_margin_size(SIDE_LEFT, -border_width);
 
@@ -897,15 +876,15 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("hover", "CheckButton", style_menu);
 	theme->set_stylebox("hover_pressed", "CheckButton", style_menu);
 
-	theme->set_icon("on", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), SNAME("EditorIcons")));
-	theme->set_icon("on_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), SNAME("EditorIcons")));
-	theme->set_icon("off", "CheckButton", theme->get_icon(SNAME("GuiToggleOff"), SNAME("EditorIcons")));
-	theme->set_icon("off_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("checked", "CheckButton", theme->get_icon(SNAME("GuiToggleOn"), SNAME("EditorIcons")));
+	theme->set_icon("checked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabled"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked", "CheckButton", theme->get_icon(SNAME("GuiToggleOff"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked_disabled", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabled"), SNAME("EditorIcons")));
 
-	theme->set_icon("on_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("on_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabledMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("off_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffMirrored"), SNAME("EditorIcons")));
-	theme->set_icon("off_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabledMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("checked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("checked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOnDisabledMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffMirrored"), SNAME("EditorIcons")));
+	theme->set_icon("unchecked_disabled_mirrored", "CheckButton", theme->get_icon(SNAME("GuiToggleOffDisabledMirrored"), SNAME("EditorIcons")));
 
 	theme->set_color("font_color", "CheckButton", font_color);
 	theme->set_color("font_hover_color", "CheckButton", font_hover_color);
@@ -921,14 +900,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_disabled_color", "CheckButton", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckButton", 8 * EDSCALE);
-	theme->set_constant("check_v_adjust", "CheckButton", 0 * EDSCALE);
+	theme->set_constant("check_v_offset", "CheckButton", 0 * EDSCALE);
 
 	// Checkbox
 	Ref<StyleBoxFlat> sb_checkbox = style_menu->duplicate();
-	sb_checkbox->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
-	sb_checkbox->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE);
+	sb_checkbox->set_default_margin_all(default_margin_size * EDSCALE);
 
 	theme->set_stylebox("normal", "CheckBox", sb_checkbox);
 	theme->set_stylebox("pressed", "CheckBox", sb_checkbox);
@@ -958,7 +934,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("icon_disabled_color", "CheckBox", icon_disabled_color);
 
 	theme->set_constant("h_separation", "CheckBox", 8 * EDSCALE);
-	theme->set_constant("check_v_adjust", "CheckBox", 0 * EDSCALE);
+	theme->set_constant("check_v_offset", "CheckBox", 0 * EDSCALE);
 
 	// PopupDialog
 	theme->set_stylebox("panel", "PopupDialog", style_popup);
@@ -968,10 +944,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Use 1 pixel for the sides, since if 0 is used, the highlight of hovered items is drawn
 	// on top of the popup border. This causes a 'gap' in the panel border when an item is highlighted,
 	// and it looks weird. 1px solves this.
-	style_popup_menu->set_default_margin(SIDE_LEFT, EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_TOP, 2 * EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_RIGHT, EDSCALE);
-	style_popup_menu->set_default_margin(SIDE_BOTTOM, 2 * EDSCALE);
+	style_popup_menu->set_default_margin_individual(EDSCALE, 2 * EDSCALE, EDSCALE, 2 * EDSCALE);
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	style_popup_menu->set_border_width_all(EDSCALE);
 	style_popup_menu->set_border_color(dark_color_2);
@@ -1027,10 +1000,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		sub_inspector_bg->set_bg_color(dark_color_1.lerp(si_base_color, 0.08));
 		sub_inspector_bg->set_border_width_all(2 * EDSCALE);
 		sub_inspector_bg->set_border_color(si_base_color * Color(0.7, 0.7, 0.7, 0.8));
-		sub_inspector_bg->set_default_margin(SIDE_LEFT, 4 * EDSCALE);
-		sub_inspector_bg->set_default_margin(SIDE_RIGHT, 4 * EDSCALE);
-		sub_inspector_bg->set_default_margin(SIDE_BOTTOM, 4 * EDSCALE);
-		sub_inspector_bg->set_default_margin(SIDE_TOP, 4 * EDSCALE);
+		sub_inspector_bg->set_default_margin_all(4 * EDSCALE);
 		sub_inspector_bg->set_corner_radius(CORNER_TOP_LEFT, 0);
 		sub_inspector_bg->set_corner_radius(CORNER_TOP_RIGHT, 0);
 
@@ -1098,7 +1068,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Make Trees easier to distinguish from other controls by using a darker background color.
 	style_tree_bg->set_bg_color(dark_color_1.lerp(dark_color_2, 0.5));
 	style_tree_bg->set_border_color(dark_color_3);
-	theme->set_stylebox("bg", "Tree", style_tree_bg);
+	theme->set_stylebox("panel", "Tree", style_tree_bg);
 
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon(SNAME("GuiChecked"), SNAME("EditorIcons")));
@@ -1109,7 +1079,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("arrow_collapsed_mirrored", "Tree", theme->get_icon(SNAME("GuiTreeArrowLeft"), SNAME("EditorIcons")));
 	theme->set_icon("updown", "Tree", theme->get_icon(SNAME("GuiTreeUpdown"), SNAME("EditorIcons")));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon(SNAME("GuiDropdown"), SNAME("EditorIcons")));
-	theme->set_stylebox("bg_focus", "Tree", style_widget_focus);
+	theme->set_stylebox("focus", "Tree", style_widget_focus);
 	theme->set_stylebox("custom_button", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_hover", "Tree", style_widget);
@@ -1200,26 +1170,24 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_itemlist_cursor->set_draw_center(false);
 	style_itemlist_cursor->set_border_width_all(border_width);
 	style_itemlist_cursor->set_border_color(highlight_color);
+	theme->set_stylebox("panel", "ItemList", style_itemlist_bg);
+	theme->set_stylebox("focus", "ItemList", style_widget_focus);
 	theme->set_stylebox("cursor", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("cursor_unfocused", "ItemList", style_itemlist_cursor);
 	theme->set_stylebox("selected_focus", "ItemList", style_tree_focus);
 	theme->set_stylebox("selected", "ItemList", style_tree_selected);
-	theme->set_stylebox("bg_focus", "ItemList", style_widget_focus);
-	theme->set_stylebox("bg", "ItemList", style_itemlist_bg);
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_selected_color", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("v_separation", "ItemList", widget_default_margin.y - EDSCALE);
+	theme->set_constant("v_separation", "ItemList", force_even_vsep * 0.5 * EDSCALE);
 	theme->set_constant("h_separation", "ItemList", 6 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", 6 * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
 
 	// TabBar & TabContainer
-	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0);
-	style_tabbar_background->set_expand_margin_size(SIDE_BOTTOM, corner_width > 0 ? corner_width : border_width);
-	style_tabbar_background->set_corner_detail(corner_width);
-	style_tabbar_background->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
-	style_tabbar_background->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
+	Ref<StyleBoxFlat> style_tabbar_background = make_flat_stylebox(dark_color_1, 0, 0, 0, 0, corner_radius * EDSCALE);
+	style_tabbar_background->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
+	style_tabbar_background->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 	theme->set_stylebox("tabbar_background", "TabContainer", style_tabbar_background);
 
 	theme->set_stylebox("tab_selected", "TabContainer", style_tab_selected);
@@ -1230,8 +1198,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("tab_disabled", "TabBar", style_tab_disabled);
 	theme->set_stylebox("button_pressed", "TabBar", style_menu);
 	theme->set_stylebox("button_highlight", "TabBar", style_menu);
-	theme->set_stylebox("SceneTabFG", "EditorStyles", style_tab_selected);
-	theme->set_stylebox("SceneTabBG", "EditorStyles", style_tab_unselected);
 	theme->set_color("font_selected_color", "TabContainer", font_color);
 	theme->set_color("font_unselected_color", "TabContainer", font_disabled_color);
 	theme->set_color("font_selected_color", "TabBar", font_color);
@@ -1251,21 +1217,24 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_highlight", "TabContainer", theme->get_icon(SNAME("GuiScrollArrowLeftHl"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabContainer", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
 	theme->set_icon("drop_mark", "TabBar", theme->get_icon(SNAME("GuiTabDropMark"), SNAME("EditorIcons")));
+	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
 
-	// Content of each tab
+	// Content of each tab.
 	Ref<StyleBoxFlat> style_content_panel = style_default->duplicate();
 	style_content_panel->set_border_color(dark_color_3);
 	style_content_panel->set_border_width_all(border_width);
 	style_content_panel->set_border_width(Side::SIDE_TOP, 0);
 	style_content_panel->set_corner_radius(CORNER_TOP_LEFT, 0);
 	style_content_panel->set_corner_radius(CORNER_TOP_RIGHT, 0);
-	// compensate the border
-	style_content_panel->set_default_margin(SIDE_TOP, (2 + margin_size_extra) * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_RIGHT, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_BOTTOM, margin_size_extra * EDSCALE);
-	style_content_panel->set_default_margin(SIDE_LEFT, margin_size_extra * EDSCALE);
+	// Compensate for the border.
+	style_content_panel->set_default_margin_individual(margin_size_extra * EDSCALE, (2 + margin_size_extra) * EDSCALE, margin_size_extra * EDSCALE, margin_size_extra * EDSCALE);
 	theme->set_stylebox("panel", "TabContainer", style_content_panel);
+
+	// Bottom panel.
+	Ref<StyleBoxFlat> style_bottom_panel = style_content_panel->duplicate();
+	style_bottom_panel->set_corner_radius_all(corner_radius * EDSCALE);
+	theme->set_stylebox("BottomPanel", "EditorStyles", style_bottom_panel);
 
 	// TabContainerOdd can be used on tabs against the base color background (e.g. nested tabs).
 	theme->set_type_variation("TabContainerOdd", "TabContainer");
@@ -1280,10 +1249,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// This stylebox is used in 3d and 2d viewports (no borders).
 	Ref<StyleBoxFlat> style_content_panel_vp = style_content_panel->duplicate();
-	style_content_panel_vp->set_default_margin(SIDE_LEFT, border_width * 2);
-	style_content_panel_vp->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE);
-	style_content_panel_vp->set_default_margin(SIDE_RIGHT, border_width * 2);
-	style_content_panel_vp->set_default_margin(SIDE_BOTTOM, border_width * 2);
+	style_content_panel_vp->set_default_margin_individual(border_width * 2, default_margin_size * EDSCALE, border_width * 2, border_width * 2);
 	theme->set_stylebox("Content", "EditorStyles", style_content_panel_vp);
 
 	// This stylebox is used by preview tabs in the Theme Editor.
@@ -1345,7 +1311,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "TextEdit", style_line_edit);
 	theme->set_stylebox("focus", "TextEdit", style_widget_focus);
 	theme->set_stylebox("read_only", "TextEdit", style_line_edit_disabled);
-	theme->set_constant("side_margin", "TabContainer", 0);
 	theme->set_icon("tab", "TextEdit", theme->get_icon(SNAME("GuiTab"), SNAME("EditorIcons")));
 	theme->set_icon("space", "TextEdit", theme->get_icon(SNAME("GuiSpace"), SNAME("EditorIcons")));
 	theme->set_color("font_color", "TextEdit", font_color);
@@ -1362,6 +1327,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	theme->set_constant("separation", "HSplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "VSplitContainer", default_margin_size * 2 * EDSCALE);
+
+	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * EDSCALE);
+	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * EDSCALE);
 
 	// Containers
 	theme->set_constant("separation", "BoxContainer", default_margin_size * EDSCALE);
@@ -1422,6 +1390,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// AcceptDialog
 	theme->set_stylebox("panel", "AcceptDialog", style_window_title);
+	theme->set_constant("buttons_separation", "AcceptDialog", 8 * EDSCALE);
 
 	// HScrollBar
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);
@@ -1520,10 +1489,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// is only relevant for default tooltips.
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();
 	style_tooltip->set_shadow_size(0);
-	style_tooltip->set_default_margin(SIDE_LEFT, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_TOP, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_RIGHT, default_margin_size * EDSCALE * 0.5);
-	style_tooltip->set_default_margin(SIDE_BOTTOM, default_margin_size * EDSCALE * 0.5);
+	style_tooltip->set_default_margin_all(default_margin_size * EDSCALE * 0.5);
 	style_tooltip->set_bg_color(dark_color_3 * Color(0.8, 0.8, 0.8, 0.9));
 	style_tooltip->set_border_width_all(0);
 	theme->set_color("font_color", "TooltipLabel", font_hover_color);
@@ -1549,8 +1515,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("updown_disabled", "SpinBox", theme->get_icon(SNAME("GuiSpinboxUpdownDisabled"), SNAME("EditorIcons")));
 
 	// ProgressBar
-	theme->set_stylebox("bg", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
-	theme->set_stylebox("fg", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
+	theme->set_stylebox("background", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressBar"), SNAME("EditorIcons")), 4, 4, 4, 4, 0, 0, 0, 0));
+	theme->set_stylebox("fill", "ProgressBar", make_stylebox(theme->get_icon(SNAME("GuiProgressFill"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 1, 2, 1));
 	theme->set_color("font_color", "ProgressBar", font_color);
 
 	// GraphEdit
@@ -1696,7 +1662,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("toggle_hidden", "FileDialog", theme->get_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons")));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
-	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
+	theme->set_color("folder_icon_color", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).lerp(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_disabled_color);
 
 	// ColorPicker

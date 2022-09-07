@@ -634,7 +634,7 @@ namespace Godot
         /// <param name="outFrom">The start value for the output interpolation.</param>
         /// <param name="outTo">The destination value for the output interpolation.</param>
         /// <returns>The resulting mapped value mapped.</returns>
-        public static real_t RangeLerp(real_t value, real_t inFrom, real_t inTo, real_t outFrom, real_t outTo)
+        public static real_t Remap(real_t value, real_t inFrom, real_t inTo, real_t outFrom, real_t outTo)
         {
             return Lerp(outFrom, outTo, InverseLerp(inFrom, inTo, value));
         }

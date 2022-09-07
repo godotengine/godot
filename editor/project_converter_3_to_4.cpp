@@ -91,6 +91,8 @@ static const char *enum_renames[][2] = {
 	{ "BUTTON_XBUTTON2", "MOUSE_BUTTON_XBUTTON2" }, // Globals
 	{ "CLEAR_MODE_ONLY_NEXT_FRAME", "CLEAR_MODE_ONCE" }, // SubViewport
 	{ "COMPRESS_PVRTC4", "COMPRESS_PVRTC1_4" }, // Image
+	{ "CONNECT_ONESHOT", "CONNECT_ONE_SHOT" }, // Object
+	{ "CONTAINER_PROPERTY_EDITOR_BOTTOM", "CONTAINER_INSPECTOR_BOTTOM" }, // EditorPlugin
 	{ "CUBEMAP_BACK", "CUBEMAP_LAYER_BACK" }, // RenderingServer
 	{ "CUBEMAP_BOTTOM", "CUBEMAP_LAYER_BOTTOM" }, // RenderingServer
 	{ "CUBEMAP_FRONT", "CUBEMAP_LAYER_FRONT" }, // RenderingServer
@@ -131,6 +133,7 @@ static const char *enum_renames[][2] = {
 	{ "MODE_STATIC", "FREEZE_MODE_STATIC" }, // RigidBody
 	{ "NOTIFICATION_APP_PAUSED", "NOTIFICATION_APPLICATION_PAUSED" }, // MainLoop
 	{ "NOTIFICATION_APP_RESUMED", "NOTIFICATION_APPLICATION_RESUMED" }, // MainLoop
+	{ "NOTIFICATION_INSTANCED", "NOTIFICATION_SCENE_INSTANTIATED" }, // Node
 	{ "NOTIFICATION_PATH_CHANGED", "NOTIFICATION_PATH_RENAMED" }, //Node
 	{ "NOTIFICATION_WM_FOCUS_IN", "NOTIFICATION_APPLICATION_FOCUS_IN" }, // MainLoop
 	{ "NOTIFICATION_WM_FOCUS_OUT", "NOTIFICATION_APPLICATION_FOCUS_OUT" }, // MainLoop
@@ -242,11 +245,11 @@ static const char *gdscript_function_renames[][2] = {
 	{ "commit_handle", "_commit_handle" }, // EditorNode3DGizmo
 	{ "convex_hull_2d", "convex_hull" }, // Geometry2D
 	{ "create_gizmo", "_create_gizmo" }, // EditorNode3DGizmoPlugin
-	{ "cursor_get_blink_speed", "get_caret_blink_speed" }, // TextEdit
+	{ "cursor_get_blink_speed", "get_caret_blink_interval" }, // TextEdit
 	{ "cursor_get_column", "get_caret_column" }, // TextEdit
 	{ "cursor_get_line", "get_caret_line" }, // TextEdit
 	{ "cursor_set_blink_enabled", "set_caret_blink_enabled" }, // TextEdit
-	{ "cursor_set_blink_speed", "set_caret_blink_speed" }, // TextEdit
+	{ "cursor_set_blink_speed", "set_caret_blink_interval" }, // TextEdit
 	{ "cursor_set_column", "set_caret_column" }, // TextEdit
 	{ "cursor_set_line", "set_caret_line" }, // TextEdit
 	{ "damped_spring_joint_create", "joint_make_damped_spring" }, // PhysicsServer2D
@@ -295,7 +298,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_d", "get_distance" }, // LineShape2D
 	{ "get_drag_data", "_get_drag_data" }, // Control
 	{ "get_drag_data_fw", "_get_drag_data_fw" }, // ScriptEditor
-	{ "get_editor_viewport", "get_viewport" }, // EditorPlugin
+	{ "get_editor_viewport", "get_editor_main_screen" }, // EditorPlugin
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
 	{ "get_endian_swap", "is_big_endian" }, // File
 	{ "get_error_string", "get_error_message" }, // JSON
@@ -331,6 +334,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_network_peer", "get_multiplayer_peer" }, // Multiplayer API
 	{ "get_network_unique_id", "get_unique_id" }, // Multiplayer API
 	{ "get_ok", "get_ok_button" }, // AcceptDialog
+	{ "get_oneshot", "get_one_shot" }, // AnimatedTexture
 	{ "get_option_visibility", "_get_option_visibility" }, // EditorImportPlugin
 	{ "get_parameter_default_value", "_get_parameter_default_value" }, // AnimationNode
 	{ "get_parameter_list", "_get_parameter_list" }, // AnimationNode
@@ -506,6 +510,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_mid_height", "set_height" }, // CapsuleMesh
 	{ "set_network_master", "set_multiplayer_authority" }, // Node
 	{ "set_network_peer", "set_multiplayer_peer" }, // Multiplayer API
+	{ "set_oneshot", "set_one_shot" }, // AnimatedTexture
 	{ "set_pause_mode", "set_process_mode" }, // Node
 	{ "set_physical_scancode", "set_physical_keycode" }, // InputEventKey
 	{ "set_refuse_new_network_connections", "set_refuse_new_connections" }, // Multiplayer API
@@ -547,6 +552,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "update_gizmo", "update_gizmos" }, // Node3D
 	{ "viewport_set_use_arvr", "viewport_set_use_xr" }, // RenderingServer
 	{ "warp_mouse_position", "warp_mouse" }, // Input
+	{ "world_to_map", "local_to_map" }, // TileMap, GridMap
 	{ "set_shader_param", "set_shader_parameter" }, // ShaderMaterial
 	{ "get_shader_param", "get_shader_parameter" }, // ShaderMaterial
 	{ "set_uniform_name", "set_parameter_name" }, // ParameterRef
@@ -575,6 +581,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "linear2db", "linear_to_db" },
 	{ "rad2deg", "rad_to_deg" },
 	{ "rand_range", "randf_range" },
+	{ "range_lerp", "remap" },
 	{ "stepify", "snapped" },
 	{ "str2var", "str_to_var" },
 	{ "var2str", "var_to_str" },
@@ -667,11 +674,11 @@ static const char *csharp_function_renames[][2] = {
 	{ "ClipPolylineWithPolygon2d", "ClipPolylineWithPolygon" }, //Geometry2D
 	{ "CommitHandle", "_CommitHandle" }, // EditorNode3DGizmo
 	{ "ConvexHull2d", "ConvexHull" }, // Geometry2D
-	{ "CursorGetBlinkSpeed", "GetCaretBlinkSpeed" }, // TextEdit
+	{ "CursorGetBlinkSpeed", "GetCaretBlinkInterval" }, // TextEdit
 	{ "CursorGetColumn", "GetCaretColumn" }, // TextEdit
 	{ "CursorGetLine", "GetCaretLine" }, // TextEdit
 	{ "CursorSetBlinkEnabled", "SetCaretBlinkEnabled" }, // TextEdit
-	{ "CursorSetBlinkSpeed", "SetCaretBlinkSpeed" }, // TextEdit
+	{ "CursorSetBlinkSpeed", "SetCaretBlinkInterval" }, // TextEdit
 	{ "CursorSetColumn", "SetCaretColumn" }, // TextEdit
 	{ "CursorSetLine", "SetCaretLine" }, // TextEdit
 	{ "DampedSpringJointCreate", "JointMakeDampedSpring" }, // PhysicsServer2D
@@ -750,6 +757,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetNetworkMaster", "GetMultiplayerAuthority" }, // Node
 	{ "GetNetworkPeer", "GetMultiplayerPeer" }, // Multiplayer API
 	{ "GetNetworkUniqueId", "GetUniqueId" }, // Multiplayer API
+	{ "GetOneshot", "GetOneShot" }, // AnimatedTexture
 	{ "GetOk", "GetOkButton" }, // AcceptDialog
 	{ "GetOptionVisibility", "_GetOptionVisibility" }, // EditorImportPlugin
 	{ "GetParameterDefaultValue", "_GetParameterDefaultValue" }, // AnimationNode
@@ -916,6 +924,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetMidHeight", "SetHeight" }, // CapsuleMesh
 	{ "SetNetworkMaster", "SetMultiplayerAuthority" }, // Node
 	{ "SetNetworkPeer", "SetMultiplayerPeer" }, // Multiplayer API
+	{ "SetOneshot", "SetOneShot" }, // AnimatedTexture
 	{ "SetPhysicalScancode", "SetPhysicalKeycode" }, // InputEventKey
 	{ "SetRefuseNewNetworkConnections", "SetRefuseNewConnections" }, // Multiplayer API
 	{ "SetRegion", "SetRegionEnabled" }, // Sprite2D, Sprite broke AtlasTexture
@@ -958,6 +967,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "UpdateGizmo", "UpdateGizmos" }, // Node3D
 	{ "ViewportSetUseArvr", "ViewportSetUseXr" }, // RenderingServer
 	{ "WarpMousePosition", "WarpMouse" }, // Input
+	{ "WorldToMap", "LocalToMap" }, // TileMap, GridMap
 	{ "SetShaderParam", "SetShaderParameter" }, // ShaderMaterial
 	{ "GetShaderParam", "GetShaderParameter" }, // ShaderMaterial
 	{ "SetUniformName", "SetParameterName" }, // ParameterRef
@@ -984,6 +994,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "Linear2Db", "LinearToDb" },
 	{ "Rad2Deg", "RadToDeg" },
 	{ "RandRange", "RandfRange" },
+	{ "RangeLerp", "Remap" },
 	{ "Stepify", "Snapped" },
 	{ "Str2Var", "StrToVar" },
 	{ "Var2Str", "VarToStr" },
@@ -1023,9 +1034,12 @@ static const char *gdscript_properties_renames[][2] = {
 	//	{ "filename", "scene_file_path" }, // Node
 	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "bbcode_text", "text" }, // RichTextLabel
+	{ "bg", "panel" }, // Theme
+	{ "bg_focus", "focus" }, // Theme
+	{ "caret_blink_speed", "caret_blink_interval" }, // TextEdit, LineEdit
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
 	{ "caret_position", "caret_column" }, // LineEdit
-	{ "check_vadjust", "check_v_adjust" }, // Theme
+	{ "check_vadjust", "check_v_offset" }, // Theme
 	{ "close_h_ofs", "close_h_offset" }, // Theme
 	{ "close_v_ofs", "close_v_offset" }, // Theme
 	{ "commentfocus", "comment_focus" }, // Theme
@@ -1043,6 +1057,9 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "focus_neighbour_left", "focus_neighbor_left" }, // Control
 	{ "focus_neighbour_right", "focus_neighbor_right" }, // Control
 	{ "focus_neighbour_top", "focus_neighbor_top" }, // Control
+	{ "file_icon_modulate", "file_icon_color" }, // Theme
+	{ "files_disabled", "file_disabled_color" }, // Theme
+	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
 	{ "gravity_distance_scale", "gravity_point_distance_scale" }, // Area2D
 	{ "gravity_vec", "gravity_direction" }, // Area2D
@@ -1057,7 +1074,12 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "mid_height", "height" }, // CapsuleMesh
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
+	{ "off", "unchecked" }, // Theme
+	{ "off_disabled", "unchecked_disabled" }, // Theme
 	{ "ofs", "offset" }, // Theme
+	{ "on", "checked" }, // Theme
+	{ "on_disabled", "checked_disabled" }, // Theme
+	{ "oneshot", "one_shot" }, // AnimatedTexture
 	{ "out_of_range_mode", "max_polyphony" }, // AudioStreamPlayer3D
 	{ "pause_mode", "process_mode" }, // Node
 	{ "physical_scancode", "physical_keycode" }, // InputEventKey
@@ -1108,6 +1130,7 @@ static const char *csharp_properties_renames[][2] = {
 	//	{ "CastTo", "TargetPosition" }, // RayCast2D, RayCast3D
 	//	{ "Doubleclick", "DoubleClick" }, // InputEventMouseButton
 	//	{ "Group", "ButtonGroup" }, // BaseButton
+	//  { "PercentVisible, "ShowPercentage}, // ProgressBar, conflicts with Label and RichTextLabel, but may be a worth it.
 	//	{ "ProcessMode", "ProcessCallback" }, // AnimationTree, Camera2D
 	//	{ "Scancode", "Keycode" }, // InputEventKey
 	//	{ "Toplevel", "TopLevel" }, // Node
@@ -1117,6 +1140,7 @@ static const char *csharp_properties_renames[][2] = {
 	//	{ "Znear", "Near" }, // Camera3D
 	{ "AsNormalmap", "AsNormalMap" }, // NoiseTexture
 	{ "BbcodeText", "Text" }, // RichTextLabel
+	{ "CaretBlinkSpeed", "CaretBlinkInterval" }, // TextEdit, LineEdit
 	{ "CaretMovingByRightClick", "CaretMoveOnRightClick" }, // TextEdit
 	{ "CaretPosition", "CaretColumn" }, // LineEdit
 	{ "CheckVadjust", "CheckVAdjust" }, // Theme
@@ -1151,6 +1175,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
 	{ "OffsetV", "DragVerticalOffset" }, // Camera2D
 	{ "Ofs", "Offset" }, // Theme
+	{ "Oneshot", "OneShot" }, // AnimatedTexture
 	{ "OutOfRangeMode", "MaxPolyphony" }, // AudioStreamPlayer3D
 	{ "PauseMode", "ProcessMode" }, // Node
 	{ "PhysicalScancode", "PhysicalKeycode" }, // InputEventKey
@@ -1456,6 +1481,7 @@ static const char *class_renames[][2] = {
 	{ "StreamCubemap", "CompressedCubemap" },
 	{ "StreamCubemapArray", "CompressedCubemapArray" },
 	{ "StreamPeerGDNative", "StreamPeerExtension" },
+	{ "StreamPeerSSL", "StreamPeerTLS" },
 	{ "StreamTexture", "CompressedTexture2D" },
 	{ "StreamTexture2D", "CompressedTexture2D" },
 	{ "StreamTexture2DArray", "CompressedTexture2DArray" },
@@ -2432,7 +2458,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid & test_conversion_gdscript_builtin("set_cell_item(a, b)", "set_cell_item(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_gdscript_builtin("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_gdscript_builtin("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid & test_conversion_gdscript_builtin("map_to_world(a, b,c)", "map_to_world(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid & test_conversion_gdscript_builtin("map_to_world(a, b,c)", "map_to_local(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid & test_conversion_gdscript_builtin("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid & test_conversion_gdscript_builtin("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -2597,7 +2623,7 @@ bool ProjectConverter3To4::test_array_names() {
 
 		// List of excluded functions from builtin types and global namespace, because currently it is not possible to get list of functions from them
 		// This will be available when https://github.com/godotengine/godot/pull/49053 or similar will be included into Godot
-		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "clamp", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", nullptr };
+		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "clamp", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", "remap", nullptr };
 		for (int current_index = 0; builtin_types_excluded_functions[current_index]; current_index++) {
 			all_functions.insert(builtin_types_excluded_functions[current_index]);
 		}
@@ -3460,14 +3486,16 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 			}
 		}
 	}
-	//  map_to_world(a, b, c)  ->   map_to_world(Vector3i(a, b, c))
+	//  map_to_world(a, b, c)  ->   map_to_local(Vector3i(a, b, c))
 	if (line.contains("map_to_world(")) {
 		int start = line.find("map_to_world(");
 		int end = get_end_parenthess(line.substr(start)) + 1;
 		if (end > -1) {
 			Vector<String> parts = parse_arguments(line.substr(start, end));
 			if (parts.size() == 3) {
-				line = line.substr(0, start) + "map_to_world(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+				line = line.substr(0, start) + "map_to_local(Vector3i(" + parts[0] + "," + parts[1] + "," + parts[2] + "))" + line.substr(end + start);
+			} else if (parts.size() == 1) {
+				line = line.substr(0, start) + "map_to_local(" + parts[0] + ")" + line.substr(end + start);
 			}
 		}
 	}

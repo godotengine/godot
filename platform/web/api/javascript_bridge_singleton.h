@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  javascript_singleton.h                                               */
+/*  javascript_bridge_singleton.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef JAVASCRIPT_SINGLETON_H
-#define JAVASCRIPT_SINGLETON_H
+#ifndef JAVASCRIPT_BRIDGE_SINGLETON_H
+#define JAVASCRIPT_BRIDGE_SINGLETON_H
 
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
@@ -44,11 +44,11 @@ protected:
 	virtual void _get_property_list(List<PropertyInfo> *p_list) const {}
 };
 
-class JavaScript : public Object {
+class JavaScriptBridge : public Object {
 private:
-	GDCLASS(JavaScript, Object);
+	GDCLASS(JavaScriptBridge, Object);
 
-	static JavaScript *singleton;
+	static JavaScriptBridge *singleton;
 
 protected:
 	static void _bind_methods();
@@ -62,9 +62,9 @@ public:
 	bool pwa_needs_update() const;
 	Error pwa_update();
 
-	static JavaScript *get_singleton();
-	JavaScript();
-	~JavaScript();
+	static JavaScriptBridge *get_singleton();
+	JavaScriptBridge();
+	~JavaScriptBridge();
 };
 
-#endif // JAVASCRIPT_SINGLETON_H
+#endif // JAVASCRIPT_BRIDGE_SINGLETON_H

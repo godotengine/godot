@@ -1015,7 +1015,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i left_rect(pos.x, pos.y + left_start_y, left, left_end_y - left_start_y);
 								if (left_rect.size.x > 0) {
 									Rect2i intersection = rect.intersection(left_rect);
-									if (!intersection.has_no_area() && intersection.size.x < rect.size.x) {
+									if (intersection.has_area() && intersection.size.x < rect.size.x) {
 										rect.position.x = left_rect.size.x;
 										rect.size.x = rect.size.x - intersection.size.x;
 									}
@@ -1024,7 +1024,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i right_rect(pos.x + size.x - right, pos.y + right_start_y, right, right_end_y - right_start_y);
 								if (right_rect.size.x > 0) {
 									Rect2i intersection = rect.intersection(right_rect);
-									if (!intersection.has_no_area() && right_rect.size.x < rect.size.x) {
+									if (intersection.has_area() && right_rect.size.x < rect.size.x) {
 										rect.size.x = intersection.position.x - rect.position.x;
 									}
 								}
@@ -1032,7 +1032,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i top_rect(pos.x + top_start_x, pos.y, top_end_x - top_start_x, top);
 								if (top_rect.size.y > 0) {
 									Rect2i intersection = rect.intersection(top_rect);
-									if (!intersection.has_no_area() && intersection.size.y < rect.size.y) {
+									if (intersection.has_area() && intersection.size.y < rect.size.y) {
 										rect.position.y = top_rect.size.y;
 										rect.size.y = rect.size.y - intersection.size.y;
 									}
@@ -1041,7 +1041,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i bottom_rect(pos.x + bottom_start_x, pos.y + size.y - bottom, bottom_end_x - bottom_start_x, bottom);
 								if (bottom_rect.size.y > 0) {
 									Rect2i intersection = rect.intersection(bottom_rect);
-									if (!intersection.has_no_area() && right_rect.size.y < rect.size.y) {
+									if (intersection.has_area() && right_rect.size.y < rect.size.y) {
 										rect.size.y = intersection.position.y - rect.position.y;
 									}
 								}
@@ -2221,7 +2221,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			wd.layered_window = p_enabled;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
@@ -2274,7 +2274,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			return wd.layered_window;
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
@@ -4426,13 +4426,41 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	//Create window
 
-	long visualMask = VisualScreenMask;
-	int numberOfVisuals;
-	XVisualInfo vInfoTemplate = {};
-	vInfoTemplate.screen = DefaultScreen(x11_display);
-	XVisualInfo *visualInfo = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+	XVisualInfo visualInfo;
+	bool vi_selected = false;
 
-	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, vInfoTemplate.screen), visualInfo->visual, AllocNone);
+#ifdef GLES3_ENABLED
+	if (gl_manager) {
+		visualInfo = gl_manager->get_vi(x11_display);
+		vi_selected = true;
+	}
+#endif
+
+	if (!vi_selected) {
+		long visualMask = VisualScreenMask;
+		int numberOfVisuals;
+		XVisualInfo vInfoTemplate = {};
+		vInfoTemplate.screen = DefaultScreen(x11_display);
+		XVisualInfo *vi_list = XGetVisualInfo(x11_display, visualMask, &vInfoTemplate, &numberOfVisuals);
+		ERR_FAIL_COND_V(!vi_list, INVALID_WINDOW_ID);
+
+		visualInfo = vi_list[0];
+		if (OS::get_singleton()->is_layered_allowed()) {
+			for (int i = 0; i < numberOfVisuals; i++) {
+				XRenderPictFormat *pict_format = XRenderFindVisualFormat(x11_display, vi_list[i].visual);
+				if (!pict_format) {
+					continue;
+				}
+				visualInfo = vi_list[i];
+				if (pict_format->direct.alphaMask > 0) {
+					break;
+				}
+			}
+		}
+		XFree(vi_list);
+	}
+
+	Colormap colormap = XCreateColormap(x11_display, RootWindow(x11_display, visualInfo.screen), visualInfo.visual, AllocNone);
 
 	XSetWindowAttributes windowAttributes = {};
 	windowAttributes.colormap = colormap;
@@ -4441,6 +4469,13 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
+
+	if (OS::get_singleton()->is_layered_allowed()) {
+		windowAttributes.background_pixmap = None;
+		windowAttributes.background_pixel = 0;
+		windowAttributes.border_pixmap = None;
+		valuemask |= CWBackPixel;
+	}
 
 	WindowID id = window_id_counter++;
 	WindowData &wd = windows[id];
@@ -4465,7 +4500,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	}
 
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4602,8 +4637,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 		XSync(x11_display, False);
 		//XSetErrorHandler(oldHandler);
-
-		XFree(visualInfo);
 	}
 
 	window_set_mode(p_mode, id);
@@ -4867,6 +4900,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	show_window(main_window);
+	XSync(x11_display, False);
+	_validate_mode_on_map(main_window);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -5013,17 +5048,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	cursor_set_shape(CURSOR_BUSY);
 
-	XEvent xevent;
-	while (XPending(x11_display) > 0) {
-		XNextEvent(x11_display, &xevent);
-		if (xevent.type == ConfigureNotify) {
-			_window_changed(&xevent);
-		} else if (xevent.type == MapNotify) {
-			// Have we failed to set fullscreen while the window was unmapped?
-			_validate_mode_on_map(main_window);
-		}
+	// Search the X11 event queue for ConfigureNotify events and process all
+	// that are currently queued early, so we can get the final window size
+	// for correctly drawing of the bootsplash.
+	XEvent config_event;
+	while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+		_window_changed(&config_event);
 	}
-
 	events_thread.start(_poll_events_thread, this);
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);

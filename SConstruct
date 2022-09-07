@@ -167,7 +167,7 @@ opts.Add("p", "Platform (alias for 'platform')", "")
 opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
-opts.Add(EnumVariable("float", "Floating-point precision", "default", ("default", "32", "64")))
+opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
 opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
 opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
@@ -437,19 +437,6 @@ if selected_platform in platform_list:
                 % (cpu_count, safer_cpu_count)
             )
             env.SetOption("num_jobs", safer_cpu_count)
-
-    if env["compiledb"]:
-        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
-        from SCons import __version__ as scons_raw_version
-
-        scons_ver = env._get_major_minor_revision(scons_raw_version)
-
-        if scons_ver < (4, 0, 0):
-            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
-            Exit(255)
-
-        env.Tool("compilation_db")
-        env.Alias("compiledb", env.CompilationDatabase())
 
     # 'dev' and 'production' are aliases to set default options if they haven't been set
     # manually by the user.
@@ -839,6 +826,19 @@ if selected_platform in platform_list:
     if env["vsproj"]:
         env.vs_incs = []
         env.vs_srcs = []
+
+    if env["compiledb"]:
+        # Generating the compilation DB (`compile_commands.json`) requires SCons 4.0.0 or later.
+        from SCons import __version__ as scons_raw_version
+
+        scons_ver = env._get_major_minor_revision(scons_raw_version)
+
+        if scons_ver < (4, 0, 0):
+            print("The `compiledb=yes` option requires SCons 4.0 or later, but your version is %s." % scons_raw_version)
+            Exit(255)
+
+        env.Tool("compilation_db")
+        env.Alias("compiledb", env.CompilationDatabase())
 
     Export("env")
 

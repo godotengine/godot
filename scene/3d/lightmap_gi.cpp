@@ -105,6 +105,7 @@ void LightmapGIData::_set_light_textures_data(const Array &p_data) {
 		Vector<Ref<Image>> images;
 		for (int i = 0; i < p_data.size(); i++) {
 			Ref<TextureLayered> texture = p_data[i];
+			ERR_FAIL_COND_MSG(texture.is_null(), vformat("Invalid TextureLayered at index %d.", i));
 			for (int j = 0; j < texture->get_layers(); j++) {
 				images.push_back(texture->get_layer_data(j));
 			}

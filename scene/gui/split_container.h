@@ -33,8 +33,26 @@
 
 #include "scene/gui/container.h"
 
+class SplitContainerDragger : public Control {
+	GDCLASS(SplitContainerDragger, Control);
+
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+
+private:
+	bool dragging = false;
+	int drag_from = 0;
+	int drag_ofs = 0;
+	bool mouse_inside = false;
+
+public:
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+};
+
 class SplitContainer : public Container {
 	GDCLASS(SplitContainer, Container);
+	friend class SplitContainerDragger;
 
 public:
 	enum DraggerVisibility {
@@ -44,19 +62,17 @@ public:
 	};
 
 private:
-	bool should_clamp_split_offset = false;
 	int split_offset = 0;
 	int middle_sep = 0;
 	bool vertical = false;
-	bool dragging = false;
-	int drag_from = 0;
-	int drag_ofs = 0;
 	bool collapsed = false;
 	DraggerVisibility dragger_visibility = DRAGGER_VISIBLE;
-	bool mouse_inside = false;
+
+	SplitContainerDragger *dragging_area_control = nullptr;
 
 	struct ThemeCache {
 		int separation = 0;
+		int minimum_grab_thickness = 0;
 		int autohide = 0;
 		Ref<Texture2D> grabber_icon;
 		Ref<Texture2D> grabber_icon_h;
@@ -66,12 +82,14 @@ private:
 	Control *_getch(int p_idx) const;
 
 	Ref<Texture2D> _get_grabber_icon() const;
+	void _compute_middle_sep(bool p_clamp);
 	void _resort();
+
+	void _dragging_area_gui_input(const Ref<InputEvent> &p_event);
 
 protected:
 	bool is_fixed = false;
 
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
@@ -91,8 +109,6 @@ public:
 
 	void set_vertical(bool p_vertical);
 	bool is_vertical() const;
-
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	virtual Size2 get_minimum_size() const override;
 

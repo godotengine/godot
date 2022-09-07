@@ -257,6 +257,7 @@ enum ContextFlag : uint32_t {
 	CF_UNIFORM_KEYWORD = 2048U, // "uniform"
 	CF_CONST_KEYWORD = 4096U, // "const"
 	CF_UNIFORM_QUALIFIER = 8192U, // "<x> uniform float t;"
+	CF_SHADER_TYPE = 16384U, // "shader_type"
 };
 
 const uint32_t KCF_DATATYPE = CF_BLOCK | CF_GLOBAL_SPACE | CF_DATATYPE | CF_FUNC_DECL_PARAM_TYPE | CF_UNIFORM_TYPE;
@@ -318,7 +319,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_VARYING, "varying", CF_GLOBAL_SPACE, { "particles", "sky", "fog" }, {} },
 	{ TK_CONST, "const", CF_BLOCK | CF_GLOBAL_SPACE | CF_CONST_KEYWORD, {}, {} },
 	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
-	{ TK_SHADER_TYPE, "shader_type", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_SHADER_TYPE, "shader_type", CF_SHADER_TYPE, {}, {} },
 	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
 
 	// uniform qualifiers
@@ -1183,7 +1184,7 @@ void ShaderLanguage::clear() {
 	include_positions.push_back(FilePosition());
 
 #ifdef DEBUG_ENABLED
-	keyword_completion_context = CF_GLOBAL_SPACE;
+	keyword_completion_context = CF_UNSPECIFIED;
 	used_constants.clear();
 	used_varyings.clear();
 	used_uniforms.clear();
@@ -7821,6 +7822,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 	Token next;
 
 	if (!is_shader_inc) {
+#ifdef DEBUG_ENABLED
+		keyword_completion_context = CF_SHADER_TYPE;
+#endif // DEBUG_ENABLED
 		tk = _get_token();
 
 		if (tk.type != TK_SHADER_TYPE) {

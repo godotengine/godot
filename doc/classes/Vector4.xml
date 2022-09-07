@@ -28,7 +28,7 @@
 			<return type="Vector4" />
 			<param index="0" name="from" type="Vector4i" />
 			<description>
-				Constructs a new [Vector4] from [Vector4i].
+				Constructs a new [Vector4] from the given [Vector4i].
 			</description>
 		</constructor>
 		<constructor name="Vector4">

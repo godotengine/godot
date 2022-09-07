@@ -537,7 +537,7 @@ public:
 	enum ConnectFlags {
 		CONNECT_DEFERRED = 1,
 		CONNECT_PERSIST = 2, // hint for scene to save this connection
-		CONNECT_ONESHOT = 4,
+		CONNECT_ONE_SHOT = 4,
 		CONNECT_REFERENCE_COUNTED = 8,
 	};
 

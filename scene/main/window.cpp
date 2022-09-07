@@ -865,9 +865,7 @@ void Window::_notification(int p_what) {
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 			}
 
-			// Need to defer here, because theme owner information might be set in
-			// add_child_notify, which doesn't get called until right after this.
-			call_deferred(SNAME("notification"), NOTIFICATION_THEME_CHANGED);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

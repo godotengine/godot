@@ -1662,19 +1662,19 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	}
 }
 
-static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
+static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, Control *p_owner_node) {
 	DocTools *doc = EditorHelp::get_doc_data();
 	String base_path;
 
-	Ref<Font> doc_font = p_rt->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
-	Ref<Font> doc_bold_font = p_rt->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
-	Ref<Font> doc_italic_font = p_rt->get_theme_font(SNAME("doc_italic"), SNAME("EditorFonts"));
-	Ref<Font> doc_code_font = p_rt->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
-	Ref<Font> doc_kbd_font = p_rt->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
+	Ref<Font> doc_font = p_owner_node->get_theme_font(SNAME("doc"), SNAME("EditorFonts"));
+	Ref<Font> doc_bold_font = p_owner_node->get_theme_font(SNAME("doc_bold"), SNAME("EditorFonts"));
+	Ref<Font> doc_italic_font = p_owner_node->get_theme_font(SNAME("doc_italic"), SNAME("EditorFonts"));
+	Ref<Font> doc_code_font = p_owner_node->get_theme_font(SNAME("doc_source"), SNAME("EditorFonts"));
+	Ref<Font> doc_kbd_font = p_owner_node->get_theme_font(SNAME("doc_keyboard"), SNAME("EditorFonts"));
 
-	Color link_color = p_rt->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
-	Color code_color = p_rt->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
-	Color kbd_color = p_rt->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
+	Color link_color = p_owner_node->get_theme_color(SNAME("link_color"), SNAME("EditorHelp"));
+	Color code_color = p_owner_node->get_theme_color(SNAME("code_color"), SNAME("EditorHelp"));
+	Color kbd_color = p_owner_node->get_theme_color(SNAME("kbd_color"), SNAME("EditorHelp"));
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 
@@ -1966,7 +1966,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 }
 
 void EditorHelp::_add_text(const String &p_bbcode) {
-	_add_text_to_rt(p_bbcode, class_desc);
+	_add_text_to_rt(p_bbcode, class_desc, this);
 }
 
 Thread EditorHelp::thread;
@@ -2192,11 +2192,10 @@ void EditorHelpBit::_bind_methods() {
 
 void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			rich_text->add_theme_color_override("selection_color", get_theme_color(SNAME("selection_color"), SNAME("EditorHelp")));
 			rich_text->clear();
-			_add_text_to_rt(text, rich_text);
+			_add_text_to_rt(text, rich_text, this);
 			rich_text->reset_size(); // Force recalculating size after parsing bbcode.
 		} break;
 	}
@@ -2205,7 +2204,7 @@ void EditorHelpBit::_notification(int p_what) {
 void EditorHelpBit::set_text(const String &p_text) {
 	text = p_text;
 	rich_text->clear();
-	_add_text_to_rt(text, rich_text);
+	_add_text_to_rt(text, rich_text, this);
 }
 
 EditorHelpBit::EditorHelpBit() {

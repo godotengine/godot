@@ -1028,8 +1028,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 						uint64_t max_rand = 2147483647;
-						double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
 						n_time = (n_time > 1.0) ? 1.0 : n_time;
 						item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
@@ -1243,8 +1243,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 						uint64_t max_rand = 2147483647;
-						double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
 						n_time = (n_time > 1.0) ? 1.0 : n_time;
 						item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
@@ -1676,8 +1676,8 @@ void RichTextLabel::_update_theme_item_cache() {
 
 	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
 	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
-	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("bg"), SNAME("ProgressBar"));
-	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fg"), SNAME("ProgressBar"));
+	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("background"), SNAME("ProgressBar"));
+	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fill"), SNAME("ProgressBar"));
 
 	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
 
@@ -1693,7 +1693,6 @@ void RichTextLabel::_update_theme_item_cache() {
 	theme_cache.shadow_offset_x = get_theme_constant(SNAME("shadow_offset_x"));
 	theme_cache.shadow_offset_y = get_theme_constant(SNAME("shadow_offset_y"));
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.outline_color = get_theme_color(SNAME("outline_color"));
 
 	theme_cache.bold_font = get_theme_font(SNAME("bold_font"));
 	theme_cache.bold_font_size = get_theme_font_size(SNAME("bold_font_size"));
@@ -3941,7 +3940,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int fs = theme_cache.normal_font_size * 3;
 			Ref<Font> f = theme_cache.normal_font;
 			Color color = theme_cache.default_color;
-			Color outline_color = theme_cache.outline_color;
+			Color outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.outline_size;
 			Rect2 dropcap_margins = Rect2();
 

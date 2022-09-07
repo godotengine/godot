@@ -100,8 +100,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
 	Vector2 add_node_pos;
 
-	ConfirmationDialog *delete_window;
-	Tree *delete_tree;
+	ConfirmationDialog *delete_window = nullptr;
+	Tree *delete_tree = nullptr;
 
 	bool box_selecting = false;
 	Point2 box_selecting_from;
@@ -117,6 +117,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	StringName snap_y;
 
 	bool connecting = false;
+	bool connection_follows_cursor = false;
 	StringName connecting_from;
 	Vector2 connecting_to;
 	StringName connecting_to_node;

@@ -90,6 +90,9 @@ class CSharpScript : public Script {
 
 	HashSet<ObjectID> pending_reload_instances;
 	RBMap<ObjectID, StateBackup> pending_reload_state;
+
+	bool was_tool_before_reload = false;
+	HashSet<ObjectID> pending_replace_placeholders;
 #endif
 
 	String source;

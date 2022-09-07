@@ -128,7 +128,7 @@ double Vector3i::length() const {
 }
 
 Vector3i Vector3i::abs() const {
-	return Vector3i(ABS(x), ABS(y), ABS(z));
+	return Vector3i(Math::abs(x), Math::abs(y), Math::abs(z));
 }
 
 Vector3i Vector3i::sign() const {

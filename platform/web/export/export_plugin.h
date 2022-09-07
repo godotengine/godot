@@ -33,7 +33,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_node.h"

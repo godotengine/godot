@@ -302,7 +302,7 @@ Ref<StreamPeer> StreamPeerMbedTLS::get_stream() const {
 	return base;
 }
 
-StreamPeerSSL *StreamPeerMbedTLS::_create_func() {
+StreamPeerTLS *StreamPeerMbedTLS::_create_func() {
 	return memnew(StreamPeerMbedTLS);
 }
 

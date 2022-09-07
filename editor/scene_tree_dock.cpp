@@ -1255,16 +1255,14 @@ void SceneTreeDock::_notification(int p_what) {
 
 			// create_root_dialog
 			HBoxContainer *top_row = memnew(HBoxContainer);
-			top_row->set_name("NodeShortcutsTopRow");
 			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
 			Label *l = memnew(Label(TTR("Create Root Node:")));
 			l->set_theme_type_variation("HeaderSmall");
 			top_row->add_child(l);
 			top_row->add_spacer();
 
-			Button *node_shortcuts_toggle = memnew(Button);
+			node_shortcuts_toggle = memnew(Button);
 			node_shortcuts_toggle->set_flat(true);
-			node_shortcuts_toggle->set_name("NodeShortcutsToggle");
 			node_shortcuts_toggle->set_icon(get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
 			node_shortcuts_toggle->set_toggle_mode(true);
 			node_shortcuts_toggle->set_tooltip_text(TTR("Switch to Favorite Nodes"));
@@ -1276,18 +1274,15 @@ void SceneTreeDock::_notification(int p_what) {
 			create_root_dialog->add_child(top_row);
 
 			ScrollContainer *scroll_container = memnew(ScrollContainer);
-			scroll_container->set_name("NodeShortcutsScrollContainer");
 			create_root_dialog->add_child(scroll_container);
 			scroll_container->set_v_size_flags(SIZE_EXPAND_FILL);
 			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
 			VBoxContainer *node_shortcuts = memnew(VBoxContainer);
-			node_shortcuts->set_name("NodeShortcuts");
 			scroll_container->add_child(node_shortcuts);
 			node_shortcuts->set_h_size_flags(SIZE_EXPAND_FILL);
 
-			VBoxContainer *beginner_node_shortcuts = memnew(VBoxContainer);
-			beginner_node_shortcuts->set_name("BeginnerNodeShortcuts");
+			beginner_node_shortcuts = memnew(VBoxContainer);
 			node_shortcuts->add_child(beginner_node_shortcuts);
 
 			button_2d = memnew(Button);
@@ -1308,8 +1303,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_ui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
 			button_ui->connect("pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
 
-			VBoxContainer *favorite_node_shortcuts = memnew(VBoxContainer);
-			favorite_node_shortcuts->set_name("FavoriteNodeShortcuts");
+			favorite_node_shortcuts = memnew(VBoxContainer);
 			node_shortcuts->add_child(favorite_node_shortcuts);
 
 			button_custom = memnew(Button);
@@ -3227,25 +3221,11 @@ void SceneTreeDock::_local_tree_selected() {
 }
 
 void SceneTreeDock::_update_create_root_dialog() {
-	BaseButton *toggle = Object::cast_to<BaseButton>(create_root_dialog->get_node(String("NodeShortcutsTopRow/NodeShortcutsToggle")));
-	Node *node_shortcuts = create_root_dialog->get_node(String("NodeShortcutsScrollContainer/NodeShortcuts"));
-
-	if (!toggle || !node_shortcuts) {
-		return;
-	}
-
-	Control *beginner_nodes = Object::cast_to<Control>(node_shortcuts->get_node(String("BeginnerNodeShortcuts")));
-	Control *favorite_nodes = Object::cast_to<Control>(node_shortcuts->get_node(String("FavoriteNodeShortcuts")));
-
-	if (!beginner_nodes || !favorite_nodes) {
-		return;
-	}
-
-	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", toggle->is_pressed());
+	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
 	EditorSettings::get_singleton()->save();
-	if (toggle->is_pressed()) {
-		for (int i = 0; i < favorite_nodes->get_child_count(); i++) {
-			favorite_nodes->get_child(i)->queue_delete();
+	if (node_shortcuts_toggle->is_pressed()) {
+		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
+			favorite_node_shortcuts->get_child(i)->queue_delete();
 		}
 
 		Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites.Node"), FileAccess::READ);
@@ -3255,7 +3235,7 @@ void SceneTreeDock::_update_create_root_dialog() {
 
 				if (!l.is_empty()) {
 					Button *button = memnew(Button);
-					favorite_nodes->add_child(button);
+					favorite_node_shortcuts->add_child(button);
 					button->set_text(l);
 					button->set_clip_text(true);
 					String name = l.get_slicec(' ', 0);
@@ -3268,14 +3248,14 @@ void SceneTreeDock::_update_create_root_dialog() {
 			}
 		}
 
-		if (!favorite_nodes->is_visible_in_tree()) {
-			favorite_nodes->show();
-			beginner_nodes->hide();
+		if (!favorite_node_shortcuts->is_visible_in_tree()) {
+			favorite_node_shortcuts->show();
+			beginner_node_shortcuts->hide();
 		}
 	} else {
-		if (!beginner_nodes->is_visible_in_tree()) {
-			beginner_nodes->show();
-			favorite_nodes->hide();
+		if (!beginner_node_shortcuts->is_visible_in_tree()) {
+			beginner_node_shortcuts->show();
+			favorite_node_shortcuts->hide();
 		}
 		button_clipboard->set_visible(!node_clipboard.is_empty());
 	}

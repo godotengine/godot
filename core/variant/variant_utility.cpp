@@ -393,8 +393,8 @@ struct VariantUtilityFunctions {
 		return Math::inverse_lerp(from, to, weight);
 	}
 
-	static inline double range_lerp(double value, double istart, double istop, double ostart, double ostop) {
-		return Math::range_lerp(value, istart, istop, ostart, ostop);
+	static inline double remap(double value, double istart, double istop, double ostart, double ostop) {
+		return Math::remap(value, istart, istop, ostart, ostop);
 	}
 
 	static inline double smoothstep(double from, double to, double val) {
@@ -1434,7 +1434,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(bezier_interpolate, sarray("start", "control_1", "control_2", "end", "t"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(lerp_angle, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(inverse_lerp, sarray("from", "to", "weight"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(range_lerp, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(remap, sarray("value", "istart", "istop", "ostart", "ostop"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(smoothstep, sarray("from", "to", "x"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(move_toward, sarray("from", "to", "delta"), Variant::UTILITY_FUNC_TYPE_MATH);

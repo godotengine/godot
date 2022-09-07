@@ -43,11 +43,16 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			if (autoplay && !Engine::get_singleton()->is_editor_hint()) {
 				play();
 			}
+			set_stream_paused(false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			stop();
+			set_stream_paused(true);
 			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
+		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			stop();
 		} break;
 
 		case NOTIFICATION_PAUSED: {

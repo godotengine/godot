@@ -132,7 +132,7 @@ double Vector4i::length() const {
 }
 
 Vector4i Vector4i::abs() const {
-	return Vector4i(ABS(x), ABS(y), ABS(z), ABS(w));
+	return Vector4i(Math::abs(x), Math::abs(y), Math::abs(z), Math::abs(w));
 }
 
 Vector4i Vector4i::sign() const {

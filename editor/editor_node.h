@@ -323,7 +323,7 @@ private:
 	Control *vp_base = nullptr;
 
 	EditorTitleBar *menu_hb = nullptr;
-	Control *main_control = nullptr;
+	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
 	PopupMenu *project_menu = nullptr;
@@ -788,7 +788,7 @@ public:
 
 	bool is_changing_scene() const;
 
-	Control *get_main_control();
+	VBoxContainer *get_main_screen_control();
 	SubViewport *get_scene_root() { return scene_root; } // Root of the scene being edited.
 
 	void set_edited_scene(Node *p_scene);

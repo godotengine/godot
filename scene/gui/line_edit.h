@@ -170,7 +170,7 @@ private:
 	bool caret_blink_enabled = false;
 	bool caret_force_displayed = false;
 	bool draw_caret = true;
-	float caret_blink_speed = 0.65;
+	float caret_blink_interval = 0.65;
 	double caret_blink_timer = 0.0;
 	bool caret_blinking = false;
 
@@ -311,8 +311,8 @@ public:
 	bool is_caret_blink_enabled() const;
 	void set_caret_blink_enabled(const bool p_enabled);
 
-	float get_caret_blink_speed() const;
-	void set_caret_blink_speed(const float p_speed);
+	float get_caret_blink_interval() const;
+	void set_caret_blink_interval(const float p_interval);
 
 	void set_caret_force_displayed(const bool p_enabled);
 	bool is_caret_force_displayed() const;

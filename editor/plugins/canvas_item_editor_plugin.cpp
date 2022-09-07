@@ -3959,10 +3959,8 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			select_sb->set_texture(get_theme_icon(SNAME("EditorRect2D"), SNAME("EditorIcons")));
-			for (int i = 0; i < 4; i++) {
-				select_sb->set_margin_size(Side(i), 4);
-				select_sb->set_default_margin(Side(i), 4);
-			}
+			select_sb->set_margin_size_all(4);
+			select_sb->set_default_margin_all(4);
 
 			AnimationPlayerEditor::get_singleton()->get_track_editor()->connect("visibility_changed", callable_mp(this, &CanvasItemEditor::_keying_changed));
 			_keying_changed();
@@ -5459,7 +5457,7 @@ void CanvasItemEditorPlugin::set_state(const Dictionary &p_state) {
 CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 	canvas_item_editor = memnew(CanvasItemEditor);
 	canvas_item_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_control()->add_child(canvas_item_editor);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(canvas_item_editor);
 	canvas_item_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	canvas_item_editor->hide();
 }

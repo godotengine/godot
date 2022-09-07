@@ -463,7 +463,7 @@
 				var ratio = inverse_lerp(20, 30, 27.5)
 				# `ratio` is now 0.75.
 				[/codeblock]
-				See also [method lerp] which performs the reverse of this operation, and [method range_lerp] to map a continuous series of values to another.
+				See also [method lerp] which performs the reverse of this operation, and [method remap] to map a continuous series of values to another.
 			</description>
 		</method>
 		<method name="is_equal_approx">
@@ -523,7 +523,7 @@
 				[codeblock]
 				lerp(0, 4, 0.75) # Returns 3.0
 				[/codeblock]
-				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method range_lerp] to map a continuous series of values to another.
+				See also [method inverse_lerp] which performs the reverse of this operation. To perform eased interpolation with [method lerp], combine it with [method ease] or [method smoothstep]. See also [method remap] to map a continuous series of values to another.
 				[b]Note:[/b] For better type safety, you can use [method lerpf], [method Vector2.lerp], [method Vector3.lerp], [method Vector4.lerp], [method Color.lerp], [method Quaternion.slerp] or [method Basis.slerp] instead.
 			</description>
 		</method>
@@ -888,7 +888,7 @@
 				[b]Note:[/b] This method is called automatically when the project is run. If you need to fix the seed to have reproducible results, use [method seed] to initialize the random number generator.
 			</description>
 		</method>
-		<method name="range_lerp">
+		<method name="remap">
 			<return type="float" />
 			<param index="0" name="value" type="float" />
 			<param index="1" name="istart" type="float" />
@@ -896,9 +896,9 @@
 			<param index="3" name="ostart" type="float" />
 			<param index="4" name="ostop" type="float" />
 			<description>
-				Maps a [param value] from range [code][istart, istop][/code] to [code][ostart, ostop][/code]. See also [method lerp] and [method inverse_lerp]. If [param value] is outside [code][istart, istop][/code], then the resulting value will also be outside [code][ostart, ostop][/code]. Use [method clamp] on the result of [method range_lerp] if this is not desired.
+				Maps a [param value] from range [code][istart, istop][/code] to [code][ostart, ostop][/code]. See also [method lerp] and [method inverse_lerp]. If [param value] is outside [code][istart, istop][/code], then the resulting value will also be outside [code][ostart, ostop][/code]. Use [method clamp] on the result of [method remap] if this is not desired.
 				[codeblock]
-				range_lerp(75, 0, 100, -1, 1) # Returns 0.5
+				remap(75, 0, 100, -1, 1) # Returns 0.5
 				[/codeblock]
 				For complex use cases where you need multiple ranges, consider using [Curve] or [Gradient] instead.
 			</description>
@@ -1275,8 +1275,8 @@
 			The [JavaClassWrapper] singleton.
 			[b]Note:[/b] Only implemented on Android.
 		</member>
-		<member name="JavaScript" type="JavaScript" setter="" getter="">
-			The [JavaScript] singleton.
+		<member name="JavaScriptBridge" type="JavaScriptBridge" setter="" getter="">
+			The [JavaScriptBridge] singleton.
 			[b]Note:[/b] Only implemented on the Web platform.
 		</member>
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
@@ -1302,8 +1302,14 @@
 		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
 			The [PhysicsServer2D] singleton.
 		</member>
+		<member name="PhysicsServer2DManager" type="PhysicsServer2DManager" setter="" getter="">
+			The [PhysicsServer2DManager] singleton.
+		</member>
 		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
 			The [PhysicsServer3D] singleton.
+		</member>
+		<member name="PhysicsServer3DManager" type="PhysicsServer3DManager" setter="" getter="">
+			The [PhysicsServer3DManager] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.

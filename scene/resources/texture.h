@@ -929,7 +929,7 @@ private:
 	int frame_count = 1.0;
 	int current_frame = 0;
 	bool pause = false;
-	bool oneshot = false;
+	bool one_shot = false;
 	float fps = 4.0;
 
 	float time = 0.0;
@@ -952,8 +952,8 @@ public:
 	void set_pause(bool p_pause);
 	bool get_pause() const;
 
-	void set_oneshot(bool p_oneshot);
-	bool get_oneshot() const;
+	void set_one_shot(bool p_one_shot);
+	bool get_one_shot() const;
 
 	void set_frame_texture(int p_frame, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_frame_texture(int p_frame) const;

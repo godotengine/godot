@@ -915,7 +915,7 @@
 		<member name="caret_blink" type="bool" setter="set_caret_blink_enabled" getter="is_caret_blink_enabled" default="false">
 			Sets if the caret should blink.
 		</member>
-		<member name="caret_blink_speed" type="float" setter="set_caret_blink_speed" getter="get_caret_blink_speed" default="0.65">
+		<member name="caret_blink_interval" type="float" setter="set_caret_blink_interval" getter="get_caret_blink_interval" default="0.65">
 			Duration (in seconds) of a caret's blinking cycle.
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="true">

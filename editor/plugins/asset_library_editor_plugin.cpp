@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/json.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_file_dialog.h"
@@ -101,10 +101,7 @@ void EditorAssetLibraryItem::_bind_methods() {
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
 	border.instantiate();
-	border->set_default_margin(SIDE_LEFT, 5 * EDSCALE);
-	border->set_default_margin(SIDE_RIGHT, 5 * EDSCALE);
-	border->set_default_margin(SIDE_BOTTOM, 5 * EDSCALE);
-	border->set_default_margin(SIDE_TOP, 5 * EDSCALE);
+	border->set_default_margin_all(5 * EDSCALE);
 	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -584,17 +581,19 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			error_tr->set_texture(get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 			filter->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
-			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			downloads_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 			error_label->add_theme_color_override("color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
+#ifndef ANDROID_ENABLED
 				// Focus the search box automatically when switching to the Templates tab (in the Project Manager)
 				// or switching to the AssetLib tab (in the editor).
 				// The Project Manager's project filter box is automatically focused in the project manager code.
 				filter->grab_focus();
+#endif
 
 				if (initial_loading) {
 					_repository_changed(0); // Update when shown for the first time.
@@ -1508,10 +1507,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instantiate();
-	border2->set_default_margin(SIDE_LEFT, 15 * EDSCALE);
-	border2->set_default_margin(SIDE_RIGHT, 35 * EDSCALE);
-	border2->set_default_margin(SIDE_BOTTOM, 15 * EDSCALE);
-	border2->set_default_margin(SIDE_TOP, 15 * EDSCALE);
+	border2->set_default_margin_individual(15 * EDSCALE, 15 * EDSCALE, 35 * EDSCALE, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1600,7 +1596,7 @@ bool AssetLibraryEditorPlugin::is_available() {
 	// directly from GitHub which does not set CORS.
 	return false;
 #else
-	return StreamPeerSSL::is_available();
+	return StreamPeerTLS::is_available();
 #endif
 }
 
@@ -1615,7 +1611,7 @@ void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_control()->add_child(addon_library);
+	EditorNode::get_singleton()->get_main_screen_control()->add_child(addon_library);
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }

@@ -355,15 +355,6 @@ Ref<Texture2D> EditorExportPlatformWeb::get_logo() const {
 }
 
 bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-#ifndef DEV_ENABLED
-	// We don't provide export templates for the Web platform currently as there
-	// is no suitable renderer to use with them. So we forbid exporting and tell
-	// users why. This is skipped in DEV_ENABLED so that contributors can still test
-	// the pipeline once we start having WebGL or WebGPU support.
-	r_error = "The Web platform is currently not supported in Godot 4.0, as there is no suitable renderer for it.\n";
-	return false;
-#endif
-
 	String err;
 	bool valid = false;
 	bool extensions = (bool)p_preset->get("variant/extensions_support");
@@ -396,15 +387,6 @@ bool EditorExportPlatformWeb::has_valid_export_configuration(const Ref<EditorExp
 }
 
 bool EditorExportPlatformWeb::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
-#ifndef DEV_ENABLED
-	// We don't provide export templates for the Web platform currently as there
-	// is no suitable renderer to use with them. So we forbid exporting and tell
-	// users why. This is skipped in DEV_ENABLED so that contributors can still test
-	// the pipeline once we start having WebGL or WebGPU support.
-	r_error = "The Web platform is currently not supported in Godot 4.0, as there is no suitable renderer for it.\n";
-	return false;
-#endif
-
 	String err;
 	bool valid = true;
 

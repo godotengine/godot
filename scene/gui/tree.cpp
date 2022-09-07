@@ -1538,12 +1538,14 @@ TreeItem::~TreeItem() {
 void Tree::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
+	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
+
 	theme_cache.font = get_theme_font(SNAME("font"));
 	theme_cache.font_size = get_theme_font_size(SNAME("font_size"));
 	theme_cache.tb_font = get_theme_font(SNAME("title_button_font"));
 	theme_cache.tb_font_size = get_theme_font_size(SNAME("title_button_font_size"));
-	theme_cache.bg = get_theme_stylebox(SNAME("bg"));
-	theme_cache.bg_focus = get_theme_stylebox(SNAME("bg_focus"));
+
 	theme_cache.selected = get_theme_stylebox(SNAME("selected"));
 	theme_cache.selected_focus = get_theme_stylebox(SNAME("selected_focus"));
 	theme_cache.cursor = get_theme_stylebox(SNAME("cursor"));
@@ -1955,7 +1957,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (i == 0) {
 				if (p_item->cells[0].selected && select_mode == SELECT_ROW) {
-					Rect2i row_rect = Rect2i(Point2i(theme_cache.bg->get_margin(SIDE_LEFT), item_rect.position.y), Size2i(get_size().width - theme_cache.bg->get_minimum_size().width, item_rect.size.y));
+					Rect2i row_rect = Rect2i(Point2i(theme_cache.panel_style->get_margin(SIDE_LEFT), item_rect.position.y), Size2i(get_size().width - theme_cache.panel_style->get_minimum_size().width, item_rect.size.y));
 					//Rect2 r = Rect2i(row_rect.pos,row_rect.size);
 					//r.grow(cache.selected->get_margin(SIDE_LEFT));
 					if (rtl) {
@@ -2502,7 +2504,7 @@ Rect2 Tree::search_item_rect(TreeItem *p_from, TreeItem *p_item) {
 
 void Tree::_range_click_timeout() {
 	if (range_item_last && !range_drag_enabled && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
-		Point2 pos = get_local_mouse_position() - theme_cache.bg->get_offset();
+		Point2 pos = get_local_mouse_position() - theme_cache.panel_style->get_offset();
 		if (show_column_titles) {
 			pos.y -= _get_title_button_height();
 
@@ -2520,7 +2522,7 @@ void Tree::_range_click_timeout() {
 		Ref<InputEventMouseButton> mb;
 		mb.instantiate();
 
-		int x_limit = get_size().width - theme_cache.bg->get_minimum_size().width;
+		int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 		if (h_scroll->is_visible()) {
 			x_limit -= h_scroll->get_minimum_size().width;
 		}
@@ -2609,7 +2611,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			return -1;
 		} else if (col == 0) {
 			int margin = x_ofs + theme_cache.item_margin; //-theme_cache.hseparation;
-			//int lm = theme_cache.bg->get_margin(SIDE_LEFT);
+			//int lm = theme_cache.panel_style->get_margin(SIDE_LEFT);
 			col_width -= margin;
 			limit_w -= margin;
 			col_ofs += margin;
@@ -3308,14 +3310,14 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		Ref<StyleBox> bg = theme_cache.bg;
+		Ref<StyleBox> bg = theme_cache.panel_style;
 		bool rtl = is_layout_rtl();
 
 		Point2 pos = mm->get_position();
 		if (rtl) {
 			pos.x = get_size().width - pos.x;
 		}
-		pos -= theme_cache.bg->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 
 		Cache::ClickType old_hover = cache.hover_type;
 		int old_index = cache.hover_index;
@@ -3343,7 +3345,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			if (rtl) {
 				mpos.x = get_size().width - mpos.x;
 			}
-			mpos -= theme_cache.bg->get_offset();
+			mpos -= theme_cache.panel_style->get_offset();
 			mpos.y -= _get_title_button_height();
 			if (mpos.y >= 0) {
 				if (h_scroll->is_visible_in_tree()) {
@@ -3443,7 +3445,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				if (rtl) {
 					pos.x = get_size().width - pos.x;
 				}
-				pos -= theme_cache.bg->get_offset();
+				pos -= theme_cache.panel_style->get_offset();
 				if (show_column_titles) {
 					pos.y -= _get_title_button_height();
 
@@ -3537,7 +3539,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		switch (mb->get_button_index()) {
 			case MouseButton::RIGHT:
 			case MouseButton::LEFT: {
-				Ref<StyleBox> bg = theme_cache.bg;
+				Ref<StyleBox> bg = theme_cache.panel_style;
 
 				Point2 pos = mb->get_position();
 				if (rtl) {
@@ -3572,7 +3574,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				pressing_for_editor = false;
 				propagate_mouse_activated = false;
 
-				int x_limit = get_size().width - theme_cache.bg->get_minimum_size().width;
+				int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width;
 				if (h_scroll->is_visible()) {
 					x_limit -= h_scroll->get_minimum_size().width;
 				}
@@ -3766,7 +3768,7 @@ bool Tree::is_editing() {
 }
 
 Size2 Tree::get_internal_min_size() const {
-	Size2i size = theme_cache.bg->get_offset();
+	Size2i size = theme_cache.panel_style->get_offset();
 	if (root) {
 		size.height += get_item_height(root);
 	}
@@ -3789,23 +3791,23 @@ void Tree::update_scrollbars() {
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, theme_cache.bg->get_margin(SIDE_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - theme_cache.bg->get_margin(SIDE_TOP) - theme_cache.bg->get_margin(SIDE_BOTTOM)));
+	v_scroll->set_begin(Point2(size.width - vmin.width, theme_cache.panel_style->get_margin(SIDE_TOP)));
+	v_scroll->set_end(Point2(size.width, size.height - theme_cache.panel_style->get_margin(SIDE_TOP) - theme_cache.panel_style->get_margin(SIDE_BOTTOM)));
 
 	h_scroll->set_begin(Point2(0, size.height - hmin.height));
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
 	Size2 internal_min_size = get_internal_min_size();
 
-	bool display_vscroll = internal_min_size.height + theme_cache.bg->get_margin(SIDE_TOP) > size.height;
-	bool display_hscroll = internal_min_size.width + theme_cache.bg->get_margin(SIDE_LEFT) > size.width;
+	bool display_vscroll = internal_min_size.height + theme_cache.panel_style->get_margin(SIDE_TOP) > size.height;
+	bool display_hscroll = internal_min_size.width + theme_cache.panel_style->get_margin(SIDE_LEFT) > size.width;
 	for (int i = 0; i < 2; i++) {
 		// Check twice, as both values are dependent on each other.
 		if (display_hscroll) {
-			display_vscroll = internal_min_size.height + theme_cache.bg->get_margin(SIDE_TOP) + hmin.height > size.height;
+			display_vscroll = internal_min_size.height + theme_cache.panel_style->get_margin(SIDE_TOP) + hmin.height > size.height;
 		}
 		if (display_vscroll) {
-			display_hscroll = internal_min_size.width + theme_cache.bg->get_margin(SIDE_LEFT) + vmin.width > size.width;
+			display_hscroll = internal_min_size.width + theme_cache.panel_style->get_margin(SIDE_LEFT) + vmin.width > size.width;
 		}
 	}
 
@@ -3941,7 +3943,7 @@ void Tree::_notification(int p_what) {
 			update_scrollbars();
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> bg = theme_cache.bg;
+			Ref<StyleBox> bg = theme_cache.panel_style;
 
 			Point2 draw_ofs;
 			draw_ofs += bg->get_offset();
@@ -3965,7 +3967,7 @@ void Tree::_notification(int p_what) {
 
 			if (show_column_titles) {
 				//title buttons
-				int ofs2 = theme_cache.bg->get_margin(SIDE_LEFT);
+				int ofs2 = theme_cache.panel_style->get_margin(SIDE_LEFT);
 				for (int i = 0; i < columns.size(); i++) {
 					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? theme_cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? theme_cache.title_button_hover : theme_cache.title_button);
 					Ref<Font> f = theme_cache.tb_font;
@@ -3987,11 +3989,11 @@ void Tree::_notification(int p_what) {
 				}
 			}
 
-			// Draw the background focus outline last, so that it is drawn in front of the section headings.
+			// Draw the focus outline last, so that it is drawn in front of the section headings.
 			// Otherwise, section heading backgrounds can appear to be in front of the focus outline when scrolling.
 			if (has_focus()) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-				theme_cache.bg_focus->draw(ci, Rect2(Point2(), get_size()));
+				theme_cache.focus_style->draw(ci, Rect2(Point2(), get_size()));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
 			}
 		} break;
@@ -4033,7 +4035,7 @@ Size2 Tree::get_minimum_size() const {
 		return Size2();
 	} else {
 		Vector2 min_size = get_internal_min_size();
-		Ref<StyleBox> bg = theme_cache.bg;
+		Ref<StyleBox> bg = theme_cache.panel_style;
 		if (bg.is_valid()) {
 			min_size.x += bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
 			min_size.y += bg->get_margin(SIDE_TOP) + bg->get_margin(SIDE_BOTTOM);
@@ -4329,7 +4331,7 @@ int Tree::get_column_minimum_width(int p_column) const {
 
 	// Check if the visible title of the column is wider.
 	if (show_column_titles) {
-		min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.bg->get_margin(SIDE_LEFT) + theme_cache.bg->get_margin(SIDE_RIGHT), min_width);
+		min_width = MAX(theme_cache.font->get_string_size(columns[p_column].title, HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).width + theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT), min_width);
 	}
 
 	if (!columns[p_column].clip_content) {
@@ -4374,7 +4376,7 @@ int Tree::get_column_width(int p_column) const {
 	if (columns[p_column].expand) {
 		int expand_area = get_size().width;
 
-		Ref<StyleBox> bg = theme_cache.bg;
+		Ref<StyleBox> bg = theme_cache.panel_style;
 
 		if (bg.is_valid()) {
 			expand_area -= bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
@@ -4482,7 +4484,7 @@ void Tree::ensure_cursor_is_visible() {
 		return; // Nothing under cursor.
 	}
 
-	const Size2 area_size = get_size() - theme_cache.bg->get_minimum_size();
+	const Size2 area_size = get_size() - theme_cache.panel_style->get_minimum_size();
 
 	int y_offset = get_item_offset(selected_item);
 	if (y_offset != -1) {
@@ -4831,7 +4833,7 @@ int Tree::get_column_at_position(const Point2 &p_pos) const {
 		if (is_layout_rtl()) {
 			pos.x = get_size().width - pos.x;
 		}
-		pos -= theme_cache.bg->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 		pos.y -= _get_title_button_height();
 		if (pos.y < 0) {
 			return -1;
@@ -4861,7 +4863,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 		if (is_layout_rtl()) {
 			pos.x = get_size().width - pos.x;
 		}
-		pos -= theme_cache.bg->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 		pos.y -= _get_title_button_height();
 		if (pos.y < 0) {
 			return -100;
@@ -4891,7 +4893,7 @@ TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 		if (is_layout_rtl()) {
 			pos.x = get_size().width - pos.x;
 		}
-		pos -= theme_cache.bg->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 		pos.y -= _get_title_button_height();
 		if (pos.y < 0) {
 			return nullptr;
@@ -4918,7 +4920,7 @@ TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 int Tree::get_button_id_at_position(const Point2 &p_pos) const {
 	if (root) {
 		Point2 pos = p_pos;
-		pos -= theme_cache.bg->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 		pos.y -= _get_title_button_height();
 		if (pos.y < 0) {
 			return -1;
@@ -4959,7 +4961,7 @@ int Tree::get_button_id_at_position(const Point2 &p_pos) const {
 String Tree::get_tooltip(const Point2 &p_pos) const {
 	if (root) {
 		Point2 pos = p_pos;
-		pos -= theme_cache.bg->get_offset();
+		pos -= theme_cache.panel_style->get_offset();
 		pos.y -= _get_title_button_height();
 		if (pos.y < 0) {
 			return Control::get_tooltip(p_pos);

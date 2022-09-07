@@ -711,7 +711,6 @@ void Skeleton3DEditor::create_editors() {
 	ne->add_control_to_menu_panel(skeleton_options);
 
 	skeleton_options->set_text(TTR("Skeleton3D"));
-	skeleton_options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 
 	// Skeleton options.
 	PopupMenu *p = skeleton_options->get_popup();
@@ -824,7 +823,6 @@ void Skeleton3DEditor::create_editors() {
 void Skeleton3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			create_editors();
 			update_joint_tree();
 			update_editors();
 
@@ -837,13 +835,14 @@ void Skeleton3DEditor::_notification(int p_what) {
 			skeleton->connect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 #endif
 
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONE_SHOT);
 		} break;
 		case NOTIFICATION_READY: {
 			// Will trigger NOTIFICATION_THEME_CHANGED, but won't cause any loops if called here.
 			add_theme_constant_override("separation", 0);
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
+			skeleton_options->set_icon(get_theme_icon(SNAME("Skeleton3D"), SNAME("EditorIcons")));
 			edit_mode_button->set_icon(get_theme_icon(SNAME("ToolBoneSelect"), SNAME("EditorIcons")));
 			key_loc_button->set_icon(get_theme_icon(SNAME("KeyPosition"), SNAME("EditorIcons")));
 			key_rot_button->set_icon(get_theme_icon(SNAME("KeyRotation"), SNAME("EditorIcons")));
@@ -852,6 +851,20 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
 
 			update_joint_tree();
+		} break;
+		case NOTIFICATION_PREDELETE: {
+			if (skeleton) {
+				select_bone(-1); // Requires that the joint_tree has not been deleted.
+#ifdef TOOLS_ENABLED
+				skeleton->disconnect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
+				skeleton->disconnect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
+				skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+				skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
+				skeleton->set_transform_gizmo_visible(true);
+#endif
+				handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
+			}
+			edit_mode_toggled(false);
 		} break;
 	}
 }
@@ -928,6 +941,8 @@ void fragment() {
 	handles_mesh_instance->set_cast_shadows_setting(GeometryInstance3D::SHADOW_CASTING_SETTING_OFF);
 	handles_mesh.instantiate();
 	handles_mesh_instance->set_mesh(handles_mesh);
+
+	create_editors();
 }
 
 void Skeleton3DEditor::update_bone_original() {
@@ -1065,18 +1080,7 @@ void Skeleton3DEditor::select_bone(int p_idx) {
 }
 
 Skeleton3DEditor::~Skeleton3DEditor() {
-	if (skeleton) {
-		select_bone(-1);
-#ifdef TOOLS_ENABLED
-		skeleton->disconnect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
-		skeleton->disconnect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
-		skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
-		skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
-		skeleton->set_transform_gizmo_visible(true);
-#endif
-		handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
-	}
-	edit_mode_toggled(false);
+	singleton = nullptr;
 
 	handles_mesh_instance->queue_delete();
 
@@ -1127,7 +1131,7 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();
-	if (se->is_edit_mode()) {
+	if (se && se->is_edit_mode()) {
 		const Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 			if (ne->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {

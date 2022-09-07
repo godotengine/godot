@@ -762,8 +762,8 @@ public:
 	void set_caret_blink_enabled(const bool p_enabled);
 	bool is_caret_blink_enabled() const;
 
-	void set_caret_blink_speed(const float p_speed);
-	float get_caret_blink_speed() const;
+	void set_caret_blink_interval(const float p_interval);
+	float get_caret_blink_interval() const;
 
 	void set_move_caret_on_right_click_enabled(const bool p_enabled);
 	bool is_move_caret_on_right_click_enabled() const;

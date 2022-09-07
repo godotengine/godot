@@ -107,7 +107,7 @@ void MenuButton::pressed() {
 	if (!_was_pressed_by_mouse()) {
 		for (int i = 0; i < popup->get_item_count(); i++) {
 			if (!popup->is_item_disabled(i)) {
-				popup->set_current_index(i);
+				popup->set_focused_item(i);
 				break;
 			}
 		}
@@ -169,7 +169,7 @@ void MenuButton::_notification(int p_what) {
 
 				menu_btn_other->pressed();
 				// As the popup wasn't triggered by a mouse click, the item focus needs to be removed manually.
-				menu_btn_other->get_popup()->set_current_index(-1);
+				menu_btn_other->get_popup()->set_focused_item(-1);
 			}
 		} break;
 	}

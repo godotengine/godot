@@ -37,7 +37,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/object/class_db.h"
 #include "core/object/message_queue.h"
 #include "core/os/keyboard.h"
@@ -762,11 +762,8 @@ void EditorNode::_notification(int p_what) {
 
 				gui_base->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Background"), SNAME("EditorStyles")));
 				scene_root_parent->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("Content"), SNAME("EditorStyles")));
-				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
-
+				bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 				tabbar_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("tabbar_background"), SNAME("TabContainer")));
-				scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox(SNAME("SceneTabFG"), SNAME("EditorStyles")));
-				scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
 
 				main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 			}
@@ -3098,14 +3095,14 @@ void EditorNode::_screenshot(bool p_use_utc) {
 }
 
 void EditorNode::_save_screenshot(NodePath p_path) {
-	Control *editor_main_control = EditorInterface::get_singleton()->get_editor_main_control();
-	ERR_FAIL_COND_MSG(!editor_main_control, "Cannot get editor main control.");
-	Viewport *viewport = editor_main_control->get_viewport();
-	ERR_FAIL_COND_MSG(!viewport, "Cannot get editor main control viewport.");
+	Control *editor_main_screen = EditorInterface::get_singleton()->get_editor_main_screen();
+	ERR_FAIL_COND_MSG(!editor_main_screen, "Cannot get the editor main screen control.");
+	Viewport *viewport = editor_main_screen->get_viewport();
+	ERR_FAIL_COND_MSG(!viewport, "Cannot get a viewport from the editor main screen.");
 	Ref<ViewportTexture> texture = viewport->get_texture();
-	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get editor main control viewport texture.");
+	ERR_FAIL_COND_MSG(texture.is_null(), "Cannot get a viewport texture from the editor main screen.");
 	Ref<Image> img = texture->get_image();
-	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get editor main control viewport texture image.");
+	ERR_FAIL_COND_MSG(img.is_null(), "Cannot get an image from a viewport texture of the editor main screen.");
 	Error error = img->save_png(p_path);
 	ERR_FAIL_COND_MSG(error != OK, "Cannot save screenshot to file '" + p_path + "'.");
 }
@@ -3289,8 +3286,8 @@ void EditorNode::_update_file_menu_closed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), false);
 }
 
-Control *EditorNode::get_main_control() {
-	return main_control;
+VBoxContainer *EditorNode::get_main_screen_control() {
+	return main_screen_vbox;
 }
 
 void EditorNode::_editor_select(int p_which) {
@@ -4338,16 +4335,8 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 	}
 
-	const HashMap<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
-	for (const KeyValue<String, Vector<EditorData::CustomType>> &E : p_map) {
-		const Vector<EditorData::CustomType> &ct = E.value;
-		for (int i = 0; i < ct.size(); ++i) {
-			if (ct[i].name == p_class) {
-				if (ct[i].icon.is_valid()) {
-					return ct[i].icon;
-				}
-			}
-		}
+	if (const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_name(p_class)) {
+		return ctype->icon;
 	}
 
 	if (gui_base->has_theme_icon(p_class, SNAME("EditorIcons"))) {
@@ -5475,7 +5464,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 			// This is the debug panel which uses tabs, so the top section should be smaller.
 			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanelDebuggerOverride"), SNAME("EditorStyles")));
 		} else {
-			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+			bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
@@ -5485,7 +5474,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		bottom_panel_raise->show();
 
 	} else {
-		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 		bottom_panel_items[p_idx].button->set_pressed(false);
 		bottom_panel_items[p_idx].control->set_visible(false);
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
@@ -6528,8 +6517,6 @@ EditorNode::EditorNode() {
 	tabbar_panel->add_child(tabbar_container);
 
 	scene_tabs = memnew(TabBar);
-	scene_tabs->add_theme_style_override("tab_selected", gui_base->get_theme_stylebox(SNAME("SceneTabFG"), SNAME("EditorStyles")));
-	scene_tabs->add_theme_style_override("tab_unselected", gui_base->get_theme_stylebox(SNAME("SceneTabBG"), SNAME("EditorStyles")));
 	scene_tabs->set_select_with_rmb(true);
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_close_display_policy((TabBar::CloseButtonDisplayPolicy)EDITOR_GET("interface/scene_tabs/display_close_button").operator int());
@@ -6588,10 +6575,11 @@ EditorNode::EditorNode() {
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 
-	main_control = memnew(VBoxContainer);
-	main_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	main_control->add_theme_constant_override("separation", 0);
-	scene_root_parent->add_child(main_control);
+	main_screen_vbox = memnew(VBoxContainer);
+	main_screen_vbox->set_name("MainScreen");
+	main_screen_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_screen_vbox->add_theme_constant_override("separation", 0);
+	scene_root_parent->add_child(main_screen_vbox);
 
 	bool global_menu = !bool(EDITOR_GET("interface/editor/use_embedded_menu")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU);
 	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
@@ -7093,7 +7081,7 @@ EditorNode::EditorNode() {
 	// Bottom panels.
 
 	bottom_panel = memnew(PanelContainer);
-	bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
+	bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 	center_split->add_child(bottom_panel);
 	center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 

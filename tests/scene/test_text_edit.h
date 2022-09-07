@@ -2714,15 +2714,15 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 	text_edit->set_caret_blink_enabled(true);
 	CHECK(text_edit->is_caret_blink_enabled());
 
-	text_edit->set_caret_blink_speed(10);
-	CHECK(text_edit->get_caret_blink_speed() == 10);
+	text_edit->set_caret_blink_interval(10);
+	CHECK(text_edit->get_caret_blink_interval() == 10);
 
 	ERR_PRINT_OFF;
-	text_edit->set_caret_blink_speed(-1);
-	CHECK(text_edit->get_caret_blink_speed() == 10);
+	text_edit->set_caret_blink_interval(-1);
+	CHECK(text_edit->get_caret_blink_interval() == 10);
 
-	text_edit->set_caret_blink_speed(0);
-	CHECK(text_edit->get_caret_blink_speed() == 10);
+	text_edit->set_caret_blink_interval(0);
+	CHECK(text_edit->get_caret_blink_interval() == 10);
 	ERR_PRINT_ON;
 
 	text_edit->set_caret_type(TextEdit::CaretType::CARET_TYPE_LINE);
