@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		2D agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO (Reciprocal Velocity Obstacles) collision avoidance. The agent needs navigation data to work correctly. By default this node will register to the default [World2D] navigation map. If this node is a child of a [Navigation2D] node it will register to the navigation map of the navigation node or the function [method set_navigation] can be used to set the navigation node directly. [NavigationAgent2D] is physics safe.
-		[b]Note:[/b] After [method set_target_location] is used it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
+		[b]Note:[/b] After setting [member target_location] it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
 		[b]Note:[/b] By default, the expensive calculations for avoidance are done in a thread. In HTML5 exports without thread support, they will be done on the main thread, which can lead to performance issues.
 	</description>
 	<tutorials>
@@ -14,7 +14,7 @@
 		<method name="distance_to_target" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the distance to the target location, using the agent's global position. The user must set the target location with [method set_target_location] in order for this to be accurate.
+				Returns the distance to the target location, using the agent's global position. The user must set [member target_location] in order for this to be accurate.
 			</description>
 		</method>
 		<method name="get_final_location">
@@ -59,12 +59,6 @@
 				Returns the [RID] of this agent on the [Navigation2DServer].
 			</description>
 		</method>
-		<method name="get_target_location" qualifiers="const">
-			<return type="Vector2" />
-			<description>
-				Returns the user-defined target location (set with [method set_target_location]).
-			</description>
-		</method>
 		<method name="is_navigation_finished">
 			<return type="bool" />
 			<description>
@@ -74,13 +68,13 @@
 		<method name="is_target_reachable">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the target location is reachable. The target location is set using [method set_target_location].
+				Returns [code]true[/code] if [member target_location] is reachable.
 			</description>
 		</method>
 		<method name="is_target_reached" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the target location is reached. The target location is set using [method set_target_location]. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
+				Returns [code]true[/code] if [member target_location] is reached. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
 			</description>
 		</method>
 		<method name="set_navigation">
@@ -95,13 +89,6 @@
 			<argument index="0" name="navigation_map" type="RID" />
 			<description>
 				Sets the [RID] of the navigation map this NavigationAgent node should use and also updates the [code]agent[/code] on the NavigationServer.
-			</description>
-		</method>
-		<method name="set_target_location">
-			<return type="void" />
-			<argument index="0" name="location" type="Vector2" />
-			<description>
-				Sets the user desired final location. This will clear the current navigation path.
 			</description>
 		</method>
 		<method name="set_velocity">
@@ -141,6 +128,9 @@
 		<member name="target_desired_distance" type="float" setter="set_target_desired_distance" getter="get_target_desired_distance" default="1.0">
 			The distance threshold before the final target point is considered to be reached. This will allow an agent to not have to hit the point of the final target exactly, but only the area. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the final target point on each physics frame update.
 		</member>
+		<member name="target_location" type="Vector2" setter="set_target_location" getter="get_target_location" default="Vector2( 0, 0 )">
+			The user-defined target location. Setting this property will clear the current navigation path.
+		</member>
 		<member name="time_horizon" type="float" setter="set_time_horizon" getter="get_time_horizon" default="20.0">
 			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but the less freedom in choosing its velocities. Must be positive.
 		</member>
@@ -158,7 +148,7 @@
 		</signal>
 		<signal name="target_reached">
 			<description>
-				Notifies when the player-defined target, set with [method set_target_location], is reached.
+				Notifies when the player-defined [member target_location] is reached.
 			</description>
 		</signal>
 		<signal name="velocity_computed">
