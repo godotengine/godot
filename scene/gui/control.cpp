@@ -2821,7 +2821,7 @@ void Control::_notification(int p_notification) {
 
 		case NOTIFICATION_READY: {
 #ifdef DEBUG_ENABLED
-			connect("ready", callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONESHOT);
+			connect("ready", callable_mp(this, &Control::_clear_size_warning), CONNECT_DEFERRED | CONNECT_ONE_SHOT);
 #endif
 		} break;
 

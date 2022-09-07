@@ -322,7 +322,7 @@ void ConnectDialog::init(ConnectionData p_cd, bool p_edit) {
 	_update_ok_enabled();
 
 	bool b_deferred = (p_cd.flags & CONNECT_DEFERRED) == CONNECT_DEFERRED;
-	bool b_oneshot = (p_cd.flags & CONNECT_ONESHOT) == CONNECT_ONESHOT;
+	bool b_oneshot = (p_cd.flags & CONNECT_ONE_SHOT) == CONNECT_ONE_SHOT;
 
 	deferred->set_pressed(b_deferred);
 	one_shot->set_pressed(b_oneshot);
@@ -565,7 +565,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	}
 	bool b_deferred = connect_dialog->get_deferred();
 	bool b_oneshot = connect_dialog->get_one_shot();
-	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONESHOT : 0);
+	cd.flags = CONNECT_PERSIST | (b_deferred ? CONNECT_DEFERRED : 0) | (b_oneshot ? CONNECT_ONE_SHOT : 0);
 
 	// Conditions to add function: must have a script and must not have the method already
 	// (in the class, the script itself, or inherited).
@@ -1083,8 +1083,8 @@ void ConnectionsDock::update_tree() {
 				if (cd.flags & CONNECT_DEFERRED) {
 					path += " (deferred)";
 				}
-				if (cd.flags & CONNECT_ONESHOT) {
-					path += " (oneshot)";
+				if (cd.flags & CONNECT_ONE_SHOT) {
+					path += " (one-shot)";
 				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";

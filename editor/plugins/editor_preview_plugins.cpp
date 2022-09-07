@@ -307,7 +307,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 	if (material->get_shader_mode() == Shader::MODE_SPATIAL) {
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_generate_frame_started), Object::CONNECT_ONESHOT);
+		RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMaterialPreviewPlugin *>(this), &EditorMaterialPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
 
 		preview_done.wait();
 
@@ -709,7 +709,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const Ref<Resource> &p_from, co
 	xform.origin.z -= rot_aabb.size.z * 2;
 	RS::get_singleton()->instance_set_transform(mesh_instance, xform);
 
-	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_generate_frame_started), Object::CONNECT_ONESHOT);
+	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorMeshPreviewPlugin *>(this), &EditorMeshPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
 
 	preview_done.wait();
 
@@ -826,7 +826,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
 	sampled_font->draw_string(canvas_item, pos, sample, HORIZONTAL_ALIGNMENT_LEFT, -1.f, 50, Color(fg, fg, fg));
 
-	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Object::CONNECT_ONESHOT);
+	RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<EditorFontPreviewPlugin *>(this), &EditorFontPreviewPlugin::_generate_frame_started), Object::CONNECT_ONE_SHOT);
 
 	preview_done.wait();
 

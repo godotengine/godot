@@ -882,7 +882,7 @@ void ScriptEditor::_queue_close_tabs() {
 			// Maybe there are unsaved changes.
 			if (se->is_unsaved()) {
 				_ask_close_current_unsaved_tab(se);
-				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), CONNECT_ONESHOT);
+				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), CONNECT_ONE_SHOT);
 				break;
 			}
 		}

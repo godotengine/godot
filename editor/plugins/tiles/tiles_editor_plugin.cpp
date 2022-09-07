@@ -116,7 +116,7 @@ void TilesEditorPlugin::_thread() {
 				// Add the viewport at the last moment to avoid rendering too early.
 				EditorNode::get_singleton()->add_child(viewport);
 
-				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_preview_frame_started), Object::CONNECT_ONESHOT);
+				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_preview_frame_started), Object::CONNECT_ONE_SHOT);
 
 				pattern_preview_done.wait();
 
