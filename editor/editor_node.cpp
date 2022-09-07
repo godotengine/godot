@@ -4335,16 +4335,8 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		}
 	}
 
-	const HashMap<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
-	for (const KeyValue<String, Vector<EditorData::CustomType>> &E : p_map) {
-		const Vector<EditorData::CustomType> &ct = E.value;
-		for (int i = 0; i < ct.size(); ++i) {
-			if (ct[i].name == p_class) {
-				if (ct[i].icon.is_valid()) {
-					return ct[i].icon;
-				}
-			}
-		}
+	if (const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_name(p_class)) {
+		return ctype->icon;
 	}
 
 	if (gui_base->has_theme_icon(p_class, SNAME("EditorIcons"))) {

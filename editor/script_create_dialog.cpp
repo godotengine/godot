@@ -202,7 +202,7 @@ bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 		}
 	}
 
-	return ClassDB::class_exists(p_string) || ScriptServer::is_global_class(p_string);
+	return EditorNode::get_editor_data().is_type_recognized(p_string);
 }
 
 bool ScriptCreateDialog::_validate_class(const String &p_string) {
@@ -372,7 +372,15 @@ void ScriptCreateDialog::_create_new() {
 
 	const ScriptLanguage::ScriptTemplate sinfo = _get_current_template();
 
-	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, cname_param, parent_name->get_text());
+	String parent_class = parent_name->get_text();
+	if (!ClassDB::class_exists(parent_class) && !ScriptServer::is_global_class(parent_class)) {
+		// If base is a custom type, replace with script path instead.
+		const EditorData::CustomType *type = EditorNode::get_editor_data().get_custom_type_by_name(parent_class);
+		ERR_FAIL_NULL(type);
+		parent_class = "\"" + type->script->get_path() + "\"";
+	}
+
+	scr = ScriptServer::get_language(language_menu->get_selected())->make_template(sinfo.content, cname_param, parent_class);
 
 	if (has_named_classes) {
 		String cname = class_name->get_text();
