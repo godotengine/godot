@@ -316,6 +316,15 @@ void DisplayServerMacOS::_displays_arrangement_changed(CGDirectDisplayID display
 	}
 }
 
+DisplayServer::WindowID DisplayServerMacOS::_get_focused_window_or_popup() const {
+	const List<WindowID>::Element *E = popup_list.back();
+	if (E) {
+		return E->get();
+	}
+
+	return last_focused_window;
+}
+
 void DisplayServerMacOS::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 	((DisplayServerMacOS *)(get_singleton()))->_dispatch_input_event(p_event);
 }
@@ -1827,7 +1836,10 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+	WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
 	WindowData &wd = windows[window_id];
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
@@ -1942,7 +1954,10 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode != MOUSE_MODE_CAPTURED) {
-		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
 		WindowData &wd = windows[window_id];
 
 		// Local point in window coords.
