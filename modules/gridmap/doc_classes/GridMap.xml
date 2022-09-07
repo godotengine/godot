@@ -94,6 +94,13 @@
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the navigation map this GridMap node uses for its cell baked navigation meshes.
+				This function returns always the map set on the GridMap node and not the map on the NavigationServer. If the map is changed directly with the NavigationServer API the GridMap node will not be aware of the map change.
+			</description>
+		</method>
 		<method name="get_orthogonal_index_from_basis" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="basis" type="Basis" />
@@ -174,6 +181,13 @@
 			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this GridMap node should use for its cell baked navigation meshes.
 			</description>
 		</method>
 	</methods>
