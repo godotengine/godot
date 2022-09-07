@@ -32,7 +32,7 @@
 #define WEB_EDITOR_HTTP_SERVER_H
 
 #include "core/io/image_loader.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_paths.h"
@@ -42,7 +42,7 @@ private:
 	Ref<TCPServer> server;
 	HashMap<String, String> mimes;
 	Ref<StreamPeerTCP> tcp;
-	Ref<StreamPeerSSL> ssl;
+	Ref<StreamPeerTLS> ssl;
 	Ref<StreamPeer> peer;
 	Ref<CryptoKey> key;
 	Ref<X509Certificate> cert;
@@ -53,7 +53,7 @@ private:
 
 	void _clear_client() {
 		peer = Ref<StreamPeer>();
-		ssl = Ref<StreamPeerSSL>();
+		ssl = Ref<StreamPeerTLS>();
 		tcp = Ref<StreamPeerTCP>();
 		memset(req_buf, 0, sizeof(req_buf));
 		time = 0;
@@ -203,7 +203,7 @@ public:
 
 		if (use_ssl) {
 			if (ssl.is_null()) {
-				ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+				ssl = Ref<StreamPeerTLS>(StreamPeerTLS::create());
 				peer = ssl;
 				ssl->set_blocking_handshake_enabled(false);
 				if (ssl->accept_stream(tcp, key, cert) != OK) {
@@ -212,11 +212,11 @@ public:
 				}
 			}
 			ssl->poll();
-			if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING) {
+			if (ssl->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
 				// Still handshaking, keep waiting.
 				return;
 			}
-			if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
+			if (ssl->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
 				_clear_client();
 				return;
 			}

@@ -1478,6 +1478,7 @@ static const char *class_renames[][2] = {
 	{ "StreamCubemap", "CompressedCubemap" },
 	{ "StreamCubemapArray", "CompressedCubemapArray" },
 	{ "StreamPeerGDNative", "StreamPeerExtension" },
+	{ "StreamPeerSSL", "StreamPeerTLS" },
 	{ "StreamTexture", "CompressedTexture2D" },
 	{ "StreamTexture2D", "CompressedTexture2D" },
 	{ "StreamTexture2DArray", "CompressedTexture2DArray" },
