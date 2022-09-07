@@ -2657,22 +2657,36 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
 				tab_closing_idx = _next_unsaved_scene(false);
-				_scene_tab_changed(tab_closing_idx);
+				if (tab_closing_idx == -1) {
+					tab_closing_idx = -2; // Only external resources are unsaved.
+				} else {
+					_scene_tab_changed(tab_closing_idx);
+				}
 
 				if (unsaved_cache || p_option == FILE_CLOSE_ALL_AND_QUIT || p_option == FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER || p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
-					Node *scene_root = editor_data.get_edited_scene_root(tab_closing_idx);
-					if (scene_root) {
-						String scene_filename = scene_root->get_scene_file_path();
+					if (tab_closing_idx == -2) {
 						if (p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
 							save_confirmation->set_ok_button_text(TTR("Save & Reload"));
-							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+							save_confirmation->set_text(TTR("Save modified resources before reloading?"));
 						} else {
 							save_confirmation->set_ok_button_text(TTR("Save & Quit"));
-							save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+							save_confirmation->set_text(TTR("Save modified resources before closing?"));
 						}
-						save_confirmation->popup_centered();
-						break;
+					} else {
+						Node *scene_root = editor_data.get_edited_scene_root(tab_closing_idx);
+						if (scene_root) {
+							String scene_filename = scene_root->get_scene_file_path();
+							if (p_option == FILE_CLOSE_ALL_AND_RELOAD_CURRENT_PROJECT) {
+								save_confirmation->set_ok_button_text(TTR("Save & Reload"));
+								save_confirmation->set_text(vformat(TTR("Save changes to '%s' before reloading?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+							} else {
+								save_confirmation->set_ok_button_text(TTR("Save & Quit"));
+								save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene_filename.is_empty() ? scene_filename : "unsaved scene"));
+							}
+						}
 					}
+					save_confirmation->popup_centered();
+					break;
 				}
 			}
 			if (!editor_data.get_edited_scene_root(tab_closing_idx)) {
@@ -2945,7 +2959,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
-				if (_next_unsaved_scene(!save_each) == -1) {
+				if (_next_unsaved_scene(!save_each) == -1 && !get_undo_redo()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY)) {
 					_discard_changes();
 					break;
 				} else {
