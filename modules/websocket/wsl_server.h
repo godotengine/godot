@@ -51,7 +51,7 @@ private:
 	public:
 		Ref<StreamPeerTCP> tcp;
 		Ref<StreamPeer> connection;
-		bool use_ssl = false;
+		bool use_tls = false;
 
 		uint64_t time = 0;
 		uint8_t req_buf[WSL_MAX_HEADER_SIZE] = {};

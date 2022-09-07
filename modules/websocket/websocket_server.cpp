@@ -58,9 +58,9 @@ void WebSocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_private_key", "key"), &WebSocketServer::set_private_key);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "private_key", PROPERTY_HINT_RESOURCE_TYPE, "CryptoKey", PROPERTY_USAGE_NONE), "set_private_key", "get_private_key");
 
-	ClassDB::bind_method(D_METHOD("get_ssl_certificate"), &WebSocketServer::get_ssl_certificate);
-	ClassDB::bind_method(D_METHOD("set_ssl_certificate", "cert"), &WebSocketServer::set_ssl_certificate);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_ssl_certificate", "get_ssl_certificate");
+	ClassDB::bind_method(D_METHOD("get_tls_certificate"), &WebSocketServer::get_tls_certificate);
+	ClassDB::bind_method(D_METHOD("set_tls_certificate", "cert"), &WebSocketServer::set_tls_certificate);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tls_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", PROPERTY_USAGE_NONE), "set_tls_certificate", "get_tls_certificate");
 
 	ClassDB::bind_method(D_METHOD("get_ca_chain"), &WebSocketServer::get_ca_chain);
 	ClassDB::bind_method(D_METHOD("set_ca_chain", "ca_chain"), &WebSocketServer::set_ca_chain);
@@ -95,13 +95,13 @@ void WebSocketServer::set_private_key(Ref<CryptoKey> p_key) {
 	private_key = p_key;
 }
 
-Ref<X509Certificate> WebSocketServer::get_ssl_certificate() const {
-	return ssl_cert;
+Ref<X509Certificate> WebSocketServer::get_tls_certificate() const {
+	return tls_cert;
 }
 
-void WebSocketServer::set_ssl_certificate(Ref<X509Certificate> p_cert) {
+void WebSocketServer::set_tls_certificate(Ref<X509Certificate> p_cert) {
 	ERR_FAIL_COND(is_listening());
-	ssl_cert = p_cert;
+	tls_cert = p_cert;
 }
 
 Ref<X509Certificate> WebSocketServer::get_ca_chain() const {

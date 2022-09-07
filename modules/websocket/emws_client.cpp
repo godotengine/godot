@@ -65,7 +65,7 @@ void EMWSClient::_esws_on_close(void *obj, int code, const char *reason, int was
 	client->_on_disconnect(was_clean != 0);
 }
 
-Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
+Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
 	if (_js_id) {
 		godot_js_websocket_destroy(_js_id);
 		_js_id = 0;
@@ -84,9 +84,9 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	if (p_custom_headers.size()) {
 		WARN_PRINT_ONCE("Custom headers are not supported in Web platform.");
 	}
-	if (p_ssl) {
+	if (p_tls) {
 		str = "wss://";
-		if (ssl_cert.is_valid()) {
+		if (tls_cert.is_valid()) {
 			WARN_PRINT_ONCE("Custom SSL certificate is not supported in Web platform.");
 		}
 	}

@@ -42,20 +42,20 @@ class WebSocketClient : public WebSocketMultiplayerPeer {
 
 protected:
 	Ref<WebSocketPeer> _peer;
-	bool verify_ssl = true;
-	Ref<X509Certificate> ssl_cert;
+	bool verify_tls = true;
+	Ref<X509Certificate> tls_cert;
 
 	static void _bind_methods();
 
 public:
 	Error connect_to_url(String p_url, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false, const Vector<String> p_custom_headers = Vector<String>());
 
-	void set_verify_ssl_enabled(bool p_verify_ssl);
-	bool is_verify_ssl_enabled() const;
-	Ref<X509Certificate> get_trusted_ssl_certificate() const;
-	void set_trusted_ssl_certificate(Ref<X509Certificate> p_cert);
+	void set_verify_tls_enabled(bool p_verify_tls);
+	bool is_verify_tls_enabled() const;
+	Ref<X509Certificate> get_trusted_tls_certificate() const;
+	void set_trusted_tls_certificate(Ref<X509Certificate> p_cert);
 
-	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) = 0;
+	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) = 0;
 	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") = 0;
 	virtual IPAddress get_connected_host() const = 0;
 	virtual uint16_t get_connected_port() const = 0;

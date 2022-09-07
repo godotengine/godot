@@ -324,7 +324,7 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			status->set_text(TTR("Can't connect."));
 		} break;
 		case HTTPRequest::RESULT_CANT_CONNECT:
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR: {
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR: {
 			error_text = TTR("Can't connect to host:") + " " + host;
 			status->set_text(TTR("Can't connect."));
 		} break;
@@ -1102,7 +1102,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
 			error_label->set_text(TTR("Connection error, please try again."));
 		} break;
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
 		case HTTPRequest::RESULT_CANT_CONNECT: {
 			error_label->set_text(TTR("Can't connect to host:") + " " + host);
 		} break;

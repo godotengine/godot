@@ -46,8 +46,8 @@ private:
 	String http_proxy_host;
 	int https_proxy_port = -1; // Proxy server for https requests.
 	String https_proxy_host;
-	bool ssl = false;
-	bool ssl_verify_host = false;
+	bool tls = false;
+	bool tls_verify_host = false;
 	bool blocking = false;
 	bool handshaking = false;
 	bool head_request = false;
@@ -79,7 +79,7 @@ public:
 
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override;
 
-	Error connect_to_host(const String &p_host, int p_port = -1, bool p_ssl = false, bool p_verify_host = true) override;
+	Error connect_to_host(const String &p_host, int p_port = -1, bool p_tls = false, bool p_verify_host = true) override;
 	void set_connection(const Ref<StreamPeer> &p_connection) override;
 	Ref<StreamPeer> get_connection() const override;
 	void close() override;

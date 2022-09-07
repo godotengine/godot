@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  tls_context_mbedtls.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBEDTLS_H
-#define SSL_CONTEXT_MBEDTLS_H
+#ifndef TLS_CONTEXT_MBEDTLS_H
+#define TLS_CONTEXT_MBEDTLS_H
 
 #include "crypto_mbedtls.h"
 
@@ -44,10 +44,10 @@
 #include <mbedtls/ssl.h>
 #include <mbedtls/ssl_cookie.h>
 
-class SSLContextMbedTLS;
+class TLSContextMbedTLS;
 
 class CookieContextMbedTLS : public RefCounted {
-	friend class SSLContextMbedTLS;
+	friend class TLSContextMbedTLS;
 
 protected:
 	bool inited = false;
@@ -63,7 +63,7 @@ public:
 	~CookieContextMbedTLS();
 };
 
-class SSLContextMbedTLS : public RefCounted {
+class TLSContextMbedTLS : public RefCounted {
 protected:
 	bool inited = false;
 
@@ -73,7 +73,7 @@ public:
 	Ref<X509CertificateMbedTLS> certs;
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
+	mbedtls_ssl_context tls;
 	mbedtls_ssl_config conf;
 
 	Ref<CookieContextMbedTLS> cookies;
@@ -86,8 +86,8 @@ public:
 
 	mbedtls_ssl_context *get_context();
 
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
+	TLSContextMbedTLS();
+	~TLSContextMbedTLS();
 };
 
-#endif // SSL_CONTEXT_MBEDTLS_H
+#endif // TLS_CONTEXT_MBEDTLS_H
