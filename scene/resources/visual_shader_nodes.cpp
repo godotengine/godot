@@ -6119,6 +6119,13 @@ String VisualShaderNodeTextureParameterTriplanar::generate_global_per_func(Shade
 	return code;
 }
 
+String VisualShaderNodeTextureParameterTriplanar::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	String code = _get_qual_str() + "uniform sampler2D " + get_parameter_name();
+	code += get_sampler_hint(texture_type, color_default, texture_filter, texture_repeat);
+	code += ";\n";
+	return code;
+}
+
 String VisualShaderNodeTextureParameterTriplanar::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String id = get_parameter_name();
 
