@@ -1011,6 +1011,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("separation", "SplitContainer", 12 * scale);
 	theme->set_constant("separation", "HSplitContainer", 12 * scale);
 	theme->set_constant("separation", "VSplitContainer", 12 * scale);
+	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * scale);
+	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * scale);
+	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * scale);
 	theme->set_constant("autohide", "SplitContainer", 1 * scale);
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
