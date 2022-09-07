@@ -519,6 +519,10 @@ protected:
 	static void _bind_methods();
 	String _get_qual_str() const;
 
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
+
 public:
 	void set_parameter_name(const String &p_name);
 	String get_parameter_name() const;
