@@ -32,6 +32,8 @@ if PLATFORM == 'macos'
                       'godot_application_delegate.mm',
                       'godot_content_view.mm',
                       'godot_main_macos.mm',
+                      'godot_menu_delegate.mm',
+                      'godot_menu_item.mm',
                       'godot_window.mm',
                       'godot_window_delegate.mm',
                       'key_mapping_macos.mm',
