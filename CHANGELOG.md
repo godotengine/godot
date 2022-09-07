@@ -327,6 +327,11 @@ See the [release announcement](https://godotengine.org/article/godot-3-5-cant-st
 
 - Android: Drop broken 32-bit framebuffer setting ([GH-54431](https://github.com/godotengine/godot/pull/54431)).
 
+#### Shaders
+
+- Removed support for `1f` or `0f` float literal syntax which is invalid in GLSL ([GH-55623](https://github.com/godotengine/godot/pull/55623)).
+  Floats should be written with a decimal separator (`1.0f` or `0.f`).
+
 
 ### Fixed
 
