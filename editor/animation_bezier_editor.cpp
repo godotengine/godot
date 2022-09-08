@@ -1088,7 +1088,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			//first check point
 			//command makes it ignore the main point, so control point editors can be force-edited
 			//path 2D editing in the 3D and 2D editors works the same way
-			if (!mb->is_command_pressed()) {
+			if (!mb->is_command_or_control_pressed()) {
 				if (edit_points[i].point_rect.has_point(mb->get_position())) {
 					IntPair pair = IntPair(edit_points[i].track, edit_points[i].key);
 					if (mb->is_shift_pressed()) {
@@ -1152,7 +1152,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		//insert new point
-		if (mb->get_position().x >= limit && mb->get_position().x < get_size().width && mb->is_command_pressed()) {
+		if (mb->get_position().x >= limit && mb->get_position().x < get_size().width && mb->is_command_or_control_pressed()) {
 			Array new_point;
 			new_point.resize(5);
 
@@ -1684,8 +1684,8 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	set_clip_contents(true);
 
 	ED_SHORTCUT("animation_bezier_editor/focus", TTR("Focus"), Key::F);
-	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD | Key::A);
-	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

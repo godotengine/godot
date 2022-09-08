@@ -679,7 +679,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
 
-			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_pressed()) {
+			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
 				emit_signal(SNAME("multi_selected"), i, false);
 
@@ -702,13 +702,13 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
 			} else {
-				if (!mb->is_double_click() && !mb->is_command_pressed() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MouseButton::LEFT) {
+				if (!mb->is_double_click() && !mb->is_command_or_control_pressed() && select_mode == SELECT_MULTI && items[i].selectable && !items[i].disabled && items[i].selected && mb->get_button_index() == MouseButton::LEFT) {
 					defer_select_single = i;
 					return;
 				}
 
 				if (!items[i].selected || allow_reselect) {
-					select(i, select_mode == SELECT_SINGLE || !mb->is_command_pressed());
+					select(i, select_mode == SELECT_SINGLE || !mb->is_command_or_control_pressed());
 
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SNAME("item_selected"), i);

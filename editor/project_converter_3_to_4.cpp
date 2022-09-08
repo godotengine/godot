@@ -292,7 +292,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_collision_layer_bit", "get_collision_layer_value" }, // CSGShape3D and a lot of others like GridMap
 	{ "get_collision_mask_bit", "get_collision_mask_value" }, // CSGShape3D and a lot of others like GridMap
 	{ "get_color_types", "get_color_type_list" }, // Theme
-	{ "get_command", "is_command_pressed" }, // InputEventWithModifiers
+	{ "get_command", "is_command_or_control_pressed" }, // InputEventWithModifiers
 	{ "get_constant_types", "get_constant_type_list" }, // Theme
 	{ "get_control", "is_ctrl_pressed" }, // InputEventWithModifiers
 	{ "get_cull_mask_bit", "get_cull_mask_value" }, // Camera3D
@@ -480,7 +480,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_collision_layer_bit", "set_collision_layer_value" }, // CSGShape3D and a lot of others like GridMap
 	{ "set_collision_mask_bit", "set_collision_mask_value" }, // CSGShape3D and a lot of others like GridMap
 	{ "set_column_min_width", "set_column_custom_minimum_width" }, // Tree
-	{ "set_command", "set_command_pressed" }, // InputEventWithModifiers
+	{ "set_command", "set_meta_pressed" }, // InputEventWithModifiers
 	{ "set_control", "set_ctrl_pressed" }, // InputEventWithModifiers
 	{ "set_create_options", "_set_create_options" }, //  EditorResourcePicker
 	{ "set_cull_mask_bit", "set_cull_mask_value" }, // Camera3D

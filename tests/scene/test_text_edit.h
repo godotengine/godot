@@ -727,7 +727,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 #ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::CMD)
+			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL)
 #endif
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "test");
@@ -739,7 +739,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 #ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::CMD)
+			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL)
 #endif
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "");
@@ -1387,7 +1387,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_caret_column(4);
 			MessageQueue::get_singleton()->flush();
 
-			Ref<InputEvent> tmpevent = InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT | KeyModifierMask::CMD);
+			Ref<InputEvent> tmpevent = InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL);
 			InputMap::get_singleton()->action_add_event("ui_text_backspace_all_to_left", tmpevent);
 
 			SIGNAL_DISCARD("text_set");
@@ -1624,7 +1624,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		}
 
 		SUBCASE("[TextEdit] ui_text_delete_all_to_right") {
-			Ref<InputEvent> tmpevent = InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT | KeyModifierMask::CMD);
+			Ref<InputEvent> tmpevent = InputEventKey::create_reference(Key::BACKSPACE | KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL);
 			InputMap::get_singleton()->action_add_event("ui_text_delete_all_to_right", tmpevent);
 
 			text_edit->set_text("this is some test text.\n");
@@ -1905,7 +1905,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 #ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\nthis is some test text.");
@@ -2016,7 +2016,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 #ifdef MACOS_ENABLED
 			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "this is some test text\n");
@@ -2245,9 +2245,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::UP | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::UP | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "this is some\nother test\nlines\ngo here");
@@ -2286,9 +2286,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::DOWN | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::DOWN | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "go here\nlines\nother test\nthis is some");
@@ -2327,7 +2327,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::SHIFT);
 #endif
@@ -2384,7 +2384,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
 			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::SHIFT);
 #endif

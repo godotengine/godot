@@ -239,7 +239,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			handled = true;
 		}
 
-		if (k->get_keycode_with_modifiers() == (KeyModifierMask::CMD | Key::F)) {
+		if (k->is_match(InputEventKey::create_reference(KeyModifierMask::CMD_OR_CTRL | Key::F))) {
 			search_box->grab_focus();
 			search_box->select_all();
 			handled = true;

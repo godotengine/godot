@@ -107,32 +107,22 @@ public:
 class InputEventWithModifiers : public InputEventFromWindow {
 	GDCLASS(InputEventWithModifiers, InputEventFromWindow);
 
-	bool store_command = true;
+	bool command_or_control_autoremap = false;
 
 	bool shift_pressed = false;
 	bool alt_pressed = false;
-#ifdef APPLE_STYLE_KEYS
-	union {
-		bool command_pressed;
-		bool meta_pressed = false; //< windows/mac key
-	};
-
+	bool meta_pressed = false; // "Command" on macOS, "Meta/Win" key on other platforms.
 	bool ctrl_pressed = false;
-#else
-	union {
-		bool command_pressed; //< windows/mac key
-		bool ctrl_pressed = false;
-	};
-	bool meta_pressed = false; //< windows/mac key
-#endif
 
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	void set_store_command(bool p_enabled);
-	bool is_storing_command() const;
+	void set_command_or_control_autoremap(bool p_enabled);
+	bool is_command_or_control_autoremap() const;
+
+	bool is_command_or_control_pressed() const;
 
 	void set_shift_pressed(bool p_pressed);
 	bool is_shift_pressed() const;
@@ -145,9 +135,6 @@ public:
 
 	void set_meta_pressed(bool p_pressed);
 	bool is_meta_pressed() const;
-
-	void set_command_pressed(bool p_pressed);
-	bool is_command_pressed() const;
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 

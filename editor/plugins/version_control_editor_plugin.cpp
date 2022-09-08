@@ -1319,7 +1319,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->connect(SNAME("gui_input"), callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_area->add_child(commit_message);
 
-	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD | Key::ENTER);
+	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD_OR_CTRL | Key::ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));

@@ -61,12 +61,16 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::PAGEDOWN              ,"PageDown"},
 	{Key::SHIFT                 ,"Shift"},
 	{Key::CTRL                  ,"Ctrl"},
-#ifdef MACOS_ENABLED
+#if defined(MACOS_ENABLED)
 	{Key::META                  ,"Command"},
+	{Key::ALT                   ,"Option"},
+#elif defined(WINDOWS_ENABLED)
+	{Key::META                  ,"Windows"},
+	{Key::ALT                   ,"Alt"},
 #else
 	{Key::META                  ,"Meta"},
-#endif
 	{Key::ALT                   ,"Alt"},
+#endif
 	{Key::CAPSLOCK              ,"CapsLock"},
 	{Key::NUMLOCK               ,"NumLock"},
 	{Key::SCROLLLOCK            ,"ScrollLock"},
@@ -435,6 +439,14 @@ String keycode_get_string(Key p_code) {
 	}
 	if ((p_code & KeyModifierMask::ALT) != Key::NONE) {
 		codestr += find_keycode_name(Key::ALT);
+		codestr += "+";
+	}
+	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
+#ifdef MACOS_ENABLED
+		codestr += find_keycode_name(Key::META);
+#else
+		codestr += find_keycode_name(Key::CTRL);
+#endif
 		codestr += "+";
 	}
 	if ((p_code & KeyModifierMask::CTRL) != Key::NONE) {

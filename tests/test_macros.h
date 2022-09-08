@@ -133,11 +133,11 @@ int register_test_command(String p_command, TestFunc p_function);
 // Utility macros to send an event actions to a given object
 // Requires Message Queue and InputMap to be setup.
 // SEND_GUI_ACTION    - takes an object and a input map key. e.g SEND_GUI_ACTION(code_edit, "ui_text_newline").
-// SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, Key::A | KeyModifierMask::CMD).
+// SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, Key::A | KeyModifierMask::META).
 // SEND_GUI_MOUSE_BUTTON_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
 // SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
-// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButton::MASK_LEFT, KeyModifierMask::CMD);
-// SEND_GUI_DOUBLE_CLICK - takes an object, position and modifiers. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50), KeyModifierMask::CMD);
+// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButton::MASK_LEFT, KeyModifierMask::META);
+// SEND_GUI_DOUBLE_CLICK - takes an object, position and modifiers. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50), KeyModifierMask::META);
 
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
 	{                                                                                                 \
@@ -161,7 +161,6 @@ int register_test_command(String p_command, TestFunc p_function);
 	m_event->set_shift_pressed(((m_modifers)&KeyModifierMask::SHIFT) != Key::NONE); \
 	m_event->set_alt_pressed(((m_modifers)&KeyModifierMask::ALT) != Key::NONE);     \
 	m_event->set_ctrl_pressed(((m_modifers)&KeyModifierMask::CTRL) != Key::NONE);   \
-	m_event->set_command_pressed(((m_modifers)&KeyModifierMask::CMD) != Key::NONE); \
 	m_event->set_meta_pressed(((m_modifers)&KeyModifierMask::META) != Key::NONE);
 
 #define _CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers) \
