@@ -283,26 +283,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 		Ref<Animation> anim = player->get_animation(current);
 		{
-			bool animation_library_is_foreign = false;
-			if (!anim->get_path().is_resource_file()) {
-				int srpos = anim->get_path().find("::");
-				if (srpos != -1) {
-					String base = anim->get_path().substr(0, srpos);
-					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
-						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-							animation_library_is_foreign = true;
-						}
-					} else {
-						if (FileAccess::exists(base + ".import")) {
-							animation_library_is_foreign = true;
-						}
-					}
-				}
-			} else {
-				if (FileAccess::exists(anim->get_path() + ".import")) {
-					animation_library_is_foreign = true;
-				}
-			}
+			bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 			track_editor->set_animation(anim, animation_library_is_foreign);
 			Node *root = player->get_node(player->get_root());
@@ -773,26 +754,7 @@ void AnimationPlayerEditor::_animation_edit() {
 	if (current != String()) {
 		Ref<Animation> anim = player->get_animation(current);
 
-		bool animation_library_is_foreign = false;
-		if (!anim->get_path().is_resource_file()) {
-			int srpos = anim->get_path().find("::");
-			if (srpos != -1) {
-				String base = anim->get_path().substr(0, srpos);
-				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
-					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-						animation_library_is_foreign = true;
-					}
-				} else {
-					if (FileAccess::exists(base + ".import")) {
-						animation_library_is_foreign = true;
-					}
-				}
-			}
-		} else {
-			if (FileAccess::exists(anim->get_path() + ".import")) {
-				animation_library_is_foreign = true;
-			}
-		}
+		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 		track_editor->set_animation(anim, animation_library_is_foreign);
 
@@ -866,25 +828,7 @@ void AnimationPlayerEditor::_update_player() {
 		// Check if the global library is foreign since we want to disable options for adding/remove/renaming animations if it is.
 		Ref<AnimationLibrary> library = player->get_animation_library(K);
 		if (K == "") {
-			if (!library->get_path().is_resource_file()) {
-				int srpos = library->get_path().find("::");
-				if (srpos != -1) {
-					String base = library->get_path().substr(0, srpos);
-					if (ResourceLoader::get_resource_type(base) == "PackedScene") {
-						if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-							foreign_global_anim_lib = true;
-						}
-					} else {
-						if (FileAccess::exists(base + ".import")) {
-							foreign_global_anim_lib = true;
-						}
-					}
-				}
-			} else {
-				if (FileAccess::exists(library->get_path() + ".import")) {
-					foreign_global_anim_lib = true;
-				}
-			}
+			foreign_global_anim_lib = EditorNode::get_singleton()->is_resource_read_only(library);
 		}
 
 		List<StringName> animlist;
@@ -950,26 +894,7 @@ void AnimationPlayerEditor::_update_player() {
 		String current = animation->get_item_text(animation->get_selected());
 		Ref<Animation> anim = player->get_animation(current);
 
-		bool animation_library_is_foreign = false;
-		if (!anim->get_path().is_resource_file()) {
-			int srpos = anim->get_path().find("::");
-			if (srpos != -1) {
-				String base = anim->get_path().substr(0, srpos);
-				if (ResourceLoader::get_resource_type(base) == "PackedScene") {
-					if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-						animation_library_is_foreign = true;
-					}
-				} else {
-					if (FileAccess::exists(base + ".import")) {
-						animation_library_is_foreign = true;
-					}
-				}
-			}
-		} else {
-			if (FileAccess::exists(anim->get_path() + ".import")) {
-				animation_library_is_foreign = true;
-			}
-		}
+		bool animation_library_is_foreign = EditorNode::get_singleton()->is_resource_read_only(anim);
 
 		track_editor->set_animation(anim, animation_library_is_foreign);
 		Node *root = player->get_node(player->get_root());

@@ -198,11 +198,17 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 		} break;
 		case FILE_MENU_MAKE_LIBRARY_UNIQUE: {
 			StringName lib_name = file_dialog_library;
+			List<StringName> animation_list;
 
-			Ref<AnimationLibrary> ald = al->duplicate();
-
-			// TODO: should probably make all foreign animations assigned to this library
-			// unique too.
+			Ref<AnimationLibrary> ald = memnew(AnimationLibrary);
+			al->get_animation_list(&animation_list);
+			for (const StringName &animation_name : animation_list) {
+				Ref<Animation> animation = al->get_animation(animation_name);
+				if (EditorNode::get_singleton()->is_resource_read_only(animation)) {
+					animation = animation->duplicate();
+				}
+				ald->add_animation(animation_name, animation);
+			}
 
 			Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
 			undo_redo->create_action(vformat(TTR("Make Animation Library Unique: %s"), lib_name));
