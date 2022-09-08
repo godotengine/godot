@@ -167,7 +167,10 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_minus->set_flat(true);
 	add_child(zoom_minus);
 	zoom_minus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
-	zoom_minus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_minus", TTR("Zoom Out"), KeyModifierMask::CMD | Key::MINUS));
+
+	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTR("Zoom Out"),
+			{ int32_t(KeyModifierMask::CMD | Key::MINUS), int32_t(KeyModifierMask::CMD | Key::KP_SUBTRACT) }));
+
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 
@@ -189,7 +192,10 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_plus->set_flat(true);
 	add_child(zoom_plus);
 	zoom_plus->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
-	zoom_plus->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_plus", TTR("Zoom In"), KeyModifierMask::CMD | Key::EQUAL)); // Usually direct access key for PLUS
+
+	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTR("Zoom In"),
+			{ int32_t(KeyModifierMask::CMD | Key::EQUAL), int32_t(KeyModifierMask::CMD | Key::KP_ADD) })); // Usually direct access key for PLUS
+
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 
