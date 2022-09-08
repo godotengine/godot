@@ -1088,16 +1088,16 @@ void SceneTree::_change_scene(Node *p_to) {
 	}
 }
 
-Error SceneTree::change_scene(const String &p_path) {
+Error SceneTree::change_scene_to_file(const String &p_path) {
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
-	return change_scene_to(new_scene);
+	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
+Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instantiate();
@@ -1111,7 +1111,7 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
-	return change_scene(fname);
+	return change_scene_to_file(fname);
 }
 
 void SceneTree::add_current_scene(Node *p_current) {
@@ -1260,8 +1260,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
 
-	ClassDB::bind_method(D_METHOD("change_scene", "path"), &SceneTree::change_scene);
-	ClassDB::bind_method(D_METHOD("change_scene_to", "packed_scene"), &SceneTree::change_scene_to);
+	ClassDB::bind_method(D_METHOD("change_scene_to_file", "path"), &SceneTree::change_scene_to_file);
+	ClassDB::bind_method(D_METHOD("change_scene_to_packed", "packed_scene"), &SceneTree::change_scene_to_packed);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 
@@ -1316,7 +1316,7 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 }
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_function == "change_scene") {
+	if (p_function == "change_scene_to_file") {
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
