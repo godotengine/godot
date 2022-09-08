@@ -83,7 +83,7 @@ public:
 	jobject get_class_loader();
 	GodotJavaViewWrapper *get_godot_view();
 
-	void on_video_init(JNIEnv *p_env = nullptr);
+	bool on_video_init(JNIEnv *p_env = nullptr);
 	void on_godot_setup_completed(JNIEnv *p_env = nullptr);
 	void on_godot_main_loop_started(JNIEnv *p_env = nullptr);
 	void restart(JNIEnv *p_env = nullptr);

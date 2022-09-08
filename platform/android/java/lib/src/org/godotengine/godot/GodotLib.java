@@ -54,7 +54,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native void initialize(Activity activity,
+	public static native boolean initialize(Activity activity,
 			Godot p_instance,
 			AssetManager p_asset_manager,
 			GodotIO godotIO,
@@ -74,7 +74,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native void setup(String[] p_cmdline);
+	public static native boolean setup(String[] p_cmdline);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.

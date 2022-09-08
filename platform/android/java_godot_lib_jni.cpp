@@ -79,7 +79,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion, jobject p_godot_tts) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion, jobject p_godot_tts) {
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
@@ -100,7 +100,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
 
-	godot_java->on_video_init(env);
+	return godot_java->on_video_init(env);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jclass clazz) {
@@ -123,7 +123,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline) {
 	setup_android_thread();
 
 	const char **cmdline = nullptr;
@@ -133,10 +133,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 		cmdlen = env->GetArrayLength(p_cmdline);
 		if (cmdlen) {
 			cmdline = (const char **)memalloc((cmdlen + 1) * sizeof(const char *));
-			ERR_FAIL_NULL_MSG(cmdline, "Out of memory.");
+			ERR_FAIL_NULL_V_MSG(cmdline, false, "Out of memory.");
 			cmdline[cmdlen] = nullptr;
 			j_cmdline = (jstring *)memalloc(cmdlen * sizeof(jstring));
-			ERR_FAIL_NULL_MSG(j_cmdline, "Out of memory.");
+			ERR_FAIL_NULL_V_MSG(j_cmdline, false, "Out of memory.");
 
 			for (int i = 0; i < cmdlen; i++) {
 				jstring string = (jstring)env->GetObjectArrayElement(p_cmdline, i);
@@ -161,11 +161,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 
 	// Note: --help and --version return ERR_HELP, but this should be translated to 0 if exit codes are propagated.
 	if (err != OK) {
-		return; // should exit instead and print the error
+		return false;
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
 	GDREGISTER_CLASS(JNISingleton);
+	return true;
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jobject p_surface, jint p_width, jint p_height) {
