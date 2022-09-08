@@ -369,6 +369,13 @@ void CanvasItem::queue_redraw() {
 	MessageQueue::get_singleton()->push_callable(callable_mp(this, &CanvasItem::_redraw_callback));
 }
 
+void CanvasItem::move_to_front() {
+	if (!get_parent()) {
+		return;
+	}
+	get_parent()->move_child(this, get_parent()->get_child_count() - 1);
+}
+
 void CanvasItem::set_modulate(const Color &p_modulate) {
 	if (modulate == p_modulate) {
 		return;
@@ -897,6 +904,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("hide"), &CanvasItem::hide);
 
 	ClassDB::bind_method(D_METHOD("queue_redraw"), &CanvasItem::queue_redraw);
+	ClassDB::bind_method(D_METHOD("move_to_front"), &CanvasItem::move_to_front);
 
 	ClassDB::bind_method(D_METHOD("set_as_top_level", "enable"), &CanvasItem::set_as_top_level);
 	ClassDB::bind_method(D_METHOD("is_set_as_top_level"), &CanvasItem::is_set_as_top_level);

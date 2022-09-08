@@ -389,21 +389,6 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	data.blocked--;
 }
 
-void Node::raise() {
-	if (!data.parent) {
-		return;
-	}
-
-	// Internal children move within a different index range.
-	if (_is_internal_front()) {
-		data.parent->move_child(this, data.parent->data.internal_children_front - 1);
-	} else if (_is_internal_back()) {
-		data.parent->move_child(this, data.parent->data.internal_children_back - 1);
-	} else {
-		data.parent->move_child(this, data.parent->get_child_count(false) - 1);
-	}
-}
-
 void Node::_propagate_groups_dirty() {
 	for (const KeyValue<StringName, GroupData> &E : data.grouped) {
 		if (E.value.group) {
@@ -2816,7 +2801,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
 	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
-	ClassDB::bind_method(D_METHOD("raise"), &Node::raise);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
 	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);

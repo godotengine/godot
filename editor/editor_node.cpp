@@ -3377,7 +3377,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
 
-		singleton->distraction_free->raise();
+		singleton->distraction_free->move_to_front();
 	}
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
@@ -4959,7 +4959,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			}
 
 			if (atidx == i) {
-				node->raise();
+				node->move_to_front();
 				continue;
 			}
 
@@ -5384,7 +5384,7 @@ Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 	tb->set_toggle_mode(true);
 	tb->set_focus_mode(Control::FOCUS_NONE);
 	bottom_panel_vb->add_child(p_item);
-	bottom_panel_hb->raise();
+	bottom_panel_hb->move_to_front();
 	bottom_panel_hb_editors->add_child(tb);
 	p_item->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	p_item->hide();
@@ -5418,7 +5418,7 @@ void EditorNode::make_bottom_panel_item_visible(Control *p_item) {
 void EditorNode::raise_bottom_panel_item(Control *p_item) {
 	for (int i = 0; i < bottom_panel_items.size(); i++) {
 		if (bottom_panel_items[i].control == p_item) {
-			bottom_panel_items[i].button->raise();
+			bottom_panel_items[i].button->move_to_front();
 			SWAP(bottom_panel_items.write[i], bottom_panel_items.write[bottom_panel_items.size() - 1]);
 			break;
 		}

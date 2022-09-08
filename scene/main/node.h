@@ -348,7 +348,6 @@ public:
 
 	void move_child(Node *p_child, int p_pos);
 	void _move_child(Node *p_child, int p_pos, bool p_ignore_end = false);
-	void raise();
 
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
