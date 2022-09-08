@@ -230,6 +230,7 @@ private:
 	Size2i size = Size2i(512, 512);
 	Size2i size_2d_override;
 	bool size_allocated = false;
+	uint32_t view_count = 1;
 
 	RID contact_2d_debug;
 	RID contact_3d_debug_multimesh;
@@ -469,7 +470,7 @@ private:
 	uint64_t event_count = 0;
 
 protected:
-	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated);
+	void _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated, uint32_t p_view_count = 1);
 
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
@@ -710,7 +711,7 @@ public:
 	void _propagate_enter_world_3d(Node *p_node);
 	void _propagate_exit_world_3d(Node *p_node);
 
-	void set_use_xr(bool p_use_xr);
+	virtual void set_use_xr(bool p_use_xr);
 	bool is_using_xr();
 #endif // _3D_DISABLED
 
@@ -765,6 +766,10 @@ public:
 	ClearMode get_clear_mode() const;
 
 	virtual Transform2D get_screen_transform() const override;
+
+#ifndef _3D_DISABLED
+	virtual void set_use_xr(bool p_use_xr) override;
+#endif // _3D_DISABLED
 
 	SubViewport();
 	~SubViewport();

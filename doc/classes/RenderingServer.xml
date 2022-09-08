@@ -3347,6 +3347,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="width" type="int" />
 			<param index="2" name="height" type="int" />
+			<param index="3" name="view_count" type="int" default="1" />
 			<description>
 				Sets the viewport's width and height.
 			</description>

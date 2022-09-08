@@ -54,6 +54,7 @@ public:
 
 		Size2i internal_size;
 		Size2i size;
+		uint32_t view_count;
 		RID camera;
 		RID scenario;
 
@@ -150,6 +151,7 @@ public:
 		RendererScene::RenderInfo render_info;
 
 		Viewport() {
+			view_count = 1;
 			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
@@ -176,8 +178,6 @@ public:
 			time_gpu_begin = 0;
 			time_gpu_end = 0;
 		}
-
-		uint32_t get_view_count();
 	};
 
 	HashMap<String, RID> timestamp_vp_map;
@@ -210,7 +210,7 @@ public:
 
 	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 
-	void viewport_set_size(RID p_viewport, int p_width, int p_height);
+	void viewport_set_size(RID p_viewport, int p_width, int p_height, uint32_t view_count);
 
 	void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), DisplayServer::WindowID p_screen = DisplayServer::MAIN_WINDOW_ID);
 	void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable);

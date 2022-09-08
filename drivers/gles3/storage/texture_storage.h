@@ -339,6 +339,7 @@ struct RenderTarget {
 
 	Point2i position = Point2i(0, 0);
 	Size2i size = Size2i(0, 0);
+	uint32_t view_count = 1;
 	int mipmap_count = 1;
 	RID self;
 	GLuint fbo = 0;

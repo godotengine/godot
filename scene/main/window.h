@@ -316,6 +316,10 @@ public:
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
 
+#ifndef _3D_DISABLED
+	virtual void set_use_xr(bool p_use_xr) override;
+#endif // _3D_DISABLED
+
 	Window();
 	~Window();
 };

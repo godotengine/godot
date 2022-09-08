@@ -94,6 +94,10 @@ Point2i Window::get_position() const {
 }
 
 void Window::set_size(const Size2i &p_size) {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "set_size() is ineffective if use_xr = true");
+#endif
+
 	size = p_size;
 	_update_window_size();
 }
@@ -103,6 +107,10 @@ Size2i Window::get_size() const {
 }
 
 void Window::reset_size() {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "reset_size() is ineffective if use_xr = true");
+#endif
+
 	set_size(Size2i());
 }
 
@@ -591,6 +599,13 @@ bool Window::is_visible() const {
 }
 
 void Window::_update_window_size() {
+#ifndef _3D_DISABLED
+	if (use_xr) {
+		_update_viewport_size();
+		return;
+	}
+#endif
+
 	Size2i size_limit;
 	if (wrap_controls) {
 		size_limit = get_contents_minimum_size();
@@ -647,6 +662,19 @@ void Window::_update_window_size() {
 
 void Window::_update_viewport_size() {
 	//update the viewport part
+
+#ifndef _3D_DISABLED
+	if (use_xr) {
+		DisplayServer::WindowID window_id = get_window_id();
+		if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+			Size2i window_size = DisplayServer::get_singleton()->window_get_size(window_id);
+			RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(Point2i(), window_size), window_id);
+		} else {
+			RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), Rect2i(), DisplayServer::INVALID_WINDOW_ID);
+		}
+		return;
+	}
+#endif
 
 	Size2i final_size;
 	Size2i final_size_override;
@@ -986,6 +1014,15 @@ DisplayServer::WindowID Window::get_window_id() const {
 	return window_id;
 }
 
+#ifndef _3D_DISABLED
+void Window::set_use_xr(bool p_use_xr) {
+	if (use_xr != p_use_xr) {
+		Viewport::set_use_xr(p_use_xr);
+		_update_window_size();
+	}
+}
+#endif // _3D_DISABLED
+
 void Window::warp_mouse(const Vector2 &p_position) {
 	Transform2D xform = get_screen_transform();
 	Vector2 gpos = xform.xform(p_position);
@@ -1132,6 +1169,9 @@ Window *Window::get_parent_visible_window() const {
 void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "popup_on_parent() is ineffective if use_xr = true");
+#endif
 
 	if (!is_embedded()) {
 		Window *window = get_parent_visible_window();
@@ -1149,6 +1189,9 @@ void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "popup_centered_clamped() is ineffective if use_xr = true");
+#endif
 
 	Rect2 parent_rect;
 
@@ -1202,6 +1245,9 @@ void Window::popup_centered(const Size2i &p_minsize) {
 void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "popup_centered_ratio() is ineffective if use_xr = true");
+#endif
 	ERR_FAIL_COND_MSG(p_ratio <= 0.0 || p_ratio > 1.0, "Ratio must be between 0.0 and 1.0!");
 
 	Rect2 parent_rect;
@@ -1225,6 +1271,10 @@ void Window::popup_centered_ratio(float p_ratio) {
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "popup() is ineffective if use_xr = true");
+#endif
+
 	emit_signal(SNAME("about_to_popup"));
 
 	if (!_get_embedder() && get_flag(FLAG_POPUP)) {

@@ -366,6 +366,7 @@ void Viewport::_notification(int p_what) {
 #ifndef _3D_DISABLED
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
 			_update_audio_listener_3d();
+			set_process_internal(true);
 #endif // _3D_DISABLED
 
 			add_to_group("_viewports");
@@ -438,6 +439,7 @@ void Viewport::_notification(int p_what) {
 
 			remove_from_group("_viewports");
 			set_physics_process_internal(false);
+			set_process_internal(false);
 
 			RS::get_singleton()->viewport_set_active(viewport, false);
 			RenderingServer::get_singleton()->viewport_set_parent_viewport(viewport, RID());
@@ -471,6 +473,21 @@ void Viewport::_notification(int p_what) {
 					Transform3D point_transform;
 					point_transform.origin = points[i];
 					RS::get_singleton()->multimesh_instance_set_transform(contact_3d_debug_multimesh, i, point_transform);
+				}
+			}
+#endif // _3D_DISABLED
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+#ifndef _3D_DISABLED
+			if (use_xr && XRServer::get_singleton() != nullptr) {
+				Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
+				if (xr_interface.is_valid() && xr_interface->is_initialized()) {
+					Size2 xr_size = xr_interface->get_render_target_size();
+					// This will only actually resize if the the size has changed.
+					_set_size((Size2i)xr_size, Size2i(), Rect2i(), Transform2D(), true, xr_interface->get_view_count());
+				} else {
+					_set_size(Size2i(), Size2i(), Rect2i(), Transform2D(), true);
 				}
 			}
 #endif // _3D_DISABLED
@@ -784,19 +801,20 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated) {
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_2d_override == size_2d_override && to_screen_rect == p_to_screen_rect) {
+void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated, uint32_t p_view_count) {
+	if (size == p_size && view_count == p_view_count && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_2d_override == size_2d_override && to_screen_rect == p_to_screen_rect) {
 		return;
 	}
 
 	size = p_size;
+	view_count = p_view_count;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = p_stretch_transform;
 	to_screen_rect = p_to_screen_rect;
 
 	if (p_allocated) {
-		RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+		RS::get_singleton()->viewport_set_size(viewport, size.width, size.height, p_view_count);
 	} else {
 		RS::get_singleton()->viewport_set_size(viewport, 0, 0);
 	}
@@ -3612,9 +3630,34 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 }
 
 void Viewport::set_use_xr(bool p_use_xr) {
-	use_xr = p_use_xr;
+	if (use_xr != p_use_xr) {
+		use_xr = p_use_xr;
 
-	RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
+		RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
+
+		if (use_xr) {
+			// Force the viewport to resize right away, so that in NOTIFICATION_INTERNAL_PROCESS
+			// we can compare the XR interfaces size with the current size and view count, to avoid
+			// resizing every frame.
+			if (XRServer::get_singleton() != nullptr) {
+				Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
+				if (xr_interface.is_valid() && xr_interface->is_initialized()) {
+					Size2 xr_size = xr_interface->get_render_target_size();
+					_set_size((Size2i)xr_size, Size2i(), Rect2i(), Transform2D(), true, xr_interface->get_view_count());
+				} else {
+					_set_size(Size2i(), Size2i(), Rect2i(), Transform2D(), true);
+				}
+			}
+		} else {
+			Size2i window_size;
+			DisplayServer::WindowID window_id = get_window_id();
+			if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+				window_size = DisplayServer::get_singleton()->window_get_size(window_id);
+			}
+
+			_set_size(window_size, Size2i(), Rect2i(), Transform2D(), true, 1);
+		}
+	}
 }
 
 bool Viewport::is_using_xr() {
@@ -4043,6 +4086,10 @@ Viewport::~Viewport() {
 /////////////////////////////////
 
 void SubViewport::set_size(const Size2i &p_size) {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "set_size() is ineffective when use_xr = true");
+#endif
+
 	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
 
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
@@ -4056,6 +4103,9 @@ Size2i SubViewport::get_size() const {
 }
 
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "set_size_2d_override() is ineffective when use_xr = true");
+#endif
 	_set_size(_get_size(), p_size, Rect2i(), _stretch_transform(), true);
 }
 
@@ -4064,6 +4114,10 @@ Size2i SubViewport::get_size_2d_override() const {
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {
+#ifndef _3D_DISABLED
+	ERR_FAIL_COND_MSG(use_xr, "set_size_2d_override_stretch() is ineffective when use_xr = true");
+#endif
+
 	if (p_enable == size_2d_override_stretch) {
 		return;
 	}
@@ -4122,6 +4176,16 @@ Transform2D SubViewport::get_screen_transform() const {
 	}
 	return container_transform * Viewport::get_screen_transform();
 }
+
+#ifndef _3D_DISABLED
+void SubViewport::set_use_xr(bool p_use_xr) {
+	bool enabled = p_use_xr && (use_xr != p_use_xr);
+	Viewport::set_use_xr(p_use_xr);
+	if (enabled) {
+		size_2d_override_stretch = false;
+	}
+}
+#endif // _3D_DISABLED
 
 void SubViewport::_notification(int p_what) {
 	switch (p_what) {
