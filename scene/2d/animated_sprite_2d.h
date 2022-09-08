@@ -49,6 +49,7 @@ class AnimatedSprite2D : public Node2D {
 
 	bool is_over = false;
 	float timeout = 0.0;
+	bool pending_refresh;
 
 	bool hflip = false;
 	bool vflip = false;
@@ -57,6 +58,8 @@ class AnimatedSprite2D : public Node2D {
 
 	double _get_frame_duration();
 	void _reset_timeout();
+	void _queue_frame_refresh();
+	void _emit_frame_refreshed();
 	Rect2 _get_rect() const;
 
 protected:

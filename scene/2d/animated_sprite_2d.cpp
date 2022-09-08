@@ -205,7 +205,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 						}
 					}
 
-					queue_redraw();
+					_queue_frame_refresh();
 
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
@@ -274,7 +274,7 @@ void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	notify_property_list_changed();
 	_reset_timeout();
-	queue_redraw();
+	_queue_frame_refresh();
 	update_configuration_warnings();
 }
 
@@ -304,7 +304,7 @@ void AnimatedSprite2D::set_frame(int p_frame) {
 
 	frame = p_frame;
 	_reset_timeout();
-	queue_redraw();
+	_queue_frame_refresh();
 
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
@@ -329,7 +329,7 @@ double AnimatedSprite2D::get_speed_scale() const {
 
 void AnimatedSprite2D::set_centered(bool p_center) {
 	centered = p_center;
-	queue_redraw();
+	_queue_frame_refresh();
 	item_rect_changed();
 }
 
@@ -339,7 +339,7 @@ bool AnimatedSprite2D::is_centered() const {
 
 void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
-	queue_redraw();
+	_queue_frame_refresh();
 	item_rect_changed();
 }
 
@@ -349,7 +349,7 @@ Point2 AnimatedSprite2D::get_offset() const {
 
 void AnimatedSprite2D::set_flip_h(bool p_flip) {
 	hflip = p_flip;
-	queue_redraw();
+	_queue_frame_refresh();
 }
 
 bool AnimatedSprite2D::is_flipped_h() const {
@@ -358,7 +358,7 @@ bool AnimatedSprite2D::is_flipped_h() const {
 
 void AnimatedSprite2D::set_flip_v(bool p_flip) {
 	vflip = p_flip;
-	queue_redraw();
+	_queue_frame_refresh();
 }
 
 bool AnimatedSprite2D::is_flipped_v() const {
@@ -368,7 +368,7 @@ bool AnimatedSprite2D::is_flipped_v() const {
 void AnimatedSprite2D::_res_changed() {
 	set_frame(frame);
 
-	queue_redraw();
+	_queue_frame_refresh();
 }
 
 void AnimatedSprite2D::set_playing(bool p_playing) {
@@ -433,7 +433,22 @@ void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	_reset_timeout();
 	set_frame(0);
 	notify_property_list_changed();
+	_queue_frame_refresh();
+}
+
+void AnimatedSprite2D::_queue_frame_refresh() {
 	queue_redraw();
+
+	if (pending_refresh) {
+		return;
+	}
+	pending_refresh = true;
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &AnimatedSprite2D::_emit_frame_refreshed));
+}
+
+void AnimatedSprite2D::_emit_frame_refreshed() {
+	pending_refresh = false;
+	emit_signal("frame_refreshed");
 }
 
 StringName AnimatedSprite2D::get_animation() const {
@@ -493,6 +508,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite2D::get_speed_scale);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("frame_refreshed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
 	ADD_GROUP("Animation", "");
