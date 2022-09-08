@@ -69,6 +69,7 @@ class OS {
 	// so we can retrieve the rendering drivers available
 	int _display_driver_id = -1;
 	String _current_rendering_driver_name;
+	String _current_rendering_method;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -98,6 +99,8 @@ protected:
 	virtual void initialize_joypads() = 0;
 
 	void set_current_rendering_driver_name(String p_driver_name) { _current_rendering_driver_name = p_driver_name; }
+	void set_current_rendering_method(String p_name) { _current_rendering_method = p_name; }
+
 	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
@@ -116,6 +119,8 @@ public:
 	static OS *get_singleton();
 
 	String get_current_rendering_driver_name() const { return _current_rendering_driver_name; }
+	String get_current_rendering_method() const { return _current_rendering_method; }
+
 	int get_display_driver_id() const { return _display_driver_id; }
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);

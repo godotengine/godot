@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_scene.cpp                                                   */
+/*  rendering_method.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "renderer_scene.h"
+#include "rendering_method.h"
 
-RendererScene::RendererScene() {
+RenderingMethod::RenderingMethod() {
 }
 
-RendererScene::~RendererScene() {
+RenderingMethod::~RenderingMethod() {
 }
