@@ -28,7 +28,7 @@
 			<return type="Texture2D" />
 			<param index="0" name="param" type="int" enum="BaseMaterial3D.TextureParam" />
 			<description>
-				Returns the [Texture] associated with the specified [enum TextureParam].
+				Returns the [Texture2D] associated with the specified [enum TextureParam].
 			</description>
 		</method>
 		<method name="set_feature">
