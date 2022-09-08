@@ -566,8 +566,6 @@ void EditorNode::_update_from_settings() {
 	SceneTree *tree = get_tree();
 	tree->set_debug_collisions_color(GLOBAL_GET("debug/shapes/collision/shape_color"));
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
-	tree->set_debug_navigation_color(GLOBAL_GET("debug/shapes/navigation/geometry_color"));
-	tree->set_debug_navigation_disabled_color(GLOBAL_GET("debug/shapes/navigation/disabled_geometry_color"));
 
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));

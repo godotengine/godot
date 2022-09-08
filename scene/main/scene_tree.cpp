@@ -722,22 +722,6 @@ float SceneTree::get_debug_paths_width() const {
 	return debug_paths_width;
 }
 
-void SceneTree::set_debug_navigation_color(const Color &p_color) {
-	debug_navigation_color = p_color;
-}
-
-Color SceneTree::get_debug_navigation_color() const {
-	return debug_navigation_color;
-}
-
-void SceneTree::set_debug_navigation_disabled_color(const Color &p_color) {
-	debug_navigation_disabled_color = p_color;
-}
-
-Color SceneTree::get_debug_navigation_disabled_color() const {
-	return debug_navigation_disabled_color;
-}
-
 Ref<Material> SceneTree::get_debug_paths_material() {
 	if (debug_paths_material.is_valid()) {
 		return debug_paths_material;
@@ -753,40 +737,6 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	debug_paths_material = _debug_material;
 
 	return debug_paths_material;
-}
-
-Ref<Material> SceneTree::get_debug_navigation_material() {
-	if (navigation_material.is_valid()) {
-		return navigation_material;
-	}
-
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(get_debug_navigation_color());
-
-	navigation_material = line_material;
-
-	return navigation_material;
-}
-
-Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
-	if (navigation_disabled_material.is_valid()) {
-		return navigation_disabled_material;
-	}
-
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(get_debug_navigation_disabled_color());
-
-	navigation_disabled_material = line_material;
-
-	return navigation_disabled_material;
 }
 
 Ref<Material> SceneTree::get_debug_collision_material() {
@@ -1404,8 +1354,6 @@ SceneTree::SceneTree() {
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_paths_width = GLOBAL_DEF("debug/shapes/paths/geometry_width", 2.0);
-	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 
