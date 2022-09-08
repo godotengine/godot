@@ -82,7 +82,7 @@ namespace {
 String get_hostfxr_file_name() {
 #if defined(WINDOWS_ENABLED) || defined(UWP_ENABLED)
 	return "hostfxr.dll";
-#elif defined(OSX_ENABLED) || defined(IOS_ENABLED)
+#elif defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	return "libhostfxr.dylib";
 #else
 	return "libhostfxr.so";
@@ -197,7 +197,7 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 
 	r_dotnet_root = path::join(program_files_dir, "dotnet");
 	return true;
-#elif defined(TARGET_OSX)
+#elif defined(MACOS_ENABLED)
 	r_dotnet_root = "/usr/local/share/dotnet";
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
