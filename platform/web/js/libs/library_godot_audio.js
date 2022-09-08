@@ -339,16 +339,21 @@ const GodotAudioWorklet = {
 				if (GodotAudioWorklet.promise === null) {
 					return;
 				}
-				GodotAudioWorklet.promise.then(function () {
+				const p = GodotAudioWorklet.promise;
+				p.then(function () {
 					GodotAudioWorklet.worklet.port.postMessage({
 						'cmd': 'stop',
 						'data': null,
 					});
 					GodotAudioWorklet.worklet.disconnect();
+					GodotAudioWorklet.worklet.port.onmessage = null;
 					GodotAudioWorklet.worklet = null;
 					GodotAudioWorklet.promise = null;
 					resolve();
-				}).catch(function (err) { /* aborted? */ });
+				}).catch(function (err) {
+					// Aborted?
+					GodotRuntime.error(err);
+				});
 			});
 		},
 	},
