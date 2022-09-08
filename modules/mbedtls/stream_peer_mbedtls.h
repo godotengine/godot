@@ -32,7 +32,7 @@
 #define STREAM_PEER_MBEDTLS_H
 
 #include "core/io/stream_peer_tls.h"
-#include "ssl_context_mbedtls.h"
+#include "tls_context_mbedtls.h"
 
 class StreamPeerMbedTLS : public StreamPeerTLS {
 private:
@@ -48,7 +48,7 @@ private:
 	void _cleanup();
 
 protected:
-	Ref<SSLContextMbedTLS> ssl_ctx;
+	Ref<TLSContextMbedTLS> tls_ctx;
 
 	Error _do_handshake();
 
@@ -69,8 +69,8 @@ public:
 
 	virtual int get_available_bytes() const;
 
-	static void initialize_ssl();
-	static void finalize_ssl();
+	static void initialize_tls();
+	static void finalize_tls();
 
 	StreamPeerMbedTLS();
 	~StreamPeerMbedTLS();

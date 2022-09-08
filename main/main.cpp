@@ -2799,7 +2799,7 @@ bool Main::start() {
 			Engine::get_singleton()->startup_benchmark_begin_measure("game_load");
 
 			// Load SSL Certificates from Project Settings (or builtin).
-			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
+			Crypto::load_default_certificates(GLOBAL_DEF("network/tls/certificate_bundle_override", ""));
 
 			if (!game_path.is_empty()) {
 				Node *scene = nullptr;
@@ -2856,7 +2856,7 @@ bool Main::start() {
 		if (project_manager || editor) {
 			// Load SSL Certificates from Editor Settings (or builtin)
 			Crypto::load_default_certificates(
-					EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
+					EditorSettings::get_singleton()->get_setting("network/tls/editor_tls_certificates").operator String());
 		}
 #endif
 	}

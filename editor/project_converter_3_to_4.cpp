@@ -1266,7 +1266,7 @@ static const char *project_settings_renames[][2] = {
 	{ "network/limits/debugger_stdout/max_errors_per_second", "network/limits/debugger/max_errors_per_second" },
 	{ "network/limits/debugger_stdout/max_messages_per_frame", "network/limits/debugger/max_queued_messages" },
 	{ "network/limits/debugger_stdout/max_warnings_per_second", "network/limits/debugger/max_warnings_per_second" },
-	{ "network/ssl/certificates", "network/ssl/certificate_bundle_override" },
+	{ "network/ssl/certificates", "network/tls/certificate_bundle_override" },
 	{ "physics/2d/thread_model", "physics/2d/run_on_thread" }, // TODO not sure
 	{ "rendering/environment/default_clear_color", "rendering/environment/defaults/default_clear_color" },
 	{ "rendering/environment/default_environment", "rendering/environment/defaults/default_environment" },

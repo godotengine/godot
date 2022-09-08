@@ -1488,8 +1488,8 @@
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
 		</member>
-		<member name="network/ssl/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
-			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
+		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
+			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
