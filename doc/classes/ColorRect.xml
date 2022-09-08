@@ -5,13 +5,19 @@
 	</brief_description>
 	<description>
 		Displays a rectangle filled with a solid [member color]. If you need to display the border alone, consider using [ReferenceRect] instead.
+		Displays a rectangle filled with a solid [member color] by default, but can be used as a reference box which displays only a border around its rectangle.
+		If you need more advanced functionality, [ColorRect] uses [method CanvasItem.draw_rect] for drawing rectangles, so you can extend [ColorRect] or create a new class via script.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<members>
+		<member name="border_width" type="float" setter="set_border_width" getter="get_border_width" default="1.0">
+			Sets the border width of the [ColorRect]. The border grows both inwards and outwards with respect to the rectangle box.
+			[b]Note:[/b] This property has no effect when [member filled] is [code]true[/code].
+		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
-			The fill color.
+			Sets the rectangle's fill and border color.
 			[codeblocks]
 			[gdscript]
 			$ColorRect.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.
@@ -20,6 +26,12 @@
 			GetNode&lt;ColorRect&gt;("ColorRect").Color = new Color(1, 0, 0, 1); // Set ColorRect's color to red.
 			[/csharp]
 			[/codeblocks]
+		</member>
+		<member name="editor_only" type="bool" setter="set_editor_only" getter="is_editor_only" default="false">
+			If [code]true[/code], the [ColorRect] will only be visible while in the editor.
+		</member>
+		<member name="filled" type="bool" setter="set_filled" getter="is_filled" default="true">
+			If [code]true[/code], the [ColorRect]'s area is filled with a solid [member color], otherwise only the rectangle's border is displayed.
 		</member>
 	</members>
 </class>

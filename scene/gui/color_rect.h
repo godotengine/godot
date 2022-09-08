@@ -37,14 +37,27 @@ class ColorRect : public Control {
 	GDCLASS(ColorRect, Control);
 
 	Color color = Color(1, 1, 1);
+	bool filled = true;
+	float border_width = 1.0; // Has no effect when `filled` is `true`.
+	bool editor_only = false;
 
 protected:
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &property) const;
 	static void _bind_methods();
 
 public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
+
+	void set_filled(bool p_filled);
+	bool is_filled() const;
+
+	void set_border_width(float p_width);
+	float get_border_width() const;
+
+	void set_editor_only(bool p_enabled);
+	bool is_editor_only() const;
 };
 
 #endif // COLOR_RECT_H
