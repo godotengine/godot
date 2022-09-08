@@ -1987,7 +1987,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		Node *node = selected.front()->get();
 		Ref<Script> existing = node->get_script();
 
-		editor_data->get_undo_redo()->create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo()->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, node);
 		editor_data->get_undo_redo()->add_do_method(InspectorDock::get_singleton(), "store_script_properties", node);
 		editor_data->get_undo_redo()->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", node);
 		editor_data->get_undo_redo()->add_do_method(node, "set_script", p_script);
@@ -1998,7 +1998,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		editor_data->get_undo_redo()->add_undo_method(this, "_update_script_button");
 		editor_data->get_undo_redo()->commit_action();
 	} else {
-		editor_data->get_undo_redo()->create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo()->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, selected.front()->get());
 		for (Node *E : selected) {
 			Ref<Script> existing = E->get_script();
 			editor_data->get_undo_redo()->add_do_method(InspectorDock::get_singleton(), "store_script_properties", E);
@@ -2093,9 +2093,9 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	EditorNode::get_singleton()->get_editor_plugins_over()->make_visible(false);
 
 	if (p_cut) {
-		editor_data->get_undo_redo()->create_action(TTR("Cut Node(s)"));
+		editor_data->get_undo_redo()->create_action(TTR("Cut Node(s)"), UndoRedo::MERGE_DISABLE, remove_list.front()->get());
 	} else {
-		editor_data->get_undo_redo()->create_action(TTR("Remove Node(s)"));
+		editor_data->get_undo_redo()->create_action(TTR("Remove Node(s)"), UndoRedo::MERGE_DISABLE, remove_list.front()->get());
 	}
 
 	bool entire_scene = false;
@@ -2103,6 +2103,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	for (const Node *E : remove_list) {
 		if (E == edited_scene) {
 			entire_scene = true;
+			break;
 		}
 	}
 
@@ -2220,7 +2221,7 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	Node *child = Object::cast_to<Node>(c);
 	ERR_FAIL_COND(!child);
 
-	editor_data->get_undo_redo()->create_action(TTR("Create Node"));
+	editor_data->get_undo_redo()->create_action_for_history(TTR("Create Node"), editor_data->get_current_edited_scene_history_id());
 
 	if (edited_scene) {
 		editor_data->get_undo_redo()->add_do_method(p_parent, "add_child", child, true);
@@ -2637,7 +2638,7 @@ void SceneTreeDock::_script_dropped(String p_file, NodePath p_to) {
 	Ref<Script> scr = ResourceLoader::load(p_file);
 	ERR_FAIL_COND(!scr.is_valid());
 	if (Node *n = get_node(p_to)) {
-		editor_data->get_undo_redo()->create_action(TTR("Attach Script"));
+		editor_data->get_undo_redo()->create_action(TTR("Attach Script"), UndoRedo::MERGE_DISABLE, n);
 		editor_data->get_undo_redo()->add_do_method(InspectorDock::get_singleton(), "store_script_properties", n);
 		editor_data->get_undo_redo()->add_undo_method(InspectorDock::get_singleton(), "store_script_properties", n);
 		editor_data->get_undo_redo()->add_do_method(n, "set_script", scr);
