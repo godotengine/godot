@@ -325,6 +325,8 @@ Object *ClassDB::instantiate(const StringName &p_class) {
 		ERR_FAIL_COND_V_MSG(!ti, nullptr, "Cannot get class '" + String(p_class) + "'.");
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, "Class '" + String(p_class) + "' is disabled.");
 		ERR_FAIL_COND_V_MSG(!ti->creation_func, nullptr, "Class '" + String(p_class) + "' or its base class cannot be instantiated.");
+		ERR_FAIL_COND_V_MSG((ti->native_extension && !ti->native_extension->create_instance), nullptr,
+				"GDExtension class '" + String(p_class) + "' has no constructor defined.");
 	}
 #ifdef TOOLS_ENABLED
 	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {

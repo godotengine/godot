@@ -245,7 +245,7 @@ typedef struct {
 	GDNativeExtensionClassToString to_string_func;
 	GDNativeExtensionClassReference reference_func;
 	GDNativeExtensionClassUnreference unreference_func;
-	GDNativeExtensionClassCreateInstance create_instance_func; /* this one is mandatory */
+	GDNativeExtensionClassCreateInstance create_instance_func; /* if missing, GDScript cannot instantiate the class */
 	GDNativeExtensionClassFreeInstance free_instance_func; /* this one is mandatory */
 	GDNativeExtensionClassGetVirtual get_virtual_func;
 	GDNativeExtensionClassGetRID get_rid_func;
