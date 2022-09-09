@@ -2763,18 +2763,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				}
 			} else if (extensions.size()) {
 				String root_name = scene->get_name();
-				// Very similar to node naming logic.
-				switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
-					case SCENE_NAME_CASING_AUTO:
-						// Use casing of the root node.
-						break;
-					case SCENE_NAME_CASING_PASCAL_CASE: {
-						root_name = root_name.to_pascal_case();
-					} break;
-					case SCENE_NAME_CASING_SNAKE_CASE:
-						root_name = root_name.replace("-", "_").to_snake_case();
-						break;
-				}
+				root_name = EditorNode::adjust_scene_name_casing(root_name);
 				file->set_current_path(root_name + "." + extensions.front()->get().to_lower());
 			}
 			file->popup_file_dialog();
@@ -3088,6 +3077,19 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			restart_editor();
 		} break;
 	}
+}
+
+String EditorNode::adjust_scene_name_casing(const String &root_name) {
+	switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+		case SCENE_NAME_CASING_AUTO:
+			// Use casing of the root node.
+			break;
+		case SCENE_NAME_CASING_PASCAL_CASE:
+			return root_name.to_pascal_case();
+		case SCENE_NAME_CASING_SNAKE_CASE:
+			return root_name.replace("-", "_").to_snake_case();
+	}
+	return root_name;
 }
 
 void EditorNode::_request_screenshot() {
