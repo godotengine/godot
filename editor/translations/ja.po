@@ -40,13 +40,15 @@
 # jp.owo.Manda <admin@alterbaum.net>, 2022.
 # KokiOgawa <mupimupicandy@gmail.com>, 2022.
 # cacapon <takuma.tsubo@amazingengine.co.jp>, 2022.
+# fadhliazhari <m.fadhliazhari@gmail.com>, 2022.
+# Chia-Hsiang Cheng <cche0109@student.monash.edu>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-06 01:50+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2022-08-21 06:01+0000\n"
+"Last-Translator: KokiOgawa <mupimupicandy@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -54,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -171,9 +173,8 @@ msgid "Print Error Messages"
 msgstr "エラーメッセージを表示"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "補間モード"
+msgstr "毎秒反復回数"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
@@ -186,21 +187,19 @@ msgstr "タイムスケール"
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
 msgid "Physics Jitter Fix"
-msgstr "物理フレーム %"
+msgstr "物理ジッタ修正"
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "エラー"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "保存中にエラーが発生しました"
+msgstr "エラー文字列"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "保存中にエラーが発生しました"
+msgstr "エラー行"
 
 #: core/bind/core_bind.cpp
 msgid "Result"
@@ -350,9 +349,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "デコードするにはバイトが足りないか、または無効な形式です。"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "式中の無効な入力 %i (渡されていません)"
+msgstr "式に無効入力 %d (渡されていません)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -396,14 +394,12 @@ msgid "Max Size (KB)"
 msgstr "最大サイズ (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "移動モード"
+msgstr "マウスモード"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "入力を削除"
+msgstr "蓄積入力使用"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -431,16 +427,14 @@ msgid "Command"
 msgstr "Command"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (物理的)"
+msgstr "物理"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "プリセット"
+msgstr "押下"
 
 #: core/os/input_event.cpp
 msgid "Scancode"
@@ -489,7 +483,7 @@ msgstr "圧力"
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Pen Inverted"
-msgstr "反転"
+msgstr "ペン反転"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -549,9 +543,8 @@ msgid "Velocity"
 msgstr "ベロシティ"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Instrument"
-msgstr "インストゥルメント"
+msgstr "楽器"
 
 #: core/os/input_event.cpp
 msgid "Controller Number"
@@ -623,16 +616,14 @@ msgid "Use Custom User Dir"
 msgstr "カスタムユーザディレクトリを使用"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Custom User Dir Name"
-msgstr "カスタムユーザディレクトリ名"
+msgstr "カスタムユーザフォルダ名"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "すべて表示"
+msgstr "表示"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
@@ -654,14 +645,12 @@ msgid "Always On Top"
 msgstr "常に最前面"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "左伸長"
+msgstr "幅テスト"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "試験的"
+msgstr "高さテスト"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -680,9 +669,8 @@ msgid "Editor"
 msgstr "エディター"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Main Run Args"
-msgstr "メインシーンの引数:"
+msgstr "メイン実行引数"
 
 #: core/project_settings.cpp
 msgid "Scene Naming"
@@ -697,14 +685,12 @@ msgid "Script Templates Search Path"
 msgstr "スクリプトテンプレートの検索パス"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "起動時の自動読み込み"
+msgstr "起動時のVCS自動読み込み"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "バージョンコントロール"
+msgstr "VCSプラグイン名"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -713,66 +699,55 @@ msgstr "入力"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "UI 同意"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "選択"
+msgstr "UI 選択"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "キャンセル"
+msgstr "UI キャンセル"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "パスにフォーカス"
+msgstr "UI 次へフォーカス"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "パスにフォーカス"
+msgstr "UI 前へフォーカス"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "左"
+msgstr "UI 左"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "右"
+msgstr "UI 右"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Up"
-msgstr "上"
+msgstr "UI 上"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "下"
+msgstr "UI 下"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Page Up"
-msgstr "ページアップ"
+msgstr "UI ページアップ"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Page Down"
-msgstr "ページダウン"
+msgstr "UI ページダウン"
 
 #: core/project_settings.cpp
 msgid "UI Home"
 msgstr "ホーム"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI End"
-msgstr "エンド"
+msgstr "UI エンド"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -782,9 +757,8 @@ msgstr "エンド"
 #: servers/physics_2d/physics_2d_server_wrap_mt.h
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Physics"
-msgstr "(物理的)"
+msgstr "物理"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -799,7 +773,7 @@ msgstr "3D"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Smooth Trimesh Collision"
-msgstr "三角形メッシュ コリジョンの兄弟を作成"
+msgstr "スムーズ三角形メッシュコリジョン"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -828,7 +802,7 @@ msgstr "品質"
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Filters"
-msgstr "フィルター:"
+msgstr "フィルター"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
@@ -859,7 +833,7 @@ msgstr "プロファイラー"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Max Functions"
-msgstr "関数を作成"
+msgstr "最大関数"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
 msgid "Compression"
@@ -910,8 +884,9 @@ msgid "Connect Timeout Seconds"
 msgstr "接続タイムアウトの秒数"
 
 #: core/register_core_types.cpp
+#, fuzzy
 msgid "Packet Peer Stream"
-msgstr ""
+msgstr "パケットピアストリーム"
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
@@ -1078,7 +1053,7 @@ msgstr "スケール"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #, fuzzy
 msgid "Follow Surface"
-msgstr "サーフェスを投入する"
+msgstr "サーフェスをフォローする"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
@@ -1170,7 +1145,7 @@ msgstr "アニメーション呼び出しの変更"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Frame"
-msgstr "フレーム %"
+msgstr "フレーム"
 
 #: editor/animation_track_editor.cpp editor/editor_profiler.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
@@ -1181,16 +1156,14 @@ msgstr "時間"
 
 #: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Location"
-msgstr "ローカライズ"
+msgstr "位置"
 
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Rotation"
-msgstr "回転のステップ:"
+msgstr "回転"
 
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
@@ -1200,7 +1173,7 @@ msgstr "値"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Arg Count"
-msgstr "総計:"
+msgstr "引数数"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -1217,12 +1190,12 @@ msgstr "タイプ(型)"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "In Handle"
-msgstr "ハンドルを設定する"
+msgstr "インハンドル"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Out Handle"
-msgstr "ハンドルを設定する"
+msgstr "アウトハンドル"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1234,12 +1207,12 @@ msgstr "ストリーム"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Start Offset"
-msgstr "グリッドのオフセット:"
+msgstr "始点オフセット"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "End Offset"
-msgstr "オフセット:"
+msgstr "終点オフセット"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -2257,8 +2230,9 @@ msgid "Open"
 msgstr "開く"
 
 #: editor/dependency_editor.cpp
+#, fuzzy
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "所有者: %s (合計: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2817,8 +2791,9 @@ msgid "Choose"
 msgstr "選ぶ"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "Project export for platform:"
-msgstr ""
+msgstr "プラットフォーム用のプロジェクトエクスポート:"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2951,8 +2926,9 @@ msgid "64 Bits"
 msgstr "64ビット"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "Embed PCK"
-msgstr ""
+msgstr "組み込みPCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -2960,12 +2936,14 @@ msgid "Texture Format"
 msgstr "テクスチャ領域"
 
 #: editor/editor_export.cpp
+#, fuzzy
 msgid "BPTC"
-msgstr ""
+msgstr "BPTC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
 msgid "S3TC"
-msgstr ""
+msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -2973,8 +2951,9 @@ msgid "ETC"
 msgstr "TCP"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
+#, fuzzy
 msgid "ETC2"
-msgstr ""
+msgstr "ETC2"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -4427,24 +4406,28 @@ msgid "Default Property Name Style"
 msgstr "デフォルトのプロジェクトパス"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Default Float Step"
-msgstr ""
+msgstr "デフォルトフロートステップ"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
 msgid "Disable Folding"
 msgstr "折りたたみを無効化"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Auto Unfold Foreign Scenes"
-msgstr ""
+msgstr "自動展開外来シーン"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Horizontal Vector2 Editing"
-msgstr ""
+msgstr "水平ベクトル2編集"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Horizontal Vector Types Editing"
-msgstr ""
+msgstr "水平ベクトルタイプ編集"
 
 #: editor/editor_node.cpp
 msgid "Open Resources In Current Inspector"
@@ -4567,6 +4550,7 @@ msgstr "その他のプロジェクトまたはシーン全体のツール。"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "プロジェクト"
 
@@ -5112,13 +5096,14 @@ msgid "Debugger"
 msgstr "デバッガー"
 
 #: editor/editor_profiler.cpp
+#, fuzzy
 msgid "Profiler Frame History Size"
-msgstr ""
+msgstr "プロファイラフレーム履歴サイズ"
 
 #: editor/editor_profiler.cpp
 #, fuzzy
 msgid "Profiler Frame Max Functions"
-msgstr "関数名を変更"
+msgstr "プロファイラフレーム最大関数数"
 
 #: editor/editor_properties.cpp
 msgid "Edit Text:"
@@ -5187,9 +5172,8 @@ msgid "Size:"
 msgstr "サイズ:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "ページ: "
+msgstr "ページ:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5361,12 +5345,14 @@ msgid "Dim Editor On Dialog Popup"
 msgstr "ダイアログのポップアップ時にエディターを薄暗くする"
 
 #: editor/editor_settings.cpp main/main.cpp
+#, fuzzy
 msgid "Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "低プロセッサ モード スリープ (マイクロ秒)"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "フォーカスされていない低プロセッサ モード スリープ (マイクロ秒)"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5374,12 +5360,14 @@ msgid "Separate Distraction Mode"
 msgstr "集中モード"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "自動的にスクリーンショットを開く"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Max Array Dictionary Items Per Page"
-msgstr ""
+msgstr "ページあたりの最大配列辞書項目数"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
@@ -5408,8 +5396,9 @@ msgid "Contrast"
 msgstr "コントラスト"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Relationship Line Opacity"
-msgstr ""
+msgstr "関係線の不透明度"
 
 #: editor/editor_settings.cpp
 msgid "Highlight Tabs"
@@ -5420,8 +5409,9 @@ msgid "Border Size"
 msgstr "ボーダーサイズ"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Use Graph Node Headers"
-msgstr ""
+msgstr "グラフ ノード ヘッダーを使用する"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5460,8 +5450,9 @@ msgid "Compress Binary Resources"
 msgstr "リソースをコピー"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Safe Save On Backup Then Rename"
-msgstr ""
+msgstr "バックアップ時に安全に保存してから名前を変更する"
 
 #: editor/editor_settings.cpp
 msgid "File Dialog"
@@ -5472,16 +5463,18 @@ msgid "Thumbnail Size"
 msgstr "サムネイルのサイズ"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Docks"
-msgstr ""
+msgstr "Docks"
 
 #: editor/editor_settings.cpp
 msgid "Scene Tree"
 msgstr "シーンツリー"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Start Create Dialog Fully Expanded"
-msgstr ""
+msgstr "完全に展開された作成ダイアログを開始する"
 
 #: editor/editor_settings.cpp
 msgid "Always Show Folders"
@@ -5574,8 +5567,9 @@ msgid "Minimap Width"
 msgstr "ミニマップの幅"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Mouse Extra Buttons Navigate History"
-msgstr ""
+msgstr "マウス追加ボタンナビゲート履歴"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5583,8 +5577,9 @@ msgid "Drag And Drop Selection"
 msgstr "GridMap の選択"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Stay In Script Editor On Node Selected"
-msgstr ""
+msgstr "ノード選択時にスクリプトエディタにとどまる"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -5599,8 +5594,9 @@ msgid "Line Numbers Zero Padded"
 msgstr "行番号をゼロ埋め"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Show Bookmark Gutter"
-msgstr ""
+msgstr "ブックマークガターを表示"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5608,36 +5604,41 @@ msgid "Show Breakpoint Gutter"
 msgstr "ブレークポイントをスキップする"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Show Info Gutter"
-msgstr ""
+msgstr "情報ガターを表示"
 
 #: editor/editor_settings.cpp
 msgid "Code Folding"
 msgstr "コードの折りたたみ"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Word Wrap"
-msgstr ""
+msgstr "ワードラップ"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
 msgstr "行の長さのガイド線を表示"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Line Length Guideline Soft Column"
-msgstr ""
+msgstr "行長ガイドラインソフト列"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Line Length Guideline Hard Column"
-msgstr ""
+msgstr "行長ガイドライン ハード列"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Script List"
 msgstr "スクリプト一覧"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Show Members Overview"
-msgstr ""
+msgstr "メンバー概要を表示"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -5669,16 +5670,18 @@ msgid "Create Signal Callbacks"
 msgstr "シグナルのコールバックを作成"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Sort Members Outline Alphabetically"
-msgstr ""
+msgstr "メンバーのアウトラインをアルファベット順に並べ替える"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
 msgstr "カーソル"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Scroll Past End Of File"
-msgstr ""
+msgstr "ファイルの終わりを過ぎてスクロールする"
 
 #: editor/editor_settings.cpp
 msgid "Block Caret"
@@ -5703,24 +5706,29 @@ msgid "Completion"
 msgstr "完了"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Idle Parse Delay"
-msgstr ""
+msgstr "アイドル解析遅延"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Auto Brace Complete"
-msgstr ""
+msgstr "自動ブレース補完"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Code Complete Delay"
-msgstr ""
+msgstr "コード補完遅延"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Put Callhint Tooltip Below Current Line"
-msgstr ""
+msgstr "コールヒントツールチップを現在の行の下に配置"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Callhint Tooltip Offset"
-msgstr ""
+msgstr "コールヒントツールチップオフセット"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5805,7 +5813,7 @@ msgstr "点"
 #: scene/resources/particles_material.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Shape"
-msgstr ""
+msgstr "シェイプ"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5818,16 +5826,19 @@ msgid "Grid Size"
 msgstr "グリッドのステップ:"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Grid Division Level Max"
-msgstr ""
+msgstr "グリッド分割レベル最大"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Grid Division Level Min"
-msgstr ""
+msgstr "グリッド分割レベル最小"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Grid Division Level Bias"
-msgstr ""
+msgstr "グリッド分割レベルバイアス"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5901,8 +5912,9 @@ msgid "Zoom Modifier"
 msgstr "変更済み"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Warped Mouse Panning"
-msgstr ""
+msgstr "ワープマウスパンニング"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5910,12 +5922,14 @@ msgid "Navigation Feel"
 msgstr "ナビゲーションモード"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Orbit Sensitivity"
-msgstr ""
+msgstr "軌道感度"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Orbit Inertia"
-msgstr ""
+msgstr "軌道慣性"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6003,16 +6017,19 @@ msgid "Viewport Border Color"
 msgstr "ビューポートのボーダーの色"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Constrain Editor View"
-msgstr ""
+msgstr "エディター ビューを制限"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Simple Panning"
-msgstr ""
+msgstr "簡易パンニング"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Scroll To Pan"
-msgstr ""
+msgstr "スクロールしてパンニング"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6025,8 +6042,9 @@ msgid "Poly Editor"
 msgstr "Polygon 2D UV エディター"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Point Grab Radius"
-msgstr ""
+msgstr "ポイントグラブ半径"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -6039,8 +6057,9 @@ msgid "Autorename Animation Tracks"
 msgstr "アニメーションの名前を変更"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Default Create Bezier Tracks"
-msgstr ""
+msgstr "デフォルトベジェトラックを作成"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6048,12 +6067,14 @@ msgid "Default Create Reset Tracks"
 msgstr "RESETトラックを作成"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Onion Layers Past Color"
-msgstr ""
+msgstr "オニオンレイヤー過去の色"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Onion Layers Future Color"
-msgstr ""
+msgstr "オニオンレイヤー将来の色"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6065,8 +6086,9 @@ msgid "Minimap Opacity"
 msgstr "ミニマップの不透明度"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Window Placement"
-msgstr ""
+msgstr "ウィンドウの配置"
 
 #: editor/editor_settings.cpp scene/2d/back_buffer_copy.cpp scene/2d/sprite.cpp
 #: scene/2d/visibility_notifier_2d.cpp scene/3d/sprite_3d.cpp
@@ -6082,7 +6104,7 @@ msgstr "曲線のOut-Controlの位置を指定"
 
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
-msgstr ""
+msgstr "画面"
 
 #: editor/editor_settings.cpp
 msgid "Auto Save"
@@ -6183,16 +6205,19 @@ msgid "Completion Selected Color"
 msgstr "選択されたものをインポート"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
+#, fuzzy
 msgid "Completion Existing Color"
-msgstr ""
+msgstr "既存の色の補完"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
+#, fuzzy
 msgid "Completion Scroll Color"
-msgstr ""
+msgstr "スクロール色の補完"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
+#, fuzzy
 msgid "Completion Font Color"
-msgstr ""
+msgstr "フォント色の補完"
 
 #: editor/editor_settings.cpp
 msgid "Text Color"
@@ -6958,8 +6983,9 @@ msgid "Collada"
 msgstr "Collada"
 
 #: editor/import/editor_import_collada.cpp
+#, fuzzy
 msgid "Use Ambient"
-msgstr ""
+msgstr "アンビエントを使用"
 
 #: editor/import/resource_importer_bitmask.cpp
 #, fuzzy
@@ -6968,8 +6994,9 @@ msgstr "フォルダーを作成"
 
 #: editor/import/resource_importer_bitmask.cpp
 #: servers/audio/effects/audio_effect_compressor.cpp
+#, fuzzy
 msgid "Threshold"
-msgstr ""
+msgstr "閾"
 
 #: editor/import/resource_importer_csv_translation.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -6981,8 +7008,9 @@ msgid "Compress"
 msgstr "コンポーネント"
 
 #: editor/import/resource_importer_csv_translation.cpp
+#, fuzzy
 msgid "Delimiter"
-msgstr ""
+msgstr "区切り文字"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -6990,8 +7018,9 @@ msgid "ColorCorrect"
 msgstr "Color関数。"
 
 #: editor/import/resource_importer_layered_texture.cpp
+#, fuzzy
 msgid "No BPTC If RGB"
-msgstr ""
+msgstr "RGB使用中の場合はBPTCを使用しない"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
@@ -7004,8 +7033,9 @@ msgstr "フラグ"
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/animation/tween.cpp
 #: scene/resources/texture.cpp
+#, fuzzy
 msgid "Repeat"
-msgstr ""
+msgstr "繰り返し"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
@@ -7022,13 +7052,14 @@ msgstr "シグナル"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Anisotropic"
-msgstr ""
+msgstr "異方性"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
@@ -7149,8 +7180,9 @@ msgid "Storage"
 msgstr "ファイルの保存:"
 
 #: editor/import/resource_importer_scene.cpp
+#, fuzzy
 msgid "Use Legacy Names"
-msgstr ""
+msgstr "従来の名前を使用"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 #, fuzzy
@@ -7183,8 +7215,9 @@ msgid "Lightmap Texel Size"
 msgstr "ライトマップを焼き込む"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
+#, fuzzy
 msgid "Skins"
-msgstr ""
+msgstr "スキン"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7197,8 +7230,9 @@ msgid "External Files"
 msgstr "外部"
 
 #: editor/import/resource_importer_scene.cpp
+#, fuzzy
 msgid "Store In Subdir"
-msgstr ""
+msgstr "サブディレクトリに保存"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7306,20 +7340,28 @@ msgid "Saving..."
 msgstr "保存中..."
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s: 3Dで法線マップとして使用されているテクスチャが検出されました。赤緑テクス"
+"チャ圧縮を有効にしてメモリ使用量を削減します（青チャンネルはすでに破棄されま"
+"した）。"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s: 3Dで使用されているテクスチャが検出されました。フィルター、繰り返し、ミッ"
+"プマップ生成、VRAMテクスチャ圧縮を有効にします。"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "2D, Detect 3D"
-msgstr ""
+msgstr "2D、3D検出"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7327,8 +7369,9 @@ msgid "2D Pixel"
 msgstr "凝集ピクセル"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
+#, fuzzy
 msgid "Lossy Quality"
-msgstr ""
+msgstr "損失のある品質"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7337,14 +7380,15 @@ msgstr "選択モード"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "BPTC LDR"
-msgstr ""
+msgstr "BPTC LDR"
 
 #: editor/import/resource_importer_texture.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
+#, fuzzy
 msgid "Normal Map"
-msgstr ""
+msgstr "法線マップ"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7352,8 +7396,9 @@ msgid "Process"
 msgstr "前処理"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Fix Alpha Border"
-msgstr ""
+msgstr "アルファボーダーを修正"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7361,8 +7406,9 @@ msgid "Premult Alpha"
 msgstr "ポリゴンを編集"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Hdr As Srgb"
-msgstr ""
+msgstr "SrgbとしてHdr"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7379,8 +7425,9 @@ msgid "Size Limit"
 msgstr "サイズ制限"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Detect 3D"
-msgstr ""
+msgstr "3Dを検出"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7388,10 +7435,13 @@ msgid "SVG"
 msgstr "CSG"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid ""
 "Warning, no suitable PC VRAM compression enabled in Project Settings. This "
 "texture will not display correctly on PC."
 msgstr ""
+"警告、プロジェクト設定で有効な適切なPC VRAM圧縮がありません。このテクスチャ"
+"は PCで正しく表示されません。"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 #, fuzzy
@@ -7409,8 +7459,9 @@ msgid "Crop To Region"
 msgstr "タイル領域を設定"
 
 #: editor/import/resource_importer_texture_atlas.cpp
+#, fuzzy
 msgid "Trim Alpha Border From Region"
-msgstr ""
+msgstr "アルファ境界線を領域からトリミング"
 
 #: editor/import/resource_importer_wav.cpp scene/2d/physics_body_2d.cpp
 #, fuzzy
@@ -7418,11 +7469,13 @@ msgid "Force"
 msgstr "強制プッシュ"
 
 #: editor/import/resource_importer_wav.cpp
+#, fuzzy
 msgid "8 Bit"
-msgstr ""
+msgstr "8ビット"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Mono"
 
@@ -7437,8 +7490,9 @@ msgid "Max Rate Hz"
 msgstr "ミックス ノード"
 
 #: editor/import/resource_importer_wav.cpp
+#, fuzzy
 msgid "Trim"
-msgstr ""
+msgstr "トリム"
 
 #: editor/import/resource_importer_wav.cpp
 #, fuzzy
@@ -7558,8 +7612,9 @@ msgid "Localized"
 msgstr "ロケール"
 
 #: editor/inspector_dock.cpp
+#, fuzzy
 msgid "Localization not available for current language."
-msgstr ""
+msgstr "現地語化は現在の言語では使用できません。"
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
@@ -8663,8 +8718,9 @@ msgid "Testing"
 msgstr "試験的"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "リポジトリを構成できませんでした。"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -9591,12 +9647,14 @@ msgid "Gradient Edited"
 msgstr "グラデーション編集"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Swap GradientTexture2D Fill Points"
-msgstr ""
+msgstr "GradientTexture2D 塗りつぶしポイントを入れ替え"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Swap Gradient Fill Points"
-msgstr ""
+msgstr "Gradient の塗りつぶしポイントを入れ替え"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 #, fuzzy
@@ -9620,7 +9678,7 @@ msgstr "アイコン"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -10416,8 +10474,9 @@ msgid "Sync Bones to Polygon"
 msgstr "ボーンをポリゴンに同期させる"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Set cast_to"
-msgstr ""
+msgstr "cast_to を設定"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -10748,8 +10807,9 @@ msgid "Search Results"
 msgstr "検索結果"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Open Dominant Script On Scene Change"
-msgstr ""
+msgstr "シーン変更時にドミナントスクリプトを開く"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "External"
@@ -10773,8 +10833,9 @@ msgid "Highlight Current Script"
 msgstr "現在のスクリプトをハイライトする"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Script Temperature History Size"
-msgstr ""
+msgstr "スクリプト温度履歴サイズ"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Current Script Background Color"
@@ -10794,8 +10855,9 @@ msgid "List Script Names As"
 msgstr "スクリプト名:"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Exec Flags"
-msgstr ""
+msgstr "実行フラグ"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Scripts"
@@ -11613,12 +11675,14 @@ msgid "Post"
 msgstr "後"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Manipulator Gizmo Size"
-msgstr ""
+msgstr "マニピュレータギズモサイズ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Manipulator Gizmo Opacity"
-msgstr ""
+msgstr "マニピュレータギズモ不透明度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -12334,14 +12398,18 @@ msgid "Override all default type items."
 msgstr "すべてのデフォルトタイプのアイテムをオーバーライドする。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Select the variation base type from a list of available types."
-msgstr ""
+msgstr "使用可能なタイプのリストからバリエーション基底型を選択。"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"組み込みクラスに関連する型を、別の型のバリエーションとしてマークすることはで"
+"きません。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -14168,8 +14236,9 @@ msgid "Runnable"
 msgstr "実行可能"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "定義されたすべてのプリセットのプロジェクトをエクスポート。"
 
 #: editor/project_export.cpp
 msgid "All presets must have an export path defined for Export All to work."
@@ -15440,18 +15509,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "ローカルにする"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "ノード名:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "ノード名:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "他の関数/変数/シグナルによりすでに使われている名前:"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "ノード名:"
 
 #: editor/scene_tree_dock.cpp
@@ -15654,6 +15724,11 @@ msgid "Button Group"
 msgstr "ボタングループ"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "ノード名:"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(接続元)"
 
@@ -15727,6 +15802,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "無効なノード名。以下の文字は使えません:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17597,6 +17676,21 @@ msgstr "ソリューションをビルド"
 msgid "Auto Update Project"
 msgstr "名無しのプロジェクト"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "表示スケール"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "ディレクトリを選択"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "ディレクトリを選択"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "内部例外スタックトレースの終了"
@@ -17703,12 +17797,14 @@ msgid "Persistence"
 msgstr "透視投影"
 
 #: modules/opensimplex/open_simplex_noise.cpp
+#, fuzzy
 msgid "Lacunarity"
-msgstr ""
+msgstr "空隙性"
 
 #: modules/regex/regex.cpp
+#, fuzzy
 msgid "Subject"
-msgstr ""
+msgstr "対象"
 
 #: modules/regex/regex.cpp
 #, fuzzy
@@ -17718,47 +17814,52 @@ msgstr "名前"
 #: modules/regex/regex.cpp
 #, fuzzy
 msgid "Strings"
-msgstr "設定:"
+msgstr "文字列"
 
 #: modules/upnp/upnp.cpp
+#, fuzzy
 msgid "Discover Multicast If"
-msgstr ""
+msgstr "マルチキャストの検出"
 
 #: modules/upnp/upnp.cpp
+#, fuzzy
 msgid "Discover Local Port"
-msgstr ""
+msgstr "ローカルポートの検出"
 
 #: modules/upnp/upnp.cpp
+#, fuzzy
 msgid "Discover IPv6"
-msgstr ""
+msgstr "IPv6 の検出"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
 msgid "Description URL"
-msgstr "説明"
+msgstr "説明 URL"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
 msgid "Service Type"
-msgstr "変数の型を設定"
+msgstr "サービス種類"
 
 #: modules/upnp/upnp_device.cpp
+#, fuzzy
 msgid "IGD Control URL"
-msgstr ""
+msgstr "IGD コントロール URL"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
 msgid "IGD Service Type"
-msgstr "変数の型を設定"
+msgstr "IGD サービス 種類"
 
 #: modules/upnp/upnp_device.cpp
+#, fuzzy
 msgid "IGD Our Addr"
-msgstr ""
+msgstr "IGD 当方アドレス"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
 msgid "IGD Status"
-msgstr "ステータス"
+msgstr "IGD 状態"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -19463,6 +19564,11 @@ msgstr "ノードを切り取る"
 msgid "Custom BG Color"
 msgstr "ノードを切り取る"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "すべて展開"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20314,6 +20420,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
