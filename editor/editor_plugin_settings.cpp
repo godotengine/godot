@@ -60,10 +60,9 @@ void EditorPluginSettings::update_plugins() {
 	Vector<String> plugins = _get_plugins("res://addons");
 	plugins.sort();
 
-	for (int i = 0; i < plugins.size(); i++) {
+	for (const String &path : plugins) {
 		Ref<ConfigFile> cf;
 		cf.instantiate();
-		const String path = plugins[i];
 
 		Error err2 = cf->load(path);
 
@@ -88,8 +87,8 @@ void EditorPluginSettings::update_plugins() {
 				WARN_PRINT("Plugin config misses \"plugin/description\" key: " + path);
 				key_missing = true;
 			}
-			if (!cf->has_section_key("plugin", "script")) {
-				WARN_PRINT("Plugin config misses \"plugin/script\" key: " + path);
+			if (!cf->has_section_key("plugin", "script") && !cf->has_section_key("plugin", "editor_plugins")) {
+				WARN_PRINT("Plugin config misses \"plugin/script\" or \"plugin/editor_plugins\" key: " + path);
 				key_missing = true;
 			}
 
@@ -98,14 +97,29 @@ void EditorPluginSettings::update_plugins() {
 				String author = cf->get_value("plugin", "author");
 				String version = cf->get_value("plugin", "version");
 				String description = cf->get_value("plugin", "description");
-				String script = cf->get_value("plugin", "script");
+
+				String tooltip_text = TTR("Name:") + " " + name + "\n";
+				tooltip_text += TTR("Path:") + " " + path + "\n";
+				tooltip_text += TTR("Description:") + " " + description + "\n";
+				if (cf->has_section_key("plugin", "script")) {
+					// Backward-compatibility
+					String script = cf->get_value("plugin", "script");
+					tooltip_text += TTR("Main Script:") + " " + script + "\n";
+				} else {
+					Array plugin_classes = cf->get_value("plugin", "editor_plugins");
+					tooltip_text += TTR("EditorPlugins:");
+					for (int i = 0; i < plugin_classes.size(); ++i) {
+						tooltip_text += "\n- ";
+						tooltip_text += String(plugin_classes[i]);
+					}
+				}
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(0, name);
-				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
+				item->set_tooltip_text(0, tooltip_text);
 				item->set_metadata(0, path);
 				item->set_text(1, version);
-				item->set_metadata(1, script);
+				//item->set_metadata(1, script); // That wasn't used
 				item->set_text(2, author);
 				item->set_metadata(2, description);
 				item->set_cell_mode(3, TreeItem::CELL_MODE_CHECK);
