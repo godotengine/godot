@@ -1466,6 +1466,7 @@ static const char *class_renames[][2] = {
 	{ "Reference", "RefCounted" }, // Be careful, this will be used everywhere
 	{ "RemoteTransform", "RemoteTransform3D" },
 	{ "ResourceInteractiveLoader", "ResourceLoader" },
+	{ "ReferenceRect", "ColorRect" }, // Approximation.
 	{ "RigidBody", "RigidBody3D" },
 	{ "SceneTreeTween", "Tween" },
 	{ "Shape", "Shape3D" }, // Be careful, this will be used everywhere

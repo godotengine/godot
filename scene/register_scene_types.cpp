@@ -109,7 +109,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
-#include "scene/gui/reference_rect.h"
 #include "scene/gui/rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_bar.h"
@@ -371,7 +370,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TextureRect);
 	GDREGISTER_CLASS(ColorRect);
 	GDREGISTER_CLASS(NinePatchRect);
-	GDREGISTER_CLASS(ReferenceRect);
 	GDREGISTER_CLASS(AspectRatioContainer);
 	GDREGISTER_CLASS(TabContainer);
 	GDREGISTER_CLASS(TabBar);
@@ -960,6 +958,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
 	ClassDB::add_compatibility_class("QuadMesh", "PlaneMesh");
+	ClassDB::add_compatibility_class("ReferenceRect", "ColorRect");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).
