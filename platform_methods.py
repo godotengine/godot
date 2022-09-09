@@ -111,3 +111,7 @@ def detect_arch():
         print("Unsupported CPU architecture: " + host_machine)
         print("Falling back to x86_64.")
         return "x86_64"
+
+
+def is_lto_recommended(detect, env):
+    return not (("lto", "none") in detect.get_flags() or env.msvc)

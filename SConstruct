@@ -13,6 +13,7 @@ import time
 from types import ModuleType
 from collections import OrderedDict
 from importlib.util import spec_from_file_location, module_from_spec
+from platform_methods import is_lto_recommended
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -466,6 +467,37 @@ if selected_platform in platform_list:
         if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
             env[f[0]] = f[1]
 
+    # 'dev' and 'production' are aliases to set default options if they haven't been set
+    # manually by the user.
+    if env["dev"]:
+        env["verbose"] = methods.get_cmdline_bool("verbose", True)
+        env["warnings"] = ARGUMENTS.get("warnings", "extra")
+        env["werror"] = methods.get_cmdline_bool("werror", True)
+        if env["tools"]:
+            env["tests"] = methods.get_cmdline_bool("tests", True)
+    if env["production"]:
+        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
+        env["lto"] = ARGUMENTS.get("lto", "full" if is_lto_recommended(detect, env) else "none")
+        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
+        if not env["tools"] and env["target"] == "debug":
+            print(
+                "WARNING: Requested `production` build with `tools=no target=debug`, "
+                "this will give you a full debug template (use `target=release_debug` "
+                "for an optimized template with debug features)."
+            )
+        if env.msvc:
+            print(
+                "WARNING: For `production` Windows builds, you should use MinGW with GCC "
+                "or Clang instead of Visual Studio, as they can better optimize the "
+                "GDScript VM in a very significant way. MSVC LTO also doesn't work "
+                "reliably for our use case."
+                "If you want to use MSVC nevertheless for production builds, set "
+                "`debug_symbols=no lto=none` instead of the `production=yes` option."
+            )
+            Exit(255)
+    if env["lto"] != "none":
+        print("Using LTO: " + env["lto"])
+
     # Must happen after the flags' definition, so that they can be used by platform detect
     detect.configure(env)
 
@@ -487,37 +519,6 @@ if selected_platform in platform_list:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
         env.Prepend(CCFLAGS=["/std:c++17"])
-
-    # 'dev' and 'production' are aliases to set default options if they haven't been set
-    # manually by the user.
-    if env["dev"]:
-        env["verbose"] = methods.get_cmdline_bool("verbose", True)
-        env["warnings"] = ARGUMENTS.get("warnings", "extra")
-        env["werror"] = methods.get_cmdline_bool("werror", True)
-        if env["tools"]:
-            env["tests"] = methods.get_cmdline_bool("tests", True)
-    if env["production"]:
-        env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
-        env["lto"] = ARGUMENTS.get("lto", "full")
-        env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
-        if not env["tools"] and env["target"] == "debug":
-            print(
-                "WARNING: Requested `production` build with `tools=no target=debug`, "
-                "this will give you a full debug template (use `target=release_debug` "
-                "for an optimized template with debug features)."
-            )
-        if env.msvc:
-            print(
-                "WARNING: For `production` Windows builds, you should use MinGW with GCC "
-                "or Clang instead of Visual Studio, as they can better optimize the "
-                "GDScript VM in a very significant way. MSVC LTO also doesn't work "
-                "reliably for our use case."
-                "If you want to use MSVC nevertheless for production builds, set "
-                "`debug_symbols=no lto=none` instead of the `production=yes` option."
-            )
-            Exit(255)
-    if env["lto"] != "none":
-        print("Using LTO: " + env["lto"])
 
     # Enforce our minimal compiler version requirements
     cc_version = methods.get_compiler_version(env) or {
