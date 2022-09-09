@@ -38,8 +38,10 @@ class NavigationObstacle2D : public Node {
 	GDCLASS(NavigationObstacle2D, Node);
 
 	Node2D *parent_node2d = nullptr;
+
 	RID agent;
 	RID map_before_pause;
+	RID map_override;
 
 	bool estimate_radius = true;
 	real_t radius = 1.0;
@@ -56,6 +58,11 @@ public:
 	RID get_rid() const {
 		return agent;
 	}
+
+	void set_agent_parent(Node *p_agent_parent);
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
 
 	void set_estimate_radius(bool p_estimate_radius);
 	bool is_radius_estimated() const {
