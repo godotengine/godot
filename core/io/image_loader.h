@@ -52,6 +52,7 @@ public:
 	enum LoaderFlags {
 		FLAG_NONE = 0,
 		FLAG_FORCE_LINEAR = 1,
+		FLAG_CONVERT_COLORS = 2,
 	};
 
 	virtual ~ImageFormatLoader() {}
