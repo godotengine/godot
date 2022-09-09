@@ -33,6 +33,7 @@
 #include "core/os/os.h"
 
 namespace TestXMLParser {
+
 #define CHECK(X)                                          \
 	if (!(X)) {                                           \
 		OS::get_singleton()->print("\tFAIL at %s\n", #X); \
@@ -40,15 +41,28 @@ namespace TestXMLParser {
 	} else {                                              \
 		OS::get_singleton()->print("\tPASS\n");           \
 	}
+#define REQUIRE_EQ(X, Y)                                            \
+	if ((X) != (Y)) {                                               \
+		OS::get_singleton()->print("\tFAIL at %s != %s\n", #X, #Y); \
+		return false;                                               \
+	} else {                                                        \
+		OS::get_singleton()->print("\tPASS\n");                     \
+	}
+
+Vector<uint8_t> _to_buffer(const String &p_text) {
+	Vector<uint8_t> buff;
+	for (int i = 0; i < p_text.length(); i++) {
+		buff.push_back(p_text.get(i));
+	}
+	return buff;
+}
+
 bool test_1() {
 	String source = "<?xml version = \"1.0\" encoding=\"UTF-8\" ?>\
 <top attr=\"attr value\">\
   Text&lt;&#65;&#x42;&gt;\
 </top>";
-	Vector<uint8_t> buff;
-	for (int i = 0; i < source.length(); i++) {
-		buff.push_back(source.get(i));
-	}
+	Vector<uint8_t> buff = _to_buffer(source);
 	XMLParser parser;
 	parser.open_buffer(buff);
 
@@ -74,9 +88,180 @@ bool test_1() {
 	return true;
 }
 
+bool test_comments() {
+	XMLParser parser;
+
+	// Missing end of comment.
+	{
+		const String input = "<first></first><!-- foo";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		REQUIRE_EQ(parser.get_node_name(), " foo");
+	}
+
+	// Bad start of comment.
+	{
+		const String input = "<first></first><!-";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		REQUIRE_EQ(parser.get_node_name(), "-");
+	}
+
+	// Unblanced angle brackets in comment.
+	{
+		const String input = "<!-- example << --><next-tag></next-tag>";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		REQUIRE_EQ(parser.get_node_name(), " example << ");
+	}
+
+	// Doctype.
+	{
+		const String input = "<!DOCTYPE greeting [<!ELEMENT greeting (#PCDATA)>]>";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		REQUIRE_EQ(parser.get_node_name(), "DOCTYPE greeting [<!ELEMENT greeting (#PCDATA)>]");
+	}
+
+	return true;
+}
+
+bool test_premature_endings() {
+	struct Case {
+		String input;
+		String expected_name;
+		XMLParser::NodeType expected_type;
+	} const cases[] = {
+		// Incomplete unknown.
+		{ "<first></first><?xml", "?xml", XMLParser::NodeType::NODE_UNKNOWN },
+		// Incomplete CDStart.
+		{ "<first></first><![CD", "", XMLParser::NodeType::NODE_CDATA },
+		// Incomplete CData.
+		{ "<first></first><![CDATA[example", "example", XMLParser::NodeType::NODE_CDATA },
+		// Incomplete CDEnd.
+		{ "<first></first><![CDATA[example]]", "example]]", XMLParser::NodeType::NODE_CDATA },
+		// Incomplete start-tag name.
+		{ "<first></first><second", "second", XMLParser::NodeType::NODE_ELEMENT },
+	};
+
+	XMLParser parser;
+
+	for (unsigned long i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+		const Case &test_case = cases[i];
+
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(test_case.input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), test_case.expected_type);
+		REQUIRE_EQ(parser.get_node_name(), test_case.expected_name);
+	}
+
+	// Incomplete start-tag attribute name.
+	{
+		const String input = "<first></first><second attr1=\"foo\" attr2";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.get_node_name(), "second");
+		REQUIRE_EQ(parser.get_attribute_count(), 1);
+		REQUIRE_EQ(parser.get_attribute_name(0), "attr1");
+		REQUIRE_EQ(parser.get_attribute_value(0), "foo");
+	}
+
+	// Incomplete start-tag attribute unquoted value.
+	{
+		const String input = "<first></first><second attr1=\"foo\" attr2=bar";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.get_node_name(), "second");
+		REQUIRE_EQ(parser.get_attribute_count(), 1);
+		REQUIRE_EQ(parser.get_attribute_name(0), "attr1");
+		REQUIRE_EQ(parser.get_attribute_value(0), "foo");
+	}
+
+	// Incomplete start-tag attribute quoted value.
+	{
+		const String input = "<first></first><second attr1=\"foo\" attr2=\"bar";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.get_node_name(), "second");
+		REQUIRE_EQ(parser.get_attribute_count(), 2);
+		REQUIRE_EQ(parser.get_attribute_name(0), "attr1");
+		REQUIRE_EQ(parser.get_attribute_value(0), "foo");
+		REQUIRE_EQ(parser.get_attribute_name(1), "attr2");
+		REQUIRE_EQ(parser.get_attribute_value(1), "bar");
+	}
+
+	// Incomplete end-tag name.
+	{
+		const String input = "<first></fir";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.get_node_name(), "fir");
+	}
+
+	// Trailing text.
+	{
+		const String input = "<first></first>example";
+		REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_TEXT);
+		REQUIRE_EQ(parser.get_node_data(), "example");
+	}
+
+	return true;
+}
+
+bool test_cdata() {
+	const String input = "<a><![CDATA[my cdata content goes here]]></a>";
+	XMLParser parser;
+	REQUIRE_EQ(parser.open_buffer(_to_buffer(input)), OK);
+	REQUIRE_EQ(parser.read(), OK);
+	REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	REQUIRE_EQ(parser.get_node_name(), "a");
+	REQUIRE_EQ(parser.read(), OK);
+	REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_CDATA);
+	REQUIRE_EQ(parser.get_node_name(), "my cdata content goes here");
+	REQUIRE_EQ(parser.read(), OK);
+	REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+	REQUIRE_EQ(parser.get_node_name(), "a");
+
+	return true;
+}
+
 typedef bool (*TestFunc)();
 TestFunc test_funcs[] = {
 	test_1,
+	test_comments,
+	test_premature_endings,
+	test_cdata,
 	nullptr
 };
 
