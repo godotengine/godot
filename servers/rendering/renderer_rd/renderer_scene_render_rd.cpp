@@ -1328,7 +1328,7 @@ void RendererSceneRenderRD::_process_sss(Ref<RenderSceneBuffersRD> p_render_buff
 	}
 }
 
-void RendererSceneRenderRD::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_slices, RID p_specular_buffer, const RID *p_metallic_slices, const Color &p_metallic_mask, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive) {
+void RendererSceneRenderRD::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_slices, RID p_specular_buffer, const RID *p_metallic_slices, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive) {
 	ERR_FAIL_NULL(ss_effects);
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
@@ -1355,7 +1355,7 @@ void RendererSceneRenderRD::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buff
 		texture_slices[v] = p_render_buffers->get_internal_texture(v);
 		depth_slices[v] = p_render_buffers->get_depth_texture(v);
 	}
-	ss_effects->screen_space_reflection(p_render_buffers->ssr, texture_slices, p_normal_slices, ssr_roughness_quality, p_metallic_slices, p_metallic_mask, depth_slices, half_size, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), view_count, p_projections, p_eye_offsets);
+	ss_effects->screen_space_reflection(p_render_buffers->ssr, texture_slices, p_normal_slices, ssr_roughness_quality, p_metallic_slices, depth_slices, half_size, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), view_count, p_projections, p_eye_offsets);
 	copy_effects->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : p_render_buffers->get_internal_texture(), p_render_buffers->ssr.output, view_count);
 }
 
