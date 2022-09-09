@@ -3436,6 +3436,98 @@ void EditorNode::_update_file_menu_closed() {
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), false);
 }
 
+void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<Resource>> &p_source_resources, const Vector<Ref<Resource>> &p_target_resource) {
+	List<PropertyInfo> pi;
+	p_object->get_property_list(&pi);
+
+	for (const PropertyInfo &E : pi) {
+		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
+			continue;
+		}
+
+		switch (E.type) {
+			case Variant::OBJECT: {
+				if (E.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					const Variant &v = p_object->get(E.name);
+					Ref<Resource> res = v;
+
+					if (res.is_valid()) {
+						int res_idx = p_source_resources.find(res);
+						if (res_idx != -1) {
+							p_object->set(E.name, p_target_resource.get(res_idx));
+						} else {
+							replace_resources_in_object(v, p_source_resources, p_target_resource);
+						}
+					}
+				}
+			} break;
+			case Variant::ARRAY: {
+				Array varray = p_object->get(E.name);
+				int len = varray.size();
+				bool array_requires_updating = false;
+				for (int i = 0; i < len; i++) {
+					const Variant &v = varray.get(i);
+					Ref<Resource> res = v;
+
+					if (res.is_valid()) {
+						int res_idx = p_source_resources.find(res);
+						if (res_idx != -1) {
+							varray.set(i, p_target_resource.get(res_idx));
+							array_requires_updating = true;
+						} else {
+							replace_resources_in_object(v, p_source_resources, p_target_resource);
+						}
+					}
+				}
+				if (array_requires_updating) {
+					p_object->set(E.name, varray);
+				}
+			} break;
+			case Variant::DICTIONARY: {
+				Dictionary d = p_object->get(E.name);
+				List<Variant> keys;
+				bool dictionary_requires_updating = false;
+				d.get_key_list(&keys);
+				for (const Variant &F : keys) {
+					Variant v = d[F];
+					Ref<Resource> res = v;
+
+					if (res.is_valid()) {
+						int res_idx = p_source_resources.find(res);
+						if (res_idx != -1) {
+							d[F] = p_target_resource.get(res_idx);
+							dictionary_requires_updating = true;
+						} else {
+							replace_resources_in_object(v, p_source_resources, p_target_resource);
+						}
+					}
+				}
+				if (dictionary_requires_updating) {
+					p_object->set(E.name, d);
+				}
+			} break;
+			default: {
+			}
+		}
+	}
+
+	Node *n = Object::cast_to<Node>(p_object);
+	if (n) {
+		for (int i = 0; i < n->get_child_count(); i++) {
+			replace_resources_in_object(n->get_child(i), p_source_resources, p_target_resource);
+		}
+	}
+}
+
+void EditorNode::replace_resources_in_scenes(const Vector<Ref<Resource>> &p_source_resources, const Vector<Ref<Resource>> &p_target_resource) {
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		Node *edited_scene_root = editor_data.get_edited_scene_root(i);
+		if (edited_scene_root) {
+			replace_resources_in_object(edited_scene_root, p_source_resources, p_target_resource);
+		}
+	}
+}
+
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 	if (p_editor->has_main_screen()) {
 		singleton->editor_main_screen->add_main_plugin(p_editor);
@@ -6350,12 +6442,32 @@ void EditorNode::remove_resource_conversion_plugin(const Ref<EditorResourceConve
 	resource_conversion_plugins.erase(p_plugin);
 }
 
-Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion_plugin(const Ref<Resource> &p_for_resource) {
+Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion_plugin_for_resource(const Ref<Resource> &p_for_resource) {
+	if (p_for_resource.is_null()) {
+		return Vector<Ref<EditorResourceConversionPlugin>>();
+	}
+
+	Vector<Ref<EditorResourceConversionPlugin>> ret;
+	for (Ref<EditorResourceConversionPlugin> resource_conversion_plugin : resource_conversion_plugins) {
+		if (resource_conversion_plugin.is_valid() && resource_conversion_plugin->handles(p_for_resource)) {
+			ret.push_back(resource_conversion_plugin);
+		}
+	}
+
+	return ret;
+}
+
+Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion_plugin_for_type_name(const String &p_type) {
 	Vector<Ref<EditorResourceConversionPlugin>> ret;
 
-	for (int i = 0; i < resource_conversion_plugins.size(); i++) {
-		if (resource_conversion_plugins[i].is_valid() && resource_conversion_plugins[i]->handles(p_for_resource)) {
-			ret.push_back(resource_conversion_plugins[i]);
+	if (ClassDB::can_instantiate(p_type)) {
+		Ref<Resource> temp = Object::cast_to<Resource>(ClassDB::instantiate(p_type));
+		if (temp.is_valid()) {
+			for (Ref<EditorResourceConversionPlugin> resource_conversion_plugin : resource_conversion_plugins) {
+				if (resource_conversion_plugin.is_valid() && resource_conversion_plugin->handles(temp)) {
+					ret.push_back(resource_conversion_plugin);
+				}
+			}
 		}
 	}
 
