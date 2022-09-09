@@ -188,6 +188,11 @@ Vector3 GodotPhysicsDirectBodyState3D::get_contact_local_normal(int p_contact_id
 	return body->contacts[p_contact_idx].local_normal;
 }
 
+real_t GodotPhysicsDirectBodyState3D::get_contact_depth(int p_contact_idx) const {
+	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);
+	return body->contacts[p_contact_idx].depth;
+}
+
 real_t GodotPhysicsDirectBodyState3D::get_contact_impulse(int p_contact_idx) const {
 	return 0.0f; // Only implemented for bullet
 }
