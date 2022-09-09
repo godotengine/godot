@@ -256,6 +256,7 @@ ReplicationEditor::ReplicationEditor() {
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
+	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
 	add_from_path_button = memnew(Button);
 	add_from_path_button->connect("pressed", callable_mp(this, &ReplicationEditor::_add_pressed));
@@ -292,7 +293,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(tree);
 
 	drop_label = memnew(Label);
-	drop_label->set_text(TTR("Add properties using the buttons above or\ndrag them them from the inspector and drop them here."));
+	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them them from the inspector and drop them here."));
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	tree->add_child(drop_label);
@@ -384,6 +385,13 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 	String np_text = np_line_edit->get_text();
+
+	if (np_text.is_empty()) {
+		error_dialog->set_text(TTR("Property/path must not be empty."));
+		error_dialog->popup_centered();
+		return;
+	}
+
 	int idx = np_text.find(":");
 	if (idx == -1) {
 		np_text = ".:" + np_text;
@@ -393,6 +401,10 @@ void ReplicationEditor::_add_pressed() {
 	NodePath path = NodePath(np_text);
 
 	_add_sync_property(path);
+}
+
+void ReplicationEditor::_np_text_submitted(const String &p_newtext) {
+	_add_pressed();
 }
 
 void ReplicationEditor::_tree_item_edited() {

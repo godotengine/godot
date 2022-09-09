@@ -72,6 +72,7 @@ private:
 	Ref<Texture2D> _get_class_icon(const Node *p_node);
 
 	void _add_pressed();
+	void _np_text_submitted(const String &p_newtext);
 	void _tree_item_edited();
 	void _tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _update_checked(const NodePath &p_prop, int p_column, bool p_checked);
