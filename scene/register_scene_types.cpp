@@ -34,6 +34,7 @@
 #include "core/extension/native_extension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/area_2d.h"
 #include "scene/2d/audio_listener_2d.h"
@@ -53,9 +54,11 @@
 #include "scene/2d/marker_2d.h"
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
@@ -240,10 +243,12 @@
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_link_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "scene/3d/node_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/path_3d.h"
@@ -576,10 +581,12 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConeTwistJoint3D);
 	GDREGISTER_CLASS(Generic6DOFJoint3D);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	GDREGISTER_CLASS(NavigationRegion3D);
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
 	GDREGISTER_CLASS(NavigationLink3D);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -933,12 +940,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Path2D);
 	GDREGISTER_CLASS(PathFollow2D);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	GDREGISTER_CLASS(NavigationMesh);
 	GDREGISTER_CLASS(NavigationPolygon);
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
 	GDREGISTER_CLASS(NavigationLink2D);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1025,6 +1034,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Listener", "AudioListener3D");
 	ClassDB::add_compatibility_class("MeshInstance", "MeshInstance3D");
 	ClassDB::add_compatibility_class("MultiMeshInstance", "MultiMeshInstance3D");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::add_compatibility_class("NavigationAgent", "NavigationAgent3D");
 	ClassDB::add_compatibility_class("NavigationMeshInstance", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("NavigationObstacle", "NavigationObstacle3D");
@@ -1032,6 +1042,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("NavigationRegion", "NavigationRegion3D");
 	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
 	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
+#endif // MODULE_NAVIGATION_ENABLED
 	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
 	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
@@ -1142,10 +1153,15 @@ void register_scene_types() {
 
 	for (int i = 0; i < 32; i++) {
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_physics"), i + 1), "");
-		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_navigation"), i + 1), "");
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
+	}
+
+#ifdef MODULE_NAVIGATION_ENABLED
+	for (int i = 0; i < 32; i++) {
+		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_navigation"), i + 1), "");
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_navigation"), i + 1), "");
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 
 	if (RenderingServer::get_singleton()) {
 		ColorPicker::init_shaders(); // RenderingServer needs to exist for this to succeed.

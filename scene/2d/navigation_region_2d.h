@@ -32,6 +32,9 @@
 #define NAVIGATION_REGION_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/resources/navigation_mesh.h"
 
 class NavigationPolygon : public Resource {
@@ -139,5 +142,6 @@ public:
 	NavigationRegion2D();
 	~NavigationRegion2D();
 };
+#endif //MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_REGION_2D_H

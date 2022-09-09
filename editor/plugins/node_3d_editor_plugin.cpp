@@ -44,6 +44,7 @@
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/decal.h"
@@ -7523,8 +7524,10 @@ void Node3DEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<CollisionObject3DGizmoPlugin>(memnew(CollisionObject3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionShape3DGizmoPlugin>(memnew(CollisionShape3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygon3DGizmoPlugin>(memnew(CollisionPolygon3DGizmoPlugin)));
+#ifdef MODULE_NAVIGATION_ENABLED
 	add_gizmo_plugin(Ref<NavigationLink3DGizmoPlugin>(memnew(NavigationLink3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<NavigationRegion3DGizmoPlugin>(memnew(NavigationRegion3DGizmoPlugin)));
+#endif // MODULE_NAVIGATION_ENABLED
 	add_gizmo_plugin(Ref<Joint3DGizmoPlugin>(memnew(Joint3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<PhysicalBone3DGizmoPlugin>(memnew(PhysicalBone3DGizmoPlugin)));
 	add_gizmo_plugin(Ref<FogVolumeGizmoPlugin>(memnew(FogVolumeGizmoPlugin)));

@@ -30,6 +30,10 @@
 
 #include "register_types.h"
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
+
 #include "core/config/engine.h"
 #include "servers/navigation_server_3d.h"
 
@@ -80,3 +84,4 @@ void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
 	}
 #endif
 }
+#endif // MODULE_NAVIGATION_ENABLED

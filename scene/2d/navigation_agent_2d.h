@@ -32,7 +32,9 @@
 #define NAVIGATION_AGENT_2D_H
 
 #include "scene/main/node.h"
+#include "modules/modules_enabled.gen.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 class Node2D;
 
 class NavigationAgent2D : public Node {
@@ -162,5 +164,6 @@ private:
 	void _request_repath();
 	void _check_distance_to_target();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_AGENT_2D_H

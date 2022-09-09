@@ -31,6 +31,8 @@
 #ifndef NAVIGATION_POLYGON_EDITOR_PLUGIN_H
 #define NAVIGATION_POLYGON_EDITOR_PLUGIN_H
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/navigation_region_2d.h"
 
@@ -66,5 +68,6 @@ class NavigationPolygonEditorPlugin : public AbstractPolygon2DEditorPlugin {
 public:
 	NavigationPolygonEditorPlugin();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_POLYGON_EDITOR_PLUGIN_H

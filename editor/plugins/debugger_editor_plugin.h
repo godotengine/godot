@@ -32,6 +32,7 @@
 #define DEBUGGER_EDITOR_PLUGIN_H
 
 #include "editor/editor_plugin.h"
+#include "modules/modules_enabled.gen.h"
 
 class EditorFileServer;
 class MenuButton;
@@ -50,7 +51,9 @@ private:
 		RUN_LIVE_DEBUG,
 		RUN_DEBUG_COLLISONS,
 		RUN_DEBUG_PATHS,
+#ifdef MODULE_NAVIGATION_ENABLED
 		RUN_DEBUG_NAVIGATION,
+#endif // MODULE_NAVIGATION_ENABLED
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
 	};

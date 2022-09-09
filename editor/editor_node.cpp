@@ -30,6 +30,7 @@
 
 #include "editor_node.h"
 
+#include "modules/modules_enabled.gen.h"
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/config_file.h"
@@ -65,8 +66,10 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/display_server.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "servers/physics_server_2d.h"
 #include "servers/rendering/rendering_device.h"
 
@@ -170,8 +173,10 @@
 #include "editor/plugins/mesh_instance_3d_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/multimesh_editor_plugin.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "editor/plugins/navigation_link_2d_editor_plugin.h"
 #include "editor/plugins/navigation_polygon_editor_plugin.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/plugins/occluder_instance_3d_editor_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
@@ -568,6 +573,7 @@ void EditorNode::_update_from_settings() {
 	tree->set_debug_collision_contact_color(GLOBAL_GET("debug/shapes/collision/contact_color"));
 
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/geometry_face_color"));
@@ -578,6 +584,7 @@ void EditorNode::_update_from_settings() {
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/enable_edge_lines"));
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/enable_edge_lines_xray"));
 	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/enable_geometry_face_random_color"));
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 }
 
@@ -6087,12 +6094,14 @@ EditorNode::EditorNode() {
 
 	AudioServer::get_singleton()->set_enable_tagging_used_audio_streams(true);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// No navigation server by default if in editor.
 	if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
 		NavigationServer3D::get_singleton()->set_active(true);
 	} else {
 		NavigationServer3D::get_singleton()->set_active(false);
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// No physics by default if in editor.
 	PhysicsServer3D::get_singleton()->set_active(false);
@@ -7354,8 +7363,10 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(GPUParticles2DEditorPlugin));
 	add_editor_plugin(memnew(LightOccluder2DEditorPlugin));
 	add_editor_plugin(memnew(Line2DEditorPlugin));
+#ifdef MODULE_NAVIGATION_ENABLED
 	add_editor_plugin(memnew(NavigationLink2DEditorPlugin));
 	add_editor_plugin(memnew(NavigationPolygonEditorPlugin));
+#endif // MODULE_NAVIGATION_ENABLED
 	add_editor_plugin(memnew(Path2DEditorPlugin));
 	add_editor_plugin(memnew(Polygon2DEditorPlugin));
 	add_editor_plugin(memnew(Cast2DEditorPlugin));

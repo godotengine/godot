@@ -32,6 +32,9 @@
 #define NAVIGATION_REGION_3D_H
 
 #include "scene/3d/node_3d.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/resources/navigation_mesh.h"
 
 class NavigationRegion3D : public Node3D {
@@ -95,5 +98,6 @@ public:
 	NavigationRegion3D();
 	~NavigationRegion3D();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_REGION_3D_H

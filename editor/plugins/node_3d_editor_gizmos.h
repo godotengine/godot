@@ -33,6 +33,7 @@
 
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -606,6 +607,7 @@ public:
 	CollisionPolygon3DGizmoPlugin();
 };
 
+#ifdef MODULE_NAVIGATION_ENABLED
 class NavigationRegion3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(NavigationRegion3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
@@ -630,6 +632,7 @@ public:
 
 	NavigationRegion3DGizmoPlugin();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 class NavigationLink3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(NavigationLink3DGizmoPlugin, EditorNode3DGizmoPlugin);

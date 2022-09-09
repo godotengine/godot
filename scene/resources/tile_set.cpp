@@ -35,10 +35,14 @@
 #include "core/math/geometry_2d.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/2d/navigation_region_2d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "scene/gui/control.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 
 /////////////////////////////// TileMapPattern //////////////////////////////////////
 
@@ -938,6 +942,7 @@ bool TileSet::is_valid_terrain_peering_bit(int p_terrain_set, TileSet::CellNeigh
 	return is_valid_terrain_peering_bit_for_mode(terrain_mode, p_peering_bit);
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 // Navigation
 int TileSet::get_navigation_layers_count() const {
 	return navigation_layers.size();
@@ -990,6 +995,7 @@ uint32_t TileSet::get_navigation_layer_layers(int p_layer_index) const {
 	ERR_FAIL_INDEX_V(p_layer_index, navigation_layers.size(), 0);
 	return navigation_layers[p_layer_index].layers;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 // Custom data.
 int TileSet::get_custom_data_layers_count() const {
@@ -2483,8 +2489,10 @@ void TileSet::reset_state() {
 	per_terrain_pattern_tiles.clear();
 	terrains_cache_dirty = true;
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Navigation
 	navigation_layers.clear();
+#endif // MODULE_NAVIGATION_ENABLED
 
 	custom_data_layers.clear();
 	custom_data_layers_by_name.clear();
@@ -2570,12 +2578,15 @@ void TileSet::_compatibility_conversion() {
 						}
 						tile_data->set_occluder(0, ctd->occluder);
 					}
+
+#ifdef MODULE_NAVIGATION_ENABLED
 					if (ctd->navigation.is_valid()) {
 						if (get_navigation_layers_count() < 1) {
 							add_navigation_layer();
 						}
 						tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
 					}
+#endif // MODULE_NAVIGATION_ENABLED
 
 					tile_data->set_z_index(ctd->z_index);
 
@@ -2661,12 +2672,14 @@ void TileSet::_compatibility_conversion() {
 								}
 								tile_data->set_occluder(0, ctd->autotile_occluder_map[coords]);
 							}
+#ifdef MODULE_NAVIGATION_ENABLED
 							if (ctd->autotile_navpoly_map.has(coords)) {
 								if (get_navigation_layers_count() < 1) {
 									add_navigation_layer();
 								}
 								tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
 							}
+#endif // MODULE_NAVIGATION_ENABLED
 							if (ctd->autotile_priority_map.has(coords)) {
 								tile_data->set_probability(ctd->autotile_priority_map[coords]);
 							}
@@ -2702,8 +2715,10 @@ void TileSet::_compatibility_conversion() {
 							// Those are offset for the whole atlas, they are likely useless for the atlases, but might make sense for single tiles.
 							// texture offset
 							// occluder_offset
+#ifdef MODULE_NAVIGATION_ENABLED
 							// navigation_offset
 
+#endif // MODULE_NAVIGATION_ENABLED
 							// For terrains, ignored for now?
 							// bitmask_mode
 							// bitmask_flags
@@ -2843,6 +2858,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 					}
 					p.pop_front();
 				}
+#ifdef MODULE_NAVIGATION_ENABLED
 			} else if (what == "navpoly_map") {
 				Array p = p_value;
 				Vector2 last_coord;
@@ -2854,6 +2870,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 					}
 					p.pop_front();
 				}
+#endif // MODULE_NAVIGATION_ENABLED
 			} else if (what == "priority_map") {
 				Array p = p_value;
 				Vector3 val;
@@ -2919,7 +2936,9 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		// IGNORED FOR NOW, maybe useless ?
 		else if (what == "occluder_offset") {
 			// Not
+#ifdef MODULE_NAVIGATION_ENABLED
 		} else if (what == "navigation_offset") {
+#endif // MODULE_NAVIGATION_ENABLED
 		}
 		*/
 
@@ -3015,6 +3034,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 					return true;
 				}
 			}
+#ifdef MODULE_NAVIGATION_ENABLED
 		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 			// Navigation layers.
 			int index = components[0].trim_prefix("navigation_layer_").to_int();
@@ -3027,6 +3047,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				set_navigation_layer_layers(index, p_value);
 				return true;
 			}
+#endif // MODULE_NAVIGATION_ENABLED
 		} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int()) {
 			// Custom data layers.
 			int index = components[0].trim_prefix("custom_data_layer_").to_int();
@@ -3148,6 +3169,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 				return true;
 			}
 		}
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		// navigation layers.
 		int index = components[0].trim_prefix("navigation_layer_").to_int();
@@ -3158,6 +3180,7 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_navigation_layer_layers(index);
 			return true;
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 	} else if (components.size() == 2 && components[0].begins_with("custom_data_layer_") && components[0].trim_prefix("custom_data_layer_").is_valid_int()) {
 		// Custom data layers.
 		int index = components[0].trim_prefix("custom_data_layer_").to_int();
@@ -3266,11 +3289,13 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Navigation.
 	p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int i = 0; i < navigation_layers.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("navigation_layer_%d/layers", i), PROPERTY_HINT_LAYERS_2D_NAVIGATION));
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// Custom data.
 	String argt = "Any";
@@ -3378,6 +3403,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_terrain_color", "terrain_set", "terrain_index", "color"), &TileSet::set_terrain_color);
 	ClassDB::bind_method(D_METHOD("get_terrain_color", "terrain_set", "terrain_index"), &TileSet::get_terrain_color);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Navigation
 	ClassDB::bind_method(D_METHOD("get_navigation_layers_count"), &TileSet::get_navigation_layers_count);
 	ClassDB::bind_method(D_METHOD("add_navigation_layer", "to_position"), &TileSet::add_navigation_layer, DEFVAL(-1));
@@ -3385,6 +3411,7 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_navigation_layer", "layer_index"), &TileSet::remove_navigation_layer);
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_layers", "layer_index", "layers"), &TileSet::set_navigation_layer_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_layers", "layer_index"), &TileSet::get_navigation_layer_layers);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// Custom data
 	ClassDB::bind_method(D_METHOD("get_custom_data_layers_count"), &TileSet::get_custom_data_layers_count);
@@ -3431,7 +3458,9 @@ void TileSet::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_ARRAY("physics_layers", "physics_layer_");
 	ADD_ARRAY("terrain_sets", "terrain_set_");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ADD_ARRAY("navigation_layers", "navigation_layer_");
+#endif // MODULE_NAVIGATION_ENABLED
 	ADD_ARRAY("custom_data_layers", "custom_data_layer_");
 
 	// -- Enum binding --
@@ -3633,6 +3662,7 @@ void TileSetAtlasSource::remove_terrain(int p_terrain_set, int p_index) {
 	}
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileSetAtlasSource::add_navigation_layer(int p_to_pos) {
 	for (KeyValue<Vector2i, TileAlternativesData> E_tile : tiles) {
 		for (KeyValue<int, TileData *> E_alternative : E_tile.value.alternatives) {
@@ -3640,7 +3670,9 @@ void TileSetAtlasSource::add_navigation_layer(int p_to_pos) {
 		}
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileSetAtlasSource::move_navigation_layer(int p_from_index, int p_to_pos) {
 	for (KeyValue<Vector2i, TileAlternativesData> E_tile : tiles) {
 		for (KeyValue<int, TileData *> E_alternative : E_tile.value.alternatives) {
@@ -3648,7 +3680,9 @@ void TileSetAtlasSource::move_navigation_layer(int p_from_index, int p_to_pos) {
 		}
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileSetAtlasSource::remove_navigation_layer(int p_index) {
 	for (KeyValue<Vector2i, TileAlternativesData> E_tile : tiles) {
 		for (KeyValue<int, TileData *> E_alternative : E_tile.value.alternatives) {
@@ -3656,6 +3690,7 @@ void TileSetAtlasSource::remove_navigation_layer(int p_index) {
 		}
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void TileSetAtlasSource::add_custom_data_layer(int p_to_pos) {
 	for (KeyValue<Vector2i, TileAlternativesData> E_tile : tiles) {
@@ -4852,7 +4887,10 @@ void TileData::notify_tile_data_properties_should_change() {
 			terrain_peering_bits[bit_index] = -1;
 		}
 	}
+
+#ifdef MODULE_NAVIGATION_ENABLED
 	navigation.resize(tile_set->get_navigation_layers_count());
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// Convert custom data to the new type.
 	custom_data.resize(tile_set->get_custom_data_layers_count());
@@ -4987,6 +5025,7 @@ void TileData::remove_terrain(int p_terrain_set, int p_index) {
 	}
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileData::add_navigation_layer(int p_to_pos) {
 	if (p_to_pos < 0) {
 		p_to_pos = navigation.size();
@@ -4994,18 +5033,23 @@ void TileData::add_navigation_layer(int p_to_pos) {
 	ERR_FAIL_INDEX(p_to_pos, navigation.size() + 1);
 	navigation.insert(p_to_pos, Ref<NavigationPolygon>());
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileData::move_navigation_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, navigation.size());
 	ERR_FAIL_INDEX(p_to_pos, navigation.size() + 1);
 	navigation.insert(p_to_pos, navigation[p_from_index]);
 	navigation.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileData::remove_navigation_layer(int p_index) {
 	ERR_FAIL_INDEX(p_index, navigation.size());
 	navigation.remove_at(p_index);
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void TileData::add_custom_data_layer(int p_to_pos) {
 	if (p_to_pos < 0) {
@@ -5018,7 +5062,9 @@ void TileData::add_custom_data_layer(int p_to_pos) {
 void TileData::move_custom_data_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, custom_data.size());
 	ERR_FAIL_INDEX(p_to_pos, custom_data.size() + 1);
+#ifdef MODULE_NAVIGATION_ENABLED
 	custom_data.insert(p_to_pos, navigation[p_from_index]);
+#endif // MODULE_NAVIGATION_ENABLED
 	custom_data.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
 
@@ -5056,8 +5102,10 @@ TileData *TileData::duplicate() {
 	// Terrain
 	output->terrain_set = -1;
 	memcpy(output->terrain_peering_bits, terrain_peering_bits, 16 * sizeof(int));
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Navigation
 	output->navigation = navigation;
+#endif // MODULE_NAVIGATION_ENABLED
 	// Misc
 	output->probability = probability;
 	// Custom data
@@ -5339,6 +5387,7 @@ TileSet::TerrainsPattern TileData::get_terrains_pattern() const {
 	return output;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 // Navigation
 void TileData::set_navigation_polygon(int p_layer_id, Ref<NavigationPolygon> p_navigation_polygon) {
 	ERR_FAIL_INDEX(p_layer_id, navigation.size());
@@ -5350,6 +5399,7 @@ Ref<NavigationPolygon> TileData::get_navigation_polygon(int p_layer_id) const {
 	ERR_FAIL_INDEX_V(p_layer_id, navigation.size(), Ref<NavigationPolygon>());
 	return navigation[p_layer_id];
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 // Misc
 void TileData::set_probability(float p_probability) {
@@ -5461,6 +5511,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 				return true;
 			}
 		}
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		// Navigation layers.
 		int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
@@ -5478,6 +5529,7 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 			set_navigation_polygon(layer_index, polygon);
 			return true;
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 	} else if (components.size() == 2 && components[0] == "terrains_peering_bit") {
 		// Terrains.
 		for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
@@ -5568,6 +5620,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				}
 			}
 			return false;
+#ifdef MODULE_NAVIGATION_ENABLED
 		} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 			// Occlusion layers.
 			int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
@@ -5579,6 +5632,7 @@ bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
 				r_ret = get_navigation_polygon(layer_index);
 				return true;
 			}
+#endif // MODULE_NAVIGATION_ENABLED
 		} else if (components.size() == 1 && components[0].begins_with("custom_data_") && components[0].trim_prefix("custom_data_").is_valid_int()) {
 			// Custom data layers.
 			int layer_index = components[0].trim_prefix("custom_data_").to_int();
@@ -5655,6 +5709,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 		}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 		// Navigation layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Navigation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 		for (int i = 0; i < navigation.size(); i++) {
@@ -5664,6 +5719,7 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 			p_list->push_back(property_info);
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 
 		// Custom data layers.
 		p_list->push_back(PropertyInfo(Variant::NIL, "Custom data", PROPERTY_HINT_NONE, "custom_data_", PROPERTY_USAGE_GROUP));
@@ -5726,9 +5782,11 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_terrain_peering_bit", "peering_bit", "terrain"), &TileData::set_terrain_peering_bit);
 	ClassDB::bind_method(D_METHOD("get_terrain_peering_bit", "peering_bit"), &TileData::get_terrain_peering_bit);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Navigation
 	ClassDB::bind_method(D_METHOD("set_navigation_polygon", "layer_id", "navigation_polygon"), &TileData::set_navigation_polygon);
 	ClassDB::bind_method(D_METHOD("get_navigation_polygon", "layer_id"), &TileData::get_navigation_polygon);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// Misc.
 	ClassDB::bind_method(D_METHOD("set_probability", "probability"), &TileData::set_probability);

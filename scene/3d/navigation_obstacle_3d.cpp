@@ -32,6 +32,7 @@
 
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/physics_body_3d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
@@ -200,3 +201,4 @@ void NavigationObstacle3D::set_radius(real_t p_radius) {
 	radius = p_radius;
 	reevaluate_agent_radius();
 }
+#endif // MODULE_NAVIGATION_ENABLED

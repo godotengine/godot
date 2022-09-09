@@ -37,6 +37,7 @@
 #include "editor/progress_dialog.h"
 
 #include "editor/editor_node.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/control.h"
@@ -714,6 +715,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors.erase(vformat("physics_layer_%d", i));
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// --- Navigation ---
 	ADD_TILE_DATA_EDITOR_GROUP("Navigation");
 	for (int i = 0; i < tile_set->get_navigation_layers_count(); i++) {
@@ -731,6 +733,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors[vformat("navigation_layer_%d", i)]->queue_delete();
 		tile_data_editors.erase(vformat("navigation_layer_%d", i));
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// --- Custom Data ---
 	ADD_TILE_DATA_EDITOR_GROUP("Custom Data");
@@ -2590,6 +2593,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 				occluder->set_polygon(generic_tile_polygon_editor->get_polygon(0));
 			}
 			emit_changed(get_edited_property(), occluder);
+#ifdef MODULE_NAVIGATION_ENABLED
 		} else if (base_type == "NavigationPolygon") {
 			Ref<NavigationPolygon> navigation_polygon;
 			if (generic_tile_polygon_editor->get_polygon_count() >= 1) {
@@ -2601,6 +2605,7 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 				navigation_polygon->make_polygons_from_outlines();
 			}
 			emit_changed(get_edited_property(), navigation_polygon);
+#endif // MODULE_NAVIGATION_ENABLED
 		}
 	} else {
 		if (base_type.is_empty()) {
@@ -2644,6 +2649,7 @@ void EditorPropertyTilePolygon::update_property() {
 			if (occluder.is_valid()) {
 				generic_tile_polygon_editor->add_polygon(occluder->get_polygon());
 			}
+#ifdef MODULE_NAVIGATION_ENABLED
 		} else if (base_type == "NavigationPolygon") {
 			// Single OccluderPolygon2D.
 			Ref<NavigationPolygon> navigation_polygon = get_edited_object()->get(get_edited_property());
@@ -2653,6 +2659,7 @@ void EditorPropertyTilePolygon::update_property() {
 					generic_tile_polygon_editor->add_polygon(navigation_polygon->get_outline(i));
 				}
 			}
+#endif // MODULE_NAVIGATION_ENABLED
 		}
 	} else {
 		int count = get_edited_object()->get(count_property);
@@ -2734,6 +2741,7 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 				return true;
 			}
 		}
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (components.size() == 2 && components[0].begins_with("navigation_layer_") && components[0].trim_prefix("navigation_layer_").is_valid_int()) {
 		// Navigation layers.
 		int layer_index = components[0].trim_prefix("navigation_layer_").to_int();
@@ -2744,6 +2752,7 @@ bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Varia
 			add_property_editor(p_path, ep);
 			return true;
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 	}
 	return false;
 }

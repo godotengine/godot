@@ -33,6 +33,9 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/2d/navigation_region_2d.h"
 
 // This server exposes the `NavigationServer3D` features in the 2D world.
@@ -246,5 +249,6 @@ public:
 	bool get_debug_navigation_enable_edge_connections() const;
 #endif // DEBUG_ENABLED
 };
+#endif //MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_SERVER_2D_H

@@ -32,6 +32,9 @@
 #define NAVIGATION_OBSTACLE_3D_H
 
 #include "scene/3d/node_3d.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 
 class NavigationObstacle3D : public Node {
 	GDCLASS(NavigationObstacle3D, Node);
@@ -72,5 +75,6 @@ private:
 	void reevaluate_agent_radius();
 	real_t estimate_agent_radius() const;
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_OBSTACLE_3D_H

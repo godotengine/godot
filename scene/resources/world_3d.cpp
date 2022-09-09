@@ -36,7 +36,9 @@
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #include "scene/scene_string_names.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 
 void World3D::_register_camera(Camera3D *p_camera) {
 #ifndef _3D_DISABLED
@@ -54,9 +56,11 @@ RID World3D::get_space() const {
 	return space;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 RID World3D::get_navigation_map() const {
 	return navigation_map;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 RID World3D::get_scenario() const {
 	return scenario;
@@ -119,7 +123,9 @@ PhysicsDirectSpaceState3D *World3D::get_direct_space_state() {
 
 void World3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_space"), &World3D::get_space);
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World3D::get_navigation_map);
+#endif // MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("get_scenario"), &World3D::get_scenario);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &World3D::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &World3D::get_environment);
@@ -132,7 +138,9 @@ void World3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "fallback_environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_fallback_environment", "get_fallback_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "camera_attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_camera_attributes", "get_camera_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
+#endif // MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "scenario", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_scenario");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState3D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
 }
@@ -149,15 +157,19 @@ World3D::World3D() {
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/3d/default_angular_damp", 0.1));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/default_angular_damp", PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"));
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	navigation_map = NavigationServer3D::get_singleton()->map_create();
 	NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.25));
 	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25));
 	NavigationServer3D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0));
+#endif // MODULE_NAVIGATION_ENABLED
 }
 
 World3D::~World3D() {
 	PhysicsServer3D::get_singleton()->free(space);
 	RenderingServer::get_singleton()->free(scenario);
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer3D::get_singleton()->free(navigation_map);
+#endif // MODULE_NAVIGATION_ENABLED
 }

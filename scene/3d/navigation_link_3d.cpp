@@ -31,6 +31,8 @@
 #include "navigation_link_3d.h"
 
 #include "mesh_instance_3d.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_3d.h"
 
 #ifdef DEBUG_ENABLED
@@ -387,3 +389,4 @@ TypedArray<String> NavigationLink3D::get_configuration_warnings() const {
 
 	return warnings;
 }
+#endif // MODULE_NAVIGATION_ENABLED

@@ -31,8 +31,11 @@
 #include "tile_map.h"
 
 #include "core/io/marshalls.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/resources/world_2d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -505,7 +508,9 @@ void TileMap::_notification(int p_what) {
 	if (tile_set.is_valid()) {
 		_rendering_notification(p_what);
 		_physics_notification(p_what);
+#ifdef MODULE_NAVIGATION_ENABLED
 		_navigation_notification(p_what);
+#endif // MODULE_NAVIGATION_ENABLED
 	}
 }
 
@@ -739,16 +744,20 @@ TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
 	return collision_visibility_mode;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
 	navigation_visibility_mode = p_show_navigation;
 	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 	return navigation_visibility_mode;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	Node2D::set_y_sort_enabled(p_enable);
@@ -848,7 +857,9 @@ void TileMap::_update_dirty_quadrants() {
 		// Call the update_dirty_quadrant method on plugins.
 		_rendering_update_dirty_quadrants(dirty_quadrant_list);
 		_physics_update_dirty_quadrants(dirty_quadrant_list);
+#ifdef MODULE_NAVIGATION_ENABLED
 		_navigation_update_dirty_quadrants(dirty_quadrant_list);
+#endif // MODULE_NAVIGATION_ENABLED
 		_scenes_update_dirty_quadrants(dirty_quadrant_list);
 
 		// Redraw the debug canvas_items.
@@ -861,7 +872,9 @@ void TileMap::_update_dirty_quadrants() {
 
 			_rendering_draw_quadrant_debug(q->self());
 			_physics_draw_quadrant_debug(q->self());
+#ifdef MODULE_NAVIGATION_ENABLED
 			_navigation_draw_quadrant_debug(q->self());
+#endif // MODULE_NAVIGATION_ENABLED
 			_scenes_draw_quadrant_debug(q->self());
 		}
 
@@ -928,7 +941,9 @@ void TileMap::_erase_quadrant(HashMap<Vector2i, TileMapQuadrant>::Iterator Q) {
 	if (tile_set.is_valid()) {
 		_rendering_cleanup_quadrant(q);
 		_physics_cleanup_quadrant(q);
+#ifdef MODULE_NAVIGATION_ENABLED
 		_navigation_cleanup_quadrant(q);
+#endif // MODULE_NAVIGATION_ENABLED
 		_scenes_cleanup_quadrant(q);
 	}
 
@@ -1628,6 +1643,7 @@ void TileMap::_physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	}
 };
 
+#ifdef MODULE_NAVIGATION_ENABLED
 /////////////////////////////// Navigation //////////////////////////////////////
 
 void TileMap::_navigation_notification(int p_what) {
@@ -1824,6 +1840,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 		}
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 /////////////////////////////// Scenes //////////////////////////////////////
 
@@ -3870,8 +3887,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_visibility_mode", "collision_visibility_mode"), &TileMap::set_collision_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_collision_visibility_mode"), &TileMap::get_collision_visibility_mode);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "navigation_visibility_mode"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
@@ -3916,7 +3935,9 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_quadrant_size", PROPERTY_HINT_RANGE, "1,128,1"), "set_quadrant_size", "get_quadrant_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+#endif // MODULE_NAVIGATION_ENABLED
 
 	ADD_ARRAY("layers", "layer_");
 

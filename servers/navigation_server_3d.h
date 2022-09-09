@@ -33,6 +33,9 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/3d/navigation_region_3d.h"
 
 /// This server uses the concept of internal mutability.
@@ -342,5 +345,6 @@ public:
 	static void set_default_server(NavigationServer3DCallback p_callback);
 	static NavigationServer3D *new_default_server();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_SERVER_3D_H

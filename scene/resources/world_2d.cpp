@@ -34,7 +34,9 @@
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
 #include "scene/main/window.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 
@@ -46,20 +48,26 @@ RID World2D::get_space() const {
 	return space;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 RID World2D::get_navigation_map() const {
 	return navigation_map;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void World2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &World2D::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_space"), &World2D::get_space);
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &World2D::get_navigation_map);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	ClassDB::bind_method(D_METHOD("get_direct_space_state"), &World2D::get_direct_space_state);
 
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "canvas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_canvas");
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "space", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_space");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::RID, "navigation_map", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "", "get_navigation_map");
+#endif // MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState2D", PROPERTY_USAGE_NONE), "", "get_direct_space_state");
 }
 
@@ -80,16 +88,20 @@ World2D::World2D() {
 	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/2d/default_angular_damp", 1.0));
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/default_angular_damp", PropertyInfo(Variant::FLOAT, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Create and configure the navigation_map to be more friendly with pixels than meters.
 	navigation_map = NavigationServer2D::get_singleton()->map_create();
 	NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 	NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 1));
 	NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1));
 	NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_DEF("navigation/2d/default_link_connection_radius", 4));
+#endif // MODULE_NAVIGATION_ENABLED
 }
 
 World2D::~World2D() {
 	RenderingServer::get_singleton()->free(canvas);
 	PhysicsServer2D::get_singleton()->free(space);
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer2D::get_singleton()->free(navigation_map);
+#endif // MODULE_NAVIGATION_ENABLED
 }

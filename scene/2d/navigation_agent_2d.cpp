@@ -32,6 +32,7 @@
 
 #include "core/math/geometry_2d.h"
 #include "scene/resources/world_2d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
@@ -459,3 +460,4 @@ void NavigationAgent2D::_check_distance_to_target() {
 		}
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED

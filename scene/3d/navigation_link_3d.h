@@ -32,7 +32,9 @@
 #define NAVIGATION_LINK_3D_H
 
 #include "scene/3d/node_3d.h"
+#include "modules/modules_enabled.gen.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 class NavigationLink3D : public Node3D {
 	GDCLASS(NavigationLink3D, Node3D);
 
@@ -86,5 +88,6 @@ public:
 
 	TypedArray<String> get_configuration_warnings() const override;
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_LINK_3D_H

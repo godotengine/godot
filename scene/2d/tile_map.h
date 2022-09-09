@@ -31,6 +31,7 @@
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
 
+#include "modules/modules_enabled.gen.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/control.h"
 #include "scene/resources/tile_set.h"
@@ -73,8 +74,10 @@ struct TileMapQuadrant {
 	// Physics.
 	List<RID> bodies;
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Navigation.
 	HashMap<Vector2i, Vector<RID>> navigation_regions;
+#endif // MODULE_NAVIGATION_ENABLED
 
 	// Scenes.
 	HashMap<Vector2i, String> scenes;
@@ -89,7 +92,9 @@ struct TileMapQuadrant {
 		canvas_items = q.canvas_items;
 		occluders = q.occluders;
 		bodies = q.bodies;
+#ifdef MODULE_NAVIGATION_ENABLED
 		navigation_regions = q.navigation_regions;
+#endif // MODULE_NAVIGATION_ENABLED
 	}
 
 	TileMapQuadrant(const TileMapQuadrant &q) :
@@ -100,7 +105,9 @@ struct TileMapQuadrant {
 		canvas_items = q.canvas_items;
 		occluders = q.occluders;
 		bodies = q.bodies;
+#ifdef MODULE_NAVIGATION_ENABLED
 		navigation_regions = q.navigation_regions;
+#endif // MODULE_NAVIGATION_ENABLED
 	}
 
 	TileMapQuadrant() :
@@ -256,10 +263,12 @@ private:
 	void _physics_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _physics_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	void _navigation_notification(int p_what);
 	void _navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list);
 	void _navigation_cleanup_quadrant(TileMapQuadrant *p_quadrant);
 	void _navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	void _scenes_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list);
 	void _scenes_cleanup_quadrant(TileMapQuadrant *p_quadrant);

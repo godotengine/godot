@@ -30,6 +30,7 @@
 
 #include "navigation_mesh.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
@@ -626,3 +627,4 @@ bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
 #endif // DISABLE_DEPRECATED
 
 NavigationMesh::NavigationMesh() {}
+#endif // MODULE_NAVIGATION_ENABLED

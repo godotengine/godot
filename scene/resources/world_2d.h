@@ -31,6 +31,8 @@
 #ifndef WORLD_2D_H
 #define WORLD_2D_H
 
+#include "modules/modules_enabled.gen.h"
+
 #include "core/io/resource.h"
 #include "scene/resources/world_2d.h"
 #include "servers/physics_server_2d.h"
@@ -44,7 +46,9 @@ class World2D : public Resource {
 
 	RID canvas;
 	RID space;
+#ifdef MODULE_NAVIGATION_ENABLED
 	RID navigation_map;
+#endif // MODULE_NAVIGATION_ENABLED
 
 	HashSet<Viewport *> viewports;
 
@@ -58,7 +62,9 @@ protected:
 public:
 	RID get_canvas() const;
 	RID get_space() const;
+#ifdef MODULE_NAVIGATION_ENABLED
 	RID get_navigation_map() const;
+#endif // MODULE_NAVIGATION_ENABLED
 
 	PhysicsDirectSpaceState2D *get_direct_space_state();
 

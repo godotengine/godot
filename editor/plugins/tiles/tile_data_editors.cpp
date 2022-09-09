@@ -43,6 +43,7 @@
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
+#include "modules/modules_enabled.gen.h"
 
 void TileDataEditor::_tile_set_changed_plan_update() {
 	_tile_set_changed_update_needed = true;
@@ -2621,6 +2622,7 @@ TileDataTerrainsEditor::~TileDataTerrainsEditor() {
 	memdelete(dummy_object);
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 Variant TileDataNavigationEditor::_get_painted_value() {
 	Ref<NavigationPolygon> navigation_polygon;
 	navigation_polygon.instantiate();
@@ -2633,7 +2635,9 @@ Variant TileDataNavigationEditor::_get_painted_value() {
 	navigation_polygon->make_polygons_from_outlines();
 	return navigation_polygon;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
@@ -2647,7 +2651,9 @@ void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set
 	}
 	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), p_tile_set_atlas_source->get_tile_effective_texture_offset(p_coords, p_alternative_tile), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
@@ -2656,13 +2662,17 @@ void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_s
 
 	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), p_tile_set_atlas_source->get_tile_effective_texture_offset(p_coords, p_alternative_tile), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 Variant TileDataNavigationEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND_V(!tile_data, Variant());
 	return tile_data->get_navigation_polygon(navigation_layer);
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
 	for (const KeyValue<TileMapCell, Variant> &E : p_previous_values) {
 		Vector2i coords = E.key.get_atlas_coords();
@@ -2670,11 +2680,15 @@ void TileDataNavigationEditor::_setup_undo_redo_action(TileSetAtlasSource *p_til
 		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/navigation_layer_%d/polygon", coords.x, coords.y, E.key.alternative_tile, navigation_layer), p_new_value);
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileDataNavigationEditor::_tile_set_changed() {
 	polygon_editor->set_tile_set(tile_set);
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileDataNavigationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -2684,7 +2698,9 @@ void TileDataNavigationEditor::_notification(int p_what) {
 		} break;
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 TileDataNavigationEditor::TileDataNavigationEditor() {
 	undo_redo = EditorNode::get_undo_redo();
 
@@ -2692,7 +2708,9 @@ TileDataNavigationEditor::TileDataNavigationEditor() {
 	polygon_editor->set_multiple_polygon_mode(true);
 	add_child(polygon_editor);
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected) {
 	TileData *tile_data = _get_tile_data(p_cell);
 	ERR_FAIL_COND(!tile_data);
@@ -2742,3 +2760,4 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
+#endif // MODULE_NAVIGATION_ENABLED

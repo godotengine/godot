@@ -31,6 +31,8 @@
 #include "navigation_region_3d.h"
 
 #include "mesh_instance_3d.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
@@ -593,3 +595,4 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 	}
 }
 #endif // DEBUG_ENABLED
+#endif // MODULE_NAVIGATION_ENABLED

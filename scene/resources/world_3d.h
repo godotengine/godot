@@ -31,6 +31,8 @@
 #ifndef WORLD_3D_H
 #define WORLD_3D_H
 
+#include "modules/modules_enabled.gen.h"
+
 #include "core/io/resource.h"
 #include "scene/resources/environment.h"
 #include "servers/physics_server_3d.h"
@@ -46,7 +48,9 @@ class World3D : public Resource {
 
 private:
 	RID space;
+#ifdef MODULE_NAVIGATION_ENABLED
 	RID navigation_map;
+#endif // MODULE_NAVIGATION_ENABLED
 	RID scenario;
 
 	Ref<Environment> environment;
@@ -65,7 +69,9 @@ protected:
 
 public:
 	RID get_space() const;
+#ifdef MODULE_NAVIGATION_ENABLED
 	RID get_navigation_map() const;
+#endif // MODULE_NAVIGATION_ENABLED
 	RID get_scenario() const;
 
 	void set_environment(const Ref<Environment> &p_environment);

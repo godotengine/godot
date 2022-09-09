@@ -30,6 +30,7 @@
 
 #include "navigation_polygon_editor_plugin.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
 	if (!navpoly.is_valid()) {
@@ -117,3 +118,4 @@ NavigationPolygonEditor::NavigationPolygonEditor() {}
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(NavigationPolygonEditor), "NavigationRegion2D") {
 }
+#endif // MODULE_NAVIGATION_ENABLED

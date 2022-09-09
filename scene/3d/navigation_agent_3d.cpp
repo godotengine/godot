@@ -30,6 +30,7 @@
 
 #include "navigation_agent_3d.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
@@ -476,3 +477,4 @@ void NavigationAgent3D::_check_distance_to_target() {
 		}
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED

@@ -30,6 +30,7 @@
 
 #include "navigation_link_2d.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "core/math/geometry_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
@@ -286,3 +287,4 @@ NavigationLink2D::~NavigationLink2D() {
 	NavigationServer2D::get_singleton()->free(link);
 	link = RID();
 }
+#endif // MODULE_NAVIGATION_ENABLED

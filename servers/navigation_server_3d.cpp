@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #endif // DEBUG_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
 void NavigationServer3D::_bind_methods() {
@@ -485,3 +486,4 @@ bool NavigationServer3D::get_debug_enabled() const {
 	return debug_enabled;
 }
 #endif // DEBUG_ENABLED
+#endif // MODULE_NAVIGATION_ENABLED

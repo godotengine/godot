@@ -54,8 +54,10 @@
 #include "scene/3d/lightmap_probe.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/3d/navigation_link_3d.h"
 #include "scene/3d/navigation_region_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/ray_cast_3d.h"
 #include "scene/3d/reflection_probe.h"
@@ -4841,25 +4843,34 @@ void CollisionPolygon3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 ////
 
+#ifdef MODULE_NAVIGATION_ENABLED
 NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
 	create_material("face_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color(), false, false, true);
 	create_material("face_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color(), false, false, true);
 	create_material("edge_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color());
 	create_material("edge_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color());
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 bool NavigationRegion3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<NavigationRegion3D>(p_spatial) != nullptr;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 String NavigationRegion3DGizmoPlugin::get_gizmo_name() const {
 	return "NavigationRegion3D";
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 int NavigationRegion3DGizmoPlugin::get_priority() const {
 	return -1;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	NavigationRegion3D *navigationregion = Object::cast_to<NavigationRegion3D>(p_gizmo->get_spatial_node());
 
@@ -5168,6 +5179,7 @@ void NavigationLink3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo
 
 	ur->commit_action();
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 //////
 

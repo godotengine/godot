@@ -35,6 +35,7 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/self_list.h"
 #include "scene/resources/mesh.h"
+#include "modules/modules_enabled.gen.h"
 
 #undef Window
 
@@ -153,12 +154,16 @@ private:
 	Color debug_collision_contact_color;
 	Color debug_paths_color;
 	float debug_paths_width = 1.0f;
+#ifdef MODULE_NAVIGATION_ENABLED
 	Color debug_navigation_color;
 	Color debug_navigation_disabled_color;
+#endif // MODULE_NAVIGATION_ENABLED
 	Ref<ArrayMesh> debug_contact_mesh;
 	Ref<Material> debug_paths_material;
+#ifdef MODULE_NAVIGATION_ENABLED
 	Ref<Material> navigation_material;
 	Ref<Material> navigation_disabled_material;
+#endif // MODULE_NAVIGATION_ENABLED
 	Ref<Material> collision_material;
 	int collision_debug_contacts;
 
@@ -309,8 +314,10 @@ public:
 	void set_debug_paths_hint(bool p_enabled);
 	bool is_debugging_paths_hint() const;
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	void set_debug_navigation_hint(bool p_enabled);
 	bool is_debugging_navigation_hint() const;
+#endif // MODULE_NAVIGATION_ENABLED
 #else
 	void set_debug_collisions_hint(bool p_enabled) {}
 	bool is_debugging_collisions_hint() const { return false; }
@@ -318,8 +325,10 @@ public:
 	void set_debug_paths_hint(bool p_enabled) {}
 	bool is_debugging_paths_hint() const { return false; }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	void set_debug_navigation_hint(bool p_enabled) {}
 	bool is_debugging_navigation_hint() const { return false; }
+#endif // MODULE_NAVIGATION_ENABLED
 #endif
 
 	void set_debug_collisions_color(const Color &p_color);

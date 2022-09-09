@@ -60,8 +60,11 @@
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "physics_2d/godot_physics_server_2d.h"
 #include "physics_3d/godot_physics_server_3d.h"
 #include "physics_server_2d.h"
@@ -163,8 +166,11 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionStateCallback, "void *instance;void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state)");
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
+#endif // MODULE_NAVIGATION_ENABLED
+
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_CLASS(CameraServer);
 
@@ -300,8 +306,10 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton(), "PhysicsServer2D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
+#ifdef MODULE_NAVIGATION_ENABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton_mut(), "NavigationServer2D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton_mut(), "NavigationServer3D"));
+#endif // MODULE_NAVIGATION_ENABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 }

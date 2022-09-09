@@ -31,6 +31,9 @@
 #ifndef NAVIGATION_MESH_H
 #define NAVIGATION_MESH_H
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/resources/mesh.h"
 
 class NavigationMesh : public Resource {
@@ -212,5 +215,6 @@ public:
 VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);
 VARIANT_ENUM_CAST(NavigationMesh::ParsedGeometryType);
 VARIANT_ENUM_CAST(NavigationMesh::SourceGeometryMode);
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_MESH_H

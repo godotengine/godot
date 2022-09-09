@@ -38,6 +38,7 @@
 #include "editor/editor_settings.h"
 #include "editor/fileserver/editor_file_server.h"
 #include "editor/plugins/script_editor_plugin.h"
+#include "modules/modules_enabled.gen.h"
 #include "scene/gui/menu_button.h"
 
 DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
@@ -75,9 +76,11 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_paths", TTR("Visible Paths")), RUN_DEBUG_PATHS);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, curve resources used by path nodes will be visible in the running project."));
+#ifdef MODULE_NAVIGATION_ENABLED
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/visible_navigation", TTR("Visible Navigation")), RUN_DEBUG_NAVIGATION);
 	debug_menu->set_item_tooltip(-1,
 			TTR("When this option is enabled, navigation meshes and polygons will be visible in the running project."));
+#endif // MODULE_NAVIGATION_ENABLED
 	debug_menu->add_separator();
 	debug_menu->add_check_shortcut(ED_SHORTCUT("editor/sync_scene_changes", TTR("Synchronize Scene Changes")), RUN_LIVE_DEBUG);
 	debug_menu->set_item_tooltip(-1,
@@ -161,11 +164,13 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_PATHS), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_paths", !ischecked);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 		} break;
 		case RUN_DEBUG_NAVIGATION: {
 			bool ischecked = debug_menu->is_item_checked(debug_menu->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->set_item_checked(debug_menu->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
+#endif // MODULE_NAVIGATION_ENABLED
 
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
@@ -192,7 +197,9 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_file_server = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
 	bool check_debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
 	bool check_debug_paths = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_paths", false);
+#ifdef MODULE_NAVIGATION_ENABLED
 	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+#endif // MODULE_NAVIGATION_ENABLED
 	bool check_live_debug = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", true);
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", true);
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
@@ -209,9 +216,11 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	if (check_debug_paths) {
 		_menu_option(RUN_DEBUG_PATHS);
 	}
+#ifdef MODULE_NAVIGATION_ENABLED
 	if (check_debug_navigation) {
 		_menu_option(RUN_DEBUG_NAVIGATION);
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 	if (check_live_debug) {
 		_menu_option(RUN_LIVE_DEBUG);
 	}

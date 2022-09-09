@@ -69,8 +69,10 @@
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
@@ -130,8 +132,10 @@ static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
+#ifdef MODULE_NAVIGATION_ENABLED
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
+#endif // MODULE_NAVIGATION_ENABLED
 static ThemeDB *theme_db = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
@@ -263,13 +267,16 @@ void finalize_display() {
 	memdelete(display_server);
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server_3d != nullptr);
 
 	navigation_server_3d = NavigationServer3DManager::new_default_server();
 	navigation_server_2d = memnew(NavigationServer2D);
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void finalize_navigation_server() {
 	memdelete(navigation_server_3d);
 	navigation_server_3d = nullptr;
@@ -277,6 +284,7 @@ void finalize_navigation_server() {
 	memdelete(navigation_server_2d);
 	navigation_server_2d = nullptr;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void initialize_theme_db() {
 	theme_db = memnew(ThemeDB);
@@ -2197,7 +2205,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Physics");
 
 	initialize_physics();
+#ifdef MODULE_NAVIGATION_ENABLED
 	initialize_navigation_server();
+#endif // MODULE_NAVIGATION_ENABLED
 	register_server_singletons();
 
 	// This loads global classes, so it must happen before custom loaders and savers are registered
@@ -2536,11 +2546,13 @@ bool Main::start() {
 		if (debug_paths) {
 			sml->set_debug_paths_hint(true);
 		}
+#ifdef MODULE_NAVIGATION_ENABLED
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 			NavigationServer3D::get_singleton()->set_active(true);
 			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 #endif
 
 		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", true);
@@ -2977,7 +2989,9 @@ bool Main::iteration() {
 			break;
 		}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 		NavigationServer3D::get_singleton_mut()->process(physics_step * time_scale);
+#endif // MODULE_NAVIGATION_ENABLED
 
 		message_queue->flush();
 
@@ -3193,7 +3207,9 @@ void Main::cleanup(bool p_force) {
 
 	OS::get_singleton()->finalize();
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	finalize_navigation_server();
+#endif // MODULE_NAVIGATION_ENABLED
 	finalize_display();
 
 	if (input) {

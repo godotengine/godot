@@ -57,10 +57,12 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			_set_item_shapes(idx, p_value);
 		} else if (what == "preview") {
 			set_item_preview(idx, p_value);
+#ifdef MODULE_NAVIGATION_ENABLED
 		} else if (what == "navmesh") {
 			set_item_navmesh(idx, p_value);
 		} else if (what == "navmesh_transform") {
 			set_item_navmesh_transform(idx, p_value);
+#endif // MODULE_NAVIGATION_ENABLED
 		} else {
 			return false;
 		}
@@ -85,10 +87,12 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_mesh_transform(idx);
 	} else if (what == "shapes") {
 		r_ret = _get_item_shapes(idx);
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (what == "navmesh") {
 		r_ret = get_item_navmesh(idx);
 	} else if (what == "navmesh_transform") {
 		r_ret = get_item_navmesh_transform(idx);
+#endif // MODULE_NAVIGATION_ENABLED
 	} else if (what == "preview") {
 		r_ret = get_item_preview(idx);
 	} else {
@@ -105,8 +109,10 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, name + PNAME("shapes")));
+#ifdef MODULE_NAVIGATION_ENABLED
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("navmesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("navmesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+#endif // MODULE_NAVIGATION_ENABLED
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
 	}
 }
@@ -150,6 +156,7 @@ void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes)
 	notify_property_list_changed();
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void MeshLibrary::set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].navmesh = p_navmesh;
@@ -158,7 +165,9 @@ void MeshLibrary::set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navm
 	emit_changed();
 	notify_property_list_changed();
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform3D &p_transform) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].navmesh_transform = p_transform;
@@ -166,6 +175,7 @@ void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform3D &p_tr
 	emit_changed();
 	notify_property_list_changed();
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
@@ -194,15 +204,19 @@ Vector<MeshLibrary::ShapeData> MeshLibrary::get_item_shapes(int p_item) const {
 	return item_map[p_item].shapes;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 Ref<NavigationMesh> MeshLibrary::get_item_navmesh(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<NavigationMesh>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navmesh;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
+#ifdef MODULE_NAVIGATION_ENABLED
 Transform3D MeshLibrary::get_item_navmesh_transform(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform3D(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].navmesh_transform;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
@@ -314,15 +328,19 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("set_item_navmesh", "id", "navmesh"), &MeshLibrary::set_item_navmesh);
 	ClassDB::bind_method(D_METHOD("set_item_navmesh_transform", "id", "navmesh"), &MeshLibrary::set_item_navmesh_transform);
+#endif // MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("get_item_navmesh", "id"), &MeshLibrary::get_item_navmesh);
 	ClassDB::bind_method(D_METHOD("get_item_navmesh_transform", "id"), &MeshLibrary::get_item_navmesh_transform);
+#endif // MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);

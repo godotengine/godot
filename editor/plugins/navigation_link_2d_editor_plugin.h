@@ -31,6 +31,9 @@
 #ifndef NAVIGATION_LINK_2D_EDITOR_PLUGIN_H
 #define NAVIGATION_LINK_2D_EDITOR_PLUGIN_H
 
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "editor/editor_plugin.h"
 #include "scene/2d/navigation_link_2d.h"
 
@@ -79,5 +82,6 @@ public:
 
 	NavigationLink2DEditorPlugin();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_LINK_2D_EDITOR_PLUGIN_H

@@ -34,6 +34,7 @@
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
 #include "scene/resources/world_2d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 
@@ -628,3 +629,4 @@ NavigationRegion2D::~NavigationRegion2D() {
 	NavigationServer3D::get_singleton_mut()->disconnect("navigation_debug_changed", callable_mp(this, &NavigationRegion2D::_map_changed));
 #endif // DEBUG_ENABLED
 }
+#endif // MODULE_NAVIGATION_ENABLED

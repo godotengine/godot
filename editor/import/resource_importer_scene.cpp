@@ -30,6 +30,8 @@
 
 #include "resource_importer_scene.h"
 
+#include "modules/modules_enabled.gen.h"
+
 #include "core/error/error_macros.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
@@ -38,7 +40,9 @@
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/3d/navigation_region_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "scene/3d/occluder_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/3d/vehicle_body_3d.h"
@@ -795,6 +799,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 			}
 		}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		if (isroot) {
 			return p_node;
@@ -813,6 +818,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node = nmi;
+#endif // MODULE_NAVIGATION_ENABLED
 	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
 		if (isroot) {
 			return p_node;
@@ -1285,6 +1291,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	//navmesh (node may have changed type above)
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
@@ -1314,6 +1321,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 			}
 		}
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 
 	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
 		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);

@@ -55,7 +55,9 @@
 #include "scene/resources/world_3d.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "window.h"
@@ -681,6 +683,7 @@ bool SceneTree::is_debugging_paths_hint() const {
 	return debug_paths_hint;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 	debug_navigation_hint = p_enabled;
 }
@@ -688,6 +691,7 @@ void SceneTree::set_debug_navigation_hint(bool p_enabled) {
 bool SceneTree::is_debugging_navigation_hint() const {
 	return debug_navigation_hint;
 }
+#endif // MODULE_NAVIGATION_ENABLED
 #endif
 
 void SceneTree::set_debug_collisions_color(const Color &p_color) {
@@ -818,7 +822,9 @@ void SceneTree::set_pause(bool p_enabled) {
 		return;
 	}
 	paused = p_enabled;
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer3D::get_singleton()->set_active(!p_enabled);
+#endif // MODULE_NAVIGATION_ENABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root()) {
@@ -1214,8 +1220,10 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_debugging_collisions_hint"), &SceneTree::is_debugging_collisions_hint);
 	ClassDB::bind_method(D_METHOD("set_debug_paths_hint", "enable"), &SceneTree::set_debug_paths_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_paths_hint"), &SceneTree::is_debugging_paths_hint);
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint", "enable"), &SceneTree::set_debug_navigation_hint);
 	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"), &SceneTree::is_debugging_navigation_hint);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	ClassDB::bind_method(D_METHOD("set_edited_scene_root", "scene"), &SceneTree::set_edited_scene_root);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &SceneTree::get_edited_scene_root);
@@ -1276,7 +1284,9 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_paths_hint"), "set_debug_paths_hint", "is_debugging_paths_hint");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
+#endif // MODULE_NAVIGATION_ENABLED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_edited_scene_root", "get_edited_scene_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_current_scene", "get_current_scene");

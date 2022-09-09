@@ -32,7 +32,9 @@
 #define NAVIGATION_LINK_2D_H
 
 #include "scene/2d/node_2d.h"
+#include "modules/modules_enabled.gen.h"
 
+#ifdef MODULE_NAVIGATION_ENABLED
 class NavigationLink2D : public Node2D {
 	GDCLASS(NavigationLink2D, Node2D);
 
@@ -84,5 +86,6 @@ public:
 	NavigationLink2D();
 	~NavigationLink2D();
 };
+#endif // MODULE_NAVIGATION_ENABLED
 
 #endif // NAVIGATION_LINK_2D_H

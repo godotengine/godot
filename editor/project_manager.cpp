@@ -58,6 +58,7 @@
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
+#include "modules/modules_enabled.gen.h"
 
 class ProjectDialog : public ConfirmationDialog {
 	GDCLASS(ProjectDialog, ConfirmationDialog);
@@ -2491,7 +2492,9 @@ ProjectManager::ProjectManager() {
 	}
 
 	// Turn off some servers we aren't going to be using in the Project Manager.
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer3D::get_singleton()->set_active(false);
+#endif // MODULE_NAVIGATION_ENABLED
 	PhysicsServer3D::get_singleton()->set_active(false);
 	PhysicsServer2D::get_singleton()->set_active(false);
 

@@ -33,6 +33,7 @@
 #include "scene/2d/collision_shape_2d.h"
 #include "scene/2d/physics_body_2d.h"
 #include "scene/resources/world_2d.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
@@ -193,3 +194,4 @@ void NavigationObstacle2D::set_radius(real_t p_radius) {
 	radius = p_radius;
 	reevaluate_agent_radius();
 }
+#endif // MODULE_NAVIGATION_ENABLED

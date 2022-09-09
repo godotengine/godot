@@ -35,7 +35,10 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_NAVIGATION_ENABLED
 #include "scene/3d/navigation_region_3d.h"
+#endif // MODULE_NAVIGATION_ENABLED
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
 
@@ -242,6 +245,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 		} break;
 
+#ifdef MODULE_NAVIGATION_ENABLED
 		case MENU_OPTION_CREATE_NAVMESH: {
 			Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 
@@ -266,6 +270,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			ur->add_undo_method(node, "remove_child", nmi);
 			ur->commit_action();
 		} break;
+#endif // MODULE_NAVIGATION_ENABLED
 
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 			outline_dialog->popup_centered(Vector2(200, 90));
@@ -506,8 +511,10 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is a performance middle-ground between a single convex collision and a polygon-based collision."));
+#ifdef MODULE_NAVIGATION_ENABLED
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Navigation Mesh"), MENU_OPTION_CREATE_NAVMESH);
+#endif // MODULE_NAVIGATION_ENABLED
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));

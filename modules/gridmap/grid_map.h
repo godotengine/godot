@@ -34,6 +34,7 @@
 #include "scene/3d/node_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
+#include "modules/modules_enabled.gen.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
@@ -95,11 +96,13 @@ class GridMap : public Node3D {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
+#ifdef MODULE_NAVIGATION_ENABLED
 		struct NavMesh {
 			RID region;
 			Transform3D xform;
 			RID navmesh_debug_instance;
 		};
+#endif // MODULE_NAVIGATION_ENABLED
 
 		struct MultimeshInstance {
 			RID instance;
@@ -118,13 +121,17 @@ class GridMap : public Node3D {
 		RID collision_debug;
 		RID collision_debug_instance;
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 		RID navigation_debug_edge_connections_instance;
 		Ref<ArrayMesh> navigation_debug_edge_connections_mesh;
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 
 		bool dirty = false;
 		RID static_body;
+#ifdef MODULE_NAVIGATION_ENABLED
 		HashMap<IndexKey, NavMesh> navmesh_ids;
+#endif // MODULE_NAVIGATION_ENABLED
 	};
 
 	union OctantKey {
@@ -151,9 +158,11 @@ class GridMap : public Node3D {
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	Ref<PhysicsMaterial> physics_material;
+#ifdef MODULE_NAVIGATION_ENABLED
 	bool bake_navigation = false;
 	RID map_override;
 	uint32_t navigation_layers = 1;
+#endif // MODULE_NAVIGATION_ENABLED
 
 	Transform3D last_transform;
 
@@ -192,9 +201,11 @@ class GridMap : public Node3D {
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
 	void _navigation_map_changed(RID p_map);
 	void _update_navigation_debug_edge_connections();
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 	bool awaiting_update = false;
 
@@ -245,6 +256,7 @@ public:
 
 	Array get_collision_shapes() const;
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
@@ -256,6 +268,7 @@ public:
 
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
+#endif // MODULE_NAVIGATION_ENABLED
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

@@ -38,6 +38,8 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
 
+#include "modules/modules_enabled.gen.h"
+
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tab_container.h"
@@ -428,8 +430,10 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrain_") {
 		int terrain_set = components[0].trim_prefix("terrain_set_").to_int();
 		end = tile_set->get_terrains_count(terrain_set);
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (p_array_prefix == "navigation_layer_") {
 		end = tile_set->get_navigation_layers_count();
+#endif // MODULE_NAVIGATION_ENABLED
 	} else if (p_array_prefix == "custom_data_layer_") {
 		end = tile_set->get_custom_data_layers_count();
 	} else {
@@ -518,10 +522,12 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 								ADD_UNDO(tile_data, "terrains_peering_bit/" + String(TileSet::CELL_NEIGHBOR_ENUM_TO_TEXT[terrain_index]));
 							}
 						}
+#ifdef MODULE_NAVIGATION_ENABLED
 					} else if (p_array_prefix == "navigation_layer_") {
 						for (int layer_index = begin; layer_index < end; layer_index++) {
 							ADD_UNDO(tile_data, vformat("navigation_layer_%d/polygon", layer_index));
 						}
+#endif // MODULE_NAVIGATION_ENABLED
 					} else if (p_array_prefix == "custom_data_layer_") {
 						for (int layer_index = begin; layer_index < end; layer_index++) {
 							ADD_UNDO(tile_data, vformat("custom_data_%d", layer_index));
@@ -567,6 +573,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 		} else {
 			undo_redo->add_do_method(tile_set, "move_terrain", terrain_set, p_from_index, p_to_pos);
 		}
+#ifdef MODULE_NAVIGATION_ENABLED
 	} else if (p_array_prefix == "navigation_layer_") {
 		if (p_from_index < 0) {
 			undo_redo->add_do_method(tile_set, "add_navigation_layer", p_to_pos);
@@ -575,6 +582,7 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 		} else {
 			undo_redo->add_do_method(tile_set, "move_navigation_layer", p_from_index, p_to_pos);
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 	} else if (p_array_prefix == "custom_data_layer_") {
 		if (p_from_index < 0) {
 			undo_redo->add_do_method(tile_set, "add_custom_data_layer", p_to_pos);

@@ -217,6 +217,7 @@ Array GridMap::get_collision_shapes() const {
 	return shapes;
 }
 
+#ifdef MODULE_NAVIGATION_ENABLED
 void GridMap::set_bake_navigation(bool p_bake_navigation) {
 	bake_navigation = p_bake_navigation;
 	_recreate_octant_data();
@@ -273,6 +274,7 @@ bool GridMap::get_navigation_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
+#endif // MODULE_NAVIGATION_ENABLED
 
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
 	if (!mesh_library.is_null()) {
@@ -541,6 +543,7 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 		RS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// update transform for NavigationServer regions and navigation debugmesh instances
 	for (const KeyValue<IndexKey, Octant::NavMesh> &E : g.navmesh_ids) {
 		if (bake_navigation) {
@@ -552,6 +555,7 @@ void GridMap::_octant_transform(const OctantKey &p_key) {
 			}
 		}
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 		RS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
@@ -573,6 +577,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		RS::get_singleton()->mesh_clear(g.collision_debug);
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	//erase navigation
 	for (const KeyValue<IndexKey, Octant::NavMesh> &E : g.navmesh_ids) {
 		NavigationServer3D::get_singleton()->free(E.value.region);
@@ -581,6 +586,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 	}
 	g.navmesh_ids.clear();
+#endif // MODULE_NAVIGATION_ENABLED
 
 	//erase multimeshes
 
@@ -648,6 +654,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			}
 		}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 		// add the item's navmesh at given xform to GridMap's Navigation ancestor
 		Ref<NavigationMesh> navmesh = mesh_library->get_item_navmesh(c.item);
 		if (navmesh.is_valid()) {
@@ -686,12 +693,15 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			}
 			g.navmesh_ids[E] = nm;
 		}
+#endif // MODULE_NAVIGATION_ENABLED
 	}
 
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 	if (bake_navigation) {
 		_update_octant_navigation_debug_edge_connections_mesh(p_key);
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 
 	//update multimeshes, only if not baked
@@ -773,6 +783,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 		RS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	if (bake_navigation && mesh_library.is_valid()) {
 		for (KeyValue<IndexKey, Octant::NavMesh> &F : g.navmesh_ids) {
 			if (cell_map.has(F.key) && F.value.region.is_valid() == false) {
@@ -806,6 +817,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 		}
 #endif // DEBUG_ENABLED
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 }
 
 void GridMap::_octant_exit_world(const OctantKey &p_key) {
@@ -822,6 +834,7 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 		RS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, RID());
 	}
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	for (KeyValue<IndexKey, Octant::NavMesh> &F : g.navmesh_ids) {
 		if (F.value.region.is_valid()) {
 			NavigationServer3D::get_singleton()->free(F.value.region);
@@ -844,6 +857,7 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 		}
 	}
 #endif // DEBUG_ENABLED
+#endif // MODULE_NAVIGATION_ENABLED
 }
 
 void GridMap::_octant_clean_up(const OctantKey &p_key) {
@@ -859,6 +873,7 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 
 	PhysicsServer3D::get_singleton()->free(g.static_body);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	// Erase navigation
 	for (const KeyValue<IndexKey, Octant::NavMesh> &E : g.navmesh_ids) {
 		if (E.value.region.is_valid()) {
@@ -869,8 +884,10 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 		}
 	}
 	g.navmesh_ids.clear();
+#endif // MODULE_NAVIGATION_ENABLED
 
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 	if (bake_navigation) {
 		if (g.navigation_debug_edge_connections_instance.is_valid()) {
 			RenderingServer::get_singleton()->free(g.navigation_debug_edge_connections_instance);
@@ -880,6 +897,7 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 			RenderingServer::get_singleton()->free(g.navigation_debug_edge_connections_mesh->get_rid());
 		}
 	}
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 
 	//erase multimeshes
@@ -907,11 +925,13 @@ void GridMap::_notification(int p_what) {
 		} break;
 
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 		case NOTIFICATION_ENTER_TREE: {
 			if (bake_navigation && NavigationServer3D::get_singleton()->get_debug_enabled()) {
 				_update_navigation_debug_edge_connections();
 			}
 		} break;
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -1048,6 +1068,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 
+#ifdef MODULE_NAVIGATION_ENABLED
 	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
 	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
 
@@ -1059,6 +1080,7 @@ void GridMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &GridMap::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &GridMap::get_navigation_layer_value);
+#endif // MODULE_NAVIGATION_ENABLED
 
 	ClassDB::bind_method(D_METHOD("set_mesh_library", "mesh_library"), &GridMap::set_mesh_library);
 	ClassDB::bind_method(D_METHOD("get_mesh_library"), &GridMap::get_mesh_library);
@@ -1116,9 +1138,11 @@ void GridMap::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+#ifdef MODULE_NAVIGATION_ENABLED
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+#endif // MODULE_NAVIGATION_ENABLED
 
 	BIND_CONSTANT(INVALID_CELL_ITEM);
 
@@ -1317,12 +1341,15 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 GridMap::GridMap() {
 	set_notify_transform(true);
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer3D::get_singleton_mut()->connect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton_mut()->connect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 }
 
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 void GridMap::_update_navigation_debug_edge_connections() {
 	if (bake_navigation) {
 		for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
@@ -1336,6 +1363,7 @@ void GridMap::_navigation_map_changed(RID p_map) {
 		_update_navigation_debug_edge_connections();
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 
 GridMap::~GridMap() {
@@ -1345,12 +1373,15 @@ GridMap::~GridMap() {
 
 	clear();
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 	NavigationServer3D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
 	NavigationServer3D::get_singleton_mut()->disconnect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
 }
 
 #ifdef DEBUG_ENABLED
+#ifdef MODULE_NAVIGATION_ENABLED
 void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key) {
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
@@ -1448,4 +1479,5 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 		RS::get_singleton()->instance_set_visible(g.navigation_debug_edge_connections_instance, false);
 	}
 }
+#endif // MODULE_NAVIGATION_ENABLED
 #endif // DEBUG_ENABLED
