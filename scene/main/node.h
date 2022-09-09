@@ -258,6 +258,10 @@ protected:
 	void _set_use_identity_transform(bool p_enable);
 	bool _is_using_identity_transform() const { return data.use_identity_transform; }
 
+#ifdef ENABLE_PERFETTO
+	virtual void _assign_name(const StringName &p_name);
+#endif
+
 public:
 	enum {
 

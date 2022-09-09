@@ -72,6 +72,8 @@
 #include "servers/register_server_types.h"
 #include "servers/visual_server_callbacks.h"
 
+#include "godot_profiler.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
 #include "editor/doc/doc_data_class_path.gen.h"
@@ -394,6 +396,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #if defined(DEBUG_ENABLED) && !defined(NO_THREADS)
 	check_lockless_atomics();
 #endif
+
+	GODOT_PROFILER_INIT();
 
 	RID_OwnerBase::init_rid();
 
@@ -2236,6 +2240,8 @@ bool Main::iteration() {
 	//for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
+	TRACE_EVENT("godot_main", "Main::iteration");
+
 	iterating++;
 
 	// ticks may become modified later on, and we want to store the raw measured
@@ -2281,66 +2287,82 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
-	static const int max_physics_steps = 8;
-	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
-		step -= (advance.physics_steps - max_physics_steps) * frame_slice;
-		advance.physics_steps = max_physics_steps;
-	}
-
 	bool exit = false;
 
-	for (int iters = 0; iters < advance.physics_steps; ++iters) {
-		if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
-			InputDefault::get_singleton()->flush_buffered_events();
+	{
+		TRACE_EVENT("godot_main", "Main::iteration::physics_step");
+		static const int max_physics_steps = 8;
+		if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
+			step -= (advance.physics_steps - max_physics_steps) * frame_slice;
+			advance.physics_steps = max_physics_steps;
 		}
 
-		Engine::get_singleton()->_in_physics = true;
+		for (int iters = 0; iters < advance.physics_steps; ++iters) {
+			if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+				InputDefault::get_singleton()->flush_buffered_events();
+			}
 
-		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
+			Engine::get_singleton()->_in_physics = true;
 
-		PhysicsServer::get_singleton()->flush_queries();
+			uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-		Physics2DServer::get_singleton()->sync();
-		Physics2DServer::get_singleton()->flush_queries();
+			PhysicsServer::get_singleton()->flush_queries();
 
-		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
-			exit = true;
+			Physics2DServer::get_singleton()->sync();
+			Physics2DServer::get_singleton()->flush_queries();
+
+			if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
+				exit = true;
+				Engine::get_singleton()->_in_physics = false;
+				break;
+			}
+
+			NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
+			message_queue->flush();
+
+			PhysicsServer::get_singleton()->step(frame_slice * time_scale);
+
+			Physics2DServer::get_singleton()->end_sync();
+			Physics2DServer::get_singleton()->step(frame_slice * time_scale);
+
+			message_queue->flush();
+
+			OS::get_singleton()->get_main_loop()->iteration_end();
+
+			physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
+			physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
+			Engine::get_singleton()->_physics_frames++;
+
 			Engine::get_singleton()->_in_physics = false;
-			break;
 		}
-
-		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
-		message_queue->flush();
-
-		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
-
-		Physics2DServer::get_singleton()->end_sync();
-		Physics2DServer::get_singleton()->step(frame_slice * time_scale);
-
-		message_queue->flush();
-
-		OS::get_singleton()->get_main_loop()->iteration_end();
-
-		physics_process_ticks = MAX(physics_process_ticks, OS::get_singleton()->get_ticks_usec() - physics_begin); // keep the largest one for reference
-		physics_process_max = MAX(OS::get_singleton()->get_ticks_usec() - physics_begin, physics_process_max);
-		Engine::get_singleton()->_physics_frames++;
-
-		Engine::get_singleton()->_in_physics = false;
 	}
 
 	if (InputDefault::get_singleton()->is_using_input_buffering() && agile_input_event_flushing) {
+		TRACE_EVENT("godot_main", "Main::iteration::flush_buffered_events");
 		InputDefault::get_singleton()->flush_buffered_events();
 	}
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
-		exit = true;
+	{
+		TRACE_EVENT("godot_main", "Main::iteration::idle");
+		if (OS::get_singleton()->get_main_loop()->idle(step * time_scale)) {
+			exit = true;
+		}
 	}
-	visual_server_callbacks->flush();
-	message_queue->flush();
+	{
+		TRACE_EVENT("godot_main", "Main::iteration::flush_visual_server_callbacks");
+		visual_server_callbacks->flush();
+	}
+	{
+		TRACE_EVENT("godot_main", "Main::iteration::flush_message_queue");
+		message_queue->flush();
+	}
 
-	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+	{
+		TRACE_EVENT("godot_main", "Main::iteration::flush_visual_server");
+		VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+	}
 
 	if (OS::get_singleton()->can_draw() && VisualServer::get_singleton()->is_render_loop_enabled()) {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
@@ -2354,10 +2376,12 @@ bool Main::iteration() {
 			OS::get_singleton()->set_update_pending(has_changed);
 
 			if (has_changed) {
+				TRACE_EVENT("godot_main", "Main::iteration::draw");
 				VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
+			TRACE_EVENT("godot_main", "Main::iteration::draw");
 			VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
@@ -2380,7 +2404,10 @@ bool Main::iteration() {
 		ScriptServer::get_language(i)->frame();
 	}
 
-	AudioServer::get_singleton()->update();
+	{
+		TRACE_EVENT("godot_main", "Main::iteration::update_audio_server");
+		AudioServer::get_singleton()->update();
+	}
 
 	if (script_debugger) {
 		if (script_debugger->is_profiling()) {
@@ -2420,6 +2447,7 @@ bool Main::iteration() {
 
 	// Needed for OSs using input buffering regardless accumulation (like Android)
 	if (InputDefault::get_singleton()->is_using_input_buffering() && !agile_input_event_flushing) {
+		TRACE_EVENT("godot_main", "Main::iteration::flush_buffered_events");
 		InputDefault::get_singleton()->flush_buffered_events();
 	}
 

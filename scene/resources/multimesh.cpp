@@ -281,6 +281,18 @@ RID MultiMesh::get_rid() const {
 	return multimesh;
 }
 
+#ifdef ENABLE_PERFETTO
+void MultiMesh::set_name(const String &p_name) {
+	VisualServer::get_singleton()->multimesh_set_name(multimesh, p_name);
+	Resource::set_name(p_name);
+}
+
+void MultiMesh::set_path(const String &p_path, bool p_take_over) {
+	VisualServer::get_singleton()->multimesh_set_path(multimesh, p_path);
+	Resource::set_path(p_path, p_take_over);
+}
+#endif
+
 void MultiMesh::set_color_format(ColorFormat p_color_format) {
 	ERR_FAIL_COND(instance_count > 0);
 	color_format = p_color_format;

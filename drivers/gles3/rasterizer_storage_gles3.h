@@ -219,6 +219,11 @@ public:
 			}
 		}
 
+#ifdef ENABLE_PERFETTO
+		CharString name;
+		CharString path;
+#endif
+
 		Instantiable() {}
 		virtual ~Instantiable() {
 		}
@@ -790,6 +795,11 @@ public:
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
+#ifdef ENABLE_PERFETTO
+	virtual void mesh_set_name(RID p_mesh, const String &p_name);
+	virtual void mesh_set_path(RID p_mesh, const String &p_path);
+#endif
+
 	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
 
@@ -867,6 +877,11 @@ public:
 
 	virtual AABB _multimesh_get_aabb(RID p_multimesh) const;
 	virtual MMInterpolator *_multimesh_get_interpolator(RID p_multimesh) const;
+
+#ifdef ENABLE_PERFETTO
+	virtual void _multimesh_set_name(RID p_multimesh, const String &p_name);
+	virtual void _multimesh_set_path(RID p_multimesh, const String &p_path);
+#endif
 
 	/* IMMEDIATE API */
 
@@ -1296,6 +1311,11 @@ public:
 	virtual void particles_request_process(RID p_particles);
 	virtual AABB particles_get_current_aabb(RID p_particles);
 	virtual AABB particles_get_aabb(RID p_particles) const;
+
+#ifdef ENABLE_PERFETTO
+	virtual void particles_set_name(RID p_particles, const String &p_name);
+	virtual void particles_set_path(RID p_particles, const String &p_path);
+#endif
 
 	virtual void _particles_update_histories(Particles *particles);
 

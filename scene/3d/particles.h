@@ -121,6 +121,10 @@ public:
 
 	virtual String get_configuration_warning() const;
 
+#ifdef ENABLE_PERFETTO
+	void set_name(const String &p_name);
+#endif
+
 	void restart();
 
 	AABB capture_aabb() const;

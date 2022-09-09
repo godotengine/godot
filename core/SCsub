@@ -44,6 +44,13 @@ with open("script_encryption_key.gen.cpp", "w") as f:
 
 # Add required thirdparty code.
 
+# Make sure Perfetto and Godot Profiler headers are available
+env.Append(CPPPATH="#thirdparty/perfetto/include")
+if env["perfetto"]:
+    env.Append(CPPDEFINES=["ENABLE_PERFETTO"])
+    if env["perfetto_sync_opengl"]:
+        env.Append(CPPDEFINES=["PERFETTO_SYNC_OPENGL"])
+
 thirdparty_obj = []
 
 env_thirdparty = env.Clone()
@@ -147,6 +154,9 @@ if env["builtin_zstd"]:
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zstd_sources)
 
+if env["perfetto"]:
+    perfetto_sources = ["#thirdparty/perfetto/src/perfetto.cc", "#thirdparty/perfetto/src/godot_profiler_main.cpp"]
+    env_thirdparty.add_source_files(thirdparty_obj, perfetto_sources)
 
 env.core_sources += thirdparty_obj
 

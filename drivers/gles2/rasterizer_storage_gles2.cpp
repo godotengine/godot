@@ -2799,6 +2799,22 @@ void RasterizerStorageGLES2::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb
 	mesh->instance_change_notify(true, false);
 }
 
+#ifdef ENABLE_PERFETTO
+void RasterizerStorageGLES2::mesh_set_name(RID p_mesh, const String &p_name) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->name = p_name.utf8();
+}
+
+void RasterizerStorageGLES2::mesh_set_path(RID p_mesh, const String &p_path) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	mesh->path = p_path.ascii();
+}
+#endif
+
 AABB RasterizerStorageGLES2::mesh_get_custom_aabb(RID p_mesh) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, AABB());
@@ -3377,6 +3393,22 @@ RasterizerStorage::MMInterpolator *RasterizerStorageGLES2::_multimesh_get_interp
 
 	return &multimesh->interpolator;
 }
+
+#ifdef ENABLE_PERFETTO
+void RasterizerStorageGLES2::_multimesh_set_name(RID p_multimesh, const String &p_name) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+
+	multimesh->name = p_name.utf8();
+}
+
+void RasterizerStorageGLES2::_multimesh_set_path(RID p_multimesh, const String &p_path) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+
+	multimesh->path = p_path.ascii();
+}
+#endif
 
 void RasterizerStorageGLES2::update_dirty_multimeshes() {
 	while (multimesh_update_list.first()) {
@@ -4851,6 +4883,14 @@ AABB RasterizerStorageGLES2::particles_get_current_aabb(RID p_particles) {
 AABB RasterizerStorageGLES2::particles_get_aabb(RID p_particles) const {
 	return AABB();
 }
+
+#ifdef ENABLE_PERFETTO
+void RasterizerStorageGLES2::particles_set_name(RID p_particles, const String &p_name) {
+}
+
+void RasterizerStorageGLES2::particles_set_path(RID p_particles, const String &p_path) {
+}
+#endif
 
 void RasterizerStorageGLES2::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
 }

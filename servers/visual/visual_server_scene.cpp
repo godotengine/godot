@@ -35,6 +35,8 @@
 #include "visual_server_globals.h"
 #include "visual_server_raster.h"
 
+#include "godot_profiler.h"
+
 #include <new>
 
 /* CAMERA API */
@@ -2894,69 +2896,73 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
 
-	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
-	if (p_eye == ARVRInterface::EYE_LEFT) {
-		///@TODO possibly move responsibility for this into our ARVRServer or ARVRInterface?
+	{
+		TRACE_EVENT("godot_rendering", "prepare_scene");
 
-		// Center our transform, we assume basis is equal.
-		Transform mono_transform = cam_transform;
-		Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
-		mono_transform.origin += right_transform.origin;
-		mono_transform.origin *= 0.5;
+		// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
+		if (p_eye == ARVRInterface::EYE_LEFT) {
+			///@TODO possibly move responsibility for this into our ARVRServer or ARVRInterface?
 
-		// We need to combine our projection frustums for culling.
-		// Ideally we should use our clipping planes for this and combine them,
-		// however our shadow map logic uses our projection matrix.
-		// Note: as our left and right frustums should be mirrored, we don't need our right projection matrix.
+			// Center our transform, we assume basis is equal.
+			Transform mono_transform = cam_transform;
+			Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
+			mono_transform.origin += right_transform.origin;
+			mono_transform.origin *= 0.5;
 
-		// - get some base values we need
-		float eye_dist = (mono_transform.origin - cam_transform.origin).length();
-		float z_near = camera_matrix.get_z_near(); // get our near plane
-		float z_far = camera_matrix.get_z_far(); // get our far plane
-		float width = (2.0 * z_near) / camera_matrix.matrix[0][0];
-		float x_shift = width * camera_matrix.matrix[2][0];
-		float height = (2.0 * z_near) / camera_matrix.matrix[1][1];
-		float y_shift = height * camera_matrix.matrix[2][1];
+			// We need to combine our projection frustums for culling.
+			// Ideally we should use our clipping planes for this and combine them,
+			// however our shadow map logic uses our projection matrix.
+			// Note: as our left and right frustums should be mirrored, we don't need our right projection matrix.
 
-		// printf("Eye_dist = %f, Near = %f, Far = %f, Width = %f, Shift = %f\n", eye_dist, z_near, z_far, width, x_shift);
+			// - get some base values we need
+			float eye_dist = (mono_transform.origin - cam_transform.origin).length();
+			float z_near = camera_matrix.get_z_near(); // get our near plane
+			float z_far = camera_matrix.get_z_far(); // get our far plane
+			float width = (2.0 * z_near) / camera_matrix.matrix[0][0];
+			float x_shift = width * camera_matrix.matrix[2][0];
+			float height = (2.0 * z_near) / camera_matrix.matrix[1][1];
+			float y_shift = height * camera_matrix.matrix[2][1];
 
-		// - calculate our near plane size (horizontal only, right_near is mirrored)
-		float left_near = -eye_dist - ((width - x_shift) * 0.5);
+			// printf("Eye_dist = %f, Near = %f, Far = %f, Width = %f, Shift = %f\n", eye_dist, z_near, z_far, width, x_shift);
 
-		// - calculate our far plane size (horizontal only, right_far is mirrored)
-		float left_far = -eye_dist - (z_far * (width - x_shift) * 0.5 / z_near);
-		float left_far_right_eye = eye_dist - (z_far * (width + x_shift) * 0.5 / z_near);
-		if (left_far > left_far_right_eye) {
-			// on displays smaller then double our iod, the right eye far frustrum can overtake the left eyes.
-			left_far = left_far_right_eye;
+			// - calculate our near plane size (horizontal only, right_near is mirrored)
+			float left_near = -eye_dist - ((width - x_shift) * 0.5);
+
+			// - calculate our far plane size (horizontal only, right_far is mirrored)
+			float left_far = -eye_dist - (z_far * (width - x_shift) * 0.5 / z_near);
+			float left_far_right_eye = eye_dist - (z_far * (width + x_shift) * 0.5 / z_near);
+			if (left_far > left_far_right_eye) {
+				// on displays smaller then double our iod, the right eye far frustrum can overtake the left eyes.
+				left_far = left_far_right_eye;
+			}
+
+			// - figure out required z-shift
+			float slope = (left_far - left_near) / (z_far - z_near);
+			float z_shift = (left_near / slope) - z_near;
+
+			// - figure out new vertical near plane size (this will be slightly oversized thanks to our z-shift)
+			float top_near = (height - y_shift) * 0.5;
+			top_near += (top_near / z_near) * z_shift;
+			float bottom_near = -(height + y_shift) * 0.5;
+			bottom_near += (bottom_near / z_near) * z_shift;
+
+			// printf("Left_near = %f, Left_far = %f, Top_near = %f, Bottom_near = %f, Z_shift = %f\n", left_near, left_far, top_near, bottom_near, z_shift);
+
+			// - generate our frustum
+			CameraMatrix combined_matrix;
+			combined_matrix.set_frustum(left_near, -left_near, bottom_near, top_near, z_near + z_shift, z_far + z_shift);
+
+			// and finally move our camera back
+			Transform apply_z_shift;
+			apply_z_shift.origin = Vector3(0.0, 0.0, z_shift); // z negative is forward so this moves it backwards
+			mono_transform *= apply_z_shift;
+
+			// now prepare our scene with our adjusted transform projection matrix
+			_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
+		} else if (p_eye == ARVRInterface::EYE_MONO) {
+			// For mono render, prepare as per usual
+			_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
 		}
-
-		// - figure out required z-shift
-		float slope = (left_far - left_near) / (z_far - z_near);
-		float z_shift = (left_near / slope) - z_near;
-
-		// - figure out new vertical near plane size (this will be slightly oversized thanks to our z-shift)
-		float top_near = (height - y_shift) * 0.5;
-		top_near += (top_near / z_near) * z_shift;
-		float bottom_near = -(height + y_shift) * 0.5;
-		bottom_near += (bottom_near / z_near) * z_shift;
-
-		// printf("Left_near = %f, Left_far = %f, Top_near = %f, Bottom_near = %f, Z_shift = %f\n", left_near, left_far, top_near, bottom_near, z_shift);
-
-		// - generate our frustum
-		CameraMatrix combined_matrix;
-		combined_matrix.set_frustum(left_near, -left_near, bottom_near, top_near, z_near + z_shift, z_far + z_shift);
-
-		// and finally move our camera back
-		Transform apply_z_shift;
-		apply_z_shift.origin = Vector3(0.0, 0.0, z_shift); // z negative is forward so this moves it backwards
-		mono_transform *= apply_z_shift;
-
-		// now prepare our scene with our adjusted transform projection matrix
-		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
-	} else if (p_eye == ARVRInterface::EYE_MONO) {
-		// For mono render, prepare as per usual
-		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID(), camera->previous_room_id_hint);
 	}
 
 	// And render our scene...

@@ -35,6 +35,8 @@
 #include "visual_server_globals.h"
 #include "visual_server_scene.h"
 
+#include "godot_profiler.h"
+
 static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewport, VisualServerCanvas::Canvas *p_canvas, VisualServerViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
 	Transform2D xf = p_viewport->global_transform;
 
@@ -79,6 +81,8 @@ void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_
 
 void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
 	/* Camera should always be BEFORE any other 3D */
+
+	TRACE_EVENT("godot_rendering", "draw_eye", "eye", p_eye);
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
@@ -275,6 +279,8 @@ void VisualServerViewport::draw_viewports() {
 	for (int i = 0; i < active_viewports.size(); i++) {
 		Viewport *vp = active_viewports[i];
 
+		TRACE_EVENT("godot_rendering", "draw_viewport", "width", vp->size.width, "height", vp->size.height);
+
 		if (vp->update_mode == VS::VIEWPORT_UPDATE_DISABLED) {
 			continue;
 		}
@@ -315,7 +321,10 @@ void VisualServerViewport::draw_viewports() {
 
 			// and draw left eye/mono
 			_draw_viewport(vp, leftOrMono);
-			arvr_interface->commit_for_eye(leftOrMono, vp->render_target, vp->viewport_to_screen_rect);
+			{
+				TRACE_EVENT("godot_rendering", "commit_for_eye");
+				arvr_interface->commit_for_eye(leftOrMono, vp->render_target, vp->viewport_to_screen_rect);
+			}
 
 			// render right eye
 			if (leftOrMono == ARVRInterface::EYE_LEFT) {
@@ -326,7 +335,10 @@ void VisualServerViewport::draw_viewports() {
 				VSG::rasterizer->set_current_render_target(vp->render_target);
 
 				_draw_viewport(vp, ARVRInterface::EYE_RIGHT);
-				arvr_interface->commit_for_eye(ARVRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
+				{
+					TRACE_EVENT("godot_rendering", "commit_for_eye");
+					arvr_interface->commit_for_eye(ARVRInterface::EYE_RIGHT, vp->render_target, vp->viewport_to_screen_rect);
+				}
 			}
 
 			// and for our frame timing, mark when we've finished committing our eyes

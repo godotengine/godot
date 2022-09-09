@@ -71,3 +71,6 @@ if lib_arch_dir != "":
         str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
     )
     env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+
+    foxus_profiler_path = env["prebuilts_dir"] + "/foxus_profiler/android/lib/libfoxus_profiler.so"
+    env_android.Command(out_dir + "/libfoxus_profiler.so", foxus_profiler_path, Copy("$TARGET", "$SOURCE"))

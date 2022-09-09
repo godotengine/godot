@@ -187,6 +187,8 @@ opts.Add(BoolVariable("builtin_squish", "Use the built-in squish library", True)
 opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True))
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
+opts.Add(BoolVariable("perfetto", "Enable perfetto profiler", False))
+opts.Add(BoolVariable("perfetto_sync_opengl", "Synchronize OpenGL traces", False))
 
 # Compilation environment setup
 opts.Add("CXX", "C++ compiler")
@@ -714,6 +716,13 @@ if selected_platform in platform_list:
     if env["vsproj"]:
         env.vs_incs = []
         env.vs_srcs = []
+
+    platform = env["platform"]
+
+    if platform in ["bsd", "linuxbsd", "x11"]:
+        platform = "linux"
+
+    platform_string = platform + "-" + env["arch"]
 
     Export("env")
 

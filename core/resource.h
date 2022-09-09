@@ -91,7 +91,11 @@ public:
 	void register_owner(Object *p_owner);
 	void unregister_owner(Object *p_owner);
 
+#ifdef ENABLE_PERFETTO
+	virtual void set_name(const String &p_name);
+#else
 	void set_name(const String &p_name);
+#endif
 	String get_name() const;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
