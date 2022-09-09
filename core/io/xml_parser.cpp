@@ -137,7 +137,7 @@ bool XMLParser::_parse_cdata() {
 		next_char();
 	}
 
-	if (cDataEnd) {
+	if (!cDataEnd) {
 		cDataEnd = P;
 	}
 	node_name = String::utf8(cDataBegin, (int)(cDataEnd - cDataBegin));
