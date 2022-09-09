@@ -956,10 +956,7 @@ void ScriptTextEditor::_update_connected_methods() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 	text_edit->set_gutter_width(connection_gutter, text_edit->get_line_height());
 	for (int i = 0; i < text_edit->get_line_count(); i++) {
-		if (text_edit->get_line_gutter_metadata(i, connection_gutter) == "") {
-			continue;
-		}
-		text_edit->set_line_gutter_metadata(i, connection_gutter, "");
+		text_edit->set_line_gutter_metadata(i, connection_gutter, Dictionary());
 		text_edit->set_line_gutter_icon(i, connection_gutter, nullptr);
 		text_edit->set_line_gutter_clickable(i, connection_gutter, false);
 	}
@@ -974,6 +971,7 @@ void ScriptTextEditor::_update_connected_methods() {
 		return;
 	}
 
+	// Add connection icons to methods.
 	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
 	HashSet<StringName> methods_found;
 	for (int i = 0; i < nodes.size(); i++) {
@@ -1002,8 +1000,11 @@ void ScriptTextEditor::_update_connected_methods() {
 				for (int j = 0; j < functions.size(); j++) {
 					String name = functions[j].get_slice(":", 0);
 					if (name == method) {
+						Dictionary line_meta;
+						line_meta["type"] = "connection";
+						line_meta["method"] = method;
 						line = functions[j].get_slice(":", 1).to_int() - 1;
-						text_edit->set_line_gutter_metadata(line, connection_gutter, method);
+						text_edit->set_line_gutter_metadata(line, connection_gutter, line_meta);
 						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
 						text_edit->set_line_gutter_clickable(line, connection_gutter, true);
 						methods_found.insert(method);
@@ -1033,6 +1034,58 @@ void ScriptTextEditor::_update_connected_methods() {
 			}
 		}
 	}
+
+	// Add override icons to methods.
+	methods_found.clear();
+	for (int i = 0; i < functions.size(); i++) {
+		StringName name = StringName(functions[i].get_slice(":", 0));
+		if (methods_found.has(name)) {
+			continue;
+		}
+
+		String found_base_class;
+		StringName base_class = script->get_instance_base_type();
+		Ref<Script> inherited_script = script->get_base_script();
+		while (!inherited_script.is_null()) {
+			if (inherited_script->has_method(name)) {
+				found_base_class = "script:" + inherited_script->get_path();
+				break;
+			}
+
+			base_class = inherited_script->get_instance_base_type();
+			inherited_script = inherited_script->get_base_script();
+		}
+
+		if (found_base_class.is_empty() && base_class) {
+			List<MethodInfo> methods;
+			ClassDB::get_method_list(base_class, &methods);
+			for (int j = 0; j < methods.size(); j++) {
+				if (methods[j].name == name) {
+					found_base_class = "builtin:" + base_class;
+					break;
+				}
+			}
+		}
+
+		if (!found_base_class.is_empty()) {
+			int line = functions[i].get_slice(":", 1).to_int() - 1;
+
+			Dictionary line_meta = text_edit->get_line_gutter_metadata(line, connection_gutter);
+			if (line_meta.is_empty()) {
+				// Add override icon to gutter.
+				line_meta["type"] = "inherits";
+				line_meta["method"] = name;
+				line_meta["base_class"] = found_base_class;
+				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("MethodOverride"), SNAME("EditorIcons")));
+				text_edit->set_line_gutter_clickable(line, connection_gutter, true);
+			} else {
+				// If method is also connected to signal, then merge icons and keep the click behavior of the slot.
+				text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_theme_icon(SNAME("MethodOverrideAndSlot"), SNAME("EditorIcons")));
+			}
+
+			methods_found.insert(name);
+		}
+	}
 }
 
 void ScriptTextEditor::_update_gutter_indexes() {
@@ -1054,18 +1107,40 @@ void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 		return;
 	}
 
-	String method = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
+	Dictionary meta = code_editor->get_text_editor()->get_line_gutter_metadata(p_line, p_gutter);
+	String type = meta.get("type", "");
+	if (type.is_empty()) {
+		return;
+	}
+
+	// All types currently need a method name.
+	String method = meta.get("method", "");
 	if (method.is_empty()) {
 		return;
 	}
 
-	Node *base = get_tree()->get_edited_scene_root();
-	if (!base) {
-		return;
-	}
+	if (type == "connection") {
+		Node *base = get_tree()->get_edited_scene_root();
+		if (!base) {
+			return;
+		}
 
-	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
-	connection_info_dialog->popup_connections(method, nodes);
+		Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
+		connection_info_dialog->popup_connections(method, nodes);
+	} else if (type == "inherits") {
+		String base_class_raw = meta["base_class"];
+		PackedStringArray base_class_split = base_class_raw.split(":", true, 1);
+
+		if (base_class_split[0] == "script") {
+			// Go to function declaration.
+			Ref<Script> base_script = ResourceLoader::load(base_class_split[1]);
+			ERR_FAIL_COND(!base_script.is_valid());
+			emit_signal(SNAME("go_to_method"), base_script, method);
+		} else if (base_class_split[0] == "builtin") {
+			// Open method documentation.
+			emit_signal(SNAME("go_to_help"), "class_method:" + base_class_split[1] + ":" + method);
+		}
+	}
 }
 
 void ScriptTextEditor::_edit_option(int p_op) {
