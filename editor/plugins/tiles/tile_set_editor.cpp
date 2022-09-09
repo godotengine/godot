@@ -690,7 +690,7 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->set_h_size_flags(SIZE_EXPAND_FILL);
 	split_container_left_side->set_v_size_flags(SIZE_EXPAND_FILL);
 	split_container_left_side->set_stretch_ratio(0.25);
-	split_container_left_side->set_custom_minimum_size(Size2i(70, 0) * EDSCALE);
+	split_container_left_side->set_custom_minimum_size(Size2(70, 0) * EDSCALE);
 	split_container->add_child(split_container_left_side);
 
 	source_sort_button = memnew(MenuButton);
@@ -706,7 +706,7 @@ TileSetEditor::TileSetEditor() {
 	p->set_item_checked(TilesEditorPlugin::SOURCE_SORT_ID, true);
 
 	sources_list = memnew(ItemList);
-	sources_list->set_fixed_icon_size(Size2i(60, 60) * EDSCALE);
+	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->connect("item_selected", callable_mp(this, &TileSetEditor::_source_selected));

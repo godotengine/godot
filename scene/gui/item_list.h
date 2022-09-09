@@ -244,8 +244,8 @@ public:
 	void set_icon_mode(IconMode p_mode);
 	IconMode get_icon_mode() const;
 
-	void set_fixed_icon_size(const Size2 &p_size);
-	Size2 get_fixed_icon_size() const;
+	void set_fixed_icon_size(const Size2i &p_size);
+	Size2i get_fixed_icon_size() const;
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;

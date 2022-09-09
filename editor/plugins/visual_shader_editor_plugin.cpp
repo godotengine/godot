@@ -5693,7 +5693,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph_plugin->set_editor(this);
 
 	property_editor_popup = memnew(PopupPanel);
-	property_editor_popup->set_min_size(Size2i(180, 0) * EDSCALE);
+	property_editor_popup->set_min_size(Size2(180, 0) * EDSCALE);
 	add_child(property_editor_popup);
 
 	edited_property_holder.instantiate();

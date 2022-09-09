@@ -596,7 +596,7 @@ ItemList::IconMode ItemList::get_icon_mode() const {
 	return icon_mode;
 }
 
-void ItemList::set_fixed_icon_size(const Size2 &p_size) {
+void ItemList::set_fixed_icon_size(const Size2i &p_size) {
 	if (fixed_icon_size == p_size) {
 		return;
 	}
@@ -605,7 +605,7 @@ void ItemList::set_fixed_icon_size(const Size2 &p_size) {
 	queue_redraw();
 }
 
-Size2 ItemList::get_fixed_icon_size() const {
+Size2i ItemList::get_fixed_icon_size() const {
 	return fixed_icon_size;
 }
 
@@ -1830,7 +1830,7 @@ void ItemList::_bind_methods() {
 	ADD_GROUP("Icon", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "icon_scale"), "set_icon_scale", "get_icon_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fixed_icon_size", PROPERTY_HINT_NONE, "suffix:px"), "set_fixed_icon_size", "get_fixed_icon_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "fixed_icon_size", PROPERTY_HINT_NONE, "suffix:px"), "set_fixed_icon_size", "get_fixed_icon_size");
 
 	BIND_ENUM_CONSTANT(ICON_MODE_TOP);
 	BIND_ENUM_CONSTANT(ICON_MODE_LEFT);

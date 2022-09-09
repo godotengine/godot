@@ -8148,7 +8148,7 @@ Node3DEditor::Node3DEditor() {
 
 		CenterContainer *sun_direction_center = memnew(CenterContainer);
 		sun_direction = memnew(Control);
-		sun_direction->set_custom_minimum_size(Size2i(128, 128) * EDSCALE);
+		sun_direction->set_custom_minimum_size(Size2(128, 128) * EDSCALE);
 		sun_direction_center->add_child(sun_direction);
 		sun_vb->add_margin_child(TTR("Sun Direction"), sun_direction_center);
 		sun_direction->connect("gui_input", callable_mp(this, &Node3DEditor::_sun_direction_input));

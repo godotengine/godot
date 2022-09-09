@@ -141,7 +141,7 @@ private:
 			install_status_rect->set_texture(new_icon);
 		}
 
-		set_size(Size2i(500, 0) * EDSCALE);
+		set_size(Size2(500, 0) * EDSCALE);
 	}
 
 	String _test_path() {
@@ -761,7 +761,7 @@ public:
 			_test_path();
 		}
 
-		popup_centered(Size2i(500, 0) * EDSCALE);
+		popup_centered(Size2(500, 0) * EDSCALE);
 	}
 
 	ProjectDialog() {
