@@ -577,12 +577,6 @@
 				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
 			</description>
 		</method>
-		<method name="remove_and_skip">
-			<return type="void" />
-			<description>
-				Removes a node and sets all its children as children of the parent node (if it exists). All event subscriptions that pass by the removed node will be unsubscribed.
-			</description>
-		</method>
 		<method name="remove_child">
 			<return type="void" />
 			<param index="0" name="node" type="Node" />

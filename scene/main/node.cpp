@@ -1907,43 +1907,6 @@ Ref<Tween> Node::create_tween() {
 	return tween;
 }
 
-void Node::remove_and_skip() {
-	ERR_FAIL_COND(!data.parent);
-
-	Node *new_owner = get_owner();
-
-	List<Node *> children;
-
-	while (true) {
-		bool clear = true;
-		for (int i = 0; i < data.children.size(); i++) {
-			Node *c_node = data.children[i];
-			if (!c_node->get_owner()) {
-				continue;
-			}
-
-			remove_child(c_node);
-			c_node->_propagate_replace_owner(this, nullptr);
-			children.push_back(c_node);
-			clear = false;
-			break;
-		}
-
-		if (clear) {
-			break;
-		}
-	}
-
-	while (!children.is_empty()) {
-		Node *c_node = children.front()->get();
-		data.parent->add_child(c_node);
-		c_node->_propagate_replace_owner(nullptr, new_owner);
-		children.pop_front();
-	}
-
-	data.parent->remove_child(this);
-}
-
 void Node::set_scene_file_path(const String &p_scene_file_path) {
 	data.scene_file_path = p_scene_file_path;
 }
@@ -2803,7 +2766,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
-	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
 	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
