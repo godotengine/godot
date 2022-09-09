@@ -356,7 +356,6 @@ public:
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
 
-	void remove_and_skip();
 	int get_index(bool p_include_internal = true) const;
 
 	Ref<Tween> create_tween();
