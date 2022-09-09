@@ -71,12 +71,13 @@
 # conecat <ilgrandemax190@gmail.com>, 2022.
 # Gico2006 <gradaellig@protonmail.com>, 2022.
 # ale piccia <picciatialessio2@gmail.com>, 2022.
+# Simone Starace <simone.starace93@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-31 18:34+0000\n"
+"PO-Revision-Date: 2022-08-30 03:11+0000\n"
 "Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -85,7 +86,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -456,7 +457,7 @@ msgstr "Comando"
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Physical"
-msgstr " (Fisico)"
+msgstr "Fisico"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -465,8 +466,9 @@ msgid "Pressed"
 msgstr "Premuto"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Scancode"
-msgstr "Scansione Codice"
+msgstr "Scancode"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -901,7 +903,6 @@ msgid "Modules"
 msgstr "Moduli"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "TCP"
 msgstr "TCP"
 
@@ -1272,7 +1273,7 @@ msgstr "Cambia la durata dell'animazione"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Commuta ciclicità animazione"
+msgstr "Cambia ciclo di animazione"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -1379,9 +1380,8 @@ msgid "Type:"
 msgstr "Tipo:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "Template di esportazione non valido:"
+msgstr "(Non valido, tipo previsto: %s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Easing:"
@@ -1398,9 +1398,8 @@ msgid "Out-Handle:"
 msgstr "Imposta Maniglia"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Stream:"
-msgstr "Stream"
+msgstr "Flusso:"
 
 #: editor/animation_track_editor.cpp
 msgid "Start (s):"
@@ -1540,6 +1539,7 @@ msgid "animation"
 msgstr "animazione"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer non può animare se stesso, solo altri nodi."
 
@@ -1630,7 +1630,6 @@ msgid "Add Method Track Key"
 msgstr "Aggiungi una chiave a una traccia di chiamate metodi"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
 msgstr "Metodo non trovato nell'oggetto:"
 
@@ -2115,7 +2114,6 @@ msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Sei sicuro di voler rimuovere tutte le connessioni dal segnale \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
-#, fuzzy
 msgid "Signals"
 msgstr "Segnali"
 
@@ -2813,9 +2811,8 @@ msgid "Project export for platform:"
 msgstr "Esportazione del progetto per la piattaforma:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Completato con errori."
+msgstr "Completato con avvertimenti."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -4565,6 +4562,7 @@ msgstr "Strumenti di progetto o scena vari."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Progetto"
 
@@ -6998,7 +6996,6 @@ msgstr "Anisotropico"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -7355,7 +7352,8 @@ msgid "8 Bit"
 msgstr "8 Bit"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Mono"
 
@@ -10571,7 +10569,6 @@ msgstr "Script precedente"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "File"
 msgstr "File"
 
@@ -15409,16 +15406,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "Rendi Locale"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Abilita Nome Unico Scena"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
 msgstr "Un altro nodo sta già usando questo nome unico nella scena."
 
 #: editor/scene_tree_dock.cpp
-msgid "Enable Scene Unique Name"
-msgstr "Abilita Nome Unico Scena"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Disable Scene Unique Name"
+#, fuzzy
+msgid "Disable Scene Unique Name(s)"
 msgstr "Disabilita Nome Unico Scena"
 
 #: editor/scene_tree_dock.cpp
@@ -15618,6 +15618,10 @@ msgid "Button Group"
 msgstr "Gruppo Pulsanti"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "Disabilita Nome Unico Scena"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Collegamento da)"
 
@@ -15694,6 +15698,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nome nodo invalido, i caratteri seguenti non sono consentiti:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr "Un altro nodo sta già usando questo nome unico nella scena."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17498,6 +17506,21 @@ msgstr "Crea Soluzione"
 #: modules/mono/editor/csharp_project.cpp
 msgid "Auto Update Project"
 msgstr "Auto-Aggiorna Progetto"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Nome Display"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Scegli una cartella"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Scegli una cartella"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 #, fuzzy
@@ -19331,6 +19354,11 @@ msgstr "Taglia nodi"
 msgid "Custom BG Color"
 msgstr "Taglia nodi"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Espandi Tutto"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20183,6 +20211,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -22217,7 +22251,7 @@ msgstr "Gizmos"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Tweaks"
-msgstr ""
+msgstr "Ritocchi"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Bounces"
@@ -25200,7 +25234,7 @@ msgstr "Imposta più valori:"
 #: scene/main/scene_tree.cpp scene/resources/mesh_library.cpp
 #: scene/resources/shape_2d.cpp
 msgid "Shapes"
-msgstr ""
+msgstr "Forme"
 
 #: scene/main/scene_tree.cpp
 msgid "Shape Color"
