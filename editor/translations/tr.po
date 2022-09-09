@@ -78,13 +78,19 @@
 # Emre <mr.inkaya@gmail.com>, 2022.
 # Deleted User <noreply+46858@weblate.org>, 2022.
 # Ümid Quliyev <lucifer25x@protonmail.com>, 2022.
+# Mustafa Said Ağca <m.said.agca@gmail.com>, 2022.
+# Yaşar Anıl Sansak <anilsansak@gmail.com>, 2022.
+# Hasan Hüseyin Cihangir <hashusfb@gmail.com>, 2022.
+# Volkan Gezer <volkangezer@gmail.com>, 2022.
+# bsr <bsndrn16@gmail.com>, 2022.
+# Ramazan SANCAR <ramazansancar4545@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-05 01:04+0000\n"
-"Last-Translator: Ümid Quliyev <lucifer25x@protonmail.com>\n"
+"PO-Revision-Date: 2022-08-30 03:11+0000\n"
+"Last-Translator: Ramazan SANCAR <ramazansancar4545@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -92,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -107,6 +113,7 @@ msgid "Current Screen"
 msgstr "Şu anki Ekran"
 
 #: core/bind/core_bind.cpp
+#, fuzzy
 msgid "Exit Code"
 msgstr "Çıkış Kodu"
 
@@ -136,11 +143,11 @@ msgstr "Ekranı Açık Tut"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr "Minimum Pencere Boyutu"
+msgstr "Minimum Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr "Maksimum Pencere Boyutu"
+msgstr "Maksimum Ekran Boyutu"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
@@ -202,7 +209,7 @@ msgstr "Endian Değişimi"
 
 #: core/bind/core_bind.cpp
 msgid "Editor Hint"
-msgstr "Düzenleyici İpucusu"
+msgstr "Editör İpucu"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
@@ -214,7 +221,7 @@ msgstr "Saniye Başına Yineleme"
 
 #: core/bind/core_bind.cpp
 msgid "Target FPS"
-msgstr "Hedef FPS"
+msgstr "Hedeflenen FPS"
 
 #: core/bind/core_bind.cpp
 msgid "Time Scale"
@@ -256,6 +263,7 @@ msgid "Limits"
 msgstr "Limitler"
 
 #: core/command_queue_mt.cpp
+#, fuzzy
 msgid "Command Queue"
 msgstr "Komut Sırası"
 
@@ -349,7 +357,7 @@ msgstr "Çıkış Arabelleği Maksimum Boyutu"
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
-msgstr ""
+msgstr "Akış Eşi"
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
@@ -425,7 +433,7 @@ msgstr "Mesaj Sırası"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr "En Büyük Boyut (KB)"
+msgstr "Maksimum Boyut (KB)"
 
 #: core/os/input.cpp
 msgid "Mouse Mode"
@@ -515,7 +523,6 @@ msgid "Pressure"
 msgstr "Baskı"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pen Inverted"
 msgstr "Ters Kalem"
 
@@ -567,9 +574,8 @@ msgid "Message"
 msgstr "Mesaj"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pitch"
-msgstr "Perde"
+msgstr "Eğim"
 
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
@@ -644,7 +650,7 @@ msgstr "Stderr'i devre dışı bırak"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr "Gizlenmiş Proje Verileri Dizinini Kullan"
+msgstr "Gizli Proje Veri Dizinini Kullan"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
@@ -704,12 +710,10 @@ msgid "Editor"
 msgstr "Düzenleyici"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Main Run Args"
-msgstr "Ana Sahne Değiştirgenleri:"
+msgstr "Oynatma Argümanları"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Scene Naming"
 msgstr "Sahne Adlandırma"
 
@@ -722,14 +726,12 @@ msgid "Script Templates Search Path"
 msgstr "Script Dosyalarını Aramak İçin Dosya Yolu"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
 msgstr "Başlangıçta Otomatik Sürüm Kontrolü"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Sürüm Denetimi Eklenti Adı"
+msgstr "Sürüm Denetim Eklentisi Adı"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -864,9 +866,8 @@ msgstr "Ayarlar"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
-#, fuzzy
 msgid "Profiler"
-msgstr "Kesitçi"
+msgstr "Profil Oluşturucu"
 
 #: core/project_settings.cpp
 msgid "Max Functions"
@@ -921,7 +922,6 @@ msgid "Connect Timeout Seconds"
 msgstr "Bağlanma Zaman Aşımı Süresi(Saniye)"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Packet Peer Stream"
 msgstr "Paket Eş Akışı"
 
@@ -963,7 +963,6 @@ msgid "Locale"
 msgstr "Yerel"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
 msgstr "Deneme"
 
@@ -1051,9 +1050,8 @@ msgstr "Işık Haritalama"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
-#, fuzzy
 msgid "Use Bicubic Sampling"
-msgstr "Bicubic Örneklemeyi Kullanın"
+msgstr "Çift Kübik Örneklemeyi Kullan"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
@@ -1073,7 +1071,7 @@ msgstr "Maks. Objeye düşen Işık Sayısı"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "Yüzeyaltı Saçılması"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1097,9 +1095,8 @@ msgid "Weight Samples"
 msgstr "Ağırlık Örnekleri"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Voxel Cone Tracing"
-msgstr "Işın İzleme"
+msgstr "Voksel Koni İzleme"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
@@ -1112,7 +1109,7 @@ msgstr "Karışım Şekli Maksimum Arabellek Boyutu (KB)"
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Özgür"
+msgstr "Serbest"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -1151,16 +1148,19 @@ msgid "Move Bezier Points"
 msgstr "Bezier Noktalarını Taşı"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "Animasyon Anahtarlarını Çoğalt"
+msgstr "Animasyon Anahtarları Çoğalt"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Delete Keys"
 msgstr "Animasyon Anahtarları Sil"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Anahtar-kare Zamanını Değiştir"
+msgstr "Animasyon Bağımsız Kare Zamanını Değiştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
@@ -1171,8 +1171,9 @@ msgid "Anim Change Transform"
 msgstr "Animasyon Değişikliği Dönüşümü"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Anahtar-kare Değerini Değiştir"
+msgstr "Animasyon Bağımsız Kare Değerini Değiştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
@@ -1224,32 +1225,27 @@ msgid "Type"
 msgstr "Tür"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In Handle"
-msgstr "Tutamacı Ayarla"
+msgstr "İç Kulp"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out Handle"
-msgstr "Tutamacı Ayarla"
+msgstr "Dış Kulp"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
-#, fuzzy
 msgid "Stream"
-msgstr "Aktarım"
+msgstr "Akış"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Izgarayı Kaydır:"
+msgstr "Başlangıç Dengeleme"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Kaydırma:"
+msgstr "Bitiş Dengeleme"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1266,8 +1262,9 @@ msgid "Easing"
 msgstr "Yumuşatma"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Animasyon Anahtar-Çerçeve Zamanını Değiştir"
+msgstr "Animasyon Çoklu Bağımsız Kare Zamanı Değiştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Transition"
@@ -1300,7 +1297,7 @@ msgstr "Özellik Parçası"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr "3D Dönüştürücü İzi"
+msgstr "3B Dönüştürücü İzi"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
@@ -1398,41 +1395,34 @@ msgid "Type:"
 msgstr "Tür:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "(Geçersiz Dışa Aktarım Şablonu: %s)"
+msgstr "(Geçersiz, beklenen tür: %s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Easing:"
 msgstr "Yumuşatma:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "In-Handle:"
-msgstr "Tutamacı Ayarla"
+msgstr "İç-Kulp:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Out-Handle:"
-msgstr "Tutamacı Ayarla"
+msgstr "Dış-Kulp:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Stream:"
-msgstr "Aktarım:"
+msgstr "Akış:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Başlangıç (lar):"
+msgstr "Başlangıç (saniye):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End (s):"
-msgstr "Bitiş (ler):"
+msgstr "Bitiş (saniye):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
 msgstr "Animasyon Klibi:"
 
@@ -1518,12 +1508,10 @@ msgstr "Animasyon İzini Kaldır"
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Editors"
-msgstr "Düzenleyici"
+msgstr "Editörler"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Confirm Insert Track"
 msgstr "Parça Eklemeyi Onayla"
 
@@ -1650,7 +1638,6 @@ msgid "Add Method Track Key"
 msgstr "Yöntem İz Anahtarı Ekle"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
 msgstr "Metot, nesne içinde bulunamadı:"
 
@@ -1672,7 +1659,7 @@ msgstr "Metodlar"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier"
-msgstr ""
+msgstr "Bezier Eğrisi"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -1845,7 +1832,7 @@ msgstr "Maks. Eniyileştirilebilir Açı:"
 #: editor/animation_track_editor.cpp scene/3d/room_manager.cpp
 #: servers/visual_server.cpp
 msgid "Optimize"
-msgstr "İyileştir"
+msgstr "En İyileştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
@@ -2262,7 +2249,6 @@ msgid "Open"
 msgstr "Aç"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Owners of: %s (Total: %d)"
 msgstr "Sahipleri: %s (Toplam: %d)"
 
@@ -2376,7 +2362,6 @@ msgstr "Baş Geliştirici"
 
 #. TRANSLATORS: This refers to a job title.
 #: editor/editor_about.cpp
-#, fuzzy
 msgctxt "Job Title"
 msgid "Project Manager"
 msgstr "Proje Yöneticisi"
@@ -2621,9 +2606,8 @@ msgid "There is no '%s' file."
 msgstr "'%s' dosyası bulunamadı."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Yerleşim Düzeni:"
+msgstr "Düzen:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2672,7 +2656,6 @@ msgid "Create a new Bus Layout."
 msgstr "Yeni bir Bus Yerleşim Düzeni oluştur."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
 msgstr "Ses Veri Yolu Düzeni"
 
@@ -2682,7 +2665,7 @@ msgstr "Geçersiz ad."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr "Basamak ile başlayamaz."
+msgstr "Rakamla başlanamaz."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2826,22 +2809,18 @@ msgid "Choose"
 msgstr "Seç"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Project export for platform:"
 msgstr "Platform için proje dışa aktarımı:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Hatalarla tamamlandı."
+msgstr "Uyarılar ile tamamlandı."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
 msgstr "Başarıyla tamamlandı."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
 msgstr "Başarısız."
 
@@ -2855,32 +2834,27 @@ msgstr "Beklenen adreste dışa aktarım şablonu bulunamadı:"
 
 #: editor/editor_export.cpp
 msgid "Packing"
-msgstr "Çıkınla"
+msgstr "Paketle"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "PCK'yi kaydet"
+msgstr "PCK Dosyasına Kaydet"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
 msgstr "\"%s\" dosyası oluşturulamıyor."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
 msgstr "Proje dosyaları dışa aktarılamadı."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
 msgstr "\"%s\" yolundan okunacak dosya açılamıyor."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "ZIP dosyasını kaydet"
+msgstr "ZIP Dosyasına Kaydet"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2941,7 +2915,6 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom Template"
 msgstr "Özel Şablon"
 
@@ -2953,49 +2926,40 @@ msgid "Release"
 msgstr "Yayınlamak"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Binary Format"
-msgstr "Çift Biçim"
+msgstr "Binary Biçimi"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "64 Bits"
 msgstr "64 Bit"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Embed PCK"
-msgstr "PCK'yı yerleştirin"
+msgstr "PCK'yi Yerleştir"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Texture Format"
 msgstr "Doku Biçimi"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "BPTC"
 msgstr "BPTC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "S3TC"
 msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "ETC"
 msgstr "ETC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "ETC2"
 msgstr "ETC2"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No BPTC Fallbacks"
-msgstr "Shader Yedeklerini Zorla"
+msgstr "BPTC Gerilemesi Yok"
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -3010,39 +2974,33 @@ msgid "Custom release template not found."
 msgstr "Özel yayınlama şablonu bulunamadı."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
 msgstr "Şablon Hazırla"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "Belirtilen Dışa aktarım yolu mevcut değil:"
+msgstr "Belirtilen dışa aktarım yolu mevcut değil."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
 msgstr "Şablon dosyası bulunamadı: \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Dışa aktarma şablonu kopyalanamadı."
+msgstr "Dışa aktarım şablonu kopyalanamadı."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "Dolgulama"
+msgstr "PCK Gömme"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "32-bit dışa aktarımlarda gömülü PCK 4GiB'tan büyük olamaz."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Convert Text Resources To Binary On Export"
-msgstr "Dışa Aktarmada Metin Kaynaklarını İkili Dosyaya Dönüştür"
+msgstr "Dışa Aktarım Sırasında Metin Kaynaklarını Binary Formata Dönüştür"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3063,19 +3021,19 @@ msgstr "Sahne Ağacı Düzenleme"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
-msgstr "Dock Nod"
+msgstr "Node Rıhtımı"
 
 #: editor/editor_feature_profile.cpp
 msgid "FileSystem Dock"
-msgstr "Dosya Sistemi"
+msgstr "Dosya Sistemi Rıhtımı"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
-msgstr "Dock İçe Aktar"
+msgstr "Rıhtım İçe Aktar"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr "3D sahneleri görüntülemeye ve düzenlemeye izin verir."
+msgstr "Üç boyutlu sahneleri görüntülemeye ve düzenlemeye izin verir."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
@@ -3113,7 +3071,7 @@ msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "(current)"
-msgstr "(Şu anki)"
+msgstr "(mevcut)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(none)"
@@ -3251,7 +3209,6 @@ msgid "Manage Editor Feature Profiles"
 msgstr "Dışa Aktarım Şablonlarını Yönet"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Default Feature Profile"
 msgstr "Varsayılan Özellik Profili"
 
@@ -3325,14 +3282,12 @@ msgid "Save a File"
 msgstr "Bir Dosya Kaydet"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Access"
 msgstr "Erişim"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Mode"
-msgstr "Ekran Modu"
+msgstr "Görüntüleme Modu"
 
 #: editor/editor_file_dialog.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -3345,33 +3300,27 @@ msgstr "Ekran Modu"
 #: scene/resources/environment.cpp scene/resources/material.cpp
 #: scene/resources/visual_shader.cpp
 #: servers/audio/effects/audio_effect_distortion.cpp
-#, fuzzy
 msgid "Mode"
 msgstr "Mod"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current Dir"
 msgstr "Geçerli Dizin"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current File"
 msgstr "Geçerli Dosya"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current Path"
 msgstr "Geçerli Yol"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Show Hidden Files"
 msgstr "Gizli Dosyaları Göster"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Disable Overwrite Warning"
 msgstr "Üzerine Yazma Uyarısını Devre Dışı Bırak"
 
@@ -3475,9 +3424,8 @@ msgid "(Re)Importing Assets"
 msgstr "Varlıklar Yeniden-İçe Aktarılıyor"
 
 #: editor/editor_file_system.cpp
-#, fuzzy
 msgid "Reimport Missing Imported Files"
-msgstr "İçe Aktarılan Eksik Dosyaları Yeniden İçe Aktar"
+msgstr "Eksik Dosyaları Yeniden İçe Aktar"
 
 #: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
@@ -3507,7 +3455,6 @@ msgid "Properties"
 msgstr "Özellikler"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "overrides %s:"
 msgstr "%s'yi geçersiz kılar:"
 
@@ -3579,9 +3526,8 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 #: modules/gdscript/gdscript_editor.cpp
-#, fuzzy
 msgid "Text Editor"
-msgstr "Metin Düzenleyici"
+msgstr "Metin Editörü"
 
 #: editor/editor_help.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -3589,7 +3535,6 @@ msgid "Help"
 msgstr "Yardım"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Sort Functions Alphabetically"
 msgstr "Fonksiyonları Alfabetik Olarak Sırala"
 
@@ -3671,40 +3616,34 @@ msgid "Property:"
 msgstr "Özellik:"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Label"
 msgstr "Etiket"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Read Only"
-msgstr "Sadece Okunur"
+msgstr "Salt Okunur"
 
 #: editor/editor_inspector.cpp editor/plugins/item_list_editor_plugin.cpp
-#, fuzzy
 msgid "Checkable"
-msgstr "Kontrol edilebilir"
+msgstr "Denetlenebilir"
 
 #: editor/editor_inspector.cpp editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Checked"
-msgstr "Kontrol edildi"
+msgstr "Denetlendi"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Draw Red"
 msgstr "Kırmızı Çiz"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Keying"
 msgstr "Anahtarlama"
 
 #: editor/editor_inspector.cpp
 msgid "Pin value"
-msgstr "İğneleme değeri"
+msgstr "Sabitleme değeri"
 
 #: editor/editor_inspector.cpp
 msgid ""
@@ -3715,7 +3654,7 @@ msgstr ""
 #: editor/editor_inspector.cpp
 msgid "Pin value [Disabled because '%s' is editor-only]"
 msgstr ""
-"Değer sabitle [Devre dışı bırakıldı çünkü '%s' sadece editör için aktiftir]"
+"Sabitleme değeri [Devre dışı bırakıldı çünkü '%s' sadece editör içindir]"
 
 #: editor/editor_inspector.cpp
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
@@ -3732,11 +3671,11 @@ msgstr "Çoklu Ayarla:"
 
 #: editor/editor_inspector.cpp
 msgid "Pinned %s"
-msgstr "% Sabitlenmişler"
+msgstr "%s sabitlendi"
 
 #: editor/editor_inspector.cpp
 msgid "Unpinned %s"
-msgstr "%Sabitlenmemişler"
+msgstr "%s serbest bırakıldı"
 
 #: editor/editor_inspector.cpp
 msgid "Copy Property"
@@ -4063,14 +4002,12 @@ msgid "Quick Open Script..."
 msgstr "Betiği Hızlı Aç..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Reload"
 msgstr "Kaydet ve Yeniden Yükle"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to '%s' before reloading?"
-msgstr "Çıkmadan önce değişiklikler '%s' ‘ye kaydedilsin mi?"
+msgstr "Yeniden yüklemeden önce değişiklikler '%s' dosyasına kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -4189,9 +4126,9 @@ msgid "Open Project Manager?"
 msgstr "Proje Yöneticisi Açılsın Mı?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to the following scene(s) before reloading?"
-msgstr "Çıkmadan önce değişiklikler sahne(ler)e kaydedilsin mi?"
+msgstr ""
+"Yeniden yüklemeden önce şu sahne(ler)deki değişiklikler kaydedilsin mi?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -4375,7 +4312,6 @@ msgid "%d more files"
 msgstr "%d daha fazla dosyalar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to write to file '%s', file in use, locked or lacking permissions."
 msgstr ""
@@ -4419,70 +4355,60 @@ msgid "Always Close Output On Stop"
 msgstr "Durdurulduğunda Çıktıyı Daima Kapat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save On Focus Loss"
-msgstr "Odak Kaybından Tasarruf Edin"
+msgstr "Odak Kaybında Kaydet"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Each Scene On Quit"
-msgstr "Dalı Sahne olarak Kaydet"
+msgstr "Çıkışta Her Sahneyi Kaydet"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Quit Confirmation"
-msgstr "Bilgi Göster"
+msgstr "Çıkış Onayı"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Show Update Spinner"
-msgstr "Güncelleme Topacını Gizle"
+msgstr "Güncelleme İkonunu Göster"
 
 #: editor/editor_node.cpp
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Vital Only"
-msgstr "Materyal Değişiklikleri:"
+msgstr "Sadece Önemli Güncellemeler"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Localize Settings"
-msgstr "Yerelleştirme"
+msgstr "Yerelleştirme Ayarları"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restore Scenes On Load"
-msgstr "Sahne Düğümünü Al"
+msgstr "Açılışta Sahneleri Geri Yükle"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Thumbnail On Hover"
-msgstr "Fareyle üzerine gelindiğinde  küçük resmi  göster"
+msgstr "Üzerine Gelindiğinde Küçük Resim Göster"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Inspector"
-msgstr "Denetçi"
+msgstr "Denetleyici"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Default Property Name Style"
-msgstr "Proje Yolu:"
+msgstr "Varsayılan Özellik İsim Biçimi"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
-msgstr ""
+msgstr "Varsayılan Ondalık Adımı"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
-#, fuzzy
 msgid "Disable Folding"
-msgstr "Pasif Düğme"
+msgstr "Katlamayı Devre Dışı Bırak"
 
 #: editor/editor_node.cpp
 msgid "Auto Unfold Foreign Scenes"
-msgstr ""
+msgstr "Harici Sahneleri Otomatik Olarak Yay"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector2 Editing"
@@ -4493,19 +4419,16 @@ msgid "Horizontal Vector Types Editing"
 msgstr "Yatay Vector tipleri düzenleme"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Resources In Current Inspector"
-msgstr "Gözetmen Bölümünde Aç"
+msgstr "Kaynakları Mevcut Denetleyicide Aç"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Resources To Open In New Inspector"
-msgstr "Gözetmen Bölümünde Aç"
+msgstr "Yeni Denetleyicide Açılacak Kaynaklar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Default Color Picker Mode"
-msgstr "Varsayılan renk seçme modu"
+msgstr "Varsayılan Renk Seçme Modu"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
@@ -4615,6 +4538,7 @@ msgstr "Çeşitli proje ya da sahne-çapında araçlar."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Proje"
 
@@ -4896,14 +4820,12 @@ msgid "Save & Restart"
 msgstr "Kaydet ve Baştan Başlat"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "Değişiklik Olduğunda Güncelle"
+msgstr "Tüm Değişiklikleri Güncelle"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Vital Changes"
-msgstr "Materyal Değişiklikleri:"
+msgstr "Önemli Değişiklikleri Güncelle"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
@@ -5164,12 +5086,11 @@ msgstr "Hata Ayıklayıcı"
 
 #: editor/editor_profiler.cpp
 msgid "Profiler Frame History Size"
-msgstr ""
+msgstr "Profil Oluşturucu Çerçeve Geçmişi Boyutu"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Profiler Frame Max Functions"
-msgstr "İşlevi Yeniden Adlandır"
+msgstr "Profil Oluşturucu Çerçeve Maksimum Fonksiyon Sayısı"
 
 #: editor/editor_properties.cpp
 msgid "Edit Text:"
@@ -5302,20 +5223,17 @@ msgstr "Yeni %s"
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Base Type"
-msgstr "Temel Tipi Değiştir"
+msgstr "Temel Tür"
 
 #: editor/editor_resource_picker.cpp
-#, fuzzy
 msgid "Edited Resource"
-msgstr "Kaynak Ekle"
+msgstr "Değiştirilmiş Kaynak"
 
 #: editor/editor_resource_picker.cpp scene/gui/line_edit.cpp
 #: scene/gui/slider.cpp scene/gui/spin_box.cpp
-#, fuzzy
 msgid "Editable"
-msgstr "Düzenlenebilir Öge"
+msgstr "Düzenlenebilir"
 
 #: editor/editor_resource_picker.cpp editor/property_editor.cpp
 msgid "New Script"
@@ -5326,9 +5244,8 @@ msgid "Extend Script"
 msgstr "Betik Aç"
 
 #: editor/editor_resource_picker.cpp
-#, fuzzy
 msgid "Script Owner"
-msgstr "Betik Adı:"
+msgstr "Senaryo Sahibi"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5341,9 +5258,8 @@ msgstr ""
 "bir ön ayarı çalıştırılabilir olarak tanımlayın."
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
-msgstr "Proje"
+msgstr "Proje Koşusu"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5370,14 +5286,12 @@ msgid "Did you forget the '_run' method?"
 msgstr "'_run()' metodunu unuttunuz mu?"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Editor Language"
-msgstr "Düzenleyici Yerleşim Düzeni"
+msgstr "Editör Dili"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Scale"
-msgstr "Hepsini Görüntüle"
+msgstr "Ölçeği Görüntüle"
 
 #: editor/editor_settings.cpp
 msgid "Custom Display Scale"
@@ -5397,48 +5311,43 @@ msgstr "Kenarı yumuşatılmış font"
 
 #: editor/editor_settings.cpp
 msgid "Font Hinting"
-msgstr ""
+msgstr "Yazıtipi İpucusu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Main Font"
-msgstr "Ana Sahne"
+msgstr "Ana Yazı Tipi"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Bold"
 msgstr "Ana font kalınlığı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Code Font"
-msgstr "Düğüm Noktası Ekle"
+msgstr "Kod Yazı Tipi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Dim Editor On Dialog Popup"
-msgstr "İletişim penceresinde Dim Editörü"
+msgstr "Popup Diyalog Çıktığında Editörü Karart"
 
 #: editor/editor_settings.cpp main/main.cpp
 msgid "Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "Düşük İşlemci Modu Uykusu (mikrosaniye)"
 
 #: editor/editor_settings.cpp
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "Odaklanılmamış Düşük İşlemci Modu Uykusu (mikrosaniye)"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Separate Distraction Mode"
-msgstr "Dikkat Dağıtmayan Kip"
+msgstr "Ayrık Dikkat Modu"
 
 #: editor/editor_settings.cpp
 msgid "Automatically Open Screenshots"
 msgstr "Otomatik olarak ekran görüntülerini aç"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Max Array Dictionary Items Per Page"
-msgstr "Her sayfada maks dizi sözlüğü öğesi"
+msgstr "Sayfa Başına Maksimum Dizi Sözlüğü Öğesi"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
@@ -5455,14 +5364,12 @@ msgid "Icon And Font Color"
 msgstr "Simge ve Font rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Base Color"
-msgstr "Renkler"
+msgstr "Temel Renk"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Accent Color"
-msgstr "Renk Seç"
+msgstr "Vurgu Rengi"
 
 #: editor/editor_settings.cpp scene/resources/environment.cpp
 msgid "Contrast"
@@ -5470,113 +5377,96 @@ msgstr "Kontrast"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
-msgstr ""
+msgstr "İlişki Hattı Opaklığı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Highlight Tabs"
-msgstr "Işık-haritaları kaydediliyor"
+msgstr "Tab Karakterlerini Vurgula"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Border Size"
-msgstr "Kenar Pikselleri"
+msgstr "Kenarlık Boyutu"
 
 #: editor/editor_settings.cpp
 msgid "Use Graph Node Headers"
-msgstr ""
+msgstr "Grafik Node Üstbilgilerini Kullan"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Additional Spacing"
-msgstr "Animasyon Döngüsü"
+msgstr "Ek Boşluk"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Custom Theme"
-msgstr "Editör Teması"
+msgstr "Özel Tema"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Script Button"
-msgstr "Tekerlek Sağ Düğme"
+msgstr "Senaryo Düğmesini Göster"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Directories"
-msgstr "Yönler"
+msgstr "Klasörler"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Autoscan Project Path"
-msgstr "Proje Yolu:"
+msgstr "Proje Yolunu Otomatik Tara"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default Project Path"
-msgstr "Proje Yolu:"
+msgstr "Varsayılan Proje Yolu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "On Save"
-msgstr "Kaydet"
+msgstr "Kayıtta"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Compress Binary Resources"
-msgstr "Kaynağı Tıpkıla"
+msgstr "Binary Kaynakları Sıkıştır"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Safe Save On Backup Then Rename"
-msgstr ""
+msgstr "İsimlendirdikten Sonra Yedeğe Güvenli Kaydet"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "File Dialog"
-msgstr "XForm İletişim Kutusu"
+msgstr "Dosya Diyaloğu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Thumbnail Size"
-msgstr "Küçük Resim..."
+msgstr "Küçük Resim Boyutu"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr "Eklentiler"
+msgstr "Rıhtımlar"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Scene Tree"
-msgstr "Sahne Ağacını Al"
+msgstr "Sahne Ağacı"
 
 #: editor/editor_settings.cpp
 msgid "Start Create Dialog Fully Expanded"
-msgstr ""
+msgstr "Oluştur Diyaloğunu Tam Boy Başlat"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Always Show Folders"
-msgstr "Daima Izgarayı Göster"
+msgstr "Klasörleri Daima Göster"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Property Editor"
-msgstr "Grup Düzenleyici"
+msgstr "Özellik Editörü"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Auto Refresh Interval"
-msgstr "Otomatik yenileme intervalı"
+msgstr "Otomatik Yenileme Aralığı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Subresource Hue Tint"
-msgstr "Alt Kaynaklar"
+msgstr "Alt Kaynak Renk Tonu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Color Theme"
-msgstr "Editör Teması"
+msgstr "Renk Teması"
 
 #: editor/editor_settings.cpp scene/3d/label_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -5585,50 +5475,44 @@ msgstr "Satır aralığı"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 #: modules/gdscript/editor/gdscript_highlighter.cpp
-#, fuzzy
 msgid "Highlighting"
-msgstr "Doğrudan aydınlatma"
+msgstr "Vurgulama"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Syntax Highlighting"
-msgstr "Yazım Vurgulama"
+msgstr "Sözdizim Vurgulama"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight All Occurrences"
-msgstr ""
+msgstr "Tüm Olayları Vurgula"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight Current Line"
-msgstr "Geçerli satırı vurgula"
+msgstr "Mevcut Satırı Vurgula"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Highlight Type Safe Lines"
-msgstr ""
+msgstr "Tip Güvenliğine Tabi Satırları Vurgula"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Indent"
-msgstr "Sola Girintile"
+msgstr "Girintile"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "Kendinden Girintili"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Convert Indent On Save"
-msgstr "Girintiyi Boşluklara Dönüştür"
+msgstr "Kayıt Sırasında Girintileri Dönüştür"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Draw Tabs"
-msgstr "Çizim Çağrıları:"
+msgstr "Tab Karakterlerini Çiz"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Draw Spaces"
-msgstr "Çizim Çağrıları:"
+msgstr "Boşluk Karakterlerini Çiz"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/tile_map.cpp
@@ -5646,9 +5530,8 @@ msgid "V Scroll Speed"
 msgstr "V kaydırma hızı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Minimap"
-msgstr "Başlatımı Göster"
+msgstr "Mini Haritayı Göster"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Width"
@@ -5656,113 +5539,102 @@ msgstr "Küçük Harita Genişliği"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
-msgstr ""
+msgstr "Ek Fare Butonları Geçmişte Gezinmek İçin Kullanılsın"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "GridMap Seçimi"
+msgstr "Sürükle ve Bırak Seçimi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Stay In Script Editor On Node Selected"
-msgstr "Seçilmiş Düğümde Script Editöründe Kal"
+msgstr "Node Seçiminde Senaryo Editöründe Kal"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
 msgstr "Dış görünüş"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Show Line Numbers"
-msgstr "Satır Numarası:"
+msgstr "Satır Numaralarını Göster"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Line Numbers Zero Padded"
-msgstr "Satır Numarası:"
+msgstr "Satır Numaralarının Başına Sıfır Ekle"
 
 #: editor/editor_settings.cpp
 msgid "Show Bookmark Gutter"
-msgstr ""
+msgstr "Yer İmi Boşluğunu Göster"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Breakpoint Gutter"
-msgstr "İşaret Noktalarını Atla"
+msgstr "Breakpoint Boşluğunu Göster"
 
 #: editor/editor_settings.cpp
 msgid "Show Info Gutter"
-msgstr ""
+msgstr "Bilgi Boşluğunu Göster"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Code Folding"
-msgstr "Kod katlama"
+msgstr "Kod Katlama"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Word Wrap"
-msgstr "Kelime Paketle"
+msgstr "Sözcük Kaydırma"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
-msgstr ""
+msgstr "Satır Uzunluğu Yönergelerini Göster"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Soft Column"
-msgstr ""
+msgstr "Satır Uzunluğu Yönergesi Yumuşak Sütun"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Hard Column"
-msgstr ""
+msgstr "Satır Uzunluğu Yönergesi Sert Sütun"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Script List"
-msgstr "Kod Düzenleyici"
+msgstr "Senaryo Listesi"
 
 #: editor/editor_settings.cpp
 msgid "Show Members Overview"
 msgstr "Üyelerin Genel Bakışını Göster"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Files"
-msgstr "Dosya"
+msgstr "Dosyalar"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Trim Trailing Whitespace On Save"
-msgstr "İzleyenin Boşluklarını Kırp"
+msgstr "Kaydederken Satır Sonundaki Boşlukları Sil"
 
 #: editor/editor_settings.cpp
 msgid "Autosave Interval Secs"
-msgstr ""
+msgstr "Otomatik Kayıt Aralığı Saniye"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Restore Scripts On Load"
-msgstr "Script'leri Yüklemede Eski Haline Getir"
+msgstr "Yükleme Sırasında Komut Dizilerini Eski Hallerine Getir"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Auto Reload And Parse Scripts On Save"
-msgstr "Kaydederken Script'leri Otomatik Tekrar yükle ve Ayrıştır"
+msgstr ""
+"Kayıt Sırasında Komut Dizilerini Otomatik Olarak Tekrar Yükle ve Çözümle"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Auto Reload Scripts On External Change"
-msgstr "Dış Değişiklikte Otomatik Olarak Script'i Geri Yükle"
+msgstr ""
+"Dışarıdan Bir Değişiklik Yapıldığında Komut Dizilerini Otomatik Olarak "
+"Yeniden Yükle"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Create Signal Callbacks"
-msgstr "Shader Yedeklerini Zorla"
+msgstr "Sinyal Geri Çağırması Oluştur"
 
 #: editor/editor_settings.cpp
 msgid "Sort Members Outline Alphabetically"
-msgstr ""
+msgstr "Fonksiyonları Alfabetik Sırala"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Cursor"
@@ -5774,35 +5646,33 @@ msgstr "Dosyanın Sonunu Kaydır"
 
 #: editor/editor_settings.cpp
 msgid "Block Caret"
-msgstr ""
+msgstr "Blok İmleç"
 
 #: editor/editor_settings.cpp
 msgid "Caret Blink"
-msgstr ""
+msgstr "Karet Yansön"
 
 #: editor/editor_settings.cpp
 msgid "Caret Blink Speed"
-msgstr ""
+msgstr "Karet Yansön Hızı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Right Click Moves Caret"
-msgstr "Nokta eklemek için sağ tıkla"
+msgstr "Sağ Tık Kareti Hareket Ettirsin"
 
 #: editor/editor_settings.cpp modules/gdscript/gdscript.cpp
 #: modules/gdscript/gdscript_editor.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion"
-msgstr "Seçimi Kopyala"
+msgstr "Tamamlanma"
 
 #: editor/editor_settings.cpp
 msgid "Idle Parse Delay"
-msgstr ""
+msgstr "Boşta Çözümleme Gecikmesi"
 
 #: editor/editor_settings.cpp
 msgid "Auto Brace Complete"
-msgstr ""
+msgstr "Süslü Ayraçları Otomatik Eşle"
 
 #: editor/editor_settings.cpp
 msgid "Code Complete Delay"
@@ -5810,84 +5680,73 @@ msgstr "Kod Tamamlama Gecikme Süresi"
 
 #: editor/editor_settings.cpp
 msgid "Put Callhint Tooltip Below Current Line"
-msgstr ""
+msgstr "Çağırma Araç İpucunu Mavcut Satırın Altında Tut"
 
 #: editor/editor_settings.cpp
 msgid "Callhint Tooltip Offset"
-msgstr ""
+msgstr "Çağırma Araç İpucu Göreli Konumu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Complete File Paths"
-msgstr "Düğüm Yolunu Kopyala"
+msgstr "Dosya Yollarını Tamamla"
 
 #: editor/editor_settings.cpp modules/gdscript/gdscript_editor.cpp
-#, fuzzy
 msgid "Add Type Hints"
-msgstr "Tür Ekle"
+msgstr "Tür İpuçlarını Ekle"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Use Single Quotes"
-msgstr "Yeni Döşeme Parçacığı"
+msgstr "Tek Tırnak İşareti Kullan"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Help Index"
-msgstr "Yardımcıları Göster"
+msgstr "Yardım İndeksini Göster"
 
 #: editor/editor_settings.cpp
 msgid "Help Font Size"
-msgstr ""
+msgstr "Yardım Yazı Tipi Boyutu"
 
 #: editor/editor_settings.cpp
 msgid "Help Source Font Size"
-msgstr ""
+msgstr "Yardım Kaynak Yazı Tipi Boyutu"
 
 #: editor/editor_settings.cpp
 msgid "Help Title Font Size"
-msgstr ""
+msgstr "Yardım Başlık Yazı Tipi Boyutu"
 
 #: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Grid Map"
 msgstr "Izgara Haritası"
 
 #: editor/editor_settings.cpp modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Pick Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Mesafe Seç"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Size"
-msgstr "Önizleme"
+msgstr "Önizleme Boyutu"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Primary Grid Color"
 msgstr "Birincil Izgara Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Secondary Grid Color"
 msgstr "İkincil Izgara Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Selection Box Color"
-msgstr "Yalnızca Seçim"
+msgstr "Seçim Kutusu Rengi"
 
 #: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
-#, fuzzy
 msgid "3D Gizmos"
-msgstr "Gizmolar"
+msgstr "Üç Boyutlu Gizmolar"
 
 #: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
-#, fuzzy
 msgid "Gizmo Colors"
-msgstr "Emisyon Renkleri"
+msgstr "Gizmo Renkleri"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5896,9 +5755,8 @@ msgstr "Örnek"
 
 #: editor/editor_settings.cpp modules/gltf/gltf_node.cpp
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Joint"
-msgstr "Nokta"
+msgstr "Eklem"
 
 #: editor/editor_settings.cpp scene/2d/collision_shape_2d.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/touch_screen_button.cpp
@@ -5910,112 +5768,96 @@ msgid "Shape"
 msgstr "Şekil"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Primary Grid Steps"
-msgstr "Izgara Adımı:"
+msgstr "Birincil Izgara Adımları"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Grid Size"
-msgstr "Izgara Adımı:"
+msgstr "Izgara Boyutu"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Max"
-msgstr ""
+msgstr "Maksimum Izgara Bölme Seviyesi"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Min"
-msgstr ""
+msgstr "Minimum Izgara Bölme Seviyesi"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Bias"
-msgstr ""
+msgstr "Izgara Bölme Seviyesi Sapması"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Grid XZ Plane"
-msgstr "IzgaraHaritası Boyama"
+msgstr "Izgara XZ Düzlemi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Grid XY Plane"
-msgstr "IzgaraHaritası Boyama"
+msgstr "Izgara XY Düzlemi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Grid YZ Plane"
-msgstr "IzgaraHaritası Boyama"
+msgstr "Izgara YZ Düzlemi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default FOV"
-msgstr "Varsayılan"
+msgstr "Varsayılan Görüş Alanı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default Z Near"
-msgstr "Varsayılan tema"
+msgstr "Varsayılan Z Yakın"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default Z Far"
-msgstr "Varsayılan"
+msgstr "Varsayılan Z Uzak"
 
 #: editor/editor_settings.cpp
 msgid "Lightmap Baking Number Of CPU Threads"
-msgstr ""
+msgstr "Işık Haritası Pişirme İş Parçacığı Sayısı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Navigation Scheme"
-msgstr "Gezinim Kipi"
+msgstr "Navigasyon Düzeni"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Invert Y Axis"
-msgstr "Y Eksenini Düzenle"
+msgstr "Y Eksenini Çevir"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Invert X Axis"
-msgstr "X Eksenini Düzenle"
+msgstr "X Eksenini Çevir"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Zoom Style"
-msgstr "Uzaklaştır"
+msgstr "Zoom Biçimi"
 
 #: editor/editor_settings.cpp
 msgid "Emulate Numpad"
-msgstr ""
+msgstr "Sayı Tuşlarını Emüle Et"
 
 #: editor/editor_settings.cpp
 msgid "Emulate 3 Button Mouse"
-msgstr ""
+msgstr "3 Butonlu Fareyi Emüle Et"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Orbit Modifier"
-msgstr "İlk Değişiklik Tarihi'ne göre sırala"
+msgstr "Yörünge Değiştirici"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Pan Modifier"
-msgstr "Kaydırma Biçimi"
+msgstr "Kaydırma Değiştirici"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Zoom Modifier"
-msgstr "Değişti"
+msgstr "Zoom Değiştirici"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Warped Mouse Panning"
-msgstr ""
+msgstr "Çarpık Fare Kaydırması"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Navigation Feel"
-msgstr "Gezinim Kipi"
+msgstr "Navigasyon Hissi"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Sensitivity"
@@ -6023,47 +5865,39 @@ msgstr "Yörünge Hassasiyeti"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Inertia"
-msgstr ""
+msgstr "Yörünge Ataleti"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Translation Inertia"
-msgstr "Çeviriler"
+msgstr "Öteleme Ataleti"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Zoom Inertia"
-msgstr "Yaklaştır"
+msgstr "Zoom Ataleti"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook"
-msgstr "Yukarı Serbest Bakış"
+msgstr "Serbest Bakış"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Navigation Scheme"
-msgstr "Yönlendirici Örüntüsü Oluştur"
+msgstr "Serbest Bakış Navigasyon Düzeni"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Sensitivity"
-msgstr "Sola Serbest Bakış"
+msgstr "Serbest Bakış Hassasiyeti"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Inertia"
-msgstr "Sola Serbest Bakış"
+msgstr "Serbest Bakış Ataleti"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Base Speed"
-msgstr "Serbest Bakış Hız Değiştirici"
+msgstr "Serbest Bakış Baz Hızı"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Activation Modifier"
-msgstr "Serbest Bakış Hız Değiştirici"
+msgstr "Serbest Bakış Aktivasyon Değiştirici"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6071,72 +5905,64 @@ msgid "Freelook Speed Zoom Link"
 msgstr "Serbest Bakış Hız Değiştirici"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Grid Color"
-msgstr "Renk Seç"
+msgstr "Izgara Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Guides Color"
-msgstr "Renk Seç"
+msgstr "Kılavuz Çizgi Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Smart Snapping Line Color"
-msgstr "Akıllı Hizalama"
+msgstr "Akıllı Yapışma Satır Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Bone Width"
-msgstr ""
+msgstr "Kemik Genişliği"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Color 1"
-msgstr "Renk Öğesini Yeniden Adlandır"
+msgstr "Kemik Rengi 1"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Color 2"
-msgstr "Renk Öğesini Yeniden Adlandır"
+msgstr "Kemik Rengi 2"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Selected Color"
-msgstr "Seçilen Profili Yapılandır:"
+msgstr "Seçilmiş Kemik Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Bone IK Color"
-msgstr ""
+msgstr "Kemik TK Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Bone Outline Color"
-msgstr ""
+msgstr "Kemik Kontur Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Outline Size"
-msgstr "Kontur Boyutu:"
+msgstr "Kemik Kontur Boyutu"
 
 #: editor/editor_settings.cpp
 msgid "Viewport Border Color"
-msgstr ""
+msgstr "Çerçeve Sınır Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Constrain Editor View"
-msgstr ""
+msgstr "Düzenleyici Görünümünü Kısıtla"
 
 #: editor/editor_settings.cpp
 msgid "Simple Panning"
-msgstr ""
+msgstr "Basit Kaydırma"
 
 #: editor/editor_settings.cpp
 msgid "Scroll To Pan"
-msgstr ""
+msgstr "Kaydırmak İçin Tut"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Pan Speed"
-msgstr "Hız:"
+msgstr "Pan Yapma Hızı"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -6145,109 +5971,103 @@ msgstr "Çokgen 2B UV Düzenleyicisi"
 
 #: editor/editor_settings.cpp
 msgid "Point Grab Radius"
-msgstr ""
+msgstr "Nokta Yakalama Yarıçapı"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Show Previous Outline"
-msgstr "Önceki sekme"
+msgstr "Önceki Konturu Göster"
 
 #: editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Autorename Animation Tracks"
-msgstr "Animasyonu Yeniden Adlandır"
+msgstr "Animasyon İzlerini Otomatik Yeniden Adlandır"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Default Create Bezier Tracks"
-msgstr ""
+msgstr "Varsayılan Bezier İz Oluştur"
 
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Create Reset Tracks"
-msgstr "RESET İz(ler)i oluşturun"
+msgstr "Varsayılan İzleri Sıfırla ve Oluştur"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Onion Layers Past Color"
-msgstr ""
+msgstr "Eski Soğan Katman Rengi"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Onion Layers Future Color"
-msgstr ""
+msgstr "Yeni Soğan Katmanı Rengi"
 
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Visual Editors"
-msgstr "Grup Düzenleyici"
+msgstr "Görsel Editörler"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Opacity"
-msgstr ""
+msgstr "Mini Harita Şeffaflığı"
 
 #: editor/editor_settings.cpp
 msgid "Window Placement"
-msgstr ""
+msgstr "Pencere Yerleşimi"
 
 #: editor/editor_settings.cpp scene/2d/back_buffer_copy.cpp scene/2d/sprite.cpp
 #: scene/2d/visibility_notifier_2d.cpp scene/3d/sprite_3d.cpp
 #: scene/gui/control.cpp
-#, fuzzy
 msgid "Rect"
-msgstr "Tam Kare"
+msgstr "Dikdörtgen"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Rect Custom Position"
-msgstr "Eğri Çıkış Konumunu Ayarla"
+msgstr "Dikdörtgen Özel Konumu"
 
 #: editor/editor_settings.cpp platform/android/export/export_plugin.cpp
 msgid "Screen"
-msgstr ""
+msgstr "Ekran"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Auto Save"
-msgstr "Otomatik Dilimle"
+msgstr "Otomatik Kaydet"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Before Running"
-msgstr "Çalıştırmadan önce sahneyi kaydedin..."
+msgstr "Çalıştırmadan Önce Kaydet"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Font Size"
-msgstr "Önden Görünüm"
+msgstr "Yazı Tipi Boyutu"
 
 #: editor/editor_settings.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
 msgid "Remote Host"
 msgstr "Uzak Ana Bilgisayar"
 
 #: editor/editor_settings.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
 msgid "Remote Port"
-msgstr "Noktayı kaldır"
+msgstr "Uzak Port"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Editor SSL Certificates"
-msgstr "Düzenleyici Ayarları"
+msgstr "Düzenleyicinin SSL Sertifikası"
 
 #: editor/editor_settings.cpp
 msgid "HTTP Proxy"
-msgstr ""
+msgstr "HTTP Proxy"
 
 #: editor/editor_settings.cpp
 msgid "Host"
-msgstr ""
+msgstr "Ana Bilgisayar"
 
 #: editor/editor_settings.cpp editor/fileserver/editor_file_server.cpp
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
@@ -6256,171 +6076,150 @@ msgstr "Proje Yöneticisi"
 
 #. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Sorting Order"
-msgstr "Klasör yeniden adlandırma:"
+msgstr "Sıralama Yöntemi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
-msgstr ""
+msgstr "Simge Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Keyword Color"
-msgstr ""
+msgstr "Anahtar Sözcük Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Control Flow Keyword Color"
-msgstr ""
+msgstr "Akış Kontrolü Anahtar Sözcüğü Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Base Type Color"
-msgstr "Temel Tipi Değiştir"
+msgstr "Temel Tür Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Engine Type Color"
-msgstr ""
+msgstr "Motor Tür Rengi"
 
 #: editor/editor_settings.cpp
 msgid "User Type Color"
-msgstr ""
+msgstr "Üye Tür Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Comment Color"
-msgstr ""
+msgstr "Yorum Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "String Color"
-msgstr "Dosya Depolama:"
+msgstr "String Rengi"
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Background Color"
-msgstr "Geçersiz arkaplan rengi."
+msgstr "Arkaplan Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Background Color"
-msgstr "Geçersiz arkaplan rengi."
+msgstr "Tamamlanma Arkaplan Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Selected Color"
-msgstr "Seçileni İçe Aktar"
+msgstr "Tamamlayıcı Seçim Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Existing Color"
-msgstr ""
+msgstr "Tamamlayıcı Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Scroll Color"
-msgstr ""
+msgstr "Tamamlayıcı Kaydırma Çubuğu Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Completion Font Color"
-msgstr ""
+msgstr "Tamamlayıcı Yazı Tipi Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Text Color"
-msgstr "Sonraki Zemin"
+msgstr "Metin Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Line Number Color"
-msgstr "Satır Numarası:"
+msgstr "Satır Numarası Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Safe Line Number Color"
-msgstr "Satır Numarası:"
+msgstr "Güvenli Satır Numarası Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
-msgstr ""
+msgstr "İmleç Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Caret Background Color"
-msgstr "Geçersiz arkaplan rengi."
+msgstr "Karet Arkaplan Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Text Selected Color"
-msgstr "Seçilenleri Sil"
+msgstr "Seçili Metin Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selection Color"
-msgstr "Yalnızca Seçim"
+msgstr "Seçim Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Brace Mismatch Color"
-msgstr ""
+msgstr "Ayraç Uyumsuz Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Current Line Color"
-msgstr "Şu anki Sahne"
+msgstr "Geçerli Satır Rengi"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Color"
-msgstr ""
+msgstr "Satır Uzunluğu Sınır Çizgisi Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Word Highlighted Color"
-msgstr "Yazım Vurgulama"
+msgstr "Vurgulu Kelime Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Number Color"
-msgstr ""
+msgstr "Sayı Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Function Color"
-msgstr "Fonksiyon"
+msgstr "Fonksiyon Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Member Variable Color"
-msgstr "Değişkeni Yeniden Adlandır"
+msgstr "Üye Değişken Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Mark Color"
-msgstr "Renk Seç"
+msgstr "İşaret Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Bookmark Color"
-msgstr "Yer imleri"
+msgstr "Yer İmi Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Breakpoint Color"
-msgstr "Hata ayıklama noktaları"
+msgstr "Kesme Noktası Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Executing Line Color"
-msgstr ""
+msgstr "Yürütülen Satır Rengi"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Code Folding Color"
-msgstr ""
+msgstr "Kod Katlama Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Search Result Color"
-msgstr "Arama Sonuçları"
+msgstr "Arama Sonuç Rengi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Search Result Border Color"
-msgstr "Arama Sonuçları"
+msgstr "Arama Sonuç Sınır Rengi"
 
 #: editor/editor_spin_slider.cpp
 msgid "Hold %s to round to integers. Hold Shift for more precise changes."
@@ -6429,14 +6228,12 @@ msgstr ""
 "Shift tuşuna basılı tutun."
 
 #: editor/editor_spin_slider.cpp scene/gui/button.cpp
-#, fuzzy
 msgid "Flat"
-msgstr "Sade 0"
+msgstr "Düz"
 
 #: editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Hide Slider"
-msgstr "Temas Kipi"
+msgstr "Kaydırıcıyı Gizle"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
@@ -6729,7 +6526,7 @@ msgstr ""
 
 #: editor/fileserver/editor_file_server.cpp
 msgid "File Server"
-msgstr ""
+msgstr "Dosya Sunucusu"
 
 #: editor/fileserver/editor_file_server.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -6797,6 +6594,11 @@ msgid ""
 "After renaming to an unknown extension, the file won't be shown in the "
 "editor anymore."
 msgstr ""
+"Bu dosya uzantısı editör tarafından tanınmadı.\n"
+"Yine de isimlendirmek istiyorsanız, işletim sisteminizin dosya yöneticisini "
+"kullanın.\n"
+"Bilinmeyen bir uzantı isimlendirildikten sonra dosya artık editörde "
+"görüntülenmeyecek."
 
 #: editor/filesystem_dock.cpp
 msgid ""
@@ -7097,43 +6899,41 @@ msgstr "Grupları Düzenle"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Collada"
-msgstr ""
+msgstr "Collada"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Use Ambient"
-msgstr ""
+msgstr "Çevreyi Kullan"
 
 #: editor/import/resource_importer_bitmask.cpp
-#, fuzzy
 msgid "Create From"
-msgstr "Klasör Oluştur"
+msgstr "Şuradan Oluştur"
 
 #: editor/import/resource_importer_bitmask.cpp
 #: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Threshold"
-msgstr ""
+msgstr "Eşik"
 
 #: editor/import/resource_importer_csv_translation.cpp
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_scene.cpp
 #: editor/import/resource_importer_texture.cpp
 #: editor/import/resource_importer_wav.cpp scene/3d/gi_probe.cpp
-#, fuzzy
 msgid "Compress"
-msgstr "Bileşenler"
+msgstr "Sıkıştırma"
 
 #: editor/import/resource_importer_csv_translation.cpp
 msgid "Delimiter"
-msgstr ""
+msgstr "Sınırlayıcı"
+
+#: editor/import/resource_importer_layered_texture.cpp
+msgid "ColorCorrect"
+msgstr "ColorCorrect"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
-msgid "ColorCorrect"
-msgstr "Renk işlevi."
-
-#: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
-msgstr ""
+msgstr "RGB ise BPTC Yok"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/cpu_particles_2d.cpp
@@ -7141,31 +6941,29 @@ msgstr ""
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
 #: scene/resources/texture.cpp scene/resources/visual_shader.cpp
 msgid "Flags"
-msgstr ""
+msgstr "Bayraklar"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/animation/tween.cpp
 #: scene/resources/texture.cpp
 msgid "Repeat"
-msgstr ""
+msgstr "Tekrar Et"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp scene/2d/light_2d.cpp
 #: scene/gui/control.cpp
-#, fuzzy
 msgid "Filter"
-msgstr "Süzgeçler:"
+msgstr "Filtre"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "Mipmaps"
-msgstr "sinyaller"
+msgstr "Mipmap'ler"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
 msgid "Anisotropic"
-msgstr ""
+msgstr "Eşyönsüz"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -7173,51 +6971,43 @@ msgid "sRGB"
 msgstr "sRGB"
 
 #: editor/import/resource_importer_layered_texture.cpp
-#, fuzzy
 msgid "Slices"
-msgstr "Otomatik Dilimle"
+msgstr "Dilimler"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
 #: scene/resources/style_box.cpp
-#, fuzzy
 msgid "Horizontal"
-msgstr "Yatay:"
+msgstr "Yatay"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/gui/scroll_container.cpp
 #: scene/resources/style_box.cpp
-#, fuzzy
 msgid "Vertical"
-msgstr "Dikey:"
+msgstr "Dikey"
 
 #: editor/import/resource_importer_obj.cpp
-#, fuzzy
 msgid "Generate Tangents"
-msgstr "Noktalar Oluştur"
+msgstr "Teğetler Oluştur"
 
 #: editor/import/resource_importer_obj.cpp
-#, fuzzy
 msgid "Scale Mesh"
-msgstr "Esnetme Şekli"
+msgstr "Mesh Ölçeği"
 
 #: editor/import/resource_importer_obj.cpp
-#, fuzzy
 msgid "Offset Mesh"
-msgstr "Kaydırma:"
+msgstr "Mesh Kaydırma"
 
 #: editor/import/resource_importer_obj.cpp
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Octahedral Compression"
-msgstr "İfade"
+msgstr "Octahedral Sıkıştırma"
 
 #: editor/import/resource_importer_obj.cpp
-#, fuzzy
 msgid "Optimize Mesh Flags"
-msgstr "Boyut:"
+msgstr "Örüntü Bayraklarını En İyileştir"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Import as Single Scene"
@@ -7261,53 +7051,44 @@ msgstr "Çoklu Sahneler+Materyaller olarak İçe Aktar"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 #: scene/3d/physics_joint.cpp
-#, fuzzy
 msgid "Nodes"
-msgstr "Düğüm"
+msgstr "Düğümler"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Root Type"
-msgstr "Dön"
+msgstr "Kök Türü"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Root Name"
-msgstr "Uzak Depo Adı"
+msgstr "Kök İsmi"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Root Scale"
-msgstr "Ölçekle"
+msgstr "Kök Ölçeği"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Custom Script"
-msgstr "ÖzelSınıf"
+msgstr "Özel Betik"
 
 #: editor/import/resource_importer_scene.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Storage"
-msgstr "Dosya Depolama:"
+msgstr "Depolama"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Use Legacy Names"
-msgstr ""
+msgstr "Eski İsimleri Kullan"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Materials"
-msgstr "Materyal Değişiklikleri:"
+msgstr "Materyaller"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Keep On Reimport"
-msgstr "Yeniden İçe Aktar"
+msgstr "Yeniden İçe Aktarmaya Devam Et"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Meshes"
-msgstr "Örgü"
+msgstr "Örgüler"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7320,42 +7101,36 @@ msgid "Light Baking"
 msgstr "Işık-Haritalarını Pişir"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Lightmap Texel Size"
-msgstr "Işık-Haritalarını Pişir"
+msgstr "Işık Haritası Texel Boyutu"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 msgid "Skins"
-msgstr ""
+msgstr "Kaplamalar"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Use Named Skins"
-msgstr "Esnetme Hizalaması Kullan"
+msgstr "İsimlendirilmiş Kaplamaları Kullan"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "External Files"
-msgstr "Bir Dosya Aç"
+msgstr "Harici Dosyalar"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Store In Subdir"
-msgstr ""
+msgstr "Alt Dizine Depola"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Filter Script"
-msgstr "Betikleri Süz"
+msgstr "Betik Süz"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Keep Custom Tracks"
-msgstr "Dönüşüm"
+msgstr "Özel İzleri Tut"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Optimizer"
-msgstr "İyileştir"
+msgstr "En İyileştirici"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/item_list_editor_plugin.cpp main/main.cpp
@@ -7374,36 +7149,30 @@ msgid "Enabled"
 msgstr "Etkin"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Max Linear Error"
-msgstr "Maks. Doğrusal Hata:"
+msgstr "Maksimum Doğrusal Hata"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Max Angular Error"
-msgstr "Maks. Açısal Hata:"
+msgstr "Maksimum Açısal Hata"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Max Angle"
-msgstr "Değer"
+msgstr "Maksimum Açı"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Remove Unused Tracks"
-msgstr "Animasyon İzini Kaldır"
+msgstr "Kullanılmayan İzleri Kaldır"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Clips"
-msgstr "Animasyon Klipleri"
+msgstr "Klipler"
 
 #: editor/import/resource_importer_scene.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/particles_2d.cpp scene/3d/area.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/particles.cpp scene/resources/environment.cpp
-#, fuzzy
 msgid "Amount"
-msgstr "Değer:"
+msgstr "Miktar"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7456,28 +7225,30 @@ msgid ""
 msgstr ""
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s: Dokunun 3B olarak kullanıldığı tespit edildi. Filtreleme, tekrarlama, "
+"mipmap oluşturma ve VRAM doku sıkıştırma etkileştiriliyor."
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
-msgstr ""
+msgstr "2D, 3D Algıla"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "2D Pixel"
-msgstr "Şekil Pikselleri"
+msgstr "2D Pixel"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
+#, fuzzy
 msgid "Lossy Quality"
-msgstr ""
+msgstr "Kayıplı Kalite"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "HDR Mode"
-msgstr "Kip Seç"
+msgstr "HDR Modu"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "BPTC LDR"
@@ -7487,8 +7258,9 @@ msgstr ""
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
+#, fuzzy
 msgid "Normal Map"
-msgstr ""
+msgstr "Normal Haritası"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7496,27 +7268,28 @@ msgid "Process"
 msgstr "Rötuş"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Fix Alpha Border"
-msgstr ""
+msgstr "Alfa Sınırını Düzelt"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
 msgid "Premult Alpha"
-msgstr "Çokluyu Düzenleyin"
+msgstr "İlk Alfa"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Hdr As Srgb"
-msgstr ""
+msgstr "SRGB Olarak HDR"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
 msgid "Invert Color"
-msgstr "Köşe"
+msgstr "Rengi Ters Çevir"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "Normal Map Invert Y"
-msgstr "Rastgele Ölçek:"
+msgstr "Normal Haritası Y Eksenini Ters Çevir"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
@@ -7524,89 +7297,89 @@ msgid "Size Limit"
 msgstr "Boyut Limiti"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid "Detect 3D"
-msgstr ""
+msgstr "3D Algıla"
 
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
 msgid "SVG"
-msgstr "HSV"
+msgstr "SVG"
 
 #: editor/import/resource_importer_texture.cpp
+#, fuzzy
 msgid ""
 "Warning, no suitable PC VRAM compression enabled in Project Settings. This "
 "texture will not display correctly on PC."
 msgstr ""
+"Uyarı, proje ayarlarında uygun PC VRAM sıkıştırması etkin değil. Bu doku "
+"PC'de düzgün görüntülenmez."
 
 #: editor/import/resource_importer_texture_atlas.cpp
-#, fuzzy
 msgid "Atlas File"
-msgstr "Kontur Boyutu:"
+msgstr "Atlas Dosyası"
 
 #: editor/import/resource_importer_texture_atlas.cpp
-#, fuzzy
 msgid "Import Mode"
-msgstr "Dışa Aktarma Biçimi:"
+msgstr "İçe Aktarım Modu"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 #, fuzzy
 msgid "Crop To Region"
-msgstr "Döşeme Bölgesi Ata"
+msgstr "Bölgeye Kırp"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 msgid "Trim Alpha Border From Region"
-msgstr ""
+msgstr "Alfa Sınırını Bölgeden Kırp"
 
 #: editor/import/resource_importer_wav.cpp scene/2d/physics_body_2d.cpp
 #, fuzzy
 msgid "Force"
-msgstr "Zorla Gönder"
+msgstr "Zorla"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "8 Bit"
-msgstr ""
+msgstr "8 Bit"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
 msgid "Mono"
-msgstr ""
+msgstr "Tek"
 
 #: editor/import/resource_importer_wav.cpp
 #, fuzzy
 msgid "Max Rate"
-msgstr "Düğümü Çırp"
+msgstr "Maximum Oran"
 
 #: editor/import/resource_importer_wav.cpp
 #, fuzzy
 msgid "Max Rate Hz"
-msgstr "Düğümü Çırp"
+msgstr "Maximum Hz Oranı"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Trim"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp
-#, fuzzy
 msgid "Normalize"
-msgstr "Biçem"
+msgstr "Normalleştir"
 
 #: editor/import/resource_importer_wav.cpp
 #: scene/resources/audio_stream_sample.cpp
-#, fuzzy
 msgid "Loop Mode"
-msgstr "Biçimi Taşı"
+msgstr "Döngü Modu"
 
 #: editor/import/resource_importer_wav.cpp
 #: scene/resources/audio_stream_sample.cpp
-#, fuzzy
 msgid "Loop Begin"
-msgstr "Biçimi Taşı"
+msgstr "Döngü Başlangıcı"
 
 #: editor/import/resource_importer_wav.cpp
 #: scene/resources/audio_stream_sample.cpp
-#, fuzzy
 msgid "Loop End"
-msgstr "Biçimi Taşı"
+msgstr "Döngü Sonu"
 
 #: editor/import_defaults_editor.cpp
 msgid "Select Importer"
@@ -7686,27 +7459,24 @@ msgid "Failed to load resource."
 msgstr "Kaynak yükleme başarısız oldu."
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Property Name Style"
-msgstr "Proje Adı:"
+msgstr "Özellik İsim Biçimi"
 
 #: editor/inspector_dock.cpp scene/gui/color_picker.cpp
 msgid "Raw"
 msgstr "Ham"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Capitalized"
-msgstr "Büyük harfe çevirme"
+msgstr "Büyük Harfe Çevrilmiş"
 
 #: editor/inspector_dock.cpp
-#, fuzzy
 msgid "Localized"
-msgstr "Yerel"
+msgstr "Yerelleştirilmiş"
 
 #: editor/inspector_dock.cpp
 msgid "Localization not available for current language."
-msgstr ""
+msgstr "Geçerli dil için yerelleştirme mevcut değil."
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
@@ -8247,9 +8017,8 @@ msgid "New"
 msgstr "Yeni"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Paste As Reference"
-msgstr "%s Class referansı"
+msgstr "Referans. Olarak Yapıştır"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
@@ -8581,7 +8350,7 @@ msgstr "Süzgeçler..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp scene/main/http_request.cpp
 msgid "Use Threads"
-msgstr ""
+msgstr "Thread'leri Kullan"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -8708,9 +8477,8 @@ msgid "Download Error"
 msgstr "İndirme Hatası"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Available URLs"
-msgstr "Kullanılabilir Profiller:"
+msgstr "Uygun URL'ler"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -8745,25 +8513,21 @@ msgid "Loading..."
 msgstr "Yükle..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgctxt "Pagination"
 msgid "First"
 msgstr "İlk"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgctxt "Pagination"
 msgid "Previous"
 msgstr "Önceki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgctxt "Pagination"
 msgid "Next"
 msgstr "Sonraki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgctxt "Pagination"
 msgid "Last"
 msgstr "Son"
@@ -8813,8 +8577,9 @@ msgid "Testing"
 msgstr "Deneme"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "Depo yapılandırması alınamadı."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -8871,8 +8636,9 @@ msgid "Bake Lightmaps"
 msgstr "Işık-Haritalarını Pişir"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
+#, fuzzy
 msgid "LightMap Bake"
-msgstr ""
+msgstr "Işık Haritasını Pişir"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Select lightmap bake file:"
@@ -9378,23 +9144,21 @@ msgid "View"
 msgstr "Görüş"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show"
-msgstr "Izgarayı Göster"
+msgstr "Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show When Snapping"
-msgstr "Akıllı Hizalama"
+msgstr "Yapışırken Göster"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Hide"
-msgstr ""
+msgstr "Gizle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
 msgid "Toggle Grid"
-msgstr "Aç / Kapat Biçimi"
+msgstr "Izgarayı Aç/Kapat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -9745,16 +9509,15 @@ msgstr "Renk Geçişi Düzenlendi"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 msgid "Swap GradientTexture2D Fill Points"
-msgstr ""
+msgstr "GradientTexture2D Dolgu Noktalarını Değiştir"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 msgid "Swap Gradient Fill Points"
-msgstr ""
+msgstr "Gradient Doldurma Noktalarını Değiştir"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Grid Snap"
-msgstr "Aç / Kapat Biçimi"
+msgstr "Snap Aç/Kapat"
 
 #: editor/plugins/item_list_editor_plugin.cpp editor/project_export.cpp
 #: scene/3d/label_3d.cpp scene/gui/button.cpp scene/gui/dialogs.cpp
@@ -9777,9 +9540,8 @@ msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separator"
-msgstr "Ayrım:"
+msgstr "Ayraç"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -10013,9 +9775,8 @@ msgstr ""
 "%s"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "MeshLibrary"
-msgstr "Model Kütüphanesi"
+msgstr ""
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
 msgid "Add Item"
@@ -10038,14 +9799,12 @@ msgid "Update from Scene"
 msgstr "Sahneden Güncelle"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Apply without Transforms"
-msgstr "MeshInstance dönüşümlerini uygula"
+msgstr "Dönüşümler olmadan uygula"
 
 #: editor/plugins/mesh_library_editor_plugin.cpp
-#, fuzzy
 msgid "Apply with Transforms"
-msgstr "MeshInstance dönüşümlerini uygula"
+msgstr "Dönüşümlerle uygula"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No mesh source specified (and no MultiMesh set in node)."
@@ -10211,9 +9970,8 @@ msgid "Volume"
 msgstr "Oylum"
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Emission Source:"
-msgstr "Emisyon Kaynağı:"
+msgstr "Emission Kaynağı:"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "A processor material of type 'ParticlesMaterial' is required."
@@ -10569,7 +10327,7 @@ msgstr "Kemikleri Çokgene Eşleştir"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
 msgid "Set cast_to"
-msgstr ""
+msgstr "cast_to ayarla"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -10899,12 +10657,13 @@ msgid "Search Results"
 msgstr "Arama Sonuçları"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Open Dominant Script On Scene Change"
-msgstr ""
+msgstr "Sahne Değişiminde Baskın Betiği Aç"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "External"
-msgstr ""
+msgstr "Harici"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -10922,17 +10681,17 @@ msgid "Script Temperature Enabled"
 msgstr "Şablon Dosyası Seç"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
 msgid "Highlight Current Script"
-msgstr ""
+msgstr "Geçerli Betiği Vurgula"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script Temperature History Size"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Current Script Background Color"
-msgstr "Geçersiz arkaplan rengi."
+msgstr "Mevcut Komut Dizisi Arkaplan Rengi"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -10945,9 +10704,8 @@ msgid "Sort Scripts By"
 msgstr "Betik Oluştur"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "List Script Names As"
-msgstr "Betik Adı:"
+msgstr "Script İsimlerini Listele"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Exec Flags"
@@ -11210,7 +10968,7 @@ msgstr "Oynat IK"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Orthogonal"
-msgstr "Dikey"
+msgstr "Dik Açılı"
 
 #: editor/plugins/spatial_editor_plugin.cpp modules/gltf/gltf_camera.cpp
 msgid "Perspective"
@@ -11764,12 +11522,14 @@ msgid "Post"
 msgstr "Sonrası"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Manipulator Gizmo Size"
-msgstr ""
+msgstr "Gizmo Boyutu Ayarlayıcı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Manipulator Gizmo Opacity"
-msgstr ""
+msgstr "Gizmo Şeffaflığı Ayarlayıcı"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -11932,9 +11692,8 @@ msgid "New Animation"
 msgstr "Yeni Animasyon"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Filter animations"
-msgstr "Metotları filtrele"
+msgstr "Animasyonları filtrele"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -12416,7 +12175,7 @@ msgstr "Tür Ekle"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Filter the list of types or create a new custom type:"
-msgstr "Tip listesini süz veya yeni bir özel tip oluştur."
+msgstr "Tip listesini filtrele veya yeni bir özel tip oluştur:"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Available Node-based types:"
@@ -12485,14 +12244,18 @@ msgid "Override all default type items."
 msgstr "Tüm varsayılan tür öğelerini geçersiz kıl."
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Select the variation base type from a list of available types."
-msgstr ""
+msgstr "Kullanılabilir tipler listesinden temel varyasyon tipini seçin."
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "A type associated with a built-in class cannot be marked as a variation of "
 "another type."
 msgstr ""
+"Yerleşik sınıfla ilişkili bir tür başka bir türün varyasyonu olarak "
+"belirlenemez."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme:"
@@ -12738,7 +12501,7 @@ msgstr "TileMap'i Boya"
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Palette Min Width"
-msgstr ""
+msgstr "Palet Minimum Genişliği"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -13132,9 +12895,8 @@ msgstr "Hizalama Ayarları"
 #: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
 #: scene/main/canvas_layer.cpp scene/resources/material.cpp
 #: scene/resources/particles_material.cpp scene/resources/style_box.cpp
-#, fuzzy
 msgid "Offset"
-msgstr "Kaydırma:"
+msgstr "Kaydırma"
 
 #: editor/plugins/tile_set_editor_plugin.cpp editor/rename_dialog.cpp
 #: scene/gui/range.cpp scene/resources/animation.cpp
@@ -13145,9 +12907,8 @@ msgstr "Adım"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Separation"
-msgstr "Ayrım:"
+msgstr "Ayrım"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -13168,14 +12929,13 @@ msgstr "Yazı"
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Tex Offset"
-msgstr "Izgarayı Kaydır:"
+msgstr "Izgarayı Kaydır"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
 #: scene/3d/mesh_instance.cpp scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Material"
-msgstr "Materyal Değişiklikleri:"
+msgstr "Materyal"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/canvas_item.cpp
 #: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/style_box.cpp
@@ -13194,9 +12954,8 @@ msgid "Autotile Bitmask Mode"
 msgstr "Bitmask Kipi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Subtile Size"
-msgstr "Kontur Boyutu:"
+msgstr "Alt Döşeme Boyutu"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -13214,9 +12973,8 @@ msgid "Navigation Offset"
 msgstr "Gezinim Kipi"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Shape Offset"
-msgstr "Kaydırma:"
+msgstr "Şekil Kaydırması"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -14332,11 +14090,14 @@ msgstr "Koşturulabilir"
 
 #: editor/project_export.cpp
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "Tanımlanan tüm ön ayarlar için projeyi dışa aktarın."
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
+"Bütün ön ayarlar Hepsini Dışa Aktar işlemi için bir dışa aktarım dizinine "
+"sahip olmalıdır."
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -14446,10 +14207,13 @@ msgid "GDScript Encryption Key (256-bits as hexadecimal):"
 msgstr "GDScript Şifreleme Anahtarı (On altılı sayı sisteminde 256-bit):"
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
 msgstr ""
+"Not: Şifreleme anahtarının iki sayı sistemi olarak saklanması gerekir,\n"
+"kaynaktan dışa aktarım şablonlarınızı derlemelisiniz."
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -14457,28 +14221,24 @@ msgid "More Info..."
 msgstr "Şuraya Taşı..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export PCK/Zip..."
-msgstr "PCK/Zip Dışa Aktar"
+msgstr "PCK/Zip Dışa Aktar..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Project..."
-msgstr "Projeyi Dışa Aktar"
+msgstr "Projeyi Dışa Aktar..."
 
 #: editor/project_export.cpp
 msgid "Export All"
 msgstr "Tümünü Dışa Aktar"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Choose an export mode:"
-msgstr "Lütfen boş bir klasör seçin."
+msgstr "Bir dışa aktarım modu seç:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All..."
-msgstr "Tümünü Dışa Aktar"
+msgstr "Tümünü Dışa Aktar..."
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
@@ -15600,19 +15360,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "Yerelleştir"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Sahne Benzersiz İsmini Etkin Kıl"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Düğüm adı:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "Başka bir düğüm sahnede bu benzersiz adı zaten kullanıyor."
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
-msgstr "Düğüm adı:"
+msgid "Disable Scene Unique Name(s)"
+msgstr "Sahne Benzersiz İsmini Etkisiz Kıl"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -15790,8 +15551,9 @@ msgid "Show Scene Tree Root Selection"
 msgstr "Merkez Seçimi"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Derive Script Globals By Name"
-msgstr ""
+msgstr "Ada Göre Betik Globallerini Türet"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -15811,6 +15573,10 @@ msgid "Button Group"
 msgstr "Düğme Grubu"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "Sahne Benzersiz İsmini Etkisiz Kıl"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Gelen Bağlantı)"
 
@@ -15819,11 +15585,15 @@ msgid "Node configuration warning:"
 msgstr "Düğüm yapılandırma uyarısı:"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid ""
 "This node can be accessed from within anywhere in the scene by preceding it "
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
+"Bu düğüme, bir düğüm adresinde önüne '%s' ön eki koyarak sahnenin herhangi "
+"bir yerinden erişilebilir.\n"
+"Bunu devre dışı bırakmak için tıklayın."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15884,6 +15654,11 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Geçersiz düğüm adı, aşağıdaki karakterlere izin verilmiyor:"
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Another node already uses this unique name in the scene."
+msgstr "Başka bir düğüm sahnede bu benzersiz adı zaten kullanıyor."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -16115,16 +15890,19 @@ msgid "Filter stack variables"
 msgstr "Döşemelerde Bul"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Auto Switch To Remote Scene Tree"
-msgstr ""
+msgstr "Uzak Sahne Ağacına Otomatik Geçiş"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Remote Scene Tree Refresh Interval"
-msgstr ""
+msgstr "Uzak Sahne Ağacı Yenileme Sıklığı"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
 msgid "Remote Inspect Refresh Interval"
-msgstr ""
+msgstr "Uzaktan İnceleme Yenileme Aralığı"
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
@@ -16232,7 +16010,7 @@ msgstr "AudioStreamPlayer3D Emisyon Açısı Değişimi"
 #: platform/osx/export/export.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Camera"
-msgstr ""
+msgstr "Kamera"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -16243,8 +16021,9 @@ msgid "Change Camera Size"
 msgstr "Kamera Boyutunu Değiştir"
 
 #: editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Visibility Notifier"
-msgstr ""
+msgstr "Görünürlük Bildiricisi"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier AABB"
@@ -16374,8 +16153,9 @@ msgid "Occluder"
 msgstr "Örtü Kipi"
 
 #: editor/spatial_editor_gizmos.cpp
+#, fuzzy
 msgid "Set Occluder Sphere Radius"
-msgstr "Engelleyici Silindir Yarıçapını Ayarla"
+msgstr "Engelleyici Küre Yarıçapını Ayarla"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Occluder Sphere Position"
@@ -16407,8 +16187,9 @@ msgid "Occluder Hole"
 msgstr "Engelleyici Çokgeni Oluştur"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Godot Physics"
-msgstr ""
+msgstr "Godot Fiziği"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/visual/visual_server_scene.cpp
@@ -16441,32 +16222,35 @@ msgid "Debugger stdout"
 msgstr "Hata Ayıklayıcı"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Max Chars Per Second"
-msgstr ""
+msgstr "Saniye başı maksimum karakter sayısı"
 
 #: main/main.cpp
 msgid "Max Messages Per Frame"
-msgstr ""
+msgstr "Kare Başına Maksimum Mesaj"
 
 #: main/main.cpp
 msgid "Max Errors Per Second"
-msgstr ""
+msgstr "Saniye Başına Maksimum Hata"
 
 #: main/main.cpp
 msgid "Max Warnings Per Second"
-msgstr ""
+msgstr "Saniye Başına Maksimum Uyarı"
 
 #: main/main.cpp
 msgid "Flush stdout On Print"
 msgstr ""
 
 #: main/main.cpp servers/visual_server.cpp
+#, fuzzy
 msgid "Logging"
-msgstr ""
+msgstr "Kayıt tutma"
 
 #: main/main.cpp
+#, fuzzy
 msgid "File Logging"
-msgstr ""
+msgstr "Dosya Kaaydı Tutma"
 
 #: main/main.cpp
 #, fuzzy
@@ -16480,16 +16264,15 @@ msgstr "Dosya Yolunu Kopyala"
 
 #: main/main.cpp
 msgid "Max Log Files"
-msgstr ""
+msgstr "Maksimum Kayıt Dosyası"
 
 #: main/main.cpp
 msgid "Driver"
-msgstr ""
+msgstr "Sürücü"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Driver Name"
-msgstr "Betik Adı:"
+msgstr "Sürücü Adı"
 
 #: main/main.cpp
 msgid "Fallback To GLES2"
@@ -16500,8 +16283,9 @@ msgid "Use Nvidia Rect Flicker Workaround"
 msgstr ""
 
 #: main/main.cpp
+#, fuzzy
 msgid "DPI"
-msgstr ""
+msgstr "DPI"
 
 #: main/main.cpp
 msgid "Allow hiDPI"
@@ -16518,16 +16302,18 @@ msgid "Use V-Sync"
 msgstr "Yapışma Kullan"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Per Pixel Transparency"
-msgstr ""
+msgstr "Piksel Başına Şeffaflık"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Allowed"
-msgstr ""
+msgstr "İzin Verildi"
 
 #: main/main.cpp
 msgid "Intended Usage"
-msgstr ""
+msgstr "Kullanım Amacı"
 
 #: main/main.cpp
 #, fuzzy
@@ -16541,7 +16327,7 @@ msgstr "Kaydedilirken hata"
 
 #: main/main.cpp
 msgid "Threads"
-msgstr ""
+msgstr "İş parçacıkları"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_wrap_mt.h
 #, fuzzy
@@ -16585,8 +16371,9 @@ msgstr ""
 #: main/main.cpp scene/gui/item_list.cpp scene/gui/popup_menu.cpp
 #: scene/gui/scroll_container.cpp scene/gui/text_edit.cpp scene/gui/tree.cpp
 #: scene/main/viewport.cpp scene/register_scene_types.cpp
+#, fuzzy
 msgid "GUI"
-msgstr ""
+msgstr "Grafiksel Kullanıcı Arayüzü"
 
 #: main/main.cpp
 msgid "Drop Mouse On GUI Input Disabled"
@@ -16597,8 +16384,9 @@ msgid "stdout"
 msgstr ""
 
 #: main/main.cpp
+#, fuzzy
 msgid "Print FPS"
-msgstr ""
+msgstr "Saniyedeki kare sayısını(FPS) yazdır"
 
 #: main/main.cpp
 msgid "Verbose stdout"
@@ -16620,8 +16408,9 @@ msgid "Frame Delay Msec"
 msgstr "Çerçeve Seçimi"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Low Processor Mode"
-msgstr ""
+msgstr "Düşük İşlemci Modu"
 
 #: main/main.cpp
 msgid "Delta Sync After Draw"
@@ -16646,8 +16435,9 @@ msgid "Pointing"
 msgstr "Nokta"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Touch Delay"
-msgstr ""
+msgstr "Dokunma Gecikmesi"
 
 #: main/main.cpp servers/visual_server.cpp
 msgid "GLES3"
@@ -16671,8 +16461,9 @@ msgid "Environment"
 msgstr "Ortamı Göster"
 
 #: main/main.cpp
+#, fuzzy
 msgid "Default Clear Color"
-msgstr ""
+msgstr "Varsayılan Temizleme Rengi"
 
 #: main/main.cpp
 msgid "Boot Splash"
@@ -16685,16 +16476,15 @@ msgstr "Kemikleri Göster"
 
 #: main/main.cpp
 msgid "Image"
-msgstr ""
+msgstr "Görüntü"
 
 #: main/main.cpp
 msgid "Fullsize"
-msgstr ""
+msgstr "Tam boyut"
 
 #: main/main.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Use Filter"
-msgstr "Süzgeç:"
+msgstr "Filtre Kullan"
 
 #: main/main.cpp scene/resources/style_box.cpp
 #, fuzzy
@@ -16741,9 +16531,8 @@ msgid "Custom Image Hotspot"
 msgstr ""
 
 #: main/main.cpp
-#, fuzzy
 msgid "Tooltip Position Offset"
-msgstr "Dönme Kayması:"
+msgstr "Araç İpucu Pozisyon Kaydırması"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 #, fuzzy
@@ -16756,9 +16545,8 @@ msgid "Wait For Debugger"
 msgstr "Hata Ayıklayıcı"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
-#, fuzzy
 msgid "Wait Timeout"
-msgstr "Zaman aşımı."
+msgstr "Bekleme Zaman Aşımı"
 
 #: main/main.cpp
 msgid "Runtime"
@@ -16873,14 +16661,12 @@ msgstr "Büyük/Küçük Harf Dönüştür"
 #: scene/resources/cylinder_shape.cpp scene/resources/environment.cpp
 #: scene/resources/navigation_mesh.cpp scene/resources/primitive_meshes.cpp
 #: scene/resources/sphere_shape.cpp
-#, fuzzy
 msgid "Radius"
-msgstr "Yarıçap:"
+msgstr "Yarıçap"
 
 #: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Radial Segments"
-msgstr "Ana Sahne Değiştirgenleri:"
+msgstr "Radyal Dilimler"
 
 #: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -16949,9 +16735,8 @@ msgid "Path Simplify Angle"
 msgstr ""
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Path Rotation"
-msgstr "Rastgele Döndürme:"
+msgstr "Yol Rotasyonu"
 
 #: modules/csg/csg_shape.cpp
 #, fuzzy
@@ -16964,9 +16749,8 @@ msgid "Path Continuous U"
 msgstr "Sürekli"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Path U Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Yol U Mesafesi"
 
 #: modules/csg/csg_shape.cpp
 #, fuzzy
@@ -17019,9 +16803,8 @@ msgid "Use FBX"
 msgstr ""
 
 #: modules/gdnative/gdnative.cpp
-#, fuzzy
 msgid "Config File"
-msgstr "Dosya Depolama:"
+msgstr "Konfigürasyon Dosyası"
 
 #: modules/gdnative/gdnative.cpp
 #, fuzzy
@@ -17037,7 +16820,7 @@ msgstr "İskelet"
 #: modules/gdnative/gdnative.cpp
 #, fuzzy
 msgid "Symbol Prefix"
-msgstr "Ön Ek:"
+msgstr "Sembol Ön Eki"
 
 #: modules/gdnative/gdnative.cpp
 #, fuzzy
@@ -17099,14 +16882,12 @@ msgid "Libraries:"
 msgstr "Kütüphaneler:"
 
 #: modules/gdnative/nativescript/nativescript.cpp
-#, fuzzy
 msgid "Class Name"
-msgstr "Sınıf İsmi:"
+msgstr "Sınıf İsmi"
 
 #: modules/gdnative/nativescript/nativescript.cpp
-#, fuzzy
 msgid "Script Class"
-msgstr "Betik Adı:"
+msgstr "Betik Sınıfı"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 #, fuzzy
@@ -17185,9 +16966,8 @@ msgid "Object can't provide a length."
 msgstr "Nesne bir uzunluk sağlayamaz."
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
 msgid "Language Server"
-msgstr "Dil:"
+msgstr "Dil Sunucusu"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #, fuzzy
@@ -17216,9 +16996,8 @@ msgid "Buffer View"
 msgstr "Arkadan Görünüm"
 
 #: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_buffer_view.cpp
-#, fuzzy
 msgid "Byte Offset"
-msgstr "Izgarayı Kaydır:"
+msgstr ""
 
 #: modules/gltf/gltf_accessor.cpp
 #, fuzzy
@@ -17259,9 +17038,8 @@ msgid "Sparse Indices Byte Offset"
 msgstr ""
 
 #: modules/gltf/gltf_accessor.cpp
-#, fuzzy
 msgid "Sparse Indices Component Type"
-msgstr "Geometri Ayrıştırılıyor..."
+msgstr "Seyrek Dizinler Bileşen Tipi"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Buffer View"
@@ -17291,9 +17069,8 @@ msgid "Indices"
 msgstr "Tüm Aygıtlar"
 
 #: modules/gltf/gltf_camera.cpp
-#, fuzzy
 msgid "FOV Size"
-msgstr "Boyut:"
+msgstr "Görüş Alanı Boyutu"
 
 #: modules/gltf/gltf_camera.cpp
 msgid "Zfar"
@@ -17342,7 +17119,7 @@ msgstr "Işık-Haritalarını Pişir"
 #: modules/gltf/gltf_mesh.cpp
 #, fuzzy
 msgid "Instance Materials"
-msgstr "Materyal Değişiklikleri:"
+msgstr "Örnek Malzemeler"
 
 #: modules/gltf/gltf_node.cpp scene/3d/skeleton.cpp
 #, fuzzy
@@ -17430,9 +17207,8 @@ msgid "Gloss Factor"
 msgstr ""
 
 #: modules/gltf/gltf_spec_gloss.cpp
-#, fuzzy
 msgid "Specular Factor"
-msgstr "Katsayı operatörü."
+msgstr "Yansıtıcı Etkeni"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Spec Gloss Img"
@@ -17471,9 +17247,8 @@ msgid "Accessors"
 msgstr ""
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Scene Name"
-msgstr "Sahne Yolu:"
+msgstr "Sahne Adı"
 
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
@@ -17502,7 +17277,7 @@ msgstr "Işık"
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
 msgid "Unique Animation Names"
-msgstr "Yeni Animasyon İsmi:"
+msgstr "Benzersiz Animasyon Adları"
 
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
@@ -17515,9 +17290,8 @@ msgid "Skeleton To Node"
 msgstr "Bir Düğüm Seç"
 
 #: modules/gltf/gltf_state.cpp
-#, fuzzy
 msgid "Animations"
-msgstr "Animasyonlar:"
+msgstr "Animasyonlar"
 
 #: modules/gltf/gltf_texture.cpp
 #, fuzzy
@@ -17764,7 +17538,7 @@ msgstr ""
 #: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp
 #, fuzzy
 msgid "Loop Offset"
-msgstr "Kaydırma:"
+msgstr "Döngü Kaydırma"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Eye Height"
@@ -17808,6 +17582,21 @@ msgstr "Solüsyonu İnşa Et"
 #, fuzzy
 msgid "Auto Update Project"
 msgstr "Adsız Proje"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Hepsini Görüntüle"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Bir Dizin Seç"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Bir Dizin Seç"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -17887,7 +17676,7 @@ msgstr ""
 #: modules/opensimplex/noise_texture.cpp
 #, fuzzy
 msgid "As Normal Map"
-msgstr "Rastgele Ölçek:"
+msgstr "Normal Haritalama Olarak"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Bump Strength"
@@ -17900,7 +17689,7 @@ msgstr ""
 #: modules/opensimplex/noise_texture.cpp
 #, fuzzy
 msgid "Noise Offset"
-msgstr "Izgarayı Kaydır:"
+msgstr "Gürültü Kaydırma"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Octaves"
@@ -17929,9 +17718,8 @@ msgid "Names"
 msgstr "İsim"
 
 #: modules/regex/regex.cpp
-#, fuzzy
 msgid "Strings"
-msgstr "Ayarlar:"
+msgstr "Dizgiler"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Multicast If"
@@ -18009,7 +17797,7 @@ msgstr "Bit dizisi bulundu fakat yığındaki düğüm değil, kusuru bildir!"
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
 msgid "Stack overflow with stack depth:"
-msgstr "Şu derinlikte yığın taşması: "
+msgstr "Şu derinlikte yığın taşması:"
 
 #: modules/visual_script/visual_script.cpp
 #, fuzzy
@@ -18381,7 +18169,7 @@ msgstr ""
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
 msgid "Input type not iterable:"
-msgstr "Girdi türü yinelenebilir değil: "
+msgstr "Girdi türü yinelenebilir değil:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
@@ -18390,7 +18178,7 @@ msgstr "Yineleyici geçersiz durumda"
 #: modules/visual_script/visual_script_flow_control.cpp
 #, fuzzy
 msgid "Iterator became invalid:"
-msgstr "Yineleyici geçersiz durumda: "
+msgstr "Yineleyici geçersiz durumda:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Sequence"
@@ -18462,9 +18250,8 @@ msgid "Use Default Args"
 msgstr "Varsayılanlara dön"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Validate"
-msgstr "Geçerli karakterler:"
+msgstr "Doğrula"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -18553,19 +18340,18 @@ msgstr "Diziyi Yeniden Boyutlandır"
 
 #: modules/visual_script/visual_script_nodes.cpp scene/resources/material.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Operator"
-msgstr "Kaplama opeartörü."
+msgstr "Operatör"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
 msgid "Invalid argument of type:"
-msgstr ": Şu tür için geçersiz değiştirgen: "
+msgstr ": Şu tür için geçersiz değiştirgen:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
 msgid "Invalid arguments:"
-msgstr ": Geçersiz değiştirgenler: "
+msgstr ": Geçersiz değiştirgenler:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
@@ -18579,12 +18365,12 @@ msgstr "İsim"
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
 msgid "VariableGet not found in script:"
-msgstr "VariableGet betikte bulunamadı: "
+msgstr "VariableGet betikte bulunamadı:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
 msgid "VariableSet not found in script:"
-msgstr "VariableSet betikte bulunamadı: "
+msgstr "VariableSet betikte bulunamadı:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Preload"
@@ -18683,7 +18469,7 @@ msgstr "Görsel Betikte Ara"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr "Yield"
+msgstr "Verim"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
@@ -18785,9 +18571,8 @@ msgid "CA Chain"
 msgstr "IK Zincirini Temizle"
 
 #: modules/websocket/websocket_server.cpp
-#, fuzzy
 msgid "Handshake Timeout"
-msgstr "Zaman aşımı."
+msgstr "Tokalaşma Zaman Aşımı"
 
 #: modules/webxr/webxr_interface.cpp
 #, fuzzy
@@ -18795,14 +18580,12 @@ msgid "Session Mode"
 msgstr "Bölge Kipi"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Required Features"
-msgstr "Ana Özellikler:"
+msgstr "Gerekli Özellikler"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Optional Features"
-msgstr "Ana Özellikler:"
+msgstr "İsteğe Bağlı Özellikler"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Requested Reference Space Types"
@@ -18907,9 +18690,8 @@ msgid "Export Format"
 msgstr "Dışa aktarım Yolu"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Min SDK"
-msgstr "Kontur Boyutu:"
+msgstr "Minimum SDK"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18960,14 +18742,12 @@ msgid "Code"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Package"
-msgstr "Çıkınla"
+msgstr "Paket"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Unique Name"
-msgstr "Düğüm adı:"
+msgstr "Benzersiz Ad"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18975,9 +18755,8 @@ msgid "Signed"
 msgstr "Sinyal"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Classify As Game"
-msgstr "Sınıf İsmi:"
+msgstr "Oyun Olarak Sınıflandır"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Retain Data On Uninstall"
@@ -18989,9 +18768,8 @@ msgid "Exclude From Recents"
 msgstr "Düğümleri Sil"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Graphics"
-msgstr "Izgarayı Kaydır:"
+msgstr "Grafikler"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19063,7 +18841,7 @@ msgstr "Topluluk"
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Extra Args"
-msgstr "Ekstra Çağrı Argümanları:"
+msgstr "Ek Çağrı Argümanları"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19282,10 +19060,8 @@ msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"'apksigner' bulunamadı.\n"
-"Lütfen komutun Android SDK build-tools dizininde bulunup bulunmadığını "
-"kontrol edin.\n"
-"Elde edilen %s imzasız."
+"'apksigner' bulunamadı. Lütfen komutun Android SDK build-tools dizininde "
+"bulunup bulunmadığını kontrol edin. Elde edilen %s imzasız."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -19300,9 +19076,8 @@ msgid "Could not find keystore, unable to export."
 msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "Alt işlem başlatılamadı!"
+msgstr "apksigner uygulaması başlatılamadı."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -19333,9 +19108,8 @@ msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Geçersiz dosya adı! Android APK, * .apk uzantısını gerektirir."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Desteklenmeyen dışa aktarma biçimi!\n"
+msgstr "Desteklenmeyen dışa aktarım biçimi!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19346,27 +19120,22 @@ msgstr ""
 "için sürüm bilgisi yok. Lütfen 'Proje' menüsünden yeniden yükleyin."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Android derlemesi sürüm uyumsuzluğu:\n"
-"   Yüklü Şablon: %s\n"
-"   Godot Versiyonu: %s\n"
+"Android derlemesi sürüm uyumsuzluğu: Yüklü Şablon: %s, Godot versiyonu: %s. "
 "Lütfen 'Proje' menüsünden Android derleme şablonunu yeniden yükleyin."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
-"Proje adıyla res://android/build/res/*.xml dosyalarının üzerine yazılamıyor"
+"Proje adıyla res://android/build/res/*.xml dosyalarının üzerine yazılamıyor."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Proje dosyaları gradle projesine aktarılamadı\n"
+msgstr "Proje dosyaları gradle projesine aktarılamadı."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -19382,10 +19151,9 @@ msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Android projesinin oluşturulması başarısız oldu, hatayı çıktı için kontrol "
-"edin.\n"
-"Alternatif olarak, Android derleme dokümantasyonu için docs.godotengine.org "
-"adresini ziyaret edin.."
+"Android projesinin oluşturulması başarısız oldu, hata. için çıktıyı kontrol "
+"edin. Alternatif olarak, Android derleme dokümantasyonu için docs."
+"godotengine.org adresini ziyaret edin."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -19400,40 +19168,34 @@ msgstr ""
 "için gradle proje dizinini kontrol edin."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "Paket bulunamadı: %s"
+msgstr "Paket bulunamadı: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
 msgstr "APK oluşturuluyor..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"Dışa aktarılacak şablon APK bulunamadı:\n"
-"%s"
+msgstr "Dışa aktarılacak şablon APK bulunamadı: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"Seçili mimariler için dışa aktarma şablonunda eksik kitaplıklar: %s.\n"
-"Lütfen tüm gerekli kitaplıkları içeren bir şablon oluşturun veya dışa "
-"aktarma ön ayarındaki eksik mimarilerin işaretini kaldırın."
+"Seçili mimariler için dışa aktarma şablonunda eksik kitaplıklar: %s. Lütfen "
+"tüm gerekli kitaplıkları içeren bir şablon oluşturun veya dışa aktarma ön "
+"ayarındaki eksik mimarilerin işaretini kaldırın."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adding files..."
 msgstr "Dosyalar ekleniyor..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files."
-msgstr "Proje dosyaları dışa aktarılamadı"
+msgstr "Proje dosyaları dışa aktarılamadı."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -19529,9 +19291,8 @@ msgid "Code Sign Identity Release"
 msgstr ""
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Method Release"
-msgstr "Dışa Aktarma Biçimi:"
+msgstr "Dışa Aktarma Yöntemi Sürümü"
 
 #: platform/iphone/export/export.cpp
 msgid "Targeted Device Family"
@@ -19542,9 +19303,8 @@ msgid "Info"
 msgstr ""
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Identifier"
-msgstr "Geçersiz Tanımlayıcı:"
+msgstr "Tanımlayıcı"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19570,12 +19330,12 @@ msgstr "Özellikleri Yapıştır"
 #: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "Access Wi-Fi"
-msgstr "Başarılı!"
+msgstr "Wi-Fi'ye Eriş"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "Push Notifications"
-msgstr "Rastgele Döndürme:"
+msgstr "Rastgele Döndürme"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -19675,6 +19435,11 @@ msgstr "ÖzelSınıf"
 msgid "Custom BG Color"
 msgstr "ÖzelSınıf"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Hepsini Genişlet"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19707,19 +19472,16 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Dışa aktarılmış HTML'yi sistemin varsayılan tarayıcısında çalıştır."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "Dışa aktarma için şablon açılamadı:"
+msgstr "Dışa aktarım için şablon açılamadı: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "Geçersiz Dışa Aktarım Şablonu:"
+msgstr "Geçersiz dışa aktarım şablonu: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "Dosya yazılamadı:"
+msgstr "Dosya yazılamadı: \"%s\"."
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19727,18 +19489,16 @@ msgid "Icon Creation"
 msgstr "Kenar Boşluk Belirle"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "Dosya okunamadı:"
+msgstr "Dosya okunamadı: \"%s\"."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Variant"
-msgstr "Ayrım:"
+msgstr "Varyant"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -19810,19 +19570,16 @@ msgid "Icon 512 X 512"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "HTML kabuğu okunamadı:"
+msgstr "HTML kabuğu okunamadı: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "HTTP sunucu klasörü oluşturulamadı:"
+msgstr "HTTP sunucu klasörü oluşturulamadı: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server: %d."
-msgstr "HTTP sunucusu başlatılırken hata:"
+msgstr "HTTP sunucusu başlatılırken hata: %d."
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
@@ -19926,9 +19683,8 @@ msgid "Unknown object type."
 msgstr ""
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "App Category"
-msgstr "Kategori:"
+msgstr "Uygulama Kategorisi"
 
 #: platform/osx/export/export.cpp
 msgid "High Res"
@@ -20122,19 +19878,16 @@ msgid "Apple Team ID"
 msgstr ""
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open icon file \"%s\"."
-msgstr "Proje dosyaları dışa aktarılamadı"
+msgstr "İkon dosyası \"%s\" açılamadı."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "Alt işlem başlatılamadı!"
+msgstr "xcrun uygulaması başlatılamadı."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Notarization failed."
-msgstr "Yerelleştirme"
+msgstr "Noter tasdiki başarısız oldu."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization request UUID: \"%s\""
@@ -20187,9 +19940,8 @@ msgid "No identity found."
 msgstr "Simge bulunamadı."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Cannot sign file %s."
-msgstr "%s dosyası kaydedilirken hata"
+msgstr "%s dosyası imzalanamadı."
 
 #: platform/osx/export/export.cpp
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
@@ -20201,9 +19953,8 @@ msgid "DMG Creation"
 msgstr "Yönler"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "Alt işlem başlatılamadı!"
+msgstr "hdiutil uygulaması başlatılamadı."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -20219,16 +19970,12 @@ msgid "Creating app bundle"
 msgstr "Küçük Bediz Oluşturuluyor"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export: \"%s\"."
-msgstr ""
-"Dışa aktarılacak şablon APK bulunamadı:\n"
-"%s"
+msgstr "Dışa aktarım için şablon uygulaması bulunamadı: \"%s\"."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid export format."
-msgstr "Geçersiz Dışa Aktarım Şablonu:"
+msgstr "Geçersiz dışa aktarım biçimi."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -20284,9 +20031,8 @@ msgid "ZIP Creation"
 msgstr "Proje"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Proje dosyaları gradle projesine aktarılamadı\n"
+msgstr "\"%s\" yolundan okunacak dosya açılamadı."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20413,23 +20159,20 @@ msgid "Display Name"
 msgstr "Hepsini Görüntüle"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Short Name"
-msgstr "Betik Adı:"
+msgstr "Kısa Ad"
 
 #: platform/uwp/export/export.cpp
 msgid "Publisher"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Publisher Display Name"
-msgstr "Geçersiz paket yayıncı görünen adı."
+msgstr "Görünen Yayıncı Adı"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Product GUID"
-msgstr "Geçersiz ürün GUID'i."
+msgstr "Ürün GUID"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20444,7 +20187,7 @@ msgstr "Sinyal"
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Certificate"
-msgstr "Köşenoktalar:"
+msgstr "Sertifika"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20512,9 +20255,8 @@ msgid "Wide 310 X 150 Logo"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Splash Screen"
-msgstr "Çizim Çağrıları:"
+msgstr "Başlangıç Ekranı"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20531,6 +20273,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -20604,9 +20352,8 @@ msgid "Debug Algorithm"
 msgstr "Hata Ayıklayıcı"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to rename temporary file \"%s\"."
-msgstr "Geçici dosya kaldırılamıyor:"
+msgstr "\"%s\" geçici dosyasının yeniden adlandırılması başarısız oldu."
 
 #: platform/windows/export/export.cpp
 msgid "Identity Type"
@@ -20632,19 +20379,16 @@ msgid "File Version"
 msgstr "Sürüm"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Product Version"
-msgstr "Geçersiz ürün GUID'i."
+msgstr "Ürün Sürümü"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Company Name"
-msgstr "Düğüm adı:"
+msgstr "Şirket Adı"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Product Name"
-msgstr "Proje Adı:"
+msgstr "Ürün Adı"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20693,9 +20437,8 @@ msgid "Could not find osslsigncode executable at \"%s\"."
 msgstr "Anahtar deposu bulunamadı, dışa aktarılamadı."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid identity type."
-msgstr "Geçersiz Tanımlayıcı:"
+msgstr "Geçersiz kimlik türü."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20715,9 +20458,8 @@ msgid "Signtool failed to sign executable: %s."
 msgstr "Geçersiz uzantı."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "Geçici dosya kaldırılamıyor:"
+msgstr "\"%s\" geçici dosyasının silinme işlemi başarısız oldu."
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -20726,19 +20468,16 @@ msgid ""
 msgstr ""
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid icon path:"
-msgstr "Geçersiz yol."
+msgstr "Geçersiz ikon yolu:"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid file version:"
-msgstr "Geçersiz uzantı."
+msgstr "Geçersiz dosya sürümü:"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid product version:"
-msgstr "Geçersiz ürün GUID'i."
+msgstr "Geçersiz ürün sürümü:"
 
 #: platform/windows/export/export.cpp
 msgid "Windows executables cannot be >= 4 GiB."
@@ -20875,7 +20614,6 @@ msgid "Audio Bus"
 msgstr "Audio Bus Ekle"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Override"
 msgstr "Üzerine Yaz"
 
@@ -20907,9 +20645,8 @@ msgstr ""
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
 #: scene/3d/visibility_notifier.cpp scene/3d/visual_instance.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Max Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Maksimum Uzaklık"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/light.cpp
 #, fuzzy
@@ -20937,15 +20674,14 @@ msgid "Anchor Mode"
 msgstr "Simge Kipi"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Rotating"
-msgstr "Dönme Adımı:"
+msgstr "Döndürme"
 
 #: scene/2d/camera_2d.cpp scene/2d/listener_2d.cpp scene/3d/camera.cpp
 #: scene/3d/listener.cpp scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Current"
-msgstr "Geçerli:"
+msgstr "Geçerli"
 
 #: scene/2d/camera_2d.cpp scene/gui/graph_edit.cpp
 #, fuzzy
@@ -21027,14 +20763,12 @@ msgid "Drag Margin"
 msgstr "Kenar Boşluk Belirle"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Screen"
-msgstr "Çizim Çağrıları:"
+msgstr "Çizim Ekranı"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Limits"
-msgstr "Çizim Çağrıları:"
+msgstr "Çizim Sınırları"
 
 #: scene/2d/camera_2d.cpp
 #, fuzzy
@@ -21248,9 +20982,8 @@ msgstr ""
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Randomness"
-msgstr "Rastgele Yeniden Başlama (sn):"
+msgstr "Rastgelelik"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21292,9 +21025,8 @@ msgstr "Emisyon Maskesi"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Sphere Radius"
-msgstr "Emisyon Kaynağı: "
+msgstr "Küre Yarıçapı"
 
 #: scene/2d/cpu_particles_2d.cpp
 #, fuzzy
@@ -21364,7 +21096,7 @@ msgstr "Doğrusal"
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Accel"
-msgstr "Başarılı!"
+msgstr "Hızlanma"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21423,9 +21155,8 @@ msgid "Angle Curve"
 msgstr "Eğriyi Kapat"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
-#, fuzzy
 msgid "Scale Amount"
-msgstr "Değer:"
+msgstr "Ölçek Miktarı"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 msgid "Scale Amount Random"
@@ -21451,13 +21182,12 @@ msgstr ""
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Hue Variation"
-msgstr "Ayrım:"
+msgstr "Renk Tonu Varyasyonu"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Variation"
-msgstr "Ayrım:"
+msgstr "Varyasyon"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21687,9 +21417,8 @@ msgid "End Cap Mode"
 msgstr "Yapışma Kipi:"
 
 #: scene/2d/line_2d.cpp scene/2d/polygon_2d.cpp scene/resources/style_box.cpp
-#, fuzzy
 msgid "Border"
-msgstr "Klasör yeniden adlandırma:"
+msgstr "Kenar"
 
 #: scene/2d/line_2d.cpp
 msgid "Sharp Limit"
@@ -21743,9 +21472,8 @@ msgid "Target Desired Distance"
 msgstr ""
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Path Max Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Yol Maksimum Mesafesi"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
@@ -21771,9 +21499,8 @@ msgid "Time Horizon"
 msgstr "Yatay Yansıt"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
-#, fuzzy
 msgid "Max Speed"
-msgstr "Hız:"
+msgstr "Maksimum Hız"
 
 #: scene/2d/navigation_agent_2d.cpp
 #, fuzzy
@@ -21817,9 +21544,8 @@ msgstr "Seyahat"
 
 #: scene/2d/node_2d.cpp scene/2d/polygon_2d.cpp scene/3d/spatial.cpp
 #: scene/main/canvas_layer.cpp
-#, fuzzy
 msgid "Rotation Degrees"
-msgstr "%s Düzey Dönüyor."
+msgstr "Dönüş Açıları"
 
 #: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
@@ -21827,14 +21553,12 @@ msgid "Global Rotation"
 msgstr "Genel Sabit"
 
 #: scene/2d/node_2d.cpp
-#, fuzzy
 msgid "Global Rotation Degrees"
-msgstr "%s Düzey Dönüyor."
+msgstr "Genel Dönüş Açıları"
 
 #: scene/2d/node_2d.cpp
-#, fuzzy
 msgid "Global Scale"
-msgstr "Rastgele Ölçek:"
+msgstr "Küresel Ölçek"
 
 #: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
@@ -22022,9 +21746,8 @@ msgid "Mass"
 msgstr ""
 
 #: scene/2d/physics_body_2d.cpp
-#, fuzzy
 msgid "Inertia"
-msgstr "Dikey:"
+msgstr "Eylemsizlik"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
@@ -22308,9 +22031,8 @@ msgid "Compatibility Mode"
 msgstr "Öncelik Kipi"
 
 #: scene/2d/tile_map.cpp
-#, fuzzy
 msgid "Centered Textures"
-msgstr "Ana Özellikler:"
+msgstr "Merkezlenmiş Dokular"
 
 #: scene/2d/tile_map.cpp
 msgid "Cell Clip UV"
@@ -22434,9 +22156,8 @@ msgid "ARVROrigin requires an ARVRCamera child node."
 msgstr "ARVROrigin bir ARVRCamera alt düğümü gerektirir."
 
 #: scene/3d/arvr_nodes.cpp servers/arvr_server.cpp
-#, fuzzy
 msgid "World Scale"
-msgstr "Rastgele Ölçek:"
+msgstr "Dünya Ölçeği"
 
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
@@ -22465,9 +22186,8 @@ msgid "Emission Angle"
 msgstr "Emisyon Renkleri"
 
 #: scene/3d/audio_stream_player_3d.cpp
-#, fuzzy
 msgid "Degrees"
-msgstr "%s Düzey Dönüyor."
+msgstr "Açılar"
 
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
@@ -22578,9 +22298,8 @@ msgid "Generate"
 msgstr "Genel"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Max Size"
-msgstr "Boyut:"
+msgstr "Maksimum Boyut"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
@@ -22588,9 +22307,8 @@ msgid "Custom Sky"
 msgstr "ÖzelSınıf"
 
 #: scene/3d/baked_lightmap.cpp
-#, fuzzy
 msgid "Custom Sky Rotation Degrees"
-msgstr "%s Düzey Dönüyor."
+msgstr "Özel Gökyüzü Dönüş Açıları"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/ray_cast.cpp
 #, fuzzy
@@ -22909,14 +22627,12 @@ msgstr "Beyaz Modüle Etme Kuvveti"
 
 #: scene/3d/label_3d.cpp scene/resources/default_theme/default_theme.cpp
 #: scene/resources/dynamic_font.cpp scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Font"
-msgstr "Yazı Tipleri"
+msgstr "Yazı Tipi"
 
 #: scene/3d/label_3d.cpp scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Horizontal Alignment"
-msgstr "Yatay:"
+msgstr "Yatay Hizalama"
 
 #: scene/3d/label_3d.cpp
 #, fuzzy
@@ -23026,9 +22742,8 @@ msgid "Software Skinning"
 msgstr ""
 
 #: scene/3d/mesh_instance.cpp
-#, fuzzy
 msgid "Transform Normals"
-msgstr "Dönüşüm Durduruldu."
+msgstr "Dönüşüm Normalleri"
 
 #: scene/3d/navigation.cpp
 msgid ""
@@ -23239,9 +22954,8 @@ msgid "Angular Limit Upper"
 msgstr "Doğrusal"
 
 #: scene/3d/physics_body.cpp
-#, fuzzy
 msgid "Angular Limit Lower"
-msgstr "Maks. Açısal Hata:"
+msgstr "Açısal Limit Alt"
 
 #: scene/3d/physics_body.cpp
 #, fuzzy
@@ -23406,9 +23120,8 @@ msgid "Exclude Nodes"
 msgstr "Düğümleri Sil"
 
 #: scene/3d/physics_joint.cpp
-#, fuzzy
 msgid "Params"
-msgstr "Parametre Değiştirildi:"
+msgstr "Parametreler"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Limit"
@@ -23436,7 +23149,7 @@ msgstr "Yörünge Görünümü Sağ"
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Max Impulse"
-msgstr "Hız:"
+msgstr "Maksimum İtme"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23444,14 +23157,12 @@ msgid "Linear Limit"
 msgstr "Doğrusal"
 
 #: scene/3d/physics_joint.cpp
-#, fuzzy
 msgid "Upper Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Üst Mesafe"
 
 #: scene/3d/physics_joint.cpp
-#, fuzzy
 msgid "Lower Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Alt Mesafe"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23499,9 +23210,8 @@ msgid "Linear Motor X"
 msgstr "Etkinleştir"
 
 #: scene/3d/physics_joint.cpp
-#, fuzzy
 msgid "Force Limit"
-msgstr "Çizim Çağrıları:"
+msgstr "Kuvvet Sınırı"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23619,9 +23329,8 @@ msgid "Dispatch Mode"
 msgstr ""
 
 #: scene/3d/proximity_group.cpp
-#, fuzzy
 msgid "Grid Radius"
-msgstr "Yarıçap:"
+msgstr "Izgara Yarıçapı"
 
 #: scene/3d/ray_cast.cpp
 #, fuzzy
@@ -23908,14 +23617,12 @@ msgid "Parent Collision Ignore"
 msgstr "Temas Çokgeni Oluştur"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Simulation Precision"
-msgstr "Animasyon ağacı geçersizdir."
+msgstr "Simülasyon Hassasiyeti"
 
 #: scene/3d/soft_body.cpp
-#, fuzzy
 msgid "Total Mass"
-msgstr "Toplam:"
+msgstr "Toplam Kütle"
 
 #: scene/3d/soft_body.cpp
 msgid "Linear Stiffness"
@@ -23984,7 +23691,7 @@ msgstr ""
 
 #: scene/3d/sprite_3d.cpp scene/gui/graph_edit.cpp
 msgid "Opacity"
-msgstr ""
+msgstr "Şeffaflık"
 
 #: scene/3d/sprite_3d.cpp scene/resources/material.cpp
 #, fuzzy
@@ -24039,9 +23746,8 @@ msgid "Use As Steering"
 msgstr ""
 
 #: scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Wheel"
-msgstr "Tekerlek Yukarı."
+msgstr "Tekerlek"
 
 #: scene/3d/vehicle_body.cpp
 msgid "Roll Influence"
@@ -24111,9 +23817,8 @@ msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/animation/skeleton_ik.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Min Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Minimum Mesafe"
 
 #: scene/3d/visual_instance.cpp
 msgid "Min Hysteresis"
@@ -24162,31 +23867,30 @@ msgstr "Düğümü Çırp"
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Fadein Time"
-msgstr "X-Sönülme Süresi (sn):"
+msgstr "Solma Süresi"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Fadeout Time"
-msgstr "X-Sönülme Süresi (sn):"
+msgstr "Kararma Süresi"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Auto Restart"
-msgstr "Kendiliğinden Yeniden Başlat:"
+msgstr "Otomatik Yeniden Başlat"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Autorestart"
-msgstr "Kendiliğinden Yeniden Başlat:"
+msgstr "Otomatik Yeniden Başlatma"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Delay"
 msgstr ""
 
 #: scene/animation/animation_blend_tree.cpp
-#, fuzzy
 msgid "Random Delay"
-msgstr "Rastgele Eğilme:"
+msgstr "Rastgele Gecikme"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
@@ -24196,7 +23900,7 @@ msgstr "Değer:"
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Blend Amount"
-msgstr "Değer:"
+msgstr "Karıştırma Miktarı"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
@@ -24212,7 +23916,7 @@ msgstr "Giriş Portu Ekle"
 #: scene/animation/animation_node_state_machine.cpp
 #, fuzzy
 msgid "Xfade Time"
-msgstr "X-Sönülme Süresi (sn):"
+msgstr "X-Sönülme Süresi"
 
 #: scene/animation/animation_node_state_machine.cpp
 #, fuzzy
@@ -24258,9 +23962,8 @@ msgid "Current Animation Position"
 msgstr "Animasyon Noktası Ekle"
 
 #: scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Playback Options"
-msgstr "Sınıf Seçenekleri:"
+msgstr "Oynatma Seçenekleri"
 
 #: scene/animation/animation_player.cpp
 #, fuzzy
@@ -24304,7 +24007,7 @@ msgstr "AnimationOynatıcı kök düğümü geçerli bir düğüm değil."
 #: scene/animation/animation_tree.cpp
 #, fuzzy
 msgid "Tree Root"
-msgstr "Kök Düğüm Oluştur:"
+msgstr "Ağaç Kökü"
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
@@ -24562,9 +24265,8 @@ msgid "Grow Direction"
 msgstr "Yönler"
 
 #: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Min Size"
-msgstr "Kontur Boyutu:"
+msgstr "Minimum Boyut"
 
 #: scene/gui/control.cpp
 #, fuzzy
@@ -24620,18 +24322,16 @@ msgid "Mouse"
 msgstr ""
 
 #: scene/gui/control.cpp
-#, fuzzy
 msgid "Default Cursor Shape"
-msgstr "Varsayılan Bus Yerleşim Düzenini Yükle."
+msgstr "Varsayılan İmleç Şekli"
 
 #: scene/gui/control.cpp
 msgid "Pass On Modal Close Click"
 msgstr ""
 
 #: scene/gui/control.cpp
-#, fuzzy
 msgid "Size Flags"
-msgstr "Boyut: "
+msgstr "Boyut Etiketleri"
 
 #: scene/gui/control.cpp
 #, fuzzy
@@ -24784,9 +24484,8 @@ msgid "Fixed Column Width"
 msgstr ""
 
 #: scene/gui/item_list.cpp
-#, fuzzy
 msgid "Icon Scale"
-msgstr "Rastgele Ölçek:"
+msgstr "Simge Ölçeği"
 
 #: scene/gui/item_list.cpp
 #, fuzzy
@@ -24799,9 +24498,8 @@ msgid "V Align"
 msgstr "Ata"
 
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
-#, fuzzy
 msgid "Visible Characters"
-msgstr "Geçerli karakterler:"
+msgstr "Görünür Karakterler"
 
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
 #, fuzzy
@@ -24825,9 +24523,8 @@ msgid "Secret"
 msgstr ""
 
 #: scene/gui/line_edit.cpp
-#, fuzzy
 msgid "Secret Character"
-msgstr "Geçerli karakterler:"
+msgstr "Gizli Karakter"
 
 #: scene/gui/line_edit.cpp
 msgid "Expand To Text Length"
@@ -24884,16 +24581,15 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Caret"
-msgstr "Karet"
+msgstr "İmleç"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Blink"
 msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Blink Speed"
-msgstr "Hız:"
+msgstr "Yanıp Sönme Hızı"
 
 #: scene/gui/link_button.cpp
 msgid "Underline"
@@ -24980,9 +24676,8 @@ msgid "Allow Search"
 msgstr "Ara"
 
 #: scene/gui/progress_bar.cpp
-#, fuzzy
 msgid "Percent"
-msgstr "Yakın zamanda:"
+msgstr "Yüzde"
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
@@ -24999,9 +24694,8 @@ msgid "Max Value"
 msgstr "Değer"
 
 #: scene/gui/range.cpp
-#, fuzzy
 msgid "Page"
-msgstr "Sayfa: "
+msgstr "Sayfa"
 
 #: scene/gui/range.cpp
 #, fuzzy
@@ -25042,9 +24736,8 @@ msgid "Absolute Index"
 msgstr "Kendinden Girintili"
 
 #: scene/gui/rich_text_effect.cpp
-#, fuzzy
 msgid "Elapsed Time"
-msgstr "Süreleri Karıştır:"
+msgstr "Geçen Süre"
 
 #: scene/gui/rich_text_effect.cpp
 #, fuzzy
@@ -25052,9 +24745,8 @@ msgid "Env"
 msgstr "Bitiş"
 
 #: scene/gui/rich_text_effect.cpp
-#, fuzzy
 msgid "Character"
-msgstr "Geçerli karakterler:"
+msgstr "Karakter"
 
 #: scene/gui/rich_text_label.cpp
 msgid "BBCode"
@@ -25065,9 +24757,8 @@ msgid "Meta Underlined"
 msgstr ""
 
 #: scene/gui/rich_text_label.cpp
-#, fuzzy
 msgid "Tab Size"
-msgstr "Boyut:"
+msgstr "Sekme Boyutu"
 
 #: scene/gui/rich_text_label.cpp
 #, fuzzy
@@ -25143,17 +24834,15 @@ msgstr "Renk Seç"
 #: scene/gui/slider.cpp
 #, fuzzy
 msgid "Ticks On Borders"
-msgstr "Klasör yeniden adlandırma:"
+msgstr "Kenarlar Üzerindeki İşaretler"
 
 #: scene/gui/spin_box.cpp
-#, fuzzy
 msgid "Prefix"
-msgstr "Ön Ek:"
+msgstr "Ön Ek"
 
 #: scene/gui/spin_box.cpp
-#, fuzzy
 msgid "Suffix"
-msgstr "Son Ek (Suffix) :"
+msgstr "Son Ek"
 
 #: scene/gui/split_container.cpp
 #, fuzzy
@@ -25175,9 +24864,8 @@ msgid "Tab Align"
 msgstr ""
 
 #: scene/gui/tab_container.cpp scene/gui/tabs.cpp
-#, fuzzy
 msgid "Current Tab"
-msgstr "Geçerli:"
+msgstr "Geçerli Sekme"
 
 #: scene/gui/tab_container.cpp
 #, fuzzy
@@ -25189,9 +24877,8 @@ msgid "All Tabs In Front"
 msgstr ""
 
 #: scene/gui/tab_container.cpp scene/gui/tabs.cpp
-#, fuzzy
 msgid "Drag To Rearrange Enabled"
-msgstr "Düzenlemek için Sürükle-Bırak."
+msgstr "Sürükleyerek Yeniden Düzenleme Aktifleştirildi"
 
 #: scene/gui/tab_container.cpp
 msgid "Use Hidden Tabs For Min Size"
@@ -25240,19 +24927,17 @@ msgid "Wrap Enabled"
 msgstr "Etkin"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Scroll Vertical"
-msgstr "Dikey:"
+msgstr "Dikey Kaydırma"
 
 #: scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Scroll Horizontal"
-msgstr "Yatay:"
+msgstr "Yatay Kaydırma"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Draw"
-msgstr "Çizim Çağrıları:"
+msgstr "Çiz"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
@@ -25312,7 +24997,7 @@ msgstr ""
 #: scene/gui/texture_progress.cpp
 #, fuzzy
 msgid "Fill Mode"
-msgstr "Oynatma Modu:"
+msgstr "Doldurma Modu"
 
 #: scene/gui/texture_progress.cpp scene/resources/material.cpp
 msgid "Tint"
@@ -25328,9 +25013,8 @@ msgid "Initial Angle"
 msgstr "Etkinleştir"
 
 #: scene/gui/texture_progress.cpp
-#, fuzzy
 msgid "Fill Degrees"
-msgstr "%s Düzey Dönüyor."
+msgstr "Dolgu Aşamaları"
 
 #: scene/gui/texture_progress.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -25381,9 +25065,8 @@ msgid "Hide Folding"
 msgstr "Pasif Düğme"
 
 #: scene/gui/tree.cpp
-#, fuzzy
 msgid "Hide Root"
-msgstr "Kök Düğüm Oluştur:"
+msgstr "Kökü Gizle"
 
 #: scene/gui/tree.cpp
 msgid "Drop Mode Flags"
@@ -25437,9 +25120,8 @@ msgid "Max Redirects"
 msgstr ""
 
 #: scene/main/http_request.cpp
-#, fuzzy
 msgid "Timeout"
-msgstr "Zaman aşımı."
+msgstr "Zaman Aşımı"
 
 #: scene/main/node.cpp
 msgid ""
@@ -25567,9 +25249,8 @@ msgid "Draw 2D Outlines"
 msgstr "Anahat Oluştur"
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "Yönler"
+msgstr "Yansımalar"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
@@ -25631,9 +25312,8 @@ msgstr ""
 "döngüsünü kullanmayı tercih edin."
 
 #: scene/main/timer.cpp
-#, fuzzy
 msgid "Autostart"
-msgstr "Kendiliğinden Yeniden Başlat:"
+msgstr "Otomatik başlatma"
 
 #: scene/main/viewport.cpp
 #, fuzzy
@@ -25961,9 +25641,8 @@ msgid "On Disabled"
 msgstr "Pasif Öge"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Off"
-msgstr "Kaydırma:"
+msgstr "Kapat"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26046,9 +25725,8 @@ msgid "Space"
 msgstr "Ana Sahne"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folded"
-msgstr "Dosya:"
+msgstr "Katlanmış"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26207,9 +25885,8 @@ msgid "Labeled Separator Right"
 msgstr "İsimli Ayraç"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Separator"
-msgstr "Renk operatörü."
+msgstr "Yazı Tipi Ayracı"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26217,9 +25894,8 @@ msgid "Font Color Accel"
 msgstr "Renk Öğesini Yeniden Adlandır"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Separator"
-msgstr "Renk operatörü."
+msgstr "Yazı Tipi Rengi Ayracı"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26389,14 +26065,12 @@ msgid "Draw Guides"
 msgstr "Kılavuz çizgilerini göster"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Border"
-msgstr "Dikey:"
+msgstr "Kaydırma Kenarlığı"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Speed"
-msgstr "Izgarayı Kaydır:"
+msgstr "Kaydırma Hızı"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26466,9 +26140,8 @@ msgid "Large"
 msgstr "Hedef"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folder"
-msgstr "Dosya:"
+msgstr "Klasör"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26506,9 +26179,8 @@ msgid "Label Width"
 msgstr "Soldan Görünüm"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Screen Picker"
-msgstr "Screen Etkisi operatörü."
+msgstr "Ekran Seçici"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26671,7 +26343,7 @@ msgstr "Yola Odaklan"
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
 msgid "Outline Size"
-msgstr "Kontur Boyutu:"
+msgstr "Kontur Boyutu"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -26684,14 +26356,12 @@ msgid "Use Mipmaps"
 msgstr "sinyaller"
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Extra Spacing"
-msgstr "İlave Seçenekler:"
+msgstr "Ekstra Boşluk"
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Char"
-msgstr "Geçerli karakterler:"
+msgstr "karakter"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -26722,9 +26392,8 @@ msgid "Sky Rotation"
 msgstr "Dönme Adımı:"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Sky Rotation Degrees"
-msgstr "%s Düzey Dönüyor."
+msgstr "Gökyüzü Dönüş Açıları"
 
 #: scene/resources/environment.cpp
 msgid "Canvas Max Layer"
@@ -26749,14 +26418,13 @@ msgid "Fog"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Sun Color"
-msgstr "Dosya Depolama:"
+msgstr "Güneş Rengi"
 
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Sun Amount"
-msgstr "Değer:"
+msgstr "Güneş Miktarı"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26845,14 +26513,13 @@ msgid "Max Steps"
 msgstr "Adım"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Fade In"
-msgstr "Açılma (sn):"
+msgstr "Solma"
 
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Fade Out"
-msgstr "Karartma (sn):"
+msgstr "Kararma"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26870,7 +26537,7 @@ msgstr ""
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Radius 2"
-msgstr "Yarıçap:"
+msgstr "Yarıçap 2"
 
 #: scene/resources/environment.cpp
 msgid "Intensity 2"
@@ -26899,14 +26566,12 @@ msgid "DOF Far Blur"
 msgstr ""
 
 #: scene/resources/environment.cpp scene/resources/material.cpp
-#, fuzzy
 msgid "Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Mesafe"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Transition"
-msgstr "Geçiş: "
+msgstr "Geçiş"
 
 #: scene/resources/environment.cpp
 msgid "DOF Near Blur"
@@ -26984,14 +26649,12 @@ msgid "Brightness"
 msgstr "Işık"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Saturation"
-msgstr "Ayrım:"
+msgstr "Doygunluk"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Color Correction"
-msgstr "Renk işlevi."
+msgstr "Renk Düzeltme"
 
 #: scene/resources/font.cpp
 #, fuzzy
@@ -27073,9 +26736,8 @@ msgid "Disable Ambient Light"
 msgstr "Sağa Girintile"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Ensure Correct Normals"
-msgstr "Dönüşüm Durduruldu."
+msgstr "Doğru Normalleri Sağla"
 
 #: scene/resources/material.cpp
 msgid "Albedo Tex MSDF"
@@ -27095,9 +26757,8 @@ msgid "Is sRGB"
 msgstr ""
 
 #: scene/resources/material.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Parameters"
-msgstr "Parametre Değiştirildi:"
+msgstr "Parametreler"
 
 #: scene/resources/material.cpp
 #, fuzzy
@@ -27139,9 +26800,8 @@ msgid "Grow"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Grow Amount"
-msgstr "Değer:"
+msgstr "Büyüme Miktarı"
 
 #: scene/resources/material.cpp
 msgid "Use Alpha Scissor"
@@ -27244,7 +26904,7 @@ msgstr ""
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Transmission"
-msgstr "Geçiş: "
+msgstr "Aktarma"
 
 #: scene/resources/material.cpp
 #, fuzzy
@@ -27312,14 +26972,12 @@ msgid "NavMesh Transform"
 msgstr "Dönüşümü Temizle"
 
 #: scene/resources/multimesh.cpp
-#, fuzzy
 msgid "Color Format"
-msgstr "Renk operatörü."
+msgstr "Renk Biçimi"
 
 #: scene/resources/multimesh.cpp
-#, fuzzy
 msgid "Transform Format"
-msgstr "Dönüşüm Durduruldu."
+msgstr "Dönüşüm Biçimi"
 
 #: scene/resources/multimesh.cpp
 msgid "Custom Data Format"
@@ -27335,9 +26993,8 @@ msgid "Visible Instance Count"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Sampling"
-msgstr "Ölçekleniyor: "
+msgstr "Örnekleme"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -27345,9 +27002,8 @@ msgid "Partition Type"
 msgstr "Değişken Tipini Ayarla"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Parsed Geometry Type"
-msgstr "Geometri Ayrıştırılıyor..."
+msgstr "Çözümlenmiş Geometri Tipi"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Source Geometry Mode"
@@ -27363,9 +27019,8 @@ msgid "Cells"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Agents"
-msgstr "Ana Sahne Değiştirgenleri:"
+msgstr "Ajanlar"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -27404,9 +27059,8 @@ msgid "Details"
 msgstr "Varsayılanı Göster"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Sample Distance"
-msgstr "Uzaklık Seç:"
+msgstr "Örnek Mesafe"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -27437,7 +27091,7 @@ msgstr "Kaydırma:"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
-msgstr ""
+msgstr "Küreler"
 
 #: scene/resources/occluder_shape.cpp
 msgid "OccluderShapeSphere Set Spheres"
@@ -27477,14 +27131,12 @@ msgid "Color Modifier"
 msgstr "Serbest Bakış Hız Değiştirici"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Point Texture"
-msgstr "Emisyon Noktaları:"
+msgstr "Nokta Dokusu"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Normal Texture"
-msgstr "Emisyon Kaynağı: "
+msgstr "Normal Doku"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -27497,9 +27149,8 @@ msgid "Point Count"
 msgstr "Giriş Portu Ekle"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale Random"
-msgstr "Ölçek Oranı:"
+msgstr "Rastgele Ölçeklendir"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -27515,9 +27166,8 @@ msgid "Absorbent"
 msgstr ""
 
 #: scene/resources/plane_shape.cpp
-#, fuzzy
 msgid "Plane"
-msgstr "Sekme:"
+msgstr "Uçak"
 
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -27541,9 +27191,8 @@ msgid "Subdivide Depth"
 msgstr ""
 
 #: scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Top Radius"
-msgstr "Yarıçap:"
+msgstr "Üst Yarıçap"
 
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -27556,8 +27205,9 @@ msgid "Left To Right"
 msgstr "Sağ Üst"
 
 #: scene/resources/primitive_meshes.cpp
+#, fuzzy
 msgid "Is Hemisphere"
-msgstr ""
+msgstr "Yarım Küre Mi"
 
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -27606,9 +27256,8 @@ msgid "Top Color"
 msgstr "Sonraki Zemin"
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Horizon Color"
-msgstr "Dosya Depolama:"
+msgstr "Horizon Renk"
 
 #: scene/resources/sky.cpp
 #, fuzzy
@@ -27688,9 +27337,8 @@ msgid "Base Texture"
 msgstr "Dokuyu Kaldır"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Image Size"
-msgstr "Sayfa: "
+msgstr "Görüntü Boyutu"
 
 #: scene/resources/texture.cpp
 #, fuzzy
@@ -27718,9 +27366,8 @@ msgid "Lossy Storage Quality"
 msgstr "Yakala"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "From"
-msgstr "Oynatma Modu:"
+msgstr "Kimden"
 
 #: scene/resources/texture.cpp
 #, fuzzy
@@ -27890,7 +27537,7 @@ msgstr "Deneme"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 #, fuzzy
 msgid "Default Edge Connection Margin"
-msgstr "Bağlantıyı Düzenle:"
+msgstr "Varsayılan Kenar Bağlantı Marjı"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
@@ -28076,7 +27723,7 @@ msgstr ""
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
 #, fuzzy
 msgid "FFT Size"
-msgstr "Boyut:"
+msgstr "FFT Boyutu"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Predelay"
@@ -28104,9 +27751,8 @@ msgid "Pan Pullout"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_stereo_enhance.cpp
-#, fuzzy
 msgid "Time Pullout (ms)"
-msgstr "Zaman aşımı."
+msgstr "Zaman Çıkışı (ms)"
 
 #: servers/audio/effects/audio_effect_stereo_enhance.cpp
 msgid "Surround"
@@ -28292,9 +27938,8 @@ msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
 
 #: servers/visual/visual_server_scene.cpp
-#, fuzzy
 msgid "Spatial Partitioning"
-msgstr "Bölümleniyor..."
+msgstr "Uzaysal Ayırma"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28458,7 +28103,7 @@ msgstr "Ara Değerleme Kipi"
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "OpenGL"
-msgstr "Aç"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"
@@ -28467,7 +28112,7 @@ msgstr ""
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Batching Stream"
-msgstr "Tümden Yeniden Adlandır"
+msgstr "Yığınlama Akışı"
 
 #: servers/visual_server.cpp
 msgid "Legacy Orphan Buffers"
@@ -28482,13 +28127,14 @@ msgid "Batching"
 msgstr "Yığınlama"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Use Batching"
-msgstr ""
+msgstr "Yığınlama Kullan"
 
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Use Batching In Editor"
-msgstr "Editörün güncellenmesi"
+msgstr "Editörde Yığınlama Kullan"
 
 #: servers/visual_server.cpp
 msgid "Single Rect Fallback"
@@ -28507,13 +28153,13 @@ msgid "Scissor Area Threshold"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Max Join Items"
-msgstr "Öğeleri Yönet..."
+msgstr "Maksimum Birleşen Maddeler"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Batch Buffer Size"
-msgstr ""
+msgstr "Yığınlama Arabellek Boyutu"
 
 #: servers/visual_server.cpp
 msgid "Item Reordering Lookahead"
@@ -28526,7 +28172,7 @@ msgstr ""
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Diagnose Frame"
-msgstr "Çerçeveyi Yapıştır"
+msgstr "Kareyi Tespit Et"
 
 #: servers/visual_server.cpp
 msgid "GLES2"
@@ -28586,7 +28232,7 @@ msgstr "Emilme Ayırmayı Görüntüle"
 
 #: servers/visual_server.cpp
 msgid "Max Active Spheres"
-msgstr "Maks. Aktif Küre Sayısı"
+msgstr "Maksimum Aktif Küre Sayısı"
 
 #: servers/visual_server.cpp
 msgid "Max Active Polygons"
@@ -28598,8 +28244,9 @@ msgid "Shader Compilation Mode"
 msgstr "Ara Değerleme Kipi"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "Max Simultaneous Compiles"
-msgstr ""
+msgstr "Maksimum Eşzamanlı Derleme"
 
 #: servers/visual_server.cpp
 msgid "Log Active Async Compiles Count"

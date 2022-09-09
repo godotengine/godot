@@ -11,7 +11,7 @@
 # Олександр Пилипчук <pilipchukap@rambler.ru>, 2018.
 # Kirill Omelchenko <kirill.omelchenko@gmail.com>, 2018.
 # Александр <ol-vin@mail.ru>, 2018.
-# Богдан Матвіїв <bomtvv@gmail.com>, 2019.
+# Богдан Матвіїв <bomtvv@gmail.com>, 2019, 2022.
 # Tymofij Lytvynenko <till.svit@gmail.com>, 2020, 2021.
 # Vladislav Glinsky <cl0ne@mithril.org.ua>, 2020.
 # Микола Тимошенко <9081@ukr.net>, 2020.
@@ -29,7 +29,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-26 01:55+0000\n"
+"PO-Revision-Date: 2022-08-25 13:04+0000\n"
 "Last-Translator: Artem <artem@molotov.work>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -412,9 +412,8 @@ msgid "Command"
 msgstr "Команда"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (фізичний)"
+msgstr "Фізичний"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -469,7 +468,7 @@ msgstr "Тиск"
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Pen Inverted"
-msgstr "Інвертувати"
+msgstr "Перо перевернуте"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -2757,9 +2756,8 @@ msgid "Project export for platform:"
 msgstr "Експортування проєкту для платформи:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Завершено з помилками."
+msgstr "Завершено з попередженнями."
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
@@ -4492,6 +4490,7 @@ msgstr "Різні проєктні або сценографічні інстр
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Проєкт"
 
@@ -4635,7 +4634,7 @@ msgid ""
 msgstr ""
 "Якщо цей параметр увімкнено, будь-які зміни, внесені у сцену в редакторі, "
 "будуть відтворені у запущеному проєкті.\n"
-"При віддаленому використанні на пристрої, це більш ефективно з мережевою "
+"При віддаленому використанні на пристрої, це ефективніше з мережевою "
 "файловою системою."
 
 #: editor/editor_node.cpp
@@ -4651,7 +4650,7 @@ msgid ""
 msgstr ""
 "Якщо цей параметр увімкнено, будь-який скрипт, який буде збережено, буде "
 "перезавантажено у запущеному проєкті.\n"
-"При віддаленому використанні на пристрої, це більш ефективно з мережевою "
+"При віддаленому використанні на пристрої, це ефективніше з мережевою "
 "файловою системою."
 
 #: editor/editor_node.cpp
@@ -5499,11 +5498,12 @@ msgstr "Додаткові кнопки миші для навігації жу�
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "Вибір GridMap"
+msgstr "Перетягніть виділення"
 
 #: editor/editor_settings.cpp
+#, fuzzy
 msgid "Stay In Script Editor On Node Selected"
-msgstr ""
+msgstr "Залишитися в редакторі скриптів на вибраному вузлі"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -7269,7 +7269,8 @@ msgid "8 Bit"
 msgstr "8-бітова"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Моно"
 
@@ -9366,7 +9367,7 @@ msgstr "Плаский 0"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Flat 1"
-msgstr "Площина 1"
+msgstr "Плоский 1"
 
 #: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
 msgid "Ease In"
@@ -11618,9 +11619,8 @@ msgid "New Animation"
 msgstr "Нова анімація"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Filter animations"
-msgstr "Фільтрувати методи"
+msgstr "Фільтрувати анімації"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -15270,16 +15270,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "Зробити локальним"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Увімкнути унікальну назву сцени"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
 msgstr "Цю унікальну назву у сцені вже використано іншим вузлом."
 
 #: editor/scene_tree_dock.cpp
-msgid "Enable Scene Unique Name"
-msgstr "Увімкнути унікальну назву сцени"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Disable Scene Unique Name"
+#, fuzzy
+msgid "Disable Scene Unique Name(s)"
 msgstr "Вимкнути унікальна назва сцени"
 
 #: editor/scene_tree_dock.cpp
@@ -15480,6 +15483,10 @@ msgid "Button Group"
 msgstr "Група кнопок"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "Вимкнути унікальна назва сцени"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Джерело з'єднання)"
 
@@ -15556,6 +15563,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Некоректна назва вузла. Не можна використовувати такі символи:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr "Цю унікальну назву у сцені вже використано іншим вузлом."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -16837,12 +16848,14 @@ msgid "Sparse Indices Component Type"
 msgstr "Тип компонентів індексів розсіювання"
 
 #: modules/gltf/gltf_accessor.cpp
+#, fuzzy
 msgid "Sparse Values Buffer View"
-msgstr ""
+msgstr "Буферне подання розріджених значень"
 
 #: modules/gltf/gltf_accessor.cpp
+#, fuzzy
 msgid "Sparse Values Byte Offset"
-msgstr ""
+msgstr "Зміщення байтів розріджених значень"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Buffer"
@@ -16854,7 +16867,7 @@ msgstr "Байтова довжина"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Stride"
-msgstr ""
+msgstr "Байтовий крок"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Indices"
@@ -16953,8 +16966,9 @@ msgid "Joints Original"
 msgstr "Початок з'єднання"
 
 #: modules/gltf/gltf_skin.cpp
+#, fuzzy
 msgid "Inverse Binds"
-msgstr ""
+msgstr "Зворотні зв'язки"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Non Joints"
@@ -17339,6 +17353,21 @@ msgstr "Зібрати рішення"
 #: modules/mono/editor/csharp_project.cpp
 msgid "Auto Update Project"
 msgstr "Проєкт без назви"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Показана назва"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Виберіть каталог"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Виберіть каталог"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -19132,6 +19161,11 @@ msgstr "Нетиповий колір тла"
 msgid "Custom BG Color"
 msgstr "Нетиповий колір тла"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Експортування піктограми"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19984,6 +20018,12 @@ msgid "Show Name On Square 310 X 310"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "Некоректна скорочена назва пакунка."
 
@@ -20218,7 +20258,7 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Windows"
-msgstr "Вікна"
+msgstr "Windows"
 
 #: platform/windows/export/export.cpp
 msgid "Rcedit"
@@ -25748,7 +25788,7 @@ msgstr "7"
 
 #: scene/resources/environment.cpp
 msgid "Bloom"
-msgstr "Цвітіння"
+msgstr "Світіння"
 
 #: scene/resources/environment.cpp
 msgid "HDR Threshold"

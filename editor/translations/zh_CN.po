@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-07-29 01:36+0000\n"
+"PO-Revision-Date: 2022-08-25 13:04+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -2791,9 +2791,8 @@ msgid "Project export for platform:"
 msgstr "针对平台导出项目："
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "已完成，存在错误。"
+msgstr "已完成，存在警告。"
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
@@ -4466,6 +4465,7 @@ msgstr "其他项目或全场景工具。"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "项目"
 
@@ -7189,7 +7189,8 @@ msgid "8 Bit"
 msgstr "8 位"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Mono"
 
@@ -15020,16 +15021,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "转为本地"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "启用场景唯一名称"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
 msgstr "该场景中已有使用该唯一名称的节点。"
 
 #: editor/scene_tree_dock.cpp
-msgid "Enable Scene Unique Name"
-msgstr "启用场景唯一名称"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Disable Scene Unique Name"
+#, fuzzy
+msgid "Disable Scene Unique Name(s)"
 msgstr "禁用场景唯一名称"
 
 #: editor/scene_tree_dock.cpp
@@ -15223,6 +15227,10 @@ msgid "Button Group"
 msgstr "按钮组"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "禁用场景唯一名称"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "（连接来源）"
 
@@ -15298,6 +15306,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "节点名称无效，不允许包含以下字符："
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr "该场景中已有使用该唯一名称的节点。"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17073,6 +17085,21 @@ msgstr "构建解决方案"
 msgid "Auto Update Project"
 msgstr "自动更新项目"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "显示名称"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "选择目录"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "选择目录"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "内部异常堆栈追朔结束"
@@ -18773,6 +18800,11 @@ msgstr "使用自定义背景色"
 msgid "Custom BG Color"
 msgstr "自定义背景色"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "导出图标"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 msgid "Prepare Templates"
@@ -19557,6 +19589,12 @@ msgid "Show Name On Square 310 X 310"
 msgstr "在正方形 310×310 上显示名称"
 
 #: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "无效的包短名称。"
 
@@ -19681,21 +19719,17 @@ msgid "Could not find wine executable at \"%s\"."
 msgstr "无法在“%s”找到 wine 可执行文件。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start rcedit executable. Configure rcedit path in the Editor "
 "Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
 "Resources\" in the export preset."
 msgstr ""
-"无法启动 rcedit 可执行文件，请在编辑器设置中配置 rcedit 路径（导出 > Windows "
-"> Rcedit）。"
+"无法启动 rcedit 可执行文件。请在编辑器设置中配置 rcedit 路径（导出 > Windows "
+"> Rcedit），或在导出预设中禁用“应用 > 修改资源”。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "rcedit failed to modify executable: %s."
-msgstr ""
-"rcedit 修改可执行文件失败：\n"
-"%s"
+msgstr "rcedit 修改可执行文件失败：%s。"
 
 #: platform/windows/export/export.cpp
 msgid "Could not find signtool executable at \"%s\"."
@@ -19714,21 +19748,17 @@ msgid "Invalid timestamp server."
 msgstr "时间戳服务器无效。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start signtool executable. Configure signtool path in the Editor "
 "Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
 "export preset."
 msgstr ""
-"无法启动 signtool 可执行文件，请在编辑器设置中配置 signtool 路径（导出 > "
-"Windows > Signtool）。"
+"无法启动 signtool 可执行文件。请在编辑器设置中配置 signtool 路径（导出 > "
+"Windows > Signtool），或在导出预设中禁用“代码签名”。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Signtool failed to sign executable: %s."
-msgstr ""
-"Signtool 签名可执行文件失败：\n"
-"%s"
+msgstr "Signtool 签名可执行文件失败：%s。"
 
 #: platform/windows/export/export.cpp
 msgid "Failed to remove temporary file \"%s\"."
@@ -21505,7 +21535,7 @@ msgstr "ConcavePolygonShape 只支持静态模式下的 RigidBody。"
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
-msgstr "无物可见，因为没有指定网格。"
+msgstr "未指定网格，无可见内容。"
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
@@ -23470,7 +23500,7 @@ msgstr "最小值"
 
 #: scene/gui/range.cpp scene/resources/curve.cpp
 msgid "Max Value"
-msgstr "最大之"
+msgstr "最大值"
 
 #: scene/gui/range.cpp
 msgid "Page"
@@ -23486,11 +23516,11 @@ msgstr "舍入"
 
 #: scene/gui/range.cpp
 msgid "Allow Greater"
-msgstr "允许更多"
+msgstr "允许更大"
 
 #: scene/gui/range.cpp
 msgid "Allow Lesser"
-msgstr "允许更少"
+msgstr "允许更小"
 
 #: scene/gui/reference_rect.cpp
 msgid "Border Color"
@@ -25296,11 +25326,11 @@ msgstr "公告板保持缩放"
 
 #: scene/resources/material.cpp
 msgid "Grow"
-msgstr "发光"
+msgstr "生长"
 
 #: scene/resources/material.cpp
 msgid "Grow Amount"
-msgstr "发光量"
+msgstr "生长量"
 
 #: scene/resources/material.cpp
 msgid "Use Alpha Scissor"

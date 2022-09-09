@@ -85,12 +85,16 @@
 # Angel Andrade <aandradeb99@gmail.com>, 2022.
 # Juan Felipe Gómez López <juanfgomez0912@gmail.com>, 2022.
 # Pineappletooth <yochank003@gmail.com>, 2022.
+# David A. Rodas S. <woshianima@gmail.com>, 2022.
+# Fernando Joaquin Manzano Lopez <ticantin12@gmail.com>, 2022.
+# M3CG <cgmario1999@gmail.com>, 2022.
+# Chalan <Valentin06ch@outlook.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-05 01:04+0000\n"
+"PO-Revision-Date: 2022-09-07 21:02+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -99,7 +103,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -478,7 +482,7 @@ msgstr "Física"
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Pressed"
-msgstr "Preset"
+msgstr "Presionado"
 
 #: core/os/input_event.cpp
 msgid "Scancode"
@@ -601,11 +605,11 @@ msgstr "Valor del Controlador"
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
 msgid "Application"
-msgstr "Aplicação"
+msgstr "Aplicación"
 
 #: core/project_settings.cpp main/main.cpp
 msgid "Config"
-msgstr "Configuração"
+msgstr "Configuración"
 
 #: core/project_settings.cpp
 msgid "Project Settings Override"
@@ -652,11 +656,11 @@ msgstr "Desactivar stderr"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr "Utilizar el Directorio de Datos Ocultos del Proyecto"
+msgstr "Usar Directorio de Datos Ocultos del Proyecto"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr "Utilizar Directorio de Usuario Personalizado"
+msgstr "Usar Directorio de Usuario Personalizado"
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
@@ -702,7 +706,7 @@ msgstr "Audio"
 
 #: core/project_settings.cpp
 msgid "Default Bus Layout"
-msgstr "Layout de Bus por Defecto"
+msgstr "Layout de Bus Predeterminado"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -966,7 +970,7 @@ msgstr "Idioma"
 
 #: core/translation.cpp
 msgid "Test"
-msgstr "Probar"
+msgstr "Test"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
@@ -1239,11 +1243,11 @@ msgstr "Stream"
 
 #: editor/animation_track_editor.cpp
 msgid "Start Offset"
-msgstr "Desplazamiento de Inicio"
+msgstr "Offset de Inicio"
 
 #: editor/animation_track_editor.cpp
 msgid "End Offset"
-msgstr "Desplazamiento Final"
+msgstr "Offset Final"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1700,12 +1704,12 @@ msgstr ""
 "Esta animación pertenece a una escena importada, por lo que los cambios en "
 "las pistas importadas no se guardarán.\n"
 "\n"
-"Para habilitar la capacidad de añadir pistas personalizadas, ve a la "
+"Para habilitar la posibilidad de añadir pistas personalizadas, ve a la "
 "configuración de importación de la escena y establece\n"
-"\"Animation > Storage\" a \"Files\", activa \"Animation > Keep Custom "
-"Tracks\", y luego reimporta.\n"
-"También puedes usar un preset de importación que importa animaciones para "
-"separar archivos."
+"\"Animación > Almacenamiento\" a \"Archivos\", active \"Animación > Mantener "
+"Pistas Personalizadas\", y vuelve a importar.\n"
+"Como alternativa, utiliza un preset de importación que importe las "
+"animaciones a archivos separados."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -1791,7 +1795,7 @@ msgstr "Ir al Paso Anterior"
 
 #: editor/animation_track_editor.cpp
 msgid "Apply Reset"
-msgstr "Aplicar Restablecer"
+msgstr "Aplicar Reset"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
@@ -2649,11 +2653,11 @@ msgstr "Guardar este Bus Layout a un archivo."
 
 #: editor/editor_audio_buses.cpp editor/import_dock.cpp
 msgid "Load Default"
-msgstr "Cargar Valores por Defecto"
+msgstr "Cargar Valores Predeterminados"
 
 #: editor/editor_audio_buses.cpp
 msgid "Load the default Bus Layout."
-msgstr "Cargar el Bus Layout predeterminado."
+msgstr "Cargue el Layout del Bus predeterminado."
 
 #: editor/editor_audio_buses.cpp
 msgid "Create a new Bus Layout."
@@ -2689,7 +2693,7 @@ msgstr "No debe coincidir con una constante global existente."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr "La palabra clave no se puede utilizar como nombre de autoload."
+msgstr "La palabra clave no se puede usar como nombre de autoload."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -2817,9 +2821,8 @@ msgid "Project export for platform:"
 msgstr "Exportar proyecto para la plataforma:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Completado con errores."
+msgstr "Completado con advertencias."
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
@@ -3150,7 +3153,7 @@ msgstr "Error al guardar el perfil en la ruta: '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Reset to Default"
-msgstr "Restablecer Valores por Defecto"
+msgstr "Restablecer Valores Predeterminados"
 
 #: editor/editor_feature_profile.cpp
 msgid "Current Profile:"
@@ -3221,7 +3224,7 @@ msgstr "Administrar Perfiles de Características del Editor"
 
 #: editor/editor_feature_profile.cpp
 msgid "Default Feature Profile"
-msgstr "Perfil de Características por Defecto"
+msgstr "Perfil de Características Predeterminado"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -3920,9 +3923,9 @@ msgid ""
 "To restore the Default layout to its base settings, use the Delete Layout "
 "option and delete the Default layout."
 msgstr ""
-"Layout por defecto del editor sobreescrita.\n"
-"Para recuperar el layout por defecto, utiliza la opción Eliminar Layout y "
-"borra el Layout por defecto."
+"Layout por defecto del editor anulado.\n"
+"Para recuperar el layout predeterminado, utiliza la opción Eliminar Layout y "
+"borra el layout Predeterminado."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -3930,7 +3933,7 @@ msgstr "¡Nombre de layout no encontrado!"
 
 #: editor/editor_node.cpp
 msgid "Restored the Default layout to its base settings."
-msgstr "Se restauró el diseño por defecto a su configuración básica."
+msgstr "Se restauró el diseño predeterminado a su configuración básica."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4282,7 +4285,7 @@ msgstr "Eliminar Layout"
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr "Por defecto"
+msgstr "Predeterminado"
 
 #: editor/editor_node.cpp editor/editor_resource_picker.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
@@ -4415,11 +4418,11 @@ msgstr "Inspector"
 
 #: editor/editor_node.cpp
 msgid "Default Property Name Style"
-msgstr "Estilo por Defecto del Nombrado de Propiedades"
+msgstr "Estilo del nombre de la Propiedad Predeterminada"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
-msgstr "Escalonado de Flotantes por Defecto"
+msgstr "Escalonado de Flotantes Predeterminado"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
 msgid "Disable Folding"
@@ -4447,7 +4450,7 @@ msgstr "Recursos Para Abrir En Nuevo Inspector"
 
 #: editor/editor_node.cpp
 msgid "Default Color Picker Mode"
-msgstr "Modo De Selección De Color Por Defecto"
+msgstr "Modo de Selección de Color Predeterminado"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
@@ -4557,6 +4560,7 @@ msgstr "Herramientas variadas de proyecto o escena."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Proyecto"
 
@@ -4617,8 +4621,8 @@ msgstr ""
 "Cuando esta opción está activada, al utilizar el despliegue con un clic, el "
 "ejecutable intentará conectarse a la IP de este equipo para que el proyecto "
 "en ejecución pueda ser depurado.\n"
-"Esta opción está pensada para ser usada en la depuración remota "
-"( normalmente con un dispositivo móvil).\n"
+"Esta opción está pensada para ser usada en la depuración remota (normalmente "
+"con un dispositivo móvil).\n"
 "No es necesario habilitarla para usar el depurador GDScript localmente."
 
 #: editor/editor_node.cpp
@@ -5435,7 +5439,7 @@ msgstr "Autoescaneo de la Ruta del Proyecto"
 
 #: editor/editor_settings.cpp
 msgid "Default Project Path"
-msgstr "Ruta del Proyecto por Defecto"
+msgstr "Ruta del Proyecto Predeterminada"
 
 #: editor/editor_settings.cpp
 msgid "On Save"
@@ -5702,7 +5706,7 @@ msgstr "Colocar Tooltip de Llamada Debajo de la Línea Actual"
 
 #: editor/editor_settings.cpp
 msgid "Callhint Tooltip Offset"
-msgstr "Desplazamiento del Tooltip de Llamada"
+msgstr "Offset del Tooltip de Llamada"
 
 #: editor/editor_settings.cpp
 msgid "Complete File Paths"
@@ -5714,7 +5718,7 @@ msgstr "Añadir Sugerencias de Tipo"
 
 #: editor/editor_settings.cpp
 msgid "Use Single Quotes"
-msgstr "Utilizar Comillas Simples"
+msgstr "Usar Comillas Simples"
 
 #: editor/editor_settings.cpp
 msgid "Show Help Index"
@@ -5818,19 +5822,19 @@ msgstr "Cuadrícula Plano YZ"
 
 #: editor/editor_settings.cpp
 msgid "Default FOV"
-msgstr "Campo de Visión por Defecto"
+msgstr "FOV Predeterminado"
 
 #: editor/editor_settings.cpp
 msgid "Default Z Near"
-msgstr "Z Cercana por Defecto"
+msgstr "Z Cercano Predeterminado"
 
 #: editor/editor_settings.cpp
 msgid "Default Z Far"
-msgstr "Z Lejana por Defecto"
+msgstr "Z Lejano Predeterminado"
 
 #: editor/editor_settings.cpp
 msgid "Lightmap Baking Number Of CPU Threads"
-msgstr "Número de hilos de la CPU para el Lightmap Baking"
+msgstr "Número de Hilos de la CPU para el Lightmap Baking"
 
 #: editor/editor_settings.cpp
 msgid "Navigation Scheme"
@@ -6002,7 +6006,7 @@ msgstr "Crear Pistas Bézier Predeterminadas"
 
 #: editor/editor_settings.cpp
 msgid "Default Create Reset Tracks"
-msgstr "Crear Pistas de Reinicio por Defecto"
+msgstr "Crear Pistas de Reinicio Predeterminado"
 
 #: editor/editor_settings.cpp
 msgid "Onion Layers Past Color"
@@ -6118,7 +6122,7 @@ msgstr "Color de los Comentarios"
 
 #: editor/editor_settings.cpp
 msgid "String Color"
-msgstr "Color de Cadena"
+msgstr "Color del String"
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
@@ -6176,7 +6180,7 @@ msgstr "Color de Selección"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Brace Mismatch Color"
-msgstr ""
+msgstr "Color de Corchetes Incompletos"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Current Line Color"
@@ -6184,7 +6188,7 @@ msgstr "Color de Línea Actual"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Color"
-msgstr ""
+msgstr "Color de Guía de la Línea de Longitud"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Word Highlighted Color"
@@ -6192,11 +6196,11 @@ msgstr "Color de la Palabra Resaltada"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Number Color"
-msgstr "Número del Color"
+msgstr "Color del Número"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Function Color"
-msgstr "Función Color"
+msgstr "Color de la Función"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Member Variable Color"
@@ -6212,15 +6216,15 @@ msgstr "Color del Marcador"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Breakpoint Color"
-msgstr "Puntos de Interrupción"
+msgstr "Color de Puntos de Interrupción"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Executing Line Color"
-msgstr "Color de la línea de ejecución"
+msgstr "Color de la línea en ejecución"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Code Folding Color"
-msgstr ""
+msgstr "Color del Código Plegado"
 
 #: editor/editor_settings.cpp
 msgid "Search Result Color"
@@ -6246,7 +6250,7 @@ msgstr "Ocultar Deslizador"
 
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
-msgstr "Selecciona nodo(s) a importar"
+msgstr "Seleccione nodo(s) a importar"
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -6279,7 +6283,7 @@ msgstr "No hay espejos disponibles."
 
 #: editor/export_template_manager.cpp
 msgid "Retrieving the mirror list..."
-msgstr "Recuperar la lista de espejos..."
+msgstr "Recuperar el listado de mirrors..."
 
 #: editor/export_template_manager.cpp
 msgid "Starting the download..."
@@ -6291,7 +6295,7 @@ msgstr "Error al solicitar la URL:"
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to the mirror..."
-msgstr "Conectando con el espejo..."
+msgstr "Conectando con el mirror..."
 
 #: editor/export_template_manager.cpp
 msgid "Can't resolve the requested address."
@@ -6299,11 +6303,11 @@ msgstr "No se puede resolver la dirección solicitada."
 
 #: editor/export_template_manager.cpp
 msgid "Can't connect to the mirror."
-msgstr "No se puede conectar al espejo."
+msgstr "No se puede conectar con el mirror."
 
 #: editor/export_template_manager.cpp
 msgid "No response from the mirror."
-msgstr "No hay respuesta del espejo."
+msgstr "No hay respuesta del mirror."
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -6320,7 +6324,7 @@ msgstr "Petición fallida:"
 
 #: editor/export_template_manager.cpp
 msgid "Download complete; extracting templates..."
-msgstr "Descarga completa; extracción de plantillas..."
+msgstr "Descarga completa; extrayendo plantillas..."
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
@@ -6336,17 +6340,17 @@ msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "Error getting the list of mirrors."
-msgstr "Error al obtener la lista de espejos."
+msgstr "Error al obtener el listado de mirrors."
 
 #: editor/export_template_manager.cpp
 msgid "Error parsing JSON with the list of mirrors. Please report this issue!"
 msgstr ""
-"Error al analizar el JSON con la lista de espejos ¡Por favor, reporta este "
+"Error al leer el JSON con la lista de mirrors ¡Por favor, informa de este "
 "problema!"
 
 #: editor/export_template_manager.cpp
 msgid "Best available mirror"
-msgstr "El mejor espejo disponible"
+msgstr "Mejor mirror disponible"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -6540,7 +6544,7 @@ msgstr ""
 
 #: editor/fileserver/editor_file_server.cpp
 msgid "File Server"
-msgstr ""
+msgstr "Servidor de Archivos"
 
 #: editor/fileserver/editor_file_server.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
@@ -6913,11 +6917,11 @@ msgstr "Administrar Grupos"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Collada"
-msgstr ""
+msgstr "Collada"
 
 #: editor/import/editor_import_collada.cpp
 msgid "Use Ambient"
-msgstr ""
+msgstr "Usar Ambiente"
 
 #: editor/import/resource_importer_bitmask.cpp
 msgid "Create From"
@@ -6926,7 +6930,7 @@ msgstr "Crear Desde"
 #: editor/import/resource_importer_bitmask.cpp
 #: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Threshold"
-msgstr ""
+msgstr "Umbral"
 
 #: editor/import/resource_importer_csv_translation.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -7011,7 +7015,7 @@ msgstr "Escalar Mesh"
 
 #: editor/import/resource_importer_obj.cpp
 msgid "Offset Mesh"
-msgstr "Offset de Malla"
+msgstr "Offset de Mesh"
 
 #: editor/import/resource_importer_obj.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -7089,7 +7093,7 @@ msgstr "Almacenamiento"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Use Legacy Names"
-msgstr ""
+msgstr "Usar Nombres Heredados"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 msgid "Materials"
@@ -7117,7 +7121,7 @@ msgstr "Tamaño Lightmap Texel"
 
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 msgid "Skins"
-msgstr ""
+msgstr "Skins"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Use Named Skins"
@@ -7129,7 +7133,7 @@ msgstr "Archivos Externos"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Store In Subdir"
-msgstr ""
+msgstr "Guardar en el Subdirectorio"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Filter Script"
@@ -7231,16 +7235,21 @@ msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
 "texture compression to reduce memory usage (blue channel is discarded)."
 msgstr ""
+"%s: Textura detectada siendo usada como mapa de normales en 3D. Activando la "
+"compresión de la textura rojo-verde para reducir el uso de memoria (el canal "
+"azul se descarta)."
 
 #: editor/import/resource_importer_texture.cpp
 msgid ""
 "%s: Texture detected as used in 3D. Enabling filter, repeat, mipmap "
 "generation and VRAM texture compression."
 msgstr ""
+"%s: Textura detectada siendo usada en 3D. Activando el filtro, la "
+"repetición, la generación de mipmaps y la compresión de textura VRAM."
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D, Detect 3D"
-msgstr ""
+msgstr "2D, Detectar 3D"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "2D Pixel"
@@ -7248,7 +7257,7 @@ msgstr "Pixel 2D"
 
 #: editor/import/resource_importer_texture.cpp scene/resources/texture.cpp
 msgid "Lossy Quality"
-msgstr ""
+msgstr "Con Pérdidas de Calidad"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "HDR Mode"
@@ -7256,14 +7265,14 @@ msgstr "Modo HDR"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "BPTC LDR"
-msgstr ""
+msgstr "BPTC LDR"
 
 #: editor/import/resource_importer_texture.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/mesh_instance_2d.cpp scene/2d/multimesh_instance_2d.cpp
 #: scene/2d/particles_2d.cpp scene/2d/sprite.cpp scene/resources/style_box.cpp
 msgid "Normal Map"
-msgstr ""
+msgstr "Mapa de Normales"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Process"
@@ -7271,7 +7280,7 @@ msgstr "Proceso"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Fix Alpha Border"
-msgstr ""
+msgstr "Corregir Borde Alfa"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Premult Alpha"
@@ -7279,7 +7288,7 @@ msgstr "Premult Alpha"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Hdr As Srgb"
-msgstr ""
+msgstr "Hdr como Srgb"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Invert Color"
@@ -7295,7 +7304,7 @@ msgstr "Tamaño Límite"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Detect 3D"
-msgstr ""
+msgstr "Detectar 3D"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "SVG"
@@ -7306,6 +7315,9 @@ msgid ""
 "Warning, no suitable PC VRAM compression enabled in Project Settings. This "
 "texture will not display correctly on PC."
 msgstr ""
+"Advertencia, no se ha activado la compresión VRAM para PC en la "
+"configuración del proyecto. Esta textura no se mostrará correctamente en el "
+"PC."
 
 #: editor/import/resource_importer_texture_atlas.cpp
 msgid "Atlas File"
@@ -7321,7 +7333,7 @@ msgstr "Recortar la Región"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 msgid "Trim Alpha Border From Region"
-msgstr ""
+msgstr "Recortar Borde Alfa de la Región"
 
 #: editor/import/resource_importer_wav.cpp scene/2d/physics_body_2d.cpp
 msgid "Force"
@@ -7329,12 +7341,13 @@ msgstr "Fuerza"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "8 Bit"
-msgstr ""
+msgstr "8 Bit"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
-msgstr ""
+msgstr "Mono"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Max Rate"
@@ -7346,7 +7359,7 @@ msgstr "Tasa Máxima Hz"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Trim"
-msgstr ""
+msgstr "Recorte"
 
 #: editor/import/resource_importer_wav.cpp
 msgid "Normalize"
@@ -7377,7 +7390,7 @@ msgstr "Importador:"
 
 #: editor/import_defaults_editor.cpp
 msgid "Reset to Defaults"
-msgstr "Restablecer Valores por Defecto"
+msgstr "Restablecer Valores Predeterminados"
 
 #: editor/import_dock.cpp
 msgid "Keep File (No Import)"
@@ -7393,7 +7406,7 @@ msgstr "Establecer como predeterminado para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr "Restablecer Predeterminado para '%s'"
+msgstr "Eliminar los Valores Predeterminados para '%s'"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -7461,7 +7474,7 @@ msgstr "Localizado"
 
 #: editor/inspector_dock.cpp
 msgid "Localization not available for current language."
-msgstr ""
+msgstr "La traducción no está disponible para el idioma actual."
 
 #: editor/inspector_dock.cpp
 msgid "Copy Properties"
@@ -8341,7 +8354,7 @@ msgstr "Filtros..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp scene/main/http_request.cpp
 msgid "Use Threads"
-msgstr ""
+msgstr "Usar Hilos"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Contents:"
@@ -8569,7 +8582,7 @@ msgstr "Prueba"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed to get repository configuration."
-msgstr ""
+msgstr "Fallo en la obtención de la configuración del repositorio."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -8599,8 +8612,8 @@ msgstr ""
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
-"Error al crear las imágenes del \"lighmap\", asegúrate de que se puede "
-"escribir en la ruta."
+"Error al crear las imágenes del lightmap, asegúrate de que se puede escribir "
+"en la ruta."
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
@@ -8646,7 +8659,7 @@ msgstr "Configurar Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Offset:"
-msgstr "Desplazamiento de Cuadrícula:"
+msgstr "Offset de Cuadrícula:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Grid Step:"
@@ -8702,7 +8715,7 @@ msgstr "Crear Guías Horizontales y Verticales"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Set CanvasItem \"%s\" Pivot Offset to (%d, %d)"
-msgstr "Ajusta el Offset del pivote del CanvasItem \"%s\" a (%d, %d)"
+msgstr "Fija el Offset del pivote del CanvasItem \"%s\" a (%d, %d)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotate %d CanvasItems"
@@ -9326,7 +9339,7 @@ msgstr "Error al instanciar escena desde %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change Default Type"
-msgstr "Cambiar Tipo por Defecto"
+msgstr "Cambiar Tipo Predeterminado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -9502,11 +9515,11 @@ msgstr "Degradado Editado"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 msgid "Swap GradientTexture2D Fill Points"
-msgstr ""
+msgstr "Intercambiar Puntos de Relleno de GradientTexture2D"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 msgid "Swap Gradient Fill Points"
-msgstr ""
+msgstr "Intercambiar Puntos de Relleno de Degradado"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 msgid "Toggle Grid Snap"
@@ -9529,7 +9542,7 @@ msgstr "Icono"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -10312,11 +10325,11 @@ msgstr "Configurar Cuadrícula:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset X:"
-msgstr "Desplazamiento de Cuadrícula en X:"
+msgstr "Offset de Cuadrícula en X:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Offset Y:"
-msgstr "Desplazamiento de Cuadrícula en Y:"
+msgstr "Offset de Cuadrícula en Y:"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Grid Step X:"
@@ -10332,7 +10345,7 @@ msgstr "Sincronizar Huesos con el Polígono"
 
 #: editor/plugins/ray_cast_2d_editor_plugin.cpp
 msgid "Set cast_to"
-msgstr ""
+msgstr "Establecer cast_to"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "ERROR: Couldn't load resource!"
@@ -10663,11 +10676,11 @@ msgstr "Resultados de la Búsqueda"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Dominant Script On Scene Change"
-msgstr ""
+msgstr "Abrir el Script Principal en el Cambio de Escena"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "External"
-msgstr ""
+msgstr "Externo"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Use External Editor"
@@ -10683,11 +10696,11 @@ msgstr "Temperatura del Script Activada"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Highlight Current Script"
-msgstr ""
+msgstr "Resaltar Script Actual"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script Temperature History Size"
-msgstr ""
+msgstr "Tamaño de Historial de Temperatura del Script"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Current Script Background Color"
@@ -10707,7 +10720,7 @@ msgstr "Lista de Nombres de Script Como"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Exec Flags"
-msgstr ""
+msgstr "Indicadores de Ejecución"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Scripts"
@@ -11284,7 +11297,7 @@ msgid ""
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Nota: El valor FPS que se muestra es la velocidad de fotogramas del editor.\n"
-"No se puede utilizar como un indicador fiable del rendimiento en el juego."
+"No se puede usar como un indicador fiable del rendimiento en el juego."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Convert Rooms"
@@ -11403,7 +11416,7 @@ msgstr "Incrementar el Campo de Visión"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Reset Field of View to Default"
-msgstr "Restablecer el Campo de Visión por Defecto"
+msgstr "Restablecer el Campo de Visión Predeterminado"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Object to Floor"
@@ -11524,11 +11537,11 @@ msgstr "Posterior"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Manipulator Gizmo Size"
-msgstr ""
+msgstr "Tamaño del Gizmo Manipulador"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Manipulator Gizmo Opacity"
-msgstr ""
+msgstr "Opacidad del Gizmo Manipulador"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Show Viewport Rotation Gizmo"
@@ -12220,13 +12233,13 @@ msgstr "Establer tipo de base"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show Default"
-msgstr "Mostrar Por Defecto"
+msgstr "Mostrar por Defecto"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Show default type items alongside items that have been overridden."
 msgstr ""
-"Mostrar los elementos de tipo por defecto junto a los elementos que han sido "
-"anulados."
+"Mostrar los elementos de tipo predeterminado junto a los elementos que han "
+"sido anulados."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override All"
@@ -12234,7 +12247,7 @@ msgstr "Anular Todo"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Override all default type items."
-msgstr "Anular todos los elementos de tipo por defecto."
+msgstr "Anular todos los elementos de tipo predeterminado."
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select the variation base type from a list of available types."
@@ -12268,7 +12281,7 @@ msgstr "Añadir Vista Previa"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Default Preview"
-msgstr "Vista Previa Por Defecto"
+msgstr "Vista Previa Predeterminada"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Select UI Scene:"
@@ -12877,7 +12890,7 @@ msgstr "Opciones de Ajuste"
 #: scene/main/canvas_layer.cpp scene/resources/material.cpp
 #: scene/resources/particles_material.cpp scene/resources/style_box.cpp
 msgid "Offset"
-msgstr "Desplazamiento"
+msgstr "Offset"
 
 #: editor/plugins/tile_set_editor_plugin.cpp editor/rename_dialog.cpp
 #: scene/gui/range.cpp scene/resources/animation.cpp
@@ -12907,7 +12920,7 @@ msgstr "Textura"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tex Offset"
-msgstr "Desplazamiento de Textura"
+msgstr "Offset de Textura"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
@@ -12938,15 +12951,15 @@ msgstr "Espaciado de Subtile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occluder Offset"
-msgstr "Desplazamiento del Oclusor"
+msgstr "Offset del Oclusor"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Navigation Offset"
-msgstr "Desplazamiento de Navegación"
+msgstr "Offset de Navegación"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Shape Offset"
-msgstr "Desplazamiento del Shape"
+msgstr "Offset del Shape"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Shape Transform"
@@ -14066,11 +14079,13 @@ msgstr "Ejecutable"
 
 #: editor/project_export.cpp
 msgid "Export the project for all the presets defined."
-msgstr ""
+msgstr "Exportar el proyecto para todos los presets definidos."
 
 #: editor/project_export.cpp
 msgid "All presets must have an export path defined for Export All to work."
 msgstr ""
+"Todos los presets deben tener una ruta de exportación definida para que "
+"Exportar Todo funcione."
 
 #: editor/project_export.cpp
 msgid "Delete preset '%s'?"
@@ -14183,6 +14198,8 @@ msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
 msgstr ""
+"Nota: La clave de encriptación debe ser almacenada en el binario,\n"
+"es necesario construir las plantillas de exportación desde el código fuente."
 
 #: editor/project_export.cpp
 msgid "More Info..."
@@ -14944,7 +14961,7 @@ msgstr "Plugins"
 
 #: editor/project_settings_editor.cpp
 msgid "Import Defaults"
-msgstr "Valores de Importación por Defecto"
+msgstr "Valores de Importación Predeterminados"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -15323,8 +15340,8 @@ msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
-"Desactivar \"editable_instance\" causara que todas las propiedades del nodo "
-"vuelvan a sus valores por defecto."
+"Desactivar \"editable_instance\" causará que todas las propiedades del nodo "
+"vuelvan a sus valores predeterminados."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -15332,23 +15349,26 @@ msgid ""
 "cause all properties of the node to be reverted to their default."
 msgstr ""
 "Activar \"Cargar Como Placeholder\" desactivará \"Hijos Editables\" y "
-"causará que todas las propiedades del nodo se reviertan a sus valores por "
-"defecto."
+"causará que todas las propiedades del nodo se reviertan a sus valores "
+"predeterminados."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Local"
 msgstr "Crear Local"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
-
 #: editor/scene_tree_dock.cpp
-msgid "Enable Scene Unique Name"
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
 msgstr "Activar Nombre Único de Escena"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Disable Scene Unique Name"
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
+msgstr "Otro nodo ya utiliza este nombre único en la escena."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name(s)"
 msgstr "Desactivar Nombre Único de Escena"
 
 #: editor/scene_tree_dock.cpp
@@ -15425,7 +15445,7 @@ msgstr "Sub-Recursos"
 
 #: editor/scene_tree_dock.cpp
 msgid "Access as Scene Unique Name"
-msgstr ""
+msgstr "Acceso como Nombre Único de Escena"
 
 #: editor/scene_tree_dock.cpp
 msgid "Clear Inheritance"
@@ -15529,7 +15549,7 @@ msgstr "Mostrar Selección de la Raíz del Árbol de Escenas"
 
 #: editor/scene_tree_dock.cpp
 msgid "Derive Script Globals By Name"
-msgstr ""
+msgstr "Derivar Script Globales por Nombre"
 
 #: editor/scene_tree_dock.cpp
 msgid "Use Favorites Root Selection"
@@ -15548,6 +15568,10 @@ msgid "Button Group"
 msgstr "Grupo de Botones"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "Desactivar Nombre Único de Escena"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Conectando Desde)"
 
@@ -15561,6 +15585,9 @@ msgid ""
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
+"Se puede acceder a este nodo desde cualquier parte de la escena anteponiendo "
+"el prefijo '%s' en una ruta de nodo.\n"
+"Haz clic para desactivar esto."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15622,6 +15649,10 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr ""
 "El nombre del nodo no es correcto, las siguientes letras no están permitidas:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr "Otro nodo ya utiliza este nombre único en la escena."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -15853,15 +15884,15 @@ msgstr "Filtrar variables apiladas"
 
 #: editor/script_editor_debugger.cpp
 msgid "Auto Switch To Remote Scene Tree"
-msgstr ""
+msgstr "Cambio Automático al Árbol de Escenas Remoto"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote Scene Tree Refresh Interval"
-msgstr ""
+msgstr "Intervalo de Refresco del Árbol de Escenas Remoto"
 
 #: editor/script_editor_debugger.cpp
 msgid "Remote Inspect Refresh Interval"
-msgstr ""
+msgstr "Intervalo de Refresco de la Inspección Remota"
 
 #: editor/script_editor_debugger.cpp
 msgid "Network Profiler"
@@ -15959,7 +15990,7 @@ msgstr "Cambiar Radio de Luces"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Stream Player 3D"
-msgstr ""
+msgstr "Stream Player 3D"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
@@ -15969,7 +16000,7 @@ msgstr "Cambiar Ángulo de Emisión de AudioStreamPlayer3D"
 #: platform/osx/export/export.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Camera"
-msgstr ""
+msgstr "Cámara"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -15981,7 +16012,7 @@ msgstr "Cambiar Tamaño de Cámara"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
-msgstr ""
+msgstr "Notificador de Visibilidad"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier AABB"
@@ -16053,19 +16084,19 @@ msgstr "Navegación Sólida Desactivada"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Joint Body A"
-msgstr ""
+msgstr "Unir cuerpo A"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Joint Body B"
-msgstr ""
+msgstr "Unir cuerpo B"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Room Edge"
-msgstr ""
+msgstr "Límite del Room"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Room Overlap"
-msgstr ""
+msgstr "Solapamiento del Room"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Room Point Position"
@@ -16077,11 +16108,11 @@ msgstr "Margen del Portal"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Portal Edge"
-msgstr ""
+msgstr "Borde del Portal"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Portal Arrow"
-msgstr ""
+msgstr "Puntero del Portal"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Set Portal Point Position"
@@ -16089,7 +16120,7 @@ msgstr "Establecer Posición del Portal Point"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Portal Front"
-msgstr ""
+msgstr "Frente del portal"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Portal Back"
@@ -16130,7 +16161,7 @@ msgstr "Orificio Oclusor"
 
 #: main/main.cpp
 msgid "Godot Physics"
-msgstr ""
+msgstr "Físicas de Godot"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_sw.cpp
 #: servers/visual/visual_server_scene.cpp
@@ -16152,7 +16183,7 @@ msgstr "Servidor Multihilo"
 
 #: main/main.cpp
 msgid "RID Pool Prealloc"
-msgstr ""
+msgstr "RID Pool Prealloc"
 
 #: main/main.cpp
 msgid "Debugger stdout"
@@ -16160,31 +16191,31 @@ msgstr "Depurador stdout"
 
 #: main/main.cpp
 msgid "Max Chars Per Second"
-msgstr ""
+msgstr "Máx. Caracteres Por Segundo"
 
 #: main/main.cpp
 msgid "Max Messages Per Frame"
-msgstr ""
+msgstr "Máx. Llamadas Por Fotograma"
 
 #: main/main.cpp
 msgid "Max Errors Per Second"
-msgstr ""
+msgstr "Máx. Errores Por Segundo"
 
 #: main/main.cpp
 msgid "Max Warnings Per Second"
-msgstr ""
+msgstr "Máx. Alertas Por Segundo"
 
 #: main/main.cpp
 msgid "Flush stdout On Print"
-msgstr ""
+msgstr "Vaciar stdout Al Imprimir"
 
 #: main/main.cpp servers/visual_server.cpp
 msgid "Logging"
-msgstr ""
+msgstr "Registro"
 
 #: main/main.cpp
 msgid "File Logging"
-msgstr ""
+msgstr "Registro De Archivos"
 
 #: main/main.cpp
 msgid "Enable File Logging"
@@ -16196,11 +16227,11 @@ msgstr "Ruta del Registro"
 
 #: main/main.cpp
 msgid "Max Log Files"
-msgstr ""
+msgstr "Registro Máx. De Archivos"
 
 #: main/main.cpp
 msgid "Driver"
-msgstr ""
+msgstr "Controlador"
 
 #: main/main.cpp
 msgid "Driver Name"
@@ -16208,19 +16239,19 @@ msgstr "Nombre del Controlador"
 
 #: main/main.cpp
 msgid "Fallback To GLES2"
-msgstr ""
+msgstr "Altenar A GLES2"
 
 #: main/main.cpp
 msgid "Use Nvidia Rect Flicker Workaround"
-msgstr ""
+msgstr "Usar la solución de Nvidia Rect Flicker"
 
 #: main/main.cpp
 msgid "DPI"
-msgstr ""
+msgstr "DPI"
 
 #: main/main.cpp
 msgid "Allow hiDPI"
-msgstr ""
+msgstr "Permitir hiDPI"
 
 #: main/main.cpp
 msgid "V-Sync"
@@ -16232,15 +16263,15 @@ msgstr "Usar Sincronización Vertical"
 
 #: main/main.cpp
 msgid "Per Pixel Transparency"
-msgstr ""
+msgstr "Transparencia Por Pixel"
 
 #: main/main.cpp
 msgid "Allowed"
-msgstr ""
+msgstr "Permitido"
 
 #: main/main.cpp
 msgid "Intended Usage"
-msgstr ""
+msgstr "Uso Planteado"
 
 #: main/main.cpp
 msgid "Framebuffer Allocation"
@@ -16252,7 +16283,7 @@ msgstr "Ahorro de Energía"
 
 #: main/main.cpp
 msgid "Threads"
-msgstr ""
+msgstr "Hilos"
 
 #: main/main.cpp servers/physics_2d/physics_2d_server_wrap_mt.h
 msgid "Thread Model"
@@ -16260,11 +16291,11 @@ msgstr "Modelo de Hilo"
 
 #: main/main.cpp
 msgid "Thread Safe BVH"
-msgstr ""
+msgstr "Hilo Seguro BVH"
 
 #: main/main.cpp
 msgid "Handheld"
-msgstr ""
+msgstr "Manipulador"
 
 #: main/main.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
@@ -16274,7 +16305,7 @@ msgstr "Orientación"
 #: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
 #: scene/main/scene_tree.cpp scene/register_scene_types.cpp
 msgid "Common"
-msgstr "Común"
+msgstr "Más información"
 
 #: main/main.cpp
 msgid "Physics FPS"
@@ -16286,25 +16317,25 @@ msgstr "Forzar FPS"
 
 #: main/main.cpp
 msgid "Enable Pause Aware Picking"
-msgstr ""
+msgstr "Activar Selección en Pausa"
 
 #: main/main.cpp scene/gui/item_list.cpp scene/gui/popup_menu.cpp
 #: scene/gui/scroll_container.cpp scene/gui/text_edit.cpp scene/gui/tree.cpp
 #: scene/main/viewport.cpp scene/register_scene_types.cpp
 msgid "GUI"
-msgstr ""
+msgstr "GUI"
 
 #: main/main.cpp
 msgid "Drop Mouse On GUI Input Disabled"
-msgstr ""
+msgstr "Colocar el Mouse en la Entrada de la GUI Desactivada"
 
 #: main/main.cpp
 msgid "stdout"
-msgstr ""
+msgstr "stdout"
 
 #: main/main.cpp
 msgid "Print FPS"
-msgstr ""
+msgstr "Imprimir FPS"
 
 #: main/main.cpp
 msgid "Verbose stdout"
@@ -16324,19 +16355,19 @@ msgstr "Retraso de los Fotogramas Msec"
 
 #: main/main.cpp
 msgid "Low Processor Mode"
-msgstr ""
+msgstr "Modo Para Procesadores Lentos"
 
 #: main/main.cpp
 msgid "Delta Sync After Draw"
-msgstr ""
+msgstr "Sincronizar Delta Después Del Evento Draw"
 
 #: main/main.cpp
 msgid "iOS"
-msgstr ""
+msgstr "iOS"
 
 #: main/main.cpp
 msgid "Hide Home Indicator"
-msgstr ""
+msgstr "Ocultar Indicador de Inicio"
 
 #: main/main.cpp
 msgid "Input Devices"
@@ -16344,15 +16375,15 @@ msgstr "Dispositivos de Entrada"
 
 #: main/main.cpp
 msgid "Pointing"
-msgstr "Apuntador"
+msgstr "Puntero"
 
 #: main/main.cpp
 msgid "Touch Delay"
-msgstr ""
+msgstr "Retraso De Toque"
 
 #: main/main.cpp servers/visual_server.cpp
 msgid "GLES3"
-msgstr ""
+msgstr "GLES3"
 
 #: main/main.cpp servers/visual_server.cpp
 msgid "Shaders"
@@ -16370,11 +16401,11 @@ msgstr "Entorno"
 
 #: main/main.cpp
 msgid "Default Clear Color"
-msgstr ""
+msgstr "Color Claro Predeterminado"
 
 #: main/main.cpp
 msgid "Boot Splash"
-msgstr ""
+msgstr "Pantalla de Splash"
 
 #: main/main.cpp
 msgid "Show Image"
@@ -16382,11 +16413,11 @@ msgstr "Mostrar Imagen"
 
 #: main/main.cpp
 msgid "Image"
-msgstr ""
+msgstr "imagen"
 
 #: main/main.cpp
 msgid "Fullsize"
-msgstr ""
+msgstr "Tamaño completo"
 
 #: main/main.cpp scene/resources/dynamic_font.cpp
 msgid "Use Filter"
@@ -16402,23 +16433,23 @@ msgstr "Icono Nativo de macOS"
 
 #: main/main.cpp
 msgid "Windows Native Icon"
-msgstr ""
+msgstr "Icono Nativo Para Windows"
 
 #: main/main.cpp
 msgid "Buffering"
-msgstr ""
+msgstr "Buffering"
 
 #: main/main.cpp
 msgid "Agile Event Flushing"
-msgstr ""
+msgstr "Evento Ágil de Vaciado"
 
 #: main/main.cpp
 msgid "Emulate Touch From Mouse"
-msgstr ""
+msgstr "Emular Toque Desde El Mouse"
 
 #: main/main.cpp
 msgid "Emulate Mouse From Touch"
-msgstr ""
+msgstr "Emular Mouse con el Toque"
 
 #: main/main.cpp
 msgid "Mouse Cursor"
@@ -16430,11 +16461,11 @@ msgstr "Imagen Personalizada"
 
 #: main/main.cpp
 msgid "Custom Image Hotspot"
-msgstr ""
+msgstr "Imagen personalizada para el Hotspot"
 
 #: main/main.cpp
 msgid "Tooltip Position Offset"
-msgstr "Desplazamiento de Posición del Tooltip"
+msgstr "Offset de Posición del Tooltip"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 msgid "Debugger Agent"
@@ -16450,11 +16481,11 @@ msgstr "Tiempo de Espera"
 
 #: main/main.cpp
 msgid "Runtime"
-msgstr ""
+msgstr "Tiempo De Ejecución"
 
 #: main/main.cpp
 msgid "Unhandled Exception Policy"
-msgstr ""
+msgstr "Política de Excepciones No Controladas"
 
 #: main/main.cpp
 msgid "Main Loop Type"
@@ -16471,11 +16502,11 @@ msgstr "Aspecto"
 
 #: main/main.cpp
 msgid "Shrink"
-msgstr ""
+msgstr "Reducción"
 
 #: main/main.cpp scene/main/scene_tree.cpp
 msgid "Auto Accept Quit"
-msgstr ""
+msgstr "Aceptar Cierre Del Programa Automáticamente"
 
 #: main/main.cpp scene/main/scene_tree.cpp
 msgid "Quit On Go Back"
@@ -16487,19 +16518,19 @@ msgstr "Ajustar Controles a Píxeles"
 
 #: main/main.cpp
 msgid "Dynamic Fonts"
-msgstr ""
+msgstr "Fuentes Dinámicas"
 
 #: main/main.cpp
 msgid "Use Oversampling"
-msgstr ""
+msgstr "Usar Sobremuestreo"
 
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 msgid "Active Soft World"
-msgstr ""
+msgstr "Soft World Activo"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "CSG"
-msgstr ""
+msgstr "CSG"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -16523,7 +16554,7 @@ msgstr "Operación"
 
 #: modules/csg/csg_shape.cpp
 msgid "Calculate Tangents"
-msgstr ""
+msgstr "Calcular Tangentes"
 
 #: modules/csg/csg_shape.cpp
 msgid "Use Collision"
@@ -16572,7 +16603,7 @@ msgstr "Lados"
 
 #: modules/csg/csg_shape.cpp
 msgid "Cone"
-msgstr ""
+msgstr "Cono"
 
 #: modules/csg/csg_shape.cpp
 msgid "Inner Radius"
@@ -16584,7 +16615,7 @@ msgstr "Radio Exterior"
 
 #: modules/csg/csg_shape.cpp
 msgid "Ring Sides"
-msgstr ""
+msgstr "Lados del Anillo"
 
 #: modules/csg/csg_shape.cpp scene/2d/collision_polygon_2d.cpp
 #: scene/2d/light_occluder_2d.cpp scene/2d/polygon_2d.cpp
@@ -16594,11 +16625,11 @@ msgstr "Polígono"
 
 #: modules/csg/csg_shape.cpp
 msgid "Spin Degrees"
-msgstr ""
+msgstr "Grados de Giro"
 
 #: modules/csg/csg_shape.cpp
 msgid "Spin Sides"
-msgstr ""
+msgstr "Lados de Giro"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path Node"
@@ -16610,11 +16641,11 @@ msgstr "Tipo de Intervalo de Ruta"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path Interval"
-msgstr ""
+msgstr "Intervalo de Ruta"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path Simplify Angle"
-msgstr ""
+msgstr "Simplificar Ángulo de Ruta"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path Rotation"
@@ -16654,15 +16685,15 @@ msgstr "Siempre Ordenado"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "Server Relay"
-msgstr ""
+msgstr "Repetidor del Servidor"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "DTLS Verify"
-msgstr ""
+msgstr "Verificar DTLS"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "DTLS Hostname"
-msgstr ""
+msgstr "Nombre de Host DTLS"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "Use DTLS"
@@ -16670,11 +16701,11 @@ msgstr "Usar DTLS"
 
 #: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "FBX"
-msgstr ""
+msgstr "FBX"
 
 #: modules/fbx/editor_scene_importer_fbx.cpp
 msgid "Use FBX"
-msgstr ""
+msgstr "Usar FBX"
 
 #: modules/gdnative/gdnative.cpp
 msgid "Config File"
@@ -16774,7 +16805,7 @@ msgstr "GDScript"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Function Definition Color"
-msgstr ""
+msgstr "Función Definición de Color"
 
 #: modules/gdscript/editor/gdscript_highlighter.cpp
 msgid "Node Path Color"
@@ -16786,15 +16817,15 @@ msgstr ""
 
 #: modules/gdscript/gdscript.cpp
 msgid "Treat Warnings As Errors"
-msgstr ""
+msgstr "Tratar las Advertencias como Errores"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Exclude Addons"
-msgstr ""
+msgstr "Excluir Addons"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Autocomplete Setters And Getters"
-msgstr ""
+msgstr "Autocompletar Setters y Getters"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Step argument is zero!"
@@ -16846,11 +16877,11 @@ msgstr "Activar Smart Resolve"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Show Native Symbols In Editor"
-msgstr ""
+msgstr "Mostrar Símbolos Nativos en el Editor"
 
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 msgid "Use Thread"
-msgstr ""
+msgstr "Usar Hilo"
 
 #: modules/gltf/editor_scene_exporter_gltf_plugin.cpp
 msgid "Export Mesh GLTF2"
@@ -16866,7 +16897,7 @@ msgstr "Vista del Buffer"
 
 #: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Offset"
-msgstr "Desplazamiento de Byte"
+msgstr "Offset de Byte"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Component Type"
@@ -16894,11 +16925,11 @@ msgstr "Recuento Parcial"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Buffer View"
-msgstr ""
+msgstr "Vista del Buffer de Índices Esparcidos"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Byte Offset"
-msgstr ""
+msgstr "Índices Dispersos del Offset de Bytes"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Component Type"
@@ -16906,11 +16937,11 @@ msgstr "Índices Dispersos de Tipo de Componente"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Buffer View"
-msgstr ""
+msgstr "Vista del Buffer de Valores Esparcidos"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Byte Offset"
-msgstr ""
+msgstr "Valores Dispersos del Offset de Bytes"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Buffer"
@@ -16934,7 +16965,7 @@ msgstr "Tamaño de FOV"
 
 #: modules/gltf/gltf_camera.cpp
 msgid "Zfar"
-msgstr ""
+msgstr "Zfar"
 
 #: modules/gltf/gltf_camera.cpp
 msgid "Znear"
@@ -16954,7 +16985,7 @@ msgstr "Color"
 #: modules/gltf/gltf_light.cpp scene/3d/reflection_probe.cpp
 #: scene/resources/environment.cpp
 msgid "Intensity"
-msgstr ""
+msgstr "Intensidad"
 
 #: modules/gltf/gltf_light.cpp scene/2d/light_2d.cpp scene/3d/light.cpp
 msgid "Range"
@@ -16962,11 +16993,11 @@ msgstr "Rango"
 
 #: modules/gltf/gltf_light.cpp
 msgid "Inner Cone Angle"
-msgstr ""
+msgstr "Ángulo del Cono Interior"
 
 #: modules/gltf/gltf_light.cpp
 msgid "Outer Cone Angle"
-msgstr ""
+msgstr "Ángulo del Cono Exterior"
 
 #: modules/gltf/gltf_mesh.cpp
 msgid "Blend Weights"
@@ -16986,7 +17017,7 @@ msgstr "Xform"
 
 #: modules/gltf/gltf_node.cpp scene/3d/mesh_instance.cpp
 msgid "Skin"
-msgstr ""
+msgstr "Skin"
 
 #: modules/gltf/gltf_node.cpp scene/3d/spatial.cpp
 msgid "Translation"
@@ -17002,11 +17033,11 @@ msgstr "Articulaciones"
 
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_skin.cpp
 msgid "Roots"
-msgstr ""
+msgstr "Raíces"
 
 #: modules/gltf/gltf_skeleton.cpp modules/gltf/gltf_state.cpp
 msgid "Unique Names"
-msgstr ""
+msgstr "Nombres Únicos"
 
 #: modules/gltf/gltf_skeleton.cpp
 msgid "Godot Bone Node"
@@ -17022,7 +17053,7 @@ msgstr "Articulaciones Originales"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Inverse Binds"
-msgstr ""
+msgstr "Enlaces Inversos"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Non Joints"
@@ -17030,27 +17061,27 @@ msgstr "Sin Articulaciones"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Joint I To Bone I"
-msgstr ""
+msgstr "Unir I a Hueso I"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Joint I To Name"
-msgstr ""
+msgstr "Unir I a Nombre"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Godot Skin"
-msgstr ""
+msgstr "Skin de Godot"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Diffuse Img"
-msgstr ""
+msgstr "Imagen Difusa"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Diffuse Factor"
-msgstr ""
+msgstr "Factor Difuso"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Gloss Factor"
-msgstr ""
+msgstr "Factor de Brillo"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Specular Factor"
@@ -17103,7 +17134,7 @@ msgstr "Texturas"
 
 #: modules/gltf/gltf_state.cpp platform/uwp/export/export.cpp
 msgid "Images"
-msgstr ""
+msgstr "Imágenes"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Cameras"
@@ -17131,7 +17162,7 @@ msgstr "Animaciones"
 
 #: modules/gltf/gltf_texture.cpp
 msgid "Src Image"
-msgstr "Imagen de Origen"
+msgstr "Origen de la Imagen"
 
 #: modules/gridmap/grid_map.cpp
 msgid "Mesh Library"
@@ -17364,7 +17395,7 @@ msgstr ""
 #: modules/stb_vorbis/audio_stream_ogg_vorbis.cpp
 #: modules/stb_vorbis/resource_importer_ogg_vorbis.cpp
 msgid "Loop Offset"
-msgstr "Desplazamiento de Ciclo"
+msgstr "Offset de Bucle"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Eye Height"
@@ -17405,6 +17436,21 @@ msgstr "Crear Solución"
 #: modules/mono/editor/csharp_project.cpp
 msgid "Auto Update Project"
 msgstr "Actualización Automática del Proyecto"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Nombre a Mostrar"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Selecciona un directorio"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Selecciona un directorio"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -17495,7 +17541,7 @@ msgstr ""
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise Offset"
-msgstr "Desplazamiento de Ruido"
+msgstr "Offset de Ruido"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Octaves"
@@ -17566,8 +17612,8 @@ msgid ""
 "A node yielded without working memory, please read the docs on how to yield "
 "properly!"
 msgstr ""
-"¡Un nodo ejecutó un yield sin memoria de trabajo. Prueba leyendo la "
-"documentación sobre cómo utilizar yield!"
+"¡Un nodo realizo un yield sin memoria de trabajo, por favor, lee la "
+"documentación sobre cómo usar yield correctamente!"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -17617,7 +17663,7 @@ msgstr "Cambiar Nombre del Argumento"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Default Value"
-msgstr "Establecer Valor por Defecto de la Variable"
+msgstr "Fijar Valor Predeterminado de la Variable"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Set Variable Type"
@@ -18034,7 +18080,7 @@ msgstr "Ruta del Nodo"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Use Default Args"
-msgstr "Usar Argumentos por Defecto"
+msgstr "Usar Argumentos Predeterminados"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Validate"
@@ -18787,7 +18833,7 @@ msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
 msgstr ""
-"\"SDK de Destino\" %d es superior a la versión por defecto %d. Podría "
+"\"SDK de Destino\" %d es superior a la versión predeterminada %d. Podría "
 "funcionar, pero no se ha probado y puede ser inestable."
 
 #: platform/android/export/export_plugin.cpp
@@ -19168,6 +19214,11 @@ msgstr "Usar Color de Fondo Personalizado"
 #: platform/iphone/export/export.cpp
 msgid "Custom BG Color"
 msgstr "Color de Fondo Personalizado"
+
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Icono de Exportación"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
@@ -19994,6 +20045,12 @@ msgid "Show Name On Square 310 X 310"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "Nombre corto del paquete inválido."
 
@@ -20020,43 +20077,41 @@ msgstr "Color de fondo inválido."
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
 msgstr ""
-"Las dimensiones de la imagen para el Store Logo son inválidas (debería ser "
-"50x50)."
+"Las dimensiones del logo de la tienda son inválidas (debería ser 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr ""
-"Las dimensiones de la imagen para el logo cuadrado de 44x44 son inválidas "
-"(debería ser 44x44)."
+"Las dimensiones de la imagen del logo cuadrado 44x44 son inválidas (deben "
+"ser 44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr ""
-"Las dimensiones de la imagen para el logo cuadrado de 71x71 son inválidas "
-"(debería ser 71x71)."
+"Las dimensiones de la imagen del logo cuadrado 71x71 son inválidas ( deben "
+"ser 71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
-"Las dimensiones de la imagen para el logo cuadrado de 150x150 son inválidas "
-"(debería ser 150x150)."
+"Las dimensiones de la imagen del logo cuadrado 150x150 son inválidas ( deben "
+"ser 150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
-"Las dimensiones de la imagen para el logo cuadrado de 310x310 son inválidas "
-"(debería ser 310x310)."
+"Las dimensiones de la imagen del logo cuadrado 310x310 son inválidas ( deben "
+"ser 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
-"Las dimensiones de la imagen para el logo ancho de 310x150 son inválidas "
-"(debería ser 310x150)."
+msgstr "Las dimensiones del logo son inválidas (deben ser 310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
-"Las dimensiones de la imagen del splash son inválidas (debería ser 620x300)."
+"Las dimensiones de la imagen de la pantalla de splash son inválidas (deben "
+"ser 620x300)."
 
 #: platform/uwp/export/export.cpp
 msgid "UWP"
@@ -20131,19 +20186,18 @@ msgid "Could not find wine executable at \"%s\"."
 msgstr "No se pudo encontrar el ejecutable de wine en \"%s\"."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start rcedit executable. Configure rcedit path in the Editor "
 "Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
 "Resources\" in the export preset."
 msgstr ""
-"No se ha podido iniciar el ejecutable rcedit, configura la ruta de rcedit en "
-"la configuración del editor (Exportar > Windows > Rcedit)."
+"No se ha podido iniciar el ejecutable de rcedit. Configura la ruta de rcedit "
+"en la configuración del editor (Exportar > Windows > Rcedit), o desactiva "
+"\"Aplicación > Modificar Recursos\" en el preset de exportación."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "rcedit failed to modify executable: %s."
-msgstr "Fallo al abrir el archivo ejecutable \"%s\"."
+msgstr "rcedit falló al modificar el ejecutable: %s."
 
 #: platform/windows/export/export.cpp
 msgid "Could not find signtool executable at \"%s\"."
@@ -20162,19 +20216,18 @@ msgid "Invalid timestamp server."
 msgstr "Servidor de marcas de tiempo inválido."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start signtool executable. Configure signtool path in the Editor "
 "Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
 "export preset."
 msgstr ""
-"No se ha podido iniciar el ejecutable de signtool, configura la ruta de "
-"signtool en la configuración del editor (Exportar > Windows > Signtool)."
+"No se ha podido iniciar el ejecutable de signtool. Configura la ruta de "
+"signtool en la configuración del editor (Exportar > Windows > Signtool), o "
+"desactiva \"Codesign\" en el preset de exportación."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Signtool failed to sign executable: %s."
-msgstr "Fallo al abrir el archivo ejecutable \"%s\"."
+msgstr "Signtool no pudo firmar el ejecutable: %s."
 
 #: platform/windows/export/export.cpp
 msgid "Failed to remove temporary file \"%s\"."
@@ -20865,12 +20918,12 @@ msgstr "Curva de Velocidad"
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
 msgid "Offset Random"
-msgstr "Desplazamiento Aleatorio"
+msgstr "Offset Aleatorio"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
 msgid "Offset Curve"
-msgstr "Curva de Desplazamiento"
+msgstr "Curva de Offset"
 
 #: scene/2d/joints_2d.cpp
 msgid "Node A and Node B must be PhysicsBody2Ds"
@@ -20921,7 +20974,7 @@ msgstr ""
 
 #: scene/2d/joints_2d.cpp
 msgid "Initial Offset"
-msgstr "Desplazamiento Inicial"
+msgstr "Offset Inicial"
 
 #: scene/2d/joints_2d.cpp scene/3d/vehicle_body.cpp
 msgid "Rest Length"
@@ -21016,7 +21069,7 @@ msgstr "Curva de Ancho"
 
 #: scene/2d/line_2d.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Default Color"
-msgstr "Color por Defecto"
+msgstr "Color Predeterminado"
 
 #: scene/2d/line_2d.cpp scene/resources/texture.cpp
 msgid "Fill"
@@ -21128,7 +21181,7 @@ msgstr "Velocidad Máxima"
 msgid ""
 "The NavigationAgent2D can be used only under a Node2D inheriting parent node."
 msgstr ""
-"El NavigationAgent2D sólo puede utilizarse bajo un nodo padre hijo de Node2D."
+"El NavigationAgent2D solo puede usarse con un nodo padre del tipo Node2D."
 
 #: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_obstacle.cpp
 msgid "Estimate Radius"
@@ -21194,7 +21247,7 @@ msgstr "Scroll"
 
 #: scene/2d/parallax_background.cpp
 msgid "Base Offset"
-msgstr "Desplazamiento Base"
+msgstr "Offset Base"
 
 #: scene/2d/parallax_background.cpp
 msgid "Base Scale"
@@ -21291,15 +21344,15 @@ msgstr ""
 
 #: scene/2d/path_2d.cpp scene/3d/path.cpp
 msgid "Unit Offset"
-msgstr "Desplazamiento de Unidad"
+msgstr "Offset de Unidad"
 
 #: scene/2d/path_2d.cpp scene/3d/camera.cpp scene/3d/path.cpp
 msgid "H Offset"
-msgstr "Desplazamiento H"
+msgstr "Offset H"
 
 #: scene/2d/path_2d.cpp scene/3d/camera.cpp scene/3d/path.cpp
 msgid "V Offset"
-msgstr "Desplazamiento V"
+msgstr "Offset V"
 
 #: scene/2d/path_2d.cpp scene/3d/path.cpp
 msgid "Cubic Interp"
@@ -21338,7 +21391,7 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Gravity"
-msgstr "Gravedad por Defecto"
+msgstr "Gravedad Predeterminada"
 
 #: scene/2d/physics_body_2d.cpp
 msgid ""
@@ -21517,7 +21570,7 @@ msgstr "Ruta Remota"
 
 #: scene/2d/remote_transform_2d.cpp scene/3d/remote_transform.cpp
 msgid "Use Global Coordinates"
-msgstr "Utilizar Coordenadas Globales"
+msgstr "Usar Coordenadas Globales"
 
 #: scene/2d/skeleton_2d.cpp scene/3d/skeleton.cpp
 msgid "Rest"
@@ -21525,7 +21578,7 @@ msgstr "Reposo"
 
 #: scene/2d/skeleton_2d.cpp
 msgid "Default Length"
-msgstr "Longitud por Defecto"
+msgstr "Longitud Predeterminada"
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
@@ -21583,7 +21636,7 @@ msgstr "Transformación Personalizada"
 
 #: scene/2d/tile_map.cpp
 msgid "Half Offset"
-msgstr "Medio Desplazamiento"
+msgstr "Medio Offset"
 
 #: scene/2d/tile_map.cpp
 msgid "Tile Origin"
@@ -21877,7 +21930,7 @@ msgstr "Propagación"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Image Path"
-msgstr ""
+msgstr "Ruta de la Imagen"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Light Data"
@@ -22263,7 +22316,7 @@ msgstr "Altura de la Celda"
 
 #: scene/3d/navigation_agent.cpp
 msgid "Agent Height Offset"
-msgstr ""
+msgstr "Offset de Altura del Agente"
 
 #: scene/3d/navigation_agent.cpp
 msgid "Ignore Y"
@@ -22273,7 +22326,7 @@ msgstr "Ignorar Y"
 msgid ""
 "The NavigationAgent can be used only under a Spatial inheriting parent node."
 msgstr ""
-"El NavigationAgent solo puede utilizarse en un nodo padre de tipo Spatial."
+"El NavigationAgent solo puede usarse con un nodo padre de tipo Spatial."
 
 #: scene/3d/navigation_mesh_instance.cpp scene/resources/mesh_library.cpp
 msgid "NavMesh"
@@ -22557,7 +22610,7 @@ msgstr "Punto de Equilibrio Angular"
 
 #: scene/3d/physics_body.cpp
 msgid "Body Offset"
-msgstr "Desplazamiento del Cuerpo"
+msgstr "Offset del Cuerpo"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
@@ -22761,7 +22814,7 @@ msgstr "Sala Vinculada"
 
 #: scene/3d/portal.cpp
 msgid "Use Default Margin"
-msgstr "Usar Margen por Defecto"
+msgstr "Usar Margen Predeterminado"
 
 #: scene/3d/proximity_group.cpp
 msgid "Group Name"
@@ -22789,7 +22842,7 @@ msgstr "Modo de Actualización"
 
 #: scene/3d/reflection_probe.cpp
 msgid "Origin Offset"
-msgstr "Desplazamiento de Origen"
+msgstr "Offset de Origen"
 
 #: scene/3d/reflection_probe.cpp
 msgid "Box Projection"
@@ -22842,7 +22895,7 @@ msgstr ""
 
 #: scene/3d/room.cpp
 msgid "Use Default Simplify"
-msgstr ""
+msgstr "Usar Simplificación Predeterminada"
 
 #: scene/3d/room.cpp scene/3d/room_manager.cpp
 msgid "Room Simplify"
@@ -22945,7 +22998,7 @@ msgstr ""
 
 #: scene/3d/room_manager.cpp
 msgid "Default Portal Margin"
-msgstr "Margen del Portal por Defecto"
+msgstr "Margen del Portal Predeterminado"
 
 #: scene/3d/room_manager.cpp
 msgid "Roaming Expansion Margin"
@@ -23351,7 +23404,7 @@ msgstr "Opciones de Reproducción"
 
 #: scene/animation/animation_player.cpp
 msgid "Default Blend Time"
-msgstr "Tiempo de Mezcla por Defecto"
+msgstr "Tiempo de Mezcla Predeterminado"
 
 #: scene/animation/animation_player.cpp
 msgid "Method Call Mode"
@@ -23618,7 +23671,7 @@ msgstr "Tamaño Mínimo"
 
 #: scene/gui/control.cpp
 msgid "Pivot Offset"
-msgstr "Pivote de Desplazamiento"
+msgstr "Pivote de Offset"
 
 #: scene/gui/control.cpp
 msgid "Clip Content"
@@ -23666,7 +23719,7 @@ msgstr ""
 
 #: scene/gui/control.cpp
 msgid "Default Cursor Shape"
-msgstr "Forma del Cursor por Defecto"
+msgstr "Forma del Cursor Predeterminado"
 
 #: scene/gui/control.cpp
 msgid "Pass On Modal Close Click"
@@ -23718,7 +23771,7 @@ msgstr "Desconexión Correcta"
 
 #: scene/gui/graph_edit.cpp
 msgid "Scroll Offset"
-msgstr "Desplazamiento de Scroll"
+msgstr "Offset de Scroll"
 
 #: scene/gui/graph_edit.cpp
 msgid "Snap Distance"
@@ -24035,7 +24088,6 @@ msgid "Elapsed Time"
 msgstr "Tiempo Transcurrido"
 
 #: scene/gui/rich_text_effect.cpp
-#, fuzzy
 msgid "Env"
 msgstr "Env"
 
@@ -24107,7 +24159,7 @@ msgstr "Vertical Activada"
 
 #: scene/gui/scroll_container.cpp
 msgid "Default Scroll Deadzone"
-msgstr ""
+msgstr "Zona Muerta Predeterminada del Scroll"
 
 #: scene/gui/slider.cpp
 msgid "Scrollable"
@@ -24131,7 +24183,7 @@ msgstr "Sufijo"
 
 #: scene/gui/split_container.cpp
 msgid "Split Offset"
-msgstr "Desplazamiento de División"
+msgstr "Offset de División"
 
 #: scene/gui/split_container.cpp scene/gui/tree.cpp
 msgid "Collapsed"
@@ -24260,7 +24312,7 @@ msgstr "Progreso"
 
 #: scene/gui/texture_progress.cpp
 msgid "Progress Offset"
-msgstr ""
+msgstr "Offset de Progreso"
 
 #: scene/gui/texture_progress.cpp
 msgid "Fill Mode"
@@ -24284,7 +24336,7 @@ msgstr "Completar Grados"
 
 #: scene/gui/texture_progress.cpp scene/resources/primitive_meshes.cpp
 msgid "Center Offset"
-msgstr "Desplazamiento Central"
+msgstr "Offset Central"
 
 #: scene/gui/texture_progress.cpp
 msgid "Nine Patch Stretch"
@@ -24515,15 +24567,16 @@ msgstr ""
 
 #: scene/main/scene_tree.cpp
 msgid "Default Environment"
-msgstr "Entorno por Defecto"
+msgstr "Entorno Predeterminado"
 
 #: scene/main/scene_tree.cpp
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
 "Environment -> Default Environment) could not be loaded."
 msgstr ""
-"El Entorno por Defecto como se especifica en Configuración del Proyecto "
-"(Rendering -> Environment -> Default Environment) no se ha podido cargar."
+"No se ha podido cargar el entorno predeterminado especificado en la "
+"configuración del proyecto (Renderizado -> Entorno -> Entorno "
+"Predeterminado)."
 
 #: scene/main/scene_tree.cpp
 msgid "Enable Object Picking"
@@ -24536,11 +24589,11 @@ msgid ""
 "Consider using a script's process loop instead of relying on a Timer for "
 "very low wait times."
 msgstr ""
-"Los tiempos de espera del temporizador muy bajos (< 0,05 segundos) pueden "
-"comportarse de manera significativamente diferente dependiendo de la "
-"velocidad de fotogramas renderizados o de la física.\n"
-"Considera la posibilidad de utilizar un bucle en process dentro del script "
-"en lugar de depender de un Timer para tiempos de espera muy bajos."
+"Los tiempos de espera del temporizador son muy bajos (< 0.05 segundos) y se "
+"puede comportar de manera muy diferente dependiendo de la tasa de fotogramas "
+"renderizados o de la física.\n"
+"Considera la posibilidad de utilizar un bucle de procesos en un script en "
+"lugar de depender de un Timer para tiempos de espera muy bajos."
 
 #: scene/main/timer.cpp
 msgid "Autostart"
@@ -24605,7 +24658,6 @@ msgid "FXAA"
 msgstr "FXAA"
 
 #: scene/main/viewport.cpp
-#, fuzzy
 msgid "Debanding"
 msgstr "Debanding"
 
@@ -24686,9 +24738,8 @@ msgid "Tooltip Delay (sec)"
 msgstr "Retraso del Tooltip (sec)"
 
 #: scene/register_scene_types.cpp
-#, fuzzy
 msgid "Swap OK Cancel"
-msgstr "Intercambio OK Cancelar"
+msgstr "Cancelar"
 
 #: scene/register_scene_types.cpp
 msgid "Layer Names"
@@ -24832,7 +24883,6 @@ msgid "Check V Adjust"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "On Disabled"
 msgstr "Desactivado"
 
@@ -24854,11 +24904,11 @@ msgstr "Modulación del Contorno de la Fuente"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Shadow Offset X"
-msgstr "Desplazamiento de la Sombra en X"
+msgstr "Offset de Sombra en X"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Shadow Offset Y"
-msgstr "Desplazamiento de la Sombra en Y"
+msgstr "Offset de Sombra en Y"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Shadow As Outline"
@@ -24923,43 +24973,36 @@ msgid "Completion Lines"
 msgstr "Finalización de Líneas"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Max Width"
-msgstr "Completar"
+msgstr "Completar Ancho Máximo"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Scroll Width"
-msgstr "Importar Seleccionado"
+msgstr "Completar Ancho de Scroll"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Focus"
-msgstr "Llenar superficie"
+msgstr "Enfoque de Scroll"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Grabber"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grabber Highlight"
-msgstr "Resaltador de Sintaxis"
+msgstr "Agarre Resaltado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grabber Pressed"
-msgstr "Preset"
+msgstr "Agarre Presionado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Increment"
-msgstr "Instrumento"
+msgstr "Incremento"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Increment Highlight"
-msgstr "Resaltador de Sintaxis"
+msgstr "Incremento Resaltado"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Increment Pressed"
@@ -24970,9 +25013,8 @@ msgid "Decrement"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Decrement Highlight"
-msgstr "Resaltador de Sintaxis"
+msgstr "Decremento Resaltado"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Decrement Pressed"
@@ -24991,9 +25033,8 @@ msgid "Grabber Area Highlight"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grabber Disabled"
-msgstr "Desactivar Elemento"
+msgstr "Agarre Desactivado"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Tick"
@@ -25004,74 +25045,60 @@ msgid "Updown"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scaleborder Size"
-msgstr "Tamaño del Borde"
+msgstr "Tamaño del Borde de la Escala"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Font"
-msgstr "Código Fuente"
+msgstr "Fuente del Título"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Color"
-msgstr "Color de Texto"
+msgstr "Color del Título"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Height"
-msgstr "Prueba"
+msgstr "Altura del Título"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close Highlight"
-msgstr "Resaltado"
+msgstr "Cierre Resaltado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close H Offset"
-msgstr "Desplazamiento de Ruido"
+msgstr "Cerrar Offset H"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close V Offset"
-msgstr "Desplazamiento de Ruido"
+msgstr "Cerrar Offset V"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Parent Folder"
-msgstr "Crear Carpeta"
+msgstr "Carpeta Padre"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Toggle Hidden"
-msgstr "Act./Desact. Archivos Ocultos"
+msgstr "Oculto"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Panel Disabled"
-msgstr "Clip Deshabilitado"
+msgstr "Panel Desactivado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Labeled Separator Left"
-msgstr "Separador con nombre"
+msgstr "Separador con Etiqueta a la Izquierda"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Labeled Separator Right"
-msgstr "Separador con nombre"
+msgstr "Separador con Etiqueta a la Derecha"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Separator"
-msgstr "Separador de Color de Fuentes"
+msgstr "Separación de Fuente"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color Accel"
-msgstr "Color Hueso 1"
+msgstr "Color de Fuente Accel"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Separator"
@@ -25082,230 +25109,188 @@ msgid "V Separation"
 msgstr "Separación en V"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selected Frame"
-msgstr "Seleccionar Fotogramas"
+msgstr "Cuadro Seleccionado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Default Frame"
-msgstr "Z Lejana por Defecto"
+msgstr "Cuadro Predeterminado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Default Focus"
-msgstr "Por defecto"
+msgstr "Enfoque Predeterminado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Comment Focus"
-msgstr "Confirmar"
+msgstr "Comentario Enfocado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Breakpoint"
-msgstr "Puntos de interrupción"
+msgstr "Punto de Ruptura"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Resizer"
-msgstr "Redimensionable"
+msgstr "Reajuste"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close Color"
-msgstr "Colores"
+msgstr "Cerrar Color"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Resizer Color"
-msgstr "Colores"
+msgstr "Cambiar Color"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Offset"
-msgstr "Desplazamiento de Byte"
+msgstr "Offset del Título"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Close Offset"
-msgstr "Desplazamiento de Ruido"
+msgstr "Offset de Cierre"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Port Offset"
-msgstr "Pivote de Desplazamiento"
+msgstr "Offset del Puerto"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "BG Focus"
-msgstr "Foco en Ruta"
+msgstr "Enfocar BG"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selected Focus"
-msgstr "Seleccionar"
+msgstr "Enfoque Seleccionado"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Cursor Unfocused"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Button Pressed"
-msgstr "Preset"
+msgstr "Botón Presionado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Normal"
-msgstr "Botón de Conmutación"
+msgstr "Botón del Título Normal"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Pressed"
-msgstr "Botón de Conmutación"
+msgstr "Botón del Título Presionado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Hover"
-msgstr "Botón de Conmutación"
+msgstr "Botón de Título Hover"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Custom Button"
-msgstr "CustomNode"
+msgstr "Botón Personalizado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Custom Button Pressed"
-msgstr "Opciones de Bus"
+msgstr "Botón Personalizado Presionado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Custom Button Hover"
-msgstr "CustomNode"
+msgstr "Botón Personalizado Hover"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Select Arrow"
-msgstr "Seleccionar Todo"
+msgstr "Seleccionar Flecha"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Arrow Collapsed"
-msgstr "Colapsar Todo"
+msgstr "Flecha Colapsada"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Font"
-msgstr "Botón de Conmutación"
+msgstr "Fuente del Título del Botón"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Title Button Color"
-msgstr "Color de Selección"
+msgstr "Color del Título del Botón"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Guide Color"
-msgstr "Color de Guías"
+msgstr "Guía de Colores"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Drop Position Color"
-msgstr "Posición del Dock"
+msgstr "Posición del Gotero de Color"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Relationship Line Color"
-msgstr "Opacidad De Línea De Relación"
+msgstr "Color de la Línea de Relación"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Custom Button Font Highlight"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Item Margin"
-msgstr "Asignar Margen"
+msgstr "Margen del Ítem"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Button Margin"
-msgstr "Máscara de Botones"
+msgstr "Margen del Botón"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Draw Relationship Lines"
-msgstr "Opacidad De Línea De Relación"
+msgstr "Dibujar Líneas de Relación"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Draw Guides"
-msgstr "Mostrar Guías"
+msgstr "Guías de Dibujo"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Border"
-msgstr "Desplazarse Verticalmente"
+msgstr "Borde del Scroll"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Scroll Speed"
-msgstr "Velocidad Desplazamiento V"
+msgstr "Velocidad del Scroll"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Icon Margin"
-msgstr "Asignar Margen"
+msgstr "Margen del Icono"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Line Separation"
 msgstr "Separación de Líneas"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab FG"
-msgstr "Tab 1"
+msgstr "Pestaña FG"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab BG"
-msgstr "Tab 1"
+msgstr "Pestaña BG"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Tab Disabled"
-msgstr "Desactivar Elemento"
+msgstr "Pestaña Desactivada"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Menu"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Menu Highlight"
-msgstr "Resaltado"
+msgstr "Menú Resaltado"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color FG"
-msgstr "Color Hueso 1"
+msgstr "Color de Fuente FG"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Font Color BG"
-msgstr "Color Hueso 1"
+msgstr "Color de Fuente BG"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Side Margin"
-msgstr "Asignar Margen"
+msgstr "Margen Lateral"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Top Margin"
-msgstr "Asignar Margen"
+msgstr "Margen Superior"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Label V Align FG"
@@ -25316,86 +25301,72 @@ msgid "Label V Align BG"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Large"
-msgstr "Objetivo"
+msgstr "Largo"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Folder"
 msgstr "Carpeta"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Folder Icon Modulate"
-msgstr "Forzar Modulación en Blanco"
+msgstr "Modular Icono de Carpeta"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "File Icon Modulate"
-msgstr "Modo de Icono"
+msgstr "Modular Icono de Archivo"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Files Disabled"
-msgstr "Clip Deshabilitado"
+msgstr "Archivos Desactivados"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "SV Width"
-msgstr "Ancho Izquierda"
+msgstr "Ancho SV"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "SV Height"
-msgstr "Luz"
+msgstr "Alto SV"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "H Width"
-msgstr "Ancho Izquierda"
+msgstr "Ancho H"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Label Width"
-msgstr "Ancho Izquierda"
+msgstr "Ancho de Etiqueta"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Screen Picker"
 msgstr "Selector de Pantalla"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Add Preset"
-msgstr "Cargar Ajuste Predeterminado"
+msgstr "Añadir Preset"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Color Hue"
-msgstr "Textura de Color"
+msgstr "Tono de Color"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Color Sample"
-msgstr "Colores"
+msgstr "Muestra de Color"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Preset BG"
-msgstr "Preajuste"
+msgstr "Preset BG"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Overbright Indicator"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Preset FG"
-msgstr "Preajuste"
+msgstr "Preset FG"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Preset BG Icon"
-msgstr "Preajuste"
+msgstr "Preset Icono BG"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Normal Font"
@@ -25414,9 +25385,8 @@ msgid "Bold Italics Font"
 msgstr "Fuente Negrita y Cursiva"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Mono Font"
-msgstr "Fuente Principal"
+msgstr "Fuente Mono"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Table H Separation"
@@ -25443,9 +25413,8 @@ msgid "Margin Bottom"
 msgstr "Margen Inferior"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Autohide"
-msgstr "Corte Automático"
+msgstr "Ocultar Automáticamente"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Minus"
@@ -25456,76 +25425,64 @@ msgid "More"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grid Minor"
-msgstr "Color de Cuadrícula"
+msgstr "Grid Menor"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Grid Major"
-msgstr "Mapeo de Cuadrícula"
+msgstr "Grid Mayor"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selection Fill"
-msgstr "Sólo selección"
+msgstr "Relleno de Selección"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selection Stroke"
-msgstr "Seleccionar Propiedad"
+msgstr "Selección de Stroke"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Activity"
-msgstr "Acción"
+msgstr "Actividad"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Bezier Len Pos"
-msgstr "Mover Puntos Bezier"
+msgstr "Bezier Len Pos"
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Bezier Len Neg"
-msgstr "Bezier"
+msgstr "Bezier Len Neg"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Port Grab Distance Horizontal"
 msgstr ""
 
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Port Grab Distance Vertical"
-msgstr "WaitInstanceSignal"
+msgstr "Distancia Vertical del Puerto de Agarre"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Hinting"
 msgstr ""
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Override Oversampling"
-msgstr "Elemento de Anulación"
+msgstr "Anular Sobremuestreo"
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Font Path"
-msgstr "Foco en Ruta"
+msgstr "Ruta de la Fuente"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Outline Size"
 msgstr "Tamaño del Contorno"
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Outline Color"
-msgstr "Función"
+msgstr "Color del Contorno"
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Use Mipmaps"
-msgstr "Señales"
+msgstr "Usar Mipmaps"
 
 #: scene/resources/dynamic_font.cpp
 msgid "Extra Spacing"
@@ -25536,9 +25493,8 @@ msgid "Char"
 msgstr "Char"
 
 #: scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Font Data"
-msgstr "Con Datos"
+msgstr "Datos de la Fuente"
 
 #: scene/resources/environment.cpp
 msgid "Background"
@@ -25549,14 +25505,12 @@ msgid "Sky"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Sky Custom FOV"
-msgstr "CustomNode"
+msgstr "FOV Personalizado del Cielo"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Sky Orientation"
-msgstr "Documentación en línea"
+msgstr "Orientación del Cielo"
 
 #: scene/resources/environment.cpp
 msgid "Sky Rotation"
@@ -25575,14 +25529,12 @@ msgid "Camera Feed ID"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Ambient Light"
-msgstr "Indentar a la Derecha"
+msgstr "Luz Ambiental"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Sky Contribution"
-msgstr "Condición"
+msgstr "Contribución del Cielo"
 
 #: scene/resources/environment.cpp
 msgid "Fog"
@@ -25597,64 +25549,52 @@ msgid "Sun Amount"
 msgstr "Cantidad de Sol"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Depth Enabled"
-msgstr "Profundidad"
+msgstr "Profundidad Activada"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Depth Begin"
-msgstr "Profundidad"
+msgstr "Inicio de la Profundidad"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Depth End"
-msgstr "Profundidad"
+msgstr "Fin de la Profundidad"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Depth Curve"
-msgstr "Partir Curva"
+msgstr "Curva de Profundidad"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Transmit Enabled"
-msgstr "Filtrar señales"
+msgstr "Transmisión Activada"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Transmit Curve"
-msgstr "Partir Curva"
+msgstr "Curva de Transmisión"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Height Enabled"
-msgstr "Filtrar señales"
+msgstr "Altura Activada"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Height Min"
-msgstr "Luz"
+msgstr "Altura Mínima"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Height Max"
-msgstr "Luz"
+msgstr "Altura Máxima"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Height Curve"
-msgstr "Partir Curva"
+msgstr "Curva de Altura"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Tonemap"
-msgstr "Remapeos"
+msgstr "Tonemap"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Exposure"
-msgstr "Exportar"
+msgstr "Exposición"
 
 #: scene/resources/environment.cpp
 msgid "White"
@@ -25673,14 +25613,12 @@ msgid "Max Luma"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "SS Reflections"
-msgstr "Escalar Selección"
+msgstr "Reflexiones SS"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Max Steps"
-msgstr "Paso"
+msgstr "Pasos Máximos"
 
 #: scene/resources/environment.cpp
 msgid "Fade In"
@@ -25691,9 +25629,8 @@ msgid "Fade Out"
 msgstr "Fundido de Salida"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Depth Tolerance"
-msgstr "Profundidad"
+msgstr "Tolerancia de Profundidad"
 
 #: scene/resources/environment.cpp scene/resources/material.cpp
 msgid "Roughness"
@@ -25712,14 +25649,12 @@ msgid "Intensity 2"
 msgstr ""
 
 #: scene/resources/environment.cpp scene/resources/material.cpp
-#, fuzzy
 msgid "Light Affect"
-msgstr "Ancho Derecha"
+msgstr "Influencia de la Luz"
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "AO Channel Affect"
-msgstr "Depuración del Canal UV"
+msgstr "Influencia del Canal AO"
 
 #: scene/resources/environment.cpp
 msgid "Blur"
@@ -25750,42 +25685,40 @@ msgid "Glow"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Levels"
-msgstr "Desarrolladores"
+msgstr "Niveles"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
 msgid "1"
-msgstr ""
+msgstr "1"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
 msgid "2"
-msgstr ""
+msgstr "2"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
-#, fuzzy
 msgid "3"
-msgstr "3D"
+msgstr "3"
 
 #: scene/resources/environment.cpp
 #: servers/audio/effects/audio_effect_chorus.cpp
 msgid "4"
-msgstr ""
+msgstr "4"
 
 #: scene/resources/environment.cpp
 msgid "5"
-msgstr ""
+msgstr "5"
 
 #: scene/resources/environment.cpp
 msgid "6"
-msgstr ""
+msgstr "6"
 
 #: scene/resources/environment.cpp
 msgid "7"
-msgstr ""
+msgstr "7"
 
 #: scene/resources/environment.cpp
 msgid "Bloom"
@@ -25800,9 +25733,8 @@ msgid "HDR Luminance Cap"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "HDR Scale"
-msgstr "Escala"
+msgstr "Escala HDR"
 
 #: scene/resources/environment.cpp
 msgid "Bicubic Upscale"
@@ -25813,9 +25745,8 @@ msgid "Adjustments"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Brightness"
-msgstr "Luz"
+msgstr "Luminosidad"
 
 #: scene/resources/environment.cpp
 msgid "Saturation"
@@ -25830,60 +25761,52 @@ msgid "Ascent"
 msgstr "Aumento"
 
 #: scene/resources/font.cpp
-#, fuzzy
 msgid "Distance Field"
-msgstr "Modo Sin Distracciones"
+msgstr "Campo de Distancia"
 
 #: scene/resources/gradient.cpp
-#, fuzzy
 msgid "Raw Data"
-msgstr "Profundidad"
+msgstr "Datos en Crudo"
 
 #: scene/resources/gradient.cpp
 msgid "Offsets"
-msgstr "Desplazamientos"
+msgstr "Offsets"
 
 #: scene/resources/height_map_shape.cpp
 msgid "Map Width"
 msgstr ""
 
 #: scene/resources/height_map_shape.cpp
-#, fuzzy
 msgid "Map Depth"
-msgstr "Profundidad"
+msgstr "Mapa de Profundidad"
 
 #: scene/resources/height_map_shape.cpp
-#, fuzzy
 msgid "Map Data"
-msgstr "Profundidad"
+msgstr "Datos del Mapa"
 
 #: scene/resources/line_shape_2d.cpp
 msgid "D"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Next Pass"
-msgstr "Siguiente Plano"
+msgstr "Siguiente Paso"
 
 #: scene/resources/material.cpp
 msgid "Use Shadow To Opacity"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Unshaded"
-msgstr "Mostrar Sin Sombreado"
+msgstr "Sin Sombreado"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Vertex Lighting"
-msgstr "Iluminación directa"
+msgstr "Iluminación de Vértices"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Use Point Size"
-msgstr "Vista Frontal"
+msgstr "Usar Tamaño del Punto"
 
 #: scene/resources/material.cpp
 msgid "World Triplanar"
@@ -25898,23 +25821,20 @@ msgid "Do Not Receive Shadows"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Disable Ambient Light"
-msgstr "Indentar a la Derecha"
+msgstr "Desactivar Luz Ambiental"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Ensure Correct Normals"
-msgstr "Transformar Normales"
+msgstr "Asegurar Normales Correctas"
 
 #: scene/resources/material.cpp
 msgid "Albedo Tex MSDF"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Vertex Color"
-msgstr "Vértice"
+msgstr "Color del Vértice"
 
 #: scene/resources/material.cpp
 msgid "Use As Albedo"
@@ -25929,39 +25849,32 @@ msgid "Parameters"
 msgstr "Parámetros"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Diffuse Mode"
-msgstr "Modo desplazamiento lateral"
+msgstr "Modo Difuso"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Specular Mode"
-msgstr "Modo de Regla"
+msgstr "Modo Especular"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Depth Draw Mode"
-msgstr "Modo de Interpolación"
+msgstr "Modo de Dibujo de Profundidad"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Line Width"
-msgstr "Ancho Izquierda"
+msgstr "Ancho de Línea"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Point Size"
-msgstr "Vista Frontal"
+msgstr "Tamaño de Punto"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Billboard Mode"
-msgstr "Modo de Regla"
+msgstr "Modo Billboard"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Billboard Keep Scale"
-msgstr "Modo de Regla"
+msgstr "Mantener Escala del Billboard"
 
 #: scene/resources/material.cpp
 msgid "Grow"
@@ -25976,19 +25889,16 @@ msgid "Use Alpha Scissor"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Particles Anim"
-msgstr "Partículas"
+msgstr "Animación de Partículas"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "H Frames"
-msgstr "Fotograma %"
+msgstr "Cuadros H"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "V Frames"
-msgstr "Fotograma %"
+msgstr "Cuadros V"
 
 #: scene/resources/material.cpp
 msgid "Albedo"
@@ -25999,14 +25909,12 @@ msgid "Metallic"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Texture Channel"
-msgstr "Región de Textura"
+msgstr "Canal de Textura"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Emission"
-msgstr "Máscara de Emisión"
+msgstr "Emisión"
 
 #: scene/resources/material.cpp
 msgid "On UV2"
@@ -26021,9 +25929,8 @@ msgid "Rim"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Clearcoat"
-msgstr "Limpiar"
+msgstr "Transparencia"
 
 #: scene/resources/material.cpp
 msgid "Gloss"
@@ -26038,32 +25945,28 @@ msgid "Flowmap"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Ambient Occlusion"
-msgstr "Oclusión"
+msgstr "Oclusión Ambiental"
 
 #: scene/resources/material.cpp
 msgid "Deep Parallax"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Min Layers"
-msgstr "Capa"
+msgstr "Capas Mínimas"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Max Layers"
-msgstr "Capa"
+msgstr "Capas Máximas"
 
 #: scene/resources/material.cpp
 msgid "Flip Tangent"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Flip Binormal"
-msgstr "Voltear Portal"
+msgstr "Voltear Binormal"
 
 #: scene/resources/material.cpp
 msgid "Subsurf Scatter"
@@ -26082,14 +25985,12 @@ msgid "Detail"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "UV Layer"
-msgstr "Capa"
+msgstr "Capa UV"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "UV1"
-msgstr "UV"
+msgstr "UV1"
 
 #: scene/resources/material.cpp
 msgid "Triplanar"
@@ -26100,42 +26001,36 @@ msgid "Triplanar Sharpness"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "UV2"
-msgstr "UV"
+msgstr "UV2"
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Proximity Fade"
-msgstr "Modo de Prioridad"
+msgstr "Desvanecimiento de Proximidad"
 
 #: scene/resources/material.cpp
 msgid "Distance Fade"
 msgstr ""
 
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Async Mode"
-msgstr "Modo desplazamiento lateral"
+msgstr "Modo Asíncrono"
 
 #: scene/resources/mesh.cpp
-#, fuzzy
 msgid "Lightmap Size Hint"
-msgstr "Calcular Lightmaps"
+msgstr "Sugerencia de Tamaño del Lightmap"
 
 #: scene/resources/mesh.cpp scene/resources/primitive_meshes.cpp
 msgid "Custom AABB"
 msgstr ""
 
 #: scene/resources/mesh_library.cpp
-#, fuzzy
 msgid "Mesh Transform"
-msgstr "Transformar"
+msgstr "Transformación de Mesh"
 
 #: scene/resources/mesh_library.cpp
-#, fuzzy
 msgid "NavMesh Transform"
-msgstr "Reestablecer Transformación"
+msgstr "Transformación de NavMesh"
 
 #: scene/resources/multimesh.cpp
 msgid "Color Format"
@@ -26150,9 +26045,8 @@ msgid "Custom Data Format"
 msgstr ""
 
 #: scene/resources/multimesh.cpp
-#, fuzzy
 msgid "Instance Count"
-msgstr "Instanciar"
+msgstr "Conteo de Instancias"
 
 #: scene/resources/multimesh.cpp
 msgid "Visible Instance Count"
@@ -26163,9 +26057,8 @@ msgid "Sampling"
 msgstr "Muestreo"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Partition Type"
-msgstr "Establecer tipo de base de variación"
+msgstr "Tipo de Partición"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Parsed Geometry Type"
@@ -26176,18 +26069,16 @@ msgid "Source Geometry Mode"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Source Group Name"
-msgstr "Fuente"
+msgstr "Nombre del Grupo de Origen"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Cells"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Agents"
-msgstr "Segmentos"
+msgstr "Agentes"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -26198,14 +26089,12 @@ msgid "Max Slope"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Regions"
-msgstr "Región"
+msgstr "Regiones"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Merge Size"
-msgstr "Unir desde escena"
+msgstr "Tamaño de Unión"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Edges"
@@ -26220,9 +26109,8 @@ msgid "Verts Per Poly"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Details"
-msgstr "Mostrar Por Defecto"
+msgstr "Detalles"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Sample Distance"
@@ -26245,14 +26133,12 @@ msgid "Walkable Low Height Spans"
 msgstr ""
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Baking AABB"
-msgstr "Generando AABB"
+msgstr "Bakear AABB"
 
 #: scene/resources/navigation_mesh.cpp
-#, fuzzy
 msgid "Baking AABB Offset"
-msgstr "Desplazamiento Base"
+msgstr "Bakear Offset AABB"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
@@ -26263,14 +26149,12 @@ msgid "OccluderShapeSphere Set Spheres"
 msgstr "Establecer Esferas OccluderShapeSphere"
 
 #: scene/resources/occluder_shape_polygon.cpp
-#, fuzzy
 msgid "Polygon Points"
-msgstr "Polígonos"
+msgstr "Puntos de Polígonos"
 
 #: scene/resources/occluder_shape_polygon.cpp
-#, fuzzy
 msgid "Hole Points"
-msgstr "Mover Puntos"
+msgstr "Puntos de Rotura"
 
 #: scene/resources/packed_scene.cpp
 msgid "Bundled"
@@ -26281,9 +26165,8 @@ msgid "Trail"
 msgstr ""
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Divisor"
-msgstr "Dividir %s"
+msgstr "Divisor"
 
 #: scene/resources/particles_material.cpp
 msgid "Size Modifier"
@@ -26306,9 +26189,8 @@ msgid "Color Texture"
 msgstr "Textura de Color"
 
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Point Count"
-msgstr "Añadir Puerto de Entrada"
+msgstr "Conteo de Puntos"
 
 #: scene/resources/particles_material.cpp
 msgid "Scale Random"
@@ -26367,9 +26249,8 @@ msgid "Is Hemisphere"
 msgstr ""
 
 #: scene/resources/primitive_meshes.cpp
-#, fuzzy
 msgid "Curve Step"
-msgstr "Partir Curva"
+msgstr "Paso de Curva"
 
 #: scene/resources/ray_shape.cpp scene/resources/segment_shape_2d.cpp
 msgid "Slips On Slope"
@@ -26384,19 +26265,16 @@ msgid "Custom Solver Bias"
 msgstr ""
 
 #: scene/resources/skin.cpp
-#, fuzzy
 msgid "Bind Count"
-msgstr "Añadir Puerto de Entrada"
+msgstr "Conteo de Vinculaciones"
 
 #: scene/resources/skin.cpp
-#, fuzzy
 msgid "Bind"
 msgstr "Vinculación"
 
 #: scene/resources/skin.cpp
-#, fuzzy
 msgid "Bone"
-msgstr "Huesos"
+msgstr "Hueso"
 
 #: scene/resources/sky.cpp
 msgid "Radiance Size"
@@ -26407,9 +26285,8 @@ msgid "Panorama"
 msgstr ""
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Top Color"
-msgstr "Siguiente Plano"
+msgstr "Color Superior"
 
 #: scene/resources/sky.cpp
 msgid "Horizon Color"
@@ -26420,19 +26297,16 @@ msgid "Ground"
 msgstr "Suelo"
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Bottom Color"
-msgstr "Marcadores"
+msgstr "Color Inferior"
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Sun"
-msgstr "Ejecutar"
+msgstr "Sol"
 
 #: scene/resources/sky.cpp
-#, fuzzy
 msgid "Latitude"
-msgstr "Sustituir"
+msgstr "Latitud"
 
 #: scene/resources/sky.cpp
 msgid "Longitude"
@@ -26447,23 +26321,20 @@ msgid "Angle Max"
 msgstr ""
 
 #: scene/resources/style_box.cpp
-#, fuzzy
 msgid "Content Margin"
-msgstr "Asignar Margen"
+msgstr "Margen de Contenido"
 
 #: scene/resources/style_box.cpp
-#, fuzzy
 msgid "Expand Margin"
-msgstr "Expandir Todo"
+msgstr "Expandir Margen"
 
 #: scene/resources/style_box.cpp
 msgid "Skew"
 msgstr ""
 
 #: scene/resources/style_box.cpp
-#, fuzzy
 msgid "Corner Radius"
-msgstr "Cambiar Radio Interno de Torus"
+msgstr "Radio de Esquina"
 
 #: scene/resources/style_box.cpp
 msgid "Corner Detail"
@@ -26482,121 +26353,100 @@ msgid "Grow End"
 msgstr ""
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Load Path"
-msgstr "Cargar Ajuste Predeterminado"
+msgstr "Ruta de Carga"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Base Texture"
-msgstr "Eliminar Textura"
+msgstr "Textura Base"
 
 #: scene/resources/texture.cpp
 msgid "Image Size"
 msgstr "Tamaño de la Imagen"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Side"
-msgstr "Mostrar Guías"
+msgstr "Lado"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Front"
-msgstr "Vista Frontal"
+msgstr "Frente"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Back"
-msgstr "Retroceder"
+msgstr "Posterior"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Storage Mode"
-msgstr "Modo de Escalado"
+msgstr "Modo de Almacenamiento"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Lossy Storage Quality"
-msgstr "Captura"
+msgstr "Calidad de Almacenamiento con Pérdidas"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "From"
-msgstr "Rellene Desde"
+msgstr "Desde"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "To"
-msgstr "Superior"
+msgstr "A"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Base"
-msgstr "Tipo Base"
+msgstr "Base"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Current Frame"
-msgstr "Nombre de la escena actual"
+msgstr "Cuadro Actual"
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Pause"
-msgstr "Modo desplazamiento lateral"
+msgstr "Pausa"
 
 #: scene/resources/texture.cpp
 msgid "Which Feed"
 msgstr ""
 
 #: scene/resources/texture.cpp
-#, fuzzy
 msgid "Camera Is Active"
-msgstr "Respetar Mayúsculas/Minúsculas"
+msgstr "Cámara Activa"
 
 #: scene/resources/theme.cpp
-#, fuzzy
 msgid "Default Font"
-msgstr "Por defecto"
+msgstr "Fuente Predeterminada"
 
 #: scene/resources/visual_shader.cpp
 msgid "Output Port For Preview"
 msgstr ""
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Depth Draw"
-msgstr "Modo de Interpolación"
+msgstr "Dibujo de Profundidad"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Cull"
-msgstr "Modo de Regla"
+msgstr "Cull"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Diffuse"
-msgstr "Modo desplazamiento lateral"
+msgstr "Difuso"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Async"
-msgstr "Modo desplazamiento lateral"
+msgstr "Asíncrono"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Modes"
-msgstr "Modo"
+msgstr "Modos"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Input Name"
-msgstr "Mapa de Entrada"
+msgstr "Nombre de Entrada"
 
 #: scene/resources/visual_shader.cpp
-#, fuzzy
 msgid "Uniform Name"
-msgstr "Establecer Nombre de Uniform"
+msgstr "Nombre del Uniform"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid ""
@@ -26615,85 +26465,72 @@ msgid "Invalid source for shader."
 msgstr "Fuente inválida para el shader."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Texture Type"
-msgstr "Región de Textura"
+msgstr "Tipo de Textura"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Cube Map"
 msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Default Value Enabled"
-msgstr "Perfil de Características de Godot"
+msgstr "Valor Predeterminado Activado"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Default Value"
-msgstr "Cambiar Valor de Entrada"
+msgstr "Valor Predeterminado"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Color Default"
-msgstr "Cargar Valores por Defecto"
+msgstr "Color Predeterminado"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid comparison function for that type."
 msgstr "Función de comparación inválida para este tipo."
 
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Fallback Environment"
-msgstr "Ver Entorno"
+msgstr "Entorno de Retorno"
 
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Scenario"
-msgstr "Escena"
+msgstr "Escenario"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Navigation Map"
-msgstr "Navegación"
+msgstr "Mapa de Navegación"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Direct Space State"
 msgstr ""
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Gravity Vector"
-msgstr "Vista Previa Por Defecto"
+msgstr "Vector de Gravedad Predeterminado"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Linear Damp"
-msgstr "Izquierda Lineal"
+msgstr "Amortiguación Lineal Predeterminada"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 msgid "Default Angular Damp"
-msgstr ""
+msgstr "Amortiguación Angular Predeterminada"
 
 #: scene/resources/world.cpp
-#, fuzzy
 msgid "Default Map Up"
-msgstr "Escalonado de Flotantes por Defecto"
+msgstr "Mapa Superior Predeterminado"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Cell Size"
-msgstr "Vista Previa Por Defecto"
+msgstr "Vista Previa Predeterminada"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Cell Height"
-msgstr "Prueba"
+msgstr "Altura de Celda Predeterminada"
 
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
-#, fuzzy
 msgid "Default Edge Connection Margin"
-msgstr "Margen de Conexión de Bordes"
+msgstr "Margen de Conexión de Bordes Predeterminado"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
@@ -26704,9 +26541,8 @@ msgid "Is Primary"
 msgstr ""
 
 #: servers/arvr/arvr_interface.cpp
-#, fuzzy
 msgid "Is Initialized"
-msgstr "Inicializar"
+msgstr "Inicializado"
 
 #: servers/arvr/arvr_interface.cpp
 msgid "AR"
@@ -26717,14 +26553,12 @@ msgid "Is Anchor Detection Enabled"
 msgstr ""
 
 #: servers/arvr_server.cpp
-#, fuzzy
 msgid "Primary Interface"
-msgstr "Interfaz de usuario"
+msgstr "Interfaz Principal"
 
 #: servers/audio/audio_stream.cpp
-#, fuzzy
 msgid "Audio Stream"
-msgstr "Radio Elemento"
+msgstr "Audio Stream"
 
 #: servers/audio/audio_stream.cpp
 msgid "Random Pitch"
@@ -26766,9 +26600,8 @@ msgid "Rate Hz"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_chorus.cpp
-#, fuzzy
 msgid "Depth (ms)"
-msgstr "Profundidad"
+msgstr "Profundidad (ms)"
 
 #: servers/audio/effects/audio_effect_chorus.cpp
 #: servers/audio/effects/audio_effect_delay.cpp
@@ -26791,9 +26624,8 @@ msgid "Attack (µs)"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_compressor.cpp
-#, fuzzy
 msgid "Release (ms)"
-msgstr "Release"
+msgstr "Release (ms)"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Mix"
@@ -26814,14 +26646,12 @@ msgstr ""
 #: servers/audio/effects/audio_effect_delay.cpp
 #: servers/audio/effects/audio_effect_phaser.cpp
 #: servers/audio/effects/audio_effect_reverb.cpp
-#, fuzzy
 msgid "Feedback"
-msgstr "Enviar Feedback de la Documentación"
+msgstr "Feedback"
 
 #: servers/audio/effects/audio_effect_delay.cpp
-#, fuzzy
 msgid "Low-pass"
-msgstr "Omitir"
+msgstr "Paso Bajo"
 
 #: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Pre Gain"
@@ -26836,14 +26666,12 @@ msgid "Drive"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_distortion.cpp
-#, fuzzy
 msgid "Post Gain"
-msgstr "Posterior"
+msgstr "Ganancia Puntual"
 
 #: servers/audio/effects/audio_effect_filter.cpp
-#, fuzzy
 msgid "Resonance"
-msgstr "Recursos"
+msgstr "Resonancia"
 
 #: servers/audio/effects/audio_effect_limiter.cpp
 msgid "Ceiling dB"
@@ -26891,9 +26719,8 @@ msgid "Room Size"
 msgstr ""
 
 #: servers/audio/effects/audio_effect_reverb.cpp
-#, fuzzy
 msgid "High-pass"
-msgstr "Omitir"
+msgstr "Paso Alto"
 
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
 msgid "Tap Back Pos"
@@ -26912,51 +26739,44 @@ msgid "Surround"
 msgstr ""
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Enable Audio Input"
-msgstr "Renombrar Bus de Audio"
+msgstr "Activar Entrada de Audio"
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Output Latency"
-msgstr "Salida"
+msgstr "Latencia de Salida"
 
 #: servers/audio_server.cpp
 msgid "Channel Disable Threshold dB"
 msgstr ""
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Channel Disable Time"
-msgstr "Cambiar Tiempo de Mezcla"
+msgstr "Tiempo de Desconexión del Canal"
 
 #: servers/audio_server.cpp
 msgid "Video Delay Compensation (ms)"
 msgstr ""
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Bus Count"
-msgstr "Añadir Puerto de Entrada"
+msgstr "Conteo de Buses"
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Capture Device"
-msgstr "Capturar desde píxel"
+msgstr "Dispositivo de Captura"
 
 #: servers/audio_server.cpp
-#, fuzzy
 msgid "Global Rate Scale"
-msgstr "Variable"
+msgstr "Escala Global de Porcentajes"
 
 #: servers/camera/camera_feed.cpp
 msgid "Feed"
 msgstr ""
 
 #: servers/camera/camera_feed.cpp
-#, fuzzy
 msgid "Is Active"
-msgstr "Perspectiva"
+msgstr "Activo"
 
 #: servers/physics/space_sw.cpp servers/physics_2d/space_2d_sw.cpp
 msgid "Sleep Threshold Linear"
@@ -26983,28 +26803,24 @@ msgid "Inverse Mass"
 msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Inverse Inertia"
-msgstr "Vista Libre Izquierda"
+msgstr "Inercia Inversa"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Total Angular Damp"
 msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Total Linear Damp"
-msgstr "Lineal"
+msgstr "Amortiguación Lineal Total"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Total Gravity"
-msgstr "Vista Previa Por Defecto"
+msgstr "Gravedad Total"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Linear Velocity"
-msgstr "Inicializar"
+msgstr "Velocidad Lineal"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Exclude"
@@ -27015,9 +26831,8 @@ msgid "Shape RID"
 msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collide With Bodies"
-msgstr "Modo de Colisión"
+msgstr "Colisión de Cuerpos"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
 msgid "Collide With Areas"
@@ -27028,39 +26843,32 @@ msgid "Motion Remainder"
 msgstr ""
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Point"
-msgstr "Modo de Colisión"
+msgstr "Punto de Colisión"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Normal"
-msgstr "Modo de Colisión"
+msgstr "Colisión Normal"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Depth"
-msgstr "Modo de Colisión"
+msgstr "Profundidad de Colisión"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Safe Fraction"
-msgstr "Modo de Colisión"
+msgstr "Fracción Segura de Colisión"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Collision Unsafe Fraction"
-msgstr "Modo de Colisión"
+msgstr "Fracción Insegura de Colisión"
 
 #: servers/physics_2d_server.cpp servers/physics_server.cpp
-#, fuzzy
 msgid "Physics Engine"
-msgstr "Fotogramas de Física %"
+msgstr "Motor de Física"
 
 #: servers/physics_server.cpp
-#, fuzzy
 msgid "Center Of Mass"
-msgstr "Centro Izquierda"
+msgstr "Centro de la Masa"
 
 #: servers/physics_server.cpp
 msgid "Principal Inertia Axes"
@@ -27071,22 +26879,20 @@ msgid "Varying may not be assigned in the '%s' function."
 msgstr "No se puede asignar la variable en la función '%s'."
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid ""
 "Varyings which were assigned in 'vertex' function may not be reassigned in "
 "'fragment' or 'light'."
 msgstr ""
-"Las variaciones asignadas en función 'vértice' no pueden reasignarse en "
-"'fragmento' o 'luz'."
+"Las variaciones que se asignaron en la función 'vertex'no pueden reasignarse "
+"en 'fragment' o 'light'."
 
 #: servers/visual/shader_language.cpp
-#, fuzzy
 msgid ""
 "Varyings which were assigned in 'fragment' function may not be reassigned in "
 "'vertex' or 'light'."
 msgstr ""
-"Varyings Cuál asignó en 'fragmento' la función no puede ser reasignada en "
-"'vértice' o 'ligero'."
+"Las variaciones que se asignaron en la función 'fragment' no pueden "
+"reasignarse en 'vertex' o 'light'."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
@@ -27105,48 +26911,40 @@ msgid "Spatial Partitioning"
 msgstr "Partición de Espacios"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Render Loop Enabled"
-msgstr "Filtrar señales"
+msgstr "Bucle de Renderización Activado"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "VRAM Compression"
-msgstr "Expresión"
+msgstr "Compresión VRAM"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import BPTC"
-msgstr "Importar"
+msgstr "Importar BPTC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import S3TC"
-msgstr "Importar"
+msgstr "Importar S3TC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import ETC"
-msgstr "Importar"
+msgstr "Importar ETC"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import ETC2"
-msgstr "Importar"
+msgstr "Importar ETC2"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Import PVRTC"
-msgstr "Importar Theme"
+msgstr "Importar PVRTC"
 
 #: servers/visual_server.cpp
 msgid "Lossless Compression"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Force PNG"
-msgstr "Forzar Push"
+msgstr "Forzar PNG"
 
 #: servers/visual_server.cpp
 msgid "WebP Compression Level"
@@ -27157,9 +26955,8 @@ msgid "Time Rollover Secs"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Cubemap Size"
-msgstr "Cambiar Tamaño de Cámara"
+msgstr "Tamaño del Cubemap"
 
 #: servers/visual_server.cpp
 msgid "Quadrant 0 Subdiv"
@@ -27178,19 +26975,16 @@ msgid "Quadrant 3 Subdiv"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shadows"
-msgstr "Shader"
+msgstr "Sombras"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filter Mode"
-msgstr "Filtrar nodos"
+msgstr "Modo de Filtrado"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Texture Array Reflections"
-msgstr "Centrar Selección"
+msgstr "Reflejos del Array de Texturas"
 
 #: servers/visual_server.cpp
 msgid "High Quality GGX"
@@ -27201,9 +26995,8 @@ msgid "Irradiance Max Size"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shading"
-msgstr "Relleno"
+msgstr "Sombreado"
 
 #: servers/visual_server.cpp
 msgid "Force Vertex Shading"
@@ -27222,9 +27015,8 @@ msgid "Mesh Storage"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Split Stream"
-msgstr "Partir Curva"
+msgstr "Stream Dividido"
 
 #: servers/visual_server.cpp
 msgid "Use Physical Light Attenuation"
@@ -27263,23 +27055,20 @@ msgid "Use Software Skinning"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Ninepatch Mode"
-msgstr "Modo de Interpolación"
+msgstr "Modo Ninepatch"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Abrir"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"
-msgstr ""
+msgstr "Envío de Lotes Nulo"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Batching Stream"
-msgstr "Renombrar por lote"
+msgstr "Flujo de Lotes"
 
 #: servers/visual_server.cpp
 msgid "Legacy Orphan Buffers"
@@ -27291,16 +27080,15 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Batching"
-msgstr "Puesta en marcha"
+msgstr "División en Lotes"
 
 #: servers/visual_server.cpp
 msgid "Use Batching"
-msgstr ""
+msgstr "Usar División en Lotes"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Use Batching In Editor"
-msgstr "Actualización del editor"
+msgstr "Usar División en Lotes en el Editor"
 
 #: servers/visual_server.cpp
 msgid "Single Rect Fallback"
@@ -27332,12 +27120,11 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Flash Batching"
-msgstr ""
+msgstr "Procesamiento Instantáneo de Lotes"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Diagnose Frame"
-msgstr "Pegar Fotograma"
+msgstr "Diagnosticar Cuadro"
 
 #: servers/visual_server.cpp
 msgid "GLES2"
@@ -27352,9 +27139,8 @@ msgid "Disable Half Float"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Enable High Float"
-msgstr "Activar Prioridad"
+msgstr "Activar Flotante Alto"
 
 #: servers/visual_server.cpp
 msgid "Precision"
@@ -27369,9 +27155,8 @@ msgid "UV Contract Amount"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Use Simple PVS"
-msgstr "Usar Ajuste de Escalado"
+msgstr "Usar PVS Simple"
 
 #: servers/visual_server.cpp
 msgid "PVS Logging"
@@ -27382,18 +27167,16 @@ msgid "Use Signals"
 msgstr "Usar Señales"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Remove Danglers"
-msgstr "Eliminar Tile"
+msgstr "Eliminar Danglers"
 
 #: servers/visual_server.cpp
 msgid "Flip Imported Portals"
 msgstr "Voltear Portales Importados"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Occlusion Culling"
-msgstr "Ver Eliminación de Oclusión"
+msgstr "Occlusion Culling"
 
 #: servers/visual_server.cpp
 msgid "Max Active Spheres"

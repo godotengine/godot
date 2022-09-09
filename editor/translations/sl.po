@@ -12,15 +12,15 @@
 # Arnold Marko <arnold.marko@gmail.com>, 2019.
 # Alex <alexrixhardson@gmail.com>, 2019.
 # Andrew Poženel <andrej.pozenel@outlook.com>, 2020, 2022.
-# Jakob Tadej Vrtačnik <minecraftalka2@gmail.com>, 2021.
+# Jakob Tadej Vrtačnik <minecraftalka2@gmail.com>, 2021, 2022.
 # Andrew Poženel <andrew.pozenel@protonmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-23 16:41+0000\n"
-"Last-Translator: Andrew Poženel <andrew.pozenel@protonmail.com>\n"
+"PO-Revision-Date: 2022-08-12 17:08+0000\n"
+"Last-Translator: Jakob Tadej Vrtačnik <minecraftalka2@gmail.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
 "Language: sl\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || "
 "n%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -320,9 +320,8 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Ni dovolj bajtov za dekodiranje, ali pa je neveljaven format."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
-msgstr "Napačen vnos %i(ni podan) v izrazu"
+msgstr "Napačen vnos %d (ni podan) v izrazu"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -351,70 +350,63 @@ msgstr "Na klic '%s':"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Seme"
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
-msgstr "Način Vrtenja"
+msgstr "Stanje"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Vrsta sporočil"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Največja velikost (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Način Premika"
+msgstr "Način kazalca"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Izbriši Vnos"
+msgstr "Uporabi zbran vnos"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
 msgid "Device"
-msgstr ""
+msgstr "Naprava"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Vse"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Control"
-msgstr "Različica:"
+msgstr "Control"
 
 #: core/os/input_event.cpp
 msgid "Meta"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Command"
-msgstr "Skupnost"
+msgstr "Ukaz"
 
 #: core/os/input_event.cpp
 #, fuzzy
 msgid "Physical"
-msgstr "Fizikalni Okvir %"
+msgstr "Fizikalno"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "Prednastavitev..."
+msgstr "Pritisnjeno"
 
 #: core/os/input_event.cpp
 msgid "Scancode"
@@ -430,98 +422,87 @@ msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
-msgstr ""
+msgstr "Odmev"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
 #, fuzzy
 msgid "Button Mask"
-msgstr "Dodaj v Skupino"
+msgstr "Maska gumba"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Konstanta"
+msgstr "Globalna pozicija"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Factor"
-msgstr "Nadzornik"
+msgstr "Faktor"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Način Plošče"
+msgstr "Kazalo gumba"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Dvojni klik"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr ""
+msgstr "Nagib"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Prednastavitev..."
+msgstr "Pritisk"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
-msgstr ""
+msgstr "Obrnjeno pero"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Pripni Relativno"
+msgstr "Relativno"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Prilagodi Velikost:"
+msgstr "Hitrost"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
 msgid "Axis"
-msgstr ""
+msgstr "Os"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "Novo ime:"
+msgstr "Vrednost osi"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Način Plošče"
+msgstr "Kazalo"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/touch_screen_button.cpp
-#, fuzzy
 msgid "Action"
-msgstr "Premakni Dejanje"
+msgstr "Akcija"
 
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Moč"
 
 #: core/os/input_event.cpp
 msgid "Delta"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Spremeni"
+msgstr "Kanal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Usklajuj Spremembe Skript"
+msgstr "Sporočilo"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -532,11 +513,11 @@ msgstr "Prilagodi Velikost:"
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
 msgid "Velocity"
-msgstr ""
+msgstr "Hitrost"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
-msgstr ""
+msgstr "Inštrument"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -550,19 +531,16 @@ msgstr ""
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Premakni Dejanje"
+msgstr "Aplikacija"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Nastavi Zaskok"
+msgstr "Konfiguracija"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Nastavitve Projekta"
+msgstr "Preglasi nastavitve projekta"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -580,9 +558,8 @@ msgstr "Ime"
 #: core/project_settings.cpp editor/editor_help.cpp
 #: modules/visual_script/visual_script_nodes.cpp platform/uwp/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Opis:"
+msgstr "Opis"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
@@ -594,42 +571,42 @@ msgstr "Zaženi"
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/run_settings_dialog.cpp main/main.cpp
 msgid "Main Scene"
-msgstr ""
+msgstr "Glavna scena"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stdout"
-msgstr "Onemogočen"
+msgstr "Onemogoči stdout"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stderr"
-msgstr "Onemogočen"
+msgstr "Onemogoči stderr"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Uporabi imenik skritih podatkov projekta"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Uporabi posebno uporabniško (režijo?)"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Posebno uporabniško ime (režije?)"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
 #, fuzzy
 msgid "Display"
-msgstr "Zamenjaj Vse"
+msgstr "Zaslon(glagol ali samostalnik?)"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Širina"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -638,21 +615,19 @@ msgstr ""
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
 msgid "Height"
-msgstr ""
+msgstr "Višina"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Vedno na vrhu"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Linearno"
+msgstr "Testiraj širino"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Preskušanje"
+msgstr "Testiraj višino"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -662,7 +637,7 @@ msgstr "Zvok"
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Default Bus Layout"
-msgstr "Naloži prevezeto Postavitev Vodila."
+msgstr "Privzeta postavitev (?)"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -673,95 +648,84 @@ msgstr "Urejevalnik"
 
 #: core/project_settings.cpp
 msgid "Main Run Args"
-msgstr ""
+msgstr "Glavni zagonski argumenti"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Scene Naming"
-msgstr "Pot Prizora:"
+msgstr "Imenovanje scene"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "Išči v razširitvah datotek"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Pot iskanja predlogov skript"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Različica:"
+msgstr "Samodejno nalaganje nadzora različic ob zagonu"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Različica:"
+msgstr "Ime vtičnika za nadzor različic"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Dodaj Vnos"
+msgstr "Vnos"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "UI Sprejmi"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Izberi"
+msgstr "UI Izberi"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "Prekliči"
+msgstr "UI Prekini"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "Poudari Pot"
+msgstr "UI Osredotoči naslednje"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "Poudari Pot"
+msgstr "UI Osredotoči prejšnje"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "Način Vrtenja"
+msgstr "UI Levo"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "Način Vrtenja"
+msgstr "UI Desno"
 
 #: core/project_settings.cpp
 msgid "UI Up"
-msgstr ""
+msgstr "UI Gor"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Prenesi"
+msgstr "UI Dol"
 
 #: core/project_settings.cpp
 msgid "UI Page Up"
-msgstr ""
+msgstr "UI Page Up"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
-msgstr ""
+msgstr "UI Page Down"
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "UI Home"
 
 #: core/project_settings.cpp
 msgid "UI End"
-msgstr ""
+msgstr "UI End"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -773,7 +737,7 @@ msgstr ""
 #: servers/physics_server.cpp
 #, fuzzy
 msgid "Physics"
-msgstr "Fizikalni Okvir %"
+msgstr "Fizika"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -783,11 +747,11 @@ msgstr "Fizikalni Okvir %"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 msgid "Smooth Trimesh Collision"
-msgstr ""
+msgstr "Gladko trimeško trčenje"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -799,7 +763,7 @@ msgstr ""
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Rendering"
-msgstr ""
+msgstr "Upodabljanje"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -809,18 +773,17 @@ msgstr ""
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Kakovost"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "Filtri..."
+msgstr "Filtri"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Izostri intenzivnost"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -836,28 +799,27 @@ msgstr "Razhroščevalnik"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "Nastavitve Zaskočenja"
+msgstr "Nastavitve"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
+#, fuzzy
 msgid "Profiler"
-msgstr ""
+msgstr "Zabeležnik(?)"
 
 #: core/project_settings.cpp
 #, fuzzy
 msgid "Max Functions"
-msgstr "Preimenuj Funkcijo"
+msgstr "Največja količina funkcij"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "Trenutna Različica:"
+msgstr "Kompresija"
 
 #: core/project_settings.cpp
 msgid "Formats"
-msgstr ""
+msgstr "Formati"
 
 #: core/project_settings.cpp
 msgid "Zstd"
@@ -869,11 +831,12 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Nivo kompresije"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Window Log Size"
-msgstr ""
+msgstr "Velikost beležnega okna"
 
 #: core/project_settings.cpp
 msgid "Zlib"
@@ -885,20 +848,19 @@ msgstr ""
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Moduli"
 
 #: core/register_core_types.cpp
 msgid "TCP"
 msgstr "TCP"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "Poveži se z Gradnikom:"
+msgstr "Časovna omejitev povezave v sekundah"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -906,16 +868,15 @@ msgstr ""
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "Največja količina medpomnilnikov (Večkratnik 2)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
 msgstr ""
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Lastnosti"
+msgstr "Certifikati"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -924,9 +885,8 @@ msgid "Resource"
 msgstr "Viri"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "Zapri Prizor"
+msgstr "Lokalno tej sceni"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -936,18 +896,16 @@ msgid "Path"
 msgstr "Pot"
 
 #: core/script_language.cpp
-#, fuzzy
 msgid "Source Code"
-msgstr "Viri"
+msgstr "Izvirna koda"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
 msgstr ""
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
-msgstr "Preskušanje"
+msgstr "Test"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
@@ -987,17 +945,17 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "Predpomnilnik"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Buffer Size (KB)"
-msgstr ""
+msgstr "Platno mnogotnik predpomnilnik velikost (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "Platno mnogokotnik kazalo predpomnilnik velikost (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -1009,13 +967,12 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Snapping"
-msgstr "Pametno pripenjanje"
+msgstr "Pripenjanje"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
@@ -1026,7 +983,7 @@ msgstr "Uporabi Pripenjanje Pikslov"
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Immediate Buffer Size (KB)"
-msgstr ""
+msgstr "Takojšnja velikost predpomnilnika (KB)"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
@@ -1036,29 +993,30 @@ msgstr "Zapeči Svetlobne karte"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
+#, fuzzy
 msgid "Use Bicubic Sampling"
-msgstr ""
+msgstr "Uporabite bikubično vzorčenje"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Največ upodobljivih elementov"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Največ upodobljivih luči"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
-#, fuzzy
 msgid "Max Renderable Reflections"
-msgstr "GridMap Izbriši Izbor"
+msgstr "Največ upodobljivih refleksij"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Največ luči na objekt"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "Podpovršinsko razprševanje"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1070,29 +1028,30 @@ msgstr ""
 #: scene/animation/animation_blend_tree.cpp scene/gui/control.cpp
 #: scene/main/canvas_layer.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Prilagodi Velikost:"
+msgstr "Velikost"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Follow Surface"
-msgstr ""
+msgstr "Sledi površini"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
-msgstr ""
+msgstr "Vzorci teže"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
+#, fuzzy
 msgid "Voxel Cone Tracing"
-msgstr ""
+msgstr "Sledenje (voxel?) stožca"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Visoka kakovost"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
+#, fuzzy
 msgid "Blend Shape Max Buffer Size (KB)"
-msgstr ""
+msgstr "Mešanica oblike največja velikost predpomnilnika (KB)"
 
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
@@ -1166,9 +1125,8 @@ msgstr "Animacija Spremeni klic"
 #: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Frame"
-msgstr "Okvir %"
+msgstr "Okvir"
 
 #: editor/animation_track_editor.cpp editor/editor_profiler.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
@@ -1179,38 +1137,35 @@ msgstr "Čas"
 
 #: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Location"
-msgstr "Rotacijski Korak:"
+msgstr "Lokacija"
 
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Rotation"
-msgstr "Rotacijski Korak:"
+msgstr "Rotacija"
 
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
 msgid "Value"
-msgstr ""
+msgstr "Vrednost"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Arg Count"
-msgstr "Količina:"
+msgstr "Količina argumentov"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Argumenti"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
 #: modules/gltf/gltf_light.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/3d/physics_body.cpp scene/resources/visual_shader_nodes.cpp
 msgid "Type"
-msgstr ""
+msgstr "Način"
 
 #: editor/animation_track_editor.cpp
 msgid "In Handle"
@@ -1225,17 +1180,15 @@ msgstr ""
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
 msgid "Stream"
-msgstr ""
+msgstr "Tok"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Mrežni Zamik:"
+msgstr "Začetni odmik"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Mrežni Zamik:"
+msgstr "Končni odmik"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1249,7 +1202,7 @@ msgstr "Animacija"
 
 #: editor/animation_track_editor.cpp
 msgid "Easing"
-msgstr ""
+msgstr "Popuščanje"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1313,7 +1266,7 @@ msgstr "Ustavi predvajanje animacije. (S)"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Animation length (frames)"
-msgstr "Dolžina animacije (v sekundah)."
+msgstr "Dolžina animacije (v slikah?)."
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1326,9 +1279,8 @@ msgid "Add Track"
 msgstr "Animacija Dodaj sled"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Približaj animacijo."
+msgstr "Animacija v zanki"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -1337,7 +1289,7 @@ msgstr "Funkcije:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Zvočni posnetki:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
@@ -4694,6 +4646,7 @@ msgstr "Različna projektna ali prizorska orodja."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -7627,7 +7580,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15903,18 +15857,19 @@ msgstr ""
 msgid "Make Local"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Ime Gradnika:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Ime Gradnika:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "Ime že uporablja druga funkcija/sprem/signal:"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Ime Gradnika:"
 
 #: editor/scene_tree_dock.cpp
@@ -16121,6 +16076,11 @@ msgstr "Dodaj v Skupino"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Ime Gradnika:"
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "(Connecting From)"
 msgstr "Napaka Pri Povezavi"
 
@@ -16182,6 +16142,10 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -18118,6 +18082,21 @@ msgstr "Celotna izbira"
 msgid "Auto Update Project"
 msgstr "Izvozi Projekt"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Zamenjaj Vse"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Izberi Mapo"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Izberi Mapo"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
@@ -19970,6 +19949,11 @@ msgstr "Gradnik Prehod"
 msgid "Custom BG Color"
 msgstr "Gradnik Prehod"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Razširi vse"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20817,6 +20801,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

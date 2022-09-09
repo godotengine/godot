@@ -78,7 +78,7 @@
 # Alex Tern <ternvein@gmail.com>, 2020.
 # Varion Drakon Neonovich <variondrakon@gmail.com>, 2020.
 # d2cyb <dmitrydpb@gmail.com>, 2020.
-# Алексей Смирнов <tir74@mail.ru>, 2020.
+# Алексей Смирнов <tir74@mail.ru>, 2020, 2022.
 # Calamander <Calamander@yandex.ru>, 2020.
 # Terminator <fresh-ter@yandex.com>, 2020.
 # Anatoly Kuznetsov <muffinnorth@yandex.ru>, 2020.
@@ -119,13 +119,18 @@
 # Vadim Mitroshkin <Vadim7540@yandex.ru>, 2022.
 # Maksim Marchukov <mar.maksim63@gmail.com>, 2022.
 # Slava Beloglazov <slavathedeveloper@gmail.com>, 2022.
+# Sned Of Bread <d.cto20181389@gmail.com>, 2022.
+# Kedr <lava20121991@gmail.com>, 2022.
+# Gulpy <yak.aryslan.1999@gmail.com>, 2022.
+# Sergey Karmanov <ppoocpel8888@gmail.com>, 2022.
+# Дмитрий <Dimega@inbox.ru>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-26 01:55+0000\n"
-"Last-Translator: NeoLan Qu <it.bulla@mail.ru>\n"
+"PO-Revision-Date: 2022-09-01 15:11+0000\n"
+"Last-Translator: Дмитрий <Dimega@inbox.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -134,7 +139,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -506,9 +511,8 @@ msgid "Command"
 msgstr "Command"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr "(Физическая)"
+msgstr "Физический"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -764,14 +768,12 @@ msgid "Script Templates Search Path"
 msgstr "Путь поиска шаблонов скриптов"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Автозагрузка при запуске"
+msgstr "Автозагрузка системы управления версиями при запуске"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Контроль версий"
+msgstr "Название плагина контроля версий"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2852,7 +2854,6 @@ msgid "Project export for platform:"
 msgstr "Экспорт проекта для платформы:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
 msgstr "Завершено с ошибками."
 
@@ -2861,9 +2862,8 @@ msgid "Completed successfully."
 msgstr "Завершено без ошибок."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "Не удалось:"
+msgstr "Ошибка."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2882,24 +2882,20 @@ msgid "Save PCK"
 msgstr "Сохранить PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Невозможно создать папку."
+msgstr "Невозможно создать файл \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Не удалось экспортировать файлы проекта"
+msgstr "Не удалось экспортировать файлы проекта."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Невозможно открыть файл для записи:"
+msgstr "Не удается открыть файл для чтения из пути \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Сохранить как"
+msgstr "Сохранить ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -3019,30 +3015,25 @@ msgid "Custom release template not found."
 msgstr "Пользовательский релизный шаблон не найден."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Управление шаблонами"
+msgstr "Подготовить шаблон"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "Данный путь экспорта не существует:"
+msgstr "Указанный путь экспорта не существует."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Файл шаблона не найден:"
+msgstr "Не найден файл шаблона: \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Неверный шаблон экспорта:"
+msgstr "Не удалось скопировать шаблон экспорта."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "Отступ"
+msgstr "Встраивание PCK"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -4594,6 +4585,7 @@ msgstr "Прочие инструменты."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Проект"
 
@@ -5311,9 +5303,8 @@ msgstr ""
 "существующий пресет как активный."
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
-msgstr "Проект"
+msgstr "Запуск проекта"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5596,13 +5587,12 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr "Навигация по истории дополнительными кнопками мыши"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "Выделение сетки"
+msgstr "DragAndDrop выделение"
 
 #: editor/editor_settings.cpp
 msgid "Stay In Script Editor On Node Selected"
-msgstr ""
+msgstr "Остаться в Редакторе Скриптов На Выбранном Узле"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -7366,7 +7356,8 @@ msgid "8 Bit"
 msgstr "8-бит"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Моно"
 
@@ -11599,9 +11590,8 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "Недопустимая геометрия, не может быть заменена полисеткой."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-#, fuzzy
 msgid "Convert to MeshInstance2D"
-msgstr "Преобразовать в Mesh2D"
+msgstr "Преобразование в MeshInstance2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create polygon."
@@ -11707,7 +11697,7 @@ msgstr "Новая анимация"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "Filter animations"
-msgstr "Фильтр методов"
+msgstr "Фильтровать анимации"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Speed:"
@@ -14231,12 +14221,10 @@ msgid "Export All"
 msgstr "Экспортировать всё"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Choose an export mode:"
-msgstr "Пожалуйста, выберите пустую папку."
+msgstr "Пожалуйста, выберите режим экспорта:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All..."
 msgstr "Экспортировать всё"
 
@@ -14393,7 +14381,7 @@ msgstr "Отрисовщик:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr "ОткрытыйGL ES 3.0"
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
@@ -14413,7 +14401,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr "ОткрытыйGL ES 2.0"
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -15370,16 +15358,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "Сделать локальным"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Добавить уникальное имя сцене"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
 msgstr "Данное уникальное имя уже использовано у другого узла в сцене."
 
 #: editor/scene_tree_dock.cpp
-msgid "Enable Scene Unique Name"
-msgstr "Добавить уникальное имя сцене"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Disable Scene Unique Name"
+#, fuzzy
+msgid "Disable Scene Unique Name(s)"
 msgstr "Убрать уникальное имя в сцене"
 
 #: editor/scene_tree_dock.cpp
@@ -15580,6 +15571,10 @@ msgid "Button Group"
 msgstr "Группа кнопок"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "Убрать уникальное имя в сцене"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Источник)"
 
@@ -15655,6 +15650,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Некорректное имя узла, следующие символы недопустимы:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr "Данное уникальное имя уже использовано у другого узла в сцене."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17051,12 +17050,12 @@ msgstr "Узел кости Godot"
 #: modules/gltf/gltf_skin.cpp
 #, fuzzy
 msgid "Skin Root"
-msgstr "Новый корень сцены"
+msgstr "Корневой скин"
 
 #: modules/gltf/gltf_skin.cpp
 #, fuzzy
 msgid "Joints Original"
-msgstr "Сфокусироваться на начале координат"
+msgstr "Суставы Оригинал"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Inverse Binds"
@@ -17065,7 +17064,7 @@ msgstr "Инвертировать Связи"
 #: modules/gltf/gltf_skin.cpp
 #, fuzzy
 msgid "Non Joints"
-msgstr "Передвинуть сустав"
+msgstr "Не Суставы"
 
 #: modules/gltf/gltf_skin.cpp
 msgid "Joint I To Bone I"
@@ -17098,7 +17097,7 @@ msgstr "Зеркальный коэффициент"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Spec Gloss Img"
-msgstr ""
+msgstr "Зеркальное Глянцевое Изображение"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
@@ -17115,16 +17114,16 @@ msgstr "Младшая версия"
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
 msgid "GLB Data"
-msgstr "С данными"
-
-#: modules/gltf/gltf_state.cpp
-msgid "Use Named Skin Binds"
-msgstr ""
+msgstr "GLB Данные"
 
 #: modules/gltf/gltf_state.cpp
 #, fuzzy
+msgid "Use Named Skin Binds"
+msgstr "Использовать Связи Именованного Скина"
+
+#: modules/gltf/gltf_state.cpp
 msgid "Buffer Views"
-msgstr "Вид сзади"
+msgstr "Буфер видов"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Accessors"
@@ -17389,23 +17388,23 @@ msgstr "Построение карт освещения"
 #: modules/lightmapper_cpu/register_types.cpp
 #, fuzzy
 msgid "CPU Lightmapper"
-msgstr "Запекать карты освещения"
+msgstr "CPU Карты освещения"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Low Quality Ray Count"
-msgstr ""
+msgstr "Количество Лучей Низкого Качества"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Medium Quality Ray Count"
-msgstr ""
+msgstr "Количество Лучей Среднего Качества"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "High Quality Ray Count"
-msgstr ""
+msgstr "Количество Лучей Высокого Качества"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Ultra Quality Ray Count"
-msgstr ""
+msgstr "Количество Лучей Ультра Качества"
 
 #: modules/minimp3/audio_stream_mp3.cpp
 #: modules/minimp3/resource_importer_mp3.cpp
@@ -17420,7 +17419,7 @@ msgstr "Высота глаз"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "IOD"
-msgstr ""
+msgstr "IOD"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 #, fuzzy
@@ -17434,15 +17433,15 @@ msgstr "Режим без теней"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Oversample"
-msgstr ""
+msgstr "Передискретизация"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K1"
-msgstr ""
+msgstr "K1"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K2"
-msgstr ""
+msgstr "K2"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -17455,6 +17454,21 @@ msgstr "Собрать решение"
 #: modules/mono/editor/csharp_project.cpp
 msgid "Auto Update Project"
 msgstr "Автообновление проекта"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Масштаб отображения"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Выбрать каталог"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Выбрать каталог"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -17536,7 +17550,7 @@ msgstr "Как карта нормалей"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Bump Strength"
-msgstr ""
+msgstr "Сила Bump"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise"
@@ -17562,7 +17576,7 @@ msgstr "Перспективный"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Lacunarity"
-msgstr ""
+msgstr "Лакунарность"
 
 #: modules/regex/regex.cpp
 msgid "Subject"
@@ -17578,7 +17592,7 @@ msgstr "Строки"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Multicast If"
-msgstr ""
+msgstr "Обнаружить Многоадресную Рассылку, Если"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Local Port"
@@ -17586,7 +17600,7 @@ msgstr "Обнаружить локальный порт"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover IPv6"
-msgstr ""
+msgstr "Обнаружить IPv6"
 
 #: modules/upnp/upnp_device.cpp
 msgid "Description URL"
@@ -17598,7 +17612,7 @@ msgstr "Тип сервиса"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Control URL"
-msgstr ""
+msgstr "IDG Контроль URL"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
@@ -17607,7 +17621,7 @@ msgstr "Установить тип переменной"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Our Addr"
-msgstr ""
+msgstr "IGD Наш Адр"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
@@ -18413,12 +18427,14 @@ msgid "Optional Features"
 msgstr "Дополнительные Компоненты"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Requested Reference Space Types"
-msgstr ""
+msgstr "Запрошенные Типы Опорного Пространства"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Reference Space Type"
-msgstr ""
+msgstr "Тип Опорного Пространства"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Visibility State"
@@ -18443,12 +18459,14 @@ msgid "Debug Keystore"
 msgstr "Отладочное хранилище ключей"
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Debug Keystore User"
-msgstr ""
+msgstr "Отладочное Хранилище ключей Пользователя"
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Debug Keystore Pass"
-msgstr ""
+msgstr "Отладочное Хранилище ключей Паролей"
 
 #: platform/android/export/export.cpp
 msgid "Force System User"
@@ -18590,9 +18608,8 @@ msgid "Graphics"
 msgstr "Смещение графа"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "OpenGL Debug"
-msgstr "Открыть"
+msgstr "OpenGL Отладка"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18950,11 +18967,9 @@ msgstr ""
 "%s. Пожалуйста, переустановите шаблон сборки Android из меню «Проект»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
-msgstr ""
-"Невозможно перезаписать файлы res://android/build/res/*.xml с именем проекта"
+msgstr "Невозможно перезаписать res://android/build/res/*.xml с именем проекта"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project."
@@ -18990,9 +19005,8 @@ msgstr ""
 "проекта gradle на наличие выходных данных."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "Пакет не найден: %s"
+msgstr "Пакет не найден: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
@@ -19017,9 +19031,8 @@ msgid "Adding files..."
 msgstr "Добавление файлов..."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files."
-msgstr "Не удалось экспортировать файлы проекта"
+msgstr "Не удалось экспортировать файлы проекта."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -19257,6 +19270,11 @@ msgstr "Пользовательский цвет"
 msgid "Custom BG Color"
 msgstr "Пользовательский цвет"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Развернуть все"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19289,19 +19307,16 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Запустить HTML в системном браузере по умолчанию."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "Не удалось открыть шаблон для экспорта:"
+msgstr "Не удалось открыть шаблон для экспорта: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "Неверный шаблон экспорта:"
+msgstr "Неверный шаблон экспорта: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "Не удалось записать файл:"
+msgstr "Не удалось записать файл: \"%s\"."
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19309,9 +19324,8 @@ msgid "Icon Creation"
 msgstr "Задать отступ"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "Не удалось прочитать файл:"
+msgstr "Не удалось прочитать файл: \"%s\"."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
@@ -19392,14 +19406,12 @@ msgid "Icon 512 X 512"
 msgstr ""
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "Не удалось прочитать HTML-оболочку:"
+msgstr "Не удалось прочитать HTML-оболочку: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "Не удалось создать каталог HTTP-сервера:"
+msgstr "Не удалось создать каталог HTTP-сервера: %s."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -20141,6 +20153,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -26223,9 +26241,8 @@ msgid "Camera Feed ID"
 msgstr ""
 
 #: scene/resources/environment.cpp
-#, fuzzy
 msgid "Ambient Light"
-msgstr "Отступ вправо"
+msgstr "Рассеянный свет"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26458,7 +26475,7 @@ msgstr ""
 
 #: scene/resources/environment.cpp
 msgid "Adjustments"
-msgstr ""
+msgstr "Adjustments (настройки)"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -27900,7 +27917,7 @@ msgstr "Режим интерполяции"
 
 #: servers/visual_server.cpp
 msgid "OpenGL"
-msgstr "ОткрытыйGL"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"
@@ -27990,8 +28007,9 @@ msgid "Precision"
 msgstr "Точность"
 
 #: servers/visual_server.cpp
+#, fuzzy
 msgid "UV Contract"
-msgstr ""
+msgstr "UV Контракт"
 
 #: servers/visual_server.cpp
 msgid "UV Contract Amount"
@@ -28017,7 +28035,7 @@ msgstr "Удалить тайл"
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Flip Imported Portals"
-msgstr "Перевернуть порталы"
+msgstr "Перевернуть Импортированные Порталы"
 
 #: servers/visual_server.cpp
 #, fuzzy

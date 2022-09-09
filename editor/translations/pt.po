@@ -26,13 +26,15 @@
 # Esdras Caleb Oliveira Silva <acheicaleb@gmail.com>, 2022.
 # Ednaldo Pereira Confia <filat51823@storypo.com>, 2022.
 # Zé Beato Página Oficial <zebeato@gmail.com>, 2022.
+# Rafael Testa <rafael1testa@gmail.com>, 2022.
+# Baiterson <baiter160@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-23 03:57+0000\n"
-"Last-Translator: Zé Beato Página Oficial <zebeato@gmail.com>\n"
+"PO-Revision-Date: 2022-08-25 13:04+0000\n"
+"Last-Translator: Baiterson <baiter160@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -410,9 +412,8 @@ msgid "Command"
 msgstr "Comando"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (Físico)"
+msgstr "Físico"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -466,7 +467,7 @@ msgstr "Pressione"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
-msgstr ""
+msgstr "Caneta Invertida"
 
 #: core/os/input_event.cpp
 msgid "Relative"
@@ -2754,9 +2755,8 @@ msgid "Project export for platform:"
 msgstr "Exportação do projeto para plataforma:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Concluído com erros."
+msgstr "Concluído com advertências."
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
@@ -2779,29 +2779,24 @@ msgid "Packing"
 msgstr "Empacotamento"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Guardar Como"
+msgstr "Salvar Como PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Não consegui criar pasta."
+msgstr "Não pôde criar arquivo \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Incapaz de exportar ficheiros do projeto"
+msgstr "Falha ao exportar arquivos do projeto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Incapaz de abrir o ficheiro para escrita:"
+msgstr "Incapaz de abrir o arquivo pelo caminho \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Guardar Como"
+msgstr "Salvar como ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2862,9 +2857,8 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom Template"
-msgstr "Editor de Tema"
+msgstr "Modelo customizado"
 
 #: editor/editor_export.cpp editor/project_export.cpp
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
@@ -2886,9 +2880,8 @@ msgid "Embed PCK"
 msgstr "Incorporar PCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Texture Format"
-msgstr "TextureRegion"
+msgstr "Formato de Textura"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
@@ -2924,12 +2917,10 @@ msgid "Custom release template not found."
 msgstr "Modelo de lançamento personalizado não encontrado."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Gerir Modelos"
+msgstr "Preparar Modelos"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
 msgstr "O caminho de exportação não existe:"
 
@@ -2938,15 +2929,13 @@ msgid "Template file not found: \"%s\"."
 msgstr "Ficheiro Modelo não encontrado"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Modelo de exportação inválido:"
+msgstr "Falha ao copiar Modelo de exportação."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
-#, fuzzy
 msgid "PCK Embedding"
-msgstr "Preenchimento"
+msgstr "Encorporar PCK"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
@@ -3160,9 +3149,8 @@ msgid "Manage Editor Feature Profiles"
 msgstr "Gerir Editor Perfis de Funcionalidades"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Default Feature Profile"
-msgstr "Perfil de Funcionalidades Godot"
+msgstr "Perfil de Funcionalidades padrão"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -3252,9 +3240,8 @@ msgstr "Modo de Visualização"
 #: scene/resources/environment.cpp scene/resources/material.cpp
 #: scene/resources/visual_shader.cpp
 #: servers/audio/effects/audio_effect_distortion.cpp
-#, fuzzy
 msgid "Mode"
-msgstr "Modo deslocamento"
+msgstr "Modo"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Current Dir"
@@ -3270,9 +3257,8 @@ msgstr "Caminho Atual"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Show Hidden Files"
-msgstr "Alternar Ficheiros Escondidos"
+msgstr "Mostrar arquivos ocultos"
 
 #: editor/editor_file_dialog.cpp
 msgid "Disable Overwrite Warning"
@@ -3570,24 +3556,20 @@ msgid "Property:"
 msgstr "Propriedade:"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
-#, fuzzy
 msgid "Label"
-msgstr "Valor"
+msgstr "Texto"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Read Only"
-msgstr "Apenas Métodos"
+msgstr "Apenas Leitura"
 
 #: editor/editor_inspector.cpp editor/plugins/item_list_editor_plugin.cpp
-#, fuzzy
 msgid "Checkable"
 msgstr "Marcar item"
 
 #: editor/editor_inspector.cpp editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Checked"
 msgstr "Item Marcado"
 
@@ -3596,7 +3578,6 @@ msgid "Draw Red"
 msgstr "Desenhar Vermelho"
 
 #: editor/editor_inspector.cpp
-#, fuzzy
 msgid "Keying"
 msgstr "Executar"
 
@@ -3962,14 +3943,12 @@ msgid "Quick Open Script..."
 msgstr "Abrir Script de forma rápida..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Reload"
-msgstr "Guardar & Reiniciar"
+msgstr "Salvar E Reiniciar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to '%s' before reloading?"
-msgstr "Guardar alterações a '%s' antes de fechar?"
+msgstr "Salvar alterações '%s' antes de reiniciar?"
 
 #: editor/editor_node.cpp
 msgid "Save & Close"
@@ -4088,9 +4067,8 @@ msgid "Open Project Manager?"
 msgstr "Abrir Gestor de Projeto?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save changes to the following scene(s) before reloading?"
-msgstr "Guardar alterações da(s) seguinte(s) cena(s) antes de sair?"
+msgstr "Salvar alterações da(s) seguinte(s) cena(s) antes de reiniciar?"
 
 #: editor/editor_node.cpp
 msgid "Save & Quit"
@@ -4283,19 +4261,16 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/editor_settings.cpp editor/scene_tree_dock.cpp
 #: servers/arvr/arvr_interface.cpp
-#, fuzzy
 msgid "Interface"
-msgstr "Interface do Utilizador"
+msgstr "Interface"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Scene Tabs"
-msgstr "Trocar Aba de Cena"
+msgstr "Abas da Cena"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Always Show Close Button"
-msgstr "Mostrar Grelha Sempre"
+msgstr "Sempre mostrar o Botão de Fechar"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Resize If Many Tabs"
@@ -4310,9 +4285,8 @@ msgid "Output"
 msgstr "Saída"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Always Clear Output On Play"
-msgstr "Limpar Saída"
+msgstr "Sempre Apagar Output quando Iniciar"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Open Output On Play"
@@ -4327,19 +4301,16 @@ msgid "Save On Focus Loss"
 msgstr "Salvar ao Perder o Foco"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Each Scene On Quit"
-msgstr "Guardar Ramo como Cena"
+msgstr "Salvar Cada Cena ao Sair"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Quit Confirmation"
-msgstr "Ver informação"
+msgstr "Confirmação de Saida"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Show Update Spinner"
-msgstr "Esconder Roleta de Atualização"
+msgstr "Mostra Ícone de Atualização"
 
 #: editor/editor_node.cpp
 msgid "Update Continuously"
@@ -4350,14 +4321,12 @@ msgid "Update Vital Only"
 msgstr "Só Atualizar Vital"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Localize Settings"
-msgstr "Localização"
+msgstr "Configuração de tradução"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Restore Scenes On Load"
-msgstr "Obter Nó da Cena"
+msgstr "Restaurar Cenas quando carregar"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Show Thumbnail On Hover"
@@ -4376,7 +4345,6 @@ msgid "Default Float Step"
 msgstr "FloatStep Padrão"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
-#, fuzzy
 msgid "Disable Folding"
 msgstr "Desativar Botão"
 
@@ -4393,14 +4361,12 @@ msgid "Horizontal Vector Types Editing"
 msgstr "Edição de Tipo de Vetor Horizontal"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Resources In Current Inspector"
-msgstr "Abrir no Inspetor"
+msgstr "Abrir Recursos no Inspetor atual"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Resources To Open In New Inspector"
-msgstr "Abrir no Inspetor"
+msgstr "Abrir Recursos em um novo Inspetor"
 
 #: editor/editor_node.cpp
 msgid "Default Color Picker Mode"
@@ -4514,6 +4480,7 @@ msgstr "Ferramentas diversas de projeto ou cena."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Projeto"
 
@@ -4792,9 +4759,8 @@ msgid "Save & Restart"
 msgstr "Guardar & Reiniciar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update All Changes"
-msgstr "Atualizar quando há Alterações"
+msgstr "Atualizar todas as Mudanças"
 
 #: editor/editor_node.cpp
 msgid "Update Vital Changes"
@@ -5062,9 +5028,8 @@ msgid "Profiler Frame History Size"
 msgstr "Tamanho do Histórico do Perfilador de Quadro"
 
 #: editor/editor_profiler.cpp
-#, fuzzy
 msgid "Profiler Frame Max Functions"
-msgstr "Mudar nome da Função"
+msgstr "Profiler Frame Max Funções"
 
 #: editor/editor_properties.cpp
 msgid "Edit Text:"
@@ -5133,9 +5098,8 @@ msgid "Size:"
 msgstr "Tamanho:"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "Página: "
+msgstr "Página:"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5197,18 +5161,15 @@ msgstr "Novo %s"
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Base Type"
 msgstr "Mudar tipo base"
 
 #: editor/editor_resource_picker.cpp
-#, fuzzy
 msgid "Edited Resource"
-msgstr "Adicionar recurso"
+msgstr "Recurso Editado"
 
 #: editor/editor_resource_picker.cpp scene/gui/line_edit.cpp
 #: scene/gui/slider.cpp scene/gui/spin_box.cpp
-#, fuzzy
 msgid "Editable"
 msgstr "Item Editável"
 
@@ -5236,7 +5197,6 @@ msgstr ""
 "definido existente como executável."
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
 msgstr "Projeto"
 
@@ -5265,14 +5225,12 @@ msgid "Did you forget the '_run' method?"
 msgstr "Esqueceu-se do método '_run'?"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Editor Language"
-msgstr "Apresentação do Editor"
+msgstr "Linguagem do Editor"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Scale"
-msgstr "Mostrar Tudo"
+msgstr "Escala do Editor"
 
 #: editor/editor_settings.cpp
 msgid "Custom Display Scale"
@@ -5295,18 +5253,16 @@ msgid "Font Hinting"
 msgstr "Alinhar Fonte"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Main Font"
-msgstr "Cena Principal"
+msgstr "Fonte Principal"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Bold"
 msgstr "Fonte Principal em Negrito"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Code Font"
-msgstr "Adicionar Ponto Nó"
+msgstr "Fonte do Código"
 
 #: editor/editor_settings.cpp
 msgid "Dim Editor On Dialog Popup"
@@ -5321,7 +5277,6 @@ msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Duração do Modo de Baixo Consumo do Processador Fora de Foco (µsec)"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Separate Distraction Mode"
 msgstr "Modo Livre de Distrações"
 
@@ -5412,9 +5367,8 @@ msgid "Safe Save On Backup Then Rename"
 msgstr "Salvar com Segurança no Backup e Renomear"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "File Dialog"
-msgstr "Diálogo XForm"
+msgstr "Arquivo de Diálogo"
 
 #: editor/editor_settings.cpp
 msgid "Thumbnail Size"
@@ -5425,37 +5379,32 @@ msgid "Docks"
 msgstr "Painéis"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Scene Tree"
-msgstr "Obter Árvore da Cena"
+msgstr "Grupo de Cenas"
 
 #: editor/editor_settings.cpp
 msgid "Start Create Dialog Fully Expanded"
 msgstr "Iniciar Diálogo de Criação Totalmente Expandido"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Always Show Folders"
-msgstr "Mostrar Grelha Sempre"
+msgstr "Sempre mostrar Pastas"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Property Editor"
-msgstr "Editor de Grupo"
+msgstr "Editor de propriedades"
 
 #: editor/editor_settings.cpp
 msgid "Auto Refresh Interval"
 msgstr "Intervalo de Atualização Automática"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Subresource Hue Tint"
-msgstr "Sub-recursos"
+msgstr "Sub-recursos Cor Hue"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Color Theme"
-msgstr "Editor de Tema"
+msgstr "Cor do Tema"
 
 #: editor/editor_settings.cpp scene/3d/label_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -5468,9 +5417,8 @@ msgid "Highlighting"
 msgstr "Destaque"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Syntax Highlighting"
-msgstr "Destaque de Sintaxe"
+msgstr "Destaque da Sintaxe"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Highlight All Occurrences"
@@ -5485,18 +5433,16 @@ msgid "Highlight Type Safe Lines"
 msgstr "Destacar Linhas com Tipo Seguro"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Indent"
-msgstr "Indentar à esquerda"
+msgstr "Indentar"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "Indentação Automática"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Convert Indent On Save"
-msgstr "Converter Indentação em Espaços"
+msgstr "Converter Indentação ao Salvar"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Draw Tabs"
@@ -5522,9 +5468,8 @@ msgid "V Scroll Speed"
 msgstr "Velocidade de Rolagem V"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Minimap"
-msgstr "Mostrar Origem"
+msgstr "Mostrar Minimapa"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Width"
@@ -5535,13 +5480,12 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr "Botões extra do Mouse para Navegar no Histórico"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "Seleção de GridMap"
+msgstr "Arrastar e soltar"
 
 #: editor/editor_settings.cpp
 msgid "Stay In Script Editor On Node Selected"
-msgstr ""
+msgstr "Manter editor de script no Nodo selecionado"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -5560,9 +5504,8 @@ msgid "Show Bookmark Gutter"
 msgstr "Mostrar Barra de Favoritos"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Show Breakpoint Gutter"
-msgstr "Saltar Pontos de Paragem"
+msgstr "Mostrar Pontos de Parada"
 
 #: editor/editor_settings.cpp
 msgid "Show Info Gutter"
@@ -5589,23 +5532,20 @@ msgid "Line Length Guideline Hard Column"
 msgstr "Diretriz de Comprimento de Linha de Coluna Rígida"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Script List"
-msgstr "Editor de Script"
+msgstr "Lista de Scripts"
 
 #: editor/editor_settings.cpp
 msgid "Show Members Overview"
 msgstr "Mostrar Visão Geral dos Membros"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Files"
-msgstr "Ficheiro"
+msgstr "Arquivos"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Trim Trailing Whitespace On Save"
-msgstr "Apagar Espaços nos Limites"
+msgstr "Apagar Espaços nos Limites ao Salvar"
 
 #: editor/editor_settings.cpp
 msgid "Autosave Interval Secs"
@@ -5624,9 +5564,8 @@ msgid "Auto Reload Scripts On External Change"
 msgstr "Recarregamento Automático de Scripts em Caso de Mudança Externa"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Create Signal Callbacks"
-msgstr "Forçar Shader de Reserva"
+msgstr "Criar Sinais de Chamadas"
 
 #: editor/editor_settings.cpp
 msgid "Sort Members Outline Alphabetically"
@@ -7369,7 +7308,8 @@ msgid "8 Bit"
 msgstr "8 Bits"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Mono"
 
@@ -15402,18 +15342,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "Tornar Local"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Nome do Nó:"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
 msgstr "Outro nó já usa esse nome exclusivo na cena."
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Nome do Nó:"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Nome do Nó:"
 
 #: editor/scene_tree_dock.cpp
@@ -15615,6 +15556,11 @@ msgid "Button Group"
 msgstr "Grupo Botão"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nome do Nó:"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(A Ligar de)"
 
@@ -15691,6 +15637,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nome de nó inválido, os caracteres seguintes não são permitidos:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr "Outro nó já usa esse nome exclusivo na cena."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17563,6 +17513,21 @@ msgstr "Construir Solução"
 msgid "Auto Update Project"
 msgstr "Projeto sem nome"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Mostrar Tudo"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Escolha uma Diretoria"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Escolha uma Diretoria"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "Fim do stack trace de exceção interna"
@@ -19412,6 +19377,11 @@ msgstr "CustomNode"
 msgid "Custom BG Color"
 msgstr "CustomNode"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Expandir Tudo"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20263,6 +20233,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -28344,7 +28320,7 @@ msgstr "Modo de Interpolação"
 
 #: servers/visual_server.cpp
 msgid "Max Simultaneous Compiles"
-msgstr ""
+msgstr "Compilação simultânea Maxima"
 
 #: servers/visual_server.cpp
 msgid "Log Active Async Compiles Count"
