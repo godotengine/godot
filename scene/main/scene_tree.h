@@ -97,6 +97,11 @@ public:
 		STRETCH_ASPECT_EXPAND,
 	};
 
+	enum DeferredNotificationType {
+		DEFERRED_NOTIFICATION_MOVED_IN_PARENT = 0,
+		DEFERRED_NOTIFICATION_MAX = 1,
+	};
+
 private:
 	struct Group {
 		Vector<Node *> nodes;
@@ -109,6 +114,8 @@ private:
 		SelfList<Spatial>::List _spatials_list;
 		void physics_process();
 	} _client_physics_interpolation;
+
+	LocalVector<ObjectID> _deferred_notification_lists[DEFERRED_NOTIFICATION_MAX];
 
 	Viewport *root;
 
@@ -302,8 +309,10 @@ public:
 	void call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
 	void notify_group(const StringName &p_group, int p_notification);
 	void set_group(const StringName &p_group, const String &p_name, const Variant &p_value);
+	void send_deferred_notification(Node *p_node, DeferredNotificationType p_deferred_notification);
 
 	void flush_transform_notifications();
+	void flush_deferred_notifications();
 
 	virtual void input_text(const String &p_text);
 	virtual void input_event(const Ref<InputEvent> &p_event);

@@ -134,6 +134,10 @@ private:
 
 		int process_priority;
 
+		// Will probably end up using 32 bits anyway (we don't need 32 flags here), but just in case...
+		// Can possibly be combined with one of the other wasteful data types above.
+		uint8_t deferred_notification_pending_flags = 0;
+
 		// Keep bitpacked values together to get better packing
 		PauseMode pause_mode : 2;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
@@ -512,6 +516,16 @@ public:
 	void set_custom_multiplayer(Ref<MultiplayerAPI> p_multiplayer);
 	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rpc_mode(const StringName &p_method);
 	const Map<StringName, MultiplayerAPI::RPCMode>::Element *get_node_rset_mode(const StringName &p_property);
+
+	bool check_and_set_notification_pending(uint8_t p_notification_flag) {
+		static_assert(SceneTree::DEFERRED_NOTIFICATION_MAX < 8, "To support more than 8 flags, increase the storage type.");
+		if (data.deferred_notification_pending_flags & p_notification_flag) {
+			return false; // already set
+		}
+		data.deferred_notification_pending_flags |= p_notification_flag;
+		return true;
+	}
+	void clear_notification_pending(uint8_t p_notification_flag) { data.deferred_notification_pending_flags &= ~p_notification_flag; }
 
 	Node();
 	~Node();

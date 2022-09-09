@@ -426,9 +426,19 @@ void Node::move_child(Node *p_child, int p_pos) {
 	}
 	// notification second
 	move_child_notify(p_child);
-	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+
+	if (is_inside_tree()) {
+		SceneTree *tree = get_tree();
+
+		for (int i = motion_from; i <= motion_to; i++) {
+			tree->send_deferred_notification(data.children[i], SceneTree::DEFERRED_NOTIFICATION_MOVED_IN_PARENT);
+		}
+	} else {
+		for (int i = motion_from; i <= motion_to; i++) {
+			data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		}
 	}
+
 	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
@@ -1352,9 +1362,19 @@ void Node::remove_child(Node *p_child) {
 	child_count = data.children.size();
 	children = data.children.ptrw();
 
-	for (int i = idx; i < child_count; i++) {
-		children[i]->data.pos = i;
-		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+	if (is_inside_tree()) {
+		SceneTree *tree = get_tree();
+
+		for (int i = idx; i < child_count; i++) {
+			children[i]->data.pos = i;
+			tree->send_deferred_notification(children[i], SceneTree::DEFERRED_NOTIFICATION_MOVED_IN_PARENT);
+		}
+	} else {
+		// send notifications directly, less efficient
+		for (int i = idx; i < child_count; i++) {
+			children[i]->data.pos = i;
+			children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		}
 	}
 
 	p_child->data.parent = nullptr;

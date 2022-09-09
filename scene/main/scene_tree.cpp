@@ -181,6 +181,66 @@ void SceneTree::make_group_changed(const StringName &p_group) {
 	}
 }
 
+void SceneTree::send_deferred_notification(Node *p_node, DeferredNotificationType p_deferred_notification) {
+// Uncomment the line below to use a passthrough rather than deferred.
+// #define GODOT_SCENE_TREE_DEFERRED_NOTIFICATION_PASSTHROUGH
+#ifdef GODOT_SCENE_TREE_DEFERRED_NOTIFICATION_PASSTHROUGH
+	int notification = 0;
+
+	switch (p_deferred_notification) {
+		case DEFERRED_NOTIFICATION_MOVED_IN_PARENT: {
+			notification = Node::NOTIFICATION_MOVED_IN_PARENT;
+		} break;
+		default: {
+			ERR_FAIL_MSG("Deferred notification not supported");
+		} break;
+	}
+
+	p_node->notification(notification);
+#else
+
+	ERR_FAIL_NULL(p_node);
+
+	// We keep a counter on each node for each deferred notification.
+	// This allows us to check whether a duplicate is being attempted, and reject it.
+	if (p_node->check_and_set_notification_pending(1 << p_deferred_notification)) {
+		ObjectID id = p_node->get_instance_id();
+		_deferred_notification_lists[p_deferred_notification].push_back(id);
+	}
+#endif
+}
+
+void SceneTree::flush_deferred_notifications() {
+	for (unsigned int n = 0; n < DEFERRED_NOTIFICATION_MAX; n++) {
+		int notification = 0;
+
+		switch (n) {
+			case DEFERRED_NOTIFICATION_MOVED_IN_PARENT: {
+				notification = Node::NOTIFICATION_MOVED_IN_PARENT;
+			} break;
+			default: {
+				ERR_CONTINUE_MSG(true, "Deferred notification not supported");
+			} break;
+		}
+		uint32_t notification_flag = 1 << notification;
+
+		for (unsigned int i = 0; i < _deferred_notification_lists[n].size(); i++) {
+			ObjectID id = (_deferred_notification_lists[n])[i];
+			Object *obj = ObjectDB::get_instance(id);
+			if (obj) {
+				obj->notification(notification);
+
+				// Should always be a node by definition
+				// (only nodes get sent deferred notifications currently).
+				Node *node = (Node *)obj;
+				node->clear_notification_pending(notification_flag);
+			}
+		}
+
+		_deferred_notification_lists[n].clear();
+	}
+}
+
 void SceneTree::flush_transform_notifications() {
 	SelfList<Node> *n = xform_change_list.first();
 	while (n) {
@@ -563,6 +623,7 @@ void SceneTree::iteration_end() {
 
 bool SceneTree::iteration(float p_time) {
 	root_lock++;
+	flush_deferred_notifications();
 
 	current_frame++;
 
@@ -617,6 +678,7 @@ bool SceneTree::idle(float p_time) {
 	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
+	flush_deferred_notifications();
 
 	MainLoop::idle(p_time);
 
@@ -686,6 +748,7 @@ bool SceneTree::idle(float p_time) {
 
 	process_tweens(p_time, false);
 
+	flush_deferred_notifications(); // flush again any notifications issued in the idle before the draw occurs
 	flush_transform_notifications(); //additional transforms after timers update
 
 	_call_idle_callbacks();
