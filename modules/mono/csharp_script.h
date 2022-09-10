@@ -133,6 +133,10 @@ class CSharpScript : public Script {
 
 	void _clear();
 
+	static void GD_CLR_STDCALL _add_property_info_list_callback(CSharpScript *p_script, const String *p_current_class_name, void *p_props, int32_t p_count);
+#ifdef TOOLS_ENABLED
+	static void GD_CLR_STDCALL _add_property_default_values_callback(CSharpScript *p_script, void *p_def_vals, int32_t p_count);
+#endif
 	bool _update_exports(PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
 	CSharpInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_is_ref_counted, Callable::CallError &r_error);

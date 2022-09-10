@@ -2563,7 +2563,9 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 
 void RichTextLabel::_thread_function(void *self) {
 	RichTextLabel *rtl = reinterpret_cast<RichTextLabel *>(self);
+	rtl->set_physics_process_internal(true);
 	rtl->_process_line_caches();
+	rtl->set_physics_process_internal(false);
 	rtl->updating.store(false);
 	rtl->call_deferred(SNAME("queue_redraw"));
 }
@@ -2679,7 +2681,6 @@ bool RichTextLabel::_validate_line_caches() {
 		loaded.store(true);
 		thread.start(RichTextLabel::_thread_function, reinterpret_cast<void *>(this));
 		loading_started = OS::get_singleton()->get_ticks_msec();
-		set_physics_process_internal(true);
 		return false;
 	} else {
 		_process_line_caches();
@@ -4367,12 +4368,12 @@ int RichTextLabel::get_visible_paragraph_count() const {
 }
 
 void RichTextLabel::scroll_to_line(int p_line) {
-	_validate_line_caches();
-
 	if (p_line <= 0) {
 		vscroll->set_value(0);
 		return;
 	}
+	_validate_line_caches();
+
 	int line_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {

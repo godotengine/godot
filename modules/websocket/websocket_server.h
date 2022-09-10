@@ -46,7 +46,7 @@ protected:
 	static void _bind_methods();
 
 	Ref<CryptoKey> private_key;
-	Ref<X509Certificate> ssl_cert;
+	Ref<X509Certificate> tls_cert;
 	Ref<X509Certificate> ca_chain;
 	uint32_t handshake_timeout = 3000;
 
@@ -74,8 +74,8 @@ public:
 	Ref<CryptoKey> get_private_key() const;
 	void set_private_key(Ref<CryptoKey> p_key);
 
-	Ref<X509Certificate> get_ssl_certificate() const;
-	void set_ssl_certificate(Ref<X509Certificate> p_cert);
+	Ref<X509Certificate> get_tls_certificate() const;
+	void set_tls_certificate(Ref<X509Certificate> p_cert);
 
 	Ref<X509Certificate> get_ca_chain() const;
 	void set_ca_chain(Ref<X509Certificate> p_ca_chain);

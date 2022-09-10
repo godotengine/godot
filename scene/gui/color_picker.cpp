@@ -1086,7 +1086,7 @@ void ColorPicker::_screen_pick_pressed() {
 	} else {
 		screen->show();
 	}
-	screen->raise();
+	screen->move_to_front();
 #ifndef _MSC_VER
 #warning show modal no longer works, needs to be converted to a popup
 #endif

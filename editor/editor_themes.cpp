@@ -447,6 +447,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Colors
 	bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
+#ifdef MODULE_SVG_ENABLED
+	if (dark_theme) {
+		ImageLoaderSVG::set_forced_color_map(HashMap<Color, Color>());
+	} else {
+		ImageLoaderSVG::set_forced_color_map(EditorColorMap::get());
+	}
+#endif
+
 	// Ensure base colors are in the 0..1 luminance range to avoid 8-bit integer overflow or text rendering issues.
 	// Some places in the editor use 8-bit integer colors.
 	const Color dark_color_1 = base_color.lerp(Color(0, 0, 0, 1), contrast).clamp();

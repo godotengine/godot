@@ -615,23 +615,23 @@ Error EditorExportPlatformWeb::run(const Ref<EditorExportPreset> &p_preset, int 
 	}
 	ERR_FAIL_COND_V_MSG(!bind_ip.is_valid(), ERR_INVALID_PARAMETER, "Invalid editor setting 'export/web/http_host': '" + bind_host + "'. Try using '127.0.0.1'.");
 
-	const bool use_ssl = EDITOR_GET("export/web/use_ssl");
-	const String ssl_key = EDITOR_GET("export/web/ssl_key");
-	const String ssl_cert = EDITOR_GET("export/web/ssl_certificate");
+	const bool use_tls = EDITOR_GET("export/web/use_tls");
+	const String tls_key = EDITOR_GET("export/web/tls_key");
+	const String tls_cert = EDITOR_GET("export/web/tls_certificate");
 
 	// Restart server.
 	{
 		MutexLock lock(server_lock);
 
 		server->stop();
-		err = server->listen(bind_port, bind_ip, use_ssl, ssl_key, ssl_cert);
+		err = server->listen(bind_port, bind_ip, use_tls, tls_key, tls_cert);
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Error starting HTTP server: %d."), err));
 		return err;
 	}
 
-	OS::get_singleton()->shell_open(String((use_ssl ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
+	OS::get_singleton()->shell_open(String((use_tls ? "https://" : "http://") + bind_host + ":" + itos(bind_port) + "/tmp_js_export.html"));
 	// FIXME: Find out how to clean up export files after running the successfully
 	// exported game. Might not be trivial.
 	return OK;

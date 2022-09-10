@@ -36,6 +36,8 @@
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 void ResourceImporterTexture::_texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_channel) {
 	ERR_FAIL_COND(p_tex.is_null());
@@ -233,6 +235,10 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 
 	if (p_path.get_extension() == "svg") {
 		r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
+
+		// Editor use only, applies to SVG.
+		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/scale_with_editor_scale"), false));
+		r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "editor/convert_colors_with_editor_theme"), false));
 	}
 }
 
@@ -447,6 +453,14 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		scale = p_options["svg/scale"];
 	}
 
+	// Editor-specific options.
+	bool use_editor_scale = p_options.has("editor/scale_with_editor_scale") && p_options["editor/scale_with_editor_scale"];
+	bool convert_editor_colors = p_options.has("editor/convert_colors_with_editor_theme") && p_options["editor/convert_colors_with_editor_theme"];
+
+	// Start importing images.
+	List<Ref<Image>> images_imported;
+
+	// Load the normal image.
 	Ref<Image> normal_image;
 	Image::RoughnessChannel roughness_channel = Image::ROUGHNESS_CHANNEL_R;
 	if (mipmaps && roughness > 1 && FileAccess::exists(normal_map)) {
@@ -456,88 +470,117 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 	}
 
+	// Load the main image.
 	Ref<Image> image;
 	image.instantiate();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, loader_flags, scale);
 	if (err != OK) {
 		return err;
 	}
+	images_imported.push_back(image);
 
-	Array formats_imported;
+	// Load the editor-only image.
+	Ref<Image> editor_image;
+	bool import_editor_image = use_editor_scale || convert_editor_colors;
+	if (import_editor_image) {
+		float editor_scale = scale;
+		if (use_editor_scale) {
+			editor_scale = scale * EDSCALE;
+		}
 
-	if (size_limit > 0 && (image->get_width() > size_limit || image->get_height() > size_limit)) {
-		//limit size
-		if (image->get_width() >= image->get_height()) {
-			int new_width = size_limit;
-			int new_height = image->get_height() * new_width / image->get_width();
+		int32_t editor_loader_flags = loader_flags;
+		if (convert_editor_colors) {
+			editor_loader_flags |= ImageFormatLoader::FLAG_CONVERT_COLORS;
+		}
 
-			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+		editor_image.instantiate();
+		err = ImageLoader::load_image(p_source_file, editor_image, nullptr, editor_loader_flags, editor_scale);
+		if (err != OK) {
+			WARN_PRINT("Failed to import an image resource for editor use from '" + p_source_file + "'");
 		} else {
-			int new_height = size_limit;
-			int new_width = image->get_width() * new_height / image->get_height();
-
-			image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
-		}
-
-		if (normal == 1) {
-			image->normalize();
+			images_imported.push_back(editor_image);
 		}
 	}
 
-	if (fix_alpha_border) {
-		image->fix_alpha_edges();
-	}
+	for (Ref<Image> &target_image : images_imported) {
+		// Apply the size limit.
+		if (size_limit > 0 && (target_image->get_width() > size_limit || target_image->get_height() > size_limit)) {
+			if (target_image->get_width() >= target_image->get_height()) {
+				int new_width = size_limit;
+				int new_height = target_image->get_height() * new_width / target_image->get_width();
 
-	if (premult_alpha) {
-		image->premultiply_alpha();
-	}
+				target_image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+			} else {
+				int new_height = size_limit;
+				int new_width = target_image->get_width() * new_height / target_image->get_height();
 
-	if (normal_map_invert_y) {
-		// Inverting the green channel can be used to flip a normal map's direction.
-		// There's no standard when it comes to normal map Y direction, so this is
-		// sometimes needed when using a normal map exported from another program.
-		// See <http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates>.
-		const int height = image->get_height();
-		const int width = image->get_width();
+				target_image->resize(new_width, new_height, Image::INTERPOLATE_CUBIC);
+			}
 
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				const Color color = image->get_pixel(i, j);
-				image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
+			if (normal == 1) {
+				target_image->normalize();
 			}
 		}
-	}
 
-	if (hdr_clamp_exposure) {
-		// Clamp HDR exposure following Filament's tonemapping formula.
-		// This can be used to reduce fireflies in environment maps or reduce the influence
-		// of the sun from an HDRI panorama on environment lighting (when a DirectionalLight3D is used instead).
-		const int height = image->get_height();
-		const int width = image->get_width();
+		// Fix alpha border.
+		if (fix_alpha_border) {
+			target_image->fix_alpha_edges();
+		}
 
-		// These values are chosen arbitrarily and seem to produce good results with 4,096 samples.
-		const float linear = 4096.0;
-		const float compressed = 16384.0;
+		// Premultiply the alpha.
+		if (premult_alpha) {
+			target_image->premultiply_alpha();
+		}
 
-		for (int i = 0; i < width; i++) {
-			for (int j = 0; j < height; j++) {
-				const Color color = image->get_pixel(i, j);
-				const float luma = color.get_luminance();
+		// Invert the green channel of the image to flip the normal map it contains.
+		if (normal_map_invert_y) {
+			// Inverting the green channel can be used to flip a normal map's direction.
+			// There's no standard when it comes to normal map Y direction, so this is
+			// sometimes needed when using a normal map exported from another program.
+			// See <http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates>.
+			const int height = target_image->get_height();
+			const int width = target_image->get_width();
 
-				Color clamped_color;
-				if (luma <= linear) {
-					clamped_color = color;
-				} else {
-					clamped_color = (color / luma) * ((linear * linear - compressed * luma) / (2 * linear - compressed - luma));
+			for (int i = 0; i < width; i++) {
+				for (int j = 0; j < height; j++) {
+					const Color color = target_image->get_pixel(i, j);
+					target_image->set_pixel(i, j, Color(color.r, 1 - color.g, color.b));
 				}
+			}
+		}
 
-				image->set_pixel(i, j, clamped_color);
+		// Clamp HDR exposure.
+		if (hdr_clamp_exposure) {
+			// Clamp HDR exposure following Filament's tonemapping formula.
+			// This can be used to reduce fireflies in environment maps or reduce the influence
+			// of the sun from an HDRI panorama on environment lighting (when a DirectionalLight3D is used instead).
+			const int height = target_image->get_height();
+			const int width = target_image->get_width();
+
+			// These values are chosen arbitrarily and seem to produce good results with 4,096 samples.
+			const float linear = 4096.0;
+			const float compressed = 16384.0;
+
+			for (int i = 0; i < width; i++) {
+				for (int j = 0; j < height; j++) {
+					const Color color = target_image->get_pixel(i, j);
+					const float luma = color.get_luminance();
+
+					Color clamped_color;
+					if (luma <= linear) {
+						clamped_color = color;
+					} else {
+						clamped_color = (color / luma) * ((linear * linear - compressed * luma) / (2 * linear - compressed - luma));
+					}
+
+					target_image->set_pixel(i, j, clamped_color);
+				}
 			}
 		}
 	}
 
 	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
-		//basis universal does not support float formats, fall back
+		// Basis universal does not support float formats, fallback.
 		compress_mode = COMPRESS_VRAM_COMPRESSED;
 	}
 
@@ -547,9 +590,11 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool force_normal = normal == 1;
 	bool srgb_friendly_pack = pack_channels == 0;
 
+	Array formats_imported;
+
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
-		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
-		//Android, GLES 2.x
+		// Must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
+		// Android, GLES 2.x
 
 		const bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
 		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
@@ -557,7 +602,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		const bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
 
 		if (can_bptc) {
-			//add to the list anyway
+			// Add to the list anyway.
 			formats_imported.push_back("bptc");
 		}
 
@@ -566,9 +611,9 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		if (is_hdr && can_compress_hdr) {
 			if (has_alpha) {
-				//can compress hdr, but hdr with alpha is not compressible
+				// Can compress HDR, but HDR with alpha is not compressible.
 				if (hdr_compression == 2) {
-					//but user selected to compress hdr anyway, so force an alpha-less format.
+					// But user selected to compress HDR anyway, so force an alpha-less format.
 					if (image->get_format() == Image::FORMAT_RGBAF) {
 						image->convert(Image::FORMAT_RGBF);
 					} else if (image->get_format() == Image::FORMAT_RGBAH) {
@@ -580,7 +625,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			}
 
 			if (!can_compress_hdr) {
-				//fallback to RGBE99995
+				// Fallback to RGBE99995.
 				if (image->get_format() != Image::FORMAT_RGBE9995) {
 					image->convert(Image::FORMAT_RGBE9995);
 				}
@@ -615,8 +660,12 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			EditorNode::add_io_error(vformat(TTR("%s: No suitable desktop VRAM compression algorithm enabled in Project Settings (S3TC or BPTC). This texture may not display correctly on desktop platforms."), p_source_file));
 		}
 	} else {
-		//import normally
+		// Import normally.
 		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+	}
+
+	if (editor_image.is_valid()) {
+		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 	}
 
 	if (r_metadata) {
@@ -625,6 +674,17 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		if (formats_imported.size()) {
 			metadata["imported_formats"] = formats_imported;
 		}
+
+		if (editor_image.is_valid()) {
+			metadata["has_editor_variant"] = true;
+			if (use_editor_scale) {
+				metadata["editor_scale"] = EDSCALE;
+			}
+			if (convert_editor_colors) {
+				metadata["editor_dark_theme"] = EditorSettings::get_singleton()->is_dark_theme();
+			}
+		}
+
 		*r_metadata = metadata;
 	}
 	return OK;
@@ -657,13 +717,22 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 	//will become invalid if formats are missing to import
 	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
+	if (metadata.has("has_editor_variant")) {
+		if (metadata.has("editor_scale") && (float)metadata["editor_scale"] != EDSCALE) {
+			return false;
+		}
+		if (metadata.has("editor_dark_theme") && (bool)metadata["editor_dark_theme"] != EditorSettings::get_singleton()->is_dark_theme()) {
+			return false;
+		}
+	}
+
 	if (!metadata.has("vram_texture")) {
 		return false;
 	}
 
 	bool vram = metadata["vram_texture"];
 	if (!vram) {
-		return true; //do not care about non vram
+		return true; // Do not care about non-VRAM.
 	}
 
 	Vector<String> formats_imported;

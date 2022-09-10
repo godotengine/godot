@@ -39,7 +39,7 @@ HTTPClient *HTTPClientTCP::_create_func() {
 	return memnew(HTTPClientTCP);
 }
 
-Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
+Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_tls, bool p_verify_host) {
 	close();
 
 	conn_port = p_port;
@@ -47,21 +47,21 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 
 	ip_candidates.clear();
 
-	ssl = p_ssl;
-	ssl_verify_host = p_verify_host;
+	tls = p_tls;
+	tls_verify_host = p_verify_host;
 
 	String host_lower = conn_host.to_lower();
 	if (host_lower.begins_with("http://")) {
 		conn_host = conn_host.substr(7, conn_host.length() - 7);
 	} else if (host_lower.begins_with("https://")) {
-		ssl = true;
+		tls = true;
 		conn_host = conn_host.substr(8, conn_host.length() - 8);
 	}
 
 	ERR_FAIL_COND_V(conn_host.length() < HOST_MIN_LEN, ERR_INVALID_PARAMETER);
 
 	if (conn_port < 0) {
-		if (ssl) {
+		if (tls) {
 			conn_port = PORT_HTTPS;
 		} else {
 			conn_port = PORT_HTTP;
@@ -70,11 +70,11 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 
 	connection = tcp_connection;
 
-	if (ssl && https_proxy_port != -1) {
+	if (tls && https_proxy_port != -1) {
 		proxy_client.instantiate(); // Needs proxy negotiation.
 		server_host = https_proxy_host;
 		server_port = https_proxy_port;
-	} else if (!ssl && http_proxy_port != -1) {
+	} else if (!tls && http_proxy_port != -1) {
 		server_host = http_proxy_host;
 		server_port = http_proxy_port;
 	} else {
@@ -107,7 +107,7 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_ss
 void HTTPClientTCP::set_connection(const Ref<StreamPeer> &p_connection) {
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
-	if (ssl) {
+	if (tls) {
 		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerTLS>(p_connection.ptr()),
 				"Connection is not a reference to a valid StreamPeerTLS object.");
 	}
@@ -156,7 +156,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	}
 
 	String uri = p_url;
-	if (!ssl && http_proxy_port != -1) {
+	if (!tls && http_proxy_port != -1) {
 		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
 	}
 
@@ -181,7 +181,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 		}
 	}
 	if (add_host) {
-		if ((ssl && conn_port == PORT_HTTPS) || (!ssl && conn_port == PORT_HTTP)) {
+		if ((tls && conn_port == PORT_HTTPS) || (!tls && conn_port == PORT_HTTP)) {
 			// Don't append the standard ports.
 			request += "Host: " + conn_host + "\r\n";
 		} else {
@@ -316,7 +316,7 @@ Error HTTPClientTCP::poll() {
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
-					if (ssl && proxy_client.is_valid()) {
+					if (tls && proxy_client.is_valid()) {
 						Error err = proxy_client->poll();
 						if (err == ERR_UNCONFIGURED) {
 							proxy_client->set_connection(tcp_connection);
@@ -357,42 +357,42 @@ Error HTTPClientTCP::poll() {
 								return ERR_CANT_CONNECT;
 							} break;
 						}
-					} else if (ssl) {
-						Ref<StreamPeerTLS> ssl;
+					} else if (tls) {
+						Ref<StreamPeerTLS> tls;
 						if (!handshaking) {
 							// Connect the StreamPeerTLS and start handshaking.
-							ssl = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-							ssl->set_blocking_handshake_enabled(false);
-							Error err = ssl->connect_to_stream(tcp_connection, ssl_verify_host, conn_host);
+							tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
+							tls->set_blocking_handshake_enabled(false);
+							Error err = tls->connect_to_stream(tcp_connection, tls_verify_host, conn_host);
 							if (err != OK) {
 								close();
-								status = STATUS_SSL_HANDSHAKE_ERROR;
+								status = STATUS_TLS_HANDSHAKE_ERROR;
 								return ERR_CANT_CONNECT;
 							}
-							connection = ssl;
+							connection = tls;
 							handshaking = true;
 						} else {
-							// We are already handshaking, which means we can use your already active SSL connection.
-							ssl = static_cast<Ref<StreamPeerTLS>>(connection);
-							if (ssl.is_null()) {
+							// We are already handshaking, which means we can use your already active TLS connection.
+							tls = static_cast<Ref<StreamPeerTLS>>(connection);
+							if (tls.is_null()) {
 								close();
-								status = STATUS_SSL_HANDSHAKE_ERROR;
+								status = STATUS_TLS_HANDSHAKE_ERROR;
 								return ERR_CANT_CONNECT;
 							}
 
-							ssl->poll(); // Try to finish the handshake.
+							tls->poll(); // Try to finish the handshake.
 						}
 
-						if (ssl->get_status() == StreamPeerTLS::STATUS_CONNECTED) {
+						if (tls->get_status() == StreamPeerTLS::STATUS_CONNECTED) {
 							// Handshake has been successful.
 							handshaking = false;
 							ip_candidates.clear();
 							status = STATUS_CONNECTED;
 							return OK;
-						} else if (ssl->get_status() != StreamPeerTLS::STATUS_HANDSHAKING) {
+						} else if (tls->get_status() != StreamPeerTLS::STATUS_HANDSHAKING) {
 							// Handshake has failed.
 							close();
-							status = STATUS_SSL_HANDSHAKE_ERROR;
+							status = STATUS_TLS_HANDSHAKE_ERROR;
 							return ERR_CANT_CONNECT;
 						}
 						// ... we will need to poll more for handshake to finish.
@@ -421,7 +421,7 @@ Error HTTPClientTCP::poll() {
 		case STATUS_BODY:
 		case STATUS_CONNECTED: {
 			// Check if we are still connected.
-			if (ssl) {
+			if (tls) {
 				Ref<StreamPeerTLS> tmp = connection;
 				tmp->poll();
 				if (tmp->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
@@ -548,7 +548,7 @@ Error HTTPClientTCP::poll() {
 			return ERR_UNCONFIGURED;
 		} break;
 		case STATUS_CONNECTION_ERROR:
-		case STATUS_SSL_HANDSHAKE_ERROR: {
+		case STATUS_TLS_HANDSHAKE_ERROR: {
 			return ERR_CONNECTION_ERROR;
 		} break;
 		case STATUS_CANT_CONNECT: {

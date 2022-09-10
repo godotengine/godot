@@ -2686,7 +2686,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				return -1;
 			}
 
-			if (select_mode == SELECT_MULTI && p_mod->is_command_pressed() && c.selectable) {
+			if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed() && c.selectable) {
 				if (!c.selected || p_button == MouseButton::RIGHT) {
 					p_item->select(col);
 					emit_signal(SNAME("multi_selected"), p_item, col, true);
@@ -3127,7 +3127,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	bool is_command = k.is_valid() && k->is_command_pressed();
+	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
 	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
@@ -3285,7 +3285,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		if (!k->is_pressed()) {
 			return;
 		}
-		if (k->is_command_pressed() || (k->is_shift_pressed() && k->get_unicode() == 0) || k->is_meta_pressed()) {
+		if (k->is_command_or_control_pressed() || (k->is_shift_pressed() && k->get_unicode() == 0) || k->is_meta_pressed()) {
 			return;
 		}
 		if (!root) {
@@ -3615,7 +3615,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					}
 
 					if (mb->get_button_index() == MouseButton::LEFT) {
-						if (get_item_at_position(mb->get_position()) == nullptr && !mb->is_shift_pressed() && !mb->is_ctrl_pressed() && !mb->is_command_pressed()) {
+						if (get_item_at_position(mb->get_position()) == nullptr && !mb->is_shift_pressed() && !mb->is_ctrl_pressed() && !mb->is_command_or_control_pressed()) {
 							emit_signal(SNAME("nothing_selected"));
 						}
 					}

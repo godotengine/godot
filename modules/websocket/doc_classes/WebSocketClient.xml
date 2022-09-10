@@ -24,8 +24,8 @@
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a multiplayer peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
 				You can optionally pass a list of [code]custom_headers[/code] to be added to the handshake HTTP request.
-				[b]Note:[/b] To avoid mixed content warnings or errors in Web, you may have to use a [code]url[/code] that starts with [code]wss://[/code] (secure) instead of [code]ws://[/code]. When doing so, make sure to use the fully qualified domain name that matches the one defined in the server's SSL certificate. Do not connect directly via the IP address for [code]wss://[/code] connections, as it won't match with the SSL certificate.
-				[b]Note:[/b] Specifying [code]custom_headers[/code] is not supported in Web exports due to browsers restrictions.
+				[b]Note:[/b] To avoid mixed content warnings or errors in Web, you may have to use a [code]url[/code] that starts with [code]wss://[/code] (secure) instead of [code]ws://[/code]. When doing so, make sure to use the fully qualified domain name that matches the one defined in the server's TLS certificate. Do not connect directly via the IP address for [code]wss://[/code] connections, as it won't match with the TLS certificate.
+				[b]Note:[/b] Specifying [code]custom_headers[/code] is not supported in Web exports due to browsers' restrictions.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
@@ -50,12 +50,12 @@
 		</method>
 	</methods>
 	<members>
-		<member name="trusted_ssl_certificate" type="X509Certificate" setter="set_trusted_ssl_certificate" getter="get_trusted_ssl_certificate">
-			If specified, this [X509Certificate] will be the only one accepted when connecting to an SSL host. Any other certificate provided by the server will be regarded as invalid.
-			[b]Note:[/b] Specifying a custom [code]trusted_ssl_certificate[/code] is not supported in Web exports due to browsers restrictions.
+		<member name="trusted_tls_certificate" type="X509Certificate" setter="set_trusted_tls_certificate" getter="get_trusted_tls_certificate">
+			If specified, this [X509Certificate] will be the only one accepted when connecting to an TLS host. Any other certificate provided by the server will be regarded as invalid.
+			[b]Note:[/b] Specifying a custom [code]trusted_tls_certificate[/code] is not supported in Web exports due to browsers' restrictions.
 		</member>
-		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
-			If [code]true[/code], SSL certificate verification is enabled.
+		<member name="verify_tls" type="bool" setter="set_verify_tls_enabled" getter="is_verify_tls_enabled">
+			If [code]true[/code], TLS certificate verification is enabled.
 			[b]Note:[/b] You must specify the certificates to be used in the Project Settings for it to work when exported.
 		</member>
 	</members>

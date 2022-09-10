@@ -334,15 +334,7 @@ public:
 	void set_debug_paths_width(float p_width);
 	float get_debug_paths_width() const;
 
-	void set_debug_navigation_color(const Color &p_color);
-	Color get_debug_navigation_color() const;
-
-	void set_debug_navigation_disabled_color(const Color &p_color);
-	Color get_debug_navigation_disabled_color() const;
-
 	Ref<Material> get_debug_paths_material();
-	Ref<Material> get_debug_navigation_material();
-	Ref<Material> get_debug_navigation_disabled_material();
 	Ref<Material> get_debug_collision_material();
 	Ref<ArrayMesh> get_debug_contact_mesh();
 
@@ -366,8 +358,8 @@ public:
 
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
-	Error change_scene(const String &p_path);
-	Error change_scene_to(const Ref<PackedScene> &p_scene);
+	Error change_scene_to_file(const String &p_path);
+	Error change_scene_to_packed(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);

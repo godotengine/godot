@@ -348,7 +348,6 @@ public:
 
 	void move_child(Node *p_child, int p_pos);
 	void _move_child(Node *p_child, int p_pos, bool p_ignore_end = false);
-	void raise();
 
 	void set_owner(Node *p_owner);
 	Node *get_owner() const;
@@ -357,7 +356,6 @@ public:
 	void set_unique_name_in_owner(bool p_enabled);
 	bool is_unique_name_in_owner() const;
 
-	void remove_and_skip();
 	int get_index(bool p_include_internal = true) const;
 
 	Ref<Tween> create_tween();

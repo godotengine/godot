@@ -102,16 +102,16 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols, uin
 		return ERR_TIMEOUT;
 	}
 
-	if (use_ssl) {
-		Ref<StreamPeerTLS> ssl = static_cast<Ref<StreamPeerTLS>>(connection);
-		if (ssl.is_null()) {
+	if (use_tls) {
+		Ref<StreamPeerTLS> tls = static_cast<Ref<StreamPeerTLS>>(connection);
+		if (tls.is_null()) {
 			ERR_FAIL_V_MSG(ERR_BUG, "Couldn't get StreamPeerTLS for WebSocket handshake.");
 		}
-		ssl->poll();
-		if (ssl->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
+		tls->poll();
+		if (tls->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
 			return ERR_BUSY;
-		} else if (ssl->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
-			print_verbose(vformat("WebSocket SSL connection error during handshake (StreamPeerTLS status code %d).", ssl->get_status()));
+		} else if (tls->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
+			print_verbose(vformat("WebSocket SSL connection error during handshake (StreamPeerTLS status code %d).", tls->get_status()));
 			return FAILED;
 		}
 	}
@@ -247,12 +247,12 @@ void WSLServer::poll() {
 		}
 
 		Ref<PendingPeer> peer = memnew(PendingPeer);
-		if (private_key.is_valid() && ssl_cert.is_valid()) {
-			Ref<StreamPeerTLS> ssl = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-			ssl->set_blocking_handshake_enabled(false);
-			ssl->accept_stream(conn, private_key, ssl_cert, ca_chain);
-			peer->connection = ssl;
-			peer->use_ssl = true;
+		if (private_key.is_valid() && tls_cert.is_valid()) {
+			Ref<StreamPeerTLS> tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
+			tls->set_blocking_handshake_enabled(false);
+			tls->accept_stream(conn, private_key, tls_cert, ca_chain);
+			peer->connection = tls;
+			peer->use_tls = true;
 		} else {
 			peer->connection = conn;
 		}

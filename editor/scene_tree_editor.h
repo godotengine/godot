@@ -78,6 +78,7 @@ class SceneTreeEditor : public Control {
 	void _test_update_tree();
 	void _update_tree(bool p_scroll_to_selected = false);
 	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
+	bool _item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms);
 	void _tree_changed();
 	void _tree_process_mode_changed();
 	void _node_removed(Node *p_node);
