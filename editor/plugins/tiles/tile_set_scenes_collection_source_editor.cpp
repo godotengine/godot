@@ -463,7 +463,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	// Middle panel.
 	ScrollContainer *middle_panel = memnew(ScrollContainer);
 	middle_panel->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-	middle_panel->set_custom_minimum_size(Size2i(200, 0) * EDSCALE);
+	middle_panel->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	split_container_right_side->add_child(middle_panel);
 
 	VBoxContainer *middle_vbox_container = memnew(VBoxContainer);

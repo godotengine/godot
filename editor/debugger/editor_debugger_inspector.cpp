@@ -36,7 +36,7 @@
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
-	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
+	if (!prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
 		return false;
 	}
 
@@ -85,14 +85,12 @@ void EditorDebuggerRemoteObject::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_variant"), &EditorDebuggerRemoteObject::get_variant);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorDebuggerRemoteObject::clear);
 	ClassDB::bind_method(D_METHOD("get_remote_object_id"), &EditorDebuggerRemoteObject::get_remote_object_id);
-	ClassDB::bind_method(D_METHOD("_is_read_only"), &EditorDebuggerRemoteObject::_is_read_only);
 
 	ADD_SIGNAL(MethodInfo("value_edited", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "property"), PropertyInfo("value")));
 }
 
 EditorDebuggerInspector::EditorDebuggerInspector() {
 	variables = memnew(EditorDebuggerRemoteObject);
-	variables->editable = false;
 }
 
 EditorDebuggerInspector::~EditorDebuggerInspector() {

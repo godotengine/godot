@@ -58,7 +58,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	}
 
 	// get some Godot method pointers...
-	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()V");
+	_on_video_init = p_env->GetMethodID(godot_class, "onVideoInit", "()Z");
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
 	_finish = p_env->GetMethodID(godot_class, "forceQuit", "()V");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");
@@ -125,14 +125,15 @@ GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
 	return _godot_view;
 }
 
-void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
+bool GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
-		ERR_FAIL_NULL(p_env);
-		p_env->CallVoidMethod(godot_instance, _on_video_init);
+		ERR_FAIL_NULL_V(p_env, false);
+		return p_env->CallBooleanMethod(godot_instance, _on_video_init);
 	}
+	return false;
 }
 
 void GodotJavaWrapper::on_godot_setup_completed(JNIEnv *p_env) {

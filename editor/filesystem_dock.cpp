@@ -3021,10 +3021,10 @@ FileSystemDock::FileSystemDock() {
 	set_name("FileSystem");
 	path = "res://";
 
-	// `KeyModifierMask::CMD | Key::C` conflicts with other editor shortcuts.
-	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
+	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
+	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
-	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD | Key::D);
+	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);

@@ -66,6 +66,170 @@ TEST_CASE("[XMLParser] End-to-end") {
 
 	parser.close();
 }
+
+TEST_CASE("[XMLParser] Comments") {
+	XMLParser parser;
+
+	SUBCASE("Missing end of comment") {
+		const String input = "<first></first><!-- foo";
+		REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.read(), OK);
+		CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		CHECK_EQ(parser.get_node_name(), " foo");
+	}
+	SUBCASE("Bad start of comment") {
+		const String input = "<first></first><!-";
+		REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.read(), OK);
+		CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		CHECK_EQ(parser.get_node_name(), "-");
+	}
+	SUBCASE("Unblanced angle brackets in comment") {
+		const String input = "<!-- example << --><next-tag></next-tag>";
+		REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		CHECK_EQ(parser.get_node_name(), " example << ");
+	}
+	SUBCASE("Doctype") {
+		const String input = "<!DOCTYPE greeting [<!ELEMENT greeting (#PCDATA)>]>";
+		REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_COMMENT);
+		CHECK_EQ(parser.get_node_name(), "DOCTYPE greeting [<!ELEMENT greeting (#PCDATA)>]");
+	}
+}
+
+TEST_CASE("[XMLParser] Premature endings") {
+	SUBCASE("Simple cases") {
+		String input;
+		String expected_name;
+		XMLParser::NodeType expected_type;
+
+		SUBCASE("Incomplete Unknown") {
+			input = "<first></first><?xml";
+			expected_type = XMLParser::NodeType::NODE_UNKNOWN;
+			expected_name = "?xml";
+		}
+		SUBCASE("Incomplete CDStart") {
+			input = "<first></first><![CD";
+			expected_type = XMLParser::NodeType::NODE_CDATA;
+			expected_name = "";
+		}
+		SUBCASE("Incomplete CData") {
+			input = "<first></first><![CDATA[example";
+			expected_type = XMLParser::NodeType::NODE_CDATA;
+			expected_name = "example";
+		}
+		SUBCASE("Incomplete CDEnd") {
+			input = "<first></first><![CDATA[example]]";
+			expected_type = XMLParser::NodeType::NODE_CDATA;
+			expected_name = "example]]";
+		}
+		SUBCASE("Incomplete start-tag name") {
+			input = "<first></first><second";
+			expected_type = XMLParser::NodeType::NODE_ELEMENT;
+			expected_name = "second";
+		}
+
+		XMLParser parser;
+		REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+		REQUIRE_EQ(parser.read(), OK);
+		REQUIRE_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+		REQUIRE_EQ(parser.read(), OK);
+		CHECK_EQ(parser.get_node_type(), expected_type);
+		CHECK_EQ(parser.get_node_name(), expected_name);
+	}
+
+	SUBCASE("With attributes and texts") {
+		XMLParser parser;
+
+		SUBCASE("Incomplete start-tag attribute name") {
+			const String input = "<first></first><second attr1=\"foo\" attr2";
+			REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+			CHECK_EQ(parser.get_node_name(), "second");
+			CHECK_EQ(parser.get_attribute_count(), 1);
+			CHECK_EQ(parser.get_attribute_name(0), "attr1");
+			CHECK_EQ(parser.get_attribute_value(0), "foo");
+		}
+
+		SUBCASE("Incomplete start-tag attribute unquoted value") {
+			const String input = "<first></first><second attr1=\"foo\" attr2=bar";
+			REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+			CHECK_EQ(parser.get_node_name(), "second");
+			CHECK_EQ(parser.get_attribute_count(), 1);
+			CHECK_EQ(parser.get_attribute_name(0), "attr1");
+			CHECK_EQ(parser.get_attribute_value(0), "foo");
+		}
+
+		SUBCASE("Incomplete start-tag attribute quoted value") {
+			const String input = "<first></first><second attr1=\"foo\" attr2=\"bar";
+			REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+			CHECK_EQ(parser.get_node_name(), "second");
+			CHECK_EQ(parser.get_attribute_count(), 2);
+			CHECK_EQ(parser.get_attribute_name(0), "attr1");
+			CHECK_EQ(parser.get_attribute_value(0), "foo");
+			CHECK_EQ(parser.get_attribute_name(1), "attr2");
+			CHECK_EQ(parser.get_attribute_value(1), "bar");
+		}
+
+		SUBCASE("Incomplete end-tag name") {
+			const String input = "<first></fir";
+			REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+			CHECK_EQ(parser.get_node_name(), "fir");
+		}
+
+		SUBCASE("Trailing text") {
+			const String input = "<first></first>example";
+			REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			REQUIRE_EQ(parser.read(), OK);
+			CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_TEXT);
+			CHECK_EQ(parser.get_node_data(), "example");
+		}
+	}
+}
+
+TEST_CASE("[XMLParser] CDATA") {
+	const String input = "<a><![CDATA[my cdata content goes here]]></a>";
+	XMLParser parser;
+	REQUIRE_EQ(parser.open_buffer(input.to_utf8_buffer()), OK);
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT);
+	CHECK_EQ(parser.get_node_name(), "a");
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_CDATA);
+	CHECK_EQ(parser.get_node_name(), "my cdata content goes here");
+	REQUIRE_EQ(parser.read(), OK);
+	CHECK_EQ(parser.get_node_type(), XMLParser::NodeType::NODE_ELEMENT_END);
+	CHECK_EQ(parser.get_node_name(), "a");
+}
 } // namespace TestXMLParser
 
 #endif // TEST_XML_PARSER_H

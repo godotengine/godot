@@ -603,7 +603,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 	updating_tree = false;
 	tree_dirty = false;
 
-	if (!filter.is_empty()) {
+	if (!filter.strip_edges().is_empty()) {
 		_update_filter(nullptr, p_scroll_to_selected);
 	}
 }
@@ -618,18 +618,28 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		return false;
 	}
 
-	bool keep = false;
+	bool keep_for_children = false;
 	for (TreeItem *child = p_parent->get_first_child(); child; child = child->get_next()) {
-		keep = _update_filter(child, p_scroll_to_selected) || keep;
+		// Always keep if at least one of the children are kept.
+		keep_for_children = _update_filter(child, p_scroll_to_selected) || keep_for_children;
 	}
 
-	if (!keep) {
-		StringName node_type = get_node(p_parent->get_metadata(0))->get_class();
-		bool is_kept_by_type = (filter.begins_with("type:") && filter.trim_prefix("type:").is_subsequence_ofn(node_type)) || (filter.begins_with("t:") && filter.trim_prefix("t:").is_subsequence_ofn(node_type));
-		keep = (filter.is_subsequence_ofn(p_parent->get_text(0)) || is_kept_by_type);
+	// Now find other reasons to keep this Node, too.
+	PackedStringArray terms = filter.to_lower().split_spaces();
+	bool keep = _item_matches_all_terms(p_parent, terms);
+
+	p_parent->set_visible(keep_for_children || keep);
+	if (keep_for_children) {
+		if (keep) {
+			p_parent->clear_custom_color(0);
+			p_parent->set_selectable(0, true);
+		} else {
+			p_parent->set_custom_color(0, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
+			p_parent->set_selectable(0, false);
+			p_parent->deselect(0);
+		}
 	}
 
-	p_parent->set_visible(keep);
 	if (editor_selection) {
 		Node *n = get_node(p_parent->get_metadata(0));
 		if (keep) {
@@ -644,7 +654,68 @@ bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_select
 		}
 	}
 
-	return keep;
+	return keep || keep_for_children;
+}
+
+bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArray p_terms) {
+	if (p_terms.is_empty()) {
+		return true;
+	}
+
+	for (int i = 0; i < p_terms.size(); i++) {
+		String term = p_terms[i];
+
+		// Recognise special filter.
+		if (term.contains(":") && !term.get_slicec(':', 0).is_empty()) {
+			String parameter = term.get_slicec(':', 0);
+			String argument = term.get_slicec(':', 1);
+
+			if (parameter == "type" || parameter == "t") {
+				// Filter by Type.
+				String node_type = get_node(p_item->get_metadata(0))->get_class().to_lower();
+
+				if (!node_type.contains(argument)) {
+					return false;
+				}
+			} else if (parameter == "group" || parameter == "g") {
+				// Filter by Group.
+				Node *node = get_node(p_item->get_metadata(0));
+
+				List<Node::GroupInfo> group_info_list;
+				node->get_groups(&group_info_list);
+				if (group_info_list.is_empty()) {
+					return false;
+				}
+				// When argument is empty, match all Nodes belonging to any group.
+				if (!argument.is_empty()) {
+					bool term_in_groups = false;
+					for (int j = 0; j < group_info_list.size(); j++) {
+						// Ignore private groups.
+						if (String(group_info_list[j].name).begins_with("__")) {
+							continue;
+						}
+						if (String(group_info_list[j].name).to_lower().contains(argument)) {
+							term_in_groups = true;
+							break;
+						}
+					}
+					if (!term_in_groups) {
+						return false;
+					}
+				}
+			} else {
+				WARN_PRINT(vformat(TTR("Special Node filter \"%s\" is not recognised. Available filters include \"type\" and \"group\"."), parameter));
+				continue;
+			}
+		} else {
+			// Default.
+			if (!p_item->get_text(0).to_lower().contains(term)) {
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {

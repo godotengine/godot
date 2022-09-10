@@ -43,14 +43,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool editable = false;
 	ObjectID remote_object_id;
 	String type_name;
 	List<PropertyInfo> prop_list;
 	HashMap<StringName, Variant> prop_values;
 
 	ObjectID get_remote_object_id() { return remote_object_id; };
-	bool _is_read_only() { return true; };
 	String get_title();
 
 	Variant get_variant(const StringName &p_name);

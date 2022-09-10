@@ -66,6 +66,14 @@ String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_ev
 
 	String text = p_event->as_text();
 
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid() && key->is_command_or_control_autoremap()) {
+#ifdef MACOS_ENABLED
+		text = text.replace("Command", "Command/Ctrl");
+#else
+		text = text.replace("Ctrl", "Command/Ctrl");
+#endif
+	}
 	Ref<InputEventMouse> mouse = p_event;
 	Ref<InputEventJoypadMotion> jp_motion = p_event;
 	Ref<InputEventJoypadButton> jp_button = p_event;
@@ -108,11 +116,10 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 			show_mods = true;
 			mod_checkboxes[MOD_ALT]->set_pressed(mod->is_alt_pressed());
 			mod_checkboxes[MOD_SHIFT]->set_pressed(mod->is_shift_pressed());
-			mod_checkboxes[MOD_COMMAND]->set_pressed(mod->is_command_pressed());
 			mod_checkboxes[MOD_CTRL]->set_pressed(mod->is_ctrl_pressed());
 			mod_checkboxes[MOD_META]->set_pressed(mod->is_meta_pressed());
 
-			store_command_checkbox->set_pressed(mod->is_storing_command());
+			autoremap_command_or_control_checkbox->set_pressed(mod->is_command_or_control_autoremap());
 		}
 
 		if (k.is_valid()) {
@@ -287,8 +294,6 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 
 	Ref<InputEventWithModifiers> mod = received_event;
 	if (mod.is_valid()) {
-		// Maintain store command option state
-		mod->set_store_command(store_command_checkbox->is_pressed());
 		mod->set_window_id(0);
 	}
 
@@ -419,41 +424,31 @@ void InputEventConfigurationDialog::_mod_toggled(bool p_checked, int p_index) {
 	} else if (p_index == 1) {
 		ie->set_shift_pressed(p_checked);
 	} else if (p_index == 2) {
-		ie->set_command_pressed(p_checked);
+		if (!autoremap_command_or_control_checkbox->is_pressed()) {
+			ie->set_ctrl_pressed(p_checked);
+		}
 	} else if (p_index == 3) {
-		ie->set_ctrl_pressed(p_checked);
-	} else if (p_index == 4) {
-		ie->set_meta_pressed(p_checked);
+		if (!autoremap_command_or_control_checkbox->is_pressed()) {
+			ie->set_meta_pressed(p_checked);
+		}
 	}
 
 	_set_event(ie);
 }
 
-void InputEventConfigurationDialog::_store_command_toggled(bool p_checked) {
+void InputEventConfigurationDialog::_autoremap_command_or_control_toggled(bool p_checked) {
 	Ref<InputEventWithModifiers> ie = event;
 	if (ie.is_valid()) {
-		ie->set_store_command(p_checked);
+		ie->set_command_or_control_autoremap(p_checked);
 		_set_event(ie);
 	}
 
 	if (p_checked) {
-		// If storing Command, show it's checkbox and hide Control (Win/Lin) or Meta (Mac)
-#ifdef APPLE_STYLE_KEYS
 		mod_checkboxes[MOD_META]->hide();
-
-		mod_checkboxes[MOD_COMMAND]->show();
-		mod_checkboxes[MOD_COMMAND]->set_text("Meta (Command)");
-#else
 		mod_checkboxes[MOD_CTRL]->hide();
-
-		mod_checkboxes[MOD_COMMAND]->show();
-		mod_checkboxes[MOD_COMMAND]->set_text("Control (Command)");
-#endif
 	} else {
-		// If not, hide Command, show Control and Meta.
-		mod_checkboxes[MOD_COMMAND]->hide();
-		mod_checkboxes[MOD_CTRL]->show();
 		mod_checkboxes[MOD_META]->show();
+		mod_checkboxes[MOD_CTRL]->show();
 	}
 }
 
@@ -502,10 +497,12 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			// Maintain modifier state from checkboxes
 			k->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
 			k->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
-			k->set_command_pressed(mod_checkboxes[MOD_COMMAND]->is_pressed());
-			k->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
-			k->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
-			k->set_store_command(store_command_checkbox->is_pressed());
+			if (autoremap_command_or_control_checkbox->is_pressed()) {
+				k->set_command_or_control_autoremap(true);
+			} else {
+				k->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
+				k->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
+			}
 
 			_set_event(k, false);
 		} break;
@@ -517,10 +514,12 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			// Maintain modifier state from checkboxes
 			mb->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
 			mb->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
-			mb->set_command_pressed(mod_checkboxes[MOD_COMMAND]->is_pressed());
-			mb->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
-			mb->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
-			mb->set_store_command(store_command_checkbox->is_pressed());
+			if (autoremap_command_or_control_checkbox->is_pressed()) {
+				mb->set_command_or_control_autoremap(true);
+			} else {
+				mb->set_ctrl_pressed(mod_checkboxes[MOD_CTRL]->is_pressed());
+				mb->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
+			}
 
 			// Maintain selected device
 			mb->set_device(_get_current_device());
@@ -611,7 +610,7 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		// This is especially important for WASD movement layouts.
 		physical_key_checkbox->set_pressed(true);
 
-		store_command_checkbox->set_pressed(true);
+		autoremap_command_or_control_checkbox->set_pressed(false);
 		_set_current_device(0);
 
 		// Switch to "Listen" tab
@@ -722,21 +721,18 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 		mod_checkboxes[i] = memnew(CheckBox);
 		mod_checkboxes[i]->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_mod_toggled).bind(i));
 		mod_checkboxes[i]->set_text(name);
+		mod_checkboxes[i]->set_tooltip_text(TTR(mods_tip[i]));
 		mod_container->add_child(mod_checkboxes[i]);
 	}
 
 	mod_container->add_child(memnew(VSeparator));
 
-	store_command_checkbox = memnew(CheckBox);
-	store_command_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_store_command_toggled));
-	store_command_checkbox->set_pressed(true);
-	store_command_checkbox->set_text(TTR("Store Command"));
-#ifdef APPLE_STYLE_KEYS
-	store_command_checkbox->set_tooltip_text(TTR("Toggles between serializing 'command' and 'meta'. Used for compatibility with Windows/Linux style keyboard."));
-#else
-	store_command_checkbox->set_tooltip_text(TTR("Toggles between serializing 'command' and 'control'. Used for compatibility with Apple Style keyboards."));
-#endif
-	mod_container->add_child(store_command_checkbox);
+	autoremap_command_or_control_checkbox = memnew(CheckBox);
+	autoremap_command_or_control_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_autoremap_command_or_control_toggled));
+	autoremap_command_or_control_checkbox->set_pressed(false);
+	autoremap_command_or_control_checkbox->set_text(TTR("Command / Control (auto)"));
+	autoremap_command_or_control_checkbox->set_tooltip_text(TTR("Automatically remaps between 'Meta' ('Command') and 'Control' depending on current platform."));
+	mod_container->add_child(autoremap_command_or_control_checkbox);
 
 	mod_container->hide();
 	additional_options_container->add_child(mod_container);

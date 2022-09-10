@@ -349,7 +349,7 @@
 			The width all columns will be adjusted to.
 			A value of zero disables the adjustment, each item will have a width equal to the width of its content and the columns will have an uneven width.
 		</member>
-		<member name="fixed_icon_size" type="Vector2" setter="set_fixed_icon_size" getter="get_fixed_icon_size" default="Vector2(0, 0)">
+		<member name="fixed_icon_size" type="Vector2i" setter="set_fixed_icon_size" getter="get_fixed_icon_size" default="Vector2i(0, 0)">
 			The size all icons will be adjusted to.
 			If either X or Y component is not greater than zero, icon size won't be affected.
 		</member>

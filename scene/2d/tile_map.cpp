@@ -34,6 +34,10 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
+#ifdef DEBUG_ENABLED
+#include "servers/navigation_server_3d.h"
+#endif // DEBUG_ENABLED
+
 HashMap<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlapping_coords_and_peering_bits() const {
 	HashMap<Vector2i, TileSet::CellNeighbor> output;
 
@@ -1656,14 +1660,6 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	// Get colors for debug.
-	SceneTree *st = SceneTree::get_singleton();
-	Color debug_navigation_color;
-	bool debug_navigation = st && st->is_debugging_navigation_hint();
-	if (debug_navigation) {
-		debug_navigation_color = st->get_debug_navigation_color();
-	}
-
 	Transform2D tilemap_xform = get_global_transform();
 	SelfList<TileMapQuadrant> *q_list_element = r_dirty_quadrant_list.first();
 	while (q_list_element) {
@@ -1766,7 +1762,10 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 
 	RenderingServer *rs = RenderingServer::get_singleton();
 
-	Color color = get_tree()->get_debug_navigation_color();
+	Color color = Color(0.5, 1.0, 1.0, 1.0);
+#ifdef DEBUG_ENABLED
+	color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
+#endif // DEBUG_ENABLED
 	RandomPCG rand;
 
 	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));

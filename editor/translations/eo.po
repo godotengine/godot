@@ -19,7 +19,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-06-03 02:51+0000\n"
+"PO-Revision-Date: 2022-08-21 06:01+0000\n"
 "Last-Translator: Kedr <lava20121991@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
@@ -27,12 +27,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Tablet Driver"
-msgstr "Pelilo de tabulo"
+msgstr "Pelilo de e-tabulo"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -72,14 +71,12 @@ msgid "Keep Screen On"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Grando de konturo:"
+msgstr "Minimuma fenestra grando"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Grando de konturo:"
+msgstr "Maksimuma fenestra grando"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -138,9 +135,8 @@ msgstr "Pozicio de doko"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Grando: "
+msgstr "Grando"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
@@ -166,9 +162,8 @@ msgid "Target FPS"
 msgstr "Celo"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Skalo:"
+msgstr "Skalo de tempo"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -180,14 +175,12 @@ msgid "Error"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Eraro dum movado de:"
+msgstr "Literĉeno de eraro"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Eraro dum movado de:"
+msgstr "Lineo de eraroj"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -221,9 +214,8 @@ msgstr ""
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Funkcioj:"
+msgstr "Funkcio"
 
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
@@ -240,14 +232,12 @@ msgid "Network"
 msgstr "Reta Profililo"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Fora "
+msgstr "Fora DS"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Page Size"
-msgstr "Paĝo: "
+msgstr "Grando de paĝo"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -285,9 +275,8 @@ msgid "Network Peer"
 msgstr "Reta Profililo"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Krei radikan nodon:"
+msgstr "Radika nodo"
 
 #: core/io/networked_multiplayer_peer.cpp
 #, fuzzy
@@ -328,9 +317,8 @@ msgid "Blocking Handshake"
 msgstr ""
 
 #: core/io/udp_server.cpp
-#, fuzzy
 msgid "Max Pending Connections"
-msgstr "Redakti Konekton:"
+msgstr "Maksimuma kvanto de atendeblaj konektoj"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -475,9 +463,8 @@ msgid "Factor"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Indekso de musbutono:"
+msgstr "Indekso de butono"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
@@ -505,9 +492,8 @@ msgstr "Kapti relative"
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Skalo:"
+msgstr "Rapideco"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -520,9 +506,8 @@ msgid "Axis Value"
 msgstr "(valoro)"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Indekso:"
+msgstr "Indekso"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -550,9 +535,8 @@ msgid "Message"
 msgstr "Ŝanĝu"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pitch"
-msgstr "Skalo:"
+msgstr "Alteco"
 
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
@@ -565,9 +549,8 @@ msgid "Instrument"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Controller Number"
-msgstr "Lineo-Numeron:"
+msgstr "Numero de kontrolilo"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
@@ -586,9 +569,8 @@ msgid "Config"
 msgstr "Agordi kapton"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Projektaj agordoj..."
+msgstr "Redifino de projekta agordoj"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -683,9 +665,8 @@ msgid "Audio"
 msgstr "Aŭdio"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Default Bus Layout"
-msgstr "Ŝargi la defaŭlta busaranĝo."
+msgstr "Busaranĝo je defaŭlto"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -695,14 +676,12 @@ msgid "Editor"
 msgstr "Redaktilo"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Main Run Args"
-msgstr "Parametroj de ĉefa sceno:"
+msgstr "Bazaj parametroj de lanĉo"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Scene Naming"
-msgstr "Scena dosierindiko:"
+msgstr "Nomado de scenoj"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
@@ -733,9 +712,8 @@ msgid "UI Accept"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Elekti"
+msgstr "UI Elekti"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -772,9 +750,8 @@ msgid "UI Down"
 msgstr "Elŝuta"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Page Up"
-msgstr "Paĝo: "
+msgstr "UI paĝon supren"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
@@ -825,9 +802,8 @@ msgstr "Krei fratan triangulo-maŝan kolizifiguron"
 #: modules/lightmapper_cpu/register_types.cpp scene/main/scene_tree.cpp
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Rendering"
-msgstr "Bildigilo:"
+msgstr "Bildigo"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -842,9 +818,8 @@ msgstr ""
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "Filtriloj:"
+msgstr "Filtriloj"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
@@ -925,9 +900,8 @@ msgid "TCP"
 msgstr ""
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Connect Timeout Seconds"
-msgstr "Konektoj al metodo:"
+msgstr "Atendtempo de konekto en sekundoj"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -1099,9 +1073,8 @@ msgstr ""
 #: scene/animation/animation_blend_tree.cpp scene/gui/control.cpp
 #: scene/main/canvas_layer.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Skalo:"
+msgstr "Skalo"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Follow Surface"
@@ -1150,11 +1123,11 @@ msgstr "Enmetu ŝlosilon ĉi tien"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplikati Elektita(j)n Ŝlosilo(j)n"
+msgstr "Duplikati elektita(j)n ŝlosilo(j)n"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Forigi Elektita(j)n Ŝlosilo(j)n"
+msgstr "Forigi elektita(j)n ŝlosilo(j)n"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
@@ -1215,9 +1188,8 @@ msgstr "Lokaĵigado"
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Rotation"
-msgstr "Rotacia paŝo:"
+msgstr "Rotacio"
 
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
@@ -1259,14 +1231,12 @@ msgid "Stream"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Krada deŝovo:"
+msgstr "Komenca deŝovo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Krada deŝovo:"
+msgstr "Fina deŝovo"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1389,14 +1359,12 @@ msgid "Remove this track."
 msgstr "Forigi ĉi tiun trakon."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Fojo (s): "
+msgstr "Tempo (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Pozicio de doko"
+msgstr "Pozicio:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1418,9 +1386,8 @@ msgid "Type:"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "Nevalida kromprogramo."
+msgstr "(Nevalida, atendebla tipo: %s)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1442,9 +1409,8 @@ msgid "Stream:"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Komenci"
+msgstr "Komenco (s):"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1669,9 +1635,8 @@ msgid "Add Method Track Key"
 msgstr "Aldoni metodan trakan ŝlosilon"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Method not found in object:"
-msgstr "Metodon ne trovis en objekto: "
+msgstr "En objekto ne estas tia metodo:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -1746,11 +1711,11 @@ msgstr "Averto: Redaktanti importis animadon"
 
 #: editor/animation_track_editor.cpp
 msgid "Select an AnimationPlayer node to create and edit animations."
-msgstr "Elektu AnimationPlayer-a nodo por krei kaj redakti animadojn."
+msgstr "Elektu AnimationPlayer-nodon por krei kaj redakti animaciojn."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr "Nur vidigi trakojn el elektitajn nodojn en la arbo."
+msgstr "Vidigi trakojn nur el elektitajn nodojn en la arbo."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
@@ -1906,7 +1871,7 @@ msgstr "Kopii"
 
 #: editor/animation_track_editor.cpp
 msgid "Select All/None"
-msgstr "Elekti Ĉiuj/Neniuj"
+msgstr "Elekti Ĉiujn/Neniujn"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
@@ -2578,7 +2543,7 @@ msgstr "Solo"
 
 #: editor/editor_audio_buses.cpp
 msgid "Mute"
-msgstr "Mute"
+msgstr "Surdigi"
 
 #: editor/editor_audio_buses.cpp
 msgid "Bypass"
@@ -2642,9 +2607,8 @@ msgid "There is no '%s' file."
 msgstr "Estas neniu dosiero '%s'."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Aranĝo"
+msgstr "Aranĝo:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2818,7 +2782,7 @@ msgstr "[ne konservis]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first."
-msgstr "Bonvolu selekti bazan dosierujon unue."
+msgstr "Bonvolu elektu bazan dosierujon."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -2852,19 +2816,16 @@ msgid "Project export for platform:"
 msgstr ""
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Kopii elektaron"
+msgstr "Finite kun eraroj."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Pakaĵo instalis sukcese!"
+msgstr "Finite sen eraroj."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "Eraris:"
+msgstr "Malsukcesis."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2889,14 +2850,12 @@ msgid "Cannot create file \"%s\"."
 msgstr "Ne povis krei dosierujon."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Ne eble komencas subprocezon!"
+msgstr "Malsukcesis eksporti dosierojn de projekto."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Ne malfermeblas dosieron por skribi:"
+msgstr "Ne malfermeblas dosieron por legado el vojo \"%s\"."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3024,9 +2983,8 @@ msgid "Custom release template not found."
 msgstr "Propra eldona ŝablono ne trovitis."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Ŝablono:"
+msgstr "Pretigi ŝablonon"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -3034,9 +2992,8 @@ msgid "The given export path doesn't exist."
 msgstr "La provizinta dosierindiko ne ekzistas."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Ŝablonan dosieron ne trovis:"
+msgstr "Ŝablona dosiero ne troviĝas: \"%s\"."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -3107,8 +3064,7 @@ msgid ""
 "Allows to work with signals and groups of the node selected in the Scene "
 "dock."
 msgstr ""
-"Permesas labori la signalojn kaj la grupojn de la nodo elektitas en la Sceno-"
-"doko."
+"Permesas labori kun signaloj kaj grupoj de la elektita nodo en sceno-panelo."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to browse the local file system via a dedicated dock."
@@ -3132,7 +3088,7 @@ msgstr "(nenio)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr "Forigi aktuale elektitan profilon '%s'? Ne malfareblas."
+msgstr "Forigi kurantan elektitan profilon '%s'? Ne malfareblas."
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -3266,7 +3222,7 @@ msgstr "Profilo de funkciaro de Godot"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
-msgstr "Elekti aktualan dosierujon"
+msgstr "Elekti kurantan dosierujon"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File exists, overwrite?"
@@ -3334,14 +3290,12 @@ msgid "Save a File"
 msgstr "Konservi dosieron"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Access"
-msgstr "Sukceso!"
+msgstr "Atingo"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Display Mode"
-msgstr "Reĝimo de ludado:"
+msgstr "Reĝimo de montro"
 
 #: editor/editor_file_dialog.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -3359,19 +3313,16 @@ msgid "Mode"
 msgstr "Panoramada reĝimo"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current Dir"
-msgstr "Aktuala profilo:"
+msgstr "Kuranta dosierujo"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current File"
-msgstr "Aktuala profilo:"
+msgstr "Kuranta dosiero"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Current Path"
-msgstr "Aktuala profilo:"
+msgstr "Kuranta vojo"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #: scene/gui/file_dialog.cpp
@@ -4475,9 +4426,8 @@ msgid "Inspector"
 msgstr "Inspektoro"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Default Property Name Style"
-msgstr "Projekta vojo:"
+msgstr "Defaŭlta stilo de eca nomo"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
@@ -4623,6 +4573,7 @@ msgstr "Diversa projekto aŭ tut-scenaj iloj."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Projekto"
 
@@ -4889,9 +4840,8 @@ msgid "Play Custom Scene"
 msgstr "Ludi laŭmendan scenon"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Changing the video driver requires restarting the editor."
-msgstr "Ŝanĝanto de la videa pelilo postulas rekomenci la redaktilon."
+msgstr "Por ŝanĝo de videopelilo, necesas restarto de redaktilo."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -4941,7 +4891,7 @@ msgstr "Instali el dosiero"
 
 #: editor/editor_node.cpp
 msgid "Select android sources file"
-msgstr ""
+msgstr "Elekti Android dosieron de risurcoj"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -5021,9 +4971,8 @@ msgid "Select"
 msgstr "Elekti"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Select Current"
-msgstr "Elekti aktualan dosierujon"
+msgstr "Elekti kurantan"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
@@ -5091,9 +5040,8 @@ msgstr "Ĝisdatigi"
 #: editor/editor_plugin_settings.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Version"
-msgstr "Versio:"
+msgstr "Versio"
 
 #: editor/editor_plugin_settings.cpp
 #, fuzzy
@@ -5230,14 +5178,12 @@ msgstr "Elektinta nodo ne estas Viewport!"
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Size:"
-msgstr "Grando: "
+msgstr "Grando"
 
 #: editor/editor_properties_array_dict.cpp
-#, fuzzy
 msgid "Page:"
-msgstr "Paĝo: "
+msgstr "Paĝo"
 
 #: editor/editor_properties_array_dict.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -5324,9 +5270,8 @@ msgid "Extend Script"
 msgstr "Etendi skripton"
 
 #: editor/editor_resource_picker.cpp
-#, fuzzy
 msgid "Script Owner"
-msgstr "Nomo de skripto:"
+msgstr "Posedanto de scenaro"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5502,14 +5447,12 @@ msgid "Directories"
 msgstr "Direktoj"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Autoscan Project Path"
-msgstr "Projekta vojo:"
+msgstr "Vojo de projektaj aŭtoskano"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Default Project Path"
-msgstr "Projekta vojo:"
+msgstr "Projekta vojo defaŭlte"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5530,9 +5473,8 @@ msgid "File Dialog"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Thumbnail Size"
-msgstr "Bildeto..."
+msgstr "Grando de miniaturoj"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
@@ -5666,14 +5608,12 @@ msgid "Appearance"
 msgstr ""
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
-#, fuzzy
 msgid "Show Line Numbers"
-msgstr "Lineo-Numeron:"
+msgstr "Aperigi numeroj de literĉenoj"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Line Numbers Zero Padded"
-msgstr "Lineo-Numeron:"
+msgstr "Numeroj de literĉenoj kun nulaj plenigiloj"
 
 #: editor/editor_settings.cpp
 msgid "Show Bookmark Gutter"
@@ -5842,9 +5782,8 @@ msgid "Pick Distance"
 msgstr "Elektu ĉefan scenon"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Size"
-msgstr "Antaŭrigardo:"
+msgstr "Grando de antaŭrigardo"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"
@@ -5891,14 +5830,12 @@ msgid "Shape"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Primary Grid Steps"
-msgstr "Krada paŝo:"
+msgstr "Bazaj paŝoj de krado"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Grid Size"
-msgstr "Krada paŝo:"
+msgstr "Grando de krado"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Max"
@@ -6073,9 +6010,8 @@ msgid "Bone Color 2"
 msgstr "Renomi nodon"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Selected Color"
-msgstr "Agordi elektitan profilon:"
+msgstr "Koloro de elektita osto"
 
 #: editor/editor_settings.cpp
 msgid "Bone IK Color"
@@ -6086,9 +6022,8 @@ msgid "Bone Outline Color"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Bone Outline Size"
-msgstr "Grando de konturo:"
+msgstr "Grando de osta konturo"
 
 #: editor/editor_settings.cpp
 msgid "Viewport Border Color"
@@ -6181,9 +6116,8 @@ msgid "Auto Save"
 msgstr "Ne konservi"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Save Before Running"
-msgstr "Konservu scenon antaŭ ruloto..."
+msgstr "Konservi antaŭ lanĉo"
 
 #: editor/editor_settings.cpp
 msgid "Font Size"
@@ -6191,9 +6125,8 @@ msgstr ""
 
 #: editor/editor_settings.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
-#, fuzzy
 msgid "Remote Host"
-msgstr "Fora "
+msgstr "Fora retnodo"
 
 #: editor/editor_settings.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
@@ -6226,9 +6159,8 @@ msgstr "Mastrumilo de Projektoj"
 
 #. TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Sorting Order"
-msgstr "Renomas dosierujon:"
+msgstr "Ordo de disspecigo"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
@@ -6260,9 +6192,8 @@ msgid "Comment Color"
 msgstr ""
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "String Color"
-msgstr "Memoras dosieron:"
+msgstr "Koloro de literĉeno"
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
@@ -6298,14 +6229,12 @@ msgid "Text Color"
 msgstr "Elekti koloron"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Line Number Color"
-msgstr "Lineo-Numeron:"
+msgstr "Koloro de lineaj numeroj"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Safe Line Number Color"
-msgstr "Lineo-Numeron:"
+msgstr "Koloro de senriskaj lineaj je numeroj"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
@@ -6348,9 +6277,8 @@ msgid "Number Color"
 msgstr ""
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Function Color"
-msgstr "Funkcioj:"
+msgstr "Koloro de funkcio"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -6408,9 +6336,8 @@ msgid "Hide Slider"
 msgstr "Videblaj koliziaj formoj"
 
 #: editor/editor_sub_scene.cpp
-#, fuzzy
 msgid "Select Node(s) to Import"
-msgstr "Selektu nodo(j)n por enporti"
+msgstr "Elektu nodo(j)n por importado"
 
 #: editor/editor_sub_scene.cpp editor/project_manager.cpp
 msgid "Browse"
@@ -7556,7 +7483,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15556,18 +15484,18 @@ msgstr ""
 msgid "Make Local"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Nomo de nodo:"
+
+#: editor/scene_tree_dock.cpp
+msgid "Unique names already used by another node in the scene:"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Nomo de nodo:"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Nomo de nodo:"
 
 #: editor/scene_tree_dock.cpp
@@ -15765,6 +15693,11 @@ msgid "Button Group"
 msgstr "Grupo de butono"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nomo de nodo:"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Konektas el)"
 
@@ -15838,6 +15771,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Malvalida nomo de nodo, la jenaj signoj ne permesas:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17745,6 +17682,21 @@ msgstr ""
 msgid "Auto Update Project"
 msgstr "Sennoma projekto"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Vidigi tutan"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Elekti dosierujon"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Elekti dosierujon"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
@@ -19572,6 +19524,11 @@ msgstr "Eltondi nodo(j)n"
 msgid "Custom BG Color"
 msgstr "Eltondi nodo(j)n"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Etendi tuton"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20416,6 +20373,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

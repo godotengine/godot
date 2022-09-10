@@ -31,7 +31,6 @@
 package org.godotengine.godot;
 import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.gl.GodotRenderer;
-import org.godotengine.godot.input.GodotGestureHandler;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.utils.GLUtils;
 import org.godotengine.godot.xr.XRMode;
@@ -46,7 +45,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Build;
-import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
@@ -75,7 +73,6 @@ import androidx.annotation.Keep;
 public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final Godot godot;
 	private final GodotInputHandler inputHandler;
-	private final GestureDetector detector;
 	private final GodotRenderer godotRenderer;
 	private PointerIcon pointerIcon;
 
@@ -85,7 +82,6 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 
 		this.godot = godot;
 		this.inputHandler = new GodotInputHandler(this);
-		this.detector = new GestureDetector(context, new GodotGestureHandler(this));
 		this.godotRenderer = new GodotRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			pointerIcon = PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT);
@@ -132,7 +128,6 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
-		this.detector.onTouchEvent(event);
 		return inputHandler.onTouchEvent(event);
 	}
 
@@ -154,6 +149,24 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	@Override
 	public boolean onCapturedPointerEvent(MotionEvent event) {
 		return inputHandler.onGenericMotionEvent(event);
+	}
+
+	@Override
+	public void onPointerCaptureChange(boolean hasCapture) {
+		super.onPointerCaptureChange(hasCapture);
+		inputHandler.onPointerCaptureChange(hasCapture);
+	}
+
+	@Override
+	public void requestPointerCapture() {
+		super.requestPointerCapture();
+		inputHandler.onPointerCaptureChange(true);
+	}
+
+	@Override
+	public void releasePointerCapture() {
+		super.releasePointerCapture();
+		inputHandler.onPointerCaptureChange(false);
 	}
 
 	/**

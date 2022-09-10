@@ -269,7 +269,7 @@ AtlasMergingDialog::AtlasMergingDialog() {
 
 	// Atlas sources item list.
 	atlas_merging_atlases_list = memnew(ItemList);
-	atlas_merging_atlases_list->set_fixed_icon_size(Size2i(60, 60) * EDSCALE);
+	atlas_merging_atlases_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	atlas_merging_atlases_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	atlas_merging_atlases_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	atlas_merging_atlases_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);

@@ -161,7 +161,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 	return true;
 }
 
-Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
+Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
 	ERR_FAIL_COND_V(_connection.is_valid(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
 
@@ -196,7 +196,7 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 		return err;
 	}
 	_connection = _tcp;
-	_use_ssl = p_ssl;
+	_use_tls = p_tls;
 	_host = p_host;
 	_port = p_port;
 	// Strip edges from protocols.
@@ -209,7 +209,7 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	_key = WSLPeer::generate_key();
 	String request = "GET " + p_path + " HTTP/1.1\r\n";
 	String port = "";
-	if ((p_port != 80 && !p_ssl) || (p_port != 443 && p_ssl)) {
+	if ((p_port != 80 && !p_tls) || (p_port != 443 && p_tls)) {
 		port = ":" + itos(p_port);
 	}
 	request += "Host: " + p_host + port + "\r\n";
@@ -288,27 +288,27 @@ void WSLClient::poll() {
 			break;
 		case StreamPeerTCP::STATUS_CONNECTED: {
 			_ip_candidates.clear();
-			Ref<StreamPeerTLS> ssl;
-			if (_use_ssl) {
+			Ref<StreamPeerTLS> tls;
+			if (_use_tls) {
 				if (_connection == _tcp) {
 					// Start SSL handshake
-					ssl = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-					ERR_FAIL_COND_MSG(ssl.is_null(), "SSL is not available in this build.");
-					ssl->set_blocking_handshake_enabled(false);
-					if (ssl->connect_to_stream(_tcp, verify_ssl, _host, ssl_cert) != OK) {
+					tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
+					ERR_FAIL_COND_MSG(tls.is_null(), "SSL is not available in this build.");
+					tls->set_blocking_handshake_enabled(false);
+					if (tls->connect_to_stream(_tcp, verify_tls, _host, tls_cert) != OK) {
 						disconnect_from_host();
 						_on_error();
 						return;
 					}
-					_connection = ssl;
+					_connection = tls;
 				} else {
-					ssl = static_cast<Ref<StreamPeerTLS>>(_connection);
-					ERR_FAIL_COND(ssl.is_null()); // Bug?
-					ssl->poll();
+					tls = static_cast<Ref<StreamPeerTLS>>(_connection);
+					ERR_FAIL_COND(tls.is_null()); // Bug?
+					tls->poll();
 				}
-				if (ssl->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
+				if (tls->get_status() == StreamPeerTLS::STATUS_HANDSHAKING) {
 					return; // Need more polling.
-				} else if (ssl->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
+				} else if (tls->get_status() != StreamPeerTLS::STATUS_CONNECTED) {
 					disconnect_from_host();
 					_on_error();
 					return; // Error.
@@ -356,7 +356,7 @@ void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 	_key = "";
 	_host = "";
 	_protocols.clear();
-	_use_ssl = false;
+	_use_tls = false;
 
 	_request = "";
 	_requested = 0;

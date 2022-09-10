@@ -76,7 +76,7 @@ private:
 	Vector<String> check_for_files();
 
 	Vector<String> parse_arguments(const String &line);
-	int get_end_parenthess(const String &line) const;
+	int get_end_parenthesis(const String &line) const;
 	String connect_arguments(const Vector<String> &line, int from, int to = -1) const;
 	String get_starting_space(const String &line) const;
 	String get_object_of_execution(const String &line) const;

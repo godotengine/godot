@@ -514,7 +514,7 @@
 			<param index="0" name="child_node" type="Node" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
+				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful. If [param to_position] is negative, the index will be counted from the end.
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
@@ -575,18 +575,6 @@
 			<return type="void" />
 			<description>
 				Queues a node for deletion at the end of the current frame. When deleted, all of its child nodes will be deleted as well. This method ensures it's safe to delete the node, contrary to [method Object.free]. Use [method Object.is_queued_for_deletion] to check whether a node will be deleted at the end of the frame.
-			</description>
-		</method>
-		<method name="raise">
-			<return type="void" />
-			<description>
-				Moves this node to the bottom of parent node's children hierarchy. This is often useful in GUIs ([Control] nodes), because their order of drawing depends on their order in the tree. The top Node is drawn first, then any siblings below the top Node in the hierarchy are successively drawn on top of it. After using [code]raise[/code], a Control will be drawn on top of its siblings.
-			</description>
-		</method>
-		<method name="remove_and_skip">
-			<return type="void" />
-			<description>
-				Removes a node and sets all its children as children of the parent node (if it exists). All event subscriptions that pass by the removed node will be unsubscribed.
 			</description>
 		</method>
 		<method name="remove_child">

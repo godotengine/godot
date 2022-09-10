@@ -65,7 +65,7 @@ private:
 	uint16_t _port = 0;
 	Array _ip_candidates;
 	Vector<String> _protocols;
-	bool _use_ssl = false;
+	bool _use_tls = false;
 	IP::ResolverID _resolver_id = IP::RESOLVER_INVALID_ID;
 
 	void _do_handshake();
@@ -73,7 +73,7 @@ private:
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
+	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
 	int get_max_packet_size() const override;
 	Ref<WebSocketPeer> get_peer(int p_peer_id) const override;
 	void disconnect_from_host(int p_code = 1000, String p_reason = "") override;

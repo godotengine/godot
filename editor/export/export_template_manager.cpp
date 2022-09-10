@@ -172,7 +172,7 @@ void ExportTemplateManager::_download_template_completed(int p_status, int p_cod
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
 		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
+		case HTTPRequest::RESULT_TLS_HANDSHAKE_ERROR:
 		case HTTPRequest::RESULT_CANT_CONNECT: {
 			_set_current_progress_status(TTR("Can't connect to the mirror."), true);
 		} break;
@@ -345,8 +345,8 @@ bool ExportTemplateManager::_humanize_http_status(HTTPRequest *p_request, String
 			*r_status = TTR("Connection Error");
 			success = false;
 			break;
-		case HTTPClient::STATUS_SSL_HANDSHAKE_ERROR:
-			*r_status = TTR("SSL Handshake Error");
+		case HTTPClient::STATUS_TLS_HANDSHAKE_ERROR:
+			*r_status = TTR("TLS Handshake Error");
 			success = false;
 			break;
 	}

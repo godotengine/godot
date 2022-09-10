@@ -48,7 +48,7 @@ public:
 		RESULT_CANT_CONNECT,
 		RESULT_CANT_RESOLVE,
 		RESULT_CONNECTION_ERROR,
-		RESULT_SSL_HANDSHAKE_ERROR,
+		RESULT_TLS_HANDSHAKE_ERROR,
 		RESULT_NO_RESPONSE,
 		RESULT_BODY_SIZE_LIMIT_EXCEEDED,
 		RESULT_BODY_DECOMPRESS_FAILED,
@@ -67,8 +67,8 @@ private:
 	String url;
 	int port = 80;
 	Vector<String> headers;
-	bool validate_ssl = false;
-	bool use_ssl = false;
+	bool validate_tls = false;
+	bool use_tls = false;
 	HTTPClient::Method method;
 	Vector<uint8_t> request_data;
 
@@ -121,8 +121,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
-	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
+	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_tls_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
+	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_tls_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 

@@ -1443,385 +1443,385 @@
 		<constant name="KEY_NONE" value="0" enum="Key">
 			Enum value which doesn't correspond to any key. This is used to initialize [enum Key] properties with a generic state.
 		</constant>
-		<constant name="KEY_SPECIAL" value="16777216" enum="Key">
+		<constant name="KEY_SPECIAL" value="4194304" enum="Key">
 			Keycodes with this bit applied are non-printable.
 		</constant>
-		<constant name="KEY_ESCAPE" value="16777217" enum="Key">
+		<constant name="KEY_ESCAPE" value="4194305" enum="Key">
 			Escape key.
 		</constant>
-		<constant name="KEY_TAB" value="16777218" enum="Key">
+		<constant name="KEY_TAB" value="4194306" enum="Key">
 			Tab key.
 		</constant>
-		<constant name="KEY_BACKTAB" value="16777219" enum="Key">
+		<constant name="KEY_BACKTAB" value="4194307" enum="Key">
 			Shift + Tab key.
 		</constant>
-		<constant name="KEY_BACKSPACE" value="16777220" enum="Key">
+		<constant name="KEY_BACKSPACE" value="4194308" enum="Key">
 			Backspace key.
 		</constant>
-		<constant name="KEY_ENTER" value="16777221" enum="Key">
+		<constant name="KEY_ENTER" value="4194309" enum="Key">
 			Return key (on the main keyboard).
 		</constant>
-		<constant name="KEY_KP_ENTER" value="16777222" enum="Key">
+		<constant name="KEY_KP_ENTER" value="4194310" enum="Key">
 			Enter key on the numeric keypad.
 		</constant>
-		<constant name="KEY_INSERT" value="16777223" enum="Key">
+		<constant name="KEY_INSERT" value="4194311" enum="Key">
 			Insert key.
 		</constant>
-		<constant name="KEY_DELETE" value="16777224" enum="Key">
+		<constant name="KEY_DELETE" value="4194312" enum="Key">
 			Delete key.
 		</constant>
-		<constant name="KEY_PAUSE" value="16777225" enum="Key">
+		<constant name="KEY_PAUSE" value="4194313" enum="Key">
 			Pause key.
 		</constant>
-		<constant name="KEY_PRINT" value="16777226" enum="Key">
+		<constant name="KEY_PRINT" value="4194314" enum="Key">
 			Print Screen key.
 		</constant>
-		<constant name="KEY_SYSREQ" value="16777227" enum="Key">
+		<constant name="KEY_SYSREQ" value="4194315" enum="Key">
 			System Request key.
 		</constant>
-		<constant name="KEY_CLEAR" value="16777228" enum="Key">
+		<constant name="KEY_CLEAR" value="4194316" enum="Key">
 			Clear key.
 		</constant>
-		<constant name="KEY_HOME" value="16777229" enum="Key">
+		<constant name="KEY_HOME" value="4194317" enum="Key">
 			Home key.
 		</constant>
-		<constant name="KEY_END" value="16777230" enum="Key">
+		<constant name="KEY_END" value="4194318" enum="Key">
 			End key.
 		</constant>
-		<constant name="KEY_LEFT" value="16777231" enum="Key">
+		<constant name="KEY_LEFT" value="4194319" enum="Key">
 			Left arrow key.
 		</constant>
-		<constant name="KEY_UP" value="16777232" enum="Key">
+		<constant name="KEY_UP" value="4194320" enum="Key">
 			Up arrow key.
 		</constant>
-		<constant name="KEY_RIGHT" value="16777233" enum="Key">
+		<constant name="KEY_RIGHT" value="4194321" enum="Key">
 			Right arrow key.
 		</constant>
-		<constant name="KEY_DOWN" value="16777234" enum="Key">
+		<constant name="KEY_DOWN" value="4194322" enum="Key">
 			Down arrow key.
 		</constant>
-		<constant name="KEY_PAGEUP" value="16777235" enum="Key">
+		<constant name="KEY_PAGEUP" value="4194323" enum="Key">
 			Page Up key.
 		</constant>
-		<constant name="KEY_PAGEDOWN" value="16777236" enum="Key">
+		<constant name="KEY_PAGEDOWN" value="4194324" enum="Key">
 			Page Down key.
 		</constant>
-		<constant name="KEY_SHIFT" value="16777237" enum="Key">
+		<constant name="KEY_SHIFT" value="4194325" enum="Key">
 			Shift key.
 		</constant>
-		<constant name="KEY_CTRL" value="16777238" enum="Key">
+		<constant name="KEY_CTRL" value="4194326" enum="Key">
 			Control key.
 		</constant>
-		<constant name="KEY_META" value="16777239" enum="Key">
+		<constant name="KEY_META" value="4194327" enum="Key">
 			Meta key.
 		</constant>
-		<constant name="KEY_ALT" value="16777240" enum="Key">
+		<constant name="KEY_ALT" value="4194328" enum="Key">
 			Alt key.
 		</constant>
-		<constant name="KEY_CAPSLOCK" value="16777241" enum="Key">
+		<constant name="KEY_CAPSLOCK" value="4194329" enum="Key">
 			Caps Lock key.
 		</constant>
-		<constant name="KEY_NUMLOCK" value="16777242" enum="Key">
+		<constant name="KEY_NUMLOCK" value="4194330" enum="Key">
 			Num Lock key.
 		</constant>
-		<constant name="KEY_SCROLLLOCK" value="16777243" enum="Key">
+		<constant name="KEY_SCROLLLOCK" value="4194331" enum="Key">
 			Scroll Lock key.
 		</constant>
-		<constant name="KEY_F1" value="16777244" enum="Key">
+		<constant name="KEY_F1" value="4194332" enum="Key">
 			F1 key.
 		</constant>
-		<constant name="KEY_F2" value="16777245" enum="Key">
+		<constant name="KEY_F2" value="4194333" enum="Key">
 			F2 key.
 		</constant>
-		<constant name="KEY_F3" value="16777246" enum="Key">
+		<constant name="KEY_F3" value="4194334" enum="Key">
 			F3 key.
 		</constant>
-		<constant name="KEY_F4" value="16777247" enum="Key">
+		<constant name="KEY_F4" value="4194335" enum="Key">
 			F4 key.
 		</constant>
-		<constant name="KEY_F5" value="16777248" enum="Key">
+		<constant name="KEY_F5" value="4194336" enum="Key">
 			F5 key.
 		</constant>
-		<constant name="KEY_F6" value="16777249" enum="Key">
+		<constant name="KEY_F6" value="4194337" enum="Key">
 			F6 key.
 		</constant>
-		<constant name="KEY_F7" value="16777250" enum="Key">
+		<constant name="KEY_F7" value="4194338" enum="Key">
 			F7 key.
 		</constant>
-		<constant name="KEY_F8" value="16777251" enum="Key">
+		<constant name="KEY_F8" value="4194339" enum="Key">
 			F8 key.
 		</constant>
-		<constant name="KEY_F9" value="16777252" enum="Key">
+		<constant name="KEY_F9" value="4194340" enum="Key">
 			F9 key.
 		</constant>
-		<constant name="KEY_F10" value="16777253" enum="Key">
+		<constant name="KEY_F10" value="4194341" enum="Key">
 			F10 key.
 		</constant>
-		<constant name="KEY_F11" value="16777254" enum="Key">
+		<constant name="KEY_F11" value="4194342" enum="Key">
 			F11 key.
 		</constant>
-		<constant name="KEY_F12" value="16777255" enum="Key">
+		<constant name="KEY_F12" value="4194343" enum="Key">
 			F12 key.
 		</constant>
-		<constant name="KEY_F13" value="16777256" enum="Key">
+		<constant name="KEY_F13" value="4194344" enum="Key">
 			F13 key.
 		</constant>
-		<constant name="KEY_F14" value="16777257" enum="Key">
+		<constant name="KEY_F14" value="4194345" enum="Key">
 			F14 key.
 		</constant>
-		<constant name="KEY_F15" value="16777258" enum="Key">
+		<constant name="KEY_F15" value="4194346" enum="Key">
 			F15 key.
 		</constant>
-		<constant name="KEY_F16" value="16777259" enum="Key">
+		<constant name="KEY_F16" value="4194347" enum="Key">
 			F16 key.
 		</constant>
-		<constant name="KEY_F17" value="16777260" enum="Key">
+		<constant name="KEY_F17" value="4194348" enum="Key">
 			F17 key.
 		</constant>
-		<constant name="KEY_F18" value="16777261" enum="Key">
+		<constant name="KEY_F18" value="4194349" enum="Key">
 			F18 key.
 		</constant>
-		<constant name="KEY_F19" value="16777262" enum="Key">
+		<constant name="KEY_F19" value="4194350" enum="Key">
 			F19 key.
 		</constant>
-		<constant name="KEY_F20" value="16777263" enum="Key">
+		<constant name="KEY_F20" value="4194351" enum="Key">
 			F20 key.
 		</constant>
-		<constant name="KEY_F21" value="16777264" enum="Key">
+		<constant name="KEY_F21" value="4194352" enum="Key">
 			F21 key.
 		</constant>
-		<constant name="KEY_F22" value="16777265" enum="Key">
+		<constant name="KEY_F22" value="4194353" enum="Key">
 			F22 key.
 		</constant>
-		<constant name="KEY_F23" value="16777266" enum="Key">
+		<constant name="KEY_F23" value="4194354" enum="Key">
 			F23 key.
 		</constant>
-		<constant name="KEY_F24" value="16777267" enum="Key">
+		<constant name="KEY_F24" value="4194355" enum="Key">
 			F24 key.
 		</constant>
-		<constant name="KEY_F25" value="16777268" enum="Key">
+		<constant name="KEY_F25" value="4194356" enum="Key">
 			F25 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F26" value="16777269" enum="Key">
+		<constant name="KEY_F26" value="4194357" enum="Key">
 			F26 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F27" value="16777270" enum="Key">
+		<constant name="KEY_F27" value="4194358" enum="Key">
 			F27 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F28" value="16777271" enum="Key">
+		<constant name="KEY_F28" value="4194359" enum="Key">
 			F28 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F29" value="16777272" enum="Key">
+		<constant name="KEY_F29" value="4194360" enum="Key">
 			F29 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F30" value="16777273" enum="Key">
+		<constant name="KEY_F30" value="4194361" enum="Key">
 			F30 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F31" value="16777274" enum="Key">
+		<constant name="KEY_F31" value="4194362" enum="Key">
 			F31 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F32" value="16777275" enum="Key">
+		<constant name="KEY_F32" value="4194363" enum="Key">
 			F32 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F33" value="16777276" enum="Key">
+		<constant name="KEY_F33" value="4194364" enum="Key">
 			F33 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F34" value="16777277" enum="Key">
+		<constant name="KEY_F34" value="4194365" enum="Key">
 			F34 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_F35" value="16777278" enum="Key">
+		<constant name="KEY_F35" value="4194366" enum="Key">
 			F35 key. Only supported on macOS and Linux due to a Windows limitation.
 		</constant>
-		<constant name="KEY_KP_MULTIPLY" value="16777345" enum="Key">
+		<constant name="KEY_KP_MULTIPLY" value="4194433" enum="Key">
 			Multiply (*) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_DIVIDE" value="16777346" enum="Key">
+		<constant name="KEY_KP_DIVIDE" value="4194434" enum="Key">
 			Divide (/) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_SUBTRACT" value="16777347" enum="Key">
+		<constant name="KEY_KP_SUBTRACT" value="4194435" enum="Key">
 			Subtract (-) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_PERIOD" value="16777348" enum="Key">
+		<constant name="KEY_KP_PERIOD" value="4194436" enum="Key">
 			Period (.) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_ADD" value="16777349" enum="Key">
+		<constant name="KEY_KP_ADD" value="4194437" enum="Key">
 			Add (+) key on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_0" value="16777350" enum="Key">
+		<constant name="KEY_KP_0" value="4194438" enum="Key">
 			Number 0 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_1" value="16777351" enum="Key">
+		<constant name="KEY_KP_1" value="4194439" enum="Key">
 			Number 1 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_2" value="16777352" enum="Key">
+		<constant name="KEY_KP_2" value="4194440" enum="Key">
 			Number 2 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_3" value="16777353" enum="Key">
+		<constant name="KEY_KP_3" value="4194441" enum="Key">
 			Number 3 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_4" value="16777354" enum="Key">
+		<constant name="KEY_KP_4" value="4194442" enum="Key">
 			Number 4 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_5" value="16777355" enum="Key">
+		<constant name="KEY_KP_5" value="4194443" enum="Key">
 			Number 5 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_6" value="16777356" enum="Key">
+		<constant name="KEY_KP_6" value="4194444" enum="Key">
 			Number 6 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_7" value="16777357" enum="Key">
+		<constant name="KEY_KP_7" value="4194445" enum="Key">
 			Number 7 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_8" value="16777358" enum="Key">
+		<constant name="KEY_KP_8" value="4194446" enum="Key">
 			Number 8 on the numeric keypad.
 		</constant>
-		<constant name="KEY_KP_9" value="16777359" enum="Key">
+		<constant name="KEY_KP_9" value="4194447" enum="Key">
 			Number 9 on the numeric keypad.
 		</constant>
-		<constant name="KEY_SUPER_L" value="16777280" enum="Key">
+		<constant name="KEY_SUPER_L" value="4194368" enum="Key">
 			Left Super key (Windows key).
 		</constant>
-		<constant name="KEY_SUPER_R" value="16777281" enum="Key">
+		<constant name="KEY_SUPER_R" value="4194369" enum="Key">
 			Right Super key (Windows key).
 		</constant>
-		<constant name="KEY_MENU" value="16777282" enum="Key">
+		<constant name="KEY_MENU" value="4194370" enum="Key">
 			Context menu key.
 		</constant>
-		<constant name="KEY_HYPER_L" value="16777283" enum="Key">
+		<constant name="KEY_HYPER_L" value="4194371" enum="Key">
 			Left Hyper key.
 		</constant>
-		<constant name="KEY_HYPER_R" value="16777284" enum="Key">
+		<constant name="KEY_HYPER_R" value="4194372" enum="Key">
 			Right Hyper key.
 		</constant>
-		<constant name="KEY_HELP" value="16777285" enum="Key">
+		<constant name="KEY_HELP" value="4194373" enum="Key">
 			Help key.
 		</constant>
-		<constant name="KEY_DIRECTION_L" value="16777286" enum="Key">
+		<constant name="KEY_DIRECTION_L" value="4194374" enum="Key">
 			Left Direction key.
 		</constant>
-		<constant name="KEY_DIRECTION_R" value="16777287" enum="Key">
+		<constant name="KEY_DIRECTION_R" value="4194375" enum="Key">
 			Right Direction key.
 		</constant>
-		<constant name="KEY_BACK" value="16777288" enum="Key">
+		<constant name="KEY_BACK" value="4194376" enum="Key">
 			Media back key. Not to be confused with the Back button on an Android device.
 		</constant>
-		<constant name="KEY_FORWARD" value="16777289" enum="Key">
+		<constant name="KEY_FORWARD" value="4194377" enum="Key">
 			Media forward key.
 		</constant>
-		<constant name="KEY_STOP" value="16777290" enum="Key">
+		<constant name="KEY_STOP" value="4194378" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_REFRESH" value="16777291" enum="Key">
+		<constant name="KEY_REFRESH" value="4194379" enum="Key">
 			Media refresh key.
 		</constant>
-		<constant name="KEY_VOLUMEDOWN" value="16777292" enum="Key">
+		<constant name="KEY_VOLUMEDOWN" value="4194380" enum="Key">
 			Volume down key.
 		</constant>
-		<constant name="KEY_VOLUMEMUTE" value="16777293" enum="Key">
+		<constant name="KEY_VOLUMEMUTE" value="4194381" enum="Key">
 			Mute volume key.
 		</constant>
-		<constant name="KEY_VOLUMEUP" value="16777294" enum="Key">
+		<constant name="KEY_VOLUMEUP" value="4194382" enum="Key">
 			Volume up key.
 		</constant>
-		<constant name="KEY_BASSBOOST" value="16777295" enum="Key">
+		<constant name="KEY_BASSBOOST" value="4194383" enum="Key">
 			Bass Boost key.
 		</constant>
-		<constant name="KEY_BASSUP" value="16777296" enum="Key">
+		<constant name="KEY_BASSUP" value="4194384" enum="Key">
 			Bass up key.
 		</constant>
-		<constant name="KEY_BASSDOWN" value="16777297" enum="Key">
+		<constant name="KEY_BASSDOWN" value="4194385" enum="Key">
 			Bass down key.
 		</constant>
-		<constant name="KEY_TREBLEUP" value="16777298" enum="Key">
+		<constant name="KEY_TREBLEUP" value="4194386" enum="Key">
 			Treble up key.
 		</constant>
-		<constant name="KEY_TREBLEDOWN" value="16777299" enum="Key">
+		<constant name="KEY_TREBLEDOWN" value="4194387" enum="Key">
 			Treble down key.
 		</constant>
-		<constant name="KEY_MEDIAPLAY" value="16777300" enum="Key">
+		<constant name="KEY_MEDIAPLAY" value="4194388" enum="Key">
 			Media play key.
 		</constant>
-		<constant name="KEY_MEDIASTOP" value="16777301" enum="Key">
+		<constant name="KEY_MEDIASTOP" value="4194389" enum="Key">
 			Media stop key.
 		</constant>
-		<constant name="KEY_MEDIAPREVIOUS" value="16777302" enum="Key">
+		<constant name="KEY_MEDIAPREVIOUS" value="4194390" enum="Key">
 			Previous song key.
 		</constant>
-		<constant name="KEY_MEDIANEXT" value="16777303" enum="Key">
+		<constant name="KEY_MEDIANEXT" value="4194391" enum="Key">
 			Next song key.
 		</constant>
-		<constant name="KEY_MEDIARECORD" value="16777304" enum="Key">
+		<constant name="KEY_MEDIARECORD" value="4194392" enum="Key">
 			Media record key.
 		</constant>
-		<constant name="KEY_HOMEPAGE" value="16777305" enum="Key">
+		<constant name="KEY_HOMEPAGE" value="4194393" enum="Key">
 			Home page key.
 		</constant>
-		<constant name="KEY_FAVORITES" value="16777306" enum="Key">
+		<constant name="KEY_FAVORITES" value="4194394" enum="Key">
 			Favorites key.
 		</constant>
-		<constant name="KEY_SEARCH" value="16777307" enum="Key">
+		<constant name="KEY_SEARCH" value="4194395" enum="Key">
 			Search key.
 		</constant>
-		<constant name="KEY_STANDBY" value="16777308" enum="Key">
+		<constant name="KEY_STANDBY" value="4194396" enum="Key">
 			Standby key.
 		</constant>
-		<constant name="KEY_OPENURL" value="16777309" enum="Key">
+		<constant name="KEY_OPENURL" value="4194397" enum="Key">
 			Open URL / Launch Browser key.
 		</constant>
-		<constant name="KEY_LAUNCHMAIL" value="16777310" enum="Key">
+		<constant name="KEY_LAUNCHMAIL" value="4194398" enum="Key">
 			Launch Mail key.
 		</constant>
-		<constant name="KEY_LAUNCHMEDIA" value="16777311" enum="Key">
+		<constant name="KEY_LAUNCHMEDIA" value="4194399" enum="Key">
 			Launch Media key.
 		</constant>
-		<constant name="KEY_LAUNCH0" value="16777312" enum="Key">
+		<constant name="KEY_LAUNCH0" value="4194400" enum="Key">
 			Launch Shortcut 0 key.
 		</constant>
-		<constant name="KEY_LAUNCH1" value="16777313" enum="Key">
+		<constant name="KEY_LAUNCH1" value="4194401" enum="Key">
 			Launch Shortcut 1 key.
 		</constant>
-		<constant name="KEY_LAUNCH2" value="16777314" enum="Key">
+		<constant name="KEY_LAUNCH2" value="4194402" enum="Key">
 			Launch Shortcut 2 key.
 		</constant>
-		<constant name="KEY_LAUNCH3" value="16777315" enum="Key">
+		<constant name="KEY_LAUNCH3" value="4194403" enum="Key">
 			Launch Shortcut 3 key.
 		</constant>
-		<constant name="KEY_LAUNCH4" value="16777316" enum="Key">
+		<constant name="KEY_LAUNCH4" value="4194404" enum="Key">
 			Launch Shortcut 4 key.
 		</constant>
-		<constant name="KEY_LAUNCH5" value="16777317" enum="Key">
+		<constant name="KEY_LAUNCH5" value="4194405" enum="Key">
 			Launch Shortcut 5 key.
 		</constant>
-		<constant name="KEY_LAUNCH6" value="16777318" enum="Key">
+		<constant name="KEY_LAUNCH6" value="4194406" enum="Key">
 			Launch Shortcut 6 key.
 		</constant>
-		<constant name="KEY_LAUNCH7" value="16777319" enum="Key">
+		<constant name="KEY_LAUNCH7" value="4194407" enum="Key">
 			Launch Shortcut 7 key.
 		</constant>
-		<constant name="KEY_LAUNCH8" value="16777320" enum="Key">
+		<constant name="KEY_LAUNCH8" value="4194408" enum="Key">
 			Launch Shortcut 8 key.
 		</constant>
-		<constant name="KEY_LAUNCH9" value="16777321" enum="Key">
+		<constant name="KEY_LAUNCH9" value="4194409" enum="Key">
 			Launch Shortcut 9 key.
 		</constant>
-		<constant name="KEY_LAUNCHA" value="16777322" enum="Key">
+		<constant name="KEY_LAUNCHA" value="4194410" enum="Key">
 			Launch Shortcut A key.
 		</constant>
-		<constant name="KEY_LAUNCHB" value="16777323" enum="Key">
+		<constant name="KEY_LAUNCHB" value="4194411" enum="Key">
 			Launch Shortcut B key.
 		</constant>
-		<constant name="KEY_LAUNCHC" value="16777324" enum="Key">
+		<constant name="KEY_LAUNCHC" value="4194412" enum="Key">
 			Launch Shortcut C key.
 		</constant>
-		<constant name="KEY_LAUNCHD" value="16777325" enum="Key">
+		<constant name="KEY_LAUNCHD" value="4194413" enum="Key">
 			Launch Shortcut D key.
 		</constant>
-		<constant name="KEY_LAUNCHE" value="16777326" enum="Key">
+		<constant name="KEY_LAUNCHE" value="4194414" enum="Key">
 			Launch Shortcut E key.
 		</constant>
-		<constant name="KEY_LAUNCHF" value="16777327" enum="Key">
+		<constant name="KEY_LAUNCHF" value="4194415" enum="Key">
 			Launch Shortcut F key.
 		</constant>
-		<constant name="KEY_UNKNOWN" value="33554431" enum="Key">
+		<constant name="KEY_UNKNOWN" value="16777215" enum="Key">
 			Unknown key.
 		</constant>
 		<constant name="KEY_SPACE" value="32" enum="Key">
@@ -2229,26 +2229,26 @@
 		<constant name="KEY_YDIAERESIS" value="255" enum="Key">
 			ÿ key.
 		</constant>
-		<constant name="KEY_CODE_MASK" value="33554431" enum="KeyModifierMask">
+		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="2130706432" enum="KeyModifierMask">
+		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask">
 			Modifier key mask.
+		</constant>
+		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask">
+			Automatically remapped to [constant KEY_META] on macOS and [constant KEY_CTRL] on other platforms, this mask is never set in the actual events, and should be used for key mapping only.
 		</constant>
 		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">
 			Shift key mask.
 		</constant>
 		<constant name="KEY_MASK_ALT" value="67108864" enum="KeyModifierMask">
-			Alt key mask.
+			Alt or Option (on macOS) key mask.
 		</constant>
 		<constant name="KEY_MASK_META" value="134217728" enum="KeyModifierMask">
-			Meta key mask.
+			Command (on macOS) or Meta/Windows key mask.
 		</constant>
 		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask">
 			Ctrl key mask.
-		</constant>
-		<constant name="KEY_MASK_CMD" value="platform-dependent" enum="KeyModifierMask">
-			Command key mask. On macOS, this is equivalent to [constant KEY_MASK_META]. On other platforms, this is equivalent to [constant KEY_MASK_CTRL]. This mask should be preferred to [constant KEY_MASK_META] or [constant KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly.
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
 			Keypad key mask.

@@ -210,6 +210,8 @@ protected:
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
+	/* SHAPE API */
+
 	EXBIND0R(RID, world_boundary_shape_create)
 	EXBIND0R(RID, separation_ray_shape_create)
 	EXBIND0R(RID, sphere_shape_create)
@@ -262,6 +264,7 @@ public:
 	EXBIND1RC(int, area_get_shape_count, RID)
 	EXBIND2RC(RID, area_get_shape, RID, int)
 	EXBIND2RC(Transform3D, area_get_shape_transform, RID, int)
+
 	EXBIND2(area_remove_shape, RID, int)
 	EXBIND1(area_clear_shapes, RID)
 
@@ -297,12 +300,11 @@ public:
 	EXBIND4(body_add_shape, RID, RID, const Transform3D &, bool)
 	EXBIND3(body_set_shape, RID, int, RID)
 	EXBIND3(body_set_shape_transform, RID, int, const Transform3D &)
+	EXBIND3(body_set_shape_disabled, RID, int, bool)
 
 	EXBIND1RC(int, body_get_shape_count, RID)
-	EXBIND2RC(Transform3D, body_get_shape_transform, RID, int)
 	EXBIND2RC(RID, body_get_shape, RID, int)
-
-	EXBIND3(body_set_shape_disabled, RID, int, bool)
+	EXBIND2RC(Transform3D, body_get_shape_transform, RID, int)
 
 	EXBIND2(body_remove_shape, RID, int)
 	EXBIND1(body_clear_shapes, RID)
@@ -333,9 +335,9 @@ public:
 	EXBIND3(body_set_state, RID, BodyState, const Variant &)
 	EXBIND2RC(Variant, body_get_state, RID, BodyState)
 
-	EXBIND2(body_apply_torque_impulse, RID, const Vector3 &)
 	EXBIND2(body_apply_central_impulse, RID, const Vector3 &)
 	EXBIND3(body_apply_impulse, RID, const Vector3 &, const Vector3 &)
+	EXBIND2(body_apply_torque_impulse, RID, const Vector3 &)
 
 	EXBIND2(body_apply_central_force, RID, const Vector3 &)
 	EXBIND3(body_apply_force, RID, const Vector3 &, const Vector3 &)
@@ -476,7 +478,6 @@ public:
 	/* JOINT API */
 
 	EXBIND0R(RID, joint_create)
-
 	EXBIND1(joint_clear, RID)
 
 	EXBIND5(joint_make_pin, RID, RID, const Vector3 &, RID, const Vector3 &)

@@ -204,6 +204,8 @@ protected:
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
+	/* SHAPE API */
+
 	EXBIND0R(RID, world_boundary_shape_create)
 	EXBIND0R(RID, separation_ray_shape_create)
 	EXBIND0R(RID, segment_shape_create)
@@ -252,6 +254,7 @@ public:
 	EXBIND4(area_add_shape, RID, RID, const Transform2D &, bool)
 	EXBIND3(area_set_shape, RID, int, RID)
 	EXBIND3(area_set_shape_transform, RID, int, const Transform2D &)
+	EXBIND3(area_set_shape_disabled, RID, int, bool)
 
 	EXBIND1RC(int, area_get_shape_count, RID)
 	EXBIND2RC(RID, area_get_shape, RID, int)
@@ -259,8 +262,6 @@ public:
 
 	EXBIND2(area_remove_shape, RID, int)
 	EXBIND1(area_clear_shapes, RID)
-
-	EXBIND3(area_set_shape_disabled, RID, int, bool)
 
 	EXBIND2(area_attach_object_instance_id, RID, ObjectID)
 	EXBIND1RC(ObjectID, area_get_object_instance_id, RID)
@@ -415,7 +416,6 @@ public:
 	/* JOINT API */
 
 	EXBIND0R(RID, joint_create)
-
 	EXBIND1(joint_clear, RID)
 
 	EXBIND3(joint_set_param, RID, JointParam, real_t)

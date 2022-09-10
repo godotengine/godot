@@ -477,9 +477,6 @@
 		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color(1, 0.7, 0.1, 0.4)">
-			Color of the disabled navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
-		</member>
 		<member name="debug/shapes/navigation/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
 			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
@@ -503,9 +500,6 @@
 		</member>
 		<member name="debug/shapes/navigation/enable_link_connections_xray" type="bool" setter="" getter="" default="true">
 			If enabled, displays navigation link connections through geometry when "Visible Navigation" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
-			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
 			Color to display enabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
@@ -1494,8 +1488,8 @@
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
 		</member>
-		<member name="network/ssl/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
-			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
+		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
+			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">

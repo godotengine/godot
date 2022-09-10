@@ -4,13 +4,14 @@
 # This file is distributed under the same license as the Godot source code.
 # Wesley (zx-wt) <ZX_WT@ymail.com>, 2016-2017, 2020.
 # cnieFIT <dtotncq@gmail.com>, 2019.
+# Peppa Pig <hansongming88@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-05-01 11:43+0000\n"
-"Last-Translator: zx-wt <ZX_WT@ymail.com>\n"
+"PO-Revision-Date: 2022-08-23 03:39+0000\n"
+"Last-Translator: Peppa Pig <hansongming88@gmail.com>\n"
 "Language-Team: Chinese (Traditional, Hong Kong) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant_HK/>\n"
 "Language: zh_HK\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.2\n"
+"X-Generator: Weblate 4.14-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -36,7 +37,7 @@ msgstr "未儲存當前場景。仍要開啟？"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "退出码"
 
 #: core/bind/core_bind.cpp
 #, fuzzy
@@ -4660,6 +4661,7 @@ msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "專案"
 
@@ -7583,7 +7585,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15840,18 +15843,18 @@ msgstr ""
 msgid "Make Local"
 msgstr ""
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Node名稱"
+
+#: editor/scene_tree_dock.cpp
+msgid "Unique names already used by another node in the scene:"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Node名稱"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-#, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Node名稱"
 
 #: editor/scene_tree_dock.cpp
@@ -16061,6 +16064,11 @@ msgstr "按鍵"
 
 #: editor/scene_tree_editor.cpp
 #, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Node名稱"
+
+#: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "(Connecting From)"
 msgstr "連到..."
 
@@ -16122,6 +16130,10 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
+msgstr ""
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -18052,6 +18064,21 @@ msgstr "所有選項"
 msgid "Auto Update Project"
 msgstr "專案"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "全部取代"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "選擇資料夾"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "選擇資料夾"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr ""
@@ -19877,6 +19904,11 @@ msgstr "貼上"
 msgid "Custom BG Color"
 msgstr "貼上"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "全部展開"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20722,6 +20754,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
