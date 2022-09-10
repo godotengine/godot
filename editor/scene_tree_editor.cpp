@@ -835,7 +835,7 @@ void SceneTreeEditor::_notification(int p_what) {
 			get_tree()->connect("tree_process_mode_changed", callable_mp(this, &SceneTreeEditor::_tree_process_mode_changed));
 			get_tree()->connect("node_removed", callable_mp(this, &SceneTreeEditor::_node_removed));
 			get_tree()->connect("node_renamed", callable_mp(this, &SceneTreeEditor::_node_renamed));
-			get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed), CONNECT_DEFERRED);
+			get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed));
 
 			tree->connect("item_collapsed", callable_mp(this, &SceneTreeEditor::_cell_collapsed));
 
