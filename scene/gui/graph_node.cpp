@@ -367,7 +367,7 @@ void GraphNode::_notification(int p_what) {
 			}
 
 			for (const KeyValue<int, Slot> &E : slot_info) {
-				if (E.key < 0 || E.key >= cache_y.size()) {
+				if (E.key < 0 || E.key >= cache_y.size() || get_child_count() == 0) {
 					continue;
 				}
 				if (!slot_info.has(E.key)) {
