@@ -373,7 +373,7 @@ void CanvasItem::move_to_front() {
 	if (!get_parent()) {
 		return;
 	}
-	get_parent()->move_child(this, get_parent()->get_child_count() - 1);
+	get_parent()->move_child(this, -1);
 }
 
 void CanvasItem::set_modulate(const Color &p_modulate) {

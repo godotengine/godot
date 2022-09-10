@@ -328,12 +328,21 @@ void Node::move_child(Node *p_child, int p_pos) {
 
 	// We need to check whether node is internal and move it only in the relevant node range.
 	if (p_child->_is_internal_front()) {
+		if (p_pos < 0) {
+			p_pos += data.internal_children_front;
+		}
 		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_front, vformat("Invalid new child position: %d. Child is internal.", p_pos));
 		_move_child(p_child, p_pos);
 	} else if (p_child->_is_internal_back()) {
+		if (p_pos < 0) {
+			p_pos += data.internal_children_back;
+		}
 		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_back, vformat("Invalid new child position: %d. Child is internal.", p_pos));
 		_move_child(p_child, data.children.size() - data.internal_children_back + p_pos);
 	} else {
+		if (p_pos < 0) {
+			p_pos += get_child_count(false);
+		}
 		ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child position: %d.", p_pos));
 		_move_child(p_child, p_pos + data.internal_children_front);
 	}
