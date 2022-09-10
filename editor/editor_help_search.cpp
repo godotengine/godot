@@ -326,6 +326,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 bool EditorHelpSearch::Runner::_phase_match_classes() {
 	DocData::ClassDoc &class_doc = iterator_doc->value;
 	if (class_doc.name.is_empty()) {
+		++iterator_doc;
 		return false;
 	}
 	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
@@ -432,7 +433,7 @@ bool EditorHelpSearch::Runner::_phase_class_items_init() {
 
 bool EditorHelpSearch::Runner::_phase_class_items() {
 	if (!iterator_match) {
-		return false;
+		return true;
 	}
 	ClassMatch &match = iterator_match->value;
 
@@ -459,10 +460,8 @@ bool EditorHelpSearch::Runner::_phase_member_items_init() {
 bool EditorHelpSearch::Runner::_phase_member_items() {
 	ClassMatch &match = iterator_match->value;
 
-	if (!match.doc) {
-		return false;
-	}
-	if (match.doc->name.is_empty()) {
+	if (!match.doc || match.doc->name.is_empty()) {
+		++iterator_match;
 		return false;
 	}
 
