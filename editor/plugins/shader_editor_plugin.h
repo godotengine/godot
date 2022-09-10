@@ -33,8 +33,8 @@
 
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
@@ -64,8 +64,8 @@ public:
 	ShaderTextEditor();
 };
 
-class ShaderEditor : public PanelContainer {
-	GDCLASS(ShaderEditor, PanelContainer);
+class ShaderEditor : public MarginContainer {
+	GDCLASS(ShaderEditor, MarginContainer);
 
 	enum {
 
