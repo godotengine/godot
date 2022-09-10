@@ -514,7 +514,7 @@
 			<param index="0" name="child_node" type="Node" />
 			<param index="1" name="to_position" type="int" />
 			<description>
-				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful.
+				Moves a child node to a different position (order) among the other children. Since calls, signals, etc are performed by tree order, changing the order of children nodes may be useful. If [param to_position] is negative, the index will be counted from the end.
 				[b]Note:[/b] Internal children can only be moved within their expected "internal range" (see [code]internal[/code] parameter in [method add_child]).
 			</description>
 		</method>
