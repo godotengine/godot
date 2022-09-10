@@ -1360,8 +1360,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
 			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
-				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 			}
 		}
 	}
@@ -1373,8 +1373,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
 			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
-				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 			}
 		}
 	}
@@ -1601,7 +1601,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						//clicking is always deferred to either move or release
 						clicked = _select_ray(b->get_position());
 						selection_in_progress = true;
@@ -1622,7 +1622,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						selection_in_progress = false;
 
 						if (clicked.is_valid()) {

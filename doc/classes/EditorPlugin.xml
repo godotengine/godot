@@ -64,8 +64,8 @@
 				    if event is InputEventMouseMotion:
 				        # Redraw viewport when cursor is moved.
 				        update_overlays()
-				        return true
-				    return false
+				        return EditorPlugin.AFTER_GUI_INPUT_STOP
+				    return EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
 				public override void _Forward3dDrawOverViewport(Godot.Control overlay)
@@ -74,15 +74,15 @@
 				    overlay.DrawCircle(overlay.GetLocalMousePosition(), 64, Colors.White);
 				}
 
-				public override bool _Forward3dGuiInput(Godot.Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Godot.Camera3D camera, InputEvent @event)
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
 				        // Redraw viewport when cursor is moved.
 				        UpdateOverlays();
-				        return true;
+				        return EditorPlugin.AFTER_GUI_INPUT_STOP;
 				    }
-				    return false;
+				    return EditorPlugin.AFTER_GUI_INPUT_PASS;
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -100,33 +100,33 @@
 			<param index="0" name="viewport_camera" type="Camera3D" />
 			<param index="1" name="event" type="InputEvent" />
 			<description>
-				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 3D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
+				Called when there is a root node in the current edited scene, [method _handles] is implemented, and an [InputEvent] happens in the 3D viewport. The return value decides whether the [InputEvent] is consumed or forwarded to other [EditorPlugin]s. See [enum AfterGUIInput] for options. Example:
 				[codeblocks]
 				[gdscript]
-				# Prevents the InputEvent to reach other Editor classes.
+				# Prevents the InputEvent from reaching other Editor classes.
 				func _forward_3d_gui_input(camera, event):
 				    return EditorPlugin.AFTER_GUI_INPUT_STOP
 				[/gdscript]
 				[csharp]
-				// Prevents the InputEvent to reach other Editor classes.
-				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
+				// Prevents the InputEvent from reaching other Editor classes.
+				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
 				    return EditorPlugin.AFTER_GUI_INPUT_STOP;
 				}
 				[/csharp]
 				[/codeblocks]
-				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				Must [code]return EditorPlugin.AFTER_GUI_INPUT_PASS[/code] in order to forward the [InputEvent] to other Editor classes. Example:
 				[codeblocks]
 				[gdscript]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types.
 				func _forward_3d_gui_input(camera, event):
-				    return event is InputEventMouseMotion
+				    return EditorPlugin.AFTER_GUI_INPUT_STOP if event is InputEventMouseMotion else EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
-				public override bool _Forward3dGuiInput(Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return @event is InputEventMouseMotion;
+				    return @event is InputEventMouseMotion ? EditorPlugin.AFTER_GUI_INPUT_STOP : EditorPlugin.AFTER_GUI_INPUT_PASS;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -185,12 +185,12 @@
 				Called when there is a root node in the current edited scene, [method _handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [param event], otherwise forwards [param event] to other Editor classes. Example:
 				[codeblocks]
 				[gdscript]
-				# Prevents the InputEvent to reach other Editor classes.
+				# Prevents the InputEvent from reaching other Editor classes.
 				func _forward_canvas_gui_input(event):
 				    return true
 				[/gdscript]
 				[csharp]
-				// Prevents the InputEvent to reach other Editor classes.
+				// Prevents the InputEvent from reaching other Editor classes.
 				public override bool ForwardCanvasGuiInput(InputEvent @event)
 				{
 				    return true;
@@ -754,6 +754,15 @@
 		</constant>
 		<constant name="DOCK_SLOT_MAX" value="8" enum="DockSlot">
 			Represents the size of the [enum DockSlot] enum.
+		</constant>
+		<constant name="AFTER_GUI_INPUT_PASS" value="0" enum="AfterGUIInput">
+			Forwards the [InputEvent] to other EditorPlugins.
+		</constant>
+		<constant name="AFTER_GUI_INPUT_STOP" value="1" enum="AfterGUIInput">
+			Prevents the [InputEvent] from reaching other Editor classes.
+		</constant>
+		<constant name="AFTER_GUI_INPUT_CUSTOM" value="2" enum="AfterGUIInput">
+			Pass the [InputEvent] to other editor plugins except the main [Node3D] one. This can be used to prevent node selection changes and work with sub-gizmos instead.
 		</constant>
 	</constants>
 </class>
