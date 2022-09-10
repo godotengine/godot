@@ -3677,6 +3677,7 @@ void TileMapEditor::_update_layers_selection() {
 		tile_map_layer = -1;
 	}
 	tile_map->set_selected_layer(toggle_highlight_selected_layer_button->is_pressed() ? tile_map_layer : -1);
+	tileset_changed_needs_update = false; // Update is not needed here and actually causes problems.
 
 	layers_selection_button->clear();
 	if (tile_map->get_layers_count() > 0) {
