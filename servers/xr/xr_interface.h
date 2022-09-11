@@ -138,8 +138,6 @@ public:
 	virtual bool start_passthrough() { return false; }
 	virtual void stop_passthrough() {}
 
-	virtual void notification(int p_what){};
-
 	XRInterface();
 	~XRInterface();
 
