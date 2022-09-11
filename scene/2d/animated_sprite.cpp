@@ -367,6 +367,9 @@ void AnimatedSprite::_notification(int p_what) {
 			if (frame < 0) {
 				return;
 			}
+			if (!OS::get_singleton()->is_update_pending()) {
+				return;
+			}
 
 			float remaining = get_process_delta_time();
 
