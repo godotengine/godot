@@ -2918,20 +2918,17 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	}
 
 	/* Filter Options. */
-	/* For now handle only tradional quoted strings. */
+	/* For now handle only traditional quoted strings. */
 	bool single_quote = in_string != -1 && first_quote_col > 0 && delimiters[in_string].start_key == "'";
 
 	code_completion_options.clear();
 	code_completion_base = string_to_complete;
 
-	Vector<ScriptLanguage::CodeCompletionOption> completion_options_casei;
-	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr;
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr_casei;
-	Vector<ScriptLanguage::CodeCompletionOption> completion_options_subseq;
-	Vector<ScriptLanguage::CodeCompletionOption> completion_options_subseq_casei;
 
 	int max_width = 0;
 	String string_to_complete_lower = string_to_complete.to_lower();
+
 	for (ScriptLanguage::CodeCompletionOption &option : code_completion_option_sources) {
 		if (single_quote && option.display.is_quoted()) {
 			option.display = option.display.unquote().quote("'");
@@ -2960,78 +2957,26 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			continue;
 		}
 
-		/* This code works the same as:
-
-		if (option.display.begins_with(s)) {
-			completion_options.push_back(option);
-		} else if (option.display.to_lower().begins_with(s.to_lower())) {
-			completion_options_casei.push_back(option);
-		} else if (s.is_subsequence_of(option.display)) {
-			completion_options_subseq.push_back(option);
-		} else if (s.is_subsequence_ofn(option.display)) {
-			completion_options_subseq_casei.push_back(option);
+		if (option.display.similarity(string_to_complete) < 0.1) {
+			continue;
 		}
-
-		But is more performant due to being inlined and looping over the characters only once
-		*/
 
 		String display_lower = option.display.to_lower();
 
-		const char32_t *ssq = &string_to_complete[0];
 		const char32_t *ssq_lower = &string_to_complete_lower[0];
 
 		const char32_t *tgt = &option.display[0];
 		const char32_t *tgt_lower = &display_lower[0];
 
-		const char32_t *sst = &string_to_complete[0];
-		const char32_t *sst_lower = &display_lower[0];
-
 		Vector<Pair<int, int>> ssq_matches;
-		int ssq_match_start = 0;
-		int ssq_match_len = 0;
 
 		Vector<Pair<int, int>> ssq_lower_matches;
 		int ssq_lower_match_start = 0;
 		int ssq_lower_match_len = 0;
 
-		int sst_start = -1;
 		int sst_lower_start = -1;
 
 		for (int i = 0; *tgt; tgt++, tgt_lower++, i++) {
-			// Check substring.
-			if (*sst == *tgt) {
-				sst++;
-				if (sst_start == -1) {
-					sst_start = i;
-				}
-			} else if (sst_start != -1 && *sst) {
-				sst = &string_to_complete[0];
-				sst_start = -1;
-			}
-
-			// Check subsequence.
-			if (*ssq == *tgt) {
-				ssq++;
-				if (ssq_match_len == 0) {
-					ssq_match_start = i;
-				}
-				ssq_match_len++;
-			} else if (ssq_match_len > 0) {
-				ssq_matches.push_back(Pair<int, int>(ssq_match_start, ssq_match_len));
-				ssq_match_len = 0;
-			}
-
-			// Check lower substring.
-			if (*sst_lower == *tgt) {
-				sst_lower++;
-				if (sst_lower_start == -1) {
-					sst_lower_start = i;
-				}
-			} else if (sst_lower_start != -1 && *sst_lower) {
-				sst_lower = &string_to_complete[0];
-				sst_lower_start = -1;
-			}
-
 			// Check lower subsequence.
 			if (*ssq_lower == *tgt_lower) {
 				ssq_lower++;
@@ -3045,33 +2990,10 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			}
 		}
 
-		/* Matched the whole subsequence in s. */
-		if (!*ssq) { // Matched the whole subsequence in s.
+		if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
 			option.matches.clear();
 
-			if (sst_start == 0) { // Matched substring in beginning of s.
-				option.matches.push_back(Pair<int, int>(sst_start, string_to_complete.length()));
-				code_completion_options.push_back(option);
-			} else if (sst_start > 0) { // Matched substring in s.
-				option.matches.push_back(Pair<int, int>(sst_start, string_to_complete.length()));
-				completion_options_substr.push_back(option);
-			} else {
-				if (ssq_match_len > 0) {
-					ssq_matches.push_back(Pair<int, int>(ssq_match_start, ssq_match_len));
-				}
-				option.matches.append_array(ssq_matches);
-				completion_options_subseq.push_back(option);
-			}
-			if (font.is_valid()) {
-				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
-			}
-		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
-			option.matches.clear();
-
-			if (sst_lower_start == 0) { // Matched substring in beginning of s_lower.
-				option.matches.push_back(Pair<int, int>(sst_lower_start, string_to_complete.length()));
-				completion_options_casei.push_back(option);
-			} else if (sst_lower_start > 0) { // Matched substring in s_lower.
+			if (sst_lower_start >= 0) {
 				option.matches.push_back(Pair<int, int>(sst_lower_start, string_to_complete.length()));
 				completion_options_substr_casei.push_back(option);
 			} else {
@@ -3079,7 +3001,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 					ssq_lower_matches.push_back(Pair<int, int>(ssq_lower_match_start, ssq_lower_match_len));
 				}
 				option.matches.append_array(ssq_lower_matches);
-				completion_options_subseq_casei.push_back(option);
+				completion_options_substr_casei.push_back(option);
 			}
 			if (font.is_valid()) {
 				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
@@ -3087,9 +3009,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		}
 	}
 
-	code_completion_options.append_array(completion_options_casei);
-	code_completion_options.append_array(completion_options_subseq);
-	code_completion_options.append_array(completion_options_subseq_casei);
+	code_completion_options.append_array(completion_options_substr_casei);
 
 	/* No options to complete, cancel. */
 	if (code_completion_options.size() == 0) {
@@ -3102,6 +3022,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		cancel_code_completion();
 		return;
 	}
+
+	CodeCompletionOptionCompare::base = string_to_complete;
+	code_completion_options.sort_custom<CodeCompletionOptionCompare>();
 
 	code_completion_longest_line = MIN(max_width, code_completion_max_width * font_size);
 	code_completion_current_selected = 0;
@@ -3230,4 +3153,70 @@ CodeEdit::CodeEdit() {
 }
 
 CodeEdit::~CodeEdit() {
+}
+
+String CodeCompletionOptionCompare::base;
+
+bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
+	if (l.location == r.location) {
+		const int l_find_idx = l.display.findn(base);
+		const int r_find_idx = r.display.findn(base);
+		// Priority to exact results, especially if closer to the beginning.
+		// This is borked but kinda works. Experimentation time.
+		/*if (l_find_idx == -1 || l_find_idx < r_find_idx) {
+			return true;
+		}
+		if (r_find_idx == -1 || l_find_idx > r_find_idx) {
+			return false;
+		}*/
+
+		if (l_find_idx != -1) {
+			if (l_find_idx < r_find_idx) {
+				return true;
+			}
+		}
+		if (r_find_idx != -1) {
+			if (l_find_idx > r_find_idx) {
+				return false;
+			}
+		}
+
+		/*if (l.display.begins_with(base)) {
+			return true;
+		}
+		if (r.display.begins_with(base)) {
+			return false;
+		}*/
+
+		const float l_similarity = l.display.similarity(base);
+		const float r_similarity = r.display.similarity(base);
+
+		if (l_similarity > 0.75f || r_similarity > 0.75f /*|| Math::abs(l_similarity - r_similarity) < 0.25f*/) {
+			return l_similarity > r_similarity;
+		}
+
+		// Group variables, members, functions, signals together for the purpose of sorting.
+		if (l.is_basic_identifier() && r.is_basic_identifier()) {
+			return l_similarity > r_similarity;
+		}
+
+		if (l.kind != r.kind) {
+			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
+			int l_index = -1;
+			int r_index = -1;
+			for (int i = 0; i < KIND_COUNT; i++) {
+				const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
+				l_index = kind == l.kind ? i : l_index;
+				r_index = kind == r.kind ? i : r_index;
+
+				if (l_index != -1 && r_index != -1) {
+					return l_index < r_index;
+				}
+			}
+		}
+
+		return l_similarity > r_similarity;
+	}
+
+	return l.location < r.location;
 }

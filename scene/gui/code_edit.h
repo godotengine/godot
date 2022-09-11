@@ -434,4 +434,26 @@ public:
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
 
+const int KIND_COUNT = 10;
+// The order in which to sort code completion options.
+const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
+	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
+	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
+	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
+	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
+	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
+	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
+	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
+	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
+	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
+	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
+};
+
+// The custom comparer which will sort completion options.
+struct CodeCompletionOptionCompare {
+	static String base;
+
+	_FORCE_INLINE_ bool operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const;
+};
+
 #endif // CODE_EDIT_H

@@ -502,78 +502,43 @@ struct GDScriptCompletionIdentifier {
 // will have a "better" (lower) location "score" than a property that is found on CanvasItem.
 
 static int _get_property_location(StringName p_class, StringName p_property) {
-	if (!ClassDB::has_property(p_class, p_property)) {
-		return ScriptLanguage::LOCATION_OTHER;
+	if (ClassDB::has_property(p_class, p_property, true)) {
+		return ScriptLanguage::LOCATION_LOCAL;
 	}
 
-	int depth = 0;
-	StringName class_test = p_class;
-	while (class_test && !ClassDB::has_property(class_test, p_property, true)) {
-		class_test = ClassDB::get_parent_class(class_test);
-		depth++;
-	}
-
-	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+	return ScriptLanguage::LOCATION_OTHER;
 }
 
 static int _get_constant_location(StringName p_class, StringName p_constant) {
-	if (!ClassDB::has_integer_constant(p_class, p_constant)) {
-		return ScriptLanguage::LOCATION_OTHER;
+	if (ClassDB::has_integer_constant(p_class, p_constant, true)) {
+		return ScriptLanguage::LOCATION_LOCAL;
 	}
 
-	int depth = 0;
-	StringName class_test = p_class;
-	while (class_test && !ClassDB::has_integer_constant(class_test, p_constant, true)) {
-		class_test = ClassDB::get_parent_class(class_test);
-		depth++;
-	}
-
-	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+	return ScriptLanguage::LOCATION_OTHER;
 }
 
 static int _get_signal_location(StringName p_class, StringName p_signal) {
-	if (!ClassDB::has_signal(p_class, p_signal)) {
-		return ScriptLanguage::LOCATION_OTHER;
+	if (ClassDB::has_signal(p_class, p_signal, true)) {
+		return ScriptLanguage::LOCATION_LOCAL;
 	}
 
-	int depth = 0;
-	StringName class_test = p_class;
-	while (class_test && !ClassDB::has_signal(class_test, p_signal, true)) {
-		class_test = ClassDB::get_parent_class(class_test);
-		depth++;
-	}
-
-	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+	return ScriptLanguage::LOCATION_OTHER;
 }
 
 static int _get_method_location(StringName p_class, StringName p_method) {
-	if (!ClassDB::has_method(p_class, p_method)) {
-		return ScriptLanguage::LOCATION_OTHER;
+	if (ClassDB::has_method(p_class, p_method, true)) {
+		return ScriptLanguage::LOCATION_LOCAL;
 	}
 
-	int depth = 0;
-	StringName class_test = p_class;
-	while (class_test && !ClassDB::has_method(class_test, p_method, true)) {
-		class_test = ClassDB::get_parent_class(class_test);
-		depth++;
-	}
-
-	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+	return ScriptLanguage::LOCATION_OTHER;
 }
 
 static int _get_enum_constant_location(StringName p_class, StringName p_enum_constant) {
-	if (!ClassDB::get_integer_constant_enum(p_class, p_enum_constant)) {
-		return ScriptLanguage::LOCATION_OTHER;
+	if (ClassDB::get_integer_constant_enum(p_class, p_enum_constant, true)) {
+		return ScriptLanguage::LOCATION_LOCAL;
 	}
 
-	int depth = 0;
-	StringName class_test = p_class;
-	while (class_test && !ClassDB::get_integer_constant_enum(class_test, p_enum_constant, true)) {
-		class_test = ClassDB::get_parent_class(class_test);
-		depth++;
-	}
-
-	return depth | ScriptLanguage::LOCATION_PARENT_MASK;
+	return ScriptLanguage::LOCATION_OTHER;
 }
 
 // END LOCATION METHODS
@@ -872,7 +837,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &E : global_classes) {
-		ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
+		ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 		r_result.insert(option.display, option);
 	}
 
@@ -884,7 +849,7 @@ static void _list_available_types(bool p_inherit_only, GDScriptParser::Completio
 		if (!info.is_singleton || info.path.get_extension().to_lower() != "gd") {
 			continue;
 		}
-		ScriptLanguage::CodeCompletionOption option(info.name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
+		ScriptLanguage::CodeCompletionOption option(info.name, ScriptLanguage::CODE_COMPLETION_KIND_CLASS);
 		r_result.insert(option.display, option);
 	}
 }
@@ -916,7 +881,7 @@ static void _find_identifiers_in_class(const GDScriptParser::ClassNode *p_class,
 		int classes_processed = 0;
 		while (clss) {
 			for (int i = 0; i < clss->members.size(); i++) {
-				const int location = (classes_processed + p_recursion_depth) | ScriptLanguage::LOCATION_PARENT_MASK;
+				const int location = p_recursion_depth + classes_processed == 0 ? ScriptLanguage::LOCATION_LOCAL : ScriptLanguage::LOCATION_OTHER;
 				const GDScriptParser::ClassNode::Member &member = clss->members[i];
 				ScriptLanguage::CodeCompletionOption option;
 				switch (member.type) {

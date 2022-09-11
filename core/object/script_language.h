@@ -323,8 +323,8 @@ public:
 
 	enum CodeCompletionLocation {
 		LOCATION_LOCAL = 0,
-		LOCATION_PARENT_MASK = 1 << 8,
-		LOCATION_OTHER_USER_CODE = 1 << 9,
+		//LOCATION_PARENT_MASK = 1 << 8,
+		//LOCATION_OTHER_USER_CODE = 1 << 9,
 		LOCATION_OTHER = 1 << 10,
 	};
 
@@ -345,6 +345,13 @@ public:
 			insert_text = p_text;
 			kind = p_kind;
 			location = p_location;
+		}
+
+		bool is_basic_identifier() const {
+			return (kind == ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE ||
+					kind == ScriptLanguage::CODE_COMPLETION_KIND_MEMBER ||
+					kind == ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION ||
+					kind == ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL);
 		}
 	};
 
