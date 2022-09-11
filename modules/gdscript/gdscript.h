@@ -40,6 +40,17 @@
 #include "core/templates/rb_set.h"
 #include "gdscript_function.h"
 
+struct GDScriptResource {
+	template <class T>
+	_FORCE_INLINE_ static T get(T p_val) {
+		Ref<WeakRef> wref = static_cast<Ref<WeakRef>>(p_val);
+		if (wref.is_valid()) {
+			return wref->get_ref();
+		}
+		return p_val;
+	}
+};
+
 class GDScriptNativeClass : public RefCounted {
 	GDCLASS(GDScriptNativeClass, RefCounted);
 
@@ -532,6 +543,16 @@ public:
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
+};
+
+class GDScriptRef : public ScriptRef {
+public:
+	Ref<GDScript> get_ref() const {
+		return WeakRef::get_ref();
+	}
+	void set_ref(const Ref<GDScript> &p_ref) {
+		WeakRef::set_ref(p_ref);
+	}
 };
 
 #endif // GDSCRIPT_H

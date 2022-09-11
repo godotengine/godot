@@ -39,7 +39,7 @@
 
 class GDScriptAnalyzer {
 	GDScriptParser *parser = nullptr;
-	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
+	HashMap<String, GDScriptParserData *> depended_parsers;
 
 	const GDScriptParser::EnumNode *current_enum = nullptr;
 	List<GDScriptParser::LambdaNode *> lambda_stack;
@@ -117,7 +117,7 @@ class GDScriptAnalyzer {
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
-	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
+	Ref<GDScriptParserDataRef> get_parser_for(const String &p_path);
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif

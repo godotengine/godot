@@ -641,8 +641,8 @@ const lsp::DocumentSymbol *GDScriptWorkspace::resolve_symbol(const lsp::TextDocu
 				if (OK == GDScriptLanguage::get_singleton()->lookup_code(parser->get_text_for_lookup_symbol(pos, symbol_identifier, p_func_required), symbol_identifier, path, nullptr, ret)) {
 					if (ret.type == ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION) {
 						String target_script_path = path;
-						if (!ret.script.is_null()) {
-							target_script_path = ret.script->get_path();
+						if (ret.script.is_valid() && ret.script->get_ref().is_valid()) {
+							target_script_path = ret.script->get_ref()->get_path();
 						} else if (!ret.class_path.is_empty()) {
 							target_script_path = ret.class_path;
 						}

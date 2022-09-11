@@ -315,7 +315,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 }
 
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion) {
-	clear();
+	// clear();
 
 	String source = p_source_code;
 	int cursor_line = -1;
@@ -3775,8 +3775,9 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 				break;
 			case GDScriptParser::DataType::SCRIPT: {
 				StringName class_name;
-				if (export_type.script_type != nullptr && export_type.script_type.is_valid()) {
-					class_name = export_type.script_type->get_language()->get_global_class_name(export_type.script_type->get_path());
+				Ref<ScriptRef> script_wref = export_type.script_type;
+				if (script_wref.is_valid()) {
+					class_name = script_wref->get_ref()->get_language()->get_global_class_name(script_wref->get_ref()->get_path());
 				}
 				if (class_name == StringName()) {
 					Ref<Script> script = ResourceLoader::load(export_type.script_path, SNAME("Script"));
@@ -3998,9 +3999,9 @@ String GDScriptParser::DataType::to_string() const {
 			return class_type->fqcn;
 		case SCRIPT: {
 			if (is_meta_type) {
-				return script_type->get_class_name().operator String();
+				return script_type->get_ref()->get_class_name().operator String();
 			}
-			String name = script_type != nullptr ? script_type->get_name() : "";
+			String name = script_type->get_ref().is_valid() ? script_type->get_ref()->get_name() : "";
 			if (!name.is_empty()) {
 				return name;
 			}

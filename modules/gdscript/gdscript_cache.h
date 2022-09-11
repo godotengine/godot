@@ -32,15 +32,17 @@
 #define GDSCRIPT_CACHE_H
 
 #include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 #include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "gdscript.h"
+#include "scene/resources/packed_scene.h"
 
 class GDScriptAnalyzer;
 class GDScriptParser;
 
-class GDScriptParserRef : public RefCounted {
+class GDScriptParserData : public RefCounted {
 public:
 	enum Status {
 		EMPTY,
@@ -63,33 +65,80 @@ public:
 	bool is_valid() const;
 	Status get_status() const;
 	GDScriptParser *get_parser() const;
+	GDScriptAnalyzer *get_analyzer() const;
 	Error raise_status(Status p_new_status);
 
-	GDScriptParserRef() {}
-	~GDScriptParserRef();
+	GDScriptParserData() {}
+	~GDScriptParserData();
+};
+
+class GDScriptParserDataRef : public WeakRef {
+public:
+	Ref<GDScriptParserData> get_ref() const {
+		return WeakRef::get_ref();
+	}
+	void set_ref(const Ref<GDScriptParserData> &p_ref) {
+		WeakRef::set_ref(p_ref);
+	}
+};
+
+class PackedSceneRef : public WeakRef {
+public:
+	Variant get(const StringName &p_name, bool *r_valid) const {
+		if (get_ref().is_null()) {
+			return Variant();
+		}
+
+		return get_ref()->get(p_name, r_valid);
+	}
+
+	void set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
+		if (get_ref().is_null()) {
+			*r_valid = false;
+			return;
+		}
+
+		get_ref()->set(p_name, p_value, r_valid);
+	}
+
+	Ref<PackedScene> get_ref() const {
+		return WeakRef::get_ref();
+	}
+
+	void set_ref(const Ref<PackedScene> &p_ref) {
+		WeakRef::set_ref(p_ref);
+	}
 };
 
 class GDScriptCache {
 	// String key is full path.
-	HashMap<String, GDScriptParserRef *> parser_map;
-	HashMap<String, GDScript *> shallow_gdscript_cache;
-	HashMap<String, GDScript *> full_gdscript_cache;
-	HashMap<String, HashSet<String>> dependencies;
+	HashMap<String, Ref<GDScriptParserData>> parser_map;
+	HashMap<String, Ref<GDScript>> shallow_gdscript_cache;
+	HashMap<String, Ref<GDScript>> full_gdscript_cache;
+	HashMap<String, RBSet<String>> dependencies;
+	HashMap<String, Ref<PackedScene>> packed_scene_cache;
+
+	bool destructing;
+	RBSet<String> removed_dependencies;
 
 	friend class GDScript;
-	friend class GDScriptParserRef;
+	friend class GDScriptParserData;
 
 	static GDScriptCache *singleton;
 
 	Mutex lock;
-	static void remove_script(const String &p_path);
+
+	static void remove_dependencies(const String &p_path);
 
 public:
-	static Ref<GDScriptParserRef> get_parser(const String &p_path, GDScriptParserRef::Status status, Error &r_error, const String &p_owner = String());
+	static Ref<GDScriptParserDataRef> get_parser(const String &p_path, GDScriptParserData::Status status, Error &r_error, const String &p_owner = String());
 	static String get_source_code(const String &p_path);
-	static Ref<GDScript> get_shallow_script(const String &p_path, const String &p_owner = String());
-	static Ref<GDScript> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
+	static Ref<GDScriptRef> get_shallow_script(const String &p_path, const String &p_owner = String());
+	static Ref<GDScriptRef> get_full_script(const String &p_path, Error &r_error, const String &p_owner = String(), bool p_update_from_disk = false);
 	static Error finish_compiling(const String &p_owner);
+	static void reload_script(const String &p_path);
+	static void remove_script(const String &p_path);
+	static Ref<PackedSceneRef> load_scene(const String &p_path, const String &p_owner);
 
 	GDScriptCache();
 	~GDScriptCache();

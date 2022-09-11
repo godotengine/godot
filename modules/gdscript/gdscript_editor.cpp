@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "core/object/script_language.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
@@ -1011,8 +1012,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 				base_type = GDScriptParser::DataType();
 			} break;
 			case GDScriptParser::DataType::SCRIPT: {
-				Ref<Script> scr = base_type.script_type;
-				if (scr.is_valid()) {
+				if (base_type.script_type.is_valid() && base_type.script_type->get_ref().is_valid()) {
+					Ref<Script> scr = base_type.script_type->get_ref();
 					if (!p_only_functions) {
 						if (!_static) {
 							List<PropertyInfo> members;
@@ -1058,7 +1059,10 @@ static void _find_identifiers_in_base(const GDScriptCompletionIdentifier &p_base
 
 					Ref<Script> base_script = scr->get_base_script();
 					if (base_script.is_valid()) {
-						base_type.script_type = base_script;
+						Ref<ScriptRef> wref;
+						wref.instantiate();
+						wref->set_ref(base_script);
+						base_type.script_type = wref;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
 						base_type.native_type = scr->get_instance_base_type();
@@ -1279,25 +1283,25 @@ static GDScriptCompletionIdentifier _type_from_variant(const Variant &p_value) {
 	ci.type.is_constant = true;
 	ci.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	ci.type.kind = GDScriptParser::DataType::BUILTIN;
-	ci.type.builtin_type = p_value.get_type();
+	ci.type.builtin_type = GDScriptResource::get(p_value).get_type();
 
 	if (ci.type.builtin_type == Variant::OBJECT) {
 		Object *obj = p_value.operator Object *();
 		if (!obj) {
 			return ci;
 		}
-		ci.type.native_type = obj->get_class_name();
-		Ref<Script> scr = p_value;
+		ci.type.native_type = GDScriptResource::get(obj)->get_class_name();
+		Ref<Script> scr = GDScriptResource::get(p_value);
 		if (scr.is_valid()) {
 			ci.type.is_meta_type = true;
 		} else {
 			ci.type.is_meta_type = false;
-			scr = obj->get_script();
+			scr = GDScriptResource::get(obj)->get_script();
 		}
 		if (scr.is_valid()) {
-			ci.type.script_type = scr;
+			ci.type.script_type = obj;
 			ci.type.kind = GDScriptParser::DataType::SCRIPT;
-			ci.type.native_type = scr->get_instance_base_type();
+			ci.type.native_type = GDScriptResource::get<Ref<Script>>(scr)->get_instance_base_type();
 		} else {
 			ci.type.kind = GDScriptParser::DataType::NATIVE;
 		}
@@ -1514,13 +1518,17 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						}
 
 						while (native_type.kind == GDScriptParser::DataType::SCRIPT) {
-							if (native_type.script_type.is_valid()) {
-								Ref<Script> parent = native_type.script_type->get_base_script();
+							Ref<Script> native_type_script_type = native_type.script_type->get_ref();
+							if (native_type_script_type.is_valid()) {
+								Ref<Script> parent = native_type_script_type->get_base_script();
 								if (parent.is_valid()) {
-									native_type.script_type = parent;
+									Ref<ScriptRef> script_wref;
+									script_wref.instantiate();
+									script_wref->set_ref(parent);
+									native_type.script_type = script_wref;
 								} else {
 									native_type.kind = GDScriptParser::DataType::NATIVE;
-									native_type.native_type = native_type.script_type->get_instance_base_type();
+									native_type.native_type = native_type_script_type->get_instance_base_type();
 									if (!ClassDB::class_exists(native_type.native_type)) {
 										native_type.kind = GDScriptParser::DataType::UNRESOLVED;
 									}
@@ -1572,15 +1580,15 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 														if (FileAccess::exists(script)) {
 															Error err = OK;
-															Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(script, GDScriptParserRef::INTERFACE_SOLVED, err);
+															Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(script, GDScriptParserData::INTERFACE_SOLVED, err);
 															if (err == OK) {
 																r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 																r_type.type.script_path = script;
-																r_type.type.class_type = parser->get_parser()->get_tree();
+																r_type.type.class_type = parser_data_wref->get_ref()->get_parser()->get_tree();
 																r_type.type.is_constant = false;
 																r_type.type.kind = GDScriptParser::DataType::CLASS;
 																r_type.value = Variant();
-																p_context.dependent_parsers.push_back(parser);
+																p_context.dependent_parsers.push_back(parser_data_wref->get_ref());
 																found = true;
 															}
 														}
@@ -1995,17 +2003,17 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 	// Check global scripts.
 	if (ScriptServer::is_global_class(p_identifier)) {
 		String script = ScriptServer::get_global_class_path(p_identifier);
-		if (script.to_lower().ends_with(".gd")) {
+		if (ResourceLoader::get_resource_type(script) == GDScriptLanguage::get_singleton()->get_type()) {
 			Error err = OK;
-			Ref<GDScriptParserRef> parser = GDScriptCache::get_parser(script, GDScriptParserRef::INTERFACE_SOLVED, err);
+			Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(script, GDScriptParserData::INTERFACE_SOLVED, err);
 			if (err == OK) {
 				r_type.type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 				r_type.type.script_path = script;
-				r_type.type.class_type = parser->get_parser()->get_tree();
+				r_type.type.class_type = parser_data_wref->get_ref()->get_parser()->get_tree();
 				r_type.type.is_constant = false;
 				r_type.type.kind = GDScriptParser::DataType::CLASS;
 				r_type.value = Variant();
-				p_context.dependent_parsers.push_back(parser);
+				p_context.dependent_parsers.push_back(parser_data_wref->get_ref());
 				return true;
 			}
 		} else {
@@ -2124,7 +2132,7 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 				base_type = base_type.class_type->base_type;
 				break;
 			case GDScriptParser::DataType::SCRIPT: {
-				Ref<Script> scr = base_type.script_type;
+				Ref<Script> scr = base_type.script_type->get_ref();
 				if (scr.is_valid()) {
 					HashMap<StringName, Variant> constants;
 					scr->get_constants(&constants);
@@ -2145,7 +2153,10 @@ static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &
 					}
 					Ref<Script> parent = scr->get_base_script();
 					if (parent.is_valid()) {
-						base_type.script_type = parent;
+						Ref<ScriptRef> script_wref;
+						script_wref.instantiate();
+						script_wref->set_ref(parent);
+						base_type.script_type = script_wref;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
 						base_type.native_type = scr->get_instance_base_type();
@@ -2295,7 +2306,7 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 				base_type = base_type.class_type->base_type;
 				break;
 			case GDScriptParser::DataType::SCRIPT: {
-				Ref<Script> scr = base_type.script_type;
+				Ref<Script> scr = base_type.script_type->get_ref();
 				if (scr.is_valid()) {
 					List<MethodInfo> methods;
 					scr->get_script_method_list(&methods);
@@ -2307,7 +2318,10 @@ static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContex
 					}
 					Ref<Script> base_script = scr->get_base_script();
 					if (base_script.is_valid()) {
-						base_type.script_type = base_script;
+						Ref<ScriptRef> script_wref;
+						script_wref.instantiate();
+						script_wref->set_ref(base_script);
+						base_type.script_type = script_wref;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
 						base_type.native_type = scr->get_instance_base_type();
@@ -3058,18 +3072,21 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 			} break;
 			case GDScriptParser::DataType::SCRIPT: {
-				Ref<Script> scr = base_type.script_type;
+				Ref<Script> scr = GDScriptResource::get(base_type.script_type);
 				if (scr.is_valid()) {
 					int line = scr->get_member_line(p_symbol);
 					if (line >= 0) {
 						r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
 						r_result.location = line;
-						r_result.script = scr;
+						r_result.script = base_type.script_type;
 						return OK;
 					}
 					Ref<Script> base_script = scr->get_base_script();
 					if (base_script.is_valid()) {
-						base_type.script_type = base_script;
+						Ref<ScriptRef> script_wref;
+						script_wref.instantiate();
+						script_wref->set_ref(base_script);
+						base_type.script_type = script_wref;
 					} else {
 						base_type.kind = GDScriptParser::DataType::NATIVE;
 						base_type.native_type = scr->get_instance_base_type();

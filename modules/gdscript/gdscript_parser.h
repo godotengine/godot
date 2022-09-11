@@ -126,7 +126,7 @@ public:
 		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
 		StringName enum_type; // Enum name or the value name in an enum.
-		Ref<Script> script_type;
+		Ref<ScriptRef> script_type;
 		String script_path;
 		ClassNode *class_type = nullptr;
 
@@ -1198,7 +1198,7 @@ public:
 		Variant::Type builtin_type = Variant::VARIANT_MAX;
 		Node *node = nullptr;
 		Object *base = nullptr;
-		List<Ref<GDScriptParserRef>> dependent_parsers;
+		List<Ref<GDScriptParserData>> dependent_parsers;
 	};
 
 	struct CompletionCall {

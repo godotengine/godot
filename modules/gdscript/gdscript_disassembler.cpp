@@ -428,7 +428,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CONSTRUCT_TYPED_ARRAY: {
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2]);
+				Ref<Script> script_type = GDScriptResource::get(get_constant(_code_ptr[ip + argc + 2]));
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 

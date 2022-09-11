@@ -38,6 +38,7 @@
 #include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_encrypted.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_cache.h"
@@ -874,8 +875,8 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 		if (!source_path.is_empty()) {
 			MutexLock lock(GDScriptCache::singleton->lock);
-			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
-				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = this;
+			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path) && !GDScriptCache::singleton->full_gdscript_cache.has(source_path)) {
+				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = Ref<GDScript>(this);
 			}
 		}
 	}
@@ -906,6 +907,15 @@ Error GDScript::reload(bool p_keep_state) {
 			e = e->next();
 		}
 		return ERR_PARSE_ERROR;
+	}
+
+	String owner_path = _owner == nullptr ? "" : _owner->get_path();
+	Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(get_path(), GDScriptParserData::Status::EMPTY, err, owner_path);
+	if (parser_data_wref.is_valid() && parser_data_wref->get_ref().is_valid()) {
+		if (parser_data_wref->get_ref()->get_status() >= GDScriptParserData::Status::PARSED) {
+			parser_data_wref->get_ref()->get_parser()->parse(get_source_code(), get_path(), false);
+			parser_data_wref->get_ref()->get_analyzer()->analyze();
+		}
 	}
 
 	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
@@ -2026,6 +2036,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
+
 		scr->reload(p_soft_reload);
 
 		//restore state if saved
@@ -2349,12 +2360,22 @@ GDScriptLanguage::~GDScriptLanguage() {
 		for (KeyValue<StringName, GDScriptFunction *> &E : scr->member_functions) {
 			GDScriptFunction *func = E.value;
 			for (int i = 0; i < func->argument_types.size(); i++) {
-				func->argument_types.write[i].script_type_ref = Ref<Script>();
+				Ref<ScriptRef> script_wref;
+				script_wref.instantiate();
+				script_wref->set_ref(Ref<Script>());
+				func->argument_types.write[i].script_type_ref = script_wref;
 			}
-			func->return_type.script_type_ref = Ref<Script>();
+			Ref<ScriptRef> script_wref;
+			script_wref.instantiate();
+			script_wref->set_ref(Ref<Script>());
+			func->return_type.script_type_ref = script_wref;
 		}
+
 		for (KeyValue<StringName, GDScript::MemberInfo> &E : scr->member_indices) {
-			E.value.data_type.script_type_ref = Ref<Script>();
+			Ref<ScriptRef> script_wref;
+			script_wref.instantiate();
+			script_wref->set_ref(Ref<Script>());
+			E.value.data_type.script_type_ref = script_wref;
 		}
 
 		s = s->next();
@@ -2389,15 +2410,21 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	Error err;
-	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
+	String path = !p_original_path.is_empty() ? p_original_path : p_path;
+	path = ProjectSettings::get_singleton()->localize_path(path);
 
 	// TODO: Reintroduce binary and encrypted scripts.
+	Error err;
+	Ref<GDScript> scr;
+	Ref<GDScriptRef> scr_wref = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
 
-	if (scr.is_null()) {
+	if (scr_wref.is_null() || scr_wref->get_ref().is_null()) {
 		// Don't fail loading because of parsing error.
 		scr.instantiate();
+		return scr;
 	}
+
+	scr = scr_wref->get_ref();
 
 	if (r_error) {
 		*r_error = OK;

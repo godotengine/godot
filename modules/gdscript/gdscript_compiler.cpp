@@ -103,8 +103,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 		} break;
 		case GDScriptParser::DataType::SCRIPT: {
 			result.kind = GDScriptDataType::SCRIPT;
-			result.script_type_ref = Ref<Script>(p_datatype.script_type);
-			result.script_type = result.script_type_ref.ptr();
+			result.script_type_ref = p_datatype.script_type;
+			result.script_type = result.script_type_ref->get_ref().ptr();
 			result.native_type = result.script_type->get_instance_base_type();
 		} break;
 		case GDScriptParser::DataType::CLASS: {
@@ -125,17 +125,17 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						class_type = class_type->outer;
 					}
 
-					Ref<GDScript> script = Ref<GDScript>(main_script);
+					GDScript *script = Ref<GDScript>(main_script).ptr();
 					while (names.back()) {
 						if (!script->subclasses.has(names.back()->get())) {
 							ERR_PRINT("Parser bug: Cannot locate datatype class.");
 							result.has_type = false;
 							return GDScriptDataType();
 						}
-						script = script->subclasses[names.back()->get()];
+						script = script->subclasses[names.back()->get()].ptr();
 						names.pop_back();
 					}
-					result.script_type = script.ptr();
+					result.script_type = script;
 					result.native_type = script->get_instance_base_type();
 				} else {
 					// Inner class.
@@ -159,16 +159,22 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 								if (!valid) {
 									continue;
 								}
-								result.script_type_ref = Ref<GDScript>(script);
+
+								Ref<GDScriptRef> wref;
+								wref.instantiate();
+								wref->set_ref(script);
+
+								result.script_type_ref = wref;
 								break;
 							}
 						}
 					}
-					if (result.script_type_ref.is_null()) {
-						result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+					if (result.script_type_ref.is_null() || result.script_type_ref->get_ref().is_null()) {
+						Error err = OK;
+						result.script_type_ref = GDScriptCache::get_full_script(p_datatype.script_path, err, main_script->path);
 					}
 
-					result.script_type = result.script_type_ref.ptr();
+					result.script_type = result.script_type_ref->get_ref().ptr();
 					result.native_type = p_datatype.native_type;
 				}
 			}
@@ -190,12 +196,6 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 
 	if (p_datatype.has_container_element_type()) {
 		result.set_container_element_type(_gdtype_from_datatype(p_datatype.get_container_element_type()));
-	}
-
-	// Only hold strong reference to the script if it's not the owner of the
-	// element qualified with this type, to avoid cyclic references (leaks).
-	if (result.script_type && result.script_type == p_owner) {
-		result.script_type_ref = Ref<Script>();
 	}
 
 	return result;
@@ -386,15 +386,32 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 
 				Ref<Resource> res;
+				Ref<GDScriptRef> gdscript_wref;
 
 				if (class_node->identifier && class_node->identifier->name == identifier) {
-					res = Ref<GDScript>(main_script);
+					gdscript_wref.instantiate();
+					gdscript_wref->set_ref(main_script);
+					res = gdscript_wref;
 				} else {
-					res = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
-					if (res.is_null()) {
-						_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
-						r_error = ERR_COMPILATION_FAILED;
-						return GDScriptCodeGenerator::Address();
+					if (ResourceLoader::get_resource_type(ScriptServer::get_global_class_path(identifier)) == GDScriptLanguage::get_singleton()->get_type()) {
+						// Use the GDScript weak reference if it's a gdscript
+						Error err = OK;
+						gdscript_wref = GDScriptCache::get_full_script(ScriptServer::get_global_class_path(identifier), err, main_script->get_path());
+
+						if (gdscript_wref->get_ref().is_null()) {
+							_set_error("Can't load global GDScript class " + String(identifier), p_expression);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						}
+
+						return codegen.add_constant(gdscript_wref);
+					} else {
+						res = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
+						if (res.is_null()) {
+							_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						}
 					}
 				}
 
@@ -2293,7 +2310,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					}
 				} else {
 					Error err = OK;
-					base = GDScriptCache::get_full_script(p_class->base_type.script_path, err, main_script->path);
+					base = GDScriptCache::get_full_script(p_class->base_type.script_path, err, main_script->path)->get_ref();
 					if (err) {
 						return err;
 					}

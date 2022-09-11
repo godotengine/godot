@@ -72,7 +72,9 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 			ResourceCache::resources.erase(p_path);
 		} else {
 			ResourceCache::lock.unlock();
-			ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			if (ResourceLoader::get_resource_type(p_path) != "GDScript") {
+				ERR_FAIL_MSG("Another resource is loaded from path '" + p_path + "' (possible cyclic resource inclusion).");
+			}
 		}
 	}
 

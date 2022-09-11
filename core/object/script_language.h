@@ -235,6 +235,34 @@ public:
 	virtual ~ScriptCodeCompletionCache() {}
 };
 
+class ScriptRef : public WeakRef {
+public:
+	Variant get(const StringName &p_name, bool *r_valid) const {
+		if (get_ref() == nullptr) {
+			return Variant();
+		}
+
+		return get_ref()->get(p_name, r_valid);
+	};
+
+	void set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
+		if (get_ref() == nullptr) {
+			*r_valid = false;
+			return;
+		}
+
+		get_ref()->set(p_name, p_value, r_valid);
+	};
+
+	Ref<Script> get_ref() const {
+		return WeakRef::get_ref();
+	};
+
+	void set_ref(const Ref<Script> &p_ref) {
+		WeakRef::set_ref(p_ref);
+	};
+};
+
 class ScriptLanguage : public Object {
 	GDCLASS(ScriptLanguage, Object)
 public:
@@ -361,7 +389,7 @@ public:
 
 	struct LookupResult {
 		LookupResultType type;
-		Ref<Script> script;
+		Ref<ScriptRef> script;
 		String class_name;
 		String class_member;
 		String class_path;

@@ -60,7 +60,7 @@ class GDScriptCompiler {
 		}
 
 		GDScriptCodeGenerator::Address add_local_constant(const StringName &p_name, const Variant &p_value) {
-			uint32_t addr = generator->add_local_constant(p_name, p_value);
+			uint32_t addr = generator->add_local_constant(p_name, GDScriptResource::get(p_value));
 			locals[p_name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CONSTANT, addr);
 			return locals[p_name];
 		}
@@ -74,9 +74,9 @@ class GDScriptCompiler {
 			GDScriptDataType type;
 			type.has_type = true;
 			type.kind = GDScriptDataType::BUILTIN;
-			type.builtin_type = p_constant.get_type();
+			type.builtin_type = GDScriptResource::get(p_constant).get_type();
 			if (type.builtin_type == Variant::OBJECT) {
-				Object *obj = p_constant;
+				Object *obj = GDScriptResource::get(p_constant);
 				if (obj) {
 					type.kind = GDScriptDataType::NATIVE;
 					type.native_type = obj->get_class_name();
