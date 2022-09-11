@@ -392,9 +392,18 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				} else {
 					res = ResourceLoader::load(ScriptServer::get_global_class_path(identifier));
 					if (res.is_null()) {
-						_set_error("Can't load global class " + String(identifier) + ", cyclic reference?", p_expression);
-						r_error = ERR_COMPILATION_FAILED;
-						return GDScriptCodeGenerator::Address();
+						res = GDScriptCache::get_shallow_script(ScriptServer::get_global_class_path(identifier));
+						if (res.is_null()) {
+							_set_error("Can't load global class " + String(identifier) + ", as the script could not be found.", p_expression);
+							r_error = ERR_COMPILATION_FAILED;
+							return GDScriptCodeGenerator::Address();
+						} else {
+							// The script exists, but is not yet compiled
+							GDScriptCodeGenerator::Address temp = codegen.add_temporary(_gdtype_from_datatype(in->get_datatype()));
+							GDScriptCodeGenerator::Address self(GDScriptCodeGenerator::Address::SELF);
+							gen->write_get_named(temp, identifier, self);
+							return temp;
+						}
 					}
 				}
 
