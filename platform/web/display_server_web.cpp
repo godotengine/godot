@@ -764,10 +764,10 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	if (wants_webgl2 && !webgl2_init_failed) {
 		EmscriptenWebGLContextAttributes attributes;
 		emscripten_webgl_init_context_attributes(&attributes);
-		//attributes.alpha = GLOBAL_GET("display/window/per_pixel_transparency/allowed");
-		attributes.alpha = true;
+		attributes.alpha = OS::get_singleton()->is_layered_allowed();
 		attributes.antialias = false;
 		attributes.majorVersion = 2;
+		attributes.explicitSwapControl = true;
 
 		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
 		if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
