@@ -843,6 +843,10 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
+	if (blend_tree.is_null()) {
+		return;
+	}
+
 	String prev_name = blend_tree->get_node_name(p_node);
 	ERR_FAIL_COND(prev_name == String());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));
