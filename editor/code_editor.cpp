@@ -1048,6 +1048,7 @@ void CodeTextEditor::update_editor_settings() {
 	} else {
 		text_editor->set_line_length_guidelines(TypedArray<int>());
 	}
+	text_editor->set_codeblock_guidelines_style((CodeEdit::CodeblockGuidelinesStyle)EditorSettings::get_singleton()->get("text_editor/appearance/guidelines/codeblock_guidelines_style").operator int());
 }
 
 void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {

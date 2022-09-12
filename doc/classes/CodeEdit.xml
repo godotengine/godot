@@ -451,6 +451,9 @@
 		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_comletion_prefixes" default="[]">
 			Sets prefixes that will trigger code completion.
 		</member>
+		<member name="codeblock_guidelines_style" type="int" setter="set_codeblock_guidelines_style" getter="get_codeblock_guidelines_style" enum="CodeEdit.CodeblockGuidelinesStyle" default="0">
+			Sets the style to display code block guidelines. See [enum CodeblockGuidelinesStyle].
+		</member>
 		<member name="delimiter_comments" type="String[]" setter="set_comment_delimiters" getter="get_comment_delimiters" default="[]">
 			Sets the comment delimiters. All existing comment delimiters will be removed.
 		</member>
@@ -527,6 +530,15 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="CODEBLOCK_GUIDE_STYLE_NONE" value="0" enum="CodeblockGuidelinesStyle">
+			Codeblock guides are not drawn.
+		</constant>
+		<constant name="CODEBLOCK_GUIDE_STYLE_LINE" value="1" enum="CodeblockGuidelinesStyle">
+			Draws guidelines denoting the blocks of code.
+		</constant>
+		<constant name="CODEBLOCK_GUIDE_STYLE_LINE_CLOSE" value="2" enum="CodeblockGuidelinesStyle">
+			Draws guidelines denoting the blocks of code. Additionally, horizontal lines connect from the end of the block to the last letter when applicable.
+		</constant>
 		<constant name="KIND_CLASS" value="0" enum="CodeCompletionKind">
 			Marks the option as a class.
 		</constant>
@@ -579,6 +591,12 @@
 		</theme_item>
 		<theme_item name="code_folding_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.8)">
 			[Color] for all icons related to line folding.
+		</theme_item>
+		<theme_item name="codeblock_guideline_active_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.25)">
+			[Color] for the code block guideline, if enabled, when the caret is inside of it.
+		</theme_item>
+		<theme_item name="codeblock_guideline_color" data_type="color" type="Color" default="Color(0.8, 0.8, 0.8, 0.1)">
+			[Color] for the code block guideline, if enabled.
 		</theme_item>
 		<theme_item name="completion_background_color" data_type="color" type="Color" default="Color(0.17, 0.16, 0.2, 1)">
 			Sets the background [Color] for the code completion popup.

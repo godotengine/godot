@@ -484,6 +484,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("executing_line_color", "CodeEdit", Color(0.98, 0.89, 0.27));
 	theme->set_color("current_line_color", "CodeEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("code_folding_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.8));
+	theme->set_color("codeblock_guideline_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.1));
+	theme->set_color("codeblock_guideline_active_color", "CodeEdit", Color(0.8, 0.8, 0.8, 0.25));
 	theme->set_color("caret_color", "CodeEdit", control_font_color);
 	theme->set_color("caret_background_color", "CodeEdit", Color(0, 0, 0));
 	theme->set_color("brace_mismatch_color", "CodeEdit", Color(1, 0.2, 0.2));

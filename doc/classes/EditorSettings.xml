@@ -661,6 +661,9 @@
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays a outline over the current character.
 		</member>
+		<member name="text_editor/appearance/guidelines/codeblock_guidelines_style" type="int" setter="" getter="">
+			The style to use for the line marking the beginning and end of a block of code (see [enum CodeEdit.CodeblockGuidelinesStyle]). To customise the color of the line, see [member text_editor/theme/highlighting/codeblock_guideline_color] and [member text_editor/theme/highlighting/codeblock_guideline_active_color].
+		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
 		</member>
@@ -823,6 +826,12 @@
 		</member>
 		<member name="text_editor/theme/highlighting/code_folding_color" type="Color" setter="" getter="">
 			The script editor's color for the code folding icon (displayed in the gutter).
+		</member>
+		<member name="text_editor/theme/highlighting/codeblock_guideline_active_color" type="Color" setter="" getter="">
+			The script editor's color for the code block guideline, when the caret is inside the code block. See also [member text_editor/appearance/guidelines/codeblock_guidelines_style].
+		</member>
+		<member name="text_editor/theme/highlighting/codeblock_guideline_color" type="Color" setter="" getter="">
+			The script editor's color for the code block guideline. See also [member text_editor/appearance/guidelines/codeblock_guidelines_style].
 		</member>
 		<member name="text_editor/theme/highlighting/comment_color" type="Color" setter="" getter="">
 			The script editor's comment color.

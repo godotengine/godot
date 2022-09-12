@@ -518,6 +518,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/appearance/guidelines/show_line_length_guidelines", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/guidelines/line_length_guideline_soft_column", 80, "20,160,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/guidelines/line_length_guideline_hard_column", 100, "20,160,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/appearance/guidelines/codeblock_guidelines_style", 0, "None,Line,Line (Close)")
 
 	// Appearance: Gutters
 	_initial_set("text_editor/appearance/gutters/show_line_numbers", true);
@@ -779,6 +780,8 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
 	_initial_set("text_editor/theme/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
 	_initial_set("text_editor/theme/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
+	_initial_set("text_editor/theme/highlighting/codeblock_guideline_color", Color(0.8, 0.8, 0.8, 0.1));
+	_initial_set("text_editor/theme/highlighting/codeblock_guideline_active_color", Color(0.8, 0.8, 0.8, 0.25));
 	_initial_set("text_editor/theme/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
 	_initial_set("text_editor/theme/highlighting/number_color", Color(0.92, 0.58, 0.2));
 	_initial_set("text_editor/theme/highlighting/function_color", Color(0.4, 0.64, 0.81));

@@ -1746,6 +1746,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color brace_mismatch_color = dark_theme ? error_color : Color(1, 0.08, 0, 1);
 	const Color current_line_color = alpha1;
 	const Color line_length_guideline_color = dark_theme ? base_color : background_color;
+	const Color codeblock_guideline_color = Color(mono_value, mono_value, mono_value, 0.125);
+	const Color codeblock_guideline_active_color = Color(mono_value, mono_value, mono_value, 0.2);
 	const Color word_highlighted_color = alpha1;
 	const Color number_color = dark_theme ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
 	const Color function_color = dark_theme ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
@@ -1786,6 +1788,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/theme/highlighting/brace_mismatch_color", brace_mismatch_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/current_line_color", current_line_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/line_length_guideline_color", line_length_guideline_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/codeblock_guideline_color", codeblock_guideline_color, true);
+		setting->set_initial_value("text_editor/theme/highlighting/codeblock_guideline_active_color", codeblock_guideline_active_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/word_highlighted_color", word_highlighted_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/number_color", number_color, true);
 		setting->set_initial_value("text_editor/theme/highlighting/function_color", function_color, true);
@@ -1834,6 +1838,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("brace_mismatch_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/brace_mismatch_color"));
 	theme->set_color("current_line_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/current_line_color"));
 	theme->set_color("line_length_guideline_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/line_length_guideline_color"));
+	theme->set_color("codeblock_guideline_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/codeblock_guideline_color"));
+	theme->set_color("codeblock_guideline_active_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/codeblock_guideline_active_color"));
 	theme->set_color("word_highlighted_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/word_highlighted_color"));
 	theme->set_color("bookmark_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/bookmark_color"));
 	theme->set_color("breakpoint_color", "CodeEdit", EDITOR_GET("text_editor/theme/highlighting/breakpoint_color"));

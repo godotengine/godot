@@ -52,6 +52,12 @@ public:
 		KIND_PLAIN_TEXT,
 	};
 
+	enum CodeblockGuidelinesStyle {
+		CODEBLOCK_GUIDE_STYLE_NONE,
+		CODEBLOCK_GUIDE_STYLE_LINE,
+		CODEBLOCK_GUIDE_STYLE_LINE_CLOSE
+	};
+
 private:
 	/* Indent management */
 	int indent_size = 4;
@@ -126,6 +132,13 @@ private:
 
 	/* Line Folding */
 	bool line_folding_enabled = false;
+	bool _can_fold_line(int p_line) const;
+	int _get_fold_line_ending(int p_line) const;
+
+	/* Codeblock Guidelines */
+	CodeblockGuidelinesStyle codeblock_guidelines_style = CODEBLOCK_GUIDE_STYLE_NONE;
+	Color codeblock_guideline_color;
+	Color codeblock_guideline_active_color;
 
 	/* Delimiters */
 	enum DelimiterType {
@@ -361,6 +374,10 @@ public:
 	bool is_line_folded(int p_line) const;
 	TypedArray<int> get_folded_lines() const;
 
+	/* Codeblock Guidelines */
+	void set_codeblock_guidelines_style(CodeblockGuidelinesStyle p_style);
+	CodeblockGuidelinesStyle get_codeblock_guidelines_style() const;
+
 	/* Delimiters */
 	void add_string_delimiter(const String &p_start_key, const String &p_end_key, bool p_line_only = false);
 	void remove_string_delimiter(const String &p_start_key);
@@ -432,5 +449,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
+VARIANT_ENUM_CAST(CodeEdit::CodeblockGuidelinesStyle);
 
 #endif // CODE_EDIT_H

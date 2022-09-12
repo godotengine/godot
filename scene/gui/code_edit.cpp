@@ -74,6 +74,8 @@ void CodeEdit::_notification(int p_what) {
 			code_completion_existing_color = get_theme_color(SNAME("completion_existing_color"));
 
 			line_length_guideline_color = get_theme_color(SNAME("line_length_guideline_color"));
+			codeblock_guideline_color = get_theme_color(SNAME("codeblock_guideline_color"));
+			codeblock_guideline_active_color = get_theme_color(SNAME("codeblock_guideline_active_color"));
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -97,6 +99,84 @@ void CodeEdit::_notification(int p_what) {
 							continue;
 						}
 						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(xoffset, 0), Point2(xoffset, size.height), guideline_color);
+					}
+				}
+			}
+
+			/* Codeblock Guidelines */
+			if (codeblock_guidelines_style != CODEBLOCK_GUIDE_STYLE_NONE) {
+				const int xmargin_beg = style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
+				const float space_width = font->get_char_size(' ', font_size).width;
+				const double v_scroll = get_v_scroll();
+				const double h_scroll = get_h_scroll();
+
+				// Let's avoid guidelines out of view.
+				const int visible_lines_from = MAX(get_first_visible_line() - 1, 0);
+				const int visible_lines_to = MIN(visible_lines_from + get_visible_line_count() + 1 + (is_smooth_scroll_enabled() ? 1 : 0), get_line_count());
+
+				PackedInt32Array block_ends;
+				for (int i = 0; i < visible_lines_to; i++) {
+					if (_is_line_hidden(i)) {
+						continue;
+					}
+
+					if (_can_fold_line(i)) {
+						const int block_start = i; // This is a line that can potentially fold.
+						const int block_end = _get_fold_line_ending(block_start);
+
+						if (block_end <= 0) {
+							continue;
+						}
+
+						const int indent_level_start = get_indent_level(i);
+						const int indent_level_inner = get_indent_level(i + 1);
+
+						// Check if this codeblock contains the caret.
+						Color color = codeblock_guideline_color;
+						const int caret_idx = get_caret_line();
+
+						if (caret_idx > block_start &&
+								caret_idx <= block_end &&
+								get_indent_level(caret_idx) == indent_level_inner) {
+							color = codeblock_guideline_active_color;
+						}
+
+						float indent_guide_x = (indent_level_start * space_width + space_width / 2) + xmargin_beg - h_scroll;
+
+						int skipped_lines_to_start = block_start - get_visible_line_count_in_range(0, block_start);
+						int skipped_lines_to_end = block_end - get_visible_line_count_in_range(0, block_end);
+						const double visible_indent_start = (block_start - v_scroll - skipped_lines_to_start);
+						const double visible_indent_end = (block_end - v_scroll - skipped_lines_to_end);
+
+						// Stack multiple guidelines.
+						float offset_y = MIN(block_ends.count(block_end) * 2.0, font->get_height(font_size) / 2.0);
+
+						// Vertical line to the end.
+						Point2 point_start = Point2(indent_guide_x, row_height * visible_indent_start);
+						Point2 point_end = Point2(indent_guide_x, row_height * visible_indent_end - offset_y);
+
+						RenderingServer::get_singleton()->canvas_item_add_line(ci, point_start, point_end, color, 1.0);
+
+						if (codeblock_guidelines_style == CODEBLOCK_GUIDE_STYLE_LINE_CLOSE && block_end <= visible_lines_to) {
+							// Horizontal guideline starting from the end,
+							// Drawn whenever a closing bracket underneath is unavailable, or already taken by a higher guideline.
+							String line_below = get_line(block_end + 1).strip_edges();
+
+							bool bottom_begins_with_close_brace = false;
+							for (int pair_idx = 0; pair_idx < auto_brace_completion_pairs.size(); pair_idx++) {
+								if (line_below.begins_with(auto_brace_completion_pairs[pair_idx].close_key)) {
+									bottom_begins_with_close_brace = true;
+								}
+							}
+
+							if (!bottom_begins_with_close_brace || block_ends.has(block_end)) {
+								float indent_guide_side_x = indent_guide_x + (get_indent_level(block_end) - indent_level_start) * space_width;
+								Point2 point_side = Point2(indent_guide_side_x, row_height * visible_indent_end - offset_y);
+
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, point_end, point_side, color, 1.0);
+							}
+						}
+						block_ends.append(block_end);
 					}
 				}
 			}
@@ -1424,50 +1504,7 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		return false;
 	}
 
-	if (p_line + 1 >= get_line_count() || get_line(p_line).strip_edges().size() == 0) {
-		return false;
-	}
-
-	if (_is_line_hidden(p_line) || is_line_folded(p_line)) {
-		return false;
-	}
-
-	/* Check for full multiline line or block strings / comments. */
-	int in_comment = is_in_comment(p_line);
-	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
-	if (in_string != -1 || in_comment != -1) {
-		if (get_delimiter_start_position(p_line, get_line(p_line).size() - 1).y != p_line) {
-			return false;
-		}
-
-		int delimter_end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
-		/* No end line, therefore we have a multiline region over the rest of the file. */
-		if (delimter_end_line == -1) {
-			return true;
-		}
-		/* End line is the same therefore we have a block. */
-		if (delimter_end_line == p_line) {
-			/* Check we are the start of the block. */
-			if (p_line - 1 >= 0) {
-				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1)) {
-					return false;
-				}
-			}
-			/* Check it continues for at least one line. */
-			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1));
-		}
-		return ((in_string != -1 && is_in_string(delimter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimter_end_line) != -1));
-	}
-
-	/* Otherwise check indent levels. */
-	int start_indent = get_indent_level(p_line);
-	for (int i = p_line + 1; i < get_line_count(); i++) {
-		if (is_in_string(i) != -1 || is_in_comment(i) != -1 || get_line(i).strip_edges().size() == 0) {
-			continue;
-		}
-		return (get_indent_level(i) > start_indent);
-	}
-	return false;
+	return _can_fold_line(p_line);
 }
 
 void CodeEdit::fold_line(int p_line) {
@@ -1477,37 +1514,7 @@ void CodeEdit::fold_line(int p_line) {
 	}
 
 	/* Find the last line to be hidden. */
-	const int line_count = get_line_count() - 1;
-	int end_line = line_count;
-
-	int in_comment = is_in_comment(p_line);
-	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
-	if (in_string != -1 || in_comment != -1) {
-		end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
-		/* End line is the same therefore we have a block of single line delimiters. */
-		if (end_line == p_line) {
-			for (int i = p_line + 1; i <= line_count; i++) {
-				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
-					break;
-				}
-				end_line = i;
-			}
-		}
-	} else {
-		int start_indent = get_indent_level(p_line);
-		for (int i = p_line + 1; i <= line_count; i++) {
-			if (get_line(i).strip_edges().size() == 0) {
-				continue;
-			}
-			if (get_indent_level(i) > start_indent) {
-				end_line = i;
-				continue;
-			}
-			if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
-				break;
-			}
-		}
-	}
+	int end_line = _get_fold_line_ending(p_line);
 
 	for (int i = p_line + 1; i <= end_line; i++) {
 		_set_line_as_hidden(i, true);
@@ -1589,6 +1596,16 @@ TypedArray<int> CodeEdit::get_folded_lines() const {
 	}
 	return folded_lines;
 }
+
+/* Codeblock Guidelines */
+void CodeEdit::set_codeblock_guidelines_style(CodeblockGuidelinesStyle p_style) {
+	codeblock_guidelines_style = p_style;
+	queue_redraw();
+};
+
+CodeEdit::CodeblockGuidelinesStyle CodeEdit::get_codeblock_guidelines_style() const {
+	return codeblock_guidelines_style;
+};
 
 /* Delimiters */
 // Strings
@@ -2195,6 +2212,14 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_line_folded", "line"), &CodeEdit::is_line_folded);
 	ClassDB::bind_method(D_METHOD("get_folded_lines"), &CodeEdit::get_folded_lines);
 
+	/* Codeblock Guidelines */
+	BIND_ENUM_CONSTANT(CODEBLOCK_GUIDE_STYLE_NONE);
+	BIND_ENUM_CONSTANT(CODEBLOCK_GUIDE_STYLE_LINE);
+	BIND_ENUM_CONSTANT(CODEBLOCK_GUIDE_STYLE_LINE_CLOSE);
+
+	ClassDB::bind_method(D_METHOD("set_codeblock_guidelines_style", "style"), &CodeEdit::set_codeblock_guidelines_style);
+	ClassDB::bind_method(D_METHOD("get_codeblock_guidelines_style"), &CodeEdit::get_codeblock_guidelines_style);
+
 	/* Delimiters */
 	// Strings
 	ClassDB::bind_method(D_METHOD("add_string_delimiter", "start_key", "end_key", "line_only"), &CodeEdit::add_string_delimiter, DEFVAL(false));
@@ -2280,6 +2305,7 @@ void CodeEdit::_bind_methods() {
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "codeblock_guidelines_style", PROPERTY_HINT_ENUM, "None,Line,Line (Close)"), "set_codeblock_guidelines_style", "get_codeblock_guidelines_style");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
 
@@ -2421,6 +2447,90 @@ void CodeEdit::_update_gutter_indexes() {
 		}
 	}
 }
+
+/* Line Folding */
+bool CodeEdit::_can_fold_line(int p_line) const {
+	if (p_line + 1 >= get_line_count() || get_line(p_line).strip_edges().size() == 0) {
+		return false;
+	}
+
+	if (_is_line_hidden(p_line) || is_line_folded(p_line)) {
+		return false;
+	}
+
+	/* Check for full multiline line or block strings / comments. */
+	int in_comment = is_in_comment(p_line);
+	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
+	if (in_string != -1 || in_comment != -1) {
+		if (get_delimiter_start_position(p_line, get_line(p_line).size() - 1).y != p_line) {
+			return false;
+		}
+
+		int delimter_end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+		/* No end line, therefore we have a multiline region over the rest of the file. */
+		if (delimter_end_line == -1) {
+			return true;
+		}
+		/* End line is the same therefore we have a block. */
+		if (delimter_end_line == p_line) {
+			/* Check we are the start of the block. */
+			if (p_line - 1 >= 0) {
+				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1)) {
+					return false;
+				}
+			}
+			/* Check it continues for at least one line. */
+			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1));
+		}
+		return ((in_string != -1 && is_in_string(delimter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimter_end_line) != -1));
+	}
+
+	/* Otherwise check indent levels. */
+	int start_indent = get_indent_level(p_line);
+	for (int i = p_line + 1; i < get_line_count(); i++) {
+		if (is_in_string(i) != -1 || is_in_comment(i) != -1 || get_line(i).strip_edges().size() == 0) {
+			continue;
+		}
+		return (get_indent_level(i) > start_indent);
+	}
+	return false;
+}
+
+int CodeEdit::_get_fold_line_ending(int p_line) const {
+	/* Find the last line to be hidden. */
+	const int line_count = get_line_count() - 1;
+	int end_line = line_count;
+
+	int in_comment = is_in_comment(p_line);
+	int in_string = (in_comment == -1) ? is_in_string(p_line) : -1;
+	if (in_string != -1 || in_comment != -1) {
+		end_line = get_delimiter_end_position(p_line, get_line(p_line).size() - 1).y;
+		/* End line is the same therefore we have a block of single line delimiters. */
+		if (end_line == p_line) {
+			for (int i = p_line + 1; i <= line_count; i++) {
+				if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
+					break;
+				}
+				end_line = i;
+			}
+		}
+	} else {
+		int start_indent = get_indent_level(p_line);
+		for (int i = p_line + 1; i <= line_count; i++) {
+			if (get_line(i).strip_edges().size() == 0) {
+				continue;
+			}
+			if (get_indent_level(i) > start_indent) {
+				end_line = i;
+				continue;
+			}
+			if (is_in_string(i) == -1 && is_in_comment(i) == -1) {
+				break;
+			}
+		}
+	}
+	return end_line;
+};
 
 /* Delimiters */
 void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
