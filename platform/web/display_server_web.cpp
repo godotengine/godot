@@ -997,7 +997,7 @@ void DisplayServerWeb::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		} break;
 		case WINDOW_MODE_MAXIMIZED:
 		case WINDOW_MODE_MINIMIZED:
-			WARN_PRINT("WindowMode MAXIMIZED and MINIMIZED are not supported in Web platform.");
+			// WindowMode MAXIMIZED and MINIMIZED are not supported in Web platform.
 			break;
 		default:
 			break;
