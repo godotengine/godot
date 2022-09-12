@@ -997,6 +997,7 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 	if (!frames.is_valid()) {
 		return;
 	}
+
 	if (p_property.name == "animation") {
 		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
@@ -1026,9 +1027,15 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 				p_property.hint_string = String(animation) + "," + p_property.hint_string;
 			}
 		}
+		return;
 	}
 
 	if (p_property.name == "frame") {
+		if (playing) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+			return;
+		}
+
 		p_property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
 			p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
@@ -1222,6 +1229,7 @@ void AnimatedSprite3D::set_playing(bool p_playing) {
 	playing = p_playing;
 	_reset_timeout();
 	set_process_internal(playing);
+	notify_property_list_changed();
 }
 
 bool AnimatedSprite3D::is_playing() const {
