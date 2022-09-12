@@ -19,8 +19,9 @@
 		<method name="play">
 			<return type="void" />
 			<argument index="0" name="anim" type="String" default="&quot;&quot;" />
+			<argument index="1" name="backwards" type="bool" default="false" />
 			<description>
-				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played.
+				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played. If [code]backwards[/code] is [code]true[/code], the animation will be played in reverse.
 			</description>
 		</method>
 		<method name="stop">
@@ -42,6 +43,9 @@
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			The animation speed is multiplied by this value.
 		</member>
 	</members>
 	<signals>

@@ -69,7 +69,7 @@ Rect2 AnimatedSprite::_edit_get_rect() const {
 }
 
 bool AnimatedSprite::_edit_use_rect() const {
-	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+	if (frames.is_null() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return false;
 	}
 	Ref<Texture> t;
@@ -85,7 +85,7 @@ Rect2 AnimatedSprite::get_anchorable_rect() const {
 }
 
 Rect2 AnimatedSprite::_get_rect() const {
-	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+	if (frames.is_null() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return Rect2();
 	}
 
@@ -315,7 +315,7 @@ SpriteFrames::SpriteFrames() {
 }
 
 void AnimatedSprite::_validate_property(PropertyInfo &property) const {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
 	if (property.name == "animation") {
@@ -382,37 +382,43 @@ void AnimatedSprite::_notification(int p_what) {
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
-					int fc = frames->get_frame_count(animation);
-					if ((!backwards && frame >= fc - 1) || (backwards && frame <= 0)) {
-						if (frames->get_animation_loop(animation)) {
-							if (backwards) {
-								frame = fc - 1;
-							} else {
+					int last_frame = frames->get_frame_count(animation) - 1;
+					if (!backwards) {
+						// Forward.
+						if (frame >= last_frame) {
+							if (frames->get_animation_loop(animation)) {
 								frame = 0;
-							}
-
-							emit_signal(SceneStringNames::get_singleton()->animation_finished);
-						} else {
-							if (backwards) {
-								frame = 0;
-							} else {
-								frame = fc - 1;
-							}
-
-							if (!is_over) {
-								is_over = true;
 								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							} else {
+								frame = last_frame;
+								if (!is_over) {
+									is_over = true;
+									emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								}
 							}
-						}
-					} else {
-						if (backwards) {
-							frame--;
 						} else {
 							frame++;
+						}
+					} else {
+						// Reversed.
+						if (frame <= 0) {
+							if (frames->get_animation_loop(animation)) {
+								frame = last_frame;
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							} else {
+								frame = 0;
+								if (!is_over) {
+									is_over = true;
+									emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								}
+							}
+						} else {
+							frame--;
 						}
 					}
 
 					update();
+
 					_change_notify("frame");
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
 				}
@@ -476,7 +482,7 @@ void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 		frames->connect("changed", this, "_res_changed");
 	}
 
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		frame = 0;
 	} else {
 		set_frame(frame);
@@ -493,7 +499,7 @@ Ref<SpriteFrames> AnimatedSprite::get_sprite_frames() const {
 }
 
 void AnimatedSprite::set_frame(int p_frame) {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
 
@@ -527,7 +533,7 @@ void AnimatedSprite::set_speed_scale(float p_speed_scale) {
 
 	speed_scale = MAX(p_speed_scale, 0.0f);
 
-	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed
+	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed.
 	_reset_timeout();
 	timeout -= elapsed;
 }

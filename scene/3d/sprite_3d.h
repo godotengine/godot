@@ -202,11 +202,14 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	Ref<SpriteFrames> frames;
 	bool playing;
+	bool backwards;
 	StringName animation;
 	int frame;
+	float speed_scale = 1.0f;
 
 	bool centered;
 
+	bool is_over;
 	float timeout;
 
 	bool hflip;
@@ -216,6 +219,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	void _res_changed();
 
+	double _get_frame_duration();
 	void _reset_timeout();
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
@@ -230,7 +234,7 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName());
+	void play(const StringName &p_animation = StringName(), bool p_backwards = false);
 	void stop();
 	bool is_playing() const;
 
@@ -239,6 +243,9 @@ public:
 
 	void set_frame(int p_frame);
 	int get_frame() const;
+
+	void set_speed_scale(double p_speed_scale);
+	double get_speed_scale() const;
 
 	virtual Rect2 get_item_rect() const;
 
