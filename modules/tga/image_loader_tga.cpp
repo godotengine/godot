@@ -100,7 +100,7 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 	uint32_t width = p_header.image_width;
 	uint32_t height = p_header.image_height;
 	tga_origin_e origin = static_cast<tga_origin_e>((p_header.image_descriptor & TGA_ORIGIN_MASK) >> TGA_ORIGIN_SHIFT);
-
+	uint8_t alpha_bits = p_header.image_descriptor & TGA_IMAGE_DESCRIPTOR_ALPHA_MASK;
 	uint32_t x_start;
 	int32_t x_step;
 	uint32_t x_end;
@@ -183,6 +183,27 @@ Error ImageLoaderTGA::convert_to_image(Ref<Image> p_image, const uint8_t *p_buff
 				x = x_start;
 				y += y_step;
 			}
+		}
+	} else if (p_header.pixel_depth == 16) {
+		while (y != y_end) {
+			while (x != x_end) {
+				if (i + 1 >= p_input_size) {
+					return ERR_PARSE_ERROR;
+				}
+
+				// Always stored as RGBA5551
+				uint8_t r = (p_buffer[i + 1] & 0x7c) << 1;
+				uint8_t g = ((p_buffer[i + 1] & 0x03) << 6) | ((p_buffer[i + 0] & 0xe0) >> 2);
+				uint8_t b = (p_buffer[i + 0] & 0x1f) << 3;
+				uint8_t a = (p_buffer[i + 1] & 0x80) ? 0xff : 0;
+
+				TGA_PUT_PIXEL(r, g, b, alpha_bits ? a : 0xff);
+
+				x += x_step;
+				i += 2;
+			}
+			x = x_start;
+			y += y_step;
 		}
 	} else if (p_header.pixel_depth == 24) {
 		while (y != y_end) {
@@ -286,7 +307,7 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		err = FAILED;
 	}
 
-	if (!(tga_header.pixel_depth == 8 || tga_header.pixel_depth == 24 || tga_header.pixel_depth == 32)) {
+	if (!(tga_header.pixel_depth == 8 || tga_header.pixel_depth == 16 || tga_header.pixel_depth == 24 || tga_header.pixel_depth == 32)) {
 		err = FAILED;
 	}
 
