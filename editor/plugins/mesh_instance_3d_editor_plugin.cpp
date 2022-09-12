@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/scene_tree_dock.h"
 #include "node_3d_editor_plugin.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -343,6 +344,75 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 			}
 			_create_uv_lines(1);
 		} break;
+		case MENU_OPTION_CREATE_TRAIL_SKELETON: {
+			if (node == get_tree()->get_edited_scene_root()) {
+				err_dialog->set_text(TTR("MeshInstance3D cannot be the scene's root node."));
+				err_dialog->popup_centered();
+				return;
+			}
+
+			if (!node->get_mesh()->is_class("TubeTrailMesh") && !node->get_mesh()->is_class("RibbonTrailMesh")) {
+				err_dialog->set_text(TTR("Mesh must be a TubeTrailMesh or a RibbonTrailMesh."));
+				err_dialog->popup_centered();
+				return;
+			}
+
+			Skeleton3D *original_skeleton = Object::cast_to<Skeleton3D>(node->get_node(node->get_skeleton_path()));
+
+			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Create Trail Skeleton"));
+
+			Skeleton3D *new_skeleton;
+
+			if (original_skeleton) {
+				new_skeleton = (Skeleton3D *)original_skeleton->duplicate();
+			} else {
+				new_skeleton = memnew(Skeleton3D);
+			}
+
+			Node *parent = node->get_parent();
+
+			// Two types of scenarios -> no existing Skeleton3D (In which case the new Skeleton3D will be made the parent of the
+			// MeshInstance3D) vs existing skeleton that just gets replaced
+			if (!original_skeleton) {
+				ur->add_do_method(parent, "remove_child", node);
+				ur->add_do_method(new_skeleton, "add_child", node);
+				ur->add_do_method(parent, "add_child", new_skeleton, true);
+				ur->add_do_method(new_skeleton, "set_owner", get_tree()->get_edited_scene_root());
+				ur->add_do_method(node, "set_owner", get_tree()->get_edited_scene_root());
+				ur->add_do_reference(new_skeleton);
+
+				ur->add_undo_method(parent, "remove_child", new_skeleton);
+				ur->add_undo_method(new_skeleton, "remove_child", node);
+				ur->add_undo_method(parent, "add_child", node);
+				ur->add_undo_method(node, "set_owner", get_tree()->get_edited_scene_root());
+			} else {
+				new_skeleton->set_name(original_skeleton->get_name());
+				ur->add_do_method(original_skeleton, "replace_by", new_skeleton, true);
+				ur->add_do_reference(new_skeleton);
+
+				ur->add_undo_method(new_skeleton, "replace_by", original_skeleton, true);
+				ur->add_undo_reference(original_skeleton);
+			}
+
+			Ref<Skin> skin = memnew(Skin);
+
+			new_skeleton->clear_bones();
+
+			for (int i = 0; i < mesh->get_builtin_bind_pose_count(); i++) {
+				String bone_name = vformat("trail_%d", i);
+				new_skeleton->add_bone(bone_name);
+				new_skeleton->set_bone_rest(i, mesh->get_builtin_bind_pose(i));
+				skin->add_named_bind(bone_name, mesh->get_builtin_bind_pose(i));
+			}
+
+			new_skeleton->reset_bone_poses();
+
+			ur->add_do_method(node, "set_skin", skin);
+			ur->add_undo_method(node, "set_skin", node->get_skin());
+
+			ur->commit_action();
+		} break;
 	}
 }
 
@@ -515,6 +585,8 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
 	options->get_popup()->add_item(TTR("Unwrap UV2 for Lightmap/AO"), MENU_OPTION_CREATE_UV2);
+	options->get_popup()->add_item(TTR("Create Skeleton from Ribbon/Tube Trail Mesh"), MENU_OPTION_CREATE_TRAIL_SKELETON);
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a Skeleton3D and assigns bones to control a RibbonTrailMesh or TubeTrailMesh mesh.\n"));
 
 	options->get_popup()->connect("id_pressed", callable_mp(this, &MeshInstance3DEditor::_menu_option));
 

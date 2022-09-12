@@ -49,6 +49,7 @@ class MeshInstance3DEditor : public Control {
 		MENU_OPTION_CREATE_UV2,
 		MENU_OPTION_DEBUG_UV1,
 		MENU_OPTION_DEBUG_UV2,
+		MENU_OPTION_CREATE_TRAIL_SKELETON
 	};
 
 	MeshInstance3D *node = nullptr;
