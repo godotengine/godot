@@ -101,6 +101,7 @@ int MultiplayerSpawner::get_spawnable_scene_count() const {
 	return spawnable_scenes.size();
 }
 String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, (int)spawnable_scenes.size(), "");
 	return spawnable_scenes[p_idx].path;
 }
 void MultiplayerSpawner::clear_spawnable_scenes() {
