@@ -1200,18 +1200,17 @@ void SkyRD::setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const P
 			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
 			// after the depth prepass, but this runs before the depth prepass
 			for (int i = 0; i < (int)p_lights.size(); i++) {
-				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_lights[i]);
-				if (!li) {
+				if (!light_storage->owns_light_instance(p_lights[i])) {
 					continue;
 				}
-				RID base = li->light;
+				RID base = light_storage->light_instance_get_base_light(p_lights[i]);
 
 				ERR_CONTINUE(base.is_null());
 
 				RS::LightType type = light_storage->light_get_type(base);
 				if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
-					Transform3D light_transform = li->transform;
+					Transform3D light_transform = light_storage->light_instance_get_base_transform(p_lights[i]);
 					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
 
 					sky_light_data.direction[0] = world_direction.x;

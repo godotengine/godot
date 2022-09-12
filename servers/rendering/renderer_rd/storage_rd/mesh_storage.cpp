@@ -197,6 +197,24 @@ MeshStorage::~MeshStorage() {
 	singleton = nullptr;
 }
 
+bool MeshStorage::free(RID p_rid) {
+	if (owns_mesh(p_rid)) {
+		mesh_free(p_rid);
+		return true;
+	} else if (owns_mesh_instance(p_rid)) {
+		mesh_instance_free(p_rid);
+		return true;
+	} else if (owns_multimesh(p_rid)) {
+		multimesh_free(p_rid);
+		return true;
+	} else if (owns_skeleton(p_rid)) {
+		skeleton_free(p_rid);
+		return true;
+	}
+
+	return false;
+}
+
 /* MESH API */
 
 RID MeshStorage::mesh_allocate() {

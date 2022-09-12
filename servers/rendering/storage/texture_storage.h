@@ -120,6 +120,12 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 
+	/* DECAL INSTANCE */
+
+	virtual RID decal_instance_create(RID p_decal) = 0;
+	virtual void decal_instance_free(RID p_decal_instance) = 0;
+	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) = 0;
+
 	/* RENDER TARGET */
 
 	virtual RID render_target_create() = 0;

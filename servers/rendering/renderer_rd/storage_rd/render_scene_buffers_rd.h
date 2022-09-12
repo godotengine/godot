@@ -31,18 +31,13 @@
 #ifndef RENDER_SCENE_BUFFERS_RD_H
 #define RENDER_SCENE_BUFFERS_RD_H
 
+#include "../effects/vrs.h"
+#include "../framebuffer_cache_rd.h"
 #include "core/templates/hash_map.h"
-#include "servers/rendering/renderer_rd/effects/vrs.h"
-#include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
+#include "render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
-
-// These can be retired in due time
-#include "servers/rendering/renderer_rd/cluster_builder_rd.h"
-#include "servers/rendering/renderer_rd/effects/ss_effects.h"
-#include "servers/rendering/renderer_rd/environment/fog.h"
 
 #define RB_SCOPE_BUFFERS SNAME("render_buffers")
 #define RB_SCOPE_VRS SNAME("VRS")
@@ -68,7 +63,6 @@ private:
 	bool can_be_storage = true;
 	uint32_t max_cluster_elements = 512;
 	RD::DataFormat base_data_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-	RendererRD::SSEffects *sse = nullptr;
 	RendererRD::VRS *vrs = nullptr;
 	uint64_t auto_exposure_version = 1;
 
@@ -139,9 +133,9 @@ public:
 	// info from our renderer
 	void set_can_be_storage(const bool p_can_be_storage) { can_be_storage = p_can_be_storage; }
 	void set_max_cluster_elements(const uint32_t p_max_elements) { max_cluster_elements = p_max_elements; }
+	uint32_t get_max_cluster_elements() { return max_cluster_elements; }
 	void set_base_data_format(const RD::DataFormat p_base_data_format) { base_data_format = p_base_data_format; }
 	RD::DataFormat get_base_data_format() const { return base_data_format; }
-	void set_sseffects(RendererRD::SSEffects *p_ss_effects) { sse = p_ss_effects; }
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
 
 	void cleanup();
@@ -215,8 +209,6 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Everything after this needs to be re-evaluated, this is all old implementation
 
-	ClusterBuilderRD *cluster_builder = nullptr;
-
 	struct WeightBuffers {
 		RID weight;
 		RID fb; // FB with both texture and weight writing into one level lower
@@ -233,24 +225,6 @@ public:
 		Vector<RID> fb;
 		RID current_fb;
 	} luminance;
-
-	struct SSEffects {
-		RID linear_depth;
-		Vector<RID> linear_depth_slices;
-
-		RID downsample_uniform_set;
-
-		Projection last_frame_projection;
-		Transform3D last_frame_transform;
-
-		RendererRD::SSEffects::SSAORenderBuffers ssao;
-		RendererRD::SSEffects::SSILRenderBuffers ssil;
-	} ss_effects;
-
-	RendererRD::SSEffects::SSRRenderBuffers ssr;
-
-	RID get_ao_texture() const { return ss_effects.ssao.ao_final; }
-	RID get_ssil_texture() const { return ss_effects.ssil.ssil_final; }
 };
 
 #endif // RENDER_SCENE_BUFFERS_RD_H
