@@ -124,7 +124,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RenderS
 	render_buffers = p_render_buffers;
 	ERR_FAIL_NULL(render_buffers);
 
-	bool msaa_3d = render_buffers->get_msaa_3d();
+	RS::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
 
 	if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
 		RD::DataFormat format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
