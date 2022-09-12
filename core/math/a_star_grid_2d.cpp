@@ -30,16 +30,16 @@
 
 #include "a_star_grid_2d.h"
 
-static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
-	real_t dx = (real_t)ABS(p_to.x - p_from.x);
-	real_t dy = (real_t)ABS(p_to.y - p_from.y);
-	return dx + dy;
-}
-
 static real_t heuristic_euclidian(const Vector2i &p_from, const Vector2i &p_to) {
 	real_t dx = (real_t)ABS(p_to.x - p_from.x);
 	real_t dy = (real_t)ABS(p_to.y - p_from.y);
 	return (real_t)Math::sqrt(dx * dx + dy * dy);
+}
+
+static real_t heuristic_manhattan(const Vector2i &p_from, const Vector2i &p_to) {
+	real_t dx = (real_t)ABS(p_to.x - p_from.x);
+	real_t dy = (real_t)ABS(p_to.y - p_from.y);
+	return dx + dy;
 }
 
 static real_t heuristic_octile(const Vector2i &p_from, const Vector2i &p_to) {
@@ -55,7 +55,7 @@ static real_t heuristic_chebyshev(const Vector2i &p_from, const Vector2i &p_to) 
 	return MAX(dx, dy);
 }
 
-static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_manhattan, heuristic_euclidian, heuristic_octile, heuristic_chebyshev };
+static real_t (*heuristics[AStarGrid2D::HEURISTIC_MAX])(const Vector2i &, const Vector2i &) = { heuristic_euclidian, heuristic_manhattan, heuristic_octile, heuristic_chebyshev };
 
 void AStarGrid2D::set_size(const Size2i &p_size) {
 	ERR_FAIL_COND(p_size.x < 0 || p_size.y < 0);
@@ -572,7 +572,7 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_heuristic", PROPERTY_HINT_ENUM, "Manhattan,Euclidean,Octile,Chebyshev,Max"), "set_default_heuristic", "get_default_heuristic");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev,Max"), "set_default_heuristic", "get_default_heuristic");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles,Max"), "set_diagonal_mode", "get_diagonal_mode");
 
 	BIND_ENUM_CONSTANT(HEURISTIC_EUCLIDEAN);
