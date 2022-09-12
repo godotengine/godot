@@ -2765,7 +2765,61 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 			const GDScriptParser::SubscriptNode *attr = static_cast<const GDScriptParser::SubscriptNode *>(completion_context.node);
 			if (attr->base) {
 				GDScriptCompletionIdentifier base;
-				if (!_guess_expression_type(completion_context, attr->base, base)) {
+				bool found_type = false;
+
+				if (p_owner != nullptr && attr->base->type == GDScriptParser::Node::IDENTIFIER) {
+					const GDScriptParser::GetNodeNode *get_node = nullptr;
+					const GDScriptParser::IdentifierNode *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(attr->base);
+
+					switch (identifier_node->source) {
+						case GDScriptParser::IdentifierNode::Source::MEMBER_VARIABLE: {
+							if (completion_context.current_class != nullptr) {
+								const StringName &member_name = identifier_node->name;
+								const GDScriptParser::ClassNode *current_class = completion_context.current_class;
+
+								if (current_class->has_member(member_name)) {
+									const GDScriptParser::ClassNode::Member &member = current_class->get_member(member_name);
+
+									if (member.type == GDScriptParser::ClassNode::Member::VARIABLE) {
+										const GDScriptParser::VariableNode *variable = static_cast<GDScriptParser::VariableNode *>(member.variable);
+
+										if (variable->initializer && variable->initializer->type == GDScriptParser::Node::GET_NODE) {
+											get_node = static_cast<GDScriptParser::GetNodeNode *>(variable->initializer);
+										}
+									}
+								}
+							}
+						} break;
+						case GDScriptParser::IdentifierNode::Source::LOCAL_VARIABLE: {
+							if (identifier_node->next != nullptr && identifier_node->next->type == GDScriptParser::ClassNode::Node::GET_NODE) {
+								get_node = static_cast<GDScriptParser::GetNodeNode *>(identifier_node->next);
+							}
+						} break;
+						default:
+							break;
+					}
+
+					if (get_node != nullptr) {
+						const Object *node = p_owner->call("get_node_or_null", NodePath(get_node->full_path));
+						if (node != nullptr) {
+							found_type = true;
+
+							GDScriptParser::DataType type;
+							type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+							type.kind = GDScriptParser::DataType::NATIVE;
+							type.native_type = node->get_class_name();
+							type.builtin_type = Variant::OBJECT;
+
+							base.type = type;
+						}
+
+						if (!found_type) {
+							break;
+						}
+					}
+				}
+
+				if (!found_type && !_guess_expression_type(completion_context, attr->base, base)) {
 					break;
 				}
 
