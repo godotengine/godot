@@ -411,6 +411,12 @@ void RayCast::_create_debug_shape() {
 	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 
 	MeshInstance *mi = memnew(MeshInstance);
+#ifdef TOOLS_ENABLED
+	// This enables the debug helper to show up in editor runs.
+	// However it should not show up during export, because global mode
+	// can slow the portal system, and this should only be used for debugging.
+	mi->set_portal_mode(CullInstance::PORTAL_MODE_GLOBAL);
+#endif
 	mi->set_mesh(mesh);
 	add_child(mi);
 
