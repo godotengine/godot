@@ -1048,6 +1048,25 @@ Transform2D Viewport::get_final_transform() const {
 	return stretch_transform * global_canvas_transform;
 }
 
+void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
+	List<Node *> camera_list;
+	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
+
+	Camera2D *new_camera = nullptr;
+	for (const Node *E : camera_list) {
+		const Camera2D *cam = Object::cast_to<Camera2D>(E);
+		if (cam->is_enabled()) {
+			new_camera = const_cast<Camera2D *>(cam);
+			break;
+		}
+	}
+
+	_camera_2d_set(new_camera);
+	if (!camera_2d) {
+		set_canvas_transform(Transform2D());
+	}
+}
+
 void Viewport::_update_canvas_items(Node *p_node) {
 	if (p_node != this) {
 		Window *w = Object::cast_to<Window>(p_node);

@@ -64,7 +64,7 @@ protected:
 	Vector2 zoom_scale = Vector2(1, 1);
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
-	bool current = false;
+	bool enabled = true;
 	real_t position_smoothing_speed = 5.0;
 	bool follow_smoothing_enabled = false;
 
@@ -88,7 +88,6 @@ protected:
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
-	void set_current(bool p_current);
 
 	void _set_old_smoothing(real_t p_enable);
 
@@ -154,6 +153,9 @@ public:
 
 	void set_process_callback(Camera2DProcessCallback p_mode);
 	Camera2DProcessCallback get_process_callback() const;
+
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
 	void make_current();
 	void clear_current();
