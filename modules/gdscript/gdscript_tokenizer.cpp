@@ -1398,6 +1398,9 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			} else if (_peek() == '>') {
 				_advance();
 				return make_token(Token::FORWARD_ARROW);
+			} else if (is_digit(_peek())) {
+				// Number starting with '-'.
+				return number();
 			} else {
 				return make_token(Token::MINUS);
 			}
