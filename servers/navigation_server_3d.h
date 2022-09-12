@@ -35,6 +35,9 @@
 #include "core/templates/rid.h"
 #include "scene/3d/navigation_region_3d.h"
 
+class NavigationPathQueryParameters3D;
+class NavigationPathQueryResult3D;
+
 /// This server uses the concept of internal mutability.
 /// All the constant functions can be called in multithread because internally
 /// the server takes care to schedule the functions access.
@@ -93,6 +96,9 @@ public:
 
 	/// Returns the navigation path to reach the destination from the origin.
 	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const = 0;
+
+	/// Returns a path to reach a destination along with additional information about the path.
+	virtual Ref<NavigationPathQueryResult3D> query_path(const Ref<NavigationPathQueryParameters3D> &p_parameters) const = 0;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const = 0;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const = 0;
@@ -330,6 +336,70 @@ public:
 	Ref<StandardMaterial3D> get_debug_navigation_link_connections_material();
 	Ref<StandardMaterial3D> get_debug_navigation_link_connections_disabled_material();
 #endif // DEBUG_ENABLED
+};
+
+/// Parameters for querying a path between two points on a navigation map.
+class NavigationPathQueryParameters3D : public RefCounted {
+	GDCLASS(NavigationPathQueryParameters3D, RefCounted);
+
+	RID map;
+	bool optimize_path = true;
+	Vector3 origin;
+	Vector3 destination;
+	uint32_t navigation_layers = 1;
+
+protected:
+	static void _bind_methods();
+
+public:
+	/// Convenience factory for path queries.
+	/// @param p_map Map to search within.
+	/// @param p_origin Location to start from.
+	/// @param p_destination Location to move to.
+	/// @param p_navigation_layers Layers to limit the path search to.
+	/// @return A valid query parameters object.
+	static Ref<NavigationPathQueryParameters3D> create(const RID &p_map, const Vector3 &p_origin, const Vector3 &p_destination, const uint32_t p_navigation_layers = 1) {
+		Ref<NavigationPathQueryParameters3D> query;
+		query.instantiate();
+		query->set_map(p_map);
+		query->set_origin(p_origin);
+		query->set_destination(p_destination);
+		query->set_navigation_layers(p_navigation_layers);
+		return query;
+	}
+
+	void set_map(const RID &p_map) { map = p_map; }
+	RID get_map() const { return map; }
+
+	void set_optimize_path(const bool p_optimize_path) { optimize_path = p_optimize_path; }
+	bool get_optimize_path() const { return optimize_path; }
+
+	void set_origin(const Vector3 &p_origin) { origin = p_origin; }
+	Vector3 get_origin() const { return origin; }
+
+	void set_destination(const Vector3 &p_destination) { destination = p_destination; }
+	Vector3 get_destination() const { return destination; }
+
+	void set_navigation_layers(const uint32_t p_navigation_layers) { navigation_layers = p_navigation_layers; }
+	uint32_t get_navigation_layers() const { return navigation_layers; }
+};
+
+/// Result of a query for path between two points on a navigation map.
+class NavigationPathQueryResult3D : public RefCounted {
+	GDCLASS(NavigationPathQueryResult3D, RefCounted);
+
+	Vector<Vector3> path;
+	real_t path_length = 0.0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_path(const Vector<Vector3> &p_path) { path = p_path; }
+	Vector<Vector3> get_path() const { return path; }
+
+	void set_path_length(const real_t p_path_length) { path_length = p_path_length; }
+	real_t get_path_length() const { return path_length; }
 };
 
 typedef NavigationServer3D *(*NavigationServer3DCallback)();

@@ -228,7 +228,38 @@ Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin,
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers);
+	const gd::PathQueryParameters params{
+		p_origin,
+		p_destination,
+		p_optimize,
+		p_navigation_layers
+	};
+	const gd::PathQueryResult result = map->query_path(params);
+
+	return result.path;
+}
+
+Ref<NavigationPathQueryResult3D> GodotNavigationServer::query_path(const Ref<NavigationPathQueryParameters3D> &p_parameters) const {
+	ERR_FAIL_COND_V(!p_parameters.is_valid(), Ref<NavigationPathQueryResult3D>());
+
+	const NavMap *map = map_owner.get_or_null(p_parameters->get_map());
+	ERR_FAIL_COND_V(map == nullptr, Ref<NavigationPathQueryResult3D>());
+
+	// Map parameters and run query
+	const gd::PathQueryParameters params{
+		p_parameters->get_origin(),
+		p_parameters->get_destination(),
+		p_parameters->get_optimize_path(),
+		p_parameters->get_navigation_layers()
+	};
+	const gd::PathQueryResult result = map->query_path(params);
+
+	// Map result to common object and return
+	Ref<NavigationPathQueryResult3D> query_result;
+	query_result.instantiate();
+	query_result->set_path(result.path);
+	query_result->set_path_length(result.path_length);
+	return query_result;
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {

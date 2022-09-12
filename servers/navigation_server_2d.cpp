@@ -234,6 +234,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_set_link_connection_radius", "map", "radius"), &NavigationServer2D::map_set_link_connection_radius);
 	ClassDB::bind_method(D_METHOD("map_get_link_connection_radius", "map"), &NavigationServer2D::map_get_link_connection_radius);
 	ClassDB::bind_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize", "navigation_layers"), &NavigationServer2D::map_get_path, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("query_path", "parameters"), &NavigationServer2D::query_path);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point", "map", "to_point"), &NavigationServer2D::map_get_closest_point);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_owner", "map", "to_point"), &NavigationServer2D::map_get_closest_point_owner);
 
@@ -337,6 +338,31 @@ real_t FORWARD_1_C(map_get_link_connection_radius, RID, p_map, rid_to_rid);
 
 Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2, p_origin, Vector2, p_destination, bool, p_optimize, uint32_t, p_layers, rid_to_rid, v2_to_v3, v2_to_v3, bool_to_bool, uint32_to_uint32);
 
+Ref<NavigationPathQueryResult2D> NavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_parameters) const {
+	ERR_FAIL_COND_V(!p_parameters.is_valid(), Ref<NavigationPathQueryResult2D>());
+
+	Ref<NavigationPathQueryParameters3D> params;
+	params.instantiate();
+	params->set_map(rid_to_rid(p_parameters->get_map()));
+	params->set_origin(v2_to_v3(p_parameters->get_origin()));
+	params->set_destination(v2_to_v3(p_parameters->get_destination()));
+	params->set_navigation_layers(uint32_to_uint32(p_parameters->get_navigation_layers()));
+	params->set_optimize_path(bool_to_bool(p_parameters->get_optimize_path()));
+
+	Ref<NavigationPathQueryResult3D> result = NavigationServer3D::get_singleton()->query_path(params);
+
+	if (result.is_valid()) {
+		Ref<NavigationPathQueryResult2D> nd;
+		nd.instantiate();
+
+		nd->set_path(vector_v3_to_v2(result->get_path()));
+		nd->set_path_length(real_to_real(result->get_path_length()));
+		return nd;
+	} else {
+		return Ref<NavigationPathQueryResult2D>();
+	}
+};
+
 Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
@@ -409,3 +435,43 @@ bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 void FORWARD_4_C(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, rid_to_rid, obj_to_obj, sn_to_sn, var_to_var);
 
 void FORWARD_1_C(free, RID, p_object, rid_to_rid);
+
+/////////////////////////////
+
+void NavigationPathQueryParameters2D::_bind_methods() {
+	ClassDB::bind_static_method("NavigationPathQueryParameters2D", D_METHOD("create", "map", "origin", "destination", "layers"), &NavigationPathQueryParameters2D::create, DEFVAL(1));
+
+	ClassDB::bind_method(D_METHOD("set_map", "map"), &NavigationPathQueryParameters2D::set_map);
+	ClassDB::bind_method(D_METHOD("get_map"), &NavigationPathQueryParameters2D::get_map);
+
+	ClassDB::bind_method(D_METHOD("set_optimize_path", "optimize"), &NavigationPathQueryParameters2D::set_optimize_path);
+	ClassDB::bind_method(D_METHOD("get_optimize_path"), &NavigationPathQueryParameters2D::get_optimize_path);
+
+	ClassDB::bind_method(D_METHOD("set_origin", "origin"), &NavigationPathQueryParameters2D::set_origin);
+	ClassDB::bind_method(D_METHOD("get_origin"), &NavigationPathQueryParameters2D::get_origin);
+
+	ClassDB::bind_method(D_METHOD("set_destination", "destination"), &NavigationPathQueryParameters2D::set_destination);
+	ClassDB::bind_method(D_METHOD("get_destination"), &NavigationPathQueryParameters2D::get_destination);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "layers"), &NavigationPathQueryParameters2D::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationPathQueryParameters2D::get_navigation_layers);
+
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "map"), "set_map", "get_map");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "optimize_path"), "set_optimize_path", "get_optimize_path");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "origin"), "set_origin", "get_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "destination"), "set_destination", "get_destination");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+}
+
+/////////////////////////////
+
+void NavigationPathQueryResult2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult2D::set_path);
+	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult2D::get_path);
+
+	ClassDB::bind_method(D_METHOD("set_path_length", "length"), &NavigationPathQueryResult2D::set_path_length);
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationPathQueryResult2D::get_path_length);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "path"), "set_path", "get_path");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_length"), "set_path_length", "get_path_length");
+}

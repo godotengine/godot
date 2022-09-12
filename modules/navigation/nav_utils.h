@@ -150,6 +150,18 @@ struct ClosestPointQueryResult {
 	RID owner;
 };
 
+struct PathQueryParameters {
+	Vector3 origin;
+	Vector3 destination;
+	bool optimize = true;
+	uint32_t navigation_layers = 1;
+};
+
+struct PathQueryResult {
+	Vector<Vector3> path;
+	real_t path_length = 0.0;
+};
+
 } // namespace gd
 
 #endif // NAV_UTILS_H

@@ -34,6 +34,7 @@
 #include "scene/main/node.h"
 
 class Node2D;
+class NavigationPathQueryResult2D;
 
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
@@ -58,7 +59,7 @@ class NavigationAgent2D : public Node {
 	real_t path_max_distance = 3.0;
 
 	Vector2 target_location;
-	Vector<Vector2> navigation_path;
+	Ref<NavigationPathQueryResult2D> navigation_result;
 	int nav_path_index = 0;
 	bool velocity_submitted = false;
 	Vector2 prev_safe_velocity;
@@ -138,9 +139,7 @@ public:
 
 	Vector2 get_next_location();
 
-	Vector<Vector2> get_nav_path() const {
-		return navigation_path;
-	}
+	Vector<Vector2> get_nav_path() const;
 
 	int get_nav_path_index() const {
 		return nav_path_index;

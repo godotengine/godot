@@ -51,6 +51,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_set_link_connection_radius", "map", "radius"), &NavigationServer3D::map_set_link_connection_radius);
 	ClassDB::bind_method(D_METHOD("map_get_link_connection_radius", "map"), &NavigationServer3D::map_get_link_connection_radius);
 	ClassDB::bind_method(D_METHOD("map_get_path", "map", "origin", "destination", "optimize", "navigation_layers"), &NavigationServer3D::map_get_path, DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("query_path", "parameters"), &NavigationServer3D::query_path);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_to_segment", "map", "start", "end", "use_collision"), &NavigationServer3D::map_get_closest_point_to_segment, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("map_get_closest_point", "map", "to_point"), &NavigationServer3D::map_get_closest_point);
 	ClassDB::bind_method(D_METHOD("map_get_closest_point_normal", "map", "to_point"), &NavigationServer3D::map_get_closest_point_normal);
@@ -115,7 +116,6 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("process", "delta_time"), &NavigationServer3D::process);
 
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
-
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 }
 
@@ -485,3 +485,43 @@ bool NavigationServer3D::get_debug_enabled() const {
 	return debug_enabled;
 }
 #endif // DEBUG_ENABLED
+
+/////////////////////////////
+
+void NavigationPathQueryParameters3D::_bind_methods() {
+	ClassDB::bind_static_method("NavigationPathQueryParameters3D", D_METHOD("create", "map", "origin", "destination", "layers"), &NavigationPathQueryParameters3D::create, DEFVAL(1));
+
+	ClassDB::bind_method(D_METHOD("set_map", "map"), &NavigationPathQueryParameters3D::set_map);
+	ClassDB::bind_method(D_METHOD("get_map"), &NavigationPathQueryParameters3D::get_map);
+
+	ClassDB::bind_method(D_METHOD("set_optimize_path", "optimize"), &NavigationPathQueryParameters3D::set_optimize_path);
+	ClassDB::bind_method(D_METHOD("get_optimize_path"), &NavigationPathQueryParameters3D::get_optimize_path);
+
+	ClassDB::bind_method(D_METHOD("set_origin", "origin"), &NavigationPathQueryParameters3D::set_origin);
+	ClassDB::bind_method(D_METHOD("get_origin"), &NavigationPathQueryParameters3D::get_origin);
+
+	ClassDB::bind_method(D_METHOD("set_destination", "destination"), &NavigationPathQueryParameters3D::set_destination);
+	ClassDB::bind_method(D_METHOD("get_destination"), &NavigationPathQueryParameters3D::get_destination);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_layers", "layers"), &NavigationPathQueryParameters3D::set_navigation_layers);
+	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &NavigationPathQueryParameters3D::get_navigation_layers);
+
+	ADD_PROPERTY(PropertyInfo(Variant::RID, "map"), "set_map", "get_map");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "optimize_path"), "set_optimize_path", "get_optimize_path");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "origin"), "set_origin", "get_origin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "destination"), "set_destination", "get_destination");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+}
+
+/////////////////////////////
+
+void NavigationPathQueryResult3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult3D::set_path);
+	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult3D::get_path);
+
+	ClassDB::bind_method(D_METHOD("set_path_length", "length"), &NavigationPathQueryResult3D::set_path_length);
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationPathQueryResult3D::get_path_length);
+
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "path"), "set_path", "get_path");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_length"), "set_path_length", "get_path_length");
+}

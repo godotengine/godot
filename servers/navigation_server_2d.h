@@ -35,6 +35,9 @@
 #include "core/templates/rid.h"
 #include "scene/2d/navigation_region_2d.h"
 
+class NavigationPathQueryParameters2D;
+class NavigationPathQueryResult2D;
+
 // This server exposes the `NavigationServer3D` features in the 2D world.
 class NavigationServer2D : public Object {
 	GDCLASS(NavigationServer2D, Object);
@@ -84,6 +87,9 @@ public:
 
 	/// Returns the navigation path to reach the destination from the origin.
 	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
+
+	/// Returns a path to reach a destination along with additional information about the path.
+	virtual Ref<NavigationPathQueryResult2D> query_path(const Ref<NavigationPathQueryParameters2D> &p_parameters) const;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const;
@@ -245,6 +251,69 @@ public:
 	void set_debug_navigation_enable_edge_connections(const bool p_value);
 	bool get_debug_navigation_enable_edge_connections() const;
 #endif // DEBUG_ENABLED
+};
+
+/// Parameters for querying a path between two points on a navigation map.
+class NavigationPathQueryParameters2D : public RefCounted {
+	GDCLASS(NavigationPathQueryParameters2D, RefCounted);
+
+	RID map;
+	bool optimize_path = true;
+	Vector2 origin;
+	Vector2 destination;
+	uint32_t navigation_layers = 1;
+
+protected:
+	static void _bind_methods();
+
+public:
+	/// Convenience factory for path queries.
+	/// @param p_origin Location to start from.
+	/// @param p_destination Location to move to.
+	/// @param p_navigation_layers Layers to limit the path search to.
+	/// @return A valid query parameters object.
+	static Ref<NavigationPathQueryParameters2D> create(const RID &p_map, const Vector2 &p_origin, const Vector2 &p_destination, const uint32_t p_navigation_layers = 1) {
+		Ref<NavigationPathQueryParameters2D> query;
+		query.instantiate();
+		query->set_map(p_map);
+		query->set_origin(p_origin);
+		query->set_destination(p_destination);
+		query->set_navigation_layers(p_navigation_layers);
+		return query;
+	}
+
+	void set_map(const RID &p_map) { map = p_map; }
+	RID get_map() const { return map; }
+
+	void set_optimize_path(const bool p_optimize_path) { optimize_path = p_optimize_path; }
+	bool get_optimize_path() const { return optimize_path; }
+
+	void set_origin(const Vector2 &p_origin) { origin = p_origin; }
+	Vector2 get_origin() const { return origin; }
+
+	void set_destination(const Vector2 &p_destination) { destination = p_destination; }
+	Vector2 get_destination() const { return destination; }
+
+	void set_navigation_layers(const uint32_t p_navigation_layers) { navigation_layers = p_navigation_layers; }
+	uint32_t get_navigation_layers() const { return navigation_layers; }
+};
+
+/// Result of a query for path between two points on a navigation map.
+class NavigationPathQueryResult2D : public RefCounted {
+	GDCLASS(NavigationPathQueryResult2D, RefCounted);
+
+	Vector<Vector2> path;
+	real_t path_length = 0.0;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_path(const Vector<Vector2> &p_path) { path = p_path; }
+	Vector<Vector2> get_path() const { return path; }
+
+	void set_path_length(const real_t p_path_length) { path_length = p_path_length; }
+	real_t get_path_length() const { return path_length; }
 };
 
 #endif // NAVIGATION_SERVER_2D_H

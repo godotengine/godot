@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationPathQueryResult2D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Result from a [NavigationServer2D] navigation path query.
+	</brief_description>
+	<description>
+		This class contains result of a navigation path query from [method NavigationServer2D.query_path].
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="path" type="PackedVector2Array" setter="set_path" getter="get_path" default="PackedVector2Array()">
+			A series of waypoints to follow in order to reach the destination passed in [NavigationPathQueryParameters2D]. All points are in global coordinates.
+		</member>
+		<member name="path_length" type="float" setter="set_path_length" getter="get_path_length" default="0.0">
+			Total length of the path in world units.
+		</member>
+	</members>
+</class>

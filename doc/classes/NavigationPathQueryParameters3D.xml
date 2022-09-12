@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationPathQueryParameters3D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Parameters for querying a path between a start location and a target location.
+	</brief_description>
+	<description>
+		This class contains information required to find a path between a start and end location when calling [method NavigationServer3D.query_path].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create" qualifiers="static">
+			<return type="NavigationPathQueryParameters3D" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="origin" type="Vector3" />
+			<param index="2" name="destination" type="Vector3" />
+			<param index="3" name="layers" type="int" default="1" />
+			<description>
+				Convenience factory for creating a valid [NavigationPathQueryParameters3D].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="destination" type="Vector3" setter="set_destination" getter="get_destination" default="Vector3(0, 0, 0)">
+			The location to find a path to in global coordinates.
+		</member>
+		<member name="map" type="RID" setter="set_map" getter="get_map">
+			The map to search for a path within.
+		</member>
+		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
+			The navigation layers the query will use (as a bitmask). Only regions and links that share a layer will be consulted.
+		</member>
+		<member name="optimize_path" type="bool" setter="set_optimize_path" getter="get_optimize_path" default="true">
+			If [code]true[/code], the path receives post-processing with a funnel algorithm to smooth the path. If [code]false[/code] all path positions will be placed at the center of each passed navigation mesh polygon edge.
+		</member>
+		<member name="origin" type="Vector3" setter="set_origin" getter="get_origin" default="Vector3(0, 0, 0)">
+			The location to find a path from in global coordinates.
+		</member>
+	</members>
+</class>

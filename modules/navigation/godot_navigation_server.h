@@ -106,6 +106,7 @@ public:
 	virtual real_t map_get_link_connection_radius(RID p_map) const override;
 
 	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const override;
+	virtual Ref<NavigationPathQueryResult3D> query_path(const Ref<NavigationPathQueryParameters3D> &p_parameters) const override;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const override;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override;

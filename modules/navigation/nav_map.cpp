@@ -71,7 +71,7 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
+gd::PathQueryResult NavMap::query_path(const gd::PathQueryParameters &p_parameters) const {
 	// Find the start poly and the end poly on this map.
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
@@ -84,7 +84,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		const gd::Polygon &p = polygons[i];
 
 		// Only consider the polygon if it in a region with compatible layers.
-		if ((p_navigation_layers & p.owner->get_navigation_layers()) == 0) {
+		if ((p_parameters.navigation_layers & p.owner->get_navigation_layers()) == 0) {
 			continue;
 		}
 
@@ -92,16 +92,16 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
 			const Face3 face(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 
-			Vector3 point = face.get_closest_point_to(p_origin);
-			float distance_to_point = point.distance_to(p_origin);
+			Vector3 point = face.get_closest_point_to(p_parameters.origin);
+			float distance_to_point = point.distance_to(p_parameters.origin);
 			if (distance_to_point < begin_d) {
 				begin_d = distance_to_point;
 				begin_poly = &p;
 				begin_point = point;
 			}
 
-			point = face.get_closest_point_to(p_destination);
-			distance_to_point = point.distance_to(p_destination);
+			point = face.get_closest_point_to(p_parameters.destination);
+			distance_to_point = point.distance_to(p_parameters.destination);
 			if (distance_to_point < end_d) {
 				end_d = distance_to_point;
 				end_poly = &p;
@@ -112,14 +112,18 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	// Check for trivial cases
 	if (!begin_poly || !end_poly) {
-		return Vector<Vector3>();
+		return gd::PathQueryResult();
 	}
+
 	if (begin_poly == end_poly) {
 		Vector<Vector3> path;
 		path.resize(2);
 		path.write[0] = begin_point;
 		path.write[1] = end_point;
-		return path;
+		return gd::PathQueryResult{
+			path,
+			begin_point.distance_to(end_point)
+		};
 	}
 
 	// List of all reachable navigation polys.
@@ -160,7 +164,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				const gd::Edge::Connection &connection = edge.connections[connection_index];
 
 				// Only consider the connection to another polygon if this polygon is in a region with compatible layers.
-				if ((p_navigation_layers & connection.polygon->owner->get_navigation_layers()) == 0) {
+				if ((p_parameters.navigation_layers & connection.polygon->owner->get_navigation_layers()) == 0) {
 					continue;
 				}
 
@@ -225,8 +229,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			end_d = 1e20;
 			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
 				Face3 f(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
-				Vector3 spoint = f.get_closest_point_to(p_destination);
-				float dpoint = spoint.distance_to(p_destination);
+				Vector3 spoint = f.get_closest_point_to(p_parameters.destination);
+				float dpoint = spoint.distance_to(p_parameters.destination);
 				if (dpoint < end_d) {
 					end_point = spoint;
 					end_d = dpoint;
@@ -263,7 +267,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// Stores the further reachable end polygon, in case our goal is not reachable.
 		if (is_reachable) {
-			float d = navigation_polys[least_cost_id].entry.distance_to(p_destination) * navigation_polys[least_cost_id].poly->owner->get_travel_cost();
+			float d = navigation_polys[least_cost_id].entry.distance_to(p_parameters.destination) * navigation_polys[least_cost_id].poly->owner->get_travel_cost();
 			if (reachable_d > d) {
 				reachable_d = d;
 				reachable_end = navigation_polys[least_cost_id].poly;
@@ -279,12 +283,14 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	// If we did not find a route, return an empty path.
 	if (!found_route) {
-		return Vector<Vector3>();
+		return gd::PathQueryResult();
 	}
 
 	Vector<Vector3> path;
+	real_t path_length = 0.0;
+
 	// Optimize the path.
-	if (p_optimize) {
+	if (p_parameters.optimize) {
 		// Set the apex poly/point to the end point
 		gd::NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
 		Vector3 apex_point = end_point;
@@ -321,6 +327,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					apex_poly = p;
 					left_portal = apex_point;
 					right_portal = apex_point;
+
+					path_length += apex_point.distance_to(path[path.size() - 1]);
 					path.push_back(apex_point);
 					skip = true;
 				}
@@ -340,6 +348,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					apex_poly = p;
 					right_portal = apex_point;
 					left_portal = apex_point;
+
+					path_length += apex_point.distance_to(path[path.size() - 1]);
 					path.push_back(apex_point);
 				}
 			}
@@ -355,6 +365,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// If the last point is not the begin point, add it to the list.
 		if (path[path.size() - 1] != begin_point) {
+			path_length += begin_point.distance_to(path[path.size() - 1]);
 			path.push_back(begin_point);
 		}
 
@@ -370,19 +381,28 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				int prev = navigation_polys[np_id].back_navigation_edge;
 				int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
 				Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
+
+				path_length += point.distance_to(path[path.size() - 1]);
 				path.push_back(point);
 			} else {
-				path.push_back(navigation_polys[np_id].entry);
+				Vector3 point = navigation_polys[np_id].entry;
+
+				path_length += point.distance_to(path[path.size() - 1]);
+				path.push_back(point);
 			}
 
 			np_id = navigation_polys[np_id].back_navigation_poly_id;
 		}
 
+		path_length += begin_point.distance_to(path[path.size() - 1]);
 		path.push_back(begin_point);
 		path.reverse();
 	}
 
-	return path;
+	return gd::PathQueryResult{
+		path,
+		path_length
+	};
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {

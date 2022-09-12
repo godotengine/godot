@@ -164,7 +164,12 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionStateCallback, "void *instance;void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state)");
 
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
+	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
+	GDREGISTER_CLASS(NavigationPathQueryResult2D);
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
+	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
+	GDREGISTER_CLASS(NavigationPathQueryResult3D);
+
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_CLASS(CameraServer);
 
