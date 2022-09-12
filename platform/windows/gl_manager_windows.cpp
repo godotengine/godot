@@ -289,12 +289,7 @@ void GLManager_Windows::make_current() {
 }
 
 void GLManager_Windows::swap_buffers() {
-	// on other platforms, OpenGL swaps buffers for all windows (on all displays, really?)
-	// Windows swaps buffers on a per-window basis
-	// REVISIT: this could be structurally bad, should we have "dirty" flags then?
-	for (KeyValue<DisplayServer::WindowID, GLWindow> &entry : _windows) {
-		SwapBuffers(entry.value.hDC);
-	}
+	SwapBuffers(_current_window->hDC);
 }
 
 Error GLManager_Windows::initialize() {
