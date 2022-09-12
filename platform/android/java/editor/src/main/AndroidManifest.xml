@@ -7,7 +7,7 @@
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
-        android:smallScreens="true"
+        android:smallScreens="false"
         android:xlargeScreens="true" />
 
     <uses-feature
