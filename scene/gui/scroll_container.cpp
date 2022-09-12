@@ -506,7 +506,7 @@ String ScrollContainer::get_configuration_warning() const {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
-		warning += TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
+		warning += TTR("ScrollContainer does not sort multiple children in rows or columns, but rather on top of one other.\nIf you don't want this, add a child container (HBox, VBox, etc.) or a control with a custom minimum size.");
 	}
 
 	return warning;
