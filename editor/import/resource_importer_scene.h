@@ -32,6 +32,7 @@
 #define RESOURCE_IMPORTER_SCENE_H
 
 #include "core/io/resource_importer.h"
+#include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape.h"
@@ -144,6 +145,7 @@ public:
 	virtual int get_import_order() const { return ResourceImporter::IMPORT_ORDER_SCENE; }
 
 	void _find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Transform> &meshes);
+	AnimationPlayer *_find_animation_player(Node *p_node);
 
 	void _make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes);
 
