@@ -830,6 +830,13 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
 
+	// scale by scale
+	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
+	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
+	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
+	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
+	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
+
 	if (collision_mode == COLLISION_RIGID) {
 		code += "	if (COLLIDED) {\n";
 		code += "		if (length(VELOCITY) > 3.0) {\n";
@@ -843,21 +850,6 @@ void ParticleProcessMaterial::_update_shader() {
 			code += "			noise_direction = vec3(1.0, 0.0, 0.0);\n";
 		}
 		code += "		}\n";
-		code += "	}\n";
-	}
-
-	// scale by scale
-	code += "	float base_scale = mix(scale_min, scale_max, scale_rand);\n";
-	code += "	base_scale = sign(base_scale) * max(abs(base_scale), 0.001);\n";
-	code += "	TRANSFORM[0].xyz *= base_scale * sign(tex_scale.r) * max(abs(tex_scale.r), 0.001);\n";
-	code += "	TRANSFORM[1].xyz *= base_scale * sign(tex_scale.g) * max(abs(tex_scale.g), 0.001);\n";
-	code += "	TRANSFORM[2].xyz *= base_scale * sign(tex_scale.b) * max(abs(tex_scale.b), 0.001);\n";
-
-	if (collision_mode == COLLISION_RIGID) {
-		code += "	if (COLLIDED) {\n";
-		code += "		TRANSFORM[3].xyz+=COLLISION_NORMAL * COLLISION_DEPTH;\n";
-		code += "		VELOCITY -= COLLISION_NORMAL * dot(COLLISION_NORMAL, VELOCITY) * (1.0 + collision_bounce);\n";
-		code += "		VELOCITY = mix(VELOCITY,vec3(0.0),collision_friction * DELTA * 100.0);\n";
 		code += "	}\n";
 	} else if (collision_mode == COLLISION_HIDE_ON_CONTACT) {
 		code += "	if (COLLIDED) {\n";
