@@ -37,8 +37,9 @@
 	<members>
 		<member name="active" type="bool" setter="rooms_set_active" getter="rooms_get_active" default="true">
 			Switches the portal culling system on and off.
-			It is important to note that when portal culling is active, it is responsible for [b]all[/b] the 3d culling. Some editor functionality may be more difficult to use, so switching the active flag is intended to be used to make sure your [Room] / [Portal] layout works within the editor.
+			It is important to note that when portal culling is active, it is responsible for [b]all[/b] the 3d culling. Some editor visual debugging helpers may not be available when active, so switching the active flag is intended to be used to ensure your [Room] / [Portal] layout works within the editor.
 			Switching to [code]active[/code] will have no effect when the [code]room graph[/code] is unloaded (the rooms have not yet been converted).
+			[b]Note:[/b] For efficiency, the portal system is designed to work with only the core visual object types. In particular, only nodes derived from [VisualInstance] are expected to show when the system is active.
 		</member>
 		<member name="debug_sprawl" type="bool" setter="set_debug_sprawl" getter="get_debug_sprawl" default="false">
 			Large objects can 'sprawl' over (be present in) more than one room. It can be useful to visualize which objects are sprawling outside the current room.
