@@ -127,16 +127,36 @@ ext.generateGodotLibraryVersion = { List<String> requiredKeys ->
         if (requiredKeys.empty) {
             libraryVersionName = map.values().join(".")
             try {
+                if (map.containsKey("status")) {
+                    int statusCode = 0
+                    String statusValue = map["status"]
+                    if (statusValue == null) {
+                        statusCode = 0
+                    } else if (statusValue.startsWith("alpha")) {
+                        statusCode = 1
+                    } else if (statusValue.startsWith("beta")) {
+                        statusCode = 2
+                    } else if (statusValue.startsWith("rc")) {
+                        statusCode = 3
+                    } else if (statusValue.startsWith("stable")) {
+                        statusCode = 4
+                    } else {
+                        statusCode = 0
+                    }
+
+                    libraryVersionCode = statusCode
+                }
+
                 if (map.containsKey("patch")) {
-                    libraryVersionCode = Integer.parseInt(map["patch"])
+                    libraryVersionCode += Integer.parseInt(map["patch"]) * 10
                 }
 
                 if (map.containsKey("minor")) {
-                    libraryVersionCode += (Integer.parseInt(map["minor"]) * 100)
+                    libraryVersionCode += (Integer.parseInt(map["minor"]) * 1000)
                 }
 
                 if (map.containsKey("major")) {
-                    libraryVersionCode += (Integer.parseInt(map["major"]) * 10000)
+                    libraryVersionCode += (Integer.parseInt(map["major"]) * 100000)
                 }
             } catch (NumberFormatException ignore) {
                 libraryVersionCode = 1
