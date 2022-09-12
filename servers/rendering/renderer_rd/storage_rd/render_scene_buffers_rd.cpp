@@ -535,7 +535,9 @@ void RenderSceneBuffersRD::ensure_velocity() {
 				RD::TEXTURE_SAMPLES_8,
 			};
 
-			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, RD::DATA_FORMAT_R16G16_SFLOAT, msaa_usage_bits, ts[msaa_3d]);
+			RD::TextureSamples texture_samples = ts[msaa_3d];
+
+			create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, RD::DATA_FORMAT_R16G16_SFLOAT, msaa_usage_bits, texture_samples);
 		}
 
 		create_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, RD::DATA_FORMAT_R16G16_SFLOAT, usage_bits);
