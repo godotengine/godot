@@ -34,7 +34,7 @@
 #include "core/version.h"
 
 Mutex ProceduralSkyMaterial::shader_mutex;
-RID ProceduralSkyMaterial::shader;
+RID ProceduralSkyMaterial::shader_cache[2];
 
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 	sky_top_color = p_sky_top;
@@ -147,7 +147,11 @@ float ProceduralSkyMaterial::get_sun_curve() const {
 
 void ProceduralSkyMaterial::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
-	RS::get_singleton()->material_set_param(_get_material(), "use_debanding", use_debanding);
+	_update_shader();
+	// Only set if shader already compiled
+	if (shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
+	}
 }
 
 bool ProceduralSkyMaterial::get_use_debanding() const {
@@ -161,7 +165,8 @@ Shader::Mode ProceduralSkyMaterial::get_shader_mode() const {
 RID ProceduralSkyMaterial::get_rid() const {
 	_update_shader();
 	if (!shader_set) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(use_debanding)]);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
 		shader_set = true;
 	}
 	return _get_material();
@@ -169,7 +174,7 @@ RID ProceduralSkyMaterial::get_rid() const {
 
 RID ProceduralSkyMaterial::get_shader_rid() const {
 	_update_shader();
-	return shader;
+	return shader_cache[int(use_debanding)];
 }
 
 void ProceduralSkyMaterial::_validate_property(PropertyInfo &p_property) const {
@@ -241,21 +246,24 @@ void ProceduralSkyMaterial::_bind_methods() {
 }
 
 void ProceduralSkyMaterial::cleanup_shader() {
-	if (shader.is_valid()) {
-		RS::get_singleton()->free(shader);
+	if (shader_cache[0].is_valid()) {
+		RS::get_singleton()->free(shader_cache[0]);
+		RS::get_singleton()->free(shader_cache[1]);
 	}
 }
 
 void ProceduralSkyMaterial::_update_shader() {
 	shader_mutex.lock();
-	if (shader.is_null()) {
-		shader = RS::get_singleton()->shader_create();
+	if (shader_cache[0].is_null()) {
+		for (int i = 0; i < 2; i++) {
+			shader_cache[i] = RS::get_singleton()->shader_create();
 
-		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-		RS::get_singleton()->shader_set_code(shader, R"(
+			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
 // NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s ProceduralSkyMaterial.
 
 shader_type sky;
+%s
 
 uniform vec4 sky_top_color : source_color = vec4(0.385, 0.454, 0.55, 1.0);
 uniform vec4 sky_horizon_color : source_color = vec4(0.646, 0.656, 0.67, 1.0);
@@ -269,14 +277,6 @@ uniform float ground_curve : hint_range(0, 1) = 0.02;
 uniform float ground_energy = 1.0;
 uniform float sun_angle_max = 30.0;
 uniform float sun_curve : hint_range(0, 1) = 0.15;
-uniform bool use_debanding = true;
-
-// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
-vec3 interleaved_gradient_noise(vec2 pos) {
-	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
-	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
-	return vec3(res, -res, res) / 255.0;
-}
 
 void sky() {
 	float v_angle = acos(clamp(EYEDIR.y, -1.0, 1.0));
@@ -332,11 +332,10 @@ void sky() {
 	ground *= ground_energy;
 
 	COLOR = mix(ground, sky, step(0.0, EYEDIR.y));
-	if (use_debanding) {
-		COLOR += interleaved_gradient_noise(FRAGCOORD.xy);
-	}
 }
-)");
+)",
+																		  i ? "render_mode use_debanding;" : ""));
+		}
 	}
 	shader_mutex.unlock();
 }
@@ -546,7 +545,11 @@ float PhysicalSkyMaterial::get_energy_multiplier() const {
 
 void PhysicalSkyMaterial::set_use_debanding(bool p_use_debanding) {
 	use_debanding = p_use_debanding;
-	RS::get_singleton()->material_set_param(_get_material(), "use_debanding", use_debanding);
+	_update_shader();
+	// Only set if shader already compiled
+	if (shader_set) {
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
+	}
 }
 
 bool PhysicalSkyMaterial::get_use_debanding() const {
@@ -570,7 +573,8 @@ Shader::Mode PhysicalSkyMaterial::get_shader_mode() const {
 RID PhysicalSkyMaterial::get_rid() const {
 	_update_shader();
 	if (!shader_set) {
-		RS::get_singleton()->material_set_shader(_get_material(), shader);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[1 - int(use_debanding)]);
+		RS::get_singleton()->material_set_shader(_get_material(), shader_cache[int(use_debanding)]);
 		shader_set = true;
 	}
 	return _get_material();
@@ -578,7 +582,7 @@ RID PhysicalSkyMaterial::get_rid() const {
 
 RID PhysicalSkyMaterial::get_shader_rid() const {
 	_update_shader();
-	return shader;
+	return shader_cache[int(use_debanding)];
 }
 
 void PhysicalSkyMaterial::_validate_property(PropertyInfo &p_property) const {
@@ -588,7 +592,7 @@ void PhysicalSkyMaterial::_validate_property(PropertyInfo &p_property) const {
 }
 
 Mutex PhysicalSkyMaterial::shader_mutex;
-RID PhysicalSkyMaterial::shader;
+RID PhysicalSkyMaterial::shader_cache[2];
 
 void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rayleigh_coefficient", "rayleigh"), &PhysicalSkyMaterial::set_rayleigh_coefficient);
@@ -642,21 +646,24 @@ void PhysicalSkyMaterial::_bind_methods() {
 }
 
 void PhysicalSkyMaterial::cleanup_shader() {
-	if (shader.is_valid()) {
-		RS::get_singleton()->free(shader);
+	if (shader_cache[0].is_valid()) {
+		RS::get_singleton()->free(shader_cache[0]);
+		RS::get_singleton()->free(shader_cache[1]);
 	}
 }
 
 void PhysicalSkyMaterial::_update_shader() {
 	shader_mutex.lock();
-	if (shader.is_null()) {
-		shader = RS::get_singleton()->shader_create();
+	if (shader_cache[0].is_null()) {
+		for (int i = 0; i < 2; i++) {
+			shader_cache[i] = RS::get_singleton()->shader_create();
 
-		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-		RS::get_singleton()->shader_set_code(shader, R"(
+			// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
+			RS::get_singleton()->shader_set_code(shader_cache[i], vformat(R"(
 // NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s PhysicalSkyMaterial.
 
 shader_type sky;
+%s
 
 uniform float rayleigh : hint_range(0, 64) = 2.0;
 uniform vec4 rayleigh_color : source_color = vec4(0.3, 0.405, 0.6, 1.0);
@@ -668,7 +675,6 @@ uniform float turbidity : hint_range(0, 1000) = 10.0;
 uniform float sun_disk_scale : hint_range(0, 360) = 1.0;
 uniform vec4 ground_color : source_color = vec4(0.1, 0.07, 0.034, 1.0);
 uniform float exposure : hint_range(0, 128) = 1.0;
-uniform bool use_debanding = true;
 
 uniform sampler2D night_sky : source_color, hint_default_black;
 
@@ -681,13 +687,6 @@ const float mie_zenith_size = 1.25e3;
 float henyey_greenstein(float cos_theta, float g) {
 	const float k = 0.0795774715459;
 	return k * (1.0 - g * g) / (pow(1.0 + g * g - 2.0 * g * cos_theta, 1.5));
-}
-
-// https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
-vec3 interleaved_gradient_noise(vec2 pos) {
-	const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);
-	float res = fract(magic.z * fract(dot(pos, magic.xy))) * 2.0 - 1.0;
-	return vec3(res, -res, res) / 255.0;
 }
 
 void sky() {
@@ -737,16 +736,15 @@ void sky() {
 		vec3 color = Lin + L0;
 		COLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));
 		COLOR *= exposure;
-		if (use_debanding) {
-			COLOR += interleaved_gradient_noise(FRAGCOORD.xy);
-		}
 	} else {
 		// There is no sun, so display night_sky and nothing else.
 		COLOR = texture(night_sky, SKY_COORDS).xyz;
 		COLOR *= exposure;
 	}
 }
-)");
+)",
+																		  i ? "render_mode use_debanding;" : ""));
+		}
 	}
 
 	shader_mutex.unlock();
