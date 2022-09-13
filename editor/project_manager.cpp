@@ -2724,9 +2724,10 @@ ProjectManager::ProjectManager() {
 		settings_hb->add_child(h_spacer);
 
 		language_btn = memnew(OptionButton);
-		language_btn->set_flat(true);
 		language_btn->set_icon(get_theme_icon(SNAME("Environment"), SNAME("EditorIcons")));
 		language_btn->set_focus_mode(Control::FOCUS_NONE);
+		language_btn->set_fit_to_longest_item(false);
+		language_btn->set_flat(true);
 		language_btn->connect("item_selected", callable_mp(this, &ProjectManager::_language_selected));
 #ifdef ANDROID_ENABLED
 		// The language selection dropdown doesn't work on Android (as the setting isn't saved), see GH-60353.
