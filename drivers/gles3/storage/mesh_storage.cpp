@@ -554,6 +554,21 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 			glDeleteBuffers(1, &s.index_buffer);
 			s.index_buffer = 0;
 		}
+
+		if (s.versions) {
+			memfree(s.versions); //reallocs, so free with memfree.
+		}
+
+		if (s.lod_count) {
+			for (uint32_t j = 0; j < s.lod_count; j++) {
+				if (s.lods[j].index_buffer != 0) {
+					glDeleteBuffers(1, &s.lods[j].index_buffer);
+					s.lods[j].index_buffer = 0;
+				}
+			}
+			memdelete_arr(s.lods);
+		}
+
 		memdelete(mesh->surfaces[i]);
 	}
 	if (mesh->surfaces) {
