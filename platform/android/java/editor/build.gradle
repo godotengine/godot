@@ -12,6 +12,25 @@ dependencies {
     implementation "androidx.window:window:1.0.0"
 }
 
+ext {
+    // Build number added as a suffix to the version code, and incremented for each build/upload to
+    // the Google Play store.
+    // This should be reset on each stable release of Godot.
+    editorBuildNumber = 0
+    // Value by which the Godot version code should be offset by to make room for the build number
+    editorBuildNumberOffset = 100
+}
+
+def generateVersionCode() {
+    int libraryVersionCode = getGodotLibraryVersionCode()
+    return (libraryVersionCode * editorBuildNumberOffset) + editorBuildNumber
+}
+
+def generateVersionName() {
+    String libraryVersionName = getGodotLibraryVersionName()
+    return libraryVersionName + ".$editorBuildNumber"
+}
+
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
@@ -20,8 +39,8 @@ android {
     defaultConfig {
         // The 'applicationId' suffix allows to install Godot 3.x(v3) and 4.x(v4) on the same device
         applicationId "org.godotengine.editor.v3"
-        versionCode getGodotLibraryVersionCode()
-        versionName getGodotLibraryVersionName()
+        versionCode generateVersionCode()
+        versionName generateVersionName()
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
 
