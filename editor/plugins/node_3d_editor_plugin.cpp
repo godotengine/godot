@@ -5516,8 +5516,8 @@ Dictionary Node3DEditor::get_state() const {
 		pd["sun_color"] = sun_color->get_pick_color();
 		pd["sun_energy"] = sun_energy->get_value();
 
-		pd["sun_disabled"] = sun_button->is_pressed();
-		pd["environ_disabled"] = environ_button->is_pressed();
+		pd["sun_enabled"] = sun_button->is_pressed();
+		pd["environ_enabled"] = environ_button->is_pressed();
 
 		d["preview_sun_env"] = pd;
 	}
@@ -5648,8 +5648,8 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		sun_color->set_pick_color(pd["sun_color"]);
 		sun_energy->set_value(pd["sun_energy"]);
 
-		sun_button->set_pressed(pd["sun_disabled"]);
-		environ_button->set_pressed(pd["environ_disabled"]);
+		sun_button->set_pressed(pd["sun_enabled"]);
+		environ_button->set_pressed(pd["environ_enabled"]);
 
 		sun_environ_updating = false;
 
@@ -5657,8 +5657,8 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		_update_preview_environment();
 	} else {
 		_load_default_preview_settings();
-		sun_button->set_pressed(false);
-		environ_button->set_pressed(false);
+		sun_button->set_pressed(true);
+		environ_button->set_pressed(true);
 		_preview_settings_changed();
 		_update_preview_environment();
 	}
@@ -7159,8 +7159,8 @@ void Node3DEditor::_update_theme() {
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_theme_icon(SNAME("Panels3Alt"), SNAME("EditorIcons")));
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_theme_icon(SNAME("Panels4"), SNAME("EditorIcons")));
 
-	sun_button->set_icon(get_theme_icon(SNAME("DirectionalLight3D"), SNAME("EditorIcons")));
-	environ_button->set_icon(get_theme_icon(SNAME("WorldEnvironment"), SNAME("EditorIcons")));
+	sun_button->set_icon(get_theme_icon(SNAME("PreviewSun"), SNAME("EditorIcons")));
+	environ_button->set_icon(get_theme_icon(SNAME("PreviewEnvironment"), SNAME("EditorIcons")));
 	sun_environ_settings->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 	sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
@@ -7636,7 +7636,7 @@ void Node3DEditor::_load_default_preview_settings() {
 }
 
 void Node3DEditor::_update_preview_environment() {
-	bool disable_light = directional_light_count > 0 || sun_button->is_pressed();
+	bool disable_light = directional_light_count > 0 || !sun_button->is_pressed();
 
 	sun_button->set_disabled(directional_light_count > 0);
 
@@ -7664,7 +7664,7 @@ void Node3DEditor::_update_preview_environment() {
 	sun_angle_altitude->set_value(-Math::rad_to_deg(sun_rotation.x));
 	sun_angle_azimuth->set_value(180.0 - Math::rad_to_deg(sun_rotation.y));
 
-	bool disable_env = world_env_count > 0 || environ_button->is_pressed();
+	bool disable_env = world_env_count > 0 || !environ_button->is_pressed();
 
 	environ_button->set_disabled(world_env_count > 0);
 
@@ -7855,6 +7855,8 @@ Node3DEditor::Node3DEditor() {
 	sun_button->set_flat(true);
 	sun_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	sun_button->set_disabled(true);
+	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
+	sun_button->set_pressed(true);
 
 	main_menu_hbox->add_child(sun_button);
 
@@ -7864,6 +7866,8 @@ Node3DEditor::Node3DEditor() {
 	environ_button->set_flat(true);
 	environ_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
 	environ_button->set_disabled(true);
+	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
+	environ_button->set_pressed(true);
 
 	main_menu_hbox->add_child(environ_button);
 
