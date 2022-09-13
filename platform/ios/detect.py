@@ -120,6 +120,10 @@ def configure(env):
         env.Append(CCFLAGS=["-miphoneos-version-min=11.0"])
 
     if env["arch"] == "x86_64":
+        if not env["ios_simulator"]:
+            print("ERROR: Building for iOS with 'arch=x86_64' requires 'ios_simulator=yes'.")
+            sys.exit(255)
+
         env["ENV"]["MACOSX_DEPLOYMENT_TARGET"] = "10.9"
         env.Append(
             CCFLAGS=(
