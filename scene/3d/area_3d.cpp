@@ -489,6 +489,11 @@ TypedArray<Node3D> Area3D::get_overlapping_bodies() const {
 	return ret;
 }
 
+bool Area3D::has_overlapping_bodies() const {
+	ERR_FAIL_COND_V_MSG(!monitoring, false, "Can't find overlapping bodies when monitoring is off.");
+	return !body_map.is_empty();
+}
+
 void Area3D::set_monitorable(bool p_enable) {
 	ERR_FAIL_COND_MSG(locked || (is_inside_tree() && PhysicsServer3D::get_singleton()->is_flushing_queries()), "Function blocked during in/out signal. Use set_deferred(\"monitorable\", true/false).");
 
@@ -519,6 +524,11 @@ TypedArray<Area3D> Area3D::get_overlapping_areas() const {
 	}
 	ret.resize(idx);
 	return ret;
+}
+
+bool Area3D::has_overlapping_areas() const {
+	ERR_FAIL_COND_V_MSG(!monitoring, false, "Can't find overlapping areas when monitoring is off.");
+	return !area_map.is_empty();
 }
 
 bool Area3D::overlaps_area(Node *p_area) const {
@@ -685,6 +695,9 @@ void Area3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_overlapping_bodies"), &Area3D::get_overlapping_bodies);
 	ClassDB::bind_method(D_METHOD("get_overlapping_areas"), &Area3D::get_overlapping_areas);
+
+	ClassDB::bind_method(D_METHOD("has_overlapping_bodies"), &Area3D::has_overlapping_bodies);
+	ClassDB::bind_method(D_METHOD("has_overlapping_areas"), &Area3D::has_overlapping_areas);
 
 	ClassDB::bind_method(D_METHOD("overlaps_body", "body"), &Area3D::overlaps_body);
 	ClassDB::bind_method(D_METHOD("overlaps_area", "area"), &Area3D::overlaps_area);
