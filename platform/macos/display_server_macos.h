@@ -85,6 +85,8 @@ public:
 		Size2i max_size;
 		Size2i size;
 
+		NSRect last_frame_rect;
+
 		bool im_active = false;
 		Size2i im_position;
 

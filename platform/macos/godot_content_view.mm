@@ -61,6 +61,24 @@
 @implementation GodotContentView
 
 - (void)setFrameSize:(NSSize)newSize {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		NSRect frameRect = [wd.window_object frame];
+		bool left = (wd.last_frame_rect.origin.x != frameRect.origin.x);
+		bool top = (wd.last_frame_rect.origin.y == frameRect.origin.y);
+		if (left && top) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomRight;
+		} else if (left && !top) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementTopRight;
+		} else if (!left && top) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomLeft;
+		} else {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+		}
+		wd.last_frame_rect = frameRect;
+	}
+
 	[super setFrameSize:newSize];
 	[self.layer setNeedsDisplay]; // Force "drawRect" call.
 }
