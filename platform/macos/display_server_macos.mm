@@ -273,12 +273,18 @@ void DisplayServerMacOS::_update_window_style(WindowData p_wd, WindowID p_window
 
 	if (borderless_full) {
 		// If the window covers up the screen set the level to above the main menu and hide on deactivate.
-		[(NSWindow *)p_wd.window_object setLevel:NSMainMenuWindowLevel + 1];
+		if (p_wd.wallpaper) {
+			[(NSWindow *)p_wd.window_object setLevel:kCGDesktopWindowLevel];
+		} else {
+			[(NSWindow *)p_wd.window_object setLevel:NSMainMenuWindowLevel + 1];
+		}
 		[(NSWindow *)p_wd.window_object setHidesOnDeactivate:YES];
 	} else {
 		// Reset these when our window is not a borderless window that covers up the screen.
 		if (is_always_on_top_recursive(p_window) && !p_wd.fullscreen) {
 			[(NSWindow *)p_wd.window_object setLevel:NSFloatingWindowLevel];
+		} else if (p_wd.wallpaper && !p_wd.fullscreen) {
+			[(NSWindow *)p_wd.window_object setLevel:kCGDesktopWindowLevel];
 		} else {
 			[(NSWindow *)p_wd.window_object setLevel:NSNormalWindowLevel];
 		}
@@ -2181,7 +2187,8 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 	ERR_FAIL_COND(wd_window.transient_parent == p_parent);
 
-	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
+	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' flag can't become transient.");
+	ERR_FAIL_COND_MSG(wd_window.wallpaper, "Windows with the 'wallpaper' flag can't become transient.");
 	if (p_parent == INVALID_WINDOW_ID) {
 		// Remove transient.
 		ERR_FAIL_COND(wd_window.transient_parent == INVALID_WINDOW_ID);
@@ -2664,12 +2671,27 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				[wd.window_object setFrame:[[wd.window_object screen] visibleFrame] display:NO];
 			}
 		} break;
+		case WINDOW_FLAG_WALLPAPER: {
+			wd.wallpaper = p_enabled;
+			if (wd.fullscreen) {
+				return;
+			}
+			if (p_enabled) {
+				wd.on_top = false;
+				[(NSWindow *)wd.window_object setLevel:kCGDesktopWindowLevel];
+				[(NSWindow *)wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorStationary | NSWindowCollectionBehaviorCanJoinAllSpaces];
+			} else {
+				[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
+				[(NSWindow *)wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+			}
+		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			wd.on_top = p_enabled;
 			if (wd.fullscreen) {
 				return;
 			}
 			if (p_enabled) {
+				wd.wallpaper = false;
 				[(NSWindow *)wd.window_object setLevel:NSFloatingWindowLevel];
 			} else {
 				[(NSWindow *)wd.window_object setLevel:NSNormalWindowLevel];
@@ -2737,6 +2759,13 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			return [wd.window_object styleMask] == NSWindowStyleMaskBorderless;
+		} break;
+		case WINDOW_FLAG_WALLPAPER: {
+			if (wd.fullscreen) {
+				return wd.wallpaper;
+			} else {
+				return [(NSWindow *)wd.window_object level] == kCGDesktopWindowLevel;
+			}
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.on_top;

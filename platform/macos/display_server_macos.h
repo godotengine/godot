@@ -132,6 +132,7 @@ public:
 		bool fullscreen = false;
 		bool exclusive_fullscreen = false;
 		bool on_top = false;
+		bool wallpaper = false;
 		bool borderless = false;
 		bool resize_disabled = false;
 		bool no_min_btn = false;
