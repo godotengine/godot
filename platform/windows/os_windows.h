@@ -146,8 +146,7 @@ public:
 
 	virtual void initialize_joypads() override {}
 
-	virtual Date get_date(bool p_utc) const override;
-	virtual Time get_time(bool p_utc) const override;
+	virtual DateTime get_datetime(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 	virtual double get_unix_time() const override;
 

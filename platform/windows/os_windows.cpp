@@ -290,7 +290,7 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool p_utc) const {
+OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {
 		GetSystemTime(&systemtime);
@@ -305,28 +305,16 @@ OS::Date OS_Windows::get_date(bool p_utc) const {
 		daylight = true;
 	}
 
-	Date date;
-	date.day = systemtime.wDay;
-	date.month = Month(systemtime.wMonth);
-	date.weekday = Weekday(systemtime.wDayOfWeek);
-	date.year = systemtime.wYear;
-	date.dst = daylight;
-	return date;
-}
-
-OS::Time OS_Windows::get_time(bool p_utc) const {
-	SYSTEMTIME systemtime;
-	if (p_utc) {
-		GetSystemTime(&systemtime);
-	} else {
-		GetLocalTime(&systemtime);
-	}
-
-	Time time;
-	time.hour = systemtime.wHour;
-	time.minute = systemtime.wMinute;
-	time.second = systemtime.wSecond;
-	return time;
+	DateTime dt;
+	dt.year = systemtime.wYear;
+	dt.month = Month(systemtime.wMonth);
+	dt.day = systemtime.wDay;
+	dt.weekday = Weekday(systemtime.wDayOfWeek);
+	dt.hour = systemtime.wHour;
+	dt.minute = systemtime.wMinute;
+	dt.second = systemtime.wSecond;
+	dt.dst = daylight;
+	return dt;
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {

@@ -686,10 +686,9 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 	String renamed_path = path.get_base_dir() + "/" + file_name;
 
 	// Generates the .trashinfo file
-	OS::Date date = OS::get_singleton()->get_date(false);
-	OS::Time time = OS::get_singleton()->get_time(false);
-	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", date.year, (int)date.month, date.day, time.hour, time.minute);
-	timestamp = vformat("%s%02d", timestamp, time.second); // vformat only supports up to 6 arguments.
+	OS::DateTime dt = OS::get_singleton()->get_datetime(false);
+	String timestamp = vformat("%04d-%02d-%02dT%02d:%02d:", dt.year, (int)dt.month, dt.day, dt.hour, dt.minute);
+	timestamp = vformat("%s%02d", timestamp, dt.second); // vformat only supports up to 6 arguments.
 	String trash_info = "[Trash Info]\nPath=" + path.uri_encode() + "\nDeletionDate=" + timestamp + "\n";
 	{
 		Error err;

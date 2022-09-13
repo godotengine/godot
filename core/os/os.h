@@ -202,18 +202,15 @@ public:
 		MONTH_DECEMBER,
 	};
 
-	struct Date {
+	struct DateTime {
 		int64_t year;
 		Month month;
 		uint8_t day;
 		Weekday weekday;
-		bool dst;
-	};
-
-	struct Time {
 		uint8_t hour;
 		uint8_t minute;
 		uint8_t second;
+		bool dst;
 	};
 
 	struct TimeZoneInfo {
@@ -221,8 +218,7 @@ public:
 		String name;
 	};
 
-	virtual Date get_date(bool p_utc = false) const = 0;
-	virtual Time get_time(bool p_utc = false) const = 0;
+	virtual DateTime get_datetime(bool utc = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
 	virtual double get_unix_time() const;
 

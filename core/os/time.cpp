@@ -324,63 +324,60 @@ String Time::get_offset_string_from_offset_minutes(int64_t p_offset_minutes) con
 }
 
 Dictionary Time::get_datetime_dict_from_system(bool p_utc) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary datetime;
-	datetime[YEAR_KEY] = date.year;
-	datetime[MONTH_KEY] = (uint8_t)date.month;
-	datetime[DAY_KEY] = date.day;
-	datetime[WEEKDAY_KEY] = (uint8_t)date.weekday;
-	datetime[DST_KEY] = date.dst;
-	datetime[HOUR_KEY] = time.hour;
-	datetime[MINUTE_KEY] = time.minute;
-	datetime[SECOND_KEY] = time.second;
+	datetime[YEAR_KEY] = dt.year;
+	datetime[MONTH_KEY] = (uint8_t)dt.month;
+	datetime[DAY_KEY] = dt.day;
+	datetime[WEEKDAY_KEY] = (uint8_t)dt.weekday;
+	datetime[HOUR_KEY] = dt.hour;
+	datetime[MINUTE_KEY] = dt.minute;
+	datetime[SECOND_KEY] = dt.second;
+	datetime[DST_KEY] = dt.dst;
 	return datetime;
 }
 
 Dictionary Time::get_date_dict_from_system(bool p_utc) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary date_dictionary;
-	date_dictionary[YEAR_KEY] = date.year;
-	date_dictionary[MONTH_KEY] = (uint8_t)date.month;
-	date_dictionary[DAY_KEY] = date.day;
-	date_dictionary[WEEKDAY_KEY] = (uint8_t)date.weekday;
-	date_dictionary[DST_KEY] = date.dst;
+	date_dictionary[YEAR_KEY] = dt.year;
+	date_dictionary[MONTH_KEY] = (uint8_t)dt.month;
+	date_dictionary[DAY_KEY] = dt.day;
+	date_dictionary[WEEKDAY_KEY] = (uint8_t)dt.weekday;
 	return date_dictionary;
 }
 
 Dictionary Time::get_time_dict_from_system(bool p_utc) const {
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	Dictionary time_dictionary;
-	time_dictionary[HOUR_KEY] = time.hour;
-	time_dictionary[MINUTE_KEY] = time.minute;
-	time_dictionary[SECOND_KEY] = time.second;
+	time_dictionary[HOUR_KEY] = dt.hour;
+	time_dictionary[MINUTE_KEY] = dt.minute;
+	time_dictionary[SECOND_KEY] = dt.second;
 	return time_dictionary;
 }
 
 String Time::get_datetime_string_from_system(bool p_utc, bool p_use_space) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
-	String timestamp = vformat("%04d-%02d-%02d", date.year, (uint8_t)date.month, date.day);
+	String timestamp = vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
 	if (p_use_space) {
-		timestamp = vformat("%s %02d:%02d:%02d", timestamp, time.hour, time.minute, time.second);
+		timestamp = vformat("%s %02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
 	} else {
-		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, time.hour, time.minute, time.second);
+		timestamp = vformat("%sT%02d:%02d:%02d", timestamp, dt.hour, dt.minute, dt.second);
 	}
 
 	return timestamp;
 }
 
 String Time::get_date_string_from_system(bool p_utc) const {
-	OS::Date date = OS::get_singleton()->get_date(p_utc);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
 	// Android is picky about the types passed to make Variant, so we need a cast.
-	return vformat("%04d-%02d-%02d", date.year, (uint8_t)date.month, date.day);
+	return vformat("%04d-%02d-%02d", dt.year, (uint8_t)dt.month, dt.day);
 }
 
 String Time::get_time_string_from_system(bool p_utc) const {
-	OS::Time time = OS::get_singleton()->get_time(p_utc);
-	return vformat("%02d:%02d:%02d", time.hour, time.minute, time.second);
+	OS::DateTime dt = OS::get_singleton()->get_datetime(p_utc);
+	return vformat("%02d:%02d:%02d", dt.hour, dt.minute, dt.second);
 }
 
 Dictionary Time::get_time_zone_from_system() const {
