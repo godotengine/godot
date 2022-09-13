@@ -1715,6 +1715,7 @@ ShaderCompiler::DefaultIdentifierActions actions;
 		actions.usage_defines["HALF_RES_COLOR"] = "\n#define USES_HALF_RES_COLOR\n";
 		actions.usage_defines["QUARTER_RES_COLOR"] = "\n#define USES_QUARTER_RES_COLOR\n";
 		actions.render_mode_defines["disable_fog"] = "#define DISABLE_FOG\n";
+		actions.render_mode_defines["use_debanding"] = "#define USE_DEBANDING\n";
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
