@@ -128,6 +128,11 @@ void RenderSceneBuffersRD::cleanup() {
 		ss_effects.linear_depth_slices.clear();
 	}
 
+	if (ss_effects.downsample_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(ss_effects.downsample_uniform_set)) {
+		RD::get_singleton()->free(ss_effects.downsample_uniform_set);
+		ss_effects.downsample_uniform_set = RID();
+	}
+
 	sse->ssao_free(ss_effects.ssao);
 	sse->ssil_free(ss_effects.ssil);
 	sse->ssr_free(ssr);

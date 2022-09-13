@@ -443,6 +443,11 @@ void SSEffects::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 
 	RD::get_singleton()->draw_command_begin_label("Downsample Depth");
 	if (p_invalidate_uniform_set || use_full_mips != ss_effects.used_full_mips_last_frame || use_half_size != ss_effects.used_half_size_last_frame || use_mips != ss_effects.used_mips_last_frame) {
+		if (ss_effects.downsample_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(ss_effects.downsample_uniform_set)) {
+			RD::get_singleton()->free(ss_effects.downsample_uniform_set);
+			ss_effects.downsample_uniform_set = RID();
+		}
+
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
@@ -516,6 +521,7 @@ void SSEffects::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 
 	ss_effects.used_full_mips_last_frame = use_full_mips;
 	ss_effects.used_half_size_last_frame = use_half_size;
+	ss_effects.used_mips_last_frame = use_mips;
 }
 
 /* SSIL */
