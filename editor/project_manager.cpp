@@ -1253,7 +1253,6 @@ void ProjectList::migrate_config() {
 	if (FileAccess::exists(_config_path)) {
 		return;
 	}
-	print_line("Migrating legacy project list");
 
 	List<PropertyInfo> properties;
 	EditorSettings::get_singleton()->get_property_list(&properties);
@@ -1266,6 +1265,8 @@ void ProjectList::migrate_config() {
 		}
 
 		String path = EDITOR_GET(property_key);
+		print_line("Migrating legacy project '" + path + "'.");
+
 		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
