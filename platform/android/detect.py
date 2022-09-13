@@ -48,9 +48,6 @@ def get_ndk_version():
 def get_flags():
     return [
         ("tools", False),
-        # Benefits of LTO for Android (size, performance) haven't been clearly established yet.
-        # So for now we override the default value which may be set when using `production=yes`.
-        ("lto", "none"),
     ]
 
 
@@ -141,6 +138,10 @@ def configure(env):
         env.Append(CPPFLAGS=["-UNDEBUG"])
 
     # LTO
+
+    if env["lto"] == "auto":  # LTO benefits for Android (size, performance) haven't been clearly established yet.
+        env["lto"] = "none"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             env.Append(CCFLAGS=["-flto=thin"])

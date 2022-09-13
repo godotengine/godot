@@ -204,6 +204,10 @@ def configure(env):
             env.Append(LINKFLAGS=["-fsanitize=memory"])
 
     # LTO
+
+    if env["lto"] == "auto":  # Full LTO for production.
+        env["lto"] = "full"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             if not env["use_llvm"]:
