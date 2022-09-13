@@ -153,6 +153,32 @@ TEST_CASE("[OS] Execute") {
 #endif
 }
 
+TEST_CASE("[OS] Ensure get_safe_dir_name returns safe results") {
+	// Path separators ('/', '\') are only allowed if the second argument is true.
+	CHECK_MESSAGE(
+			OS::get_singleton()->get_safe_dir_name("a/b/c") == "a-b-c",
+			"Safe dir names should not contain directory separators, unless specified.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->get_safe_dir_name("a/b/c", true) == "a/b/c",
+			"Directory separators should be allowed, when specified.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->get_safe_dir_name("a\\b\\c") == "a-b-c",
+			"Safe dir names should not contain directory separators, unless specified.");
+	CHECK_MESSAGE(
+			OS::get_singleton()->get_safe_dir_name("a\\b\\c", true) == "a/b/c",
+			"Legacy path separators should be replaced with slashes, when specified.");
+
+	// Never allow '..', it is dangerous! (whether that is an overstatement depends on the use case, but we should always be careful with user input).
+	CHECK_MESSAGE(
+			OS::get_singleton()->get_safe_dir_name("../../secret/files.txt") == "----secret-files.txt",
+			"Navigational path was not properly handled, the file system could have been traversed.");
+
+	// Allow '.' because it is still valid in dir/file names.
+	CHECK_MESSAGE(
+			OS::get_singleton()->get_safe_dir_name("some_file.txt") == "some_file.txt",
+			"Individual full stops '.' should be allowed, they are harmless in this context.");
+}
+
 } // namespace TestOS
 
 #endif // TEST_OS_H

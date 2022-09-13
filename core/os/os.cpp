@@ -211,11 +211,12 @@ uint64_t OS::get_embedded_pck_offset() const {
 
 // Helper function to ensure that a dir name/path will be valid on the OS
 String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
-	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");
-	if (p_allow_dir_separator) {
-		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
-		invalid_chars.push_back("..");
-	} else {
+	// Disallow dangerous directory characters, especially '..' which can be used to traverse the filesystem.
+	Vector<String> invalid_chars = String(": * ? \" < > | ..").split(" ");
+
+	// Optionally, allow the directory separator so users can create subdirectories.
+	if (!p_allow_dir_separator) {
+		// Disallowed, so add it to invalid characters.
 		invalid_chars.push_back("/");
 	}
 
