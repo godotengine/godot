@@ -714,7 +714,14 @@ void RendererViewport::draw_viewports() {
 					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 				}
 
-				blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
+				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+					Vector<BlitToScreen> blit_to_screen_vec;
+					blit_to_screen_vec.push_back(blit);
+					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);
+					RSG::rasterizer->end_frame(true);
+				} else {
+					blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
+				}
 			}
 		}
 
