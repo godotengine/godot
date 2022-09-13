@@ -100,6 +100,10 @@ def configure(env):
     env["ENV"] = os.environ
 
     # LTO
+
+    if env["lto"] == "auto":  # Full LTO for production.
+        env["lto"] = "full"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             env.Append(CCFLAGS=["-flto=thin"])

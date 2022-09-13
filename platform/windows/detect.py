@@ -281,6 +281,9 @@ def configure_msvc(env, manual_msvc_config):
 
     ## LTO
 
+    if env["lto"] == "auto":  # No LTO by default for MSVC, doesn't help.
+        env["lto"] = "none"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
@@ -394,6 +397,11 @@ def configure_mingw(env):
         env["RANLIB"] = mingw_prefix + "gcc-ranlib"
 
     env["x86_libtheora_opt_gcc"] = True
+
+    ## LTO
+
+    if env["lto"] == "auto":  # Full LTO for production with MinGW.
+        env["lto"] = "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
