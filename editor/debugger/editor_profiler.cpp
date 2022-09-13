@@ -104,6 +104,10 @@ void EditorProfiler::clear() {
 	updating_frame = false;
 	hover_metric = -1;
 	seeking = false;
+
+	// Ensure button text (start, stop) is correct
+	_set_button_text();
+	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
 static String _get_percent_txt(float p_value, float p_total) {
@@ -374,15 +378,23 @@ void EditorProfiler::_update_frame() {
 	updating_frame = false;
 }
 
-void EditorProfiler::_activate_pressed() {
+void EditorProfiler::_set_button_text() {
 	if (activate->is_pressed()) {
 		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
-		_clear_pressed();
 	} else {
 		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
 	}
+}
+
+void EditorProfiler::_activate_pressed() {
+	_set_button_text();
+
+	if (activate->is_pressed()) {
+		_clear_pressed();
+	}
+
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
@@ -499,8 +511,12 @@ void EditorProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("break_request"));
 }
 
-void EditorProfiler::set_enabled(bool p_enable) {
+void EditorProfiler::set_enabled(bool p_enable, bool p_clear) {
+	activate->set_pressed(false);
 	activate->set_disabled(!p_enable);
+	if (p_clear) {
+		clear();
+	}
 }
 
 bool EditorProfiler::is_profiling() {
