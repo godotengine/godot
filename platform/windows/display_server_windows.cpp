@@ -2419,14 +2419,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SETTINGCHANGE: {
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
-				if (is_dark_mode_supported()) {
+				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
 					::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
-			if (is_dark_mode_supported()) {
+			if (is_dark_mode_supported() && dark_title_available) {
 				BOOL value = is_dark_mode();
 				::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 			}
@@ -3541,7 +3541,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			wd.pre_fs_valid = true;
 		}
 
-		if (is_dark_mode_supported()) {
+		if (is_dark_mode_supported() && dark_title_available) {
 			BOOL value = is_dark_mode();
 			::DwmSetWindowAttribute(wd.hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 		}
@@ -3633,6 +3633,7 @@ WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
 WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
 // UXTheme API.
+bool DisplayServerWindows::dark_title_available = false;
 bool DisplayServerWindows::ux_theme_available = false;
 IsDarkModeAllowedForAppPtr DisplayServerWindows::IsDarkModeAllowedForApp = nullptr;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
@@ -3725,7 +3726,21 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
-	// Load UXTheme
+	// Load Windows version info.
+	OSVERSIONINFOW os_ver;
+	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
+	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+
+	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+	if (nt_lib) {
+		RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(nt_lib, "RtlGetVersion");
+		if (RtlGetVersion) {
+			RtlGetVersion(&os_ver);
+		}
+		FreeLibrary(nt_lib);
+	}
+
+	// Load UXTheme.
 	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 	if (ux_theme_lib) {
 		IsDarkModeAllowedForApp = (IsDarkModeAllowedForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
@@ -3735,6 +3750,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
 		ux_theme_available = IsDarkModeAllowedForApp && ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+		if (os_ver.dwBuildNumber >= 22000) {
+			dark_title_available = true;
+		}
 	}
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
