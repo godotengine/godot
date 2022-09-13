@@ -124,7 +124,7 @@ void EditorUndoRedoManager::create_action(const String &p_name, UndoRedo::MergeM
 	create_action_for_history(p_name, INVALID_HISTORY, p_mode);
 
 	if (p_custom_context) {
-		// This assigns context to pending action.
+		// This assigns history to pending action.
 		get_history_for_object(p_custom_context);
 	}
 }
@@ -218,7 +218,10 @@ void EditorUndoRedoManager::add_undo_reference(Object *p_object) {
 }
 
 void EditorUndoRedoManager::commit_action(bool p_execute) {
-	ERR_FAIL_COND(pending_action.history_id == INVALID_HISTORY);
+	if (pending_action.history_id == INVALID_HISTORY) {
+		return; // Empty action, do nothing.
+	}
+
 	is_committing = true;
 
 	History &history = get_or_create_history(pending_action.history_id);
