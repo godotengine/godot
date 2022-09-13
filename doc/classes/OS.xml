@@ -517,6 +517,14 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="read_string_from_stdin">
+			<return type="String" />
+			<param index="0" name="block" type="bool" default="true" />
+			<description>
+				Reads a user input string from the standard input (usually the terminal).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Non-blocking reads are not currently supported on any platform.
+			</description>
+		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />

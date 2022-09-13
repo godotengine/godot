@@ -253,6 +253,10 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
+String OS::read_string_from_stdin(bool p_block) {
+	return ::OS::get_singleton()->get_stdin_string(true);
+}
+
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -522,6 +526,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
 	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "block"), &OS::read_string_from_stdin, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
