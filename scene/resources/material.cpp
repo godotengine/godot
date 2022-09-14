@@ -156,17 +156,7 @@ Material::~Material() {
 
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_uniform(p_name);
-		if (!pr) {
-			String n = p_name;
-			if (n.find("shader_parameter/") == 0) { //backwards compatibility
-				pr = n.replace_first("shader_parameter/", "");
-			} else if (n.find("shader_uniform/") == 0) { //backwards compatibility
-				pr = n.replace_first("shader_uniform/", "");
-			} else if (n.find("param/") == 0) { //backwards compatibility
-				pr = n.substr(6, n.length());
-			}
-		}
+		StringName pr = shader->remap_parameter(p_name);
 		if (pr) {
 			set_shader_parameter(pr, p_value);
 			return true;
@@ -178,25 +168,9 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_uniform(p_name);
-		if (!pr) {
-			String n = p_name;
-			if (n.find("shader_parameter/") == 0) { //backwards compatibility
-				pr = n.replace_first("shader_parameter/", "");
-			} else if (n.find("shader_uniform/") == 0) { //backwards compatibility
-				pr = n.replace_first("shader_uniform/", "");
-			} else if (n.find("param/") == 0) { //backwards compatibility
-				pr = n.substr(6, n.length());
-			}
-		}
-
+		StringName pr = shader->remap_parameter(p_name);
 		if (pr) {
-			HashMap<StringName, Variant>::ConstIterator E = param_cache.find(pr);
-			if (E) {
-				r_ret = E->value;
-			} else {
-				r_ret = Variant();
-			}
+			r_ret = get_shader_parameter(pr);
 			return true;
 		}
 	}
@@ -238,6 +212,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_GROUP;
 						info.name = last_group.capitalize();
+						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> none_subgroup;
 						none_subgroup.push_back(info);
@@ -252,6 +227,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 						PropertyInfo info;
 						info.usage = PROPERTY_USAGE_SUBGROUP;
 						info.name = last_subgroup.capitalize();
+						info.hint_string = "shader_parameter/";
 
 						List<PropertyInfo> subgroup;
 						subgroup.push_back(info);
@@ -271,12 +247,13 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 				PropertyInfo info;
 				info.usage = PROPERTY_USAGE_GROUP;
-				info.name = "Shader Param";
+				info.name = "Shader Parameters";
+				info.hint_string = "shader_parameter/";
 				groups["<None>"]["<None>"].push_back(info);
 			}
 
 			PropertyInfo info = E->get();
-			info.name = info.name;
+			info.name = "shader_parameter/" + info.name;
 			groups[last_group][last_subgroup].push_back(info);
 		}
 
@@ -303,7 +280,7 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_uniform(p_name);
+		StringName pr = shader->remap_parameter(p_name);
 		if (pr) {
 			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pr);
 			Variant current_value;
@@ -316,7 +293,7 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 
 bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_uniform(p_name);
+		StringName pr = shader->remap_parameter(p_name);
 		if (pr) {
 			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pr);
 			return true;
