@@ -1379,9 +1379,9 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 
 		actions.renames["MODEL_MATRIX"] = "model_matrix";
-		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
-		actions.renames["SCREEN_MATRIX"] = "canvas_data.screen_transform";
-		actions.renames["TIME"] = "canvas_data.time";
+		actions.renames["CANVAS_MATRIX"] = "canvas_transform";
+		actions.renames["SCREEN_MATRIX"] = "screen_transform";
+		actions.renames["TIME"] = "time";
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
@@ -1399,7 +1399,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["SPECULAR_SHININESS"] = "specular_shininess";
 		actions.renames["SCREEN_UV"] = "screen_uv";
 		actions.renames["SCREEN_TEXTURE"] = "screen_texture";
-		actions.renames["SCREEN_PIXEL_SIZE"] = "canvas_data.screen_pixel_size";
+		actions.renames["SCREEN_PIXEL_SIZE"] = "screen_pixel_size";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
