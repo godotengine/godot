@@ -91,10 +91,10 @@ void TilesEditorPlugin::_thread() {
 				TypedArray<Vector2i> used_cells = tile_map->get_used_cells(0);
 
 				Rect2 encompassing_rect = Rect2();
-				encompassing_rect.set_position(tile_map->map_to_world(used_cells[0]));
+				encompassing_rect.set_position(tile_map->map_to_local(used_cells[0]));
 				for (int i = 0; i < used_cells.size(); i++) {
 					Vector2i cell = used_cells[i];
-					Vector2 world_pos = tile_map->map_to_world(cell);
+					Vector2 world_pos = tile_map->map_to_local(cell);
 					encompassing_rect.expand_to(world_pos);
 
 					// Texture.
@@ -116,7 +116,7 @@ void TilesEditorPlugin::_thread() {
 				// Add the viewport at the last moment to avoid rendering too early.
 				EditorNode::get_singleton()->add_child(viewport);
 
-				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_preview_frame_started), Object::CONNECT_ONESHOT);
+				RS::get_singleton()->connect(SNAME("frame_pre_draw"), callable_mp(const_cast<TilesEditorPlugin *>(this), &TilesEditorPlugin::_preview_frame_started), Object::CONNECT_ONE_SHOT);
 
 				pattern_preview_done.wait();
 

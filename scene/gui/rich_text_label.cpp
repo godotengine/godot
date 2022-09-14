@@ -1028,8 +1028,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 						uint64_t max_rand = 2147483647;
-						double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
 						n_time = (n_time > 1.0) ? 1.0 : n_time;
 						item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
@@ -1243,8 +1243,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 						uint64_t max_rand = 2147483647;
-						double current_offset = Math::range_lerp(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
-						double previous_offset = Math::range_lerp(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double current_offset = Math::remap(char_current_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
+						double previous_offset = Math::remap(char_previous_rand % max_rand, 0, max_rand, 0.0f, 2.f * (float)Math_PI);
 						double n_time = (double)(item_shake->elapsed_time / (0.5f / item_shake->rate));
 						n_time = (n_time > 1.0) ? 1.0 : n_time;
 						item_shake->prev_off = Point2(Math::lerp(Math::sin(previous_offset), Math::sin(current_offset), n_time), Math::lerp(Math::cos(previous_offset), Math::cos(current_offset), n_time)) * (float)item_shake->strength / 10.0f;
@@ -1664,7 +1664,7 @@ int RichTextLabel::_find_first_line(int p_from, int p_to, int p_vofs) const {
 			r = m;
 		}
 	}
-	return l;
+	return MIN(l, (int)main->lines.size() - 1);
 }
 
 _FORCE_INLINE_ float RichTextLabel::_calculate_line_vertical_offset(const RichTextLabel::Line &line) const {
@@ -1676,8 +1676,8 @@ void RichTextLabel::_update_theme_item_cache() {
 
 	theme_cache.normal_style = get_theme_stylebox(SNAME("normal"));
 	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
-	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("bg"), SNAME("ProgressBar"));
-	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fg"), SNAME("ProgressBar"));
+	theme_cache.progress_bg_style = get_theme_stylebox(SNAME("background"), SNAME("ProgressBar"));
+	theme_cache.progress_fg_style = get_theme_stylebox(SNAME("fill"), SNAME("ProgressBar"));
 
 	theme_cache.line_separation = get_theme_constant(SNAME("line_separation"));
 
@@ -1693,7 +1693,6 @@ void RichTextLabel::_update_theme_item_cache() {
 	theme_cache.shadow_offset_x = get_theme_constant(SNAME("shadow_offset_x"));
 	theme_cache.shadow_offset_y = get_theme_constant(SNAME("shadow_offset_y"));
 	theme_cache.outline_size = get_theme_constant(SNAME("outline_size"));
-	theme_cache.outline_color = get_theme_color(SNAME("outline_color"));
 
 	theme_cache.bold_font = get_theme_font(SNAME("bold_font"));
 	theme_cache.bold_font_size = get_theme_font_size(SNAME("bold_font_size"));
@@ -2564,7 +2563,9 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 
 void RichTextLabel::_thread_function(void *self) {
 	RichTextLabel *rtl = reinterpret_cast<RichTextLabel *>(self);
+	rtl->set_physics_process_internal(true);
 	rtl->_process_line_caches();
+	rtl->set_physics_process_internal(false);
 	rtl->updating.store(false);
 	rtl->call_deferred(SNAME("queue_redraw"));
 }
@@ -2680,7 +2681,6 @@ bool RichTextLabel::_validate_line_caches() {
 		loaded.store(true);
 		thread.start(RichTextLabel::_thread_function, reinterpret_cast<void *>(this));
 		loading_started = OS::get_singleton()->get_ticks_msec();
-		set_physics_process_internal(true);
 		return false;
 	} else {
 		_process_line_caches();
@@ -3941,7 +3941,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			int fs = theme_cache.normal_font_size * 3;
 			Ref<Font> f = theme_cache.normal_font;
 			Color color = theme_cache.default_color;
-			Color outline_color = theme_cache.outline_color;
+			Color outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.outline_size;
 			Rect2 dropcap_margins = Rect2();
 
@@ -4364,16 +4364,18 @@ int RichTextLabel::get_visible_paragraph_count() const {
 	if (!is_visible()) {
 		return 0;
 	}
+
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
 	return visible_paragraph_count;
 }
 
 void RichTextLabel::scroll_to_line(int p_line) {
-	_validate_line_caches();
-
 	if (p_line <= 0) {
 		vscroll->set_value(0);
 		return;
 	}
+	_validate_line_caches();
+
 	int line_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
@@ -4392,6 +4394,8 @@ void RichTextLabel::scroll_to_line(int p_line) {
 }
 
 float RichTextLabel::get_line_offset(int p_line) {
+	_validate_line_caches();
+
 	int line_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
@@ -4409,6 +4413,8 @@ float RichTextLabel::get_line_offset(int p_line) {
 }
 
 float RichTextLabel::get_paragraph_offset(int p_paragraph) {
+	_validate_line_caches();
+
 	int to_line = main->first_invalid_line.load();
 	if (0 <= p_paragraph && p_paragraph < to_line) {
 		return main->lines[p_paragraph].offset.y;
@@ -4417,6 +4423,8 @@ float RichTextLabel::get_paragraph_offset(int p_paragraph) {
 }
 
 int RichTextLabel::get_line_count() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	int line_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
@@ -4430,6 +4438,8 @@ int RichTextLabel::get_visible_line_count() const {
 	if (!is_visible()) {
 		return 0;
 	}
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	return visible_line_count;
 }
 
@@ -4844,7 +4854,14 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	}
 	use_bbcode = p_enable;
 	notify_property_list_changed();
-	set_text(text);
+
+	const String current_text = text;
+	if (use_bbcode) {
+		parse_bbcode(current_text);
+	} else { // raw text
+		clear();
+		add_text(current_text);
+	}
 }
 
 bool RichTextLabel::is_using_bbcode() const {
@@ -5005,7 +5022,12 @@ int RichTextLabel::get_content_height() const {
 	int to_line = main->first_invalid_line.load();
 	if (to_line) {
 		MutexLock lock(main->lines[to_line - 1].text_buf->get_mutex());
-		total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+		if (theme_cache.line_separation < 0) {
+			// Do not apply to the last line to avoid cutting text.
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + (main->lines[to_line - 1].text_buf->get_line_count() - 1) * theme_cache.line_separation;
+		} else {
+			total_height = main->lines[to_line - 1].offset.y + main->lines[to_line - 1].text_buf->get_size().y + main->lines[to_line - 1].text_buf->get_line_count() * theme_cache.line_separation;
+		}
 	}
 	return total_height;
 }
@@ -5298,6 +5320,8 @@ int RichTextLabel::get_visible_characters() const {
 }
 
 int RichTextLabel::get_character_line(int p_char) {
+	_validate_line_caches();
+
 	int line_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
@@ -5318,6 +5342,8 @@ int RichTextLabel::get_character_line(int p_char) {
 }
 
 int RichTextLabel::get_character_paragraph(int p_char) {
+	_validate_line_caches();
+
 	int para_count = 0;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
@@ -5349,6 +5375,8 @@ int RichTextLabel::get_total_character_count() const {
 }
 
 int RichTextLabel::get_total_glyph_count() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	int tg = 0;
 	Item *it = main;
 	while (it) {

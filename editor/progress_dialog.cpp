@@ -176,7 +176,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 	} else {
 		cancel_hb->hide();
 	}
-	cancel_hb->raise();
+	cancel_hb->move_to_front();
 	cancelled = false;
 	_popup();
 	if (p_can_cancel) {
@@ -207,7 +207,9 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 		DisplayServer::get_singleton()->process_events();
 	}
 
+#ifndef ANDROID_ENABLED
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
+#endif
 	return cancelled;
 }
 

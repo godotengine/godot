@@ -31,7 +31,6 @@ def get_opts():
     return [
         ("initial_memory", "Initial WASM memory (in MiB)", 32),
         BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
-        BoolVariable("use_thinlto", "Use ThinLTO", False),
         BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
         BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
@@ -110,12 +109,13 @@ def configure(env):
     env["ENV"] = os.environ
 
     # LTO
-    if env["use_thinlto"]:
-        env.Append(CCFLAGS=["-flto=thin"])
-        env.Append(LINKFLAGS=["-flto=thin"])
-    elif env["use_lto"]:
-        env.Append(CCFLAGS=["-flto=full"])
-        env.Append(LINKFLAGS=["-flto=full"])
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
     # Sanitizers
     if env["use_ubsan"]:
@@ -227,3 +227,7 @@ def configure(env):
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+
+    # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
+    # We also only use WebGL2, and changing context version is not widely supported anyway.
+    env.Append(LINKFLAGS=["-s", "GL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])

@@ -36,13 +36,15 @@
 # Seonghyeon Cho <seonghyeoncho96@gmail.com>, 2022.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2022.
 # 김태우 <ogosengi3@gmail.com>, 2022.
+# 박민규 <80dots@gmail.com>, 2022.
+# 이지민 <jiminaleejung@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-06-26 16:16+0000\n"
-"Last-Translator: 김태우 <ogosengi3@gmail.com>\n"
+"PO-Revision-Date: 2022-09-07 06:16+0000\n"
+"Last-Translator: 이지민 <jiminaleejung@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -50,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.13.1-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -387,9 +389,8 @@ msgid "Max Size (KB)"
 msgstr "최대 크기(KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "이동 모드"
+msgstr "마우스 모드"
 
 #: core/os/input.cpp
 #, fuzzy
@@ -411,7 +412,7 @@ msgstr "Shift"
 
 #: core/os/input_event.cpp
 msgid "Control"
-msgstr "조작"
+msgstr "Control"
 
 #: core/os/input_event.cpp
 msgid "Meta"
@@ -422,9 +423,8 @@ msgid "Command"
 msgstr "명령"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr " (물리)"
+msgstr "물리"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
@@ -680,14 +680,12 @@ msgid "Script Templates Search Path"
 msgstr "스크립트 템플릿 검색 경로"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "스타트업으로 자동 로드"
+msgstr "시작할 때 자동으로 Version Control 로드"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "버전 컨트롤"
+msgstr "버전 컨트롤 플러그인 이름"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -2757,12 +2755,11 @@ msgstr "선택"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "플랫폼으로 프로젝트 내보내기:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "파일 경로 완성"
+msgstr "완료하였지만 경고가 있습니다."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2770,9 +2767,8 @@ msgid "Completed successfully."
 msgstr "패키지를 성공적으로 설치했습니다!"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "실패함:"
+msgstr "실패함."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2787,29 +2783,24 @@ msgid "Packing"
 msgstr "패킹 중"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "다른 이름으로 저장"
+msgstr "PCK를 저장합니다."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "폴더를 만들 수 없습니다."
+msgstr "\"%s\" 파일을 생성할 수 없습니다."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "프로젝트 파일을 내보낼 수 없었습니다"
+msgstr "프로젝트 파일을 내보낼 수 없습니다."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "파일을 쓰기 모드로 열 수 없음:"
+msgstr "\"%s\" 경로의 파일을 읽기 위해 열지 못했습니다."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "다른 이름으로 저장"
+msgstr "ZIP파일로 저장"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2934,14 +2925,12 @@ msgid "Prepare Template"
 msgstr "템플릿 관리"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "주어진 내보내기 경로가 없음:"
+msgstr "Export하려고 했으나 해당 경로가 존재하지 않습니다."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "템플릿 파일을 찾을 수 없습니다:"
+msgstr "템플릿 파일을 찾을 수 없습니다: \"%s\""
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -4486,6 +4475,7 @@ msgstr "프로젝트 또는 씬 관련 여러가지 툴."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "프로젝트"
 
@@ -5194,9 +5184,8 @@ msgstr ""
 "있도록 정의해주세요."
 
 #: editor/editor_run_native.cpp
-#, fuzzy
 msgid "Project Run"
-msgstr "프로젝트"
+msgstr "프로젝트 실행"
 
 #: editor/editor_run_script.cpp
 msgid "Write your logic in the _run() method."
@@ -5374,7 +5363,7 @@ msgstr "썸네일 크기"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr "결합"
+msgstr "독"
 
 #: editor/editor_settings.cpp
 msgid "Scene Tree"
@@ -5478,9 +5467,8 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr "마우스 부가 버튼으로 히스토리 둘러보기"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "그리드맵 선택"
+msgstr "선택된 항목을 Drag and drop"
 
 #: editor/editor_settings.cpp
 msgid "Stay In Script Editor On Node Selected"
@@ -5766,7 +5754,7 @@ msgstr "줌 방식"
 
 #: editor/editor_settings.cpp
 msgid "Emulate Numpad"
-msgstr "숫자 패드 모방"
+msgstr "숫자패드 모방"
 
 #: editor/editor_settings.cpp
 msgid "Emulate 3 Button Mouse"
@@ -6106,12 +6094,11 @@ msgstr "행 번호:"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
-msgstr ""
+msgstr "탈자 기호 색"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Caret Background Color"
-msgstr "잘못된 배경 색상."
+msgstr "탈자 기호 배경 색"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -7326,7 +7313,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -12594,7 +12582,7 @@ msgstr "콜리전"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Occlusion"
-msgstr "어클루전"
+msgstr "오클루전"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/touch_screen_button.cpp
 msgid "Bitmask"
@@ -15343,18 +15331,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "로컬로 만들기"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "노드 이름:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "노드 이름:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "이미 다른 함수/변수/시그널로 사용된 이름:"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "노드 이름:"
 
 #: editor/scene_tree_dock.cpp
@@ -15553,6 +15542,11 @@ msgid "Button Group"
 msgstr "버튼 그룹"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "노드 이름:"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(연결 시작 지점)"
 
@@ -15626,6 +15620,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "잘못된 노드 이름입니다. 다음 문자는 허용하지 않습니다:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17551,6 +17549,21 @@ msgstr "솔루션 빌드"
 msgid "Auto Update Project"
 msgstr "이름 없는 프로젝트"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "모두 표시"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "디렉토리를 선택하세요"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "디렉토리를 선택하세요"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "내부 예외 스택 추적의 끝"
@@ -19424,6 +19437,11 @@ msgstr "노드 잘라내기"
 msgid "Custom BG Color"
 msgstr "노드 잘라내기"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "모두 펼치기"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20195,9 +20213,8 @@ msgid "Certificate"
 msgstr "정점:"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Algorithm"
-msgstr "디버거"
+msgstr "알고리즘"
 
 #: platform/uwp/export/export.cpp
 msgid "Major"
@@ -20213,9 +20230,8 @@ msgid "Build"
 msgstr "자 모드"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Revision"
-msgstr "표현식 설정"
+msgstr "개정"
 
 #: platform/uwp/export/export.cpp
 msgid "Landscape"
@@ -20279,6 +20295,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp
@@ -22620,9 +22642,8 @@ msgid "Alpha Scissor Threshold"
 msgstr ""
 
 #: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/material.cpp
-#, fuzzy
 msgid "Render Priority"
-msgstr "우선 순위 활성화"
+msgstr "렌더 우선 순위"
 
 #: scene/3d/label_3d.cpp
 #, fuzzy
@@ -24599,7 +24620,7 @@ msgstr ""
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Caret"
-msgstr ""
+msgstr "탈자 기호"
 
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Blink"

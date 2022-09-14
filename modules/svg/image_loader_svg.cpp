@@ -35,6 +35,12 @@
 
 #include <thorvg.h>
 
+HashMap<Color, Color> ImageLoaderSVG::forced_color_map = HashMap<Color, Color>();
+
+void ImageLoaderSVG::set_forced_color_map(const HashMap<Color, Color> &p_color_map) {
+	forced_color_map = p_color_map;
+}
+
 void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_color_map, const String &p_prefix, String &r_string) {
 	// Replace colors in the SVG based on what is passed in `p_color_map`.
 	// Used to change the colors of editor icons based on the used theme.
@@ -138,7 +144,13 @@ void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const
 
 Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, uint32_t p_flags, float p_scale) {
 	String svg = p_fileaccess->get_as_utf8_string();
-	create_image_from_string(p_image, svg, p_scale, false, HashMap<Color, Color>());
+
+	if (p_flags & FLAG_CONVERT_COLORS) {
+		create_image_from_string(p_image, svg, p_scale, false, forced_color_map);
+	} else {
+		create_image_from_string(p_image, svg, p_scale, false, HashMap<Color, Color>());
+	}
+
 	ERR_FAIL_COND_V(p_image->is_empty(), FAILED);
 	if (p_flags & FLAG_FORCE_LINEAR) {
 		p_image->srgb_to_linear();

@@ -616,8 +616,8 @@
 			The port number to use to contact the HTTP and HTTPS proxy in the editor (for the asset library and export template downloads). See also [member network/http_proxy/host].
 			[b]Note:[/b] Godot currently doesn't automatically use system proxy settings, so you have to enter them manually here if needed.
 		</member>
-		<member name="network/ssl/editor_ssl_certificates" type="String" setter="" getter="">
-			The SSL certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
+		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
+			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
 		<member name="project_manager/sorting_order" type="int" setter="" getter="">
 			The sorting order to use in the project manager. When changing the sorting order in the project manager, this setting is set permanently in the editor settings.
@@ -647,9 +647,9 @@
 			The monitor to display the project on when starting the project from the editor.
 		</member>
 		<member name="text_editor/appearance/caret/caret_blink" type="bool" setter="" getter="">
-			If [code]true[/code], makes the caret blink according to [member text_editor/appearance/caret/caret_blink_speed]. Disabling this setting can improve battery life on laptops if you spend long amounts of time in the script editor, since it will reduce the frequency at which the editor needs to be redrawn.
+			If [code]true[/code], makes the caret blink according to [member text_editor/appearance/caret/caret_blink_interval]. Disabling this setting can improve battery life on laptops if you spend long amounts of time in the script editor, since it will reduce the frequency at which the editor needs to be redrawn.
 		</member>
-		<member name="text_editor/appearance/caret/caret_blink_speed" type="float" setter="" getter="">
+		<member name="text_editor/appearance/caret/caret_blink_interval" type="float" setter="" getter="">
 			The interval at which to blink the caret (in seconds). See also [member text_editor/appearance/caret/caret_blink].
 		</member>
 		<member name="text_editor/appearance/caret/highlight_all_occurrences" type="bool" setter="" getter="">

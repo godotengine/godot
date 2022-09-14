@@ -118,17 +118,17 @@ TEST_CASE("[Rect2i] Area getters") {
 			"get_area() should return the expected value.");
 
 	CHECK_MESSAGE(
-			!Rect2i(0, 100, 1280, 720).has_no_area(),
-			"has_no_area() should return the expected value on Rect2i with an area.");
+			Rect2i(0, 100, 1280, 720).has_area(),
+			"has_area() should return the expected value on Rect2i with an area.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 0, 500).has_no_area(),
-			"has_no_area() should return the expected value on Rect2i with no area.");
+			!Rect2i(0, 100, 0, 500).has_area(),
+			"has_area() should return the expected value on Rect2i with no area.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 500, 0).has_no_area(),
-			"has_no_area() should return the expected value on Rect2i with no area.");
+			!Rect2i(0, 100, 500, 0).has_area(),
+			"has_area() should return the expected value on Rect2i with no area.");
 	CHECK_MESSAGE(
-			Rect2i(0, 100, 0, 0).has_no_area(),
-			"has_no_area() should return the expected value on Rect2i with no area.");
+			!Rect2i(0, 100, 0, 0).has_area(),
+			"has_area() should return the expected value on Rect2i with no area.");
 }
 
 TEST_CASE("[Rect2i] Absolute coordinates") {

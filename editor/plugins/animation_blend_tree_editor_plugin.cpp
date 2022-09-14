@@ -242,7 +242,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 				}
 			}
 
-			pb->set_percent_visible(false);
+			pb->set_show_percentage(false);
 			pb->set_custom_minimum_size(Vector2(0, 14) * EDSCALE);
 			animations[E] = pb;
 			node->add_child(pb);
@@ -800,7 +800,7 @@ void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 }
 
 void AnimationNodeBlendTreeEditor::_update_theme() {
-	error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+	error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 	error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), SNAME("Editor")));
 }
 
@@ -907,6 +907,10 @@ void AnimationNodeBlendTreeEditor::_bind_methods() {
 AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
+	if (blend_tree.is_null()) {
+		return;
+	}
+
 	String prev_name = blend_tree->get_node_name(p_node);
 	ERR_FAIL_COND(prev_name.is_empty());
 	GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(prev_name));

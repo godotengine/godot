@@ -477,9 +477,6 @@
 		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color(1, 0.7, 0.1, 0.4)">
-			Color of the disabled navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
-		</member>
 		<member name="debug/shapes/navigation/edge_connection_color" type="Color" setter="" getter="" default="Color(1, 0, 1, 1)">
 			Color to display edge connections between navigation regions, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
@@ -503,9 +500,6 @@
 		</member>
 		<member name="debug/shapes/navigation/enable_link_connections_xray" type="bool" setter="" getter="" default="true">
 			If enabled, displays navigation link connections through geometry when "Visible Navigation" is enabled in the Debug menu.
-		</member>
-		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
-			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/navigation/geometry_edge_color" type="Color" setter="" getter="" default="Color(0.5, 1, 1, 1)">
 			Color to display enabled navigation mesh polygon edges, visible when "Visible Navigation" is enabled in the Debug menu.
@@ -646,9 +640,21 @@
 			If [code]true[/code], Blender 3D scene files with the [code].blend[/code] extension will be imported by converting them to glTF 2.0.
 			This requires configuring a path to a Blender executable in the editor settings at [code]filesystem/import/blender/blender3_path[/code]. Blender 3.0 or later is required.
 		</member>
+		<member name="filesystem/import/blender/enabled.android" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/blender/enabled] on Android where Blender can't easily be accessed from Godot.
+		</member>
+		<member name="filesystem/import/blender/enabled.web" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/blender/enabled] on the Web where Blender can't easily be accessed from Godot.
+		</member>
 		<member name="filesystem/import/fbx/enabled" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], Autodesk FBX 3D scene files with the [code].fbx[/code] extension will be imported by converting them to glTF 2.0.
 			This requires configuring a path to a FBX2glTF executable in the editor settings at [code]filesystem/import/fbx/fbx2gltf_path[/code].
+		</member>
+		<member name="filesystem/import/fbx/enabled.android" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx/enabled] on Android where FBX2glTF can't easily be accessed from Godot.
+		</member>
+		<member name="filesystem/import/fbx/enabled.web" type="bool" setter="" getter="" default="false">
+			Override for [member filesystem/import/fbx/enabled] on the Web where FBX2glTF can't easily be accessed from Godot.
 		</member>
 		<member name="gui/common/default_scroll_deadzone" type="int" setter="" getter="" default="0">
 			Default value for [member ScrollContainer.scroll_deadzone], which will be used for all [ScrollContainer]s unless overridden.
@@ -1494,8 +1500,8 @@
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
 		</member>
-		<member name="network/ssl/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
-			The CA certificates bundle to use for SSL connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
+		<member name="network/tls/certificate_bundle_override" type="String" setter="" getter="" default="&quot;&quot;">
+			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">

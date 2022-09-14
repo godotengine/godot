@@ -130,7 +130,6 @@ namespace Godot.Bridge
             {
                 // Performance is not critical here as this will be replaced with source generators.
                 Type scriptType = _scriptTypeBiMap.GetScriptType(scriptPtr);
-                var obj = (Object)FormatterServices.GetUninitializedObject(scriptType);
 
                 var ctor = scriptType
                     .GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
@@ -150,6 +149,8 @@ namespace Godot.Bridge
                             $"The class '{scriptType.FullName}' does not define a constructor that takes x parameters.");
                     }
                 }
+
+                var obj = (Object)FormatterServices.GetUninitializedObject(scriptType);
 
                 var parameters = ctor.GetParameters();
                 int paramCount = parameters.Length;

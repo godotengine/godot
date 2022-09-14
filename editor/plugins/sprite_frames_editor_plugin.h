@@ -57,6 +57,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	};
 	int dominant_param = PARAM_FRAME_COUNT;
 
+	bool read_only = false;
+
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
 	Button *_delete = nullptr;

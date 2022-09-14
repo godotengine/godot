@@ -2103,7 +2103,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	p_control->set_as_top_level(true);
 	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); // Add as child of viewport.
-	p_control->raise();
+	p_control->move_to_front();
 
 	gui.drag_preview_id = p_control->get_instance_id();
 }

@@ -152,6 +152,7 @@ class GridMap : public Node3D {
 	uint32_t collision_mask = 1;
 	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
+	RID map_override;
 	uint32_t navigation_layers = 1;
 
 	Transform3D last_transform;
@@ -247,6 +248,9 @@ public:
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
+
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
 
@@ -276,8 +280,8 @@ public:
 	Basis get_basis_with_orthogonal_index(int p_index) const;
 	int get_orthogonal_index_from_basis(const Basis &p_basis) const;
 
-	Vector3i world_to_map(const Vector3 &p_world_position) const;
-	Vector3 map_to_world(const Vector3i &p_map_position) const;
+	Vector3i local_to_map(const Vector3 &p_local_position) const;
+	Vector3 map_to_local(const Vector3i &p_map_position) const;
 
 	void set_cell_scale(float p_scale);
 	float get_cell_scale() const;

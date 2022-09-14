@@ -1023,8 +1023,8 @@ void RasterizerCanvasGLES3::_bind_instance_data_buffer(uint32_t p_max_index) {
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, INSTANCE_UNIFORM_LOCATION, state.canvas_instance_data_buffers[state.current_buffer]);
 #ifdef WEB_ENABLED
-	//WebGL 2.0 does not support mapping buffers, so use slow glBufferData instead
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(InstanceData) * p_max_index, state.instance_data_array, GL_DYNAMIC_DRAW);
+	//WebGL 2.0 does not support mapping buffers, so use slow glBufferSubData instead
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(InstanceData) * p_max_index, state.instance_data_array);
 #else
 	void *ubo = glMapBufferRange(GL_UNIFORM_BUFFER, 0, sizeof(InstanceData) * p_max_index, GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 	memcpy(ubo, state.instance_data_array, sizeof(InstanceData) * p_max_index);

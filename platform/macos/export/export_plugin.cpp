@@ -1641,16 +1641,15 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 			continue;
 		}
 		if (da->is_link(f)) {
-			OS::Time time = OS::get_singleton()->get_time();
-			OS::Date date = OS::get_singleton()->get_date();
+			OS::DateTime dt = OS::get_singleton()->get_datetime();
 
 			zip_fileinfo zipfi;
-			zipfi.tmz_date.tm_hour = time.hour;
-			zipfi.tmz_date.tm_mday = date.day;
-			zipfi.tmz_date.tm_min = time.minute;
-			zipfi.tmz_date.tm_mon = date.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
-			zipfi.tmz_date.tm_sec = time.second;
-			zipfi.tmz_date.tm_year = date.year;
+			zipfi.tmz_date.tm_year = dt.year;
+			zipfi.tmz_date.tm_mon = dt.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
+			zipfi.tmz_date.tm_mday = dt.day;
+			zipfi.tmz_date.tm_hour = dt.hour;
+			zipfi.tmz_date.tm_min = dt.minute;
+			zipfi.tmz_date.tm_sec = dt.second;
 			zipfi.dosDate = 0;
 			// 0120000: symbolic link type
 			// 0000755: permissions rwxr-xr-x
@@ -1686,16 +1685,15 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 		} else {
 			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
 
-			OS::Time time = OS::get_singleton()->get_time();
-			OS::Date date = OS::get_singleton()->get_date();
+			OS::DateTime dt = OS::get_singleton()->get_datetime();
 
 			zip_fileinfo zipfi;
-			zipfi.tmz_date.tm_hour = time.hour;
-			zipfi.tmz_date.tm_mday = date.day;
-			zipfi.tmz_date.tm_min = time.minute;
-			zipfi.tmz_date.tm_mon = date.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
-			zipfi.tmz_date.tm_sec = time.second;
-			zipfi.tmz_date.tm_year = date.year;
+			zipfi.tmz_date.tm_year = dt.year;
+			zipfi.tmz_date.tm_mon = dt.month - 1; // Note: "tm" month range - 0..11, Godot month range - 1..12, https://www.cplusplus.com/reference/ctime/tm/
+			zipfi.tmz_date.tm_mday = dt.day;
+			zipfi.tmz_date.tm_hour = dt.hour;
+			zipfi.tmz_date.tm_min = dt.minute;
+			zipfi.tmz_date.tm_sec = dt.second;
 			zipfi.dosDate = 0;
 			// 0100000: regular file type
 			// 0000755: permissions rwxr-xr-x

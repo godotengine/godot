@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.h                                                    */
+/*  stream_peer_tls.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,50 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_SSL_H
-#define STREAM_PEER_SSL_H
+#include "stream_peer_tls.h"
 
-#include "core/crypto/crypto.h"
-#include "core/io/stream_peer.h"
+#include "core/config/engine.h"
 
-class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL, StreamPeer);
+StreamPeerTLS *(*StreamPeerTLS::_create)() = nullptr;
 
-protected:
-	static StreamPeerSSL *(*_create)();
-	static void _bind_methods();
+StreamPeerTLS *StreamPeerTLS::create() {
+	if (_create) {
+		return _create();
+	}
+	return nullptr;
+}
 
-	static bool available;
+bool StreamPeerTLS::available = false;
 
-	bool blocking_handshake = true;
+bool StreamPeerTLS::is_available() {
+	return available;
+}
 
-public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
-	};
+void StreamPeerTLS::set_blocking_handshake_enabled(bool p_enabled) {
+	blocking_handshake = p_enabled;
+}
 
-	void set_blocking_handshake_enabled(bool p_enabled);
-	bool is_blocking_handshake_enabled() const;
+bool StreamPeerTLS::is_blocking_handshake_enabled() const {
+	return blocking_handshake;
+}
 
-	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
-	virtual Status get_status() const = 0;
-	virtual Ref<StreamPeer> get_stream() const = 0;
+void StreamPeerTLS::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerTLS::poll);
+	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "private_key", "certificate", "chain"), &StreamPeerTLS::accept_stream, DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname", "valid_certificate"), &StreamPeerTLS::connect_to_stream, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTLS::get_status);
+	ClassDB::bind_method(D_METHOD("get_stream"), &StreamPeerTLS::get_stream);
+	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerTLS::disconnect_from_stream);
+	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &StreamPeerTLS::set_blocking_handshake_enabled);
+	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &StreamPeerTLS::is_blocking_handshake_enabled);
 
-	virtual void disconnect_from_stream() = 0;
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 
-	static StreamPeerSSL *create();
-
-	static bool is_available();
-
-	StreamPeerSSL() {}
-};
-
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
-
-#endif // STREAM_PEER_SSL_H
+	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
+	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_ERROR);
+	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
+}

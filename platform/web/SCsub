@@ -6,7 +6,7 @@ web_files = [
     "audio_driver_web.cpp",
     "display_server_web.cpp",
     "http_client_web.cpp",
-    "javascript_singleton.cpp",
+    "javascript_bridge_singleton.cpp",
     "web_main.cpp",
     "os_web.cpp",
     "api/web_tools_editor_plugin.cpp",

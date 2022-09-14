@@ -53,7 +53,7 @@ void SceneCreateDialog::_notification(int p_what) {
 			node_type_3d->set_icon(get_theme_icon(SNAME("Node3D"), SNAME("EditorIcons")));
 			node_type_gui->set_icon(get_theme_icon(SNAME("Control"), SNAME("EditorIcons")));
 			node_type_other->add_theme_icon_override(SNAME("icon"), get_theme_icon(SNAME("Node"), SNAME("EditorIcons")));
-			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			status_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 	}
 }

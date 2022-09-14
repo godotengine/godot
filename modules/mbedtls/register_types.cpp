@@ -45,7 +45,7 @@ void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
 	}
 
 	CryptoMbedTLS::initialize_crypto();
-	StreamPeerMbedTLS::initialize_ssl();
+	StreamPeerMbedTLS::initialize_tls();
 	PacketPeerMbedDTLS::initialize_dtls();
 	DTLSServerMbedTLS::initialize();
 }
@@ -57,6 +57,6 @@ void uninitialize_mbedtls_module(ModuleInitializationLevel p_level) {
 
 	DTLSServerMbedTLS::finalize();
 	PacketPeerMbedDTLS::finalize_dtls();
-	StreamPeerMbedTLS::finalize_ssl();
+	StreamPeerMbedTLS::finalize_tls();
 	CryptoMbedTLS::finalize_crypto();
 }

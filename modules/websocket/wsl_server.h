@@ -36,8 +36,8 @@
 #include "websocket_server.h"
 #include "wsl_peer.h"
 
-#include "core/io/stream_peer_ssl.h"
 #include "core/io/stream_peer_tcp.h"
+#include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 
 class WSLServer : public WebSocketServer {
@@ -51,7 +51,7 @@ private:
 	public:
 		Ref<StreamPeerTCP> tcp;
 		Ref<StreamPeer> connection;
-		bool use_ssl = false;
+		bool use_tls = false;
 
 		uint64_t time = 0;
 		uint8_t req_buf[WSL_MAX_HEADER_SIZE] = {};

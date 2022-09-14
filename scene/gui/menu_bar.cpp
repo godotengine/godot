@@ -137,7 +137,7 @@ void MenuBar::_open_popup(int p_index, bool p_focus_item) {
 	if (p_focus_item) {
 		for (int i = 0; i < pm->get_item_count(); i++) {
 			if (!pm->is_item_disabled(i)) {
-				pm->set_current_index(i);
+				pm->set_focused_item(i);
 				break;
 			}
 		}

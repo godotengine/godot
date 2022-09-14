@@ -785,7 +785,7 @@ void Skeleton3DEditor::create_editors() {
 	key_insert_all_button->set_focus_mode(FOCUS_NONE);
 	key_insert_all_button->connect("pressed", callable_mp(this, &Skeleton3DEditor::insert_keys).bind(true));
 	key_insert_all_button->set_tooltip_text(TTR("Insert key of all bone poses."));
-	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD + Key::INSERT));
+	key_insert_all_button->set_shortcut(ED_SHORTCUT("skeleton_3d_editor/insert_key_of_all_bones", TTR("Insert Key (All Bones)"), KeyModifierMask::CMD_OR_CTRL + Key::INSERT));
 	animation_hb->add_child(key_insert_all_button);
 
 	// Bone tree.
@@ -835,7 +835,7 @@ void Skeleton3DEditor::_notification(int p_what) {
 			skeleton->connect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
 #endif
 
-			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONESHOT);
+			get_tree()->connect("node_removed", callable_mp(this, &Skeleton3DEditor::_node_removed), Object::CONNECT_ONE_SHOT);
 		} break;
 		case NOTIFICATION_READY: {
 			// Will trigger NOTIFICATION_THEME_CHANGED, but won't cause any loops if called here.
@@ -851,6 +851,20 @@ void Skeleton3DEditor::_notification(int p_what) {
 			key_insert_all_button->set_icon(get_theme_icon(SNAME("NewKey"), SNAME("EditorIcons")));
 
 			update_joint_tree();
+		} break;
+		case NOTIFICATION_PREDELETE: {
+			if (skeleton) {
+				select_bone(-1); // Requires that the joint_tree has not been deleted.
+#ifdef TOOLS_ENABLED
+				skeleton->disconnect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
+				skeleton->disconnect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
+				skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
+				skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
+				skeleton->set_transform_gizmo_visible(true);
+#endif
+				handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
+			}
+			edit_mode_toggled(false);
 		} break;
 	}
 }
@@ -1066,18 +1080,7 @@ void Skeleton3DEditor::select_bone(int p_idx) {
 }
 
 Skeleton3DEditor::~Skeleton3DEditor() {
-	if (skeleton) {
-		select_bone(-1);
-#ifdef TOOLS_ENABLED
-		skeleton->disconnect("show_rest_only_changed", callable_mp(this, &Skeleton3DEditor::_update_gizmo_visible));
-		skeleton->disconnect("bone_enabled_changed", callable_mp(this, &Skeleton3DEditor::_bone_enabled_changed));
-		skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_draw_gizmo));
-		skeleton->disconnect("pose_updated", callable_mp(this, &Skeleton3DEditor::_update_properties));
-		skeleton->set_transform_gizmo_visible(true);
-#endif
-		handles_mesh_instance->get_parent()->remove_child(handles_mesh_instance);
-	}
-	edit_mode_toggled(false);
+	singleton = nullptr;
 
 	handles_mesh_instance->queue_delete();
 
@@ -1128,7 +1131,7 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();
-	if (se->is_edit_mode()) {
+	if (se && se->is_edit_mode()) {
 		const Ref<InputEventMouseButton> mb = p_event;
 		if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 			if (ne->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT) {
@@ -1140,7 +1143,7 @@ EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_spatial_gui_input(Ca
 				se->update_bone_original();
 			}
 		}
-		return EditorPlugin::AFTER_GUI_INPUT_DESELECT;
+		return EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 	}
 	return EditorPlugin::AFTER_GUI_INPUT_PASS;
 }

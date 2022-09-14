@@ -85,15 +85,21 @@ private:
 	enum ModCheckbox {
 		MOD_ALT,
 		MOD_SHIFT,
-		MOD_COMMAND,
 		MOD_CTRL,
 		MOD_META,
 		MOD_MAX
 	};
-	String mods[MOD_MAX] = { "Alt", "Shift", "Command", "Ctrl", "Metakey" };
+#if defined(MACOS_ENABLED)
+	String mods[MOD_MAX] = { "Option", "Shift", "Ctrl", "Command" };
+#elif defined(WINDOWS_ENABLED)
+	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Windows" };
+#else
+	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Meta" };
+#endif
+	String mods_tip[MOD_MAX] = { "Alt or Option key", "Shift key", "Control key", "Meta/Windows or Command key" };
 
 	CheckBox *mod_checkboxes[MOD_MAX];
-	CheckBox *store_command_checkbox = nullptr;
+	CheckBox *autoremap_command_or_control_checkbox = nullptr;
 
 	CheckBox *physical_key_checkbox = nullptr;
 
@@ -107,7 +113,7 @@ private:
 	void _input_list_item_selected();
 
 	void _mod_toggled(bool p_checked, int p_index);
-	void _store_command_toggled(bool p_checked);
+	void _autoremap_command_or_control_toggled(bool p_checked);
 	void _physical_keycode_toggled(bool p_checked);
 
 	void _device_selection_changed(int p_option_button_index);

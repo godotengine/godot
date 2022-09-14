@@ -555,8 +555,9 @@ msgid ""
 "[code]0.0[/code] and [code]1.0[/code] if [code]weight[/code] is between "
 "[code]from[/code] and [code]to[/code] (inclusive). If [code]weight[/code] is "
 "located outside this range, then an extrapolation factor will be returned "
-"(return value lower than [code]0.0[/code] or greater than [code]1.0[/"
-"code]).\n"
+"(return value lower than [code]0.0[/code] or greater than [code]1.0[/code]). "
+"Use [method clamp] on the result of [method inverse_lerp] if this is not "
+"desired.\n"
 "[codeblock]\n"
 "# The interpolation ratio in the `lerp()` call below is 0.75.\n"
 "var middle = lerp(20, 30, 0.75)\n"
@@ -566,7 +567,8 @@ msgid ""
 "var ratio = inverse_lerp(20, 30, 27.5)\n"
 "# `ratio` is now 0.75.\n"
 "[/codeblock]\n"
-"See also [method lerp] which performs the reverse of this operation."
+"See also [method lerp] which performs the reverse of this operation, and "
+"[method range_lerp] to map a continuous series of values to another."
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -620,7 +622,8 @@ msgid ""
 "[code]weight[/code]. To perform interpolation, [code]weight[/code] should be "
 "between [code]0.0[/code] and [code]1.0[/code] (inclusive). However, values "
 "outside this range are allowed and can be used to perform [i]extrapolation[/"
-"i].\n"
+"i]. Use [method clamp] on the result of [method lerp] if this is not "
+"desired.\n"
 "If the [code]from[/code] and [code]to[/code] arguments are of type [int] or "
 "[float], the return value is a [float].\n"
 "If both are of the same vector type ([Vector2], [Vector3] or [Color]), the "
@@ -632,7 +635,8 @@ msgid ""
 "[/codeblock]\n"
 "See also [method inverse_lerp] which performs the reverse of this operation. "
 "To perform eased interpolation with [method lerp], combine it with [method "
-"ease] or [method smoothstep]."
+"ease] or [method smoothstep]. See also [method range_lerp] to map a "
+"continuous series of values to another."
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -1047,10 +1051,15 @@ msgstr ""
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
 "Maps a [code]value[/code] from range [code][istart, istop][/code] to [code]"
-"[ostart, ostop][/code].\n"
+"[ostart, ostop][/code]. See also [method lerp] and [method inverse_lerp]. If "
+"[code]value[/code] is outside [code][istart, istop][/code], then the "
+"resulting value will also be outside [code][ostart, ostop][/code]. Use "
+"[method clamp] on the result of [method range_lerp] if this is not desired.\n"
 "[codeblock]\n"
 "range_lerp(75, 0, 100, -1, 1) # Returns 0.5\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"For complex use cases where you need multiple ranges, consider using [Curve] "
+"or [Gradient] instead."
 msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
@@ -4861,19 +4870,21 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
-msgid "Gets the text caption for this node (used by some editors)."
+msgid ""
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"override the text caption for this node."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets a child node by index (used by editors inheriting from "
-"[AnimationRootNode])."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return a child node by its [code]name[/code]."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets all children nodes in order as a [code]name: node[/code] dictionary. "
-"Only useful when inheriting [AnimationRootNode]."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return all children nodes in order as a [code]name: node[/code] dictionary."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
@@ -4894,21 +4905,25 @@ msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets the default value of a parameter. Parameters are custom local memory "
-"used for your nodes, given a resource can be reused in multiple trees."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return the default value of parameter \"[code]name[/code]\". Parameters are "
+"custom local memory used for your nodes, given a resource can be reused in "
+"multiple trees."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Gets the property information for parameter. Parameters are custom local "
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return a list of the properties on this node. Parameters are custom local "
 "memory used for your nodes, given a resource can be reused in multiple "
 "trees. Format is similar to [method Object.get_property_list]."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"Returns [code]true[/code] whether you want the blend tree editor to display "
-"filter editing on this node."
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"return whether the blend tree editor should display filter editing on this "
+"node."
 msgstr ""
 
 #: doc/classes/AnimationNode.xml
@@ -4917,9 +4932,10 @@ msgstr ""
 
 #: doc/classes/AnimationNode.xml
 msgid ""
-"User-defined callback called when a custom node is processed. The "
-"[code]time[/code] parameter is a relative delta, unless [code]seek[/code] is "
-"[code]true[/code], in which case it is absolute.\n"
+"When inheriting from [AnimationRootNode], implement this virtual method to "
+"run some code when this node is processed. The [code]time[/code] parameter "
+"is a relative delta, unless [code]seek[/code] is [code]true[/code], in which "
+"case it is absolute.\n"
 "Here, call the [method blend_input], [method blend_node] or [method "
 "blend_animation] functions. You can also use [method get_parameter] and "
 "[method set_parameter] to modify local memory.\n"
@@ -5571,9 +5587,9 @@ msgid ""
 "Turn on auto advance when this condition is set. The provided name will "
 "become a boolean parameter on the [AnimationTree] that can be controlled "
 "from code (see [url=$DOCS_URL/tutorials/animation/animation_tree."
-"html#controlling-from-code][/url]). For example, if [member AnimationTree."
-"tree_root] is an [AnimationNodeStateMachine] and [member advance_condition] "
-"is set to [code]\"idle\"[/code]:\n"
+"html#controlling-from-code]Using AnimationTree[/url]). For example, if "
+"[member AnimationTree.tree_root] is an [AnimationNodeStateMachine] and "
+"[member advance_condition] is set to [code]\"idle\"[/code]:\n"
 "[codeblock]\n"
 "$animation_tree[\"parameters/conditions/idle\"] = is_on_floor and "
 "(linear_velocity.x == 0)\n"
@@ -5747,8 +5763,8 @@ msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
 msgid ""
-"Returns the [Animation] with key [code]name[/code] or [code]null[/code] if "
-"not found."
+"Returns the [Animation] with the key [code]name[/code]. If the animation "
+"does not exist, [code]null[/code] is returned and an error is logged."
 msgstr ""
 
 #: doc/classes/AnimationPlayer.xml
@@ -8750,8 +8766,9 @@ msgid ""
 "resource is applied on."
 msgstr ""
 
-#: doc/classes/AudioEffect.xml doc/classes/AudioEffectRecord.xml
-#: doc/classes/AudioServer.xml doc/classes/AudioStream.xml
+#: doc/classes/AudioEffect.xml doc/classes/AudioEffectCapture.xml
+#: doc/classes/AudioEffectRecord.xml doc/classes/AudioServer.xml
+#: doc/classes/AudioStream.xml doc/classes/AudioStreamMicrophone.xml
 #: doc/classes/AudioStreamPlayer.xml
 msgid "Audio Mic Record Demo"
 msgstr ""
@@ -8802,10 +8819,20 @@ msgid ""
 "attached audio effect bus into its internal ring buffer.\n"
 "Application code should consume these audio frames from this ring buffer "
 "using [method get_buffer] and process it as needed, for example to capture "
-"data from a microphone, implement application defined effects, or to "
-"transmit audio over the network. When capturing audio data from a "
+"data from an [AudioStreamMicrophone], implement application-defined effects, "
+"or to transmit audio over the network. When capturing audio data from a "
 "microphone, the format of the samples will be stereo 32-bit floating point "
-"PCM."
+"PCM.\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
+msgstr ""
+
+#: doc/classes/AudioEffectCapture.xml doc/classes/AudioEffectDistortion.xml
+#: doc/classes/AudioEffectFilter.xml doc/classes/AudioEffectHighShelfFilter.xml
+#: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
+msgid "Audio buses"
 msgstr ""
 
 #: doc/classes/AudioEffectCapture.xml
@@ -9045,12 +9072,6 @@ msgid ""
 "By distorting the waveform the frequency content change, which will often "
 "make the sound \"crunchy\" or \"abrasive\". For games, it can simulate sound "
 "coming from some saturated device or speaker very efficiently."
-msgstr ""
-
-#: doc/classes/AudioEffectDistortion.xml doc/classes/AudioEffectFilter.xml
-#: doc/classes/AudioEffectHighShelfFilter.xml
-#: doc/classes/AudioEffectLowShelfFilter.xml doc/classes/AudioServer.xml
-msgid "Audio buses"
 msgstr ""
 
 #: doc/classes/AudioEffectDistortion.xml
@@ -9598,7 +9619,12 @@ msgid ""
 msgstr ""
 
 #: doc/classes/AudioServer.xml
-msgid "Returns the names of all audio input devices detected on the system."
+msgid ""
+"Returns the names of all audio input devices detected on the system.\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -9759,12 +9785,16 @@ msgstr ""
 
 #: doc/classes/AudioServer.xml
 msgid ""
-"Name of the current device for audio input (see [method get_device_list]). "
-"On systems with multiple audio inputs (such as analog, USB and HDMI audio), "
-"this can be used to select the audio input device. The value "
-"[code]\"Default\"[/code] will record audio on the system-wide default audio "
-"input. If an invalid device name is set, the value will be reverted back to "
-"[code]\"Default\"[/code]."
+"Name of the current device for audio input (see [method "
+"capture_get_device_list]). On systems with multiple audio inputs (such as "
+"analog, USB and HDMI audio), this can be used to select the audio input "
+"device. The value [code]\"Default\"[/code] will record audio on the system-"
+"wide default audio input. If an invalid device name is set, the value will "
+"be reverted back to [code]\"Default\"[/code].\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
 msgstr ""
 
 #: doc/classes/AudioServer.xml
@@ -9912,6 +9942,21 @@ msgid ""
 "GDNative, but [method push_frame] may be [i]more[/i] efficient in GDScript."
 msgstr ""
 
+#: doc/classes/AudioStreamMicrophone.xml
+msgid "Plays real-time audio input data."
+msgstr ""
+
+#: doc/classes/AudioStreamMicrophone.xml
+msgid ""
+"When used directly in an [AudioStreamPlayer] node, [AudioStreamMicrophone] "
+"plays back microphone input in real-time. This can be used in conjunction "
+"with [AudioEffectCapture] to process the data or save it.\n"
+"[b]Note:[/b] [member ProjectSettings.audio/enable_audio_input] must be "
+"[code]true[/code] for audio input to work. See also that setting's "
+"description for caveats related to permissions and operating system privacy "
+"settings."
+msgstr ""
+
 #: modules/minimp3/doc_classes/AudioStreamMP3.xml
 msgid "MP3 audio stream driver."
 msgstr ""
@@ -10052,7 +10097,10 @@ msgstr ""
 
 #: doc/classes/AudioStreamPlayer2D.xml
 msgid ""
-"Plays audio that dampens with distance from screen center.\n"
+"Plays audio that dampens with distance from a given position.\n"
+"By default, audio is heard from the screen center. This can be changed by "
+"adding a [Listener2D] node to the scene and enabling it by calling [method "
+"Listener2D.make_current] on it.\n"
 "See also [AudioStreamPlayer] to play a sound non-positionally.\n"
 "[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio "
 "output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set "
@@ -11730,7 +11778,7 @@ msgid ""
 "Sets the camera projection to frustum mode (see [constant "
 "PROJECTION_FRUSTUM]), by specifying a [code]size[/code], an [code]offset[/"
 "code], and the [code]z_near[/code] and [code]z_far[/code] clip planes in "
-"world space units."
+"world space units. See also [member frustum_offset]."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -11823,7 +11871,9 @@ msgstr ""
 msgid ""
 "The camera's frustum offset. This can be changed from the default to create "
 "\"tilted frustum\" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-"
-"shearing[/url]."
+"shearing[/url].\n"
+"[b]Note:[/b] Only effective if [member projection] is [constant "
+"PROJECTION_FRUSTUM]."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -11851,9 +11901,9 @@ msgstr ""
 
 #: doc/classes/Camera.xml
 msgid ""
-"The camera's size measured as 1/2 the width or height. Only applicable in "
-"orthogonal and frustum modes. Since [member keep_aspect] locks on axis, "
-"[code]size[/code] sets the other axis' size length."
+"The camera's size in meters measured as the diameter of the width or height, "
+"depending on [member keep_aspect]. Only applicable in orthogonal and frustum "
+"modes."
 msgstr ""
 
 #: doc/classes/Camera.xml
@@ -12350,13 +12400,14 @@ msgid ""
 "inherit and extend their parent's transform. [CanvasItem] is extended by "
 "[Control] for anything GUI-related, and by [Node2D] for anything related to "
 "the 2D engine.\n"
-"Any [CanvasItem] can draw. For this, [method update] must be called, then "
-"[constant NOTIFICATION_DRAW] will be received on idle time to request "
-"redraw. Because of this, canvas items don't need to be redrawn on every "
-"frame, improving the performance significantly. Several functions for "
+"Any [CanvasItem] can draw. For this, [method update] is called by the "
+"engine, then [constant NOTIFICATION_DRAW] will be received on idle time to "
+"request redraw. Because of this, canvas items don't need to be redrawn on "
+"every frame, improving the performance significantly. Several functions for "
 "drawing on the [CanvasItem] are provided (see [code]draw_*[/code] "
-"functions). However, they can only be used inside the [method Object."
-"_notification], signal or [method _draw] virtual functions.\n"
+"functions). However, they can only be used inside [method _draw], its "
+"corresponding [method Object._notification] or methods connected to the "
+"[signal draw] signal.\n"
 "Canvas items are drawn in tree order. By default, children are on top of "
 "their parents so a root [CanvasItem] will be drawn behind everything. This "
 "behavior can be changed on a per-item basis.\n"
@@ -12382,8 +12433,10 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Overridable function called by the engine (if defined) to draw the canvas "
-"item."
+"Called when [CanvasItem] has been requested to redraw (when [method update] "
+"is called, either manually or by the engine).\n"
+"Corresponds to the [constant NOTIFICATION_DRAW] notification in [method "
+"Object._notification]."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12696,12 +12749,12 @@ msgid ""
 "to children."
 msgstr ""
 
-#: doc/classes/CanvasItem.xml doc/classes/Spatial.xml
+#: doc/classes/CanvasItem.xml
 msgid ""
 "Returns [code]true[/code] if the node is present in the [SceneTree], its "
 "[member visible] property is [code]true[/code] and all its antecedents are "
 "also visible. If any antecedent is hidden, this node will not be visible in "
-"the scene tree."
+"the scene tree, and is consequently not drawn (see [method _draw])."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12746,8 +12799,10 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Queue the [CanvasItem] for update. [constant NOTIFICATION_DRAW] will be "
-"called on idle time to request redraw."
+"Queues the [CanvasItem] to redraw. During idle time, if [CanvasItem] is "
+"visible, [constant NOTIFICATION_DRAW] is sent and [method _draw] is called. "
+"This only occurs [b]once[/b] per frame, even if this method has been called "
+"multiple times."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12795,8 +12850,11 @@ msgstr ""
 
 #: doc/classes/CanvasItem.xml
 msgid ""
-"Emitted when the [CanvasItem] must redraw. This can only be connected "
-"realtime, as deferred will not allow drawing."
+"Emitted when the [CanvasItem] must redraw, [i]after[/i] the related "
+"[constant NOTIFICATION_DRAW] notification, and [i]before[/i] [method _draw] "
+"is called.\n"
+"[b]Note:[/b] Deferred connections do not allow drawing through the "
+"[code]draw_*[/code] methods."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12858,7 +12916,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
-msgid "The [CanvasItem] is requested to draw."
+msgid "The [CanvasItem] is requested to draw (see [method _draw])."
 msgstr ""
 
 #: doc/classes/CanvasItem.xml
@@ -12983,7 +13041,10 @@ msgstr ""
 
 #: doc/classes/CanvasLayer.xml
 msgid ""
-"Sets the layer to follow the viewport in order to simulate a pseudo 3D "
+"If enabled, the [CanvasLayer] will use the viewport's transform, so it will "
+"move when camera moves instead of being anchored in a fixed position on the "
+"screen.\n"
+"Together with [member follow_viewport_scale] it can be used for a pseudo 3D "
 "effect."
 msgstr ""
 
@@ -15979,7 +16040,9 @@ msgstr ""
 #: doc/classes/Control.xml
 msgid ""
 "Steal the focus from another control and become the focused control (see "
-"[member focus_mode])."
+"[member focus_mode]).\n"
+"[b]Note[/b]: Using this method together with [method Object.call_deferred] "
+"makes it more reliable, especially when called inside [method Node._ready]."
 msgstr ""
 
 #: doc/classes/Control.xml
@@ -18704,7 +18767,9 @@ msgstr ""
 msgid ""
 "A curve that can be saved and re-used for other objects. By default, it "
 "ranges between [code]0[/code] and [code]1[/code] on the Y axis and positions "
-"points relative to the [code]0.5[/code] Y position."
+"points relative to the [code]0.5[/code] Y position.\n"
+"See also [Gradient] which is designed for color interpolation. See also "
+"[Curve2D] and [Curve3D]."
 msgstr ""
 
 #: doc/classes/Curve.xml
@@ -18853,16 +18918,17 @@ msgid ""
 "further calculations."
 msgstr ""
 
-#: doc/classes/Curve2D.xml
+#: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
 msgid ""
-"Adds a point to a curve at [code]position[/code] relative to the [Curve2D]'s "
-"position, with control points [code]in[/code] and [code]out[/code].\n"
-"If [code]at_position[/code] is given, the point is inserted before the point "
-"number [code]at_position[/code], moving that point (and every point after) "
-"after the inserted point. If [code]at_position[/code] is not given, or is an "
-"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
-"get_point_count][/code]), the point will be appended at the end of the point "
-"list."
+"Adds a point with the specified [code]position[/code] relative to the "
+"curve's own position, with control points [code]in[/code] and [code]out[/"
+"code]. Appends the new point at the end of the point list.\n"
+"If [code]index[/code] is given, the new point is inserted before the "
+"existing point identified by index [code]index[/code]. Every existing point "
+"starting from [code]index[/code] is shifted further down the list of points. "
+"The index must be greater than or equal to [code]0[/code] and must not "
+"exceed the number of existing points in the line. See [method "
+"get_point_count]."
 msgstr ""
 
 #: doc/classes/Curve2D.xml doc/classes/Curve3D.xml
@@ -19004,18 +19070,6 @@ msgid ""
 "shape to a [Path], but can be manually sampled for other purposes.\n"
 "It keeps a cache of precalculated points along the curve, to speed up "
 "further calculations."
-msgstr ""
-
-#: doc/classes/Curve3D.xml
-msgid ""
-"Adds a point to a curve at [code]position[/code] relative to the [Curve3D]'s "
-"position, with control points [code]in[/code] and [code]out[/code].\n"
-"If [code]at_position[/code] is given, the point is inserted before the point "
-"number [code]at_position[/code], moving that point (and every point after) "
-"after the inserted point. If [code]at_position[/code] is not given, or is an "
-"illegal value ([code]at_position <0[/code] or [code]at_position >= [method "
-"get_point_count][/code]), the point will be appended at the end of the point "
-"list."
 msgstr ""
 
 #: doc/classes/Curve3D.xml
@@ -23925,8 +23979,12 @@ msgstr ""
 
 #: doc/classes/File.xml
 msgid ""
-"Returns the whole file as a [String].\n"
-"Text is interpreted as being UTF-8 encoded."
+"Returns the whole file as a [String]. Text is interpreted as being UTF-8 "
+"encoded.\n"
+"If [code]skip_cr[/code] is [code]true[/code], carriage return characters "
+"([code]\\r[/code], CR) will be ignored when parsing the UTF-8, so that only "
+"line feed characters ([code]\\n[/code], LF) represent a new line (Unix "
+"convention)."
 msgstr ""
 
 #: doc/classes/File.xml
@@ -24546,7 +24604,9 @@ msgid ""
 "[code]next[/code] is passed. clipping the width. [code]position[/code] "
 "specifies the baseline, not the top. To draw from the top, [i]ascent[/i] "
 "must be added to the Y axis. The width used by the character is returned, "
-"making this function useful for drawing strings character by character."
+"making this function useful for drawing strings character by character.\n"
+"If [code]outline[/code] is [code]true[/code], the outline of the character "
+"is drawn instead of the character itself."
 msgstr ""
 
 #: doc/classes/Font.xml
@@ -26130,10 +26190,13 @@ msgstr ""
 #: doc/classes/Gradient.xml
 msgid ""
 "Given a set of colors, this resource will interpolate them in order. This "
-"means that if you have color 1, color 2 and color 3, the ramp will "
-"interpolate from color 1 to color 2 and from color 2 to color 3. The ramp "
-"will initially have 2 colors (black and white), one (black) at ramp lower "
-"offset 0 and the other (white) at the ramp higher offset 1."
+"means that if you have color 1, color 2 and color 3, the gradient will "
+"interpolate from color 1 to color 2 and from color 2 to color 3. The "
+"gradient will initially have 2 colors (black and white), one (black) at "
+"gradient lower offset 0 and the other (white) at the gradient higher offset "
+"1.\n"
+"See also [Curve] which supports more complex easing methods, but does not "
+"support colors."
 msgstr ""
 
 #: doc/classes/Gradient.xml
@@ -27540,8 +27603,8 @@ msgstr ""
 msgid ""
 "Hyper-text transfer protocol client (sometimes called \"User Agent\"). Used "
 "to make HTTP requests to download web content, upload files and other data "
-"or to communicate with various services, among other use cases. [b]See the "
-"[HTTPRequest] node for a higher-level alternative.[/b]\n"
+"or to communicate with various services, among other use cases.\n"
+"See the [HTTPRequest] node for a higher-level alternative.\n"
 "[b]Note:[/b] This client only needs to connect to a host once (see [method "
 "connect_to_host]) to send multiple requests. Because of this, methods that "
 "take URLs usually take just the part after the host instead of the full URL, "
@@ -29841,11 +29904,14 @@ msgstr ""
 
 #: doc/classes/Input.xml
 msgid ""
-"Vibrate Android and iOS devices.\n"
+"Vibrate handheld devices.\n"
+"[b]Note:[/b] This method is implemented on Android, iOS, and HTML5.\n"
 "[b]Note:[/b] For Android, it requires enabling the [code]VIBRATE[/code] "
 "permission in the export preset.\n"
 "[b]Note:[/b] For iOS, specifying the duration is supported in iOS 13 and "
-"later."
+"later.\n"
+"[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not "
+"support this method."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -30690,7 +30756,11 @@ msgstr ""
 
 #: doc/classes/InstancePlaceholder.xml
 msgid ""
-"Not thread-safe. Use [method Object.call_deferred] if calling from a thread."
+"Call this method to actually load in the node. The created node will be "
+"placed as a sibling [i]above[/i] the [InstancePlaceholder] in the scene "
+"tree. The [Node]'s reference is also returned for convenience.\n"
+"[b]Note:[/b] [method create_instance] is not thread-safe. Use [method Object."
+"call_deferred] if calling from a thread."
 msgstr ""
 
 #: doc/classes/InstancePlaceholder.xml
@@ -30698,6 +30768,16 @@ msgid ""
 "Gets the path to the [PackedScene] resource file that is loaded by default "
 "when calling [method replace_by_instance]. Not thread-safe. Use [method "
 "Object.call_deferred] if calling from a thread."
+msgstr ""
+
+#: doc/classes/InstancePlaceholder.xml
+msgid ""
+"Returns the list of properties that will be applied to the node when [method "
+"create_instance] is called.\n"
+"If [code]with_order[/code] is [code]true[/code], a key named [code].order[/"
+"code] (note the leading period) is added to the dictionary. This [code]."
+"order[/code] key is an [Array] of [String] property names specifying the "
+"order in which properties will be applied (with index 0 being the first)."
 msgstr ""
 
 #: doc/classes/InstancePlaceholder.xml
@@ -33059,14 +33139,14 @@ msgstr ""
 
 #: doc/classes/Line2D.xml
 msgid ""
-"Adds a point at the [code]position[/code]. Appends the point at the end of "
-"the line.\n"
-"If [code]at_position[/code] is given, the point is inserted before the point "
-"number [code]at_position[/code], moving that point (and every point after) "
-"after the inserted point. If [code]at_position[/code] is not given, or is an "
-"illegal value ([code]at_position < 0[/code] or [code]at_position >= [method "
-"get_point_count][/code]), the point will be appended at the end of the point "
-"list."
+"Adds a point with the specified [code]position[/code] relative to the line's "
+"own position. Appends the new point at the end of the point list.\n"
+"If [code]index[/code] is given, the new point is inserted before the "
+"existing point identified by index [code]index[/code]. Every existing point "
+"starting from [code]index[/code] is shifted further down the list of points. "
+"The index must be greater than or equal to [code]0[/code] and must not "
+"exceed the number of existing points in the line. See [method "
+"get_point_count]."
 msgstr ""
 
 #: doc/classes/Line2D.xml
@@ -33074,21 +33154,21 @@ msgid "Removes all points from the line."
 msgstr ""
 
 #: doc/classes/Line2D.xml
-msgid "Returns the Line2D's amount of points."
+msgid "Returns the amount of points in the line."
 msgstr ""
 
 #: doc/classes/Line2D.xml
-msgid "Returns point [code]i[/code]'s position."
+msgid "Returns the position of the point at index [code]index[/code]."
 msgstr ""
 
 #: doc/classes/Line2D.xml
-msgid "Removes the point at index [code]i[/code] from the line."
+msgid "Removes the point at index [code]index[/code] from the line."
 msgstr ""
 
 #: doc/classes/Line2D.xml
 msgid ""
-"Overwrites the position in point [code]i[/code] with the supplied "
-"[code]position[/code]."
+"Overwrites the position of the point at index [code]index[/code] with the "
+"supplied [code]position[/code]."
 msgstr ""
 
 #: doc/classes/Line2D.xml
@@ -34665,9 +34745,9 @@ msgid ""
 "MeshInstance is a node that takes a [Mesh] resource and adds it to the "
 "current scenario by creating an instance of it. This is the class most often "
 "used to get 3D geometry rendered and can be used to instance a single [Mesh] "
-"in many places. This allows to reuse geometry and save on resources. When a "
-"[Mesh] has to be instanced more than thousands of times at close proximity, "
-"consider using a [MultiMesh] in a [MultiMeshInstance] instead."
+"in many places. This allows reusing geometry, which can save on resources. "
+"When a [Mesh] has to be instanced more than thousands of times at close "
+"proximity, consider using a [MultiMesh] in a [MultiMeshInstance] instead."
 msgstr ""
 
 #: doc/classes/MeshInstance.xml
@@ -35126,7 +35206,9 @@ msgid ""
 "existing vertex colors.\n"
 "For the color to take effect, ensure that [member color_format] is non-"
 "[code]null[/code] on the [MultiMesh] and [member SpatialMaterial."
-"vertex_color_use_as_albedo] is [code]true[/code] on the material."
+"vertex_color_use_as_albedo] is [code]true[/code] on the material. If the "
+"color doesn't look as expected, make sure the material's albedo color is set "
+"to pure white ([code]Color(1, 1, 1)[/code])."
 msgstr ""
 
 #: doc/classes/MultiMesh.xml
@@ -36238,7 +36320,7 @@ msgstr ""
 #: doc/classes/NavigationAgent.xml doc/classes/NavigationAgent2D.xml
 msgid ""
 "Notifies when the collision avoidance velocity is calculated after a call to "
-"[method set_velocity]."
+"[method set_velocity]. Only emitted when [member avoidance_enabled] is true."
 msgstr ""
 
 #: doc/classes/NavigationAgent2D.xml
@@ -37053,13 +37135,25 @@ msgstr ""
 #: doc/classes/NetworkedMultiplayerCustom.xml
 msgid ""
 "Initialize the peer with the given [code]peer_id[/code] (must be between 1 "
-"and 2147483647)."
+"and 2147483647).\n"
+"Can only be called if the connection status is [constant "
+"NetworkedMultiplayerPeer.CONNECTION_CONNECTING]. See [method "
+"set_connection_status]."
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerCustom.xml
 msgid ""
 "Set the state of the connection. See [enum NetworkedMultiplayerPeer."
-"ConnectionStatus]."
+"ConnectionStatus].\n"
+"This will emit the [signal NetworkedMultiplayerPeer.connection_succeeded], "
+"[signal NetworkedMultiplayerPeer.connection_failed] or [signal "
+"NetworkedMultiplayerPeer.server_disconnected] signals depending on the "
+"status and if the peer has the unique network id of [code]1[/code].\n"
+"You can only change to [constant NetworkedMultiplayerPeer."
+"CONNECTION_CONNECTING] from [constant NetworkedMultiplayerPeer."
+"CONNECTION_DISCONNECTED] and to [constant NetworkedMultiplayerPeer."
+"CONNECTION_CONNECTED] from [constant NetworkedMultiplayerPeer."
+"CONNECTION_CONNECTING]."
 msgstr ""
 
 #: doc/classes/NetworkedMultiplayerCustom.xml
@@ -40723,7 +40817,9 @@ msgid ""
 "are also subject to automatic adjustments by the operating system. [b]Always "
 "use[/b] [method get_ticks_usec] or [method get_ticks_msec] for precise time "
 "calculation instead, since they are guaranteed to be monotonic (i.e. never "
-"decrease)."
+"decrease).\n"
+"[b]Note:[/b] To get a floating point timestamp with sub-second precision, "
+"use [method Time.get_unix_time_from_system]."
 msgstr ""
 
 #: doc/classes/OS.xml
@@ -46087,7 +46183,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
-msgid "Sets the currently focused item as the given [code]index[/code]."
+msgid ""
+"Sets the currently focused item as the given [code]index[/code].\n"
+"Passing [code]-1[/code] as the index makes so that no item is focused."
 msgstr ""
 
 #: doc/classes/PopupMenu.xml
@@ -46326,7 +46424,9 @@ msgstr ""
 msgid ""
 "Class for displaying popups with a panel background. In some cases it might "
 "be simpler to use than [Popup], since it provides a configurable background. "
-"If you are making windows, better check [WindowDialog]."
+"If you are making windows, better check [WindowDialog].\n"
+"If any [Control] node is added as a child of this [PopupPanel], it will be "
+"stretched to fit the panel's size (similar to how [PanelContainer] works)."
 msgstr ""
 
 #: doc/classes/PopupPanel.xml
@@ -47055,7 +47155,11 @@ msgstr ""
 #: doc/classes/ProjectSettings.xml
 msgid ""
 "If [code]true[/code], microphone input will be allowed. This requires "
-"appropriate permissions to be set when exporting to Android or iOS."
+"appropriate permissions to be set when exporting to Android or iOS.\n"
+"[b]Note:[/b] If the operating system blocks access to audio input devices "
+"(due to the user's privacy settings), audio capture will only return "
+"silence. On Windows 10 and later, make sure that apps are allowed to access "
+"the microphone in the OS' privacy settings."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -49736,8 +49840,19 @@ msgstr ""
 msgid ""
 "Maximum anisotropic filter level used for textures with anisotropy enabled. "
 "Higher values will result in sharper textures when viewed from oblique "
-"angles, at the cost of performance. Only power-of-two values are valid (2, "
-"4, 8, 16)."
+"angles, at the cost of performance. With the exception of [code]1[/code], "
+"only power-of-two values are valid ([code]2[/code], [code]4[/code], [code]8[/"
+"code], [code]16[/code]). A value of [code]1[/code] forcibly disables "
+"anisotropic filtering, even on textures where it is enabled.\n"
+"[b]Note:[/b] For performance reasons, anisotropic filtering [i]is not "
+"enabled by default[/i] on textures. For this setting to have an effect, "
+"anisotropic texture filtering can be enabled by selecting a texture in the "
+"FileSystem dock, going to the Import dock, checking the [b]Anisotropic[/b] "
+"checkbox then clicking [b]Reimport[/b]. However, anisotropic filtering is "
+"rarely useful in 2D, so only enable it for textures in 2D if it makes a "
+"meaningful visual difference.\n"
+"[b]Note:[/b] This property is only read when the project starts. There is "
+"currently no way to change this setting at run-time."
 msgstr ""
 
 #: doc/classes/ProjectSettings.xml
@@ -53754,7 +53869,9 @@ msgid ""
 "cannot be instantiated.\n"
 "[b]Note:[/b] The scene change is deferred, which means that the new scene "
 "node is added on the next idle frame. You won't be able to access it "
-"immediately after the [method change_scene_to] call."
+"immediately after the [method change_scene_to] call.\n"
+"[b]Note:[/b] Passing a value of [code]null[/code] into the method will "
+"unload the current scene without loading a new one."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -53898,13 +54015,19 @@ msgstr ""
 #: doc/classes/SceneTree.xml
 msgid ""
 "If [code]true[/code], collision shapes will be visible when running the game "
-"from the editor for debugging purposes."
+"from the editor for debugging purposes.\n"
+"[b]Note:[/b] This property is not designed to be changed at run-time. "
+"Changing the value of [member debug_collisions_hint] while the project is "
+"running will not have the desired effect."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
 msgid ""
 "If [code]true[/code], navigation polygons will be visible when running the "
-"game from the editor for debugging purposes."
+"game from the editor for debugging purposes.\n"
+"[b]Note:[/b] This property is not designed to be changed at run-time. "
+"Changing the value of [member debug_navigation_hint] while the project is "
+"running will not have the desired effect."
 msgstr ""
 
 #: doc/classes/SceneTree.xml
@@ -55094,7 +55217,10 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Shape2D.xml
-msgid "The shape's custom solver bias."
+msgid ""
+"The shape's custom solver bias. Defines how much bodies react to enforce "
+"contact separation when this shape is involved.\n"
+"When set to [code]0.0[/code], the default value of [code]0.3[/code] is used."
 msgstr ""
 
 #: doc/classes/ShortCut.xml
@@ -55713,6 +55839,14 @@ msgstr ""
 
 #: doc/classes/Spatial.xml
 msgid ""
+"Returns [code]true[/code] if the node is present in the [SceneTree], its "
+"[member visible] property is [code]true[/code] and all its antecedents are "
+"also visible. If any antecedent is hidden, this node will not be visible in "
+"the scene tree."
+msgstr ""
+
+#: doc/classes/Spatial.xml
+msgid ""
 "Rotates the node so that the local forward axis (-Z) points toward the "
 "[code]target[/code] position.\n"
 "The local up axis (+Y) points as close to the [code]up[/code] vector as "
@@ -56047,7 +56181,9 @@ msgid ""
 "[b]Note:[/b] Material anisotropy should not to be confused with anisotropic "
 "texture filtering. Anisotropic texture filtering can be enabled by selecting "
 "a texture in the FileSystem dock, going to the Import dock, checking the "
-"[b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]."
+"[b]Anisotropic[/b] checkbox then clicking [b]Reimport[/b]. The anisotropic "
+"filtering level can be changed by adjusting [member ProjectSettings."
+"rendering/quality/filters/anisotropic_filter_level]."
 msgstr ""
 
 #: doc/classes/SpatialMaterial.xml
@@ -57480,7 +57616,7 @@ msgstr ""
 #: doc/classes/Sprite3D.xml
 msgid ""
 "[Texture] object to draw. If [member GeometryInstance.material_override] is "
-"used, this will be overridden."
+"used, this will be overridden. The size information is still used."
 msgstr ""
 
 #: doc/classes/SpriteBase3D.xml
@@ -58745,6 +58881,9 @@ msgid ""
 "the substrings, starting from right.\n"
 "The splits in the returned array are sorted in the same order as the "
 "original string, from left to right.\n"
+"If [code]allow_empty[/code] is [code]true[/code], and there are two adjacent "
+"delimiters in the string, it will add an empty string to the array of "
+"substrings at this position.\n"
 "If [code]maxsplit[/code] is specified, it defines the number of splits to do "
 "from the right up to [code]maxsplit[/code]. The default value of 0 means "
 "that all items are split, thus giving the same result as [method split].\n"
@@ -58806,6 +58945,9 @@ msgstr ""
 msgid ""
 "Splits the string by a [code]delimiter[/code] string and returns an array of "
 "the substrings. The [code]delimiter[/code] can be of any length.\n"
+"If [code]allow_empty[/code] is [code]true[/code], and there are two adjacent "
+"delimiters in the string, it will add an empty string to the array of "
+"substrings at this position.\n"
 "If [code]maxsplit[/code] is specified, it defines the number of splits to do "
 "from the left up to [code]maxsplit[/code]. The default value of [code]0[/"
 "code] means that all items are split.\n"
@@ -58828,7 +58970,10 @@ msgid ""
 "Splits the string in floats by using a delimiter string and returns an array "
 "of the substrings.\n"
 "For example, [code]\"1,2.5,3\"[/code] will return [code][1,2.5,3][/code] if "
-"split by [code]\",\"[/code]."
+"split by [code]\",\"[/code].\n"
+"If [code]allow_empty[/code] is [code]true[/code], and there are two adjacent "
+"delimiters in the string, it will add an empty string to the array of "
+"substrings at this position."
 msgstr ""
 
 #: doc/classes/String.xml
@@ -59965,6 +60110,10 @@ msgid "Returns [code]true[/code] if select with right mouse button is enabled."
 msgstr ""
 
 #: doc/classes/Tabs.xml
+msgid "Returns the button icon from the tab at index [code]tab_idx[/code]."
+msgstr ""
+
+#: doc/classes/Tabs.xml
 msgid "Returns the number of hidden tabs offsetted to the left."
 msgstr ""
 
@@ -59991,6 +60140,10 @@ msgstr ""
 #: doc/classes/Tabs.xml
 msgid ""
 "If [code]true[/code], enables selecting a tab with the right mouse button."
+msgstr ""
+
+#: doc/classes/Tabs.xml
+msgid "Sets the button icon from the tab at index [code]tab_idx[/code]."
 msgstr ""
 
 #: doc/classes/Tabs.xml
@@ -60035,7 +60188,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Tabs.xml
-msgid "Emitted when a tab is right-clicked."
+msgid ""
+"Emitted when a tab's right button is pressed. See [method "
+"set_tab_button_icon]."
 msgstr ""
 
 #: doc/classes/Tabs.xml
@@ -64900,21 +65055,25 @@ msgid "Makes subsequent actions with the same name be merged into one."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
-msgid "UPNP network functions."
+msgid ""
+"Universal Plug and Play (UPnP) functions for network device discovery, "
+"querying and port forwarding."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
 msgid ""
-"Provides UPNP functionality to discover [UPNPDevice]s on the local network "
-"and execute commands on them, like managing port mappings (port forwarding) "
-"and querying the local and remote network IP address. Note that methods on "
-"this class are synchronous and block the calling thread.\n"
-"To forward a specific port:\n"
+"This class can be used to discover compatible [UPNPDevice]s on the local "
+"network and execute commands on them, like managing port mappings (for port "
+"forwarding/NAT traversal) and querying the local and remote network IP "
+"address. Note that methods on this class are synchronous and block the "
+"calling thread.\n"
+"To forward a specific port (here [code]7777[/code], note both [method "
+"discover] and [method add_port_mapping] can return errors that should be "
+"checked):\n"
 "[codeblock]\n"
-"const PORT = 7777\n"
 "var upnp = UPNP.new()\n"
-"upnp.discover(2000, 2, \"InternetGatewayDevice\")\n"
-"upnp.add_port_mapping(port)\n"
+"upnp.discover()\n"
+"upnp.add_port_mapping(7777)\n"
 "[/codeblock]\n"
 "To close a specific port (e.g. after you have finished using it):\n"
 "[codeblock]\n"
@@ -64927,7 +65086,7 @@ msgid ""
 "or failure).\n"
 "signal upnp_completed(error)\n"
 "\n"
-"# Replace this with your own server port number between 1025 and 65535.\n"
+"# Replace this with your own server port number between 1024 and 65535.\n"
 "const SERVER_PORT = 3928\n"
 "var thread = null\n"
 "\n"
@@ -64956,7 +65115,39 @@ msgid ""
 "    # Wait for thread finish here to handle game exit while the thread is "
 "running.\n"
 "    thread.wait_to_finish()\n"
-"[/codeblock]"
+"[/codeblock]\n"
+"[b]Terminology:[/b] In the context of UPnP networking, \"gateway\" (or "
+"\"internet gateway device\", short IGD) refers to network devices that allow "
+"computers in the local network to access the internet (\"wide area "
+"network\", WAN). These gateways are often also called \"routers\".\n"
+"[b]Pitfalls:[/b]\n"
+"- As explained above, these calls are blocking and shouldn't be run on the "
+"main thread, especially as they can block for multiple seconds at a time. "
+"Use threading!\n"
+"- Networking is physical and messy. Packets get lost in transit or get "
+"filtered, addresses, free ports and assigned mappings change, and devices "
+"may leave or join the network at any time. Be mindful of this, be diligent "
+"when checking and handling errors, and handle these gracefully if you can: "
+"add clear error UI, timeouts and re-try handling.\n"
+"- Port mappings may change (and be removed) at any time, and the remote/"
+"external IP address of the gateway can change likewise. You should consider "
+"re-querying the external IP and try to update/refresh the port mapping "
+"periodically (for example, every 5 minutes and on networking failures).\n"
+"- Not all devices support UPnP, and some users disable UPnP support. You "
+"need to handle this (e.g. documenting and requiring the user to manually "
+"forward ports, or adding alternative methods of NAT traversal, like a relay/"
+"mirror server, or NAT hole punching, STUN/TURN, etc.).\n"
+"- Consider what happens on mapping conflicts. Maybe multiple users on the "
+"same network would like to play your game at the same time, or maybe another "
+"application uses the same port. Make the port configurable, and optimally "
+"choose a port automatically (re-trying with a different port on failure).\n"
+"[b]Further reading:[/b] If you want to know more about UPnP (and the "
+"Internet Gateway Device (IGD) and Port Control Protocol (PCP) specifically), "
+"[url=https://en.wikipedia.org/wiki/Universal_Plug_and_Play]Wikipedia[/url] "
+"is a good first stop, the specification can be found at the [url=https://"
+"openconnectivity.org/developer/specifications/upnp-resources/upnp/]Open "
+"Connectivity Foundation[/url] and Godot's implementation is based on the "
+"[url=https://github.com/miniupnp/miniupnp]MiniUPnP client[/url]."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
@@ -64966,22 +65157,35 @@ msgstr ""
 #: modules/upnp/doc_classes/UPNP.xml
 msgid ""
 "Adds a mapping to forward the external [code]port[/code] (between 1 and "
-"65535) on the default gateway (see [method get_gateway]) to the "
-"[code]internal_port[/code] on the local machine for the given protocol "
-"[code]proto[/code] (either [code]TCP[/code] or [code]UDP[/code], with UDP "
-"being the default). If a port mapping for the given port and protocol "
-"combination already exists on that gateway device, this method tries to "
-"overwrite it. If that is not desired, you can retrieve the gateway manually "
-"with [method get_gateway] and call [method add_port_mapping] on it, if any.\n"
+"65535, although recommended to use port 1024 or above) on the default "
+"gateway (see [method get_gateway]) to the [code]internal_port[/code] on the "
+"local machine for the given protocol [code]proto[/code] (either [code]TCP[/"
+"code] or [code]UDP[/code], with UDP being the default). If a port mapping "
+"for the given port and protocol combination already exists on that gateway "
+"device, this method tries to overwrite it. If that is not desired, you can "
+"retrieve the gateway manually with [method get_gateway] and call [method "
+"add_port_mapping] on it, if any. Note that forwarding a well-known port "
+"(below 1024) with UPnP may fail depending on the device.\n"
+"Depending on the gateway device, if a mapping for that port already exists, "
+"it will either be updated or it will refuse this command due to that "
+"conflict, especially if the existing mapping for that port wasn't created "
+"via UPnP or points to a different network address (or device) than this "
+"one.\n"
 "If [code]internal_port[/code] is [code]0[/code] (the default), the same port "
 "number is used for both the external and the internal port (the [code]port[/"
 "code] value).\n"
-"The description ([code]desc[/code]) is shown in some router UIs and can be "
-"used to point out which application added the mapping. The mapping's lease "
-"duration can be limited by specifying a [code]duration[/code] (in seconds). "
-"However, some routers are incompatible with one or both of these, so use "
-"with caution and add fallback logic in case of errors to retry without them "
-"if in doubt.\n"
+"The description ([code]desc[/code]) is shown in some routers management UIs "
+"and can be used to point out which application added the mapping.\n"
+"The mapping's lease [code]duration[/code] can be limited by specifying a "
+"duration in seconds. The default of [code]0[/code] means no duration, i.e. a "
+"permanent lease and notably some devices only support these permanent "
+"leases. Note that whether permanent or not, this is only a request and the "
+"gateway may still decide at any point to remove the mapping (which usually "
+"happens on a reboot of the gateway, when its external IP address changes, or "
+"on some models when it detects a port mapping has become inactive, i.e. had "
+"no traffic for multiple minutes). If not [code]0[/code] (permanent), the "
+"allowed range according to spec is between [code]120[/code] (2 minutes) and "
+"[code]86400[/code] seconds (24 hours).\n"
 "See [enum UPNPResult] for possible return values."
 msgstr ""
 
@@ -64994,8 +65198,10 @@ msgid ""
 "Deletes the port mapping for the given port and protocol combination on the "
 "default gateway (see [method get_gateway]) if one exists. [code]port[/code] "
 "must be a valid port between 1 and 65535, [code]proto[/code] can be either "
-"[code]TCP[/code] or [code]UDP[/code]. See [enum UPNPResult] for possible "
-"return values."
+"[code]TCP[/code] or [code]UDP[/code]. May be refused for mappings pointing "
+"to addresses other than this one, for well-known ports (below 1024), or for "
+"mappings not added via UPnP. See [enum UPNPResult] for possible return "
+"values."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNP.xml
@@ -65193,16 +65399,16 @@ msgid "Unknown error."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
-msgid "UPNP device."
+msgid "Universal Plug and Play (UPnP) device."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid ""
-"UPNP device. See [UPNP] for UPNP discovery and utility functions. Provides "
-"low-level access to UPNP control commands. Allows to manage port mappings "
-"(port forwarding) and to query network information of the device (like local "
-"and external IP address and status). Note that methods on this class are "
-"synchronous and block the calling thread."
+"Universal Plug and Play (UPnP) device. See [UPNP] for UPnP discovery and "
+"utility functions. Provides low-level access to UPNP control commands. "
+"Allows to manage port mappings (port forwarding) and to query network "
+"information of the device (like local and external IP address and status). "
+"Note that methods on this class are synchronous and block the calling thread."
 msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
@@ -73832,7 +74038,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/WeakRef.xml
-msgid "Returns the [Object] this weakref is referring to."
+msgid ""
+"Returns the [Object] this weakref is referring to. Returns [code]null[/code] "
+"if that object no longer exists."
 msgstr ""
 
 #: modules/webrtc/doc_classes/WebRTCDataChannel.xml

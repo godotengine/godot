@@ -1602,7 +1602,7 @@ void EditorInspectorArray::_rmb_popup_id_pressed(int p_id) {
 		case OPTION_RESIZE_ARRAY:
 			new_size_spin_box->set_value(count);
 			resize_dialog->get_ok_button()->set_disabled(true);
-			resize_dialog->popup_centered(Size2i(250, 0) * EDSCALE);
+			resize_dialog->popup_centered(Size2(250, 0) * EDSCALE);
 			new_size_spin_box->get_line_edit()->grab_focus();
 			new_size_spin_box->get_line_edit()->select_all();
 			break;
@@ -2711,6 +2711,11 @@ void EditorInspector::update_tree() {
 				continue;
 			}
 
+			// Hide the "MultiNodeEdit" category for MultiNodeEdit.
+			if (Object::cast_to<MultiNodeEdit>(object) && p.name == "MultiNodeEdit") {
+				continue;
+			}
+
 			// Iterate over remaining properties. If no properties in category, skip the category.
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
@@ -2738,7 +2743,7 @@ void EditorInspector::update_tree() {
 			doc_name = p.name;
 
 			// Set the category icon.
-			if (!ClassDB::class_exists(type) && !ScriptServer::is_global_class(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
+			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
 				// If we have a category inside a script, search for the first script with a valid icon.
 				Ref<Script> script = ResourceLoader::load(p.hint_string, "Script");
 				StringName base_type;
@@ -2757,8 +2762,14 @@ void EditorInspector::update_tree() {
 				while (script.is_valid()) {
 					name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
 					String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-					if (name != StringName() && icon_path.length()) {
+					if (name != StringName() && !icon_path.is_empty()) {
 						category->icon = ResourceLoader::load(icon_path, "Texture");
+						break;
+					}
+
+					const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_path(script->get_path());
+					if (ctype) {
+						category->icon = ctype->icon;
 						break;
 					}
 					script = script->get_base_script();
@@ -2816,6 +2827,11 @@ void EditorInspector::update_tree() {
 
 		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
 			// Hide script variables from inspector if required.
+			continue;
+		}
+
+		if (p.name.begins_with("metadata/") && bool(object->call("_hide_metadata_from_inspector"))) {
+			// Hide metadata from inspector if required.
 			continue;
 		}
 
@@ -3089,6 +3105,8 @@ void EditorInspector::update_tree() {
 			StringName classname = doc_name == "" ? object->get_class_name() : doc_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
+			} else if (Object::cast_to<MultiNodeEdit>(object)) {
+				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
 			}
 
 			StringName propname = property_prefix + p.name;
@@ -3242,7 +3260,7 @@ void EditorInspector::update_tree() {
 		}
 	}
 
-	if (!hide_metadata) {
+	if (!hide_metadata && !object->call("_hide_metadata_from_inspector")) {
 		// Add 4px of spacing between the "Add Metadata" button and the content above it.
 		Control *spacer = memnew(Control);
 		spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
@@ -3475,9 +3493,9 @@ void EditorInspector::_update_inspector_bg() {
 			n = n->get_parent();
 		}
 		count_subinspectors = MIN(15, count_subinspectors);
-		add_theme_style_override("bg", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), SNAME("Editor")));
+		add_theme_style_override("panel", get_theme_stylebox("sub_inspector_bg" + itos(count_subinspectors), SNAME("Editor")));
 	} else {
-		add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+		add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 	}
 }
 void EditorInspector::set_sub_inspector(bool p_enable) {
@@ -4064,7 +4082,7 @@ EditorInspector::EditorInspector() {
 		refresh_countdown = 0.33;
 	}
 
-	ED_SHORTCUT("property_editor/copy_property", TTR("Copy Property"), KeyModifierMask::CMD | Key::C);
-	ED_SHORTCUT("property_editor/paste_property", TTR("Paste Property"), KeyModifierMask::CMD | Key::V);
-	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("property_editor/copy_property", TTR("Copy Property"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_property", TTR("Paste Property"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 }

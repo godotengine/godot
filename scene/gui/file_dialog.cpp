@@ -70,9 +70,9 @@ void FileDialog::_update_theme_item_cache() {
 	theme_cache.folder = get_theme_icon(SNAME("folder"));
 	theme_cache.file = get_theme_icon(SNAME("file"));
 
-	theme_cache.folder_icon_modulate = get_theme_color(SNAME("folder_icon_modulate"));
-	theme_cache.file_icon_modulate = get_theme_color(SNAME("file_icon_modulate"));
-	theme_cache.files_disabled = get_theme_color(SNAME("files_disabled"));
+	theme_cache.folder_icon_color = get_theme_color(SNAME("folder_icon_color"));
+	theme_cache.file_icon_color = get_theme_color(SNAME("file_icon_color"));
+	theme_cache.file_disabled_color = get_theme_color(SNAME("file_disabled_color"));
 
 	// TODO: Define own colors?
 	theme_cache.icon_normal_color = get_theme_color(SNAME("font_color"), SNAME("Button"));
@@ -87,6 +87,8 @@ void FileDialog::_notification(int p_what) {
 			if (!is_visible()) {
 				set_process_shortcut_input(false);
 			}
+
+			invalidate(); // Put it here to preview in the editor.
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -143,7 +145,7 @@ void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 
 			switch (k->get_keycode()) {
 				case Key::H: {
-					if (k->is_command_pressed()) {
+					if (k->is_command_or_control_pressed()) {
 						set_show_hidden_files(!show_hidden_files);
 					} else {
 						handled = false;
@@ -223,10 +225,6 @@ void FileDialog::_save_confirm_pressed() {
 
 void FileDialog::_post_popup() {
 	ConfirmationDialog::_post_popup();
-	if (invalidated) {
-		update_file_list();
-		invalidated = false;
-	}
 	if (mode == FILE_MODE_SAVE_FILE) {
 		file->grab_focus();
 	} else {
@@ -552,7 +550,7 @@ void FileDialog::update_file_list() {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, theme_cache.folder);
-		ti->set_icon_modulate(0, theme_cache.folder_icon_modulate);
+		ti->set_icon_modulate(0, theme_cache.folder_icon_color);
 
 		Dictionary d;
 		d["name"] = dir_name;
@@ -613,10 +611,10 @@ void FileDialog::update_file_list() {
 			} else {
 				ti->set_icon(0, theme_cache.file);
 			}
-			ti->set_icon_modulate(0, theme_cache.file_icon_modulate);
+			ti->set_icon_modulate(0, theme_cache.file_icon_color);
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, theme_cache.files_disabled);
+				ti->set_custom_color(0, theme_cache.file_disabled_color);
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;

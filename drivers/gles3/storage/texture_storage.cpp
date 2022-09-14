@@ -1199,7 +1199,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 	rt->color_internal_format = rt->is_transparent ? GL_RGBA8 : GL_RGB10_A2;
 	rt->color_format = GL_RGBA;
-	rt->color_type = rt->is_transparent ? GL_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
+	rt->color_type = rt->is_transparent ? GL_UNSIGNED_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
 	rt->image_format = Image::FORMAT_RGBA8;
 
 	glDisable(GL_SCISSOR_TEST);

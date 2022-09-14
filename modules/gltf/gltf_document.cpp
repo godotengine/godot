@@ -2673,7 +2673,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 			} else if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
 				PackedInt32Array joints_0 = _decode_accessor_as_ints(state, a["JOINTS_0"], true);
 				PackedInt32Array joints_1 = _decode_accessor_as_ints(state, a["JOINTS_1"], true);
-				ERR_FAIL_COND_V(joints_0.size() != joints_0.size(), ERR_INVALID_DATA);
+				ERR_FAIL_COND_V(joints_0.size() != joints_1.size(), ERR_INVALID_DATA);
 				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
 				Vector<int> joints;
 				joints.resize(vertex_num * weight_8_count);
@@ -5271,7 +5271,7 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		cell_xform.basis.scale(Vector3(p_grid_map->get_cell_scale(),
 				p_grid_map->get_cell_scale(),
 				p_grid_map->get_cell_scale()));
-		cell_xform.set_origin(p_grid_map->map_to_world(
+		cell_xform.set_origin(p_grid_map->map_to_local(
 				Vector3(cell_location.x, cell_location.y, cell_location.z)));
 		Ref<GLTFMesh> gltf_mesh;
 		gltf_mesh.instantiate();

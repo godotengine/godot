@@ -640,7 +640,7 @@ void CurveEditor::_draw() {
 	// Background
 
 	Vector2 view_size = get_rect().size;
-	draw_style_box(get_theme_stylebox(SNAME("bg"), SNAME("Tree")), Rect2(Point2(), view_size));
+	draw_style_box(get_theme_stylebox(SNAME("panel"), SNAME("Tree")), Rect2(Point2(), view_size));
 
 	// Grid
 

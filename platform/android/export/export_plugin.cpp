@@ -569,16 +569,15 @@ bool EditorExportPlatformAndroid::_should_compress_asset(const String &p_path, c
 }
 
 zip_fileinfo EditorExportPlatformAndroid::get_zip_fileinfo() {
-	OS::Time time = OS::get_singleton()->get_time();
-	OS::Date date = OS::get_singleton()->get_date();
+	OS::DateTime dt = OS::get_singleton()->get_datetime();
 
 	zip_fileinfo zipfi;
-	zipfi.tmz_date.tm_hour = time.hour;
-	zipfi.tmz_date.tm_mday = date.day;
-	zipfi.tmz_date.tm_min = time.minute;
-	zipfi.tmz_date.tm_mon = date.month - 1; // tm_mon is zero indexed
-	zipfi.tmz_date.tm_sec = time.second;
-	zipfi.tmz_date.tm_year = date.year;
+	zipfi.tmz_date.tm_year = dt.year;
+	zipfi.tmz_date.tm_mon = dt.month - 1; // tm_mon is zero indexed
+	zipfi.tmz_date.tm_mday = dt.day;
+	zipfi.tmz_date.tm_hour = dt.hour;
+	zipfi.tmz_date.tm_min = dt.minute;
+	zipfi.tmz_date.tm_sec = dt.second;
 	zipfi.dosDate = 0;
 	zipfi.external_fa = 0;
 	zipfi.internal_fa = 0;

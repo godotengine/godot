@@ -148,7 +148,7 @@ TEST_CASE("[InputEventKey] Key correctly converts its state to a string represen
 	CHECK(none_key.to_string() == "InputEventKey: keycode=0 (), mods=none, physical=true, pressed=false, echo=false");
 	// Set physical key to Escape.
 	none_key.set_physical_keycode(Key::ESCAPE);
-	CHECK(none_key.to_string() == "InputEventKey: keycode=16777217 (Escape), mods=none, physical=true, pressed=false, echo=false");
+	CHECK(none_key.to_string() == "InputEventKey: keycode=4194305 (Escape), mods=none, physical=true, pressed=false, echo=false");
 
 	InputEventKey key;
 
@@ -167,7 +167,11 @@ TEST_CASE("[InputEventKey] Key correctly converts its state to a string represen
 	// Press Ctrl and Alt.
 	key.set_ctrl_pressed(true);
 	key.set_alt_pressed(true);
+#ifdef MACOS_ENABLED
+	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Option, physical=false, pressed=true, echo=true");
+#else
 	CHECK(key.to_string() == "InputEventKey: keycode=32 (Space), mods=Ctrl+Alt, physical=false, pressed=true, echo=true");
+#endif
 }
 
 TEST_CASE("[InputEventKey] Key is correctly converted to reference") {

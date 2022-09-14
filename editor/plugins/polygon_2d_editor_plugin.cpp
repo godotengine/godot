@@ -94,8 +94,8 @@ void Polygon2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
-			bone_scroll->add_theme_style_override("bg", get_theme_stylebox(SNAME("bg"), SNAME("Tree")));
+			uv_edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			bone_scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -627,11 +627,11 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				}
 
 				if (uv_move_current == UV_MODE_EDIT_POINT) {
-					if (mb->is_shift_pressed() && mb->is_command_pressed()) {
+					if (mb->is_shift_pressed() && mb->is_command_or_control_pressed()) {
 						uv_move_current = UV_MODE_SCALE;
 					} else if (mb->is_shift_pressed()) {
 						uv_move_current = UV_MODE_MOVE;
-					} else if (mb->is_command_pressed()) {
+					} else if (mb->is_command_or_control_pressed()) {
 						uv_move_current = UV_MODE_ROTATE;
 					}
 				}

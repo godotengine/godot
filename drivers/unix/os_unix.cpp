@@ -200,7 +200,7 @@ double OS_Unix::get_unix_time() const {
 	return (double)tv_now.tv_sec + double(tv_now.tv_usec) / 1000000;
 }
 
-OS::Date OS_Unix::get_date(bool p_utc) const {
+OS::DateTime OS_Unix::get_datetime(bool p_utc) const {
 	time_t t = time(nullptr);
 	struct tm lt;
 	if (p_utc) {
@@ -208,7 +208,7 @@ OS::Date OS_Unix::get_date(bool p_utc) const {
 	} else {
 		localtime_r(&t, &lt);
 	}
-	Date ret;
+	DateTime ret;
 	ret.year = 1900 + lt.tm_year;
 	// Index starting at 1 to match OS_Unix::get_date
 	//   and Windows SYSTEMTIME and tm_mon follows the typical structure
@@ -216,24 +216,11 @@ OS::Date OS_Unix::get_date(bool p_utc) const {
 	ret.month = (Month)(lt.tm_mon + 1);
 	ret.day = lt.tm_mday;
 	ret.weekday = (Weekday)lt.tm_wday;
-	ret.dst = lt.tm_isdst;
-
-	return ret;
-}
-
-OS::Time OS_Unix::get_time(bool p_utc) const {
-	time_t t = time(nullptr);
-	struct tm lt;
-	if (p_utc) {
-		gmtime_r(&t, &lt);
-	} else {
-		localtime_r(&t, &lt);
-	}
-	Time ret;
 	ret.hour = lt.tm_hour;
 	ret.minute = lt.tm_min;
 	ret.second = lt.tm_sec;
-	get_time_zone_info();
+	ret.dst = lt.tm_isdst;
+
 	return ret;
 }
 

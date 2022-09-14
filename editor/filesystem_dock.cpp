@@ -76,7 +76,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 	subdirectory_item->set_icon(0, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog")));
+	subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
 	subdirectory_item->set_selectable(0, true);
 	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
@@ -246,7 +246,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		}
 
 		Ref<Texture2D> folder_icon = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
-		const Color folder_color = get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
+		const Color folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 		String text;
 		Ref<Texture2D> icon;
@@ -778,7 +778,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
-	const Color folder_color = get_theme_color(SNAME("folder_icon_modulate"), SNAME("FileDialog"));
+	const Color folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	// Build the FileInfo list.
 	List<FileInfo> file_list;
@@ -3021,10 +3021,10 @@ FileSystemDock::FileSystemDock() {
 	set_name("FileSystem");
 	path = "res://";
 
-	// `KeyModifierMask::CMD | Key::C` conflicts with other editor shortcuts.
-	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD | KeyModifierMask::SHIFT | Key::C);
+	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
+	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
-	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD | Key::D);
+	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);

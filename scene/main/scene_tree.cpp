@@ -722,22 +722,6 @@ float SceneTree::get_debug_paths_width() const {
 	return debug_paths_width;
 }
 
-void SceneTree::set_debug_navigation_color(const Color &p_color) {
-	debug_navigation_color = p_color;
-}
-
-Color SceneTree::get_debug_navigation_color() const {
-	return debug_navigation_color;
-}
-
-void SceneTree::set_debug_navigation_disabled_color(const Color &p_color) {
-	debug_navigation_disabled_color = p_color;
-}
-
-Color SceneTree::get_debug_navigation_disabled_color() const {
-	return debug_navigation_disabled_color;
-}
-
 Ref<Material> SceneTree::get_debug_paths_material() {
 	if (debug_paths_material.is_valid()) {
 		return debug_paths_material;
@@ -753,40 +737,6 @@ Ref<Material> SceneTree::get_debug_paths_material() {
 	debug_paths_material = _debug_material;
 
 	return debug_paths_material;
-}
-
-Ref<Material> SceneTree::get_debug_navigation_material() {
-	if (navigation_material.is_valid()) {
-		return navigation_material;
-	}
-
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(get_debug_navigation_color());
-
-	navigation_material = line_material;
-
-	return navigation_material;
-}
-
-Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
-	if (navigation_disabled_material.is_valid()) {
-		return navigation_disabled_material;
-	}
-
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(get_debug_navigation_disabled_color());
-
-	navigation_disabled_material = line_material;
-
-	return navigation_disabled_material;
 }
 
 Ref<Material> SceneTree::get_debug_collision_material() {
@@ -1138,16 +1088,16 @@ void SceneTree::_change_scene(Node *p_to) {
 	}
 }
 
-Error SceneTree::change_scene(const String &p_path) {
+Error SceneTree::change_scene_to_file(const String &p_path) {
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
 	if (new_scene.is_null()) {
 		return ERR_CANT_OPEN;
 	}
 
-	return change_scene_to(new_scene);
+	return change_scene_to_packed(new_scene);
 }
 
-Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
+Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instantiate();
@@ -1161,7 +1111,7 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
 	String fname = current_scene->get_scene_file_path();
-	return change_scene(fname);
+	return change_scene_to_file(fname);
 }
 
 void SceneTree::add_current_scene(Node *p_current) {
@@ -1310,8 +1260,8 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
 
-	ClassDB::bind_method(D_METHOD("change_scene", "path"), &SceneTree::change_scene);
-	ClassDB::bind_method(D_METHOD("change_scene_to", "packed_scene"), &SceneTree::change_scene_to);
+	ClassDB::bind_method(D_METHOD("change_scene_to_file", "path"), &SceneTree::change_scene_to_file);
+	ClassDB::bind_method(D_METHOD("change_scene_to_packed", "packed_scene"), &SceneTree::change_scene_to_packed);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
 
@@ -1366,7 +1316,7 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 }
 
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_function == "change_scene") {
+	if (p_function == "change_scene_to_file") {
 		Ref<DirAccess> dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		List<String> directories;
 		directories.push_back(dir_access->get_current_dir());
@@ -1404,8 +1354,6 @@ SceneTree::SceneTree() {
 	debug_collision_contact_color = GLOBAL_DEF("debug/shapes/collision/contact_color", Color(1.0, 0.2, 0.1, 0.8));
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_paths_width = GLOBAL_DEF("debug/shapes/paths/geometry_width", 2.0);
-	debug_navigation_color = GLOBAL_DEF("debug/shapes/navigation/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
-	debug_navigation_disabled_color = GLOBAL_DEF("debug/shapes/navigation/disabled_geometry_color", Color(1.0, 0.7, 0.1, 0.4));
 	collision_debug_contacts = GLOBAL_DEF("debug/shapes/collision/max_contacts_displayed", 10000);
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/shapes/collision/max_contacts_displayed", PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1")); // No negative
 

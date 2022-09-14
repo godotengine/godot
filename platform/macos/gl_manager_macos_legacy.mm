@@ -167,9 +167,8 @@ void GLManager_MacOS::make_current() {
 }
 
 void GLManager_MacOS::swap_buffers() {
-	for (const KeyValue<DisplayServer::WindowID, GLWindow> &E : windows) {
-		[E.value.context flushBuffer];
-	}
+	GLWindow &win = windows[current_window];
+	[win.context flushBuffer];
 }
 
 void GLManager_MacOS::window_update(DisplayServer::WindowID p_window_id) {

@@ -36,11 +36,11 @@ void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
 
 Error HTTPRequest::_request() {
-	return client->connect_to_host(url, port, use_ssl, validate_ssl);
+	return client->connect_to_host(url, port, use_tls, validate_tls);
 }
 
 Error HTTPRequest::_parse_url(const String &p_url) {
-	use_ssl = false;
+	use_tls = false;
 	request_string = "";
 	port = 80;
 	request_sent = false;
@@ -54,12 +54,12 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 	Error err = p_url.parse_url(scheme, url, port, request_string);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Error parsing URL: " + p_url + ".");
 	if (scheme == "https://") {
-		use_ssl = true;
+		use_tls = true;
 	} else if (scheme != "http://") {
 		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Invalid URL scheme: " + scheme + ".");
 	}
 	if (port == 0) {
-		port = use_ssl ? 443 : 80;
+		port = use_tls ? 443 : 80;
 	}
 	if (request_string.is_empty()) {
 		request_string = "/";
@@ -98,7 +98,7 @@ String HTTPRequest::get_header_value(const PackedStringArray &p_headers, const S
 	return value;
 }
 
-Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
+Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_tls_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
 	// Copy the string into a raw buffer.
 	Vector<uint8_t> raw_data;
 
@@ -110,10 +110,10 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 		memcpy(w, charstr.ptr(), len);
 	}
 
-	return request_raw(p_url, p_custom_headers, p_ssl_validate_domain, p_method, raw_data);
+	return request_raw(p_url, p_custom_headers, p_tls_validate_domain, p_method, raw_data);
 }
 
-Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const Vector<uint8_t> &p_request_data_raw) {
+Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_tls_validate_domain, HTTPClient::Method p_method, const Vector<uint8_t> &p_request_data_raw) {
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
@@ -129,7 +129,7 @@ Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_cust
 		return err;
 	}
 
-	validate_ssl = p_ssl_validate_domain;
+	validate_tls = p_tls_validate_domain;
 
 	headers = p_custom_headers;
 
@@ -413,8 +413,8 @@ bool HTTPRequest::_update_connection() {
 			call_deferred(SNAME("_request_done"), RESULT_CONNECTION_ERROR, 0, PackedStringArray(), PackedByteArray());
 			return true;
 		} break;
-		case HTTPClient::STATUS_SSL_HANDSHAKE_ERROR: {
-			call_deferred(SNAME("_request_done"), RESULT_SSL_HANDSHAKE_ERROR, 0, PackedStringArray(), PackedByteArray());
+		case HTTPClient::STATUS_TLS_HANDSHAKE_ERROR: {
+			call_deferred(SNAME("_request_done"), RESULT_TLS_HANDSHAKE_ERROR, 0, PackedStringArray(), PackedByteArray());
 			return true;
 		} break;
 	}
@@ -570,8 +570,8 @@ void HTTPRequest::_timeout() {
 }
 
 void HTTPRequest::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
-	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
+	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "tls_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "tls_validate_domain", "method", "request_data_raw"), &HTTPRequest::request_raw, DEFVAL(PackedStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PackedByteArray()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);
@@ -621,7 +621,7 @@ void HTTPRequest::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESULT_CANT_CONNECT);
 	BIND_ENUM_CONSTANT(RESULT_CANT_RESOLVE);
 	BIND_ENUM_CONSTANT(RESULT_CONNECTION_ERROR);
-	BIND_ENUM_CONSTANT(RESULT_SSL_HANDSHAKE_ERROR);
+	BIND_ENUM_CONSTANT(RESULT_TLS_HANDSHAKE_ERROR);
 	BIND_ENUM_CONSTANT(RESULT_NO_RESPONSE);
 	BIND_ENUM_CONSTANT(RESULT_BODY_SIZE_LIMIT_EXCEEDED);
 	BIND_ENUM_CONSTANT(RESULT_BODY_DECOMPRESS_FAILED);

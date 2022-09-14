@@ -108,6 +108,7 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 	if (!frames.is_valid()) {
 		return;
 	}
+
 	if (p_property.name == "animation") {
 		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
@@ -137,9 +138,15 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 				p_property.hint_string = String(animation) + "," + p_property.hint_string;
 			}
 		}
+		return;
 	}
 
 	if (p_property.name == "frame") {
+		if (playing) {
+			p_property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY;
+			return;
+		}
+
 		p_property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 0) {
 			p_property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
@@ -175,33 +182,38 @@ void AnimatedSprite2D::_notification(int p_what) {
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
-					int fc = frames->get_frame_count(animation);
-					if ((!backwards && frame >= fc - 1) || (backwards && frame <= 0)) {
-						if (frames->get_animation_loop(animation)) {
-							if (backwards) {
-								frame = fc - 1;
-							} else {
+					int last_frame = frames->get_frame_count(animation) - 1;
+					if (!backwards) {
+						// Forward.
+						if (frame >= last_frame) {
+							if (frames->get_animation_loop(animation)) {
 								frame = 0;
-							}
-
-							emit_signal(SceneStringNames::get_singleton()->animation_finished);
-						} else {
-							if (backwards) {
-								frame = 0;
-							} else {
-								frame = fc - 1;
-							}
-
-							if (!is_over) {
-								is_over = true;
 								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							} else {
+								frame = last_frame;
+								if (!is_over) {
+									is_over = true;
+									emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								}
 							}
-						}
-					} else {
-						if (backwards) {
-							frame--;
 						} else {
 							frame++;
+						}
+					} else {
+						// Reversed.
+						if (frame <= 0) {
+							if (frames->get_animation_loop(animation)) {
+								frame = last_frame;
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							} else {
+								frame = 0;
+								if (!is_over) {
+									is_over = true;
+									emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								}
+							}
+						} else {
+							frame--;
 						}
 					}
 
@@ -259,14 +271,15 @@ void AnimatedSprite2D::_notification(int p_what) {
 
 void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	if (frames.is_valid()) {
-		frames->disconnect("changed", callable_mp(this, &AnimatedSprite2D::_res_changed));
-	}
-	frames = p_frames;
-	if (frames.is_valid()) {
-		frames->connect("changed", callable_mp(this, &AnimatedSprite2D::_res_changed));
+		frames->disconnect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
 	}
 
-	if (!frames.is_valid()) {
+	frames = p_frames;
+	if (frames.is_valid()) {
+		frames->connect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
+	}
+
+	if (frames.is_null()) {
 		frame = 0;
 	} else {
 		set_frame(frame);
@@ -283,7 +296,7 @@ Ref<SpriteFrames> AnimatedSprite2D::get_sprite_frames() const {
 }
 
 void AnimatedSprite2D::set_frame(int p_frame) {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
 
@@ -318,7 +331,7 @@ void AnimatedSprite2D::set_speed_scale(double p_speed_scale) {
 
 	speed_scale = MAX(p_speed_scale, 0.0f);
 
-	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed
+	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed.
 	_reset_timeout();
 	timeout -= elapsed;
 }
@@ -378,6 +391,7 @@ void AnimatedSprite2D::set_playing(bool p_playing) {
 	playing = p_playing;
 	_reset_timeout();
 	set_process_internal(playing);
+	notify_property_list_changed();
 }
 
 bool AnimatedSprite2D::is_playing() const {

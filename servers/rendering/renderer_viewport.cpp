@@ -73,33 +73,36 @@ static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport,
 }
 
 Vector<RendererViewport::Viewport *> RendererViewport::_sort_active_viewports() {
-	// We need to sort the viewports in a "topological order",
-	// children first and parents last, we use the Kahn's algorithm to achieve that.
+	// We need to sort the viewports in a "topological order", children first and
+	// parents last. We also need to keep sibling viewports in the original order
+	// from top to bottom.
 
 	Vector<Viewport *> result;
 	List<Viewport *> nodes;
 
-	for (Viewport *viewport : active_viewports) {
+	for (int i = active_viewports.size() - 1; i >= 0; --i) {
+		Viewport *viewport = active_viewports[i];
 		if (viewport->parent.is_valid()) {
 			continue;
 		}
 
 		nodes.push_back(viewport);
+		result.insert(0, viewport);
 	}
 
 	while (!nodes.is_empty()) {
-		Viewport *node = nodes[0];
+		const Viewport *node = nodes[0];
 		nodes.pop_front();
 
-		result.insert(0, node);
-
-		for (Viewport *child : active_viewports) {
+		for (int i = active_viewports.size() - 1; i >= 0; --i) {
+			Viewport *child = active_viewports[i];
 			if (child->parent != node->self) {
 				continue;
 			}
 
 			if (!nodes.find(child)) {
 				nodes.push_back(child);
+				result.insert(0, child);
 			}
 		}
 	}
@@ -714,7 +717,14 @@ void RendererViewport::draw_viewports() {
 					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 				}
 
-				blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
+				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+					Vector<BlitToScreen> blit_to_screen_vec;
+					blit_to_screen_vec.push_back(blit);
+					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blit_to_screen_vec.ptr(), 1);
+					RSG::rasterizer->end_frame(true);
+				} else {
+					blit_to_screen_list[vp->viewport_to_screen].push_back(blit);
+				}
 			}
 		}
 

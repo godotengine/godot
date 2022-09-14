@@ -1060,7 +1060,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			}
 		}
 
-		bool disconnect = c.flags & CONNECT_ONESHOT;
+		bool disconnect = c.flags & CONNECT_ONE_SHOT;
 #ifdef TOOLS_ENABLED
 		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
 			//this signal was connected from the editor, and is being edited. just don't disconnect for now
@@ -1575,7 +1575,7 @@ void Object::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(CONNECT_DEFERRED);
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
-	BIND_ENUM_CONSTANT(CONNECT_ONESHOT);
+	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
 }
 

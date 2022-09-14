@@ -115,8 +115,8 @@ public:
 	ShaderTextEditor();
 };
 
-class ShaderEditor : public PanelContainer {
-	GDCLASS(ShaderEditor, PanelContainer);
+class ShaderEditor : public MarginContainer {
+	GDCLASS(ShaderEditor, MarginContainer);
 
 	enum {
 		EDIT_UNDO,

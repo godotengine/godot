@@ -1015,7 +1015,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i left_rect(pos.x, pos.y + left_start_y, left, left_end_y - left_start_y);
 								if (left_rect.size.x > 0) {
 									Rect2i intersection = rect.intersection(left_rect);
-									if (!intersection.has_no_area() && intersection.size.x < rect.size.x) {
+									if (intersection.has_area() && intersection.size.x < rect.size.x) {
 										rect.position.x = left_rect.size.x;
 										rect.size.x = rect.size.x - intersection.size.x;
 									}
@@ -1024,7 +1024,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i right_rect(pos.x + size.x - right, pos.y + right_start_y, right, right_end_y - right_start_y);
 								if (right_rect.size.x > 0) {
 									Rect2i intersection = rect.intersection(right_rect);
-									if (!intersection.has_no_area() && right_rect.size.x < rect.size.x) {
+									if (intersection.has_area() && right_rect.size.x < rect.size.x) {
 										rect.size.x = intersection.position.x - rect.position.x;
 									}
 								}
@@ -1032,7 +1032,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i top_rect(pos.x + top_start_x, pos.y, top_end_x - top_start_x, top);
 								if (top_rect.size.y > 0) {
 									Rect2i intersection = rect.intersection(top_rect);
-									if (!intersection.has_no_area() && intersection.size.y < rect.size.y) {
+									if (intersection.has_area() && intersection.size.y < rect.size.y) {
 										rect.position.y = top_rect.size.y;
 										rect.size.y = rect.size.y - intersection.size.y;
 									}
@@ -1041,7 +1041,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 								Rect2i bottom_rect(pos.x + bottom_start_x, pos.y + size.y - bottom, bottom_end_x - bottom_start_x, bottom);
 								if (bottom_rect.size.y > 0) {
 									Rect2i intersection = rect.intersection(bottom_rect);
-									if (!intersection.has_no_area() && right_rect.size.y < rect.size.y) {
+									if (intersection.has_area() && right_rect.size.y < rect.size.y) {
 										rect.size.y = intersection.position.y - rect.position.y;
 									}
 								}
@@ -4900,6 +4900,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	show_window(main_window);
+	XSync(x11_display, False);
+	_validate_mode_on_map(main_window);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
@@ -5046,24 +5048,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 	cursor_set_shape(CURSOR_BUSY);
 
-	Vector<XEvent> save_events;
-	while (XPending(x11_display) > 0) {
-		XEvent xevent{ 0 };
-		XNextEvent(x11_display, &xevent);
-		if (xevent.type == ConfigureNotify) {
-			_window_changed(&xevent);
-		} else {
-			// Don't discard this event, we must resend it...
-			save_events.push_back(xevent);
-		}
+	// Search the X11 event queue for ConfigureNotify events and process all
+	// that are currently queued early, so we can get the final window size
+	// for correctly drawing of the bootsplash.
+	XEvent config_event;
+	while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+		_window_changed(&config_event);
 	}
-
-	// Resend events that would have been dropped by the early event queue
-	// processing we just performed.
-	for (XEvent &ev : save_events) {
-		XSendEvent(x11_display, ev.xany.window, False, 0, &ev);
-	}
-
 	events_thread.start(_poll_events_thread, this);
 
 	_update_real_mouse_position(windows[MAIN_WINDOW_ID]);

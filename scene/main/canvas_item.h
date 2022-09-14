@@ -198,6 +198,7 @@ public:
 	void hide();
 
 	void queue_redraw();
+	void move_to_front();
 
 	void set_clip_children(bool p_enabled);
 	bool is_clipping_children() const;

@@ -260,7 +260,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		}
 		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
 			const AABB &bone = p_surface.bone_aabbs[i];
-			if (!bone.has_no_volume()) {
+			if (bone.has_volume()) {
 				mesh->bone_aabbs.write[i].merge_with(bone);
 			}
 		}
@@ -350,6 +350,10 @@ RS::SurfaceData MeshStorage::mesh_get_surface(RID p_mesh, int p_surface) const {
 
 	if (s.attribute_buffer != 0) {
 		sd.attribute_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.attribute_buffer, s.attribute_buffer_size);
+	}
+
+	if (s.skin_buffer != 0) {
+		sd.skin_data = Utilities::buffer_get_data(GL_ARRAY_BUFFER, s.skin_buffer, s.skin_buffer_size);
 	}
 
 	sd.vertex_count = s.vertex_count;
@@ -550,6 +554,21 @@ void MeshStorage::mesh_clear(RID p_mesh) {
 			glDeleteBuffers(1, &s.index_buffer);
 			s.index_buffer = 0;
 		}
+
+		if (s.versions) {
+			memfree(s.versions); //reallocs, so free with memfree.
+		}
+
+		if (s.lod_count) {
+			for (uint32_t j = 0; j < s.lod_count; j++) {
+				if (s.lods[j].index_buffer != 0) {
+					glDeleteBuffers(1, &s.lods[j].index_buffer);
+					s.lods[j].index_buffer = 0;
+				}
+			}
+			memdelete_arr(s.lods);
+		}
+
 		memdelete(mesh->surfaces[i]);
 	}
 	if (mesh->surfaces) {

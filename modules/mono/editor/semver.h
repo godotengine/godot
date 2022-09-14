@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotGestureHandler.java                                             */
+/*  semver.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,60 +28,79 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.input;
+#ifndef SEMVER_H
+#define SEMVER_H
 
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotRenderView;
+#include "core/string/ustring.h"
+#include "modules/regex/regex.h"
 
-import android.view.GestureDetector;
-import android.view.MotionEvent;
+// <sys/sysmacros.h> is included somewhere, which defines major(dev) to gnu_dev_major(dev)
+#if defined(major)
+#undef major
+#endif
+#if defined(minor)
+#undef minor
+#endif
 
-/**
- * Handles gesture input related events for the {@link GodotRenderView} view.
- * https://developer.android.com/reference/android/view/GestureDetector.SimpleOnGestureListener
- */
-public class GodotGestureHandler extends GestureDetector.SimpleOnGestureListener {
-	private final GodotRenderView mRenderView;
+namespace godotsharp {
 
-	public GodotGestureHandler(GodotRenderView godotView) {
-		mRenderView = godotView;
+struct SemVer {
+private:
+	static bool parse_digit_only_field(const String &p_field, uint64_t &r_result);
+
+	static int cmp(const SemVer &p_a, const SemVer &p_b);
+
+public:
+	int major = 0;
+	int minor = 0;
+	int patch = 0;
+	String prerelease;
+	String build_metadata;
+
+	bool operator==(const SemVer &b) const {
+		return cmp(*this, b) == 0;
 	}
 
-	private void queueEvent(Runnable task) {
-		mRenderView.queueOnRenderThread(task);
+	bool operator!=(const SemVer &b) const {
+		return !operator==(b);
 	}
 
-	@Override
-	public boolean onDown(MotionEvent event) {
-		super.onDown(event);
-		//Log.i("GodotGesture", "onDown");
-		return true;
+	bool operator<(const SemVer &b) const {
+		return cmp(*this, b) < 0;
 	}
 
-	@Override
-	public boolean onSingleTapConfirmed(MotionEvent event) {
-		super.onSingleTapConfirmed(event);
-		return true;
+	bool operator>(const SemVer &b) const {
+		return cmp(*this, b) > 0;
 	}
 
-	@Override
-	public void onLongPress(MotionEvent event) {
-		//Log.i("GodotGesture", "onLongPress");
+	bool operator<=(const SemVer &b) const {
+		return cmp(*this, b) <= 0;
 	}
 
-	@Override
-	public boolean onDoubleTap(MotionEvent event) {
-		//Log.i("GodotGesture", "onDoubleTap");
-		final int x = Math.round(event.getX());
-		final int y = Math.round(event.getY());
-		final int buttonMask = event.getButtonState();
-		GodotLib.doubleTap(buttonMask, x, y);
-		return true;
+	bool operator>=(const SemVer &b) const {
+		return cmp(*this, b) >= 0;
 	}
 
-	@Override
-	public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-		//Log.i("GodotGesture", "onFling");
-		return true;
+	SemVer() {}
+
+	SemVer(int p_major, int p_minor, int p_patch,
+			const String &p_prerelease, const String &p_build_metadata) :
+			major(p_major),
+			minor(p_minor),
+			patch(p_patch),
+			prerelease(p_prerelease),
+			build_metadata(p_build_metadata) {
 	}
-}
+};
+
+struct SemVerParser {
+private:
+	RegEx regex;
+
+public:
+	bool parse(const String &p_ver_text, SemVer &r_semver);
+};
+
+} //namespace godotsharp
+
+#endif // SEMVER_H

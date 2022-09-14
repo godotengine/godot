@@ -63,13 +63,14 @@
 # DK0492 <doriankaczmarek28@gmail.com>, 2022.
 # Dawid Skubij <davidsd@tlen.pl>, 2022.
 # kingofsponges <q.patex.q@gmail.com>, 2022.
+# Patryk Morawski <gormit7@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-04 06:38+0000\n"
-"Last-Translator: kingofsponges <q.patex.q@gmail.com>\n"
+"PO-Revision-Date: 2022-08-17 18:20+0000\n"
+"Last-Translator: Patryk Morawski <gormit7@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -4384,7 +4385,7 @@ msgstr "Zawsze Zamykaj Wyjście Po Zatrzymaniu"
 
 #: editor/editor_node.cpp
 msgid "Save On Focus Loss"
-msgstr ""
+msgstr "Zapisz przy utracie skupienia"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 #, fuzzy
@@ -4436,7 +4437,7 @@ msgstr "Ścieżka do projektu:"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
-msgstr ""
+msgstr "Domyślny krok zmiennoprzecinkowy"
 
 #: editor/editor_node.cpp scene/gui/tree.cpp
 #, fuzzy
@@ -4445,15 +4446,15 @@ msgstr "Wyłączony przycisk"
 
 #: editor/editor_node.cpp
 msgid "Auto Unfold Foreign Scenes"
-msgstr ""
+msgstr "Automatyczne rozwijanie zagranicznych scen"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector2 Editing"
-msgstr ""
+msgstr "Edycja pozioma Vector2"
 
 #: editor/editor_node.cpp
 msgid "Horizontal Vector Types Editing"
-msgstr ""
+msgstr "Edycja poziomych typów wektorów"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -4578,6 +4579,7 @@ msgstr "Różne narzędzia dla scen lub projektu."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -5338,7 +5340,7 @@ msgstr "Pokaż wszystko"
 
 #: editor/editor_settings.cpp
 msgid "Custom Display Scale"
-msgstr ""
+msgstr "Niestandardowa skala wyświetlania"
 
 #: editor/editor_settings.cpp
 msgid "Main Font Size"
@@ -5346,15 +5348,15 @@ msgstr "Rozmiar głównej czcionki"
 
 #: editor/editor_settings.cpp
 msgid "Code Font Size"
-msgstr ""
+msgstr "Rozmiar czcionki kodu"
 
 #: editor/editor_settings.cpp
 msgid "Font Antialiased"
-msgstr ""
+msgstr "Wygładzana czcionka"
 
 #: editor/editor_settings.cpp
 msgid "Font Hinting"
-msgstr ""
+msgstr "Czcionka podpowiedzi"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5377,11 +5379,11 @@ msgstr "Przygaś edytor przy wyskakującym oknie"
 
 #: editor/editor_settings.cpp main/main.cpp
 msgid "Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "Niski tryb uśpienia procesora (µsec)"
 
 #: editor/editor_settings.cpp
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr ""
+msgstr "Nieskoncentrowany tryb uśpienia w trybie niskiego procesora (µsec)"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5394,7 +5396,7 @@ msgstr "Automatycznie otwieraj zrzuty ekranu"
 
 #: editor/editor_settings.cpp
 msgid "Max Array Dictionary Items Per Page"
-msgstr ""
+msgstr "Maksymalna liczba pozycji słownika tablicy na stronie"
 
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp scene/gui/control.cpp
@@ -5408,7 +5410,7 @@ msgstr "Profil"
 
 #: editor/editor_settings.cpp
 msgid "Icon And Font Color"
-msgstr ""
+msgstr "Kolor ikony i czcionki"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5426,7 +5428,7 @@ msgstr "Kontrast"
 
 #: editor/editor_settings.cpp
 msgid "Relationship Line Opacity"
-msgstr ""
+msgstr "Przezroczystość linii relacji"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5440,7 +5442,7 @@ msgstr "Brzegowe piksele"
 
 #: editor/editor_settings.cpp
 msgid "Use Graph Node Headers"
-msgstr ""
+msgstr "Użyj wykresu nagłówków węzłów"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5484,7 +5486,7 @@ msgstr "Kopiuj zasób"
 
 #: editor/editor_settings.cpp
 msgid "Safe Save On Backup Then Rename"
-msgstr ""
+msgstr "Bezpieczne zapisywanie kopii zapasowej, a następnie zmiana nazwy"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5507,7 +5509,7 @@ msgstr "Pozyskaj drzewo sceny"
 
 #: editor/editor_settings.cpp
 msgid "Start Create Dialog Fully Expanded"
-msgstr ""
+msgstr "Rozpocznij tworzenie w pełni rozwiniętego okna dialogowego"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5559,7 +5561,7 @@ msgstr "Podświetl obecną linię"
 
 #: editor/editor_settings.cpp editor/plugins/script_text_editor.cpp
 msgid "Highlight Type Safe Lines"
-msgstr ""
+msgstr "Wyróżnij typy bezpiecznych linii"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5598,7 +5600,7 @@ msgstr "Płynne przewijanie"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "V Scroll Speed"
-msgstr ""
+msgstr "Pionowa szybkość przewijania"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5611,7 +5613,7 @@ msgstr "Szerokość minimapy"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
-msgstr ""
+msgstr "Historia nawigacji dodatkowych przycisków myszy"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5620,7 +5622,7 @@ msgstr "Wybór GridMap"
 
 #: editor/editor_settings.cpp
 msgid "Stay In Script Editor On Node Selected"
-msgstr ""
+msgstr "Pozostań w edytorze skryptów na wybranym węźle"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -5638,7 +5640,7 @@ msgstr "Numer linii:"
 
 #: editor/editor_settings.cpp
 msgid "Show Bookmark Gutter"
-msgstr ""
+msgstr "Pokaż ciek zakładek"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5647,23 +5649,23 @@ msgstr "Pomiń punkty wstrzymania"
 
 #: editor/editor_settings.cpp
 msgid "Show Info Gutter"
-msgstr ""
+msgstr "Pokaż ciek informacji"
 
 #: editor/editor_settings.cpp
 msgid "Code Folding"
-msgstr ""
+msgstr "Zawijanie kodu"
 
 #: editor/editor_settings.cpp
 msgid "Word Wrap"
-msgstr ""
+msgstr "Zawijanie tekstu"
 
 #: editor/editor_settings.cpp
 msgid "Show Line Length Guidelines"
-msgstr ""
+msgstr "Pokaż wytyczne dotyczące długości linii"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Soft Column"
-msgstr ""
+msgstr "Wytyczne dotyczące długości linii miękkiej kolumny"
 
 #: editor/editor_settings.cpp
 msgid "Line Length Guideline Hard Column"
@@ -7517,7 +7519,8 @@ msgid "8 Bit"
 msgstr ""
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr ""
 
@@ -15574,18 +15577,19 @@ msgstr ""
 msgid "Make Local"
 msgstr "Uczyń lokalnym"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
-msgstr ""
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Nazwa węzła:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Enable Scene Unique Name"
-msgstr "Nazwa węzła:"
+msgid "Unique names already used by another node in the scene:"
+msgstr "Nazwa jest już użyta przez inną funkcję/zmienną/sygnał:"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
+#: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Disable Scene Unique Name"
+msgid "Disable Scene Unique Name(s)"
 msgstr "Nazwa węzła:"
 
 #: editor/scene_tree_dock.cpp
@@ -15787,6 +15791,11 @@ msgid "Button Group"
 msgstr "Grupa przycisków"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
+msgid "Disable Scene Unique Name"
+msgstr "Nazwa węzła:"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(łączony teraz)"
 
@@ -15860,6 +15869,10 @@ msgstr ""
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nieprawidłowa nazwa węzła, następujące znaki są niedozwolone:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17789,6 +17802,21 @@ msgstr "Zbuduj rozwiązanie"
 msgid "Auto Update Project"
 msgstr "Projekt bez nazwy"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Pokaż wszystko"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Wybierz katalog"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Wybierz katalog"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "Koniec śladu stosu wewnętrznego wyjątku"
@@ -19645,6 +19673,11 @@ msgstr "NiestandardowyWęzeł"
 msgid "Custom BG Color"
 msgstr "NiestandardowyWęzeł"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Rozwiń wszystko"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -20537,6 +20570,12 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
+msgstr ""
+
+#: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
 msgstr ""
 
 #: platform/uwp/export/export.cpp

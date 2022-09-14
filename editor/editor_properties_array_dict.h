@@ -151,7 +151,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	Button *edit = nullptr;
 	MarginContainer *container = nullptr;
 	VBoxContainer *property_vbox = nullptr;
-	EditorSpinSlider *size_sliderv;
+	EditorSpinSlider *size_sliderv = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
 

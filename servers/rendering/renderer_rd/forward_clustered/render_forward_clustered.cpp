@@ -124,7 +124,7 @@ void RenderForwardClustered::RenderBufferDataForwardClustered::configure(RenderS
 	render_buffers = p_render_buffers;
 	ERR_FAIL_NULL(render_buffers);
 
-	bool msaa_3d = render_buffers->get_msaa_3d();
+	RS::ViewportMSAA msaa_3d = render_buffers->get_msaa_3d();
 
 	if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
 		RD::DataFormat format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
@@ -1609,7 +1609,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			for (uint32_t v = 0; v < p_render_data->view_count; v++) {
 				specular_views[v] = rb_data->get_specular(v);
 			}
-			_process_ssr(rb, color_only_framebuffer, normal_roughness_views, rb_data->get_specular(), specular_views, Color(0, 0, 0, 1), p_render_data->environment, p_render_data->view_projection, p_render_data->view_eye_offset, rb->get_msaa_3d() == RS::VIEWPORT_MSAA_DISABLED);
+			_process_ssr(rb, color_only_framebuffer, normal_roughness_views, rb_data->get_specular(), specular_views, p_render_data->environment, p_render_data->view_projection, p_render_data->view_eye_offset, rb->get_msaa_3d() == RS::VIEWPORT_MSAA_DISABLED);
 			RD::get_singleton()->draw_command_end_label();
 		} else {
 			//just mix specular back

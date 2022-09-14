@@ -290,7 +290,7 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date(bool p_utc) const {
+OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {
 		GetSystemTime(&systemtime);
@@ -305,28 +305,16 @@ OS::Date OS_Windows::get_date(bool p_utc) const {
 		daylight = true;
 	}
 
-	Date date;
-	date.day = systemtime.wDay;
-	date.month = Month(systemtime.wMonth);
-	date.weekday = Weekday(systemtime.wDayOfWeek);
-	date.year = systemtime.wYear;
-	date.dst = daylight;
-	return date;
-}
-
-OS::Time OS_Windows::get_time(bool p_utc) const {
-	SYSTEMTIME systemtime;
-	if (p_utc) {
-		GetSystemTime(&systemtime);
-	} else {
-		GetLocalTime(&systemtime);
-	}
-
-	Time time;
-	time.hour = systemtime.wHour;
-	time.minute = systemtime.wMinute;
-	time.second = systemtime.wSecond;
-	return time;
+	DateTime dt;
+	dt.year = systemtime.wYear;
+	dt.month = Month(systemtime.wMonth);
+	dt.day = systemtime.wDay;
+	dt.weekday = Weekday(systemtime.wDayOfWeek);
+	dt.hour = systemtime.wHour;
+	dt.minute = systemtime.wMinute;
+	dt.second = systemtime.wSecond;
+	dt.dst = daylight;
+	return dt;
 }
 
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
@@ -1145,6 +1133,21 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 #endif
 
 	DisplayServerWindows::register_windows_driver();
+
+	// Enable ANSI escape code support on Windows 10 v1607 (Anniversary Update) and later.
+	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.
+	//
+	// NOTE: The engine does not use ANSI escape codes to color error/warning messages; it uses Windows API calls instead.
+	// Therefore, error/warning messages are still colored on Windows versions older than 10.
+	HANDLE stdoutHandle;
+	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD outMode = 0;
+	outMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+	if (!SetConsoleMode(stdoutHandle, outMode)) {
+		// Windows 8.1 or below, or Windows 10 prior to Anniversary Update.
+		print_verbose("Can't set the ENABLE_VIRTUAL_TERMINAL_PROCESSING Windows console mode. `print_rich()` will not work as expected.");
+	}
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(WindowsTerminalLogger));

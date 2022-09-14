@@ -209,7 +209,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	if (p_by_keyboard) {
 		for (int i = 0; i < submenu_pum->get_item_count(); i++) {
 			if (!submenu_pum->is_item_disabled(i)) {
-				submenu_pum->set_current_index(i);
+				submenu_pum->set_focused_item(i);
 				break;
 			}
 		}
@@ -1547,7 +1547,7 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 	return items[p_idx].shortcut_is_disabled;
 }
 
-void PopupMenu::set_current_index(int p_idx) {
+void PopupMenu::set_focused_item(int p_idx) {
 	if (p_idx != -1) {
 		ERR_FAIL_INDEX(p_idx, items.size());
 	}
@@ -1564,7 +1564,7 @@ void PopupMenu::set_current_index(int p_idx) {
 	control->queue_redraw();
 }
 
-int PopupMenu::get_current_index() const {
+int PopupMenu::get_focused_item() const {
 	return mouse_over;
 }
 
@@ -2057,8 +2057,8 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "index"), &PopupMenu::get_item_shortcut);
 	ClassDB::bind_method(D_METHOD("get_item_indent", "index"), &PopupMenu::get_item_indent);
 
-	ClassDB::bind_method(D_METHOD("set_current_index", "index"), &PopupMenu::set_current_index);
-	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
+	ClassDB::bind_method(D_METHOD("set_focused_item", "index"), &PopupMenu::set_focused_item);
+	ClassDB::bind_method(D_METHOD("get_focused_item"), &PopupMenu::get_focused_item);
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &PopupMenu::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 

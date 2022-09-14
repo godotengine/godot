@@ -83,13 +83,16 @@
 # Sajeg <jfx@posteo.de>, 2022.
 # Tobias Jacobs <tobi@jacobs.rocks>, 2022.
 # JeremyStarTM <jeremystartm@tuta.io>, 2022.
+# Tim <sakul8826@gmail.com>, 2022.
+# Anonynonymouse <tom.spaine60388@gmail.com>, 2022.
+# Felix Bitsch <felix.a.bitsch@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-31 18:34+0000\n"
-"Last-Translator: JeremyStarTM <jeremystartm@tuta.io>\n"
+"PO-Revision-Date: 2022-08-30 03:11+0000\n"
+"Last-Translator: Felix Bitsch <felix.a.bitsch@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -97,7 +100,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -478,7 +481,7 @@ msgstr "Gedrückt"
 
 #: core/os/input_event.cpp
 msgid "Scancode"
-msgstr "Tastencode"
+msgstr "Scancode"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -1633,7 +1636,7 @@ msgstr "Methodenaufrufsspurschlüssel hinzufügen"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object:"
-msgstr "Methode im Objekt nicht gefunden:"
+msgstr "Methode nicht im Objekt gefunden:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
@@ -2815,9 +2818,8 @@ msgid "Project export for platform:"
 msgstr "Projektexport für Plattform:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Fertiggestellt mit Fehlern."
+msgstr "Unter Warnungen fertiggestellt."
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
@@ -3501,7 +3503,7 @@ msgstr "Stile"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Aufzählungstypen"
+msgstr "Aufzählungen"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -4564,6 +4566,7 @@ msgstr "Sonstiges Projekt oder szenenübergreifende Werkzeuge."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp modules/mono/editor/csharp_project.cpp
+#: modules/mono/godotsharp_dirs.cpp
 msgid "Project"
 msgstr "Projekt"
 
@@ -5462,7 +5465,7 @@ msgstr "Vorschaubildgröße"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
-msgstr "Leisten"
+msgstr "Docks"
 
 #: editor/editor_settings.cpp
 msgid "Scene Tree"
@@ -5571,7 +5574,7 @@ msgstr "Auswahl ziehen und fallen lassen"
 
 #: editor/editor_settings.cpp
 msgid "Stay In Script Editor On Node Selected"
-msgstr "Im Skript Editor bei ausgewähltem Node bleiben"
+msgstr "Im Skript-Editor bei ausgewähltem Node bleiben"
 
 #: editor/editor_settings.cpp
 msgid "Appearance"
@@ -7339,7 +7342,8 @@ msgid "8 Bit"
 msgstr "8-Bit"
 
 #: editor/import/resource_importer_wav.cpp main/main.cpp
-#: modules/mono/editor/csharp_project.cpp modules/mono/mono_gd/gd_mono.cpp
+#: modules/mono/editor/csharp_project.cpp modules/mono/godotsharp_dirs.cpp
+#: modules/mono/mono_gd/gd_mono.cpp
 msgid "Mono"
 msgstr "Mono"
 
@@ -15359,17 +15363,20 @@ msgstr ""
 msgid "Make Local"
 msgstr "Lokal machen"
 
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Another node already uses this unique name in the scene."
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Enable Scene Unique Name(s)"
+msgstr "Szenen-eindeutigen Namen aktivieren"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Unique names already used by another node in the scene:"
 msgstr ""
 "Ein anderes Node nutzt schon diesen einzigartigen Namen in dieser Szene."
 
 #: editor/scene_tree_dock.cpp
-msgid "Enable Scene Unique Name"
-msgstr "Szenen-eindeutigen Namen aktivieren"
-
-#: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
-msgid "Disable Scene Unique Name"
+#, fuzzy
+msgid "Disable Scene Unique Name(s)"
 msgstr "Szenen-eindeutigen Namen deaktivieren"
 
 #: editor/scene_tree_dock.cpp
@@ -15569,6 +15576,10 @@ msgid "Button Group"
 msgstr "Knopf-Gruppe"
 
 #: editor/scene_tree_editor.cpp
+msgid "Disable Scene Unique Name"
+msgstr "Szenen-eindeutigen Namen deaktivieren"
+
+#: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
 msgstr "(Verbindung von)"
 
@@ -15646,6 +15657,11 @@ msgstr ""
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr ""
 "Ungültiger Name für ein Node, die folgenden Zeichen sind nicht gestattet:"
+
+#: editor/scene_tree_editor.cpp
+msgid "Another node already uses this unique name in the scene."
+msgstr ""
+"Ein anderes Node nutzt schon diesen einzigartigen Namen in dieser Szene."
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -17427,6 +17443,21 @@ msgstr "Solution bauen"
 msgid "Auto Update Project"
 msgstr "Projekt automatisch aktualisieren"
 
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Assembly Name"
+msgstr "Anzeigename"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "Solution Directory"
+msgstr "Wähle ein Verzeichnis"
+
+#: modules/mono/godotsharp_dirs.cpp
+#, fuzzy
+msgid "C# Project Directory"
+msgstr "Wähle ein Verzeichnis"
+
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
 msgstr "Ende des inneren Exception-Stack-Traces"
@@ -19192,6 +19223,11 @@ msgstr "Eigene Hintergrundfarbe verwenden"
 msgid "Custom BG Color"
 msgstr "Eigene Hintergrundfarbe"
 
+#: platform/iphone/export/export.cpp
+#, fuzzy
+msgid "Export Icons"
+msgstr "Export-Icon"
+
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
 msgid "Prepare Templates"
@@ -19653,8 +19689,8 @@ msgid ""
 "Could not start codesign executable, make sure Xcode command line tools are "
 "installed."
 msgstr ""
-"Codesign-Anwendung konnte nicht gestartet werden, stelle sicher dass die "
-"Xcode-Kommandozeilen-Tools installiert sind."
+"Codesign-Anwendung konnte nicht gestartet werden, bitte sicher stellen dass "
+"die Xcode-Kommandozeilen-Hilfsprogramme installiert sind."
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "No identity found."
@@ -20022,6 +20058,12 @@ msgid "Show Name On Square 310 X 310"
 msgstr "Zeige Name bei Viereck 310 X 310"
 
 #: platform/uwp/export/export.cpp
+msgid ""
+"Godot's Mono version does not support the UWP platform. Use the standard "
+"build (no C# support) if you wish to target UWP."
+msgstr ""
+
+#: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
 msgstr "Ungültiger Paket-Kurzname."
 
@@ -20146,21 +20188,19 @@ msgid "Could not find wine executable at \"%s\"."
 msgstr "Anwendung wine konnte nicht gefunden werden in „%s“."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start rcedit executable. Configure rcedit path in the Editor "
 "Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
 "Resources\" in the export preset."
 msgstr ""
 "Anwendung rcedit konnte nicht gestartet werden. Bitte rcedit-Pfad in "
-"Editoreinstellungen festlegen (Export > Windows > Rcedit)."
+"Editoreinstellungen festlegen (Export > Windows > Rcedit) oder die "
+"Einstellung „Application > Modify Resources“ in der Exportvorlage "
+"deaktivieren."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "rcedit failed to modify executable: %s."
-msgstr ""
-"Modifikation der Anwendung durch rcedit fehlgeschlagen:\n"
-"%s"
+msgstr "Modifikation der Anwendung durch rcedit fehlgeschlagen: %s."
 
 #: platform/windows/export/export.cpp
 msgid "Could not find signtool executable at \"%s\"."
@@ -20179,21 +20219,18 @@ msgid "Invalid timestamp server."
 msgstr "Ungültiger Zeitstempelserver."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid ""
 "Could not start signtool executable. Configure signtool path in the Editor "
 "Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
 "export preset."
 msgstr ""
 "Anwendung signtool konnte nicht gestartet werden. Bitte signtool-Pfad in "
-"Editoreinstellungen festlegen (Export > Windows > Signtool)."
+"Editoreinstellungen festlegen (Export > Windows > Signtool) oder Einstellung "
+"„Codesign“ in Exportvorlage deaktivieren."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Signtool failed to sign executable: %s."
-msgstr ""
-"Signieren der Anwendung durch Signtool ist fehlgeschlagen:\n"
-"%s"
+msgstr "Signieren der Anwendung durch Signtool ist fehlgeschlagen: %s."
 
 #: platform/windows/export/export.cpp
 msgid "Failed to remove temporary file \"%s\"."

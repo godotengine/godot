@@ -52,7 +52,6 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -317,7 +316,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (!error.is_empty()) {
 			tabs->set_current_tab(0);
 		}
-		profiler->set_enabled(false);
+		profiler->set_enabled(false, false);
 		inspector->clear_cache(); // Take a chance to force remote objects update.
 
 	} else if (p_msg == "debug_exit") {
@@ -327,7 +326,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_update_buttons_state();
 		_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 		emit_signal(SNAME("breaked"), false, false, "", false);
-		profiler->set_enabled(true);
+		profiler->set_enabled(true, false);
 		profiler->disable_seeking();
 	} else if (p_msg == "set_pid") {
 		ERR_FAIL_COND(p_data.size() < 1);
@@ -916,6 +915,8 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_clear_errors_list();
 	stop();
 
+	profiler->set_enabled(true, true);
+
 	peer = p_peer;
 	ERR_FAIL_COND(p_peer.is_null());
 
@@ -970,6 +971,8 @@ void ScriptEditorDebugger::stop() {
 	node_path_cache.clear();
 	res_path_cache.clear();
 	profiler_signature.clear();
+
+	profiler->set_enabled(true, false);
 
 	inspector->edit(nullptr);
 	_update_buttons_state();

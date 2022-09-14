@@ -194,7 +194,7 @@ String Engine::get_architecture_name() const {
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
 
-#elif defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7S__) || defined(_M_ARM)
+#elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
 
 #elif defined(__riscv)

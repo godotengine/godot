@@ -113,6 +113,10 @@ void NavigationLink2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 Rect2 NavigationLink2D::_edit_get_rect() const {
+	if (!is_inside_tree()) {
+		return Rect2();
+	}
+
 	real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());
 
 	Rect2 rect(get_start_location(), Size2());

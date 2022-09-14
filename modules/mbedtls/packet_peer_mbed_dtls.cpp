@@ -32,7 +32,7 @@
 #include "mbedtls/platform_util.h"
 
 #include "core/io/file_access.h"
-#include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tls.h"
 
 int PacketPeerMbedDTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 	if (buf == nullptr || len == 0) {
@@ -79,7 +79,7 @@ int PacketPeerMbedDTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 }
 
 void PacketPeerMbedDTLS::_cleanup() {
-	ssl_ctx->clear();
+	tls_ctx->clear();
 	base = Ref<PacketPeer>();
 	status = STATUS_DISCONNECTED;
 }
@@ -91,16 +91,16 @@ int PacketPeerMbedDTLS::_set_cookie() {
 	uint16_t port = base->get_packet_port();
 	memcpy(client_id, addr.get_ipv6(), 16);
 	memcpy(&client_id[16], (uint8_t *)&port, 2);
-	return mbedtls_ssl_set_client_transport_id(ssl_ctx->get_context(), client_id, 18);
+	return mbedtls_ssl_set_client_transport_id(tls_ctx->get_context(), client_id, 18);
 }
 
 Error PacketPeerMbedDTLS::_do_handshake() {
 	int ret = 0;
-	while ((ret = mbedtls_ssl_handshake(ssl_ctx->get_context())) != 0) {
+	while ((ret = mbedtls_ssl_handshake(tls_ctx->get_context())) != 0) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 			if (ret != MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED) {
 				ERR_PRINT("TLS handshake error: " + itos(ret));
-				SSLContextMbedTLS::print_mbedtls_error(ret);
+				TLSContextMbedTLS::print_mbedtls_error(ret);
 			}
 			_cleanup();
 			status = STATUS_ERROR;
@@ -121,12 +121,12 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 	int ret = 0;
 	int authmode = p_validate_certs ? MBEDTLS_SSL_VERIFY_REQUIRED : MBEDTLS_SSL_VERIFY_NONE;
 
-	Error err = ssl_ctx->init_client(MBEDTLS_SSL_TRANSPORT_DATAGRAM, authmode, p_ca_certs);
+	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_DATAGRAM, authmode, p_ca_certs);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	mbedtls_ssl_set_hostname(ssl_ctx->get_context(), p_for_hostname.utf8().get_data());
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
-	mbedtls_ssl_set_timer_cb(ssl_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
+	mbedtls_ssl_set_hostname(tls_ctx->get_context(), p_for_hostname.utf8().get_data());
+	mbedtls_ssl_set_bio(tls_ctx->get_context(), this, bio_send, bio_recv, nullptr);
+	mbedtls_ssl_set_timer_cb(tls_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
 
 	status = STATUS_HANDSHAKING;
 
@@ -139,13 +139,13 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 }
 
 Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain, Ref<CookieContextMbedTLS> p_cookies) {
-	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert, p_cookies);
+	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert, p_cookies);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	base = p_base;
 	base->set_blocking_mode(false);
 
-	mbedtls_ssl_session_reset(ssl_ctx->get_context());
+	mbedtls_ssl_session_reset(tls_ctx->get_context());
 
 	int ret = _set_cookie();
 	if (ret != 0) {
@@ -153,8 +153,8 @@ Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> 
 		ERR_FAIL_V_MSG(FAILED, "Error setting DTLS client cookie");
 	}
 
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
-	mbedtls_ssl_set_timer_cb(ssl_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
+	mbedtls_ssl_set_bio(tls_ctx->get_context(), this, bio_send, bio_recv, nullptr);
+	mbedtls_ssl_set_timer_cb(tls_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
 
 	status = STATUS_HANDSHAKING;
 
@@ -173,11 +173,11 @@ Error PacketPeerMbedDTLS::put_packet(const uint8_t *p_buffer, int p_bytes) {
 		return OK;
 	}
 
-	int ret = mbedtls_ssl_write(ssl_ctx->get_context(), p_buffer, p_bytes);
+	int ret = mbedtls_ssl_write(tls_ctx->get_context(), p_buffer, p_bytes);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		ret = 0; // non blocking io
 	} else if (ret <= 0) {
-		SSLContextMbedTLS::print_mbedtls_error(ret);
+		TLSContextMbedTLS::print_mbedtls_error(ret);
 		_cleanup();
 		return ERR_CONNECTION_ERROR;
 	}
@@ -190,7 +190,7 @@ Error PacketPeerMbedDTLS::get_packet(const uint8_t **r_buffer, int &r_bytes) {
 
 	r_bytes = 0;
 
-	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), packet_buffer, PACKET_BUFFER_SIZE);
+	int ret = mbedtls_ssl_read(tls_ctx->get_context(), packet_buffer, PACKET_BUFFER_SIZE);
 	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
 		ret = 0; // non blocking io
 	} else if (ret <= 0) {
@@ -200,7 +200,7 @@ Error PacketPeerMbedDTLS::get_packet(const uint8_t **r_buffer, int &r_bytes) {
 		} else {
 			_cleanup();
 			status = STATUS_ERROR;
-			SSLContextMbedTLS::print_mbedtls_error(ret);
+			TLSContextMbedTLS::print_mbedtls_error(ret);
 		}
 		return ERR_CONNECTION_ERROR;
 	}
@@ -220,7 +220,7 @@ void PacketPeerMbedDTLS::poll() {
 
 	ERR_FAIL_COND(!base.is_valid());
 
-	int ret = mbedtls_ssl_read(ssl_ctx->get_context(), nullptr, 0);
+	int ret = mbedtls_ssl_read(tls_ctx->get_context(), nullptr, 0);
 
 	if (ret < 0 && ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 		if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
@@ -229,7 +229,7 @@ void PacketPeerMbedDTLS::poll() {
 		} else {
 			_cleanup();
 			status = STATUS_ERROR;
-			SSLContextMbedTLS::print_mbedtls_error(ret);
+			TLSContextMbedTLS::print_mbedtls_error(ret);
 		}
 	}
 }
@@ -237,7 +237,7 @@ void PacketPeerMbedDTLS::poll() {
 int PacketPeerMbedDTLS::get_available_packet_count() const {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, 0);
 
-	return mbedtls_ssl_get_bytes_avail(&(ssl_ctx->ssl)) > 0 ? 1 : 0;
+	return mbedtls_ssl_get_bytes_avail(&(tls_ctx->tls)) > 0 ? 1 : 0;
 }
 
 int PacketPeerMbedDTLS::get_max_packet_size() const {
@@ -245,7 +245,7 @@ int PacketPeerMbedDTLS::get_max_packet_size() const {
 }
 
 PacketPeerMbedDTLS::PacketPeerMbedDTLS() {
-	ssl_ctx.instantiate();
+	tls_ctx.instantiate();
 }
 
 PacketPeerMbedDTLS::~PacketPeerMbedDTLS() {
@@ -261,7 +261,7 @@ void PacketPeerMbedDTLS::disconnect_from_peer() {
 		int ret = 0;
 		// Send SSL close notification, blocking, but ignore other errors.
 		do {
-			ret = mbedtls_ssl_close_notify(ssl_ctx->get_context());
+			ret = mbedtls_ssl_close_notify(tls_ctx->get_context());
 		} while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
 	}
 

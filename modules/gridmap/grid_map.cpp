@@ -226,6 +226,27 @@ bool GridMap::is_baking_navigation() {
 	return bake_navigation;
 }
 
+void GridMap::set_navigation_map(RID p_navigation_map) {
+	map_override = p_navigation_map;
+	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
+		Octant &g = *octant_map[E.key];
+		for (KeyValue<IndexKey, Octant::NavMesh> &F : g.navmesh_ids) {
+			if (F.value.region.is_valid()) {
+				NavigationServer3D::get_singleton()->region_set_map(F.value.region, map_override);
+			}
+		}
+	}
+}
+
+RID GridMap::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (is_inside_tree()) {
+		return get_world_3d()->get_navigation_map();
+	}
+	return RID();
+}
+
 void GridMap::set_navigation_layers(uint32_t p_navigation_layers) {
 	navigation_layers = p_navigation_layers;
 	_recreate_octant_data();
@@ -497,18 +518,18 @@ int GridMap::get_orthogonal_index_from_basis(const Basis &p_basis) const {
 	return 0;
 }
 
-Vector3i GridMap::world_to_map(const Vector3 &p_world_position) const {
+Vector3i GridMap::local_to_map(const Vector3 &p_world_position) const {
 	Vector3 map_position = (p_world_position / cell_size).floor();
 	return Vector3i(map_position);
 }
 
-Vector3 GridMap::map_to_world(const Vector3i &p_map_position) const {
+Vector3 GridMap::map_to_local(const Vector3i &p_map_position) const {
 	Vector3 offset = _get_offset();
-	Vector3 world_pos(
+	Vector3 local_position(
 			p_map_position.x * cell_size.x + offset.x,
 			p_map_position.y * cell_size.y + offset.y,
 			p_map_position.z * cell_size.z + offset.z);
-	return world_pos;
+	return local_position;
 }
 
 void GridMap::_octant_transform(const OctantKey &p_key) {
@@ -639,10 +660,15 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				NavigationServer3D::get_singleton()->region_set_navmesh(region, navmesh);
 				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
 				if (is_inside_tree()) {
-					NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+					if (map_override.is_valid()) {
+						NavigationServer3D::get_singleton()->region_set_map(region, map_override);
+					} else {
+						NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+					}
 				}
 				nm.region = region;
 
+#ifdef DEBUG_ENABLED
 				// add navigation debugmesh visual instances if debug is enabled
 				SceneTree *st = SceneTree::get_singleton();
 				if (st && st->is_debugging_navigation_hint()) {
@@ -650,15 +676,14 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 						RID navmesh_debug_rid = navmesh->get_debug_mesh()->get_rid();
 						nm.navmesh_debug_instance = RS::get_singleton()->instance_create();
 						RS::get_singleton()->instance_set_base(nm.navmesh_debug_instance, navmesh_debug_rid);
-						RS::get_singleton()->mesh_surface_set_material(navmesh_debug_rid, 0, st->get_debug_navigation_material()->get_rid());
 					}
 					if (is_inside_tree()) {
 						RS::get_singleton()->instance_set_scenario(nm.navmesh_debug_instance, get_world_3d()->get_scenario());
 						RS::get_singleton()->instance_set_transform(nm.navmesh_debug_instance, get_global_transform() * nm.xform);
 					}
 				}
+#endif // DEBUG_ENABLED
 			}
-
 			g.navmesh_ids[E] = nm;
 		}
 	}
@@ -757,7 +782,11 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 					NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 					NavigationServer3D::get_singleton()->region_set_navmesh(region, nm);
 					NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * F.value.xform);
-					NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+					if (map_override.is_valid()) {
+						NavigationServer3D::get_singleton()->region_set_map(region, map_override);
+					} else {
+						NavigationServer3D::get_singleton()->region_set_map(region, get_world_3d()->get_navigation_map());
+					}
 
 					F.value.region = region;
 				}
@@ -1022,6 +1051,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &GridMap::set_bake_navigation);
 	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &GridMap::is_baking_navigation);
 
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &GridMap::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &GridMap::get_navigation_map);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_layers", "layers"), &GridMap::set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layers"), &GridMap::get_navigation_layers);
 
@@ -1047,8 +1079,8 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_basis_with_orthogonal_index", "index"), &GridMap::get_basis_with_orthogonal_index);
 	ClassDB::bind_method(D_METHOD("get_orthogonal_index_from_basis", "basis"), &GridMap::get_orthogonal_index_from_basis);
 
-	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &GridMap::world_to_map);
-	ClassDB::bind_method(D_METHOD("map_to_world", "map_position"), &GridMap::map_to_world);
+	ClassDB::bind_method(D_METHOD("local_to_map", "local_position"), &GridMap::local_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &GridMap::map_to_local);
 
 	ClassDB::bind_method(D_METHOD("_update_octants_callback"), &GridMap::_update_octants_callback);
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &GridMap::resource_changed);

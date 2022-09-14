@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.cpp                                                  */
+/*  javascript_bridge_singleton.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,43 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "stream_peer_ssl.h"
+#ifndef JAVASCRIPT_BRIDGE_SINGLETON_H
+#define JAVASCRIPT_BRIDGE_SINGLETON_H
 
-#include "core/config/engine.h"
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
 
-StreamPeerSSL *(*StreamPeerSSL::_create)() = nullptr;
+class JavaScriptObject : public RefCounted {
+private:
+	GDCLASS(JavaScriptObject, RefCounted);
 
-StreamPeerSSL *StreamPeerSSL::create() {
-	if (_create) {
-		return _create();
-	}
-	return nullptr;
-}
+protected:
+	virtual bool _set(const StringName &p_name, const Variant &p_value) { return false; }
+	virtual bool _get(const StringName &p_name, Variant &r_ret) const { return false; }
+	virtual void _get_property_list(List<PropertyInfo> *p_list) const {}
+};
 
-bool StreamPeerSSL::available = false;
+class JavaScriptBridge : public Object {
+private:
+	GDCLASS(JavaScriptBridge, Object);
 
-bool StreamPeerSSL::is_available() {
-	return available;
-}
+	static JavaScriptBridge *singleton;
 
-void StreamPeerSSL::set_blocking_handshake_enabled(bool p_enabled) {
-	blocking_handshake = p_enabled;
-}
+protected:
+	static void _bind_methods();
 
-bool StreamPeerSSL::is_blocking_handshake_enabled() const {
-	return blocking_handshake;
-}
+public:
+	Variant eval(const String &p_code, bool p_use_global_exec_context = false);
+	Ref<JavaScriptObject> get_interface(const String &p_interface);
+	Ref<JavaScriptObject> create_callback(const Callable &p_callable);
+	Variant _create_object_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	void download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime = "application/octet-stream");
+	bool pwa_needs_update() const;
+	Error pwa_update();
 
-void StreamPeerSSL::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerSSL::poll);
-	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "private_key", "certificate", "chain"), &StreamPeerSSL::accept_stream, DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname", "valid_certificate"), &StreamPeerSSL::connect_to_stream, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerSSL::get_status);
-	ClassDB::bind_method(D_METHOD("get_stream"), &StreamPeerSSL::get_stream);
-	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerSSL::disconnect_from_stream);
-	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &StreamPeerSSL::set_blocking_handshake_enabled);
-	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &StreamPeerSSL::is_blocking_handshake_enabled);
+	static JavaScriptBridge *get_singleton();
+	JavaScriptBridge();
+	~JavaScriptBridge();
+};
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
-
-	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
-	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
-	BIND_ENUM_CONSTANT(STATUS_ERROR);
-	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
-}
+#endif // JAVASCRIPT_BRIDGE_SINGLETON_H

@@ -40,6 +40,9 @@ def get_flags():
     return [
         ("arch", detect_arch()),
         ("use_volk", False),
+        # Benefits of LTO for macOS (size, performance) haven't been clearly established yet.
+        # So for now we override the default value which may be set when using `production=yes`.
+        ("lto", "none"),
     ]
 
 
@@ -54,11 +57,13 @@ def get_mvk_sdk_path():
         return [int_or_zero(i) for i in a.split(".")]
 
     dirname = os.path.expanduser("~/VulkanSDK")
-    files = os.listdir(dirname)
+    if not os.path.exists(dirname):
+        return ""
 
     ver_file = "0.0.0.0"
     ver_num = ver_parse(ver_file)
 
+    files = os.listdir(dirname)
     for file in files:
         if os.path.isdir(os.path.join(dirname, file)):
             ver_comp = ver_parse(file)
@@ -145,7 +150,7 @@ def configure(env):
         env.Append(LINKFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
 
     else:  # osxcross build
-        root = os.environ.get("OSXCROSS_ROOT", 0)
+        root = os.environ.get("OSXCROSS_ROOT", "")
         if env["arch"] == "arm64":
             basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
         else:
@@ -163,6 +168,15 @@ def configure(env):
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
+
+    # LTO
+    if env["lto"] != "none":
+        if env["lto"] == "thin":
+            env.Append(CCFLAGS=["-flto=thin"])
+            env.Append(LINKFLAGS=["-flto=thin"])
+        else:
+            env.Append(CCFLAGS=["-flto"])
+            env.Append(LINKFLAGS=["-flto"])
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += ".san"
@@ -197,9 +211,7 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=["#platform/macos"])
-    env.Append(
-        CPPDEFINES=["MACOS_ENABLED", "UNIX_ENABLED", "APPLE_STYLE_KEYS", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"]
-    )
+    env.Append(CPPDEFINES=["MACOS_ENABLED", "UNIX_ENABLED", "COREAUDIO_ENABLED", "COREMIDI_ENABLED"])
     env.Append(
         LINKFLAGS=[
             "-framework",
@@ -248,7 +260,7 @@ def configure(env):
                     env.Append(LINKFLAGS=["-L" + mvk_path])
             if not mvk_found:
                 mvk_path = get_mvk_sdk_path()
-                if os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
+                if mvk_path and os.path.isfile(os.path.join(mvk_path, "libMoltenVK.a")):
                     mvk_found = True
                     env.Append(LINKFLAGS=["-L" + mvk_path])
             if not mvk_found:

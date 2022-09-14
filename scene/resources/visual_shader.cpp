@@ -3718,6 +3718,17 @@ bool VisualShaderNodeParameter::is_global_code_generated() const {
 	return global_code_generated;
 }
 
+#ifndef DISABLE_DEPRECATED
+// Kept for compatibility from 3.x to 4.0.
+bool VisualShaderNodeParameter::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "uniform_name") {
+		set_parameter_name(p_value);
+		return true;
+	}
+	return false;
+}
+#endif
+
 void VisualShaderNodeParameter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parameter_name", "name"), &VisualShaderNodeParameter::set_parameter_name);
 	ClassDB::bind_method(D_METHOD("get_parameter_name"), &VisualShaderNodeParameter::get_parameter_name);

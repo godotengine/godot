@@ -121,7 +121,7 @@ private:
 	EditorInspector *bind_editor = nullptr;
 	OptionButton *type_list = nullptr;
 	CheckBox *deferred = nullptr;
-	CheckBox *oneshot = nullptr;
+	CheckBox *one_shot = nullptr;
 	CheckButton *advanced = nullptr;
 	Vector<Control *> bind_controls;
 
@@ -153,7 +153,7 @@ public:
 	Vector<Variant> get_binds() const;
 
 	bool get_deferred() const;
-	bool get_oneshot() const;
+	bool get_one_shot() const;
 	bool is_editing() const;
 
 	void init(ConnectionData p_cd, bool p_edit = false);

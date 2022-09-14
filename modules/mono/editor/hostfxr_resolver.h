@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  hostfxr_resolver.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,66 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBEDTLS_H
-#define SSL_CONTEXT_MBEDTLS_H
+#ifndef HOSTFXR_RESOLVER_H
+#define HOSTFXR_RESOLVER_H
 
-#include "crypto_mbedtls.h"
+#include "core/string/ustring.h"
 
-#include "core/io/file_access.h"
+namespace godotsharp {
+namespace hostfxr_resolver {
 
-#include "core/object/ref_counted.h"
+bool try_get_path_from_dotnet_root(const String &p_dotnet_root, String &r_out_fxr_path);
+bool try_get_path(String &r_out_dotnet_root, String &r_out_fxr_path);
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
+} //namespace hostfxr_resolver
+} //namespace godotsharp
 
-class SSLContextMbedTLS;
-
-class CookieContextMbedTLS : public RefCounted {
-	friend class SSLContextMbedTLS;
-
-protected:
-	bool inited = false;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
-
-public:
-	Error setup();
-	void clear();
-
-	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
-};
-
-class SSLContextMbedTLS : public RefCounted {
-protected:
-	bool inited = false;
-
-public:
-	static void print_mbedtls_error(int p_ret);
-
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
-
-	mbedtls_ssl_context *get_context();
-
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
-
-#endif // SSL_CONTEXT_MBEDTLS_H
+#endif // HOSTFXR_RESOLVER_H

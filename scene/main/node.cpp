@@ -328,12 +328,21 @@ void Node::move_child(Node *p_child, int p_pos) {
 
 	// We need to check whether node is internal and move it only in the relevant node range.
 	if (p_child->_is_internal_front()) {
+		if (p_pos < 0) {
+			p_pos += data.internal_children_front;
+		}
 		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_front, vformat("Invalid new child position: %d. Child is internal.", p_pos));
 		_move_child(p_child, p_pos);
 	} else if (p_child->_is_internal_back()) {
+		if (p_pos < 0) {
+			p_pos += data.internal_children_back;
+		}
 		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_back, vformat("Invalid new child position: %d. Child is internal.", p_pos));
 		_move_child(p_child, data.children.size() - data.internal_children_back + p_pos);
 	} else {
+		if (p_pos < 0) {
+			p_pos += get_child_count(false);
+		}
 		ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child position: %d.", p_pos));
 		_move_child(p_child, p_pos + data.internal_children_front);
 	}
@@ -387,21 +396,6 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	p_child->_propagate_groups_dirty();
 
 	data.blocked--;
-}
-
-void Node::raise() {
-	if (!data.parent) {
-		return;
-	}
-
-	// Internal children move within a different index range.
-	if (_is_internal_front()) {
-		data.parent->move_child(this, data.parent->data.internal_children_front - 1);
-	} else if (_is_internal_back()) {
-		data.parent->move_child(this, data.parent->data.internal_children_back - 1);
-	} else {
-		data.parent->move_child(this, data.parent->get_child_count(false) - 1);
-	}
 }
 
 void Node::_propagate_groups_dirty() {
@@ -1131,7 +1125,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	add_child_notify(p_child);
 }
 
-void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_internal) {
+void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_internal) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
@@ -1140,7 +1134,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_i
 #endif
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 
-	_validate_child_name(p_child, p_legible_unique_name);
+	_validate_child_name(p_child, p_force_readable_name);
 	_add_child_nocheck(p_child, p_child->data.name);
 
 	if (p_internal == INTERNAL_MODE_FRONT) {
@@ -1154,7 +1148,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name, InternalMode p_i
 	}
 }
 
-void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
+void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
@@ -1167,7 +1161,7 @@ void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
 		internal = INTERNAL_MODE_BACK;
 	}
 
-	data.parent->add_child(p_sibling, p_legible_unique_name, internal);
+	data.parent->add_child(p_sibling, p_force_readable_name, internal);
 	data.parent->_move_child(p_sibling, get_index() + 1);
 }
 
@@ -1920,43 +1914,6 @@ Ref<Tween> Node::create_tween() {
 	Ref<Tween> tween = get_tree()->create_tween();
 	tween->bind_node(this);
 	return tween;
-}
-
-void Node::remove_and_skip() {
-	ERR_FAIL_COND(!data.parent);
-
-	Node *new_owner = get_owner();
-
-	List<Node *> children;
-
-	while (true) {
-		bool clear = true;
-		for (int i = 0; i < data.children.size(); i++) {
-			Node *c_node = data.children[i];
-			if (!c_node->get_owner()) {
-				continue;
-			}
-
-			remove_child(c_node);
-			c_node->_propagate_replace_owner(this, nullptr);
-			children.push_back(c_node);
-			clear = false;
-			break;
-		}
-
-		if (clear) {
-			break;
-		}
-	}
-
-	while (!children.is_empty()) {
-		Node *c_node = children.front()->get();
-		data.parent->add_child(c_node);
-		c_node->_propagate_replace_owner(nullptr, new_owner);
-		children.pop_front();
-	}
-
-	data.parent->remove_child(this);
 }
 
 void Node::set_scene_file_path(const String &p_scene_file_path) {
@@ -2787,11 +2744,11 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
-	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
 	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::_get_children, DEFVAL(false));
@@ -2816,10 +2773,8 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
 	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
-	ClassDB::bind_method(D_METHOD("raise"), &Node::raise);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
-	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
 	ClassDB::bind_method(D_METHOD("get_index", "include_internal"), &Node::get_index, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);

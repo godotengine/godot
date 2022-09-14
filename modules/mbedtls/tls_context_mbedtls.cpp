@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.cpp                                              */
+/*  tls_context_mbedtls.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "ssl_context_mbedtls.h"
+#include "tls_context_mbedtls.h"
 
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
@@ -37,7 +37,7 @@ static void my_debug(void *ctx, int level,
 	fflush(stdout);
 }
 
-void SSLContextMbedTLS::print_mbedtls_error(int p_ret) {
+void TLSContextMbedTLS::print_mbedtls_error(int p_ret) {
 	printf("mbedtls error: returned -0x%x\n\n", -p_ret);
 	fflush(stdout);
 }
@@ -82,12 +82,12 @@ CookieContextMbedTLS::~CookieContextMbedTLS() {
 	clear();
 }
 
-/// SSLContextMbedTLS
+/// TLSContextMbedTLS
 
-Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode) {
+Error TLSContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode) {
 	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This SSL context is already active");
 
-	mbedtls_ssl_init(&ssl);
+	mbedtls_ssl_init(&tls);
 	mbedtls_ssl_config_init(&conf);
 	mbedtls_ctr_drbg_init(&ctr_drbg);
 	mbedtls_entropy_init(&entropy);
@@ -110,7 +110,7 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	return OK;
 }
 
-Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies) {
+Error TLSContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies) {
 	ERR_FAIL_COND_V(!p_pkey.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!p_cert.is_valid(), ERR_INVALID_PARAMETER);
 
@@ -146,11 +146,11 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 		cookies = p_cookies;
 		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &(cookies->cookie_ctx));
 	}
-	mbedtls_ssl_setup(&ssl, &conf);
+	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
 }
 
-Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas) {
+Error TLSContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas) {
 	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, p_authmode);
 	ERR_FAIL_COND_V(err != OK, err);
 
@@ -172,15 +172,15 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 
 	// Set valid CAs
 	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), nullptr);
-	mbedtls_ssl_setup(&ssl, &conf);
+	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
 }
 
-void SSLContextMbedTLS::clear() {
+void TLSContextMbedTLS::clear() {
 	if (!inited) {
 		return;
 	}
-	mbedtls_ssl_free(&ssl);
+	mbedtls_ssl_free(&tls);
 	mbedtls_ssl_config_free(&conf);
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
@@ -198,14 +198,14 @@ void SSLContextMbedTLS::clear() {
 	inited = false;
 }
 
-mbedtls_ssl_context *SSLContextMbedTLS::get_context() {
+mbedtls_ssl_context *TLSContextMbedTLS::get_context() {
 	ERR_FAIL_COND_V(!inited, nullptr);
-	return &ssl;
+	return &tls;
 }
 
-SSLContextMbedTLS::SSLContextMbedTLS() {
+TLSContextMbedTLS::TLSContextMbedTLS() {
 }
 
-SSLContextMbedTLS::~SSLContextMbedTLS() {
+TLSContextMbedTLS::~TLSContextMbedTLS() {
 	clear();
 }
