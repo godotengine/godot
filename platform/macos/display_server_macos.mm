@@ -166,6 +166,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
 #endif
+		[wd.window_view updateLayerDelegate];
 		id = window_id_counter++;
 		windows[id] = wd;
 	}
