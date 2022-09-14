@@ -27,6 +27,7 @@
 
 #ifdef XR_USE_PLATFORM_ANDROID
 #include "android_utilities.h"
+#include <android/asset_manager_jni.h>
 #include <json/value.h>
 #endif  // XR_USE_PLATFORM_ANDROID
 
@@ -50,6 +51,14 @@ class LoaderInitData {
      * Type alias for the platform-specific structure type.
      */
     using StructType = XrLoaderInitInfoAndroidKHR;
+    /*!
+     * Native library path.
+     */
+    std::string _native_library_path;
+    /*!
+     * Android asset manager.
+     */
+    AAssetManager* _android_asset_manager;
 #endif
 
     /*!
@@ -99,6 +108,30 @@ XrResult LoaderInitData::initialize(const XrLoaderInitInfoBaseHeaderKHR* info) {
     _data = *cast_info;
     jni::init((jni::JavaVM*)_data.applicationVM);
     _data.next = nullptr;
+    JNIEnv* Env;
+    ((jni::JavaVM*)(cast_info->applicationVM))->AttachCurrentThread(&Env, nullptr);
+    const jclass contextClass = Env->GetObjectClass((jobject)_data.applicationContext);
+
+    const jmethodID getAssetsMethod = Env->GetMethodID(contextClass, "getAssets", "()Landroid/content/res/AssetManager;");
+    const jobject AssetManagerObject = Env->CallObjectMethod((jobject)_data.applicationContext, getAssetsMethod);
+    _android_asset_manager = AAssetManager_fromJava(Env, AssetManagerObject);
+
+    const jmethodID getApplicationContextMethod =
+        Env->GetMethodID(contextClass, "getApplicationContext", "()Landroid/content/Context;");
+    const jobject contextObject = Env->CallObjectMethod((jobject)_data.applicationContext, getApplicationContextMethod);
+    const jmethodID getApplicationInfoMethod =
+        Env->GetMethodID(contextClass, "getApplicationInfo", "()Landroid/content/pm/ApplicationInfo;");
+    const jobject applicationInfoObject = Env->CallObjectMethod(contextObject, getApplicationInfoMethod);
+    const jfieldID nativeLibraryDirField =
+        Env->GetFieldID(Env->GetObjectClass(applicationInfoObject), "nativeLibraryDir", "Ljava/lang/String;");
+    const jobject nativeLibraryDirObject = Env->GetObjectField(applicationInfoObject, nativeLibraryDirField);
+    const jmethodID getBytesMethod =
+        Env->GetMethodID(Env->GetObjectClass(nativeLibraryDirObject), "getBytes", "(Ljava/lang/String;)[B");
+    const auto bytesObject =
+        static_cast<jbyteArray>(Env->CallObjectMethod(nativeLibraryDirObject, getBytesMethod, Env->NewStringUTF("UTF-8")));
+    const size_t length = Env->GetArrayLength(bytesObject);
+    const jbyte* const bytes = Env->GetByteArrayElements(bytesObject, nullptr);
+    _native_library_path = std::string(reinterpret_cast<const char*>(bytes), length);
     _initialized = true;
     return XR_SUCCESS;
 }
@@ -108,6 +141,10 @@ XrResult LoaderInitData::initialize(const XrLoaderInitInfoBaseHeaderKHR* info) {
 XrResult InitializeLoader(const XrLoaderInitInfoBaseHeaderKHR* loaderInitInfo) {
     return LoaderInitData::instance().initialize(loaderInitInfo);
 }
+
+std::string GetAndroidNativeLibraryDir() { return LoaderInitData::instance()._native_library_path; }
+
+void* Android_Get_Asset_Manager() { return LoaderInitData::instance()._android_asset_manager; }
 
 #endif  // XR_KHR_LOADER_INIT_SUPPORT
 

@@ -299,7 +299,7 @@ int getActiveRuntimeVirtualManifest(wrap::android::content::Context const &conte
 
     auto hasFunctions = cursor.getInt(cursor.getColumnIndex(active_runtime::Columns::HAS_FUNCTIONS)) == 1;
     __android_log_print(ANDROID_LOG_INFO, TAG, "Got runtime: package: %s, so filename: %s, native lib dir: %s, has functions: %s",
-                        packageName.c_str(), libDir.c_str(), filename.c_str(), (hasFunctions ? "yes" : "no"));
+                        packageName.c_str(), filename.c_str(), libDir.c_str(), (hasFunctions ? "yes" : "no"));
 
     auto lib_path = libDir + "/" + filename;
     cursor.close();
