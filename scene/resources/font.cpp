@@ -554,7 +554,6 @@ Font::Font() {
 }
 
 Font::~Font() {
-	reset_state();
 }
 
 /*************************************************************************/
@@ -2433,11 +2432,10 @@ int32_t FontFile::get_glyph_index(int p_size, char32_t p_char, char32_t p_variat
 }
 
 FontFile::FontFile() {
-	/* NOP */
 }
 
 FontFile::~FontFile() {
-	reset_state();
+	_clear_cache();
 }
 
 /*************************************************************************/
@@ -2688,7 +2686,6 @@ FontVariation::FontVariation() {
 }
 
 FontVariation::~FontVariation() {
-	reset_state();
 }
 
 /*************************************************************************/
@@ -3081,5 +3078,4 @@ SystemFont::SystemFont() {
 }
 
 SystemFont::~SystemFont() {
-	reset_state();
 }
