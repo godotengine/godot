@@ -1720,6 +1720,7 @@
 		</constant>
 		<constant name="HINTING_NORMAL" value="2" enum="Hinting">
 			Use the default font hinting mode (crisper but less smooth).
+			[b]Note:[/b] This hinting mode changes both horizontal and vertical glyph metrics. If applied to monospace font, some glyphs might have different width.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_DISABLED" value="0" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded to the whole pixel size, each glyph is rasterized once.
