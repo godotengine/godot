@@ -91,9 +91,6 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	sc.path = p_path;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		ERR_FAIL_COND(!FileAccess::exists(p_path));
-	} else {
-		sc.cache = ResourceLoader::load(p_path);
-		ERR_FAIL_COND_MSG(sc.cache.is_null(), "Invalid spawnable scene: " + p_path);
 	}
 	spawnable_scenes.push_back(sc);
 }
@@ -271,9 +268,12 @@ const Variant MultiplayerSpawner::get_spawn_argument(const ObjectID &p_id) const
 Node *MultiplayerSpawner::instantiate_scene(int p_id) {
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
 	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_id, spawnable_scenes.size(), nullptr);
-	Ref<PackedScene> scene = spawnable_scenes[p_id].cache;
-	ERR_FAIL_COND_V(scene.is_null(), nullptr);
-	return scene->instantiate();
+	SpawnableScene &sc = spawnable_scenes[p_id];
+	if (sc.cache.is_null()) {
+		sc.cache = ResourceLoader::load(sc.path);
+	}
+	ERR_FAIL_COND_V_MSG(sc.cache.is_null(), nullptr, "Invalid spawnable scene: " + sc.path);
+	return sc.cache->instantiate();
 }
 
 Node *MultiplayerSpawner::instantiate_custom(const Variant &p_data) {
