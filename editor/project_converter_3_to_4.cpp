@@ -310,6 +310,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_error_string", "get_error_message" }, // JSON
 	{ "get_filename", "get_scene_file_path" }, // Node, WARNING, this may be used in a lot of other places
 	{ "get_focus_neighbour", "get_focus_neighbor" }, // Control
+	{ "get_follow_smoothing", "get_position_smoothing_speed" }, // Camera2D
 	{ "get_font_types", "get_font_type_list" }, // Theme
 	{ "get_frame_color", "get_color" }, // ColorRect
 	{ "get_global_rate_scale", "get_playback_speed_scale" }, // AudioServer
@@ -417,6 +418,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "is_commiting_action", "is_committing_action" }, // UndoRedo
 	{ "is_doubleclick", "is_double_click" }, // InputEventMouseButton
 	{ "is_draw_red", "is_draw_warning" }, // EditorProperty
+	{ "is_follow_smoothing_enabled", "is_position_smoothing_enabled" }, // Camera2D
 	{ "is_h_drag_enabled", "is_drag_horizontal_enabled" }, // Camera2D
 	{ "is_handle_highlighted", "_is_handle_highlighted" }, // EditorNode3DGizmo, EditorNode3DGizmoPlugin
 	{ "is_inverting_faces", "get_flip_faces" }, // CSGPrimitive3D
@@ -497,11 +499,13 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_d", "set_distance" }, // WorldMarginShape2D
 	{ "set_doubleclick", "set_double_click" }, // InputEventMouseButton
 	{ "set_draw_red", "set_draw_warning" }, // EditorProperty
+	{ "set_enable_follow_smoothing", "set_position_smoothing_enabled" }, // Camera2D
 	{ "set_enabled_focus_mode", "set_focus_mode" }, // BaseButton
 	{ "set_endian_swap", "set_big_endian" }, // File
 	{ "set_expand_to_text_length", "set_expand_to_text_length_enabled" }, // LineEdit
 	{ "set_filename", "set_scene_file_path" }, // Node, WARNING, this may be used in a lot of other places
 	{ "set_focus_neighbour", "set_focus_neighbor" }, // Control
+	{ "set_follow_smoothing", "set_position_smoothing_speed" }, // Camera2D
 	{ "set_frame_color", "set_color" }, // ColorRect
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
 	{ "set_gravity_distance_scale", "set_gravity_point_distance_scale" }, // Area2D
@@ -747,6 +751,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetEndianSwap", "IsBigEndian" }, // File
 	{ "GetErrorString", "GetErrorMessage" }, // JSON
 	{ "GetFocusNeighbour", "GetFocusNeighbor" }, // Control
+	{ "GetFollowSmoothing", "GetFollowSmoothingSpeed" }, // Camera2D
 	{ "GetFontTypes", "GetFontTypeList" }, // Theme
 	{ "GetFrameColor", "GetColor" }, // ColorRect
 	{ "GetGlobalRateScale", "GetPlaybackSpeedScale" }, // AudioServer
@@ -851,6 +856,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "IsAParentOf", "IsAncestorOf" }, // Node
 	{ "IsCommitingAction", "IsCommittingAction" }, // UndoRedo
 	{ "IsDoubleclick", "IsDoubleClick" }, // InputEventMouseButton
+	{ "IsFollowSmoothingEnabled", "IsPositionSmoothingEnabled" }, // Camera2D
 	{ "IsHDragEnabled", "IsDragHorizontalEnabled" }, // Camera2D
 	{ "IsHandleHighlighted", "_IsHandleHighlighted" }, // EditorNode3DGizmo, EditorNode3DGizmoPlugin
 	{ "IsNetworkMaster", "IsMultiplayerAuthority" }, // Node
@@ -926,10 +932,12 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetCursorPosition", "SetCaretColumn" }, // LineEdit
 	{ "SetD", "SetDistance" }, // WorldMarginShape2D
 	{ "SetDoubleclick", "SetDoubleClick" }, // InputEventMouseButton
+	{ "SetEnableFollowSmoothing", "SetFollowSmoothingEnabled" }, // Camera2D
 	{ "SetEnabledFocusMode", "SetFocusMode" }, // BaseButton
 	{ "SetEndianSwap", "SetBigEndian" }, // File
 	{ "SetExpandToTextLength", "SetExpandToTextLengthEnabled" }, // LineEdit
 	{ "SetFocusNeighbour", "SetFocusNeighbor" }, // Control
+	{ "SetFollowSmoothing", "SetFollowSmoothingSpeed" }, // Camera2D
 	{ "SetFrameColor", "SetColor" }, // ColorRect
 	{ "SetGlobalRateScale", "SetPlaybackSpeedScale" }, // AudioServer
 	{ "SetGravityDistanceScale", "SetGravityPointDistanceScale" }, // Area2D
@@ -1126,6 +1134,8 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "selectedframe", "selected_frame" }, // Theme
 	{ "size_override_stretch", "size_2d_override_stretch" }, // SubViewport
 	{ "slips_on_slope", "slide_on_slope" }, // SeparationRayShape2D
+	{ "smoothing_enabled", "follow_smoothing_enabled" }, // Camera2D
+	{ "smoothing_speed", "position_smoothing_speed" }, // Camera2D
 	{ "ss_reflections_depth_tolerance", "ssr_depth_tolerance" }, // Environment
 	{ "ss_reflections_enabled", "ssr_enabled" }, // Environment
 	{ "ss_reflections_fade_in", "ssr_fade_in" }, // Environment
@@ -1217,6 +1227,8 @@ static const char *csharp_properties_renames[][2] = {
 	{ "Selectedframe", "SelectedFrame" }, // Theme
 	{ "SizeOverrideStretch", "Size2dOverrideStretch" }, // SubViewport
 	{ "SlipsOnSlope", "SlideOnSlope" }, // SeparationRayShape2D
+	{ "SmoothingEnabled", "FollowSmoothingEnabled" }, // Camera2D
+	{ "SmoothingSpeed", "FollowSmoothingSpeed" }, // Camera2D
 	{ "SsReflectionsDepthTolerance", "SsrDepthTolerance" }, // Environment
 	{ "SsReflectionsEnabled", "SsrEnabled" }, // Environment
 	{ "SsReflectionsFadeIn", "SsrFadeIn" }, // Environment
