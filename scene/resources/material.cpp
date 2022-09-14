@@ -924,6 +924,7 @@ void BaseMaterial3D::_update_shader() {
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
+			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
 		case BILLBOARD_FIXED_Y: {
 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(vec4(normalize(cross(vec3(0.0, 1.0, 0.0), INV_VIEW_MATRIX[2].xyz)), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(normalize(cross(INV_VIEW_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))), 0.0), MODEL_MATRIX[3]);\n";
@@ -931,6 +932,7 @@ void BaseMaterial3D::_update_shader() {
 			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
 				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			}
+			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 		} break;
 		case BILLBOARD_PARTICLES: {
 			//make billboard
@@ -939,6 +941,8 @@ void BaseMaterial3D::_update_shader() {
 			code += "	mat_world = mat_world * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			//set modelview
 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
+			//set modelview normal
+			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 
 			//handle animation
 			code += "	float h_frames = float(particles_anim_h_frames);\n";
@@ -949,7 +953,7 @@ void BaseMaterial3D::_update_shader() {
 			code += "		particle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
 			code += "	} else {\n";
 			code += "		particle_frame = mod(particle_frame, particle_total_frames);\n";
-			code += "	}";
+			code += "	}\n";
 			code += "	UV /= vec2(h_frames, v_frames);\n";
 			code += "	UV += vec2(mod(particle_frame, h_frames) / h_frames, floor((particle_frame + 0.5) / h_frames) / v_frames);\n";
 		} break;
