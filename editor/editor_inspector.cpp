@@ -1651,6 +1651,10 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)array_elements.size());
 
+	if (read_only) {
+		return;
+	}
+
 	Ref<InputEventKey> key_ref = p_event;
 	if (key_ref.is_valid()) {
 		const InputEventKey &key = **key_ref;
@@ -2151,7 +2155,7 @@ void EditorInspectorArray::drop_data_fw(const Point2 &p_point, const Variant &p_
 }
 
 bool EditorInspectorArray::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-	if (!movable) {
+	if (!movable || read_only) {
 		return false;
 	}
 	// First, update drawing.
@@ -2271,7 +2275,9 @@ VBoxContainer *EditorInspectorArray::get_vbox(int p_index) {
 	}
 }
 
-EditorInspectorArray::EditorInspectorArray() {
+EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
+	read_only = p_read_only;
+
 	set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
 	odd_style.instantiate();
@@ -2297,6 +2303,7 @@ EditorInspectorArray::EditorInspectorArray() {
 
 	add_button = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 	add_button->connect("pressed", callable_mp(this, &EditorInspectorArray::_add_button_pressed));
+	add_button->set_disabled(read_only);
 	vbox->add_child(add_button);
 
 	control_dropping = memnew(Control);
@@ -2317,6 +2324,7 @@ EditorInspectorArray::EditorInspectorArray() {
 	new_size_spin_box->set_max(16384);
 	new_size_spin_box->connect("value_changed", callable_mp(this, &EditorInspectorArray::_new_size_spin_box_value_changed));
 	new_size_spin_box->get_line_edit()->connect("text_submitted", callable_mp(this, &EditorInspectorArray::_new_size_spin_box_text_submitted));
+	new_size_spin_box->set_editable(!read_only);
 	resize_dialog_vbox->add_margin_child(TTRC("New Size:"), new_size_spin_box);
 
 	vbox->connect("visibility_changed", callable_mp(this, &EditorInspectorArray::_vbox_visibility_changed));
@@ -3051,7 +3059,7 @@ void EditorInspector::update_tree() {
 			if (p.type == Variant::NIL) {
 				// Setup the array to use a method to create/move/delete elements.
 				array_element_prefix = class_name_components[0];
-				editor_inspector_array = memnew(EditorInspectorArray);
+				editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 
 				String array_label = path.contains("/") ? path.substr(path.rfind("/") + 1) : path;
 				array_label = EditorPropertyNameProcessor::get_singleton()->process_name(property_label_string, property_name_style);
@@ -3063,7 +3071,7 @@ void EditorInspector::update_tree() {
 				// Setup the array to use the count property and built-in functions to create/move/delete elements.
 				if (class_name_components.size() >= 2) {
 					array_element_prefix = class_name_components[1];
-					editor_inspector_array = memnew(EditorInspectorArray);
+					editor_inspector_array = memnew(EditorInspectorArray(all_read_only));
 					int page = per_array_page.has(array_element_prefix) ? per_array_page[array_element_prefix] : 0;
 
 					editor_inspector_array->setup_with_count_property(object, class_name_components[0], p.name, array_element_prefix, page, c, foldable, movable, numbered, page_size, add_button_text, swap_method);
