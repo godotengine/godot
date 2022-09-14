@@ -77,44 +77,37 @@ def add_module_version_string(self, s):
     self.module_version_string += "." + s
 
 
-def update_version(module_version_string=""):
+def get_version_info(module_version_string="", silent=False):
     build_name = "custom_build"
     if os.getenv("BUILD_NAME") != None:
         build_name = str(os.getenv("BUILD_NAME"))
-        print("Using custom build name: " + build_name)
+        if not silent:
+            print(f"Using custom build name: '{build_name}'.")
 
     import version
 
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    f = open("core/version_generated.gen.h", "w")
-    f.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    f.write("#ifndef VERSION_GENERATED_GEN_H\n")
-    f.write("#define VERSION_GENERATED_GEN_H\n")
-    f.write('#define VERSION_SHORT_NAME "' + str(version.short_name) + '"\n')
-    f.write('#define VERSION_NAME "' + str(version.name) + '"\n')
-    f.write("#define VERSION_MAJOR " + str(version.major) + "\n")
-    f.write("#define VERSION_MINOR " + str(version.minor) + "\n")
-    f.write("#define VERSION_PATCH " + str(version.patch) + "\n")
+    version_info = {
+        "short_name": str(version.short_name),
+        "name": str(version.name),
+        "major": int(version.major),
+        "minor": int(version.minor),
+        "patch": int(version.patch),
+        "status": str(version.status),
+        "build": str(build_name),
+        "module_config": str(version.module_config) + module_version_string,
+        "year": int(version.year),
+        "website": str(version.website),
+        "docs_branch": str(version.docs),
+    }
+
     # For dev snapshots (alpha, beta, RC, etc.) we do not commit status change to Git,
     # so this define provides a way to override it without having to modify the source.
-    godot_status = str(version.status)
     if os.getenv("GODOT_VERSION_STATUS") != None:
-        godot_status = str(os.getenv("GODOT_VERSION_STATUS"))
-        print("Using version status '{}', overriding the original '{}'.".format(godot_status, str(version.status)))
-    f.write('#define VERSION_STATUS "' + godot_status + '"\n')
-    f.write('#define VERSION_BUILD "' + str(build_name) + '"\n')
-    f.write('#define VERSION_MODULE_CONFIG "' + str(version.module_config) + module_version_string + '"\n')
-    f.write("#define VERSION_YEAR " + str(version.year) + "\n")
-    f.write('#define VERSION_WEBSITE "' + str(version.website) + '"\n')
-    f.write('#define VERSION_DOCS_BRANCH "' + str(version.docs) + '"\n')
-    f.write('#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH\n')
-    f.write("#endif // VERSION_GENERATED_GEN_H\n")
-    f.close()
+        version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
+        if not silent:
+            print(f"Using version status '{version_info.status}', overriding the original '{version.status}'.")
 
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    fhash = open("core/version_hash.gen.cpp", "w")
-    fhash.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
-    fhash.write('#include "core/version.h"\n')
+    # Parse Git hash if we're in a Git repo.
     githash = ""
     gitfolder = ".git"
 
@@ -144,7 +137,49 @@ def update_version(module_version_string=""):
         else:
             githash = head
 
-    fhash.write('const char *const VERSION_HASH = "' + githash + '";\n')
+    version_info["git_hash"] = githash
+
+    return version_info
+
+
+def generate_version_header(module_version_string=""):
+    version_info = get_version_info(module_version_string)
+
+    # NOTE: It is safe to generate these files here, since this is still executed serially.
+
+    f = open("core/version_generated.gen.h", "w")
+    f.write(
+        """/* THIS FILE IS GENERATED DO NOT EDIT */
+#ifndef VERSION_GENERATED_GEN_H
+#define VERSION_GENERATED_GEN_H
+#define VERSION_SHORT_NAME "{short_name}"
+#define VERSION_NAME "{name}"
+#define VERSION_MAJOR {major}
+#define VERSION_MINOR {minor}
+#define VERSION_PATCH {patch}
+#define VERSION_STATUS "{status}"
+#define VERSION_BUILD "{build}"
+#define VERSION_MODULE_CONFIG "{module_config}"
+#define VERSION_YEAR {year}
+#define VERSION_WEBSITE "{website}"
+#define VERSION_DOCS_BRANCH "{docs_branch}"
+#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
+#endif // VERSION_GENERATED_GEN_H
+""".format(
+            **version_info
+        )
+    )
+    f.close()
+
+    fhash = open("core/version_hash.gen.cpp", "w")
+    fhash.write(
+        """/* THIS FILE IS GENERATED DO NOT EDIT */
+#include "core/version.h"
+const char *const VERSION_HASH = "{git_hash}";
+""".format(
+            **version_info
+        )
+    )
     fhash.close()
 
 
