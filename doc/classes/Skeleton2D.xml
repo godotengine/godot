@@ -11,7 +11,7 @@
 		<link title="2D skeletons">$DOCS_URL/tutorials/animation/2d_skeletons.html</link>
 	</tutorials>
 	<methods>
-		<method name="execute_modifications">
+		<method name="execute_modifications" is_experimental="true">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="execution_mode" type="int" />
@@ -39,12 +39,6 @@
 				Returns the local pose override transform for [param bone_idx].
 			</description>
 		</method>
-		<method name="get_modification_stack" qualifiers="const">
-			<return type="SkeletonModificationStack2D" />
-			<description>
-				Returns the [SkeletonModificationStack2D] attached to this skeleton, if one exists.
-			</description>
-		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="RID" />
 			<description>
@@ -63,14 +57,12 @@
 				[b]Note:[/b] The pose transform needs to be a local transform relative to the [Bone2D] node at [param bone_idx]!
 			</description>
 		</method>
-		<method name="set_modification_stack">
-			<return type="void" />
-			<param index="0" name="modification_stack" type="SkeletonModificationStack2D" />
-			<description>
-				Sets the [SkeletonModificationStack2D] attached to this skeleton.
-			</description>
-		</method>
 	</methods>
+	<members>
+		<member name="modification_stack" type="SkeletonModificationStack2D" setter="set_modification_stack" getter="get_modification_stack" is_experimental="true">
+			The [SkeletonModificationStack2D] attached to this skeleton.
+		</member>
+	</members>
 	<signals>
 		<signal name="bone_setup_changed">
 			<description>

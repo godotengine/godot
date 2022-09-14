@@ -32,7 +32,6 @@
 #define SKELETON_3D_H
 
 #include "scene/3d/node_3d.h"
-#include "scene/resources/skeleton_modification_3d.h"
 #include "scene/resources/skin.h"
 
 typedef int BoneId;
@@ -102,16 +101,8 @@ private:
 		PhysicalBone3D *physical_bone = nullptr;
 		PhysicalBone3D *cache_parent_physical_bone = nullptr;
 
-		real_t local_pose_override_amount;
-		bool local_pose_override_reset;
-		Transform3D local_pose_override;
-
 		Vector<int> child_bones;
-
-		// The forward direction vector and rest bone forward axis are cached because they do not change
-		// 99% of the time, but recalculating them can be expensive on models with many bones.
 		Vector3 rest_bone_forward_vector;
-		int rest_bone_forward_axis = -1;
 
 		Bone() {
 			parent = -1;
@@ -122,12 +113,7 @@ private:
 			physical_bone = nullptr;
 			cache_parent_physical_bone = nullptr;
 #endif // _3D_DISABLED
-			local_pose_override_amount = 0;
-			local_pose_override_reset = false;
 			child_bones = Vector<int>();
-
-			rest_bone_forward_vector = Vector3(0, 0, 0);
-			rest_bone_forward_axis = -1;
 		}
 	};
 
@@ -160,20 +146,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-#ifndef _3D_DISABLED
-	Ref<SkeletonModificationStack3D> modification_stack;
-#endif // _3D_DISABLED
-
 public:
-	enum Bone_Forward_Axis {
-		BONE_AXIS_X_FORWARD = 0,
-		BONE_AXIS_Y_FORWARD = 1,
-		BONE_AXIS_Z_FORWARD = 2,
-		BONE_AXIS_NEGATIVE_X_FORWARD = 3,
-		BONE_AXIS_NEGATIVE_Y_FORWARD = 4,
-		BONE_AXIS_NEGATIVE_Z_FORWARD = 5,
-	};
-
 	enum {
 		NOTIFICATION_UPDATE_SKELETON = 50
 	};
@@ -231,10 +204,6 @@ public:
 	Transform3D get_bone_global_pose_override(int p_bone) const;
 	void set_bone_global_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
 
-	void clear_bones_local_pose_override();
-	Transform3D get_bone_local_pose_override(int p_bone) const;
-	void set_bone_local_pose_override(int p_bone, const Transform3D &p_pose, real_t p_amount, bool p_persistent = false);
-
 	void localize_rests(); // used for loaders and tools
 
 	Ref<Skin> create_skin_from_rest_transforms();
@@ -242,28 +211,10 @@ public:
 	Ref<SkinReference> register_skin(const Ref<Skin> &p_skin);
 
 	void force_update_all_dirty_bones();
-	void force_update_all_bone_transforms();
 	void force_update_bone_children_transforms(int bone_idx);
 
-	void update_bone_rest_forward_vector(int p_bone, bool p_force_update = false);
-	void update_bone_rest_forward_axis(int p_bone, bool p_force_update = false);
-	Vector3 get_bone_axis_forward_vector(int p_bone);
-	int get_bone_axis_forward_enum(int p_bone);
-
-	// Helper functions
-	Transform3D global_pose_to_world_transform(Transform3D p_global_pose);
-	Transform3D world_transform_to_global_pose(Transform3D p_transform);
-	Transform3D global_pose_to_local_pose(int p_bone_idx, Transform3D p_global_pose);
-	Transform3D local_pose_to_global_pose(int p_bone_idx, Transform3D p_local_pose);
-
-	Basis global_pose_z_forward_to_bone_forward(int p_bone_idx, Basis p_basis);
-
-	// Modifications
-#ifndef _3D_DISABLED
-	Ref<SkeletonModificationStack3D> get_modification_stack();
-	void set_modification_stack(Ref<SkeletonModificationStack3D> p_stack);
-	void execute_modifications(real_t p_delta, int p_execution_mode);
-#endif // _3D_DISABLED
+	void update_bone_rest_forward_vector(int p_bone, bool p_force_update = false); // deprecated, used in skeleton_ik_3d.cpp
+	Vector3 get_bone_axis_forward_vector(int p_bone); // deprecated, used in skeleton_ik_3d.cpp
 
 	// Physical bone API
 

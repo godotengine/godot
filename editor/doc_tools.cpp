@@ -1376,10 +1376,10 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 
 			String additional_attributes;
 			if (m.is_deprecated) {
-				additional_attributes += " is_deprecated=\"True\"";
+				additional_attributes += " is_deprecated=\"true\"";
 			}
 			if (m.is_experimental) {
-				additional_attributes += " is_experimental=\"True\"";
+				additional_attributes += " is_experimental=\"true\"";
 			}
 
 			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + additional_attributes + ">");
@@ -1446,10 +1446,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.inherits.is_empty()) {
 			header += " inherits=\"" + c.inherits + "\"";
 			if (c.is_deprecated) {
-				header += " is_deprecated=\"True\"";
+				header += " is_deprecated=\"true\"";
 			}
 			if (c.is_experimental) {
-				header += " is_experimental=\"True\"";
+				header += " is_experimental=\"true\"";
 			}
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
@@ -1495,10 +1495,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
 				}
 				if (c.properties[i].is_deprecated) {
-					additional_attributes += " is_deprecated=\"True\"";
+					additional_attributes += " is_deprecated=\"true\"";
 				}
 				if (c.properties[i].is_experimental) {
-					additional_attributes += " is_experimental=\"True\"";
+					additional_attributes += " is_experimental=\"true\"";
 				}
 
 				const DocData::PropertyDoc &p = c.properties[i];
@@ -1523,10 +1523,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 				String additional_attributes;
 				if (c.constants[i].is_deprecated) {
-					additional_attributes += " is_deprecated=\"True\"";
+					additional_attributes += " is_deprecated=\"true\"";
 				}
 				if (c.constants[i].is_experimental) {
-					additional_attributes += " is_experimental=\"True\"";
+					additional_attributes += " is_experimental=\"true\"";
 				}
 
 				if (k.is_value_valid) {

@@ -538,34 +538,6 @@ Bone2D::~Bone2D() {
 
 //////////////////////////////////////
 
-bool Skeleton2D::_set(const StringName &p_path, const Variant &p_value) {
-	String path = p_path;
-
-	if (path.begins_with("modification_stack")) {
-		set_modification_stack(p_value);
-		return true;
-	}
-	return true;
-}
-
-bool Skeleton2D::_get(const StringName &p_path, Variant &r_ret) const {
-	String path = p_path;
-
-	if (path.begins_with("modification_stack")) {
-		r_ret = get_modification_stack();
-		return true;
-	}
-	return true;
-}
-
-void Skeleton2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(
-			PropertyInfo(Variant::OBJECT, PNAME("modification_stack"),
-					PROPERTY_HINT_RESOURCE_TYPE,
-					"SkeletonModificationStack2D",
-					PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-}
-
 void Skeleton2D::_make_bone_setup_dirty() {
 	if (bone_setup_dirty) {
 		return;
@@ -795,6 +767,8 @@ void Skeleton2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bone_local_pose_override", "bone_idx", "override_pose", "strength", "persistent"), &Skeleton2D::set_bone_local_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_local_pose_override", "bone_idx"), &Skeleton2D::get_bone_local_pose_override);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "modification_stack", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonModificationStack2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_modification_stack", "get_modification_stack");
 
 	ADD_SIGNAL(MethodInfo("bone_setup_changed"));
 }
