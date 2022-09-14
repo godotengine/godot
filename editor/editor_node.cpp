@@ -3932,7 +3932,7 @@ void EditorNode::edit_foreign_resource(Ref<Resource> p_resource) {
 	InspectorDock::get_singleton()->call_deferred("edit_resource", p_resource);
 }
 
-bool EditorNode::is_resource_read_only(Ref<Resource> p_resource) {
+bool EditorNode::is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable) {
 	ERR_FAIL_COND_V(p_resource.is_null(), false);
 
 	String path = p_resource->get_path();
@@ -3944,7 +3944,11 @@ bool EditorNode::is_resource_read_only(Ref<Resource> p_resource) {
 			// If the base resource is a packed scene, we treat it as read-only if it is not the currently edited scene.
 			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
 				if (!get_tree()->get_edited_scene_root() || get_tree()->get_edited_scene_root()->get_scene_file_path() != base) {
-					return true;
+					// If we have not flagged foreign resources as writable or the base scene the resource is
+					// part was imported, it can be considered read-only.
+					if (!p_foreign_resources_are_writable || FileAccess::exists(base + ".import")) {
+						return true;
+					}
 				}
 			} else {
 				// If a corresponding .import file exists for the base file, we assume it to be imported and should therefore treated as read-only.
