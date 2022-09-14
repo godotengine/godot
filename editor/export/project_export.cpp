@@ -932,8 +932,10 @@ void ProjectExportDialog::_export_project_to_path(const String &p_path) {
 }
 
 void ProjectExportDialog::_export_all_dialog() {
+#ifndef ANDROID_ENABLED
 	export_all_dialog->show();
 	export_all_dialog->popup_centered(Size2(300, 80));
+#endif
 }
 
 void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
@@ -1194,11 +1196,16 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	set_cancel_button_text(TTR("Close"));
 	set_ok_button_text(TTR("Export PCK/ZIP..."));
+	get_ok_button()->set_disabled(true);
+#ifdef ANDROID_ENABLED
+	export_button = memnew(Button);
+	export_button->hide();
+#else
 	export_button = add_button(TTR("Export Project..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+#endif
 	export_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_project));
 	// Disable initially before we select a valid preset
 	export_button->set_disabled(true);
-	get_ok_button()->set_disabled(true);
 
 	export_all_dialog = memnew(ConfirmationDialog);
 	add_child(export_all_dialog);
@@ -1208,8 +1215,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_all_dialog->add_button(TTR("Debug"), true, "debug");
 	export_all_dialog->add_button(TTR("Release"), true, "release");
 	export_all_dialog->connect("custom_action", callable_mp(this, &ProjectExportDialog::_export_all_dialog_action));
+#ifdef ANDROID_ENABLED
+	export_all_dialog->hide();
 
+	export_all_button = memnew(Button);
+	export_all_button->hide();
+#else
 	export_all_button = add_button(TTR("Export All..."), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "export");
+#endif
 	export_all_button->connect("pressed", callable_mp(this, &ProjectExportDialog::_export_all_dialog));
 	export_all_button->set_disabled(true);
 
