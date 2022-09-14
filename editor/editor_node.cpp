@@ -6750,8 +6750,10 @@ EditorNode::EditorNode() {
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/export", TTR("Export..."), Key::NONE, TTR("Export")), FILE_EXPORT_PROJECT);
+#ifndef ANDROID_ENABLED
 	project_menu->add_item(TTR("Install Android Build Template..."), FILE_INSTALL_ANDROID_SOURCE);
 	project_menu->add_item(TTR("Open User Data Folder"), RUN_USER_DATA_FOLDER);
+#endif
 
 	project_menu->add_separator();
 	project_menu->add_item(TTR("Customize Engine Build Configuration..."), TOOLS_BUILD_PROFILE_MANAGER);
@@ -6814,12 +6816,14 @@ EditorNode::EditorNode() {
 
 	settings_menu->set_item_tooltip(-1, TTR("Screenshots are stored in the Editor Data/Settings Folder."));
 
+#ifndef ANDROID_ENABLED
 	ED_SHORTCUT_AND_COMMAND("editor/fullscreen_mode", TTR("Toggle Fullscreen"), KeyModifierMask::SHIFT | Key::F11);
 	ED_SHORTCUT_OVERRIDE("editor/fullscreen_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
 	settings_menu->add_shortcut(ED_GET_SHORTCUT("editor/fullscreen_mode"), SETTINGS_TOGGLE_FULLSCREEN);
-
+#endif
 	settings_menu->add_separator();
 
+#ifndef ANDROID_ENABLED
 	if (OS::get_singleton()->get_data_path() == OS::get_singleton()->get_config_path()) {
 		// Configuration and data folders are located in the same place (Windows/MacOS).
 		settings_menu->add_item(TTR("Open Editor Data/Settings Folder"), SETTINGS_EDITOR_DATA_FOLDER);
@@ -6829,9 +6833,12 @@ EditorNode::EditorNode() {
 		settings_menu->add_item(TTR("Open Editor Settings Folder"), SETTINGS_EDITOR_CONFIG_FOLDER);
 	}
 	settings_menu->add_separator();
+#endif
 
 	settings_menu->add_item(TTR("Manage Editor Features..."), SETTINGS_MANAGE_FEATURE_PROFILES);
+#ifndef ANDROID_ENABLED
 	settings_menu->add_item(TTR("Manage Export Templates..."), SETTINGS_MANAGE_EXPORT_TEMPLATES);
+#endif
 
 	help_menu = memnew(PopupMenu);
 	help_menu->set_name(TTR("Help"));

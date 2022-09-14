@@ -1619,21 +1619,24 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 }
 
 bool EditorExportPlatform::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	bool valid = true;
+#ifndef ANDROID_ENABLED
 	String templates_error;
-	bool valid_export_configuration = has_valid_export_configuration(p_preset, templates_error, r_missing_templates);
-
-	String project_configuration_error;
-	bool valid_project_configuration = has_valid_project_configuration(p_preset, project_configuration_error);
+	valid = valid && has_valid_export_configuration(p_preset, templates_error, r_missing_templates);
 
 	if (!templates_error.is_empty()) {
 		r_error += templates_error;
 	}
+#endif
+
+	String project_configuration_error;
+	valid = valid && has_valid_project_configuration(p_preset, project_configuration_error);
 
 	if (!project_configuration_error.is_empty()) {
 		r_error += project_configuration_error;
 	}
 
-	return valid_export_configuration && valid_project_configuration;
+	return valid;
 }
 
 EditorExportPlatform::EditorExportPlatform() {
