@@ -29,8 +29,8 @@
 layout(push_constant, std430) uniform DrawCall {
 	uint instance_index;
 	uint uv_offset;
-	uint pad0;
-	uint pad1;
+	uint multimesh_motion_vectors_current_offset;
+	uint multimesh_motion_vectors_previous_offset;
 }
 draw_call;
 

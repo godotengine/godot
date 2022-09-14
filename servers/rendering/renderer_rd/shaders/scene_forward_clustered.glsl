@@ -129,7 +129,7 @@ invariant gl_Position;
 
 #GLOBALS
 
-void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -208,7 +208,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 			}
 		}
 
-		uint offset = stride * gl_InstanceIndex;
+		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
 
 		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
@@ -397,13 +397,13 @@ void main() {
 	mat4 model_matrix = instances.data[instance_index].transform;
 #if defined(MOTION_VECTORS)
 	global_time = scene_data_block.prev_data.time;
-	vertex_shader(instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
 	global_time = scene_data_block.data.time;
-	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 #else
 	global_time = scene_data_block.data.time;
 	vec4 screen_position;
-	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 #endif
 }
 
