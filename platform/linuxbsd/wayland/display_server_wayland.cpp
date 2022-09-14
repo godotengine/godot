@@ -2553,9 +2553,9 @@ void DisplayServerWayland::process_events() {
 			uint32_t id = 0;
 
 			int error_code = wl_display_get_protocol_error(wls.display, (const struct wl_interface **)&wl_interface, &id);
-			print_error(vformat("Wayland protocol error %d on interface %s@%d", error_code, wl_interface ? wl_interface->name : "unknown", id));
+			print_error(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
 		} else {
-			print_error(vformat("Wayland client error code %d", werror));
+			print_error(vformat("Wayland client error code %d.", werror));
 		}
 	}
 
@@ -2783,7 +2783,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 			memdelete(wls.context_vulkan);
 			wls.context_vulkan = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize Vulkan");
+			ERR_FAIL_MSG("Could not initialize Vulkan.");
 		}
 	}
 #endif
@@ -2796,7 +2796,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 			memdelete(wls.gl_manager);
 			wls.gl_manager = nullptr;
 			r_error = ERR_CANT_CREATE;
-			ERR_FAIL_MSG("Could not initialize GLES3");
+			ERR_FAIL_MSG("Could not initialize GLES3.");
 		}
 
 		RasterizerGLES3::make_current();
