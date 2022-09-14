@@ -46,6 +46,7 @@
 
 #include "wayland-cursor.h"
 
+#include "protocol/idle_inhibit.gen.h"
 #include "protocol/pointer_constraints.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
@@ -134,10 +135,13 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zwp_pointer_constraints_v1 *wp_pointer_constraints = nullptr;
 		uint32_t wp_pointer_constraints_name = 0;
+
+		struct zwp_idle_inhibit_manager_v1 *wp_idle_inhibit_manager = nullptr;
+		uint32_t wp_idle_inhibit_manager_name = 0;
 	};
 
-	// This forward declaration is needed due to a circular dependency with
-	// WindowData. The actual struct members are declared later in this header.
+	// This forward declaration is needed due to some circular dependencies.
+	// The actual struct members are declared later in this header.
 	struct WaylandState;
 
 	struct WindowData {
@@ -314,6 +318,8 @@ class DisplayServerWayland : public DisplayServer {
 		SafeFlag events_thread_done;
 
 		List<Ref<WaylandMessage>> message_queue;
+
+		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
 
 #ifdef VULKAN_ENABLED
 		VulkanContextWayland *context_vulkan = nullptr;
@@ -556,10 +562,8 @@ public:
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
-#if defined(DBUS_ENABLED)
 	virtual void screen_set_keep_on(bool p_enable) override;
 	virtual bool screen_is_kept_on() const override;
-#endif
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 

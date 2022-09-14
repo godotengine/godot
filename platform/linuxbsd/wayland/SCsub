@@ -73,6 +73,16 @@ env.WAYLAND_API_CODE(
     source="#thirdparty/wayland-protocols/unstable/primary-selection/primary-selection-unstable-v1.xml",
 )
 
+env.WAYLAND_API_HEADER(
+    target="protocol/idle_inhibit.gen.h",
+    source="#thirdparty/wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml",
+)
+
+env.WAYLAND_API_CODE(
+    target="protocol/idle_inhibit.gen.c",
+    source="#thirdparty/wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml",
+)
+
 source_files = [
     "protocol/wayland.gen.c",
     "protocol/xdg_shell.gen.c",
@@ -80,6 +90,7 @@ source_files = [
     "protocol/relative_pointer.gen.c",
     "protocol/pointer_constraints.gen.c",
     "protocol/primary_selection.gen.c",
+    "protocol/idle_inhibit.gen.c",
     "display_server_wayland.cpp",
     "key_mapping_xkb.cpp",
 ]

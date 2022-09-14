@@ -625,6 +625,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		globals.wp_relative_pointer_manager_name = name;
 		return;
 	}
+
+	if (strcmp(interface, zwp_idle_inhibit_manager_v1_interface.name) == 0) {
+		globals.wp_idle_inhibit_manager = (struct zwp_idle_inhibit_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_idle_inhibit_manager_v1_interface, 1);
+		globals.wp_idle_inhibit_manager_name = name;
+		return;
+	}
 }
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
@@ -676,6 +682,12 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	if (name == globals.wp_relative_pointer_manager_name) {
 		zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
 		globals.wp_relative_pointer_manager = nullptr;
+		return;
+	}
+
+	if (name == globals.wp_idle_inhibit_manager_name) {
+		zwp_idle_inhibit_manager_v1_destroy(globals.wp_idle_inhibit_manager);
+		globals.wp_idle_inhibit_manager = nullptr;
 		return;
 	}
 
@@ -1818,20 +1830,24 @@ bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
 	return false;
 }
 
-#if defined(DBUS_ENABLED)
-
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub screen_set_keep_on %s", p_enable ? "true" : "false"));
+	if (p_enable) {
+		if (wls.globals.wp_idle_inhibit_manager && !wls.wp_idle_inhibitor) {
+			ERR_FAIL_COND(!wls.windows.has(MAIN_WINDOW_ID));
+			ERR_FAIL_COND(!wls.windows[MAIN_WINDOW_ID].wl_surface);
+			wls.wp_idle_inhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(wls.globals.wp_idle_inhibit_manager, wls.windows[MAIN_WINDOW_ID].wl_surface);
+		}
+	} else {
+		if (wls.wp_idle_inhibitor) {
+			zwp_idle_inhibitor_v1_destroy(wls.wp_idle_inhibitor);
+			wls.wp_idle_inhibitor = nullptr;
+		}
+	}
 }
 
 bool DisplayServerWayland::screen_is_kept_on() const {
-	// TODO
-	DEBUG_LOG_WAYLAND("wayland stub screen_is_kept_on, returning false");
-	return false;
+	return wls.wp_idle_inhibitor != nullptr;
 }
-
-#endif
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	// TODO
@@ -2746,6 +2762,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported!");
 	}
 
+	if (!wls.globals.wp_idle_inhibit_manager) {
+		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
+	}
+
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
 
@@ -2954,6 +2974,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.wl_cursor_theme) {
 		wl_cursor_theme_destroy(wls.wl_cursor_theme);
+	}
+
+	if (wls.globals.wp_idle_inhibit_manager) {
+		zwp_idle_inhibit_manager_v1_destroy(wls.globals.wp_idle_inhibit_manager);
 	}
 
 	if (wls.globals.wp_pointer_constraints) {
