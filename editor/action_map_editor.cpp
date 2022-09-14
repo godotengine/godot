@@ -150,7 +150,10 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 					}
 
 					// If event type matches input types of this category.
-					if ((k.is_valid() && input_type == INPUT_KEY) || (joyb.is_valid() && input_type == INPUT_JOY_BUTTON) || (joym.is_valid() && input_type == INPUT_JOY_MOTION) || (mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
+					if ((k.is_valid() && input_type == INPUT_KEY) ||
+							(joyb.is_valid() && input_type == INPUT_JOY_BUTTON) ||
+							(joym.is_valid() && input_type == INPUT_JOY_MOTION) ||
+							(mb.is_valid() && input_type == INPUT_MOUSE_BUTTON)) {
 						// Loop through all items of this category until one matches.
 						while (input_item) {
 							bool key_match = k.is_valid() && (Variant(k->get_keycode()) == input_item->get_meta("__keycode") || Variant(k->get_physical_keycode()) == input_item->get_meta("__keycode"));
@@ -191,7 +194,11 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 			strings.append(TTR("Joypad Axis"));
 		}
 		if (allowed_input_types & INPUT_MOUSE_BUTTON) {
-			strings.append(TTR("Mouse Button in area below"));
+			if (allowed_input_types & INPUT_MOUSE_THUMB_BUTTON) {
+				strings.append(TTR("Mouse Thumb Button in area below"));
+			} else {
+				strings.append(TTR("Mouse Button in area below"));
+			}
 		}
 		if (strings.size() == 0) {
 			text = TTR("Input Event dialog has been misconfigured: No input types are allowed.");
@@ -265,6 +272,13 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 		type = INPUT_JOY_MOTION;
 	} else if (mb.is_valid()) {
 		type = INPUT_MOUSE_BUTTON;
+
+		const MouseButton button = mb->get_button_index();
+		if (button == MouseButton::MB_XBUTTON1 || button == MouseButton::MB_XBUTTON2) {
+			type = INPUT_MOUSE_THUMB_BUTTON;
+		} else {
+			type = INPUT_MOUSE_COMMON_BUTTON;
+		}
 	}
 
 	if (!(allowed_input_types & type)) {
@@ -336,7 +350,7 @@ void InputEventConfigurationDialog::_update_input_list() {
 		}
 	}
 
-	if (allowed_input_types & INPUT_MOUSE_BUTTON) {
+	if (allowed_input_types & INPUT_MOUSE_COMMON_BUTTON) {
 		TreeItem *mouse_root = input_list_tree->create_item(root);
 		mouse_root->set_text(0, TTR("Mouse Buttons"));
 		mouse_root->set_icon(0, icon_cache.mouse);
@@ -345,6 +359,28 @@ void InputEventConfigurationDialog::_update_input_list() {
 
 		MouseButton mouse_buttons[9] = { MouseButton::LEFT, MouseButton::RIGHT, MouseButton::MIDDLE, MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT, MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 };
 		for (int i = 0; i < 9; i++) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_button_index(mouse_buttons[i]);
+			String desc = get_event_text(mb, false);
+
+			if (!search_term.is_empty() && desc.findn(search_term) == -1) {
+				continue;
+			}
+
+			TreeItem *item = input_list_tree->create_item(mouse_root);
+			item->set_text(0, desc);
+			item->set_meta("__index", mouse_buttons[i]);
+		}
+	} else if (allowed_input_types & INPUT_MOUSE_THUMB_BUTTON) {
+		TreeItem *mouse_root = input_list_tree->create_item(root);
+		mouse_root->set_text(0, TTR("Mouse Thumb Buttons"));
+		mouse_root->set_icon(0, icon_cache.mouse);
+		mouse_root->set_collapsed(collapse);
+		mouse_root->set_meta("__type", INPUT_MOUSE_BUTTON);
+
+		MouseButton mouse_buttons[2] = { MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 };
+		for (int i = 0; i < 2; i++) {
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
 			mb->set_button_index(mouse_buttons[i]);
@@ -506,6 +542,8 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			_set_event(k, false);
 		} break;
+		case InputEventConfigurationDialog::INPUT_MOUSE_COMMON_BUTTON:
+		case InputEventConfigurationDialog::INPUT_MOUSE_THUMB_BUTTON:
 		case InputEventConfigurationDialog::INPUT_MOUSE_BUTTON: {
 			MouseButton idx = (MouseButton)(int)selected->get_meta("__index");
 			Ref<InputEventMouseButton> mb;
@@ -632,7 +670,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 }
 
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
-	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION | INPUT_MOUSE_BUTTON;
+	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
 	set_title(TTR("Event Configuration"));
 	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
