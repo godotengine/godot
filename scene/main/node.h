@@ -457,7 +457,7 @@ public:
 #ifdef TOOLS_ENABLED
 	String validate_child_name(Node *p_child);
 #endif
-	static String adjust_name_casing(const String &p_name);
+	static String adjust_name_casing(const String &p_name, const bool p_skip_pascal_case = false);
 
 	void queue_delete();
 
