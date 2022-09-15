@@ -48,6 +48,15 @@ int Engine::get_physics_ticks_per_second() const {
 	return ips;
 }
 
+void Engine::set_max_physics_steps_per_frame(int p_max_physics_steps) {
+	ERR_FAIL_COND_MSG(p_max_physics_steps <= 0, "Maximum number of physics steps per frame must be greater than 0.");
+	max_physics_steps_per_frame = p_max_physics_steps;
+}
+
+int Engine::get_max_physics_steps_per_frame() const {
+	return max_physics_steps_per_frame;
+}
+
 void Engine::set_physics_jitter_fix(double p_threshold) {
 	if (p_threshold < 0) {
 		p_threshold = 0;
