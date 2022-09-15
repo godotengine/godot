@@ -1621,6 +1621,7 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_MOUSE:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
+		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_CLIPBOARD_PRIMARY: {
