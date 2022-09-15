@@ -5,7 +5,8 @@
 #extension GL_EXT_multiview : enable
 #endif
 
-#include "decal_data_inc.glsl"
+#include "../decal_data_inc.glsl"
+#include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
@@ -32,7 +33,7 @@ draw_call;
 
 /* Set 0: Base Pass (never changes) */
 
-#include "light_data_inc.glsl"
+#include "../light_data_inc.glsl"
 
 #define SAMPLER_NEAREST_CLAMP 0
 #define SAMPLER_LINEAR_CLAMP 1
@@ -127,75 +128,9 @@ global_shader_uniforms;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-struct SceneData {
-	highp mat4 projection_matrix;
-	highp mat4 inv_projection_matrix;
-	highp mat4 inv_view_matrix;
-	highp mat4 view_matrix;
-
-	// only used for multiview
-	highp mat4 projection_matrix_view[MAX_VIEWS];
-	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
-	highp vec4 eye_offset[MAX_VIEWS];
-
-	highp vec2 viewport_size;
-	highp vec2 screen_pixel_size;
-
-	// Use vec4s because std140 doesn't play nice with vec2s, z and w are wasted.
-	highp vec4 directional_penumbra_shadow_kernel[32];
-	highp vec4 directional_soft_shadow_kernel[32];
-	highp vec4 penumbra_shadow_kernel[32];
-	highp vec4 soft_shadow_kernel[32];
-
-	mediump vec4 ambient_light_color_energy;
-
-	mediump float ambient_color_sky_mix;
-	bool use_ambient_light;
-	bool use_ambient_cubemap;
-	bool use_reflection_cubemap;
-
-	mediump mat3 radiance_inverse_xform;
-
-	highp vec2 shadow_atlas_pixel_size;
-	highp vec2 directional_shadow_pixel_size;
-
-	uint directional_light_count;
-	mediump float dual_paraboloid_side;
-	highp float z_far;
-	highp float z_near;
-
-	bool ssao_enabled;
-	mediump float ssao_light_affect;
-	mediump float ssao_ao_affect;
-	bool roughness_limiter_enabled;
-
-	mediump float roughness_limiter_amount;
-	mediump float roughness_limiter_limit;
-	mediump float opaque_prepass_threshold;
-	uint roughness_limiter_pad;
-
-	bool fog_enabled;
-	highp float fog_density;
-	highp float fog_height;
-	highp float fog_height_density;
-
-	mediump vec3 fog_light_color;
-	mediump float fog_sun_scatter;
-
-	mediump float fog_aerial_perspective;
-	bool material_uv2_mode;
-
-	highp float time;
-	mediump float reflection_multiplier; // one normally, zero when rendering reflections
-
-	bool pancake_shadows;
-	float emissive_exposure_normalization;
-	float IBL_exposure_normalization;
-	uint pad3;
-};
-
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
 	SceneData data;
+	SceneData prev_data;
 }
 scene_data_block;
 

@@ -46,30 +46,14 @@
 #include "servers/rendering/renderer_rd/environment/sky.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
+#include "servers/rendering/renderer_rd/storage_rd/render_scene_data_rd.h"
 #include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_device.h"
 
 struct RenderDataRD {
 	Ref<RenderSceneBuffersRD> render_buffers;
-
-	Transform3D cam_transform;
-	Projection cam_projection;
-	Vector2 taa_jitter;
-	bool cam_orthogonal = false;
-
-	// For stereo rendering
-	uint32_t view_count = 1;
-	Vector3 view_eye_offset[RendererSceneRender::MAX_RENDER_VIEWS];
-	Projection view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
-
-	Transform3D prev_cam_transform;
-	Projection prev_cam_projection;
-	Vector2 prev_taa_jitter;
-	Projection prev_view_projection[RendererSceneRender::MAX_RENDER_VIEWS];
-
-	float z_near = 0.0;
-	float z_far = 0.0;
+	RenderSceneDataRD *scene_data;
 
 	const PagedArray<RenderGeometryInstance *> *instances = nullptr;
 	const PagedArray<RID> *lights = nullptr;
@@ -84,10 +68,6 @@ struct RenderDataRD {
 	RID reflection_atlas;
 	RID reflection_probe;
 	int reflection_probe_pass = 0;
-
-	float lod_distance_multiplier = 0.0;
-	Plane lod_camera_plane;
-	float screen_mesh_lod_threshold = 0.0;
 
 	RID cluster_buffer;
 	uint32_t cluster_size = 0;
@@ -598,13 +578,6 @@ private:
 	uint64_t scene_pass = 0;
 	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
 
-	/* !BAS! is this used anywhere?
-	struct SDFGICosineNeighbour {
-		uint32_t neighbour;
-		float weight;
-	};
-	*/
-
 	uint32_t max_cluster_elements = 512;
 
 	void _render_shadow_pass(RID p_light, RID p_shadow_atlas, int p_pass, const PagedArray<RenderGeometryInstance *> &p_instances, const Plane &p_camera_plane = Plane(), float p_lod_distance_multiplier = 0, float p_screen_mesh_lod_threshold = 0.0, bool p_open_pass = true, bool p_close_pass = true, bool p_clear_region = true, RendererScene::RenderInfo *p_render_info = nullptr);
@@ -626,6 +599,10 @@ public:
 	/* GI */
 
 	RendererRD::GI *get_gi() { return &gi; }
+
+	/* SKY */
+
+	RendererRD::SkyRD *get_sky() { return &sky; }
 
 	/* SHADOW ATLAS API */
 

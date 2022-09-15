@@ -101,7 +101,7 @@ layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms
 
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) out highp float dp_clip;
+layout(location = 9) out highp float dp_clip;
 
 #endif
 
@@ -450,7 +450,7 @@ layout(location = 6) mediump in vec3 binormal_interp;
 
 #ifdef MODE_DUAL_PARABOLOID
 
-layout(location = 8) highp in float dp_clip;
+layout(location = 9) highp in float dp_clip;
 
 #endif
 
@@ -519,7 +519,7 @@ layout(location = 0) out mediump vec4 frag_color;
 
 #endif // RENDER DEPTH
 
-#include "scene_forward_aa_inc.glsl"
+#include "../scene_forward_aa_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -528,7 +528,7 @@ layout(location = 0) out mediump vec4 frag_color;
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#include "scene_forward_lights_inc.glsl"
+#include "../scene_forward_lights_inc.glsl"
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
