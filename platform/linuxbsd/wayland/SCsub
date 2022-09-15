@@ -6,14 +6,14 @@ Import("env")
 WAYLAND_BUILDERS = {
     "WAYLAND_API_HEADER": Builder(
         action=Action(
-            "wayland-scanner -c client-header ${SOURCE} ${TARGET}", 'Building Wayland client header: "${TARGET}"'
+            "wayland-scanner -c client-header ${SOURCE} ${TARGET}", 'Generating Wayland client header: "${TARGET}"'
         ),
         single_source=True,
     ),
     "WAYLAND_API_CODE": Builder(
         action=Action(
             "wayland-scanner -c private-code ${SOURCE} ${TARGET}",
-            'Building Wayland protocol marshalling code: "${TARGET}"',
+            'Generatinc Wayland protocol marshalling code: "${TARGET}"',
         ),
         single_source=True,
     ),
