@@ -367,6 +367,7 @@ public:
 	String right(int p_len) const;
 	String indent(const String &p_prefix) const;
 	String dedent() const;
+	String strip_bbcode() const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
 	String lstrip(const String &p_chars) const;

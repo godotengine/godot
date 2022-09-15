@@ -1520,6 +1520,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(String, left, sarray("length"), varray());
 	bind_method(String, right, sarray("length"), varray());
 
+	bind_method(String, strip_bbcode, sarray(), varray());
 	bind_method(String, strip_edges, sarray("left", "right"), varray(true, true));
 	bind_method(String, strip_escapes, sarray(), varray());
 	bind_method(String, lstrip, sarray("chars"), varray());

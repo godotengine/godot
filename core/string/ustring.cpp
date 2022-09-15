@@ -3582,6 +3582,51 @@ String String::dedent() const {
 	return new_string;
 }
 
+String String::strip_bbcode() const {
+	String new_string;
+	for (int i = 0; i < length(); i++) {
+		bool found_close = false;
+
+		// Checks for "["
+		if (operator[](i) == '[') {
+			int skip_char = 0;
+
+			//Check for [rb] and [lb].
+			String check_escape = "";
+			for (int k = i + 1; k <= i + 3 && k < length(); k++) {
+				check_escape += operator[](k);
+			}
+			if (check_escape == "rb]") {
+				skip_char += 3;
+				found_close = true;
+				new_string += "]";
+			} else if (check_escape == "lb]") {
+				skip_char += 3;
+				found_close = true;
+				new_string += "[";
+			} else { //If not [rb] or [lb].
+				for (int j = i + 1; j < length(); j++) {
+					skip_char++;
+					// Checks for "]"
+					if (operator[](j) == ']') {
+						found_close = true;
+						break;
+					} else if (operator[](j) == '[') {
+						break;
+					}
+				}
+			}
+			// Skip characters.
+			if (found_close) {
+				i = i + skip_char;
+				continue;
+			}
+		}
+		new_string += operator[](i);
+	}
+	return new_string;
+}
+
 String String::strip_edges(bool left, bool right) const {
 	int len = length();
 	int beg = 0, end = len;

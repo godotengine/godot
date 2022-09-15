@@ -1544,6 +1544,11 @@ TEST_CASE("[String] Similarity") {
 	CHECK(a.similarity(b) > a.similarity(c));
 }
 
+TEST_CASE("[String] Strip bbcode") {
+	String s = "[color=#ffffff]Test[/color]";
+	CHECK(s.strip_bbcode() == "Test");
+}
+
 TEST_CASE("[String] Strip edges") {
 	String s = "\t Test Test   ";
 	CHECK(s.strip_edges(true, false) == "Test Test   ");
