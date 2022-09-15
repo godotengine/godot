@@ -66,6 +66,8 @@ void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
 	} else if (full_name.begins_with("text_editor/theme/highlighting")) {
 		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", "Custom");
 	}
+
+	emit_signal(SNAME("user_changed_setting"), full_name);
 }
 
 void EditorSettingsDialog::_settings_save() {
@@ -694,6 +696,8 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
+
+	ADD_SIGNAL(MethodInfo("user_changed_setting", PropertyInfo(Variant::STRING, "full_name")));
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {

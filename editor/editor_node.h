@@ -928,6 +928,8 @@ public:
 	void save_scene_list(Vector<String> p_scene_filenames);
 	void restart_editor();
 
+	void connect_user_changed_setting(const Callable &p_callable);
+
 	void notify_settings_changed();
 
 	void dim_editor(bool p_dimming);

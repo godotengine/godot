@@ -6542,6 +6542,10 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 	return eta.exitcode;
 }
 
+void EditorNode::connect_user_changed_setting(const Callable &p_callable) {
+	editor_settings_dialog->connect("user_changed_setting", p_callable);
+}
+
 void EditorNode::notify_settings_changed() {
 	settings_changed = true;
 }
