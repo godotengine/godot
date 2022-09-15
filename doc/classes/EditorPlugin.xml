@@ -237,7 +237,7 @@
 				    # You can use a custom icon:
 				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
 				    # Or use a built-in icon:
-				    return get_editor_interface().get_base_control().get_icon("Node", "EditorIcons")
+				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
 				public override Texture2D GetPluginIcon()
@@ -245,7 +245,7 @@
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
 				    // Or use a built-in icon:
-				    return GetEditorInterface().GetBaseControl().GetIcon("Node", "EditorIcons");
+				    return GetEditorInterface().GetBaseControl().GetThemeIcon("Node", "EditorIcons");
 				}
 				[/csharp]
 				[/codeblocks]
