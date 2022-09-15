@@ -552,6 +552,10 @@ void EditorSettingsDialog::_shortcut_cell_double_clicked() {
 	const ShortcutButton edit_btn_id = EditorSettingsDialog::SHORTCUT_EDIT;
 	const int edit_btn_col = 1;
 	TreeItem *ti = shortcuts->get_selected();
+	if (ti == nullptr) {
+		return;
+	}
+
 	String type = ti->get_meta("type");
 	int col = shortcuts->get_selected_column();
 	if (type == "shortcut" && col == 0) {
