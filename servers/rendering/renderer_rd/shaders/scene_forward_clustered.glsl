@@ -737,6 +737,13 @@ void fragment_shader(in SceneData scene_data) {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
+#ifndef MODE_RENDER_DEPTH
+	// Volumetric fog is calculated after user code
+	if (scene_data.fog_enabled) {
+		fog = fog_process(vertex);
+	}
+#endif //!MODE_RENDER_DEPTH
+
 	{
 #CODE : FRAGMENT
 	}
@@ -810,16 +817,9 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 	/////////////////////// FOG //////////////////////
+
 #ifndef MODE_RENDER_DEPTH
-
-#ifndef CUSTOM_FOG_USED
-	// fog must be processed as early as possible and then packed.
-	// to maximize VGPR usage
-	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-
-	if (scene_data.fog_enabled) {
-		fog = fog_process(vertex);
-	}
+	// Fog must be processed as early as possible and then packed to maximize VGPR usage.
 
 	if (scene_data.volumetric_fog_enabled) {
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
@@ -838,7 +838,6 @@ void fragment_shader(in SceneData scene_data) {
 			fog = volumetric_fog;
 		}
 	}
-#endif //!CUSTOM_FOG_USED
 
 	uint fog_rg = packHalf2x16(fog.rg);
 	uint fog_ba = packHalf2x16(fog.ba);

@@ -685,6 +685,12 @@ void main() {
 	vec2 alpha_texture_coordinate = vec2(0.0, 0.0);
 #endif // ALPHA_ANTIALIASING_EDGE_USED
 
+#ifndef MODE_RENDER_DEPTH
+	if (!sc_disable_fog && scene_data.fog_enabled) {
+		fog = fog_process(vertex);
+	}
+#endif //!MODE_RENDER_DEPTH
+
 	{
 #CODE : FRAGMENT
 	}
@@ -761,23 +767,10 @@ void main() {
 	}
 #endif
 
-	/////////////////////// FOG //////////////////////
 #ifndef MODE_RENDER_DEPTH
-
-#ifndef CUSTOM_FOG_USED
-	// fog must be processed as early as possible and then packed.
-	// to maximize VGPR usage
-	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.
-
-	if (!sc_disable_fog && scene_data.fog_enabled) {
-		fog = fog_process(vertex);
-	}
-
-#endif //!CUSTOM_FOG_USED
-
+	// Fog must be processed as early as possible and then packed to maximize VGPR usage.
 	uint fog_rg = packHalf2x16(fog.rg);
 	uint fog_ba = packHalf2x16(fog.ba);
-
 #endif //!MODE_RENDER_DEPTH
 
 	/////////////////////// DECALS ////////////////////////////////
