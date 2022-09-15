@@ -763,7 +763,9 @@ private:
 	Button *sun_environ_settings = nullptr;
 
 	DirectionalLight3D *preview_sun = nullptr;
+	bool preview_sun_dangling = false;
 	WorldEnvironment *preview_environment = nullptr;
+	bool preview_env_dangling = false;
 	Ref<Environment> environment;
 	Ref<CameraAttributesPhysical> camera_attributes;
 	Ref<ProceduralSkyMaterial> sky_material;
