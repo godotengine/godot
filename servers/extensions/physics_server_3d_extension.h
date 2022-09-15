@@ -192,14 +192,8 @@ public:
 typedef PhysicsServer3D::MotionCollision PhysicsServer3DExtensionMotionCollision;
 typedef PhysicsServer3D::MotionResult PhysicsServer3DExtensionMotionResult;
 
-struct PhysicsServer3DExtensionStateCallback {
-	void *instance = nullptr;
-	void (*callback)(void *p_instance, PhysicsDirectBodyState3D *p_state);
-};
-
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionMotionCollision)
 GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionMotionResult)
-GDVIRTUAL_NATIVE_PTR(PhysicsServer3DExtensionStateCallback)
 
 class PhysicsServer3DExtension : public PhysicsServer3D {
 	GDCLASS(PhysicsServer3DExtension, PhysicsServer3D);
@@ -380,13 +374,7 @@ public:
 	EXBIND2(body_set_omit_force_integration, RID, bool)
 	EXBIND1RC(bool, body_is_omitting_force_integration, RID)
 
-	GDVIRTUAL2(_body_set_state_sync_callback, RID, GDNativePtr<PhysicsServer3DExtensionStateCallback>)
-	void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override {
-		PhysicsServer3DExtensionStateCallback callback;
-		callback.callback = p_callback;
-		callback.instance = p_instance;
-		GDVIRTUAL_REQUIRED_CALL(_body_set_state_sync_callback, p_body, &callback);
-	}
+	EXBIND2(body_set_state_sync_callback, RID, const Callable &)
 	EXBIND3(body_set_force_integration_callback, RID, const Callable &, const Variant &)
 
 	EXBIND2(body_set_ray_pickable, RID, bool)

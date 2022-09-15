@@ -262,19 +262,14 @@ void AnimatableBody2D::_update_kinematic_motion() {
 #endif
 
 	if (sync_to_physics) {
-		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &AnimatableBody2D::_body_state_changed));
 		set_only_update_transform_changes(true);
 		set_notify_local_transform(true);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
+		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), Callable());
 		set_only_update_transform_changes(false);
 		set_notify_local_transform(false);
 	}
-}
-
-void AnimatableBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	AnimatableBody2D *body = static_cast<AnimatableBody2D *>(p_instance);
-	body->_body_state_changed(p_state);
 }
 
 void AnimatableBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
@@ -437,11 +432,6 @@ struct _RigidBody2DInOut {
 	int shape = 0;
 	int local_shape = 0;
 };
-
-void RigidBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	RigidBody2D *body = static_cast<RigidBody2D *>(p_instance);
-	body->_body_state_changed(p_state);
-}
 
 void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
@@ -1079,7 +1069,7 @@ void RigidBody2D::_validate_property(PropertyInfo &p_property) const {
 
 RigidBody2D::RigidBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
-	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody2D::_body_state_changed));
 }
 
 RigidBody2D::~RigidBody2D() {

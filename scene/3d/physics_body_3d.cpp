@@ -317,11 +317,6 @@ void AnimatableBody3D::_update_kinematic_motion() {
 	}
 }
 
-void AnimatableBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	AnimatableBody3D *body = (AnimatableBody3D *)p_instance;
-	body->_body_state_changed(p_state);
-}
-
 void AnimatableBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -373,7 +368,7 @@ void AnimatableBody3D::_bind_methods() {
 
 AnimatableBody3D::AnimatableBody3D() :
 		StaticBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &AnimatableBody3D::_body_state_changed));
 }
 
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
@@ -487,11 +482,6 @@ struct _RigidBodyInOut {
 	int shape = 0;
 	int local_shape = 0;
 };
-
-void RigidBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	RigidBody3D *body = (RigidBody3D *)p_instance;
-	body->_body_state_changed(p_state);
-}
 
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	set_ignore_transform_notification(true);
@@ -1139,7 +1129,7 @@ void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
 
 RigidBody3D::RigidBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_RIGID) {
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody3D::_body_state_changed));
 }
 
 RigidBody3D::~RigidBody3D() {
@@ -2903,11 +2893,6 @@ void PhysicalBone3D::_notification(int p_what) {
 	}
 }
 
-void PhysicalBone3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	PhysicalBone3D *bone = (PhysicalBone3D *)p_instance;
-	bone->_body_state_changed(p_state);
-}
-
 void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
@@ -3425,7 +3410,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &PhysicalBone3D::_body_state_changed));
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
 }
@@ -3446,7 +3431,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), 1.0);
 	}
 	if (_internal_simulate_physics) {
-		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
+		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), Callable());
 		parent_skeleton->set_bone_global_pose_override(bone_id, Transform3D(), 0.0, false);
 		set_as_top_level(false);
 		_internal_simulate_physics = false;
