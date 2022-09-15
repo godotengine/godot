@@ -90,8 +90,11 @@
     <Compile Include="Core\Interfaces\IAwaitable.cs" />
     <Compile Include="Core\Interfaces\IAwaiter.cs" />
     <Compile Include="Core\Interfaces\ISerializationListener.cs" />
-    <Compile Include="Core\Mathf.cs" />
-    <Compile Include="Core\MathfEx.cs" />
+    <Compile Include="Core\Mathd.cs" />
+    <Compile Include="Core\MathdEx.cs" />
+    <Compile Include="Core\Mathi.cs" />
+    <Compile Include="Core\Maths.cs" />
+    <Compile Include="Core\MathsEx.cs" />
     <Compile Include="Core\NativeInterop\CustomUnsafe.cs" />
     <Compile Include="Core\NativeInterop\ExceptionUtils.cs" />
     <Compile Include="Core\NativeInterop\GodotDllImportResolver.cs" />
