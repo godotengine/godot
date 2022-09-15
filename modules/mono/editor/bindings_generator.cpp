@@ -2229,23 +2229,6 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
-			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
-			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
-
-			if (summary_lines.size()) {
-				p_output.append(MEMBER_BEGIN "/// <summary>\n");
-
-				for (int i = 0; i < summary_lines.size(); i++) {
-					p_output.append(INDENT1 "/// ");
-					p_output.append(summary_lines[i]);
-					p_output.append("\n");
-				}
-
-				p_output.append(INDENT1 "/// </summary>");
-			}
-		}
-
 		if (p_isignal.is_deprecated) {
 			if (p_isignal.deprecation_message.is_empty()) {
 				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
@@ -2265,6 +2248,29 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		p_output.append("(");
 		p_output.append(arguments_sig);
 		p_output.append(");\n");
+
+		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
+			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype);
+			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
+
+			if (summary_lines.size()) {
+				p_output.append(MEMBER_BEGIN "/// <summary>\n");
+
+				for (int i = 0; i < summary_lines.size(); i++) {
+					p_output.append(INDENT1 "/// ");
+					p_output.append(summary_lines[i]);
+					p_output.append("\n");
+				}
+
+				p_output.append(INDENT1 "/// </summary>");
+			}
+		}
+
+		if (p_isignal.is_deprecated) {
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+			p_output.append(p_isignal.deprecation_message);
+			p_output.append("\")]");
+		}
 
 		// TODO:
 		// Could we assume the StringName instance of signal name will never be freed (it's stored in ClassDB) before the managed world is unloaded?
