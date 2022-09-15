@@ -1550,14 +1550,14 @@ void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, s
 	pd.relative_motion_time = uptime_lo;
 }
 
-void DisplayServerWayland::_wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer) {
+void DisplayServerWayland::_wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer) {
 	// This method is purposely left unimplemented as we don't care about the
 	// offered MIME type, as we only want `text/plain` data.
 
 	// TODO: Perhaps we could try to detect other text types such as `TEXT`?
 }
 
-void DisplayServerWayland::_wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *zwp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id) {
+void DisplayServerWayland::_wp_primary_selection_device_on_selection(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *id) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
@@ -1568,13 +1568,13 @@ void DisplayServerWayland::_wp_primary_selection_device_on_selection(void *data,
 	ss->wp_primary_selection_offer = id;
 }
 
-void DisplayServerWayland::_wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1, const char *mime_type, int32_t fd) {
+void DisplayServerWayland::_wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1, const char *mime_type, int32_t fd) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
 	Vector<uint8_t> *data_to_send = nullptr;
 
-	if (zwp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
+	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
 		data_to_send = &ss->primary_data;
 		DEBUG_LOG_WAYLAND("Clipboard: requested primary selection.");
 	}
@@ -1598,11 +1598,11 @@ void DisplayServerWayland::_wp_primary_selection_source_on_send(void *data, stru
 	close(fd);
 }
 
-void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1) {
+void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
-	if (zwp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
+	if (wp_primary_selection_source_v1 == ss->wp_primary_selection_source) {
 		zwp_primary_selection_source_v1_destroy(ss->wp_primary_selection_source);
 		ss->wp_primary_selection_source = nullptr;
 
