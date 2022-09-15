@@ -1261,6 +1261,7 @@ void SkyRD::setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const P
 				light_data_dirty = true;
 				for (uint32_t i = sky_scene_state.ubo.directional_light_count; i < sky_scene_state.max_directional_lights; i++) {
 					sky_scene_state.directional_lights[i].enabled = false;
+					sky_scene_state.last_frame_directional_lights[i].enabled = false;
 				}
 			}
 

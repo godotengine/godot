@@ -683,6 +683,7 @@ void RasterizerSceneGLES3::_setup_sky(const RenderDataGLES3 *p_render_data, cons
 				light_data_dirty = true;
 				for (uint32_t i = sky_globals.directional_light_count; i < sky_globals.max_directional_lights; i++) {
 					sky_globals.directional_lights[i].enabled = false;
+					sky_globals.last_frame_directional_lights[i].enabled = false;
 				}
 			}
 

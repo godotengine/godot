@@ -108,6 +108,7 @@ class ProjectManager : public Control {
 	void _run_project_confirm();
 	void _open_selected_projects();
 	void _open_selected_projects_ask();
+	void _full_convert_button_pressed();
 	void _perform_full_project_conversion();
 	void _import_project();
 	void _new_project();

@@ -221,12 +221,9 @@ void main() {
 		vec4 sample_color = texture(source_color, uv_adj);
 		sample_color.a = texture(source_weight, uv_adj).r;
 
-		float limit;
-
-		if (sample_color.a < color.a) {
-			limit = abs(sample_color.a);
-		} else {
-			limit = abs(color.a);
+		float limit = abs(sample_color.a);
+		if (sample_color.a > color.a) {
+			limit = clamp(limit, 0.0, abs(color.a) * 2.0);
 		}
 
 		limit -= DEPTH_GAP;

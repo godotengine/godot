@@ -1162,13 +1162,11 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		}
 
 		if (parser->has_attribute("is_deprecated")) {
-			String result = parser->get_attribute_value("is_deprecated");
-			c.is_deprecated = (result == "true" || result == "True" || result == "TRUE" || result == "1");
+			c.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
 		}
 
 		if (parser->has_attribute("is_experimental")) {
-			String result = parser->get_attribute_value("is_experimental");
-			c.is_experimental = (result == "true" || result == "True" || result == "TRUE" || result == "1");
+			c.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
 		}
 
 		while (parser->read() == OK) {
@@ -1315,12 +1313,10 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 									constant2.is_bitfield = parser->get_attribute_value("is_bitfield").to_lower() == "true";
 								}
 								if (parser->has_attribute("is_deprecated")) {
-									String result = parser->get_attribute_value("is_deprecated");
-									constant2.is_deprecated = (result == "true" || result == "True" || result == "TRUE" || result == "1");
+									constant2.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
 								}
 								if (parser->has_attribute("is_experimental")) {
-									String result = parser->get_attribute_value("is_experimental");
-									constant2.is_experimental = (result == "true" || result == "True" || result == "TRUE" || result == "1");
+									constant2.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
 								}
 								if (!parser->is_empty()) {
 									parser->read();
@@ -1376,10 +1372,10 @@ static void _write_method_doc(Ref<FileAccess> f, const String &p_name, Vector<Do
 
 			String additional_attributes;
 			if (m.is_deprecated) {
-				additional_attributes += " is_deprecated=\"True\"";
+				additional_attributes += " is_deprecated=\"true\"";
 			}
 			if (m.is_experimental) {
-				additional_attributes += " is_experimental=\"True\"";
+				additional_attributes += " is_experimental=\"true\"";
 			}
 
 			_write_string(f, 2, "<" + p_name + " name=\"" + m.name.xml_escape() + "\"" + qualifiers + additional_attributes + ">");
@@ -1446,10 +1442,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		if (!c.inherits.is_empty()) {
 			header += " inherits=\"" + c.inherits + "\"";
 			if (c.is_deprecated) {
-				header += " is_deprecated=\"True\"";
+				header += " is_deprecated=\"true\"";
 			}
 			if (c.is_experimental) {
-				header += " is_experimental=\"True\"";
+				header += " is_experimental=\"true\"";
 			}
 		}
 		header += String(" version=\"") + VERSION_BRANCH + "\"";
@@ -1495,10 +1491,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 					additional_attributes += " default=\"" + c.properties[i].default_value.xml_escape(true) + "\"";
 				}
 				if (c.properties[i].is_deprecated) {
-					additional_attributes += " is_deprecated=\"True\"";
+					additional_attributes += " is_deprecated=\"true\"";
 				}
 				if (c.properties[i].is_experimental) {
-					additional_attributes += " is_experimental=\"True\"";
+					additional_attributes += " is_experimental=\"true\"";
 				}
 
 				const DocData::PropertyDoc &p = c.properties[i];
@@ -1523,10 +1519,10 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 
 				String additional_attributes;
 				if (c.constants[i].is_deprecated) {
-					additional_attributes += " is_deprecated=\"True\"";
+					additional_attributes += " is_deprecated=\"true\"";
 				}
 				if (c.constants[i].is_experimental) {
-					additional_attributes += " is_experimental=\"True\"";
+					additional_attributes += " is_experimental=\"true\"";
 				}
 
 				if (k.is_value_valid) {
