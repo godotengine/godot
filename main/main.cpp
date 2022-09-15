@@ -1789,6 +1789,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_ticks_per_second",
 			PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second",
 					PROPERTY_HINT_RANGE, "1,1000,1"));
+
+	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF("physics/common/max_physics_steps_per_frame", 8));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/max_physics_steps_per_frame",
+			PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame",
+					PROPERTY_HINT_RANGE, "1,100,1"));
+
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
 	Engine::get_singleton()->set_max_fps(GLOBAL_DEF("application/run/max_fps", 0));
 	ProjectSettings::get_singleton()->set_custom_property_info("application/run/max_fps",
@@ -3105,7 +3111,7 @@ bool Main::iteration() {
 
 	last_ticks = ticks;
 
-	static const int max_physics_steps = 8;
+	const int max_physics_steps = Engine::get_singleton()->get_max_physics_steps_per_frame();
 	if (fixed_fps == -1 && advance.physics_steps > max_physics_steps) {
 		process_step -= (advance.physics_steps - max_physics_steps) * physics_step;
 		advance.physics_steps = max_physics_steps;
