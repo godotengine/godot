@@ -3727,36 +3727,6 @@ String Variant::get_callable_error_text(const Callable &p_callable, const Varian
 	return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, p_argcount, ce);
 }
 
-String vformat(const String &p_text, const Variant &p1, const Variant &p2, const Variant &p3, const Variant &p4, const Variant &p5) {
-	Array args;
-	if (p1.get_type() != Variant::NIL) {
-		args.push_back(p1);
-
-		if (p2.get_type() != Variant::NIL) {
-			args.push_back(p2);
-
-			if (p3.get_type() != Variant::NIL) {
-				args.push_back(p3);
-
-				if (p4.get_type() != Variant::NIL) {
-					args.push_back(p4);
-
-					if (p5.get_type() != Variant::NIL) {
-						args.push_back(p5);
-					}
-				}
-			}
-		}
-	}
-
-	bool error = false;
-	String fmt = p_text.sprintf(args, &error);
-
-	ERR_FAIL_COND_V_MSG(error, String(), fmt);
-
-	return fmt;
-}
-
 void Variant::register_types() {
 	_register_variant_operators();
 	_register_variant_methods();
