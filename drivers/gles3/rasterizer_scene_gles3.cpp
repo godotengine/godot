@@ -1526,6 +1526,10 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			if (amount == -1) {
 				amount = multi_mesh->size;
 			}
+
+			if (!amount) {
+				return;
+			}
 #ifdef DEBUG_ENABLED
 
 			if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->array_wireframe_id) {
