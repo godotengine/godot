@@ -269,6 +269,7 @@ public:
 	void popup_centered_clamped(const Size2i &p_size = Size2i(), float p_fallback_ratio = 0.75);
 
 	void set_theme_owner_node(Node *p_node);
+	void propagate_theme_changed(Node *p_theme_owner_node);
 	Node *get_theme_owner_node() const;
 	bool has_theme_owner_node() const;
 

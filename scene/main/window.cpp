@@ -1311,6 +1311,10 @@ void Window::set_theme_owner_node(Node *p_node) {
 	theme_owner->set_owner_node(p_node);
 }
 
+void Window::propagate_theme_changed(Node *p_theme_owner_node) {
+	theme_owner->propagate_theme_changed(this, p_theme_owner_node, is_inside_tree(), true);
+}
+
 Node *Window::get_theme_owner_node() const {
 	return theme_owner->get_owner_node();
 }

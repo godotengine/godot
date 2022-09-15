@@ -1132,13 +1132,11 @@ void Viewport::_gui_cancel_tooltip() {
 		gui.tooltip_timer = Ref<SceneTreeTimer>();
 	}
 	if (gui.tooltip_popup) {
-		gui.tooltip_popup->queue_delete();
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
+		gui.tooltip_popup->hide();
 	}
 }
 
-String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner) {
+String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_serve_target) {
 	Vector2 pos = p_pos;
 	String tooltip;
 
@@ -1151,8 +1149,8 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 			tooltip = menu->get_tooltip(pos);
 		}
 
-		if (r_tooltip_owner) {
-			*r_tooltip_owner = p_control;
+		if (r_tooltip_serve_target) {
+			*r_tooltip_serve_target = p_control;
 		}
 
 		// If we found a tooltip, we stop here.
@@ -1184,56 +1182,68 @@ void Viewport::_gui_show_tooltip() {
 	}
 
 	// Get the Control under cursor and the relevant tooltip text, if any.
-	Control *tooltip_owner = nullptr;
+	Control *tooltip_serve_target = nullptr;
 	String tooltip_text = _gui_get_tooltip(
 			gui.tooltip_control,
 			gui.tooltip_control->get_global_transform().xform_inv(gui.last_mouse_pos),
-			&tooltip_owner);
+			&tooltip_serve_target);
 	tooltip_text = tooltip_text.strip_edges();
 	if (tooltip_text.is_empty()) {
 		return; // Nothing to show.
 	}
 
-	// Remove previous popup if we change something.
-	if (gui.tooltip_popup) {
-		memdelete(gui.tooltip_popup);
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
+	// Remove previous custom tooltip if we change something.
+	if (gui.custom_tooltip) {
+		memdelete(gui.custom_tooltip);
+		gui.custom_tooltip = nullptr;
 	}
 
-	if (!tooltip_owner) {
+	if (!tooltip_serve_target) {
 		return;
 	}
 
-	// Popup window which houses the tooltip content.
-	PopupPanel *panel = memnew(PopupPanel);
-	panel->set_theme_type_variation(SNAME("TooltipPanel"));
+	if (!gui.tooltip_popup) {
+		// Popup window which houses the tooltip content.
+		gui.tooltip_popup = memnew(PopupPanel);
+		gui.tooltip_popup->set_theme_type_variation(SNAME("TooltipPanel"));
+		gui.tooltip_popup->set_transient(true);
+		gui.tooltip_popup->set_flag(Window::FLAG_NO_FOCUS, true);
+		gui.tooltip_popup->set_flag(Window::FLAG_POPUP, false);
+		gui.tooltip_popup->set_wrap_controls(true);
+
+		// Provides a default implementation in case there is no custom tooltip.
+		gui.tooltip_label = memnew(Label);
+		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
+		gui.tooltip_label->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		gui.tooltip_label->hide();
+		gui.tooltip_popup->add_child(gui.tooltip_label);
+		add_child(gui.tooltip_popup);
+	}
+
+	// Because gui.tooltip_popup needs to be reused, it may already exist and only tooltip_serve_target has changed.
+	// In order to use the theme associated with tooltip_serve_target, the theme property needs to be propagated manually.
+	gui.tooltip_popup->propagate_theme_changed(tooltip_serve_target->get_theme_owner_node());
 
 	// Controls can implement `make_custom_tooltip` to provide their own tooltip.
 	// This should be a Control node which will be added as child to a TooltipPanel.
-	Control *base_tooltip = tooltip_owner->make_custom_tooltip(tooltip_text);
+	gui.custom_tooltip = tooltip_serve_target->make_custom_tooltip(tooltip_text);
 
-	// If no custom tooltip is given, use a default implementation.
-	if (!base_tooltip) {
-		gui.tooltip_label = memnew(Label);
-		gui.tooltip_label->set_theme_type_variation(SNAME("TooltipLabel"));
-		gui.tooltip_label->set_auto_translate(gui.tooltip_control->is_auto_translating());
+	if (gui.custom_tooltip) {
+		gui.custom_tooltip->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		gui.tooltip_popup->add_child(gui.custom_tooltip);
+		if (gui.tooltip_label->is_visible()) {
+			gui.tooltip_popup->disconnect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
+			gui.tooltip_label->hide();
+		}
+	} else {
+		// If no custom tooltip is given, use the default implementation.
 		gui.tooltip_label->set_text(tooltip_text);
-		base_tooltip = gui.tooltip_label;
-		panel->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
+		gui.tooltip_label->set_auto_translate(gui.tooltip_control->is_auto_translating());
+		if (!gui.tooltip_label->is_visible()) {
+			gui.tooltip_popup->connect("mouse_entered", callable_mp(this, &Viewport::_gui_cancel_tooltip));
+			gui.tooltip_label->show();
+		}
 	}
-
-	base_tooltip->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-
-	panel->set_transient(true);
-	panel->set_flag(Window::FLAG_NO_FOCUS, true);
-	panel->set_flag(Window::FLAG_POPUP, false);
-	panel->set_wrap_controls(true);
-	panel->add_child(base_tooltip);
-
-	gui.tooltip_popup = panel;
-
-	tooltip_owner->add_child(gui.tooltip_popup);
 
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
@@ -1705,17 +1715,17 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				bool is_tooltip_shown = false;
 
-				if (gui.tooltip_popup) {
+				if (gui.tooltip_popup && gui.tooltip_popup->is_visible()) {
 					if (gui.tooltip_control) {
 						String tooltip = _gui_get_tooltip(over, gui.tooltip_control->get_global_transform().xform_inv(mpos));
 						tooltip = tooltip.strip_edges();
 						if (tooltip.length() == 0) {
 							_gui_cancel_tooltip();
-						} else if (gui.tooltip_label) {
+						} else if (gui.tooltip_label && gui.tooltip_label->is_visible()) {
 							if (tooltip == gui.tooltip_label->get_text()) {
 								is_tooltip_shown = true;
 							}
-						} else {
+						} else if (gui.custom_tooltip) {
 							is_tooltip_shown = true; // Nothing to compare against, likely using custom control, so if it changes there is nothing we can do.
 						}
 					} else {

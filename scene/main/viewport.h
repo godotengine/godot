@@ -362,6 +362,7 @@ private:
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
+		Control *custom_tooltip = nullptr;
 		Point2 tooltip_pos;
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
@@ -414,7 +415,7 @@ private:
 
 	void _gui_remove_root_control(List<Control *>::Element *RI);
 
-	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = nullptr);
+	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_serve_target = nullptr);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
