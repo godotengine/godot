@@ -1710,7 +1710,7 @@ void fragment_shader(in SceneData scene_data) {
 			shadow = shadow * directional_lights.data[i].shadow_opacity + 1.0 - directional_lights.data[i].shadow_opacity;
 #endif
 
-			blur_shadow(shadow);
+			shadow = blur_shadow(shadow);
 
 			float size_A = sc_use_light_soft_shadows ? directional_lights.data[i].size : 0.0;
 
