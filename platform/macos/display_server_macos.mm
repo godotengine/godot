@@ -3537,7 +3537,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	[apple_menu addItem:[NSMenuItem separatorItem]];
 
-	title = [NSString stringWithFormat:NSLocalizedString(@"\t\tQuit %@", nil), nsappname];
+	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
 
 	// Add items to the menu bar.
