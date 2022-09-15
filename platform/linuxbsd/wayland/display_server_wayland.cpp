@@ -1452,9 +1452,21 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 	WindowData *wd = (WindowData *)data;
 	ERR_FAIL_NULL(wd);
 
+	WaylandState *wls = wd->wls;
+
 	if (width != 0 && height != 0) {
 		wd->rect.size.width = width;
 		wd->rect.size.height = height;
+	}
+
+	if (wls->current_seat && wls->current_seat->wp_locked_pointer && wd->id == wls->current_seat->pointer_data.pointed_window_id) {
+		// Since the cursor's currently locked and the window's rect might have
+		// changed, we have to recenter the position hint to ensure that the cursors
+		// stays centered on unlock.
+		wl_fixed_t unlock_x = wl_fixed_from_int(width / 2);
+		wl_fixed_t unlock_y = wl_fixed_from_int(height / 2);
+
+		zwp_locked_pointer_v1_set_cursor_position_hint(wls->current_seat->wp_locked_pointer, unlock_x, unlock_y);
 	}
 
 	// Expect the window to be in windowed mode. The mode will get overridden if
@@ -2597,16 +2609,6 @@ void DisplayServerWayland::process_events() {
 				Callable::CallError ce;
 
 				wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
-			}
-
-			// TODO: It would probably be better to do this Wayland-side.
-			if (wls.current_seat && wls.current_seat->wp_locked_pointer && id == wls.current_seat->pointer_data.pointed_window_id) {
-				// Since the window changes size, we have to reset its position hint, to
-				// successfully have a centered cursor on unlock.
-				wl_fixed_t unlock_x = wl_fixed_from_int(rect.size.width / 2);
-				wl_fixed_t unlock_y = wl_fixed_from_int(rect.size.height / 2);
-
-				zwp_locked_pointer_v1_set_cursor_position_hint(wls.current_seat->wp_locked_pointer, unlock_x, unlock_y);
 			}
 		}
 
