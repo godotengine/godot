@@ -641,18 +641,21 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	if (name == globals.wl_shm_name) {
 		wl_shm_destroy(globals.wl_shm);
 		globals.wl_shm = nullptr;
+		globals.wl_shm_name = 0;
 		return;
 	}
 
 	if (name == globals.wl_compositor_name) {
 		wl_compositor_destroy(globals.wl_compositor);
 		globals.wl_compositor = nullptr;
+		globals.wl_compositor_name = 0;
 		return;
 	}
 
 	if (name == globals.wl_data_device_manager_name) {
 		wl_data_device_manager_destroy(globals.wl_data_device_manager);
 		globals.wl_data_device_manager = nullptr;
+		globals.wl_data_device_manager_name = 0;
 
 		// Destroy any seat data device that's there.
 		for (SeatState &ss : wls->seats) {
@@ -664,30 +667,35 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	if (name == globals.xdg_wm_base_name) {
 		xdg_wm_base_destroy(globals.xdg_wm_base);
 		globals.xdg_wm_base = nullptr;
+		globals.xdg_wm_base_name = 0;
 		return;
 	}
 
 	if (name == globals.xdg_decoration_manager_name) {
 		zxdg_decoration_manager_v1_destroy(globals.xdg_decoration_manager);
 		globals.xdg_decoration_manager = nullptr;
+		globals.xdg_decoration_manager_name = 0;
 		return;
 	}
 
 	if (name == globals.wp_pointer_constraints_name) {
 		zwp_pointer_constraints_v1_destroy(globals.wp_pointer_constraints);
 		globals.wp_pointer_constraints = nullptr;
+		globals.wp_pointer_constraints_name = 0;
 		return;
 	}
 
 	if (name == globals.wp_relative_pointer_manager_name) {
 		zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
 		globals.wp_relative_pointer_manager = nullptr;
+		globals.wp_relative_pointer_manager_name = 0;
 		return;
 	}
 
 	if (name == globals.wp_idle_inhibit_manager_name) {
 		zwp_idle_inhibit_manager_v1_destroy(globals.wp_idle_inhibit_manager);
 		globals.wp_idle_inhibit_manager = nullptr;
+		globals.wp_idle_inhibit_manager_name = 0;
 		return;
 	}
 
