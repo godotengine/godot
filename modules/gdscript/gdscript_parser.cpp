@@ -4166,8 +4166,22 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							return;
 						}
 
-						sig.arguments.push_back(tokenizer->get_token_identifier());
+						Pair<StringName, Variant::Type> parameter{};
+						parameter.first = tokenizer->get_token_identifier();
 						tokenizer->advance();
+
+						parameter.second = Variant::NIL;
+						if (tokenizer->get_token() == GDScriptTokenizer::TK_COLON) {
+							tokenizer->advance();
+							if (tokenizer->get_token() != GDScriptTokenizer::TK_BUILT_IN_TYPE) {
+								_set_error(String{ "Signal ({0})'s parameter ({1})'s type ({2}) is not a built-in type, currently only support built-in types." }.format(varray(sig.name, parameter.first, tokenizer->get_token_identifier())));
+								return;
+							} else {
+								parameter.second = tokenizer->get_token_type();
+							}
+							tokenizer->advance();
+						}
+						sig.arguments.push_back(parameter);
 
 						while (tokenizer->get_token() == GDScriptTokenizer::TK_NEWLINE) {
 							tokenizer->advance();

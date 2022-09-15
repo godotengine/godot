@@ -880,12 +880,13 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 	return false;
 }
 void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	for (const Map<StringName, Vector<StringName>>::Element *E = _signals.front(); E; E = E->next()) {
+	for (const Map<StringName, Vector<Pair<StringName, Variant::Type>>>::Element *E = _signals.front(); E; E = E->next()) {
 		MethodInfo mi;
 		mi.name = E->key();
 		for (int i = 0; i < E->get().size(); i++) {
 			PropertyInfo arg;
-			arg.name = E->get()[i];
+			arg.name = E->get()[i].first;
+			arg.type = E->get()[i].second;
 			mi.arguments.push_back(arg);
 		}
 		r_signals->push_back(mi);
