@@ -101,13 +101,13 @@ void AnimationNodeBlendTreeEditor::_property_changed(const StringName &p_propert
 	undo_redo->create_action(TTR("Parameter Changed:") + " " + String(p_property), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(tree, p_property, p_value);
 	undo_redo->add_undo_property(tree, p_property, tree->get(p_property));
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 	updating = false;
 }
 
-void AnimationNodeBlendTreeEditor::_update_graph() {
+void AnimationNodeBlendTreeEditor::update_graph() {
 	if (updating || blend_tree.is_null()) {
 		return;
 	}
@@ -364,8 +364,8 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		to_slot = -1;
 	}
 
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 }
 
@@ -416,8 +416,8 @@ void AnimationNodeBlendTreeEditor::_node_dragged(const Vector2 &p_from, const Ve
 	undo_redo->create_action(TTR("Node Moved"));
 	undo_redo->add_do_method(blend_tree.ptr(), "set_node_position", p_which, p_to / EDSCALE);
 	undo_redo->add_undo_method(blend_tree.ptr(), "set_node_position", p_which, p_from / EDSCALE);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 	updating = false;
 }
@@ -437,8 +437,8 @@ void AnimationNodeBlendTreeEditor::_connection_request(const String &p_from, int
 	undo_redo->create_action(TTR("Nodes Connected"));
 	undo_redo->add_do_method(blend_tree.ptr(), "connect_node", p_to, p_to_index, p_from);
 	undo_redo->add_undo_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 }
 
@@ -453,8 +453,8 @@ void AnimationNodeBlendTreeEditor::_disconnection_request(const String &p_from, 
 	undo_redo->create_action(TTR("Nodes Disconnected"));
 	undo_redo->add_do_method(blend_tree.ptr(), "disconnect_node", p_to, p_to_index);
 	undo_redo->add_undo_method(blend_tree.ptr(), "connect_node", p_to, p_to_index, p_from);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 	updating = false;
 }
@@ -468,8 +468,8 @@ void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, Array p_options, 
 	undo_redo->create_action(TTR("Set Animation"));
 	undo_redo->add_do_method(anim.ptr(), "set_animation", option);
 	undo_redo->add_undo_method(anim.ptr(), "set_animation", anim->get_animation());
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 }
 
@@ -491,8 +491,8 @@ void AnimationNodeBlendTreeEditor::_delete_request(const String &p_which) {
 		}
 	}
 
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 }
 
@@ -819,7 +819,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			_update_theme();
 
 			if (is_visible_in_tree()) {
-				_update_graph();
+				update_graph();
 			}
 		} break;
 
@@ -900,11 +900,22 @@ void AnimationNodeBlendTreeEditor::_scroll_changed(const Vector2 &p_scroll) {
 }
 
 void AnimationNodeBlendTreeEditor::_bind_methods() {
-	ClassDB::bind_method("_update_graph", &AnimationNodeBlendTreeEditor::_update_graph);
+	ClassDB::bind_method("update_graph", &AnimationNodeBlendTreeEditor::update_graph);
 	ClassDB::bind_method("_update_filters", &AnimationNodeBlendTreeEditor::_update_filters);
 }
 
 AnimationNodeBlendTreeEditor *AnimationNodeBlendTreeEditor::singleton = nullptr;
+
+// AnimationNode's "node_changed" signal means almost update_input.
+void AnimationNodeBlendTreeEditor::_node_changed(const StringName &p_node_name) {
+	// TODO:
+	// Here is executed during the commit of EditorNode::undo_redo, it is not possible to create an undo_redo action here.
+	// The disconnect when the number of enabled inputs decreases is done in AnimationNodeBlendTree and update_graph().
+	// This means that there is no place to register undo_redo actions.
+	// In order to implement undo_redo correctly, we may need to implement AnimationNodeEdit such as AnimationTrackKeyEdit
+	// and add it to _node_selected() with EditorNode::get_singleton()->push_item(AnimationNodeEdit).
+	update_graph();
+}
 
 void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<AnimationNode> p_node) {
 	if (blend_tree.is_null()) {
@@ -940,8 +951,8 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	undo_redo->add_undo_method(blend_tree.ptr(), "rename_node", name, prev_name);
 	undo_redo->add_do_method(AnimationTreeEditor::get_singleton()->get_tree(), "rename_parameter", base_path + prev_name, base_path + name);
 	undo_redo->add_undo_method(AnimationTreeEditor::get_singleton()->get_tree(), "rename_parameter", base_path + name, base_path + prev_name);
-	undo_redo->add_do_method(this, "_update_graph");
-	undo_redo->add_undo_method(this, "_update_graph");
+	undo_redo->add_do_method(this, "update_graph");
+	undo_redo->add_undo_method(this, "update_graph");
 	undo_redo->commit_action();
 	updating = false;
 	gn->set_name(new_name);
@@ -979,7 +990,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 		}
 	}
 
-	_update_graph(); // Needed to update the signal connections with the new name.
+	update_graph(); // Needed to update the signal connections with the new name.
 }
 
 void AnimationNodeBlendTreeEditor::_node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node) {
@@ -996,6 +1007,7 @@ bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
 
 void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	if (blend_tree.is_valid()) {
+		blend_tree->disconnect("node_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_changed));
 		blend_tree->disconnect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 	}
 
@@ -1008,9 +1020,10 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	} else {
 		read_only = EditorNode::get_singleton()->is_resource_read_only(blend_tree);
 
+		blend_tree->connect("node_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_changed));
 		blend_tree->connect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 
-		_update_graph();
+		update_graph();
 	}
 
 	add_node->set_disabled(read_only);

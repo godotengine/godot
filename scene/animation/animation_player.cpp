@@ -1270,6 +1270,8 @@ void AnimationPlayer::_animation_set_cache_update() {
 		// If something was modified or removed, caches need to be cleared
 		clear_caches();
 	}
+
+	emit_signal(SNAME("animation_list_changed"));
 }
 
 void AnimationPlayer::_animation_added(const StringName &p_name, const StringName &p_library) {
@@ -2150,6 +2152,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_list_changed"));
 	ADD_SIGNAL(MethodInfo("caches_cleared"));
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
