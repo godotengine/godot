@@ -747,6 +747,12 @@
 				If [param allow_empty] is [code]true[/code], and there are two adjacent delimiters in the string, it will add an empty string to the array of substrings at this position.
 			</description>
 		</method>
+		<method name="strip_bbcode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns a copy of the string stripped of any bbcode tags. This includes all text between pairs of brackets.
+			</description>
+		</method>
 		<method name="strip_edges" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="left" type="bool" default="true" />
