@@ -795,7 +795,6 @@ void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *
 		ss->wp_relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(wls->globals.wp_relative_pointer_manager, ss->wl_pointer);
 		zwp_relative_pointer_v1_add_listener(ss->wp_relative_pointer, &wp_relative_pointer_listener, ss);
 	} else {
-		// DEBUG
 		if (ss->cursor_surface) {
 			wl_surface_destroy(ss->cursor_surface);
 			ss->cursor_surface = nullptr;
