@@ -3038,7 +3038,7 @@ void EditorInspector::update_tree() {
 			bool movable = true;
 			bool numbered = false;
 			bool foldable = use_folding;
-			String add_button_text;
+			String add_button_text = TTR("Add Element");
 			String swap_method;
 			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
 				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
