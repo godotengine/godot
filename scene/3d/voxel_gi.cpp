@@ -30,6 +30,7 @@
 
 #include "voxel_gi.h"
 
+#include "core/config/project_settings.h"
 #include "core/core_string_names.h"
 #include "mesh_instance_3d.h"
 #include "multimesh_instance_3d.h"
@@ -382,7 +383,10 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	float exposure_normalization = 1.0;
 	if (camera_attributes.is_valid()) {
-		exposure_normalization = camera_attributes->calculate_exposure_normalization() * camera_attributes->get_exposure_multiplier();
+		exposure_normalization = camera_attributes->get_exposure_multiplier();
+		if (GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+			exposure_normalization = camera_attributes->calculate_exposure_normalization();
+		}
 	}
 
 	Voxelizer baker;
