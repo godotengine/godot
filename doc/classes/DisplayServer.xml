@@ -1286,6 +1286,13 @@
 				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
+		<method name="window_move_to_center">
+			<return type="void" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Centers the window on the screen the window is currently on.
+			</description>
+		</method>
 		<method name="window_move_to_foreground">
 			<return type="void" />
 			<param index="0" name="window_id" type="int" default="0" />

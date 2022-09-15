@@ -1646,6 +1646,20 @@ void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable
 	wd.drop_files_callback = p_callable;
 }
 
+void DisplayServerX11::window_move_to_center(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+
+	int p_screen = window_get_current_screen(p_window);
+
+	Point2i screen_size = screen_get_size(p_screen);
+	Point2i window_size = window_get_size(p_window);
+	Point2i position = screen_get_position(p_screen) + screen_size / 2 - window_size / 2;
+
+	window_set_position(position, p_window);
+}
+
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
