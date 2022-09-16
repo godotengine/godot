@@ -1,9 +1,9 @@
 
 /* png.h - header file for PNG reference library
  *
- * libpng version 1.6.37 - April 14, 2019
+ * libpng version 1.6.38 - September 14, 2022
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2022 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -15,7 +15,7 @@
  *   libpng versions 0.89, June 1996, through 0.96, May 1997: Andreas Dilger
  *   libpng versions 0.97, January 1998, through 1.6.35, July 2018:
  *     Glenn Randers-Pehrson
- *   libpng versions 1.6.36, December 2018, through 1.6.37, April 2019:
+ *   libpng versions 1.6.36, December 2018, through 1.6.38, September 2022:
  *     Cosmin Truta
  *   See also "Contributing Authors", below.
  */
@@ -27,8 +27,8 @@
  * PNG Reference Library License version 2
  * ---------------------------------------
  *
- *  * Copyright (c) 1995-2019 The PNG Reference Library Authors.
- *  * Copyright (c) 2018-2019 Cosmin Truta.
+ *  * Copyright (c) 1995-2022 The PNG Reference Library Authors.
+ *  * Copyright (c) 2018-2022 Cosmin Truta.
  *  * Copyright (c) 2000-2002, 2004, 2006-2018 Glenn Randers-Pehrson.
  *  * Copyright (c) 1996-1997 Andreas Dilger.
  *  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -239,7 +239,7 @@
  *    ...
  *    1.5.30                  15    10530  15.so.15.30[.0]
  *    ...
- *    1.6.37                  16    10637  16.so.16.37[.0]
+ *    1.6.38                  16    10638  16.so.16.38[.0]
  *
  *    Henceforth the source version will match the shared-library major and
  *    minor numbers; the shared-library major version number will be used for
@@ -278,8 +278,8 @@
  */
 
 /* Version information for png.h - this should match the version in png.c */
-#define PNG_LIBPNG_VER_STRING "1.6.37"
-#define PNG_HEADER_VERSION_STRING " libpng version 1.6.37 - April 14, 2019\n"
+#define PNG_LIBPNG_VER_STRING "1.6.38"
+#define PNG_HEADER_VERSION_STRING " libpng version 1.6.38 - September 14, 2022\n"
 
 #define PNG_LIBPNG_VER_SONUM   16
 #define PNG_LIBPNG_VER_DLLNUM  16
@@ -287,7 +287,7 @@
 /* These should match the first 3 components of PNG_LIBPNG_VER_STRING: */
 #define PNG_LIBPNG_VER_MAJOR   1
 #define PNG_LIBPNG_VER_MINOR   6
-#define PNG_LIBPNG_VER_RELEASE 37
+#define PNG_LIBPNG_VER_RELEASE 38
 
 /* This should be zero for a public release, or non-zero for a
  * development version.  [Deprecated]
@@ -318,7 +318,7 @@
  * From version 1.0.1 it is:
  * XXYYZZ, where XX=major, YY=minor, ZZ=release
  */
-#define PNG_LIBPNG_VER 10637 /* 1.6.37 */
+#define PNG_LIBPNG_VER 10638 /* 1.6.38 */
 
 /* Library configuration: these options cannot be changed after
  * the library has been built.
@@ -329,10 +329,6 @@
  */
 #   include "pnglibconf.h"
 #endif
-
-#define PNG_APNG_SUPPORTED
-#define PNG_READ_APNG_SUPPORTED
-#define PNG_WRITE_APNG_SUPPORTED
 
 #ifndef PNG_VERSION_INFO_ONLY
 /* Machine specific configuration. */
@@ -429,21 +425,10 @@ extern "C" {
  * See pngconf.h for base types that vary by machine/system
  */
 
-#ifdef PNG_APNG_SUPPORTED
-/* dispose_op flags from inside fcTL */
-#define PNG_DISPOSE_OP_NONE        0x00U
-#define PNG_DISPOSE_OP_BACKGROUND  0x01U
-#define PNG_DISPOSE_OP_PREVIOUS    0x02U
-
-/* blend_op flags from inside fcTL */
-#define PNG_BLEND_OP_SOURCE        0x00U
-#define PNG_BLEND_OP_OVER          0x01U
-#endif /* PNG_APNG_SUPPORTED */
-
 /* This triggers a compiler error in png.c, if png.c and png.h
  * do not agree upon the version number.
  */
-typedef char* png_libpng_version_1_6_37;
+typedef char* png_libpng_version_1_6_38;
 
 /* Basic control structions.  Read libpng-manual.txt or libpng.3 for more info.
  *
@@ -761,10 +746,6 @@ typedef png_unknown_chunk * * png_unknown_chunkpp;
 #define PNG_INFO_sCAL 0x4000U  /* ESR, 1.0.6 */
 #define PNG_INFO_IDAT 0x8000U  /* ESR, 1.0.6 */
 #define PNG_INFO_eXIf 0x10000U /* GR-P, 1.6.31 */
-#ifdef PNG_APNG_SUPPORTED
-#define PNG_INFO_acTL 0x20000U
-#define PNG_INFO_fcTL 0x40000U
-#endif
 
 /* This is used for the transformation routines, as some of them
  * change these values for the row.  It also should enable using
@@ -802,10 +783,6 @@ typedef PNG_CALLBACK(void, *png_write_status_ptr, (png_structp, png_uint_32,
 #ifdef PNG_PROGRESSIVE_READ_SUPPORTED
 typedef PNG_CALLBACK(void, *png_progressive_info_ptr, (png_structp, png_infop));
 typedef PNG_CALLBACK(void, *png_progressive_end_ptr, (png_structp, png_infop));
-#ifdef PNG_APNG_SUPPORTED
-typedef PNG_CALLBACK(void, *png_progressive_frame_ptr, (png_structp,
-    png_uint_32));
-#endif
 
 /* The following callback receives png_uint_32 row_number, int pass for the
  * png_bytep data of the row.  When transforming an interlaced image the
@@ -1469,7 +1446,7 @@ PNG_EXPORT(66, void, png_set_crc_action, (png_structrp png_ptr, int crit_action,
  * mainly useful for testing, as the defaults should work with most users.
  * Those users who are tight on memory or want faster performance at the
  * expense of compression can modify them.  See the compression library
- * header file (zlib.h) for an explination of the compression functions.
+ * header file (zlib.h) for an explanation of the compression functions.
  */
 
 /* Set the filtering method(s) used by libpng.  Currently, the only valid
@@ -1524,7 +1501,7 @@ PNG_FIXED_EXPORT(209, void, png_set_filter_heuristics_fixed,
  * 0 - 9, corresponding directly to the zlib compression levels 0 - 9
  * (0 - no compression, 9 - "maximal" compression).  Note that tests have
  * shown that zlib compression levels 3-6 usually perform as well as level 9
- * for PNG images, and do considerably fewer caclulations.  In the future,
+ * for PNG images, and do considerably fewer calculations.  In the future,
  * these values may not correspond directly to the zlib compression levels.
  */
 #ifdef PNG_WRITE_CUSTOMIZE_COMPRESSION_SUPPORTED
@@ -3249,74 +3226,6 @@ PNG_EXPORT(244, int, png_set_option, (png_structrp png_ptr, int option,
 /*******************************************************************************
  *  END OF HARDWARE AND SOFTWARE OPTIONS
  ******************************************************************************/
-#ifdef PNG_APNG_SUPPORTED
-PNG_EXPORT(250, png_uint_32, png_get_acTL, (png_structp png_ptr,
-   png_infop info_ptr, png_uint_32 *num_frames, png_uint_32 *num_plays));
-
-PNG_EXPORT(251, png_uint_32, png_set_acTL, (png_structp png_ptr,
-   png_infop info_ptr, png_uint_32 num_frames, png_uint_32 num_plays));
-
-PNG_EXPORT(252, png_uint_32, png_get_num_frames, (png_structp png_ptr,
-   png_infop info_ptr));
-
-PNG_EXPORT(253, png_uint_32, png_get_num_plays, (png_structp png_ptr,
-   png_infop info_ptr));
-
-PNG_EXPORT(254, png_uint_32, png_get_next_frame_fcTL,
-   (png_structp png_ptr, png_infop info_ptr, png_uint_32 *width,
-   png_uint_32 *height, png_uint_32 *x_offset, png_uint_32 *y_offset,
-   png_uint_16 *delay_num, png_uint_16 *delay_den, png_byte *dispose_op,
-   png_byte *blend_op));
-
-PNG_EXPORT(255, png_uint_32, png_set_next_frame_fcTL,
-   (png_structp png_ptr, png_infop info_ptr, png_uint_32 width,
-   png_uint_32 height, png_uint_32 x_offset, png_uint_32 y_offset,
-   png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
-   png_byte blend_op));
-
-PNG_EXPORT(256, png_uint_32, png_get_next_frame_width,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(257, png_uint_32, png_get_next_frame_height,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(258, png_uint_32, png_get_next_frame_x_offset,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(259, png_uint_32, png_get_next_frame_y_offset,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(260, png_uint_16, png_get_next_frame_delay_num,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(261, png_uint_16, png_get_next_frame_delay_den,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(262, png_byte, png_get_next_frame_dispose_op,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(263, png_byte, png_get_next_frame_blend_op,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(264, png_byte, png_get_first_frame_is_hidden,
-   (png_structp png_ptr, png_infop info_ptr));
-PNG_EXPORT(265, png_uint_32, png_set_first_frame_is_hidden,
-   (png_structp png_ptr, png_infop info_ptr, png_byte is_hidden));
-
-#ifdef PNG_READ_APNG_SUPPORTED
-PNG_EXPORT(266, void, png_read_frame_head, (png_structp png_ptr,
-   png_infop info_ptr));
-#ifdef PNG_PROGRESSIVE_READ_SUPPORTED
-PNG_EXPORT(267, void, png_set_progressive_frame_fn, (png_structp png_ptr,
-   png_progressive_frame_ptr frame_info_fn,
-   png_progressive_frame_ptr frame_end_fn));
-#endif /* PNG_PROGRESSIVE_READ_SUPPORTED */
-#endif /* PNG_READ_APNG_SUPPORTED */
-
-#ifdef PNG_WRITE_APNG_SUPPORTED
-PNG_EXPORT(268, void, png_write_frame_head, (png_structp png_ptr,
-   png_infop info_ptr, png_bytepp row_pointers,
-   png_uint_32 width, png_uint_32 height,
-   png_uint_32 x_offset, png_uint_32 y_offset,
-   png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
-   png_byte blend_op));
-
-PNG_EXPORT(269, void, png_write_frame_tail, (png_structp png_ptr,
-   png_infop info_ptr));
-#endif /* PNG_WRITE_APNG_SUPPORTED */
-#endif /* PNG_APNG_SUPPORTED */
 
 /* Maintainer: Put new public prototypes here ^, in libpng.3, in project
  * defs, and in scripts/symbols.def.
@@ -3326,11 +3235,7 @@ PNG_EXPORT(269, void, png_write_frame_tail, (png_structp png_ptr,
  * one to use is one more than this.)
  */
 #ifdef PNG_EXPORT_LAST_ORDINAL
-#ifdef PNG_APNG_SUPPORTED
-  PNG_EXPORT_LAST_ORDINAL(269);
-#else
   PNG_EXPORT_LAST_ORDINAL(249);
-#endif /* PNG_APNG_SUPPORTED */
 #endif
 
 #ifdef __cplusplus
