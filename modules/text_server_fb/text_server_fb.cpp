@@ -2127,8 +2127,10 @@ int64_t TextServerFallback::font_get_glyph_index(const RID &p_font_rid, int64_t 
 
 bool TextServerFallback::font_has_char(const RID &p_font_rid, int64_t p_char) const {
 	FontFallback *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, false);
 	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), false, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
+	if (!fd) {
+		return false;
+	}
 
 	MutexLock lock(fd->mutex);
 	if (fd->cache.is_empty()) {
@@ -3453,29 +3455,34 @@ void TextServerFallback::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 	int last_valid_cut = 0;
 	bool found = false;
 
-	for (int i = sd_size - 1; i != -1; i--) {
-		width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
+	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
+		trim_pos = -1;
+		ellipsis_pos = sd_size;
+	} else {
+		for (int i = sd_size - 1; i != -1; i--) {
+			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
 
-		if (sd_glyphs[i].count > 0) {
-			bool above_min_char_threshold = (i >= ell_min_characters);
+			if (sd_glyphs[i].count > 0) {
+				bool above_min_char_threshold = (i >= ell_min_characters);
 
-			if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
-				if (cut_per_word && above_min_char_threshold) {
-					if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+					if (cut_per_word && above_min_char_threshold) {
+						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+							last_valid_cut = i;
+							found = true;
+						}
+					} else {
 						last_valid_cut = i;
 						found = true;
 					}
-				} else {
-					last_valid_cut = i;
-					found = true;
-				}
-				if (found) {
-					trim_pos = last_valid_cut;
+					if (found) {
+						trim_pos = last_valid_cut;
 
-					if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
-						ellipsis_pos = trim_pos;
+						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+							ellipsis_pos = trim_pos;
+						}
+						break;
 					}
-					break;
 				}
 			}
 		}
