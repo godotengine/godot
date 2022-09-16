@@ -1187,6 +1187,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 
 		default: {
+			_filter_option_selected(p_tool);
+
 			if (p_tool >= EDIT_SUBRESOURCE_BASE) {
 				int idx = p_tool - EDIT_SUBRESOURCE_BASE;
 
@@ -2883,11 +2885,83 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 
 void SceneTreeDock::_update_tree_menu() {
 	PopupMenu *tree_menu = button_tree_menu->get_popup();
-	tree_menu->set_item_checked(tree_menu->get_item_idx_from_text(TTR("Auto Expand to Selected")), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
+	tree_menu->clear();
+
+	_append_filter_options_to(tree_menu);
+
+	tree_menu->add_separator();
+	tree_menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_AUTO_EXPAND), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
+}
+
+void SceneTreeDock::_update_filter_menu() {
+	_append_filter_options_to(filter->get_menu());
 }
 
 void SceneTreeDock::_filter_changed(const String &p_filter) {
 	scene_tree->set_filter(p_filter);
+
+	String warning = scene_tree->get_filter_term_warning();
+	if (!warning.is_empty()) {
+		filter->add_theme_icon_override(SNAME("clear"), get_theme_icon(SNAME("NodeWarning"), SNAME("EditorIcons")));
+		filter->set_tooltip_text(warning);
+	} else {
+		filter->remove_theme_icon_override(SNAME("clear"));
+		filter->set_tooltip_text("");
+	}
+}
+
+void SceneTreeDock::_filter_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_null()) {
+		return;
+	}
+
+	if (mb->is_pressed() && mb->get_button_index() == MouseButton::MIDDLE) {
+		filter_quick_menu->clear();
+
+		_append_filter_options_to(filter_quick_menu, false);
+		filter_quick_menu->set_position(get_screen_position() + get_local_mouse_position());
+		filter_quick_menu->reset_size();
+		filter_quick_menu->popup();
+		filter_quick_menu->grab_focus();
+		accept_event();
+	}
+}
+
+void SceneTreeDock::_filter_option_selected(int p_option) {
+	String filter_parameter;
+	switch (p_option) {
+		case FILTER_BY_TYPE: {
+			filter_parameter = "type";
+		} break;
+		case FILTER_BY_GROUP: {
+			filter_parameter = "group";
+		} break;
+	}
+
+	if (!filter_parameter.is_empty()) {
+		set_filter((get_filter() + " " + filter_parameter + ":").strip_edges());
+		filter->set_caret_column(filter->get_text().length());
+		filter->grab_focus();
+	}
+}
+
+void SceneTreeDock::_append_filter_options_to(PopupMenu *p_menu, bool p_include_separator) {
+	if (p_include_separator) {
+		p_menu->add_separator();
+
+		p_menu->set_item_text(-1, TTR("Filters"));
+		p_menu->set_item_icon(-1, get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+		p_menu->set_item_indent(-1, -2);
+	}
+
+	p_menu->add_item(TTR("Filter by Type"), FILTER_BY_TYPE);
+	p_menu->add_item(TTR("Filter by Group"), FILTER_BY_GROUP);
+	p_menu->set_item_icon(p_menu->get_item_index(FILTER_BY_TYPE), get_theme_icon(SNAME("Node"), SNAME("EditorIcons")));
+	p_menu->set_item_icon(p_menu->get_item_index(FILTER_BY_GROUP), get_theme_icon(SNAME("Groups"), SNAME("EditorIcons")));
+	p_menu->set_item_tooltip(p_menu->get_item_index(FILTER_BY_TYPE), TTR("Selects all Nodes of the given type."));
+	p_menu->set_item_tooltip(p_menu->get_item_index(FILTER_BY_GROUP), TTR("Selects all Nodes belonging to the given group.\nIf empty, selects any Node belonging to any group."));
 }
 
 String SceneTreeDock::get_filter() {
@@ -3399,14 +3473,22 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_instance->set_tooltip_text(TTR("Instantiate a scene file as a Node. Creates an inherited scene if no root node exists."));
 	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instance_scene"));
 	filter_hbc->add_child(button_instance);
-
 	vbc->add_child(filter_hbc);
+
+	// The "Filter Nodes" text input above the Scene Tree Editor.
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter Nodes"));
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect("text_changed", callable_mp(this, &SceneTreeDock::_filter_changed));
+	filter->connect("gui_input", callable_mp(this, &SceneTreeDock::_filter_gui_input));
+	filter->get_menu()->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_update_filter_menu));
+	filter->get_menu()->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
+
+	filter_quick_menu = memnew(PopupMenu);
+	filter_quick_menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_filter_option_selected));
+	filter->add_child(filter_quick_menu);
 
 	button_create_script = memnew(Button);
 	button_create_script->set_flat(true);
@@ -3430,7 +3512,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter_hbc->add_child(button_tree_menu);
 
 	PopupMenu *tree_menu = button_tree_menu->get_popup();
-	tree_menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
 	tree_menu->connect("id_pressed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(false));
 
 	button_hb = memnew(HBoxContainer);

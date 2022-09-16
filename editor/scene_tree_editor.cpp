@@ -612,6 +612,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 bool SceneTreeEditor::_update_filter(TreeItem *p_parent, bool p_scroll_to_selected) {
 	if (!p_parent) {
 		p_parent = tree->get_root();
+		filter_term_warning.clear();
 	}
 
 	if (!p_parent) {
@@ -704,8 +705,8 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 						return false;
 					}
 				}
-			} else {
-				WARN_PRINT(vformat(TTR("Special Node filter \"%s\" is not recognised. Available filters include \"type\" and \"group\"."), parameter));
+			} else if (filter_term_warning.is_empty()) {
+				filter_term_warning = vformat(TTR("\"%s\" is not a known filter."), parameter);
 				continue;
 			}
 		} else {
@@ -1027,6 +1028,10 @@ void SceneTreeEditor::set_filter(const String &p_filter) {
 
 String SceneTreeEditor::get_filter() const {
 	return filter;
+}
+
+String SceneTreeEditor::get_filter_term_warning() {
+	return filter_term_warning;
 }
 
 void SceneTreeEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
