@@ -154,6 +154,7 @@ public:
 	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
+	virtual Error shell_show_in_explorer(String p_fpath);
 	virtual Error set_cwd(const String &p_cwd);
 
 	virtual bool has_environment(const String &p_var) const = 0;

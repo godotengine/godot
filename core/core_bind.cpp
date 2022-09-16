@@ -252,6 +252,14 @@ Error OS::shell_open(String p_uri) {
 	}
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
+Error OS::shell_show_in_explorer(String p_fpath) {
+	if (p_fpath.begins_with("res://")) {
+		WARN_PRINT("Attempting to navigate to a file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_explorer()`.");
+	} else if (p_fpath.begins_with("user://")) {
+		WARN_PRINT("Attempting to navigate to a file path with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_explorer()`.");
+	}
+	return ::OS::get_singleton()->shell_show_in_explorer(p_fpath);
+}
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
@@ -527,6 +535,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+	ClassDB::bind_method(D_METHOD("shell_show_in_explorer", "file_path"), &OS::shell_show_in_explorer);
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 

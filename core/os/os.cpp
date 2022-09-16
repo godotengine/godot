@@ -278,6 +278,13 @@ Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
 }
 
+Error OS::shell_show_in_explorer(String p_fpath) {
+	p_fpath = String("file://") + p_fpath;
+	if (!p_fpath.ends_with("/")) {
+		p_fpath = p_fpath.get_base_dir();
+	}
+	return shell_open(p_fpath);
+};
 // implement these with the canvas?
 
 uint64_t OS::get_static_memory_usage() const {

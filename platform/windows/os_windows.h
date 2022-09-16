@@ -188,6 +188,7 @@ public:
 	virtual String get_unique_id() const override;
 
 	virtual Error shell_open(String p_uri) override;
+	virtual Error shell_show_in_explorer(String p_fpath);
 
 	void run();
 

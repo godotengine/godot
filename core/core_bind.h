@@ -180,6 +180,7 @@ public:
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+	Error shell_show_in_explorer(String p_fpath);
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
