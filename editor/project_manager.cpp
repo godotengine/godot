@@ -493,7 +493,7 @@ private:
 					} else {
 						// Store default project icon in SVG format.
 						Error err;
-						Ref<FileAccess> fa_icon = FileAccess::open(dir.path_join("icon.svg"), FileAccess::WRITE, &err);
+						Ref<FileAccess> fa_icon = FileAccess::open(dir.path_join("./logo/icon.svg"), FileAccess::WRITE, &err);
 						fa_icon->store_string(get_default_project_icon());
 
 						if (err != OK) {
