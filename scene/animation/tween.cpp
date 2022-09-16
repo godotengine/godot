@@ -315,6 +315,7 @@ bool Tween::step(float p_delta) {
 					running = false;
 					dead = true;
 					emit_signal(SNAME("finished"));
+					break;
 				} else {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
