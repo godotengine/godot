@@ -5561,7 +5561,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	return false;
 }
 
-// Helper math fuctions for Variant.
+// Helper math functions for Variant.
 Variant Animation::add_variant(const Variant &a, const Variant &b) {
 	if (a.get_type() != b.get_type()) {
 		return a;
