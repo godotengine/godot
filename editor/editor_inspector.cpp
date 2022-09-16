@@ -458,7 +458,7 @@ StringName EditorProperty::_get_revert_property() const {
 	return property;
 }
 
-void EditorProperty::update_revert_and_pin_status() {
+void EditorProperty::update_editor_property_status() {
 	if (property == StringName()) {
 		return; //no property, so nothing to do
 	}
@@ -469,15 +469,26 @@ void EditorProperty::update_revert_and_pin_status() {
 		CRASH_COND(!node);
 		new_pinned = node->is_property_pinned(property);
 	}
+
 	Variant current = object->get(_get_revert_property());
 	bool new_can_revert = EditorPropertyRevert::can_property_revert(object, property, &current) && !is_read_only();
 
-	if (new_can_revert != can_revert || new_pinned != pinned) {
+	bool new_checked = checked;
+	if (checkable) { // for properties like theme overrides.
+		bool valid = false;
+		Variant value = object->get(property, &valid);
+		if (valid) {
+			new_checked = value.get_type() != Variant::NIL;
+		}
+	}
+
+	if (new_can_revert != can_revert || new_pinned != pinned || new_checked != checked) {
 		if (new_can_revert != can_revert) {
 			emit_signal(SNAME("property_can_revert_changed"), property, new_can_revert);
 		}
 		can_revert = new_can_revert;
 		pinned = new_pinned;
+		checked = new_checked;
 		queue_redraw();
 	}
 }
@@ -974,7 +985,7 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
 	GDVIRTUAL_BIND(_update_property)
-	ClassDB::bind_method(D_METHOD("_update_revert_and_pin_status"), &EditorProperty::update_revert_and_pin_status);
+	ClassDB::bind_method(D_METHOD("_update_editor_property_status"), &EditorProperty::update_editor_property_status);
 }
 
 EditorProperty::EditorProperty() {
@@ -2552,7 +2563,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 			ep->set_read_only(read_only);
 			ep->update_property();
 			ep->_update_pin_flags();
-			ep->update_revert_and_pin_status();
+			ep->update_editor_property_status();
 			ep->set_deletable(deletable_properties);
 			ep->update_cache();
 		}
@@ -3211,6 +3222,7 @@ void EditorInspector::update_tree() {
 						// Use the existing one.
 						ep->set_label(property_label_string);
 					}
+
 					for (int j = 0; j < properties.size(); j++) {
 						String prop = properties[j];
 
@@ -3258,7 +3270,7 @@ void EditorInspector::update_tree() {
 				ep->set_doc_path(doc_info.path);
 				ep->update_property();
 				ep->_update_pin_flags();
-				ep->update_revert_and_pin_status();
+				ep->update_editor_property_status();
 				ep->update_cache();
 
 				if (current_selected && ep->property == current_selected) {
@@ -3297,7 +3309,7 @@ void EditorInspector::update_property(const String &p_prop) {
 
 	for (EditorProperty *E : editor_property_map[p_prop]) {
 		E->update_property();
-		E->update_revert_and_pin_status();
+		E->update_editor_property_status();
 		E->update_cache();
 	}
 }
@@ -3640,7 +3652,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 	if (editor_property_map.has(p_name)) {
 		for (EditorProperty *E : editor_property_map[p_name]) {
-			E->update_revert_and_pin_status();
+			E->update_editor_property_status();
 		}
 	}
 }
@@ -3754,7 +3766,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			for (EditorProperty *E : editor_property_map[p_path]) {
 				E->set_checked(p_checked);
 				E->update_property();
-				E->update_revert_and_pin_status();
+				E->update_editor_property_status();
 				E->update_cache();
 			}
 		}
@@ -3778,8 +3790,8 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 		undo_redo->add_undo_method(node, "_set_property_pinned", p_path, !p_pinned);
 		if (editor_property_map.has(p_path)) {
 			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				undo_redo->add_do_method(E->get(), "_update_revert_and_pin_status");
-				undo_redo->add_undo_method(E->get(), "_update_revert_and_pin_status");
+				undo_redo->add_do_method(E->get(), "_update_editor_property_status");
+				undo_redo->add_undo_method(E->get(), "_update_editor_property_status");
 			}
 		}
 		undo_redo->commit_action();
@@ -3787,7 +3799,7 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 		node->set_property_pinned(p_path, p_pinned);
 		if (editor_property_map.has(p_path)) {
 			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				E->get()->update_revert_and_pin_status();
+				E->get()->update_editor_property_status();
 			}
 		}
 	}
@@ -3868,7 +3880,7 @@ void EditorInspector::_notification(int p_what) {
 						for (EditorProperty *E : F.value) {
 							if (E && !E->is_cache_valid()) {
 								E->update_property();
-								E->update_revert_and_pin_status();
+								E->update_editor_property_status();
 								E->update_cache();
 							}
 						}
@@ -3890,7 +3902,7 @@ void EditorInspector::_notification(int p_what) {
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
-							E->update_revert_and_pin_status();
+							E->update_editor_property_status();
 							E->update_cache();
 						}
 					}

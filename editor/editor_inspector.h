@@ -151,7 +151,7 @@ public:
 	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
-	void update_revert_and_pin_status();
+	void update_editor_property_status();
 
 	virtual bool use_keying_next() const;
 
