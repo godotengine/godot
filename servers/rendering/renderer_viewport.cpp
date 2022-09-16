@@ -179,7 +179,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			// to compensate for the loss of sharpness.
 			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
 
-			p_viewport->render_buffers->configure(p_viewport->render_target, Size2i(render_width, render_height), Size2(width, height), p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->get_view_count());
+			p_viewport->render_buffers->configure(p_viewport->render_target, Size2i(render_width, render_height), Size2(width, height), p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->view_count);
 		}
 	}
 }
@@ -616,14 +616,7 @@ void RendererViewport::draw_viewports() {
 			if (xr_interface.is_valid()) {
 				// Override our size, make sure it matches our required size and is created as a stereo target
 				Size2 xr_size = xr_interface->get_render_target_size();
-
-				// Would have been nice if we could call viewport_set_size here,
-				// but alas that takes our RID and we now have our pointer,
-				// also we only check if view_count changes in render_target_set_size so we need to call that for this to reliably change
-				vp->occlusion_buffer_dirty = vp->occlusion_buffer_dirty || (vp->size != xr_size);
-				vp->size = xr_size;
-				uint32_t view_count = xr_interface->get_view_count();
-				RSG::texture_storage->render_target_set_size(vp->render_target, vp->size.x, vp->size.y, view_count);
+				_viewport_set_size(vp, xr_size.width, xr_size.height, xr_interface->get_view_count());
 
 				// Inform xr interface we're about to render its viewport, if this returns false we don't render
 				visible = xr_interface->pre_draw_viewport(vp->render_target);
@@ -686,12 +679,17 @@ void RendererViewport::draw_viewports() {
 			// commit our eyes
 			Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && blits.size() > 0) {
-				if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
-					blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
-				}
+				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+					RSG::rasterizer->end_frame(true);
+				} else {
+					if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
+						blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
+					}
 
-				for (int b = 0; b < blits.size(); b++) {
-					blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
+					for (int b = 0; b < blits.size(); b++) {
+						blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
+					}
 				}
 			}
 		} else {
@@ -777,7 +775,13 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	}
 
 	viewport->use_xr = p_use_xr;
-	_configure_3d_render_buffers(viewport);
+
+	// Re-configure the 3D render buffers when disabling XR. They'll get
+	// re-configured when enabling XR in draw_viewports().
+	if (!p_use_xr) {
+		viewport->view_count = 1;
+		_configure_3d_render_buffers(viewport);
+	}
 }
 
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
@@ -823,34 +827,27 @@ void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_sca
 	_configure_3d_render_buffers(viewport);
 }
 
-uint32_t RendererViewport::Viewport::get_view_count() {
-	uint32_t view_count = 1;
-
-	if (use_xr && XRServer::get_singleton() != nullptr) {
-		Ref<XRInterface> xr_interface;
-
-		xr_interface = XRServer::get_singleton()->get_primary_interface();
-		if (xr_interface.is_valid()) {
-			view_count = xr_interface->get_view_count();
-		}
-	}
-
-	return view_count;
-}
-
 void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
 	ERR_FAIL_COND(p_width < 0 && p_height < 0);
 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
+	ERR_FAIL_COND_MSG(viewport->use_xr, "Cannot set viewport size when using XR");
 
-	viewport->size = Size2(p_width, p_height);
+	_viewport_set_size(viewport, p_width, p_height, 1);
+}
 
-	uint32_t view_count = viewport->get_view_count();
-	RSG::texture_storage->render_target_set_size(viewport->render_target, p_width, p_height, view_count);
-	_configure_3d_render_buffers(viewport);
+void RendererViewport::_viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count) {
+	Size2i new_size(p_width, p_height);
+	if (p_viewport->size != new_size || p_viewport->view_count != p_view_count) {
+		p_viewport->size = new_size;
+		p_viewport->view_count = p_view_count;
 
-	viewport->occlusion_buffer_dirty = true;
+		RSG::texture_storage->render_target_set_size(p_viewport->render_target, p_width, p_height, p_view_count);
+		_configure_3d_render_buffers(p_viewport);
+
+		p_viewport->occlusion_buffer_dirty = true;
+	}
 }
 
 void RendererViewport::viewport_set_active(RID p_viewport, bool p_active) {
@@ -890,7 +887,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		// If using OpenGL we can optimize this operation by rendering directly to system_fbo
 		// instead of rendering to fbo and copying to system_fbo after
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
-			RSG::texture_storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->get_view_count());
+			RSG::texture_storage->render_target_set_size(viewport->render_target, p_rect.size.x, p_rect.size.y, viewport->view_count);
 			RSG::texture_storage->render_target_set_position(viewport->render_target, p_rect.position.x, p_rect.position.y);
 		}
 
@@ -900,7 +897,7 @@ void RendererViewport::viewport_attach_to_screen(RID p_viewport, const Rect2 &p_
 		// if render_direct_to_screen was used, reset size and position
 		if (RSG::rasterizer->is_low_end() && viewport->viewport_render_direct_to_screen) {
 			RSG::texture_storage->render_target_set_position(viewport->render_target, 0, 0);
-			RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
+			RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->view_count);
 		}
 
 		viewport->viewport_to_screen_rect = Rect2();
@@ -919,7 +916,7 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 	// if disabled, reset render_target size and position
 	if (!p_enable) {
 		RSG::texture_storage->render_target_set_position(viewport->render_target, 0, 0);
-		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->get_view_count());
+		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->size.x, viewport->size.y, viewport->view_count);
 	}
 
 	RSG::texture_storage->render_target_set_direct_to_screen(viewport->render_target, p_enable);
@@ -927,7 +924,7 @@ void RendererViewport::viewport_set_render_direct_to_screen(RID p_viewport, bool
 
 	// if attached to screen already, setup screen size and position, this needs to happen after setting flag to avoid an unnecessary buffer allocation
 	if (RSG::rasterizer->is_low_end() && viewport->viewport_to_screen_rect != Rect2() && p_enable) {
-		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y, viewport->get_view_count());
+		RSG::texture_storage->render_target_set_size(viewport->render_target, viewport->viewport_to_screen_rect.size.x, viewport->viewport_to_screen_rect.size.y, viewport->view_count);
 		RSG::texture_storage->render_target_set_position(viewport->render_target, viewport->viewport_to_screen_rect.position.x, viewport->viewport_to_screen_rect.position.y);
 	}
 }

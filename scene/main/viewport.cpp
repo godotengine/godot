@@ -795,11 +795,20 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 	stretch_transform = p_stretch_transform;
 	to_screen_rect = p_to_screen_rect;
 
-	if (p_allocated) {
-		RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
-	} else {
-		RS::get_singleton()->viewport_set_size(viewport, 0, 0);
-	}
+#ifndef _3D_DISABLED
+	if (!use_xr) {
+#endif
+
+		if (p_allocated) {
+			RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+		} else {
+			RS::get_singleton()->viewport_set_size(viewport, 0, 0);
+		}
+
+#ifndef _3D_DISABLED
+	} // if (!use_xr)
+#endif
+
 	_update_global_transform();
 	update_configuration_warnings();
 
@@ -813,6 +822,19 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 }
 
 Size2i Viewport::_get_size() const {
+#ifndef _3D_DISABLED
+	if (use_xr) {
+		if (XRServer::get_singleton() != nullptr) {
+			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
+			if (xr_interface.is_valid() && xr_interface->is_initialized()) {
+				Size2 xr_size = xr_interface->get_render_target_size();
+				return (Size2i)xr_size;
+			}
+		}
+		return Size2i();
+	}
+#endif // _3D_DISABLED
+
 	return size;
 }
 
@@ -3612,9 +3634,20 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 }
 
 void Viewport::set_use_xr(bool p_use_xr) {
-	use_xr = p_use_xr;
+	if (use_xr != p_use_xr) {
+		use_xr = p_use_xr;
 
-	RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
+		RS::get_singleton()->viewport_set_use_xr(viewport, use_xr);
+
+		if (!use_xr) {
+			// Set viewport to previous size when exiting XR.
+			if (size_allocated) {
+				RS::get_singleton()->viewport_set_size(viewport, size.width, size.height);
+			} else {
+				RS::get_singleton()->viewport_set_size(viewport, 0, 0);
+			}
+		}
+	}
 }
 
 bool Viewport::is_using_xr() {
