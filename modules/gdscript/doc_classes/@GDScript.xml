@@ -267,6 +267,7 @@
 	<annotations>
 		<annotation name="@export">
 			<return type="void" />
+			<param index="0" name="hints" type="String" default="&quot;&quot;" />
 			<description>
 				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property use the type hint notation.
 				[codeblock]
