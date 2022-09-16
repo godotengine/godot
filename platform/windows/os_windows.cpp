@@ -290,6 +290,24 @@ String OS_Windows::get_name() const {
 	return "Windows";
 }
 
+String OS_Windows::get_distribution_name() const {
+	return get_name();
+}
+
+String OS_Windows::get_version() const {
+	typedef LONG NTSTATUS, *PNTSTATUS;
+	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	if (version_ptr != nullptr) {
+		RTL_OSVERSIONINFOW fow = { 0 };
+		fow.dwOSVersionInfoSize = sizeof(fow);
+		if (version_ptr(&fow) == 0x00000000) {
+			return vformat("%d.%d.%d", (int64_t)fow.dwMajorVersion, (int64_t)fow.dwMinorVersion, (int64_t)fow.dwBuildNumber);
+		}
+	}
+	return "";
+}
+
 OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {

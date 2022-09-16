@@ -216,6 +216,15 @@
 				Not to be confused with [method get_user_data_dir], which returns the [i]project-specific[/i] user data path.
 			</description>
 		</method>
+		<method name="get_distribution_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the distribution for Linux and BSD platforms (e.g. Ubuntu, Manjaro, OpenBSD, etc.).
+				Returns the same value as [method get_name] for stock Android ROMs, but attempts to return the custom ROM name for popular Android derivatives such as LineageOS.
+				Returns the same value as [method get_name] for other platforms.
+				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
+			</description>
+		</method>
 		<method name="get_environment" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="variable" type="String" />
@@ -428,6 +437,18 @@
 				On the web, this is a virtual directory managed by the browser.
 				If the project name is empty, [code][project_name][/code] falls back to [code][unnamed project][/code].
 				Not to be confused with [method get_data_dir], which returns the [i]global[/i] (non-project-specific) user home directory.
+			</description>
+		</method>
+		<method name="get_version" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the exact production and build version of the operating system. This is different from the branded version used in marketing. This helps to distinguish between different releases of operating systems, including minor versions, and insider and custom builds.
+				For Windows, the major and minor version are returned, as well as the build number. For example, the returned string can look like [code]10.0.9926[/code] for a build of Windows 10, and it can look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
+				For rolling distributions, such as Arch Linux, an empty string is returned.
+				For macOS and iOS, the major and minor version are returned, as well as the patch number.
+				For UWP, the device family version is returned.
+				For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
+				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">

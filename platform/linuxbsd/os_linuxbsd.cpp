@@ -50,6 +50,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 
 #ifdef FONTCONFIG_ENABLED
@@ -203,6 +204,42 @@ String OS_LinuxBSD::get_name() const {
 #else
 	return "BSD";
 #endif
+}
+
+String OS_LinuxBSD::get_systemd_os_release_info_value(const String &key) const {
+	static String info;
+	if (info.is_empty()) {
+		Ref<FileAccess> f = FileAccess::open("/etc/os-release", FileAccess::READ);
+		if (f.is_valid()) {
+			while (!f->eof_reached()) {
+				const String line = f->get_line();
+				if (line.find(key) != -1) {
+					return line.split("=")[1].strip_edges();
+				}
+			}
+		}
+	}
+	return info;
+}
+
+String OS_LinuxBSD::get_distribution_name() const {
+	static String systemd_name = get_systemd_os_release_info_value("NAME"); // returns a value for systemd users, otherwise an empty string.
+	if (!systemd_name.is_empty()) {
+		return systemd_name;
+	}
+	struct utsname uts; // returns a decent value for BSD family.
+	uname(&uts);
+	return uts.sysname;
+}
+
+String OS_LinuxBSD::get_version() const {
+	static String systemd_version = get_systemd_os_release_info_value("VERSION"); // returns a value for systemd users, otherwise an empty string.
+	if (!systemd_version.is_empty()) {
+		return systemd_version;
+	}
+	struct utsname uts; // returns a decent value for BSD family.
+	uname(&uts);
+	return uts.version;
 }
 
 Error OS_LinuxBSD::shell_open(String p_uri) {

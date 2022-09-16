@@ -322,6 +322,14 @@ String OS::get_name() const {
 	return ::OS::get_singleton()->get_name();
 }
 
+String OS::get_distribution_name() const {
+	return ::OS::get_singleton()->get_distribution_name();
+}
+
+String OS::get_version() const {
+	return ::OS::get_singleton()->get_version();
+}
+
 Vector<String> OS::get_cmdline_args() {
 	List<String> cmdline = ::OS::get_singleton()->get_cmdline_args();
 	Vector<String> cmdlinev;
@@ -535,6 +543,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
+	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);
+	ClassDB::bind_method(D_METHOD("get_version"), &OS::get_version);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
 	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
 

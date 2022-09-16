@@ -193,6 +193,8 @@ public:
 	bool set_environment(const String &p_var, const String &p_value) const;
 
 	String get_name() const;
+	String get_distribution_name() const;
+	String get_version() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 

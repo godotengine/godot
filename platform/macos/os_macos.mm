@@ -134,6 +134,15 @@ String OS_MacOS::get_name() const {
 	return "macOS";
 }
 
+String OS_MacOS::get_distribution_name() const {
+	return get_name();
+}
+
+String OS_MacOS::get_version() const {
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	return vformat("%d.%d.%d", (int64_t)ver.majorVersion, (int64_t)ver.minorVersion, (int64_t)ver.patchVersion);
+}
+
 void OS_MacOS::alert(const String &p_alert, const String &p_title) {
 	NSAlert *window = [[NSAlert alloc] init];
 	NSString *ns_title = [NSString stringWithUTF8String:p_title.utf8().get_data()];

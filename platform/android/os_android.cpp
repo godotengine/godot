@@ -44,6 +44,7 @@
 #include "net_socket_android.h"
 
 #include <dlfcn.h>
+#include <sys/system_properties.h>
 
 #include "java_godot_io_wrapper.h"
 #include "java_godot_wrapper.h"
@@ -173,6 +174,79 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 
 String OS_Android::get_name() const {
 	return "Android";
+}
+
+String OS_Android::get_system_property(const char *key) const {
+	static String value;
+	char value_str[PROP_VALUE_MAX];
+	if (__system_property_get(key, value_str)) {
+		value = String(value_str);
+	}
+	return value;
+}
+
+String OS_Android::get_distribution_name() const {
+	if (!get_system_property("ro.havoc.version").is_empty()) {
+		return "Havoc OS";
+	} else if (!get_system_property("org.pex.version").is_empty()) { // Putting before "Pixel Experience", because it's derivating from it.
+		return "Pixel Extended";
+	} else if (!get_system_property("org.pixelexperience.version").is_empty()) {
+		return "Pixel Experience";
+	} else if (!get_system_property("ro.potato.version").is_empty()) {
+		return "POSP";
+	} else if (!get_system_property("ro.xtended.version").is_empty()) {
+		return "Project-Xtended";
+	} else if (!get_system_property("org.evolution.version").is_empty()) {
+		return "Evolution X";
+	} else if (!get_system_property("ro.corvus.version").is_empty()) {
+		return "Corvus-Q";
+	} else if (!get_system_property("ro.pa.version").is_empty()) {
+		return "Paranoid Android";
+	} else if (!get_system_property("ro.crdroid.version").is_empty()) {
+		return "crDroid Android";
+	} else if (!get_system_property("ro.syberia.version").is_empty()) {
+		return "Syberia Project";
+	} else if (!get_system_property("ro.arrow.version").is_empty()) {
+		return "ArrowOS";
+	} else if (!get_system_property("ro.lineage.version").is_empty()) { // Putting LineageOS last, just in case any derivative writes to "ro.lineage.version".
+		return "LineageOS";
+	}
+
+	if (!get_system_property("ro.modversion").is_empty()) { // Handles other Android custom ROMs.
+		return vformat("%s %s", get_name(), "Custom ROM");
+	}
+
+	// Handles stock Android.
+	return get_name();
+}
+
+String OS_Android::get_version() const {
+	const Vector<const char *> roms = { "ro.havoc.version", "org.pex.version", "org.pixelexperience.version",
+		"ro.potato.version", "ro.xtended.version", "org.evolution.version", "ro.corvus.version", "ro.pa.version",
+		"ro.crdroid.version", "ro.syberia.version", "ro.arrow.version", "ro.lineage.version" };
+	for (int i = 0; i < roms.size(); i++) {
+		static String rom_version = get_system_property(roms[i]);
+		if (!rom_version.is_empty()) {
+			return rom_version;
+		}
+	}
+
+	static String mod_version = get_system_property("ro.modversion"); // Handles other Android custom ROMs.
+	if (!mod_version.is_empty()) {
+		return mod_version;
+	}
+
+	// Handles stock Android.
+	static String sdk_version = get_system_property("ro.build.version.sdk_int");
+	static String build = get_system_property("ro.build.version.incremental");
+	if (!sdk_version.is_empty()) {
+		if (!build.is_empty()) {
+			return vformat("%s.%s", sdk_version, build);
+		}
+		return sdk_version;
+	}
+
+	return "";
 }
 
 MainLoop *OS_Android::get_main_loop() const {

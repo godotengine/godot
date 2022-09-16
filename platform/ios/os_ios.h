@@ -100,6 +100,8 @@ public:
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
 
 	virtual String get_name() const override;
+	virtual String get_distribution_name() const override;
+	virtual String get_version() const override;
 	virtual String get_model_name() const override;
 
 	virtual Error shell_open(String p_uri) override;
