@@ -500,6 +500,7 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	f = FileAccess::open(p_path, FileAccess::WRITE);
 	if (f.is_null()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), p_path));
+		html.resize(0);
 		return ERR_FILE_CANT_WRITE;
 	}
 	f->store_buffer(html.ptr(), html.size());
