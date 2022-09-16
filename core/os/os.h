@@ -156,6 +156,7 @@ public:
 	virtual Error shell_open(String p_uri);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	virtual Error shell_show_in_explorer(String p_fpath);
 =======
 	virtual Error shell_show_in_explore(String p_fpath);
@@ -163,6 +164,9 @@ public:
 =======
 	virtual Error shell_show_in_explorer(String p_fpath);
 >>>>>>> 440daa8426 (fix methods names)
+=======
+	virtual Error shell_show_in_explorer(String p_fpath);
+>>>>>>> 7badfa76a34f42c8e1ab8848c5028750290d5040
 	virtual Error set_cwd(const String &p_cwd);
 
 	virtual bool has_environment(const String &p_var) const = 0;

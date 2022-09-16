@@ -182,6 +182,7 @@ public:
 	Error shell_open(String p_uri);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 	Error shell_show_in_explorer(String p_fpath);
 =======
 	Error shell_show_in_explore(String p_fpath);
@@ -189,6 +190,9 @@ public:
 =======
 	Error shell_show_in_explorer(String p_fpath);
 >>>>>>> 440daa8426 (fix methods names)
+=======
+	Error shell_show_in_explorer(String p_fpath);
+>>>>>>> 7badfa76a34f42c8e1ab8848c5028750290d5040
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;

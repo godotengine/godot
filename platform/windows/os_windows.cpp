@@ -807,6 +807,7 @@ Error OS_Windows::shell_open(String p_uri) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 Error OS_Windows::shell_show_in_explorer(String p_fpath) {
 	p_fpath = String("file://") + p_fpath;
 =======
@@ -816,6 +817,10 @@ Error OS_Windows::shell_show_in_explore(String p_fpath) {
 Error OS_Windows::shell_show_in_explorer(String p_fpath) {
 	p_fpath = String("file://") + p_fpath;
 >>>>>>> 440daa8426 (fix methods names)
+=======
+Error OS_Windows::shell_show_in_explorer(String p_fpath) {
+	p_fpath = String("file://") + p_fpath;
+>>>>>>> 7badfa76a34f42c8e1ab8848c5028750290d5040
 	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, LPCWSTR(String("explorer.exe").utf16().get_data()), LPCWSTR((String("/select,")+p_fpath).utf16().get_data()), nullptr, SW_SHOWNORMAL);
 	if (ret > 32) {
 		return OK;

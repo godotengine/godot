@@ -1798,6 +1798,7 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 			OS::get_singleton()->shell_show_in_explorer(dir);
 =======
 			OS::get_singleton()->shell_show_in_explore(String("file://") + dir);
@@ -1805,6 +1806,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 =======
 			OS::get_singleton()->shell_show_in_explorer(dir);
 >>>>>>> 440daa8426 (fix methods names)
+=======
+			OS::get_singleton()->shell_show_in_explorer(dir);
+>>>>>>> 7badfa76a34f42c8e1ab8848c5028750290d5040
 		} break;
 
 		case FILE_OPEN: {

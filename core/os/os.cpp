@@ -280,6 +280,7 @@ Error OS::shell_open(String p_uri) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 Error OS::shell_show_in_explorer(String p_fpath) {
 	p_fpath = String("file://") + p_fpath;
 =======
@@ -289,6 +290,10 @@ Error OS::shell_show_in_explore(String p_fpath) {
 Error OS::shell_show_in_explorer(String p_fpath) {
 	p_fpath = String("file://") + p_fpath;
 >>>>>>> 440daa8426 (fix methods names)
+=======
+Error OS::shell_show_in_explorer(String p_fpath) {
+	p_fpath = String("file://") + p_fpath;
+>>>>>>> 7badfa76a34f42c8e1ab8848c5028750290d5040
 	if (!p_fpath.ends_with("/")) {
 		p_fpath = p_fpath.get_base_dir();
 	}
