@@ -2229,6 +2229,15 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
+		p_output.append(MEMBER_BEGIN "/// <summary>\n");
+		p_output.append(INDENT1 "/// ");
+		p_output.append("Represents the method that handles the ");
+		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
+		p_output.append(" event of a ");
+		p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
+		p_output.append(" class.\n");
+		p_output.append(INDENT1 "/// </summary>");
+
 		if (p_isignal.is_deprecated) {
 			if (p_isignal.deprecation_message.is_empty()) {
 				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
