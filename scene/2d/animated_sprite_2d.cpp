@@ -63,9 +63,13 @@ Rect2 AnimatedSprite2D::_edit_get_rect() const {
 }
 
 bool AnimatedSprite2D::_edit_use_rect() const {
-	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+	if (frames.is_null() || !frames->has_animation(animation)) {
 		return false;
 	}
+	if (frame < 0 || frame >= frames->get_frame_count(animation)) {
+		return false;
+	}
+
 	Ref<Texture2D> t;
 	if (animation) {
 		t = frames->get_frame(animation, frame);
@@ -79,7 +83,10 @@ Rect2 AnimatedSprite2D::get_anchorable_rect() const {
 }
 
 Rect2 AnimatedSprite2D::_get_rect() const {
-	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+	if (frames.is_null() || !frames->has_animation(animation)) {
+		return Rect2();
+	}
+	if (frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return Rect2();
 	}
 
@@ -161,29 +168,22 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 void AnimatedSprite2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (frames.is_null()) {
+			if (frames.is_null() || !frames->has_animation(animation)) {
 				return;
 			}
-			if (!frames->has_animation(animation)) {
-				return;
+
+			double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
+			if (speed == 0) {
+				return; // Do nothing.
 			}
-			if (frame < 0) {
-				return;
-			}
+			int last_frame = frames->get_frame_count(animation) - 1;
 
 			double remaining = get_process_delta_time();
-
 			while (remaining) {
-				double speed = frames->get_animation_speed(animation) * speed_scale;
-				if (speed == 0) {
-					return; // Do nothing.
-				}
-
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
-					int last_frame = frames->get_frame_count(animation) - 1;
-					if (!backwards) {
+					if (!playing_backwards) {
 						// Forward.
 						if (frame >= last_frame) {
 							if (frames->get_animation_loop(animation)) {
@@ -229,13 +229,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (frames.is_null()) {
-				return;
-			}
-			if (frame < 0) {
-				return;
-			}
-			if (!frames->has_animation(animation)) {
+			if (frames.is_null() || !frames->has_animation(animation)) {
 				return;
 			}
 
@@ -327,9 +321,14 @@ int AnimatedSprite2D::get_frame() const {
 }
 
 void AnimatedSprite2D::set_speed_scale(double p_speed_scale) {
+	if (speed_scale == p_speed_scale) {
+		return;
+	}
+
 	double elapsed = _get_frame_duration() - timeout;
 
-	speed_scale = MAX(p_speed_scale, 0.0f);
+	speed_scale = p_speed_scale;
+	playing_backwards = signbit(speed_scale) != backwards;
 
 	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed.
 	_reset_timeout();
@@ -398,12 +397,13 @@ bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backwards) {
+void AnimatedSprite2D::play(const StringName &p_animation, bool p_backwards) {
 	backwards = p_backwards;
+	playing_backwards = signbit(speed_scale) != backwards;
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (frames.is_valid() && backwards && get_frame() == 0) {
+		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
 		}
 	}
@@ -418,7 +418,7 @@ void AnimatedSprite2D::stop() {
 
 double AnimatedSprite2D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		double speed = frames->get_animation_speed(animation) * speed_scale;
+		double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
 		if (speed > 0) {
 			return 1.0 / speed;
 		}

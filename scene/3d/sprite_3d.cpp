@@ -447,7 +447,7 @@ void Sprite3D::_draw() {
 	if (get_base() != get_mesh()) {
 		set_base(get_mesh());
 	}
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		set_base(RID());
 		return;
 	}
@@ -807,15 +807,7 @@ void AnimatedSprite3D::_draw() {
 		set_base(get_mesh());
 	}
 
-	if (frames.is_null()) {
-		return;
-	}
-
-	if (frame < 0) {
-		return;
-	}
-
-	if (!frames->has_animation(animation)) {
+	if (frames.is_null() || !frames->has_animation(animation)) {
 		return;
 	}
 
@@ -1050,29 +1042,22 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 void AnimatedSprite3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (frames.is_null()) {
+			if (frames.is_null() || !frames->has_animation(animation)) {
 				return;
 			}
-			if (!frames->has_animation(animation)) {
-				return;
+
+			double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
+			if (speed == 0) {
+				return; // Do nothing.
 			}
-			if (frame < 0) {
-				return;
-			}
+			int last_frame = frames->get_frame_count(animation) - 1;
 
 			double remaining = get_process_delta_time();
-
 			while (remaining) {
-				double speed = frames->get_animation_speed(animation) * speed_scale;
-				if (speed == 0) {
-					return; // Do nothing.
-				}
-
 				if (timeout <= 0) {
 					timeout = _get_frame_duration();
 
-					int last_frame = frames->get_frame_count(animation) - 1;
-					if (!backwards) {
+					if (!playing_backwards) {
 						// Forward.
 						if (frame >= last_frame) {
 							if (frames->get_animation_loop(animation)) {
@@ -1177,9 +1162,14 @@ int AnimatedSprite3D::get_frame() const {
 }
 
 void AnimatedSprite3D::set_speed_scale(double p_speed_scale) {
+	if (speed_scale == p_speed_scale) {
+		return;
+	}
+
 	double elapsed = _get_frame_duration() - timeout;
 
-	speed_scale = MAX(p_speed_scale, 0.0f);
+	speed_scale = p_speed_scale;
+	playing_backwards = signbit(speed_scale) != backwards;
 
 	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed.
 	_reset_timeout();
@@ -1191,7 +1181,10 @@ double AnimatedSprite3D::get_speed_scale() const {
 }
 
 Rect2 AnimatedSprite3D::get_item_rect() const {
-	if (!frames.is_valid() || !frames->has_animation(animation) || frame < 0 || frame >= frames->get_frame_count(animation)) {
+	if (frames.is_null() || !frames->has_animation(animation)) {
+		return Rect2(0, 0, 1, 1);
+	}
+	if (frame < 0 || frame >= frames->get_frame_count(animation)) {
 		return Rect2(0, 0, 1, 1);
 	}
 
@@ -1236,12 +1229,13 @@ bool AnimatedSprite3D::is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite3D::play(const StringName &p_animation, const bool p_backwards) {
+void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
 	backwards = p_backwards;
+	playing_backwards = signbit(speed_scale) != backwards;
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (frames.is_valid() && backwards && get_frame() == 0) {
+		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
 		}
 	}
@@ -1256,7 +1250,7 @@ void AnimatedSprite3D::stop() {
 
 double AnimatedSprite3D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
-		double speed = frames->get_animation_speed(animation) * speed_scale;
+		double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
 		if (speed > 0) {
 			return 1.0 / speed;
 		}
