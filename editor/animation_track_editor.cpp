@@ -1445,7 +1445,9 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 			default:
 				break;
 		}
+		undo_redo->add_do_method(this, "update_values");
 		undo_redo->add_undo_method(animation.ptr(), "set_loop_mode", animation->get_loop_mode());
+		undo_redo->add_undo_method(this, "update_values");
 		undo_redo->commit_action();
 	} else {
 		String base_path = animation->get_path();
@@ -1913,6 +1915,8 @@ void AnimationTimelineEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag"), PropertyInfo(Variant::BOOL, "timeline_only")));
 	ADD_SIGNAL(MethodInfo("track_added", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("length_changed", PropertyInfo(Variant::FLOAT, "size")));
+
+	ClassDB::bind_method(D_METHOD("update_values"), &AnimationTimelineEdit::update_values);
 }
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
