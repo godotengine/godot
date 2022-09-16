@@ -805,7 +805,8 @@ Error OS_Windows::shell_open(String p_uri) {
 	}
 }
 
-Error OS_Windows::shell_show_in_explore(String p_fpath) {
+Error OS_Windows::shell_show_in_explorer(String p_fpath) {
+	p_fpath = String("file://") + p_fpath;
 	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, LPCWSTR(String("explorer.exe").utf16().get_data()), LPCWSTR((String("/select,")+p_fpath).utf16().get_data()), nullptr, SW_SHOWNORMAL);
 	if (ret > 32) {
 		return OK;
