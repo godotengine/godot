@@ -210,7 +210,6 @@ class AnimatedSprite3D : public SpriteBase3D {
 	Ref<SpriteFrames> frames;
 	bool playing = false;
 	bool playing_backwards = false;
-	bool backwards = false;
 	StringName animation = "default";
 	int frame = 0;
 	float speed_scale = 1.0f;
@@ -238,7 +237,9 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName(), bool p_backwards = false);
+	void play(const StringName &p_animation);
+	void play_forward(const StringName &p_animation);
+	void play_backwards(const StringName &p_animation);
 	void stop();
 
 	void set_playing(bool p_playing);

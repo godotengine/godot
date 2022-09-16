@@ -15,9 +15,22 @@
 		<method name="play">
 			<return type="void" />
 			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
-			<param index="1" name="backwards" type="bool" default="false" />
 			<description>
-				Plays the animation named [param anim]. If no [param anim] is provided, the current animation is played. If [param backwards] is [code]true[/code], the animation is played in reverse.
+				Plays the animation named [param anim]. If no [param anim] is provided, the current animation is played.
+			</description>
+		</method>
+		<method name="play_forward">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Sets [member speed_scale] to a positive value, playing the current animation forward. If [param anim] is provided and is not currently playing, starts [param anim] from the first frame.
+			</description>
+		</method>
+		<method name="play_backwards">
+			<return type="void" />
+			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Sets [member speed_scale] to a negative value, playing the current animation in reverse. If [param anim] is provided and is not currently playing, starts [param anim] from the last frame.
 			</description>
 		</method>
 		<method name="stop">

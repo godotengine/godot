@@ -328,7 +328,7 @@ void AnimatedSprite2D::set_speed_scale(double p_speed_scale) {
 	double elapsed = _get_frame_duration() - timeout;
 
 	speed_scale = p_speed_scale;
-	playing_backwards = signbit(speed_scale) != backwards;
+	playing_backwards = signbit(speed_scale);
 
 	// We adapt the timeout so that the animation speed adapts as soon as the speed scale is changed.
 	_reset_timeout();
@@ -397,15 +397,32 @@ bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite2D::play(const StringName &p_animation, bool p_backwards) {
-	backwards = p_backwards;
-	playing_backwards = signbit(speed_scale) != backwards;
-
+void AnimatedSprite2D::play(const StringName &p_animation) {
 	if (p_animation) {
 		set_animation(p_animation);
-		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
-			set_frame(frames->get_frame_count(p_animation) - 1);
-		}
+	}
+
+	is_over = false;
+	set_playing(true);
+}
+
+void AnimatedSprite2D::play_forward(const StringName &p_animation) {
+	if (speed_scale < 0.0f) {
+		set_speed_scale(speed_scale * -1);
+	}
+
+	play(p_animation);
+}
+
+void AnimatedSprite2D::play_backwards(const StringName &p_animation) {
+	if (speed_scale > 0.0f) {
+		set_speed_scale(speed_scale * -1);
+	}
+
+	if (p_animation && animation == p_animation) {
+		set_animation(p_animation);
+		// set_animation() also sets frame to 0, so this needs to be done afterwards.
+		set_frame(frames->get_frame_count(p_animation) - 1);
 	}
 
 	is_over = false;
@@ -485,7 +502,9 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite2D::set_playing);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play", "anim"), &AnimatedSprite2D::play, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("play_forward", "anim"), &AnimatedSprite2D::play_forward, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("play_backwards", "anim"), &AnimatedSprite2D::play_backwards, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
