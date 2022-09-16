@@ -1795,11 +1795,16 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				fpath = p_selected[0];
 			}
 
-			if (!fpath.ends_with("/")) {
-				fpath = fpath.get_base_dir();
-			}
 			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
-			OS::get_singleton()->shell_open(String("file://") + dir);
+<<<<<<< HEAD
+<<<<<<< HEAD
+			OS::get_singleton()->shell_show_in_explorer(dir);
+=======
+			OS::get_singleton()->shell_show_in_explore(String("file://") + dir);
+>>>>>>> 9905764c62 (implement 'OS::shell_show_in_explore()' for FilesystemDock and expose to GDScript)
+=======
+			OS::get_singleton()->shell_show_in_explorer(dir);
+>>>>>>> 440daa8426 (fix methods names)
 		} break;
 
 		case FILE_OPEN: {

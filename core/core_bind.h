@@ -180,6 +180,15 @@ public:
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+<<<<<<< HEAD
+<<<<<<< HEAD
+	Error shell_show_in_explorer(String p_fpath);
+=======
+	Error shell_show_in_explore(String p_fpath);
+>>>>>>> 9905764c62 (implement 'OS::shell_show_in_explore()' for FilesystemDock and expose to GDScript)
+=======
+	Error shell_show_in_explorer(String p_fpath);
+>>>>>>> 440daa8426 (fix methods names)
 
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;

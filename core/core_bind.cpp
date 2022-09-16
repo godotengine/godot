@@ -252,6 +252,32 @@ Error OS::shell_open(String p_uri) {
 	}
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
+<<<<<<< HEAD
+<<<<<<< HEAD
+Error OS::shell_show_in_explorer(String p_fpath) {
+	if (p_fpath.begins_with("res://")) {
+		WARN_PRINT("Attempting to navigate to a file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_explorer()`.");
+	} else if (p_fpath.begins_with("user://")) {
+		WARN_PRINT("Attempting to navigate to a file path with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_explorer()`.");
+	}
+	return ::OS::get_singleton()->shell_show_in_explorer(p_fpath);
+=======
+Error OS::shell_show_in_explore(String p_fpath) {
+=======
+Error OS::shell_show_in_explorer(String p_fpath) {
+>>>>>>> 440daa8426 (fix methods names)
+	if (p_fpath.begins_with("res://")) {
+		WARN_PRINT("Attempting to navigate to a file path with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_explorer()`.");
+	} else if (p_fpath.begins_with("user://")) {
+		WARN_PRINT("Attempting to navigate to a file path with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_show_in_explorer()`.");
+	}
+<<<<<<< HEAD
+	return ::OS::get_singleton()->shell_show_in_explore(p_fpath);
+>>>>>>> 9905764c62 (implement 'OS::shell_show_in_explore()' for FilesystemDock and expose to GDScript)
+=======
+	return ::OS::get_singleton()->shell_show_in_explorer(p_fpath);
+>>>>>>> 440daa8426 (fix methods names)
+}
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
@@ -527,6 +553,15 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);
+<<<<<<< HEAD
+<<<<<<< HEAD
+	ClassDB::bind_method(D_METHOD("shell_show_in_explorer", "file_path"), &OS::shell_show_in_explorer);
+=======
+	ClassDB::bind_method(D_METHOD("shell_show_in_explore", "file_path"), &OS::shell_show_in_explore);
+>>>>>>> 9905764c62 (implement 'OS::shell_show_in_explore()' for FilesystemDock and expose to GDScript)
+=======
+	ClassDB::bind_method(D_METHOD("shell_show_in_explorer", "file_path"), &OS::shell_show_in_explorer);
+>>>>>>> 440daa8426 (fix methods names)
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 

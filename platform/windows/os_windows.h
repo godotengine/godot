@@ -188,6 +188,15 @@ public:
 	virtual String get_unique_id() const override;
 
 	virtual Error shell_open(String p_uri) override;
+<<<<<<< HEAD
+<<<<<<< HEAD
+	virtual Error shell_show_in_explorer(String p_fpath);
+=======
+	virtual Error shell_show_in_explore(String p_fpath);
+>>>>>>> 9905764c62 (implement 'OS::shell_show_in_explore()' for FilesystemDock and expose to GDScript)
+=======
+	virtual Error shell_show_in_explorer(String p_fpath);
+>>>>>>> 440daa8426 (fix methods names)
 
 	void run();
 
