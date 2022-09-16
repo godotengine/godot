@@ -427,9 +427,6 @@ typedef struct {
 	GDNativeInt (*variant_recursive_hash)(const GDNativeVariantPtr p_self, GDNativeInt p_recursion_count);
 	GDNativeBool (*variant_hash_compare)(const GDNativeVariantPtr p_self, const GDNativeVariantPtr p_other);
 	GDNativeBool (*variant_booleanize)(const GDNativeVariantPtr p_self);
-	void (*variant_sub)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, GDNativeVariantPtr r_dst);
-	void (*variant_blend)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst);
-	void (*variant_interpolate)(const GDNativeVariantPtr p_a, const GDNativeVariantPtr p_b, float p_c, GDNativeVariantPtr r_dst);
 	void (*variant_duplicate)(const GDNativeVariantPtr p_self, GDNativeVariantPtr r_ret, GDNativeBool p_deep);
 	void (*variant_stringify)(const GDNativeVariantPtr p_self, GDNativeStringPtr r_ret);
 
