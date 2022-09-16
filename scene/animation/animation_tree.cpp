@@ -167,7 +167,7 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
-	//inputs.write[p_input].last_pass = state->last_pass;
+	// inputs.write[p_input].last_pass = state->last_pass;
 	real_t activity = 0.0;
 	double ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_seek_root, p_blend, p_filter, p_sync, &activity);
 
@@ -201,7 +201,7 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 
 	if (has_filter() && is_filter_enabled() && p_filter != FILTER_IGNORE) {
 		for (int i = 0; i < blend_count; i++) {
-			blendw[i] = 0.0; //all to zero by default
+			blendw[i] = 0.0; // all to zero by default
 		}
 
 		for (const KeyValue<NodePath, bool> &E : filter) {
@@ -209,16 +209,16 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 				continue;
 			}
 			int idx = state->track_map[E.key];
-			blendw[idx] = 1.0; //filtered goes to one
+			blendw[idx] = 1.0; // filtered goes to one
 		}
 
 		switch (p_filter) {
 			case FILTER_IGNORE:
-				break; //will not happen anyway
+				break; // will not happen anyway
 			case FILTER_PASS: {
-				//values filtered pass, the rest don't
+				// values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] == 0) { //not filtered, does not pass
+					if (blendw[i] == 0) { // not filtered, does not pass
 						continue;
 					}
 
@@ -227,13 +227,12 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 						any_valid = true;
 					}
 				}
-
 			} break;
 			case FILTER_STOP: {
-				//values filtered don't pass, the rest are blended
+				// values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] > 0) { //filtered, does not pass
+					if (blendw[i] > 0) { // filtered, does not pass
 						continue;
 					}
 
@@ -242,28 +241,26 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 						any_valid = true;
 					}
 				}
-
 			} break;
 			case FILTER_BLEND: {
-				//filtered values are blended, the rest are passed without blending
+				// filtered values are blended, the rest are passed without blending
 
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] == 1.0) {
-						blendw[i] = blendr[i] * p_blend; //filtered, blend
+						blendw[i] = blendr[i] * p_blend; // filtered, blend
 					} else {
-						blendw[i] = blendr[i]; //not filtered, do not blend
+						blendw[i] = blendr[i]; // not filtered, do not blend
 					}
 
 					if (blendw[i] > CMP_EPSILON) {
 						any_valid = true;
 					}
 				}
-
 			} break;
 		}
 	} else {
 		for (int i = 0; i < blend_count; i++) {
-			//regular blend
+			// regular blend
 			blendw[i] = blendr[i] * p_blend;
 			if (blendw[i] > CMP_EPSILON) {
 				any_valid = true;
@@ -321,7 +318,7 @@ String AnimationNode::get_caption() const {
 }
 
 void AnimationNode::add_input(const String &p_name) {
-	//root nodes can't add inputs
+	// root nodes can't add inputs
 	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
 	Input input;
 	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
@@ -385,9 +382,9 @@ Array AnimationNode::_get_filters() const {
 	Array paths;
 
 	for (const KeyValue<NodePath, bool> &E : filter) {
-		paths.push_back(String(E.key)); //use strings, so sorting is possible
+		paths.push_back(String(E.key)); // use strings, so sorting is possible
 	}
-	paths.sort(); //done so every time the scene is saved, it does not change
+	paths.sort(); // done so every time the scene is saved, it does not change
 
 	return paths;
 }
@@ -562,7 +559,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 			Animation::TrackType track_cache_type = track_type;
 			if (track_cache_type == Animation::TYPE_POSITION_3D || track_cache_type == Animation::TYPE_ROTATION_3D || track_cache_type == Animation::TYPE_SCALE_3D) {
-				track_cache_type = Animation::TYPE_POSITION_3D; //reference them as position3D tracks, even if they modify rotation or scale
+				track_cache_type = Animation::TYPE_POSITION_3D; // reference them as position3D tracks, even if they modify rotation or scale
 			}
 
 			TrackCache *track = nullptr;
@@ -570,7 +567,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				track = track_cache.get(path);
 			}
 
-			//if not valid, delete track
+			// if not valid, delete track
 			if (track && (track->type != track_cache_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
 				playing_caches.erase(track);
 				memdelete(track);
@@ -738,7 +735,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track_method->object_id = track_method->object->get_instance_id();
 
 						track = track_method;
-
 					} break;
 					case Animation::TYPE_BEZIER: {
 						TrackCacheBezier *track_bezier = memnew(TrackCacheBezier);
@@ -768,7 +764,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track_audio->object_id = track_audio->object->get_instance_id();
 
 						track = track_audio;
-
 					} break;
 					case Animation::TYPE_ANIMATION: {
 						TrackCacheAnimation *track_animation = memnew(TrackCacheAnimation);
@@ -777,7 +772,6 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track_animation->object_id = track_animation->object->get_instance_id();
 
 						track = track_animation;
-
 					} break;
 					default: {
 						ERR_PRINT("Animation corrupted (invalid track type)");
@@ -877,10 +871,47 @@ static void _call_object(Object *p_object, const StringName &p_method, const Vec
 		p_object->callp(p_method, argptrs, argcount, ce);
 	}
 }
-void AnimationTree::_process_graph(double p_delta) {
-	_update_properties(); //if properties need updating, update them
 
-	//check all tracks, see if they need modification
+void apply_looping_bounds(double *prev_time, bool backward, Animation *animation) {
+	if (!backward) {
+		if (*prev_time < 0) {
+			switch (animation->get_loop_mode()) {
+				case Animation::LOOP_NONE: {
+					*prev_time = 0;
+				} break;
+				case Animation::LOOP_LINEAR: {
+					*prev_time = Math::fposmod(*prev_time, (double)animation->get_length());
+				} break;
+				case Animation::LOOP_PINGPONG: {
+					*prev_time = Math::pingpong(*prev_time, (double)animation->get_length());
+				} break;
+				default:
+					break;
+			}
+		}
+	} else {
+		if (*prev_time > animation->get_length()) {
+			switch (animation->get_loop_mode()) {
+				case Animation::LOOP_NONE: {
+					*prev_time = (double)animation->get_length();
+				} break;
+				case Animation::LOOP_LINEAR: {
+					*prev_time = Math::fposmod(*prev_time, (double)animation->get_length());
+				} break;
+				case Animation::LOOP_PINGPONG: {
+					*prev_time = Math::pingpong(*prev_time, (double)animation->get_length());
+				} break;
+				default:
+					break;
+			}
+		}
+	}
+}
+
+void AnimationTree::_process_graph(double p_delta) {
+	_update_properties(); // if properties need updating, update them
+
+	// check all tracks, see if they need modification
 	root_motion_transform = Transform3D();
 
 	if (!root.is_valid()) {
@@ -933,13 +964,13 @@ void AnimationTree::_process_graph(double p_delta) {
 		}
 	}
 
-	{ //setup
+	{ // setup
 
 		process_pass++;
 
 		state.valid = true;
 		state.invalid_reasons = "";
-		state.animation_states.clear(); //will need to be re-created
+		state.animation_states.clear(); // will need to be re-created
 		state.player = player;
 		state.last_pass = process_pass;
 		state.tree = this;
@@ -949,15 +980,15 @@ void AnimationTree::_process_graph(double p_delta) {
 		root->blends.resize(state.track_count);
 		real_t *src_blendsw = root->blends.ptrw();
 		for (int i = 0; i < state.track_count; i++) {
-			src_blendsw[i] = 1.0; //by default all go to 1 for the root input
+			src_blendsw[i] = 1.0; // by default all go to 1 for the root input
 		}
 	}
 
-	//process
+	// process
 
 	{
 		if (started) {
-			//if started, seek
+			// if started, seek
 			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, false, Vector<StringName>());
 			started = false;
 		}
@@ -966,9 +997,9 @@ void AnimationTree::_process_graph(double p_delta) {
 	}
 
 	if (!state.valid) {
-		return; //state is not valid. do nothing.
+		return; // state is not valid. do nothing.
 	}
-	//apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
+	// apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
 
 	{
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
@@ -980,9 +1011,9 @@ void AnimationTree::_process_graph(double p_delta) {
 			real_t weight = as.blend;
 			bool seeked = as.seeked;
 			int pingponged = as.pingponged;
+			bool calc_root = !seeked || as.seek_root;
 #ifndef _3D_DISABLED
 			bool backward = signbit(delta);
-			bool calc_root = !seeked || as.seek_root;
 #endif // _3D_DISABLED
 
 			for (int i = 0; i < a->get_track_count(); i++) {
@@ -998,7 +1029,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 				Animation::TrackType ttype = a->track_get_type(i);
 				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {
-					//broken animation, but avoid error spamming
+					// broken animation, but avoid error spamming
 					continue;
 				}
 
@@ -1023,39 +1054,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->scale = Vector3(0, 0, 0);
 							}
 							double prev_time = time - delta;
-							if (!backward) {
-								if (prev_time < 0) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = 0;
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							} else {
-								if (prev_time > a->get_length()) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = (double)a->get_length();
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							}
+							apply_looping_bounds(&prev_time, backward, a.ptr());
 
 							Vector3 loc[2];
 
@@ -1126,39 +1125,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->scale = Vector3(0, 0, 0);
 							}
 							double prev_time = time - delta;
-							if (!backward) {
-								if (prev_time < 0) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = 0;
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							} else {
-								if (prev_time > a->get_length()) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = (double)a->get_length();
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							}
+							apply_looping_bounds(&prev_time, backward, a.ptr());
 
 							Quaternion rot[2];
 
@@ -1228,39 +1195,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								t->scale = Vector3(0, 0, 0);
 							}
 							double prev_time = time - delta;
-							if (!backward) {
-								if (prev_time < 0) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = 0;
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							} else {
-								if (prev_time > a->get_length()) {
-									switch (a->get_loop_mode()) {
-										case Animation::LOOP_NONE: {
-											prev_time = (double)a->get_length();
-										} break;
-										case Animation::LOOP_LINEAR: {
-											prev_time = Math::fposmod(prev_time, (double)a->get_length());
-										} break;
-										case Animation::LOOP_PINGPONG: {
-											prev_time = Math::pingpong(prev_time, (double)a->get_length());
-										} break;
-										default:
-											break;
-									}
-								}
-							}
+							apply_looping_bounds(&prev_time, backward, a.ptr());
 
 							Vector3 scale[2];
 
@@ -1332,7 +1267,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						float value;
 
 						Error err = a->blend_shape_track_interpolate(i, time, &value);
-						//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+						// ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 						if (err != OK) {
 							continue;
@@ -1347,65 +1282,96 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
-						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
-							Variant value = a->value_track_interpolate(i, time);
-							value = _post_process_key_value(a, i, value, t->object);
-
-							if (value == Variant()) {
-								continue;
-							}
-
+						if (track->root_motion && calc_root) {
 							if (t->process_pass != process_pass) {
 								t->process_pass = process_pass;
-								if (!t->init_value) {
-									t->init_value = value;
-									t->init_value.zero();
-								}
-								t->value = t->init_value;
+								t->value = Variant(Vector2());
 							}
 
-							// Special case for angle interpolation.
-							if (t->is_using_angle) {
-								// For blending consistency, it prevents rotation of more than 180 degrees from init_value.
-								// This is the same as for Quaternion blends.
-								float rot_a = t->value;
-								float rot_b = value;
-								float rot_init = t->init_value;
-								rot_a = Math::fposmod(rot_a, (float)Math_TAU);
-								rot_b = Math::fposmod(rot_b, (float)Math_TAU);
-								rot_init = Math::fposmod(rot_init, (float)Math_TAU);
-								if (rot_init < Math_PI) {
-									rot_a = rot_a > rot_init + Math_PI ? rot_a - Math_TAU : rot_a;
-									rot_b = rot_b > rot_init + Math_PI ? rot_b - Math_TAU : rot_b;
-								} else {
-									rot_a = rot_a < rot_init - Math_PI ? rot_a + Math_TAU : rot_a;
-									rot_b = rot_b < rot_init - Math_PI ? rot_b + Math_TAU : rot_b;
+							double prev_time = time - delta;
+							apply_looping_bounds(&prev_time, backward, a.ptr());
+
+							if (!backward) {
+								if (prev_time > time) {
+									Vector2 prev_value = a->value_track_interpolate(i, prev_time);
+									Vector2 end_value = a->value_track_interpolate(i, (double)a->get_length());
+									t->value = static_cast<Vector2>(t->value) + ((end_value - prev_value) * blend);
+									prev_time = 0;
 								}
-								t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
 							} else {
-								Variant::sub(value, t->init_value, value);
-								Variant::blend(t->value, value, blend, t->value);
-							}
-						} else {
-							if (blend < CMP_EPSILON) {
-								continue; //nothing to blend
+								if (prev_time < time) {
+									Vector2 prev_value = a->value_track_interpolate(i, prev_time);
+									Vector2 start_value = a->value_track_interpolate(i, 0);
+									t->value = static_cast<Vector2>(t->value) + ((start_value - prev_value) * blend);
+									prev_time = (double)a->get_length();
+								}
 							}
 
-							if (seeked) {
-								int idx = a->track_find_key(i, time);
-								if (idx < 0) {
+							Vector2 prev_value = a->value_track_interpolate(i, prev_time);
+							Vector2 current_value = a->value_track_interpolate(i, time);
+							t->value = static_cast<Vector2>(t->value) + ((current_value - prev_value) * blend);
+							prev_time = !backward ? 0 : (double)a->get_length();
+						} else {
+							if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
+								Variant value = a->value_track_interpolate(i, time);
+								value = _post_process_key_value(a, i, value, t->object);
+
+								if (value == Variant()) {
 									continue;
 								}
-								Variant value = a->track_get_key_value(i, idx);
-								value = _post_process_key_value(a, i, value, t->object);
-								t->object->set_indexed(t->subpath, value);
+
+								if (t->process_pass != process_pass) {
+									t->process_pass = process_pass;
+									if (!t->init_value) {
+										t->init_value = value;
+										t->init_value.zero();
+									}
+									t->value = t->init_value;
+								}
+
+								// Special case for angle interpolation.
+								if (t->is_using_angle) {
+									// For blending consistency, it prevents rotation of more than 180 degrees from init_value.
+									// This is the same as for Quaternion blends.
+									float rot_a = t->value;
+									float rot_b = value;
+									float rot_init = t->init_value;
+									rot_a = Math::fposmod(rot_a, (float)Math_TAU);
+									rot_b = Math::fposmod(rot_b, (float)Math_TAU);
+									rot_init = Math::fposmod(rot_init, (float)Math_TAU);
+									if (rot_init < Math_PI) {
+										rot_a = rot_a > rot_init + Math_PI ? rot_a - Math_TAU : rot_a;
+										rot_b = rot_b > rot_init + Math_PI ? rot_b - Math_TAU : rot_b;
+									} else {
+										rot_a = rot_a < rot_init - Math_PI ? rot_a + Math_TAU : rot_a;
+										rot_b = rot_b < rot_init - Math_PI ? rot_b + Math_TAU : rot_b;
+									}
+									t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
+								} else {
+									Variant::sub(value, t->init_value, value);
+									Variant::blend(t->value, value, blend, t->value);
+								}
 							} else {
-								List<int> indices;
-								a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
-								for (int &F : indices) {
-									Variant value = a->track_get_key_value(i, F);
+								if (blend < CMP_EPSILON) {
+									continue; //nothing to blend
+								}
+
+								if (seeked) {
+									int idx = a->track_find_key(i, time);
+									if (idx < 0) {
+										continue;
+									}
+									Variant value = a->track_get_key_value(i, idx);
 									value = _post_process_key_value(a, i, value, t->object);
 									t->object->set_indexed(t->subpath, value);
+								} else {
+									List<int> indices;
+									a->value_track_get_key_indices(i, time, delta, &indices, pingponged);
+									for (int &F : indices) {
+										Variant value = a->track_get_key_value(i, F);
+										value = _post_process_key_value(a, i, value, t->object);
+										t->object->set_indexed(t->subpath, value);
+									}
 								}
 							}
 						}
@@ -1454,12 +1420,12 @@ void AnimationTree::_process_graph(double p_delta) {
 					} break;
 					case Animation::TYPE_AUDIO: {
 						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
+							continue; // nothing to blend
 						}
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
-							//find whatever should be playing
+							// find whatever should be playing
 							int idx = a->track_find_key(i, time);
 							if (idx < 0) {
 								continue;
@@ -1488,7 +1454,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 								t->playing = true;
 								playing_caches.insert(t);
-								if (len && end_ofs > 0) { //force an end at a time
+								if (len && end_ofs > 0) { // force an end at a time
 									t->len = len - start_ofs - end_ofs;
 								} else {
 									t->len = 0;
@@ -1496,9 +1462,8 @@ void AnimationTree::_process_graph(double p_delta) {
 
 								t->start = time;
 							}
-
 						} else {
-							//find stuff to play
+							// find stuff to play
 							List<int> to_play;
 							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
 							if (to_play.size()) {
@@ -1519,7 +1484,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 									t->playing = true;
 									playing_caches.insert(t);
-									if (len && end_ofs > 0) { //force an end at a time
+									if (len && end_ofs > 0) { // force an end at a time
 										t->len = len - start_ofs - end_ofs;
 									} else {
 										t->len = 0;
@@ -1551,7 +1516,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 
 								if (stop) {
-									//time to stop
+									// time to stop
 									t->object->call(SNAME("stop"));
 									t->playing = false;
 									playing_caches.erase(t);
@@ -1568,7 +1533,7 @@ void AnimationTree::_process_graph(double p_delta) {
 					} break;
 					case Animation::TYPE_ANIMATION: {
 						if (blend < CMP_EPSILON) {
-							continue; //nothing to blend
+							continue; // nothing to blend
 						}
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
@@ -1579,7 +1544,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						}
 
 						if (seeked) {
-							//seek
+							// seek
 							int idx = a->track_find_key(i, time);
 							if (idx < 0) {
 								continue;
@@ -1598,10 +1563,10 @@ void AnimationTree::_process_graph(double p_delta) {
 
 							switch (anim->get_loop_mode()) {
 								case Animation::LOOP_NONE: {
-									at_anim_pos = MAX((double)anim->get_length(), time - pos); //seek to end
+									at_anim_pos = MAX((double)anim->get_length(), time - pos); // seek to end
 								} break;
 								case Animation::LOOP_LINEAR: {
-									at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); //seek to loop
+									at_anim_pos = Math::fposmod(time - pos, (double)anim->get_length()); // seek to loop
 								} break;
 								case Animation::LOOP_PINGPONG: {
 									at_anim_pos = Math::pingpong(time - pos, (double)a->get_length());
@@ -1620,7 +1585,7 @@ void AnimationTree::_process_graph(double p_delta) {
 								player2->seek(at_anim_pos, true);
 							}
 						} else {
-							//find stuff to play
+							// find stuff to play
 							List<int> to_play;
 							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
 							if (to_play.size()) {
@@ -1640,7 +1605,6 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 							}
 						}
-
 					} break;
 				}
 			}
@@ -1652,7 +1616,7 @@ void AnimationTree::_process_graph(double p_delta) {
 		for (const KeyValue<NodePath, TrackCache *> &K : track_cache) {
 			TrackCache *track = K.value;
 			if (track->process_pass != process_pass) {
-				continue; //not processed, ignore
+				continue; // not processed, ignore
 			}
 
 			switch (track->type) {
@@ -1666,7 +1630,6 @@ void AnimationTree::_process_graph(double p_delta) {
 						xform.basis.set_quaternion_scale(t->rot, Vector3(1, 1, 1) + t->scale);
 
 						root_motion_transform = xform;
-
 					} else if (t->skeleton && t->bone_idx >= 0) {
 						if (t->loc_used) {
 							t->skeleton->set_bone_pose_position(t->bone_idx, t->loc);
@@ -1677,7 +1640,6 @@ void AnimationTree::_process_graph(double p_delta) {
 						if (t->scale_used) {
 							t->skeleton->set_bone_pose_scale(t->bone_idx, t->scale);
 						}
-
 					} else if (!t->skeleton) {
 						if (t->loc_used) {
 							t->node_3d->set_position(t->loc);
@@ -1703,17 +1665,23 @@ void AnimationTree::_process_graph(double p_delta) {
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+					if (t->root_motion) {
+						Transform3D xform;
+						Vector2 origin = t->value;
+						xform.origin = Vector3(origin.x, origin.y, 0);
 
+						root_motion_transform = xform;
+					} else {
+						t->object->set_indexed(t->subpath, t->value);
+					}
 				} break;
 				case Animation::TYPE_BEZIER: {
 					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
 					t->object->set_indexed(t->subpath, t->value);
-
 				} break;
 				default: {
-				} //the rest don't matter
+				} // the rest don't matter
 			}
 		}
 	}
@@ -1980,7 +1948,7 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
-	//rename values first
+	// rename values first
 	for (const PropertyInfo &E : properties) {
 		if (E.name.begins_with(p_base)) {
 			String new_name = E.name.replace_first(p_base, p_new_base);
@@ -1988,7 +1956,7 @@ void AnimationTree::rename_parameter(const String &p_base, const String &p_new_b
 		}
 	}
 
-	//update tree second
+	// update tree second
 	properties_dirty = true;
 	_update_properties();
 }
