@@ -94,6 +94,16 @@ void MultiplayerSynchronizer::_update_process() {
 	}
 }
 
+TypedArray<String> MultiplayerSynchronizer::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (root_path.is_empty() || !has_node(root_path)) {
+		warnings.push_back(RTR("A valid NodePath must be set in the \"Root Path\" property in order for MultiplayerSynchronizer to be able to synchronize properties."));
+	}
+
+	return warnings;
+}
+
 Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
 	ERR_FAIL_COND_V(!p_obj, ERR_INVALID_PARAMETER);
 	r_variant.resize(p_properties.size());

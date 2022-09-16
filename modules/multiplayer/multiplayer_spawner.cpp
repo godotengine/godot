@@ -86,6 +86,23 @@ void MultiplayerSpawner::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 #endif
+
+TypedArray<String> MultiplayerSpawner::get_configuration_warnings() const {
+	TypedArray<String> warnings = Node::get_configuration_warnings();
+
+	if (spawn_path.is_empty() || !has_node(spawn_path)) {
+		warnings.push_back(RTR("A valid NodePath must be set in the \"Spawn Path\" property in order for MultiplayerSpawner to be able to spawn Nodes."));
+	}
+	bool has_scenes = get_spawnable_scene_count() > 0;
+	// Can't check if method is overriden in placeholder scripts.
+	bool has_placeholder_script = get_script_instance() && get_script_instance()->is_placeholder();
+	if (!has_scenes && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom) && !has_placeholder_script) {
+		warnings.push_back(RTR("A list of PackedScenes must be set in the \"Auto Spawn List\" property in order for MultiplayerSpawner to automatically spawn them remotely when added as child of \"spawn_path\"."));
+		warnings.push_back(RTR("Alternatively, a Script implementing the function \"_spawn_custom\" must be set for this MultiplayerSpawner, and \"spawn\" must be called explicitly in code."));
+	}
+	return warnings;
+}
+
 void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
 	sc.path = p_path;
@@ -94,13 +111,16 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	}
 	spawnable_scenes.push_back(sc);
 }
+
 int MultiplayerSpawner::get_spawnable_scene_count() const {
 	return spawnable_scenes.size();
 }
+
 String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, (int)spawnable_scenes.size(), "");
 	return spawnable_scenes[p_idx].path;
 }
+
 void MultiplayerSpawner::clear_spawnable_scenes() {
 	spawnable_scenes.clear();
 }
