@@ -494,10 +494,16 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 
 	// Generate HTML file with replaced strings.
 	_fix_html(html, p_preset, base_name, p_debug, p_flags, shared_objects, file_sizes);
-	Error err = _write_or_error(html.ptr(), html.size(), p_path);
-	if (err != OK) {
-		return err;
+
+	Error err = OK;
+
+	f = FileAccess::open(p_path, FileAccess::WRITE);
+	if (f.is_null()) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write file: \"%s\"."), p_path));
+		return ERR_FILE_CANT_WRITE;
 	}
+	f->store_buffer(html.ptr(), html.size());
+
 	html.resize(0);
 
 	// Export splash (why?)
