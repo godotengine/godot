@@ -161,6 +161,8 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
 
 	virtual String get_name() const = 0;
+	virtual String get_distribution_name() const = 0;
+	virtual String get_version() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }

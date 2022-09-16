@@ -444,6 +444,16 @@ String OS_UWP::get_name() const {
 	return "UWP";
 }
 
+String OS_UWP::get_distribution_name() const {
+	return get_name();
+}
+
+String OS_UWP::get_version() const {
+	winrt::hstring df_version = VersionInfo().DeviceFamilyVersion();
+	static String version = String(winrt::to_string(df_version).c_str());
+	return version;
+}
+
 OS::DateTime OS_UWP::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {
