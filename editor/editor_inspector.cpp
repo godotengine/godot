@@ -3983,13 +3983,7 @@ void EditorInspector::_check_meta_name(const String &p_name) {
 	} else if (!p_name.is_valid_identifier()) {
 		error = TTR("Metadata name must be a valid identifier.");
 	} else if (object->has_meta(p_name)) {
-		Node *node = Object::cast_to<Node>(object);
-		if (node) {
-			error = vformat(TTR("Metadata with name \"%s\" already exists on \"%s\"."), p_name, node->get_name());
-		} else {
-			// This should normally never be reached, but the error is set just in case.
-			error = vformat(TTR("Metadata with name \"%s\" already exists."), p_name, node->get_name());
-		}
+		error = vformat(TTR("Metadata with name \"%s\" already exists."), p_name);
 	} else if (p_name[0] == '_') {
 		error = TTR("Names starting with _ are reserved for editor-only metadata.");
 	}
@@ -4008,14 +4002,6 @@ void EditorInspector::_check_meta_name(const String &p_name) {
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
 		add_meta_dialog = memnew(ConfirmationDialog);
-
-		Node *node = Object::cast_to<Node>(object);
-		if (node) {
-			add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), node->get_name()));
-		} else {
-			// This should normally never be reached, but the title is set just in case.
-			add_meta_dialog->set_title(vformat(TTR("Add Metadata Property"), node->get_name()));
-		}
 
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		add_meta_dialog->add_child(vbc);
@@ -4044,6 +4030,14 @@ void EditorInspector::_show_add_meta_dialog() {
 		vbc->add_child(add_meta_error);
 
 		add_meta_name->connect("text_changed", callable_mp(this, &EditorInspector::_check_meta_name));
+	}
+
+	Node *node = Object::cast_to<Node>(object);
+	if (node) {
+		add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), node->get_name()));
+	} else {
+		// This should normally be reached when the object is derived from Resource.
+		add_meta_dialog->set_title(vformat(TTR("Add Metadata Property for \"%s\""), object->get_class()));
 	}
 
 	add_meta_dialog->popup_centered();
