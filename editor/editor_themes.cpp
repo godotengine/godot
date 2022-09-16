@@ -42,10 +42,15 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-HashMap<Color, Color> EditorColorMap::editor_color_map;
+HashMap<Color, Color> EditorColorMap::color_conversion_map;
+HashSet<StringName> EditorColorMap::color_conversion_exceptions;
 
-void EditorColorMap::add_color_pair(const String p_from_color, const String p_to_color) {
-	editor_color_map[Color::html(p_from_color)] = Color::html(p_to_color);
+void EditorColorMap::add_conversion_color_pair(const String p_from_color, const String p_to_color) {
+	color_conversion_map[Color::html(p_from_color)] = Color::html(p_to_color);
+}
+
+void EditorColorMap::add_conversion_exception(const StringName p_icon_name) {
+	color_conversion_exceptions.insert(p_icon_name);
 }
 
 void EditorColorMap::create() {
@@ -53,105 +58,139 @@ void EditorColorMap::create() {
 	// This can be a basis for proper palette validation later.
 
 	// Convert:    FROM       TO
-	add_color_pair("#478cbf", "#478cbf"); // Godot Blue
-	add_color_pair("#414042", "#414042"); // Godot Gray
+	add_conversion_color_pair("#478cbf", "#478cbf"); // Godot Blue
+	add_conversion_color_pair("#414042", "#414042"); // Godot Gray
 
-	add_color_pair("#ffffff", "#414141"); // Pure white
-	add_color_pair("#000000", "#bfbfbf"); // Pure black
+	add_conversion_color_pair("#ffffff", "#414141"); // Pure white
+	add_conversion_color_pair("#000000", "#bfbfbf"); // Pure black
 	// Keep pure RGB colors as is, but list them for explicitly.
-	add_color_pair("#ff0000", "#ff0000"); // Pure red
-	add_color_pair("#00ff00", "#00ff00"); // Pure green
-	add_color_pair("#0000ff", "#0000ff"); // Pure blue
+	add_conversion_color_pair("#ff0000", "#ff0000"); // Pure red
+	add_conversion_color_pair("#00ff00", "#00ff00"); // Pure green
+	add_conversion_color_pair("#0000ff", "#0000ff"); // Pure blue
 
 	// GUI Colors
-	add_color_pair("#e0e0e0", "#5a5a5a"); // Common icon color
-	add_color_pair("#fefefe", "#fefefe"); // Forced light color
-	add_color_pair("#808080", "#808080"); // GUI disabled color
-	add_color_pair("#b3b3b3", "#363636"); // GUI disabled light color
-	add_color_pair("#699ce8", "#699ce8"); // GUI highlight color
-	add_color_pair("#f9f9f9", "#606060"); // Scrollbar grabber highlight color
+	add_conversion_color_pair("#e0e0e0", "#5a5a5a"); // Common icon color
+	add_conversion_color_pair("#fefefe", "#fefefe"); // Forced light color
+	add_conversion_color_pair("#808080", "#808080"); // GUI disabled color
+	add_conversion_color_pair("#b3b3b3", "#363636"); // GUI disabled light color
+	add_conversion_color_pair("#699ce8", "#699ce8"); // GUI highlight color
+	add_conversion_color_pair("#f9f9f9", "#606060"); // Scrollbar grabber highlight color
 
-	add_color_pair("#c38ef1", "#a85de9"); // Animation
-	add_color_pair("#fc7f7f", "#cd3838"); // Spatial
-	add_color_pair("#8da5f3", "#3d64dd"); // 2D
-	add_color_pair("#4b70ea", "#1a3eac"); // 2D Dark
-	add_color_pair("#8eef97", "#2fa139"); // Control
+	add_conversion_color_pair("#c38ef1", "#a85de9"); // Animation
+	add_conversion_color_pair("#fc7f7f", "#cd3838"); // Spatial
+	add_conversion_color_pair("#8da5f3", "#3d64dd"); // 2D
+	add_conversion_color_pair("#4b70ea", "#1a3eac"); // 2D Dark
+	add_conversion_color_pair("#8eef97", "#2fa139"); // Control
 
-	add_color_pair("#5fb2ff", "#0079f0"); // Selection (blue)
-	add_color_pair("#003e7a", "#2b74bb"); // Selection (darker blue)
-	add_color_pair("#f7f5cf", "#615f3a"); // Gizmo (yellow)
+	add_conversion_color_pair("#5fb2ff", "#0079f0"); // Selection (blue)
+	add_conversion_color_pair("#003e7a", "#2b74bb"); // Selection (darker blue)
+	add_conversion_color_pair("#f7f5cf", "#615f3a"); // Gizmo (yellow)
 
 	// Rainbow
-	add_color_pair("#ff4545", "#ff2929"); // Red
-	add_color_pair("#ffe345", "#ffe337"); // Yellow
-	add_color_pair("#80ff45", "#74ff34"); // Green
-	add_color_pair("#45ffa2", "#2cff98"); // Aqua
-	add_color_pair("#45d7ff", "#22ccff"); // Blue
-	add_color_pair("#8045ff", "#702aff"); // Purple
-	add_color_pair("#ff4596", "#ff2781"); // Pink
+	add_conversion_color_pair("#ff4545", "#ff2929"); // Red
+	add_conversion_color_pair("#ffe345", "#ffe337"); // Yellow
+	add_conversion_color_pair("#80ff45", "#74ff34"); // Green
+	add_conversion_color_pair("#45ffa2", "#2cff98"); // Aqua
+	add_conversion_color_pair("#45d7ff", "#22ccff"); // Blue
+	add_conversion_color_pair("#8045ff", "#702aff"); // Purple
+	add_conversion_color_pair("#ff4596", "#ff2781"); // Pink
 
 	// Audio gradients
-	add_color_pair("#e1da5b", "#d6cf4b"); // Yellow
+	add_conversion_color_pair("#e1da5b", "#d6cf4b"); // Yellow
 
-	add_color_pair("#62aeff", "#1678e0"); // Frozen gradient top
-	add_color_pair("#75d1e6", "#41acc5"); // Frozen gradient middle
-	add_color_pair("#84ffee", "#49ccba"); // Frozen gradient bottom
+	add_conversion_color_pair("#62aeff", "#1678e0"); // Frozen gradient top
+	add_conversion_color_pair("#75d1e6", "#41acc5"); // Frozen gradient middle
+	add_conversion_color_pair("#84ffee", "#49ccba"); // Frozen gradient bottom
 
-	add_color_pair("#f70000", "#c91616"); // Color track red
-	add_color_pair("#eec315", "#d58c0b"); // Color track orange
-	add_color_pair("#dbee15", "#b7d10a"); // Color track yellow
-	add_color_pair("#288027", "#218309"); // Color track green
+	add_conversion_color_pair("#f70000", "#c91616"); // Color track red
+	add_conversion_color_pair("#eec315", "#d58c0b"); // Color track orange
+	add_conversion_color_pair("#dbee15", "#b7d10a"); // Color track yellow
+	add_conversion_color_pair("#288027", "#218309"); // Color track green
 
 	// Resource groups
-	add_color_pair("#ffca5f", "#fea900"); // Mesh resource (orange)
-	add_color_pair("#2998ff", "#68b6ff"); // Shape resource (blue)
-	add_color_pair("#a2d2ff", "#4998e3"); // Shape resource (light blue)
+	add_conversion_color_pair("#ffca5f", "#fea900"); // Mesh resource (orange)
+	add_conversion_color_pair("#2998ff", "#68b6ff"); // Shape resource (blue)
+	add_conversion_color_pair("#a2d2ff", "#4998e3"); // Shape resource (light blue)
 
 	// Animation editor tracks
 	// The property track icon color is set by the common icon color.
-	add_color_pair("#ea7940", "#bd5e2c"); // 3D Position track
-	add_color_pair("#ff2b88", "#bd165f"); // 3D Rotation track
-	add_color_pair("#eac840", "#bd9d1f"); // 3D Scale track
-	add_color_pair("#3cf34e", "#16a827"); // Call Method track
-	add_color_pair("#2877f6", "#236be6"); // Bezier Curve track
-	add_color_pair("#eae440", "#9f9722"); // Audio Playback track
-	add_color_pair("#a448f0", "#9853ce"); // Animation Playback track
-	add_color_pair("#5ad5c4", "#0a9c88"); // Blend Shape track
+	add_conversion_color_pair("#ea7940", "#bd5e2c"); // 3D Position track
+	add_conversion_color_pair("#ff2b88", "#bd165f"); // 3D Rotation track
+	add_conversion_color_pair("#eac840", "#bd9d1f"); // 3D Scale track
+	add_conversion_color_pair("#3cf34e", "#16a827"); // Call Method track
+	add_conversion_color_pair("#2877f6", "#236be6"); // Bezier Curve track
+	add_conversion_color_pair("#eae440", "#9f9722"); // Audio Playback track
+	add_conversion_color_pair("#a448f0", "#9853ce"); // Animation Playback track
+	add_conversion_color_pair("#5ad5c4", "#0a9c88"); // Blend Shape track
 
 	// Control layouts
-	add_color_pair("#d6d6d6", "#474747"); // Highlighted part
-	add_color_pair("#474747", "#d6d6d6"); // Background part
-	add_color_pair("#919191", "#6e6e6e"); // Border part
+	add_conversion_color_pair("#d6d6d6", "#474747"); // Highlighted part
+	add_conversion_color_pair("#474747", "#d6d6d6"); // Background part
+	add_conversion_color_pair("#919191", "#6e6e6e"); // Border part
 
 	// TileSet editor icons
-	add_color_pair("#fce00e", "#aa8d24"); // New Single Tile
-	add_color_pair("#0e71fc", "#0350bd"); // New Autotile
-	add_color_pair("#c6ced4", "#828f9b"); // New Atlas
+	add_conversion_color_pair("#fce00e", "#aa8d24"); // New Single Tile
+	add_conversion_color_pair("#0e71fc", "#0350bd"); // New Autotile
+	add_conversion_color_pair("#c6ced4", "#828f9b"); // New Atlas
 
 	// Visual script
-	add_color_pair("#41ecad", "#25e3a0"); // VisualScript variant
-	add_color_pair("#6f91f0", "#6d8eeb"); // VisualScript bool
-	add_color_pair("#5abbef", "#4fb2e9"); // VisualScript int
-	add_color_pair("#35d4f4", "#27ccf0"); // VisualScript float
-	add_color_pair("#4593ec", "#4690e7"); // VisualScript String
-	add_color_pair("#ac73f1", "#ad76ee"); // VisualScript Vector2
-	add_color_pair("#f1738f", "#ee758e"); // VisualScript Rect2
-	add_color_pair("#de66f0", "#dc6aed"); // VisualScript Vector3
-	add_color_pair("#b9ec41", "#96ce1a"); // VisualScript Transform2D
-	add_color_pair("#f74949", "#f77070"); // VisualScript Plane
-	add_color_pair("#ec418e", "#ec69a3"); // VisualScript Quat
-	add_color_pair("#ee5677", "#ee7991"); // VisualScript AABB
-	add_color_pair("#e1ec41", "#b2bb19"); // VisualScript Basis
-	add_color_pair("#f68f45", "#f49047"); // VisualScript Transform
-	add_color_pair("#417aec", "#6993ec"); // VisualScript NodePath
-	add_color_pair("#41ec80", "#2ce573"); // VisualScript RID
-	add_color_pair("#55f3e3", "#12d5c3"); // VisualScript Object
-	add_color_pair("#54ed9e", "#57e99f"); // VisualScript Dictionary
+	add_conversion_color_pair("#41ecad", "#25e3a0"); // VisualScript variant
+	add_conversion_color_pair("#6f91f0", "#6d8eeb"); // VisualScript bool
+	add_conversion_color_pair("#5abbef", "#4fb2e9"); // VisualScript int
+	add_conversion_color_pair("#35d4f4", "#27ccf0"); // VisualScript float
+	add_conversion_color_pair("#4593ec", "#4690e7"); // VisualScript String
+	add_conversion_color_pair("#ac73f1", "#ad76ee"); // VisualScript Vector2
+	add_conversion_color_pair("#f1738f", "#ee758e"); // VisualScript Rect2
+	add_conversion_color_pair("#de66f0", "#dc6aed"); // VisualScript Vector3
+	add_conversion_color_pair("#b9ec41", "#96ce1a"); // VisualScript Transform2D
+	add_conversion_color_pair("#f74949", "#f77070"); // VisualScript Plane
+	add_conversion_color_pair("#ec418e", "#ec69a3"); // VisualScript Quat
+	add_conversion_color_pair("#ee5677", "#ee7991"); // VisualScript AABB
+	add_conversion_color_pair("#e1ec41", "#b2bb19"); // VisualScript Basis
+	add_conversion_color_pair("#f68f45", "#f49047"); // VisualScript Transform
+	add_conversion_color_pair("#417aec", "#6993ec"); // VisualScript NodePath
+	add_conversion_color_pair("#41ec80", "#2ce573"); // VisualScript RID
+	add_conversion_color_pair("#55f3e3", "#12d5c3"); // VisualScript Object
+	add_conversion_color_pair("#54ed9e", "#57e99f"); // VisualScript Dictionary
 	// Visual shaders
-	add_color_pair("#77ce57", "#67c046"); // Vector funcs
-	add_color_pair("#ea686c", "#d95256"); // Vector transforms
-	add_color_pair("#eac968", "#d9b64f"); // Textures and cubemaps
-	add_color_pair("#cf68ea", "#c050dd"); // Functions and expressions
+	add_conversion_color_pair("#77ce57", "#67c046"); // Vector funcs
+	add_conversion_color_pair("#ea686c", "#d95256"); // Vector transforms
+	add_conversion_color_pair("#eac968", "#d9b64f"); // Textures and cubemaps
+	add_conversion_color_pair("#cf68ea", "#c050dd"); // Functions and expressions
+
+	// These icons should not be converted.
+	add_conversion_exception("EditorPivot");
+	add_conversion_exception("EditorHandle");
+	add_conversion_exception("Editor3DHandle");
+	add_conversion_exception("EditorBoneHandle");
+	add_conversion_exception("Godot");
+	add_conversion_exception("Sky");
+	add_conversion_exception("EditorControlAnchor");
+	add_conversion_exception("DefaultProjectIcon");
+	add_conversion_exception("GuiChecked");
+	add_conversion_exception("GuiRadioChecked");
+	add_conversion_exception("GuiIndeterminate");
+	add_conversion_exception("GuiCloseCustomizable");
+	add_conversion_exception("GuiGraphNodePort");
+	add_conversion_exception("GuiResizer");
+	add_conversion_exception("ZoomMore");
+	add_conversion_exception("ZoomLess");
+	add_conversion_exception("ZoomReset");
+	add_conversion_exception("LockViewport");
+	add_conversion_exception("GroupViewport");
+	add_conversion_exception("StatusError");
+	add_conversion_exception("StatusSuccess");
+	add_conversion_exception("StatusWarning");
+	add_conversion_exception("OverbrightIndicator");
+	add_conversion_exception("GuiMiniCheckerboard");
+
+	/// Code Editor.
+	add_conversion_exception("GuiTab");
+	add_conversion_exception("GuiSpace");
+	add_conversion_exception("CodeFoldedRightArrow");
+	add_conversion_exception("CodeFoldDownArrow");
+	add_conversion_exception("TextEditorPlay");
+	add_conversion_exception("Breakpoint");
 }
 
 static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_bottom, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1, bool p_draw_center = true) {
@@ -206,67 +245,49 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float 
 		img->adjust_bcs(1.0, 1.0, p_saturation);
 	}
 
-	// In this case filter really helps.
 	return ImageTexture::create_from_image(img);
 }
 #endif
 
-void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = true, int p_thumb_size = 32, bool p_only_thumbs = false, float p_icon_saturation = 1.0) {
+void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, float p_icon_saturation, int p_thumb_size, bool p_only_thumbs = false) {
 #ifdef MODULE_SVG_ENABLED
-	HashMap<Color, Color> icon_color_map;
+	// Before we register the icons, we adjust their colors and saturation.
+	// Most icons follow the standard rules for color conversion to follow the editor
+	// theme's polarity (dark/light). We also adjust the saturation for most icons,
+	// following the editor setting.
+	// Some icons are excluded from this conversion, and instead use the configured
+	// accent color to replace their innate accent color to match the editor theme.
+	// And then some icons are completely excluded from the conversion.
 
-	// The names of the icons to never convert, even if one of their colors
-	// are contained in the dictionary above.
-	HashSet<StringName> exceptions;
-
+	// Standard color conversion map.
+	HashMap<Color, Color> color_conversion_map;
+	// Icons by default are set up for the dark theme, so if the theme is light,
+	// we apply the dark-to-light color conversion map.
 	if (!p_dark_theme) {
-		for (KeyValue<Color, Color> &E : EditorColorMap::get()) {
-			icon_color_map[E.key] = E.value;
+		for (KeyValue<Color, Color> &E : EditorColorMap::get_color_conversion_map()) {
+			color_conversion_map[E.key] = E.value;
 		}
-
-		exceptions.insert("EditorPivot");
-		exceptions.insert("EditorHandle");
-		exceptions.insert("Editor3DHandle");
-		exceptions.insert("EditorBoneHandle");
-		exceptions.insert("Godot");
-		exceptions.insert("Sky");
-		exceptions.insert("EditorControlAnchor");
-		exceptions.insert("DefaultProjectIcon");
-		exceptions.insert("GuiChecked");
-		exceptions.insert("GuiRadioChecked");
-		exceptions.insert("GuiIndeterminate");
-		exceptions.insert("GuiCloseCustomizable");
-		exceptions.insert("GuiGraphNodePort");
-		exceptions.insert("GuiResizer");
-		exceptions.insert("ZoomMore");
-		exceptions.insert("ZoomLess");
-		exceptions.insert("ZoomReset");
-		exceptions.insert("LockViewport");
-		exceptions.insert("GroupViewport");
-		exceptions.insert("StatusError");
-		exceptions.insert("StatusSuccess");
-		exceptions.insert("StatusWarning");
-		exceptions.insert("OverbrightIndicator");
-		exceptions.insert("GuiMiniCheckerboard");
-
-		// Prevents Code Editor icons from changing
-		exceptions.insert("GuiTab");
-		exceptions.insert("GuiSpace");
-		exceptions.insert("CodeFoldedRightArrow");
-		exceptions.insert("CodeFoldDownArrow");
-		exceptions.insert("TextEditorPlay");
-		exceptions.insert("Breakpoint");
 	}
-
-	// These ones should be converted even if we are using a dark theme.
+	// These colors should be converted even if we are using a dark theme.
 	const Color error_color = p_theme->get_color(SNAME("error_color"), SNAME("Editor"));
 	const Color success_color = p_theme->get_color(SNAME("success_color"), SNAME("Editor"));
 	const Color warning_color = p_theme->get_color(SNAME("warning_color"), SNAME("Editor"));
-	icon_color_map[Color::html("#ff5f5f")] = error_color;
-	icon_color_map[Color::html("#5fff97")] = success_color;
-	icon_color_map[Color::html("#ffdd65")] = warning_color;
+	color_conversion_map[Color::html("#ff5f5f")] = error_color;
+	color_conversion_map[Color::html("#5fff97")] = success_color;
+	color_conversion_map[Color::html("#ffdd65")] = warning_color;
 
-	// Use the accent color for some icons (checkbox, radio, toggle, etc.).
+	// The names of the icons to exclude from the standard color conversion.
+	HashSet<StringName> conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();
+
+	// The names of the icons to exclude when adjusting for saturation.
+	HashSet<StringName> saturation_exceptions;
+	saturation_exceptions.insert("DefaultProjectIcon");
+	saturation_exceptions.insert("Godot");
+	saturation_exceptions.insert("Logo");
+
+	// Accent color conversion map.
+	// It is used on soem icons (checkbox, radio, toggle, etc.), regardless of the dark
+	// or light mode.
 	HashMap<Color, Color> accent_color_map;
 	HashSet<StringName> accent_color_icons;
 
@@ -292,16 +313,14 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 				icon = editor_generate_icon(i, EDSCALE, 1.0, accent_color_map);
 			} else {
 				float saturation = p_icon_saturation;
-
-				if (strcmp(editor_icons_names[i], "DefaultProjectIcon") == 0 || strcmp(editor_icons_names[i], "Godot") == 0 || strcmp(editor_icons_names[i], "Logo") == 0) {
+				if (saturation_exceptions.has(editor_icons_names[i])) {
 					saturation = 1.0;
 				}
 
-				const int is_exception = exceptions.has(editor_icons_names[i]);
-				if (is_exception) {
+				if (conversion_exceptions.has(editor_icons_names[i])) {
 					icon = editor_generate_icon(i, EDSCALE, saturation);
 				} else {
-					icon = editor_generate_icon(i, EDSCALE, saturation, icon_color_map);
+					icon = editor_generate_icon(i, EDSCALE, saturation, color_conversion_map);
 				}
 			}
 
@@ -310,19 +329,26 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 	}
 
 	// Generate thumbnail icons with the given thumbnail size.
-	// We don't need filtering when generating at one of the default resolutions.
-	const bool force_filter = p_thumb_size != 64 && p_thumb_size != 32;
+	// See editor\icons\editor_icons_builders.py for the code that determines which icons are thumbnails.
 	if (p_thumb_size >= 64) {
 		const float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			const int index = editor_bg_thumbs_indices[i];
-			const int is_exception = exceptions.has(editor_icons_names[index]);
-
 			Ref<ImageTexture> icon;
-			if (!p_dark_theme && !is_exception) {
-				icon = editor_generate_icon(index, scale, force_filter, icon_color_map);
+
+			if (accent_color_icons.has(editor_icons_names[index])) {
+				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);
 			} else {
-				icon = editor_generate_icon(index, scale, force_filter);
+				float saturation = p_icon_saturation;
+				if (saturation_exceptions.has(editor_icons_names[index])) {
+					saturation = 1.0;
+				}
+
+				if (conversion_exceptions.has(editor_icons_names[index])) {
+					icon = editor_generate_icon(index, scale, saturation);
+				} else {
+					icon = editor_generate_icon(index, scale, saturation, color_conversion_map);
+				}
 			}
 
 			p_theme->set_icon(editor_icons_names[index], SNAME("EditorIcons"), icon);
@@ -331,13 +357,21 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		const float scale = (float)p_thumb_size / 32.0 * EDSCALE;
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			const int index = editor_md_thumbs_indices[i];
-			const bool is_exception = exceptions.has(editor_icons_names[index]);
-
 			Ref<ImageTexture> icon;
-			if (!p_dark_theme && !is_exception) {
-				icon = editor_generate_icon(index, scale, force_filter, icon_color_map);
+
+			if (accent_color_icons.has(editor_icons_names[index])) {
+				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);
 			} else {
-				icon = editor_generate_icon(index, scale, force_filter);
+				float saturation = p_icon_saturation;
+				if (saturation_exceptions.has(editor_icons_names[index])) {
+					saturation = 1.0;
+				}
+
+				if (conversion_exceptions.has(editor_icons_names[index])) {
+					icon = editor_generate_icon(index, scale, saturation);
+				} else {
+					icon = editor_generate_icon(index, scale, saturation, color_conversion_map);
+				}
 			}
 
 			p_theme->set_icon(editor_icons_names[index], SNAME("EditorIcons"), icon);
@@ -432,7 +466,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	if (dark_theme) {
 		ImageLoaderSVG::set_forced_color_map(HashMap<Color, Color>());
 	} else {
-		ImageLoaderSVG::set_forced_color_map(EditorColorMap::get());
+		ImageLoaderSVG::set_forced_color_map(EditorColorMap::get_color_conversion_map());
 	}
 #endif
 
@@ -475,9 +509,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color highlight_color = Color(accent_color.r, accent_color.g, accent_color.b, 0.275);
 	const Color disabled_highlight_color = highlight_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.5);
 
-	float prev_icon_saturation = theme->has_color(SNAME("icon_saturation"), SNAME("Editor")) ? theme->get_color(SNAME("icon_saturation"), SNAME("Editor")).r : 1.0;
-
-	theme->set_color("icon_saturation", "Editor", Color(icon_saturation, icon_saturation, icon_saturation)); // can't save single float in theme, so using color
+	// Can't save single float in theme, so using Color.
+	theme->set_color("icon_saturation", "Editor", Color(icon_saturation, icon_saturation, icon_saturation));
 	theme->set_color("accent_color", "Editor", accent_color);
 	theme->set_color("highlight_color", "Editor", highlight_color);
 	theme->set_color("disabled_highlight_color", "Editor", disabled_highlight_color);
@@ -518,7 +551,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color readonly_warning_color = error_color.lerp(dark_theme ? Color(0, 0, 0) : Color(1, 1, 1), 0.25);
 
 	if (!dark_theme) {
-		// Darken some colors to be readable on a light background
+		// Darken some colors to be readable on a light background.
 		success_color = success_color.lerp(mono_color, 0.35);
 		warning_color = warning_color.lerp(mono_color, 0.35);
 		error_color = error_color.lerp(mono_color, 0.25);
@@ -541,22 +574,43 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("dark_theme", "Editor", dark_theme);
 	theme->set_constant("color_picker_button_height", "Editor", 28 * EDSCALE);
 
-	// Register icons + font
+	// Register editor icons.
+	// If the settings are comparable to the old theme, then just copy them over.
+	// Otherwise, regenerate them. Also check if we need to regenerate "thumb" icons.
+	bool keep_old_icons = false;
+	bool regenerate_thumb_icons = true;
+	if (p_theme != nullptr) {
+		// We check editor scale, theme dark/light mode, icon saturation, and accent color.
 
-	// The editor scale, icon color (dark_theme bool), icon saturation, and accent color has not changed, so we do not regenerate the icons.
-	if (p_theme != nullptr && fabs(p_theme->get_constant(SNAME("scale"), SNAME("Editor")) - EDSCALE) < 0.00001 && (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor")) == dark_theme && prev_icon_saturation == icon_saturation && p_theme->get_color(SNAME("accent_color"), SNAME("Editor")) == accent_color) {
-		// Register already generated icons.
+		// That doesn't really work as expected, since theme constants are integers, and scales are floats.
+		// So this check will never work when changing between 100-199% values.
+		const float prev_scale = (float)p_theme->get_constant(SNAME("scale"), SNAME("Editor"));
+		const bool prev_dark_theme = (bool)p_theme->get_constant(SNAME("dark_theme"), SNAME("Editor"));
+		const Color prev_accent_color = p_theme->get_color(SNAME("accent_color"), SNAME("Editor"));
+		const float prev_icon_saturation = p_theme->get_color(SNAME("icon_saturation"), SNAME("Editor")).r;
+
+		keep_old_icons = (Math::is_equal_approx(prev_scale, EDSCALE) &&
+				prev_dark_theme == dark_theme &&
+				prev_accent_color == accent_color &&
+				prev_icon_saturation == icon_saturation);
+
+		const double prev_thumb_size = (double)p_theme->get_constant(SNAME("thumb_size"), SNAME("Editor"));
+
+		regenerate_thumb_icons = !Math::is_equal_approx(prev_thumb_size, thumb_size);
+	}
+
+	if (keep_old_icons) {
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], SNAME("EditorIcons"), p_theme->get_icon(editor_icons_names[i], SNAME("EditorIcons")));
 		}
 	} else {
-		editor_register_and_generate_icons(theme, dark_theme, thumb_size, false, icon_saturation);
+		editor_register_and_generate_icons(theme, dark_theme, icon_saturation, thumb_size, false);
 	}
-	// Thumbnail size has changed, so we regenerate the medium sizes
-	if (p_theme != nullptr && fabs((double)p_theme->get_constant(SNAME("thumb_size"), SNAME("Editor")) - thumb_size) > 0.00001) {
-		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
+	if (regenerate_thumb_icons) {
+		editor_register_and_generate_icons(theme, dark_theme, icon_saturation, thumb_size, true);
 	}
 
+	// Register editor fonts.
 	editor_register_fonts(theme);
 
 	// Ensure borders are visible when using an editor scale below 100%.
