@@ -311,6 +311,7 @@ bool SceneTreeTween::step(float p_delta) {
 					running = false;
 					dead = true;
 					emit_signal(SceneStringNames::get_singleton()->finished);
+					break;
 				} else {
 					emit_signal(SceneStringNames::get_singleton()->loop_finished, loops_done);
 					current_step = 0;
