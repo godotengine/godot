@@ -82,6 +82,15 @@ public:
 		MENU_SELECT_ALL,
 	};
 
+	enum DefaultFont {
+		NORMAL_FONT,
+		BOLD_FONT,
+		ITALICS_FONT,
+		BOLD_ITALICS_FONT,
+		MONO_FONT,
+		CUSTOM_FONT,
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
@@ -178,6 +187,7 @@ private:
 	};
 
 	struct ItemFont : public Item {
+		DefaultFont def_font = CUSTOM_FONT;
 		Ref<Font> font;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
@@ -560,6 +570,7 @@ public:
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void _push_def_font(DefaultFont p_font);
 	void push_font(const Ref<Font> &p_font, int p_size = 0);
 	void push_font_size(int p_font_size);
 	void push_outline_size(int p_font_size);
