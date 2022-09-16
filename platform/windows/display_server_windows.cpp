@@ -104,7 +104,10 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (windows.has(MAIN_WINDOW_ID) && (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
 		// Mouse is grabbed (captured or confined).
 
-		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
 
 		WindowData &wd = windows[window_id];
 
@@ -119,11 +122,15 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 			ClientToScreen(wd.hWnd, &pos);
 			SetCursorPos(pos.x, pos.y);
 			SetCapture(wd.hWnd);
+
+			_register_raw_input_devices(window_id);
 		}
 	} else {
 		// Mouse is free to move around (not captured or confined).
 		ReleaseCapture();
 		ClipCursor(nullptr);
+
+		_register_raw_input_devices(INVALID_WINDOW_ID);
 	}
 
 	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
@@ -136,6 +143,37 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
+	}
+}
+
+DisplayServer::WindowID DisplayServerWindows::_get_focused_window_or_popup() const {
+	const List<WindowID>::Element *E = popup_list.back();
+	if (E) {
+		return E->get();
+	}
+
+	return last_focused_window;
+}
+
+void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window) {
+	use_raw_input = true;
+
+	RAWINPUTDEVICE rid[1] = {};
+	rid[0].usUsagePage = 0x01;
+	rid[0].usUsage = 0x02;
+	rid[0].dwFlags = 0;
+
+	if (p_target_window != INVALID_WINDOW_ID && windows.has(p_target_window)) {
+		// Follow the defined window
+		rid[0].hwndTarget = windows[p_target_window].hWnd;
+	} else {
+		// Follow the keyboard focus
+		rid[0].hwndTarget = 0;
+	}
+
+	if (RegisterRawInputDevices(rid, 1, sizeof(rid[0])) == FALSE) {
+		// Registration failed.
+		use_raw_input = false;
 	}
 }
 
@@ -194,7 +232,9 @@ DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
-	if (!windows.has(last_focused_window)) {
+	WindowID window_id = _get_focused_window_or_popup();
+
+	if (!windows.has(window_id)) {
 		return; // No focused window?
 	}
 
@@ -205,7 +245,7 @@ void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 		POINT p;
 		p.x = p_position.x;
 		p.y = p_position.y;
-		ClientToScreen(windows[last_focused_window].hWnd, &p);
+		ClientToScreen(windows[window_id].hWnd, &p);
 
 		SetCursorPos(p.x, p.y);
 	}
@@ -2483,7 +2523,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					old_y = coords.y;
 				}
 
-				if (windows[window_id].window_has_focus && mm->get_relative() != Vector2()) {
+				if ((windows[window_id].window_has_focus || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
 					Input::get_singleton()->parse_input_event(mm);
 				}
 			}
@@ -3773,19 +3813,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		return;
 	}
 
-	use_raw_input = true;
-
-	RAWINPUTDEVICE Rid[1];
-
-	Rid[0].usUsagePage = 0x01;
-	Rid[0].usUsage = 0x02;
-	Rid[0].dwFlags = 0;
-	Rid[0].hwndTarget = 0;
-
-	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
-		// Registration failed.
-		use_raw_input = false;
-	}
+	_register_raw_input_devices(INVALID_WINDOW_ID);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {

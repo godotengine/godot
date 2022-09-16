@@ -189,6 +189,8 @@ private:
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
 
+	WindowID _get_focused_window_or_popup() const;
+
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
