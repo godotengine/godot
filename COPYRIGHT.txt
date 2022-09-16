@@ -47,10 +47,7 @@ Copyright: 2007-2022, Juan Linietsky, Ariel Manzur.
  2014-2022, Godot Engine contributors.
 License: Expat
 
-Files: ./icon.png
- ./icon.svg
- ./logo.png
- ./logo.svg
+Files: ./logo/*
 Comment: Godot Engine logo
 Copyright: 2017, Andrea Calabró
 License: CC-BY-4.0
