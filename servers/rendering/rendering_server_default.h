@@ -394,6 +394,7 @@ public:
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
 	FUNC2(reflection_probe_set_resolution, RID, int)
 	FUNC2(reflection_probe_set_mesh_lod_threshold, RID, float)
+	FUNC1(reflection_probe_queue_update, RID)
 
 	/* LIGHTMAP */
 
