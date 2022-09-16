@@ -7645,6 +7645,7 @@ void Node3DEditor::_update_preview_environment() {
 			preview_sun->get_parent()->remove_child(preview_sun);
 			sun_state->show();
 			sun_vb->hide();
+			preview_sun_dangling = true;
 		}
 
 		if (directional_light_count > 0) {
@@ -7658,6 +7659,7 @@ void Node3DEditor::_update_preview_environment() {
 			add_child(preview_sun, true);
 			sun_state->hide();
 			sun_vb->show();
+			preview_sun_dangling = false;
 		}
 	}
 
@@ -7673,6 +7675,7 @@ void Node3DEditor::_update_preview_environment() {
 			preview_environment->get_parent()->remove_child(preview_environment);
 			environ_state->show();
 			environ_vb->hide();
+			preview_env_dangling = true;
 		}
 		if (world_env_count > 0) {
 			environ_state->set_text(TTR("Scene contains\nWorldEnvironment.\nPreview disabled."));
@@ -7685,6 +7688,7 @@ void Node3DEditor::_update_preview_environment() {
 			add_child(preview_environment);
 			environ_state->hide();
 			environ_vb->show();
+			preview_env_dangling = false;
 		}
 	}
 }
@@ -7854,7 +7858,6 @@ Node3DEditor::Node3DEditor() {
 	sun_button->set_toggle_mode(true);
 	sun_button->set_flat(true);
 	sun_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
-	sun_button->set_disabled(true);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	sun_button->set_pressed(true);
 
@@ -7865,7 +7868,6 @@ Node3DEditor::Node3DEditor() {
 	environ_button->set_toggle_mode(true);
 	environ_button->set_flat(true);
 	environ_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
-	environ_button->set_disabled(true);
 	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
 	environ_button->set_pressed(true);
 
@@ -8333,6 +8335,12 @@ void fragment() {
 }
 Node3DEditor::~Node3DEditor() {
 	memdelete(preview_node);
+	if (preview_sun_dangling && preview_sun) {
+		memdelete(preview_sun);
+	}
+	if (preview_env_dangling && preview_environment) {
+		memdelete(preview_environment);
+	}
 }
 
 void Node3DEditorPlugin::make_visible(bool p_visible) {
