@@ -344,6 +344,11 @@ namespace Godot.Collections
         }
     }
 
+    internal interface IGenericGodotDictionary
+    {
+        public Dictionary UnderlyingDictionary { get; }
+    }
+
     /// <summary>
     /// Typed wrapper around Godot's Dictionary class, a dictionary of Variant
     /// typed elements allocated in the engine in C++. Useful when
@@ -354,7 +359,8 @@ namespace Godot.Collections
     /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
     public class Dictionary<[MustBeVariant] TKey, [MustBeVariant] TValue> :
         IDictionary<TKey, TValue>,
-        IReadOnlyDictionary<TKey, TValue>
+        IReadOnlyDictionary<TKey, TValue>,
+        IGenericGodotDictionary
     {
         // ReSharper disable StaticMemberInGenericType
         // Warning is about unique static fields being created for each generic type combination:
@@ -392,6 +398,8 @@ namespace Godot.Collections
         }
 
         private readonly Dictionary _underlyingDict;
+
+        Dictionary IGenericGodotDictionary.UnderlyingDictionary => _underlyingDict;
 
         internal ref godot_dictionary.movable NativeValue
         {

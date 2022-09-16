@@ -474,6 +474,11 @@ namespace Godot.Collections
         }
     }
 
+    internal interface IGenericGodotArray
+    {
+        public Array UnderlyingArray { get; }
+    }
+
     /// <summary>
     /// Typed wrapper around Godot's Array class, an array of Variant
     /// typed elements allocated in the engine in C++. Useful when
@@ -487,7 +492,8 @@ namespace Godot.Collections
         IList<T>,
         IReadOnlyList<T>,
         ICollection<T>,
-        IEnumerable<T>
+        IEnumerable<T>,
+        IGenericGodotArray
     {
         // ReSharper disable StaticMemberInGenericType
         // Warning is about unique static fields being created for each generic type combination:
@@ -515,6 +521,8 @@ namespace Godot.Collections
         }
 
         private readonly Array _underlyingArray;
+
+        Array IGenericGodotArray.UnderlyingArray => _underlyingArray;
 
         internal ref godot_array.movable NativeValue
         {
