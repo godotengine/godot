@@ -3668,10 +3668,6 @@ bool EditorNode::is_changing_scene() const {
 	return changing_scene;
 }
 
-void EditorNode::_clear_undo_history() {
-	get_undo_redo()->clear_history(false);
-}
-
 void EditorNode::set_current_scene(int p_idx) {
 	// Save the folding in case the scene gets reloaded.
 	if (editor_data.get_scene_path(p_idx) != "" && editor_data.get_edited_scene_root(p_idx)) {
@@ -5980,8 +5976,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_thumbnail_done", &EditorNode::_thumbnail_done);
 	ClassDB::bind_method("_set_main_scene_state", &EditorNode::_set_main_scene_state);
 	ClassDB::bind_method("_update_recent_scenes", &EditorNode::_update_recent_scenes);
-
-	ClassDB::bind_method("_clear_undo_history", &EditorNode::_clear_undo_history);
 
 	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
 
