@@ -526,6 +526,7 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
 	WaylandState *wls = (WaylandState *)data;
+	ERR_FAIL_NULL(wls);
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -635,6 +636,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_registry *wl_registry, uint32_t name) {
 	WaylandState *wls = (WaylandState *)data;
+	ERR_FAIL_NULL(wls);
 
 	WaylandGlobals &globals = wls->globals;
 
@@ -746,6 +748,7 @@ void DisplayServerWayland::_wl_surface_on_leave(void *data, struct wl_surface *w
 
 void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *wl_output, int32_t x, int32_t y, int32_t physical_width, int32_t physical_height, int32_t subpixel, const char *make, const char *model, int32_t transform) {
 	ScreenData *sd = (ScreenData *)data;
+	ERR_FAIL_NULL(sd);
 
 	sd->position.x = x;
 	sd->position.y = y;
@@ -759,6 +762,7 @@ void DisplayServerWayland::_wl_output_on_geometry(void *data, struct wl_output *
 
 void DisplayServerWayland::_wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh) {
 	ScreenData *sd = (ScreenData *)data;
+	ERR_FAIL_NULL(sd);
 
 	sd->size.width = width;
 	sd->size.height = height;
@@ -772,6 +776,7 @@ void DisplayServerWayland::_wl_output_on_done(void *data, struct wl_output *wl_o
 
 void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor) {
 	ScreenData *sd = (ScreenData *)data;
+	ERR_FAIL_NULL(sd);
 
 	sd->scale = factor;
 }
