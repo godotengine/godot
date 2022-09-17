@@ -42,7 +42,7 @@
 			The pressure of the MIDI signal. This value ranges from 0 to 127. For many devices, this value is always zero.
 		</member>
 		<member name="velocity" type="int" setter="set_velocity" getter="get_velocity" default="0">
-			The velocity of the MIDI signal. This value ranges from 0 to 127. For a piano, this corresponds to how quickly the key was pressed, and is rarely above about 110 in practice.
+			The velocity of the MIDI signal. This value ranges from 0 to 127. For a piano, this corresponds to how quickly the key was pressed, and is rarely above about 110 in practice. Note that some MIDI devices may send a [constant MIDI_MESSAGE_NOTE_ON] message with zero velocity and expect this to be treated the same as a [constant MIDI_MESSAGE_NOTE_OFF] message, but device implementations vary so Godot reports event data exactly as received.
 		</member>
 	</members>
 	<constants>
