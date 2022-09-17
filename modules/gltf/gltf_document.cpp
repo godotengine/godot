@@ -625,6 +625,11 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> state) {
 					node->light = light;
 				}
 			}
+			for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+				ERR_CONTINUE(ext.is_null());
+				Error err = ext->parse_node_extensions(state, node, extensions);
+				ERR_CONTINUE_MSG(err != OK, "GLTF: Encountered error " + itos(err) + " when parsing node extensions for node " + node->get_name() + " in file " + state->filename + ". Continuing.");
+			}
 		}
 
 		if (n.has("children")) {
@@ -5266,6 +5271,10 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, co
 		AnimationPlayer *animation_player = Object::cast_to<AnimationPlayer>(p_current);
 		_convert_animation_player_to_gltf(animation_player, state, p_gltf_parent, p_gltf_root, gltf_node, p_current);
 	}
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		ext->convert_scene_node(state, gltf_node, p_current);
+	}
 	GLTFNodeIndex current_node_i = state->nodes.size();
 	GLTFNodeIndex gltf_root = p_gltf_root;
 	if (gltf_root == -1) {
@@ -5589,21 +5598,32 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> state, Node *scene_parent
 		// and attach it to the bone_attachment
 		scene_parent = bone_attachment;
 	}
-	if (gltf_node->mesh >= 0) {
-		current_node = _generate_mesh_instance(state, node_index);
-	} else if (gltf_node->camera >= 0) {
-		current_node = _generate_camera(state, node_index);
-	} else if (gltf_node->light >= 0) {
-		current_node = _generate_light(state, node_index);
+	// Check if any GLTFDocumentExtension classes want to generate a node for us.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		current_node = ext->generate_scene_node(state, gltf_node, scene_parent);
+		if (current_node) {
+			break;
+		}
 	}
-
-	// We still have not managed to make a node.
+	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
-		current_node = _generate_spatial(state, node_index);
+		if (gltf_node->mesh >= 0) {
+			current_node = _generate_mesh_instance(state, node_index);
+		} else if (gltf_node->camera >= 0) {
+			current_node = _generate_camera(state, node_index);
+		} else if (gltf_node->light >= 0) {
+			current_node = _generate_light(state, node_index);
+		} else {
+			current_node = _generate_spatial(state, node_index);
+		}
 	}
+	// Add the node we generated and set the owner to the scene root.
 	scene_parent->add_child(current_node, true);
 	if (current_node != scene_root) {
-		current_node->set_owner(scene_root);
+		Array args;
+		args.append(scene_root);
+		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(gltf_node->xform);
 	current_node->set_name(gltf_node->get_name());
@@ -5669,19 +5689,32 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> state, Node *scen
 			// and attach it to the bone_attachment
 			scene_parent = bone_attachment;
 		}
-
-		// We still have not managed to make a node
-		if (gltf_node->mesh >= 0) {
-			current_node = _generate_mesh_instance(state, node_index);
-		} else if (gltf_node->camera >= 0) {
-			current_node = _generate_camera(state, node_index);
-		} else if (gltf_node->light >= 0) {
-			current_node = _generate_light(state, node_index);
+		// Check if any GLTFDocumentExtension classes want to generate a node for us.
+		for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+			ERR_CONTINUE(ext.is_null());
+			current_node = ext->generate_scene_node(state, gltf_node, scene_parent);
+			if (current_node) {
+				break;
+			}
 		}
-
+		// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
+		if (!current_node) {
+			if (gltf_node->mesh >= 0) {
+				current_node = _generate_mesh_instance(state, node_index);
+			} else if (gltf_node->camera >= 0) {
+				current_node = _generate_camera(state, node_index);
+			} else if (gltf_node->light >= 0) {
+				current_node = _generate_light(state, node_index);
+			} else {
+				current_node = _generate_spatial(state, node_index);
+			}
+		}
+		// Add the node we generated and set the owner to the scene root.
 		scene_parent->add_child(current_node, true);
 		if (current_node != scene_root) {
-			current_node->set_owner(scene_root);
+			Array args;
+			args.append(scene_root);
+			current_node->propagate_call(StringName("set_owner"), args);
 		}
 		// Do not set transform here. Transform is already applied to our bone.
 		current_node->set_name(gltf_node->get_name());
