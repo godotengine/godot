@@ -4261,6 +4261,7 @@ struct GSUBGPOS
   }
 
   void prune_langsys (const hb_map_t *duplicate_feature_map,
+                      const hb_set_t *layout_scripts,
                       hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> *script_langsys_map,
                       hb_set_t       *new_feature_indexes /* OUT */) const
   {
@@ -4269,6 +4270,8 @@ struct GSUBGPOS
     unsigned count = get_script_count ();
     for (unsigned script_index = 0; script_index < count; script_index++)
     {
+      const Tag& tag = get_script_tag (script_index);
+      if (!layout_scripts->has (tag)) continue;
       const Script& s = get_script (script_index);
       s.prune_langsys (&c, script_index);
     }

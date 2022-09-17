@@ -32,12 +32,21 @@
 
 /* Implements a lockfree cache for int->int functions. */
 
-template <unsigned int key_bits=16, unsigned int value_bits=8 + 32 - key_bits, unsigned int cache_bits=8>
+template <unsigned int key_bits=16,
+	 unsigned int value_bits=8 + 32 - key_bits,
+	 unsigned int cache_bits=8,
+	 bool thread_safe=true>
 struct hb_cache_t
 {
+  using item_t = typename std::conditional<thread_safe,
+					   hb_atomic_int_t,
+					   typename std::conditional<key_bits + value_bits - cache_bits <= 16,
+								     short,
+								     int>::type
+					  >::type;
+
   static_assert ((key_bits >= cache_bits), "");
-  static_assert ((key_bits + value_bits - cache_bits <= 8 * sizeof (hb_atomic_int_t)), "");
-  static_assert (sizeof (hb_atomic_int_t) == sizeof (unsigned int), "");
+  static_assert ((key_bits + value_bits - cache_bits <= 8 * sizeof (item_t)), "");
 
   void init () { clear (); }
   void fini () {}
@@ -45,14 +54,14 @@ struct hb_cache_t
   void clear ()
   {
     for (unsigned i = 0; i < ARRAY_LENGTH (values); i++)
-      values[i].set_relaxed (-1);
+      values[i] = -1;
   }
 
   bool get (unsigned int key, unsigned int *value) const
   {
     unsigned int k = key & ((1u<<cache_bits)-1);
-    unsigned int v = values[k].get_relaxed ();
-    if ((key_bits + value_bits - cache_bits == 8 * sizeof (hb_atomic_int_t) && v == (unsigned int) -1) ||
+    unsigned int v = values[k];
+    if ((key_bits + value_bits - cache_bits == 8 * sizeof (item_t) && v == (unsigned int) -1) ||
 	(v >> value_bits) != (key >> cache_bits))
       return false;
     *value = v & ((1u<<value_bits)-1);
@@ -65,16 +74,13 @@ struct hb_cache_t
       return false; /* Overflows */
     unsigned int k = key & ((1u<<cache_bits)-1);
     unsigned int v = ((key>>cache_bits)<<value_bits) | value;
-    values[k].set_relaxed (v);
+    values[k] = v;
     return true;
   }
 
   private:
-  hb_atomic_int_t values[1u<<cache_bits];
+  item_t values[1u<<cache_bits];
 };
-
-typedef hb_cache_t<21, 16, 8> hb_cmap_cache_t;
-typedef hb_cache_t<16, 24, 8> hb_advance_cache_t;
 
 
 #endif /* HB_CACHE_HH */

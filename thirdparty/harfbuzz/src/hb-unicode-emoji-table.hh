@@ -6,16 +6,16 @@
  *
  * on file with this header:
  *
- * # emoji-data-14.0.0.txt
- * # Date: 2021-08-26, 17:22:22 GMT
- * # © 2021 Unicode®, Inc.
+ * # emoji-data.txt
+ * # Date: 2022-08-02, 00:26:10 GMT
+ * # © 2022 Unicode®, Inc.
  * # Unicode and the Unicode Logo are registered trademarks of Unicode, Inc. in the U.S. and other countries.
- * # For terms of use, see http://www.unicode.org/terms_of_use.html
+ * # For terms of use, see https://www.unicode.org/terms_of_use.html
  * #
  * # Emoji Data for UTS #51
- * # Used with Emoji Version 14.0 and subsequent minor revisions (if any)
+ * # Used with Emoji Version 15.0 and subsequent minor revisions (if any)
  * #
- * # For documentation and usage, see http://www.unicode.org/reports/tr51
+ * # For documentation and usage, see https://www.unicode.org/reports/tr51
  */
 
 #ifndef HB_UNICODE_EMOJI_TABLE_HH

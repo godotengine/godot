@@ -24,38 +24,46 @@
  * Google Author(s): Garret Rieger
  */
 
-#include "graph.hh"
-#include "../hb-ot-layout-gsubgpos.hh"
-
-#ifndef GRAPH_GSUBGPOS_CONTEXT_HH
-#define GRAPH_GSUBGPOS_CONTEXT_HH
+#ifndef GRAPH_SPLIT_HELPERS_HH
+#define GRAPH_SPLIT_HELPERS_HH
 
 namespace graph {
 
-struct Lookup;
-
-struct gsubgpos_graph_context_t
+template<typename Context>
+HB_INTERNAL
+hb_vector_t<unsigned> actuate_subtable_split (Context& split_context,
+                                              const hb_vector_t<unsigned>& split_points)
 {
-  hb_tag_t table_tag;
-  graph_t& graph;
-  unsigned lookup_list_index;
-  hb_hashmap_t<unsigned, graph::Lookup*> lookups;
+  hb_vector_t<unsigned> new_objects;
+  if (!split_points)
+    return new_objects;
 
-
-  HB_INTERNAL gsubgpos_graph_context_t (hb_tag_t table_tag_,
-                                        graph_t& graph_);
-
-  HB_INTERNAL unsigned create_node (unsigned size);
-
-  void add_buffer (char* buffer)
+  for (unsigned i = 0; i < split_points.length; i++)
   {
-    graph.add_buffer (buffer);
+    unsigned start = split_points[i];
+    unsigned end = (i < split_points.length - 1)
+                   ? split_points[i + 1]
+                   : split_context.original_count ();
+    unsigned id = split_context.clone_range (start, end);
+
+    if (id == (unsigned) -1)
+    {
+      new_objects.reset ();
+      new_objects.allocated = -1; // mark error
+      return new_objects;
+    }
+    new_objects.push (id);
   }
 
- private:
-  HB_INTERNAL unsigned num_non_ext_subtables ();
-};
+  if (!split_context.shrink (split_points[0]))
+  {
+    new_objects.reset ();
+    new_objects.allocated = -1; // mark error
+  }
+
+  return new_objects;
+}
 
 }
 
-#endif  // GRAPH_GSUBGPOS_CONTEXT
+#endif  // GRAPH_SPLIT_HELPERS_HH

@@ -22,7 +22,8 @@ template<typename Iterator, typename SrcLookup>
 static void SinglePos_serialize (hb_serialize_context_t *c,
                                  const SrcLookup *src,
                                  Iterator it,
-                                 const hb_map_t *layout_variation_idx_map);
+                                 const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map,
+                                 bool all_axes_pinned);
 
 
 }
