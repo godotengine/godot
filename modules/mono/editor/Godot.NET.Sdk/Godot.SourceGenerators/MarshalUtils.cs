@@ -156,6 +156,10 @@ namespace Godot.SourceGenerators
                     else if (typeKind == TypeKind.Array)
                     {
                         var arrayType = (IArrayTypeSymbol)type;
+
+                        if (arrayType.Rank != 1)
+                            return null;
+
                         var elementType = arrayType.ElementType;
 
                         switch (elementType.SpecialType)
@@ -177,8 +181,8 @@ namespace Godot.SourceGenerators
                         if (elementType.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerivedArray;
 
-                        if (elementType.ContainingAssembly.Name == "GodotSharp" &&
-                            elementType.ContainingNamespace.Name == "Godot")
+                        if (elementType.ContainingAssembly?.Name == "GodotSharp" &&
+                            elementType.ContainingNamespace?.Name == "Godot")
                         {
                             switch (elementType)
                             {
