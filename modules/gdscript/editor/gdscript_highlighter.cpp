@@ -235,7 +235,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 			}
 		}
 
-		if (is_symbol) {
+		if (is_symbol && in_region == -1) {
 			if (in_function_name) {
 				in_function_args = true;
 			}
