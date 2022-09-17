@@ -737,6 +737,9 @@ if selected_platform in platform_list:
     env.module_list = modules_enabled
     methods.sort_module_list(env)
 
+    suffix = methods.validate_target_filename(suffix)
+    if not suffix:  # Could not find a suitable file name, exit.
+        Exit()
     methods.update_version(env.module_version_string)
 
     env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
