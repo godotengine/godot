@@ -403,6 +403,9 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 	// Update everything.
 	_update_zoom_and_panning();
 
+	base_tiles_drawing_root->set_size(_compute_base_tiles_control_size());
+	alternative_tiles_drawing_root->set_size(_compute_alternative_tiles_control_size());
+
 	// Update.
 	base_tiles_draw->queue_redraw();
 	base_tiles_texture_grid->queue_redraw();
@@ -601,7 +604,6 @@ TileAtlasView::TileAtlasView() {
 
 	base_tiles_drawing_root = memnew(Control);
 	base_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	base_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	base_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	base_tiles_root_control->add_child(base_tiles_drawing_root);
 
@@ -645,7 +647,6 @@ TileAtlasView::TileAtlasView() {
 
 	alternative_tiles_drawing_root = memnew(Control);
 	alternative_tiles_drawing_root->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	alternative_tiles_drawing_root->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	alternative_tiles_drawing_root->set_texture_filter(TEXTURE_FILTER_NEAREST);
 	alternative_tiles_root_control->add_child(alternative_tiles_drawing_root);
 
