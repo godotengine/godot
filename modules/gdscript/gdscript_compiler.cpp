@@ -2658,6 +2658,7 @@ void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::C
 
 		subclass->_owner = p_script;
 		subclass->fully_qualified_name = fully_qualified_name;
+		subclass->set_script_path(p_script->get_script_path());
 		p_script->subclasses.insert(name, subclass);
 
 		_make_scripts(subclass.ptr(), inner_class, false);
