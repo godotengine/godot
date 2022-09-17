@@ -504,7 +504,7 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 	WindowData &wd = wls.windows[p_window];
 
 	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && p_event == WINDOW_EVENT_CLOSE_REQUEST) {
-		for (WindowID &child : wd.children) {
+		for (const WindowID &child : wd.children) {
 			// If the window is a borderless window (Wayland popup) and it's getting
 			// asked to close, make absolutely sure to request it first to all of its
 			// children recursively and from top to bottom. The Wayland spec mandates
@@ -2009,7 +2009,7 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 
 	while (wd.children.size()) {
 		// Unparent all children of the window.
-		window_set_transient(wd.children.front()->get(), INVALID_WINDOW_ID);
+		window_set_transient(*wd.children.begin(), INVALID_WINDOW_ID);
 	}
 
 	if (wd.parent != INVALID_WINDOW_ID) {

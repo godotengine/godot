@@ -158,7 +158,7 @@ class DisplayServerWayland : public DisplayServer {
 		struct xdg_popup *xdg_popup = nullptr;
 		struct xdg_positioner *xdg_positioner = nullptr;
 
-		RBSet<WindowID> children;
+		HashSet<WindowID> children;
 		WindowID parent = INVALID_WINDOW_ID;
 
 		bool visible = false;
@@ -299,7 +299,7 @@ class DisplayServerWayland : public DisplayServer {
 		WaylandGlobals globals;
 
 		WindowID window_id_counter = MAIN_WINDOW_ID;
-		RBMap<WindowID, WindowData> windows;
+		HashMap<WindowID, WindowData> windows;
 
 		SeatState *current_seat = nullptr;
 
