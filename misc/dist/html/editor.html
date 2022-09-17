@@ -259,31 +259,20 @@
 					>Web editor documentation</a> for usage instructions and limitations.
 				</p>
 			</div>
-			<div id="welcome-modal-description-no-cross-origin-isolation" style="display: none">
+			<div id="welcome-modal-missing-description" style="display: none">
 				<p>
-					The web server does not support cross-origin isolation,
-					which is required for the Godot Web Editor to function.
-				</p>
-				<p>
-					<strong>Reasons for cross-origin isolation being disabled:</strong>
-					<ul>
-						<li id="welcome-modal-reason-not-secure">
-							This page is not served from a secure context (HTTPS <i>or</i> localhost).
-						</li>
-						<li>
-							This page may not be served with cross-origin isolation headers
-							(check with the developer tools' Network tab).
-						</li>
+					<strong>The following features required by the Godot Web Editor are missing:</strong>
+					<ul id="welcome-modal-missing-list">
 					</ul>
 				</p>
 				<p>
 					If you are self-hosting the web editor,
 					refer to
 					<a
-						href="https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_web.html#threads"
+						href="https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_web.html"
 						target="_blank"
 						rel="noopener"
-					>Exporting for the Web - Threads</a> for more information.
+					>Exporting for the Web</a> for more information.
 				</p>
 			</div>
 			<div style="text-align: center">
@@ -394,16 +383,22 @@
 				});
 			}
 
-			if (!crossOriginIsolated) {
+			const missing = Engine.getMissingFeatures();
+			if (missing.length) {
 				// Display error dialog as threading support is required for the editor.
 				setButtonEnabled('startButton', false);
 				document.getElementById("welcome-modal-description").style.display = "none";
-				document.getElementById("welcome-modal-description-no-cross-origin-isolation").style.display = "block";
+				document.getElementById("welcome-modal-missing-description").style.display = "block";
 				document.getElementById("welcome-modal-dismiss").style.display = "none";
-				document.getElementById("welcome-modal-reason-not-secure").style.display = window.isSecureContext ? "none" : "list-item";
+				const list = document.getElementById("welcome-modal-missing-list");
+				for (let i = 0; i < missing.length; i++) {
+					const node = document.createElement("li");
+					node.innerText = missing[i];
+					list.appendChild(node);
+				}
 			}
 
-			if (!crossOriginIsolated || localStorage.getItem("welcomeModalDismissed") !== 'true') {
+			if (missing.length || localStorage.getItem("welcomeModalDismissed") !== 'true') {
 				document.getElementById("welcome-modal").style.display = "block";
 				document.getElementById("welcome-modal-dismiss").focus();
 			}
