@@ -120,7 +120,7 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 	// Export annotations.
-	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
+	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE | AnnotationInfo::SCRIPT, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 	register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::INT>, varray(), true);
 	register_annotation(MethodInfo("@export_file", PropertyInfo(Variant::STRING, "filter")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_FILE, Variant::STRING>, varray(""), true);
 	register_annotation(MethodInfo("@export_dir"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_DIR, Variant::STRING>);
@@ -553,10 +553,10 @@ void GDScriptParser::parse_program() {
 				// @tool annotation has no specific target.
 				annotation->apply(this, nullptr);
 			} else if (annotation->applies_to(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE)) {
-				premature_annotation = annotation;
 				if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
-					push_error(R"(Expected newline after a standalone annotation.)");
+					push_error(vformat(R"(Expected newline after a standalone "%s" annotation.)", annotation->name));
 				}
+				premature_annotation = annotation;
 				annotation->apply(this, head);
 			} else {
 				premature_annotation = annotation;
@@ -601,19 +601,8 @@ void GDScriptParser::parse_program() {
 		}
 	}
 
-	if (match(GDScriptTokenizer::Token::ANNOTATION)) {
-		// Check for a script-level, or standalone annotation.
-		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
-		if (annotation != nullptr) {
-			if (annotation->applies_to(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE)) {
-				if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
-					push_error(R"(Expected newline after a standalone annotation.)");
-				}
-				annotation->apply(this, head);
-			} else {
-				annotation_stack.push_back(annotation);
-			}
-		}
+	if (head->identifier == nullptr && head->global_script_flags & GLOBAL_SCRIPT_EXPORT && !check(GDScriptTokenizer::Token::VAR)) {
+		push_error(R"("@export" can only apply to script-level classes that use "class_name".)");
 	}
 
 	parse_class_body(true);
@@ -829,9 +818,23 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				advance();
 
 				// Check for class-level annotations.
-				AnnotationNode *annotation = parse_annotation(AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
+				AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 				if (annotation != nullptr) {
-					if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
+					// Need to check NEWLINE too b/c the @export annotation can apply to both scripts (action: apply) and things within a script (action: add to stack).
+					// TODO: Devise a means of concretely knowing the intended target of a given annotation without resorting to this terrible hack.
+					if (annotation->applies_to(AnnotationInfo::SCRIPT) && previous.type == GDScriptTokenizer::Token::NEWLINE) {
+						if (current_class != head) {
+							push_error(vformat(R"("%s" script annotation can only be used for the top-level class.)"));
+						}
+						if (annotation->name == SNAME("@tool")) {
+							if (_is_tool) {
+								push_error(R"("@tool" script annotation cannot be declared multiple times.)");
+							} else {
+								push_error(R"("@tool" script annotation must be declared before all others.)");
+							}
+						}
+						annotation->apply(this, head);
+					} else if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
 						if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 							push_error(R"(Expected newline after a standalone annotation.)");
 						}
@@ -3685,7 +3688,17 @@ bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node
 
 template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_node) {
-	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
+	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE && p_node->type != Node::CLASS, false, vformat(R"("%s" annotation can only be applied to variables or the script-level class.)", p_annotation->name));
+
+	if (p_node->type == Node::CLASS && !check(GDScriptTokenizer::Token::VAR)) {
+		ClassNode *class_node = static_cast<ClassNode *>(p_node);
+
+		ERR_FAIL_COND_V_MSG(class_node != head, false, vformat(R"("%s" annotation applied to a class can only be applied to the script-level class.)", p_annotation->name));
+
+		class_node->global_script_flags = GLOBAL_SCRIPT_EXPORT;
+
+		return true;
+	}
 
 	{
 		const int max_flags = 32;
@@ -3758,6 +3771,39 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 					return false;
 				}
 				break;
+			case GDScriptParser::DataType::CLASS: {
+				// can assume type is a global GDScript class.
+				if (!ClassDB::is_parent_class(export_type.native_type, Resource::get_class_static())) {
+					push_error(R"(Exported script type must extend Resource.)");
+					return false;
+				}
+				String class_name = export_type.class_type->identifier->name;
+				GlobalScriptFlags flags = ScriptServer::get_global_class_flags(class_name);
+				if ((flags & GLOBAL_SCRIPT_EXPORT) == 0) {
+					push_error(R"(Exported resource script property must use a globally exported script type with "@export" above "class_name".)", variable);
+					return false;
+				}
+				variable->export_info.type = Variant::OBJECT;
+				variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				variable->export_info.hint_string = class_name;
+			} break;
+			case GDScriptParser::DataType::SCRIPT: {
+				StringName class_name;
+				if (export_type.script_type != nullptr && export_type.script_type.is_valid()) {
+					class_name = export_type.script_type->get_language()->get_global_class_name(export_type.script_type->get_path());
+				}
+				if (class_name == StringName()) {
+					Ref<Script> script = ResourceLoader::load(export_type.script_path, Script::get_class_static());
+					if (script.is_valid()) {
+						class_name = script->get_language()->get_global_class_name(export_type.script_path);
+					}
+				}
+				if (class_name != StringName() && ClassDB::is_parent_class(ScriptServer::get_global_class_native_base(class_name), Resource::get_class_static())) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					variable->export_info.hint_string = class_name;
+				}
+			} break;
 			case GDScriptParser::DataType::ENUM: {
 				variable->export_info.type = Variant::INT;
 				variable->export_info.hint = PROPERTY_HINT_ENUM;

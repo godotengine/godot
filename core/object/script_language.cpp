@@ -190,10 +190,10 @@ void ScriptServer::init_languages() {
 
 			for (int i = 0; i < script_classes.size(); i++) {
 				Dictionary c = script_classes[i];
-				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("flags")) {
 					continue;
 				}
-				add_global_class(c["class"], c["base"], c["language"], c["path"]);
+				add_global_class(c["class"], c["base"], c["language"], c["path"], (GlobalScriptFlags)c["flags"].operator signed int());
 			}
 		}
 	}
@@ -237,12 +237,13 @@ void ScriptServer::global_classes_clear() {
 	global_classes.clear();
 }
 
-void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
+void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, GlobalScriptFlags p_flags) {
 	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
 	GlobalScriptClass g;
 	g.language = p_language;
 	g.path = p_path;
 	g.base = p_base;
+	g.flags = p_flags;
 	global_classes[p_class] = g;
 }
 
@@ -278,6 +279,11 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	return base;
 }
 
+GlobalScriptFlags ScriptServer::get_global_class_flags(const StringName &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), GLOBAL_SCRIPT_NONE);
+	return global_classes[p_class].flags;
+}
+
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	List<StringName> classes;
 	for (const KeyValue<StringName, GlobalScriptClass> &E : global_classes) {
@@ -299,6 +305,7 @@ void ScriptServer::save_global_classes() {
 		d["language"] = global_classes[E].language;
 		d["path"] = global_classes[E].path;
 		d["base"] = global_classes[E].base;
+		d["flags"] = global_classes[E].flags;
 		gcarr.push_back(d);
 	}
 

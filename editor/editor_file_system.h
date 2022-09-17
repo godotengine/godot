@@ -64,6 +64,7 @@ class EditorFileSystemDirectory : public Object {
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
+		GlobalScriptFlags script_class_flags = GLOBAL_SCRIPT_NONE;
 	};
 
 	struct FileInfoSort {
@@ -198,6 +199,7 @@ class EditorFileSystem : public Node {
 		String script_class_name;
 		String script_class_extends;
 		String script_class_icon_path;
+		GlobalScriptFlags script_class_flags = GLOBAL_SCRIPT_NONE;
 	};
 
 	HashMap<String, FileCache> file_cache;
@@ -261,7 +263,7 @@ class EditorFileSystem : public Node {
 	SafeFlag update_script_classes_queued;
 	void _queue_update_script_classes();
 
-	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
+	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path, GlobalScriptFlags *r_flags) const;
 
 	static Error _resource_import(const String &p_path);
 

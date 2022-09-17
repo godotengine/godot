@@ -529,7 +529,7 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const {
+void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<String> *r_typeset) const {
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
@@ -538,13 +538,19 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 
 	for (int i = 0; i < size; i++) {
 		String base = allowed_types[i].strip_edges();
-		p_vector->insert(base);
+		if (ScriptServer::is_global_class(base)) {
+			GlobalScriptFlags flags = ScriptServer::get_global_class_flags(base);
+			if (!(flags & GLOBAL_SCRIPT_EXPORT)) {
+				continue;
+			}
+		}
+		r_typeset->insert(base);
 
 		// If we hit a familiar base type, take all the data from cache.
 		if (allowed_types_cache.has(base)) {
 			List<StringName> allowed_subtypes = allowed_types_cache[base];
 			for (const StringName &subtype_name : allowed_subtypes) {
-				p_vector->insert(subtype_name);
+				r_typeset->insert(subtype_name);
 			}
 		} else {
 			List<StringName> allowed_subtypes;
@@ -552,13 +558,18 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 			List<StringName> inheriters;
 			ClassDB::get_inheriters_from_class(base, &inheriters);
 			for (const StringName &subtype_name : inheriters) {
-				p_vector->insert(subtype_name);
+				r_typeset->insert(subtype_name);
 				allowed_subtypes.push_back(subtype_name);
 			}
 
 			for (const StringName &subtype_name : global_classes) {
+				GlobalScriptFlags flags = ScriptServer::get_global_class_flags(subtype_name);
+				if ((flags & GLOBAL_SCRIPT_EXPORT) == 0) {
+					continue;
+				}
+
 				if (EditorNode::get_editor_data().script_class_is_parent(subtype_name, base)) {
-					p_vector->insert(subtype_name);
+					r_typeset->insert(subtype_name);
 					allowed_subtypes.push_back(subtype_name);
 				}
 			}
@@ -569,11 +580,11 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 
 		if (p_with_convert) {
 			if (base == "BaseMaterial3D") {
-				p_vector->insert("Texture2D");
+				r_typeset->insert("Texture2D");
 			} else if (base == "ShaderMaterial") {
-				p_vector->insert("Shader");
+				r_typeset->insert("Shader");
 			} else if (base == "Texture2D") {
-				p_vector->insert("Image");
+				r_typeset->insert("Image");
 			}
 		}
 	}
@@ -582,7 +593,7 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 		Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 
 		for (int i = 0; i < custom_resources.size(); i++) {
-			p_vector->insert(custom_resources[i].name);
+			r_typeset->insert(custom_resources[i].name);
 		}
 	}
 }
@@ -789,6 +800,12 @@ void EditorResourcePicker::_notification(int p_what) {
 }
 
 void EditorResourcePicker::set_base_type(const String &p_base_type) {
+	GlobalScriptFlags flags = GLOBAL_SCRIPT_NONE;
+	if (ScriptServer::is_global_class(base_type)) {
+		flags = ScriptServer::get_global_class_flags(base_type);
+		ERR_FAIL_COND_MSG(!(flags & GLOBAL_SCRIPT_EXPORT), vformat("Cannot set EditorResourcePicker base class to '%s' as it is a non-exported global script class.", base_type));
+	}
+
 	base_type = p_base_type;
 
 	// There is a possibility that the new base type is conflicting with the existing value.
@@ -844,6 +861,14 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	}
 
 	if (!base_type.is_empty()) {
+		if (ScriptServer::is_global_class(base_type)) {
+			GlobalScriptFlags flags = ScriptServer::get_global_class_flags(base_type);
+			if (!(flags & GLOBAL_SCRIPT_EXPORT)) {
+				// TODO: Possibly update inspector tree after re-assigning base class to global class native base type?
+				ERR_FAIL_MSG(vformat("Failed to set the resource because this EditorResourcePicker's required base class '%s' is a non-exported global script class.", base_type));
+			}
+		}
+
 		HashSet<String> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 

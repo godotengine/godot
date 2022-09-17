@@ -616,7 +616,7 @@ public:
 
 	GDVIRTUAL1RC(Dictionary, _get_global_class_name, const String &)
 
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override {
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, GlobalScriptFlags *r_flags = nullptr) const override {
 		Dictionary ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_global_class_name, p_path, ret);
 		if (!ret.has("name")) {
@@ -627,6 +627,9 @@ public:
 		}
 		if (r_icon_path != nullptr && ret.has("icon_path")) {
 			*r_icon_path = ret["icon_path"];
+		}
+		if (r_flags != nullptr && ret.has("flags")) {
+			*r_flags = (GlobalScriptFlags)ret["flags"].operator signed int();
 		}
 		return ret["name"];
 	}

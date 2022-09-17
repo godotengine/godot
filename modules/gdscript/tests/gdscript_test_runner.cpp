@@ -300,15 +300,16 @@ bool GDScriptTestRunner::generate_class_index() {
 	for (int i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
 		String base_type;
+		GlobalScriptFlags flags;
 
-		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type);
+		String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(test.get_source_file(), &base_type, nullptr, &flags);
 		if (class_name.is_empty()) {
 			continue;
 		}
 		ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
 				"Class name '" + class_name + "' from " + test.get_source_file() + " is already used in " + ScriptServer::get_global_class_path(class_name));
 
-		ScriptServer::add_global_class(class_name, base_type, gdscript_name, test.get_source_file());
+		ScriptServer::add_global_class(class_name, base_type, gdscript_name, test.get_source_file(), flags);
 	}
 	return true;
 }

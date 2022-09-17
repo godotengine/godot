@@ -639,6 +639,7 @@ public:
 
 		IdentifierNode *identifier = nullptr;
 		String icon_path;
+		GlobalScriptFlags global_script_flags = GLOBAL_SCRIPT_NONE;
 		Vector<Member> members;
 		HashMap<StringName, int> members_indices;
 		ClassNode *outer = nullptr;
@@ -1210,6 +1211,7 @@ private:
 	friend class GDScriptAnalyzer;
 
 	bool _is_tool = false;
+	bool _is_exported = false;
 	String script_path;
 	bool for_completion = false;
 	bool panic_mode = false;
