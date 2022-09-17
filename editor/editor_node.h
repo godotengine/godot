@@ -658,8 +658,6 @@ private:
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
 
-	void _clear_undo_history();
-
 	void _update_addon_config();
 
 	void _toggle_distraction_free_mode();
