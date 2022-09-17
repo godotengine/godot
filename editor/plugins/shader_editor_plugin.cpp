@@ -1366,6 +1366,7 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 		edited_shaders[p_index].shader_editor->validate_script();
 	}
 	shader_tabs->set_current_tab(p_index);
+	shader_list->select(p_index);
 }
 
 void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index) {
