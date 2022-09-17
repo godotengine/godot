@@ -784,7 +784,7 @@ public:
 	void open_request(const String &p_path);
 	void edit_foreign_resource(Ref<Resource> p_resource);
 
-	bool is_resource_read_only(Ref<Resource> p_resource);
+	bool is_resource_read_only(Ref<Resource> p_resource, bool p_foreign_resources_are_writable = false);
 
 	bool is_changing_scene() const;
 

@@ -1362,9 +1362,12 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 		default_repeat = p_default_repeat;
 	}
 
-	//fill the list until rendering is possible.
-	bool material_screen_texture_found = false;
 	Item *ci = p_item_list;
+
+	//fill the list until rendering is possible.
+	bool material_screen_texture_cached = false;
+	bool material_screen_texture_mipmaps_cached = false;
+
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
 	bool backbuffer_gen_mipmaps = false;
@@ -1393,9 +1396,11 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			CanvasMaterialData *md = static_cast<CanvasMaterialData *>(material_storage->material_get_data(material, RendererRD::MaterialStorage::SHADER_TYPE_2D));
 			if (md && md->shader_data->valid) {
 				if (md->shader_data->uses_screen_texture && canvas_group_owner == nullptr) {
-					if (!material_screen_texture_found) {
+					if (!material_screen_texture_cached) {
 						backbuffer_copy = true;
 						back_buffer_rect = Rect2();
+						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
+					} else if (!material_screen_texture_mipmaps_cached) {
 						backbuffer_gen_mipmaps = md->shader_data->uses_screen_texture_mipmaps;
 					}
 				}
@@ -1486,7 +1491,15 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 
 			backbuffer_copy = false;
 			backbuffer_gen_mipmaps = false;
-			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
+			material_screen_texture_cached = true; // After a backbuffer copy, screen texture makes no further copies.
+			material_screen_texture_mipmaps_cached = backbuffer_gen_mipmaps;
+		}
+
+		if (backbuffer_gen_mipmaps) {
+			texture_storage->render_target_gen_back_buffer_mipmaps(p_to_render_target, back_buffer_rect);
+
+			backbuffer_gen_mipmaps = false;
+			material_screen_texture_mipmaps_cached = true;
 		}
 
 		items[item_count++] = ci;

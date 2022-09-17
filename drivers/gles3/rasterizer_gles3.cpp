@@ -280,11 +280,6 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	// TODO: do we need a keep 3d linear option?
-
-	// Make sure we are drawing to the right context.
-	DisplayServer::get_singleton()->gl_window_make_current(p_screen);
-
 	if (rt->external.fbo != 0) {
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
 	} else {
@@ -298,9 +293,6 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 
 // is this p_screen useless in a multi window environment?
 void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-	// All blits are going to the system framebuffer, so just bind once.
-	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-
 	for (int i = 0; i < p_amount; i++) {
 		const BlitToScreen &blit = p_render_targets[i];
 

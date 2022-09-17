@@ -256,7 +256,11 @@ void GLManager_X11::release_current() {
 	if (!_current_window) {
 		return;
 	}
-	glXMakeCurrent(_x_windisp.x11_display, None, nullptr);
+
+	if (!glXMakeCurrent(_x_windisp.x11_display, None, nullptr)) {
+		ERR_PRINT("glXMakeCurrent failed");
+	}
+	_current_window = nullptr;
 }
 
 void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
@@ -276,7 +280,9 @@ void GLManager_X11::window_make_current(DisplayServer::WindowID p_window_id) {
 
 	const GLDisplay &disp = get_display(win.gldisplay_id);
 
-	glXMakeCurrent(disp.x11_display, win.x11_window, disp.context->glx_context);
+	if (!glXMakeCurrent(disp.x11_display, win.x11_window, disp.context->glx_context)) {
+		ERR_PRINT("glXMakeCurrent failed");
+	}
 
 	_internal_set_current_window(&win);
 }
@@ -290,13 +296,12 @@ void GLManager_X11::make_current() {
 		return;
 	}
 	const GLDisplay &disp = get_current_display();
-	glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context);
+	if (!glXMakeCurrent(_x_windisp.x11_display, _x_windisp.x11_window, disp.context->glx_context)) {
+		ERR_PRINT("glXMakeCurrent failed");
+	}
 }
 
 void GLManager_X11::swap_buffers() {
-	// NO NEED TO CALL SWAP BUFFERS for each window...
-	// see https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glXSwapBuffers.xml
-
 	if (!_current_window) {
 		return;
 	}
@@ -315,13 +320,6 @@ void GLManager_X11::swap_buffers() {
 		}
 	}
 
-	//	print_line("\tswap_buffers");
-
-	// only for debugging without drawing anything
-	//	glClearColor(Math::randf(), 0, 1, 1);
-	//glClear(GL_COLOR_BUFFER_BIT);
-
-	//const GLDisplay &disp = get_current_display();
 	glXSwapBuffers(_x_windisp.x11_display, _x_windisp.x11_window);
 }
 

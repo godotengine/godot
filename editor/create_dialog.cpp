@@ -296,6 +296,15 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const String 
 		r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type, icon_fallback));
 	}
 
+	bool is_deprecated = EditorHelp::get_doc_data()->class_list[p_type].is_deprecated;
+	bool is_experimental = EditorHelp::get_doc_data()->class_list[p_type].is_experimental;
+
+	if (is_deprecated) {
+		r_item->add_button(0, get_theme_icon("StatusError", SNAME("EditorIcons")), 0, false, TTR("This class is marked as deprecated."));
+	} else if (is_experimental) {
+		r_item->add_button(0, get_theme_icon("NodeWarning", SNAME("EditorIcons")), 0, false, TTR("This class is marked as experimental."));
+	}
+
 	if (!search_box->get_text().is_empty()) {
 		r_item->set_collapsed(false);
 	} else {

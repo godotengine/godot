@@ -55,6 +55,18 @@ void cleanup_after_sync() {
 	emscripten_set_main_loop(exit_callback, -1, false);
 }
 
+void early_cleanup() {
+	emscripten_cancel_main_loop(); // After this, we can exit!
+	int exit_code = OS_Web::get_singleton()->get_exit_code();
+	memdelete(os);
+	os = nullptr;
+	emscripten_force_exit(exit_code); // No matter that we call cancel_main_loop, regular "exit" will not work, forcing.
+}
+
+void early_cleanup_sync() {
+	emscripten_set_main_loop(early_cleanup, -1, false);
+}
+
 void main_loop_callback() {
 	uint64_t current_ticks = os->get_ticks_usec();
 
@@ -87,7 +99,19 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 	// We must override main when testing is enabled
 	TEST_MAIN_OVERRIDE
 
-	Main::setup(argv[0], argc - 1, &argv[1]);
+	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+
+	// Proper shutdown in case of setup failure.
+	if (err != OK) {
+		int exit_code = (int)err;
+		if (err == ERR_HELP) {
+			exit_code = 0; // Called with --help.
+		}
+		os->set_exit_code(exit_code);
+		// Will only exit after sync.
+		godot_js_os_finish_async(early_cleanup_sync);
+		return exit_code;
+	}
 
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);

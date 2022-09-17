@@ -227,3 +227,7 @@ def configure(env):
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
+
+    # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
+    # We also only use WebGL2, and changing context version is not widely supported anyway.
+    env.Append(LINKFLAGS=["-s", "GL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])

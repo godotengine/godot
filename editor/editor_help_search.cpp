@@ -326,6 +326,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 bool EditorHelpSearch::Runner::_phase_match_classes() {
 	DocData::ClassDoc &class_doc = iterator_doc->value;
 	if (class_doc.name.is_empty()) {
+		++iterator_doc;
 		return false;
 	}
 	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
@@ -432,7 +433,7 @@ bool EditorHelpSearch::Runner::_phase_class_items_init() {
 
 bool EditorHelpSearch::Runner::_phase_class_items() {
 	if (!iterator_match) {
-		return false;
+		return true;
 	}
 	ClassMatch &match = iterator_match->value;
 
@@ -459,10 +460,8 @@ bool EditorHelpSearch::Runner::_phase_member_items_init() {
 bool EditorHelpSearch::Runner::_phase_member_items() {
 	ClassMatch &match = iterator_match->value;
 
-	if (!match.doc) {
-		return false;
-	}
-	if (match.doc->name.is_empty()) {
+	if (!match.doc || match.doc->name.is_empty()) {
+		++iterator_match;
 		return false;
 	}
 
@@ -599,6 +598,14 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 		item->set_custom_color(1, disabled_color);
 	}
 
+	if (p_doc->is_deprecated) {
+		Ref<Texture2D> error_icon = ui_service->get_theme_icon("StatusError", SNAME("EditorIcons"));
+		item->add_button(0, error_icon, 0, false, TTR("This class is marked as deprecated."));
+	} else if (p_doc->is_experimental) {
+		Ref<Texture2D> warning_icon = ui_service->get_theme_icon("NodeWarning", SNAME("EditorIcons"));
+		item->add_button(0, warning_icon, 0, false, TTR("This class is marked as experimental."));
+	}
+
 	_match_item(item, p_doc->name);
 
 	return item;
@@ -606,37 +613,37 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 
 TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
 	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
-	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
 	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
-	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_annotation_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc) {
 	String tooltip = _build_method_tooltip(p_class_doc, p_doc);
-	return _create_member_item(p_parent, p_class_doc->name, "MemberAnnotation", p_doc->name, p_text, TTRC("Annotation"), "annotation", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberAnnotation", p_doc->name, p_text, TTRC("Annotation"), "annotation", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
 	String tooltip = p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip, p_doc->is_deprecated, p_doc->is_experimental);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip, false, false);
 }
 
-TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip) {
+TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, bool is_deprecated, bool is_experimental) {
 	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
@@ -654,6 +661,14 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 	item->set_tooltip_text(0, p_tooltip);
 	item->set_tooltip_text(1, p_tooltip);
 	item->set_metadata(0, "class_" + p_metatype + ":" + p_class_name + ":" + p_name);
+
+	if (is_deprecated) {
+		Ref<Texture2D> error_icon = ui_service->get_theme_icon("StatusError", SNAME("EditorIcons"));
+		item->add_button(0, error_icon, 0, false, TTR("This member is marked as deprecated."));
+	} else if (is_experimental) {
+		Ref<Texture2D> warning_icon = ui_service->get_theme_icon("NodeWarning", SNAME("EditorIcons"));
+		item->add_button(0, warning_icon, 0, false, TTR("This member is marked as experimental."));
+	}
 
 	_match_item(item, p_name);
 

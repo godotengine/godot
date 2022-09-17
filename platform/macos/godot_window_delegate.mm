@@ -151,7 +151,9 @@
 
 - (void)windowWillStartLiveResize:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (ds) {
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		wd.last_frame_rect = [wd.window_object frame];
 		ds->set_is_resizing(true);
 	}
 }

@@ -1050,6 +1050,10 @@ private:
 	};
 
 	CompletionType completion_type;
+	ShaderNode::Uniform::Hint current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
+	TextureFilter current_uniform_filter = FILTER_DEFAULT;
+	TextureRepeat current_uniform_repeat = REPEAT_DEFAULT;
+	bool current_uniform_instance_index_defined = false;
 	int completion_line = 0;
 	BlockNode *completion_block = nullptr;
 	DataType completion_base;

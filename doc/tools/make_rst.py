@@ -1480,6 +1480,8 @@ def format_text_block(
                                 )
 
                         tag_text = f"``{link_target}``"
+                        escape_pre = True
+                        escape_post = True
 
             # Formatting directives.
 

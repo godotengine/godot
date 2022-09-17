@@ -55,7 +55,7 @@ private:
 	bool use_debanding = true;
 
 	static Mutex shader_mutex;
-	static RID shader;
+	static RID shader_cache[2];
 	static void _update_shader();
 	mutable bool shader_set = false;
 
@@ -160,7 +160,7 @@ class PhysicalSkyMaterial : public Material {
 
 private:
 	static Mutex shader_mutex;
-	static RID shader;
+	static RID shader_cache[2];
 
 	float rayleigh = 0.0f;
 	Color rayleigh_color;

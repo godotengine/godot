@@ -129,7 +129,7 @@ invariant gl_Position;
 
 #GLOBALS
 
-void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
+void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multimesh_offset, in SceneData scene_data, in mat4 model_matrix, out vec4 screen_pos) {
 	vec4 instance_custom = vec4(0.0);
 #if defined(COLOR_USED)
 	color_interp = color_attrib;
@@ -208,7 +208,7 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 			}
 		}
 
-		uint offset = stride * gl_InstanceIndex;
+		uint offset = stride * (gl_InstanceIndex + multimesh_offset);
 
 		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
 			matrix = mat4(transforms.data[offset + 0], transforms.data[offset + 1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));
@@ -326,10 +326,6 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 
 	vertex_interp = vertex;
 
-#ifdef MOTION_VECTORS
-	screen_pos = projection_matrix * vec4(vertex_interp, 1.0);
-#endif
-
 #ifdef NORMAL_USED
 	normal_interp = normal;
 #endif
@@ -367,6 +363,10 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in SceneData sc
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 #endif
 
+#ifdef MOTION_VECTORS
+	screen_pos = gl_Position;
+#endif
+
 #ifdef MODE_RENDER_DEPTH
 	if (scene_data.pancake_shadows) {
 		if (gl_Position.z <= 0.00001) {
@@ -397,13 +397,13 @@ void main() {
 	mat4 model_matrix = instances.data[instance_index].transform;
 #if defined(MOTION_VECTORS)
 	global_time = scene_data_block.prev_data.time;
-	vertex_shader(instance_index, is_multimesh, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
+	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_previous_offset, scene_data_block.prev_data, instances.data[instance_index].prev_transform, prev_screen_position);
 	global_time = scene_data_block.data.time;
-	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 #else
 	global_time = scene_data_block.data.time;
 	vec4 screen_position;
-	vertex_shader(instance_index, is_multimesh, scene_data_block.data, model_matrix, screen_position);
+	vertex_shader(instance_index, is_multimesh, draw_call.multimesh_motion_vectors_current_offset, scene_data_block.data, model_matrix, screen_position);
 #endif
 }
 
@@ -553,7 +553,7 @@ layout(location = 0) out vec4 frag_color;
 layout(location = 2) out vec2 motion_vector;
 #endif
 
-#include "scene_forward_aa_inc.glsl"
+#include "../scene_forward_aa_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
@@ -562,20 +562,20 @@ layout(location = 2) out vec2 motion_vector;
 #define SPECULAR_SCHLICK_GGX
 #endif
 
-#include "scene_forward_lights_inc.glsl"
+#include "../scene_forward_lights_inc.glsl"
 
-#include "scene_forward_gi_inc.glsl"
+#include "../scene_forward_gi_inc.glsl"
 
 #endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 #ifndef MODE_RENDER_DEPTH
 
 vec4 volumetric_fog_process(vec2 screen_uv, float z) {
-	vec3 fog_pos = vec3(screen_uv, z * scene_data_block.data.volumetric_fog_inv_length);
+	vec3 fog_pos = vec3(screen_uv, z * implementation_data.volumetric_fog_inv_length);
 	if (fog_pos.z < 0.0) {
 		return vec4(0.0);
 	} else if (fog_pos.z < 1.0) {
-		fog_pos.z = pow(fog_pos.z, scene_data_block.data.volumetric_fog_detail_spread);
+		fog_pos.z = pow(fog_pos.z, implementation_data.volumetric_fog_detail_spread);
 	}
 
 	return texture(sampler3D(volumetric_fog_texture, material_samplers[SAMPLER_LINEAR_CLAMP]), fog_pos);
@@ -821,7 +821,7 @@ void fragment_shader(in SceneData scene_data) {
 		fog = fog_process(vertex);
 	}
 
-	if (scene_data.volumetric_fog_enabled) {
+	if (implementation_data.volumetric_fog_enabled) {
 		vec4 volumetric_fog = volumetric_fog_process(screen_uv, -vertex.z);
 		if (scene_data.fog_enabled) {
 			//must use the full blending equation here to blend fogs
@@ -849,8 +849,8 @@ void fragment_shader(in SceneData scene_data) {
 
 #ifndef MODE_RENDER_DEPTH
 
-	uvec2 cluster_pos = uvec2(gl_FragCoord.xy) >> scene_data.cluster_shift;
-	uint cluster_offset = (scene_data.cluster_width * cluster_pos.y + cluster_pos.x) * (scene_data.max_cluster_element_count_div_32 + 32);
+	uvec2 cluster_pos = uvec2(gl_FragCoord.xy) >> implementation_data.cluster_shift;
+	uint cluster_offset = (implementation_data.cluster_width * cluster_pos.y + cluster_pos.x) * (implementation_data.max_cluster_element_count_div_32 + 32);
 
 	uint cluster_z = uint(clamp((-vertex.z / scene_data.z_far) * 32.0, 0.0, 31.0));
 
@@ -860,14 +860,14 @@ void fragment_shader(in SceneData scene_data) {
 
 	{ // process decals
 
-		uint cluster_decal_offset = cluster_offset + scene_data.cluster_type_size * 2;
+		uint cluster_decal_offset = cluster_offset + implementation_data.cluster_type_size * 2;
 
 		uint item_min;
 		uint item_max;
 		uint item_from;
 		uint item_to;
 
-		cluster_get_item_range(cluster_decal_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_item_range(cluster_decal_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
 #ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
@@ -1256,7 +1256,7 @@ void fragment_shader(in SceneData scene_data) {
 
 		vec2 coord;
 
-		if (scene_data.gi_upscale_for_msaa) {
+		if (implementation_data.gi_upscale_for_msaa) {
 			vec2 base_coord = screen_uv;
 			vec2 closest_coord = base_coord;
 #ifdef USE_MULTIVIEW
@@ -1298,10 +1298,10 @@ void fragment_shader(in SceneData scene_data) {
 	}
 #endif // !USE_LIGHTMAP
 
-	if (bool(scene_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO)) {
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSAO)) {
 		float ssao = texture(sampler2D(ao_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv).r;
 		ao = min(ao, ssao);
-		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, scene_data.ssao_light_affect), scene_data.ssao_ao_affect);
+		ao_light_affect = mix(ao_light_affect, max(ao_light_affect, implementation_data.ssao_light_affect), implementation_data.ssao_ao_affect);
 	}
 
 	{ // process reflections
@@ -1309,14 +1309,14 @@ void fragment_shader(in SceneData scene_data) {
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 
-		uint cluster_reflection_offset = cluster_offset + scene_data.cluster_type_size * 3;
+		uint cluster_reflection_offset = cluster_offset + implementation_data.cluster_type_size * 3;
 
 		uint item_min;
 		uint item_max;
 		uint item_from;
 		uint item_to;
 
-		cluster_get_item_range(cluster_reflection_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_item_range(cluster_reflection_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
 #ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
@@ -1380,7 +1380,7 @@ void fragment_shader(in SceneData scene_data) {
 	// convert ao to direct light ao
 	ao = mix(1.0, ao, ao_light_affect);
 
-	if (bool(scene_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
+	if (bool(implementation_data.ss_effects_flags & SCREEN_SPACE_EFFECTS_FLAGS_USE_SSIL)) {
 		vec4 ssil = textureLod(sampler2D(ssil_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), screen_uv, 0.0);
 		ambient_light *= 1.0 - ssil.a;
 		ambient_light += ssil.rgb * albedo.rgb;
@@ -1748,7 +1748,7 @@ void fragment_shader(in SceneData scene_data) {
 		uint item_from;
 		uint item_to;
 
-		cluster_get_item_range(cluster_omni_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_item_range(cluster_omni_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
 #ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
@@ -1812,14 +1812,14 @@ void fragment_shader(in SceneData scene_data) {
 
 	{ //spot lights
 
-		uint cluster_spot_offset = cluster_offset + scene_data.cluster_type_size;
+		uint cluster_spot_offset = cluster_offset + implementation_data.cluster_type_size;
 
 		uint item_min;
 		uint item_max;
 		uint item_from;
 		uint item_to;
 
-		cluster_get_item_range(cluster_spot_offset + scene_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
+		cluster_get_item_range(cluster_spot_offset + implementation_data.max_cluster_element_count_div_32 + cluster_z, item_min, item_max, item_from, item_to);
 
 #ifdef USE_SUBGROUPS
 		item_from = subgroupBroadcastFirst(subgroupMin(item_from));
@@ -1909,8 +1909,8 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef MODE_RENDER_SDF
 
 	{
-		vec3 local_pos = (scene_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
-		ivec3 grid_pos = scene_data.sdf_offset + ivec3(local_pos * vec3(scene_data.sdf_size));
+		vec3 local_pos = (implementation_data.sdf_to_bounds * vec4(vertex, 1.0)).xyz;
+		ivec3 grid_pos = implementation_data.sdf_offset + ivec3(local_pos * vec3(implementation_data.sdf_size));
 
 		uint albedo16 = 0x1; //solid flag
 		albedo16 |= clamp(uint(albedo.r * 31.0), 0, 31) << 11;

@@ -91,7 +91,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	RSG::viewport->draw_viewports();
 	RSG::canvas_render->update();
 
-	RSG::rasterizer->end_frame(p_swap_buffers);
+	if (OS::get_singleton()->get_current_rendering_driver_name() != "opengl3") {
+		// Already called for gl_compatibility renderer.
+		RSG::rasterizer->end_frame(p_swap_buffers);
+	}
 
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {

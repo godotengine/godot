@@ -168,7 +168,7 @@ public:
 	};
 
 	void ssr_allocate_buffers(SSRRenderBuffers &p_ssr_buffers, const RenderingDevice::DataFormat p_color_format, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, const Size2i &p_screen_size, const uint32_t p_view_count);
-	void screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, const RID *p_metallic_slices, const Color &p_metallic_mask, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets);
+	void screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, RS::EnvironmentSSRRoughnessQuality p_roughness_quality, const RID *p_metallic_slices, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets);
 	void ssr_free(SSRRenderBuffers &p_ssr_buffers);
 
 	/* subsurface scattering */
@@ -465,10 +465,7 @@ private:
 		uint32_t orthogonal; //  4 - 52
 		float filter_mipmap_levels; //  4 - 56
 		uint32_t use_half_res; //  4 - 60
-		uint8_t metallic_mask[4]; //  4 - 64
-
-		uint32_t view_index; //  4 - 68
-		uint32_t pad[3]; // 12 - 80
+		uint32_t view_index; //  4 - 64
 
 		// float projection[16];			// this is in our ScreenSpaceReflectionSceneData now
 	};

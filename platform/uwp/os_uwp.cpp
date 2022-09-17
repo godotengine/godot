@@ -444,24 +444,17 @@ String OS_UWP::get_name() const {
 	return "UWP";
 }
 
-OS::Date OS_UWP::get_date(bool p_utc) const {
-	SYSTEMTIME systemtime;
-	if (p_utc) {
-		GetSystemTime(&systemtime);
-	} else {
-		GetLocalTime(&systemtime);
-	}
-
-	Date date;
-	date.day = systemtime.wDay;
-	date.month = Month(systemtime.wMonth);
-	date.weekday = Weekday(systemtime.wDayOfWeek);
-	date.year = systemtime.wYear;
-	date.dst = false;
-	return date;
+String OS_UWP::get_distribution_name() const {
+	return get_name();
 }
 
-OS::Time OS_UWP::get_time(bool p_utc) const {
+String OS_UWP::get_version() const {
+	winrt::hstring df_version = VersionInfo().DeviceFamilyVersion();
+	static String version = String(winrt::to_string(df_version).c_str());
+	return version;
+}
+
+OS::DateTime OS_UWP::get_datetime(bool p_utc) const {
 	SYSTEMTIME systemtime;
 	if (p_utc) {
 		GetSystemTime(&systemtime);
@@ -469,11 +462,23 @@ OS::Time OS_UWP::get_time(bool p_utc) const {
 		GetLocalTime(&systemtime);
 	}
 
-	Time time;
-	time.hour = systemtime.wHour;
-	time.min = systemtime.wMinute;
-	time.sec = systemtime.wSecond;
-	return time;
+	//Get DST information from Windows, but only if p_utc is false.
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (!p_utc && GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT) {
+		daylight = true;
+	}
+
+	DateTime dt;
+	dt.year = systemtime.wYear;
+	dt.month = Month(systemtime.wMonth);
+	dt.day = systemtime.wDay;
+	dt.weekday = Weekday(systemtime.wDayOfWeek);
+	dt.hour = systemtime.wHour;
+	dt.minute = systemtime.wMinute;
+	dt.second = systemtime.wSecond;
+	dt.dst = daylight;
+	return dt;
 }
 
 OS::TimeZoneInfo OS_UWP::get_time_zone_info() const {

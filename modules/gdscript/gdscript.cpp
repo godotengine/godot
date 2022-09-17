@@ -1077,10 +1077,12 @@ Error GDScript::load_source_code(const String &p_path) {
 	}
 
 	source = s;
+	path = p_path;
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
-#endif
-	path = p_path;
+	set_edited(false);
+	set_last_modified_time(FileAccess::get_modified_time(path));
+#endif // TOOLS_ENABLED
 	return OK;
 }
 

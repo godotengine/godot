@@ -32,6 +32,8 @@
 
 void WebRTCPeerConnectionExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_connection_state);
+	GDVIRTUAL_BIND(_get_gathering_state);
+	GDVIRTUAL_BIND(_get_signaling_state);
 	GDVIRTUAL_BIND(_initialize, "p_config");
 	GDVIRTUAL_BIND(_create_data_channel, "p_label", "p_config");
 	GDVIRTUAL_BIND(_create_offer);

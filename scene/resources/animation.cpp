@@ -2317,9 +2317,7 @@ Quaternion Animation::_interpolate(const Quaternion &p_a, const Quaternion &p_b,
 }
 
 Variant Animation::_interpolate(const Variant &p_a, const Variant &p_b, real_t p_c) const {
-	Variant dst;
-	Variant::interpolate(p_a, p_b, p_c, dst);
-	return dst;
+	return interpolate_variant(p_a, p_b, p_c);
 }
 
 real_t Animation::_interpolate(const real_t &p_a, const real_t &p_b, real_t p_c) const {
@@ -5561,6 +5559,466 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	}
 
 	return false;
+}
+
+// Helper math fuctions for Variant.
+Variant Animation::add_variant(const Variant &a, const Variant &b) {
+	if (a.get_type() != b.get_type()) {
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::BOOL: {
+			return (a.operator real_t()) + (b.operator real_t()); // It is cast for interpolation.
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position + rb.position, ra.size + rb.size);
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(ra.position + rb.position, ra.size + rb.size);
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal + pb.normal, pa.d + pb.d);
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position + ab.position, aa.size + ab.size);
+		}
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()) * (b.operator Quaternion());
+		}
+		case Variant::TRANSFORM2D: {
+			return (a.operator Transform2D()) * (b.operator Transform2D());
+		}
+		case Variant::TRANSFORM3D: {
+			return (a.operator Transform3D()) * (b.operator Transform3D());
+		}
+		default: {
+			return Variant::evaluate(Variant::OP_ADD, a, b);
+		}
+	}
+}
+
+Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
+	if (a.get_type() != b.get_type()) {
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::BOOL: {
+			return (a.operator real_t()) - (b.operator real_t()); // It is cast for interpolation.
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position - rb.position, ra.size - rb.size);
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(ra.position - rb.position, ra.size - rb.size);
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal - pb.normal, pa.d - pb.d);
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position - ab.position, aa.size - ab.size);
+		}
+		case Variant::QUATERNION: {
+			return (b.operator Quaternion()).inverse() * (a.operator Quaternion());
+		}
+		case Variant::TRANSFORM2D: {
+			return (b.operator Transform2D()).inverse() * (a.operator Transform2D());
+		}
+		case Variant::TRANSFORM3D: {
+			return (b.operator Transform3D()).inverse() * (a.operator Transform3D());
+		}
+		default: {
+			return Variant::evaluate(Variant::OP_SUBTRACT, a, b);
+		}
+	}
+}
+
+Variant Animation::blend_variant(const Variant &a, const Variant &b, float c) {
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			real_t va = a;
+			real_t vb = b;
+			return va + vb * c;
+		}
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::INT: {
+			return int((a.operator int64_t()) + (b.operator int64_t()) * c + 0.5);
+		}
+		case Variant::FLOAT: {
+			return (a.operator double()) + (b.operator double()) * c;
+		}
+		case Variant::VECTOR2: {
+			return (a.operator Vector2()) + (b.operator Vector2()) * c;
+		}
+		case Variant::VECTOR2I: {
+			const Vector2i va = a.operator Vector2i();
+			const Vector2i vb = b.operator Vector2i();
+			return Vector2i(int32_t(va.x + vb.x * c + 0.5), int32_t(va.y + vb.y * c + 0.5));
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position + rb.position * c, ra.size + rb.size * c);
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(int32_t(ra.position.x + rb.position.x * c + 0.5), int32_t(ra.position.y + rb.position.y * c + 0.5), int32_t(ra.size.x + rb.size.x * c + 0.5), int32_t(ra.size.y + rb.size.y * c + 0.5));
+		}
+		case Variant::VECTOR3: {
+			return (a.operator Vector3()) + (b.operator Vector3()) * c;
+		}
+		case Variant::VECTOR3I: {
+			const Vector3i va = a.operator Vector3i();
+			const Vector3i vb = b.operator Vector3i();
+			return Vector3i(int32_t(va.x + vb.x * c + 0.5), int32_t(va.y + vb.y * c + 0.5), int32_t(va.z + vb.z * c + 0.5));
+		}
+		case Variant::VECTOR4: {
+			return (a.operator Vector4()) + (b.operator Vector4()) * c;
+		}
+		case Variant::VECTOR4I: {
+			const Vector4i va = a.operator Vector4i();
+			const Vector4i vb = b.operator Vector4i();
+			return Vector4i(int32_t(va.x + vb.x * c + 0.5), int32_t(va.y + vb.y * c + 0.5), int32_t(va.z + vb.z * c + 0.5), int32_t(va.w + vb.w * c + 0.5));
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal + pb.normal * c, pa.d + pb.d * c);
+		}
+		case Variant::COLOR: {
+			return (a.operator Color()) + (b.operator Color()) * c;
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position + ab.position * c, aa.size + ab.size * c);
+		}
+		case Variant::BASIS: {
+			return (a.operator Basis()) + (b.operator Basis()) * c;
+		}
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()) * Quaternion().slerp((b.operator Quaternion()), c);
+		}
+		case Variant::TRANSFORM2D: {
+			return (a.operator Transform2D()) * Transform2D().interpolate_with((b.operator Transform2D()), c);
+		}
+		case Variant::TRANSFORM3D: {
+			return (a.operator Transform3D()) * Transform3D().interpolate_with((b.operator Transform3D()), c);
+		}
+		default: {
+			return c < 0.5 ? a : b;
+		}
+	}
+}
+
+Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float c) {
+	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			real_t va = a;
+			real_t vb = b;
+			return va + (vb - va) * c;
+		}
+		return a;
+	}
+
+	switch (a.get_type()) {
+		case Variant::NIL: {
+			return Variant();
+		}
+		case Variant::INT: {
+			const int64_t va = a.operator int64_t();
+			return int(va + ((b.operator int64_t()) - va) * c);
+		}
+		case Variant::FLOAT: {
+			const real_t va = a.operator real_t();
+			return va + ((b.operator real_t()) - va) * c;
+		}
+		case Variant::VECTOR2: {
+			return (a.operator Vector2()).lerp(b.operator Vector2(), c);
+		}
+		case Variant::VECTOR2I: {
+			const Vector2i va = a.operator Vector2i();
+			const Vector2i vb = b.operator Vector2i();
+			return Vector2i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c));
+		}
+		case Variant::RECT2: {
+			const Rect2 ra = a.operator Rect2();
+			const Rect2 rb = b.operator Rect2();
+			return Rect2(ra.position.lerp(rb.position, c), ra.size.lerp(rb.size, c));
+		}
+		case Variant::RECT2I: {
+			const Rect2i ra = a.operator Rect2i();
+			const Rect2i rb = b.operator Rect2i();
+			return Rect2i(int32_t(ra.position.x + (rb.position.x - ra.position.x) * c), int32_t(ra.position.y + (rb.position.y - ra.position.y) * c), int32_t(ra.size.x + (rb.size.x - ra.size.x) * c), int32_t(ra.size.y + (rb.size.y - ra.size.y) * c));
+		}
+		case Variant::VECTOR3: {
+			return (a.operator Vector3()).lerp(b.operator Vector3(), c);
+		}
+		case Variant::VECTOR3I: {
+			const Vector3i va = a.operator Vector3i();
+			const Vector3i vb = b.operator Vector3i();
+			return Vector3i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c), int32_t(va.z + (vb.z - va.z) * c));
+		}
+		case Variant::VECTOR4: {
+			return (a.operator Vector4()).lerp(b.operator Vector4(), c);
+		}
+		case Variant::VECTOR4I: {
+			const Vector4i va = a.operator Vector4i();
+			const Vector4i vb = b.operator Vector4i();
+			return Vector4i(int32_t(va.x + (vb.x - va.x) * c), int32_t(va.y + (vb.y - va.y) * c), int32_t(va.z + (vb.z - va.z) * c), int32_t(va.w + (vb.w - va.w) * c));
+		}
+		case Variant::PLANE: {
+			const Plane pa = a.operator Plane();
+			const Plane pb = b.operator Plane();
+			return Plane(pa.normal.lerp(pb.normal, c), pa.d + (pb.d - pa.d) * c);
+		}
+		case Variant::COLOR: {
+			return (a.operator Color()).lerp(b.operator Color(), c);
+		}
+		case Variant::AABB: {
+			const ::AABB aa = a.operator ::AABB();
+			const ::AABB ab = b.operator ::AABB();
+			return ::AABB(aa.position.lerp(ab.position, c), aa.size.lerp(ab.size, c));
+		}
+		case Variant::BASIS: {
+			return (a.operator Basis()).lerp(b.operator Basis(), c);
+		}
+		case Variant::QUATERNION: {
+			return (a.operator Quaternion()).slerp(b.operator Quaternion(), c);
+		}
+		case Variant::TRANSFORM2D: {
+			return (a.operator Transform2D()).interpolate_with(b.operator Transform2D(), c);
+		}
+		case Variant::TRANSFORM3D: {
+			return (a.operator Transform3D()).interpolate_with(b.operator Transform3D(), c);
+		}
+		case Variant::STRING: {
+			// This is pretty funny and bizarre, but artists like to use it for typewriter effects.
+			const String sa = a.operator String();
+			const String sb = b.operator String();
+			String dst;
+			int sa_len = sa.length();
+			int sb_len = sb.length();
+			int csize = sa_len + (sb_len - sa_len) * c;
+			if (csize == 0) {
+				return "";
+			}
+			dst.resize(csize + 1);
+			dst[csize] = 0;
+			int split = csize / 2;
+
+			for (int i = 0; i < csize; i++) {
+				char32_t chr = ' ';
+
+				if (i < split) {
+					if (i < sa.length()) {
+						chr = sa[i];
+					} else if (i < sb.length()) {
+						chr = sb[i];
+					}
+
+				} else {
+					if (i < sb.length()) {
+						chr = sb[i];
+					} else if (i < sa.length()) {
+						chr = sa[i];
+					}
+				}
+
+				dst[i] = chr;
+			}
+
+			return dst;
+		}
+		case Variant::PACKED_INT32_ARRAY: {
+			const Vector<int32_t> *arr_a = Object::cast_to<Vector<int32_t>>(a);
+			const Vector<int32_t> *arr_b = Object::cast_to<Vector<int32_t>>(b);
+			int32_t sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<int32_t> v;
+				v.resize(sz);
+				{
+					int32_t *vw = v.ptrw();
+					const int32_t *ar = arr_a->ptr();
+					const int32_t *br = arr_b->ptr();
+
+					Variant va;
+					for (int32_t i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_INT64_ARRAY: {
+			const Vector<int64_t> *arr_a = Object::cast_to<Vector<int64_t>>(a);
+			const Vector<int64_t> *arr_b = Object::cast_to<Vector<int64_t>>(b);
+			int64_t sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<int64_t> v;
+				v.resize(sz);
+				{
+					int64_t *vw = v.ptrw();
+					const int64_t *ar = arr_a->ptr();
+					const int64_t *br = arr_b->ptr();
+
+					Variant va;
+					for (int64_t i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_FLOAT32_ARRAY: {
+			const Vector<float> *arr_a = Object::cast_to<Vector<float>>(a);
+			const Vector<float> *arr_b = Object::cast_to<Vector<float>>(b);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<float> v;
+				v.resize(sz);
+				{
+					float *vw = v.ptrw();
+					const float *ar = arr_a->ptr();
+					const float *br = arr_b->ptr();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_FLOAT64_ARRAY: {
+			const Vector<double> *arr_a = Object::cast_to<Vector<double>>(a);
+			const Vector<double> *arr_b = Object::cast_to<Vector<double>>(b);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<double> v;
+				v.resize(sz);
+				{
+					double *vw = v.ptrw();
+					const double *ar = arr_a->ptr();
+					const double *br = arr_b->ptr();
+
+					Variant va;
+					for (int i = 0; i < sz; i++) {
+						va = interpolate_variant(ar[i], br[i], c);
+						vw[i] = va;
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_VECTOR2_ARRAY: {
+			const Vector<Vector2> *arr_a = Object::cast_to<Vector<Vector2>>(a);
+			const Vector<Vector2> *arr_b = Object::cast_to<Vector<Vector2>>(b);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<Vector2> v;
+				v.resize(sz);
+				{
+					Vector2 *vw = v.ptrw();
+					const Vector2 *ar = arr_a->ptr();
+					const Vector2 *br = arr_b->ptr();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].lerp(br[i], c);
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_VECTOR3_ARRAY: {
+			const Vector<Vector3> *arr_a = Object::cast_to<Vector<Vector3>>(a);
+			const Vector<Vector3> *arr_b = Object::cast_to<Vector<Vector3>>(b);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<Vector3> v;
+				v.resize(sz);
+				{
+					Vector3 *vw = v.ptrw();
+					const Vector3 *ar = arr_a->ptr();
+					const Vector3 *br = arr_b->ptr();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].lerp(br[i], c);
+					}
+				}
+				return v;
+			}
+		}
+		case Variant::PACKED_COLOR_ARRAY: {
+			const Vector<Color> *arr_a = Object::cast_to<Vector<Color>>(a);
+			const Vector<Color> *arr_b = Object::cast_to<Vector<Color>>(b);
+			int sz = arr_a->size();
+			if (sz == 0 || arr_b->size() != sz) {
+				return a;
+			} else {
+				Vector<Color> v;
+				v.resize(sz);
+				{
+					Color *vw = v.ptrw();
+					const Color *ar = arr_a->ptr();
+					const Color *br = arr_b->ptr();
+
+					for (int i = 0; i < sz; i++) {
+						vw[i] = ar[i].lerp(br[i], c);
+					}
+				}
+				return v;
+			}
+		}
+		default: {
+			return c < 0.5 ? a : b;
+		}
+	}
 }
 
 Animation::Animation() {}

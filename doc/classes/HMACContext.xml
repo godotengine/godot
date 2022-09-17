@@ -32,22 +32,22 @@
 		public class CryptoNode : Node
 		{
 		    private HMACContext ctx = new HMACContext();
+
 		    public override void _Ready()
 		    {
-		        PackedByteArray key = String("supersecret").to_utf8();
-		        Error err = ctx.Start(HashingContext.HASH_SHA256, key);
-		        GD.Assert(err == OK);
-		        PackedByteArray msg1 = String("this is ").to_utf8();
-		        PackedByteArray msg2 = String("super duper secret").to_utf8();
+		        byte[] key = "supersecret".ToUTF8();
+		        Error err = ctx.Start(HashingContext.HashType.Sha256, key);
+		        Debug.Assert(err == Error.Ok);
+		        byte[] msg1 = "this is ".ToUTF8();
+		        byte[] msg2 = "super duper secret".ToUTF8();
 		        err = ctx.Update(msg1);
-		        GD.Assert(err == OK);
+		        Debug.Assert(err == Error.Ok);
 		        err = ctx.Update(msg2);
-		        GD.Assert(err == OK);
-		        PackedByteArray hmac = ctx.Finish();
+		        Debug.Assert(err == Error.Ok);
+		        byte[] hmac = ctx.Finish();
 		        GD.Print(hmac.HexEncode());
 		    }
 		}
-
 		[/csharp]
 		[/codeblocks]
 	</description>

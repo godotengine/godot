@@ -166,6 +166,7 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
 #endif
+		[wd.window_view updateLayerDelegate];
 		id = window_id_counter++;
 		windows[id] = wd;
 	}
@@ -314,6 +315,15 @@ void DisplayServerMacOS::_displays_arrangement_changed(CGDirectDisplayID display
 	if (ds) {
 		ds->displays_arrangement_dirty = true;
 	}
+}
+
+DisplayServer::WindowID DisplayServerMacOS::_get_focused_window_or_popup() const {
+	const List<WindowID>::Element *E = popup_list.back();
+	if (E) {
+		return E->get();
+	}
+
+	return last_focused_window;
 }
 
 void DisplayServerMacOS::_dispatch_input_events(const Ref<InputEvent> &p_event) {
@@ -1827,7 +1837,10 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		return;
 	}
 
-	WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+	WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
 	WindowData &wd = windows[window_id];
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
@@ -1942,7 +1955,10 @@ void DisplayServerMacOS::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode != MOUSE_MODE_CAPTURED) {
-		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
 		WindowData &wd = windows[window_id];
 
 		// Local point in window coords.
@@ -3536,7 +3552,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 	[apple_menu addItem:[NSMenuItem separatorItem]];
 
-	title = [NSString stringWithFormat:NSLocalizedString(@"\t\tQuit %@", nil), nsappname];
+	title = [NSString stringWithFormat:NSLocalizedString(@"Quit %@", nil), nsappname];
 	[apple_menu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
 
 	// Add items to the menu bar.
