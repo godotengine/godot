@@ -388,7 +388,6 @@ void AnimatedSprite2D::set_playing(bool p_playing) {
 		return;
 	}
 	playing = p_playing;
-	_reset_timeout();
 	set_process_internal(playing);
 	notify_property_list_changed();
 }
@@ -413,6 +412,7 @@ void AnimatedSprite2D::play(const StringName &p_animation, bool p_backwards) {
 }
 
 void AnimatedSprite2D::stop() {
+	_reset_timeout();
 	set_playing(false);
 }
 
