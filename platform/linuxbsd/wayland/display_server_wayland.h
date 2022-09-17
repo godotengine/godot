@@ -293,8 +293,8 @@ class DisplayServerWayland : public DisplayServer {
 	struct WaylandState {
 		Mutex mutex;
 
-		struct wl_display *display = nullptr;
-		struct wl_registry *registry = nullptr;
+		struct wl_display *wl_display = nullptr;
+		struct wl_registry *wl_registry = nullptr;
 
 		WaylandGlobals globals;
 

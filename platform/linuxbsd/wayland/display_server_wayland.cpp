@@ -53,17 +53,17 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	WaylandState *wls = (WaylandState *)p_wls;
 
 	struct pollfd poll_fd;
-	poll_fd.fd = wl_display_get_fd(wls->display);
+	poll_fd.fd = wl_display_get_fd(wls->wl_display);
 	poll_fd.events = POLLIN | POLLHUP;
 
 	while (true) {
 		// Empty the event queue while it's full.
-		while (wl_display_prepare_read(wls->display) != 0) {
+		while (wl_display_prepare_read(wls->wl_display) != 0) {
 			MutexLock mutex_lock(wls->mutex);
-			wl_display_dispatch_pending(wls->display);
+			wl_display_dispatch_pending(wls->wl_display);
 		}
 
-		if (wl_display_flush(wls->display) == -1) {
+		if (wl_display_flush(wls->wl_display) == -1) {
 			if (errno != EAGAIN) {
 				print_error(vformat("Error %d while flushing the Wayland display.", errno));
 				wls->events_thread_done.set();
@@ -74,14 +74,14 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 		poll(&poll_fd, 1, -1);
 
 		if (wls->events_thread_done.is_set()) {
-			wl_display_cancel_read(wls->display);
+			wl_display_cancel_read(wls->wl_display);
 			break;
 		}
 
 		if (poll_fd.revents | POLLIN) {
-			wl_display_read_events(wls->display);
+			wl_display_read_events(wls->wl_display);
 		} else {
-			wl_display_cancel_read(wls->display);
+			wl_display_cancel_read(wls->wl_display);
 		}
 	}
 }
@@ -134,7 +134,7 @@ String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) c
 		wl_data_offer_receive(wl_data_offer, "text/plain", fds[1]);
 
 		// Wait for the compositor to know about the pipe.
-		wl_display_roundtrip(wls.display);
+		wl_display_roundtrip(wls.wl_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -158,7 +158,7 @@ String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_select
 		zwp_primary_selection_offer_v1_receive(wp_primary_selection_offer, "text/plain", fds[1]);
 
 		// Wait for the compositor to know about the pipe.
-		wl_display_roundtrip(wls.display);
+		wl_display_roundtrip(wls.wl_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -464,7 +464,7 @@ void DisplayServerWayland::_window_data_set_mode(WindowData &p_wd, WindowMode p_
 	}
 
 	// Wait for a configure event and hope that something changed.
-	wl_display_roundtrip(wls.display);
+	wl_display_roundtrip(wls.wl_display);
 
 	if (p_wd.mode != WINDOW_MODE_WINDOWED) {
 		// The compositor refused our "normalization" request. It'd be useless or
@@ -1315,7 +1315,7 @@ void DisplayServerWayland::_wl_data_device_on_drop(void *data, struct wl_data_de
 		// Let the compositor know about the pipe, but don't handle any event. For
 		// some cursed reason both leave and drop events are released at the same
 		// time, although both of them clean up the offer. I'm still not sure why.
-		wl_display_flush(ss->wls->display);
+		wl_display_flush(ss->wls->wl_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -1722,7 +1722,7 @@ void DisplayServerWayland::clipboard_set(const String &p_text) {
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
-	wl_display_roundtrip(wls.display);
+	wl_display_roundtrip(wls.wl_display);
 
 	ss.selection_data = p_text.to_utf8_buffer();
 }
@@ -1757,7 +1757,7 @@ void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
 
 	// Wait for the message to get to the server before continuing, otherwise the
 	// clipboard update might come with a delay.
-	wl_display_roundtrip(wls.display);
+	wl_display_roundtrip(wls.wl_display);
 
 	ss.primary_data = p_text.to_utf8_buffer();
 }
@@ -1956,21 +1956,21 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		wl_surface_commit(wd.wl_surface);
 
 		// Wait for the surface to be configured before continuing.
-		wl_display_roundtrip(wls.display);
+		wl_display_roundtrip(wls.wl_display);
 
 #ifdef VULKAN_ENABLED
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
 		// to the `wl_surface` and doing so instantly maps it, moving this method here
 		// is the only solution I can think of to implement this method properly.
 		if (wls.context_vulkan) {
-			Error err = wls.context_vulkan->window_create(p_id, wd.vsync_mode, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = wls.context_vulkan->window_create(p_id, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
 		}
 #endif
 
 #ifdef GLES3_ENABLED
 		if (wls.gl_manager) {
-			Error err = wls.gl_manager->window_create(p_id, wls.display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+			Error err = wls.gl_manager->window_create(p_id, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
 		}
 #endif
@@ -2196,7 +2196,7 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 		xdg_popup_reposition(wd.xdg_popup, wd.xdg_positioner, 0);
 
 		// Wait configure.
-		wl_display_roundtrip(wls.display);
+		wl_display_roundtrip(wls.wl_display);
 	}
 }
 
@@ -2565,14 +2565,14 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 void DisplayServerWayland::process_events() {
 	MutexLock mutex_lock(wls.mutex);
 
-	int werror = wl_display_get_error(wls.display);
+	int werror = wl_display_get_error(wls.wl_display);
 
 	if (werror) {
 		if (werror == EPROTO) {
 			struct wl_interface *wl_interface = nullptr;
 			uint32_t id = 0;
 
-			int error_code = wl_display_get_protocol_error(wls.display, (const struct wl_interface **)&wl_interface, &id);
+			int error_code = wl_display_get_protocol_error(wls.wl_display, (const struct wl_interface **)&wl_interface, &id);
 			print_error(vformat("Wayland protocol error %d on interface %s@%d.", error_code, wl_interface ? wl_interface->name : "unknown", id));
 		} else {
 			print_error(vformat("Wayland client error code %d.", werror));
@@ -2749,18 +2749,18 @@ DisplayServer *DisplayServerWayland::create_func(const String &p_rendering_drive
 DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	r_error = ERR_UNAVAILABLE;
 
-	wls.display = wl_display_connect(nullptr);
+	wls.wl_display = wl_display_connect(nullptr);
 
-	ERR_FAIL_COND_MSG(!wls.display, "Can't connect to a Wayland display.");
+	ERR_FAIL_COND_MSG(!wls.wl_display, "Can't connect to a Wayland display.");
 
-	wls.registry = wl_display_get_registry(wls.display);
+	wls.wl_registry = wl_display_get_registry(wls.wl_display);
 
-	ERR_FAIL_COND_MSG(!wls.registry, "Can't obtain the Wayland registry global.");
+	ERR_FAIL_COND_MSG(!wls.wl_registry, "Can't obtain the Wayland registry global.");
 
-	wl_registry_add_listener(wls.registry, &wl_registry_listener, &wls);
+	wl_registry_add_listener(wls.wl_registry, &wl_registry_listener, &wls);
 
 	// Wait for globals to get notified from the compositor.
-	wl_display_roundtrip(wls.display);
+	wl_display_roundtrip(wls.wl_display);
 
 	// TODO: Perhaps gracefully handle missing protocols when possible?
 	ERR_FAIL_COND_MSG(!wls.globals.wl_shm, "Can't obtain the Wayland shared memory global.");
@@ -2781,7 +2781,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
 
 	// Wait for seat capabilities.
-	wl_display_roundtrip(wls.display);
+	wl_display_roundtrip(wls.wl_display);
 
 	xdg_wm_base_add_listener(wls.globals.xdg_wm_base, &xdg_wm_base_listener, nullptr);
 
@@ -2895,11 +2895,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 }
 
 DisplayServerWayland::~DisplayServerWayland() {
-	if (wls.display && events_thread.is_started()) {
+	if (wls.wl_display && events_thread.is_started()) {
 		wls.events_thread_done.set();
 
 		// Wait for any Wayland event to be handled and unblock the polling thread.
-		wl_display_roundtrip(wls.display);
+		wl_display_roundtrip(wls.wl_display);
 
 		events_thread.wait_to_finish();
 	}
@@ -3015,12 +3015,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 		wl_compositor_destroy(wls.globals.wl_compositor);
 	}
 
-	if (wls.registry) {
-		wl_registry_destroy(wls.registry);
+	if (wls.wl_registry) {
+		wl_registry_destroy(wls.wl_registry);
 	}
 
-	if (wls.display) {
-		wl_display_disconnect(wls.display);
+	if (wls.wl_display) {
+		wl_display_disconnect(wls.wl_display);
 	}
 
 	// Destroy all drivers.
