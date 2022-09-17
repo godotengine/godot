@@ -17,8 +17,9 @@
 #extension GL_EXT_multiview : enable
 #endif
 
-#include "cluster_data_inc.glsl"
-#include "decal_data_inc.glsl"
+#include "../cluster_data_inc.glsl"
+#include "../decal_data_inc.glsl"
+#include "../scene_data_inc.glsl"
 
 #if !defined(MODE_RENDER_DEPTH) || defined(MODE_RENDER_MATERIAL) || defined(MODE_RENDER_SDF) || defined(MODE_RENDER_NORMAL_ROUGHNESS) || defined(MODE_RENDER_VOXEL_GI) || defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 #ifndef NORMAL_USED
@@ -29,8 +30,8 @@
 layout(push_constant, std430) uniform DrawCall {
 	uint instance_index;
 	uint uv_offset;
-	uint pad0;
-	uint pad1;
+	uint multimesh_motion_vectors_current_offset;
+	uint multimesh_motion_vectors_previous_offset;
 }
 draw_call;
 
@@ -38,7 +39,7 @@ draw_call;
 
 /* Set 0: Base Pass (never changes) */
 
-#include "light_data_inc.glsl"
+#include "../light_data_inc.glsl"
 
 #define SAMPLER_NEAREST_CLAMP 0
 #define SAMPLER_LINEAR_CLAMP 1
@@ -175,62 +176,27 @@ sdfgi;
 
 /* Set 1: Render Pass (changes per render pass) */
 
-struct SceneData {
-	mat4 projection_matrix;
-	mat4 inv_projection_matrix;
-	mat4 inv_view_matrix;
-	mat4 view_matrix;
+layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
+	SceneData data;
+	SceneData prev_data;
+}
+scene_data_block;
 
-	// only used for multiview
-	mat4 projection_matrix_view[MAX_VIEWS];
-	mat4 inv_projection_matrix_view[MAX_VIEWS];
-	vec4 eye_offset[MAX_VIEWS];
-
-	vec2 viewport_size;
-	vec2 screen_pixel_size;
-
+struct ImplementationData {
 	uint cluster_shift;
 	uint cluster_width;
 	uint cluster_type_size;
 	uint max_cluster_element_count_div_32;
 
-	// Use vec4s because std140 doesn't play nice with vec2s, z and w are wasted.
-	vec4 directional_penumbra_shadow_kernel[32];
-	vec4 directional_soft_shadow_kernel[32];
-	vec4 penumbra_shadow_kernel[32];
-	vec4 soft_shadow_kernel[32];
-
-	vec4 ambient_light_color_energy;
-
-	float ambient_color_sky_mix;
-	bool use_ambient_light;
-	bool use_ambient_cubemap;
-	bool use_reflection_cubemap;
-
-	mat3 radiance_inverse_xform;
-
-	vec2 shadow_atlas_pixel_size;
-	vec2 directional_shadow_pixel_size;
-
-	uint directional_light_count;
-	float dual_paraboloid_side;
-	float z_far;
-	float z_near;
-
 	uint ss_effects_flags;
 	float ssao_light_affect;
 	float ssao_ao_affect;
-	bool roughness_limiter_enabled;
-
-	float roughness_limiter_amount;
-	float roughness_limiter_limit;
-	float opaque_prepass_threshold;
-	uint roughness_limiter_pad;
+	uint pad1;
 
 	mat4 sdf_to_bounds;
 
 	ivec3 sdf_offset;
-	bool material_uv2_mode;
+	uint pad2;
 
 	ivec3 sdf_size;
 	bool gi_upscale_for_msaa;
@@ -239,31 +205,14 @@ struct SceneData {
 	float volumetric_fog_inv_length;
 	float volumetric_fog_detail_spread;
 	uint volumetric_fog_pad;
-
-	bool fog_enabled;
-	float fog_density;
-	float fog_height;
-	float fog_height_density;
-
-	vec3 fog_light_color;
-	float fog_sun_scatter;
-
-	float fog_aerial_perspective;
-
-	float time;
-	float reflection_multiplier; // one normally, zero when rendering reflections
-
-	bool pancake_shadows;
-	vec2 taa_jitter;
-	float emissive_exposure_normalization;
-	float IBL_exposure_normalization;
 };
 
-layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
-	SceneData data;
-	SceneData prev_data;
+layout(set = 1, binding = 1, std140) uniform ImplementationDataBlock {
+	ImplementationData data;
 }
-scene_data_block;
+implementation_data_block;
+
+#define implementation_data implementation_data_block.data
 
 struct InstanceData {
 	mat4 transform;
@@ -275,42 +224,42 @@ struct InstanceData {
 	vec4 lightmap_uv_scale;
 };
 
-layout(set = 1, binding = 1, std430) buffer restrict readonly InstanceDataBuffer {
+layout(set = 1, binding = 2, std430) buffer restrict readonly InstanceDataBuffer {
 	InstanceData data[];
 }
 instances;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 1, binding = 2) uniform textureCubeArray radiance_cubemap;
+layout(set = 1, binding = 3) uniform textureCubeArray radiance_cubemap;
 
 #else
 
-layout(set = 1, binding = 2) uniform textureCube radiance_cubemap;
+layout(set = 1, binding = 3) uniform textureCube radiance_cubemap;
 
 #endif
 
-layout(set = 1, binding = 3) uniform textureCubeArray reflection_atlas;
+layout(set = 1, binding = 4) uniform textureCubeArray reflection_atlas;
 
-layout(set = 1, binding = 4) uniform texture2D shadow_atlas;
+layout(set = 1, binding = 5) uniform texture2D shadow_atlas;
 
-layout(set = 1, binding = 5) uniform texture2D directional_shadow_atlas;
+layout(set = 1, binding = 6) uniform texture2D directional_shadow_atlas;
 
-layout(set = 1, binding = 6) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+layout(set = 1, binding = 7) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
 
-layout(set = 1, binding = 7) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
+layout(set = 1, binding = 8) uniform texture3D voxel_gi_textures[MAX_VOXEL_GI_INSTANCES];
 
-layout(set = 1, binding = 8, std430) buffer restrict readonly ClusterBuffer {
+layout(set = 1, binding = 9, std430) buffer restrict readonly ClusterBuffer {
 	uint data[];
 }
 cluster_buffer;
 
 #ifdef MODE_RENDER_SDF
 
-layout(r16ui, set = 1, binding = 9) uniform restrict writeonly uimage3D albedo_volume_grid;
-layout(r32ui, set = 1, binding = 10) uniform restrict writeonly uimage3D emission_grid;
-layout(r32ui, set = 1, binding = 11) uniform restrict writeonly uimage3D emission_aniso_grid;
-layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
+layout(r16ui, set = 1, binding = 10) uniform restrict writeonly uimage3D albedo_volume_grid;
+layout(r32ui, set = 1, binding = 11) uniform restrict writeonly uimage3D emission_grid;
+layout(r32ui, set = 1, binding = 12) uniform restrict writeonly uimage3D emission_aniso_grid;
+layout(r32ui, set = 1, binding = 13) uniform restrict uimage3D geom_facing_grid;
 
 //still need to be present for shaders that use it, so remap them to something
 #define depth_buffer shadow_atlas
@@ -319,21 +268,21 @@ layout(r32ui, set = 1, binding = 12) uniform restrict uimage3D geom_facing_grid;
 
 #else
 
-layout(set = 1, binding = 9) uniform texture2D depth_buffer;
-layout(set = 1, binding = 10) uniform texture2D color_buffer;
+layout(set = 1, binding = 10) uniform texture2D depth_buffer;
+layout(set = 1, binding = 11) uniform texture2D color_buffer;
 
 #ifdef USE_MULTIVIEW
-layout(set = 1, binding = 11) uniform texture2DArray normal_roughness_buffer;
-layout(set = 1, binding = 13) uniform texture2DArray ambient_buffer;
-layout(set = 1, binding = 14) uniform texture2DArray reflection_buffer;
+layout(set = 1, binding = 12) uniform texture2DArray normal_roughness_buffer;
+layout(set = 1, binding = 14) uniform texture2DArray ambient_buffer;
+layout(set = 1, binding = 15) uniform texture2DArray reflection_buffer;
 #else // USE_MULTIVIEW
-layout(set = 1, binding = 11) uniform texture2D normal_roughness_buffer;
-layout(set = 1, binding = 13) uniform texture2D ambient_buffer;
-layout(set = 1, binding = 14) uniform texture2D reflection_buffer;
+layout(set = 1, binding = 12) uniform texture2D normal_roughness_buffer;
+layout(set = 1, binding = 14) uniform texture2D ambient_buffer;
+layout(set = 1, binding = 15) uniform texture2D reflection_buffer;
 #endif
-layout(set = 1, binding = 12) uniform texture2D ao_buffer;
-layout(set = 1, binding = 15) uniform texture2DArray sdfgi_lightprobe_texture;
-layout(set = 1, binding = 16) uniform texture3D sdfgi_occlusion_cascades;
+layout(set = 1, binding = 13) uniform texture2D ao_buffer;
+layout(set = 1, binding = 16) uniform texture2DArray sdfgi_lightprobe_texture;
+layout(set = 1, binding = 17) uniform texture3D sdfgi_occlusion_cascades;
 
 struct VoxelGIData {
 	mat4 xform; // 64 - 64
@@ -350,14 +299,14 @@ struct VoxelGIData {
 	float exposure_normalization; // 4 - 112
 };
 
-layout(set = 1, binding = 17, std140) uniform VoxelGIs {
+layout(set = 1, binding = 18, std140) uniform VoxelGIs {
 	VoxelGIData data[MAX_VOXEL_GI_INSTANCES];
 }
 voxel_gi_instances;
 
-layout(set = 1, binding = 18) uniform texture3D volumetric_fog_texture;
+layout(set = 1, binding = 19) uniform texture3D volumetric_fog_texture;
 
-layout(set = 1, binding = 19) uniform texture2D ssil_buffer;
+layout(set = 1, binding = 20) uniform texture2D ssil_buffer;
 
 #endif
 

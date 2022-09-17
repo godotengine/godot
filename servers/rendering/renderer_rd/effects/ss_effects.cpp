@@ -443,6 +443,11 @@ void SSEffects::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 
 	RD::get_singleton()->draw_command_begin_label("Downsample Depth");
 	if (p_invalidate_uniform_set || use_full_mips != ss_effects.used_full_mips_last_frame || use_half_size != ss_effects.used_half_size_last_frame || use_mips != ss_effects.used_mips_last_frame) {
+		if (ss_effects.downsample_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(ss_effects.downsample_uniform_set)) {
+			RD::get_singleton()->free(ss_effects.downsample_uniform_set);
+			ss_effects.downsample_uniform_set = RID();
+		}
+
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
@@ -516,6 +521,7 @@ void SSEffects::downsample_depth(RID p_depth_buffer, const Vector<RID> &p_depth_
 
 	ss_effects.used_full_mips_last_frame = use_full_mips;
 	ss_effects.used_half_size_last_frame = use_half_size;
+	ss_effects.used_mips_last_frame = use_mips;
 }
 
 /* SSIL */
@@ -1484,7 +1490,7 @@ void SSEffects::ssr_allocate_buffers(SSRRenderBuffers &p_ssr_buffers, const Rend
 	}
 }
 
-void SSEffects::screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, const RID *p_metallic_slices, const Color &p_metallic_mask, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets) {
+void SSEffects::screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const RID *p_diffuse_slices, const RID *p_normal_roughness_slices, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, const RID *p_metallic_slices, const RID *p_depth_slices, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const uint32_t p_view_count, const Projection *p_projections, const Vector3 *p_eye_offsets) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -1579,10 +1585,6 @@ void SSEffects::screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const R
 			push_constant.proj_info[1] = -2.0f / (p_screen_size.height * p_projections[v].matrix[1][1]);
 			push_constant.proj_info[2] = (1.0f - p_projections[v].matrix[0][2]) / p_projections[v].matrix[0][0];
 			push_constant.proj_info[3] = (1.0f + p_projections[v].matrix[1][2]) / p_projections[v].matrix[1][1];
-			push_constant.metallic_mask[0] = CLAMP(p_metallic_mask.r * 255.0, 0, 255);
-			push_constant.metallic_mask[1] = CLAMP(p_metallic_mask.g * 255.0, 0, 255);
-			push_constant.metallic_mask[2] = CLAMP(p_metallic_mask.b * 255.0, 0, 255);
-			push_constant.metallic_mask[3] = CLAMP(p_metallic_mask.a * 255.0, 0, 255);
 
 			ScreenSpaceReflectionMode mode = (p_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) ? SCREEN_SPACE_REFLECTION_ROUGH : SCREEN_SPACE_REFLECTION_NORMAL;
 			RID shader = ssr.shader.version_get_shader(ssr.shader_version, mode);

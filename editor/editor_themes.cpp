@@ -191,25 +191,6 @@ static Ref<StyleBoxLine> make_line_stylebox(Color p_color, int p_thickness = 1, 
 	return style;
 }
 
-static Ref<Texture2D> flip_icon(Ref<Texture2D> p_texture, bool p_flip_y = false, bool p_flip_x = false) {
-	if (!p_flip_y && !p_flip_x) {
-		return p_texture;
-	}
-
-	Ref<Image> img = p_texture->get_image();
-	ERR_FAIL_NULL_V(img, Ref<Texture2D>());
-	img = img->duplicate();
-
-	if (p_flip_y) {
-		img->flip_y();
-	}
-	if (p_flip_x) {
-		img->flip_x();
-	}
-
-	return ImageTexture::create_from_image(img);
-}
-
 #ifdef MODULE_SVG_ENABLED
 // See also `generate_icon()` in `scene/resources/default_theme.cpp`.
 static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const HashMap<Color, Color> &p_convert_colors = HashMap<Color, Color>()) {
@@ -1567,14 +1548,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("camera", "GraphEditMinimap", style_minimap_camera);
 	theme->set_stylebox("node", "GraphEditMinimap", style_minimap_node);
 
-	Ref<Texture2D> minimap_resizer_icon = theme->get_icon(SNAME("GuiResizer"), SNAME("EditorIcons"));
 	Color minimap_resizer_color;
 	if (dark_theme) {
 		minimap_resizer_color = Color(1, 1, 1, 0.65);
 	} else {
 		minimap_resizer_color = Color(0, 0, 0, 0.65);
 	}
-	theme->set_icon("resizer", "GraphEditMinimap", flip_icon(minimap_resizer_icon, true, true));
+	theme->set_icon("resizer", "GraphEditMinimap", theme->get_icon(SNAME("GuiResizerTopLeft"), SNAME("EditorIcons")));
 	theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 
 	// GraphNode

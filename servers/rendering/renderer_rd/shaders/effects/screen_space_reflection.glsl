@@ -30,12 +30,7 @@ layout(push_constant, std430) uniform Params {
 	bool orthogonal;
 	float filter_mipmap_levels;
 	bool use_half_res;
-	uint metallic_mask;
-
 	uint view_index;
-	uint pad1;
-	uint pad2;
-	uint pad3;
 }
 params;
 
@@ -167,7 +162,7 @@ void main() {
 
 		if (depth > z_to) {
 			// if depth was surpassed
-			if (depth <= max(z_to, z_from) + params.depth_tolerance && -depth < params.camera_z_far) {
+			if (depth <= max(z_to, z_from) + params.depth_tolerance && -depth < params.camera_z_far * 0.95) {
 				// check the depth tolerance and far clip
 				// check that normal is valid
 				found = true;
@@ -231,18 +226,20 @@ void main() {
 			}
 		}
 
-		// Isn't this going to be overwritten after our endif?
-		final_color = imageLoad(source_diffuse, ivec2((final_pos - 0.5) * pixel_size));
-
 		imageStore(blur_radius_image, ssC, vec4(blur_radius / 255.0)); //stored in r8
 
 #endif // MODE_ROUGH
 
 		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend);
 
-		//change blend by metallic
-		vec4 metallic_mask = unpackUnorm4x8(params.metallic_mask);
-		final_color.a *= dot(metallic_mask, texelFetch(source_metallic, ssC << 1, 0));
+		// Schlick term.
+		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;
+		float f0 = mix(0.04, 1.0, metallic); // Assume a "specular" amount of 0.5
+		normal.y = -normal.y;
+		float m = clamp(1.0 - dot(normalize(normal), -view_dir), 0.0, 1.0);
+		float m2 = m * m;
+		m = m2 * m2 * m; // pow(m,5)
+		final_color.a *= f0 + (1.0 - f0) * m; // Fresnel Schlick term.
 
 		imageStore(ssr_image, ssC, final_color);
 

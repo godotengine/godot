@@ -282,6 +282,8 @@ private:
 	bool cache_valid = false;
 	void _node_removed(Node *p_node);
 
+	void _setup_animation_player();
+	void _animation_player_changed();
 	void _clear_caches();
 	bool _update_caches(AnimationPlayer *player);
 	void _process_graph(double p_delta);

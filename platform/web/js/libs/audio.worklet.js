@@ -133,6 +133,8 @@ class GodotProcessor extends AudioWorkletProcessor {
 			this.running = false;
 			this.output = null;
 			this.input = null;
+			this.lock = null;
+			this.notifier = null;
 		} else if (p_cmd === 'start_nothreads') {
 			this.output = new RingBuffer(p_data[0], p_data[0].length, false);
 		} else if (p_cmd === 'chunk') {

@@ -189,7 +189,7 @@ void RendererCanvasCull::_attach_canvas_item_for_draw(RendererCanvasCull::Item *
 			RenderingServerDefault::redraw_request();
 		}
 
-		if (ci->commands != nullptr) {
+		if (ci->commands != nullptr || ci->copy_back_buffer) {
 			ci->final_transform = xform;
 			ci->final_modulate = modulate * ci->self_modulate;
 			ci->global_rect_cache = global_rect;

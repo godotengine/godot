@@ -186,7 +186,7 @@ void EditorResourcePicker::_update_menu_items() {
 	// Add options for changing existing value of the resource.
 	if (edited_resource.is_valid()) {
 		// Determine if the edited resource is part of another scene (foreign) which was imported
-		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource);
+		bool is_edited_resource_foreign_import = EditorNode::get_singleton()->is_resource_read_only(edited_resource, true);
 
 		// If the resource is determined to be foreign and imported, change the menu entry's description to 'inspect' rather than 'edit'
 		// since will only be able to view its properties in read-only mode.

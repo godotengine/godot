@@ -847,6 +847,11 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	return true;
 }
 
+void AnimationTree::_animation_player_changed() {
+	emit_signal(SNAME("animation_player_changed"));
+	_clear_caches();
+}
+
 void AnimationTree::_clear_caches() {
 	for (KeyValue<NodePath, TrackCache *> &K : track_cache) {
 		memdelete(K.value);
@@ -1378,8 +1383,13 @@ void AnimationTree::_process_graph(double p_delta) {
 								}
 								t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
 							} else {
-								Variant::sub(value, t->init_value, value);
-								Variant::blend(t->value, value, blend, t->value);
+								if (t->init_value.get_type() == Variant::BOOL) {
+									value = Animation::subtract_variant(value.operator real_t(), t->init_value.operator real_t());
+									t->value = Animation::blend_variant(t->value.operator real_t(), value.operator real_t(), blend);
+								} else {
+									value = Animation::subtract_variant(value, t->init_value);
+									t->value = Animation::blend_variant(t->value, value, blend);
+								}
 							}
 						} else {
 							if (blend < CMP_EPSILON) {
@@ -1698,7 +1708,11 @@ void AnimationTree::_process_graph(double p_delta) {
 				case Animation::TYPE_VALUE: {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
-					t->object->set_indexed(t->subpath, t->value);
+					if (t->init_value.get_type() == Variant::BOOL) {
+						t->object->set_indexed(t->subpath, t->value.operator real_t() >= 0.5);
+					} else {
+						t->object->set_indexed(t->subpath, t->value);
+					}
 
 				} break;
 				case Animation::TYPE_BEZIER: {
@@ -1738,6 +1752,7 @@ void AnimationTree::advance(real_t p_time) {
 void AnimationTree::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			_setup_animation_player();
 			if (last_animation_player.is_valid()) {
 				Object *player = ObjectDB::get_instance(last_animation_player);
 				if (player) {
@@ -1770,8 +1785,43 @@ void AnimationTree::_notification(int p_what) {
 	}
 }
 
+void AnimationTree::_setup_animation_player() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	AnimationPlayer *new_player = nullptr;
+	if (!animation_player.is_empty()) {
+		new_player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
+		if (new_player && !new_player->is_connected("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed))) {
+			new_player->connect("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed));
+		}
+	}
+
+	if (new_player) {
+		if (!last_animation_player.is_valid()) {
+			// Animation player set newly.
+			emit_signal(SNAME("animation_player_changed"));
+			return;
+		} else if (last_animation_player == new_player->get_instance_id()) {
+			// Animation player isn't changed.
+			return;
+		}
+	} else if (!last_animation_player.is_valid()) {
+		// Animation player is being empty.
+		return;
+	}
+
+	AnimationPlayer *old_player = Object::cast_to<AnimationPlayer>(ObjectDB::get_instance(last_animation_player));
+	if (old_player && old_player->is_connected("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed))) {
+		old_player->disconnect("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed));
+	}
+	emit_signal(SNAME("animation_player_changed"));
+}
+
 void AnimationTree::set_animation_player(const NodePath &p_player) {
 	animation_player = p_player;
+	_setup_animation_player();
 	update_configuration_warnings();
 }
 
@@ -2008,6 +2058,8 @@ void AnimationTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
+
+	ADD_SIGNAL(MethodInfo("animation_player_changed"));
 }
 
 AnimationTree::AnimationTree() {

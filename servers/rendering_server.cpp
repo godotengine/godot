@@ -1114,7 +1114,8 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 				for (int j = 0; j < p_vertex_len; j++) {
 					const uint32_t v = *(const uint32_t *)&r[j * vertex_elem_size + offsets[i]];
-					w[j] = Vector3((v & 0x3FF) / 1023.0, ((v >> 10) & 0x3FF) / 1023.0, ((v >> 20) & 0x3FF) / 1023.0) * Vector3(2, 2, 2) - Vector3(1, 1, 1);
+
+					w[j] = Vector3::octahedron_decode(Vector2((v & 0xFFFF) / 65535.0, ((v >> 16) & 0xFFFF) / 65535.0));
 				}
 
 				ret[i] = arr;
@@ -1129,11 +1130,12 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 				for (int j = 0; j < p_vertex_len; j++) {
 					const uint32_t v = *(const uint32_t *)&r[j * vertex_elem_size + offsets[i]];
-
-					w[j * 4 + 0] = ((v & 0x3FF) / 1023.0) * 2.0 - 1.0;
-					w[j * 4 + 1] = (((v >> 10) & 0x3FF) / 1023.0) * 2.0 - 1.0;
-					w[j * 4 + 2] = (((v >> 20) & 0x3FF) / 1023.0) * 2.0 - 1.0;
-					w[j * 4 + 3] = ((v >> 30) / 3.0) * 2.0 - 1.0;
+					float tangent_sign;
+					Vector3 res = Vector3::octahedron_tangent_decode(Vector2((v & 0xFFFF) / 65535.0, ((v >> 16) & 0xFFFF) / 65535.0), &tangent_sign);
+					w[j * 4 + 0] = res.x;
+					w[j * 4 + 1] = res.y;
+					w[j * 4 + 2] = res.z;
+					w[j * 4 + 3] = tangent_sign;
 				}
 
 				ret[i] = arr;

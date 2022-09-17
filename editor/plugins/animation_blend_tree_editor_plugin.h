@@ -71,8 +71,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	int to_slot = -1;
 	String from_node = "";
 
-	void _update_graph();
-
 	struct AddOption {
 		String name;
 		String type;
@@ -95,6 +93,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _node_dragged(const Vector2 &p_from, const Vector2 &p_to, const StringName &p_which);
 	void _node_renamed(const String &p_text, Ref<AnimationNode> p_node);
 	void _node_renamed_focus_out(Node *le, Ref<AnimationNode> p_node);
+	void _node_changed(const StringName &p_node_name);
 
 	bool updating;
 
@@ -149,6 +148,8 @@ public:
 
 	virtual bool can_edit(const Ref<AnimationNode> &p_node) override;
 	virtual void edit(const Ref<AnimationNode> &p_node) override;
+
+	void update_graph();
 
 	AnimationNodeBlendTreeEditor();
 };

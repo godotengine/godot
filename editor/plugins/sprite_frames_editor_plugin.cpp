@@ -984,11 +984,17 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 }
 
 void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
-	if (frames == p_frames) {
+	bool new_read_only_state = false;
+	if (p_frames) {
+		new_read_only_state = EditorNode::get_singleton()->is_resource_read_only(p_frames);
+	}
+
+	if (frames == p_frames && new_read_only_state == read_only) {
 		return;
 	}
 
 	frames = p_frames;
+	read_only = new_read_only_state;
 
 	if (p_frames) {
 		if (!p_frames->has_animation(edited_anim)) {
@@ -1009,6 +1015,20 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	} else {
 		hide();
 	}
+
+	new_anim->set_disabled(read_only);
+	remove_anim->set_disabled(read_only);
+	anim_speed->set_editable(!read_only);
+	anim_loop->set_disabled(read_only);
+	load->set_disabled(read_only);
+	load_sheet->set_disabled(read_only);
+	copy->set_disabled(read_only);
+	paste->set_disabled(read_only);
+	empty->set_disabled(read_only);
+	empty2->set_disabled(read_only);
+	move_up->set_disabled(read_only);
+	move_down->set_disabled(read_only);
+	_delete->set_disabled(read_only);
 }
 
 void SpriteFramesEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
@@ -1016,6 +1036,10 @@ void SpriteFramesEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
 }
 
 Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (read_only) {
+		return false;
+	}
+
 	if (!frames->has_animation(edited_anim)) {
 		return false;
 	}
@@ -1038,6 +1062,10 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 }
 
 bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	if (read_only) {
+		return false;
+	}
+
 	Dictionary d = p_data;
 
 	if (!d.has("type")) {
@@ -1169,6 +1197,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	remove_anim->set_flat(true);
 	remove_anim->set_tooltip_text(TTR("Remove Animation"));
 	hbc_animlist->add_child(remove_anim);
+	remove_anim->set_disabled(true);
 	remove_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
 	anim_search_box = memnew(LineEdit);

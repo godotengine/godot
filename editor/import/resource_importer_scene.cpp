@@ -1891,6 +1891,39 @@ void ResourceImporterScene::_replace_owner(Node *p_node, Node *p_scene, Node *p_
 	}
 }
 
+Array ResourceImporterScene::_get_skinned_pose_transforms(ImporterMeshInstance3D *p_src_mesh_node) {
+	Array skin_pose_transform_array;
+
+	const Ref<Skin> skin = p_src_mesh_node->get_skin();
+	if (skin.is_valid()) {
+		NodePath skeleton_path = p_src_mesh_node->get_skeleton_path();
+		const Node *node = p_src_mesh_node->get_node_or_null(skeleton_path);
+		const Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
+		if (skeleton) {
+			int bind_count = skin->get_bind_count();
+
+			for (int i = 0; i < bind_count; i++) {
+				Transform3D bind_pose = skin->get_bind_pose(i);
+				String bind_name = skin->get_bind_name(i);
+
+				int bone_idx = bind_name.is_empty() ? skin->get_bind_bone(i) : skeleton->find_bone(bind_name);
+				ERR_FAIL_COND_V(bone_idx >= skeleton->get_bone_count(), Array());
+
+				Transform3D bp_global_rest;
+				if (bone_idx >= 0) {
+					bp_global_rest = skeleton->get_bone_global_pose(bone_idx);
+				} else {
+					bp_global_rest = skeleton->get_bone_global_pose(i);
+				}
+
+				skin_pose_transform_array.push_back(bp_global_rest * bind_pose);
+			}
+		}
+	}
+
+	return skin_pose_transform_array;
+}
+
 void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
 	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
 	if (src_mesh_node) {
@@ -2007,7 +2040,8 @@ void ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_m
 				}
 
 				if (generate_lods) {
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle);
+					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
+					src_mesh_node->get_mesh()->generate_lods(merge_angle, split_angle, skin_pose_transform_array);
 				}
 
 				if (create_shadow_meshes) {

@@ -302,6 +302,7 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB, 1000118003) \
     _(XR_TYPE_GEOMETRY_INSTANCE_CREATE_INFO_FB, 1000118004) \
     _(XR_TYPE_GEOMETRY_INSTANCE_TRANSFORM_FB, 1000118005) \
+    _(XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES2_FB, 1000118006) \
     _(XR_TYPE_PASSTHROUGH_STYLE_FB, 1000118020) \
     _(XR_TYPE_PASSTHROUGH_COLOR_MAP_MONO_TO_RGBA_FB, 1000118021) \
     _(XR_TYPE_PASSTHROUGH_COLOR_MAP_MONO_TO_MONO_FB, 1000118022) \
@@ -340,6 +341,9 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_SWAPCHAIN_STATE_SAMPLER_VULKAN_FB, 1000163000) \
     _(XR_TYPE_COMPOSITION_LAYER_SPACE_WARP_INFO_FB, 1000171000) \
     _(XR_TYPE_SYSTEM_SPACE_WARP_PROPERTIES_FB, 1000171001) \
+    _(XR_TYPE_SEMANTIC_LABELS_FB, 1000175000) \
+    _(XR_TYPE_ROOM_LAYOUT_FB, 1000175001) \
+    _(XR_TYPE_BOUNDARY_2D_FB, 1000175002) \
     _(XR_TYPE_DIGITAL_LENS_CONTROL_ALMALENCE, 1000196000) \
     _(XR_TYPE_SPACE_CONTAINER_FB, 1000199000) \
     _(XR_TYPE_PASSTHROUGH_KEYBOARD_HANDS_INTENSITY_FB, 1000203002) \
@@ -660,6 +664,10 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_ENUM_XrSpaceComponentTypeFB(_) \
     _(XR_SPACE_COMPONENT_TYPE_LOCATABLE_FB, 0) \
     _(XR_SPACE_COMPONENT_TYPE_STORABLE_FB, 1) \
+    _(XR_SPACE_COMPONENT_TYPE_BOUNDED_2D_FB, 3) \
+    _(XR_SPACE_COMPONENT_TYPE_BOUNDED_3D_FB, 4) \
+    _(XR_SPACE_COMPONENT_TYPE_SEMANTIC_LABELS_FB, 5) \
+    _(XR_SPACE_COMPONENT_TYPE_ROOM_LAYOUT_FB, 6) \
     _(XR_SPACE_COMPONENT_TYPE_SPACE_CONTAINER_FB, 7) \
     _(XR_SPACE_COMPONENT_TYPE_MAX_ENUM_FB, 0x7FFFFFFF)
 
@@ -847,8 +855,14 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_BITS_XrTriangleMeshFlagsFB(_) \
     _(XR_TRIANGLE_MESH_MUTABLE_BIT_FB, 0x00000001) \
 
+#define XR_LIST_BITS_XrPassthroughCapabilityFlagsFB(_) \
+    _(XR_PASSTHROUGH_CAPABILITY_BIT_FB, 0x00000001) \
+    _(XR_PASSTHROUGH_CAPABILITY_COLOR_BIT_FB, 0x00000002) \
+    _(XR_PASSTHROUGH_CAPABILITY_LAYER_DEPTH_BIT_FB, 0x00000004) \
+
 #define XR_LIST_BITS_XrPassthroughFlagsFB(_) \
     _(XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB, 0x00000001) \
+    _(XR_PASSTHROUGH_LAYER_DEPTH_BIT_FB, 0x00000002) \
 
 #define XR_LIST_BITS_XrPassthroughStateChangedFlagsFB(_) \
     _(XR_PASSTHROUGH_STATE_CHANGED_REINIT_REQUIRED_BIT_FB, 0x00000001) \
@@ -2288,6 +2302,11 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(supportsPassthrough) \
 
+#define XR_LIST_STRUCT_XrSystemPassthroughProperties2FB(_) \
+    _(type) \
+    _(next) \
+    _(capabilities) \
+
 #define XR_LIST_STRUCT_XrPassthroughCreateInfoFB(_) \
     _(type) \
     _(next) \
@@ -2589,6 +2608,43 @@ XR_ENUM_STR(XrResult);
     _(recommendedMotionVectorImageRectWidth) \
     _(recommendedMotionVectorImageRectHeight) \
 
+#define XR_LIST_STRUCT_XrExtent3DfFB(_) \
+    _(width) \
+    _(height) \
+    _(depth) \
+
+#define XR_LIST_STRUCT_XrOffset3DfFB(_) \
+    _(x) \
+    _(y) \
+    _(z) \
+
+#define XR_LIST_STRUCT_XrRect3DfFB(_) \
+    _(offset) \
+    _(extent) \
+
+#define XR_LIST_STRUCT_XrSemanticLabelsFB(_) \
+    _(type) \
+    _(next) \
+    _(bufferCapacityInput) \
+    _(bufferCountOutput) \
+    _(buffer) \
+
+#define XR_LIST_STRUCT_XrRoomLayoutFB(_) \
+    _(type) \
+    _(next) \
+    _(floorUuid) \
+    _(ceilingUuid) \
+    _(wallUuidCapacityInput) \
+    _(wallUuidCountOutput) \
+    _(wallUuids) \
+
+#define XR_LIST_STRUCT_XrBoundary2DFB(_) \
+    _(type) \
+    _(next) \
+    _(vertexCapacityInput) \
+    _(vertexCountOutput) \
+    _(vertices) \
+
 #define XR_LIST_STRUCT_XrDigitalLensControlALMALENCE(_) \
     _(type) \
     _(next) \
@@ -2785,6 +2841,7 @@ XR_ENUM_STR(XrResult);
     _(XrKeyboardTrackingQueryFB, XR_TYPE_KEYBOARD_TRACKING_QUERY_FB) \
     _(XrTriangleMeshCreateInfoFB, XR_TYPE_TRIANGLE_MESH_CREATE_INFO_FB) \
     _(XrSystemPassthroughPropertiesFB, XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES_FB) \
+    _(XrSystemPassthroughProperties2FB, XR_TYPE_SYSTEM_PASSTHROUGH_PROPERTIES2_FB) \
     _(XrPassthroughCreateInfoFB, XR_TYPE_PASSTHROUGH_CREATE_INFO_FB) \
     _(XrPassthroughLayerCreateInfoFB, XR_TYPE_PASSTHROUGH_LAYER_CREATE_INFO_FB) \
     _(XrCompositionLayerPassthroughFB, XR_TYPE_COMPOSITION_LAYER_PASSTHROUGH_FB) \
@@ -2823,6 +2880,9 @@ XR_ENUM_STR(XrResult);
     _(XrEventDataSpaceEraseCompleteFB, XR_TYPE_EVENT_DATA_SPACE_ERASE_COMPLETE_FB) \
     _(XrCompositionLayerSpaceWarpInfoFB, XR_TYPE_COMPOSITION_LAYER_SPACE_WARP_INFO_FB) \
     _(XrSystemSpaceWarpPropertiesFB, XR_TYPE_SYSTEM_SPACE_WARP_PROPERTIES_FB) \
+    _(XrSemanticLabelsFB, XR_TYPE_SEMANTIC_LABELS_FB) \
+    _(XrRoomLayoutFB, XR_TYPE_ROOM_LAYOUT_FB) \
+    _(XrBoundary2DFB, XR_TYPE_BOUNDARY_2D_FB) \
     _(XrDigitalLensControlALMALENCE, XR_TYPE_DIGITAL_LENS_CONTROL_ALMALENCE) \
     _(XrSpaceContainerFB, XR_TYPE_SPACE_CONTAINER_FB) \
     _(XrPassthroughKeyboardHandsIntensityFB, XR_TYPE_PASSTHROUGH_KEYBOARD_HANDS_INTENSITY_FB) \
@@ -3071,6 +3131,7 @@ XR_ENUM_STR(XrResult);
     _(XR_VARJO_environment_depth_estimation, 124) \
     _(XR_VARJO_marker_tracking, 125) \
     _(XR_VARJO_view_offset, 126) \
+    _(XR_ML_ml2_controller_interaction, 135) \
     _(XR_MSFT_spatial_anchor_persistence, 143) \
     _(XR_ULTRALEAP_hand_tracking_forearm, 150) \
     _(XR_FB_spatial_entity_query, 157) \
@@ -3082,6 +3143,8 @@ XR_ENUM_STR(XrResult);
     _(XR_FB_swapchain_update_state_vulkan, 164) \
     _(XR_KHR_swapchain_usage_input_attachment_bit, 166) \
     _(XR_FB_space_warp, 172) \
+    _(XR_FB_scene, 176) \
+    _(XR_EXT_palm_pose, 177) \
     _(XR_ALMALENCE_digital_lens_control, 197) \
     _(XR_FB_spatial_entity_container, 200) \
     _(XR_FB_passthrough_keyboard_hands, 204) \

@@ -315,6 +315,8 @@ def main():
 
     output_dir = os.path.abspath(args.godot_output_dir)
 
+    push_nupkgs_local = os.path.abspath(args.push_nupkgs_local) if args.push_nupkgs_local else None
+
     msbuild_tool = find_any_msbuild_tool(args.mono_prefix)
 
     if msbuild_tool is None:
@@ -327,7 +329,7 @@ def main():
         output_dir,
         args.godot_platform,
         args.dev_debug,
-        args.push_nupkgs_local,
+        push_nupkgs_local,
         args.float,
     )
     sys.exit(exit_code)

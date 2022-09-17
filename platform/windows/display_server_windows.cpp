@@ -104,7 +104,10 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (windows.has(MAIN_WINDOW_ID) && (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
 		// Mouse is grabbed (captured or confined).
 
-		WindowID window_id = windows.has(last_focused_window) ? last_focused_window : MAIN_WINDOW_ID;
+		WindowID window_id = _get_focused_window_or_popup();
+		if (!windows.has(window_id)) {
+			window_id = MAIN_WINDOW_ID;
+		}
 
 		WindowData &wd = windows[window_id];
 
@@ -119,11 +122,15 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 			ClientToScreen(wd.hWnd, &pos);
 			SetCursorPos(pos.x, pos.y);
 			SetCapture(wd.hWnd);
+
+			_register_raw_input_devices(window_id);
 		}
 	} else {
 		// Mouse is free to move around (not captured or confined).
 		ReleaseCapture();
 		ClipCursor(nullptr);
+
+		_register_raw_input_devices(INVALID_WINDOW_ID);
 	}
 
 	if (p_mode == MOUSE_MODE_HIDDEN || p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
@@ -136,6 +143,37 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
 		cursor_set_shape(c);
+	}
+}
+
+DisplayServer::WindowID DisplayServerWindows::_get_focused_window_or_popup() const {
+	const List<WindowID>::Element *E = popup_list.back();
+	if (E) {
+		return E->get();
+	}
+
+	return last_focused_window;
+}
+
+void DisplayServerWindows::_register_raw_input_devices(WindowID p_target_window) {
+	use_raw_input = true;
+
+	RAWINPUTDEVICE rid[1] = {};
+	rid[0].usUsagePage = 0x01;
+	rid[0].usUsage = 0x02;
+	rid[0].dwFlags = 0;
+
+	if (p_target_window != INVALID_WINDOW_ID && windows.has(p_target_window)) {
+		// Follow the defined window
+		rid[0].hwndTarget = windows[p_target_window].hWnd;
+	} else {
+		// Follow the keyboard focus
+		rid[0].hwndTarget = 0;
+	}
+
+	if (RegisterRawInputDevices(rid, 1, sizeof(rid[0])) == FALSE) {
+		// Registration failed.
+		use_raw_input = false;
 	}
 }
 
@@ -194,7 +232,9 @@ DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
 
-	if (!windows.has(last_focused_window)) {
+	WindowID window_id = _get_focused_window_or_popup();
+
+	if (!windows.has(window_id)) {
 		return; // No focused window?
 	}
 
@@ -205,7 +245,7 @@ void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 		POINT p;
 		p.x = p_position.x;
 		p.y = p_position.y;
-		ClientToScreen(windows[last_focused_window].hWnd, &p);
+		ClientToScreen(windows[window_id].hWnd, &p);
 
 		SetCursorPos(p.x, p.y);
 	}
@@ -1496,7 +1536,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 		IDC_HELP
 	};
 
-	if (cursors[p_shape] != nullptr) {
+	if (cursors_cache.has(p_shape)) {
 		SetCursor(cursors[p_shape]);
 	} else {
 		SetCursor(LoadCursor(hInstance, win_cursors[p_shape]));
@@ -1507,55 +1547,6 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 
 DisplayServer::CursorShape DisplayServerWindows::cursor_get_shape() const {
 	return cursor_shape;
-}
-
-void DisplayServerWindows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap) {
-	// Get the system display DC.
-	HDC hDC = GetDC(nullptr);
-
-	// Create helper DC.
-	HDC hMainDC = CreateCompatibleDC(hDC);
-	HDC hAndMaskDC = CreateCompatibleDC(hDC);
-	HDC hXorMaskDC = CreateCompatibleDC(hDC);
-
-	// Get the dimensions of the source bitmap.
-	BITMAP bm;
-	GetObject(hSourceBitmap, sizeof(BITMAP), &bm);
-
-	// Create the mask bitmaps.
-	hAndMaskBitmap = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight); // Color.
-	hXorMaskBitmap = CreateCompatibleBitmap(hDC, bm.bmWidth, bm.bmHeight); // Color.
-
-	// Release the system display DC.
-	ReleaseDC(nullptr, hDC);
-
-	// Select the bitmaps to helper DC.
-	HBITMAP hOldMainBitmap = (HBITMAP)SelectObject(hMainDC, hSourceBitmap);
-	HBITMAP hOldAndMaskBitmap = (HBITMAP)SelectObject(hAndMaskDC, hAndMaskBitmap);
-	HBITMAP hOldXorMaskBitmap = (HBITMAP)SelectObject(hXorMaskDC, hXorMaskBitmap);
-
-	// Assign the monochrome AND mask bitmap pixels so that the pixels of the source bitmap
-	// with 'clrTransparent' will be white pixels of the monochrome bitmap.
-	SetBkColor(hMainDC, clrTransparent);
-	BitBlt(hAndMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0, 0, SRCCOPY);
-
-	// Assign the color XOR mask bitmap pixels so that the pixels of the source bitmap
-	// with 'clrTransparent' will be black and rest the pixels same as corresponding
-	// pixels of the source bitmap.
-	SetBkColor(hXorMaskDC, RGB(0, 0, 0));
-	SetTextColor(hXorMaskDC, RGB(255, 255, 255));
-	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hAndMaskDC, 0, 0, SRCCOPY);
-	BitBlt(hXorMaskDC, 0, 0, bm.bmWidth, bm.bmHeight, hMainDC, 0, 0, SRCAND);
-
-	// Deselect bitmaps from the helper DC.
-	SelectObject(hMainDC, hOldMainBitmap);
-	SelectObject(hAndMaskDC, hOldAndMaskBitmap);
-	SelectObject(hXorMaskDC, hOldXorMaskBitmap);
-
-	// Delete the helper DC.
-	DeleteDC(hXorMaskDC);
-	DeleteDC(hAndMaskDC);
-	DeleteDC(hMainDC);
 }
 
 void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
@@ -1610,8 +1601,26 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 		UINT image_size = texture_size.width * texture_size.height;
 
 		// Create the BITMAP with alpha channel.
-		COLORREF *buffer = (COLORREF *)memalloc(sizeof(COLORREF) * image_size);
+		COLORREF *buffer = nullptr;
 
+		BITMAPV5HEADER bi;
+		ZeroMemory(&bi, sizeof(bi));
+		bi.bV5Size = sizeof(bi);
+		bi.bV5Width = texture_size.width;
+		bi.bV5Height = -texture_size.height;
+		bi.bV5Planes = 1;
+		bi.bV5BitCount = 32;
+		bi.bV5Compression = BI_BITFIELDS;
+		bi.bV5RedMask = 0x00ff0000;
+		bi.bV5GreenMask = 0x0000ff00;
+		bi.bV5BlueMask = 0x000000ff;
+		bi.bV5AlphaMask = 0xff000000;
+
+		HDC dc = GetDC(nullptr);
+		HBITMAP bitmap = CreateDIBSection(dc, reinterpret_cast<BITMAPINFO *>(&bi), DIB_RGB_COLORS, reinterpret_cast<void **>(&buffer), nullptr, 0);
+		HBITMAP mask = CreateBitmap(texture_size.width, texture_size.height, 1, 1, nullptr);
+
+		bool fully_transparent = true;
 		for (UINT index = 0; index < image_size; index++) {
 			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
 			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
@@ -1620,39 +1629,28 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 				column_index = MIN(column_index, atlas_rect.size.width - 1);
 				row_index = MIN(row_index, atlas_rect.size.height - 1);
 			}
+			const Color &c = image->get_pixel(column_index, row_index);
+			fully_transparent = fully_transparent && (c.a == 0.f);
 
-			*(buffer + index) = image->get_pixel(column_index, row_index).to_argb32();
-		}
-
-		// Using 4 channels, so 4 * 8 bits.
-		HBITMAP bitmap = CreateBitmap(texture_size.width, texture_size.height, 1, 4 * 8, buffer);
-		COLORREF clrTransparent = -1;
-
-		// Create the AND and XOR masks for the bitmap.
-		HBITMAP hAndMask = nullptr;
-		HBITMAP hXorMask = nullptr;
-
-		GetMaskBitmaps(bitmap, clrTransparent, hAndMask, hXorMask);
-
-		if (nullptr == hAndMask || nullptr == hXorMask) {
-			memfree(buffer);
-			DeleteObject(bitmap);
-			return;
+			*(buffer + index) = c.to_argb32();
 		}
 
 		// Finally, create the icon.
-		ICONINFO iconinfo;
-		iconinfo.fIcon = FALSE;
-		iconinfo.xHotspot = p_hotspot.x;
-		iconinfo.yHotspot = p_hotspot.y;
-		iconinfo.hbmMask = hAndMask;
-		iconinfo.hbmColor = hXorMask;
-
 		if (cursors[p_shape]) {
 			DestroyIcon(cursors[p_shape]);
 		}
 
-		cursors[p_shape] = CreateIconIndirect(&iconinfo);
+		if (fully_transparent) {
+			cursors[p_shape] = nullptr;
+		} else {
+			ICONINFO iconinfo;
+			iconinfo.fIcon = FALSE;
+			iconinfo.xHotspot = p_hotspot.x;
+			iconinfo.yHotspot = p_hotspot.y;
+			iconinfo.hbmMask = mask;
+			iconinfo.hbmColor = bitmap;
+			cursors[p_shape] = CreateIconIndirect(&iconinfo);
+		}
 
 		Vector<Variant> params;
 		params.push_back(p_cursor);
@@ -1665,17 +1663,15 @@ void DisplayServerWindows::cursor_set_custom_image(const Ref<Resource> &p_cursor
 			}
 		}
 
-		DeleteObject(hAndMask);
-		DeleteObject(hXorMask);
-
-		memfree(buffer);
+		DeleteObject(mask);
 		DeleteObject(bitmap);
+		ReleaseDC(nullptr, dc);
 	} else {
 		// Reset to default system cursor.
 		if (cursors[p_shape]) {
 			DestroyIcon(cursors[p_shape]);
-			cursors[p_shape] = nullptr;
 		}
+		cursors[p_shape] = nullptr;
 
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;
@@ -2419,14 +2415,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_SETTINGCHANGE: {
 			if (lParam && CompareStringOrdinal(reinterpret_cast<LPCWCH>(lParam), -1, L"ImmersiveColorSet", -1, true) == CSTR_EQUAL) {
-				if (is_dark_mode_supported()) {
+				if (is_dark_mode_supported() && dark_title_available) {
 					BOOL value = is_dark_mode();
 					::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 				}
 			}
 		} break;
 		case WM_THEMECHANGED: {
-			if (is_dark_mode_supported()) {
+			if (is_dark_mode_supported() && dark_title_available) {
 				BOOL value = is_dark_mode();
 				::DwmSetWindowAttribute(windows[window_id].hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 			}
@@ -2527,7 +2523,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					old_y = coords.y;
 				}
 
-				if (windows[window_id].window_has_focus && mm->get_relative() != Vector2()) {
+				if ((windows[window_id].window_has_focus || windows[window_id].is_popup) && mm->get_relative() != Vector2()) {
 					Input::get_singleton()->parse_input_event(mm);
 				}
 			}
@@ -3541,7 +3537,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			wd.pre_fs_valid = true;
 		}
 
-		if (is_dark_mode_supported()) {
+		if (is_dark_mode_supported() && dark_title_available) {
 			BOOL value = is_dark_mode();
 			::DwmSetWindowAttribute(wd.hWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 		}
@@ -3633,6 +3629,7 @@ WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
 WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
 // UXTheme API.
+bool DisplayServerWindows::dark_title_available = false;
 bool DisplayServerWindows::ux_theme_available = false;
 IsDarkModeAllowedForAppPtr DisplayServerWindows::IsDarkModeAllowedForApp = nullptr;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
@@ -3725,7 +3722,21 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Enforce default keep screen on value.
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
-	// Load UXTheme
+	// Load Windows version info.
+	OSVERSIONINFOW os_ver;
+	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
+	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+
+	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+	if (nt_lib) {
+		RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(nt_lib, "RtlGetVersion");
+		if (RtlGetVersion) {
+			RtlGetVersion(&os_ver);
+		}
+		FreeLibrary(nt_lib);
+	}
+
+	// Load UXTheme.
 	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 	if (ux_theme_lib) {
 		IsDarkModeAllowedForApp = (IsDarkModeAllowedForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
@@ -3735,6 +3746,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
 		ux_theme_available = IsDarkModeAllowedForApp && ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+		if (os_ver.dwBuildNumber >= 22000) {
+			dark_title_available = true;
+		}
 	}
 
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
@@ -3799,19 +3813,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		return;
 	}
 
-	use_raw_input = true;
-
-	RAWINPUTDEVICE Rid[1];
-
-	Rid[0].usUsagePage = 0x01;
-	Rid[0].usUsage = 0x02;
-	Rid[0].dwFlags = 0;
-	Rid[0].hwndTarget = 0;
-
-	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
-		// Registration failed.
-		use_raw_input = false;
-	}
+	_register_raw_input_devices(INVALID_WINDOW_ID);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {

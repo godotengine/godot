@@ -1069,7 +1069,7 @@ String ShaderLanguage::get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint) {
 			result = "hint_range";
 		} break;
 		case ShaderNode::Uniform::HINT_SOURCE_COLOR: {
-			result = "hint_color";
+			result = "source_color";
 		} break;
 		case ShaderNode::Uniform::HINT_NORMAL: {
 			result = "hint_normal";
@@ -1171,6 +1171,10 @@ void ShaderLanguage::clear() {
 	last_type = IDENTIFIER_MAX;
 	current_uniform_group_name = "";
 	current_uniform_subgroup_name = "";
+	current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
+	current_uniform_filter = FILTER_DEFAULT;
+	current_uniform_repeat = REPEAT_DEFAULT;
+	current_uniform_instance_index_defined = false;
 
 	completion_type = COMPLETION_NONE;
 	completion_block = nullptr;
@@ -8617,6 +8621,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									}
 
 									custom_instance_index = tk.constant;
+									current_uniform_instance_index_defined = true;
 
 									if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
 										_set_error(vformat(RTR("Allowed instance uniform indices must be within [0..%d] range."), MAX_INSTANCE_UNIFORM_INDICES - 1));
@@ -8682,6 +8687,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									return ERR_PARSE_ERROR;
 								} else {
 									uniform.hint = new_hint;
+									current_uniform_hint = new_hint;
 								}
 							}
 
@@ -8695,6 +8701,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									return ERR_PARSE_ERROR;
 								} else {
 									uniform.filter = new_filter;
+									current_uniform_filter = new_filter;
 								}
 							}
 
@@ -8708,6 +8715,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									return ERR_PARSE_ERROR;
 								} else {
 									uniform.repeat = new_repeat;
+									current_uniform_repeat = new_repeat;
 								}
 							}
 
@@ -8775,6 +8783,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					keyword_completion_context = CF_GLOBAL_SPACE;
 #endif // DEBUG_ENABLED
 					completion_type = COMPLETION_NONE;
+
+					current_uniform_hint = ShaderNode::Uniform::HINT_NONE;
+					current_uniform_filter = FILTER_DEFAULT;
+					current_uniform_repeat = REPEAT_DEFAULT;
+					current_uniform_instance_index_defined = false;
 				} else { // varying
 					ShaderNode::Varying varying;
 					varying.type = type;
@@ -10311,28 +10324,33 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		} break;
 		case COMPLETION_HINT: {
 			if (completion_base == DataType::TYPE_VEC3 || completion_base == DataType::TYPE_VEC4) {
-				ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-				r_options->push_back(option);
-			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
-				ScriptLanguage::CodeCompletionOption option("hint_range", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
-
-				if (completion_base == DataType::TYPE_INT) {
-					option.insert_text = "hint_range(0, 100, 1)";
-				} else {
-					option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
+					ScriptLanguage::CodeCompletionOption option("source_color", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+					r_options->push_back(option);
 				}
+			} else if ((completion_base == DataType::TYPE_INT || completion_base == DataType::TYPE_FLOAT) && !completion_base_array) {
+				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
+					ScriptLanguage::CodeCompletionOption option("hint_range", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 
-				r_options->push_back(option);
+					if (completion_base == DataType::TYPE_INT) {
+						option.insert_text = "hint_range(0, 100, 1)";
+					} else {
+						option.insert_text = "hint_range(0.0, 1.0, 0.1)";
+					}
+
+					r_options->push_back(option);
+				}
 			} else if ((int(completion_base) > int(TYPE_MAT4) && int(completion_base) < int(TYPE_STRUCT)) && !completion_base_array) {
-				static Vector<String> options;
-
-				if (options.is_empty()) {
+				Vector<String> options;
+				if (current_uniform_filter == FILTER_DEFAULT) {
 					options.push_back("filter_linear");
 					options.push_back("filter_linear_mipmap");
 					options.push_back("filter_linear_mipmap_anisotropic");
 					options.push_back("filter_nearest");
 					options.push_back("filter_nearest_mipmap");
 					options.push_back("filter_nearest_mipmap_anisotropic");
+				}
+				if (current_uniform_hint == ShaderNode::Uniform::HINT_NONE) {
 					options.push_back("hint_anisotropy");
 					options.push_back("hint_default_black");
 					options.push_back("hint_default_white");
@@ -10348,6 +10366,8 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					options.push_back("hint_normal_roughness_texture");
 					options.push_back("hint_depth_texture");
 					options.push_back("source_color");
+				}
+				if (current_uniform_repeat == REPEAT_DEFAULT) {
 					options.push_back("repeat_enable");
 					options.push_back("repeat_disable");
 				}
@@ -10357,7 +10377,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					r_options->push_back(option);
 				}
 			}
-			if (!completion_base_array) {
+			if (!completion_base_array && !current_uniform_instance_index_defined) {
 				ScriptLanguage::CodeCompletionOption option("instance_index", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				option.insert_text = "instance_index(0)";
 				r_options->push_back(option);

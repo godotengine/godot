@@ -96,6 +96,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	TextServer::SubpixelPositioning font_subpixel_positioning = (TextServer::SubpixelPositioning)(int)EditorSettings::get_singleton()->get("interface/editor/font_subpixel_positioning");
 
 	TextServer::Hinting font_hinting;
+	TextServer::Hinting font_mono_hinting;
 	switch (font_hinting_setting) {
 		case 0:
 			// The "Auto" setting uses the setting that best matches the OS' font rendering:
@@ -104,18 +105,23 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 			// - Linux has configurable font hinting, but most distributions including Ubuntu default to "Light".
 #ifdef MACOS_ENABLED
 			font_hinting = TextServer::HINTING_NONE;
+			font_mono_hinting = TextServer::HINTING_NONE;
 #else
 			font_hinting = TextServer::HINTING_LIGHT;
+			font_mono_hinting = TextServer::HINTING_LIGHT;
 #endif
 			break;
 		case 1:
 			font_hinting = TextServer::HINTING_NONE;
+			font_mono_hinting = TextServer::HINTING_NONE;
 			break;
 		case 2:
 			font_hinting = TextServer::HINTING_LIGHT;
+			font_mono_hinting = TextServer::HINTING_LIGHT;
 			break;
 		default:
 			font_hinting = TextServer::HINTING_NORMAL;
+			font_mono_hinting = TextServer::HINTING_LIGHT;
 			break;
 	}
 
@@ -163,7 +169,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	default_font_bold->set_fallbacks(fallbacks_bold);
 	default_font_bold_msdf->set_fallbacks(fallbacks_bold);
 
-	Ref<FontFile> default_font_mono = load_internal_font(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning);
+	Ref<FontFile> default_font_mono = load_internal_font(_font_JetBrainsMono_Regular, _font_JetBrainsMono_Regular_size, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning);
 	default_font_mono->set_fallbacks(fallbacks);
 
 	// Init base font configs and load custom fonts.
@@ -260,7 +266,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<FontVariation> mono_fc;
 	mono_fc.instantiate();
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path_source, font_hinting, font_antialiasing, true, font_subpixel_positioning);
+		Ref<FontFile> custom_font = load_external_font(custom_font_path_source, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning);
 		{
 			TypedArray<Font> fallback_custom;
 			fallback_custom.push_back(default_font_mono);

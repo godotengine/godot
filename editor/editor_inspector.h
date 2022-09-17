@@ -151,7 +151,7 @@ public:
 	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
-	void update_revert_and_pin_status();
+	void update_editor_property_status();
 
 	virtual bool use_keying_next() const;
 
@@ -333,6 +333,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 	int begin_array_index = 0;
 	int end_array_index = 0;
 
+	bool read_only = false;
 	bool movable = true;
 	bool numbered = false;
 
@@ -404,7 +405,7 @@ public:
 	void setup_with_count_property(Object *p_object, String p_label, const StringName &p_count_property, const StringName &p_array_element_prefix, int p_page, const Color &p_bg_color, bool p_foldable, bool p_movable = true, bool p_numbered = false, int p_page_length = 5, const String &p_add_item_text = "", const String &p_swap_method = "");
 	VBoxContainer *get_vbox(int p_index);
 
-	EditorInspectorArray();
+	EditorInspectorArray(bool p_read_only);
 };
 
 class EditorPaginator : public HBoxContainer {

@@ -252,75 +252,6 @@ protected:
 	/* Scene state */
 
 	struct SceneState {
-		// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
-		struct UBO {
-			float projection_matrix[16];
-			float inv_projection_matrix[16];
-			float inv_view_matrix[16];
-			float view_matrix[16];
-
-			float projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
-			float inv_projection_matrix_view[RendererSceneRender::MAX_RENDER_VIEWS][16];
-			float eye_offset[RendererSceneRender::MAX_RENDER_VIEWS][4];
-
-			float viewport_size[2];
-			float screen_pixel_size[2];
-
-			float directional_penumbra_shadow_kernel[128]; //32 vec4s
-			float directional_soft_shadow_kernel[128];
-			float penumbra_shadow_kernel[128];
-			float soft_shadow_kernel[128];
-
-			float ambient_light_color_energy[4];
-
-			float ambient_color_sky_mix;
-			uint32_t use_ambient_light;
-			uint32_t use_ambient_cubemap;
-			uint32_t use_reflection_cubemap;
-
-			float radiance_inverse_xform[12];
-
-			float shadow_atlas_pixel_size[2];
-			float directional_shadow_pixel_size[2];
-
-			uint32_t directional_light_count;
-			float dual_paraboloid_side;
-			float z_far;
-			float z_near;
-
-			uint32_t ssao_enabled;
-			float ssao_light_affect;
-			float ssao_ao_affect;
-			uint32_t roughness_limiter_enabled;
-
-			float roughness_limiter_amount;
-			float roughness_limiter_limit;
-			float opaque_prepass_threshold;
-			uint32_t roughness_limiter_pad;
-
-			// Fog
-			uint32_t fog_enabled;
-			float fog_density;
-			float fog_height;
-			float fog_height_density;
-
-			float fog_light_color[3];
-			float fog_sun_scatter;
-
-			float fog_aerial_perspective;
-			uint32_t material_uv2_mode;
-
-			float time;
-			float reflection_multiplier;
-
-			uint32_t pancake_shadows;
-			float emissive_exposure_normalization; // Needed to normalize emissive when using physical units.
-			float IBL_exposure_normalization; // Adjusts for baked exposure.
-			uint32_t pad3;
-		};
-
-		UBO ubo;
-
 		LocalVector<RID> uniform_buffers;
 
 		// !BAS! We need to change lightmaps, we're not going to do this with a buffer but pushing the used lightmap in
@@ -442,13 +373,14 @@ protected:
 
 	// check which ones of these apply, probably all except GI and SDFGI
 	enum {
-		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 5,
-		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 6,
-		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 7,
-		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 8,
-		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 9,
-		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 10,
-		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 11,
+		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
+		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
+		INSTANCE_DATA_FLAG_USE_SDFGI = 1 << 6,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE = 1 << 7,
+		INSTANCE_DATA_FLAG_USE_LIGHTMAP = 1 << 8,
+		INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP = 1 << 9,
+		INSTANCE_DATA_FLAG_USE_VOXEL_GI = 1 << 10,
+		INSTANCE_DATA_FLAG_PARTICLES = 1 << 11,
 		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
 		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
 		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,

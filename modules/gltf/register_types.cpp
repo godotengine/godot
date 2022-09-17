@@ -142,6 +142,11 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GLOBAL_DEF_RST("filesystem/import/fbx/enabled", true);
 		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
 		GDREGISTER_CLASS(EditorSceneFormatImporterFBX);
+		// Can't (a priori) run external app on these platforms.
+		GLOBAL_DEF_RST("filesystem/import/blender/enabled.android", false);
+		GLOBAL_DEF_RST("filesystem/import/blender/enabled.web", false);
+		GLOBAL_DEF_RST("filesystem/import/fbx/enabled.android", false);
+		GLOBAL_DEF_RST("filesystem/import/fbx/enabled.web", false);
 
 		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);

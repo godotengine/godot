@@ -17,7 +17,7 @@
 		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
 			The bias to use when computing shadows. Increasing [member bias] can fix shadow acne on the resulting baked lightmap, but can introduce peter-panning (shadows not connecting to their casters). Real-time [Light3D] shadows are not affected by this [member bias] property.
 		</member>
-		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="1">
+		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="3">
 			Number of light bounces that are taken into account during baking. Higher values result in brighter, more realistic lighting, at the cost of longer bake times. If set to [code]0[/code], only environment lighting, direct light and emissive lighting is baked.
 		</member>
 		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
@@ -36,10 +36,10 @@
 		<member name="environment_custom_sky" type="Sky" setter="set_environment_custom_sky" getter="get_environment_custom_sky">
 			The sky to use as a source of environment lighting. Only effective if [member environment_mode] is [constant ENVIRONMENT_MODE_CUSTOM_SKY].
 		</member>
-		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="LightmapGI.EnvironmentMode" default="0">
+		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="LightmapGI.EnvironmentMode" default="1">
 			The environment mode to use when baking lightmaps.
 		</member>
-		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="LightmapGI.GenerateProbes" default="0">
+		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="LightmapGI.GenerateProbes" default="2">
 			The level of subdivision to use when automatically generating [LightmapProbe]s for dynamic object lighting. Higher values result in more accurate indirect lighting on dynamic objects, at the cost of longer bake times and larger file sizes.
 			[b]Note:[/b] Automatically generated [LightmapProbe]s are not visible as nodes in the Scene tree dock, and cannot be modified this way after they are generated.
 			[b]Note:[/b] Regardless of [member generate_probes_subdiv], direct lighting on dynamic objects is always applied using [Light3D] nodes in real-time.

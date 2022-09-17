@@ -205,13 +205,19 @@ private:
 		AABB aabb;
 		bool aabb_dirty = false;
 		bool buffer_set = false;
+		bool motion_vectors_enabled = false;
+		uint32_t motion_vectors_current_offset = 0;
+		uint32_t motion_vectors_previous_offset = 0;
+		uint64_t motion_vectors_last_change = -1;
 		uint32_t stride_cache = 0;
 		uint32_t color_offset_cache = 0;
 		uint32_t custom_data_offset_cache = 0;
 
 		Vector<float> data_cache; //used if individual setting is used
 		bool *data_cache_dirty_regions = nullptr;
-		uint32_t data_cache_used_dirty_regions = 0;
+		uint32_t data_cache_dirty_region_count = 0;
+		bool *previous_data_cache_dirty_regions = nullptr;
+		uint32_t previous_data_cache_dirty_region_count = 0;
 
 		RID buffer; //storage buffer
 		RID uniform_set_3d;
@@ -228,6 +234,7 @@ private:
 	MultiMesh *multimesh_dirty_list = nullptr;
 
 	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
+	_FORCE_INLINE_ void _multimesh_update_motion_vectors_data_cache(MultiMesh *multimesh);
 	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
@@ -579,6 +586,8 @@ public:
 	virtual AABB multimesh_get_aabb(RID p_multimesh) const override;
 
 	void _update_dirty_multimeshes();
+	bool _multimesh_enable_motion_vectors(RID p_multimesh);
+	void _multimesh_get_motion_vectors_offsets(RID p_multimesh, uint32_t &r_current_offset, uint32_t &r_prev_offset);
 
 	_FORCE_INLINE_ RS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
 		MultiMesh *multimesh = multimesh_owner.get_or_null(p_multimesh);

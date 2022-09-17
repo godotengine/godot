@@ -1360,8 +1360,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
 			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
-				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 			}
 		}
 	}
@@ -1373,8 +1373,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
 			}
-			if (discard == EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
-				after = EditorPlugin::AFTER_GUI_INPUT_DESELECT;
+			if (discard == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
+				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 			}
 		}
 	}
@@ -1601,7 +1601,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						//clicking is always deferred to either move or release
 						clicked = _select_ray(b->get_position());
 						selection_in_progress = true;
@@ -1622,7 +1622,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						break;
 					}
 
-					if (after != EditorPlugin::AFTER_GUI_INPUT_DESELECT) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						selection_in_progress = false;
 
 						if (clicked.is_valid()) {
@@ -5516,8 +5516,8 @@ Dictionary Node3DEditor::get_state() const {
 		pd["sun_color"] = sun_color->get_pick_color();
 		pd["sun_energy"] = sun_energy->get_value();
 
-		pd["sun_disabled"] = sun_button->is_pressed();
-		pd["environ_disabled"] = environ_button->is_pressed();
+		pd["sun_enabled"] = sun_button->is_pressed();
+		pd["environ_enabled"] = environ_button->is_pressed();
 
 		d["preview_sun_env"] = pd;
 	}
@@ -5648,8 +5648,8 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		sun_color->set_pick_color(pd["sun_color"]);
 		sun_energy->set_value(pd["sun_energy"]);
 
-		sun_button->set_pressed(pd["sun_disabled"]);
-		environ_button->set_pressed(pd["environ_disabled"]);
+		sun_button->set_pressed(pd["sun_enabled"]);
+		environ_button->set_pressed(pd["environ_enabled"]);
 
 		sun_environ_updating = false;
 
@@ -5657,8 +5657,8 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		_update_preview_environment();
 	} else {
 		_load_default_preview_settings();
-		sun_button->set_pressed(false);
-		environ_button->set_pressed(false);
+		sun_button->set_pressed(true);
+		environ_button->set_pressed(true);
 		_preview_settings_changed();
 		_update_preview_environment();
 	}
@@ -7159,8 +7159,8 @@ void Node3DEditor::_update_theme() {
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), get_theme_icon(SNAME("Panels3Alt"), SNAME("EditorIcons")));
 	view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), get_theme_icon(SNAME("Panels4"), SNAME("EditorIcons")));
 
-	sun_button->set_icon(get_theme_icon(SNAME("DirectionalLight3D"), SNAME("EditorIcons")));
-	environ_button->set_icon(get_theme_icon(SNAME("WorldEnvironment"), SNAME("EditorIcons")));
+	sun_button->set_icon(get_theme_icon(SNAME("PreviewSun"), SNAME("EditorIcons")));
+	environ_button->set_icon(get_theme_icon(SNAME("PreviewEnvironment"), SNAME("EditorIcons")));
 	sun_environ_settings->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 	sun_title->add_theme_font_override("font", get_theme_font(SNAME("title_font"), SNAME("Window")));
@@ -7636,7 +7636,7 @@ void Node3DEditor::_load_default_preview_settings() {
 }
 
 void Node3DEditor::_update_preview_environment() {
-	bool disable_light = directional_light_count > 0 || sun_button->is_pressed();
+	bool disable_light = directional_light_count > 0 || !sun_button->is_pressed();
 
 	sun_button->set_disabled(directional_light_count > 0);
 
@@ -7645,6 +7645,7 @@ void Node3DEditor::_update_preview_environment() {
 			preview_sun->get_parent()->remove_child(preview_sun);
 			sun_state->show();
 			sun_vb->hide();
+			preview_sun_dangling = true;
 		}
 
 		if (directional_light_count > 0) {
@@ -7658,13 +7659,14 @@ void Node3DEditor::_update_preview_environment() {
 			add_child(preview_sun, true);
 			sun_state->hide();
 			sun_vb->show();
+			preview_sun_dangling = false;
 		}
 	}
 
 	sun_angle_altitude->set_value(-Math::rad_to_deg(sun_rotation.x));
 	sun_angle_azimuth->set_value(180.0 - Math::rad_to_deg(sun_rotation.y));
 
-	bool disable_env = world_env_count > 0 || environ_button->is_pressed();
+	bool disable_env = world_env_count > 0 || !environ_button->is_pressed();
 
 	environ_button->set_disabled(world_env_count > 0);
 
@@ -7673,6 +7675,7 @@ void Node3DEditor::_update_preview_environment() {
 			preview_environment->get_parent()->remove_child(preview_environment);
 			environ_state->show();
 			environ_vb->hide();
+			preview_env_dangling = true;
 		}
 		if (world_env_count > 0) {
 			environ_state->set_text(TTR("Scene contains\nWorldEnvironment.\nPreview disabled."));
@@ -7685,6 +7688,7 @@ void Node3DEditor::_update_preview_environment() {
 			add_child(preview_environment);
 			environ_state->hide();
 			environ_vb->show();
+			preview_env_dangling = false;
 		}
 	}
 }
@@ -7854,7 +7858,8 @@ Node3DEditor::Node3DEditor() {
 	sun_button->set_toggle_mode(true);
 	sun_button->set_flat(true);
 	sun_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
-	sun_button->set_disabled(true);
+	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
+	sun_button->set_pressed(true);
 
 	main_menu_hbox->add_child(sun_button);
 
@@ -7863,7 +7868,8 @@ Node3DEditor::Node3DEditor() {
 	environ_button->set_toggle_mode(true);
 	environ_button->set_flat(true);
 	environ_button->connect("pressed", callable_mp(this, &Node3DEditor::_update_preview_environment), CONNECT_DEFERRED);
-	environ_button->set_disabled(true);
+	// Preview is enabled by default - ensure this applies on editor startup when there is no state yet.
+	environ_button->set_pressed(true);
 
 	main_menu_hbox->add_child(environ_button);
 
@@ -8329,6 +8335,12 @@ void fragment() {
 }
 Node3DEditor::~Node3DEditor() {
 	memdelete(preview_node);
+	if (preview_sun_dangling && preview_sun) {
+		memdelete(preview_sun);
+	}
+	if (preview_env_dangling && preview_environment) {
+		memdelete(preview_environment);
+	}
 }
 
 void Node3DEditorPlugin::make_visible(bool p_visible) {

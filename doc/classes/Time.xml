@@ -17,7 +17,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="utc" type="bool" default="false" />
 			<description>
-				Returns the current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], and [code]dst[/code] (Daylight Savings Time).
+				Returns the current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], and [code]weekday[/code].
 				The returned values are in the system's local time when [param utc] is [code]false[/code], otherwise they are in UTC.
 			</description>
 		</method>
@@ -57,7 +57,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="utc" type="bool" default="false" />
 			<description>
-				Returns the current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/code], [code]minute[/code], and [code]second[/code].
+				Returns the current date as a dictionary of keys: [code]year[/code], [code]month[/code], [code]day[/code], [code]weekday[/code], [code]hour[/code], [code]minute[/code], [code]second[/code], and [code]dst[/code] (Daylight Savings Time).
 			</description>
 		</method>
 		<method name="get_datetime_dict_from_unix_time" qualifiers="const">

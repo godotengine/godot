@@ -986,18 +986,6 @@ DisplayServer::WindowID Window::get_window_id() const {
 	return window_id;
 }
 
-void Window::warp_mouse(const Vector2 &p_position) {
-	Transform2D xform = get_screen_transform();
-	Vector2 gpos = xform.xform(p_position);
-
-	if (transient_parent && !transient_parent->is_embedding_subwindows()) {
-		Transform2D window_trans = Transform2D().translated(get_position() + (transient_parent->get_visible_rect().size - transient_parent->get_real_size()));
-		gpos = window_trans.xform(gpos);
-	}
-
-	Input::get_singleton()->warp_mouse(gpos);
-}
-
 void Window::set_wrap_controls(bool p_enable) {
 	wrap_controls = p_enable;
 	if (wrap_controls) {
@@ -1153,7 +1141,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = get_parent_viewport()->get_visible_rect();
+		parent_rect = _get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1179,7 +1167,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = get_parent_viewport()->get_visible_rect();
+		parent_rect = _get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1207,7 +1195,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = get_parent_viewport()->get_visible_rect();
+		parent_rect = _get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);

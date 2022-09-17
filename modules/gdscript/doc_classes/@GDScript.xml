@@ -35,14 +35,14 @@
 			<description>
 				Asserts that the [code]condition[/code] is [code]true[/code]. If the [code]condition[/code] is [code]false[/code], an error is generated. When running from the editor, the running project will also be paused until you resume it. This can be used as a stronger form of [method @GlobalScope.push_error] for reporting errors to project developers or add-on users.
 				[b]Note:[/b] For performance reasons, the code inside [method assert] is only executed in debug builds or when running the project from the editor. Don't include code that has side effects in an [method assert] call. Otherwise, the project will behave differently when exported in release mode.
-				The optional [code]message[/code] argument, if given, is shown in addition to the generic "Assertion failed" message. You can use this to provide additional details about why the assertion failed.
+				The optional [code]message[/code] argument, if given, is shown in addition to the generic "Assertion failed" message. It must be a static string, so format strings can't be used. You can use this to provide additional details about why the assertion failed.
 				[codeblock]
 				# Imagine we always want speed to be between 0 and 20.
 				var speed = -10
 				assert(speed &lt; 20) # True, the program will continue
 				assert(speed &gt;= 0) # False, the program will stop
 				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check
-				assert(speed &lt; 20, "speed = %f, but the speed limit is 20" % speed) # Show a message with clarifying details
+				assert(speed &lt; 20, "the speed limit is 20") # Show a message
 				[/codeblock]
 			</description>
 		</method>

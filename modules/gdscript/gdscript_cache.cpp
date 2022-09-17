@@ -146,9 +146,7 @@ String GDScriptCache::get_source_code(const String &p_path) {
 	Vector<uint8_t> source_file;
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (err) {
-		ERR_FAIL_COND_V(err, "");
-	}
+	ERR_FAIL_COND_V(err, "");
 
 	uint64_t len = f->get_length();
 	source_file.resize(len + 1);
