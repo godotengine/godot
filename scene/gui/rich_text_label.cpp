@@ -2188,6 +2188,30 @@ RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
 	while (fontitem) {
 		if (fontitem->type == ITEM_FONT) {
 			ItemFont *fi = static_cast<ItemFont *>(fontitem);
+			switch (fi->def_font) {
+				case NORMAL_FONT: {
+					fi->font = theme_cache.normal_font;
+					fi->font_size = theme_cache.normal_font_size;
+				} break;
+				case BOLD_FONT: {
+					fi->font = theme_cache.bold_font;
+					fi->font_size = theme_cache.bold_font_size;
+				} break;
+				case ITALICS_FONT: {
+					fi->font = theme_cache.italics_font;
+					fi->font_size = theme_cache.italics_font_size;
+				} break;
+				case BOLD_ITALICS_FONT: {
+					fi->font = theme_cache.bold_italics_font;
+					fi->font_size = theme_cache.bold_italics_font_size;
+				} break;
+				case MONO_FONT: {
+					fi->font = theme_cache.mono_font;
+					fi->font_size = theme_cache.mono_font_size;
+				} break;
+				default: {
+				} break;
+			}
 			return fi;
 		}
 
@@ -3004,6 +3028,17 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	_add_item(item, false);
 }
 
+void RichTextLabel::_push_def_font(DefaultFont p_font) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemFont *item = memnew(ItemFont);
+
+	item->def_font = p_font;
+	_add_item(item, true);
+}
+
 void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
@@ -3020,31 +3055,31 @@ void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 void RichTextLabel::push_normal() {
 	ERR_FAIL_COND(theme_cache.normal_font.is_null());
 
-	push_font(theme_cache.normal_font, theme_cache.normal_font_size);
+	_push_def_font(NORMAL_FONT);
 }
 
 void RichTextLabel::push_bold() {
 	ERR_FAIL_COND(theme_cache.bold_font.is_null());
 
-	push_font(theme_cache.bold_font, theme_cache.bold_font_size);
+	_push_def_font(BOLD_FONT);
 }
 
 void RichTextLabel::push_bold_italics() {
 	ERR_FAIL_COND(theme_cache.bold_italics_font.is_null());
 
-	push_font(theme_cache.bold_italics_font, theme_cache.bold_italics_font_size);
+	_push_def_font(BOLD_ITALICS_FONT);
 }
 
 void RichTextLabel::push_italics() {
 	ERR_FAIL_COND(theme_cache.italics_font.is_null());
 
-	push_font(theme_cache.italics_font, theme_cache.italics_font_size);
+	_push_def_font(ITALICS_FONT);
 }
 
 void RichTextLabel::push_mono() {
 	ERR_FAIL_COND(theme_cache.mono_font.is_null());
 
-	push_font(theme_cache.mono_font, theme_cache.mono_font_size);
+	_push_def_font(MONO_FONT);
 }
 
 void RichTextLabel::push_font_size(int p_font_size) {
@@ -3635,9 +3670,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			//use bold font
 			in_bold = true;
 			if (in_italics) {
-				push_font(theme_cache.bold_italics_font, theme_cache.bold_italics_font_size);
+				_push_def_font(BOLD_ITALICS_FONT);
 			} else {
-				push_font(theme_cache.bold_font, theme_cache.bold_font_size);
+				_push_def_font(BOLD_FONT);
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -3645,15 +3680,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			//use italics font
 			in_italics = true;
 			if (in_bold) {
-				push_font(theme_cache.bold_italics_font, theme_cache.bold_italics_font_size);
+				_push_def_font(BOLD_ITALICS_FONT);
 			} else {
-				push_font(theme_cache.italics_font, theme_cache.italics_font_size);
+				_push_def_font(ITALICS_FONT);
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
 			//use monospace font
-			push_font(theme_cache.mono_font, theme_cache.mono_font_size);
+			_push_def_font(MONO_FONT);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("table=")) {
