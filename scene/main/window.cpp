@@ -96,6 +96,7 @@ Point2i Window::get_position() const {
 void Window::set_size(const Size2i &p_size) {
 	size = p_size;
 	_update_window_size();
+	update_configuration_warnings();
 }
 
 Size2i Window::get_size() const {

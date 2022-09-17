@@ -810,7 +810,6 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 #endif
 
 	_update_global_transform();
-	update_configuration_warnings();
 
 	update_canvas_items();
 
@@ -4082,6 +4081,7 @@ void SubViewport::set_size(const Size2i &p_size) {
 	if (c) {
 		c->update_minimum_size();
 	}
+	update_configuration_warnings();
 }
 
 Size2i SubViewport::get_size() const {
