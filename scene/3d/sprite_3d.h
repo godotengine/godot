@@ -240,6 +240,7 @@ public:
 
 	void play(const StringName &p_animation = StringName(), bool p_backwards = false);
 	void stop();
+	bool is_playing_backwards() const;
 
 	void set_playing(bool p_playing);
 	bool is_playing() const;

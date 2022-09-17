@@ -416,6 +416,10 @@ void AnimatedSprite2D::stop() {
 	set_playing(false);
 }
 
+bool AnimatedSprite2D::is_playing_backwards() const {
+	return playing_backwards;
+}
+
 double AnimatedSprite2D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
 		double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
@@ -487,6 +491,7 @@ void AnimatedSprite2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
+	ClassDB::bind_method(D_METHOD("is_playing_backwards"), &AnimatedSprite2D::is_playing_backwards);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
 	ClassDB::bind_method(D_METHOD("is_centered"), &AnimatedSprite2D::is_centered);

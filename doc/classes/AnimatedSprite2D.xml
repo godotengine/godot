@@ -14,6 +14,12 @@
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/515</link>
 	</tutorials>
 	<methods>
+		<method name="is_playing_backwards" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the animation is playing in reverse.
+			</description>
+		</method>
 		<method name="play">
 			<return type="void" />
 			<param index="0" name="anim" type="StringName" default="&amp;&quot;&quot;" />
