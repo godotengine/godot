@@ -555,7 +555,7 @@
 		<annotation name="@onready">
 			<return type="void" />
 			<description>
-				Mark the following property as assigned on [Node]'s ready state change. Values for these properties are no assigned immediately upon the node's creation, and instead are computed and stored right before [method Node._ready].
+				Mark the following property as assigned on [Node]'s ready state change. Values for these properties are not assigned immediately upon the node's creation, and instead are computed and stored right before [method Node._ready].
 				[codeblock]
 				@onready var character_name: Label = $Label
 				[/codeblock]
