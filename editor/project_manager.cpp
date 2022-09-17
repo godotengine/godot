@@ -1751,11 +1751,15 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
-			_config.erase_section(item.path);
-
 			if (p_delete_project_contents) {
-				OS::get_singleton()->move_to_trash(item.path);
+				Error err = OS::get_singleton()->move_to_trash(item.path);
+				if (err != OK) {
+					OS::get_singleton()->alert(vformat("An error occurred deleting \"%s\".\nIt will be kept in the project list.", item.project_name), "Failed to delete project");
+					continue;
+				}
 			}
+
+			_config.erase_section(item.path);
 
 			memdelete(item.control);
 			_projects.remove_at(i);
