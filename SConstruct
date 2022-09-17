@@ -737,7 +737,7 @@ if selected_platform in platform_list:
     env.module_list = modules_enabled
     methods.sort_module_list(env)
 
-    methods.update_version(env.module_version_string)
+    methods.generate_version_header(env.module_version_string)
 
     env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
