@@ -87,7 +87,7 @@ struct SinglePosFormat1
                   const SrcLookup *src,
                   Iterator it,
                   ValueFormat newFormat,
-                  const hb_map_t *layout_variation_idx_map)
+                  const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map)
   {
     if (unlikely (!c->extend_min (this))) return;
     if (unlikely (!c->check_assign (valueFormat,
@@ -96,7 +96,7 @@ struct SinglePosFormat1
 
     for (const hb_array_t<const Value>& _ : + it | hb_map (hb_second))
     {
-      src->get_value_format ().copy_values (c, newFormat, src,  &_, layout_variation_idx_map);
+      src->get_value_format ().copy_values (c, newFormat, src,  &_, layout_variation_idx_delta_map);
       // Only serialize the first entry in the iterator, the rest are assumed to
       // be the same.
       break;
@@ -126,7 +126,7 @@ struct SinglePosFormat1
     ;
 
     bool ret = bool (it);
-    SinglePos_serialize (c->serializer, this, it, c->plan->layout_variation_idx_map);
+    SinglePos_serialize (c->serializer, this, it, c->plan->layout_variation_idx_delta_map, c->plan->all_axes_pinned);
     return_trace (ret);
   }
 };
