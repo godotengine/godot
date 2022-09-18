@@ -1234,9 +1234,12 @@ void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
 	playing_backwards = signbit(speed_scale) != backwards;
 
 	if (p_animation) {
+		StringName previous_animation = animation;
 		set_animation(p_animation);
-		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
-			set_frame(frames->get_frame_count(p_animation) - 1);
+		if (animation == previous_animation) {
+			// Animation has successfully changed.
+			_reset_timeout();
+			set_frame(playing_backwards ? frames->get_frame_count(animation) - 1 : 0);
 		}
 	}
 
@@ -1269,14 +1272,17 @@ void AnimatedSprite3D::_reset_timeout() {
 
 void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
+	ERR_FAIL_COND_MSG(!frames->has_animation(p_animation), vformat("There is no animation with name '%s'.", p_animation));
 	if (animation == p_animation) {
 		return;
 	}
 
 	animation = p_animation;
-	_reset_timeout();
-	set_frame(0);
+
+	if (frame > frames->get_frame_count(animation) || Engine::get_singleton()->is_editor_hint()) {
+		set_frame(playing_backwards ? frames->get_frame_count(animation) - 1 : 0);
+		_reset_timeout();
+	}
 	notify_property_list_changed();
 	_queue_redraw();
 }
