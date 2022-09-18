@@ -1376,11 +1376,10 @@ void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_
 }
 
 void ShaderEditorPlugin::_close_shader(int p_index) {
-	int index = shader_tabs->get_current_tab();
-	ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
-	Control *c = shader_tabs->get_tab_control(index);
+	ERR_FAIL_INDEX(p_index, shader_tabs->get_tab_count());
+	Control *c = shader_tabs->get_tab_control(p_index);
 	memdelete(c);
-	edited_shaders.remove_at(index);
+	edited_shaders.remove_at(p_index);
 	_update_shader_list();
 	EditorNode::get_singleton()->get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
 }
