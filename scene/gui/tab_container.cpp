@@ -519,11 +519,11 @@ void TabContainer::_refresh_tab_names() {
 }
 
 void TabContainer::add_child_notify(Node *p_child) {
+	Container::add_child_notify(p_child);
+
 	if (p_child == tab_bar) {
 		return;
 	}
-
-	Container::add_child_notify(p_child);
 
 	Control *c = Object::cast_to<Control>(p_child);
 	if (!c || c->is_set_as_top_level()) {
