@@ -2527,6 +2527,8 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		case VERTICAL_ALIGNMENT_BOTTOM: {
 			vbegin = (total_h - line_spacing * pixel_size);
 		} break;
+		default:
+			break;
 	}
 
 	Vector<Vector3> vertices;
@@ -2548,6 +2550,13 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
 
 		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_AUTO:
+				if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+					offset.x = -line_width;
+				} else {
+					offset.x = 0.0;
+				}
+				break;
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				offset.x = 0.0;
 				break;
@@ -2558,6 +2567,8 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				offset.x = -line_width;
 			} break;
+			default:
+				break;
 		}
 		offset.x += lbl_offset.x * pixel_size;
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
@@ -2625,6 +2636,13 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
 
 		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_AUTO:
+				if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+					offset.x = -line_width;
+				} else {
+					offset.x = 0.0;
+				}
+				break;
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				offset.x = 0.0;
 				break;
@@ -2635,6 +2653,8 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				offset.x = -line_width;
 			} break;
+			default:
+				break;
 		}
 		offset.x += lbl_offset.x * pixel_size;
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
@@ -2866,7 +2886,7 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill,Auto"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
@@ -2915,7 +2935,7 @@ TextMesh::~TextMesh() {
 }
 
 void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(HORIZONTAL_ALIGNMENT_MAX));
 	if (horizontal_alignment != p_alignment) {
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			dirty_lines = true;
@@ -2930,7 +2950,7 @@ HorizontalAlignment TextMesh::get_horizontal_alignment() const {
 }
 
 void TextMesh::set_vertical_alignment(VerticalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(VERTICAL_ALIGNMENT_MAX));
 	if (vertical_alignment != p_alignment) {
 		vertical_alignment = p_alignment;
 		_request_update();

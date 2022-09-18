@@ -2757,7 +2757,7 @@ bool TextServerFallback::shaped_text_get_preserve_control(const RID &p_shaped) c
 }
 
 void TextServerFallback::shaped_text_set_spacing(const RID &p_shaped, SpacingType p_spacing, int64_t p_value) {
-	ERR_FAIL_INDEX((int)p_spacing, 4);
+	ERR_FAIL_INDEX((int)p_spacing, int(SPACING_MAX));
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND(!sd);
 
@@ -2772,7 +2772,7 @@ void TextServerFallback::shaped_text_set_spacing(const RID &p_shaped, SpacingTyp
 }
 
 int64_t TextServerFallback::shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const {
-	ERR_FAIL_INDEX_V((int)p_spacing, 4, 0);
+	ERR_FAIL_INDEX_V((int)p_spacing, int(SPACING_MAX), 0);
 
 	const ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, 0);

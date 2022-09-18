@@ -232,7 +232,7 @@ private:
 	};
 
 	struct ItemParagraph : public Item {
-		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
+		HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_AUTO;
 		String language;
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -396,7 +396,7 @@ private:
 	bool underline_hint = true;
 	bool override_selected_font_color = false;
 
-	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	HorizontalAlignment default_alignment = HORIZONTAL_ALIGNMENT_AUTO;
 
 	ItemMeta *meta_hovering = nullptr;
 	Variant current_meta;

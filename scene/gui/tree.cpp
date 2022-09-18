@@ -1756,19 +1756,26 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	w += ts.width;
 
 	switch (p_cell.text_alignment) {
+		case HORIZONTAL_ALIGNMENT_AUTO: {
+			if (TS->shaped_text_get_inferred_direction(p_cell.text_buf->get_rid()) == TextServer::DIRECTION_RTL) {
+				rect.position.x += MAX(0, (rect.size.width - w));
+			}
+		} break;
 		case HORIZONTAL_ALIGNMENT_FILL:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
 				rect.position.x += MAX(0, (rect.size.width - w));
 			}
 		} break;
-		case HORIZONTAL_ALIGNMENT_CENTER:
+		case HORIZONTAL_ALIGNMENT_CENTER: {
 			rect.position.x += MAX(0, (rect.size.width - w) / 2);
-			break;
-		case HORIZONTAL_ALIGNMENT_RIGHT:
+		} break;
+		case HORIZONTAL_ALIGNMENT_RIGHT: {
 			if (!rtl) {
 				rect.position.x += MAX(0, (rect.size.width - w));
 			}
+		} break;
+		default:
 			break;
 	}
 

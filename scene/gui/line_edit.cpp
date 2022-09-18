@@ -606,7 +606,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void LineEdit::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(HORIZONTAL_ALIGNMENT_MAX));
 	if (alignment == p_alignment) {
 		return;
 	}
@@ -819,6 +819,13 @@ void LineEdit::_notification(int p_what) {
 			float text_height = TS->shaped_text_get_size(text_rid).y;
 
 			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_AUTO: {
+					if (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL) {
+						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - style->get_margin(SIDE_RIGHT) - (text_width)));
+					} else {
+						x_ofs = style->get_offset().x;
+					}
+				} break;
 				case HORIZONTAL_ALIGNMENT_FILL:
 				case HORIZONTAL_ALIGNMENT_LEFT: {
 					if (rtl) {
@@ -841,6 +848,8 @@ void LineEdit::_notification(int p_what) {
 						x_ofs = MAX(style->get_margin(SIDE_LEFT), int(size.width - style->get_margin(SIDE_RIGHT) - (text_width)));
 					}
 				} break;
+				default:
+					break;
 			}
 
 			int ofs_max = width - style->get_margin(SIDE_RIGHT);
@@ -1231,6 +1240,13 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	int x_ofs = 0;
 	float text_width = TS->shaped_text_get_size(text_rid).x;
 	switch (alignment) {
+		case HORIZONTAL_ALIGNMENT_AUTO: {
+			if (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
+			} else {
+				x_ofs = style->get_offset().x;
+			}
+		} break;
 		case HORIZONTAL_ALIGNMENT_FILL:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
@@ -1253,6 +1269,8 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
 		} break;
+		default:
+			break;
 	}
 
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
@@ -1279,6 +1297,13 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 	int x_ofs = 0;
 	float text_width = TS->shaped_text_get_size(text_rid).x;
 	switch (alignment) {
+		case HORIZONTAL_ALIGNMENT_AUTO: {
+			if (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
+			} else {
+				x_ofs = style->get_offset().x;
+			}
+		} break;
 		case HORIZONTAL_ALIGNMENT_FILL:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
@@ -1301,6 +1326,8 @@ Vector2 LineEdit::get_caret_pixel_pos() {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
 		} break;
+		default:
+			break;
 	}
 
 	bool using_placeholder = text.is_empty() && ime_text.is_empty();
@@ -1597,6 +1624,13 @@ void LineEdit::set_caret_column(int p_column) {
 	int x_ofs = 0;
 	float text_width = TS->shaped_text_get_size(text_rid).x;
 	switch (alignment) {
+		case HORIZONTAL_ALIGNMENT_AUTO: {
+			if (TS->shaped_text_get_inferred_direction(text_rid) == TextServer::DIRECTION_RTL) {
+				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
+			} else {
+				x_ofs = style->get_offset().x;
+			}
+		} break;
 		case HORIZONTAL_ALIGNMENT_FILL:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
@@ -1619,6 +1653,8 @@ void LineEdit::set_caret_column(int p_column) {
 				x_ofs = MAX(style->get_margin(SIDE_LEFT), int(get_size().width - style->get_margin(SIDE_RIGHT) - (text_width)));
 			}
 		} break;
+		default:
+			break;
 	}
 
 	int ofs_max = get_size().width - style->get_margin(SIDE_RIGHT);
@@ -2399,7 +2435,7 @@ void LineEdit::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill,Auto"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_length", PROPERTY_HINT_RANGE, "0,1000,1,or_greater"), "set_max_length", "get_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret"), "set_secret", "is_secret");

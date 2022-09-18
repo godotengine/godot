@@ -1349,7 +1349,7 @@ void ItemList::_notification(int p_what) {
 							text_ofs.x = size.width - text_ofs.x - max_len;
 						}
 
-						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+						items.write[i].text_buf->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
@@ -1377,9 +1377,9 @@ void ItemList::_notification(int p_what) {
 						items.write[i].text_buf->set_width(width - text_ofs.x);
 
 						if (rtl) {
-							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+							items.write[i].text_buf->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 						} else {
-							items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_LEFT);
+							items.write[i].text_buf->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 						}
 
 						if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {

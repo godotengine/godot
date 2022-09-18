@@ -307,7 +307,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 		cache_wrap.insert(hash, lines_buffer);
 	}
 
-	lines_buffer->set_alignment(p_alignment);
+	lines_buffer->set_horizontal_alignment(p_alignment);
 	lines_buffer->set_max_lines_visible(p_max_lines);
 
 	return lines_buffer->get_size();
@@ -380,7 +380,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 		ofs.x -= lines_buffer->get_line_ascent(0);
 	}
 
-	lines_buffer->set_alignment(p_alignment);
+	lines_buffer->set_horizontal_alignment(p_alignment);
 	lines_buffer->set_max_lines_visible(p_max_lines);
 
 	lines_buffer->draw(p_canvas_item, ofs, p_modulate);
@@ -453,7 +453,7 @@ void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos,
 		ofs.x -= lines_buffer->get_line_ascent(0);
 	}
 
-	lines_buffer->set_alignment(p_alignment);
+	lines_buffer->set_horizontal_alignment(p_alignment);
 	lines_buffer->set_max_lines_visible(p_max_lines);
 
 	lines_buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate);
@@ -2653,7 +2653,7 @@ Dictionary FontVariation::get_opentype_features() const {
 }
 
 void FontVariation::set_spacing(TextServer::SpacingType p_spacing, int p_value) {
-	ERR_FAIL_INDEX((int)p_spacing, TextServer::SPACING_MAX);
+	ERR_FAIL_INDEX((int)p_spacing, int(TextServer::SPACING_MAX));
 	if (extra_spacing[p_spacing] != p_value) {
 		extra_spacing[p_spacing] = p_value;
 		_invalidate_rids();
@@ -2661,7 +2661,7 @@ void FontVariation::set_spacing(TextServer::SpacingType p_spacing, int p_value) 
 }
 
 int FontVariation::get_spacing(TextServer::SpacingType p_spacing) const {
-	ERR_FAIL_INDEX_V((int)p_spacing, TextServer::SPACING_MAX, 0);
+	ERR_FAIL_INDEX_V((int)p_spacing, int(TextServer::SPACING_MAX), 0);
 	return extra_spacing[p_spacing];
 }
 

@@ -260,9 +260,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="HorizontalAlignment" default="0">
-			Paragraph horizontal alignment.
-		</member>
 		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" default="3">
 			Line breaking rules. For more info see [TextServer].
 		</member>
@@ -271,6 +268,9 @@
 		</member>
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
+		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Paragraph horizontal alignment.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" default="3">
 			Line alignment rules. For more info see [TextServer].

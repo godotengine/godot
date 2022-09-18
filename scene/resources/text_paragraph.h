@@ -98,8 +98,8 @@ public:
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER);
 
-	void set_alignment(HorizontalAlignment p_alignment);
-	HorizontalAlignment get_alignment() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	void tab_align(const Vector<float> &p_tab_stops);
 

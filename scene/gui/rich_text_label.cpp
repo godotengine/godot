@@ -462,7 +462,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	// Add indent.
 	l.offset.x = _find_margin(l.from, p_base_font, p_base_font_size);
 	l.text_buf->set_width(p_width - l.offset.x);
-	l.text_buf->set_alignment(_find_alignment(l.from));
+	l.text_buf->set_horizontal_alignment(_find_alignment(l.from));
 	l.text_buf->set_direction(_find_direction(l.from));
 
 	if (tab_size > 0) { // Align inline tabs.
@@ -844,8 +844,15 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
+		RID rid = l.text_buf->get_line_rid(line);
+
 		// Draw text.
-		switch (l.text_buf->get_alignment()) {
+		switch (l.text_buf->get_horizontal_alignment()) {
+			case HORIZONTAL_ALIGNMENT_AUTO: {
+				if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					off.x += width - length;
+				}
+			} break;
 			case HORIZONTAL_ALIGNMENT_FILL:
 			case HORIZONTAL_ALIGNMENT_LEFT: {
 				if (rtl) {
@@ -860,6 +867,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					off.x += width - length;
 				}
 			} break;
+			default:
+				break;
 		}
 
 		if (line <= dc_lines) {
@@ -870,7 +879,6 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			}
 		}
 
-		RID rid = l.text_buf->get_line_rid(line);
 		//draw_rect(Rect2(p_ofs + off, TS->shaped_text_get_size(rid)), Color(1,0,0), false, 2); //DEBUG_RECTS
 
 		off.y += TS->shaped_text_get_ascent(rid);
@@ -1422,7 +1430,12 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 			}
 		}
 
-		switch (l.text_buf->get_alignment()) {
+		switch (l.text_buf->get_horizontal_alignment()) {
+			case HORIZONTAL_ALIGNMENT_AUTO: {
+				if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					off.x += width - length;
+				}
+			} break;
 			case HORIZONTAL_ALIGNMENT_FILL:
 			case HORIZONTAL_ALIGNMENT_LEFT: {
 				if (rtl) {
@@ -1437,6 +1450,8 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 					off.x += width - length;
 				}
 			} break;
+			default:
+				break;
 		}
 
 		off.y += TS->shaped_text_get_ascent(rid);
@@ -3153,6 +3168,10 @@ void RichTextLabel::push_strikethrough() {
 }
 
 void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser) {
+	ERR_FAIL_INDEX((int)p_alignment, int(HORIZONTAL_ALIGNMENT_MAX));
+	ERR_FAIL_INDEX((int)p_direction, int(Control::TEXT_DIRECTION_MAX));
+	ERR_FAIL_INDEX((int)p_st_parser, int(TextServer::STRUCTURED_TEXT_MAX));
+
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3869,6 +3888,10 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
+		} else if (tag == "auto") {
+			push_paragraph(HORIZONTAL_ALIGNMENT_AUTO);
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
 		} else if (tag == "ul") {
 			indent_level++;
 			push_list(indent_level, LIST_DOTS, false);
@@ -3926,6 +3949,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 							alignment = HORIZONTAL_ALIGNMENT_RIGHT;
 						} else if (subtag_a[1] == "f" || subtag_a[1] == "fill") {
 							alignment = HORIZONTAL_ALIGNMENT_FILL;
+						} else if (subtag_a[1] == "a" || subtag_a[1] == "auto") {
+							alignment = HORIZONTAL_ALIGNMENT_AUTO;
 						}
 					} else if (subtag_a[0] == "dir" || subtag_a[0] == "direction") {
 						if (subtag_a[1] == "a" || subtag_a[1] == "auto") {
