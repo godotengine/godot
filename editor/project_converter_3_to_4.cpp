@@ -3950,6 +3950,8 @@ String ProjectConverter3To4::collect_string_from_vector(Vector<String> &vector) 
 
 #else // No RegEx.
 
+ProjectConverter3To4::ProjectConverter3To4(int _p_maximum_file_size_kb, int _p_maximum_line_length) {}
+
 int ProjectConverter3To4::convert() {
 	ERR_FAIL_V_MSG(ERROR_CODE, "Can't run converter for Godot 3.x projects, because RegEx module is disabled.");
 }
