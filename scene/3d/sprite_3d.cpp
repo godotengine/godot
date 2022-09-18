@@ -102,11 +102,28 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture> p_texture, Rect2 p_dst_rect, R
 		return;
 	}
 
+	// 2D:                                                     3D plane (axes match exactly when `axis == Vector3::AXIS_Z`):
+	//   -X+                                                     -X+
+	//  -                                                       +
+	//  Y  +--------+       +--------+       +--------+         Y  +--------+
+	//  +  | +--+   |       |        |  (2)  |        |         -  | 0--1   |
+	//     | |ab|   |  (1)  | +--+   |  (3)  | 3--2   |            | |ab|   |
+	//     | |cd|   |  -->  | |ab|   |  -->  | |cd|   |    <==>    | |cd|   |
+	//     | +--+   |       | |cd|   |       | |ab|   |            | 3--2   |
+	//     |        |       | +--+   |       | 0--1   |            |        |
+	//     +--------+       +--------+       +--------+            +--------+
+
+	// (1) Y-wise shift `final_rect` within `p_dst_rect` so after inverting Y
+	// axis distances between top/bottom borders will be preserved (so for
+	// example AtlasTextures with vertical margins will look the same in 2D/3D).
+	final_rect.position.y = (p_dst_rect.position.y + p_dst_rect.size.y) - ((final_rect.position.y + final_rect.size.y) - p_dst_rect.position.y);
+
 	Color color = _get_color_accum();
 	color.a *= get_opacity();
 
 	float pixel_size = get_pixel_size();
 
+	// (2) Order vertices (0123) bottom-top in 2D / top-bottom in 3D.
 	Vector2 vertices[4] = {
 		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
 		(final_rect.position + final_rect.size) * pixel_size,
@@ -123,6 +140,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture> p_texture, Rect2 p_dst_rect, R
 		src_tsize[1] = atlas_tex->get_atlas()->get_height();
 	}
 
+	// (3) Assign UVs (abcd) according to the vertices order (bottom-top in 2D / top-bottom in 3D).
 	Vector2 uvs[4] = {
 		final_src_rect.position / src_tsize,
 		(final_src_rect.position + Vector2(final_src_rect.size.x, 0)) / src_tsize,
