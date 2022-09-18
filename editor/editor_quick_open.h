@@ -43,6 +43,7 @@ class EditorQuickOpen : public ConfirmationDialog {
 	Tree *search_options = nullptr;
 	StringName base_type;
 	bool allow_multi_select = false;
+	bool _load_resources = true;
 
 	Vector<String> files;
 	OAHashMap<String, Ref<Texture2D>> icons;
