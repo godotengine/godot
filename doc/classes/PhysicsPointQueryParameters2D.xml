@@ -11,6 +11,7 @@
 	<members>
 		<member name="canvas_instance_id" type="int" setter="set_canvas_instance_id" getter="get_canvas_instance_id" default="0">
 			If different from [code]0[/code], restricts the query to a specific canvas layer specified by its instance ID. See [method Object.get_instance_id].
+			If [code]0[/code], restricts the query to the Viewport's default canvas layer.
 		</member>
 		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
 			If [code]true[/code], the query will take [Area2D]s into account.
