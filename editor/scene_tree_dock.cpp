@@ -916,6 +916,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			String existing;
 			if (extensions.size()) {
 				String root_name(tocopy->get_name());
+				root_name = EditorNode::adjust_scene_name_casing(root_name);
 				existing = root_name + "." + extensions.front()->get().to_lower();
 			}
 			new_scene_from_dialog->set_current_path(existing);
