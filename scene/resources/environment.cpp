@@ -841,6 +841,63 @@ void Environment::_update_fog() {
 			fog_sky_affect);
 }
 
+// Depth Fog
+
+void Environment::set_fog_depth_enabled(bool p_enabled) {
+	fog_depth_enabled = p_enabled;
+	_update_fog_depth();
+}
+
+bool Environment::is_fog_depth_enabled() const {
+	return fog_depth_enabled;
+}
+
+void Environment::set_fog_depth_curve(float p_curve) {
+	fog_depth_curve = p_curve;
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_curve() const {
+	return fog_depth_curve;
+}
+
+void Environment::set_fog_depth_density(float p_density) {
+	fog_depth_density = p_density;
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_density() const {
+	return fog_depth_density;
+}
+
+void Environment::set_fog_depth_begin(float p_begin) {
+	fog_depth_begin = p_begin;
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_begin() const {
+	return fog_depth_begin;
+}
+
+void Environment::set_fog_depth_end(float p_end) {
+	fog_depth_end = p_end;
+	_update_fog_depth();
+}
+
+float Environment::get_fog_depth_end() const {
+	return fog_depth_end;
+}
+
+void Environment::_update_fog_depth() {
+	RS::get_singleton()->environment_set_fog_depth(
+			environment,
+			fog_depth_enabled,
+			fog_depth_curve,
+			fog_depth_density,
+			fog_depth_begin,
+			fog_depth_end);
+}
+
 // Volumetric Fog
 
 void Environment::_update_volumetric_fog() {
@@ -1411,6 +1468,17 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fog_sky_affect", "sky_affect"), &Environment::set_fog_sky_affect);
 	ClassDB::bind_method(D_METHOD("get_fog_sky_affect"), &Environment::get_fog_sky_affect);
 
+	ClassDB::bind_method(D_METHOD("set_fog_depth_enabled", "enabled"), &Environment::set_fog_depth_enabled);
+	ClassDB::bind_method(D_METHOD("is_fog_depth_enabled"), &Environment::is_fog_depth_enabled);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_curve", "curve"), &Environment::set_fog_depth_curve);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_curve"), &Environment::get_fog_depth_curve);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_density", "density"), &Environment::set_fog_depth_density);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_density"), &Environment::get_fog_depth_density);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_begin", "begin"), &Environment::set_fog_depth_begin);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_begin"), &Environment::get_fog_depth_begin);
+	ClassDB::bind_method(D_METHOD("set_fog_depth_end", "end"), &Environment::set_fog_depth_end);
+	ClassDB::bind_method(D_METHOD("get_fog_depth_end"), &Environment::get_fog_depth_end);
+
 	ADD_GROUP("Fog", "fog_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_enabled"), "set_fog_enabled", "is_fog_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "fog_light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_fog_light_color", "get_fog_light_color");
@@ -1422,6 +1490,12 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_sky_affect", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_fog_sky_affect", "get_fog_sky_affect");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height", PROPERTY_HINT_RANGE, "-1024,1024,0.01,or_less,or_greater,suffix:m"), "set_fog_height", "get_fog_height");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_height_density", PROPERTY_HINT_RANGE, "-16,16,0.0001,or_less,or_greater"), "set_fog_height_density", "get_fog_height_density");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fog_depth_enabled"), "set_fog_depth_enabled", "is_fog_depth_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_curve", PROPERTY_HINT_EXP_EASING), "set_fog_depth_curve", "get_fog_depth_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_density", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_fog_depth_density", "get_fog_depth_density");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_begin", PROPERTY_HINT_RANGE, "0,4000,0.1"), "set_fog_depth_begin", "get_fog_depth_begin");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "fog_depth_end", PROPERTY_HINT_RANGE, "0,4000,0.1,or_greater"), "set_fog_depth_end", "get_fog_depth_end");
 
 	ClassDB::bind_method(D_METHOD("set_volumetric_fog_enabled", "enabled"), &Environment::set_volumetric_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_volumetric_fog_enabled"), &Environment::is_volumetric_fog_enabled);

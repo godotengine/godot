@@ -1140,6 +1140,14 @@ public:
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
 
+	// Depth Fog
+	PASS6(environment_set_fog_depth, RID, bool, float, float, float, float)
+	PASS1RC(bool, environment_get_fog_depth_enabled, RID)
+	PASS1RC(float, environment_get_fog_depth_curve, RID)
+	PASS1RC(float, environment_get_fog_depth_density, RID)
+	PASS1RC(float, environment_get_fog_depth_begin, RID)
+	PASS1RC(float, environment_get_fog_depth_end, RID)
+
 	// Volumentric Fog
 	PASS14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
 

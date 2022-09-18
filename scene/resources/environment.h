@@ -183,6 +183,15 @@ private:
 
 	void _update_fog();
 
+	// Depth Fog
+	bool fog_depth_enabled = false;
+	float fog_depth_curve = 1.0;
+	float fog_depth_density = 1.0;
+	float fog_depth_begin = 10.0;
+	float fog_depth_end = 100.0;
+
+	void _update_fog_depth();
+
 	// Volumetric Fog
 	bool volumetric_fog_enabled = false;
 	float volumetric_fog_density = 0.05;
@@ -378,6 +387,18 @@ public:
 	float get_fog_aerial_perspective() const;
 	void set_fog_sky_affect(float p_sky_affect);
 	float get_fog_sky_affect() const;
+
+	// Depth Fog
+	void set_fog_depth_enabled(bool p_enabled);
+	bool is_fog_depth_enabled() const;
+	void set_fog_depth_curve(float p_curve);
+	float get_fog_depth_curve() const;
+	void set_fog_depth_density(float p_density);
+	float get_fog_depth_density() const;
+	void set_fog_depth_begin(float p_begin);
+	float get_fog_depth_begin() const;
+	void set_fog_depth_end(float p_end);
+	float get_fog_depth_end() const;
 
 	// Volumetric Fog
 	void set_volumetric_fog_enabled(bool p_enable);

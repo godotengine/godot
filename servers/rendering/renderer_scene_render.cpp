@@ -348,6 +348,32 @@ float RendererSceneRender::environment_get_fog_aerial_perspective(RID p_env) con
 	return environment_storage.environment_get_fog_aerial_perspective(p_env);
 }
 
+// Depth Fog
+
+void RendererSceneRender::environment_set_fog_depth(RID p_env, bool p_enable, float p_curve, float p_density, float p_begin, float p_end) {
+	environment_storage.environment_set_fog_depth(p_env, p_enable, p_curve, p_density, p_begin, p_end);
+}
+
+bool RendererSceneRender::environment_get_fog_depth_enabled(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_enabled(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_curve(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_curve(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_density(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_density(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_begin(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_begin(p_env);
+}
+
+float RendererSceneRender::environment_get_fog_depth_end(RID p_env) const {
+	return environment_storage.environment_get_fog_depth_end(p_env);
+}
+
 // Volumetric Fog
 
 void RendererSceneRender::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) {

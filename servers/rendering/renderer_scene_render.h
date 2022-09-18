@@ -138,6 +138,14 @@ public:
 	float environment_get_fog_height_density(RID p_env) const;
 	float environment_get_fog_aerial_perspective(RID p_env) const;
 
+	// Depth Fog
+	void environment_set_fog_depth(RID p_env, bool p_enable, float p_curve, float p_density, float p_begin, float p_end);
+	bool environment_get_fog_depth_enabled(RID p_env) const;
+	float environment_get_fog_depth_curve(RID p_env) const;
+	float environment_get_fog_depth_density(RID p_env) const;
+	float environment_get_fog_depth_begin(RID p_env) const;
+	float environment_get_fog_depth_end(RID p_env) const;
+
 	// Volumetric Fog
 	void environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect);
 	bool environment_get_volumetric_fog_enabled(RID p_env) const;

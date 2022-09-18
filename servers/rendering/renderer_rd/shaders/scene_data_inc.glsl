@@ -50,20 +50,27 @@ struct SceneData {
 	highp float fog_height;
 	highp float fog_height_density;
 
-	mediump vec3 fog_light_color;
-	mediump float fog_sun_scatter;
+	bool fog_depth_enabled;
+	highp float fog_depth_curve;
+	highp float fog_depth_density;
+	highp float fog_depth_begin;
 
+	mediump vec3 fog_light_color;
+	highp float fog_depth_end;
+
+	mediump float fog_sun_scatter;
 	mediump float fog_aerial_perspective;
 	highp float time;
 	mediump float reflection_multiplier; // one normally, zero when rendering reflections
-	bool material_uv2_mode;
 
 	vec2 taa_jitter;
+	bool material_uv2_mode;
 	float emissive_exposure_normalization;
-	float IBL_exposure_normalization;
 
+	float IBL_exposure_normalization;
 	bool pancake_shadows;
 	uint pad1;
 	uint pad2;
-	uint pad3;
+
+	vec4 pad3;
 };

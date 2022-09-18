@@ -89,6 +89,7 @@ enum {
 	SPEC_CONSTANT_DISABLE_OMNI_LIGHTS = 2,
 	SPEC_CONSTANT_DISABLE_SPOT_LIGHTS = 3,
 	SPEC_CONSTANT_DISABLE_FOG = 4,
+	SPEC_CONSTANT_DISABLE_FOG_DEPTH = 5,
 };
 
 struct RenderDataGLES3 {
@@ -366,8 +367,18 @@ private:
 			float fog_height;
 			float fog_height_density;
 
+			uint32_t fog_depth_enabled;
+			float fog_depth_curve;
+			float fog_depth_density;
+			float fog_depth_begin;
+
 			float fog_light_color[3];
+			float fog_depth_end;
+
 			float fog_sun_scatter;
+			float pad1;
+			float pad3;
+			float pad4;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
 

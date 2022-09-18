@@ -15,6 +15,7 @@ DISABLE_LIGHT_DIRECTIONAL = false
 DISABLE_LIGHT_OMNI = false
 DISABLE_LIGHT_SPOT = false
 DISABLE_FOG = false
+DISABLE_FOG_DEPTH = false
 USE_RADIANCE_MAP = true
 
 
@@ -148,8 +149,18 @@ layout(std140) uniform SceneData { // ubo:2
 	float fog_height;
 	float fog_height_density;
 
+	bool fog_depth_enabled;
+	float fog_depth_curve;
+	float fog_depth_density;
+	float fog_depth_begin;
+
 	vec3 fog_light_color;
+	float fog_depth_end;
+
 	float fog_sun_scatter;
+	float pad1;
+	float pad3;
+	float pad4;
 }
 scene_data;
 
@@ -458,8 +469,18 @@ layout(std140) uniform SceneData { // ubo:2
 	float fog_height;
 	float fog_height_density;
 
+	bool fog_depth_enabled;
+	float fog_depth_curve;
+	float fog_depth_density;
+	float fog_depth_begin;
+
 	vec3 fog_light_color;
+	float fog_depth_end;
+
 	float fog_sun_scatter;
+	float pad1;
+	float pad3;
+	float pad4;
 }
 scene_data;
 
@@ -865,6 +886,16 @@ vec4 fog_process(vec3 vertex) {
 #endif // !DISABLE_LIGHT_DIRECTIONAL
 
 	float fog_amount = 1.0 - exp(min(0.0, -length(vertex) * scene_data.fog_density));
+
+#ifndef DISABLE_FOG_DEPTH
+	if (scene_data.fog_depth_enabled) {
+		float fog_far = scene_data.fog_depth_end > 0.0 ? scene_data.fog_depth_end : scene_data.z_far;
+		float fog_z = smoothstep(scene_data.fog_depth_begin, fog_far, length(vertex));
+
+		float fog_quad_amount = pow(fog_z, scene_data.fog_depth_curve) * scene_data.fog_depth_density;
+		fog_amount = max(fog_quad_amount, fog_amount);
+	}
+#endif
 
 	if (abs(scene_data.fog_height_density) >= 0.0001) {
 		float y = (scene_data.inv_view_matrix * vec4(vertex, 1.0)).y;

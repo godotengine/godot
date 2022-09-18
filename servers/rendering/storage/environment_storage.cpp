@@ -273,6 +273,48 @@ float RendererEnvironmentStorage::environment_get_fog_sky_affect(RID p_env) cons
 	return env->fog_sky_affect;
 }
 
+// Depth Fog
+
+void RendererEnvironmentStorage::environment_set_fog_depth(RID p_env, bool p_enable, float p_curve, float p_density, float p_begin, float p_end) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND(!env);
+	env->fog_depth_enabled = p_enable;
+	env->fog_depth_curve = p_curve;
+	env->fog_depth_density = p_density;
+	env->fog_depth_begin = p_begin;
+	env->fog_depth_end = p_end;
+}
+
+bool RendererEnvironmentStorage::environment_get_fog_depth_enabled(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0.0);
+	return env->fog_depth_enabled;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_curve(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0.0);
+	return env->fog_depth_curve;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_density(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0.0);
+	return env->fog_depth_density;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_begin(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0.0);
+	return env->fog_depth_begin;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_end(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_COND_V(!env, 0.0);
+	return env->fog_depth_end;
+}
+
 // Volumetric Fog
 
 void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) {
