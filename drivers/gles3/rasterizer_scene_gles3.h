@@ -398,15 +398,21 @@ private:
 			float IBL_exposure_normalization;
 
 			uint32_t fog_enabled;
+			uint32_t fog_mode;
 			float fog_density;
 			float fog_height;
+
 			float fog_height_density;
+			float fog_depth_curve;
+			float pad;
+			float fog_depth_begin;
 
 			float fog_light_color[3];
+			float fog_depth_end;
+
 			float fog_sun_scatter;
 
 			float shadow_bias;
-			float pad;
 			uint32_t camera_visible_layers;
 			bool pancake_shadows;
 		};

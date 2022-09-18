@@ -1203,7 +1203,7 @@ public:
 	PASS1RC(float, environment_get_white, RID)
 
 	// Fog
-	PASS10(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float)
+	PASS11(environment_set_fog, RID, bool, const Color &, float, float, float, float, float, float, float, RS::EnvironmentFogMode)
 
 	PASS1RC(bool, environment_get_fog_enabled, RID)
 	PASS1RC(Color, environment_get_fog_light_color, RID)
@@ -1214,9 +1214,16 @@ public:
 	PASS1RC(float, environment_get_fog_height, RID)
 	PASS1RC(float, environment_get_fog_height_density, RID)
 	PASS1RC(float, environment_get_fog_aerial_perspective, RID)
+	PASS1RC(RS::EnvironmentFogMode, environment_get_fog_mode, RID)
 
 	PASS2(environment_set_volumetric_fog_volume_size, int, int)
 	PASS1(environment_set_volumetric_fog_filter_active, bool)
+
+	// Depth Fog
+	PASS4(environment_set_fog_depth, RID, float, float, float)
+	PASS1RC(float, environment_get_fog_depth_curve, RID)
+	PASS1RC(float, environment_get_fog_depth_begin, RID)
+	PASS1RC(float, environment_get_fog_depth_end, RID)
 
 	// Volumentric Fog
 	PASS14(environment_set_volumetric_fog, RID, bool, float, const Color &, const Color &, float, float, float, float, float, bool, float, float, float)
