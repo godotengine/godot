@@ -2636,9 +2636,9 @@ Rect2i Image::get_used_rect() const {
 	}
 }
 
-Ref<Image> Image::get_rect(const Rect2i &p_area) const {
-	Ref<Image> img = memnew(Image(p_area.size.x, p_area.size.y, mipmaps, format));
-	img->blit_rect(Ref<Image>((Image *)this), p_area, Point2i(0, 0));
+Ref<Image> Image::get_region(const Rect2i &p_region) const {
+	Ref<Image> img = memnew(Image(p_region.size.x, p_region.size.y, mipmaps, format));
+	img->blit_rect(Ref<Image>((Image *)this), p_region, Point2i(0, 0));
 	return img;
 }
 
@@ -3362,7 +3362,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("fill_rect", "rect", "color"), &Image::fill_rect);
 
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &Image::get_used_rect);
-	ClassDB::bind_method(D_METHOD("get_rect", "rect"), &Image::get_rect);
+	ClassDB::bind_method(D_METHOD("get_region", "region"), &Image::get_region);
 
 	ClassDB::bind_method(D_METHOD("copy_from", "src"), &Image::copy_internals_from);
 

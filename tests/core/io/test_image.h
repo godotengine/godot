@@ -162,7 +162,7 @@ TEST_CASE("[Image] Basic getters") {
 	CHECK(image->get_size() == Vector2(8, 4));
 	CHECK(image->get_format() == Image::FORMAT_LA8);
 	CHECK(image->get_used_rect() == Rect2i(0, 0, 0, 0));
-	Ref<Image> image_get_rect = image->get_rect(Rect2i(0, 0, 2, 1));
+	Ref<Image> image_get_rect = image->get_region(Rect2i(0, 0, 2, 1));
 	CHECK(image_get_rect->get_size() == Vector2(2, 1));
 }
 

@@ -241,11 +241,11 @@
 				This is the same as [method get_pixel], but with a [Vector2i] argument instead of two integer arguments.
 			</description>
 		</method>
-		<method name="get_rect" qualifiers="const">
+		<method name="get_region" qualifiers="const">
 			<return type="Image" />
-			<param index="0" name="rect" type="Rect2i" />
+			<param index="0" name="region" type="Rect2i" />
 			<description>
-				Returns a new image that is a copy of the image's area specified with [param rect].
+				Returns a new [Image] that is a copy of this [Image]'s area specified with [param region].
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
