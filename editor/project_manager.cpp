@@ -1753,8 +1753,8 @@ void ProjectList::erase_selected_projects(bool p_delete_project_contents) {
 		if (_selected_project_paths.has(item.path) && item.control->is_visible()) {
 			if (p_delete_project_contents) {
 				Error err = OS::get_singleton()->move_to_trash(item.path);
-				if (err != OK) {
-					OS::get_singleton()->alert(vformat("An error occurred deleting \"%s\".\nIt will be kept in the project list.", item.project_name), "Failed to delete project");
+				if (err == ERR_SKIP) {
+					OS::get_singleton()->alert(vformat("User cancelled deletion of project \"%s\".\nIt will be kept in the project list.", item.project_name), "Cancelled operation");
 					continue;
 				}
 			}

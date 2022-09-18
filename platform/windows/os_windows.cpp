@@ -1124,6 +1124,11 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	int ret = SHFileOperationW(&sf);
 	delete[] from;
 
+	if (ret == ERROR_CANCELLED || sf.fAnyOperationsAborted) {
+		ERR_PRINT("User cancelled move_to_trash");
+		return ERR_SKIP;
+	}
+
 	if (ret) {
 		ERR_PRINT("SHFileOperation error: " + itos(ret));
 		return FAILED;
