@@ -191,7 +191,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		return Error::FAILED;
 	}
 
-	/* STEP SERIALIZE SCENE */
+	/* STEP SERIALIZE LIGHTS */
 	err = _serialize_lights(state);
 	if (err != OK) {
 		return Error::FAILED;
@@ -401,47 +401,47 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 	Array nodes;
 	for (int i = 0; i < state->nodes.size(); i++) {
 		Dictionary node;
-		Ref<GLTFNode> n = state->nodes[i];
+		Ref<GLTFNode> gltf_node = state->nodes[i];
 		Dictionary extensions;
 		node["extensions"] = extensions;
-		if (!n->get_name().is_empty()) {
-			node["name"] = n->get_name();
+		if (!gltf_node->get_name().is_empty()) {
+			node["name"] = gltf_node->get_name();
 		}
-		if (n->camera != -1) {
-			node["camera"] = n->camera;
+		if (gltf_node->camera != -1) {
+			node["camera"] = gltf_node->camera;
 		}
-		if (n->light != -1) {
+		if (gltf_node->light != -1) {
 			Dictionary lights_punctual;
 			extensions["KHR_lights_punctual"] = lights_punctual;
-			lights_punctual["light"] = n->light;
+			lights_punctual["light"] = gltf_node->light;
 		}
-		if (n->mesh != -1) {
-			node["mesh"] = n->mesh;
+		if (gltf_node->mesh != -1) {
+			node["mesh"] = gltf_node->mesh;
 		}
-		if (n->skin != -1) {
-			node["skin"] = n->skin;
+		if (gltf_node->skin != -1) {
+			node["skin"] = gltf_node->skin;
 		}
-		if (n->skeleton != -1 && n->skin < 0) {
+		if (gltf_node->skeleton != -1 && gltf_node->skin < 0) {
 		}
-		if (n->xform != Transform3D()) {
-			node["matrix"] = _xform_to_array(n->xform);
-		}
-
-		if (!n->rotation.is_equal_approx(Quaternion())) {
-			node["rotation"] = _quaternion_to_array(n->rotation);
+		if (gltf_node->xform != Transform3D()) {
+			node["matrix"] = _xform_to_array(gltf_node->xform);
 		}
 
-		if (!n->scale.is_equal_approx(Vector3(1.0f, 1.0f, 1.0f))) {
-			node["scale"] = _vec3_to_arr(n->scale);
+		if (!gltf_node->rotation.is_equal_approx(Quaternion())) {
+			node["rotation"] = _quaternion_to_array(gltf_node->rotation);
 		}
 
-		if (!n->position.is_zero_approx()) {
-			node["translation"] = _vec3_to_arr(n->position);
+		if (!gltf_node->scale.is_equal_approx(Vector3(1.0f, 1.0f, 1.0f))) {
+			node["scale"] = _vec3_to_arr(gltf_node->scale);
 		}
-		if (n->children.size()) {
+
+		if (!gltf_node->position.is_zero_approx()) {
+			node["translation"] = _vec3_to_arr(gltf_node->position);
+		}
+		if (gltf_node->children.size()) {
 			Array children;
-			for (int j = 0; j < n->children.size(); j++) {
-				children.push_back(n->children[j]);
+			for (int j = 0; j < gltf_node->children.size(); j++) {
+				children.push_back(gltf_node->children[j]);
 			}
 			node["children"] = children;
 		}
@@ -450,7 +450,7 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 			Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
 			ERR_CONTINUE(ext.is_null());
 			ERR_CONTINUE(!state->scene_nodes.find(i));
-			Error err = ext->export_node(state, n, state->json, state->scene_nodes[i]);
+			Error err = ext->export_node(state, gltf_node, node, state->scene_nodes[i]);
 			ERR_CONTINUE(err != OK);
 		}
 
@@ -5046,7 +5046,7 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> sta
 	return mi;
 }
 
-Node3D *GLTFDocument::_generate_light(Ref<GLTFState> state, const GLTFNodeIndex node_index) {
+Light3D *GLTFDocument::_generate_light(Ref<GLTFState> state, const GLTFNodeIndex node_index) {
 	Ref<GLTFNode> gltf_node = state->nodes[node_index];
 
 	ERR_FAIL_INDEX_V(gltf_node->light, state->lights.size(), nullptr);
@@ -5102,6 +5102,7 @@ Node3D *GLTFDocument::_generate_spatial(Ref<GLTFState> state, const GLTFNodeInde
 
 	return spatial;
 }
+
 void GLTFDocument::_convert_scene_node(Ref<GLTFState> state, Node *p_current, const GLTFNodeIndex p_gltf_parent, const GLTFNodeIndex p_gltf_root) {
 	bool retflag = true;
 	_check_visibility(p_current, retflag);
