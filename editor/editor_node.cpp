@@ -465,15 +465,15 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (ED_IS_SHORTCUT("editor/editor_2d", p_event)) {
-			_editor_select(EDITOR_2D);
+			editor_select(EDITOR_2D);
 		} else if (ED_IS_SHORTCUT("editor/editor_3d", p_event)) {
-			_editor_select(EDITOR_3D);
+			editor_select(EDITOR_3D);
 		} else if (ED_IS_SHORTCUT("editor/editor_script", p_event)) {
-			_editor_select(EDITOR_SCRIPT);
+			editor_select(EDITOR_SCRIPT);
 		} else if (ED_IS_SHORTCUT("editor/editor_help", p_event)) {
 			emit_signal(SNAME("request_help_search"), "");
 		} else if (ED_IS_SHORTCUT("editor/editor_assetlib", p_event) && AssetLibraryEditorPlugin::is_available()) {
-			_editor_select(EDITOR_ASSETLIB);
+			editor_select(EDITOR_ASSETLIB);
 		} else if (ED_IS_SHORTCUT("editor/editor_next", p_event)) {
 			_editor_select_next();
 		} else if (ED_IS_SHORTCUT("editor/editor_prev", p_event)) {
@@ -584,7 +584,7 @@ void EditorNode::_update_from_settings() {
 void EditorNode::_select_default_main_screen_plugin() {
 	if (EDITOR_3D < main_editor_buttons.size() && main_editor_buttons[EDITOR_3D]->is_visible()) {
 		// If the 3D editor is enabled, use this as the default.
-		_editor_select(EDITOR_3D);
+		editor_select(EDITOR_3D);
 		return;
 	}
 
@@ -593,12 +593,12 @@ void EditorNode::_select_default_main_screen_plugin() {
 	for (int i = 0; i < main_editor_buttons.size(); i++) {
 		Button *editor_button = main_editor_buttons[i];
 		if (editor_button->is_visible()) {
-			_editor_select(i);
+			editor_select(i);
 			return;
 		}
 	}
 
-	_editor_select(-1);
+	editor_select(-1);
 }
 
 void EditorNode::_notification(int p_what) {
@@ -1190,7 +1190,7 @@ void EditorNode::_editor_select_next() {
 		}
 	} while (!main_editor_buttons[editor]->is_visible());
 
-	_editor_select(editor);
+	editor_select(editor);
 }
 
 void EditorNode::_open_command_palette() {
@@ -1208,7 +1208,7 @@ void EditorNode::_editor_select_prev() {
 		}
 	} while (!main_editor_buttons[editor]->is_visible());
 
-	_editor_select(editor);
+	editor_select(editor);
 }
 
 Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_deps) {
@@ -2390,7 +2390,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 				// Update screen main_plugin.
-				_editor_select(plugin_index);
+				editor_select(plugin_index);
 				main_plugin->edit(current_obj);
 			} else {
 				editor_plugin_screen->edit(current_obj);
@@ -3305,7 +3305,7 @@ VBoxContainer *EditorNode::get_main_screen_control() {
 	return main_screen_vbox;
 }
 
-void EditorNode::_editor_select(int p_which) {
+void EditorNode::editor_select(int p_which) {
 	static bool selecting = false;
 	if (selecting || changing_scene) {
 		return;
@@ -3359,7 +3359,7 @@ void EditorNode::select_editor_by_name(const String &p_name) {
 
 	for (int i = 0; i < main_editor_buttons.size(); i++) {
 		if (main_editor_buttons[i]->get_text() == p_name) {
-			_editor_select(i);
+			editor_select(i);
 			return;
 		}
 	}
@@ -3372,7 +3372,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		Button *tb = memnew(Button);
 		tb->set_flat(true);
 		tb->set_toggle_mode(true);
-		tb->connect("pressed", callable_mp(singleton, &EditorNode::_editor_select).bind(singleton->main_editor_buttons.size()));
+		tb->connect("pressed", callable_mp(singleton, &EditorNode::editor_select).bind(singleton->main_editor_buttons.size()));
 		tb->set_name(p_editor->get_name());
 		tb->set_text(p_editor->get_name());
 
@@ -3406,7 +3406,7 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
 			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
 				if (singleton->main_editor_buttons[i]->is_pressed()) {
-					singleton->_editor_select(EDITOR_SCRIPT);
+					singleton->editor_select(EDITOR_SCRIPT);
 				}
 
 				memdelete(singleton->main_editor_buttons[i]);
@@ -3630,7 +3630,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 		int index = p_state["editor_index"];
 		if (current < 2) { // If currently in spatial/2d, only switch to spatial/2d. If currently in script, stay there.
 			if (index < 2 || !get_edited_scene()) {
-				_editor_select(index);
+				editor_select(index);
 			}
 		}
 	}
@@ -3641,9 +3641,9 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 			int n2d = 0, n3d = 0;
 			_find_node_types(get_edited_scene(), n2d, n3d);
 			if (n2d > n3d) {
-				_editor_select(EDITOR_2D);
+				editor_select(EDITOR_2D);
 			} else if (n3d > n2d) {
-				_editor_select(EDITOR_3D);
+				editor_select(EDITOR_3D);
 			}
 		}
 	}
@@ -5935,7 +5935,7 @@ void EditorNode::_feature_profile_changed() {
 		if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
 				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) && singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
 				(AssetLibraryEditorPlugin::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
-			_editor_select(EDITOR_2D);
+			editor_select(EDITOR_2D);
 		}
 	} else {
 		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), false);
@@ -5958,19 +5958,14 @@ void EditorNode::_bind_methods() {
 	GLOBAL_DEF("editor/scene/scene_naming", SCENE_NAME_CASING_SNAKE_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("editor/scene/scene_naming", PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"));
 	ClassDB::bind_method("edit_current", &EditorNode::edit_current);
-	ClassDB::bind_method("_editor_select", &EditorNode::_editor_select);
-	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
 
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 
-	ClassDB::bind_method("_get_scene_metadata", &EditorNode::_get_scene_metadata);
 	ClassDB::bind_method("set_edited_scene", &EditorNode::set_edited_scene);
 	ClassDB::bind_method("open_request", &EditorNode::open_request);
 	ClassDB::bind_method("edit_foreign_resource", &EditorNode::edit_foreign_resource);
 	ClassDB::bind_method("is_resource_read_only", &EditorNode::is_resource_read_only);
-	ClassDB::bind_method("_close_messages", &EditorNode::_close_messages);
-	ClassDB::bind_method("_show_messages", &EditorNode::_show_messages);
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
@@ -5982,13 +5977,6 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
 
 	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
-
-	ClassDB::bind_method(D_METHOD("_on_plugin_ready"), &EditorNode::_on_plugin_ready); // Still used by some connect_compat.
-
-	ClassDB::bind_method("_screenshot", &EditorNode::_screenshot);
-	ClassDB::bind_method("_save_screenshot", &EditorNode::_save_screenshot);
-
-	ClassDB::bind_method("_version_button_pressed", &EditorNode::_version_button_pressed);
 
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));

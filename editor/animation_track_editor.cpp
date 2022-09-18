@@ -3424,9 +3424,6 @@ void AnimationTrackEditGroup::_zoom_changed() {
 	queue_redraw();
 }
 
-void AnimationTrackEditGroup::_bind_methods() {
-}
-
 AnimationTrackEditGroup::AnimationTrackEditGroup() {
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
@@ -6461,16 +6458,11 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 }
 
 void AnimationTrackEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_animation_update"), &AnimationTrackEditor::_animation_update);
-	ClassDB::bind_method(D_METHOD("_track_grab_focus"), &AnimationTrackEditor::_track_grab_focus);
-	ClassDB::bind_method(D_METHOD("_update_tracks"), &AnimationTrackEditor::_update_tracks);
-	ClassDB::bind_method(D_METHOD("_redraw_tracks"), &AnimationTrackEditor::_redraw_tracks);
-	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"), &AnimationTrackEditor::_clear_selection_for_anim);
-	ClassDB::bind_method(D_METHOD("_select_at_anim"), &AnimationTrackEditor::_select_at_anim);
-
-	ClassDB::bind_method(D_METHOD("_key_selected"), &AnimationTrackEditor::_key_selected); // Still used by some connect_compat.
-	ClassDB::bind_method(D_METHOD("_key_deselected"), &AnimationTrackEditor::_key_deselected); // Still used by some connect_compat.
-	ClassDB::bind_method(D_METHOD("_clear_selection"), &AnimationTrackEditor::_clear_selection); // Still used by some connect_compat.
+	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
+	ClassDB::bind_method("_track_grab_focus", &AnimationTrackEditor::_track_grab_focus);
+	ClassDB::bind_method("_clear_selection_for_anim", &AnimationTrackEditor::_clear_selection_for_anim);
+	ClassDB::bind_method("_select_at_anim", &AnimationTrackEditor::_select_at_anim);
+	ClassDB::bind_method("_clear_selection", &AnimationTrackEditor::_clear_selection);
 
 	ClassDB::bind_method(D_METHOD("_bezier_track_set_key_handle_mode", "animation", "track_idx", "key_idx", "key_handle_mode", "key_handle_set_mode"), &AnimationTrackEditor::_bezier_track_set_key_handle_mode, DEFVAL(Animation::HANDLE_SET_MODE_NONE));
 

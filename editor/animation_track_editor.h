@@ -280,7 +280,6 @@ class AnimationTrackEditGroup : public Control {
 	void _zoom_changed();
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
@@ -407,7 +406,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
 
-	void _clear_selection(bool p_update = false);
 	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
 	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 
@@ -424,9 +422,6 @@ class AnimationTrackEditor : public VBoxContainer {
 	};
 
 	RBMap<SelectedKey, KeyInfo> selection;
-
-	void _key_selected(int p_key, bool p_single, int p_track);
-	void _key_deselected(int p_key, int p_track);
 
 	bool moving_selection = false;
 	float moving_selection_offset = 0.0f;
@@ -531,6 +526,11 @@ protected:
 	void _notification(int p_what);
 
 public:
+	// Public for use with callable_mp.
+	void _clear_selection(bool p_update = false);
+	void _key_selected(int p_key, bool p_single, int p_track);
+	void _key_deselected(int p_key, int p_track);
+
 	enum {
 		EDIT_COPY_TRACKS,
 		EDIT_COPY_TRACKS_CONFIRM,

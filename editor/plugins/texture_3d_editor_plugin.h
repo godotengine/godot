@@ -66,8 +66,6 @@ class Texture3DEditor : public Control {
 protected:
 	void _notification(int p_what);
 
-	static void _bind_methods();
-
 public:
 	void edit(Ref<Texture3D> p_texture);
 	Texture3DEditor();
