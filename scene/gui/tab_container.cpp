@@ -838,7 +838,7 @@ Size2 TabContainer::get_minimum_size() const {
 	}
 
 	Vector<Control *> controls = _get_tab_controls();
-	int max_control_height = 0;
+	Size2 largest_child_min_size;
 	for (int i = 0; i < controls.size(); i++) {
 		Control *c = controls[i];
 
@@ -847,13 +847,14 @@ Size2 TabContainer::get_minimum_size() const {
 		}
 
 		Size2 cms = c->get_combined_minimum_size();
-		ms.x = MAX(ms.x, cms.x);
-		max_control_height = MAX(max_control_height, cms.y);
+		largest_child_min_size.x = MAX(largest_child_min_size.x, cms.x);
+		largest_child_min_size.y = MAX(largest_child_min_size.y, cms.y);
 	}
-	ms.y += max_control_height;
+	ms.y += largest_child_min_size.y;
 
 	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
-	ms.x = MAX(ms.x, panel_ms.x);
+
+	ms.x = MAX(ms.x, largest_child_min_size.x + panel_ms.x);
 	ms.y += panel_ms.y;
 
 	return ms;
