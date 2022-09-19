@@ -775,6 +775,28 @@ void main() {
 #CODE : FRAGMENT
 	}
 
+// Normalize these only once if the user fragment shader set them
+// FIXME: It would be nice to have NORMAL_GET and NORMAL_SET instead to separate the read and write cases
+#ifdef NORMAL_USED
+	normal = normalize(normal);
+#endif
+#ifdef TANGENT_USED
+	tangent = normalize(tangent);
+	binormal = normalize(binormal);
+#endif
+
+#ifdef DEPTH_USED
+	vec3 ndc = vec3(screen_uv * 2.0 - 1.0, gl_FragDepth);
+	vec4 view_pos = inv_projection_matrix * vec4(ndc, 1.0);
+	// Vertex is in view space, the rays are not parallel. It is not enough to update the z component!
+	vertex = view_pos.xyz / view_pos.w;
+#ifdef USE_MULTIVIEW
+	view = -normalize(vertex_interp - scene_data.eye_offset[ViewIndex].xyz);
+#else
+	view = -normalize(vertex_interp);
+#endif //USE_MULTIVIEW
+#endif //DEPTH_USED
+
 #ifdef LIGHT_TRANSMITTANCE_USED
 #ifdef SSS_MODE_SKIN
 	transmittance_color.a = sss_strength;
@@ -821,13 +843,18 @@ void main() {
 #endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef NORMAL_MAP_USED
+	// Save the normal vector before applying the normal map.
+	// This must be used instead of normal_interp, since the
+	// user FRAGMENT code may have set NORMAL.
+	vec3 geometric_normal = normal;
 
 	normal_map.xy = normal_map.xy * 2.0 - 1.0;
 	normal_map.z = sqrt(max(0.0, 1.0 - dot(normal_map.xy, normal_map.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
 	normal = normalize(mix(normal, tangent * normal_map.x + binormal * normal_map.y + normal * normal_map.z, normal_map_depth));
-
-#endif
+#else
+#define geometric_normal normal
+#endif // NORMAL_MAP_USED
 
 #ifdef LIGHT_ANISOTROPY_USED
 
@@ -898,7 +925,7 @@ void main() {
 			float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
 
 			if (decals.data[decal_index].normal_fade > 0.0) {
-				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
+				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(geometric_normal, decals.data[decal_index].normal) * 0.5 + 0.5);
 			}
 
 			//we need ddx/ddy for mipmaps, so simulate them
@@ -1044,7 +1071,7 @@ void main() {
 #ifdef LIGHT_CLEARCOAT_USED
 
 	if (scene_data.use_reflection_cubemap) {
-		vec3 n = normalize(normal_interp); // We want to use geometric normal, not normal_map
+		vec3 n = geometric_normal; // We want to use geometric normal, not normal_map
 		float NoV = max(dot(n, view), 0.0001);
 		vec3 ref_vec = reflect(-view, n);
 		ref_vec = mix(ref_vec, n, clearcoat_roughness * clearcoat_roughness);
@@ -1262,10 +1289,10 @@ void main() {
 				vec4 pssm_coord;
 				vec3 light_dir = directional_lights.data[i].direction;
 
-#define BIAS_FUNC(m_var, m_idx)                                                                                                                                       \
-	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                                                                                           \
-	vec3 normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp)))) * directional_lights.data[i].shadow_normal_bias[m_idx]; \
-	normal_bias -= light_dir * dot(light_dir, normal_bias);                                                                                                           \
+#define BIAS_FUNC(m_var, m_idx)                                                                                                                       \
+	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                                                                           \
+	vec3 normal_bias = geometric_normal * (1.0 - max(0.0, dot(light_dir, -geometric_normal))) * directional_lights.data[i].shadow_normal_bias[m_idx]; \
+	normal_bias -= light_dir * dot(light_dir, normal_bias);                                                                                           \
 	m_var.xyz += normal_bias;
 
 				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
@@ -1414,7 +1441,7 @@ void main() {
 				vec4 pssm_coord;
 				float blur_factor;
 				vec3 light_dir = directional_lights.data[i].direction;
-				vec3 base_normal_bias = normalize(normal_interp) * (1.0 - max(0.0, dot(light_dir, -normalize(normal_interp))));
+				vec3 base_normal_bias = geometric_normal * (1.0 - max(0.0, dot(light_dir, -normal)));
 
 #define BIAS_FUNC(m_var, m_idx)                                                                 \
 	m_var.xyz += light_dir * directional_lights.data[i].shadow_bias[m_idx];                     \
@@ -1534,7 +1561,7 @@ void main() {
 #endif
 			blur_shadow(shadow);
 
-			light_compute(normal, directional_lights.data[i].direction, normalize(view), 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, true, shadow, f0, orms, 1.0, albedo, alpha,
+			light_compute(normal, directional_lights.data[i].direction, view, 0.0, directional_lights.data[i].color * directional_lights.data[i].energy, true, shadow, f0, orms, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -1550,7 +1577,7 @@ void main() {
 					rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+					clearcoat, clearcoat_roughness, geometric_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 					binormal, tangent, anisotropy,
@@ -1597,7 +1624,7 @@ void main() {
 					rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+					clearcoat, clearcoat_roughness, geometric_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 					tangent,
@@ -1642,7 +1669,7 @@ void main() {
 					rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-					clearcoat, clearcoat_roughness, normalize(normal_interp),
+					clearcoat, clearcoat_roughness, geometric_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 					tangent,

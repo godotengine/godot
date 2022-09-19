@@ -971,6 +971,9 @@ void main() {
 
 	float alpha = 1.0;
 
+#define projection_matrix scene_data.projection_matrix
+#define inv_projection_matrix scene_data.inv_projection_matrix
+
 #if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 binormal = normalize(binormal_interp);
 	vec3 tangent = normalize(tangent_interp);
@@ -1029,6 +1032,24 @@ void main() {
 #CODE : FRAGMENT
 	}
 
+// Normalize these only once if the user fragment shader set them
+// FIXME: It would be nice to have NORMAL_GET and NORMAL_SET instead to separate the read and write cases
+#ifdef NORMAL_USED
+	normal = normalize(normal);
+#endif
+#ifdef TANGENT_USED
+	tangent = normalize(tangent);
+	binormal = normalize(binormal);
+#endif
+
+#ifdef DEPTH_USED
+	vec3 ndc = vec3(screen_uv * 2.0 - 1.0, gl_FragDepth);
+	vec4 view_pos = inv_projection_matrix * vec4(ndc, 1.0);
+	// Vertex is in view space, the rays are not parallel. It is not enough to update the z component!
+	vertex = view_pos.xyz / view_pos.w;
+	view = -normalize(vertex);
+#endif
+
 #ifndef USE_SHADOW_TO_OPACITY
 
 #if defined(ALPHA_SCISSOR_USED)
@@ -1050,13 +1071,18 @@ void main() {
 #endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef NORMAL_MAP_USED
+	// Save the normal vector before applying the normal map.
+	// This must be used instead of normal_interp, since the
+	// user FRAGMENT code may have set NORMAL.
+	vec3 geometric_normal = normal;
 
 	normal_map.xy = normal_map.xy * 2.0 - 1.0;
 	normal_map.z = sqrt(max(0.0, 1.0 - dot(normal_map.xy, normal_map.xy))); //always ignore Z, as it can be RG packed, Z may be pos/neg, etc.
 
 	normal = normalize(mix(normal, tangent * normal_map.x + binormal * normal_map.y + normal * normal_map.z, normal_map_depth));
-
-#endif
+#else
+#define geometric_normal normal
+#endif // NORMAL_MAP_USED
 
 #ifdef LIGHT_ANISOTROPY_USED
 
@@ -1189,7 +1215,7 @@ void main() {
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 	//diffuse_light = normal; //
 	for (uint i = uint(0); i < scene_data.directional_light_count; i++) {
-		light_compute(normal, normalize(directional_lights[i].direction), normalize(view), directional_lights[i].size, directional_lights[i].color * directional_lights[i].energy, true, 1.0, f0, roughness, metallic, 1.0, albedo, alpha,
+		light_compute(normal, normalize(directional_lights[i].direction), view, directional_lights[i].size, directional_lights[i].color * directional_lights[i].energy, true, 1.0, f0, roughness, metallic, 1.0, albedo, alpha,
 #ifdef LIGHT_BACKLIGHT_USED
 				backlight,
 #endif
@@ -1197,7 +1223,7 @@ void main() {
 				rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
+				clearcoat, clearcoat_roughness, geometric_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal,
@@ -1222,7 +1248,7 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
+				clearcoat, clearcoat_roughness, geometric_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 				binormal, tangent, anisotropy,
@@ -1245,7 +1271,7 @@ void main() {
 				rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
-				clearcoat, clearcoat_roughness, normalize(normal_interp),
+				clearcoat, clearcoat_roughness, geometric_normal,
 #endif
 #ifdef LIGHT_ANISOTROPY_USED
 				tangent,
