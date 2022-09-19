@@ -566,8 +566,8 @@ void NavigationRegion2D::_map_changed(RID p_map) {
 #endif // DEBUG_ENABLED
 }
 
-TypedArray<String> NavigationRegion2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node2D::get_configuration_warnings();
+PackedStringArray NavigationRegion2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!navpoly.is_valid()) {

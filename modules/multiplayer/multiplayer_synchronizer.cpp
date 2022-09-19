@@ -94,8 +94,8 @@ void MultiplayerSynchronizer::_update_process() {
 	}
 }
 
-TypedArray<String> MultiplayerSynchronizer::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (root_path.is_empty() || !has_node(root_path)) {
 		warnings.push_back(RTR("A valid NodePath must be set in the \"Root Path\" property in order for MultiplayerSynchronizer to be able to synchronize properties."));

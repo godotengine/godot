@@ -136,7 +136,7 @@ public:
 	void remove_exception(const Object *p_object);
 	void clear_exceptions();
 
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 };
 
 #endif // SHAPE_CAST_3D_H

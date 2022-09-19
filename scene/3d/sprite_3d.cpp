@@ -1285,8 +1285,8 @@ StringName AnimatedSprite3D::get_animation() const {
 	return animation;
 }
 
-TypedArray<String> AnimatedSprite3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = SpriteBase3D::get_configuration_warnings();
+PackedStringArray AnimatedSprite3D::get_configuration_warnings() const {
+	PackedStringArray warnings = SpriteBase3D::get_configuration_warnings();
 	if (frames.is_null()) {
 		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
 	}

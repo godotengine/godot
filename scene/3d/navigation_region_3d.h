@@ -90,7 +90,7 @@ public:
 	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

@@ -391,8 +391,8 @@ Array ShapeCast2D::_get_collision_result() const {
 	return ret;
 }
 
-TypedArray<String> ShapeCast2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node2D::get_configuration_warnings();
+PackedStringArray ShapeCast2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (shape.is_null()) {
 		warnings.push_back(RTR("This node cannot interact with other objects unless a Shape2D is assigned."));

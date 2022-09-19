@@ -168,8 +168,8 @@ bool CollisionShape2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	return shape->_edit_is_selected_on_click(p_point, p_tolerance);
 }
 
-TypedArray<String> CollisionShape2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray CollisionShape2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		warnings.push_back(RTR("CollisionShape2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));

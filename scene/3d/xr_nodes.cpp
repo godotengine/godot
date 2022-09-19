@@ -88,8 +88,8 @@ void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	}
 }
 
-TypedArray<String> XRCamera3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray XRCamera3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		// must be child node of XROrigin3D!
@@ -414,8 +414,8 @@ XRNode3D::~XRNode3D() {
 	xr_server->disconnect("tracker_removed", callable_mp(this, &XRNode3D::_removed_tracker));
 }
 
-TypedArray<String> XRNode3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray XRNode3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		// must be child node of XROrigin!
@@ -582,8 +582,8 @@ Plane XRAnchor3D::get_plane() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TypedArray<String> XROrigin3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray XROrigin3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (is_visible() && is_inside_tree()) {
 		if (tracked_camera == nullptr) {

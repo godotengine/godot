@@ -145,7 +145,7 @@ public:
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_sub_emitter(const NodePath &p_path);
 	NodePath get_sub_emitter() const;
