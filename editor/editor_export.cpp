@@ -64,6 +64,9 @@ bool EditorExportPreset::_set(const StringName &p_name, const Variant &p_value) 
 	if (values.has(p_name)) {
 		values[p_name] = p_value;
 		EditorExport::singleton->save_presets();
+		if (update_visibility[p_name]) {
+			property_list_changed_notify();
+		}
 		return true;
 	}
 
@@ -81,7 +84,7 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-		if (platform->get_option_visibility(E->get().name, values)) {
+		if (platform->get_option_visibility(this, E->get().name, values)) {
 			p_list->push_back(E->get());
 		}
 	}
@@ -451,6 +454,7 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	for (List<ExportOption>::Element *E = options.front(); E; E = E->next()) {
 		preset->properties.push_back(E->get().option);
 		preset->values[E->get().option.name] = E->get().default_value;
+		preset->update_visibility[E->get().option.name] = E->get().update_visibility;
 	}
 
 	return preset;
@@ -1567,12 +1571,14 @@ void EditorExport::update_export_presets() {
 			// Clear the preset properties and values prior to reloading
 			preset->properties.clear();
 			preset->values.clear();
+			preset->update_visibility.clear();
 
 			for (List<EditorExportPlatform::ExportOption>::Element *E = options.front(); E; E = E->next()) {
 				preset->properties.push_back(E->get().option);
 
 				StringName option_name = E->get().option.name;
 				preset->values[option_name] = previous_values.has(option_name) ? previous_values[option_name] : E->get().default_value;
+				preset->update_visibility[option_name] = E->get().update_visibility;
 			}
 		}
 	}
