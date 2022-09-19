@@ -262,6 +262,18 @@ public:
 
 VARIANT_ENUM_CAST(PlaneMesh::Orientation)
 
+/*
+	A flat rectangle, inherits from PlaneMesh but defaults to facing the Z-plane.
+*/
+class QuadMesh : public PlaneMesh {
+	GDCLASS(QuadMesh, PlaneMesh);
+
+public:
+	QuadMesh() {
+		set_orientation(FACE_Z);
+	}
+};
+
 /**
 	A prism shapen, handy for ramps, triangles, etc.
 */
