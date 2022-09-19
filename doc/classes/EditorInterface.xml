@@ -72,7 +72,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_editor_scale" qualifiers="const">
+		<method name="get_editor_scale" qualifiers="static">
 			<return type="float" />
 			<description>
 				Returns the actual scale of the editor UI ([code]1.0[/code] being 100% scale). This can be used to adjust position and dimensions of the UI added by plugins.

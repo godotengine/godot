@@ -277,7 +277,7 @@ Control *EditorInterface::get_base_control() {
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
-float EditorInterface::get_editor_scale() const {
+float EditorInterface::get_editor_scale() {
 	return EDSCALE;
 }
 
@@ -336,7 +336,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
 	ClassDB::bind_method(D_METHOD("get_script_editor"), &EditorInterface::get_script_editor);
 	ClassDB::bind_method(D_METHOD("get_base_control"), &EditorInterface::get_base_control);
-	ClassDB::bind_method(D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
+	ClassDB::bind_static_method(EditorInterface::get_class_static(), D_METHOD("get_editor_scale"), &EditorInterface::get_editor_scale);
 	ClassDB::bind_method(D_METHOD("edit_resource", "resource"), &EditorInterface::edit_resource);
 	ClassDB::bind_method(D_METHOD("edit_node", "node"), &EditorInterface::edit_node);
 	ClassDB::bind_method(D_METHOD("edit_script", "script", "line", "column", "grab_focus"), &EditorInterface::edit_script, DEFVAL(-1), DEFVAL(0), DEFVAL(true));
