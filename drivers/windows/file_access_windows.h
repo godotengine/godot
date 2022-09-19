@@ -51,7 +51,7 @@ class FileAccessWindows : public FileAccess {
 	void _close();
 
 public:
-	virtual Error _open(const String &p_path, int p_mode_flags) override; ///< open a file
+	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
 	virtual String get_path() const override; /// returns the path for the current open file

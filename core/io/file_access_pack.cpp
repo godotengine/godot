@@ -259,7 +259,7 @@ Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::Pack
 
 //////////////////////////////////////////////////////////////////
 
-Error FileAccessPack::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessPack::open_internal(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 	return ERR_UNAVAILABLE;
 }

@@ -228,8 +228,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatLoader);
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
-	GDREGISTER_CLASS(core_bind::File);
-	GDREGISTER_CLASS(core_bind::Directory);
+	GDREGISTER_ABSTRACT_CLASS(FileAccess);
+	GDREGISTER_ABSTRACT_CLASS(DirAccess);
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);
 	GDREGISTER_CLASS(core_bind::Semaphore);

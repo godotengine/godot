@@ -45,15 +45,12 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/config/project_settings.h"
-#include "core/core_bind.h"
 #include "core/error/error_macros.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
-
-using namespace core_bind;
 
 #endif
 
@@ -408,13 +405,12 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	if (!icu_data_loaded) {
 		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
-		Ref<File> f;
-		f.instantiate();
-		if (f->open(filename, File::READ) != OK) {
+		Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
+		if (f.is_null()) {
 			return false;
 		}
 		uint64_t len = f->get_length();
-		PackedByteArray icu_data = f->get_buffer(len);
+		PackedByteArray icu_data = f->_get_buffer(len);
 
 		UErrorCode err = U_ZERO_ERROR;
 		udata_setCommonData(icu_data.ptr(), &err);
@@ -455,16 +451,15 @@ bool TextServerAdvanced::save_support_data(const String &p_filename) const {
 
 	// Store data to the res file if it's available.
 
-	Ref<File> f;
-	f.instantiate();
-	if (f->open(p_filename, File::WRITE) != OK) {
+	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::WRITE);
+	if (f.is_null()) {
 		return false;
 	}
 
 	PackedByteArray icu_data;
 	icu_data.resize(U_ICUDATA_SIZE);
 	memcpy(icu_data.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
-	f->store_buffer(icu_data);
+	f->_store_buffer(icu_data);
 
 	return true;
 #else
