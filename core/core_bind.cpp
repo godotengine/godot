@@ -810,14 +810,13 @@ Dictionary Geometry2D::make_atlas(const Vector<Size2> &p_rects) {
 
 	::Geometry2D::make_atlas(rects, result, size);
 
-	Size2 r_size = size;
 	Vector<Point2> r_result;
 	for (int i = 0; i < result.size(); i++) {
 		r_result.push_back(result[i]);
 	}
 
 	ret["points"] = r_result;
-	ret["size"] = r_size;
+	ret["size"] = size;
 
 	return ret;
 }
