@@ -812,7 +812,7 @@ struct _VariantCall {
 		if (size == 0) {
 			return dest;
 		}
-		ERR_FAIL_COND_V_MSG(size % sizeof(Vector2), dest, "PackedByteArray size must be a multiple of 8 (size of Vector2) to convert to PackedFloat32Array.");
+		ERR_FAIL_COND_V_MSG(size % sizeof(Vector2), dest, "PackedByteArray size must be a multiple of Vector2 size to convert to PackedVector2Array.");
 		const uint8_t *r = p_instance->ptr();
 		dest.resize(size / sizeof(Vector2));
 		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
@@ -831,6 +831,20 @@ struct _VariantCall {
 		dest.resize(size / sizeof(Vector3));
 		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector3));
+		return dest;
+	}
+
+	static PackedColorArray func_PackedByteArray_decode_color_array(PackedByteArray *p_instance) {
+		uint64_t size = p_instance->size();
+		PackedColorArray dest;
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(Color), dest, "PackedByteArray size must be a multiple of 32 (size of Color) size to convert to PackedColorArray.");
+		const uint8_t *r = p_instance->ptr();
+		dest.resize(size / sizeof(Color));
+		ERR_FAIL_COND_V(dest.size() == 0, dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(Color));
 		return dest;
 	}
 
@@ -2146,6 +2160,7 @@ static void _register_variant_builtin_methods() {
 	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_double_array, sarray(), varray());
 	bind_function(PackedByteArray, to_vector2_array, _VariantCall::func_PackedByteArray_decode_vector2_array, sarray(), varray());
 	bind_function(PackedByteArray, to_vector3_array, _VariantCall::func_PackedByteArray_decode_vector3_array, sarray(), varray());
+	bind_function(PackedByteArray, to_color_array, _VariantCall::func_PackedByteArray_decode_color_array, sarray(), varray());
 
 	bind_functionnc(PackedByteArray, encode_u8, _VariantCall::func_PackedByteArray_encode_u8, sarray("byte_offset", "value"), varray());
 	bind_functionnc(PackedByteArray, encode_s8, _VariantCall::func_PackedByteArray_encode_s8, sarray("byte_offset", "value"), varray());
