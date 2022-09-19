@@ -468,8 +468,8 @@ AABB VoxelGI::get_aabb() const {
 	return AABB(-extents, extents * 2);
 }
 
-TypedArray<String> VoxelGI::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray VoxelGI::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		warnings.push_back(RTR("VoxelGIs are not supported by the OpenGL video driver.\nUse a LightmapGI instead."));

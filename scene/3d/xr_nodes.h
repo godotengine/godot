@@ -55,7 +55,7 @@ protected:
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -107,7 +107,7 @@ public:
 
 	Ref<XRPose> get_pose();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	XRNode3D();
 	~XRNode3D();
@@ -187,7 +187,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_tracked_camera(XRCamera3D *p_tracked_camera);
 	XRCamera3D *get_tracked_camera() const;

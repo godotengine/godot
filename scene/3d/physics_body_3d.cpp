@@ -982,10 +982,10 @@ TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
 	return ret;
 }
 
-TypedArray<String> RigidBody3D::get_configuration_warnings() const {
+PackedStringArray RigidBody3D::get_configuration_warnings() const {
 	Transform3D t = get_transform();
 
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (ABS(t.basis.get_column(0).length() - 1.0) > 0.05 || ABS(t.basis.get_column(1).length() - 1.0) > 0.05 || ABS(t.basis.get_column(2).length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));

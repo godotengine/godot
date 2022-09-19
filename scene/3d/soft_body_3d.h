@@ -125,7 +125,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 public:
 	RID get_physics_rid() const { return physics_rid; }

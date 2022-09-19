@@ -157,7 +157,7 @@ public:
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 
