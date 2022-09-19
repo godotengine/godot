@@ -159,6 +159,15 @@
 				Sets the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
+		<method name="set_restart_if_changed">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="restart" type="bool" />
+			<description>
+				Sets whether a setting requires restarting the editor to properly take effect.
+				[b]Note:[/b] This is just a hint to display to the user that the editor must be restarted for changes to take effect. Enabling [method set_restart_if_changed] does [i]not[/i] delay the setting being set when changed.
+			</description>
+		</method>
 		<method name="set_setting">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
