@@ -124,6 +124,12 @@
 				Returns a list of all nodes assigned to the given group.
 			</description>
 		</method>
+		<method name="get_process_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the time elapsed since the last rendering frame, in seconds.
+			</description>
+		</method>
 		<method name="get_processed_tweens">
 			<return type="Tween[]" />
 			<description>
