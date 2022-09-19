@@ -69,10 +69,6 @@ struct _NO_DISCARD_ Vector2 {
 		return coord[p_idx];
 	}
 
-	_FORCE_INLINE_ void set_all(const real_t p_value) {
-		x = y = p_value;
-	}
-
 	_FORCE_INLINE_ Vector2::Axis min_axis_index() const {
 		return x < y ? Vector2::AXIS_X : Vector2::AXIS_Y;
 	}
