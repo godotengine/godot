@@ -88,6 +88,21 @@
 		<member name="fog_density" type="float" setter="set_fog_density" getter="get_fog_density" default="0.01">
 			The [i]exponential[/i] fog density to use. Higher values result in a more dense fog. Fog rendering is exponential as in real life.
 		</member>
+		<member name="fog_depth_begin" type="float" setter="set_fog_depth_begin" getter="get_fog_depth_begin" default="10.0">
+			The fog's depth starting distance from the camera.
+		</member>
+		<member name="fog_depth_curve" type="float" setter="set_fog_depth_curve" getter="get_fog_depth_curve" default="1.0">
+			The fog depth's intensity curve. A number of presets are available in the Inspector by right-clicking the curve.
+		</member>
+		<member name="fog_depth_density" type="float" setter="set_fog_depth_density" getter="get_fog_depth_density" default="1.0">
+			The maximum intensity of the depth fog effect.
+		</member>
+		<member name="fog_depth_enabled" type="bool" setter="set_fog_depth_enabled" getter="is_fog_depth_enabled" default="false">
+			If [code]true[/code], the depth fog effect is enabled. When enabled, fog will appear in the distance (relative to the camera).
+		</member>
+		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
+			The fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's Camera.far value.
+		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
 			If [code]true[/code], fog effects are enabled.
 		</member>
