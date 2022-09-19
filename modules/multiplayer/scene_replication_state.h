@@ -44,7 +44,8 @@ class SceneReplicationState : public RefCounted {
 private:
 	struct TrackedNode {
 		ObjectID id;
-		uint32_t net_id = 0;
+		uint32_t sync_net_id = 0;
+		uint32_t spawn_net_id = 0;
 		uint32_t remote_peer = 0;
 		ObjectID spawner;
 		ObjectID synchronizer;
@@ -58,10 +59,6 @@ private:
 		MultiplayerSynchronizer *get_synchronizer() const { return synchronizer.is_valid() ? Object::cast_to<MultiplayerSynchronizer>(ObjectDB::get_instance(synchronizer)) : nullptr; }
 		TrackedNode() {}
 		TrackedNode(const ObjectID &p_id) { id = p_id; }
-		TrackedNode(const ObjectID &p_id, uint32_t p_net_id) {
-			id = p_id;
-			net_id = p_net_id;
-		}
 	};
 
 	struct PeerInfo {
@@ -73,7 +70,8 @@ private:
 	};
 
 	HashSet<int> known_peers;
-	uint32_t last_net_id = 0;
+	uint32_t last_sync_net_id = 0;
+	uint32_t last_spawn_net_id = 0;
 	HashMap<ObjectID, TrackedNode> tracked_nodes;
 	HashMap<int, PeerInfo> peers_info;
 	HashSet<ObjectID> spawned_nodes;
@@ -96,9 +94,13 @@ public:
 	bool update_last_node_sync(const ObjectID &p_id, uint16_t p_time);
 	bool update_sync_time(const ObjectID &p_id, uint64_t p_msec);
 
-	uint32_t get_net_id(const ObjectID &p_id) const;
-	void set_net_id(const ObjectID &p_id, uint32_t p_net_id);
-	uint32_t ensure_net_id(const ObjectID &p_id);
+	uint32_t get_sync_net_id(const ObjectID &p_id) const;
+	void set_sync_net_id(const ObjectID &p_id, uint32_t p_net_id);
+	uint32_t ensure_sync_net_id(const ObjectID &p_id);
+
+	uint32_t get_spawn_net_id(const ObjectID &p_id) const;
+	void set_spawn_net_id(const ObjectID &p_id, uint32_t p_net_id);
+	uint32_t ensure_spawn_net_id(const ObjectID &p_id);
 
 	void reset();
 	void on_peer_change(int p_peer, bool p_connected);

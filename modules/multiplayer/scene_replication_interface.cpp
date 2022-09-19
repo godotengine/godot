@@ -92,7 +92,7 @@ Error SceneReplicationInterface::on_spawn(Object *p_obj, Variant p_config) {
 	ERR_FAIL_COND_V(err != OK, err);
 	const ObjectID oid = node->get_instance_id();
 	if (multiplayer->has_multiplayer_peer() && spawner->is_multiplayer_authority()) {
-		rep_state->ensure_net_id(oid);
+		rep_state->ensure_spawn_net_id(oid);
 		_update_spawn_visibility(0, oid);
 	}
 	ERR_FAIL_COND_V(err != OK, err);
@@ -272,8 +272,8 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, int &r_len) {
 	MultiplayerSpawner *spawner = rep_state->get_spawner(oid);
 	ERR_FAIL_COND_V(!spawner || !p_node, ERR_BUG);
 
-	uint32_t nid = rep_state->get_net_id(oid);
-	ERR_FAIL_COND_V(!nid, ERR_UNCONFIGURED);
+	uint32_t net_spawn_id = rep_state->get_spawn_net_id(oid);
+	ERR_FAIL_COND_V(!net_spawn_id, ERR_UNCONFIGURED);
 
 	// Prepare custom arg and scene_id
 	uint8_t scene_id = spawner->find_spawnable_scene_index_from_object(oid);
@@ -309,7 +309,7 @@ Error SceneReplicationInterface::_make_spawn_packet(Node *p_node, int &r_len) {
 	ptr[1] = scene_id;
 	int ofs = 2;
 	ofs += encode_uint32(path_id, &ptr[ofs]);
-	ofs += encode_uint32(nid, &ptr[ofs]);
+	ofs += encode_uint32(net_spawn_id, &ptr[ofs]);
 	ofs += encode_uint32(nlen, &ptr[ofs]);
 	ofs += encode_cstring(cname.get_data(), &ptr[ofs]);
 	// Write args
@@ -335,8 +335,8 @@ Error SceneReplicationInterface::_make_despawn_packet(Node *p_node, int &r_len) 
 	uint8_t *ptr = packet_cache.ptrw();
 	ptr[0] = (uint8_t)SceneMultiplayer::NETWORK_COMMAND_DESPAWN;
 	int ofs = 1;
-	uint32_t nid = rep_state->get_net_id(oid);
-	ofs += encode_uint32(nid, &ptr[ofs]);
+	uint32_t net_spawn_id = rep_state->get_spawn_net_id(oid);
+	ofs += encode_uint32(net_spawn_id, &ptr[ofs]);
 	r_len = ofs;
 	return OK;
 }
@@ -352,7 +352,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);
 
-	uint32_t net_id = decode_uint32(&p_buffer[ofs]);
+	uint32_t net_spawn_id = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
 	uint32_t name_len = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
@@ -387,7 +387,7 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	}
 	ERR_FAIL_COND_V(!node, ERR_UNAUTHORIZED);
 	node->set_name(name);
-	rep_state->peer_add_remote(p_from, net_id, node, spawner);
+	rep_state->peer_add_remote(p_from, net_spawn_id, node, spawner);
 	// The initial state will be applied during the sync config (i.e. before _ready).
 	int state_len = p_buffer_len - ofs;
 	if (state_len) {
@@ -407,10 +407,10 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 Error SceneReplicationInterface::on_despawn_receive(int p_from, const uint8_t *p_buffer, int p_buffer_len) {
 	ERR_FAIL_COND_V_MSG(p_buffer_len < 5, ERR_INVALID_DATA, "Invalid spawn packet received");
 	int ofs = 1; // The spawn/despawn command.
-	uint32_t net_id = decode_uint32(&p_buffer[ofs]);
+	uint32_t net_spawn_id = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
 	Node *node = nullptr;
-	Error err = rep_state->peer_del_remote(p_from, net_id, &node);
+	Error err = rep_state->peer_del_remote(p_from, net_spawn_id, &node);
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(!node, ERR_BUG);
 
@@ -447,15 +447,15 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 		ERR_CONTINUE(!sync || !sync->get_replication_config().is_valid());
 		Node *node = rep_state->get_node(oid);
 		ERR_CONTINUE(!node);
-		uint32_t net_id = rep_state->get_net_id(oid);
-		if (net_id == 0 || (net_id & 0x80000000)) {
+		uint32_t net_sync_id = rep_state->get_sync_net_id(oid);
+		if (net_sync_id == 0 || (net_sync_id & 0x80000000)) {
 			int path_id = 0;
 			bool verified = multiplayer->get_path_cache()->send_object_cache(sync, p_peer, path_id);
 			ERR_CONTINUE_MSG(path_id < 0, "This should never happen!");
-			if (net_id == 0) {
+			if (net_sync_id == 0) {
 				// First time path based ID.
-				net_id = path_id | 0x80000000;
-				rep_state->set_net_id(oid, net_id | 0x80000000);
+				net_sync_id = path_id | 0x80000000;
+				rep_state->set_sync_net_id(oid, net_sync_id | 0x80000000);
 			}
 			if (!verified) {
 				// The path based sync is not yet confirmed, skipping.
@@ -478,7 +478,7 @@ void SceneReplicationInterface::_send_sync(int p_peer, uint64_t p_msec) {
 			ofs = 3;
 		}
 		if (size) {
-			ofs += encode_uint32(rep_state->get_net_id(oid), &ptr[ofs]);
+			ofs += encode_uint32(rep_state->get_sync_net_id(oid), &ptr[ofs]);
 			ofs += encode_uint32(size, &ptr[ofs]);
 			MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), &ptr[ofs], size);
 			ofs += size;
@@ -496,17 +496,17 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 	int ofs = 3;
 	rep_state->peer_sync_recv(p_from, time);
 	while (ofs + 8 < p_buffer_len) {
-		uint32_t net_id = decode_uint32(&p_buffer[ofs]);
+		uint32_t net_sync_id = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
 		uint32_t size = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
 		Node *node = nullptr;
-		if (net_id & 0x80000000) {
-			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_from, net_id & 0x7FFFFFFF));
+		if (net_sync_id & 0x80000000) {
+			MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_from, net_sync_id & 0x7FFFFFFF));
 			ERR_FAIL_COND_V(!sync || sync->get_multiplayer_authority() != p_from, ERR_UNAUTHORIZED);
 			node = sync->get_node(sync->get_root_path());
 		} else {
-			node = rep_state->peer_get_remote(p_from, net_id);
+			node = rep_state->peer_get_remote(p_from, net_sync_id);
 		}
 		if (!node) {
 			// Not received yet.

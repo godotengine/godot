@@ -46,15 +46,16 @@ SceneReplicationState::TrackedNode &SceneReplicationState::_track(const ObjectID
 
 void SceneReplicationState::_untrack(const ObjectID &p_id) {
 	if (tracked_nodes.has(p_id)) {
-		uint32_t net_id = tracked_nodes[p_id].net_id;
+		uint32_t spawn_net_id = tracked_nodes[p_id].spawn_net_id;
+		uint32_t sync_net_id = tracked_nodes[p_id].sync_net_id;
 		uint32_t peer = tracked_nodes[p_id].remote_peer;
 		tracked_nodes.erase(p_id);
 		// If it was spawned by a remote, remove it from the received nodes.
 		if (peer && peers_info.has(peer)) {
-			peers_info[peer].recv_nodes.erase(net_id);
+			peers_info[peer].recv_nodes.erase(spawn_net_id);
 		}
 		// If we spawned or synced it, we need to remove it from any peer it was sent to.
-		if (net_id || peer == 0) {
+		if (spawn_net_id || sync_net_id || peer == 0) {
 			for (KeyValue<int, PeerInfo> &E : peers_info) {
 				E.value.sync_nodes.erase(p_id);
 				E.value.spawn_nodes.erase(p_id);
@@ -94,25 +95,46 @@ bool SceneReplicationState::update_sync_time(const ObjectID &p_id, uint64_t p_ms
 	return false;
 }
 
-uint32_t SceneReplicationState::get_net_id(const ObjectID &p_id) const {
+uint32_t SceneReplicationState::get_sync_net_id(const ObjectID &p_id) const {
 	const TrackedNode *tnode = tracked_nodes.getptr(p_id);
 	ERR_FAIL_COND_V(!tnode, 0);
-	return tnode->net_id;
+	return tnode->sync_net_id;
 }
 
-void SceneReplicationState::set_net_id(const ObjectID &p_id, uint32_t p_net_id) {
+void SceneReplicationState::set_sync_net_id(const ObjectID &p_id, uint32_t p_net_id) {
 	TrackedNode *tnode = tracked_nodes.getptr(p_id);
 	ERR_FAIL_COND(!tnode);
-	tnode->net_id = p_net_id;
+	tnode->sync_net_id = p_net_id;
 }
 
-uint32_t SceneReplicationState::ensure_net_id(const ObjectID &p_id) {
+uint32_t SceneReplicationState::ensure_sync_net_id(const ObjectID &p_id) {
 	TrackedNode *tnode = tracked_nodes.getptr(p_id);
 	ERR_FAIL_COND_V(!tnode, 0);
-	if (tnode->net_id == 0) {
-		tnode->net_id = ++last_net_id;
+	if (tnode->sync_net_id == 0) {
+		tnode->sync_net_id = ++last_sync_net_id;
 	}
-	return tnode->net_id;
+	return tnode->sync_net_id;
+}
+
+uint32_t SceneReplicationState::get_spawn_net_id(const ObjectID &p_id) const {
+	const TrackedNode *tnode = tracked_nodes.getptr(p_id);
+	ERR_FAIL_COND_V(!tnode, 0);
+	return tnode->spawn_net_id;
+}
+
+void SceneReplicationState::set_spawn_net_id(const ObjectID &p_id, uint32_t p_net_id) {
+	TrackedNode *tnode = tracked_nodes.getptr(p_id);
+	ERR_FAIL_COND(!tnode);
+	tnode->spawn_net_id = p_net_id;
+}
+
+uint32_t SceneReplicationState::ensure_spawn_net_id(const ObjectID &p_id) {
+	TrackedNode *tnode = tracked_nodes.getptr(p_id);
+	ERR_FAIL_COND_V(!tnode, 0);
+	if (tnode->spawn_net_id == 0) {
+		tnode->spawn_net_id = ++last_spawn_net_id;
+	}
+	return tnode->spawn_net_id;
 }
 
 void SceneReplicationState::on_peer_change(int p_peer, bool p_connected) {
@@ -131,7 +153,8 @@ void SceneReplicationState::reset() {
 	// Tracked nodes are cleared on deletion, here we only reset the ids so they can be later re-assigned.
 	for (KeyValue<ObjectID, TrackedNode> &E : tracked_nodes) {
 		TrackedNode &tobj = E.value;
-		tobj.net_id = 0;
+		tobj.sync_net_id = 0;
+		tobj.spawn_net_id = 0;
 		tobj.remote_peer = 0;
 		tobj.last_sync = 0;
 	}
@@ -237,7 +260,7 @@ Error SceneReplicationState::peer_add_remote(int p_peer, uint32_t p_net_id, Node
 	ObjectID oid = p_node->get_instance_id();
 	TrackedNode &tobj = _track(oid);
 	tobj.spawner = p_spawner->get_instance_id();
-	tobj.net_id = p_net_id;
+	tobj.spawn_net_id = p_net_id;
 	tobj.remote_peer = p_peer;
 	tobj.last_sync = pinfo.last_recv_sync;
 	// Also track as a remote.
