@@ -65,9 +65,6 @@ struct _NO_DISCARD_ Vector4 {
 
 	_FORCE_INLINE_ void set_all(const real_t p_value);
 
-	void set_axis(const int p_axis, const real_t p_value);
-	real_t get_axis(const int p_axis) const;
-
 	Vector4::Axis min_axis_index() const;
 	Vector4::Axis max_axis_index() const;
 
