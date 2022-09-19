@@ -31,7 +31,7 @@
 #ifndef GLTF_DOCUMENT_H
 #define GLTF_DOCUMENT_H
 
-#include "gltf_defines.h"
+#include "extensions/gltf_document_extension.h"
 #include "structures/gltf_animation.h"
 
 #include "scene/3d/bone_attachment_3d.h"
@@ -44,13 +44,13 @@
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
-	TypedArray<GLTFDocumentExtension> document_extensions;
+	static Vector<Ref<GLTFDocumentExtension>> all_document_extensions;
+	Vector<Ref<GLTFDocumentExtension>> document_extensions;
 
 private:
 	const float BAKE_FPS = 30.0f;
 
 public:
-	GLTFDocument();
 	const int32_t JOINT_GROUP_SIZE = 4;
 
 	enum {
@@ -76,8 +76,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_extensions(TypedArray<GLTFDocumentExtension> p_extensions);
-	TypedArray<GLTFDocumentExtension> get_extensions() const;
+	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
+	static void unregister_all_gltf_document_extensions();
 
 private:
 	void _build_parent_hierachy(Ref<GLTFState> state);

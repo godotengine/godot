@@ -50,6 +50,15 @@
 			<description>
 			</description>
 		</method>
+		<method name="register_gltf_document_extension" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="extension" type="GLTFDocumentExtension" />
+			<param index="1" name="first_priority" type="bool" default="false" />
+			<description>
+				Registers this GLTFDocumentExtension instance with GLTFDocument. If [param first_priority] is true, this extension will be ran first. Otherwise, it will be ran last.
+				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
+			</description>
+		</method>
 		<method name="write_to_filesystem">
 			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
@@ -58,8 +67,4 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="extensions" type="GLTFDocumentExtension[]" setter="set_extensions" getter="get_extensions" default="[]">
-		</member>
-	</members>
 </class>
