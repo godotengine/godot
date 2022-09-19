@@ -426,6 +426,9 @@ void EditorProperty::_set_read_only(bool p_read_only) {
 
 void EditorProperty::set_read_only(bool p_read_only) {
 	read_only = p_read_only;
+	if (GDVIRTUAL_CALL(_set_read_only, p_read_only)) {
+		return;
+	}
 	_set_read_only(p_read_only);
 }
 
@@ -985,6 +988,8 @@ void EditorProperty::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "path"), PropertyInfo(Variant::INT, "focusable_idx")));
 
 	GDVIRTUAL_BIND(_update_property)
+	GDVIRTUAL_BIND(_set_read_only, "read_only")
+
 	ClassDB::bind_method(D_METHOD("_update_editor_property_status"), &EditorProperty::update_editor_property_status);
 }
 
