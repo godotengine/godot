@@ -48,9 +48,10 @@ void RefCounted::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("init_ref"), &RefCounted::init_ref);
 	ClassDB::bind_method(D_METHOD("reference"), &RefCounted::reference);
 	ClassDB::bind_method(D_METHOD("unreference"), &RefCounted::unreference);
+	ClassDB::bind_method(D_METHOD("get_reference_count"), &RefCounted::get_reference_count);
 }
 
-int RefCounted::reference_get_count() const {
+int RefCounted::get_reference_count() const {
 	return refcount.get();
 }
 
