@@ -27,7 +27,7 @@
 		[csharp]
 		public void DirContents(string path)
 		{
-		    var dir = DirAccess.Open(path);
+		    using var dir = DirAccess.Open(path);
 		    if (dir != null)
 		    {
 		        dir.ListDirBegin();
