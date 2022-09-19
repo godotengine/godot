@@ -1273,7 +1273,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
-		parameters.max_collisions = 4;
+		parameters.max_collisions = 6; // There can be 4 collisions between 2 walls + 2 more for the floor.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
