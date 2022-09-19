@@ -148,6 +148,8 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	} else if (!p_material->get_name().is_empty()) {
 		import_id = p_material->get_name();
 		has_import_id = true;
+	} else if (p_material->has_meta("unique_id")) {
+		import_id = p_material->get_meta("unique_id");
 	} else {
 		import_id = "@MATERIAL:" + itos(material_set.size() - 1);
 	}
