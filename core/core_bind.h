@@ -289,6 +289,7 @@ public:
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay(const Vector<Vector2> &p_points);
 	Vector<Point2> convex_hull(const Vector<Point2> &p_points);
+	TypedArray<PackedVector2Array> decompose_polygon_in_convex(const Vector<Vector2> &p_polygon);
 
 	enum PolyBooleanOperation {
 		OPERATION_UNION,
