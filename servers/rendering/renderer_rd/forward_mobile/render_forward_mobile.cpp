@@ -729,7 +729,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_DIRECTIONAL_LIGHTS;
 		}
 
-		if (!is_environment(p_render_data->environment) || environment_get_fog_enabled(p_render_data->environment)) {
+		if (!is_environment(p_render_data->environment) || !environment_get_fog_enabled(p_render_data->environment)) {
 			spec_constant_base_flags |= 1 << SPEC_CONSTANT_DISABLE_FOG;
 		}
 	}
