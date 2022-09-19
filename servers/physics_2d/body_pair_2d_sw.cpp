@@ -60,6 +60,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2 &p_point_A, const Vecto
 	contact.local_B = local_B;
 	contact.reused = true;
 	contact.normal = (p_point_A - p_point_B).normalized();
+	contact.impulse_sum = Vector2();
 	contact.mass_normal = 0; // will be computed in setup()
 
 	// attempt to determine if the contact will be reused
@@ -375,16 +376,6 @@ bool BodyPair2DSW::setup(real_t p_step) {
 		c.rA = global_A;
 		c.rB = global_B - offset_B;
 
-		if (A->can_report_contacts()) {
-			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
-		}
-
-		if (B->can_report_contacts()) {
-			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
-		}
-
 		if (report_contacts_only) {
 			collided = false;
 			continue;
@@ -415,6 +406,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 			// Apply normal + friction impulse
 			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
 
+			c.impulse_sum += P;
 			A->apply_impulse(c.rA, -P);
 			B->apply_impulse(c.rB, P);
 		}
@@ -485,8 +477,37 @@ void BodyPair2DSW::solve(real_t p_step) {
 
 		Vector2 j = c.normal * (c.acc_normal_impulse - jnOld) + tangent * (c.acc_tangent_impulse - jtOld);
 
+		c.impulse_sum += j;
 		A->apply_impulse(c.rA, -j);
 		B->apply_impulse(c.rB, j);
+	}
+}
+
+void BodyPair2DSW::close() {
+	if (contact_count < 1) {
+		return;
+	}
+
+	Vector2 offset_A = A->get_transform().get_origin();
+	Transform2D xform_Au = A->get_transform().untranslated();
+	Transform2D xform_Bu = B->get_transform();
+	xform_Bu.elements[2] -= A->get_transform().get_origin();
+
+	for (int i = 0; i < contact_count; i++) {
+		Contact &c = contacts[i];
+
+		Vector2 global_A = xform_Au.xform(c.local_A);
+		Vector2 global_B = xform_Bu.xform(c.local_B);
+
+		if (A->can_report_contacts()) {
+			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
+			A->add_contact(global_A + offset_A, -c.normal, c.depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity(), -c.impulse_sum);
+		}
+
+		if (B->can_report_contacts()) {
+			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
+			B->add_contact(global_B + offset_A, c.normal, c.depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity(), c.impulse_sum);
+		}
 	}
 }
 

@@ -55,6 +55,7 @@ class BodyPair2DSW : public Constraint2DSW {
 	struct Contact {
 		Vector2 position;
 		Vector2 normal;
+		Vector2 impulse_sum;
 		Vector2 local_A, local_B;
 		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
 		real_t acc_tangent_impulse; // accumulated tangent impulse (Pt)
@@ -86,6 +87,7 @@ class BodyPair2DSW : public Constraint2DSW {
 public:
 	bool setup(real_t p_step);
 	void solve(real_t p_step);
+	void close();
 
 	BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B);
 	~BodyPair2DSW();

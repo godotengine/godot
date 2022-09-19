@@ -266,6 +266,17 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 		}
 	}
 
+	/* REPORT CONTACTS */
+
+	{
+		Constraint2DSW *ci = constraint_island_list;
+		while (ci) {
+			//iterating each island separatedly improves cache efficiency
+			ci->close();
+			ci = ci->get_island_list_next();
+		}
+	}
+
 	{ //profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
