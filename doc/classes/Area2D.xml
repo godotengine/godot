@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		2D area that detects [CollisionObject2D] nodes overlapping, entering, or exiting. Can also alter or override local physics parameters (gravity, damping) and route audio to a custom audio bus.
+		To give the area its shape, add a [CollisionShape2D] or a [CollisionPolygon2D] node as a [i]direct[/i] child (or add multiple such nodes as direct children) of the area.
+		[b]Warning:[/b] See [ConcavePolygonShape2D] for a warning about possibly unexpected behavior when using that shape for an area.
 	</description>
 	<tutorials>
 		<link title="Using Area2D">$DOCS_URL/tutorials/physics/using_area_2d.html</link>
