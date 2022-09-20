@@ -1006,11 +1006,7 @@ static void register_builtin_method(const Vector<String> &p_argnames, const Vect
 
 	imi.call = T::call;
 	imi.validated_call = T::validated_call;
-	if (T::is_vararg()) {
-		imi.ptrcall = nullptr;
-	} else {
-		imi.ptrcall = T::ptrcall;
-	}
+	imi.ptrcall = T::ptrcall;
 
 	imi.default_arguments = p_def_args;
 	imi.argument_names = p_argnames;
