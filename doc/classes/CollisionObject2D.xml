@@ -85,8 +85,8 @@
 			<argument index="0" name="bit" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/code] in the the [member collision_layer].
-				If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/code] in the the [member collision_layer].
+				If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/code] in the [member collision_layer].
+				If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/code] in the [member collision_layer].
 			</description>
 		</method>
 		<method name="set_collision_mask_bit">
@@ -94,8 +94,8 @@
 			<argument index="0" name="bit" type="int" />
 			<argument index="1" name="value" type="bool" />
 			<description>
-				If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/code] in the the [member collision_mask].
-				If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/code] in the the [member collision_mask].
+				If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/code] in the [member collision_mask].
+				If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/code] in the [member collision_mask].
 			</description>
 		</method>
 		<method name="shape_find_owner" qualifiers="const">
