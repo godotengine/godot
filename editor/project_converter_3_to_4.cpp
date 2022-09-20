@@ -1762,6 +1762,9 @@ static const char *color_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
+static const char *source_excluded_placeholder = "__EXCLUDED_FROM_SCAN__";
+static const char *embedded_script_excluded_placeholder = "__EXCLUDED_SCRIPT_FROM_SCAN__";
+
 class ProjectConverter3To4::RegExContainer {
 public:
 	// Custom GDScript.
@@ -1950,6 +1953,723 @@ ProjectConverter3To4::ProjectConverter3To4(int p_maximum_file_size_kb, int p_max
 	maximum_line_length = p_maximum_line_length;
 }
 
+ProjectConverter3To4::SourceExcluded::Type ProjectConverter3To4::find_excluded_type(const String &literal, const String &line, int start) {
+	// Resource?
+	if (literal.begins_with("res://")) {
+		return SourceExcluded::RESOURCE_PATH;
+	}
+
+	// NodePath?
+	if (line.substr(start - 10, 9) == "NodePath(") {
+		return SourceExcluded::NODE_PATH;
+	}
+
+	// Project setting?
+	for (unsigned int current_index = 0; project_settings_renames[current_index][0]; current_index++) {
+		if (literal == project_settings_renames[current_index][0]) {
+			return SourceExcluded::PROJECT_SETTING;
+		}
+	}
+
+	// Signal? (connect/disconnect/emit_signal/is_connected)
+	for (unsigned int current_index = 0; gdscript_signals_renames[current_index][0]; current_index++) {
+		if (literal == gdscript_signals_renames[current_index][0]) {
+			return SourceExcluded::SIGNAL_NAME;
+		}
+	}
+
+	return SourceExcluded::ONE_LINE_STRING;
+}
+
+Vector<ProjectConverter3To4::SourceCode> ProjectConverter3To4::parse_gdscript(const Vector<SourceCode> &lines, Vector<SourceExcluded> &excluded) {
+	Vector<SourceCode> ret;
+	char32_t quote_chr = '"';
+	bool escaped = false;
+	bool literal = false;
+	bool node_name = false;
+	bool multiline = false;
+	String multiline_content;
+	String current_line;
+	int start = 0;
+	int column = 0;
+	int max = 0;
+	// Line numbers are used in validation process
+	int multiline_start_line_number = 1;
+
+	for (const SourceCode &source : lines) {
+		String line = source.content;
+		// Keep empty lines
+		if (line.strip_edges().is_empty()) {
+			ret.push_back({ source.line_number, line });
+			continue;
+		}
+
+		// User-defined signal?
+		if (!multiline && line.begins_with("signal ")) {
+			int begin = 7;
+			int end = line.find("(", begin);
+			String signal_name;
+			// declaration has arguments?
+			if (end != -1) {
+				signal_name = line.substr(begin, end - begin);
+			} else {
+				signal_name = line.substr(begin);
+			}
+
+			for (unsigned int current_index = 0; gdscript_signals_renames[current_index][0]; current_index++) {
+				if (signal_name == gdscript_signals_renames[current_index][0]) {
+					excluded.push_back({ SourceExcluded::SIGNAL_NAME, source.line_number, signal_name, source.content });
+					ret.push_back({ source.line_number, line.substr(0, begin) + source_excluded_placeholder + line.substr(end) });
+					break;
+				}
+			}
+
+			continue;
+		}
+
+		escaped = false;
+		start = 0;
+		column = 0;
+		if (!multiline) {
+			current_line.clear();
+		}
+		max = line.length();
+
+		while (column < max) {
+			char32_t chr = line.get(column);
+			bool break_loop = false;
+			switch (chr) {
+				case '\\': {
+					escaped = !escaped;
+					break;
+				};
+				case '\'': {
+					if (escaped) {
+						escaped = false;
+					} else if (!multiline) {
+						if (literal) {
+							if (chr == quote_chr) {
+								// end of single-quoted literal string
+								String literal_str = line.substr(start, column - start);
+								SourceExcluded::Type ex_type = node_name ? SourceExcluded::NODE_NAME : find_excluded_type(literal_str, line, start);
+
+								excluded.push_back({ ex_type, source.line_number, literal_str, line });
+								current_line += vformat("'%s'", source_excluded_placeholder);
+
+								literal = false;
+								node_name = false;
+								column++;
+								continue;
+							}
+						} else {
+							// start of single-quoted literal string
+							literal = true;
+							quote_chr = chr;
+							start = column + 1;
+						}
+					}
+					break;
+				};
+				case '"': {
+					if (escaped) {
+						escaped = false;
+					} else if (!multiline) {
+						if (literal) {
+							if (chr == quote_chr) {
+								// end of double-quoted literal string
+								String literal_str = line.substr(start, column - start);
+								SourceExcluded::Type ex_type = node_name ? SourceExcluded::NODE_NAME : find_excluded_type(literal_str, line, start);
+
+								excluded.push_back({ ex_type, source.line_number, literal_str, line });
+								current_line += vformat("\"%s\"", source_excluded_placeholder);
+
+								literal = false;
+								node_name = false;
+								column++;
+								continue;
+							}
+						} else {
+							// start of double-quoted literal string
+							literal = true;
+							// multiline?
+							if ((column < max - 2) && chr == line[column + 1] && chr == line[column + 2]) {
+								multiline = true;
+								column += 3;
+								current_line += vformat("\"\"\"%s\"\"\"", source_excluded_placeholder);
+								multiline_start_line_number = source.line_number;
+								continue;
+							} else {
+								quote_chr = chr;
+								start = column + 1;
+							}
+						}
+					} else if (literal) {
+						// end of multiline literal string?
+						if ((column < max - 2) && chr == line[column + 1] && chr == line[column + 2]) {
+							SourceExcluded::Type ex_type = node_name ? SourceExcluded::NODE_NAME : SourceExcluded::MULTI_LINE_STRING;
+							excluded.push_back({ ex_type, multiline_start_line_number, multiline_content, line });
+							multiline = false;
+							multiline_content.clear();
+							literal = false;
+							node_name = false;
+							column += 3;
+							continue;
+						}
+					}
+					break;
+				};
+				case '#': {
+					if (!literal) {
+						// single-line comment
+						excluded.push_back({ SourceExcluded::COMMENT, source.line_number, line.substr(column), line });
+						current_line += source_excluded_placeholder;
+						// nothing else to scan for this line
+						break_loop = true;
+					}
+					break;
+				};
+				case '$': {
+					if (escaped) {
+						escaped = false;
+					} else if (!literal && (column < max - 1)) {
+						if (line[column + 1] != '"' && line[column + 1] != '\'') {
+							int next_column = column + 1;
+							String literal_str = parse_gdscript_node_name(line, next_column);
+							if (!literal_str.is_empty()) {
+								excluded.push_back({ SourceExcluded::NODE_NAME, source.line_number, literal_str, line });
+								current_line += vformat("$%s", source_excluded_placeholder);
+								column = next_column;
+								continue;
+							}
+						} else {
+							// next quoted literal string will be a node's name
+							node_name = true;
+						}
+					}
+					break;
+				};
+				case 'g': {
+					if (escaped) {
+						escaped = false;
+					} else if (!literal && (column < max - 9) && line.substr(column, 9) == "get_node(") {
+						// next quoted literal string will be a node's name
+						node_name = true;
+						current_line += "get_node(";
+						column += 9;
+						continue;
+					}
+					break;
+				};
+				default: {
+					escaped = false;
+					break;
+				};
+			}
+
+			if (break_loop) {
+				break;
+			}
+
+			if (!literal) {
+				current_line += chr;
+			} else if (multiline) {
+				multiline_content += chr;
+			}
+
+			column++;
+		}
+
+		// FileAccess::get_line() does not return '\n',
+		// so if we don't want to loose them in the converted file,
+		// we have to add it for multiline literal string
+		if (multiline) {
+			multiline_content += '\n';
+		}
+
+		// Checking for "multiline" mode here, prevents from
+		// adding a new item in the vector, which will results
+		// in a new line added in the converted file
+		if (!multiline && !current_line.is_empty()) {
+			ret.push_back({ source.line_number, current_line });
+		}
+	}
+
+	return ret;
+}
+
+String ProjectConverter3To4::parse_gdscript_node_name(const String &line, int &column) {
+	bool escaped = false;
+	int max = line.size();
+	int start = column;
+	Vector<String> invalid_chars = String::invalid_node_name_characters.split(" ");
+	invalid_chars.push_back(" ");
+	invalid_chars.push_back(";");
+	invalid_chars.push_back("#");
+
+	while (column < max) {
+		switch (line.get(column)) {
+			case '\\': {
+				escaped = !escaped;
+				break;
+			};
+			case '\'':
+			case '"': {
+				if (escaped) {
+					escaped = false;
+				} else {
+					return line.substr(start, column - start);
+				}
+				break;
+			};
+			default: {
+				escaped = false;
+				break;
+			};
+		}
+
+		if (!escaped && invalid_chars.has(line.substr(column, 1))) {
+			return line.substr(start, column - start);
+		}
+
+		column++;
+	}
+
+	return line.substr(start);
+}
+
+void ProjectConverter3To4::restore_source_excluded(String &line, int &current, const Vector<SourceExcluded> &excluded) {
+	int pos = line.find(source_excluded_placeholder);
+	if (pos == -1) {
+		return;
+	}
+
+	int start = 0;
+	String current_line;
+
+	// This is because we can have multiple replacements to perform
+	// on the same line (e.g. literal string then later comment)
+	while (pos != -1) {
+		SourceExcluded ex = excluded[current];
+		current++;
+
+		current_line += line.substr(start, pos - start) + ex.content;
+		start = pos + String(source_excluded_placeholder).size() - 1;
+		pos = line.find(source_excluded_placeholder, start);
+	}
+
+	if (start < line.size()) {
+		current_line += line.substr(start);
+	}
+
+	line = current_line;
+}
+
+String ProjectConverter3To4::exclude_scene_attribute(const int &line_number, const String &line, const String &name, SourceExcluded::Type ex_type, Vector<SourceExcluded> &excluded) {
+	int pos = line.find(vformat(" %s=\"", name));
+	if (pos == -1) {
+		return line;
+	}
+
+	int begin = pos + name.length() + 3;
+	int end = line.find("\"", begin);
+
+	if (end == -1) {
+		// Invalid syntax
+		return line;
+	}
+
+	String attr_value = line.substr(begin, end - begin);
+	excluded.push_back({ ex_type, line_number, attr_value, line });
+	return line.replace_first(vformat(" %s=\"%s\"", name, attr_value), vformat(" %s=\"%s\"", name, source_excluded_placeholder));
+}
+
+String ProjectConverter3To4::exclude_from_scene(const SourceCode &source, Vector<SourceExcluded> &excluded) {
+	String line = source.content;
+	int line_number = source.line_number;
+
+	// Signal connection?
+	if (line.find("[connection signal=\"") != -1) {
+		// order is important!
+		line = exclude_scene_attribute(line_number, line, "signal", SourceExcluded::SIGNAL_NAME, excluded);
+		line = exclude_scene_attribute(line_number, line, "from", SourceExcluded::NODE_NAME, excluded);
+		line = exclude_scene_attribute(line_number, line, "to", SourceExcluded::NODE_NAME, excluded);
+		return line;
+	}
+
+	// Node?
+	if (line.find("[node name=\"") != -1) {
+		// order is important!
+		line = exclude_scene_attribute(line_number, line, "name", SourceExcluded::NODE_NAME, excluded);
+		line = exclude_scene_attribute(line_number, line, "parent", SourceExcluded::NODE_NAME, excluded);
+		return line;
+	}
+
+	// NodePath?
+	int pos = line.find("NodePath(\"");
+	if (pos != -1) {
+		// As the two above, we expect there's no resource path
+		// on the same line where NodePath is found
+		int end = line.find("\")", pos + 10);
+		if (end != -1) {
+			String node_path = line.substr(pos + 10, end - pos - 10);
+			excluded.push_back({ SourceExcluded::NODE_PATH, line_number, node_path, line });
+			return line.substr(0, pos + 10) + source_excluded_placeholder + line.substr(end);
+		}
+	}
+
+	// The order of items in excluded is important for "restore" stage.
+	// If we want to exclude other things from regular processing,
+	// lines below may have to be rewritten
+	//
+	pos = line.find("res://");
+	if (pos == -1) {
+		return line;
+	}
+
+	String ret;
+	int start = 0;
+	int end = 0;
+	int len = line.size();
+	String quote_chr;
+
+	while (pos != -1) {
+		quote_chr = line.substr(pos - 1, 1);
+
+		if (quote_chr != "\"" && quote_chr != "'") {
+			// non-quoted resource path -> skip
+			ret += line.substr(start, pos + 6 - start);
+			start = pos + 6;
+			end = start;
+		} else {
+			// quotes are invalid in paths,
+			// no need to worry about escaped quote
+			end = line.find(quote_chr, pos + 1);
+			if (end != -1) {
+				String resource_path = line.substr(pos, end - pos);
+				ret += line.substr(start, pos - start) + source_excluded_placeholder + quote_chr;
+				excluded.push_back({ SourceExcluded::RESOURCE_PATH, line_number, resource_path, line });
+				end++;
+				start = end;
+			}
+		}
+
+		pos = line.find("res://", start);
+	}
+
+	if (end > 0 && end < len) {
+		ret += line.substr(end);
+	}
+
+	return ret;
+}
+
+Vector<ProjectConverter3To4::SourceCode> ProjectConverter3To4::restore_excluded(const Vector<SourceCode> &lines, const Vector<SourceExcluded> &excluded) {
+	Vector<SourceCode> ret;
+	int current_excluded = 0;
+
+	for (const SourceCode &source : lines) {
+		String line = source.content;
+		restore_source_excluded(line, current_excluded, excluded);
+		ret.push_back({ source.line_number, line });
+	}
+
+	return ret;
+}
+
+void ProjectConverter3To4::process_gdscript(Vector<SourceCode> &lines, RegExContainer &reg_container) {
+	Vector<SourceExcluded> excluded;
+	lines = parse_gdscript(lines, excluded);
+
+	rename_classes(lines, reg_container); // Using only specialized function.
+
+	rename_common(enum_renames, reg_container.enum_regexes, lines);
+	rename_colors(lines, reg_container); // Require to additional rename.
+
+	rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines);
+	rename_gdscript_functions(lines, reg_container, false); // Require to additional rename.
+
+	rename_gdscript_keywords(lines, reg_container);
+	rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines);
+	rename_common(shaders_renames, reg_container.shaders_regexes, lines);
+	rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
+
+	custom_rename(lines, "\\.shader", ".gdshader");
+
+	process_excluded(excluded);
+
+	lines = restore_excluded(lines, excluded);
+}
+
+void ProjectConverter3To4::process_excluded(Vector<SourceExcluded> &excluded) {
+	for (SourceExcluded &ex : excluded) {
+		if (ex.type == SourceExcluded::SIGNAL_NAME) {
+			for (unsigned int current_index = 0; gdscript_signals_renames[current_index][0]; current_index++) {
+				if (ex.content == gdscript_signals_renames[current_index][0]) {
+					ex.content = gdscript_signals_renames[current_index][1];
+				}
+			}
+			continue;
+		}
+
+		if (ex.type == SourceExcluded::PROJECT_SETTING) {
+			for (unsigned int current_index = 0; project_settings_renames[current_index][0]; current_index++) {
+				if (ex.content == project_settings_renames[current_index][0]) {
+					if (project_settings_renames[current_index][1] == nullptr) {
+						// We are supposed to remove this setting,
+						// but this would be harmful for the resulting source code,
+						// so we just warn the user and process next one
+						ERR_PRINT(vformat("Line(%d), %s is no longer supported  -  LINE \"\"\" %s \"\"\"", ex.line_number, ex.content, ex.source));
+						continue;
+					}
+
+					ex.content = project_settings_renames[current_index][1];
+				}
+			}
+			continue;
+		}
+	}
+}
+
+Vector<String> ProjectConverter3To4::validate_conversion_excluded(const Vector<SourceExcluded> &excluded) {
+	Vector<String> ret;
+
+	for (const SourceExcluded &ex : excluded) {
+		if (ex.type == SourceExcluded::SIGNAL_NAME) {
+			for (unsigned int current_index = 0; gdscript_signals_renames[current_index][0]; current_index++) {
+				if (ex.content == gdscript_signals_renames[current_index][0]) {
+					ret.append(line_formatter(ex.line_number, ex.content, gdscript_signals_renames[current_index][1], ex.source));
+				}
+			}
+			continue;
+		}
+
+		if (ex.type == SourceExcluded::PROJECT_SETTING) {
+			for (unsigned int current_index = 0; project_settings_renames[current_index][0]; current_index++) {
+				if (ex.content == project_settings_renames[current_index][0]) {
+					if (project_settings_renames[current_index][1] == nullptr) {
+						// We are supposed to remove this setting,
+						// but this would be harmful for the resulting source code,
+						// so we just warn the user and process next one
+						ERR_PRINT(vformat("Line(%d), %s is no longer supported  -  LINE \"\"\" %s \"\"\"", ex.line_number, ex.content, ex.source));
+						continue;
+					}
+
+					ret.append(line_formatter(ex.line_number, ex.content, project_settings_renames[current_index][1], ex.source));
+				}
+			}
+			continue;
+		}
+	}
+
+	return ret;
+}
+
+Vector<ProjectConverter3To4::SourceCode> ProjectConverter3To4::parse_scene(const Vector<SourceCode> &lines, Vector<Vector<SourceCode>> &scripts, Vector<SourceExcluded> &excluded) {
+	Vector<SourceCode> ret;
+	bool has_script = false;
+	Vector<SourceCode> current_script;
+	int current_script_start_line = 0;
+	String current_line;
+
+	for (const SourceCode &source : lines) {
+		String line = source.content;
+		// Keep empty lines
+		if (line.strip_edges().is_empty()) {
+			if (current_script.size() > 0) {
+				// in current script
+				current_script.push_back({ source.line_number, line.c_unescape() });
+			} else {
+				// or in scene
+				ret.push_back({ source.line_number, line });
+			}
+			continue;
+		}
+
+		if (!has_script) {
+			line = exclude_from_scene(source, excluded);
+			ret.push_back({ source.line_number, line });
+
+			if (line.find("[sub_resource type=\"GDScript\"") != -1) {
+				// sub_resource detected
+				has_script = true;
+				continue;
+			}
+		} else if (current_script.size() == 0) {
+			// now we're looking for source declaration
+			int pos = line.find("script/source = \"");
+			if (pos == -1) {
+				line = exclude_from_scene(source, excluded);
+				ret.push_back({ source.line_number, line });
+				continue;
+			}
+
+			int src_begin_pos = pos + 17;
+			current_line = line.substr(0, src_begin_pos) + embedded_script_excluded_placeholder;
+			current_script_start_line = source.line_number;
+
+			String src_beginning = line.substr(src_begin_pos);
+			// One-liner script?
+			pos = src_beginning.find("\"");
+			if (pos == -1) {
+				current_script.push_back({ source.line_number, src_beginning.c_unescape() });
+				continue;
+			}
+
+			// Looking for a non-escaped double-quote
+			bool src_ended = false;
+			while (pos != -1) {
+				if (src_beginning[pos - 1] != '\\') {
+					// end of a one-liner script
+					current_script.push_back({ source.line_number, src_beginning.substr(0, pos).c_unescape() });
+					scripts.push_back(current_script);
+					ret.push_back({ current_script_start_line, current_line + src_beginning.substr(pos) });
+					has_script = false;
+					current_script.clear();
+					current_line.clear();
+					src_ended = true;
+					break;
+				}
+
+				pos = src_beginning.find("\"", pos + 1);
+			}
+
+			if (src_ended) {
+				continue;
+			}
+		} else {
+			// Collecting source code for current script
+			//
+			// A non-escaped double-quote will means the end of the source code
+			int pos = line.find("\"");
+			if (pos == -1) {
+				current_script.push_back({ source.line_number, line.c_unescape() });
+				continue;
+			}
+
+			bool src_ended = false;
+			while (pos != -1) {
+				if (pos == 0 || (pos - 1 > 0 && line[pos - 1] != '\\')) {
+					// end of script source
+					current_script.push_back({ source.line_number, line.substr(0, pos).c_unescape() });
+					scripts.push_back(current_script);
+					ret.push_back({ current_script_start_line, current_line + line.substr(pos) });
+					has_script = false;
+					current_script.clear();
+					current_line.clear();
+					src_ended = true;
+					break;
+				}
+
+				pos = line.find("\"", pos + 1);
+			}
+
+			if (src_ended) {
+				continue;
+			}
+
+			current_script.push_back({ source.line_number, line.c_unescape() });
+		}
+
+		if (!has_script && !current_line.is_empty()) {
+			ret.push_back({ source.line_number, current_line });
+		}
+	}
+	return ret;
+}
+
+Vector<ProjectConverter3To4::SourceCode> ProjectConverter3To4::restore_embedded_scripts(const Vector<SourceCode> &lines, const Vector<Vector<SourceCode>> &scripts) {
+	Vector<SourceCode> ret;
+	int current_script = 0;
+
+	for (const SourceCode &source : lines) {
+		String line = source.content;
+
+		int pos = line.find(embedded_script_excluded_placeholder);
+		if (pos == -1) {
+			ret.push_back({ source.line_number, line });
+			continue;
+		}
+
+		// There's only one embedded script per line (one replacement to perform)
+		//
+		// First line is the source declaration + first line of the script source
+		Vector<SourceCode> script = scripts[current_script];
+		current_script++;
+
+		String post_chars = line.substr(pos + String(embedded_script_excluded_placeholder).size() - 1); // mostly just a double-quote
+
+		// One-liner?
+		if (script.size() == 1) {
+			ret.push_back({ source.line_number, line.substr(0, pos) + script[0].content.c_escape_multiline() + post_chars });
+			continue;
+		}
+
+		// Restore first line with declaration
+		ret.push_back({ source.line_number, line.substr(0, pos) + script[0].content.c_escape_multiline() });
+		// then the remaining lines
+		int max = script.size();
+		for (int i = 1; i < max; i++) {
+			if (i == max - 1) {
+				ret.push_back({ source.line_number, script[i].content.c_escape_multiline() + post_chars });
+			} else {
+				ret.push_back({ source.line_number, script[i].content.c_escape_multiline() });
+			}
+		}
+	}
+
+	return ret;
+}
+
+void ProjectConverter3To4::process_scene(Vector<SourceCode> &lines, RegExContainer &reg_container) {
+	Vector<Vector<SourceCode>> scripts;
+	Vector<SourceExcluded> excluded;
+	lines = parse_scene(lines, scripts, excluded);
+
+	rename_classes(lines, reg_container); // Using only specialized function.
+
+	rename_common(enum_renames, reg_container.enum_regexes, lines);
+	rename_colors(lines, reg_container); // Require to do additional renames.
+
+	rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines);
+	rename_gdscript_functions(lines, reg_container, true); // Require to do additional renames.
+
+	rename_common(project_settings_renames, reg_container.project_settings_regexes, lines);
+	rename_gdscript_keywords(lines, reg_container);
+	rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines);
+	rename_common(shaders_renames, reg_container.shaders_regexes, lines);
+	rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
+
+	custom_rename(lines, "\\.shader", ".gdshader");
+
+	// Process embedded scripts
+	for (Vector<SourceCode> &script : scripts) {
+		process_gdscript(script, reg_container);
+	}
+
+	process_excluded(excluded);
+
+	lines = restore_excluded(lines, excluded);
+	lines = restore_embedded_scripts(lines, scripts);
+}
+
+void ProjectConverter3To4::process_resource(Vector<SourceCode> &lines, RegExContainer &reg_container) {
+	Vector<Vector<SourceCode>> scripts;
+	Vector<SourceExcluded> excluded;
+	lines = parse_scene(lines, scripts, excluded);
+
+	rename_classes(lines, reg_container); // Using only specialized function.
+
+	rename_common(shaders_renames, reg_container.shaders_regexes, lines);
+	rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
+
+	custom_rename(lines, "\\.shader", ".gdshader");
+
+	process_excluded(excluded);
+
+	lines = restore_excluded(lines, excluded);
+	lines = restore_embedded_scripts(lines, scripts);
+}
+
 // Function responsible for converting project.
 int ProjectConverter3To4::convert() {
 	print_line("Starting conversion.");
@@ -1991,14 +2711,16 @@ int ProjectConverter3To4::convert() {
 	// Check file by file.
 	for (int i = 0; i < collected_files.size(); i++) {
 		String file_name = collected_files[i];
-		Vector<String> lines;
+		Vector<SourceCode> lines;
 		uint32_t ignored_lines = 0;
 		{
 			Ref<FileAccess> file = FileAccess::open(file_name, FileAccess::READ);
 			ERR_CONTINUE_MSG(file.is_null(), vformat("Unable to read content of \"%s\".", file_name));
+			int line_number = 1;
 			while (!file->eof_reached()) {
 				String line = file->get_line();
-				lines.append(line);
+				lines.append({ line_number, line });
+				line_number++;
 			}
 		}
 		String file_content_before = collect_string_from_vector(lines);
@@ -2018,39 +2740,9 @@ int ProjectConverter3To4::convert() {
 		if (file_size < uint64_t(maximum_file_size)) {
 			// ".tscn" must work exactly the same as ".gd" files because they may contain built-in Scripts.
 			if (file_name.ends_with(".gd")) {
-				rename_classes(lines, reg_container); // Using only specialized function.
-
-				rename_common(enum_renames, reg_container.enum_regexes, lines);
-				rename_colors(lines, reg_container); // Require to additional rename.
-
-				rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines);
-				rename_gdscript_functions(lines, reg_container, false); // Require to additional rename.
-
-				rename_common(project_settings_renames, reg_container.project_settings_regexes, lines);
-				rename_gdscript_keywords(lines, reg_container);
-				rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines);
-				rename_common(gdscript_signals_renames, reg_container.gdscript_signals_regexes, lines);
-				rename_common(shaders_renames, reg_container.shaders_regexes, lines);
-				rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
-
-				custom_rename(lines, "\\.shader", ".gdshader");
+				process_gdscript(lines, reg_container);
 			} else if (file_name.ends_with(".tscn")) {
-				rename_classes(lines, reg_container); // Using only specialized function.
-
-				rename_common(enum_renames, reg_container.enum_regexes, lines);
-				rename_colors(lines, reg_container); // Require to do additional renames.
-
-				rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines);
-				rename_gdscript_functions(lines, reg_container, true); // Require to do additional renames.
-
-				rename_common(project_settings_renames, reg_container.project_settings_regexes, lines);
-				rename_gdscript_keywords(lines, reg_container);
-				rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines);
-				rename_common(gdscript_signals_renames, reg_container.gdscript_signals_regexes, lines);
-				rename_common(shaders_renames, reg_container.shaders_regexes, lines);
-				rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
-
-				custom_rename(lines, "\\.shader", ".gdshader");
+				process_scene(lines, reg_container);
 			} else if (file_name.ends_with(".cs")) { // TODO, C# should use different methods.
 				rename_classes(lines, reg_container); // Using only specialized function.
 				rename_common(csharp_function_renames, reg_container.csharp_function_regexes, lines);
@@ -2063,12 +2755,7 @@ int ProjectConverter3To4::convert() {
 			} else if (file_name.ends_with(".gdshader") || file_name.ends_with(".shader")) {
 				rename_common(shaders_renames, reg_container.shaders_regexes, lines);
 			} else if (file_name.ends_with("tres")) {
-				rename_classes(lines, reg_container); // Using only specialized function.
-
-				rename_common(shaders_renames, reg_container.shaders_regexes, lines);
-				rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
-
-				custom_rename(lines, "\\.shader", ".gdshader");
+				process_resource(lines, reg_container);
 			} else if (file_name.ends_with("project.godot")) {
 				rename_common(project_settings_renames, reg_container.project_settings_regexes, lines);
 				rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
@@ -2079,7 +2766,8 @@ int ProjectConverter3To4::convert() {
 				continue;
 			}
 
-			for (String &line : lines) {
+			for (const SourceCode &source : lines) {
+				String line = source.content;
 				if (uint64_t(line.length()) > maximum_line_length) {
 					ignored_lines += 1;
 				}
@@ -2122,6 +2810,90 @@ int ProjectConverter3To4::convert() {
 	return 0;
 };
 
+Vector<String> ProjectConverter3To4::validate_conversion_gdscript(Vector<SourceCode> &lines, RegExContainer &reg_container) {
+	Vector<String> ret;
+
+	Vector<SourceExcluded> excluded;
+	lines = parse_gdscript(lines, excluded);
+
+	ret.append_array(check_for_rename_classes(lines, reg_container));
+
+	ret.append_array(check_for_rename_common(enum_renames, reg_container.enum_regexes, lines));
+	ret.append_array(check_for_rename_colors(lines, reg_container));
+
+	ret.append_array(check_for_rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines));
+	ret.append_array(check_for_rename_gdscript_functions(lines, reg_container, false));
+
+	ret.append_array(check_for_rename_gdscript_keywords(lines, reg_container));
+	ret.append_array(check_for_rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines));
+	ret.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
+	ret.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
+
+	ret.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
+
+	ret.append_array(validate_conversion_excluded(excluded));
+
+	return ret;
+}
+
+Vector<String> ProjectConverter3To4::validate_conversion_scene(Vector<SourceCode> &lines, RegExContainer &reg_container) {
+	Vector<String> ret;
+
+	Vector<Vector<SourceCode>> scripts;
+	Vector<SourceExcluded> excluded;
+	lines = parse_scene(lines, scripts, excluded);
+
+	ret.append_array(check_for_rename_classes(lines, reg_container));
+
+	ret.append_array(check_for_rename_common(enum_renames, reg_container.enum_regexes, lines));
+	ret.append_array(check_for_rename_colors(lines, reg_container));
+
+	ret.append_array(check_for_rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines));
+	ret.append_array(check_for_rename_gdscript_functions(lines, reg_container, true));
+
+	ret.append_array(check_for_rename_gdscript_keywords(lines, reg_container));
+	ret.append_array(check_for_rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines));
+	ret.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
+	ret.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
+
+	ret.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
+
+	ret.append_array(validate_conversion_excluded(excluded));
+
+	// Validate embedded scripts
+	for (int i = 0; i < scripts.size(); i++) {
+		Vector<SourceCode> script = scripts[i];
+		ret.append_array(validate_conversion_gdscript(script, reg_container));
+	}
+
+	return ret;
+}
+
+Vector<String> ProjectConverter3To4::validate_conversion_resource(Vector<SourceCode> &lines, RegExContainer &reg_container) {
+	Vector<String> ret;
+
+	Vector<Vector<SourceCode>> scripts;
+	Vector<SourceExcluded> excluded;
+	lines = parse_scene(lines, scripts, excluded);
+
+	ret.append_array(check_for_rename_classes(lines, reg_container));
+
+	ret.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
+	ret.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
+
+	ret.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
+
+	ret.append_array(validate_conversion_excluded(excluded));
+
+	// Validate embedded scripts
+	for (int i = 0; i < scripts.size(); i++) {
+		Vector<SourceCode> script = scripts[i];
+		ret.append_array(validate_conversion_gdscript(script, reg_container));
+	}
+
+	return ret;
+}
+
 // Function responsible for validating project conversion.
 int ProjectConverter3To4::validate_conversion() {
 	print_line("Starting checking if project conversion can be done.");
@@ -2158,16 +2930,18 @@ int ProjectConverter3To4::validate_conversion() {
 	// Check file by file.
 	for (int i = 0; i < collected_files.size(); i++) {
 		String file_name = collected_files[i];
-		Vector<String> lines;
+		Vector<SourceCode> lines;
 		uint32_t ignored_lines = 0;
 		uint64_t file_size = 0;
 		{
 			Ref<FileAccess> file = FileAccess::open(file_name, FileAccess::READ);
 			ERR_CONTINUE_MSG(file.is_null(), vformat("Unable to read content of \"%s\".", file_name));
+			int line_number = 1;
 			while (!file->eof_reached()) {
 				String line = file->get_line();
 				file_size += line.size();
-				lines.append(line);
+				lines.append({ line_number, line });
+				line_number++;
 			}
 		}
 		print_line(vformat("Checking for conversion - %d/%d file - \"%s\" with size - %d KB"), i + 1, collected_files.size(), file_name.trim_prefix("res://"), file_size / 1024);
@@ -2183,39 +2957,9 @@ int ProjectConverter3To4::validate_conversion() {
 
 		if (file_size < uint64_t(maximum_file_size)) {
 			if (file_name.ends_with(".gd")) {
-				changed_elements.append_array(check_for_rename_classes(lines, reg_container));
-
-				changed_elements.append_array(check_for_rename_common(enum_renames, reg_container.enum_regexes, lines));
-				changed_elements.append_array(check_for_rename_colors(lines, reg_container));
-
-				changed_elements.append_array(check_for_rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines));
-				changed_elements.append_array(check_for_rename_gdscript_functions(lines, reg_container, false));
-
-				changed_elements.append_array(check_for_rename_common(project_settings_renames, reg_container.project_settings_regexes, lines));
-				changed_elements.append_array(check_for_rename_gdscript_keywords(lines, reg_container));
-				changed_elements.append_array(check_for_rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(gdscript_signals_renames, reg_container.gdscript_signals_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
-
-				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
+				changed_elements.append_array(validate_conversion_gdscript(lines, reg_container));
 			} else if (file_name.ends_with(".tscn")) {
-				changed_elements.append_array(check_for_rename_classes(lines, reg_container));
-
-				changed_elements.append_array(check_for_rename_common(enum_renames, reg_container.enum_regexes, lines));
-				changed_elements.append_array(check_for_rename_colors(lines, reg_container));
-
-				changed_elements.append_array(check_for_rename_common(gdscript_function_renames, reg_container.gdscript_function_regexes, lines));
-				changed_elements.append_array(check_for_rename_gdscript_functions(lines, reg_container, true));
-
-				changed_elements.append_array(check_for_rename_common(project_settings_renames, reg_container.project_settings_regexes, lines));
-				changed_elements.append_array(check_for_rename_gdscript_keywords(lines, reg_container));
-				changed_elements.append_array(check_for_rename_common(gdscript_properties_renames, reg_container.gdscript_properties_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(gdscript_signals_renames, reg_container.gdscript_signals_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
-
-				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
+				changed_elements.append_array(validate_conversion_scene(lines, reg_container));
 			} else if (file_name.ends_with(".cs")) {
 				changed_elements.append_array(check_for_rename_classes(lines, reg_container));
 				changed_elements.append_array(check_for_rename_common(csharp_function_renames, reg_container.csharp_function_regexes, lines));
@@ -2228,12 +2972,7 @@ int ProjectConverter3To4::validate_conversion() {
 			} else if (file_name.ends_with(".gdshader") || file_name.ends_with(".shader")) {
 				changed_elements.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
 			} else if (file_name.ends_with("tres")) {
-				changed_elements.append_array(check_for_rename_classes(lines, reg_container));
-
-				changed_elements.append_array(check_for_rename_common(shaders_renames, reg_container.shaders_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
-
-				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
+				changed_elements.append_array(validate_conversion_resource(lines, reg_container));
 			} else if (file_name.ends_with("project.godot")) {
 				changed_elements.append_array(check_for_rename_common(project_settings_renames, reg_container.project_settings_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
@@ -2244,8 +2983,8 @@ int ProjectConverter3To4::validate_conversion() {
 				continue;
 			}
 
-			for (String &line : lines) {
-				if (uint64_t(line.length()) > maximum_line_length) {
+			for (SourceCode &line : lines) {
+				if (uint64_t(line.content.length()) > maximum_line_length) {
 					ignored_lines += 1;
 				}
 			}
@@ -2324,18 +3063,54 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 }
 
 // Test expected results of gdscript
-bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &, bool), String what, const RegExContainer &reg_container, bool builtin_script) {
-	Vector<String> got = name.split("\n");
-	(this->*func)(got, reg_container, builtin_script);
+bool ProjectConverter3To4::test_conversion_gdscript_builtin(String name, String expected, String what, const RegExContainer &reg_container, bool builtin_script) {
+	Vector<SourceCode> got = split_name(name);
+	rename_gdscript_functions(got, reg_container, builtin_script);
 	String got_str = collect_string_from_vector(got);
 	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
 
 	return true;
 }
 
-bool ProjectConverter3To4::test_conversion_with_regex(String name, String expected, void (ProjectConverter3To4::*func)(Vector<String> &, const RegExContainer &), String what, const RegExContainer &reg_container) {
-	Vector<String> got = name.split("\n");
-	(this->*func)(got, reg_container);
+bool ProjectConverter3To4::test_conversion_csharp_functions(String name, String expected, String what, const RegExContainer &reg_container) {
+	Vector<SourceCode> got = split_name(name);
+	rename_csharp_functions(got, reg_container);
+	String got_str = collect_string_from_vector(got);
+	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
+
+	return true;
+}
+
+bool ProjectConverter3To4::test_conversion_csharp_attributes(String name, String expected, String what, const RegExContainer &reg_container) {
+	Vector<SourceCode> got = split_name(name);
+	rename_csharp_attributes(got, reg_container);
+	String got_str = collect_string_from_vector(got);
+	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
+
+	return true;
+}
+
+bool ProjectConverter3To4::test_conversion_classes(String name, String expected, String what, const RegExContainer &reg_container) {
+	Vector<SourceCode> got = split_name(name);
+	rename_classes(got, reg_container);
+	String got_str = collect_string_from_vector(got);
+	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
+
+	return true;
+}
+
+bool ProjectConverter3To4::test_conversion_gdscript_keywords(String name, String expected, String what, const RegExContainer &reg_container) {
+	Vector<SourceCode> got = split_name(name);
+	rename_gdscript_keywords(got, reg_container);
+	String got_str = collect_string_from_vector(got);
+	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
+
+	return true;
+}
+
+bool ProjectConverter3To4::test_conversion_colors(String name, String expected, String what, const RegExContainer &reg_container) {
+	Vector<SourceCode> got = split_name(name);
+	rename_colors(got, reg_container);
 	String got_str = collect_string_from_vector(got);
 	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
 
@@ -2343,12 +3118,23 @@ bool ProjectConverter3To4::test_conversion_with_regex(String name, String expect
 }
 
 bool ProjectConverter3To4::test_conversion_basic(String name, String expected, const char *array[][2], LocalVector<RegEx *> &regex_cache, String what) {
-	Vector<String> got = name.split("\n");
+	Vector<SourceCode> got = split_name(name);
 	rename_common(array, regex_cache, got);
 	String got_str = collect_string_from_vector(got);
 	ERR_FAIL_COND_V_MSG(expected != got_str, false, vformat("Failed to convert %s \"%s\" to \"%s\", got instead \"%s\"", what, name, expected, got_str));
 
 	return true;
+}
+
+Vector<ProjectConverter3To4::SourceCode> ProjectConverter3To4::split_name(const String &name) {
+	Vector<SourceCode> ret;
+	Vector<String> got = name.split("\n");
+	int line_number = 1;
+	for (const String &line : got) {
+		ret.push_back({ line_number, line });
+		line_number++;
+	}
+	return ret;
 }
 
 // Validate if conversions are proper.
@@ -2377,162 +3163,162 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 
 	// Custom Renames.
 
-	valid = valid && test_conversion_with_regex("(Connect(A,B,C,D,E,F,G) != OK):", "(Connect(A,new Callable(B,C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("(Disconnect(A,B,C) != OK):", "(Disconnect(A,new Callable(B,C)) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("(IsConnected(A,B,C) != OK):", "(IsConnected(A,new Callable(B,C)) != OK):", &ProjectConverter3To4::rename_csharp_functions, "custom rename", reg_container);
+	valid = valid && test_conversion_csharp_functions("(Connect(A,B,C,D,E,F,G) != OK):", "(Connect(A,new Callable(B,C),D,E,F,G) != OK):", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_functions("(Disconnect(A,B,C) != OK):", "(Disconnect(A,new Callable(B,C)) != OK):", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_functions("(IsConnected(A,B,C) != OK):", "(IsConnected(A,new Callable(B,C)) != OK):", "custom rename", reg_container);
 
-	valid = valid && test_conversion_with_regex("[Remote]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[RemoteSync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[Sync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[Slave]", "[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[Puppet]", "[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[PuppetSync]", "[RPC(CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[Master]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
-	valid = valid && test_conversion_with_regex("[MasterSync]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC(CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[Remote]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[RemoteSync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[Sync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[Slave]", "[RPC]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[Puppet]", "[RPC]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[PuppetSync]", "[RPC(CallLocal = true)]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[Master]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC]", "custom rename csharp", reg_container);
+	valid = valid && test_conversion_csharp_attributes("[MasterSync]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC(CallLocal = true)]", "custom rename csharp", reg_container);
 
-	valid = valid && test_conversion_gdscript_builtin("OS.window_fullscreen = Settings.fullscreen", "if Settings.fullscreen:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)\nelse:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("OS.get_window_safe_area()", "DisplayServer.get_display_safe_area()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("OS.window_fullscreen = Settings.fullscreen", "if Settings.fullscreen:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)\nelse:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("OS.get_window_safe_area()", "DisplayServer.get_display_safe_area()", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide( a, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide_with_snap( a, g, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide( a, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide_with_snap( a, g, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide_with_snap( a, g, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\t# TODOConverter40 looks that snap in Godot 4.0 is float, not vector like in Godot 3 - previous value `g`\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a , b )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( a )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("list_dir_begin( )", "list_dir_begin() # TODOGODOT4 fill missing arguments https://github.com/godotengine/godot/pull/40547", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("sort_custom( a , b )", "sort_custom(Callable(a,b))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("sort_custom( a , b )", "sort_custom(Callable(a,b))", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("func c(var a, var b)", "func c(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("func c(var a, var b)", "func c(a, b)", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("draw_line(1, 2, 3, 4, 5)", "draw_line(1,2,3,4)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("draw_line(1, 2, 3, 4, 5)", "draw_line(1,2,3,4)", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("\timage.lock()", "\tfalse # image.lock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\timage.unlock()", "\tfalse # image.unlock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\troman.image.unlock()", "\tfalse # roman.image.unlock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\tmtx.lock()", "\tmtx.lock()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\tmutex.unlock()", "\tmutex.unlock()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\timage.lock()", "\tfalse # image.lock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\timage.unlock()", "\tfalse # image.unlock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\troman.image.unlock()", "\tfalse # roman.image.unlock() # TODOConverter40, Image no longer requires locking, `false` helps to not break one line if/else, so it can freely be removed", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tmtx.lock()", "\tmtx.lock()", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tmutex.unlock()", "\tmutex.unlock()", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_with_regex("extends CSGBox", "extends CSGBox3D", &ProjectConverter3To4::rename_classes, "classes", reg_container);
-	valid = valid && test_conversion_with_regex("CSGBox", "CSGBox3D", &ProjectConverter3To4::rename_classes, "classes", reg_container);
-	valid = valid && test_conversion_with_regex("Spatial", "Node3D", &ProjectConverter3To4::rename_classes, "classes", reg_container);
-	valid = valid && test_conversion_with_regex("Spatial.tscn", "Spatial.tscn", &ProjectConverter3To4::rename_classes, "classes", reg_container);
-	valid = valid && test_conversion_with_regex("Spatial.gd", "Spatial.gd", &ProjectConverter3To4::rename_classes, "classes", reg_container);
-	valid = valid && test_conversion_with_regex("Spatial.shader", "Spatial.shader", &ProjectConverter3To4::rename_classes, "classes", reg_container);
-	valid = valid && test_conversion_with_regex("Spatial.other", "Node3D.other", &ProjectConverter3To4::rename_classes, "classes", reg_container);
+	valid = valid && test_conversion_classes("extends CSGBox", "extends CSGBox3D", "classes", reg_container);
+	valid = valid && test_conversion_classes("CSGBox", "CSGBox3D", "classes", reg_container);
+	valid = valid && test_conversion_classes("Spatial", "Node3D", "classes", reg_container);
+	valid = valid && test_conversion_classes("Spatial.tscn", "Spatial.tscn", "classes", reg_container);
+	valid = valid && test_conversion_classes("Spatial.gd", "Spatial.gd", "classes", reg_container);
+	valid = valid && test_conversion_classes("Spatial.shader", "Spatial.shader", "classes", reg_container);
+	valid = valid && test_conversion_classes("Spatial.other", "Node3D.other", "classes", reg_container);
 
-	valid = valid && test_conversion_with_regex("\nonready", "\n@onready", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("onready", "@onready", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex(" onready", " onready", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\nexport", "\n@export", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\texport", "\t@export", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\texport_dialog", "\texport_dialog", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("export", "@export", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex(" export", " export", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("tool", "@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n    tool", "\n    tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\ntool", "\n\n@tool", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\nremote func", "\n\n@rpc(any_peer) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\nremotesync func", "\n\n@rpc(any_peer, call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\nsync func", "\n\n@rpc(any_peer, call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\nslave func", "\n\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\npuppet func", "\n\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\npuppetsync func", "\n\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\nmaster func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
-	valid = valid && test_conversion_with_regex("\n\nmastersync func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc(call_local) func", &ProjectConverter3To4::rename_gdscript_keywords, "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\nonready", "\n@onready", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("onready", "@onready", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords(" onready", " onready", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\nexport", "\n@export", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\texport", "\t@export", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\texport_dialog", "\texport_dialog", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("export", "@export", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords(" export", " export", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("tool", "@tool", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n    tool", "\n    tool", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\ntool", "\n\n@tool", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\nremote func", "\n\n@rpc(any_peer) func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\nremotesync func", "\n\n@rpc(any_peer, call_local) func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\nsync func", "\n\n@rpc(any_peer, call_local) func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\nslave func", "\n\n@rpc func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\npuppet func", "\n\n@rpc func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\npuppetsync func", "\n\n@rpc(call_local) func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\nmaster func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc func", "gdscript keyword", reg_container);
+	valid = valid && test_conversion_gdscript_keywords("\n\nmastersync func", "\n\nThe master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n@rpc(call_local) func", "gdscript keyword", reg_container);
 
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function\n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function \n	set(mod_value):\n		mod_value  # TODOConverter40  Non existent set function", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function\n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function , ", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget set_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Non existent get function \n	set(mod_value):\n		mod_value  # TODOConverter40 Copy here content of set_function", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var size : Vector2 = Vector2() setget  , get_function", "var size : Vector2 = Vector2() :\n	get:\n		return size # TODOConverter40 Copy here content of get_function \n	set(mod_value):\n		mod_value  # TODOConverter40  Non existent set function", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("get_node(@", "get_node(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("get_node(@", "get_node(", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("yield(this, \"timeout\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("yield(this, \\\"timeout\\\")", "await this.timeout", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, true);
+	valid = valid && test_conversion_gdscript_builtin("yield(this, \"timeout\")", "await this.timeout", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("yield(this, \\\"timeout\\\")", "await this.timeout", "custom rename", reg_container, true);
 
-	valid = valid && test_conversion_gdscript_builtin(" Transform.xform(Vector3(a,b,c)) ", " Transform * Vector3(a,b,c) ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin(" Transform.xform_inv(Vector3(a,b,c)) ", " Vector3(a,b,c) * Transform ", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(" Transform.xform(Vector3(a,b,c)) ", " Transform * Vector3(a,b,c) ", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(" Transform.xform_inv(Vector3(a,b,c)) ", " Vector3(a,b,c) * Transform ", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("export(float) var lifetime = 3.0", "export var lifetime: float = 3.0", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro'", "export var _font_name = 'AnonymousPro' # (String, 'AnonymousPro', 'CourierPrime')", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false); // TODO, this is only a workaround
-	valid = valid && test_conversion_gdscript_builtin("export(PackedScene) var mob_scene", "export var mob_scene: PackedScene", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("export(float) var lifetime = 3.0", "export var lifetime: float = 3.0", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("export(String, 'AnonymousPro', 'CourierPrime') var _font_name = 'AnonymousPro'", "export var _font_name = 'AnonymousPro' # (String, 'AnonymousPro', 'CourierPrime')", "custom rename", reg_container, false); // TODO, this is only a workaround
+	valid = valid && test_conversion_gdscript_builtin("export(PackedScene) var mob_scene", "export var mob_scene: PackedScene", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("var d = parse_json(roman(sfs))", "var test_json_conv = JSON.new()\ntest_json_conv.parse(roman(sfs))\nvar d = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var d = parse_json(roman(sfs))", "var test_json_conv = JSON.new()\ntest_json_conv.parse(roman(sfs))\nvar d = test_json_conv.get_data()", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("to_json( AA ) szon", "JSON.new().stringify( AA ) szon", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("s to_json", "s JSON.new().stringify", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("AF to_json2", "AF to_json2", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("var rr = JSON.parse(a)", "var test_json_conv = JSON.new()\ntest_json_conv.parse(a)\nvar rr = test_json_conv.get_data()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("to_json( AA ) szon", "JSON.new().stringify( AA ) szon", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("s to_json", "s JSON.new().stringify", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("AF to_json2", "AF to_json2", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("var rr = JSON.parse(a)", "var test_json_conv = JSON.new()\ntest_json_conv.parse(a)\nvar rr = test_json_conv.get_data()", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("empty()", "is_empty()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin(".empty", ".empty", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("empty()", "is_empty()", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(".empty", ".empty", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin(").roman(", ").roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\t.roman(", "\tsuper.roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin(" .roman(", " super.roman(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin(".1", ".1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin(" .1", " .1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("'.'", "'.'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("'.a'", "'.a'", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("\t._input(_event)", "\tsuper._input(_event)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(").roman(", ").roman(", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\t.roman(", "\tsuper.roman(", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(" .roman(", " super.roman(", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(".1", ".1", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin(" .1", " .1", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("'.'", "'.'", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("'.a'", "'.a'", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\t._input(_event)", "\tsuper._input(_event)", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C) != OK):", "(connect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,D) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D]) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E]) != OK):", "(connect(A,Callable(B,C).bind(D,E)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E],F) != OK):", "(connect(A,Callable(B,C).bind(D,E),F) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,D,E) != OK):", "(connect(A,Callable(B,C).bind(D),E) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C) != OK):", "(connect(A,Callable(B,C)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,D) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D]) != OK):", "(connect(A,Callable(B,C).bind(D)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E]) != OK):", "(connect(A,Callable(B,C).bind(D,E)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,[D,E],F) != OK):", "(connect(A,Callable(B,C).bind(D,E),F) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(connect(A,B,C,D,E) != OK):", "(connect(A,Callable(B,C).bind(D),E) != OK):", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("(start(A,B) != OK):", "(start(Callable(A,B)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("func start(A,B):", "func start(A,B):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(start(A,B,C,D,E,F,G) != OK):", "(start(Callable(A,B).bind(C),D,E,F,G) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("disconnect(A,B,C) != OK):", "disconnect(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("is_connected(A,B,C) != OK):", "is_connected(A,Callable(B,C)) != OK):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("is_connected(A,B,C))", "is_connected(A,Callable(B,C)))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(start(A,B) != OK):", "(start(Callable(A,B)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("func start(A,B):", "func start(A,B):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(start(A,B,C,D,E,F,G) != OK):", "(start(Callable(A,B).bind(C),D,E,F,G) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("disconnect(A,B,C) != OK):", "disconnect(A,Callable(B,C)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("is_connected(A,B,C) != OK):", "is_connected(A,Callable(B,C)) != OK):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("is_connected(A,B,C))", "is_connected(A,Callable(B,C)))", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("(tween_method(A,B,C,D,E).foo())", "(tween_method(Callable(A,B),C,D,E).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(tween_method(A,B,C,D,E,[F,G]).foo())", "(tween_method(Callable(A,B).bind(F,G),C,D,E).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(tween_callback(A,B).foo())", "(tween_callback(Callable(A,B)).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("(tween_callback(A,B,[C,D]).foo())", "(tween_callback(Callable(A,B).bind(C,D)).foo())", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(tween_method(A,B,C,D,E).foo())", "(tween_method(Callable(A,B),C,D,E).foo())", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(tween_method(A,B,C,D,E,[F,G]).foo())", "(tween_method(Callable(A,B).bind(F,G),C,D,E).foo())", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(tween_callback(A,B).foo())", "(tween_callback(Callable(A,B)).foo())", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("(tween_callback(A,B,[C,D]).foo())", "(tween_callback(Callable(A,B).bind(C,D)).foo())", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("func _init(", "func _init(", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("func _init(p_x:int)->void:", "func _init(p_x:int):", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("q_PackedDataContainer._iter_init(variable1)", "q_PackedDataContainer._iter_init(variable1)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("func _init(", "func _init(", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("func _init(p_x:int)->void:", "func _init(p_x:int):", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("q_PackedDataContainer._iter_init(variable1)", "q_PackedDataContainer._iter_init(variable1)", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("assert(speed < 20, str(randi()%10))", "assert(speed < 20) #,str(randi()%10))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("assert(speed < 2)", "assert(speed < 2)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("assert(false, \"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", "assert(false) #,\"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("assert(speed < 20, str(randi()%10))", "assert(speed < 20) #,str(randi()%10))", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("assert(speed < 2)", "assert(speed < 2)", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("assert(false, \"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", "assert(false) #,\"Missing type --\" + str(argument.type) + \"--, needs to be added to project\")", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("create_from_image(aa, bb)", "create_from_image(aa) #,bb", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("q_ImageTexture.create_from_image(variable1, variable2)", "q_ImageTexture.create_from_image(variable1) #,variable2", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("create_from_image(aa, bb)", "create_from_image(aa) #,bb", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("q_ImageTexture.create_from_image(variable1, variable2)", "q_ImageTexture.create_from_image(variable1) #,variable2", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("set_cell_item(a, b, c, d ,e) # AA", "set_cell_item( Vector3(a,b,c) ,d,e) # AA", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("set_cell_item(a, b)", "set_cell_item(a, b)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("map_to_world(a, b,c)", "map_to_local(Vector3i(a,b,c))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("set_cell_item(a, b, c, d ,e) # AA", "set_cell_item( Vector3(a,b,c) ,d,e) # AA", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("set_cell_item(a, b)", "set_cell_item(a, b)", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("get_cell_item_orientation(a, b,c)", "get_cell_item_orientation(Vector3i(a,b,c))", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("get_cell_item(a, b,c)", "get_cell_item(Vector3i(a,b,c))", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("map_to_world(a, b,c)", "map_to_local(Vector3i(a,b,c))", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("PackedStringArray(req_godot).join('.')", "'.'.join(PackedStringArray(req_godot))", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("=PackedStringArray(req_godot).join('.')", "='.'.join(PackedStringArray(req_godot))", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_gdscript_builtin("apply_force(position, impulse)", "apply_force(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("apply_impulse(position, impulse)", "apply_impulse(impulse, position)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("draw_rect(a,b,c,d,e).abc", "draw_rect(a,b,c,d).abc# e) TODOGODOT4 Antialiasing argument is missing", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("get_focus_owner()", "get_viewport().gui_get_focus_owner()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("button.pressed = 1", "button.button_pressed = 1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("button.pressed=1", "button.button_pressed=1", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("button.pressed SF", "button.pressed SF", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("apply_force(position, impulse)", "apply_force(impulse, position)", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("apply_impulse(position, impulse)", "apply_impulse(impulse, position)", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("draw_rect(a,b,c,d,e).abc", "draw_rect(a,b,c,d).abc# e) TODOGODOT4 Antialiasing argument is missing", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("get_focus_owner()", "get_viewport().gui_get_focus_owner()", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("button.pressed = 1", "button.button_pressed = 1", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("button.pressed=1", "button.button_pressed=1", "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("button.pressed SF", "button.pressed SF", "custom rename", reg_container, false);
 
-	valid = valid && test_conversion_with_regex("AAA Color.white AF", "AAA Color.WHITE AF", &ProjectConverter3To4::rename_colors, "custom rename", reg_container);
+	valid = valid && test_conversion_colors("AAA Color.white AF", "AAA Color.WHITE AF", "custom rename", reg_container);
 
 	// Custom rule conversion
 	{
 		String from = "instance";
 		String to = "instantiate";
 		String name = "AA.instance()";
-		Vector<String> got = String("AA.instance()").split("\n");
+		Vector<SourceCode> got = split_name("AA.instance()");
 		String expected = "AA.instantiate()";
 		custom_rename(got, from, to);
 		String got_str = collect_string_from_vector(got);
@@ -2954,61 +3740,59 @@ String ProjectConverter3To4::get_object_of_execution(const String &line) const {
 	return line.substr(variable_start, (end - variable_start));
 }
 
-void ProjectConverter3To4::rename_colors(Vector<String> &lines, const RegExContainer &reg_container) {
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			if (line.contains("Color.")) {
+void ProjectConverter3To4::rename_colors(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			if (source.content.contains("Color.")) {
 				for (unsigned int current_index = 0; color_renames[current_index][0]; current_index++) {
-					line = reg_container.color_regexes[current_index]->sub(line, reg_container.color_renamed[current_index], true);
+					source.content = reg_container.color_regexes[current_index]->sub(source.content, reg_container.color_renamed[current_index], true);
 				}
 			}
 		}
 	}
 };
 
-Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container) {
+Vector<String> ProjectConverter3To4::check_for_rename_colors(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
 
-	int current_line = 1;
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			if (line.contains("Color.")) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			if (source.content.contains("Color.")) {
 				for (unsigned int current_index = 0; color_renames[current_index][0]; current_index++) {
-					TypedArray<RegExMatch> reg_match = reg_container.color_regexes[current_index]->search_all(line);
+					TypedArray<RegExMatch> reg_match = reg_container.color_regexes[current_index]->search_all(source.content);
 					if (reg_match.size() > 0) {
-						found_renames.append(line_formatter(current_line, color_renames[current_index][0], color_renames[current_index][1], line));
+						found_renames.append(line_formatter(source.line_number, color_renames[current_index][0], color_renames[current_index][1], source.content));
 					}
 				}
 			}
 		}
-		current_line++;
 	}
 
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_classes(Vector<String> &lines, const RegExContainer &reg_container) {
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
+void ProjectConverter3To4::rename_classes(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; class_renames[current_index][0]; current_index++) {
-				if (line.contains(class_renames[current_index][0])) {
+				if (source.content.contains(class_renames[current_index][0])) {
 					bool found_ignored_items = false;
 					// Renaming Spatial.tscn to TEMP_RENAMED_CLASS.tscn.
-					if (line.contains(String(class_renames[current_index][0]) + ".")) {
+					if (source.content.contains(String(class_renames[current_index][0]) + ".")) {
 						found_ignored_items = true;
-						line = reg_container.class_tscn_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.tscn", true);
-						line = reg_container.class_gd_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.gd", true);
-						line = reg_container.class_shader_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.shader", true);
+						source.content = reg_container.class_tscn_regexes[current_index]->sub(source.content, "TEMP_RENAMED_CLASS.tscn", true);
+						source.content = reg_container.class_gd_regexes[current_index]->sub(source.content, "TEMP_RENAMED_CLASS.gd", true);
+						source.content = reg_container.class_shader_regexes[current_index]->sub(source.content, "TEMP_RENAMED_CLASS.shader", true);
 					}
 
 					// Causal renaming Spatial -> Node3D.
-					line = reg_container.class_regexes[current_index]->sub(line, class_renames[current_index][1], true);
+					source.content = reg_container.class_regexes[current_index]->sub(source.content, class_renames[current_index][1], true);
 
 					// Restore Spatial.tscn from TEMP_RENAMED_CLASS.tscn.
 					if (found_ignored_items) {
-						line = reg_container.class_temp_tscn.sub(line, reg_container.class_temp_tscn_renames[current_index], true);
-						line = reg_container.class_temp_gd.sub(line, reg_container.class_temp_gd_renames[current_index], true);
-						line = reg_container.class_temp_shader.sub(line, reg_container.class_temp_shader_renames[current_index], true);
+						source.content = reg_container.class_temp_tscn.sub(source.content, reg_container.class_temp_tscn_renames[current_index], true);
+						source.content = reg_container.class_temp_gd.sub(source.content, reg_container.class_temp_gd_renames[current_index], true);
+						source.content = reg_container.class_temp_shader.sub(source.content, reg_container.class_temp_shader_renames[current_index], true);
 					}
 				}
 			}
@@ -3016,64 +3800,59 @@ void ProjectConverter3To4::rename_classes(Vector<String> &lines, const RegExCont
 	}
 };
 
-Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<String> &lines, const RegExContainer &reg_container) {
+Vector<String> ProjectConverter3To4::check_for_rename_classes(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
 
-	int current_line = 1;
-
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; class_renames[current_index][0]; current_index++) {
-				if (line.contains(class_renames[current_index][0])) {
-					String old_line = line;
+				if (source.content.contains(class_renames[current_index][0])) {
+					String old_line = source.content;
 					bool found_ignored_items = false;
 					// Renaming Spatial.tscn to TEMP_RENAMED_CLASS.tscn.
-					if (line.contains(String(class_renames[current_index][0]) + ".")) {
+					if (source.content.contains(String(class_renames[current_index][0]) + ".")) {
 						found_ignored_items = true;
-						line = reg_container.class_tscn_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.tscn", true);
-						line = reg_container.class_gd_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.gd", true);
-						line = reg_container.class_shader_regexes[current_index]->sub(line, "TEMP_RENAMED_CLASS.shader", true);
+						source.content = reg_container.class_tscn_regexes[current_index]->sub(source.content, "TEMP_RENAMED_CLASS.tscn", true);
+						source.content = reg_container.class_gd_regexes[current_index]->sub(source.content, "TEMP_RENAMED_CLASS.gd", true);
+						source.content = reg_container.class_shader_regexes[current_index]->sub(source.content, "TEMP_RENAMED_CLASS.shader", true);
 					}
 
 					// Causal renaming Spatial -> Node3D.
-					TypedArray<RegExMatch> reg_match = reg_container.class_regexes[current_index]->search_all(line);
+					TypedArray<RegExMatch> reg_match = reg_container.class_regexes[current_index]->search_all(source.content);
 					if (reg_match.size() > 0) {
-						found_renames.append(line_formatter(current_line, class_renames[current_index][0], class_renames[current_index][1], old_line));
+						found_renames.append(line_formatter(source.line_number, class_renames[current_index][0], class_renames[current_index][1], old_line));
 					}
 
 					// Restore Spatial.tscn from TEMP_RENAMED_CLASS.tscn.
 					if (found_ignored_items) {
-						line = reg_container.class_temp_tscn.sub(line, reg_container.class_temp_tscn_renames[current_index], true);
-						line = reg_container.class_temp_gd.sub(line, reg_container.class_temp_gd_renames[current_index], true);
-						line = reg_container.class_temp_shader.sub(line, reg_container.class_temp_shader_renames[current_index], true);
+						source.content = reg_container.class_temp_tscn.sub(source.content, reg_container.class_temp_tscn_renames[current_index], true);
+						source.content = reg_container.class_temp_gd.sub(source.content, reg_container.class_temp_gd_renames[current_index], true);
+						source.content = reg_container.class_temp_shader.sub(source.content, reg_container.class_temp_shader_renames[current_index], true);
 					}
 				}
 			}
 		}
-		current_line++;
 	}
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin) {
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			process_gdscript_line(line, reg_container, builtin);
+void ProjectConverter3To4::rename_gdscript_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container, bool builtin) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			process_gdscript_line(source.content, reg_container, builtin);
 		}
 	}
 };
 
-Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<String> &lines, const RegExContainer &reg_container, bool builtin) {
-	int current_line = 1;
-
+Vector<String> ProjectConverter3To4::check_for_rename_gdscript_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container, bool builtin) {
 	Vector<String> found_renames;
 
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			String old_line = line;
-			process_gdscript_line(line, reg_container, builtin);
-			if (old_line != line) {
-				found_renames.append(simple_line_formatter(current_line, old_line, line));
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			String old_line = source.content;
+			process_gdscript_line(source.content, reg_container, builtin);
+			if (old_line != source.content) {
+				found_renames.append(simple_line_formatter(source.line_number, old_line, source.content));
 			}
 		}
 	}
@@ -3700,25 +4479,23 @@ void ProjectConverter3To4::process_csharp_line(String &line, const RegExContaine
 	}
 }
 
-void ProjectConverter3To4::rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container) {
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			process_csharp_line(line, reg_container);
+void ProjectConverter3To4::rename_csharp_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			process_csharp_line(source.content, reg_container);
 		}
 	}
 };
 
-Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<String> &lines, const RegExContainer &reg_container) {
-	int current_line = 1;
-
+Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
 
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			String old_line = line;
-			process_csharp_line(line, reg_container);
-			if (old_line != line) {
-				found_renames.append(simple_line_formatter(current_line, old_line, line));
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			String old_line = source.content;
+			process_csharp_line(source.content, reg_container);
+			if (old_line != source.content) {
+				found_renames.append(simple_line_formatter(source.line_number, old_line, source.content));
 			}
 		}
 	}
@@ -3726,284 +4503,274 @@ Vector<String> ProjectConverter3To4::check_for_rename_csharp_functions(Vector<St
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container) {
+void ProjectConverter3To4::rename_csharp_attributes(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	static String error_message = "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n";
 
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			line = reg_container.keyword_csharp_remote.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
-			line = reg_container.keyword_csharp_remotesync.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
-			line = reg_container.keyword_csharp_puppet.sub(line, "[RPC]", true);
-			line = reg_container.keyword_csharp_puppetsync.sub(line, "[RPC(CallLocal = true)]", true);
-			line = reg_container.keyword_csharp_master.sub(line, error_message + "[RPC]", true);
-			line = reg_container.keyword_csharp_mastersync.sub(line, error_message + "[RPC(CallLocal = true)]", true);
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			source.content = reg_container.keyword_csharp_remote.sub(source.content, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
+			source.content = reg_container.keyword_csharp_remotesync.sub(source.content, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
+			source.content = reg_container.keyword_csharp_puppet.sub(source.content, "[RPC]", true);
+			source.content = reg_container.keyword_csharp_puppetsync.sub(source.content, "[RPC(CallLocal = true)]", true);
+			source.content = reg_container.keyword_csharp_master.sub(source.content, error_message + "[RPC]", true);
+			source.content = reg_container.keyword_csharp_mastersync.sub(source.content, error_message + "[RPC(CallLocal = true)]", true);
 		}
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_rename_csharp_attributes(Vector<String> &lines, const RegExContainer &reg_container) {
-	int current_line = 1;
-
+Vector<String> ProjectConverter3To4::check_for_rename_csharp_attributes(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
 
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
 			String old;
-			old = line;
-			line = reg_container.keyword_csharp_remote.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
-			if (old != line) {
-				found_renames.append(line_formatter(current_line, "[Remote]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", line));
+			old = source.content;
+			source.content = reg_container.keyword_csharp_remote.sub(source.content, "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", true);
+			if (old != source.content) {
+				found_renames.append(line_formatter(source.line_number, "[Remote]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer)]", old));
 			}
 
-			old = line;
-			line = reg_container.keyword_csharp_remotesync.sub(line, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
-			if (old != line) {
-				found_renames.append(line_formatter(current_line, "[RemoteSync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", line));
+			old = source.content;
+			source.content = reg_container.keyword_csharp_remotesync.sub(source.content, "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", true);
+			if (old != source.content) {
+				found_renames.append(line_formatter(source.line_number, "[RemoteSync]", "[RPC(MultiplayerAPI.RPCMode.AnyPeer, CallLocal = true)]", old));
 			}
 
-			old = line;
-			line = reg_container.keyword_csharp_puppet.sub(line, "[RPC]", true);
-			if (old != line) {
-				found_renames.append(line_formatter(current_line, "[Puppet]", "[RPC]", line));
+			old = source.content;
+			source.content = reg_container.keyword_csharp_puppet.sub(source.content, "[RPC]", true);
+			if (old != source.content) {
+				found_renames.append(line_formatter(source.line_number, "[Puppet]", "[RPC]", old));
 			}
 
-			old = line;
-			line = reg_container.keyword_csharp_puppetsync.sub(line, "[RPC(CallLocal = true)]", true);
-			if (old != line) {
-				found_renames.append(line_formatter(current_line, "[PuppetSync]", "[RPC(CallLocal = true)]", line));
+			old = source.content;
+			source.content = reg_container.keyword_csharp_puppetsync.sub(source.content, "[RPC(CallLocal = true)]", true);
+			if (old != source.content) {
+				found_renames.append(line_formatter(source.line_number, "[PuppetSync]", "[RPC(CallLocal = true)]", old));
 			}
 
-			old = line;
-			line = reg_container.keyword_csharp_master.sub(line, "[RPC]", true);
-			if (old != line) {
-				found_renames.append(line_formatter(current_line, "[Master]", "[RPC]", line));
+			old = source.content;
+			source.content = reg_container.keyword_csharp_master.sub(source.content, "[RPC]", true);
+			if (old != source.content) {
+				found_renames.append(line_formatter(source.line_number, "[Master]", "[RPC]", old));
 			}
 
-			old = line;
-			line = reg_container.keyword_csharp_mastersync.sub(line, "[RPC(CallLocal = true)]", true);
-			if (old != line) {
-				found_renames.append(line_formatter(current_line, "[MasterSync]", "[RPC(CallLocal = true)]", line));
+			old = source.content;
+			source.content = reg_container.keyword_csharp_mastersync.sub(source.content, "[RPC(CallLocal = true)]", true);
+			if (old != source.content) {
+				found_renames.append(line_formatter(source.line_number, "[MasterSync]", "[RPC(CallLocal = true)]", old));
 			}
 		}
-		current_line++;
 	}
 
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container) {
+void ProjectConverter3To4::rename_gdscript_keywords(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	static String error_message = "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using get_multiplayer().get_remote_sender_id()\n";
 
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			if (line.contains("tool")) {
-				line = reg_container.keyword_gdscript_tool.sub(line, "@tool", true);
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			if (source.content.contains("tool")) {
+				source.content = reg_container.keyword_gdscript_tool.sub(source.content, "@tool", true);
 			}
-			if (line.contains("export")) {
-				line = reg_container.keyword_gdscript_export_single.sub(line, "@export", true);
+			if (source.content.contains("export")) {
+				source.content = reg_container.keyword_gdscript_export_single.sub(source.content, "@export", true);
 			}
-			if (line.contains("export")) {
-				line = reg_container.keyword_gdscript_export_mutli.sub(line, "$1@export", true);
+			if (source.content.contains("export")) {
+				source.content = reg_container.keyword_gdscript_export_mutli.sub(source.content, "$1@export", true);
 			}
-			if (line.contains("onready")) {
-				line = reg_container.keyword_gdscript_onready.sub(line, "@onready", true);
+			if (source.content.contains("onready")) {
+				source.content = reg_container.keyword_gdscript_onready.sub(source.content, "@onready", true);
 			}
-			if (line.contains("remote")) {
-				line = reg_container.keyword_gdscript_remote.sub(line, "@rpc(any_peer) func", true);
+			if (source.content.contains("remote")) {
+				source.content = reg_container.keyword_gdscript_remote.sub(source.content, "@rpc(any_peer) func", true);
 			}
-			if (line.contains("remote")) {
-				line = reg_container.keyword_gdscript_remotesync.sub(line, "@rpc(any_peer, call_local) func", true);
+			if (source.content.contains("remote")) {
+				source.content = reg_container.keyword_gdscript_remotesync.sub(source.content, "@rpc(any_peer, call_local) func", true);
 			}
-			if (line.contains("sync")) {
-				line = reg_container.keyword_gdscript_sync.sub(line, "@rpc(any_peer, call_local) func", true);
+			if (source.content.contains("sync")) {
+				source.content = reg_container.keyword_gdscript_sync.sub(source.content, "@rpc(any_peer, call_local) func", true);
 			}
-			if (line.contains("slave")) {
-				line = reg_container.keyword_gdscript_slave.sub(line, "@rpc func", true);
+			if (source.content.contains("slave")) {
+				source.content = reg_container.keyword_gdscript_slave.sub(source.content, "@rpc func", true);
 			}
-			if (line.contains("puppet")) {
-				line = reg_container.keyword_gdscript_puppet.sub(line, "@rpc func", true);
+			if (source.content.contains("puppet")) {
+				source.content = reg_container.keyword_gdscript_puppet.sub(source.content, "@rpc func", true);
 			}
-			if (line.contains("puppet")) {
-				line = reg_container.keyword_gdscript_puppetsync.sub(line, "@rpc(call_local) func", true);
+			if (source.content.contains("puppet")) {
+				source.content = reg_container.keyword_gdscript_puppetsync.sub(source.content, "@rpc(call_local) func", true);
 			}
-			if (line.contains("master")) {
-				line = reg_container.keyword_gdscript_master.sub(line, error_message + "@rpc func", true);
+			if (source.content.contains("master")) {
+				source.content = reg_container.keyword_gdscript_master.sub(source.content, error_message + "@rpc func", true);
 			}
-			if (line.contains("master")) {
-				line = reg_container.keyword_gdscript_mastersync.sub(line, error_message + "@rpc(call_local) func", true);
+			if (source.content.contains("master")) {
+				source.content = reg_container.keyword_gdscript_mastersync.sub(source.content, error_message + "@rpc(call_local) func", true);
 			}
 		}
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<String> &lines, const RegExContainer &reg_container) {
+Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<SourceCode> &lines, const RegExContainer &reg_container) {
 	Vector<String> found_renames;
 
-	int current_line = 1;
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
 			String old;
 
-			if (line.contains("tool")) {
-				old = line;
-				line = reg_container.keyword_gdscript_tool.sub(line, "@tool", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "tool", "@tool", line));
+			if (source.content.contains("tool")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_tool.sub(source.content, "@tool", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "tool", "@tool", old));
 				}
 			}
 
-			if (line.contains("export")) {
-				old = line;
-				line = reg_container.keyword_gdscript_export_single.sub(line, "$1@export", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "export", "@export", line));
+			if (source.content.contains("export")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_export_single.sub(source.content, "@export", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "export", "@export", old));
 				}
 			}
 
-			if (line.contains("export")) {
-				old = line;
-				line = reg_container.keyword_gdscript_export_mutli.sub(line, "@export", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "export", "@export", line));
+			if (source.content.contains("export")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_export_mutli.sub(source.content, "$1@export", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "export", "@export", old));
 				}
 			}
 
-			if (line.contains("onready")) {
-				old = line;
-				line = reg_container.keyword_gdscript_tool.sub(line, "@onready", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "onready", "@onready", line));
+			if (source.content.contains("onready")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_onready.sub(source.content, "@onready", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "onready", "@onready", old));
 				}
 			}
 
-			if (line.contains("remote")) {
-				old = line;
-				line = reg_container.keyword_gdscript_remote.sub(line, "@rpc(any_peer) func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "remote func", "@rpc(any_peer) func", line));
+			if (source.content.contains("remote")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_remote.sub(source.content, "@rpc(any_peer) func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "remote func", "@rpc(any_peer) func", old));
 				}
 			}
 
-			if (line.contains("remote")) {
-				old = line;
-				line = reg_container.keyword_gdscript_remotesync.sub(line, "@rpc(any_peer, call_local)) func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "remotesync func", "@rpc(any_peer, call_local)) func", line));
+			if (source.content.contains("remote")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_remotesync.sub(source.content, "@rpc(any_peer, call_local)) func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "remotesync func", "@rpc(any_peer, call_local)) func", old));
 				}
 			}
 
-			if (line.contains("sync")) {
-				old = line;
-				line = reg_container.keyword_gdscript_sync.sub(line, "@rpc(any_peer, call_local)) func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "sync func", "@rpc(any_peer, call_local)) func", line));
+			if (source.content.contains("sync")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_sync.sub(source.content, "@rpc(any_peer, call_local)) func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "sync func", "@rpc(any_peer, call_local)) func", old));
 				}
 			}
 
-			if (line.contains("slave")) {
-				old = line;
-				line = reg_container.keyword_gdscript_slave.sub(line, "@rpc func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "slave func", "@rpc func", line));
+			if (source.content.contains("slave")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_slave.sub(source.content, "@rpc func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "slave func", "@rpc func", old));
 				}
 			}
 
-			if (line.contains("puppet")) {
-				old = line;
-				line = reg_container.keyword_gdscript_puppet.sub(line, "@rpc func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "puppet func", "@rpc func", line));
+			if (source.content.contains("puppet")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_puppet.sub(source.content, "@rpc func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "puppet func", "@rpc func", old));
 				}
 			}
 
-			if (line.contains("puppet")) {
-				old = line;
-				line = reg_container.keyword_gdscript_puppetsync.sub(line, "@rpc(call_local) func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "puppetsync func", "@rpc(call_local) func", line));
+			if (source.content.contains("puppet")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_puppetsync.sub(source.content, "@rpc(call_local) func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "puppetsync func", "@rpc(call_local) func", old));
 				}
 			}
 
-			if (line.contains("master")) {
-				old = line;
-				line = reg_container.keyword_gdscript_master.sub(line, "@rpc func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "master func", "@rpc func", line));
+			if (source.content.contains("master")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_master.sub(source.content, "@rpc func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "master func", "@rpc func", old));
 				}
 			}
 
-			if (line.contains("master")) {
-				old = line;
-				line = reg_container.keyword_gdscript_master.sub(line, "@rpc(call_local) func", true);
-				if (old != line) {
-					found_renames.append(line_formatter(current_line, "mastersync func", "@rpc(call_local) func", line));
+			if (source.content.contains("master")) {
+				old = source.content;
+				source.content = reg_container.keyword_gdscript_master.sub(source.content, "@rpc(call_local) func", true);
+				if (old != source.content) {
+					found_renames.append(line_formatter(source.line_number, "mastersync func", "@rpc(call_local) func", old));
 				}
 			}
 		}
-		current_line++;
 	}
 
 	return found_renames;
 }
 
-void ProjectConverter3To4::custom_rename(Vector<String> &lines, String from, String to) {
+void ProjectConverter3To4::custom_rename(Vector<SourceCode> &lines, String from, String to) {
 	RegEx reg = RegEx(String("\\b") + from + "\\b");
 	CRASH_COND(!reg.is_valid());
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			line = reg.sub(line, to, true);
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			source.content = reg.sub(source.content, to, true);
 		}
 	}
 };
 
-Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, String from, String to) {
+Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<SourceCode> &lines, String from, String to) {
 	Vector<String> found_renames;
 
 	RegEx reg = RegEx(String("\\b") + from + "\\b");
 	CRASH_COND(!reg.is_valid());
 
-	int current_line = 1;
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
-			TypedArray<RegExMatch> reg_match = reg.search_all(line);
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
+			TypedArray<RegExMatch> reg_match = reg.search_all(source.content);
 			if (reg_match.size() > 0) {
-				found_renames.append(line_formatter(current_line, from.replace("\\.", "."), to, line)); // Without replacing it will print "\.shader" instead ".shader".
+				found_renames.append(line_formatter(source.line_number, from.replace("\\.", "."), to, source.content)); // Without replacing it will print "\.shader" instead ".shader".
 			}
 		}
-		current_line++;
 	}
 	return found_renames;
 }
 
-void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines) {
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
+void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceCode> &lines) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
-				if (line.contains(array[current_index][0])) {
-					line = cached_regexes[current_index]->sub(line, array[current_index][1], true);
+				if (source.content.contains(array[current_index][0])) {
+					source.content = cached_regexes[current_index]->sub(source.content, array[current_index][1], true);
 				}
 			}
 		}
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<String> &lines) {
+Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[][2], LocalVector<RegEx *> &cached_regexes, Vector<SourceCode> &lines) {
 	Vector<String> found_renames;
 
-	int current_line = 1;
-
-	for (String &line : lines) {
-		if (uint64_t(line.length()) <= maximum_line_length) {
+	for (SourceCode &source : lines) {
+		if (uint64_t(source.content.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
-				if (line.contains(array[current_index][0])) {
-					TypedArray<RegExMatch> reg_match = cached_regexes[current_index]->search_all(line);
+				if (source.content.contains(array[current_index][0])) {
+					TypedArray<RegExMatch> reg_match = cached_regexes[current_index]->search_all(source.content);
 					if (reg_match.size() > 0) {
-						found_renames.append(line_formatter(current_line, array[current_index][0], array[current_index][1], line));
+						found_renames.append(line_formatter(source.line_number, array[current_index][0], array[current_index][1], source.content));
 					}
 				}
 			}
 		}
-		current_line++;
 	}
 
 	return found_renames;
@@ -4046,10 +4813,10 @@ String ProjectConverter3To4::simple_line_formatter(int current_line, String old_
 }
 
 // Collects string from vector strings
-String ProjectConverter3To4::collect_string_from_vector(Vector<String> &vector) {
+String ProjectConverter3To4::collect_string_from_vector(Vector<SourceCode> &vector) {
 	String string = "";
 	for (int i = 0; i < vector.size(); i++) {
-		string += vector[i];
+		string += vector[i].content;
 
 		if (i != vector.size() - 1) {
 			string += "\n";
