@@ -3489,6 +3489,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 								icon_size_x = icon_region.size.width;
 							}
 						}
+
+						// Take care to check if icon_max_width is set.
+						if (get_selected()->get_icon_max_width(selected_col) > 0 && get_selected()->get_icon_max_width(selected_col) < icon_size_x) {
+							icon_size_x = get_selected()->get_icon_max_width(selected_col);
+						}
+
 						// Icon is treated as if it is outside of the rect so that double clicking on it will emit the item_double_clicked signal.
 						if (rtl) {
 							mpos.x = get_size().width - (mpos.x + icon_size_x);
@@ -3728,8 +3734,14 @@ bool Tree::edit_selected() {
 		popup_rect.size = rect.size;
 
 		// Account for icon.
-		popup_rect.position.x += c.get_icon_size().x;
-		popup_rect.size.x -= c.get_icon_size().x;
+		// If set_icon_max_width is set and less than the current icon width.
+		if (c.icon_max_w > 0 && c.icon_max_w < c.get_icon_size().x) {
+			popup_rect.position.x += c.icon_max_w;
+			popup_rect.size.x -= c.icon_max_w;
+		} else {
+			popup_rect.position.x += c.get_icon_size().x;
+			popup_rect.size.x -= c.get_icon_size().x;
+		}
 
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
