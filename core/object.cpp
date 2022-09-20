@@ -1477,7 +1477,9 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 			s->slot_map[target].reference_count++;
 			return OK;
 		} else {
-			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Signal '" + p_signal + "' is already connected to given method '" + p_to_method + "' in that object.");
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER,
+					vformat("Signal \"%s\" from \"%s\" is already connected to given method \"%s\" in \"%s\".",
+							p_signal, to_string(), p_to_method, p_to_object->to_string()));
 		}
 	}
 
