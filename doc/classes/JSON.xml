@@ -28,6 +28,11 @@
 		[codeblock]
 		var data = JSON.parse_string(json_string) # Returns null if parsing failed.
 		[/codeblock]
+		[b]Note:[/b] Both parse methods do not fully comply with the JSON specification:
+		- Trailing commas in arrays or objects are ignored, instead of causing a parser error.
+		- New line and tab characters are accepted in string literals, and are treated like their corresponding escape sequences [code]\n[/code] and [code]\t[/code].
+		- Numbers are parsed using [method String.to_float] which is generally more lax than the JSON specification.
+		- Certain errors, such as invalid Unicode sequences, do not cause a parser error. Instead, the string is cleansed and an error is logged to the console.
 	</description>
 	<tutorials>
 	</tutorials>
