@@ -31,6 +31,7 @@
 #include "godot_window_delegate.h"
 
 #include "display_server_macos.h"
+#include "godot_button_view.h"
 
 @implementation GodotWindowDelegate
 
@@ -219,6 +220,10 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
+	if (wd.window_button_view) {
+		[(GodotButtonView *)wd.window_button_view displayButtons];
+	}
+
 	if (ds->mouse_get_mode() == DisplayServer::MOUSE_MODE_CAPTURED) {
 		const NSRect content_rect = [wd.window_view frame];
 		NSRect point_in_window_rect = NSMakeRect(content_rect.size.width / 2, content_rect.size.height / 2, 0, 0);
@@ -240,6 +245,10 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+
+	if (wd.window_button_view) {
+		[(GodotButtonView *)wd.window_button_view displayButtons];
+	}
 
 	ds->release_pressed_events();
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);

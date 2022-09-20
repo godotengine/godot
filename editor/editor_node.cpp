@@ -7528,6 +7528,7 @@ EditorNode::EditorNode() {
 
 	// Extend menu bar to window title.
 	if (can_expand) {
+		DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(menu_hb->get_minimum_size().y / 2, menu_hb->get_minimum_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
 		menu_hb->set_can_move_window(true);
 	}

@@ -12,6 +12,7 @@ files = [
     "crash_handler_macos.mm",
     "macos_terminal_logger.mm",
     "display_server_macos.mm",
+    "godot_button_view.mm",
     "godot_content_view.mm",
     "godot_window_delegate.mm",
     "godot_window.mm",

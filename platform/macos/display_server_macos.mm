@@ -30,6 +30,7 @@
 
 #include "display_server_macos.h"
 
+#include "godot_button_view.h"
 #include "godot_content_view.h"
 #include "godot_menu_delegate.h"
 #include "godot_menu_item.h"
@@ -2639,6 +2640,14 @@ bool DisplayServerMacOS::window_minimize_on_title_dbl_click() const {
 	return false;
 }
 
+void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.wb_offset = p_offset;
+}
+
 Vector2i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -2682,14 +2691,31 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
 			NSRect rect = [wd.window_object frame];
+			if (wd.window_button_view) {
+				[wd.window_button_view removeFromSuperview];
+				wd.window_button_view = nil;
+			}
 			if (p_enabled) {
 				[wd.window_object setTitlebarAppearsTransparent:YES];
 				[wd.window_object setTitleVisibility:NSWindowTitleHidden];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
+
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:YES];
+				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+				[[wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:YES];
+				float window_buttons_spacing = NSMinX([[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] frame]) - NSMinX([[wd.window_object standardWindowButton:NSWindowCloseButton] frame]);
+
+				wd.window_button_view = [[GodotButtonView alloc] initWithFrame:NSZeroRect];
+				[wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+				[wd.window_view addSubview:wd.window_button_view];
 			} else {
 				[wd.window_object setTitlebarAppearsTransparent:NO];
 				[wd.window_object setTitleVisibility:NSWindowTitleVisible];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskFullSizeContentView];
+
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:NO];
+				[[wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:NO];
+				[[wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
 			}
 			[wd.window_object setFrame:rect display:YES];
 		} break;
