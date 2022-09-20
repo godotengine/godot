@@ -1336,6 +1336,15 @@
 				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED], if the desired mode is not supported.
 			</description>
 		</method>
+		<method name="window_set_window_buttons_offset">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector2i" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				When [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set, set offset to the center of the first titlebar button.
+				[b]Note:[/b] This flag is implemented on macOS.
+			</description>
+		</method>
 		<method name="window_set_window_event_callback">
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />

@@ -76,6 +76,7 @@ public:
 		id window_delegate;
 		id window_object;
 		id window_view;
+		id window_button_view;
 
 		Vector<Vector2> mpath;
 
@@ -84,6 +85,7 @@ public:
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
+		Vector2i wb_offset = Vector2i(16, 16);
 
 		NSRect last_frame_rect;
 
@@ -391,6 +393,7 @@ public:
 	virtual bool window_maximize_on_title_dbl_click() const override;
 	virtual bool window_minimize_on_title_dbl_click() const override;
 
+	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual Point2i ime_get_selection() const override;

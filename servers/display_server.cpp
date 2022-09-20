@@ -678,6 +678,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_set_flag", "flag", "enabled", "window_id"), &DisplayServer::window_set_flag, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_flag", "flag", "window_id"), &DisplayServer::window_get_flag, DEFVAL(MAIN_WINDOW_ID));
 
+	ClassDB::bind_method(D_METHOD("window_set_window_buttons_offset", "offset", "window_id"), &DisplayServer::window_set_window_buttons_offset, DEFVAL(MAIN_WINDOW_ID));
 	ClassDB::bind_method(D_METHOD("window_get_safe_title_margins", "window_id"), &DisplayServer::window_get_safe_title_margins, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("window_request_attention", "window_id"), &DisplayServer::window_request_attention, DEFVAL(MAIN_WINDOW_ID));
