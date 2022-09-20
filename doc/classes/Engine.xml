@@ -14,12 +14,20 @@
 			<description>
 				Returns the name of the CPU architecture the Godot binary was built for. Possible return values are [code]x86_64[/code], [code]x86_32[/code], [code]arm64[/code], [code]armv7[/code], [code]rv64[/code], [code]riscv[/code], [code]ppc64[/code], [code]ppc[/code], [code]wasm64[/code] and [code]wasm32[/code].
 				To detect whether the current CPU architecture is 64-bit, you can use the fact that all 64-bit architecture names have [code]64[/code] in their name:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				if "64" in Engine.get_architecture_name():
 				    print("Running on 64-bit CPU.")
 				else:
 				    print("Running on 32-bit CPU.")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				if (Engine.GetArchitectureName().Contains("64"))
+				    GD.Print("Running on 64-bit CPU.");
+				else
+				    GD.Print("Running on 32-bit CPU.");
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] [method get_architecture_name] does [i]not[/i] return the name of the host CPU architecture. For example, if running an x86_32 Godot binary on a x86_64 system, the returned value will be [code]x86_32[/code].
 			</description>
 		</method>
@@ -83,11 +91,24 @@
 			<description>
 				Returns the total number of frames passed since engine initialization which is advanced on each [b]physics frame[/b]. See also [method get_process_frames].
 				[method get_physics_frames] can be used to run expensive logic less often without relying on a [Timer]:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _physics_process(_delta):
 				    if Engine.get_physics_frames() % 2 == 0:
 				        pass  # Run expensive logic only once every 2 physics frames here.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _PhysicsProcess(double delta)
+				{
+				    base._PhysicsProcess(delta);
+
+				    if (Engine.GetPhysicsFrames() % 2 == 0)
+				    {
+				        // Run expensive logic only once every 2 physics frames here.
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_physics_interpolation_fraction" qualifiers="const">
@@ -101,11 +122,24 @@
 			<description>
 				Returns the total number of frames passed since engine initialization which is advanced on each [b]process frame[/b], regardless of whether the render loop is enabled. See also [method get_frames_drawn] and [method get_physics_frames].
 				[method get_process_frames] can be used to run expensive logic less often without relying on a [Timer]:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _process(_delta):
 				    if Engine.get_process_frames() % 2 == 0:
 				        pass  # Run expensive logic only once every 2 process (render) frames here.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public override void _Process(double delta)
+				{
+				    base._Process(delta);
+
+				    if (Engine.GetProcessFrames() % 2 == 0)
+				    {
+				        // Run expensive logic only once every 2 physics frames here.
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="get_script_language" qualifiers="const">
@@ -182,12 +216,20 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the script is currently running inside the editor, [code]false[/code] otherwise. This is useful for [code]@tool[/code] scripts to conditionally draw editor helpers, or prevent accidentally running "game" code that would affect the scene state while in the editor:
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				if Engine.is_editor_hint():
 				    draw_gizmos()
 				else:
 				    simulate_physics()
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				if (Engine.IsEditorHint())
+				    DrawGizmos();
+				else
+				    SimulatePhysics();
+				[/csharp]
+				[/codeblocks]
 				See [url=$DOCS_URL/tutorials/plugins/running_code_in_the_editor.html]Running code in the editor[/url] in the documentation for more information.
 				[b]Note:[/b] To detect whether the script is run from an editor [i]build[/i] (e.g. when pressing [kbd]F5[/kbd]), use [method OS.has_feature] with the [code]"editor"[/code] argument instead. [code]OS.has_feature("editor")[/code] will evaluate to [code]true[/code] both when the code is running in the editor and when running the project from the editor, but it will evaluate to [code]false[/code] when the code is run from an exported project.
 			</description>

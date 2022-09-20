@@ -6,14 +6,24 @@
 	<description>
 		Compared to [AStar2D] you don't need to manually create points or connect them together. It also supports multiple type of heuristics and modes for diagonal movement. This class also provides a jumping mode which is faster to calculate than without it in the [AStar2D] class.
 		In contrast to [AStar2D], you only need set the [member size] of the grid, optionally set the [member cell_size] and then call the [method update] method:
-		[codeblock]
+		[codeblocks]
+		[gdscript]
 		var astar_grid = AStarGrid2D.new()
 		astar_grid.size = Vector2i(32, 32)
 		astar_grid.cell_size = Vector2(16, 16)
 		astar_grid.update()
 		print(astar_grid.get_id_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
 		print(astar_grid.get_point_path(Vector2i(0, 0), Vector2i(3, 4))) # prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
-		[/codeblock]
+		[/gdscript]
+		[csharp]
+		AStarGrid2D astarGrid = new AStarGrid2D();
+		astarGrid.Size = new Vector2i(32, 32);
+		astarGrid.CellSize = new Vector2i(16, 16);
+		astarGrid.Update();
+		GD.Print(astarGrid.GetIdPath(Vector2i.Zero, new Vector2i(3, 4))); // prints (0, 0), (1, 1), (2, 2), (3, 3), (3, 4)
+		GD.Print(astarGrid.GetPointPath(Vector2i.Zero, new Vector2i(3, 4))); // prints (0, 0), (16, 16), (32, 32), (48, 48), (48, 64)
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 	</tutorials>
