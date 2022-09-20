@@ -6,6 +6,7 @@
 	<description>
 		Concave polygon shape resource, which can be set into a [PhysicsBody] or area. This shape is created by feeding a list of triangles.
 		[b]Note:[/b] When used for collision, [ConcavePolygonShape] is intended to work with static [PhysicsBody] nodes like [StaticBody] and will not work with [KinematicBody] or [RigidBody] with a mode other than Static.
+		[b]Warning:[/b] Using this shape for an [Area] (via a [CollisionShape] node, created e.g. by using the [i]Create Trimesh Collision Sibling[/i] option in the [i]Mesh[/i] menu that appears when selecting a [MeshInstance] node) may give unexpected results: when using Godot Physics, the area will only detect collisions with the triangle faces in the [ConcavePolygonShape] (and not with any "inside" of the shape, for example), and when using Bullet Physics the area will not detect any collisions with the concave shape at all (this is a known bug).
 	</description>
 	<tutorials>
 		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
