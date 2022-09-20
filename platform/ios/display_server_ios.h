@@ -195,6 +195,7 @@ public:
 	virtual bool can_any_window_draw() const override;
 
 	virtual void window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID) override;
+	virtual void window_set_icon(const Ref<Image> &p_icon, WindowID p_window) override;
 	virtual DisplayServer::VSyncMode window_get_vsync_mode(WindowID p_vsync_mode) const override;
 
 	virtual bool screen_is_touchscreen(int p_screen) const override;

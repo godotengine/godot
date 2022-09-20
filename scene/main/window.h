@@ -91,6 +91,7 @@ private:
 	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	String title;
+	Ref<Image> icon;
 	mutable int current_screen = 0;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -187,6 +188,9 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
+
+	void set_icon(const Ref<Image> &p_icon);
+	Ref<Image> get_icon() const;
 
 	void set_current_screen(int p_screen);
 	int get_current_screen() const;

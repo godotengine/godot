@@ -339,6 +339,10 @@ void DisplayServerAndroid::window_set_title(const String &p_title, DisplayServer
 	// Not supported on Android.
 }
 
+void DisplayServerAndroid::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
+	// Not supported on Android.
+}
+
 int DisplayServerAndroid::window_get_current_screen(DisplayServer::WindowID p_window) const {
 	return SCREEN_OF_MAIN_WINDOW;
 }

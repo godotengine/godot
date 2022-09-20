@@ -511,7 +511,7 @@ void DisplayServer::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
 
-void DisplayServer::set_icon(const Ref<Image> &p_icon) {
+void DisplayServer::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
@@ -728,7 +728,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
-	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
+	ClassDB::bind_method(D_METHOD("window_set_icon", "image", "window_id"), &DisplayServer::window_set_icon);
 
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_name", "idx"), &DisplayServer::tablet_get_driver_name);

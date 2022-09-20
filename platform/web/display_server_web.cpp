@@ -695,7 +695,7 @@ void DisplayServerWeb::send_window_event_callback(int p_notification) {
 	}
 }
 
-void DisplayServerWeb::set_icon(const Ref<Image> &p_icon) {
+void DisplayServerWeb::window_set_icon(const Ref<Image> &p_icon, WindowID p_window) {
 	ERR_FAIL_COND(p_icon.is_null());
 	Ref<Image> icon = p_icon;
 	if (icon->is_compressed()) {
