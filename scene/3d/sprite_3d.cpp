@@ -881,6 +881,11 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "frame") {
+		if (playing) {
+			property.usage = PROPERTY_USAGE_EDITOR;
+			return;
+		}
+
 		property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
@@ -1033,6 +1038,7 @@ void AnimatedSprite3D::_set_playing(bool p_playing) {
 	playing = p_playing;
 	_reset_timeout();
 	set_process_internal(playing);
+	property_list_changed_notify();
 }
 
 bool AnimatedSprite3D::_is_playing() const {
