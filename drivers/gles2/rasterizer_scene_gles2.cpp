@@ -1735,6 +1735,10 @@ void RasterizerSceneGLES2::_render_geometry(RenderList::Element *p_element) {
 				amount = multi_mesh->size;
 			}
 
+			if (!amount) {
+				return;
+			}
+
 			int stride = multi_mesh->color_floats + multi_mesh->custom_data_floats + multi_mesh->xform_floats;
 
 			int color_ofs = multi_mesh->xform_floats;

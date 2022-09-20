@@ -62,6 +62,11 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 1) * p_amount);
+	// We must fill immediately to prevent garbage data and Nans
+	// being sent to the visual server with set_as_bulk_array,
+	// if this is sent before being regularly updated.
+	particle_data.fill(0);
+
 	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, VS::MULTIMESH_COLOR_8BIT, VS::MULTIMESH_CUSTOM_DATA_FLOAT);
 
 	particle_order.resize(p_amount);
