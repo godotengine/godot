@@ -31,6 +31,7 @@
 #include "gltf_document_extension.h"
 
 void GLTFDocumentExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_supported_extensions);
 	GDVIRTUAL_BIND(_import_preflight, "state");
 	GDVIRTUAL_BIND(_import_post_parse, "state");
 	GDVIRTUAL_BIND(_import_node, "state", "gltf_node", "json", "node");
@@ -38,6 +39,12 @@ void GLTFDocumentExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_export_preflight, "root");
 	GDVIRTUAL_BIND(_export_node, "state", "gltf_node", "json", "node");
 	GDVIRTUAL_BIND(_export_post, "state");
+}
+
+Vector<String> GLTFDocumentExtension::get_supported_extensions() {
+	Vector<String> ret;
+	GDVIRTUAL_CALL(_get_supported_extensions, ret);
+	return ret;
 }
 
 Error GLTFDocumentExtension::import_post(Ref<GLTFState> p_state, Node *p_root) {
