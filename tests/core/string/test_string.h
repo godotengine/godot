@@ -1603,7 +1603,7 @@ TEST_CASE("[String] Is_*") {
 	static bool ishex[12] = { true, true, false, false, true, false, true, false, true, false, false, false };
 	static bool ishex_p[12] = { false, false, false, false, false, false, false, true, false, false, false, false };
 	static bool isflt[12] = { true, true, true, false, true, true, false, false, false, false, false, false };
-	static bool isid[12] = { false, false, false, false, false, false, false, false, true, true, false, false };
+	static bool isid[12] = { false, true, false, false, true, false, true, true, true, true, true, false };
 	for (int i = 0; i < 12; i++) {
 		String s = String(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
@@ -1642,7 +1642,7 @@ TEST_CASE("[String] validate_identifier") {
 	CHECK(empty_string.validate_identifier() == "_");
 
 	String numeric_only = "12345";
-	CHECK(numeric_only.validate_identifier() == "_2345");
+	CHECK(numeric_only.validate_identifier() == "12345");
 
 	String name_with_spaces = "Name with spaces";
 	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");

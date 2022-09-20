@@ -3772,13 +3772,6 @@ bool String::is_absolute_path() const {
 	}
 }
 
-static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, char32_t p_char) {
-	if (p_index == 0 && is_digit(p_char)) {
-		return false; // No start with number plz.
-	}
-	return is_ascii_identifier_char(p_char);
-}
-
 String String::validate_identifier() const {
 	if (is_empty()) {
 		return "_"; // Empty string is not a valid identifier;
@@ -3789,7 +3782,7 @@ String String::validate_identifier() const {
 	char32_t *buffer = result.ptrw();
 
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, buffer[i])) {
+		if (!is_ascii_identifier_char(buffer[i])) {
 			buffer[i] = '_';
 		}
 	}
@@ -3807,7 +3800,7 @@ bool String::is_valid_identifier() const {
 	const char32_t *str = &operator[](0);
 
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, str[i])) {
+		if (!is_ascii_identifier_char(str[i])) {
 			return false;
 		}
 	}
