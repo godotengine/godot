@@ -35,11 +35,7 @@ def get_opts():
 
 
 def get_flags():
-    return [
-        # Benefits of LTO for macOS (size, performance) haven't been clearly established yet.
-        # So for now we override the default value which may be set when using `production=yes`.
-        ("lto", "none"),
-    ]
+    return []
 
 
 def configure(env):
@@ -132,6 +128,10 @@ def configure(env):
         env.Append(CPPDEFINES=["__MACPORTS__"])  # hack to fix libvpx MM256_BROADCASTSI128_SI256 define
 
     # LTO
+
+    if env["lto"] == "auto":  # LTO benefits for macOS (size, performance) haven't been clearly established yet.
+        env["lto"] = "none"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             env.Append(CCFLAGS=["-flto=thin"])
@@ -139,6 +139,8 @@ def configure(env):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+
+    # Sanitizers
 
     if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"]:
         env.extra_suffix += "s"

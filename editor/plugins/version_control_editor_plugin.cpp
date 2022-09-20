@@ -1064,6 +1064,8 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_password->connect("text_changed", this, "_update_set_up_warning");
 	set_up_password_input->add_child(set_up_password);
 
+	const String home_dir = OS::get_singleton()->has_environment("HOME") ? OS::get_singleton()->get_environment("HOME") : OS::get_singleton()->get_system_dir(OS::SYSTEM_DIR_DOCUMENTS);
+
 	HBoxContainer *set_up_ssh_public_key_input = memnew(HBoxContainer);
 	set_up_ssh_public_key_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_settings_vbc->add_child(set_up_ssh_public_key_input);
@@ -1087,10 +1089,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_public_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	set_up_ssh_public_key_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
 	set_up_ssh_public_key_file_dialog->set_show_hidden_files(true);
-	// TODO: Make this start at the user's home folder
-	DirAccess *d = DirAccess::open(OS::get_singleton()->get_system_dir(OS::SystemDir::SYSTEM_DIR_DOCUMENTS));
-	d->change_dir("../");
-	set_up_ssh_public_key_file_dialog->set_current_dir(d->get_current_dir());
+	set_up_ssh_public_key_file_dialog->set_current_dir(home_dir);
 	set_up_ssh_public_key_file_dialog->connect("file_selected", this, "_ssh_public_key_selected");
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_file_dialog);
 
@@ -1123,9 +1122,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_private_key_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 	set_up_ssh_private_key_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
 	set_up_ssh_private_key_file_dialog->set_show_hidden_files(true);
-	// TODO: Make this start at the user's home folder
-	set_up_ssh_private_key_file_dialog->set_current_dir(d->get_current_dir());
-	memdelete(d);
+	set_up_ssh_private_key_file_dialog->set_current_dir(home_dir);
 	set_up_ssh_private_key_file_dialog->connect("file_selected", this, "_ssh_private_key_selected");
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_file_dialog);
 
