@@ -73,7 +73,7 @@ class ImageLoaderTGA : public ImageFormatLoader {
 	static Error convert_to_image(Ref<Image> p_image, const uint8_t *p_buffer, const tga_header_s &p_header, const uint8_t *p_palette, const bool p_is_monochrome, size_t p_input_size);
 
 public:
-	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale);
+	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	ImageLoaderTGA();
 };
