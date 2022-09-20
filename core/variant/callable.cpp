@@ -63,6 +63,21 @@ void Callable::callp(const Variant **p_arguments, int p_argcount, Variant &r_ret
 	}
 }
 
+Variant Callable::callv(const Array &p_arguments) const {
+	int argcount = p_arguments.size();
+	const Variant **argptrs = nullptr;
+	if (argcount) {
+		argptrs = (const Variant **)alloca(sizeof(Variant *) * argcount);
+		for (int i = 0; i < argcount; i++) {
+			argptrs[i] = &p_arguments[i];
+		}
+	}
+	CallError ce;
+	Variant ret;
+	callp(argptrs, argcount, ret, ce);
+	return ret;
+}
+
 Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const {
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
