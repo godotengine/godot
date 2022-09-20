@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  renderer_scene.h                                                     */
+/*  rendering_method.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RENDERER_SCENE_H
-#define RENDERER_SCENE_H
+#ifndef RENDERING_METHOD_H
+#define RENDERING_METHOD_H
 
 #include "servers/rendering/storage/render_scene_buffers.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 
-class RendererScene {
+class RenderingMethod {
 public:
 	virtual RID camera_allocate() = 0;
 	virtual void camera_initialize(RID p_rid) = 0;
@@ -318,8 +318,8 @@ public:
 
 	virtual bool free(RID p_rid) = 0;
 
-	RendererScene();
-	virtual ~RendererScene();
+	RenderingMethod();
+	virtual ~RenderingMethod();
 };
 
-#endif // RENDERER_SCENE_H
+#endif // RENDERING_METHOD_H

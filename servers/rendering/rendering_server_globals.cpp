@@ -46,4 +46,4 @@ RendererCompositor *RenderingServerGlobals::rasterizer = nullptr;
 
 RendererCanvasCull *RenderingServerGlobals::canvas = nullptr;
 RendererViewport *RenderingServerGlobals::viewport = nullptr;
-RendererScene *RenderingServerGlobals::scene = nullptr;
+RenderingMethod *RenderingServerGlobals::scene = nullptr;

@@ -3069,8 +3069,8 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case HELP_SUPPORT_GODOT_DEVELOPMENT: {
 			OS::get_singleton()->shell_open("https://godotengine.org/donate");
 		} break;
-		case SET_RENDERING_DRIVER_SAVE_AND_RESTART: {
-			ProjectSettings::get_singleton()->set("rendering/driver/driver_name", rendering_driver_request);
+		case SET_RENDERER_NAME_SAVE_AND_RESTART: {
+			ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method", renderer_request);
 			ProjectSettings::get_singleton()->save();
 
 			save_all_scenes();
@@ -5880,27 +5880,27 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 	top_split->set_visible(!p_pressed);
 }
 
-void EditorNode::_update_rendering_driver_color() {
-	if (rendering_driver->get_text() == "opengl3") {
-		rendering_driver->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
-	} else if (rendering_driver->get_text() == "vulkan") {
-		rendering_driver->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
+void EditorNode::_update_renderer_color() {
+	if (renderer->get_text() == "gl_compatibility") {
+		renderer->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
+	} else if (renderer->get_text() == "forward_plus" || renderer->get_text() == "mobile") {
+		renderer->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
 	}
 }
 
-void EditorNode::_rendering_driver_selected(int p_which) {
-	String driver = rendering_driver->get_item_metadata(p_which);
+void EditorNode::_renderer_selected(int p_which) {
+	String rendering_method = renderer->get_item_metadata(p_which);
 
-	String current_driver = OS::get_singleton()->get_current_rendering_driver_name();
+	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
 
-	if (driver == current_driver) {
+	if (rendering_method == current_renderer) {
 		return;
 	}
 
-	rendering_driver_request = driver;
+	renderer_request = rendering_method;
 	video_restart_dialog->popup_centered();
-	rendering_driver->select(rendering_driver_current);
-	_update_rendering_driver_color();
+	renderer->select(renderer_current);
+	_update_renderer_color();
 }
 
 void EditorNode::_resource_saved(Ref<Resource> p_resource, const String &p_path) {
@@ -6950,19 +6950,17 @@ EditorNode::EditorNode() {
 	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
 	menu_hb->add_child(right_menu_hb);
 
-	rendering_driver = memnew(OptionButton);
-
+	renderer = memnew(OptionButton);
 	// Hide the renderer selection dropdown until OpenGL support is more mature.
 	// The renderer can still be changed in the project settings or using `--rendering-driver opengl3`.
-	rendering_driver->set_visible(false);
+	renderer->set_visible(false);
+	renderer->set_flat(true);
+	renderer->set_focus_mode(Control::FOCUS_NONE);
+	renderer->connect("item_selected", callable_mp(this, &EditorNode::_renderer_selected));
+	renderer->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	renderer->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
 
-	rendering_driver->set_flat(true);
-	rendering_driver->set_focus_mode(Control::FOCUS_NONE);
-	rendering_driver->connect("item_selected", callable_mp(this, &EditorNode::_rendering_driver_selected));
-	rendering_driver->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
-	rendering_driver->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
-
-	right_menu_hb->add_child(rendering_driver);
+	right_menu_hb->add_child(renderer);
 
 	if (can_expand) {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
@@ -6972,36 +6970,35 @@ EditorNode::EditorNode() {
 		menu_hb->add_child(menu_spacer);
 	}
 
-	// Only display the render drivers that are available for this display driver.
-	int display_driver_idx = OS::get_singleton()->get_display_driver_id();
-	Vector<String> render_drivers = DisplayServer::get_create_function_rendering_drivers(display_driver_idx);
-	String current_rendering_driver = OS::get_singleton()->get_current_rendering_driver_name();
+	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
+
+	PackedStringArray renderers = ProjectSettings::get_singleton()->get_custom_property_info().get(StringName("rendering/renderer/rendering_method")).hint_string.split(",", false);
 
 	// As we are doing string comparisons, keep in standard case to prevent problems with capitals
 	// "vulkan" in particular uses lowercase "v" in the code, and uppercase in the UI.
-	current_rendering_driver = current_rendering_driver.to_lower();
+	current_renderer = current_renderer.to_lower();
 
-	for (int i = 0; i < render_drivers.size(); i++) {
-		String driver = render_drivers[i];
+	for (int i = 0; i < renderers.size(); i++) {
+		String rendering_method = renderers[i];
 
-		// Add the driver to the UI.
-		rendering_driver->add_item(driver);
-		rendering_driver->set_item_metadata(i, driver);
+		// Add the renderers name to the UI.
+		renderer->add_item(rendering_method);
+		renderer->set_item_metadata(i, rendering_method);
 
 		// Lowercase for standard comparison.
-		driver = driver.to_lower();
+		rendering_method = rendering_method.to_lower();
 
-		if (current_rendering_driver == driver) {
-			rendering_driver->select(i);
-			rendering_driver_current = i;
+		if (current_renderer == rendering_method) {
+			renderer->select(i);
+			renderer_current = i;
 		}
 	}
-	_update_rendering_driver_color();
+	_update_renderer_color();
 
 	video_restart_dialog = memnew(ConfirmationDialog);
-	video_restart_dialog->set_text(TTR("Changing the video driver requires restarting the editor."));
+	video_restart_dialog->set_text(TTR("Changing the renderer requires restarting the editor."));
 	video_restart_dialog->set_ok_button_text(TTR("Save & Restart"));
-	video_restart_dialog->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind(SET_RENDERING_DRIVER_SAVE_AND_RESTART));
+	video_restart_dialog->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind(SET_RENDERER_NAME_SAVE_AND_RESTART));
 	gui_base->add_child(video_restart_dialog);
 
 	progress_hb = memnew(BackgroundProgress);
