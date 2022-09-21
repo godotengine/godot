@@ -4,7 +4,7 @@ if get_option('builtin_libtheora')
         # 'analyze.c',
         # 'apiwrapper.c',
         'bitpack.c',
-        'cpu.c',
+        #'cpu.c',
         # 'decapiwrapper.c',
         'decinfo.c',
         'decode.c',

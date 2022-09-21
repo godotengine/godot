@@ -1,11 +1,26 @@
-import zlib
+#!/usr/bin/env python3
 
+import zlib
+import sys
+
+def replace_if_different(output_path_str, new_content_path_str):
+    import pathlib
+    output_path = pathlib.Path(output_path_str)
+    new_content_path = pathlib.Path(new_content_path_str)
+    if not output_path.exists():
+        new_content_path.replace(output_path)
+        return
+    if output_path.read_bytes() == new_content_path.read_bytes():
+        new_content_path.unlink()
+    else:
+        new_content_path.replace(output_path)
 
 def run(target, source, env):
     src = source[0]
     dst = target[0]
-    f = open(src, "rb")
-    g = open(dst, "w", encoding="utf-8")
+    tmpfilename = dst + '~'
+    f = open(src, "r", encoding="utf-8")
+    g = open(tmpfilename, "w", encoding="utf-8")
 
     buf = f.read()
     decomp_size = len(buf)
@@ -57,9 +72,10 @@ class GDExtensionInterfaceDump {
     )
     g.close()
     f.close()
-
+    replace_if_different(dst, tmpfilename)
 
 if __name__ == "__main__":
-    from platform_methods import subprocess_main
+#    from platform_methods import subprocess_main
 
-    subprocess_main(globals())
+#    subprocess_main(globals())
+    run([sys.argv[2]], [sys.argv[1]], None)
