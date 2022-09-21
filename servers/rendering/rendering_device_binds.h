@@ -517,7 +517,7 @@ public:
 	RD_SETGET(bool, wireframe)
 	RD_SETGET(RD::PolygonCullMode, cull_mode)
 	RD_SETGET(RD::PolygonFrontFace, front_face)
-	RD_SETGET(bool, depth_bias_enable)
+	RD_SETGET(bool, depth_bias_enabled)
 	RD_SETGET(float, depth_bias_constant_factor)
 	RD_SETGET(float, depth_bias_clamp)
 	RD_SETGET(float, depth_bias_slope_factor)
@@ -531,7 +531,7 @@ protected:
 		RD_BIND(Variant::BOOL, RDPipelineRasterizationState, wireframe);
 		RD_BIND(Variant::INT, RDPipelineRasterizationState, cull_mode);
 		RD_BIND(Variant::INT, RDPipelineRasterizationState, front_face);
-		RD_BIND(Variant::BOOL, RDPipelineRasterizationState, depth_bias_enable);
+		RD_BIND(Variant::BOOL, RDPipelineRasterizationState, depth_bias_enabled);
 		RD_BIND(Variant::FLOAT, RDPipelineRasterizationState, depth_bias_constant_factor);
 		RD_BIND(Variant::FLOAT, RDPipelineRasterizationState, depth_bias_clamp);
 		RD_BIND(Variant::FLOAT, RDPipelineRasterizationState, depth_bias_slope_factor);
