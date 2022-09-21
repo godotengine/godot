@@ -142,6 +142,7 @@ class EditorHelp : public VBoxContainer {
 
 	//void _button_pressed(int p_idx);
 	void _add_type(const String &p_type, const String &p_enum = String());
+	void _add_type_icon(const String &p_type, int p_size = 0);
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
 
 	void _add_bulletpoint();
