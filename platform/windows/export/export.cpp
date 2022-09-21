@@ -47,7 +47,7 @@ public:
 	virtual Error modify_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags);
 	virtual Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
 	virtual void get_export_options(List<ExportOption> *r_options);
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual bool get_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 	virtual bool has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const;
 };
@@ -89,7 +89,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	return err;
 }
 
-bool EditorExportPlatformWindows::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
+bool EditorExportPlatformWindows::get_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const Map<StringName, Variant> &p_options) const {
 	// This option is not supported by "osslsigncode", used on non-Windows host.
 	if (!OS::get_singleton()->has_feature("Windows") && p_option == "codesign/identity_type") {
 		return false;
@@ -206,7 +206,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String str;
 	Error err = OS::get_singleton()->execute(rcedit_path, args, true, nullptr, &str, nullptr, true);
 	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > Rcedit), or disable \"Application > Modify Resources\" in the export preset."));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"), TTR("Could not start rcedit executable. Configure rcedit path in the Editor Settings (Export > Windows > rcedit), or disable \"Application > Modify Resources\" in the export preset."));
 		return err;
 	}
 	print_line("rcedit (" + p_path + "): " + str);
@@ -354,7 +354,11 @@ Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_p
 	String str;
 	Error err = OS::get_singleton()->execute(signtool_path, args, true, nullptr, &str, nullptr, true);
 	if (err != OK || (str.find("not found") != -1) || (str.find("not recognized") != -1)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start signtool executable. Configure signtool path in the Editor Settings (Export > Windows > Signtool), or disable \"Codesign\" in the export preset."));
+#ifndef WINDOWS_ENABLED
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start signtool executable. Configure signtool path in the Editor Settings (Export > Windows > signtool), or disable \"Codesign\" in the export preset."));
+#else
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start osslsigncode executable. Configure signtool path in the Editor Settings (Export > Windows > osslsigncode), or disable \"Codesign\" in the export preset."));
+#endif
 		return err;
 	}
 
@@ -393,7 +397,7 @@ bool EditorExportPlatformWindows::has_valid_export_configuration(const Ref<Edito
 
 	String rcedit_path = EditorSettings::get_singleton()->get("export/windows/rcedit");
 	if (p_preset->get("application/modify_resources") && rcedit_path.empty()) {
-		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > Rcedit) to change the icon or app information data.") + "\n";
+		err += TTR("The rcedit tool must be configured in the Editor Settings (Export > Windows > rcedit) to change the icon or app information data.") + "\n";
 	}
 
 	if (!err.empty()) {
