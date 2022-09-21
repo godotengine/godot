@@ -462,7 +462,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				d["indexing_return_type"] = index_type == Variant::NIL ? String("Variant") : Variant::get_type_name(index_type);
 			}
 
-			d["is_keyed"] = Variant::ValidatedKeyedSetter(type);
+			d["is_keyed"] = Variant::is_keyed(type);
 
 			{
 				//members
