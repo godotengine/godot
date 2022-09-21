@@ -662,19 +662,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			pos.x = get_size().width - pos.x;
 		}
 
-		int closest = -1;
-
-		for (int i = 0; i < items.size(); i++) {
-			Rect2 rc = items[i].rect_cache;
-			if (i % current_columns == current_columns - 1) {
-				rc.size.width = get_size().width; //not right but works
-			}
-
-			if (rc.has_point(pos)) {
-				closest = i;
-				break;
-			}
-		}
+		int closest = get_item_at_position(mb->get_position(), true);
 
 		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
@@ -1467,7 +1455,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	for (int i = 0; i < items.size(); i++) {
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
+			rc.size.width = get_size().width - rc.position.x; // Make sure you can still select the last item when clicking past the column.
 		}
 
 		if (rc.has_point(pos)) {
