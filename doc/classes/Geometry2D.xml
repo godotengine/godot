@@ -33,6 +33,13 @@
 				Given an array of [Vector2]s, returns the convex hull as a list of points in counterclockwise order. The last point is the same as the first one.
 			</description>
 		</method>
+		<method name="decompose_polygon_in_convex">
+			<return type="PackedVector2Array[]" />
+			<param index="0" name="polygon" type="PackedVector2Array" />
+			<description>
+				Decomposes the [param polygon] into multiple convex hulls and returns an array of [PackedVector2Array].
+			</description>
+		</method>
 		<method name="exclude_polygons">
 			<return type="PackedVector2Array[]" />
 			<param index="0" name="polygon_a" type="PackedVector2Array" />
