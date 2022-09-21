@@ -1727,8 +1727,12 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		}                                                                                \
 	} break;
 
+// clang-format 14 wants to add a space after the last return,
+// and clang-format 15 removes it...
+/* clang-format off */
 #define DEFAULT_OP_DVECTOR_SET(m_name, dv_type, skip_cond) \
-	DEFAULT_OP_ARRAY_CMD(m_name, PoolVector<dv_type>, if (skip_cond) return;, arr->set(index, p_value); return )
+	DEFAULT_OP_ARRAY_CMD(m_name, PoolVector<dv_type>, if (skip_cond) return;, arr->set(index, p_value); return)
+/* clang-format on */
 
 #define DEFAULT_OP_DVECTOR_GET(m_name, dv_type) \
 	DEFAULT_OP_ARRAY_CMD(m_name, const PoolVector<dv_type>, ;, return arr->get(index))
@@ -2192,7 +2196,11 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			valid = true; //always valid, i guess? should this really be ok?
 			return;
 		} break;
-			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
+			// clang-format 14 wants to add a space after the last return,
+			// and clang-format 15 removes it...
+			/* clang-format off */
+			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return) // 20
+			/* clang-format on */
 			DEFAULT_OP_DVECTOR_SET(POOL_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
 			DEFAULT_OP_DVECTOR_SET(POOL_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)

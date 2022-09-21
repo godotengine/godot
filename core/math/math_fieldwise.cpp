@@ -47,9 +47,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 	/* clang-format off */
 
 	switch (p_source.get_type()) {
-
 		case Variant::VECTOR2: {
-
 			SETUP_TYPE(Vector2)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -59,7 +57,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::RECT2: {
-
 			SETUP_TYPE(Rect2)
 
 			/**/ TRY_TRANSFER_FIELD("x", position.x)
@@ -71,7 +68,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::VECTOR3: {
-
 			SETUP_TYPE(Vector3)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -82,7 +78,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::PLANE: {
-
 			SETUP_TYPE(Plane)
 
 			/**/ TRY_TRANSFER_FIELD("x", normal.x)
@@ -94,7 +89,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::QUAT: {
-
 			SETUP_TYPE(Quat)
 
 			/**/ TRY_TRANSFER_FIELD("x", x)
@@ -106,7 +100,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::AABB: {
-
 			SETUP_TYPE(AABB)
 
 			/**/ TRY_TRANSFER_FIELD("px", position.x)
@@ -120,7 +113,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::TRANSFORM2D: {
-
 			SETUP_TYPE(Transform2D)
 
 			/**/ TRY_TRANSFER_FIELD("xx", elements[0][0])
@@ -134,7 +126,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::BASIS: {
-
 			SETUP_TYPE(Basis)
 
 			/**/ TRY_TRANSFER_FIELD("xx", elements[0][0])
@@ -151,7 +142,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 		}
 
 		case Variant::TRANSFORM: {
-
 			SETUP_TYPE(Transform)
 
 			/**/ TRY_TRANSFER_FIELD("xx", basis.elements[0][0])
