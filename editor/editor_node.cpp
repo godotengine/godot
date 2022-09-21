@@ -1055,6 +1055,11 @@ void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 		reload_scene(E);
 	}
 
+	// Reload all edited scenes
+	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
+		reload_scene(editor_data.get_scene_path(i));
+	}
+
 	scene_tabs->set_current_tab(current_tab);
 }
 
