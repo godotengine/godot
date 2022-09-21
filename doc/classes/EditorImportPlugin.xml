@@ -9,7 +9,7 @@
 		Below is an example EditorImportPlugin that imports a [Mesh] from a file with the extension ".special" or ".spec":
 		[codeblocks]
 		[gdscript]
-		tool
+		@tool
 		extends EditorImportPlugin
 
 		func _get_importer_name():

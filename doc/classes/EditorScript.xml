@@ -9,7 +9,7 @@
 		[b]Example script:[/b]
 		[codeblocks]
 		[gdscript]
-		tool
+		@tool
 		extends EditorScript
 
 		func _run():
