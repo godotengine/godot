@@ -640,6 +640,7 @@ public:
 	static String get_parent_class_static() { return String(); }
 	static String get_category_static() { return String(); }
 
+	String get_script_class() const;
 	virtual String get_class() const { return "Object"; }
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 

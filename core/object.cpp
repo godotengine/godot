@@ -1048,6 +1048,17 @@ RefPtr Object::get_script() const {
 	return script;
 }
 
+String Object::get_script_class() const {
+	if (!get_script_instance()) {
+		return "";
+	}
+	if (get_script_instance()->get_script() == nullptr) {
+		return "";
+	}
+
+	return get_script_instance()->get_script()->get_script_class_name();
+}
+
 bool Object::has_meta(const String &p_name) const {
 	return metadata.has(p_name);
 }
@@ -1665,6 +1676,7 @@ void Object::clear_internal_resource_paths() {
 
 void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
+	ClassDB::bind_method(D_METHOD("get_script_class"), &Object::get_script_class);
 	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
