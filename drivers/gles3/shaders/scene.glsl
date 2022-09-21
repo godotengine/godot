@@ -1976,21 +1976,18 @@ FRAGMENT_SHADER_CODE
 #if defined(AMBIENT_LIGHT_DISABLED)
 	ambient_light = vec3(0.0, 0.0, 0.0);
 #else
-	{
-		{ //read radiance from dual paraboloid
-
-			vec3 ref_vec = reflect(-eye_vec, normal);
-			float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
-			ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
-			vec3 radiance;
+	{ //read radiance from dual paraboloid
+		vec3 ref_vec = reflect(-eye_vec, normal);
+		float horizon = min(1.0 + dot(ref_vec, normal), 1.0);
+		ref_vec = normalize((radiance_inverse_xform * vec4(ref_vec, 0.0)).xyz);
+		vec3 radiance;
 #ifdef USE_RADIANCE_MAP_ARRAY //ubershader-runtime
-			radiance = textureDualParaboloidArray(radiance_map_array, ref_vec, roughness) * bg_energy;
+		radiance = textureDualParaboloidArray(radiance_map_array, ref_vec, roughness) * bg_energy;
 #else //ubershader-runtime
-			radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
+		radiance = textureDualParaboloid(radiance_map, ref_vec, roughness) * bg_energy;
 #endif //ubershader-runtime
-			env_reflection_light = radiance;
-			env_reflection_light *= horizon * horizon;
-		}
+		env_reflection_light = radiance;
+		env_reflection_light *= horizon * horizon;
 	}
 #ifndef USE_LIGHTMAP //ubershader-runtime
 	{
@@ -2257,7 +2254,6 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_VERTEX_LIGHTING //ubershader-runtime
 	diffuse_light *= mix(vec3(1.0), light_attenuation, diffuse_light_interp.a);
 	specular_light *= mix(vec3(1.0), light_attenuation, specular_light_interp.a);
-
 #else //ubershader-runtime
 	light_compute(normal, -light_direction_attenuation.xyz, eye_vec, binormal, tangent, light_color_energy.rgb, light_attenuation, albedo, transmission, light_params.z * specular_blob_intensity, roughness, metallic, specular, rim, rim_tint, clearcoat, clearcoat_gloss, anisotropy, diffuse_light, specular_light, alpha);
 #endif //ubershader-runtime
