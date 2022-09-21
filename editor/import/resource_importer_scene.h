@@ -119,6 +119,7 @@ private:
 	mutable const Dictionary *current_options_dict = nullptr;
 	List<ResourceImporter::ImportOption> *current_option_list = nullptr;
 	InternalImportCategory current_category = INTERNAL_IMPORT_CATEGORY_MAX;
+	String source_file;
 
 protected:
 	GDVIRTUAL1(_get_internal_import_options, int)
@@ -129,6 +130,7 @@ protected:
 	GDVIRTUAL3RC(Variant, _get_option_visibility, String, bool, String)
 	GDVIRTUAL1(_pre_process, Node *)
 	GDVIRTUAL1(_post_process, Node *)
+	GDVIRTUAL1R(Variant, _get_custom_scene_root, Node *)
 
 	static void _bind_methods();
 
@@ -148,6 +150,10 @@ public:
 
 	virtual void pre_process(Node *p_scene, const HashMap<StringName, Variant> &p_options);
 	virtual void post_process(Node *p_scene, const HashMap<StringName, Variant> &p_options);
+	virtual NodePath get_custom_scene_root(Node *p_scene, const HashMap<StringName, Variant> &p_options);
+
+	void set_source_file(const String &p_source_file) { source_file = p_source_file; }
+	String get_source_file() const;
 
 	EditorScenePostImportPlugin() {}
 };

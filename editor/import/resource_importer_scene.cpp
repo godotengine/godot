@@ -211,11 +211,28 @@ void EditorScenePostImportPlugin::post_process(Node *p_scene, const HashMap<Stri
 	current_options = nullptr;
 }
 
+NodePath EditorScenePostImportPlugin::get_custom_scene_root(Node *p_scene, const HashMap<StringName, Variant> &p_options) {
+	current_options = &p_options;
+	NodePath ret;
+	Variant script_value;
+	if (GDVIRTUAL_CALL(_get_custom_scene_root, p_scene, script_value)) {
+		ret = script_value;
+	}
+	current_options = nullptr;
+
+	return ret;
+}
+
+String EditorScenePostImportPlugin::get_source_file() const {
+	return source_file;
+}
+
 void EditorScenePostImportPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_option_value", "name"), &EditorScenePostImportPlugin::get_option_value);
 
 	ClassDB::bind_method(D_METHOD("add_import_option", "name", "value"), &EditorScenePostImportPlugin::add_import_option);
 	ClassDB::bind_method(D_METHOD("add_import_option_advanced", "type", "name", "default_value", "hint", "hint_string", "usage_flags"), &EditorScenePostImportPlugin::add_import_option_advanced, DEFVAL(PROPERTY_HINT_NONE), DEFVAL(""), DEFVAL(PROPERTY_USAGE_DEFAULT));
+	ClassDB::bind_method(D_METHOD("get_source_file"), &EditorScenePostImportPlugin::get_source_file);
 
 	GDVIRTUAL_BIND(_get_internal_import_options, "category");
 	GDVIRTUAL_BIND(_get_internal_option_visibility, "category", "for_animation", "option");
@@ -225,6 +242,7 @@ void EditorScenePostImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_option_visibility, "path", "for_animation", "option");
 	GDVIRTUAL_BIND(_pre_process, "scene");
 	GDVIRTUAL_BIND(_post_process, "scene");
+	GDVIRTUAL_BIND(_get_custom_scene_root, "scene");
 
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_NODE);
 	BIND_ENUM_CONSTANT(INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE);
@@ -1317,6 +1335,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						nmi->set_transform(mi->get_transform());
 						p_node->replace_by(nmi);
 						p_node->set_owner(nullptr);
+						nmi->set_name(mi->get_name());
 						memdelete(p_node);
 						p_node = nmi;
 					} else {
@@ -2361,6 +2380,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
 	Node *scene = importer->import_scene(src_path, import_flags, p_options, &missing_deps, &err);
+	NodePath scene_custom_root;
 	if (!scene || err != OK) {
 		return err;
 	}
@@ -2397,6 +2417,10 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	Dictionary animation_data;
 	if (subresources.has("animations")) {
 		animation_data = subresources["animations"];
+	}
+
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->set_source_file(p_source_file);
 	}
 
 	HashSet<Ref<ImporterMesh>> scanned_meshes;
@@ -2491,6 +2515,38 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 	err = OK;
 
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		post_importer_plugins.write[i]->post_process(scene, p_options);
+	}
+
+	for (int i = 0; i < post_importer_plugins.size(); i++) {
+		NodePath custom_root = post_importer_plugins.write[i]->get_custom_scene_root(scene, p_options);
+		if (!custom_root.is_empty()) {
+			ERR_CONTINUE_EDMSG(!scene_custom_root.is_empty(), "Custom scene root may be set only once");
+			scene_custom_root = custom_root;
+		}
+	}
+
+	Node *scene_custom_root_node = nullptr;
+	if (!scene_custom_root.is_empty()) {
+		scene_custom_root_node = scene->get_node_or_null(scene_custom_root);
+	}
+
+	if (scene_custom_root_node != nullptr) {
+		if (scene_custom_root_node->get_parent()) {
+			scene_custom_root_node->get_parent()->remove_child(scene_custom_root_node);
+		}
+		scene_custom_root_node->set_owner(nullptr);
+		Array custom_root_subtree_nodes = scene_custom_root_node->find_children("*", "", true, true);
+		for (int i = 0; i < custom_root_subtree_nodes.size(); i++) {
+			Object *child_node = custom_root_subtree_nodes[i];
+			static_cast<Node *>(child_node)->set_owner(scene_custom_root_node);
+		}
+
+		memdelete(scene);
+		scene = scene_custom_root_node;
+	}
+
 	progress.step(TTR("Running Custom Script..."), 2);
 
 	String post_import_script_path = p_options["import_script/path"];
@@ -2520,10 +2576,6 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 					TTR("Did you return a Node-derived object in the `_post_import()` method?"));
 			return err;
 		}
-	}
-
-	for (int i = 0; i < post_importer_plugins.size(); i++) {
-		post_importer_plugins.write[i]->post_process(scene, p_options);
 	}
 
 	progress.step(TTR("Saving..."), 104);

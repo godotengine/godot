@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_get_custom_scene_root" qualifiers="virtual">
+			<return type="NodePath" />
+			<param index="0" name="scene" type="Node" />
+			<description>
+				Return the NodePath of the node that should be the root of the imported scene tree. Only one EditorPostImportPlugin may use of this feature at a time per scene import, otherwise further custom roots will be ignored. The scene importer will take care of freeing the remainder of the discarded scene tree.
+			</description>
+		</method>
 		<method name="_get_import_options" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
@@ -98,6 +105,12 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Query the value of an option. This function can only be called from those querying visibility, or processing.
+			</description>
+		</method>
+		<method name="get_source_file" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the source file path which got imported (e.g. [code]res://scene.dae[/code]).
 			</description>
 		</method>
 	</methods>
