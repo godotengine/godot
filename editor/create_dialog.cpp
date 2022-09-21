@@ -183,6 +183,10 @@ void CreateDialog::_update_search() {
 			candidates.push_back(I->get());
 		}
 	}
+	// Also check the base type.
+	if (empty_search || search_text.is_subsequence_ofn(base_type)) {
+		candidates.push_back(base_type);
+	}
 
 	// Build the type tree.
 	for (int i = 0; i < candidates.size(); i++) {
@@ -343,6 +347,11 @@ String CreateDialog::_top_result(const Vector<String> p_candidates, const String
 }
 
 float CreateDialog::_score_type(const String &p_type, const String &p_search) const {
+	if (p_type == p_search) {
+		// Always favor an exact match (case-sensitive), since clicking a favorite will set the search text to the type.
+		return 999.0f;
+	}
+
 	float inverse_length = 1.f / float(p_type.length());
 
 	// Favor types where search term is a substring close to the start of the type.
