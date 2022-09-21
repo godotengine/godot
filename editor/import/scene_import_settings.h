@@ -200,6 +200,7 @@ protected:
 public:
 	bool is_editing_animation() const { return editing_animation; }
 	void update_view();
+	void update_state(ResourceImporterScene::InternalImportCategory p_state);
 	void open_settings(const String &p_path, bool p_for_animation = false);
 	static SceneImportSettings *get_singleton();
 	Node *get_selected_node();

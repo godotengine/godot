@@ -53,6 +53,7 @@ class SceneImportSettingsData : public Object {
 	String path;
 
 	ResourceImporterScene::InternalImportCategory category = ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX;
+	String import_id;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
 		if (settings) {
@@ -79,6 +80,9 @@ class SceneImportSettingsData : public Object {
 					if (ResourceImporterScene::get_scene_singleton()->get_option_visibility(path, p_name, current)) {
 						SceneImportSettings::get_singleton()->update_view();
 					}
+				} else if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL) {
+					SceneImportSettings::get_singleton()->update_state(ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL);
+					SceneImportSettings::get_singleton()->update_state(ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH);
 				} else {
 					if (ResourceImporterScene::get_scene_singleton()->get_internal_option_update_view_required(category, p_name, current)) {
 						SceneImportSettings::get_singleton()->update_view();
@@ -377,6 +381,7 @@ void SceneImportSettings::_fill_scene(Node *p_node, TreeItem *p_parent_item) {
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		if (!editing_animation) {
 			_fill_mesh(scene_tree, mesh_node->get_mesh(), item);
+			update_state(ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH);
 		}
 
 		// Add the collider view.
@@ -526,12 +531,55 @@ void SceneImportSettings::_load_default_subresource_settings(HashMap<StringName,
 					settings[key] = d[key];
 				}
 			}
+			scene_import_settings_data->import_id = p_import_id;
+			scene_import_settings_data->category = p_category;
 		}
 	}
 }
 
 void SceneImportSettings::update_view() {
 	update_view_timer->start();
+}
+
+void SceneImportSettings::update_state(ResourceImporterScene::InternalImportCategory p_state) {
+	switch (p_state) {
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL: {
+			MaterialData &material_data = material_map[scene_import_settings_data->import_id];
+			if (material_data.settings["use_external/enabled"] && material_data.settings["use_external/path"]) {
+				material_preview->set_material(ResourceLoader::load(material_data.settings["use_external/path"]));
+			} else {
+				material_preview->set_material(material_data.material);
+			}
+			break;
+		}
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH: {
+			String import_id;
+			if (material_map.has(scene_import_settings_data->import_id)) {
+				import_id = material_map[scene_import_settings_data->import_id].scene_node->get_parent()->get_meta("import_id");
+			} else {
+				import_id = scene_import_settings_data->import_id;
+			}
+			MeshData &mesh_data = mesh_map[import_id];
+			int num_childrent = mesh_data.scene_node->get_child_count();
+			for (int i = 0; i != num_childrent; ++i) {
+				MaterialData &material_data = material_map[mesh_data.scene_node->get_child(i)->get_meta("import_id")];
+				if (material_data.settings["use_external/enabled"] && material_data.settings["use_external/path"]) {
+					mesh_data.mesh->surface_set_material(i, ResourceLoader::load(material_data.settings["use_external/path"]));
+				} else {
+					mesh_data.mesh->surface_set_material(i, material_data.material);
+				}
+			}
+			break;
+		}
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_NODE:
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE:
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION:
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE:
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE:
+		case ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX:
+		default:
+			break;
+	}
 }
 
 void SceneImportSettings::open_settings(const String &p_path, bool p_for_animation) {
@@ -638,7 +686,7 @@ Node *SceneImportSettings::get_selected_node() {
 void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 	selecting = true;
 	scene_import_settings_data->hide_options = false;
-
+	scene_import_settings_data->import_id = p_id;
 	if (p_type == "Node") {
 		node_selected->hide(); //always hide just in case
 		mesh_preview->hide();
@@ -726,12 +774,11 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 			Object::cast_to<Node3D>(scene)->hide();
 		}
 
+		update_state(ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MATERIAL);
+		mesh_preview->set_mesh(material_preview);
 		mesh_preview->show();
 
 		MaterialData &md = material_map[p_id];
-
-		material_preview->set_material(md.material);
-		mesh_preview->set_mesh(material_preview);
 
 		if (p_from != mesh_tree) {
 			md.mesh_node->uncollapse_tree();
