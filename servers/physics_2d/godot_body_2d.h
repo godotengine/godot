@@ -137,8 +137,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	Vector<Contact> contacts; //no contacts by default
 	int contact_count = 0;
 
-	void *body_state_callback_instance = nullptr;
-	PhysicsServer2D::BodyStateCallback body_state_callback = nullptr;
+	Callable body_state_callback;
 
 	struct ForceIntegrationCallbackData {
 		Callable callable;
@@ -156,7 +155,7 @@ class GodotBody2D : public GodotCollisionObject2D {
 	friend class GodotPhysicsDirectBodyState2D; // i give up, too many functions to expose
 
 public:
-	void set_state_sync_callback(void *p_instance, PhysicsServer2D::BodyStateCallback p_callback);
+	void set_state_sync_callback(const Callable &p_callable);
 	void set_force_integration_callback(const Callable &p_callable, const Variant &p_udata = Variant());
 
 	GodotPhysicsDirectBodyState2D *get_direct_state();
