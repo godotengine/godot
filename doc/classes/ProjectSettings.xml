@@ -571,14 +571,24 @@
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
-		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
-			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
-			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
+		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
+			Main window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
+			[b]Note:[/b] This setting is implemented on macOS.
+		</member>
+		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
+			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
+		</member>
+		<member name="display/window/size/no_focus" type="bool" setter="" getter="" default="false">
+			Main window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 			[b]Note:[/b] This setting is ignored on iOS.
+		</member>
+		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
+			Main window background can be transparent.
+			[b]Note:[/b] To use transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
+			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].

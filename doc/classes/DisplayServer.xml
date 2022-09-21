@@ -1324,6 +1324,7 @@
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="parent_window_id" type="int" />
 			<description>
+				Sets window transient parent. Transient window is will be destroyed with its transient parent and displayed on top of non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			</description>
 		</method>
 		<method name="window_set_vsync_mode">
@@ -1518,7 +1519,8 @@
 			Window is floating above other regular windows. This flag is ignored for full-screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
-			Window is will be destroyed with its transient parent and displayed on top of non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+			Window background can be transparent.
+			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			Window can't be focused. No-focus window will ignore all input, except mouse clicks.

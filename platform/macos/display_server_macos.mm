@@ -2213,7 +2213,9 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	popup_open(p_id);
-	if (wd.no_focus || wd.is_popup) {
+	if ([wd.window_object isMiniaturized]) {
+		return;
+	} else if (wd.no_focus || wd.is_popup) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
@@ -2370,6 +2372,10 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if ([wd.window_object isZoomed]) {
+		return;
+	}
+
 	Point2i position = p_position;
 	// OS X native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot passes a positive value.
@@ -2493,6 +2499,10 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	if ([wd.window_object isZoomed]) {
+		return;
+	}
 
 	Size2i size = p_size / screen_get_max_scale();
 
@@ -2750,7 +2760,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			_update_window_style(wd);
 			if ([wd.window_object isVisible]) {
-				if (wd.no_focus || wd.is_popup) {
+				if ([wd.window_object isMiniaturized]) {
+					return;
+				} else if (wd.no_focus || wd.is_popup) {
 					[wd.window_object orderFront:nil];
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];
