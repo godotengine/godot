@@ -2126,6 +2126,8 @@ void Node::get_storable_properties(Set<StringName> &r_storable_properties) const
 }
 
 String Node::to_string() {
+	// This code doesn't print the script's name, it calls to_string() if you override it in a Node's script,
+	// which you only do if you specifically want to customize how the node should be represented by print().
 	if (get_script_instance()) {
 		bool valid;
 		String ret = get_script_instance()->to_string(&valid);
