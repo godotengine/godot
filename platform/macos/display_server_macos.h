@@ -85,7 +85,7 @@ public:
 		Size2i min_size;
 		Size2i max_size;
 		Size2i size;
-		Vector2i wb_offset = Vector2i(16, 16);
+		Vector2i wb_offset = Vector2i(14, 14);
 
 		NSRect last_frame_rect;
 
@@ -230,6 +230,7 @@ public:
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
+	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;

@@ -77,9 +77,15 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fullscreen = true;
+
 	// Reset window size limits.
 	[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 	[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+
+	// Reset custom window buttons.
+	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
+		ds->window_set_custom_window_buttons(wd, false);
+	}
 
 	// Force window resize event.
 	[self windowDidResize:notification];
@@ -103,6 +109,11 @@
 	if (wd.max_size != Size2i()) {
 		Size2i size = wd.max_size / scale;
 		[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
+	}
+
+	// Restore custom window buttons.
+	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
+		ds->window_set_custom_window_buttons(wd, true);
 	}
 
 	// Restore resizability state.
