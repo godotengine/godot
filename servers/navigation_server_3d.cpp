@@ -62,6 +62,8 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer3D::map_force_update);
 
+	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result"), &NavigationServer3D::query_path);
+
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
 	ClassDB::bind_method(D_METHOD("region_set_enter_cost", "region", "enter_cost"), &NavigationServer3D::region_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer3D::region_get_enter_cost);
@@ -485,3 +487,14 @@ bool NavigationServer3D::get_debug_enabled() const {
 	return debug_enabled;
 }
 #endif // DEBUG_ENABLED
+
+///////////////////////////////////////////////////////
+
+void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const {
+	ERR_FAIL_COND(!p_query_parameters.is_valid());
+	ERR_FAIL_COND(!p_query_result.is_valid());
+
+	const NavigationUtilities::PathQueryResult _query_result = _query_path(p_query_parameters->get_parameters());
+
+	p_query_result->set_path(_query_result.path);
+}

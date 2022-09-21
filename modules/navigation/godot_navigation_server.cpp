@@ -810,6 +810,32 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 	}
 }
 
+NavigationUtilities::PathQueryResult GodotNavigationServer::_query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const {
+	NavigationUtilities::PathQueryResult r_query_result;
+
+	const NavMap *map = map_owner.get_or_null(p_parameters.map);
+	ERR_FAIL_COND_V(map == nullptr, r_query_result);
+
+	// run the pathfinding
+
+	if (p_parameters.pathfinding_algorithm == NavigationUtilities::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR) {
+		// while postprocessing is still part of map.get_path() need to check and route it here for the correct "optimize" post-processing
+		if (p_parameters.path_postprocessing == NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL) {
+			r_query_result.path = map->get_path(p_parameters.start_position, p_parameters.target_position, true, p_parameters.navigation_layers);
+		} else if (p_parameters.path_postprocessing == NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED) {
+			r_query_result.path = map->get_path(p_parameters.start_position, p_parameters.target_position, false, p_parameters.navigation_layers);
+		}
+	} else {
+		return r_query_result;
+	}
+
+	// add path postprocessing
+
+	// add path stats
+
+	return r_query_result;
+}
+
 #undef COMMAND_1
 #undef COMMAND_2
 #undef COMMAND_4
