@@ -224,8 +224,6 @@ class SceneTreeDock : public VBoxContainer {
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	void _import_subscene();
-
 	void _new_scene_from(String p_file);
 	void _set_node_owner_recursive(Node *p_node, Node *p_owner);
 
@@ -288,7 +286,6 @@ public:
 
 	void _focus_node();
 
-	void import_subscene();
 	void add_root_node(Node *p_node);
 	void set_edited_scene(Node *p_scene);
 	void instantiate(const String &p_file);
