@@ -556,7 +556,6 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 	}
 
 	_changed_notify();
-	tree->emit_signal(SNAME("item_collapsed"), this);
 }
 
 bool TreeItem::is_collapsed() {
@@ -2573,6 +2572,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 		if (!p_item->disable_folding && !hide_folding && p_item->first_child && (p_pos.x >= x_ofs && p_pos.x < (x_ofs + theme_cache.item_margin))) {
 			p_item->set_collapsed(!p_item->is_collapsed());
+			emit_signal(SNAME("item_collapsed"), p_item);
 			return -1;
 		}
 
@@ -2624,6 +2624,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 		if (!p_item->disable_folding && !hide_folding && !p_item->cells[col].editable && !p_item->cells[col].selectable && p_item->get_first_child()) {
 			p_item->set_collapsed(!p_item->is_collapsed());
+			emit_signal(SNAME("item_collapsed"), p_item);
 			return -1; //collapse/uncollapse because nothing can be done with item
 		}
 
@@ -2984,6 +2985,7 @@ void Tree::_go_left() {
 	if (selected_col == 0) {
 		if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
 			selected_item->set_collapsed(true);
+			emit_signal(SNAME("item_collapsed"), selected_item);
 		} else {
 			if (columns.size() == 1) { // goto parent with one column
 				TreeItem *parent = selected_item->get_parent();
@@ -3012,6 +3014,7 @@ void Tree::_go_right() {
 	if (selected_col == (columns.size() - 1)) {
 		if (selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
 			selected_item->set_collapsed(false);
+			emit_signal(SNAME("item_collapsed"), selected_item);
 		} else if (selected_item->get_next_visible()) {
 			selected_col = 0;
 			_go_down();
@@ -3138,9 +3141,11 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 		if (k.is_valid() && k->is_alt_pressed()) {
 			selected_item->set_collapsed(false);
+			emit_signal(SNAME("item_collapsed"), selected_item);
 			TreeItem *next = selected_item->get_first_child();
 			while (next && next != selected_item->next) {
 				next->set_collapsed(false);
+				emit_signal(SNAME("item_collapsed"), next);
 				next = next->get_next_visible();
 			}
 		} else {
@@ -3157,9 +3162,11 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (k.is_valid() && k->is_alt_pressed()) {
 			selected_item->set_collapsed(true);
+			emit_signal(SNAME("item_collapsed"), selected_item);
 			TreeItem *next = selected_item->get_first_child();
 			while (next && next != selected_item->next) {
 				next->set_collapsed(true);
+				emit_signal(SNAME("item_collapsed"), next);
 				next = next->get_next_visible();
 			}
 		} else {

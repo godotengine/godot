@@ -204,6 +204,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		bool collapsed = p_node->is_displayed_folded();
 		if (collapsed) {
 			item->set_collapsed(true);
+			_cell_collapsed(item);
 		}
 	}
 
@@ -901,6 +902,7 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 			TreeItem *node = item->get_parent();
 			while (node && node != tree->get_root()) {
 				node->set_collapsed(false);
+				_cell_collapsed(node);
 				node = node->get_parent();
 			}
 			item->select(0);
