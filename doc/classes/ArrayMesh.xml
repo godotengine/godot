@@ -46,6 +46,8 @@
 				Creates a new surface.
 				Surfaces are created to be rendered using a [code]primitive[/code], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines, or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
 				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant ARRAY_INDEX] if it is used.
+				[code]compress_flags[/code] is a bitfield made of [enum Mesh.ArrayFormat] values. It defaults to [constant Mesh.ARRAY_COMPRESS_DEFAULT].
+				[b]Note:[/b] The default [code]compress_flags[/code] enable [constant Mesh.ARRAY_COMPRESS_COLOR], which makes vertex colors stored as 8-bit unsigned integers. This will clamp overbright vertex colors to [code]Color(1, 1, 1, 1)[/code] and reduce their precision. To store HDR vertex colors, remove the vertex color compression flag by passing [code]Mesh.ARRAY_COMPRESS_DEFAULT ^ Mesh.ARRAY_COMPRESS_COLOR[/code] as the value of [code]compress_flags[/code].
 			</description>
 		</method>
 		<method name="clear_blend_shapes">
