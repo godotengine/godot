@@ -309,7 +309,11 @@ void EditorFeatureProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_MAX);
 }
 
-EditorFeatureProfile::EditorFeatureProfile() {}
+EditorFeatureProfile::EditorFeatureProfile() {
+	for (int i = 0; i < FEATURE_MAX; i++) {
+		features_disabled[i] = false;
+	}
+}
 
 //////////////////////////
 
@@ -746,6 +750,8 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	class_list->clear();
 
 	String profile = _get_selected_profile();
+	profile_actions[PROFILE_SET]->set_disabled(profile == current_profile);
+
 	if (profile.is_empty()) { //nothing selected, nothing edited
 		property_list->clear();
 		edited.unref();
