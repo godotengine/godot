@@ -30,6 +30,7 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
 #include "editor/editor_file_system.h"
@@ -942,14 +943,16 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	// Empty node names are not allowed, so resets it to previous text and show warning
-	if (which->get_text(0).strip_edges().is_empty()) {
-		which->set_text(0, n->get_name());
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
+	String raw_new_name = which->get_text(0);
+	if (raw_new_name.strip_edges().is_empty()) {
+		// If name is empty, fallback to class name.
+		if (GLOBAL_GET("editor/node_naming/name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			raw_new_name = Node::adjust_name_casing(n->get_class());
+		} else {
+			raw_new_name = n->get_class();
+		}
 	}
 
-	String raw_new_name = which->get_text(0);
 	String new_name = raw_new_name.validate_node_name();
 
 	if (new_name != raw_new_name) {
