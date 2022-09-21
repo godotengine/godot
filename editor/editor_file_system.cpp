@@ -2057,6 +2057,10 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap
 
 void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params) {
 	_reimport_file(p_file, &p_custom_params, p_importer);
+
+	Vector<String> files;
+	files.push_back(p_file);
+	emit_signal(SNAME("resources_reimported"), files);
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
