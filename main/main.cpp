@@ -1932,6 +1932,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
 		EditorPaths::create();
+		if (EditorPaths::get_singleton()->is_self_contained()) {
+			if (ProjectSettings::get_singleton()->get_resource_path() == OS::get_singleton()->get_executable_path().get_base_dir()) {
+				ERR_PRINT("You are trying to run a self-contained editor at the same location as a project. This is not allowed, since editor files will mix with project files.");
+				OS::get_singleton()->set_exit_code(EXIT_FAILURE);
+				return FAILED;
+			}
+		}
 	}
 #endif
 
