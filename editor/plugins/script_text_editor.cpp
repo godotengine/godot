@@ -1558,8 +1558,13 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
-		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
+		Node *scene_root = get_tree()->get_edited_scene_root();
+		if (!scene_root) {
+			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
+			return;
+		}
 
+		Node *sn = _find_script_node(scene_root, scene_root, script);
 		if (!sn) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop nodes because script '%s' is not used in this scene."), get_name()));
 			return;
