@@ -238,6 +238,12 @@ void ConnectDialog::_notification(int p_what) {
 				String type_name = Variant::get_type_name((Variant::Type)type_list->get_item_id(i));
 				type_list->set_item_icon(i, get_theme_icon(type_name, SNAME("EditorIcons")));
 			}
+
+			Ref<StyleBox> style = get_theme_stylebox("normal", "LineEdit")->duplicate();
+			if (style.is_valid()) {
+				style->set_default_margin(SIDE_TOP, style->get_default_margin(SIDE_TOP) + 1.0);
+				from_signal->add_theme_style_override("normal", style);
+			}
 		} break;
 	}
 }
@@ -465,30 +471,31 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
-	HBoxContainer *dstm_hb = memnew(HBoxContainer);
-	vbc_left->add_margin_child(TTR("Receiver Method:"), dstm_hb);
-
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
-	dstm_hb->add_child(dst_method);
+	vbc_left->add_margin_child(TTR("Receiver Method:"), dst_method);
 
 	advanced = memnew(CheckButton);
-	dstm_hb->add_child(advanced);
+	vbc_left->add_child(advanced);
 	advanced->set_text(TTR("Advanced"));
+	advanced->set_h_size_flags(Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND);
 	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
+
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	vbc_right->add_child(hbox);
 
 	deferred = memnew(CheckBox);
 	deferred->set_h_size_flags(0);
 	deferred->set_text(TTR("Deferred"));
 	deferred->set_tooltip_text(TTR("Defers the signal, storing it in a queue and only firing it at idle time."));
-	vbc_right->add_child(deferred);
+	hbox->add_child(deferred);
 
 	one_shot = memnew(CheckBox);
 	one_shot->set_h_size_flags(0);
-	one_shot->set_text(TTR("Oneshot"));
+	one_shot->set_text(TTR("One Shot"));
 	one_shot->set_tooltip_text(TTR("Disconnects the signal after its first emission."));
-	vbc_right->add_child(one_shot);
+	hbox->add_child(one_shot);
 
 	cdbinds = memnew(ConnectDialogBinds);
 
