@@ -28,7 +28,7 @@ so they should work out of the box on Linux/macOS.
 #### Windows
 
 ##### clang-format
-- Download LLVM for Windows (version 8 or later) from
+- Download LLVM for Windows (version 13 or later) from
   <https://releases.llvm.org/download.html>
 - Make sure LLVM is added to the `PATH` during installation
 
