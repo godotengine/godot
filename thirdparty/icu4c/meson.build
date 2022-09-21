@@ -1,7 +1,7 @@
 if get_option('builtin_icu')
     _builtin_icu_incdirs = include_directories('common', 'i18n')
 
-    _builtin_icu_srcs = files([
+    _builtin_icu_srcs = files(
         'common/appendable.cpp',
         'common/bmpset.cpp',
         'common/brkeng.cpp',
@@ -204,9 +204,9 @@ if get_option('builtin_icu')
         'i18n/uspoof.cpp',
         'i18n/uspoof_impl.cpp',
         'i18n/scriptset.cpp',
-    ])
+    )
 
-    _icu_data_name = 'icudt71l.dat'
+    _icu_data_name = 'icudt72l.dat'
 
     _builtin_icu_compile_dep_flags = [
         '-DU_STATIC_IMPLEMENTATION',

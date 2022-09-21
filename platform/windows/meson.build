@@ -55,7 +55,8 @@ if PLATFORM == 'windows'
         _cpp.find_library('wsock32'),
         _cpp.find_library('opengl32'),
         _cpp.find_library('ksuser'),
-    ]
+        _cpp.find_library('wbemuuid'),
+]
 
     CPP_ARGS += [
         '-DVULKAN_ENABLED',

@@ -6,15 +6,15 @@ thorvg_lib = library('thorvg', thorvg_sources,
                           'src/lib',
                           'src/loaders/tvg',
                           'src/loaders/svg',
-                          'src/loaders/png',
+                          'src/loaders/external_png',
                           'src/loaders/jpg',
                           'src/loaders/raw',
                           'src/savers/tvg',
                           'src/lib/sw_engine'],
-    dependencies: dependency('threads'),
+    dependencies: [dependency('threads'), DEP_LIBPNG],
     )
 
 thorvg_dep = declare_dependency(
     link_with: thorvg_lib,
-    include_directories: 'inc',
+    include_directories: ['inc', 'src/lib'],
 )

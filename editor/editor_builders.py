@@ -12,7 +12,6 @@ import subprocess
 import tempfile
 import uuid
 import zlib
-from platform_methods import subprocess_main
 
 
 from glob import glob

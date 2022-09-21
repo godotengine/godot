@@ -19,20 +19,17 @@ SOURCES += [_target_linuxbsd_logo]
 # Host Machine Specifics
 ################################################################################
 if PLATFORM == 'linuxbsd'
+    subdir('x11')
 
     # add the godot linuxbsd main to main sources
     MAIN_SOURCES += files('godot_linuxbsd.cpp')
 
     # the src files for the linux *platform*
-    _linuxbsd_srcs = files([
+    _linuxbsd_srcs += files(
         'crash_handler_linuxbsd.cpp',
         'os_linuxbsd.cpp',
         'joypad_linux.cpp',
-        'detect_prime_x11.cpp',
-        'display_server_x11.cpp',
-        'vulkan_context_x11.cpp',
-        'key_mapping_x11.cpp',
-    ])
+    )
 
     # get all of our dependencies
     _cpp = meson.get_compiler('cpp')

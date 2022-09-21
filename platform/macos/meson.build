@@ -30,6 +30,7 @@ if PLATFORM == 'macos'
                       'vulkan_context_macos.mm',
                       'godot_application.mm',
                       'godot_application_delegate.mm',
+                      'godot_button_view.mm',
                       'godot_content_view.mm',
                       'godot_main_macos.mm',
                       'godot_menu_delegate.mm',
