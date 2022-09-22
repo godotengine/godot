@@ -1009,6 +1009,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 	vars_list_root = vars_list->create_item();
 
+	import_settings_data->settings.clear();
 	import_settings_data->defaults.clear();
 	for (List<ResourceImporter::ImportOption>::Element *E = options_general.front(); E; E = E->next()) {
 		import_settings_data->defaults[E->get().option.name] = E->get().default_value;
