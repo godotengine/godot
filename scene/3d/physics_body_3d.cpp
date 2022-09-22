@@ -100,7 +100,7 @@ Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p
 
 	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
-		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
+		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
@@ -1797,7 +1797,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 	}
 
 	// Create a new instance when the cached reference is invalid or still in use in script.
-	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
