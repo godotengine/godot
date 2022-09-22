@@ -39,10 +39,10 @@ class NavigationRegion3D : public Node3D {
 
 	bool enabled = true;
 	RID region;
-	Ref<NavigationMesh> navmesh;
-
+	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+	Ref<NavigationMesh> navmesh;
 
 	Thread bake_thread;
 
