@@ -41,10 +41,15 @@ class RegEx;
 class ProjectConverter3To4 {
 public:
 	class RegExContainer;
+	struct ConfigSection;
+	class ProjectSettings;
 
 private:
 	uint64_t maximum_file_size;
 	uint64_t maximum_line_length;
+
+	void parse_project_godot(Vector<String> &lines, RegExContainer &reg_container);
+	Vector<String> validate_conversion_project_godot(Vector<String> &lines, RegExContainer &reg_container);
 
 	void rename_colors(Vector<String> &lines, const RegExContainer &reg_container);
 	Vector<String> check_for_rename_colors(Vector<String> &lines, const RegExContainer &reg_container);

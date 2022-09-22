@@ -1322,6 +1322,8 @@ static const char *project_settings_renames[][2] = {
 	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2" },
 	{ "rendering/vram_compression/import_pvrtc", "rendering/textures/vram_compression/import_pvrtc" },
 	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc" },
+	{ "display/window/size/width", "display/window/size/viewport_width" },
+	{ "display/window/size/height", "display/window/size/viewport_height" },
 
 	{ nullptr, nullptr },
 };
@@ -1917,9 +1919,913 @@ public:
 	}
 };
 
+struct ProjectConverter3To4::ConfigSection {
+	enum Type {
+		BASIC,
+		COMMENT,
+		EMPTY_LINE,
+		KEY_VALUE,
+		EMBEDDED_SCRIPT,
+	};
+
+	struct Element {
+		int line_number;
+
+		virtual Vector<String> dump() const = 0;
+		virtual Type get_type() const = 0;
+	};
+
+	struct Basic : public Element {
+		String content;
+
+		virtual Vector<String> dump() const override {
+			return { content };
+		}
+
+		virtual Type get_type() const override {
+			return Type::BASIC;
+		}
+	};
+
+	struct Comment : public Basic {
+		virtual Type get_type() const override {
+			return Type::COMMENT;
+		}
+	};
+
+	struct EmptyLine : public Basic {
+		virtual Type get_type() const override {
+			return Type::EMPTY_LINE;
+		}
+	};
+
+	struct KeyValue : public Element {
+		String key;
+		String value;
+		String separator;
+
+		virtual Vector<String> dump() const override {
+			return { vformat("%s%s%s", key, separator, value) };
+		}
+
+		virtual Type get_type() const override {
+			return Type::KEY_VALUE;
+		}
+	};
+
+	struct EmbeddedScript : public Element {
+		Vector<String> lines;
+		String separator;
+
+		virtual Vector<String> dump() const override {
+			if (lines.is_empty()) {
+				return { vformat("script/source%s\"\"", separator) };
+			}
+
+			if (lines.size() == 1) {
+				return { vformat("script/source%s\"%s\"", separator, lines[0].c_escape_multiline()) };
+			}
+
+			Vector<String> ret;
+			int nb_lines = lines.size();
+
+			ret.push_back(vformat("script/source%s\"%s", separator, lines[0].c_escape_multiline()));
+			for (int i = 1; i < nb_lines - 1; i++) {
+				ret.push_back(lines[i].c_escape_multiline());
+			}
+			ret.push_back(vformat("%s\"", lines[nb_lines - 1].c_escape_multiline()));
+			return ret;
+		}
+
+		virtual Type get_type() const override {
+			return Type::EMBEDDED_SCRIPT;
+		}
+	};
+
+	String name;
+	int line_number;
+	Dictionary attrs;
+	Vector<Element *> elements;
+
+	~ConfigSection() {
+		clear();
+	}
+
+	void clear() {
+		for (Element *el : elements) {
+			memdelete(el);
+		}
+		elements.clear();
+	}
+
+	void set_attr(String key) {
+		attrs[key] = "";
+	}
+
+	void set_attr(String key, String value) {
+		attrs[key] = value;
+	}
+
+	bool has_attr(const String &key) const {
+		return attrs.has(key);
+	}
+
+	String get_attr(const String &key) const {
+		if (attrs.has(key)) {
+			return attrs[key];
+		}
+		return String();
+	}
+
+	bool remove_attr(const String &key) {
+		return attrs.erase(key);
+	}
+
+	void add_element(Element *el) {
+		elements.push_back(el);
+	}
+
+	void remove_element(Element *el) {
+		int i = 0;
+		bool found = false;
+
+		for (Element *E : elements) {
+			if (el == E) {
+				found = true;
+				break;
+			}
+
+			i++;
+		}
+
+		if (found) {
+			memdelete(elements.get(i));
+			elements.remove_at(i);
+		}
+	}
+
+	Vector<String> dump() const {
+		Vector<String> ret;
+
+		if (!name.is_empty()) {
+			String line = "[" + name;
+
+			Array keys = attrs.keys();
+			for (int i = 0; i < keys.size(); i++) {
+				String key = keys[i];
+				String value = attrs[key];
+
+				if (!value.is_empty()) {
+					line += vformat(" %s=%s", key, value);
+				} else {
+					line += vformat(" %s", key);
+				}
+			}
+
+			line += "]";
+			ret.append(line);
+		}
+
+		for (const Element *element : elements) {
+			ret.append_array(element->dump());
+		}
+
+		return ret;
+	}
+
+	static ConfigSection *parse_section(int line_number, String line) {
+		ConfigSection *ret = memnew(ConfigSection);
+		ret->line_number = line_number;
+
+		int pos = line.find(" ");
+		if (pos == -1) {
+			// This section has no attributes
+			ret->name = line.substr(1, line.length() - 2);
+			return ret;
+		}
+
+		ret->name = line.substr(1, pos - 1);
+
+		int start = -1;
+		int column = pos;
+		int max_column = line.length();
+		bool escaped = false;
+		bool quoted = false;
+		char32_t quoted_chr = '"';
+		String attr_name = "";
+		int paren_depth = 0;
+
+		while (column < max_column - 1) {
+			char32_t c = line.get(column);
+
+			switch (c) {
+				case '\\': {
+					escaped = !escaped;
+					column++;
+					continue;
+				};
+				case '"':
+				case '\'': {
+					if (!escaped) {
+						if (!quoted) {
+							quoted = true;
+							quoted_chr = c;
+						} else if (c == quoted_chr) {
+							quoted = false;
+						}
+					}
+					break;
+				};
+				case '(': {
+					// instance=ExtResource( 1 )
+					if (!escaped && !quoted) {
+						paren_depth++;
+						if (start == -1) {
+							start = column;
+						}
+					}
+					break;
+				};
+				case ')': {
+					if (!escaped && !quoted && paren_depth > 0) {
+						paren_depth--;
+						if (start == -1) {
+							start = column;
+						}
+					}
+					break;
+				};
+				case ' ': {
+					if (start != -1 && !quoted && paren_depth == 0) {
+						if (!attr_name.is_empty()) {
+							ret->set_attr(attr_name, line.substr(start, column - start));
+						} else {
+							ret->set_attr(line.substr(start, column - start));
+						}
+
+						start = -1;
+						attr_name.clear();
+					}
+					break;
+				};
+				case '=': {
+					if (!quoted && paren_depth == 0) {
+						attr_name = line.substr(start, column - start);
+						start = column + 1;
+					}
+					break;
+				};
+				default: {
+					if (!quoted && start == -1) {
+						start = column;
+					}
+					break;
+				};
+			}
+
+			column++;
+			escaped = false;
+		}
+
+		if (start != -1) {
+			if (!attr_name.is_empty()) {
+				ret->set_attr(attr_name, line.substr(start, column - start));
+			} else {
+				ret->set_attr(line.substr(start, column - start));
+			}
+		}
+
+		return ret;
+	}
+
+	static ProjectConverter3To4::ConfigSection::EmbeddedScript *parse_embedded_script(const Vector<String> &lines, int &current_line, const String &kv_separator) {
+		EmbeddedScript *ret = memnew(EmbeddedScript);
+		ret->line_number = current_line + 1;
+		ret->separator = kv_separator;
+
+		int max_line = lines.size();
+		int column = lines[current_line].find(kv_separator) + kv_separator.length();
+		int max_column = 0;
+		bool escaped = false;
+
+		// We know that an embedded script starts with a double-quote
+		column++;
+
+		while (current_line < max_line) {
+			String src_line = lines[current_line];
+			max_column = src_line.length();
+			escaped = false;
+
+			String dst_line;
+
+			while (column < max_column) {
+				char32_t c = src_line.get(column);
+
+				switch (c) {
+					case '\\': {
+						escaped = !escaped;
+						break;
+					};
+					case '"': {
+						// a non-escaped double-quote means the end of the embedded script
+						if (!escaped) {
+							ret->lines.push_back(dst_line.c_unescape());
+							return ret;
+						}
+						escaped = false;
+						break;
+					};
+					default: {
+						escaped = false;
+						break;
+					};
+				}
+
+				column++;
+				dst_line += c;
+			}
+
+			ret->lines.push_back(dst_line.c_unescape());
+			escaped = false;
+			column = 0;
+			current_line++;
+		}
+
+		return ret;
+	}
+
+	static ProjectConverter3To4::ConfigSection::KeyValue *parse_key_value(const Vector<String> &lines, int &current_line, const String &kv_separator) {
+		KeyValue *ret = memnew(KeyValue);
+		ret->line_number = current_line + 1;
+		ret->separator = kv_separator;
+
+		// Key
+		String line = lines[current_line];
+		int pos = line.find(kv_separator);
+		int start = -1;
+		int column = 0;
+		bool break_loop = false;
+
+		while (column < pos && !break_loop) {
+			char32_t c = line[column];
+
+			switch (c) {
+				case ' ':
+				case '\t': {
+					if (start != -1) {
+						break_loop = true;
+						break;
+					}
+					column++;
+					break;
+				};
+				default: {
+					if (start == -1) {
+						start = column;
+					}
+					column++;
+					break;
+				};
+			}
+		}
+
+		ret->key = line.substr(start, column - start);
+
+		// Value
+		break_loop = false;
+		int max_line = lines.size();
+		column = pos + kv_separator.length();
+		int max_column = 0;
+		int depth = 0;
+		bool escaped = false;
+		bool quoted = false;
+		char32_t quoted_chr = '\0';
+		char32_t begin_chr = '\0';
+		char32_t end_chr = '\0';
+
+		while (current_line < max_line) {
+			line = lines[current_line];
+			max_column = line.length();
+
+			while (column < max_column && !break_loop) {
+				char32_t c = line.get(column);
+
+				switch (c) {
+					case '\\': {
+						escaped = !escaped;
+						ret->value += c;
+						column++;
+						continue;
+					};
+					case '"':
+					case '\'': {
+						if (!escaped) {
+							// string literal
+							if (!quoted) {
+								quoted = true;
+								quoted_chr = c;
+							} else if (c == quoted_chr) {
+								quoted = false;
+							}
+						}
+						break;
+					};
+					case '{':
+					case '[': {
+						if (!escaped && !quoted) {
+							// array or dictionary
+							if (begin_chr == '\0') {
+								begin_chr = c;
+								end_chr = char32_t(int(c) + 2);
+								depth++;
+							} else if (c == begin_chr) {
+								depth++;
+							}
+						}
+						break;
+					};
+					case '}':
+					case ']': {
+						if (!escaped && !quoted && c == end_chr && depth > 0) {
+							depth--;
+						}
+						break;
+					};
+					case ';': {
+						if (!escaped && !quoted) {
+							// comment
+							escaped = false;
+							break_loop = true;
+							ret->value += line.substr(column);
+							continue;
+						}
+						break;
+					};
+				}
+
+				escaped = false;
+				ret->value += c;
+				column++;
+			}
+
+			if (depth == 0) {
+				break;
+			}
+
+			escaped = false;
+			column = 0;
+			current_line++;
+			ret->value += '\n';
+		}
+
+		return ret;
+	}
+
+	static Vector<ProjectConverter3To4::ConfigSection *> parse_lines(const Vector<String> &lines, const String &kv_separator, ConfigSection *current_section = nullptr) {
+		Vector<ConfigSection *> ret;
+		int current_line = 0;
+		int max_line = lines.size();
+
+		while (current_line < max_line) {
+			String line = lines[current_line];
+
+			if (line.strip_edges().begins_with("[") && line.strip_edges().ends_with("]")) {
+				if (current_section != nullptr) {
+					ret.push_back(current_section);
+				}
+				current_section = parse_section(current_line + 1, line);
+			} else if (current_section != nullptr) {
+				if (line.strip_edges().begins_with(";")) {
+					Comment *el = memnew(Comment);
+					el->line_number = current_line + 1;
+					el->content = line;
+					current_section->add_element(el);
+				} else if (line.strip_edges().is_empty()) {
+					EmptyLine *el = memnew(EmptyLine);
+					el->line_number = current_line + 1;
+					el->content = line;
+					current_section->add_element(el);
+				} else if (current_section->name == "sub_resource" && current_section->has_attr("type") && current_section->get_attr("type") == "\"GDScript\"" && line.strip_edges().begins_with("script/source")) {
+					EmbeddedScript *el = parse_embedded_script(lines, current_line, kv_separator);
+					current_section->add_element(el);
+				} else if (line.find(kv_separator) != -1) {
+					KeyValue *el = parse_key_value(lines, current_line, kv_separator);
+					current_section->add_element(el);
+				} else {
+					// Unknown
+					Basic *el = memnew(Basic);
+					el->line_number = current_line + 1;
+					el->content = line;
+					current_section->add_element(el);
+				}
+			}
+			current_line++;
+		}
+
+		if (current_section != nullptr) {
+			ret.push_back(current_section);
+		}
+
+		return ret;
+	}
+};
+
+class ProjectConverter3To4::ProjectSettings {
+private:
+	HashMap<String, HashMap<String, String>> config;
+	Vector<ConfigSection *> settings;
+
+	HashMap<ConfigSection *, Vector<ConfigSection::KeyValue *>> remove_actions;
+	HashMap<String, Vector<String>> insert_actions;
+	HashMap<ConfigSection *, HashMap<ConfigSection::KeyValue *, String>> replace_actions;
+	Vector<String> create_section_actions;
+	Vector<ConfigSection *> remove_section_actions;
+
+	void remove_section(const ConfigSection *section) {
+		int i = 0;
+		bool found = false;
+
+		for (const ConfigSection *E : settings) {
+			if (E == section) {
+				found = true;
+				break;
+			}
+
+			i++;
+		}
+
+		if (found) {
+			ConfigSection *section = settings.get(i);
+			section->clear();
+			memdelete(section);
+			settings.remove_at(i);
+		}
+	}
+
+	void create_section(const String &name) {
+		ConfigSection *section = memnew(ConfigSection);
+		section->name = name;
+		// first line of a new section is an empty one
+		ConfigSection::EmptyLine *el = memnew(ConfigSection::EmptyLine);
+		// Don't need to set line_number because it's only used for validation
+		section->add_element(el);
+		settings.push_back(section);
+	}
+
+	bool has_section(const String &name) const {
+		for (const ConfigSection *section : settings) {
+			if (section->name == name) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	ConfigSection *get_section(const String &name) {
+		for (ConfigSection *section : settings) {
+			if (section->name == name) {
+				return section;
+			}
+		}
+		return nullptr;
+	}
+
+public:
+	~ProjectSettings() {
+		clear();
+	}
+
+	void clear() {
+		for (ConfigSection *section : settings) {
+			section->clear();
+			memdelete(section);
+		}
+		settings.clear();
+	}
+
+	bool parse_config(const char *renames[][2]) {
+		for (unsigned int current_index = 0; renames[current_index][0]; current_index++) {
+			String from(renames[current_index][0]);
+			String section_name;
+			String section_key;
+			int pos = from.find("/");
+
+			if (pos == -1) {
+				section_key = from;
+			} else {
+				section_name = from.substr(0, pos);
+				section_key = from.substr(pos + 1);
+			}
+
+			if (!config.has(section_name)) {
+				config[section_name] = HashMap<String, String>();
+			}
+
+			if (config[section_name].has(section_key)) {
+				ERR_PRINT(vformat("'%s' already defined!", from));
+				return false;
+			}
+
+			config[section_name][section_key] = renames[current_index][1];
+		}
+		return true;
+	}
+
+	void parse_lines(const Vector<String> &lines) {
+		if (!settings.is_empty()) {
+			clear();
+		}
+
+		ConfigSection *root = memnew(ConfigSection);
+		root->line_number = 0;
+		settings = ConfigSection::parse_lines(lines, "=", root);
+
+		// For each section
+		for (ConfigSection *section : settings) {
+			int nb_elements = section->elements.size();
+			if (nb_elements > 0) {
+				// remove the last line if it's empty (part of the prettify stage)
+				ConfigSection::Element *last_element = section->elements[nb_elements - 1];
+				if (last_element->get_type() == ConfigSection::EMPTY_LINE) {
+					section->remove_element(last_element);
+				}
+			}
+		}
+	}
+
+	void analyze() {
+		remove_actions.clear();
+		insert_actions.clear();
+		replace_actions.clear();
+		create_section_actions.clear();
+		remove_section_actions.clear();
+
+		for (const KeyValue<String, HashMap<String, String>> &E : config) {
+			// Section exists?
+			ConfigSection *section = get_section(E.key);
+			if (section == nullptr) {
+				continue;
+			}
+
+			for (ConfigSection::Element *el : section->elements) {
+				// Here, we just care about key/value pairs
+				ConfigSection::KeyValue *kv = dynamic_cast<ConfigSection::KeyValue *>(el);
+				if (kv == nullptr) {
+					continue;
+				}
+
+				// key defined in config?
+				if (!E.value.has(kv->key)) {
+					continue;
+				}
+
+				// line to remove?
+				String rename_to = E.value[kv->key];
+				if (rename_to.is_empty()) {
+					remove_actions[section].push_back(kv);
+				} else {
+					String target_section;
+					String target_key;
+
+					int sep = rename_to.find("/");
+					if (sep != -1) {
+						target_section = rename_to.substr(0, sep);
+						target_key = rename_to.substr(sep + 1);
+					} else {
+						target_key = rename_to;
+					}
+
+					// replace the line?
+					if (target_section == E.key) {
+						replace_actions[section][kv] = target_key;
+					} else {
+						// move to another section
+						remove_actions[section].push_back(kv);
+						String new_line = vformat("%s%s%s", target_key, kv->separator, kv->value);
+						insert_actions[target_section].push_back(new_line);
+
+						if (!has_section(target_section) && create_section_actions.count(target_section) == 0) {
+							create_section_actions.push_back(target_section);
+						}
+					}
+				}
+			}
+		}
+
+		// Detect empty sections (part of the prettify stage)
+		for (ConfigSection *section : settings) {
+			// Section has lines?
+			if (section->elements.is_empty()) {
+				remove_section_actions.push_back(section);
+				continue;
+			}
+
+			// Section contains only one empty line?
+			if (section->elements.size() == 1 && section->elements[0]->get_type() == ConfigSection::EMPTY_LINE) {
+				remove_section_actions.push_back(section);
+				continue;
+			}
+
+			// Section contains "to remove" lines?
+			if (!remove_actions.has(section)) {
+				continue;
+			}
+
+			// Section (will) only contains empty lines?
+			bool has_content = false;
+			for (ConfigSection::Element *el : section->elements) {
+				ConfigSection::Type type = el->get_type();
+
+				if (type == ConfigSection::EMPTY_LINE) {
+					continue;
+				} else if (type == ConfigSection::KEY_VALUE) {
+					ConfigSection::KeyValue *kv = dynamic_cast<ConfigSection::KeyValue *>(el);
+					// KeyValue will be removed?
+					if (remove_actions[section].find(kv) != -1) {
+						continue;
+					}
+				}
+
+				has_content = true;
+				break;
+			}
+
+			if (!has_content) {
+				remove_section_actions.push_back(section);
+				// forget line remove actions for this section
+				remove_actions.erase(section);
+			}
+		}
+	}
+
+	Vector<String> convert() {
+		// Update existing lines
+		for (const KeyValue<ConfigSection *, HashMap<ConfigSection::KeyValue *, String>> &E : replace_actions) {
+			for (const KeyValue<ConfigSection::KeyValue *, String> &F : E.value) {
+				F.key->key = F.value;
+			}
+		}
+
+		// Remove sections
+		for (const ConfigSection *section : remove_section_actions) {
+			remove_section(section);
+		}
+
+		// New sections
+		for (const String &section_name : create_section_actions) {
+			create_section(section_name);
+		}
+
+		// Insert new lines
+		for (const KeyValue<String, Vector<String>> &E : insert_actions) {
+			for (const String &line : E.value) {
+				ConfigSection::Basic *el = memnew(ConfigSection::Basic);
+				el->content = line;
+				get_section(E.key)->add_element(el);
+			}
+		}
+
+		// Remove "old" lines
+		for (KeyValue<ConfigSection *, Vector<ConfigSection::KeyValue *>> &E : remove_actions) {
+			for (ConfigSection::KeyValue *kv : E.value) {
+				E.key->remove_element(kv);
+			}
+		}
+
+		// Everything is done, let's prettify a bit
+		for (ConfigSection *section : settings) {
+			// count trailing empty lines
+			int nb_trailing_empty_lines = 0;
+			int nb_elements = section->elements.size();
+
+			for (int i = nb_elements - 1; i >= 0; i--) {
+				if (section->elements[i]->get_type() != ConfigSection::EMPTY_LINE) {
+					break;
+				}
+				nb_trailing_empty_lines++;
+			}
+
+			// Missing empty last line?
+			if (nb_trailing_empty_lines == 0) {
+				ConfigSection::EmptyLine *el = memnew(ConfigSection::EmptyLine);
+				section->add_element(el);
+				continue;
+			}
+
+			// Too many trailing empty lines?
+			while (nb_trailing_empty_lines > 1) {
+				ConfigSection::Element *el = section->elements[section->elements.size() - 1];
+				section->remove_element(el);
+				nb_trailing_empty_lines--;
+			}
+		}
+
+		// Dump updated settings
+		Vector<String> ret;
+
+		for (const ConfigSection *section : settings) {
+			ret.append_array(section->dump());
+		}
+
+		return ret;
+	}
+
+	Vector<String> check() {
+		Vector<String> ret;
+
+		// Remove sections
+		for (const ConfigSection *section : remove_section_actions) {
+			ret.push_back(vformat("- Remove section '%s'", section->name));
+		}
+
+		// New sections
+		for (const String &section_name : create_section_actions) {
+			ret.push_back(vformat("- Create section '%s'", section_name));
+		}
+
+		// Lines replaced in the same section
+		for (const KeyValue<ConfigSection *, HashMap<ConfigSection::KeyValue *, String>> &E : replace_actions) {
+			for (const KeyValue<ConfigSection::KeyValue *, String> &F : E.value) {
+				String from_key = F.key->key;
+				String to_key = F.value;
+
+				if (E.key->name.is_empty()) {
+					ret.push_back(vformat("- In root, rename '%s' to '%s'", from_key, to_key));
+				} else {
+					ret.push_back(vformat("- In '%s', rename '%s' to '%s'", E.key->name, from_key, to_key));
+				}
+			}
+		}
+
+		// Lines removed from sections
+		for (const KeyValue<ConfigSection *, Vector<ConfigSection::KeyValue *>> &E : remove_actions) {
+			for (const ConfigSection::KeyValue *kv : E.value) {
+				// We know that a KeyValue dump will return only one String
+				String chk_line = kv->dump()[0];
+
+				if (chk_line.size() > 200) {
+					chk_line = chk_line.substr(0, 197) + "...";
+				}
+
+				if (E.key->name.is_empty()) {
+					ret.push_back(vformat("- In root, remove '%s'", chk_line));
+				} else {
+					ret.push_back(vformat("- In '%s', remove '%s'", E.key->name, chk_line));
+				}
+			}
+		}
+
+		// Lines moved to another section
+		for (const KeyValue<String, Vector<String>> &E : insert_actions) {
+			for (const String &line : E.value) {
+				String chk_line = line;
+				if (chk_line.size() > 200) {
+					chk_line = chk_line.substr(0, 197) + "...";
+				}
+
+				if (E.key.is_empty()) {
+					ret.push_back(vformat("- In root, insert '%s'", chk_line));
+				} else {
+					ret.push_back(vformat("- In '%s', insert '%s'", E.key, chk_line));
+				}
+			}
+		}
+
+		return ret;
+	}
+};
+
 ProjectConverter3To4::ProjectConverter3To4(int p_maximum_file_size_kb, int p_maximum_line_length) {
 	maximum_file_size = p_maximum_file_size_kb * 1024;
 	maximum_line_length = p_maximum_line_length;
+}
+
+void ProjectConverter3To4::parse_project_godot(Vector<String> &lines, RegExContainer &reg_container) {
+	rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
+
+	ProjectSettings project_settings;
+
+	if (project_settings.parse_config(project_settings_renames)) {
+		project_settings.parse_lines(lines);
+		project_settings.analyze();
+		lines = project_settings.convert();
+	}
+}
+
+Vector<String> ProjectConverter3To4::validate_conversion_project_godot(Vector<String> &lines, RegExContainer &reg_container) {
+	Vector<String> ret;
+
+	ret.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
+
+	ProjectSettings project_settings;
+
+	if (project_settings.parse_config(project_settings_renames)) {
+		project_settings.parse_lines(lines);
+		project_settings.analyze();
+		ret.append_array(project_settings.check());
+	}
+
+	return ret;
 }
 
 // Function responsible for converting project.
@@ -2042,8 +2948,7 @@ int ProjectConverter3To4::convert() {
 
 				custom_rename(lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with("project.godot")) {
-				rename_common(project_settings_renames, reg_container.project_settings_regexes, lines);
-				rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
+				parse_project_godot(lines, reg_container);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else {
@@ -2207,8 +3112,7 @@ int ProjectConverter3To4::validate_conversion() {
 
 				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with("project.godot")) {
-				changed_elements.append_array(check_for_rename_common(project_settings_renames, reg_container.project_settings_regexes, lines));
-				changed_elements.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
+				changed_elements.append_array(validate_conversion_project_godot(lines, reg_container));
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else {
@@ -2729,7 +3633,7 @@ bool ProjectConverter3To4::test_single_array(const char *p_array[][2], bool p_ig
 			ERR_PRINT(vformat("Invalid Entry \"%s\" contains leading or trailing spaces.", name_3_x));
 			valid = false;
 		}
-		if (names.has(name_4_0)) {
+		if (!name_4_0.is_empty() && names.has(name_4_0)) {
 			ERR_PRINT(vformat("Found duplicated entry, pair ( -> %s , %s)", name_3_x, name_4_0));
 			valid = false;
 		}
@@ -3951,7 +4855,7 @@ void ProjectConverter3To4::rename_common(const char *array[][2], LocalVector<Reg
 	for (String &line : lines) {
 		if (uint64_t(line.length()) <= maximum_line_length) {
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
-				if (line.contains(array[current_index][0])) {
+				if (line.contains(array[current_index][0]) && array[current_index][1] != nullptr) {
 					line = cached_regexes[current_index]->sub(line, array[current_index][1], true);
 				}
 			}
@@ -3969,7 +4873,7 @@ Vector<String> ProjectConverter3To4::check_for_rename_common(const char *array[]
 			for (unsigned int current_index = 0; current_index < cached_regexes.size(); current_index++) {
 				if (line.contains(array[current_index][0])) {
 					TypedArray<RegExMatch> reg_match = cached_regexes[current_index]->search_all(line);
-					if (reg_match.size() > 0) {
+					if (reg_match.size() > 0 && array[current_index][1] != nullptr) {
 						found_renames.append(line_formatter(current_line, array[current_index][0], array[current_index][1], line));
 					}
 				}
