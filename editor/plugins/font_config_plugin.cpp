@@ -622,6 +622,16 @@ void EditorPropertyOTFeatures::update_property() {
 		supported = fd->get_supported_feature_list();
 	}
 
+	if (supported.is_empty()) {
+		edit->set_text(vformat(TTR("No supported features")));
+		if (container) {
+			set_bottom_editor(nullptr);
+			memdelete(container);
+			button_add = nullptr;
+			container = nullptr;
+		}
+		return;
+	}
 	edit->set_text(vformat(TTR("Features (%d of %d set)"), dict.size(), supported.size()));
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
