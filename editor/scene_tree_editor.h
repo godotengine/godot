@@ -55,6 +55,7 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUPS = 7,
 		BUTTON_PIN = 8,
 		BUTTON_UNIQUE = 9,
+		BUTTON_UNIQUE_TOGGLE = 10,
 	};
 
 	Tree *tree = nullptr;
@@ -98,6 +99,9 @@ class SceneTreeEditor : public Control {
 	bool updating_tree = false;
 	bool show_enabled_subscene = false;
 
+	TreeItem *renaming_item;
+	void _begin_rename();
+	void _end_rename();
 	void _renamed();
 	Ref<EditorUndoRedoManager> undo_redo;
 

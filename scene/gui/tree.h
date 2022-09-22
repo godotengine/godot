@@ -447,7 +447,7 @@ private:
 
 	VBoxContainer *popup_editor_vb = nullptr;
 
-	Popup *popup_editor = nullptr;
+	Window *popup_editor = nullptr;
 	LineEdit *text_editor = nullptr;
 	HSlider *value_editor = nullptr;
 	bool updating_value_editor = false;
@@ -473,7 +473,7 @@ private:
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int x_limit, bool p_double_click, TreeItem *p_item, MouseButton p_button, const Ref<InputEventWithModifiers> &p_mod);
 	void _text_editor_submit(String p_text);
-	void _text_editor_modal_close();
+	void _text_editor_modal_close_requested();
 	void value_editor_changed(double p_value);
 
 	void popup_select(int p_option);
@@ -690,6 +690,7 @@ public:
 
 	TreeItem *get_edited() const;
 	int get_edited_column() const;
+	LineEdit *get_text_editor() const;
 
 	void ensure_cursor_is_visible();
 
@@ -698,6 +699,7 @@ public:
 	int get_item_offset(TreeItem *p_item) const;
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
 	bool edit_selected();
+	void _update_popup_editor_size();
 	bool is_editing();
 
 	// First item that starts with the text, from the current focused item down and wraps around.

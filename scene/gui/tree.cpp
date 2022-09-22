@@ -2030,6 +2030,10 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
 
+				if (popup_edited_item && popup_edited_item_col >= 0 && popup_edited_item_col <= columns.size()) {
+					_update_popup_editor_size();
+				}
+
 				if (select_mode != SELECT_ROW) {
 					if (rtl) {
 						r.position.x = get_size().width - r.position.x - r.size.x;
@@ -2958,7 +2962,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 	return item_h; // nothing found
 }
 
-void Tree::_text_editor_modal_close() {
+void Tree::_text_editor_modal_close_requested() {
 	if (Input::get_singleton()->is_key_pressed(Key::ESCAPE) ||
 			Input::get_singleton()->is_key_pressed(Key::KP_ENTER) ||
 			Input::get_singleton()->is_key_pressed(Key::ENTER)) {
@@ -2969,11 +2973,43 @@ void Tree::_text_editor_modal_close() {
 		return;
 	}
 
+	// Don't close when clicking cell buttons.
+	if (popup_edited_item && popup_edited_item_col >= 0 && popup_edited_item_col < popup_edited_item->cells.size()) {
+		TreeItem *item = popup_edited_item;
+		int item_column = popup_edited_item_col;
+
+		Rect2 focus_rect = item->get_meta("__focus_rect");
+		Vector2 mouse_position = get_local_mouse_position();
+
+		focus_rect.size.x = get_column_width(item_column);
+
+		//Rect2 button_rect = Rect2(0, 0, 240, 240);
+		if (focus_rect.has_point(mouse_position)) {
+			//WARN_PRINT("Point found");
+
+			Ref<InputEventMouseButton> mouse_button_event(memnew(InputEventMouseButton));
+
+			mouse_button_event->set_global_position(get_global_mouse_position());
+			mouse_button_event->set_position(get_local_mouse_position());
+			mouse_button_event->set_button_index(MouseButton::LEFT);
+			mouse_button_event->set_pressed(true);
+			gui_input(mouse_button_event);
+
+			mouse_button_event->set_pressed(false);
+			gui_input(mouse_button_event);
+
+			return;
+		}
+	}
+
+	//WARN_PRINT("Hide the popup");
+	popup_editor->hide();
+
 	_text_editor_submit(text_editor->get_text());
 }
 
 void Tree::_text_editor_submit(String p_text) {
-	popup_editor->hide();
+	//popup_editor->hide();
 
 	if (!popup_edited_item) {
 		return;
@@ -3817,12 +3853,40 @@ bool Tree::edit_selected() {
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
+		//update();
+		//popup_editor->call_deferred("_update_popup_editor_size");
+
 		text_editor->grab_focus();
 
 		return true;
 	}
 
 	return false;
+}
+
+void Tree::_update_popup_editor_size() {
+	TreeItem *selected_item = popup_edited_item;
+	ERR_FAIL_COND_MSG(!selected_item, "Can't update size with no item selected.");
+	int selected_column = popup_edited_item_col;
+	ERR_FAIL_INDEX_MSG(selected_column, columns.size(), "Can't update size with no column selected.");
+
+	const TreeItem::Cell cell = selected_item->cells[selected_column];
+
+	Rect2i focus_rect = selected_item->get_meta("__focus_rect");
+
+	if (cell.mode == TreeItem::CELL_MODE_STRING || cell.mode == TreeItem::CELL_MODE_RANGE) {
+		Rect2 popup_rect;
+
+		Vector2 offset(0, (text_editor->get_size().height - focus_rect.size.height) / 2);
+
+		Point2i textedpos = get_screen_position() + focus_rect.position - offset;
+		cache.text_editor_position = textedpos;
+		popup_rect.position = textedpos;
+		popup_rect.size = focus_rect.size;
+
+		popup_editor->set_position(popup_rect.position);
+		popup_editor->set_size(popup_rect.size);
+	}
 }
 
 bool Tree::is_editing() {
@@ -4347,6 +4411,10 @@ TreeItem *Tree::get_edited() const {
 
 int Tree::get_edited_column() const {
 	return edited_col;
+}
+
+LineEdit *Tree::get_text_editor() const {
+	return text_editor;
 }
 
 TreeItem *Tree::get_next_selected(TreeItem *p_item) {
@@ -5258,8 +5326,16 @@ Tree::Tree() {
 	popup_menu->hide();
 	add_child(popup_menu, false, INTERNAL_MODE_FRONT);
 
-	popup_editor = memnew(Popup);
+	popup_editor = memnew(Window);
 	popup_editor->set_wrap_controls(true);
+
+	popup_editor->set_wrap_controls(true);
+	popup_editor->set_visible(false);
+	popup_editor->set_transient(true);
+	popup_editor->set_flag(Window::FLAG_BORDERLESS, true);
+	popup_editor->set_flag(Window::FLAG_RESIZE_DISABLED, true);
+	popup_editor->set_flag(Window::FLAG_POPUP, true);
+
 	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 	popup_editor_vb = memnew(VBoxContainer);
 	popup_editor->add_child(popup_editor_vb);
@@ -5288,7 +5364,7 @@ Tree::Tree() {
 	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
 	text_editor->connect("text_submitted", callable_mp(this, &Tree::_text_editor_submit));
-	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_modal_close));
+	popup_editor->connect("close_requested", callable_mp(this, &Tree::_text_editor_modal_close_requested));
 	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
 	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
 
