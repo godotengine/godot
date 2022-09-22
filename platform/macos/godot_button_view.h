@@ -41,9 +41,10 @@
 	NSPoint offset;
 	CGFloat spacing;
 	bool mouse_in_group;
+	bool rtl;
 }
 
-- (void)initButtons:(CGFloat)button_spacing offset:(NSPoint)button_offset;
+- (void)initButtons:(CGFloat)button_spacing offset:(NSPoint)button_offset rtl:(bool)is_rtl;
 - (void)displayButtons;
 
 @end

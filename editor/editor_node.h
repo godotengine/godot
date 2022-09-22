@@ -322,6 +322,9 @@ private:
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
+	Label *project_title = nullptr;
+	Control *left_menu_spacer = nullptr;
+	Control *right_menu_spacer = nullptr;
 	EditorTitleBar *menu_hb = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
@@ -397,7 +400,7 @@ private:
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
-	HBoxContainer *main_editor_button_vb = nullptr;
+	HBoxContainer *main_editor_button_hb = nullptr;
 	Vector<Button *> main_editor_buttons;
 	Vector<EditorPlugin *> editor_table;
 
@@ -560,6 +563,7 @@ private:
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();
+	void _titlebar_resized();
 	void _version_button_pressed();
 
 	int _save_external_resources();
