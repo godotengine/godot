@@ -1987,7 +1987,16 @@ String Node::get_scene_file_path() const {
 }
 
 void Node::set_editor_description(const String &p_editor_description) {
+	if (data.editor_description == p_editor_description) {
+		return;
+	}
+
 	data.editor_description = p_editor_description;
+
+	if (Engine::get_singleton()->is_editor_hint() && is_inside_tree()) {
+		// Update tree so the tooltip in the Scene tree dock is also updated in the editor.
+		get_tree()->tree_changed();
+	}
 }
 
 String Node::get_editor_description() const {
