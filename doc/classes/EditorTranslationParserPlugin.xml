@@ -11,7 +11,7 @@
 		Below shows an example of a custom parser that extracts strings from a CSV file to write into a POT.
 		[codeblocks]
 		[gdscript]
-		tool
+		@tool
 		extends EditorTranslationParserPlugin
 
 		func _parse_file(path, msgids, msgids_context_plural):
