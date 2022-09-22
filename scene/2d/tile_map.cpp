@@ -160,7 +160,7 @@ void TileMap::_update_quadrant_transform() {
 		if (navigation) {
 			nav_rel = get_relative_transform_to_parent(navigation);
 		} else {
-			nav_rel = get_transform();
+			nav_rel = get_global_transform();
 		}
 	}
 
@@ -346,7 +346,7 @@ void TileMap::update_dirty_quadrants() {
 		if (navigation) {
 			nav_rel = get_relative_transform_to_parent(navigation);
 		} else {
-			nav_rel = get_transform();
+			nav_rel = get_global_transform();
 		}
 	}
 
