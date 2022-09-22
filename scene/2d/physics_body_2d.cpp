@@ -128,14 +128,14 @@ bool PhysicsBody2D::move_and_collide(const PhysicsServer2D::MotionParameters &p_
 	return colliding;
 }
 
-bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distance, const Ref<KinematicCollision2D> &r_collision, real_t p_margin, bool p_recovery_as_collision) {
+bool PhysicsBody2D::test_move(const Transform2D &p_from, const Vector2 &p_distance, Ref<KinematicCollision2D> r_collision, real_t p_margin, bool p_recovery_as_collision) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer2D::MotionResult *r = nullptr;
 	PhysicsServer2D::MotionResult temp_result;
 	if (r_collision.is_valid()) {
-		// Needs const_cast because method bindings don't support non-const Ref.
-		r = const_cast<PhysicsServer2D::MotionResult *>(&r_collision->result);
+		r_collision->owner = this;
+		r = &r_collision->result;
 	} else {
 		r = &temp_result;
 	}
