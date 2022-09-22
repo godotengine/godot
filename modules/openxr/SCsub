@@ -96,7 +96,7 @@ env_openxr.add_source_files(module_obj, "extensions/openxr_hand_tracking_extensi
 
 env.modules_sources += module_obj
 
-if env["tools"]:
+if env.editor_build:
     SConscript("editor/SCsub")
 
 # Needed to force rebuilding the module files when the thirdparty library is updated.

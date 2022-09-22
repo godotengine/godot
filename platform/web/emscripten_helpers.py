@@ -38,7 +38,7 @@ def create_engine_file(env, target, source, externs):
 
 
 def create_template_zip(env, js, wasm, worker, side):
-    binary_name = "godot.tools" if env["tools"] else "godot"
+    binary_name = "godot.editor" if env.editor_build else "godot"
     zip_dir = env.Dir("#bin/.web_zip")
     in_files = [
         js,
@@ -58,19 +58,19 @@ def create_template_zip(env, js, wasm, worker, side):
         out_files.append(zip_dir.File(binary_name + ".side.wasm"))
 
     service_worker = "#misc/dist/html/service-worker.js"
-    if env["tools"]:
+    if env.editor_build:
         # HTML
         html = "#misc/dist/html/editor.html"
         cache = [
-            "godot.tools.html",
+            "godot.editor.html",
             "offline.html",
-            "godot.tools.js",
-            "godot.tools.worker.js",
-            "godot.tools.audio.worklet.js",
+            "godot.editor.js",
+            "godot.editor.worker.js",
+            "godot.editor.audio.worklet.js",
             "logo.svg",
             "favicon.png",
         ]
-        opt_cache = ["godot.tools.wasm"]
+        opt_cache = ["godot.editor.wasm"]
         subst_dict = {
             "@GODOT_VERSION@": get_build_version(),
             "@GODOT_NAME@": "GodotEngine",

@@ -46,7 +46,7 @@ def get_ndk_version():
 def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
-        ("tools", False),
+        ("target", "template_debug"),
     ]
 
 
@@ -114,20 +114,6 @@ def configure(env):
     env.Append(CCFLAGS=target_option)
     env.Append(LINKFLAGS=target_option)
 
-    # Build type
-
-    if env["target"].startswith("release"):
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
-            # when using `target=release_debug`.
-            opt = "-O3" if env["target"] == "release" else "-O2"
-            env.Append(CCFLAGS=[opt])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["-Oz"])
-    elif env["target"] == "debug":
-        env.Append(LINKFLAGS=["-O0"])
-        env.Append(CCFLAGS=["-O0", "-g"])
-
     # LTO
 
     if env["lto"] == "auto":  # LTO benefits for Android (size, performance) haven't been clearly established yet.
@@ -168,7 +154,7 @@ def configure(env):
     env["AS"] = compiler_path + "/clang"
 
     # Disable exceptions and rtti on non-tools (template) builds
-    if env["tools"]:
+    if env.editor_build:
         env.Append(CXXFLAGS=["-frtti"])
     elif env["builtin_icu"]:
         env.Append(CXXFLAGS=["-frtti", "-fno-exceptions"])
