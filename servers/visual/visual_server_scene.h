@@ -54,6 +54,12 @@ public:
 		MAX_EXTERIOR_PORTALS = 128,
 	};
 
+	enum ShadowMapUpdate {
+		SHADOW_MAP_UPDATE_POINT_AND_DIRECTIONAL, // Update both point and directional light shadows for this frame (default).
+		SHADOW_MAP_UPDATE_POINT, // Update point light shadows only for this frame.
+		SHADOW_MAP_UPDATE_DIRECTIONAL, // Update directional light shadows only for this frame.
+	};
+
 	uint64_t render_pass;
 	static VisualServerScene *singleton;
 
@@ -610,6 +616,7 @@ public:
 	int directional_light_count;
 	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
 	int reflection_probe_cull_count;
+	ShadowMapUpdate shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT_AND_DIRECTIONAL;
 
 	RID_Owner<Instance> instance_owner;
 

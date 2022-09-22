@@ -1778,6 +1778,9 @@
 		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/shadows/update_every_2_frames" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], directional and point light shadows are only updated every 2 frames instead of being updated every frame. Updates are staggered across frames to avoid stuttering. This improves performance at the cost of shadows updating in a more "choppy" manner, especially at lower framerates. The difference is mainly noticeable with fast-moving lights, especially when close to the camera.
+		</member>
 		<member name="rendering/quality/skinning/force_software_skinning" type="bool" setter="" getter="" default="false">
 			Forces [MeshInstance] to always perform skinning on the CPU (applies to both GLES2 and GLES3).
 			See also [member rendering/quality/skinning/software_skinning_fallback].

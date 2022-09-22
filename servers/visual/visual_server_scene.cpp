@@ -3139,8 +3139,19 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	RID *directional_light_ptr = &light_instance_cull_result[light_cull_count];
 	directional_light_count = 0;
 
-	// directional lights
-	{
+	if (bool(GLOBAL_GET("rendering/quality/shadows/update_every_2_frames"))) {
+		// Toggle between directional and point light shadow updating every frame.
+		// This update staggering avoids stuttering by splitting CPU/GPU load across frames.
+		if (shadow_map_update == ShadowMapUpdate::SHADOW_MAP_UPDATE_DIRECTIONAL) {
+			shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT;
+		} else {
+			shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_DIRECTIONAL;
+		}
+	} else {
+		shadow_map_update = ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT_AND_DIRECTIONAL;
+	}
+
+	{ // directional lights
 		Instance **lights_with_shadow = (Instance **)alloca(sizeof(Instance *) * scenario->directional_lights.size());
 		int directional_shadow_count = 0;
 
@@ -3166,17 +3177,18 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			}
 		}
 
-		VSG::scene_render->set_directional_shadow_count(directional_shadow_count);
+		if (shadow_map_update != ShadowMapUpdate::SHADOW_MAP_UPDATE_POINT) {
+			VSG::scene_render->set_directional_shadow_count(directional_shadow_count);
 
-		for (int i = 0; i < directional_shadow_count; i++) {
-			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+			for (int i = 0; i < directional_shadow_count; i++) {
+				_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+			}
 		}
 	}
 
-	{ //setup shadow maps
+	if (shadow_map_update != ShadowMapUpdate::SHADOW_MAP_UPDATE_DIRECTIONAL) {
+		// Set up point light shadow maps.
 
-		//SortArray<Instance*,_InstanceLightsort> sorter;
-		//sorter.sort(light_cull_result,light_cull_count);
 		for (int i = 0; i < light_cull_count; i++) {
 			Instance *ins = light_cull_result[i];
 
