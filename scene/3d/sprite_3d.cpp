@@ -1091,7 +1091,6 @@ void AnimatedSprite3D::set_playing(bool p_playing) {
 		return;
 	}
 	playing = p_playing;
-	_reset_timeout();
 	set_process_internal(playing);
 	notify_property_list_changed();
 }
@@ -1115,7 +1114,13 @@ void AnimatedSprite3D::play(const StringName &p_animation, bool p_backwards) {
 	set_playing(true);
 }
 
+void AnimatedSprite3D::pause() {
+	set_playing(false);
+}
+
 void AnimatedSprite3D::stop() {
+	_reset_timeout();
+	set_frame(0);
 	set_playing(false);
 }
 
@@ -1187,6 +1192,7 @@ void AnimatedSprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite3D::is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite3D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite3D::pause);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite3D::stop);
 
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite3D::set_frame);

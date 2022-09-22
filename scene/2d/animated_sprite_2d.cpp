@@ -388,7 +388,6 @@ void AnimatedSprite2D::set_playing(bool p_playing) {
 		return;
 	}
 	playing = p_playing;
-	_reset_timeout();
 	set_process_internal(playing);
 	notify_property_list_changed();
 }
@@ -412,7 +411,13 @@ void AnimatedSprite2D::play(const StringName &p_animation, bool p_backwards) {
 	set_playing(true);
 }
 
+void AnimatedSprite2D::pause() {
+	set_playing(false);
+}
+
 void AnimatedSprite2D::stop() {
+	_reset_timeout();
+	set_frame(0);
 	set_playing(false);
 }
 
@@ -486,6 +491,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite2D::pause);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
