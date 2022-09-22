@@ -3302,7 +3302,7 @@ void RendererSceneRenderRD::_render_shadow_pass(RID p_light, RID p_shadow_atlas,
 	ERR_FAIL_COND(!light_instance);
 
 	Rect2i atlas_rect;
-	uint32_t atlas_size;
+	uint32_t atlas_size = 1;
 	RID atlas_fb;
 
 	bool using_dual_paraboloid = false;
