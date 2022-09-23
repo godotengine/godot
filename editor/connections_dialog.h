@@ -114,9 +114,15 @@ private:
 	bool first_popup = true;
 	NodePath dst_path;
 	VBoxContainer *vbc_right = nullptr;
-
 	SceneTreeEditor *tree = nullptr;
 	AcceptDialog *error = nullptr;
+
+	AcceptDialog *method_popup = nullptr;
+	Tree *method_tree = nullptr;
+	LineEdit *method_search = nullptr;
+	CheckButton *script_methods_only = nullptr;
+	CheckButton *compatible_methods_only = nullptr;
+
 	SpinBox *unbind_count = nullptr;
 	EditorInspector *bind_editor = nullptr;
 	OptionButton *type_list = nullptr;
@@ -132,6 +138,14 @@ private:
 	void _item_activated();
 	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
+
+	void _method_selected();
+	void _create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item);
+	List<MethodInfo> _filter_method_list(const List<MethodInfo> &p_methods, const MethodInfo &p_signal, const String &p_search_string) const;
+	void _update_method_tree();
+	void _method_check_button_pressed(const CheckButton *p_button);
+	void _open_method_popup();
+
 	void _unbind_count_changed(double p_count);
 	void _add_bind();
 	void _remove_bind();
