@@ -12,5 +12,6 @@
 	</tutorials>
 	<members>
 		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" overrides="PlaneMesh" enum="PlaneMesh.Orientation" default="2" />
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" overrides="PlaneMesh" default="Vector2(1, 1)" />
 	</members>
 </class>

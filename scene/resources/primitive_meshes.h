@@ -271,6 +271,7 @@ class QuadMesh : public PlaneMesh {
 public:
 	QuadMesh() {
 		set_orientation(FACE_Z);
+		set_size(Size2(1, 1));
 	}
 };
 
