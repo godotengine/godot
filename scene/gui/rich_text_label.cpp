@@ -4703,7 +4703,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 			queue_redraw();
 			return true;
 		}
-		p_search_previous ? current_line-- : current_line++;
+
+		if (current_line != ending_line) {
+			p_search_previous ? current_line-- : current_line++;
+		}
 	}
 
 	if (p_from_selection && selection.active) {
