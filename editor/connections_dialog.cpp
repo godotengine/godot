@@ -166,6 +166,7 @@ void ConnectDialog::_tree_node_selected() {
 	if (!edit_mode) {
 		set_dst_method(generate_method_callback_name(source, signal, current));
 	}
+	_update_method_tree();
 	_update_ok_enabled();
 }
 
@@ -181,6 +182,11 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
 			e->set_read_only(p_count > 0);
 		}
 	}
+}
+
+void ConnectDialog::_method_selected() {
+	TreeItem *selected_item = method_tree->get_selected();
+	dst_method->set_text(selected_item->get_text(0));
 }
 
 /*
@@ -251,6 +257,142 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 	return dst_method;
 }
 
+void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item) {
+	for (const MethodInfo &mi : p_methods) {
+		TreeItem *method_item = method_tree->create_item(p_parent_item);
+		method_item->set_text(0, mi.name);
+		if (mi.return_val.type == Variant::NIL) {
+			method_item->set_icon(0, get_theme_icon(SNAME("Variant"), "EditorIcons"));
+		} else {
+			method_item->set_icon(0, get_theme_icon(Variant::get_type_name(mi.return_val.type), "EditorIcons"));
+		}
+	}
+}
+
+List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_methods, const MethodInfo &p_signal, const String &p_search_string) const {
+	bool check_signal = compatible_methods_only->is_pressed();
+	List<MethodInfo> ret;
+
+	for (const MethodInfo &mi : p_methods) {
+		if (!p_search_string.is_empty() && !mi.name.contains(p_search_string)) {
+			continue;
+		}
+
+		if (check_signal) {
+			if (mi.arguments.size() != p_signal.arguments.size()) {
+				continue;
+			}
+
+			bool type_mismatch = false;
+			const List<PropertyInfo>::Element *E = p_signal.arguments.front();
+			for (const List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next(), E = E->next()) {
+				Variant::Type stype = E->get().type;
+				Variant::Type mtype = F->get().type;
+
+				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
+					type_mismatch = true;
+					break;
+				}
+			}
+
+			if (type_mismatch) {
+				continue;
+			}
+		}
+		ret.push_back(mi);
+	}
+	return ret;
+}
+
+void ConnectDialog::_update_method_tree() {
+	method_tree->clear();
+
+	Color disabled_color = get_theme_color(SNAME("accent_color"), SNAME("Editor")) * 0.7;
+	String search_string = method_search->get_text();
+	Node *target = tree->get_selected();
+	if (!target) {
+		return;
+	}
+
+	MethodInfo signal_info;
+	if (compatible_methods_only->is_pressed()) {
+		List<MethodInfo> signals;
+		source->get_signal_list(&signals);
+		for (const MethodInfo &mi : signals) {
+			if (mi.name == signal) {
+				signal_info = mi;
+				break;
+			}
+		}
+	}
+
+	TreeItem *root_item = method_tree->create_item();
+	root_item->set_text(0, TTR("Methods"));
+	root_item->set_selectable(0, false);
+
+	// If a script is attached, get methods from it.
+	ScriptInstance *si = target->get_script_instance();
+	if (si) {
+		TreeItem *si_item = method_tree->create_item(root_item);
+		si_item->set_text(0, TTR("Attached Script"));
+		si_item->set_icon(0, get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
+		si_item->set_selectable(0, false);
+
+		List<MethodInfo> methods;
+		si->get_method_list(&methods);
+		methods = _filter_method_list(methods, signal_info, search_string);
+
+		if (methods.is_empty()) {
+			si_item->set_custom_color(0, disabled_color);
+		} else {
+			_create_method_tree_items(methods, si_item);
+		}
+	}
+
+	if (script_methods_only->is_pressed()) {
+		return;
+	}
+
+	// Get methods from each class in the heirarchy.
+	StringName current_class = target->get_class_name();
+	do {
+		TreeItem *class_item = method_tree->create_item(root_item);
+		class_item->set_text(0, current_class);
+		Ref<Texture2D> icon = get_theme_icon(SNAME("Node"), SNAME("EditorIcons"));
+		if (has_theme_icon(current_class, SNAME("EditorIcons"))) {
+			icon = get_theme_icon(current_class, SNAME("EditorIcons"));
+		}
+		class_item->set_icon(0, icon);
+		class_item->set_selectable(0, false);
+
+		List<MethodInfo> methods;
+		ClassDB::get_method_list(current_class, &methods, true);
+		methods = _filter_method_list(methods, signal_info, search_string);
+
+		if (methods.is_empty()) {
+			class_item->set_custom_color(0, disabled_color);
+		} else {
+			_create_method_tree_items(methods, class_item);
+		}
+		current_class = ClassDB::get_parent_class_nocheck(current_class);
+	} while (current_class != StringName());
+}
+
+void ConnectDialog::_method_check_button_pressed(const CheckButton *p_button) {
+	if (p_button == script_methods_only) {
+		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_script_methods_only", p_button->is_pressed());
+	} else if (p_button == compatible_methods_only) {
+		EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "show_compatible_methods_only", p_button->is_pressed());
+	}
+	_update_method_tree();
+}
+
+void ConnectDialog::_open_method_popup() {
+	method_popup->popup_centered();
+	method_search->clear();
+	method_search->grab_focus();
+}
+
 /*
  * Enables or disables the connect button. The connect button is enabled if a
  * node is selected and valid in the selected mode.
@@ -263,7 +405,7 @@ void ConnectDialog::_update_ok_enabled() {
 		return;
 	}
 
-	if (!advanced->is_pressed() && target->get_script().is_null()) {
+	if (dst_method->get_text().is_empty()) {
 		get_ok_button()->set_disabled(true);
 		return;
 	}
@@ -289,14 +431,12 @@ void ConnectDialog::_notification(int p_what) {
 				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
 				from_signal->add_theme_style_override("normal", style);
 			}
+			method_search->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
 
 void ConnectDialog::_bind_methods() {
-	ClassDB::bind_method("_cancel", &ConnectDialog::_cancel_pressed);
-	ClassDB::bind_method("_update_ok_enabled", &ConnectDialog::_update_ok_enabled);
-
 	ADD_SIGNAL(MethodInfo("connected"));
 }
 
@@ -438,7 +578,6 @@ void ConnectDialog::_advanced_pressed() {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
 
-	_update_ok_enabled();
 	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "use_advanced_connections", advanced->is_pressed());
 
 	popup_centered();
@@ -458,9 +597,18 @@ ConnectDialog::ConnectDialog() {
 	main_hb->add_child(vbc_left);
 	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
+	HBoxContainer *from_signal_hb = memnew(HBoxContainer);
+
 	from_signal = memnew(LineEdit);
 	from_signal->set_editable(false);
-	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
+	from_signal->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	from_signal_hb->add_child(from_signal);
+
+	advanced = memnew(CheckButton(TTR("Advanced")));
+	from_signal_hb->add_child(advanced);
+	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
+
+	vbc_left->add_margin_child(TTR("From Signal:"), from_signal_hb);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
@@ -476,6 +624,39 @@ ConnectDialog::ConnectDialog() {
 	error_label->set_text(TTR("Scene does not contain any script."));
 	vbc_left->add_child(error_label);
 	error_label->hide();
+
+	method_popup = memnew(AcceptDialog);
+	method_popup->set_title(TTR("Select Method"));
+	method_popup->set_min_size(Vector2(400, 600) * EDSCALE);
+	add_child(method_popup);
+
+	VBoxContainer *method_vbc = memnew(VBoxContainer);
+	method_popup->add_child(method_vbc);
+
+	method_search = memnew(LineEdit);
+	method_vbc->add_child(method_search);
+	method_search->set_placeholder(TTR("Filter Methods"));
+	method_search->set_clear_button_enabled(true);
+	method_search->connect("text_changed", callable_mp(this, &ConnectDialog::_update_method_tree).unbind(1));
+
+	method_tree = memnew(Tree);
+	method_vbc->add_child(method_tree);
+	method_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	method_tree->set_hide_root(true);
+	method_tree->connect("item_selected", callable_mp(this, &ConnectDialog::_method_selected));
+	method_tree->connect("item_activated", callable_mp((Window *)method_popup, &Window::hide));
+
+	script_methods_only = memnew(CheckButton(TTR("Script Methods Only")));
+	method_vbc->add_child(script_methods_only);
+	script_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
+	script_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_script_methods_only", true));
+	script_methods_only->connect("pressed", callable_mp(this, &ConnectDialog::_method_check_button_pressed).bind(script_methods_only));
+
+	compatible_methods_only = memnew(CheckButton(TTR("Compatible Methods Only")));
+	method_vbc->add_child(compatible_methods_only);
+	compatible_methods_only->set_h_size_flags(Control::SIZE_SHRINK_END);
+	compatible_methods_only->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "show_compatible_methods_only", true));
+	compatible_methods_only->connect("pressed", callable_mp(this, &ConnectDialog::_method_check_button_pressed).bind(compatible_methods_only));
 
 	vbc_right = memnew(VBoxContainer);
 	main_hb->add_child(vbc_right);
@@ -522,10 +703,20 @@ ConnectDialog::ConnectDialog() {
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
+	HBoxContainer *hbc_method = memnew(HBoxContainer);
+	vbc_left->add_margin_child(TTR("Receiver Method:"), hbc_method);
+
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dst_method->connect("text_changed", callable_mp(method_tree, &Tree::deselect_all).unbind(1));
 	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
-	vbc_left->add_margin_child(TTR("Receiver Method:"), dst_method);
+	hbc_method->add_child(dst_method);
+
+	Button *open_tree_button = memnew(Button);
+	open_tree_button->set_flat(false);
+	open_tree_button->set_text("...");
+	open_tree_button->connect("pressed", callable_mp(this, &ConnectDialog::_open_method_popup));
+	hbc_method->add_child(open_tree_button);
 
 	advanced = memnew(CheckButton);
 	vbc_left->add_child(advanced);
