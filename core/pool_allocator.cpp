@@ -35,8 +35,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
-#include <assert.h>
-
 #define COMPACT_CHUNK(m_entry, m_to_pos)                      \
 	do {                                                      \
 		void *_dst = &((unsigned char *)pool)[m_to_pos];      \
@@ -169,11 +167,6 @@ bool PoolAllocator::find_entry_index(EntryIndicesPos *p_map_pos, Entry *p_entry)
 
 PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	ERR_FAIL_COND_V(p_size < 1, POOL_ALLOCATOR_INVALID_ID);
-#ifdef DEBUG_ENABLED
-	if (p_size > free_mem) {
-		OS::get_singleton()->debug_break();
-	}
-#endif
 	ERR_FAIL_COND_V(p_size > free_mem, POOL_ALLOCATOR_INVALID_ID);
 
 	mt_lock();
@@ -482,7 +475,6 @@ void *PoolAllocator::get(ID p_mem) {
 		ERR_FAIL_COND_V(!e, nullptr);
 	}
 	if (e->lock == 0) {
-		//assert(0);
 		mt_unlock();
 		ERR_PRINT("e->lock == 0");
 		return nullptr;

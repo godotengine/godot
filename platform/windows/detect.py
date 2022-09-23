@@ -193,7 +193,6 @@ def configure_msvc(env, manual_msvc_config):
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
-        # Allow big objects. Only needed for debug, see MinGW branch for rationale.
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["windows_subsystem"] == "gui":

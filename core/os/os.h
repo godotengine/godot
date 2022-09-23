@@ -569,8 +569,6 @@ public:
 	virtual void enable_for_stealing_focus(ProcessID pid) {}
 	virtual void move_window_to_foreground() {}
 
-	virtual void debug_break();
-
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
