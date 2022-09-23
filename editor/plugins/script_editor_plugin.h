@@ -146,6 +146,7 @@ public:
 	virtual bool is_unsaved() = 0;
 	virtual Variant get_edit_state() = 0;
 	virtual void set_edit_state(const Variant &p_state) = 0;
+	virtual Variant get_navigation_state() = 0;
 	virtual void goto_line(int p_line, bool p_with_error = false) = 0;
 	virtual void set_executing_line(int p_line) = 0;
 	virtual void clear_executing_line() = 0;

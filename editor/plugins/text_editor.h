@@ -117,6 +117,7 @@ public:
 	virtual bool is_unsaved() override;
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
+	virtual Variant get_navigation_state() override;
 	virtual Vector<String> get_functions() override;
 	virtual PackedInt32Array get_breakpoints() override;
 	virtual void set_breakpoint(int p_line, bool p_enabled) override{};

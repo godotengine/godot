@@ -221,6 +221,10 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 	ensure_focus();
 }
 
+Variant TextEditor::get_navigation_state() {
+	return code_editor->get_navigation_state();
+}
+
 void TextEditor::trim_trailing_whitespace() {
 	code_editor->trim_trailing_whitespace();
 }
