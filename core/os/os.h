@@ -287,8 +287,6 @@ public:
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
 
-	virtual void debug_break();
-
 	virtual int get_exit_code() const;
 	// `set_exit_code` should only be used from `SceneTree` (or from a similar
 	// level, e.g. from the `Main::start` if leaving without creating a `SceneTree`).
