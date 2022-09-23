@@ -43,9 +43,9 @@ def configure(env):
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize"])
+            env.Prepend(CCFLAGS=["-O3"])
         elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize"])
+            env.Prepend(CCFLAGS=["-Os"])
         if env["arch"] != "arm64":
             env.Prepend(CCFLAGS=["-msse2"])
 
