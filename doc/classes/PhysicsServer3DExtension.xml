@@ -34,6 +34,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="_area_get_collision_layer" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_area_get_collision_mask" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_area_get_object_instance_id" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />

@@ -189,7 +189,10 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_area_get_transform, "area");
 
 	GDVIRTUAL_BIND(_area_set_collision_layer, "area", "layer");
+	GDVIRTUAL_BIND(_area_get_collision_layer, "area");
+
 	GDVIRTUAL_BIND(_area_set_collision_mask, "area", "mask");
+	GDVIRTUAL_BIND(_area_get_collision_mask, "area");
 
 	GDVIRTUAL_BIND(_area_set_monitorable, "area", "monitorable");
 	GDVIRTUAL_BIND(_area_set_pickable, "area", "pickable");
