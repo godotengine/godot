@@ -1221,7 +1221,7 @@ void OS_Windows::process_key_events() {
 					k->set_control(ke.control);
 					k->set_metakey(ke.meta);
 					k->set_pressed(true);
-					k->set_scancode(KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_scancode(KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK)));
 					k->set_physical_scancode(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24)));
 					k->set_unicode(ke.wParam);
 					if (k->get_unicode() && gr_mem) {
