@@ -33,6 +33,7 @@
 
 #include "core/math/face3.h"
 #include "core/object/object.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 
 class Geometry3D {
@@ -539,18 +540,19 @@ public:
 	struct MeshData {
 		struct Face {
 			Plane plane;
-			Vector<int> indices;
+			LocalVector<int> indices;
 		};
 
-		Vector<Face> faces;
+		LocalVector<Face> faces;
 
 		struct Edge {
-			int a, b;
+			int vertex_a, vertex_b;
+			int face_a, face_b;
 		};
 
-		Vector<Edge> edges;
+		LocalVector<Edge> edges;
 
-		Vector<Vector3> vertices;
+		LocalVector<Vector3> vertices;
 
 		void optimize_vertices();
 	};
