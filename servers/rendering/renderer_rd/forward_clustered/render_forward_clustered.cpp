@@ -479,6 +479,9 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 		if ((surf->owner->base_flags & (INSTANCE_DATA_FLAG_MULTIMESH | INSTANCE_DATA_FLAG_PARTICLES)) == INSTANCE_DATA_FLAG_MULTIMESH) {
 			mesh_storage->_multimesh_get_motion_vectors_offsets(surf->owner->data->base, push_constant.multimesh_motion_vectors_current_offset, push_constant.multimesh_motion_vectors_previous_offset);
+		} else {
+			push_constant.multimesh_motion_vectors_current_offset = 0;
+			push_constant.multimesh_motion_vectors_previous_offset = 0;
 		}
 
 		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(SceneState::PushConstant));
