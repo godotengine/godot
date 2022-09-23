@@ -32,6 +32,7 @@
 
 #include "display_server_macos.h"
 #include "godot_button_view.h"
+#include "godot_window.h"
 
 @implementation GodotWindowDelegate
 
@@ -69,6 +70,26 @@
 	ds->window_destroy(window_id);
 }
 
+- (NSArray<NSWindow *> *)customWindowsToEnterFullScreenForWindow:(NSWindow *)window {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return nullptr;
+	}
+
+	old_frame = [window frame];
+	old_style_mask = [window styleMask];
+
+	NSMutableArray<NSWindow *> *windows = [[NSMutableArray alloc] init];
+	[windows addObject:window];
+
+	return windows;
+}
+
+- (void)window:(NSWindow *)window startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
+	[(GodotWindow *)window setAnimDuration:duration];
+	[window setFrame:[[window screen] frame] display:YES animate:YES];
+}
+
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
@@ -81,6 +102,7 @@
 	// Reset window size limits.
 	[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 	[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
 
 	// Reset custom window buttons.
 	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
@@ -89,6 +111,33 @@
 
 	// Force window resize event.
 	[self windowDidResize:notification];
+	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+}
+
+- (NSArray<NSWindow *> *)customWindowsToExitFullScreenForWindow:(NSWindow *)window {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return nullptr;
+	}
+
+	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+
+	// Restore custom window buttons.
+	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
+		ds->window_set_custom_window_buttons(wd, true);
+	}
+
+	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+
+	NSMutableArray<NSWindow *> *windows = [[NSMutableArray alloc] init];
+	[windows addObject:wd.window_object];
+	return windows;
+}
+
+- (void)window:(NSWindow *)window startCustomAnimationToExitFullScreenWithDuration:(NSTimeInterval)duration {
+	[(GodotWindow *)window setAnimDuration:duration];
+	[window setStyleMask:old_style_mask];
+	[window setFrame:old_frame display:YES animate:YES];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -100,6 +149,8 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fullscreen = false;
 
+	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
+
 	// Set window size limits.
 	const float scale = ds->screen_get_max_scale();
 	if (wd.min_size != Size2i()) {
@@ -109,11 +160,6 @@
 	if (wd.max_size != Size2i()) {
 		Size2i size = wd.max_size / scale;
 		[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
-	}
-
-	// Restore custom window buttons.
-	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
-		ds->window_set_custom_window_buttons(wd, true);
 	}
 
 	// Restore resizability state.
