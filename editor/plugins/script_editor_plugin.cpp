@@ -3595,8 +3595,9 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 		return true;
 	}
 
-	if (Object::cast_to<Script>(p_object)) {
-		return true;
+	Script *script = Object::cast_to<Script>(p_object);
+	if (script) {
+		return script->get_language() != nullptr; // Could be a PluginScript with no language attached.
 	}
 
 	return p_object->is_class("Script");
