@@ -103,9 +103,9 @@ env_oidn.Append(
         "__STDC_LIMIT_MACROS",
         "DISABLE_VERBOSE",
         "MKLDNN_ENABLE_CONCURRENT_EXEC",
-        "NDEBUG",
     ]
 )
+env_oidn.AppendUnique(CPPDEFINES=["NDEBUG"])  # No assert() even in debug builds.
 
 env_thirdparty = env_oidn.Clone()
 env_thirdparty.disable_warnings()

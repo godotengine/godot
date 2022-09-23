@@ -49,7 +49,7 @@ def configure(env):
     ## Build type
 
     if env["target"].startswith("release"):
-        env.Append(CPPDEFINES=["NDEBUG", ("NS_BLOCK_ASSERTIONS", 1)])
+        env.Append(CPPDEFINES=[("NS_BLOCK_ASSERTIONS", 1)])
         if env["optimize"] == "speed":  # optimize for speed (default)
             # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
             # when using `target=release_debug`.
@@ -61,8 +61,7 @@ def configure(env):
             env.Append(LINKFLAGS=["-Os"])
 
     elif env["target"] == "debug":
-        env.Append(CCFLAGS=["-gdwarf-2", "-O0"])
-        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1)])
+        env.Append(CCFLAGS=["-g", "-O0"])
 
     ## LTO
 

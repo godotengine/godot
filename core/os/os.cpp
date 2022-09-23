@@ -90,10 +90,6 @@ uint64_t OS::get_system_time_msecs() const {
 double OS::get_subsecond_unix_time() const {
 	return 0.0;
 }
-void OS::debug_break(){
-
-	// something
-};
 
 void OS::_set_logger(CompositeLogger *p_logger) {
 	if (_logger) {
