@@ -51,7 +51,6 @@
 #include <sys/sysctl.h>
 #endif
 
-#include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
@@ -103,10 +102,6 @@ static void _setup_clock() {
 	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
 }
 #endif
-
-void OS_Unix::debug_break() {
-	assert(false);
-}
 
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {

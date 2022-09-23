@@ -86,7 +86,6 @@ public:
 
 	virtual int get_processor_count() const override;
 
-	virtual void debug_break() override;
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
