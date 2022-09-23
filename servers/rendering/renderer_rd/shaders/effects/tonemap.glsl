@@ -462,12 +462,6 @@ void main() {
 	}
 #endif
 
-	if (params.use_debanding) {
-		// For best results, debanding should be done before tonemapping.
-		// Otherwise, we're adding noise to an already-quantized image.
-		color.rgb += screen_space_dither(gl_FragCoord.xy);
-	}
-
 	color.rgb = apply_tonemapping(color.rgb, params.white);
 
 	color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
@@ -496,6 +490,12 @@ void main() {
 
 	if (params.use_color_correction) {
 		color.rgb = apply_color_correction(color.rgb);
+	}
+
+	if (params.use_debanding) {
+		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
+		// Otherwise, we're adding noise to an already-quantized image.
+		color.rgb += screen_space_dither(gl_FragCoord.xy);
 	}
 
 	frag_color = color;
