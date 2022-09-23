@@ -215,7 +215,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				String name = t == Variant::VARIANT_MAX ? String("Variant") : Variant::get_type_name(t);
 				Dictionary d2;
 				d2["name"] = name;
-				uint32_t size;
+				uint32_t size = 0;
 				switch (i) {
 					case 0:
 						size = type_size_array[j].size_32_bits_real_float;
@@ -330,7 +330,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					last_type = t;
 				}
 				Dictionary d3;
-				uint32_t offset;
+				uint32_t offset = 0;
 				switch (i) {
 					case 0:
 						offset = member_offset_array[idx].offset_32_bits_real_float;

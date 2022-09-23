@@ -763,7 +763,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	TreeItem *root = class_list->create_item();
 
 	TreeItem *features = class_list->create_item(root);
-	TreeItem *last_feature;
+	TreeItem *last_feature = nullptr;
 	features->set_text(0, TTR("Main Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
 		TreeItem *feature;

@@ -743,7 +743,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 	r_attrib_element_size = 0;
 	r_skin_element_size = 0;
 
-	uint32_t *size_accum;
+	uint32_t *size_accum = nullptr;
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; // Reset
@@ -847,8 +847,12 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 			}
 		}
 
-		r_offsets[i] = (*size_accum);
-		(*size_accum) += elem_size;
+		if (size_accum != nullptr) {
+			r_offsets[i] = (*size_accum);
+			(*size_accum) += elem_size;
+		} else {
+			r_offsets[i] = 0;
+		}
 	}
 }
 
