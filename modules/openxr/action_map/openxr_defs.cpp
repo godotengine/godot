@@ -62,6 +62,8 @@ OpenXRDefs::IOPath OpenXRDefs::simple_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -78,6 +80,8 @@ OpenXRDefs::IOPath OpenXRDefs::vive_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -109,6 +113,8 @@ OpenXRDefs::IOPath OpenXRDefs::motion_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -143,6 +149,8 @@ OpenXRDefs::IOPath OpenXRDefs::hpmr_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -175,6 +183,8 @@ OpenXRDefs::IOPath OpenXRDefs::touch_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -213,6 +223,8 @@ OpenXRDefs::IOPath OpenXRDefs::index_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -260,6 +272,8 @@ OpenXRDefs::IOPath OpenXRDefs::odyssey_io_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -294,6 +308,8 @@ OpenXRDefs::IOPath OpenXRDefs::vive_cosmos_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -331,6 +347,8 @@ OpenXRDefs::IOPath OpenXRDefs::vive_focus3_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Menu click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/menu/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "System click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/system/click", OpenXRAction::OPENXR_ACTION_BOOL },
@@ -371,6 +389,8 @@ OpenXRDefs::IOPath OpenXRDefs::huawei_controller_paths[] = {
 	{ "Grip pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/grip/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
 	{ "Aim pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/aim/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
+	{ "Palm pose", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/palm_ext/pose", OpenXRAction::OPENXR_ACTION_POSE },
 
 	{ "Home click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_LEFT_HAND], "/user/hand/left/input/home/click", OpenXRAction::OPENXR_ACTION_BOOL },
 	{ "Home click", &OpenXRDefs::available_top_level_paths[OpenXRDefs::OPENXR_RIGHT_HAND], "/user/hand/right/input/home/click", OpenXRAction::OPENXR_ACTION_BOOL },

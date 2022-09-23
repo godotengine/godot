@@ -81,6 +81,8 @@ private:
 	bool ext_vive_focus3_available = false;
 	bool ext_huawei_controller_available = false;
 
+	bool is_path_supported(const String &p_path);
+
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
 
