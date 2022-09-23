@@ -492,6 +492,7 @@ PackedStringArray DirAccess::get_files() {
 
 PackedStringArray DirAccess::get_files_at(const String &p_path) {
 	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V_MSG(da.is_null(), PackedStringArray(), vformat("Couldn't open directory at path \"%s\".", p_path));
 	return da->get_files();
 }
 
@@ -501,6 +502,7 @@ PackedStringArray DirAccess::get_directories() {
 
 PackedStringArray DirAccess::get_directories_at(const String &p_path) {
 	Ref<DirAccess> da = DirAccess::open(p_path);
+	ERR_FAIL_COND_V_MSG(da.is_null(), PackedStringArray(), vformat("Couldn't open directory at path \"%s\".", p_path));
 	return da->get_directories();
 }
 
