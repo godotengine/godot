@@ -2190,6 +2190,11 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 		editor_data->get_undo_redo()->add_undo_method(p_parent, "remove_child", child);
 
 		String new_name = p_parent->validate_child_name(child);
+
+		if (GLOBAL_GET("editor/node_naming/name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			new_name = adjust_name_casing(new_name);
+		}
+		child->set_name(new_name);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 		editor_data->get_undo_redo()->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class(), new_name);
 		editor_data->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
