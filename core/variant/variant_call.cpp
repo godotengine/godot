@@ -1930,7 +1930,7 @@ static void _register_variant_builtin_methods() {
 	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "angle"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
-	bind_method(Basis, get_euler, sarray("order"), varray(Basis::EULER_ORDER_YXZ));
+	bind_method(Basis, get_euler, sarray("order"), varray((int64_t)Basis::EULER_ORDER_YXZ));
 	bind_method(Basis, tdotx, sarray("with"), varray());
 	bind_method(Basis, tdoty, sarray("with"), varray());
 	bind_method(Basis, tdotz, sarray("with"), varray());
@@ -1940,7 +1940,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
-	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray(Basis::EULER_ORDER_YXZ));
+	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray((int64_t)Basis::EULER_ORDER_YXZ));
 
 	/* AABB */
 

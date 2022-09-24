@@ -192,7 +192,7 @@ TEST_CASE("[Quaternion] Construct Basis Euler") {
 	double roll = Math::deg_to_rad(10.0);
 	Vector3 euler_yxz(pitch, yaw, roll);
 	Quaternion q_yxz(euler_yxz);
-	Basis basis_axes(euler_yxz);
+	Basis basis_axes = Basis::from_euler(euler_yxz);
 	Quaternion q(basis_axes);
 	CHECK(q.is_equal_approx(q_yxz));
 }
@@ -218,7 +218,7 @@ TEST_CASE("[Quaternion] Construct Basis Axes") {
 	// This is by design, but may be subject to change.
 	// Workaround by constructing Basis from Euler angles.
 	// basis_axes = Basis(i_unit, j_unit, k_unit);
-	Basis basis_axes(euler_yxz);
+	Basis basis_axes = Basis::from_euler(euler_yxz);
 	Quaternion q(basis_axes);
 
 	CHECK(basis_axes.get_column(0).is_equal_approx(i_unit));
@@ -334,7 +334,7 @@ TEST_CASE("[Quaternion] xform unit vectors") {
 TEST_CASE("[Quaternion] xform vector") {
 	// Arbitrary quaternion rotates an arbitrary vector.
 	Vector3 euler_yzx(Math::deg_to_rad(31.41), Math::deg_to_rad(-49.16), Math::deg_to_rad(12.34));
-	Basis basis_axes(euler_yzx);
+	Basis basis_axes = Basis::from_euler(euler_yzx);
 	Quaternion q(basis_axes);
 
 	Vector3 v_arb(3.0, 4.0, 5.0);
@@ -347,7 +347,7 @@ TEST_CASE("[Quaternion] xform vector") {
 
 // Test vector xform for a single combination of Quaternion and Vector.
 void test_quat_vec_rotate(Vector3 euler_yzx, Vector3 v_in) {
-	Basis basis_axes(euler_yzx);
+	Basis basis_axes = Basis::from_euler(euler_yzx);
 	Quaternion q(basis_axes);
 
 	Vector3 v_rot = q.xform(v_in);

@@ -2986,7 +2986,7 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 				Transform3D xform;
 				if (orthogonal) {
 					xform = sp->get_global_transform();
-					xform.basis.set_euler(camera_transform.basis.get_euler());
+					xform.basis = Basis::from_euler(camera_transform.basis.get_euler());
 				} else {
 					xform = camera_transform;
 					xform.scale_basis(sp->get_scale());
@@ -7615,7 +7615,7 @@ void Node3DEditor::_preview_settings_changed() {
 
 	{ // preview sun
 		Transform3D t;
-		t.basis = Basis(Vector3(sun_rotation.x, sun_rotation.y, 0));
+		t.basis = Basis::from_euler(Vector3(sun_rotation.x, sun_rotation.y, 0));
 		preview_sun->set_transform(t);
 		sun_direction->queue_redraw();
 		preview_sun->set_param(Light3D::PARAM_ENERGY, sun_energy->get_value());
