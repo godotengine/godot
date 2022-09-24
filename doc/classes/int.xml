@@ -206,13 +206,6 @@
 			</description>
 		</operator>
 		<operator name="operator +">
-			<return type="String" />
-			<param index="0" name="right" type="String" />
-			<description>
-				Adds Unicode character with code [int] to the [String].
-			</description>
-		</operator>
-		<operator name="operator +">
 			<return type="float" />
 			<param index="0" name="right" type="float" />
 			<description>
