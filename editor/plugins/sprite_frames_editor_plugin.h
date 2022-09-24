@@ -61,11 +61,11 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
-	Button *_delete = nullptr;
+	Button *delete_frame = nullptr;
 	Button *copy = nullptr;
 	Button *paste = nullptr;
-	Button *empty = nullptr;
-	Button *empty2 = nullptr;
+	Button *empty_before = nullptr;
+	Button *empty_after = nullptr;
 	Button *move_up = nullptr;
 	Button *move_down = nullptr;
 	Button *zoom_out = nullptr;
@@ -75,8 +75,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	bool loading_scene;
 	int sel;
 
-	Button *new_anim = nullptr;
-	Button *remove_anim = nullptr;
+	Button *add_anim = nullptr;
+	Button *delete_anim = nullptr;
 	LineEdit *anim_search_box = nullptr;
 
 	Tree *animations = nullptr;
