@@ -79,6 +79,7 @@ struct _NO_DISCARD_ Vector4i {
 	_FORCE_INLINE_ Vector4i abs() const;
 	_FORCE_INLINE_ Vector4i sign() const;
 	Vector4i clamp(const Vector4i &p_min, const Vector4i &p_max) const;
+	Vector4i snapped(const Vector4i &p_step) const;
 
 	/* Operators */
 

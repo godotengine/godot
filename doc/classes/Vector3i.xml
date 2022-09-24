@@ -87,7 +87,14 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector3i" />
 			<description>
-				Returns the vector with each component set to one or negative one, depending on the signs of the components.
+				Returns a new vector with each component set to [code]1[/code] if it's positive, [code]-1[/code] if it's negative, and [code]0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
+			</description>
+		</method>
+		<method name="snapped" qualifiers="const">
+			<return type="Vector3i" />
+			<param index="0" name="step" type="Vector3i" />
+			<description>
+				Returns a new vector with each component snapped to the closest multiple of the corresponding component in [param step].
 			</description>
 		</method>
 	</methods>

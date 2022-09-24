@@ -131,12 +131,16 @@ TEST_CASE("[Vector2i] Other methods") {
 			"Vector2i aspect should work as expected.");
 
 	CHECK_MESSAGE(
-			Vector2i(1, 2) == vector.min(Vector2i(3, 2)),
+			vector.min(Vector2i(3, 2)) == Vector2i(1, 2),
 			"Vector2i min should return expected value.");
 
 	CHECK_MESSAGE(
-			Vector2i(5, 3) == vector.max(Vector2i(5, 2)),
+			vector.max(Vector2i(5, 2)) == Vector2i(5, 3),
 			"Vector2i max should return expected value.");
+
+	CHECK_MESSAGE(
+			vector.snapped(Vector2i(4, 2)) == Vector2i(0, 4),
+			"Vector2i snapped should work as expected.");
 }
 
 TEST_CASE("[Vector2i] Abs and sign methods") {

@@ -127,6 +127,14 @@ TEST_CASE("[Vector3i] Operators") {
 			"Vector3i constructed from Vector3 should work as expected.");
 }
 
+TEST_CASE("[Vector3i] Other methods") {
+	const Vector3i vector = Vector3i(1, 3, -7);
+
+	CHECK_MESSAGE(
+			vector.snapped(Vector3i(4, 2, 5)) == Vector3i(0, 4, -5),
+			"Vector3i snapped should work as expected.");
+}
+
 TEST_CASE("[Vector3i] Abs and sign methods") {
 	const Vector3i vector1 = Vector3i(1, 3, 5);
 	const Vector3i vector2 = Vector3i(1, -3, -5);
