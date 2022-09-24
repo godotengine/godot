@@ -406,6 +406,27 @@ _passthrough (hb_subset_plan_t *plan, hb_tag_t tag)
 }
 
 static bool
+_dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
+                         hb_set_t &visited_set, hb_set_t &revisit_set)
+{
+  switch (tag)
+  {
+  case HB_OT_TAG_hmtx:
+  case HB_OT_TAG_vmtx:
+    if (!plan->pinned_at_default &&
+        !visited_set.has (HB_OT_TAG_glyf))
+    {
+      revisit_set.add (tag);
+      return false;
+    }
+    return true;
+
+  default:
+    return true;
+  }
+}
+
+static bool
 _subset_table (hb_subset_plan_t *plan,
 	       hb_vector_t<char> &buf,
 	       hb_tag_t tag)
@@ -514,7 +535,7 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
     return nullptr;
   }
 
-  hb_set_t tags_set;
+  hb_set_t tags_set, revisit_set;
   bool success = true;
   hb_tag_t table_tags[32];
   unsigned offset = 0, num_tables = ARRAY_LENGTH (table_tags);
@@ -527,9 +548,26 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
     {
       hb_tag_t tag = table_tags[i];
       if (_should_drop_table (plan, tag) && !tags_set.has (tag)) continue;
+      if (!_dependencies_satisfied (plan, tag, tags_set, revisit_set)) continue;
       tags_set.add (tag);
       success = _subset_table (plan, buf, tag);
       if (unlikely (!success)) goto end;
+    }
+
+    /*delayed subsetting for some tables since they might have dependency on other tables in some cases:
+    e.g: during instantiating glyf tables, hmetrics/vmetrics are updated and saved in subset plan,
+    hmtx/vmtx subsetting need to use these updated metrics values*/
+    while (!revisit_set.is_empty ())
+    {
+      hb_set_t revisit_temp;
+      for (hb_tag_t tag : revisit_set)
+      {
+        if (!_dependencies_satisfied (plan, tag, tags_set, revisit_temp)) continue;
+        tags_set.add (tag);
+        success = _subset_table (plan, buf, tag);
+        if (unlikely (!success)) goto end;
+      }
+      revisit_set = revisit_temp;
     }
     offset += num_tables;
   }

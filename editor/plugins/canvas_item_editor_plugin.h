@@ -618,8 +618,6 @@ class CanvasItemEditorViewport : public Control {
 	void _show_resource_type_selector();
 	void _update_theme();
 
-	static void _bind_methods();
-
 protected:
 	void _notification(int p_what);
 

@@ -46,6 +46,9 @@ static String get_type_name(const PropertyInfo &p_info) {
 			return p_info.hint_string + "*";
 		}
 	}
+	if (p_info.type == Variant::ARRAY && (p_info.hint == PROPERTY_HINT_ARRAY_TYPE)) {
+		return String("typedarray::") + p_info.hint_string;
+	}
 	if (p_info.type == Variant::INT && (p_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM))) {
 		return String("enum::") + String(p_info.class_name);
 	}
@@ -215,7 +218,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				String name = t == Variant::VARIANT_MAX ? String("Variant") : Variant::get_type_name(t);
 				Dictionary d2;
 				d2["name"] = name;
-				uint32_t size;
+				uint32_t size = 0;
 				switch (i) {
 					case 0:
 						size = type_size_array[j].size_32_bits_real_float;
@@ -330,7 +333,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					last_type = t;
 				}
 				Dictionary d3;
-				uint32_t offset;
+				uint32_t offset = 0;
 				switch (i) {
 					case 0:
 						offset = member_offset_array[idx].offset_32_bits_real_float;
@@ -462,7 +465,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				d["indexing_return_type"] = index_type == Variant::NIL ? String("Variant") : Variant::get_type_name(index_type);
 			}
 
-			d["is_keyed"] = Variant::ValidatedKeyedSetter(type);
+			d["is_keyed"] = Variant::is_keyed(type);
 
 			{
 				//members

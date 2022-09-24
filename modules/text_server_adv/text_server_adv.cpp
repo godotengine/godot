@@ -45,15 +45,12 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/config/project_settings.h"
-#include "core/core_bind.h"
 #include "core/error/error_macros.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen.
-
-using namespace core_bind;
 
 #endif
 
@@ -408,13 +405,12 @@ bool TextServerAdvanced::load_support_data(const String &p_filename) {
 	if (!icu_data_loaded) {
 		String filename = (p_filename.is_empty()) ? String("res://") + _MKSTR(ICU_DATA_NAME) : p_filename;
 
-		Ref<File> f;
-		f.instantiate();
-		if (f->open(filename, File::READ) != OK) {
+		Ref<FileAccess> f = FileAccess::open(filename, FileAccess::READ);
+		if (f.is_null()) {
 			return false;
 		}
 		uint64_t len = f->get_length();
-		PackedByteArray icu_data = f->get_buffer(len);
+		PackedByteArray icu_data = f->_get_buffer(len);
 
 		UErrorCode err = U_ZERO_ERROR;
 		udata_setCommonData(icu_data.ptr(), &err);
@@ -455,16 +451,15 @@ bool TextServerAdvanced::save_support_data(const String &p_filename) const {
 
 	// Store data to the res file if it's available.
 
-	Ref<File> f;
-	f.instantiate();
-	if (f->open(p_filename, File::WRITE) != OK) {
+	Ref<FileAccess> f = FileAccess::open(p_filename, FileAccess::WRITE);
+	if (f.is_null()) {
 		return false;
 	}
 
 	PackedByteArray icu_data;
 	icu_data.resize(U_ICUDATA_SIZE);
 	memcpy(icu_data.ptrw(), U_ICUDATA_ENTRY_POINT, U_ICUDATA_SIZE);
-	f->store_buffer(icu_data);
+	f->_store_buffer(icu_data);
 
 	return true;
 #else
@@ -1940,12 +1935,12 @@ int64_t TextServerAdvanced::font_get_face_count(const RID &p_font_rid) const {
 		fargs.flags = FT_OPEN_MEMORY;
 		fargs.stream = &stream;
 
-		FT_Face tmp_face;
+		FT_Face tmp_face = nullptr;
 		error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
 		if (error == 0) {
 			face_count = tmp_face->num_faces;
+			FT_Done_Face(tmp_face);
 		}
-		FT_Done_Face(tmp_face);
 #endif
 	}
 
@@ -3070,8 +3065,10 @@ int64_t TextServerAdvanced::font_get_glyph_index(const RID &p_font_rid, int64_t 
 
 bool TextServerAdvanced::font_has_char(const RID &p_font_rid, int64_t p_char) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
-	ERR_FAIL_COND_V(!fd, false);
 	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), false, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");
+	if (!fd) {
+		return false;
+	}
 
 	MutexLock lock(fd->mutex);
 	if (fd->cache.is_empty()) {
@@ -4500,35 +4497,40 @@ void TextServerAdvanced::shaped_text_overrun_trim_to_width(const RID &p_shaped_l
 	int glyphs_to = (is_rtl) ? sd_size - 1 : -1;
 	int glyphs_delta = (is_rtl) ? +1 : -1;
 
-	for (int i = glyphs_from; i != glyphs_to; i += glyphs_delta) {
-		if (!is_rtl) {
-			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
-		}
-		if (sd_glyphs[i].count > 0) {
-			bool above_min_char_threshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
+	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
+		trim_pos = -1;
+		ellipsis_pos = (is_rtl) ? 0 : sd_size;
+	} else {
+		for (int i = glyphs_from; i != glyphs_to; i += glyphs_delta) {
+			if (!is_rtl) {
+				width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
+			}
+			if (sd_glyphs[i].count > 0) {
+				bool above_min_char_threshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
 
-			if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
-				if (cut_per_word && above_min_char_threshold) {
-					if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
+					if (cut_per_word && above_min_char_threshold) {
+						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+							last_valid_cut = i;
+							found = true;
+						}
+					} else {
 						last_valid_cut = i;
 						found = true;
 					}
-				} else {
-					last_valid_cut = i;
-					found = true;
-				}
-				if (found) {
-					trim_pos = last_valid_cut;
+					if (found) {
+						trim_pos = last_valid_cut;
 
-					if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
-						ellipsis_pos = trim_pos;
+						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
+							ellipsis_pos = trim_pos;
+						}
+						break;
 					}
-					break;
 				}
 			}
-		}
-		if (is_rtl) {
-			width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
+			if (is_rtl) {
+				width -= sd_glyphs[i].advance * sd_glyphs[i].repeat;
+			}
 		}
 	}
 
@@ -5849,9 +5851,9 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 	return "%";
 }
 
-int TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+int64_t TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
 	UErrorCode status = U_ZERO_ERROR;
-	int match_index = -1;
+	int64_t match_index = -1;
 
 	Char16String utf16 = p_string.utf16();
 	Vector<UChar *> skeletons;

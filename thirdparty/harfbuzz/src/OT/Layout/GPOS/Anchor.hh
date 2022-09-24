@@ -58,8 +58,7 @@ struct Anchor
         return_trace (bool (reinterpret_cast<Anchor *> (u.format1.copy (c->serializer))));
       }
       return_trace (bool (reinterpret_cast<Anchor *> (u.format2.copy (c->serializer))));
-    case 3: return_trace (bool (reinterpret_cast<Anchor *> (u.format3.copy (c->serializer,
-                                                                            c->plan->layout_variation_idx_map))));
+    case 3: return_trace (u.format3.subset (c));
     default:return_trace (false);
     }
   }

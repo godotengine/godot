@@ -743,7 +743,7 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 	r_attrib_element_size = 0;
 	r_skin_element_size = 0;
 
-	uint32_t *size_accum;
+	uint32_t *size_accum = nullptr;
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; // Reset
@@ -847,8 +847,12 @@ void RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_format, i
 			}
 		}
 
-		r_offsets[i] = (*size_accum);
-		(*size_accum) += elem_size;
+		if (size_accum != nullptr) {
+			r_offsets[i] = (*size_accum);
+			(*size_accum) += elem_size;
+		} else {
+			r_offsets[i] = 0;
+		}
 	}
 }
 
@@ -2863,18 +2867,12 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end", 0);
-	GLOBAL_DEF_RST_BASIC("rendering/vulkan/rendering/back_end.mobile", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/vulkan/rendering/back_end",
-			PropertyInfo(Variant::INT,
-					"rendering/vulkan/rendering/back_end",
-					PROPERTY_HINT_ENUM, "Forward Clustered (Supports Desktop Only),Forward Mobile (Supports Desktop and Mobile)"));
 	// Already defined in RenderingDeviceVulkan::initialize which runs before this code.
 	// We re-define them here just for doctool's sake. Make sure to keep default values in sync.
-	GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
-	GLOBAL_DEF("rendering/vulkan/staging_buffer/max_size_mb", 128);
-	GLOBAL_DEF("rendering/vulkan/staging_buffer/texture_upload_region_size_px", 64);
-	GLOBAL_DEF("rendering/vulkan/descriptor_pools/max_descriptors_per_pool", 64);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
+	GLOBAL_DEF("rendering/rendering_device/descriptor_pools/max_descriptors_per_pool", 64);
 
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/enabled", true);
 	GLOBAL_DEF("rendering/shader_compiler/shader_cache/compress", true);

@@ -38,6 +38,7 @@ const int ERROR_CODE = 77;
 
 #include "modules/regex/regex.h"
 
+#include "core/io/dir_access.h"
 #include "core/os/time.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
@@ -418,6 +419,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "is_normalmap", "is_normal_map" }, // NoiseTexture
 	{ "is_refusing_new_network_connections", "is_refusing_new_connections" }, // Multiplayer API
 	{ "is_region", "is_region_enabled" }, // Sprite2D
+	{ "is_rotating", "is_ignoring_rotation" }, // Camera2D
 	{ "is_scancode_unicode", "is_keycode_unicode" }, // OS
 	{ "is_selectable_when_hidden", "_is_selectable_when_hidden" }, // EditorNode3DGizmoPlugin
 	{ "is_set_as_toplevel", "is_set_as_top_level" }, // CanvasItem
@@ -840,6 +842,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "IsNormalmap", "IsNormalMap" }, // NoiseTexture
 	{ "IsRefusingNewNetworkConnections", "IsRefusingNewConnections" }, // Multiplayer API
 	{ "IsRegion", "IsRegionEnabled" }, // Sprite2D
+	{ "IsRotating", "IsIgnoringRotation" }, // Camera2D
 	{ "IsScancodeUnicode", "IsKeycodeUnicode" }, // OS
 	{ "IsSelectableWhenHidden", "_IsSelectableWhenHidden" }, // EditorNode3DGizmoPlugin
 	{ "IsSetAsToplevel", "IsSetAsTopLevel" }, // CanvasItem
@@ -2229,22 +2232,23 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 	Vector<String> directories_to_check = Vector<String>();
 	directories_to_check.push_back("res://");
 
-	core_bind::Directory dir = core_bind::Directory();
 	while (!directories_to_check.is_empty()) {
 		String path = directories_to_check.get(directories_to_check.size() - 1); // Is there any pop_back function?
-		directories_to_check.resize(directories_to_check.size() - 1); // Remove last element.
-		if (dir.open(path) == OK) {
-			dir.set_include_hidden(true);
-			dir.list_dir_begin();
-			String current_dir = dir.get_current_dir();
-			String file_name = dir.get_next();
+		directories_to_check.resize(directories_to_check.size() - 1); // Remove last element
+
+		Ref<DirAccess> dir = DirAccess::create_for_path(path);
+		if (dir.is_valid()) {
+			dir->set_include_hidden(true);
+			dir->list_dir_begin();
+			String current_dir = dir->get_current_dir();
+			String file_name = dir->_get_next();
 
 			while (file_name != "") {
 				if (file_name == ".git" || file_name == ".import" || file_name == ".godot") {
-					file_name = dir.get_next();
+					file_name = dir->_get_next();
 					continue;
 				}
-				if (dir.current_is_dir()) {
+				if (dir->current_is_dir()) {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
@@ -2255,7 +2259,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 						collected_files.append(current_dir.path_join(file_name));
 					}
 				}
-				file_name = dir.get_next();
+				file_name = dir->_get_next();
 			}
 		} else {
 			print_verbose("Failed to open " + path);
@@ -2331,8 +2335,7 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("[Master]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
 	valid = valid && test_conversion_with_regex("[MasterSync]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC(CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
 
-	valid = valid && test_conversion_gdscript_builtin("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\"display/window/size/fullscreen\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("OS.window_fullscreen = Settings.fullscreen", "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", Settings.fullscreen)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, true);
+	valid = valid && test_conversion_gdscript_builtin("OS.window_fullscreen = Settings.fullscreen", "if Settings.fullscreen:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)\nelse:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("OS.get_window_safe_area()", "DisplayServer.get_display_safe_area()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -3090,13 +3093,9 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		line = reg_container.reg_setget_get.sub(line, "var $1$2:\n\tget:\n\t\treturn $1 # TODOConverter40 Copy here content of $3 \n\tset(mod_value):\n\t\tmod_value  # TODOConverter40  Non existent set function", true);
 	}
 
-	// OS.window_fullscreen = true -> ProjectSettings.set("display/window/size/fullscreen",true)
+	// OS.window_fullscreen = a -> if a: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN) else: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	if (line.contains("window_fullscreen")) {
-		if (builtin) {
-			line = reg_container.reg_os_fullscreen.sub(line, "ProjectSettings.set(\\\"display/window/size/fullscreen\\\", $1)", true);
-		} else {
-			line = reg_container.reg_os_fullscreen.sub(line, "ProjectSettings.set(\"display/window/size/fullscreen\", $1)", true);
-		}
+		line = reg_container.reg_os_fullscreen.sub(line, "if $1:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)\nelse:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)", true);
 	}
 
 	// Instantiate
@@ -3490,6 +3489,20 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 			}
 		}
 	}
+
+	//  set_rotating(true)  ->   set_ignore_rotation(false)
+	if (line.contains("set_rotating(")) {
+		int start = line.find("set_rotating(");
+		int end = get_end_parenthesis(line.substr(start)) + 1;
+		if (end > -1) {
+			Vector<String> parts = parse_arguments(line.substr(start, end));
+			if (parts.size() == 1) {
+				String opposite = parts[0] == "true" ? "false" : "true";
+				line = line.substr(0, start) + "set_ignore_rotation(" + opposite + ")";
+			}
+		}
+	}
+
 	//  OS.get_window_safe_area()  ->   DisplayServer.get_display_safe_area()
 	if (line.contains("OS.get_window_safe_area(")) {
 		int start = line.find("OS.get_window_safe_area(");
@@ -3534,6 +3547,29 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		}
 		if (foundNextEqual) {
 			line = line.substr(0, start) + ".button_pressed" + line.substr(start + String(".pressed").length());
+		}
+	}
+
+	// rotating = true  ->   ignore_rotation = false # reversed "rotating" for Camera2D
+	if (line.contains("rotating")) {
+		int start = line.find("rotating");
+		bool foundNextEqual = false;
+		String line_to_check = line.substr(start + String("rotating").length());
+		String assigned_value;
+		for (int current_index = 0; line_to_check.length() > current_index; current_index++) {
+			char32_t chr = line_to_check.get(current_index);
+			if (chr == '\t' || chr == ' ') {
+				continue;
+			} else if (chr == '=') {
+				foundNextEqual = true;
+				assigned_value = line.right(current_index).strip_edges();
+				assigned_value = assigned_value == "true" ? "false" : "true";
+			} else {
+				break;
+			}
+		}
+		if (foundNextEqual) {
+			line = line.substr(0, start) + "ignore_rotation =" + assigned_value + " # reversed \"rotating\" for Camera2D";
 		}
 	}
 
@@ -3949,6 +3985,8 @@ String ProjectConverter3To4::collect_string_from_vector(Vector<String> &vector) 
 }
 
 #else // No RegEx.
+
+ProjectConverter3To4::ProjectConverter3To4(int _p_maximum_file_size_kb, int _p_maximum_line_length) {}
 
 int ProjectConverter3To4::convert() {
 	ERR_FAIL_V_MSG(ERROR_CODE, "Can't run converter for Godot 3.x projects, because RegEx module is disabled.");

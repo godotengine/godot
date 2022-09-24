@@ -1669,14 +1669,7 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 }
 
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	String driver = ProjectSettings::get_singleton()->get("rendering/driver/driver_name");
-	if (driver == "opengl3") {
-		r_features->push_back("etc");
-	}
-	// FIXME: Review what texture formats are used for Vulkan.
-	if (driver == "vulkan") {
-		r_features->push_back("etc2");
-	}
+	r_features->push_back("etc2");
 
 	Vector<String> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {

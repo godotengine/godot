@@ -66,6 +66,7 @@ sys_env.Depends(build[0], sys_env["JS_PRE"])
 sys_env.Depends(build[0], sys_env["JS_EXTERNS"])
 
 engine = [
+    "js/engine/features.js",
     "js/engine/preloader.js",
     "js/engine/config.js",
     "js/engine/engine.js",

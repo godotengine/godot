@@ -1245,12 +1245,12 @@ namespace Godot
         /// <summary>
         /// If the string is a path, this concatenates <paramref name="file"/>
         /// at the end of the string as a subpath.
-        /// E.g. <c>"this/is".PlusFile("path") == "this/is/path"</c>.
+        /// E.g. <c>"this/is".PathJoin("path") == "this/is/path"</c>.
         /// </summary>
         /// <param name="instance">The path that will be concatenated.</param>
         /// <param name="file">File name to concatenate with the path.</param>
         /// <returns>The concatenated path with the given file name.</returns>
-        public static string PlusFile(this string instance, string file)
+        public static string PathJoin(this string instance, string file)
         {
             if (instance.Length > 0 && instance[instance.Length - 1] == '/')
                 return instance + file;

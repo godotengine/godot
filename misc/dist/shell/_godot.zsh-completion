@@ -44,6 +44,7 @@ _arguments \
   '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
   '--audio-driver[set the audio driver]:audio driver name' \
   '--display-driver[set the display driver]:display driver name' \
+  "--rendering-method[set the renderer]:renderer name:((forward_plus\:'Desktop renderer' mobile\:'Desktop and mobile renderer' gl_compatibility\:'Desktop, mobile and web renderer'))" \
   "--rendering-driver[set the rendering driver]:rendering driver name:((vulkan\:'Vulkan renderer' opengl3\:'OpenGL ES 3.0 renderer' dummy\:'Dummy renderer'))" \
   "--gpu-index[use a specific GPU (run with --verbose to get available device list)]:device index" \
   '--text-driver[set the text driver]:text driver name' \

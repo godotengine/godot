@@ -350,7 +350,6 @@ def configure_msvc(env, vcvars_msvc_config):
 
     elif env["target"] == "debug":
         env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
-        # Allow big objects. Only needed for debug, see MinGW branch for rationale.
         env.Append(LINKFLAGS=["/DEBUG"])
 
     if env["debug_symbols"]:
@@ -447,6 +446,9 @@ def configure_msvc(env, vcvars_msvc_config):
             print("Missing environment variable: WindowsSdkDir")
 
     ## LTO
+
+    if env["lto"] == "auto":  # No LTO by default for MSVC, doesn't help.
+        env["lto"] = "none"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -563,6 +565,11 @@ def configure_mingw(env):
             env["AR"] = mingw_bin_prefix + "gcc-ar"
         if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
             env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
+
+    ## LTO
+
+    if env["lto"] == "auto":  # Full LTO for production with MinGW.
+        env["lto"] = "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":

@@ -575,7 +575,7 @@
 		<method name="_body_set_state_sync_callback" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
-			<param index="1" name="callback" type="PhysicsServer3DExtensionStateCallback*" />
+			<param index="1" name="callable" type="Callable" />
 			<description>
 			</description>
 		</method>

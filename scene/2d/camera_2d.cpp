@@ -172,7 +172,7 @@ Transform2D Camera2D::get_camera_transform() {
 	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom_scale) : Point2());
 
 	real_t angle = get_global_rotation();
-	if (rotating) {
+	if (!ignore_rotation) {
 		screen_offset = screen_offset.rotated(angle);
 	}
 
@@ -204,7 +204,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Transform2D xform;
 	xform.scale_basis(zoom_scale);
-	if (rotating) {
+	if (!ignore_rotation) {
 		xform.set_rotation(angle);
 	}
 	xform.set_origin(screen_rect.position);
@@ -363,15 +363,15 @@ Camera2D::AnchorMode Camera2D::get_anchor_mode() const {
 	return anchor_mode;
 }
 
-void Camera2D::set_rotating(bool p_rotating) {
-	rotating = p_rotating;
+void Camera2D::set_ignore_rotation(bool p_ignore) {
+	ignore_rotation = p_ignore;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
 }
 
-bool Camera2D::is_rotating() const {
-	return rotating;
+bool Camera2D::is_ignoring_rotation() const {
+	return ignore_rotation;
 }
 
 void Camera2D::set_process_callback(Camera2DProcessCallback p_mode) {
@@ -668,8 +668,8 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_mode", "anchor_mode"), &Camera2D::set_anchor_mode);
 	ClassDB::bind_method(D_METHOD("get_anchor_mode"), &Camera2D::get_anchor_mode);
 
-	ClassDB::bind_method(D_METHOD("set_rotating", "rotating"), &Camera2D::set_rotating);
-	ClassDB::bind_method(D_METHOD("is_rotating"), &Camera2D::is_rotating);
+	ClassDB::bind_method(D_METHOD("set_ignore_rotation", "ignore"), &Camera2D::set_ignore_rotation);
+	ClassDB::bind_method(D_METHOD("is_ignoring_rotation"), &Camera2D::is_ignoring_rotation);
 
 	ClassDB::bind_method(D_METHOD("_update_scroll"), &Camera2D::_update_scroll);
 
@@ -733,7 +733,7 @@ void Camera2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_mode", PROPERTY_HINT_ENUM, "Fixed TopLeft,Drag Center"), "set_anchor_mode", "get_anchor_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotating"), "set_rotating", "is_rotating");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_rotation"), "set_ignore_rotation", "is_ignoring_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom", PROPERTY_HINT_LINK), "set_zoom", "get_zoom");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");

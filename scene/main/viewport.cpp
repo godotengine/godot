@@ -2872,8 +2872,8 @@ Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
 
-TypedArray<String> Viewport::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray Viewport::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (size.x <= 1 || size.y <= 1) {
 		warnings.push_back(RTR("The Viewport size must be greater than or equal to 2 pixels on both dimensions to render anything."));

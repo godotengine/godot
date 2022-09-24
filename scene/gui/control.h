@@ -387,7 +387,7 @@ public:
 	// Editor integration.
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	virtual bool is_text_field() const;
 

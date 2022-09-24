@@ -267,6 +267,7 @@ public:
 
 		return cubic_interpolate(from_rot, to_rot, pre_rot, post_rot, p_weight);
 	}
+
 	static _ALWAYS_INLINE_ float cubic_interpolate_angle(float p_from, float p_to, float p_pre, float p_post, float p_weight) {
 		float from_rot = fmod(p_from, (float)Math_TAU);
 
@@ -293,6 +294,7 @@ public:
 		double b2 = Math::lerp(a2, a3, p_post_t == 0 ? 1.0 : t / p_post_t);
 		return Math::lerp(b1, b2, p_to_t == 0 ? 0.5 : t / p_to_t);
 	}
+
 	static _ALWAYS_INLINE_ float cubic_interpolate_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
 			float p_to_t, float p_pre_t, float p_post_t) {
 		/* Barry-Goldman method */
@@ -320,6 +322,7 @@ public:
 
 		return cubic_interpolate_in_time(from_rot, to_rot, pre_rot, post_rot, p_weight, p_to_t, p_pre_t, p_post_t);
 	}
+
 	static _ALWAYS_INLINE_ float cubic_interpolate_angle_in_time(float p_from, float p_to, float p_pre, float p_post, float p_weight,
 			float p_to_t, float p_pre_t, float p_post_t) {
 		float from_rot = fmod(p_from, (float)Math_TAU);
@@ -346,6 +349,7 @@ public:
 
 		return p_start * omt3 + p_control_1 * omt2 * p_t * 3.0 + p_control_2 * omt * t2 * 3.0 + p_end * t3;
 	}
+
 	static _ALWAYS_INLINE_ float bezier_interpolate(float p_start, float p_control_1, float p_control_2, float p_end, float p_t) {
 		/* Formula from Wikipedia article on Bezier curves. */
 		float omt = (1.0f - p_t);
@@ -368,11 +372,19 @@ public:
 		return p_from + distance * p_weight;
 	}
 
-	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
-	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
+	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) {
+		return (p_value - p_from) / (p_to - p_from);
+	}
+	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) {
+		return (p_value - p_from) / (p_to - p_from);
+	}
 
-	static _ALWAYS_INLINE_ double remap(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
-	static _ALWAYS_INLINE_ float remap(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
+	static _ALWAYS_INLINE_ double remap(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) {
+		return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value));
+	}
+	static _ALWAYS_INLINE_ float remap(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) {
+		return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value));
+	}
 
 	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 		if (is_equal_approx(p_from, p_to)) {
@@ -388,14 +400,26 @@ public:
 		float s = CLAMP((p_s - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return s * s * (3.0f - 2.0f * s);
 	}
-	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
-	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) {
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) {
+		return abs(p_to - p_from) <= p_delta ? p_to : p_from + SIGN(p_to - p_from) * p_delta;
+	}
 
-	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
-	static _ALWAYS_INLINE_ float linear_to_db(float p_linear) { return Math::log(p_linear) * (float)8.6858896380650365530225783783321; }
+	static _ALWAYS_INLINE_ double linear_to_db(double p_linear) {
+		return Math::log(p_linear) * 8.6858896380650365530225783783321;
+	}
+	static _ALWAYS_INLINE_ float linear_to_db(float p_linear) {
+		return Math::log(p_linear) * (float)8.6858896380650365530225783783321;
+	}
 
-	static _ALWAYS_INLINE_ double db_to_linear(double p_db) { return Math::exp(p_db * 0.11512925464970228420089957273422); }
-	static _ALWAYS_INLINE_ float db_to_linear(float p_db) { return Math::exp(p_db * (float)0.11512925464970228420089957273422); }
+	static _ALWAYS_INLINE_ double db_to_linear(double p_db) {
+		return Math::exp(p_db * 0.11512925464970228420089957273422);
+	}
+	static _ALWAYS_INLINE_ float db_to_linear(float p_db) {
+		return Math::exp(p_db * (float)0.11512925464970228420089957273422);
+	}
 
 	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }

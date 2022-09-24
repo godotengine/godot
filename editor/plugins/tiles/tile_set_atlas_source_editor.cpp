@@ -401,7 +401,7 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	if (all_alternatve_id_zero) {
 		p_list->push_back(PropertyInfo(Variant::NIL, "Animation", PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
 		p_list->push_back(PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, ""));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2I, "animation_separation", PROPERTY_HINT_NONE, "suffix:px"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2I, "animation_separation", PROPERTY_HINT_NONE, ""));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, ""));
 		p_list->push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
 		// Not optimal, but returns value for the first tile. This is similar to what MultiNodeEdit does.

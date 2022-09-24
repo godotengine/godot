@@ -46,8 +46,6 @@ public:
 	};
 
 	typedef void (*CommitNotifyCallback)(void *p_ud, const String &p_name);
-	void _add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
-	void _add_undo_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	typedef void (*MethodNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
 	typedef void (*PropertyNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
@@ -58,14 +56,14 @@ private:
 			TYPE_METHOD,
 			TYPE_PROPERTY,
 			TYPE_REFERENCE
-		};
+		} type;
 
-		Type type;
 		bool force_keep_in_merge_ends;
 		Ref<RefCounted> ref;
 		ObjectID object;
 		StringName name;
-		Vector<Variant> args;
+		Callable callable;
+		Variant value;
 
 		void delete_reference();
 	};
@@ -106,30 +104,8 @@ protected:
 public:
 	void create_action(const String &p_name = "", MergeMode p_mode = MERGE_DISABLE);
 
-	void add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
-	void add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount);
-
-	template <typename... VarArgs>
-	void add_do_method(Object *p_object, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-
-		add_do_methodp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-	}
-	template <typename... VarArgs>
-	void add_undo_method(Object *p_object, const StringName &p_method, VarArgs... p_args) {
-		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
-		const Variant *argptrs[sizeof...(p_args) + 1];
-		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
-			argptrs[i] = &args[i];
-		}
-
-		add_undo_methodp(p_object, p_method, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
-	}
-
+	void add_do_method(const Callable &p_callable);
+	void add_undo_method(const Callable &p_callable);
 	void add_do_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value);
 	void add_do_reference(Object *p_object);

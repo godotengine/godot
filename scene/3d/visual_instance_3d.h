@@ -186,7 +186,7 @@ public:
 	void set_ignore_occlusion_culling(bool p_enabled);
 	bool is_ignoring_occlusion_culling();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 	GeometryInstance3D();
 	virtual ~GeometryInstance3D();
 };

@@ -391,7 +391,7 @@ hb_subset_input_get_user_data (const hb_subset_input_t *input,
  *
  * Return value: `true` if success, `false` otherwise
  *
- * Since: REPLACEME
+ * Since: EXPERIMENTAL
  **/
 hb_bool_t
 hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
@@ -415,7 +415,7 @@ hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
  *
  * Return value: `true` if success, `false` otherwise
  *
- * Since: REPLACEME
+ * Since: EXPERIMENTAL
  **/
 hb_bool_t
 hb_subset_input_pin_axis_location (hb_subset_input_t  *input,

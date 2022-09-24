@@ -78,7 +78,7 @@ Error FileAccessMemory::open_custom(const uint8_t *p_data, uint64_t p_len) {
 	return OK;
 }
 
-Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessMemory::open_internal(const String &p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(!files, ERR_FILE_NOT_FOUND);
 
 	String name = fix_path(p_path);

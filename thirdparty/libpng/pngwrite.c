@@ -1,7 +1,7 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2022 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -128,10 +128,6 @@ png_write_info_before_PLTE(png_structrp png_ptr, png_const_inforp info_ptr)
        * the application continues writing the PNG.  So check the 'invalid'
        * flag here too.
        */
-#ifdef PNG_WRITE_APNG_SUPPORTED
-      if (info_ptr->valid & PNG_INFO_acTL)
-         png_write_acTL(png_ptr, info_ptr->num_frames, info_ptr->num_plays);
-#endif
 #ifdef PNG_GAMMA_SUPPORTED
 #  ifdef PNG_WRITE_gAMA_SUPPORTED
       if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
@@ -374,11 +370,6 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
       png_benign_error(png_ptr, "Wrote palette index exceeding num_palette");
 #endif
 
-#ifdef PNG_WRITE_APNG_SUPPORTED
-   if (png_ptr->num_frames_written != png_ptr->num_frames_to_write)
-      png_error(png_ptr, "Not enough frames written");
-#endif
-
    /* See if user wants us to write information chunks */
    if (info_ptr != NULL)
    {
@@ -498,6 +489,16 @@ png_convert_from_time_t(png_timep ptime, time_t ttime)
    png_debug(1, "in png_convert_from_time_t");
 
    tbuf = gmtime(&ttime);
+   if (tbuf == NULL)
+   {
+      /* TODO: add a safe function which takes a png_ptr argument and raises
+       * a png_error if the ttime argument is invalid and the call to gmtime
+       * fails as a consequence.
+       */
+      memset(ptime, 0, sizeof(*ptime));
+      return;
+   }
+
    png_convert_from_struct_tm(ptime, tbuf);
 }
 #endif
@@ -1470,43 +1471,6 @@ png_write_png(png_structrp png_ptr, png_inforp info_ptr,
 }
 #endif
 
-#ifdef PNG_WRITE_APNG_SUPPORTED
-void PNGAPI
-png_write_frame_head(png_structp png_ptr, png_infop info_ptr,
-    png_bytepp row_pointers, png_uint_32 width, png_uint_32 height,
-    png_uint_32 x_offset, png_uint_32 y_offset,
-    png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
-    png_byte blend_op)
-{
-    png_debug(1, "in png_write_frame_head");
-
-    /* there is a chance this has been set after png_write_info was called,
-    * so it would be set but not written. is there a way to be sure? */
-    if (!(info_ptr->valid & PNG_INFO_acTL))
-        png_error(png_ptr, "png_write_frame_head(): acTL not set");
-
-    png_write_reset(png_ptr);
-
-    png_write_reinit(png_ptr, info_ptr, width, height);
-
-    if ( !(png_ptr->num_frames_written == 0 &&
-           (png_ptr->apng_flags & PNG_FIRST_FRAME_HIDDEN) ) )
-        png_write_fcTL(png_ptr, width, height, x_offset, y_offset,
-                       delay_num, delay_den, dispose_op, blend_op);
-
-    PNG_UNUSED(row_pointers)
-}
-
-void PNGAPI
-png_write_frame_tail(png_structp png_ptr, png_infop info_ptr)
-{
-    png_debug(1, "in png_write_frame_tail");
-
-    png_ptr->num_frames_written++;
-
-    PNG_UNUSED(info_ptr)
-}
-#endif /* PNG_WRITE_APNG_SUPPORTED */
 
 #ifdef PNG_SIMPLIFIED_WRITE_SUPPORTED
 /* Initialize the write structure - general purpose utility. */

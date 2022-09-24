@@ -69,51 +69,41 @@ namespace GodotTools.Build
 
         private void LoadIssuesFromFile(string csvFile)
         {
-            using (var file = new Godot.File())
+            using var file = FileAccess.Open(csvFile, FileAccess.ModeFlags.Read);
+
+            if (file == null)
+                return;
+
+            while (!file.EofReached())
             {
-                try
+                string[] csvColumns = file.GetCsvLine();
+
+                if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
+                    return;
+
+                if (csvColumns.Length != 7)
                 {
-                    Error openError = file.Open(csvFile, Godot.File.ModeFlags.Read);
-
-                    if (openError != Error.Ok)
-                        return;
-
-                    while (!file.EofReached())
-                    {
-                        string[] csvColumns = file.GetCsvLine();
-
-                        if (csvColumns.Length == 1 && string.IsNullOrEmpty(csvColumns[0]))
-                            return;
-
-                        if (csvColumns.Length != 7)
-                        {
-                            GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
-                            continue;
-                        }
-
-                        var issue = new BuildIssue
-                        {
-                            Warning = csvColumns[0] == "warning",
-                            File = csvColumns[1],
-                            Line = int.Parse(csvColumns[2]),
-                            Column = int.Parse(csvColumns[3]),
-                            Code = csvColumns[4],
-                            Message = csvColumns[5],
-                            ProjectFile = csvColumns[6]
-                        };
-
-                        if (issue.Warning)
-                            WarningCount += 1;
-                        else
-                            ErrorCount += 1;
-
-                        _issues.Add(issue);
-                    }
+                    GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
+                    continue;
                 }
-                finally
+
+                var issue = new BuildIssue
                 {
-                    file.Close(); // Disposing it is not enough. We need to call Close()
-                }
+                    Warning = csvColumns[0] == "warning",
+                    File = csvColumns[1],
+                    Line = int.Parse(csvColumns[2]),
+                    Column = int.Parse(csvColumns[3]),
+                    Code = csvColumns[4],
+                    Message = csvColumns[5],
+                    ProjectFile = csvColumns[6]
+                };
+
+                if (issue.Warning)
+                    WarningCount += 1;
+                else
+                    ErrorCount += 1;
+
+                _issues.Add(issue);
             }
         }
 

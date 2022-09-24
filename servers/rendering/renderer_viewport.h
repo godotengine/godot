@@ -34,8 +34,8 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 #include "storage/render_scene_buffers.h"
@@ -148,7 +148,7 @@ public:
 
 		HashMap<RID, CanvasData> canvas_map;
 
-		RendererScene::RenderInfo render_info;
+		RenderingMethod::RenderInfo render_info;
 
 		Viewport() {
 			view_count = 1;

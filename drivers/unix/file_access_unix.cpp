@@ -70,7 +70,7 @@ void FileAccessUnix::check_errors() const {
 	}
 }
 
-Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
 	path_src = p_path;

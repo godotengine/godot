@@ -370,12 +370,15 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	if (type_A == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
 		if (type_B == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+			WARN_PRINT_ONCE("Collisions between world boundaries are not supported.");
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+			WARN_PRINT_ONCE("Collisions between world boundaries and rays are not supported.");
 			return false;
 		}
 		if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
+			WARN_PRINT_ONCE("Collisions between world boundaries and soft bodies are not supported.");
 			return false;
 		}
 
@@ -387,6 +390,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	} else if (type_A == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
 		if (type_B == PhysicsServer3D::SHAPE_SEPARATION_RAY) {
+			WARN_PRINT_ONCE("Collisions between rays are not supported.");
 			return false;
 		}
 
@@ -398,7 +402,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	} else if (type_B == PhysicsServer3D::SHAPE_SOFT_BODY) {
 		if (type_A == PhysicsServer3D::SHAPE_SOFT_BODY) {
-			// Soft Body / Soft Body not supported.
+			WARN_PRINT_ONCE("Collisions between soft bodies are not supported.");
 			return false;
 		}
 
@@ -410,6 +414,7 @@ bool GodotCollisionSolver3D::solve_static(const GodotShape3D *p_shape_A, const T
 
 	} else if (concave_B) {
 		if (concave_A) {
+			WARN_PRINT_ONCE("Collisions between two concave shapes are not supported.");
 			return false;
 		}
 

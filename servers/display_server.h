@@ -336,6 +336,7 @@ public:
 		WINDOW_EVENT_CLOSE_REQUEST,
 		WINDOW_EVENT_GO_BACK_REQUEST,
 		WINDOW_EVENT_DPI_CHANGE,
+		WINDOW_EVENT_TITLEBAR_CHANGE,
 	};
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
@@ -380,7 +381,8 @@ public:
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
-	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); };
+	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); }
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 

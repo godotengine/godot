@@ -38,6 +38,8 @@ class String;
 struct Vector3;
 
 struct _NO_DISCARD_ Vector3i {
+	static const int AXIS_COUNT = 3;
+
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,

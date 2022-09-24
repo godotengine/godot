@@ -33,7 +33,10 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
+
 #include "scene/2d/navigation_region_2d.h"
+#include "servers/navigation/navigation_path_query_parameters_2d.h"
+#include "servers/navigation/navigation_path_query_result_2d.h"
 
 // This server exposes the `NavigationServer3D` features in the 2D world.
 class NavigationServer2D : public Object {
@@ -216,6 +219,8 @@ public:
 
 	/// Callback called at the end of the RVO process
 	virtual void agent_set_callback(RID p_agent, Object *p_receiver, StringName p_method, Variant p_udata = Variant()) const;
+
+	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
 
 	/// Destroy the `RID`
 	virtual void free(RID p_object) const;

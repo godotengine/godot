@@ -40,22 +40,16 @@ struct gsubgpos_graph_context_t
   graph_t& graph;
   unsigned lookup_list_index;
   hb_hashmap_t<unsigned, graph::Lookup*> lookups;
-  hb_vector_t<char*> buffers;
+
 
   HB_INTERNAL gsubgpos_graph_context_t (hb_tag_t table_tag_,
                                         graph_t& graph_);
-
-  ~gsubgpos_graph_context_t ()
-  {
-    for (char* b : buffers)
-      hb_free (b);
-  }
 
   HB_INTERNAL unsigned create_node (unsigned size);
 
   void add_buffer (char* buffer)
   {
-    buffers.push (buffer);
+    graph.add_buffer (buffer);
   }
 
  private:

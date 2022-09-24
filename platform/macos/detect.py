@@ -40,9 +40,6 @@ def get_flags():
     return [
         ("arch", detect_arch()),
         ("use_volk", False),
-        # Benefits of LTO for macOS (size, performance) haven't been clearly established yet.
-        # So for now we override the default value which may be set when using `production=yes`.
-        ("lto", "none"),
     ]
 
 
@@ -91,9 +88,9 @@ def configure(env):
 
     if env["target"] == "release":
         if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3", "-fomit-frame-pointer", "-ftree-vectorize"])
+            env.Prepend(CCFLAGS=["-O3"])
         elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os", "-ftree-vectorize"])
+            env.Prepend(CCFLAGS=["-Os"])
         if env["arch"] != "arm64":
             env.Prepend(CCFLAGS=["-msse2"])
 
@@ -170,6 +167,10 @@ def configure(env):
         env["AS"] = basecmd + "as"
 
     # LTO
+
+    if env["lto"] == "auto":  # LTO benefits for macOS (size, performance) haven't been clearly established yet.
+        env["lto"] = "none"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             env.Append(CCFLAGS=["-flto=thin"])
@@ -177,6 +178,8 @@ def configure(env):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+
+    # Sanitizers
 
     if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
         env.extra_suffix += ".san"

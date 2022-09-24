@@ -72,7 +72,7 @@ public:
 		return radius;
 	}
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 private:
 	void initialize_agent();

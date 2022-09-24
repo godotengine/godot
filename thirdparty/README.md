@@ -214,7 +214,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 5.1.0 (f1f2be776bcd994fa9262622e1a7098a066e5cf7, 2022)
+- Version: 5.2.0 (4a1d891c6317d2c83e5f3c2607ec5f5ccedffcde, 2022)
 - License: MIT
 
 Files extracted from upstream source:
@@ -276,7 +276,7 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.37 (a40189cf881e9f0db80511c382292a5604c3c3d1, 2019)
+- Version: 1.6.38 (0a158f3506502dfa23edfc42790dfaed82efba17, 2022)
 - License: libpng/zlib
 
 Files extracted from upstream source:

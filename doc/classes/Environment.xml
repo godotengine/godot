@@ -313,6 +313,7 @@
 		</member>
 		<member name="volumetric_fog_enabled" type="bool" setter="set_volumetric_fog_enabled" getter="is_volumetric_fog_enabled" default="false">
 			Enables the volumetric fog effect. Volumetric fog uses a screen-aligned froxel buffer to calculate accurate volumetric scattering in the short to medium range. Volumetric fog interacts with [FogVolume]s and lights to calculate localized and global fog. Volumetric fog uses a PBR single-scattering model based on extinction, scattering, and emission which it exposes to users as density, albedo, and emission.
+			[b]Note:[/b] Volumetric fog is only available in the forward plus renderer. It is not available in the mobile renderer or the compatibility renderer.
 		</member>
 		<member name="volumetric_fog_gi_inject" type="float" setter="set_volumetric_fog_gi_inject" getter="get_volumetric_fog_gi_inject" default="1.0">
 			Scales the strength of Global Illumination used in the volumetric fog's albedo color. A value of [code]0.0[/code] means that Global Illumination will not impact the volumetric fog. [member volumetric_fog_gi_inject] has a small performance cost when set above [code]0.0[/code].

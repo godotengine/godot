@@ -43,7 +43,7 @@ struct VariationValueRecord
 
   public:
   Tag		valueTag;	/* Four-byte tag identifying a font-wide measure. */
-  HBUINT32		varIdx;		/* Outer/inner index into VariationStore item. */
+  VarIdx	varIdx;		/* Outer/inner index into VariationStore item. */
 
   public:
   DEFINE_SIZE_STATIC (8);

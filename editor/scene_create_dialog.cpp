@@ -133,7 +133,7 @@ void SceneCreateDialog::update_dialog() {
 		root_name = scene_name.get_file().get_basename();
 	}
 
-	if (!root_name.is_valid_identifier()) {
+	if (root_name.is_empty() || root_name.validate_node_name().size() != root_name.size()) {
 		update_error(node_error_label, MSG_ERROR, TTR("Invalid root node name."));
 		is_valid = false;
 	}

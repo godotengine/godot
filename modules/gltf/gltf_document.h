@@ -188,7 +188,7 @@ private:
 			const GLTFNodeIndex bone_index);
 	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> state, const GLTFNodeIndex node_index);
 	Camera3D *_generate_camera(Ref<GLTFState> state, const GLTFNodeIndex node_index);
-	Node3D *_generate_light(Ref<GLTFState> state, const GLTFNodeIndex node_index);
+	Light3D *_generate_light(Ref<GLTFState> state, const GLTFNodeIndex node_index);
 	Node3D *_generate_spatial(Ref<GLTFState> state, const GLTFNodeIndex node_index);
 	void _assign_scene_names(Ref<GLTFState> state);
 	template <class T>
@@ -265,7 +265,7 @@ private:
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
 	Error _serialize_version(Ref<GLTFState> state);
 	Error _serialize_file(Ref<GLTFState> state, const String p_path);
-	Error _serialize_extensions(Ref<GLTFState> state) const;
+	Error _serialize_gltf_extensions(Ref<GLTFState> state) const;
 
 public:
 	// https://www.itu.int/rec/R-REC-BT.601

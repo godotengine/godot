@@ -47,7 +47,7 @@ public:
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
-	int reference_get_count() const;
+	int get_reference_count() const;
 
 	RefCounted();
 	~RefCounted() {}
