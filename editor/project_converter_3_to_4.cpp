@@ -217,6 +217,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "_get_configuration_warning", "_get_configuration_warnings" }, // Node
 	{ "_set_current", "set_current" }, // Camera2D
 	{ "_set_editor_description", "set_editor_description" }, // Node
+	{ "_set_playing", "set_playing" }, // AnimatedSprite3D
 	{ "_toplevel_raise_self", "_top_level_raise_self" }, // CanvasItem
 	{ "_update_wrap_at", "_update_wrap_at_column" }, // TextEdit
 	{ "add_animation", "add_animation_library" }, // AnimationPlayer
@@ -231,6 +232,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "add_scene_import_plugin", "add_scene_format_importer_plugin" }, //EditorPlugin
 	{ "add_stylebox_override", "add_theme_stylebox_override" }, // Control
 	{ "add_torque", "apply_torque" }, //RigidBody2D
+	{ "agent_set_neighbor_dist", "agent_set_neighbor_distance" }, // NavigationServer2D, NavigationServer3D
 	{ "apply_changes", "_apply_changes" }, // EditorPlugin
 	{ "body_add_force", "body_apply_force" }, // PhysicsServer2D
 	{ "body_add_torque", "body_apply_torque" }, // PhysicsServer2D
@@ -332,6 +334,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_metakey", "is_meta_pressed" }, // InputEventWithModifiers
 	{ "get_mid_height", "get_height" }, // CapsuleMesh
 	{ "get_motion_remainder", "get_remainder" }, // PhysicsTestMotionResult2D
+	{ "get_neighbor_dist", "get_neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "get_network_connected_peers", "get_peers" }, // Multiplayer API
 	{ "get_network_master", "get_multiplayer_authority" }, // Node
 	{ "get_network_peer", "get_multiplayer_peer" }, // Multiplayer API
@@ -512,6 +515,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_max_atlas_size", "set_max_texture_size" }, // LightmapGI
 	{ "set_metakey", "set_meta_pressed" }, // InputEventWithModifiers
 	{ "set_mid_height", "set_height" }, // CapsuleMesh
+	{ "set_neighbor_dist", "set_neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "set_network_master", "set_multiplayer_authority" }, // Node
 	{ "set_network_peer", "set_multiplayer_peer" }, // Multiplayer API
 	{ "set_oneshot", "set_one_shot" }, // AnimatedTexture
@@ -652,6 +656,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "_GetConfigurationWarning", "_GetConfigurationWarnings" }, // Node
 	{ "_SetCurrent", "SetCurrent" }, // Camera2D
 	{ "_SetEditorDescription", "SetEditorDescription" }, // Node
+	{ "_SetPlaying", "SetPlaying" }, // AnimatedSprite3D
 	{ "_ToplevelRaiseSelf", "_TopLevelRaiseSelf" }, // CanvasItem
 	{ "_UpdateWrapAt", "_UpdateWrapAtColumn" }, // TextEdit
 	{ "AddAnimation", "AddAnimationLibrary" }, // AnimationPlayer
@@ -666,6 +671,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "AddSceneImportPlugin", "AddSceneFormatImporterPlugin" }, //EditorPlugin
 	{ "AddStyleboxOverride", "AddThemeStyleboxOverride" }, // Control
 	{ "AddTorque", "AddConstantTorque" }, //RigidBody2D
+	{ "AgentSetNeighborDist", "AgentSetNeighborDistance" }, // NavigationServer2D, NavigationServer3D
 	{ "BindChildNodeToBone", "SetBoneChildren" }, // Skeleton3D
 	{ "BumpmapToNormalmap", "BumpMapToNormalMap" }, // Image
 	{ "CanBeHidden", "_CanBeHidden" }, // EditorNode3DGizmoPlugin
@@ -759,6 +765,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetMetakey", "IsMetaPressed" }, // InputEventWithModifiers
 	{ "GetMidHeight", "GetHeight" }, // CapsuleMesh
 	{ "GetMotionRemainder", "GetRemainder" }, // PhysicsTestMotionResult2D
+	{ "GetNeighborDist", "GetNeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "GetNetworkConnectedPeers", "GetPeers" }, // Multiplayer API
 	{ "GetNetworkMaster", "GetMultiplayerAuthority" }, // Node
 	{ "GetNetworkPeer", "GetMultiplayerPeer" }, // Multiplayer API
@@ -929,6 +936,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetMaxAtlasSize", "SetMaxTextureSize" }, // LightmapGI
 	{ "SetMetakey", "SetMetaPressed" }, // InputEventWithModifiers
 	{ "SetMidHeight", "SetHeight" }, // CapsuleMesh
+	{ "SetNeighborDist", "SetNeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "SetNetworkMaster", "SetMultiplayerAuthority" }, // Node
 	{ "SetNetworkPeer", "SetMultiplayerPeer" }, // Multiplayer API
 	{ "SetOneshot", "SetOneShot" }, // AnimatedTexture
@@ -1064,6 +1072,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "focus_neighbour_left", "focus_neighbor_left" }, // Control
 	{ "focus_neighbour_right", "focus_neighbor_right" }, // Control
 	{ "focus_neighbour_top", "focus_neighbor_top" }, // Control
+	{ "follow_viewport_enable", "follow_viewport_enabled" }, // CanvasItem
 	{ "file_icon_modulate", "file_icon_color" }, // Theme
 	{ "files_disabled", "file_disabled_color" }, // Theme
 	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
@@ -1079,6 +1088,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "margin_right", "offset_right" }, // Control broke NinePatchRect, StyleBox
 	{ "margin_top", "offset_top" }, // Control broke NinePatchRect, StyleBox
 	{ "mid_height", "height" }, // CapsuleMesh
+	{ "neighbor_dist", "neighbor_distance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "offset_h", "drag_horizontal_offset" }, // Camera2D
 	{ "offset_v", "drag_vertical_offset" }, // Camera2D
 	{ "off", "unchecked" }, // Theme
@@ -1167,6 +1177,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "FocusNeighbourLeft", "FocusNeighborLeft" }, // Control
 	{ "FocusNeighbourRight", "FocusNeighborRight" }, // Control
 	{ "FocusNeighbourTop", "FocusNeighborTop" }, // Control
+	{ "FollowViewportEnable", "FollowViewportEnabled" }, // CanvasItem
 	{ "GlobalRateScale", "PlaybackSpeedScale" }, // AudioServer
 	{ "GravityDistanceScale", "GravityPointDistanceScale" }, // Area2D
 	{ "GravityVec", "GravityDirection" }, // Area2D
@@ -1179,6 +1190,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "MarginRight", "OffsetRight" }, // Control broke NinePatchRect, StyleBox
 	{ "MarginTop", "OffsetTop" }, // Control broke NinePatchRect, StyleBox
 	{ "MidHeight", "Height" }, // CapsuleMesh
+	{ "NeighborDist", "NeighborDistance" }, // NavigationAgent2D, NavigationAgent3D
 	{ "OffsetH", "DragHorizontalOffset" }, // Camera2D
 	{ "OffsetV", "DragVerticalOffset" }, // Camera2D
 	{ "Ofs", "Offset" }, // Theme
