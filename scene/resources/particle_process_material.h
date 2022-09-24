@@ -246,6 +246,7 @@ private:
 
 		StringName sub_emitter_frequency;
 		StringName sub_emitter_amount_at_end;
+		StringName sub_emitter_amount_at_collision;
 		StringName sub_emitter_keep_velocity;
 
 		StringName collision_friction;
@@ -304,6 +305,7 @@ private:
 	SubEmitterMode sub_emitter_mode;
 	double sub_emitter_frequency = 0.0;
 	int sub_emitter_amount_at_end = 0;
+	int sub_emitter_amount_at_collision = 0;
 	bool sub_emitter_keep_velocity = false;
 	//do not save emission points here
 
@@ -417,6 +419,9 @@ public:
 
 	void set_sub_emitter_amount_at_end(int p_amount);
 	int get_sub_emitter_amount_at_end() const;
+
+	void set_sub_emitter_amount_at_collision(int p_amount);
+	int get_sub_emitter_amount_at_collision() const;
 
 	void set_sub_emitter_keep_velocity(bool p_enable);
 	bool get_sub_emitter_keep_velocity() const;
