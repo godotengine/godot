@@ -1757,8 +1757,24 @@ DisplayServerWayland::MouseMode DisplayServerWayland::mouse_get_mode() const {
 }
 
 void DisplayServerWayland::warp_mouse(const Point2i &p_to) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub warp_mouse to %s", p_to));
+	// NOTE: This is hacked together as for some reason the pointer constraints
+	// protocol doesn't implement pointer warping (not even in the window). This
+	// isn't efficient *at all* and perhaps there could be better behaviours in
+	// the pointer capturing logic in general, but this will do for now.
+	MutexLock mutex_lock(wls.mutex);
+
+	if (wls.current_seat) {
+		MouseMode old_mouse_mode = wls.mouse_mode;
+
+		mouse_set_mode(MOUSE_MODE_CAPTURED);
+
+		// Override the hint set by MOUSE_MODE_CAPTURED with the requested one.
+		zwp_locked_pointer_v1_set_cursor_position_hint(wls.current_seat->wp_locked_pointer, wl_fixed_from_int(p_to.x), wl_fixed_from_int(p_to.y));
+		// Committing the surface is required to set the hint instantly.
+		wl_surface_commit(wls.windows[MAIN_WINDOW_ID].wl_surface);
+
+		mouse_set_mode(old_mouse_mode);
+	}
 }
 
 Point2i DisplayServerWayland::mouse_get_position() const {
