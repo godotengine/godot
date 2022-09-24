@@ -1647,6 +1647,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2i, sign, sarray(), varray());
 	bind_method(Vector2i, abs, sarray(), varray());
 	bind_method(Vector2i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector2i, snapped, sarray("step"), varray());
 
 	/* Rect2 */
 
@@ -1736,6 +1737,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3i, sign, sarray(), varray());
 	bind_method(Vector3i, abs, sarray(), varray());
 	bind_method(Vector3i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector3i, snapped, sarray("step"), varray());
 
 	/* Vector4 */
 
@@ -1775,6 +1777,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4i, sign, sarray(), varray());
 	bind_method(Vector4i, abs, sarray(), varray());
 	bind_method(Vector4i, clamp, sarray("min", "max"), varray());
+	bind_method(Vector4i, snapped, sarray("step"), varray());
 
 	/* Plane */
 
