@@ -29,27 +29,22 @@
 /*************************************************************************/
 
 #ifdef WINDOWS_ENABLED
-
 #include "file_access_windows.h"
-
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
 #include <wchar.h>
-
 #ifdef _MSC_VER
 #define S_ISREG(m) ((m)&_S_IFREG)
-#endif
 
+#endif
 void FileAccessWindows::check_errors() const {
 	ERR_FAIL_COND(!f);
 
