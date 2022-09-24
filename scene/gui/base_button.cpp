@@ -60,7 +60,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mouse_button = p_event;
-	bool ui_accept = p_event->is_action("ui_accept") && !p_event->is_echo();
+	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
 
 	bool button_masked = mouse_button.is_valid() && (mouse_button_to_mask(mouse_button->get_button_index()) & button_mask) != MouseButton::NONE;
 	if (button_masked || ui_accept) {

@@ -1385,16 +1385,16 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	if (p_ev->is_pressed()) {
-		if (p_ev->is_action("ui_graph_duplicate")) {
+		if (p_ev->is_action("ui_graph_duplicate", true)) {
 			emit_signal(SNAME("duplicate_nodes_request"));
 			accept_event();
-		} else if (p_ev->is_action("ui_copy")) {
+		} else if (p_ev->is_action("ui_copy", true)) {
 			emit_signal(SNAME("copy_nodes_request"));
 			accept_event();
-		} else if (p_ev->is_action("ui_paste")) {
+		} else if (p_ev->is_action("ui_paste", true)) {
 			emit_signal(SNAME("paste_nodes_request"));
 			accept_event();
-		} else if (p_ev->is_action("ui_graph_delete")) {
+		} else if (p_ev->is_action("ui_graph_delete", true)) {
 			TypedArray<StringName> nodes;
 
 			for (int i = 0; i < get_child_count(); i++) {

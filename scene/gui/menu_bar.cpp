@@ -41,7 +41,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	MutexLock lock(mutex);
-	if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+	if (p_event->is_action("ui_left", true) && p_event->is_pressed()) {
 		int new_sel = selected_menu;
 		int old_sel = (selected_menu < 0) ? 0 : selected_menu;
 		do {
@@ -63,7 +63,7 @@ void MenuBar::gui_input(const Ref<InputEvent> &p_event) {
 			_open_popup(selected_menu, true);
 		}
 		return;
-	} else if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
 		int new_sel = selected_menu;
 		int old_sel = (selected_menu < 0) ? menu_cache.size() - 1 : selected_menu;
 		do {

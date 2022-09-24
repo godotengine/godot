@@ -143,7 +143,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept")) {
+	if (k.is_valid() && k->is_pressed() && k->is_action("ui_accept", true)) {
 		_focus_entered();
 	}
 }
