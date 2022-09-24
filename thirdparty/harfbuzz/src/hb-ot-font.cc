@@ -59,13 +59,15 @@
  * never need to call these functions directly.
  **/
 
+using hb_ot_font_advance_cache_t = hb_cache_t<24, 16, 8, true>;
+
 struct hb_ot_font_t
 {
   const hb_ot_face_t *ot_face;
 
   /* h_advance caching */
   mutable hb_atomic_int_t cached_coords_serial;
-  mutable hb_atomic_ptr_t<hb_advance_cache_t> advance_cache;
+  mutable hb_atomic_ptr_t<hb_ot_font_advance_cache_t> advance_cache;
 };
 
 static hb_ot_font_t *
@@ -161,14 +163,14 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   bool use_cache = false;
 #endif
 
-  hb_advance_cache_t *cache = nullptr;
+  hb_ot_font_advance_cache_t *cache = nullptr;
   if (use_cache)
   {
   retry:
-    cache = ot_font->advance_cache.get ();
+    cache = ot_font->advance_cache.get_acquire ();
     if (unlikely (!cache))
     {
-      cache = (hb_advance_cache_t *) hb_malloc (sizeof (hb_advance_cache_t));
+      cache = (hb_ot_font_advance_cache_t *) hb_malloc (sizeof (hb_ot_font_advance_cache_t));
       if (unlikely (!cache))
       {
 	use_cache = false;
@@ -181,7 +183,7 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 	hb_free (cache);
 	goto retry;
       }
-      ot_font->cached_coords_serial.set (font->serial_coords);
+      ot_font->cached_coords_serial.set_release (font->serial_coords);
     }
   }
   out:
@@ -197,10 +199,10 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
   }
   else
   { /* Use cache. */
-    if (ot_font->cached_coords_serial.get () != (int) font->serial_coords)
+    if (ot_font->cached_coords_serial.get_acquire () != (int) font->serial_coords)
     {
       ot_font->advance_cache->init ();
-      ot_font->cached_coords_serial.set (font->serial_coords);
+      ot_font->cached_coords_serial.set_release (font->serial_coords);
     }
 
     for (unsigned int i = 0; i < count; i++)

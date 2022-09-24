@@ -152,7 +152,7 @@ bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line,
 }
 
 void godot_icall_Internal_EditorNodeShowScriptScreen() {
-	EditorNode::get_singleton()->call("_editor_select", EditorNode::EDITOR_SCRIPT);
+	EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
 }
 
 void godot_icall_Internal_EditorRunPlay() {

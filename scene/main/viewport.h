@@ -581,7 +581,7 @@ public:
 	void gui_release_focus();
 	Control *gui_get_focus_owner();
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;

@@ -1550,8 +1550,8 @@ PackedInt32Array TextServerExtension::string_get_word_breaks(const String &p_str
 	return PackedInt32Array();
 }
 
-int TextServerExtension::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
-	int ret;
+int64_t TextServerExtension::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+	int64_t ret;
 	if (GDVIRTUAL_CALL(is_confusable, p_string, p_dict, ret)) {
 		return ret;
 	}

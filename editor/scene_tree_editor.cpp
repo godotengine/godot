@@ -30,6 +30,7 @@
 
 #include "scene_tree_editor.h"
 
+#include "core/config/project_settings.h"
 #include "core/object/message_queue.h"
 #include "core/string/print_string.h"
 #include "editor/editor_file_system.h"
@@ -835,7 +836,7 @@ void SceneTreeEditor::_notification(int p_what) {
 			get_tree()->connect("tree_process_mode_changed", callable_mp(this, &SceneTreeEditor::_tree_process_mode_changed));
 			get_tree()->connect("node_removed", callable_mp(this, &SceneTreeEditor::_node_removed));
 			get_tree()->connect("node_renamed", callable_mp(this, &SceneTreeEditor::_node_renamed));
-			get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed), CONNECT_DEFERRED);
+			get_tree()->connect("node_configuration_warning_changed", callable_mp(this, &SceneTreeEditor::_warning_changed));
 
 			tree->connect("item_collapsed", callable_mp(this, &SceneTreeEditor::_cell_collapsed));
 
@@ -942,14 +943,16 @@ void SceneTreeEditor::_renamed() {
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	// Empty node names are not allowed, so resets it to previous text and show warning
-	if (which->get_text(0).strip_edges().is_empty()) {
-		which->set_text(0, n->get_name());
-		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
-		return;
+	String raw_new_name = which->get_text(0);
+	if (raw_new_name.strip_edges().is_empty()) {
+		// If name is empty, fallback to class name.
+		if (GLOBAL_GET("editor/node_naming/name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+			raw_new_name = Node::adjust_name_casing(n->get_class());
+		} else {
+			raw_new_name = n->get_class();
+		}
 	}
 
-	String raw_new_name = which->get_text(0);
 	String new_name = raw_new_name.validate_node_name();
 
 	if (new_name != raw_new_name) {
@@ -1332,7 +1335,7 @@ void SceneTreeEditor::set_connecting_signal(bool p_enable) {
 }
 
 void SceneTreeEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by some connect_compat.
+	ClassDB::bind_method(D_METHOD("_update_tree"), &SceneTreeEditor::_update_tree, DEFVAL(false)); // Still used by UndoRedo.
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
 	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
 

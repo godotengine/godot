@@ -33,10 +33,56 @@
 #include "hb-subset-input.hh"
 
 #include "hb-map.hh"
+#include "hb-bimap.hh"
 #include "hb-set.hh"
 
 struct hb_subset_plan_t
 {
+  hb_subset_plan_t ()
+  {}
+
+  ~hb_subset_plan_t()
+  {
+    hb_set_destroy (unicodes);
+    hb_set_destroy (name_ids);
+    hb_set_destroy (name_languages);
+    hb_set_destroy (layout_features);
+    hb_set_destroy (layout_scripts);
+    hb_set_destroy (glyphs_requested);
+    hb_set_destroy (drop_tables);
+    hb_set_destroy (no_subset_tables);
+    hb_face_destroy (source);
+    hb_face_destroy (dest);
+    hb_map_destroy (codepoint_to_glyph);
+    hb_map_destroy (glyph_map);
+    hb_map_destroy (reverse_glyph_map);
+    hb_map_destroy (glyph_map_gsub);
+    hb_set_destroy (_glyphset);
+    hb_set_destroy (_glyphset_gsub);
+    hb_set_destroy (_glyphset_mathed);
+    hb_set_destroy (_glyphset_colred);
+    hb_map_destroy (gsub_lookups);
+    hb_map_destroy (gpos_lookups);
+    hb_map_destroy (gsub_features);
+    hb_map_destroy (gpos_features);
+    hb_map_destroy (colrv1_layers);
+    hb_map_destroy (colr_palettes);
+
+    hb_hashmap_destroy (gsub_langsys);
+    hb_hashmap_destroy (gpos_langsys);
+    hb_hashmap_destroy (axes_location);
+    hb_hashmap_destroy (sanitized_table_cache);
+    hb_hashmap_destroy (hmtx_map);
+    hb_hashmap_destroy (vmtx_map);
+    hb_hashmap_destroy (layout_variation_idx_delta_map);
+
+    if (user_axes_location)
+    {
+      hb_object_destroy (user_axes_location);
+      hb_free (user_axes_location);
+    }
+  }
+
   hb_object_header_t header;
 
   bool successful;
@@ -101,10 +147,11 @@ struct hb_subset_plan_t
   hb_map_t *colrv1_layers;
   hb_map_t *colr_palettes;
 
-  //The set of layout item variation store delta set indices to be retained
-  hb_set_t *layout_variation_indices;
-  //Old -> New layout item variation store delta set index mapping
-  hb_map_t *layout_variation_idx_map;
+  //Old layout item variation index -> (New varidx, delta) mapping
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map;
+
+  //gdef varstore retained varidx mapping
+  hb_vector_t<hb_inc_bimap_t> gdef_varstore_inner_maps;
 
   hb_hashmap_t<hb_tag_t, hb::unique_ptr<hb_blob_t>>* sanitized_table_cache;
   //normalized axes location map
@@ -112,6 +159,12 @@ struct hb_subset_plan_t
   //user specified axes location map
   hb_hashmap_t<hb_tag_t, float> *user_axes_location;
   bool all_axes_pinned;
+  bool pinned_at_default;
+
+  //hmtx metrics map: new gid->(advance, lsb)
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *hmtx_map;
+  //vmtx metrics map: new gid->(advance, lsb)
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *vmtx_map;
 
  public:
 

@@ -33,7 +33,10 @@
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
+
 #include "scene/3d/navigation_region_3d.h"
+#include "servers/navigation/navigation_path_query_parameters_3d.h"
+#include "servers/navigation/navigation_path_query_result_3d.h"
 
 /// This server uses the concept of internal mutability.
 /// All the constant functions can be called in multithread because internally
@@ -41,6 +44,7 @@
 ///
 /// Note: All the `set` functions are commands executed during the `sync` phase,
 /// don't expect that a change is immediately propagated.
+
 class NavigationServer3D : public Object {
 	GDCLASS(NavigationServer3D, Object);
 
@@ -242,6 +246,11 @@ public:
 	/// so this must be called in the main thread.
 	/// Note: This function is not thread safe.
 	virtual void process(real_t delta_time) = 0;
+
+	/// Returns a customized navigation path using a query parameters object
+	void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;
+
+	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const = 0;
 
 	NavigationServer3D();
 	virtual ~NavigationServer3D();

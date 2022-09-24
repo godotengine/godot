@@ -965,17 +965,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			uint32_t gl = glyphs[i].index;
 			uint16_t gl_fl = glyphs[i].flags;
 			uint8_t gl_cn = glyphs[i].count;
-			bool cprev = false;
+			bool cprev_cluster = false;
+			bool cprev_conn = false;
 			if (gl_cn == 0) { // Parts of the same cluster, always connected.
-				cprev = true;
+				cprev_cluster = true;
 			}
 			if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
 				if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
-					cprev = true;
+					cprev_conn = true;
 				}
 			} else {
 				if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
-					cprev = true;
+					cprev_conn = true;
 				}
 			}
 
@@ -994,6 +995,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
+				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
+
 				if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
 					ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
 
@@ -1024,7 +1027,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (item_fx->type == ITEM_SHAKE) {
 					ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
 
-					if (!cprev) {
+					if (!cn) {
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 						uint64_t max_rand = 2147483647;
@@ -1038,7 +1041,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (item_fx->type == ITEM_WAVE) {
 					ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
 
-					if (!cprev) {
+					if (!cn) {
 						double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + gloff.x) / 50)) * (item_wave->amplitude / 10.0f);
 						item_wave->prev_off = Point2(0, 1) * value;
 					}
@@ -1046,7 +1049,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (item_fx->type == ITEM_TORNADO) {
 					ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
 
-					if (!cprev) {
+					if (!cn) {
 						double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + gloff.x) / 50)) * (item_tornado->radius);
 						double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + gloff.x) / 50)) * (item_tornado->radius);
 						item_tornado->prev_off = Point2(torn_x, torn_y);
@@ -1181,17 +1184,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			uint32_t gl = glyphs[i].index;
 			uint16_t gl_fl = glyphs[i].flags;
 			uint8_t gl_cn = glyphs[i].count;
-			bool cprev = false;
+			bool cprev_cluster = false;
+			bool cprev_conn = false;
 			if (gl_cn == 0) { // Parts of the same grapheme cluster, always connected.
-				cprev = true;
+				cprev_cluster = true;
 			}
 			if (gl_fl & TextServer::GRAPHEME_IS_RTL) { // Check if previous grapheme cluster is connected.
 				if (i > 0 && (glyphs[i - 1].flags & TextServer::GRAPHEME_IS_CONNECTED)) {
-					cprev = true;
+					cprev_conn = true;
 				}
 			} else {
 				if (glyphs[i].flags & TextServer::GRAPHEME_IS_CONNECTED) {
-					cprev = true;
+					cprev_conn = true;
 				}
 			}
 
@@ -1209,6 +1213,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
+				bool cn = cprev_cluster || (cprev_conn && item_fx->connected);
+
 				if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
 					ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
 
@@ -1239,7 +1245,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (item_fx->type == ITEM_SHAKE) {
 					ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
 
-					if (!cprev) {
+					if (!cn) {
 						uint64_t char_current_rand = item_shake->offset_random(glyphs[i].start);
 						uint64_t char_previous_rand = item_shake->offset_previous_random(glyphs[i].start);
 						uint64_t max_rand = 2147483647;
@@ -1253,7 +1259,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (item_fx->type == ITEM_WAVE) {
 					ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
 
-					if (!cprev) {
+					if (!cn) {
 						double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + off.x) / 50)) * (item_wave->amplitude / 10.0f);
 						item_wave->prev_off = Point2(0, 1) * value;
 					}
@@ -1261,7 +1267,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				} else if (item_fx->type == ITEM_TORNADO) {
 					ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
 
-					if (!cprev) {
+					if (!cn) {
 						double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off.x) / 50)) * (item_tornado->radius);
 						double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + off.x) / 50)) * (item_tornado->radius);
 						item_tornado->prev_off = Point2(torn_x, torn_y);
@@ -2188,6 +2194,30 @@ RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
 	while (fontitem) {
 		if (fontitem->type == ITEM_FONT) {
 			ItemFont *fi = static_cast<ItemFont *>(fontitem);
+			switch (fi->def_font) {
+				case NORMAL_FONT: {
+					fi->font = theme_cache.normal_font;
+					fi->font_size = theme_cache.normal_font_size;
+				} break;
+				case BOLD_FONT: {
+					fi->font = theme_cache.bold_font;
+					fi->font_size = theme_cache.bold_font_size;
+				} break;
+				case ITALICS_FONT: {
+					fi->font = theme_cache.italics_font;
+					fi->font_size = theme_cache.italics_font_size;
+				} break;
+				case BOLD_ITALICS_FONT: {
+					fi->font = theme_cache.bold_italics_font;
+					fi->font_size = theme_cache.bold_italics_font_size;
+				} break;
+				case MONO_FONT: {
+					fi->font = theme_cache.mono_font;
+					fi->font_size = theme_cache.mono_font_size;
+				} break;
+				default: {
+				} break;
+			}
 			return fi;
 		}
 
@@ -3004,6 +3034,17 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	_add_item(item, false);
 }
 
+void RichTextLabel::_push_def_font(DefaultFont p_font) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemFont *item = memnew(ItemFont);
+
+	item->def_font = p_font;
+	_add_item(item, true);
+}
+
 void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
@@ -3020,31 +3061,31 @@ void RichTextLabel::push_font(const Ref<Font> &p_font, int p_size) {
 void RichTextLabel::push_normal() {
 	ERR_FAIL_COND(theme_cache.normal_font.is_null());
 
-	push_font(theme_cache.normal_font, theme_cache.normal_font_size);
+	_push_def_font(NORMAL_FONT);
 }
 
 void RichTextLabel::push_bold() {
 	ERR_FAIL_COND(theme_cache.bold_font.is_null());
 
-	push_font(theme_cache.bold_font, theme_cache.bold_font_size);
+	_push_def_font(BOLD_FONT);
 }
 
 void RichTextLabel::push_bold_italics() {
 	ERR_FAIL_COND(theme_cache.bold_italics_font.is_null());
 
-	push_font(theme_cache.bold_italics_font, theme_cache.bold_italics_font_size);
+	_push_def_font(BOLD_ITALICS_FONT);
 }
 
 void RichTextLabel::push_italics() {
 	ERR_FAIL_COND(theme_cache.italics_font.is_null());
 
-	push_font(theme_cache.italics_font, theme_cache.italics_font_size);
+	_push_def_font(ITALICS_FONT);
 }
 
 void RichTextLabel::push_mono() {
 	ERR_FAIL_COND(theme_cache.mono_font.is_null());
 
-	push_font(theme_cache.mono_font, theme_cache.mono_font_size);
+	_push_def_font(MONO_FONT);
 }
 
 void RichTextLabel::push_font_size(int p_font_size) {
@@ -3201,33 +3242,36 @@ void RichTextLabel::push_fade(int p_start_index, int p_length) {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_shake(int p_strength = 10, float p_rate = 24.0f) {
+void RichTextLabel::push_shake(int p_strength = 10, float p_rate = 24.0f, bool p_connected = true) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
 	ItemShake *item = memnew(ItemShake);
 	item->strength = p_strength;
 	item->rate = p_rate;
+	item->connected = p_connected;
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_wave(float p_frequency = 1.0f, float p_amplitude = 10.0f) {
+void RichTextLabel::push_wave(float p_frequency = 1.0f, float p_amplitude = 10.0f, bool p_connected = true) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
 	ItemWave *item = memnew(ItemWave);
 	item->frequency = p_frequency;
 	item->amplitude = p_amplitude;
+	item->connected = p_connected;
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_tornado(float p_frequency = 1.0f, float p_radius = 10.0f) {
+void RichTextLabel::push_tornado(float p_frequency = 1.0f, float p_radius = 10.0f, bool p_connected = true) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
 	ItemTornado *item = memnew(ItemTornado);
 	item->frequency = p_frequency;
 	item->radius = p_radius;
+	item->connected = p_connected;
 	_add_item(item, true);
 }
 
@@ -3635,9 +3679,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			//use bold font
 			in_bold = true;
 			if (in_italics) {
-				push_font(theme_cache.bold_italics_font, theme_cache.bold_italics_font_size);
+				_push_def_font(BOLD_ITALICS_FONT);
 			} else {
-				push_font(theme_cache.bold_font, theme_cache.bold_font_size);
+				_push_def_font(BOLD_FONT);
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -3645,15 +3689,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			//use italics font
 			in_italics = true;
 			if (in_bold) {
-				push_font(theme_cache.bold_italics_font, theme_cache.bold_italics_font_size);
+				_push_def_font(BOLD_ITALICS_FONT);
 			} else {
-				push_font(theme_cache.italics_font, theme_cache.italics_font_size);
+				_push_def_font(ITALICS_FONT);
 			}
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
 			//use monospace font
-			push_font(theme_cache.mono_font, theme_cache.mono_font_size);
+			_push_def_font(MONO_FONT);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("table=")) {
@@ -4230,7 +4274,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				rate = rate_option->value.to_float();
 			}
 
-			push_shake(strength, rate);
+			bool connected = true;
+			OptionMap::Iterator connected_option = bbcode_options.find("connected");
+			if (connected_option) {
+				connected = connected_option->value.to_int();
+			}
+
+			push_shake(strength, rate, connected);
 			pos = brk_end + 1;
 			tag_stack.push_front("shake");
 			set_process_internal(true);
@@ -4247,7 +4297,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				period = period_option->value.to_float();
 			}
 
-			push_wave(period, amplitude);
+			bool connected = true;
+			OptionMap::Iterator connected_option = bbcode_options.find("connected");
+			if (connected_option) {
+				connected = connected_option->value.to_int();
+			}
+
+			push_wave(period, amplitude, connected);
 			pos = brk_end + 1;
 			tag_stack.push_front("wave");
 			set_process_internal(true);
@@ -4264,7 +4320,13 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				frequency = frequency_option->value.to_float();
 			}
 
-			push_tornado(frequency, radius);
+			bool connected = true;
+			OptionMap::Iterator connected_option = bbcode_options.find("connected");
+			if (connected_option) {
+				connected = connected_option->value.to_int();
+			}
+
+			push_tornado(frequency, radius, connected);
 			pos = brk_end + 1;
 			tag_stack.push_front("tornado");
 			set_process_internal(true);
@@ -4641,7 +4703,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 			queue_redraw();
 			return true;
 		}
-		p_search_previous ? current_line-- : current_line++;
+
+		if (current_line != ending_line) {
+			p_search_previous ? current_line-- : current_line++;
+		}
 	}
 
 	if (p_from_selection && selection.active) {

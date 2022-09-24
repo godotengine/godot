@@ -566,7 +566,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 
 	bones.write[14].bone_name = "LeftThumbMetacarpal";
 	bones.write[14].bone_parent = "LeftHand";
-	bones.write[14].reference_pose = Transform3D(0, -0.577, 0.816, 0.707, 0.577, 0.408, -0.707, 0.577, 0.408, -0.025, 0, 0);
+	bones.write[14].reference_pose = Transform3D(0, -0.577, 0.816, 0, 0.816, 0.577, -1, 0, 0, -0.025, 0.025, 0);
 	bones.write[14].handle_offset = Vector2(0.4, 0.8);
 	bones.write[14].group = "LeftHand";
 
@@ -686,7 +686,7 @@ SkeletonProfileHumanoid::SkeletonProfileHumanoid() {
 
 	bones.write[33].bone_name = "RightThumbMetacarpal";
 	bones.write[33].bone_parent = "RightHand";
-	bones.write[33].reference_pose = Transform3D(0, 0.577, -0.816, -0.707, 0.577, 0.408, 0.707, 0.577, 0.408, 0.025, 0, 0);
+	bones.write[33].reference_pose = Transform3D(0, 0.577, -0.816, 0, 0.816, 0.577, 1, 0, 0, 0.025, 0.025, 0);
 	bones.write[33].handle_offset = Vector2(0.6, 0.8);
 	bones.write[33].group = "RightHand";
 

@@ -550,7 +550,7 @@ public:
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
-#define ServerName RendererScene
+#define ServerName RenderingMethod
 #define server_name RSG::scene
 
 	/* CAMERA API */
@@ -649,7 +649,7 @@ public:
 #undef server_name
 #undef ServerName
 //from now on, calls forwarded to this singleton
-#define ServerName RendererScene
+#define ServerName RenderingMethod
 #define server_name RSG::scene
 
 	FUNC2(directional_shadow_atlas_set_size, int, bool)
@@ -739,7 +739,7 @@ public:
 #undef server_name
 #undef ServerName
 
-#define ServerName RendererScene
+#define ServerName RenderingMethod
 #define server_name RSG::scene
 
 	FUNCRIDSPLIT(scenario)

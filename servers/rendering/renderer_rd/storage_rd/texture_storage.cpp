@@ -795,6 +795,8 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 		case RS::TEXTURE_LAYERED_CUBEMAP_ARRAY: {
 			texture.rd_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 		} break;
+		default:
+			ERR_FAIL(); // Shouldn't happen, silence warnings.
 	}
 
 	texture.rd_format = ret_format.format;

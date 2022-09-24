@@ -674,7 +674,7 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 		return;
 	}
 
-	if (fi_callback_data || body_state_callback) {
+	if (fi_callback_data || body_state_callback.get_object()) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 	}
 
@@ -756,11 +756,12 @@ void GodotBody3D::wakeup_neighbours() {
 }
 
 void GodotBody3D::call_queries() {
+	Variant direct_state_variant = get_direct_state();
+
 	if (fi_callback_data) {
 		if (!fi_callback_data->callable.get_object()) {
 			set_force_integration_callback(Callable());
 		} else {
-			Variant direct_state_variant = get_direct_state();
 			const Variant *vp[2] = { &direct_state_variant, &fi_callback_data->udata };
 
 			Callable::CallError ce;
@@ -770,8 +771,11 @@ void GodotBody3D::call_queries() {
 		}
 	}
 
-	if (body_state_callback_instance) {
-		(body_state_callback)(body_state_callback_instance, get_direct_state());
+	if (body_state_callback.get_object()) {
+		const Variant *vp[1] = { &direct_state_variant };
+		Callable::CallError ce;
+		Variant rv;
+		body_state_callback.callp(vp, 1, rv, ce);
 	}
 }
 
@@ -792,9 +796,8 @@ bool GodotBody3D::sleep_test(real_t p_step) {
 	}
 }
 
-void GodotBody3D::set_state_sync_callback(void *p_instance, PhysicsServer3D::BodyStateCallback p_callback) {
-	body_state_callback_instance = p_instance;
-	body_state_callback = p_callback;
+void GodotBody3D::set_state_sync_callback(const Callable &p_callable) {
+	body_state_callback = p_callable;
 }
 
 void GodotBody3D::set_force_integration_callback(const Callable &p_callable, const Variant &p_udata) {

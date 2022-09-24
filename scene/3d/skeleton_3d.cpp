@@ -45,7 +45,6 @@ void SkinReference::_skin_changed() {
 }
 
 void SkinReference::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_skin_changed"), &SkinReference::_skin_changed);
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkinReference::get_skeleton);
 	ClassDB::bind_method(D_METHOD("get_skin"), &SkinReference::get_skin);
 }
@@ -1007,7 +1006,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin_bindings.insert(skin_ref.operator->());
 
-	skin_ref->skin->connect("changed", Callable(skin_ref.operator->(), "_skin_changed"));
+	skin_ref->skin->connect("changed", callable_mp(skin_ref.operator->(), &SkinReference::_skin_changed));
 
 	_make_dirty(); // Skin needs to be updated, so update skeleton.
 

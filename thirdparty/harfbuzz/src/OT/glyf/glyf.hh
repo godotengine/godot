@@ -24,7 +24,6 @@ namespace OT {
  */
 #define HB_OT_TAG_glyf HB_TAG('g','l','y','f')
 
-
 struct glyf
 {
   friend struct glyf_accelerator_t;
@@ -75,6 +74,9 @@ struct glyf
     hb_vector_t<glyf_impl::SubsetGlyph> glyphs;
     _populate_subset_glyphs (c->plan, &glyphs);
 
+    if (!c->plan->pinned_at_default)
+      _compile_subset_glyphs_with_deltas (c->plan, &glyphs);
+
     auto padded_offsets =
     + hb_iter (glyphs)
     | hb_map (&glyf_impl::SubsetGlyph::padded_size)
@@ -93,6 +95,8 @@ struct glyf
     }
 
 
+    if (!c->plan->pinned_at_default)
+      _free_compiled_subset_glyphs (&glyphs);
     if (unlikely (c->serializer->in_error ())) return_trace (false);
     return_trace (c->serializer->check_success (glyf_impl::_add_loca_and_head (c->plan,
 									       padded_offsets,
@@ -102,6 +106,16 @@ struct glyf
   void
   _populate_subset_glyphs (const hb_subset_plan_t   *plan,
 			   hb_vector_t<glyf_impl::SubsetGlyph> *glyphs /* OUT */) const;
+  
+  void
+  _compile_subset_glyphs_with_deltas (const hb_subset_plan_t *plan,
+                                      hb_vector_t<glyf_impl::SubsetGlyph> *glyphs /* OUT */) const;
+
+  void _free_compiled_subset_glyphs (hb_vector_t<glyf_impl::SubsetGlyph> *glyphs) const
+  {
+    for (auto _ : *glyphs)
+      _.free_compiled_bytes ();
+  }
 
   protected:
   UnsizedArrayOf<HBUINT8>
@@ -166,7 +180,7 @@ struct glyf_accelerator_t
     contour_point_vector_t all_points;
 
     bool phantom_only = !consumer.is_consuming_contour_points ();
-    if (unlikely (!glyph_for_gid (gid).get_points (font, *this, all_points, phantom_only)))
+    if (unlikely (!glyph_for_gid (gid).get_points (font, *this, all_points, nullptr, true, phantom_only)))
       return false;
 
     if (consumer.is_consuming_contour_points ())
@@ -389,6 +403,30 @@ glyf::_populate_subset_glyphs (const hb_subset_plan_t   *plan,
   ;
 }
 
+inline void
+glyf::_compile_subset_glyphs_with_deltas (const hb_subset_plan_t *plan,
+                                          hb_vector_t<glyf_impl::SubsetGlyph> *glyphs /* OUT */) const
+{
+  OT::glyf_accelerator_t glyf (plan->source);
+  hb_font_t *font = hb_font_create (plan->source);
+
+  hb_vector_t<hb_variation_t> vars;
+  vars.alloc (plan->user_axes_location->get_population ());
+
+  for (auto _ : *plan->user_axes_location)
+  {
+    hb_variation_t var;
+    var.tag = _.first;
+    var.value = _.second;
+    vars.push (var);
+  }
+
+  hb_font_set_variations (font, vars.arrayZ, plan->user_axes_location->get_population ());
+  for (auto& subset_glyph : *glyphs)
+    const_cast<glyf_impl::SubsetGlyph &> (subset_glyph).compile_bytes_with_deltas (plan, font, glyf);
+
+  hb_font_destroy (font);
+}
 
 
 } /* namespace OT */

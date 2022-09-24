@@ -31,7 +31,6 @@
 #ifndef PROJECT_CONVERTER_3_TO_4_H
 #define PROJECT_CONVERTER_3_TO_4_H
 
-#include "core/core_bind.h"
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"

@@ -100,8 +100,8 @@ void BoneAttachment3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-TypedArray<String> BoneAttachment3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node3D::get_configuration_warnings();
+PackedStringArray BoneAttachment3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (use_external_skeleton) {
 		if (external_skeleton_node_cache.is_null()) {

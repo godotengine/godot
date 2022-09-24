@@ -884,7 +884,7 @@ static GDNativeMethodBindPtr gdnative_classdb_get_method_bind(const char *p_clas
 	MethodBind *mb = ClassDB::get_method(StringName(p_classname), StringName(p_methodname));
 	ERR_FAIL_COND_V(!mb, nullptr);
 	if (mb->get_hash() != p_hash) {
-		ERR_PRINT_ONCE("Hash mismatch for method '" + String(p_classname) + "." + String(p_methodname) + "'.");
+		ERR_PRINT("Hash mismatch for method '" + String(p_classname) + "." + String(p_methodname) + "'.");
 		return nullptr;
 	}
 	// MethodBind *mb = ClassDB::get_method("Node", "get_name");

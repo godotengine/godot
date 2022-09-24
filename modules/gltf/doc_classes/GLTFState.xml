@@ -7,6 +7,14 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="add_used_extension">
+			<return type="void" />
+			<param index="0" name="extension_name" type="String" />
+			<param index="1" name="required" type="bool" />
+			<description>
+				Appends an extension to the list of extensions used by this GLTF file during serialization. If [param required] is true, the extension will also be added to the list of required extensions. Do not run this in [method GLTFDocumentExtension._export_post], as that stage is too late to add extensions. The final list is sorted alphabetically.
+			</description>
+		</method>
 		<method name="get_accessors">
 			<return type="GLTFAccessor[]" />
 			<description>

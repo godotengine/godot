@@ -9,6 +9,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_set_read_only" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="read_only" type="bool" />
+			<description>
+				Called when the read-only status of the property is changed. It may be used to change custom controls into a read-only or modifiable state.
+			</description>
+		</method>
 		<method name="_update_property" qualifiers="virtual">
 			<return type="void" />
 			<description>

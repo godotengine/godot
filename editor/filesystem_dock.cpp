@@ -1751,22 +1751,7 @@ void FileSystemDock::_tree_rmb_option(int p_option) {
 		case FOLDER_COLLAPSE_ALL: {
 			// Expand or collapse the folder
 			if (selected_strings.size() == 1) {
-				bool is_collapsed = (p_option == FOLDER_COLLAPSE_ALL);
-
-				Vector<TreeItem *> needs_check;
-				needs_check.push_back(tree->get_selected());
-
-				while (needs_check.size()) {
-					needs_check[0]->set_collapsed(is_collapsed);
-
-					TreeItem *child = needs_check[0]->get_first_child();
-					while (child) {
-						needs_check.push_back(child);
-						child = child->get_next();
-					}
-
-					needs_check.remove_at(0);
-				}
+				tree->get_selected()->set_collapsed_recursive(p_option == FOLDER_COLLAPSE_ALL);
 			}
 		} break;
 		default: {

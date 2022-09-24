@@ -74,7 +74,7 @@ static const float earth_gravity = 9.80665;
 
 	if ([driverName isEqualToString:@"vulkan"]) {
 		layer = [GodotMetalLayer layer];
-	} else if ([driverName isEqualToString:@"opengl_es"]) {
+	} else if ([driverName isEqualToString:@"opengl3"]) {
 		if (@available(iOS 13, *)) {
 			NSLog(@"OpenGL ES is deprecated on iOS 13");
 		}

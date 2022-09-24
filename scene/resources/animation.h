@@ -496,7 +496,7 @@ public:
 	void optimize(real_t p_allowed_velocity_err = 0.01, real_t p_allowed_angular_err = 0.01, int p_precision = 3);
 	void compress(uint32_t p_page_size = 8192, uint32_t p_fps = 120, float p_split_tolerance = 4.0); // 4.0 seems to be the split tolerance sweet spot from many tests
 
-	// Helper math fuctions for Variant.
+	// Helper math functions for Variant.
 	static Variant add_variant(const Variant &a, const Variant &b);
 	static Variant subtract_variant(const Variant &a, const Variant &b);
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);

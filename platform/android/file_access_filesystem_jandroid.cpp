@@ -61,7 +61,7 @@ String FileAccessFilesystemJAndroid::get_path_absolute() const {
 	return absolute_path;
 }
 
-Error FileAccessFilesystemJAndroid::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessFilesystemJAndroid::open_internal(const String &p_path, int p_mode_flags) {
 	if (is_open()) {
 		_close();
 	}

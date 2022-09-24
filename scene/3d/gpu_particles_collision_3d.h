@@ -162,7 +162,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_thickness(float p_thickness);
 	float get_thickness() const;

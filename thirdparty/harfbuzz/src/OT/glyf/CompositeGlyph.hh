@@ -105,6 +105,67 @@ struct CompositeGlyphRecord
     }
   }
 
+  unsigned compile_with_deltas (const contour_point_t &p_delta,
+                                char *out) const
+  {
+    const HBINT8 *p = &StructAfter<const HBINT8> (flags);
+#ifndef HB_NO_BEYOND_64K
+    if (flags & GID_IS_24BIT)
+      p += HBGlyphID24::static_size;
+    else
+#endif
+      p += HBGlyphID16::static_size;
+
+    unsigned len = get_size ();
+    unsigned len_before_val = (const char *)p - (const char *)this;
+    if (flags & ARG_1_AND_2_ARE_WORDS)
+    {
+      // no overflow, copy and update value with deltas
+      memcpy (out, this, len);
+
+      const HBINT16 *px = reinterpret_cast<const HBINT16 *> (p);
+      HBINT16 *o = reinterpret_cast<HBINT16 *> (out + len_before_val);
+      o[0] = px[0] + roundf (p_delta.x);
+      o[1] = px[1] + roundf (p_delta.y);
+    }
+    else
+    {
+      int new_x = p[0] + roundf (p_delta.x);
+      int new_y = p[1] + roundf (p_delta.y);
+      if (new_x <= 127 && new_x >= -128 &&
+          new_y <= 127 && new_y >= -128)
+      {
+        memcpy (out, this, len);
+        HBINT8 *o = reinterpret_cast<HBINT8 *> (out + len_before_val);
+        o[0] = new_x;
+        o[1] = new_y;
+      }
+      else
+      {
+        // int8 overflows after deltas applied
+        memcpy (out, this, len_before_val);
+        
+        //update flags
+        CompositeGlyphRecord *o = reinterpret_cast<CompositeGlyphRecord *> (out);
+        o->flags = flags | ARG_1_AND_2_ARE_WORDS;
+        out += len_before_val;
+
+        HBINT16 new_value;
+        new_value = new_x;
+        memcpy (out, &new_value, HBINT16::static_size);
+        out += HBINT16::static_size;
+
+        new_value = new_y;
+        memcpy (out, &new_value, HBINT16::static_size);
+        out += HBINT16::static_size;
+
+        memcpy (out, p+2, len - len_before_val - 2);
+        len += 2;
+      }
+    }
+    return len;
+  }
+
   protected:
   bool scaled_offsets () const
   { return (flags & (SCALED_COMPONENT_OFFSET | UNSCALED_COMPONENT_OFFSET)) == SCALED_COMPONENT_OFFSET; }
@@ -287,6 +348,63 @@ struct CompositeGlyph
     if (!bytes.check_range(&glyph_chain, CompositeGlyphRecord::min_size))
       return;
     glyph_chain.set_overlaps_flag ();
+  }
+
+  bool compile_bytes_with_deltas (const hb_bytes_t &source_bytes,
+                                  const contour_point_vector_t &deltas,
+                                  hb_bytes_t &dest_bytes /* OUT */)
+  {
+    if (source_bytes.length <= GlyphHeader::static_size ||
+        header.numberOfContours != -1)
+    {
+      dest_bytes = hb_bytes_t ();
+      return true;
+    }
+
+    unsigned source_len = source_bytes.length - GlyphHeader::static_size;
+
+    /* try to allocate more memories than source glyph bytes
+     * in case that there might be an overflow for int8 value
+     * and we would need to use int16 instead */
+    char *o = (char *) hb_calloc (source_len + source_len/2, sizeof (char));
+    if (unlikely (!o)) return false;
+
+    const CompositeGlyphRecord *c = reinterpret_cast<const CompositeGlyphRecord *> (source_bytes.arrayZ + GlyphHeader::static_size);
+    auto it = composite_iter_t (hb_bytes_t ((const char *)c, source_len), c);
+
+    char *p = o;
+    unsigned i = 0, source_comp_len = 0;
+    for (const auto &component : it)
+    {
+      /* last 4 points in deltas are phantom points and should not be included */
+      if (i >= deltas.length - 4) return false;
+
+      unsigned comp_len = component.get_size ();
+      if (component.is_anchored ())
+      {
+        memcpy (p, &component, comp_len);
+        p += comp_len;
+      }
+      else
+      {
+        unsigned new_len = component.compile_with_deltas (deltas[i], p);
+        p += new_len;
+      }
+      i++;
+      source_comp_len += comp_len;
+    }
+
+    //copy instructions if any
+    if (source_len > source_comp_len)
+    {
+      unsigned instr_len = source_len - source_comp_len;
+      memcpy (p, (const char *)c + source_comp_len, instr_len);
+      p += instr_len;
+    }
+
+    unsigned len = p - o;
+    dest_bytes = hb_bytes_t (o, len);
+    return true;
   }
 };
 

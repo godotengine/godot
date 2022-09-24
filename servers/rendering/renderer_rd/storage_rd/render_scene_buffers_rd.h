@@ -35,8 +35,8 @@
 #include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_buffer_custom_data_rd.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 
 // These can be retired in due time

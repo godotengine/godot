@@ -47,7 +47,6 @@ class Array {
 	void _unref() const;
 
 protected:
-	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool _assign(const Array &p_array);
 
 public:
@@ -131,6 +130,7 @@ public:
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;
 
+	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	Array(const Array &p_from);
 	Array();
 	~Array();

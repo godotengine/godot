@@ -34,8 +34,8 @@
 #include "scene/scene_string_names.h"
 
 void PhysicsBody3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("move_and_collide", "distance", "test_only", "safe_margin", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(1));
-	ClassDB::bind_method(D_METHOD("test_move", "from", "distance", "collision", "safe_margin", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "distance", "test_only", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::_move, DEFVAL(false), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("test_move", "from", "distance", "collision", "safe_margin", "recovery_as_collision", "max_collisions"), &PhysicsBody3D::test_move, DEFVAL(Variant()), DEFVAL(0.001), DEFVAL(false), DEFVAL(1));
 
 	ClassDB::bind_method(D_METHOD("set_axis_lock", "axis", "lock"), &PhysicsBody3D::set_axis_lock);
 	ClassDB::bind_method(D_METHOD("get_axis_lock", "axis"), &PhysicsBody3D::get_axis_lock);
@@ -91,16 +91,16 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
-Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p_test_only, real_t p_margin, int p_max_collisions) {
+Ref<KinematicCollision3D> PhysicsBody3D::_move(const Vector3 &p_distance, bool p_test_only, real_t p_margin, bool p_recovery_as_collision, int p_max_collisions) {
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), p_distance, p_margin);
 	parameters.max_collisions = p_max_collisions;
-	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
+	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	PhysicsServer3D::MotionResult result;
 
 	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
-		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
+		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
@@ -169,7 +169,7 @@ bool PhysicsBody3D::move_and_collide(const PhysicsServer3D::MotionParameters &p_
 	return colliding;
 }
 
-bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_distance, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, int p_max_collisions) {
+bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_distance, const Ref<KinematicCollision3D> &r_collision, real_t p_margin, bool p_recovery_as_collision, int p_max_collisions) {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
 	PhysicsServer3D::MotionResult *r = nullptr;
@@ -182,7 +182,7 @@ bool PhysicsBody3D::test_move(const Transform3D &p_from, const Vector3 &p_distan
 	}
 
 	PhysicsServer3D::MotionParameters parameters(p_from, p_distance, p_margin);
-	parameters.recovery_as_collision = false; // Don't report collisions generated only from recovery.
+	parameters.recovery_as_collision = p_recovery_as_collision;
 
 	return PhysicsServer3D::get_singleton()->body_test_motion(get_rid(), parameters, r);
 }
@@ -317,11 +317,6 @@ void AnimatableBody3D::_update_kinematic_motion() {
 	}
 }
 
-void AnimatableBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	AnimatableBody3D *body = (AnimatableBody3D *)p_instance;
-	body->_body_state_changed(p_state);
-}
-
 void AnimatableBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	linear_velocity = p_state->get_linear_velocity();
 	angular_velocity = p_state->get_angular_velocity();
@@ -373,7 +368,7 @@ void AnimatableBody3D::_bind_methods() {
 
 AnimatableBody3D::AnimatableBody3D() :
 		StaticBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &AnimatableBody3D::_body_state_changed));
 }
 
 void RigidBody3D::_body_enter_tree(ObjectID p_id) {
@@ -487,11 +482,6 @@ struct _RigidBodyInOut {
 	int shape = 0;
 	int local_shape = 0;
 };
-
-void RigidBody3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	RigidBody3D *body = (RigidBody3D *)p_instance;
-	body->_body_state_changed(p_state);
-}
 
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	set_ignore_transform_notification(true);
@@ -982,10 +972,10 @@ TypedArray<Node3D> RigidBody3D::get_colliding_bodies() const {
 	return ret;
 }
 
-TypedArray<String> RigidBody3D::get_configuration_warnings() const {
+PackedStringArray RigidBody3D::get_configuration_warnings() const {
 	Transform3D t = get_transform();
 
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (ABS(t.basis.get_column(0).length() - 1.0) > 0.05 || ABS(t.basis.get_column(1).length() - 1.0) > 0.05 || ABS(t.basis.get_column(2).length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
@@ -1139,7 +1129,7 @@ void RigidBody3D::_validate_property(PropertyInfo &p_property) const {
 
 RigidBody3D::RigidBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_RIGID) {
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody3D::_body_state_changed));
 }
 
 RigidBody3D::~RigidBody3D() {
@@ -1210,7 +1200,6 @@ bool CharacterBody3D::move_and_slide() {
 
 	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
-		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
@@ -1274,8 +1263,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
-		parameters.max_collisions = 4;
-		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+		parameters.max_collisions = 6; // There can be 4 collisions between 2 walls + 2 more for the floor.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
@@ -1520,7 +1508,6 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
-		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
@@ -1575,7 +1562,7 @@ void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
-	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;
@@ -1611,7 +1598,7 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
-	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
+	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;
@@ -1810,7 +1797,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 	}
 
 	// Create a new instance when the cached reference is invalid or still in use in script.
-	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}
@@ -2903,11 +2890,6 @@ void PhysicalBone3D::_notification(int p_what) {
 	}
 }
 
-void PhysicalBone3D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state) {
-	PhysicalBone3D *bone = (PhysicalBone3D *)p_instance;
-	bone->_body_state_changed(p_state);
-}
-
 void PhysicalBone3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
@@ -3425,7 +3407,7 @@ void PhysicalBone3D::_start_physics_simulation() {
 	PhysicsServer3D::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), get_collision_priority());
-	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &PhysicalBone3D::_body_state_changed));
 	set_as_top_level(true);
 	_internal_simulate_physics = true;
 }
@@ -3446,7 +3428,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		PhysicsServer3D::get_singleton()->body_set_collision_priority(get_rid(), 1.0);
 	}
 	if (_internal_simulate_physics) {
-		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
+		PhysicsServer3D::get_singleton()->body_set_state_sync_callback(get_rid(), Callable());
 		parent_skeleton->set_bone_global_pose_override(bone_id, Transform3D(), 0.0, false);
 		set_as_top_level(false);
 		_internal_simulate_physics = false;

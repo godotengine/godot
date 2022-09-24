@@ -76,7 +76,7 @@ protected:
 #endif // TOOLS_ENABLED
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_bone_name(const String &p_name);
 	String get_bone_name() const;

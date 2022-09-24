@@ -23,6 +23,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+function godot_rendering_method_args
+    # Use a function instead of a fixed string to customize the argument descriptions.
+    echo -e "forward_plus\tHigh-end desktop renderer"
+    echo -e "mobile\tHigh-end mobile/desktop renderer"
+    echo -e "gl_compatibility\tLow-end desktop, mobile and web renderer"
+end
+
 function godot_rendering_driver_args
     # Use a function instead of a fixed string to customize the argument descriptions.
     echo -e "vulkan\tVulkan renderer"
@@ -53,6 +60,7 @@ complete -c godot -l remote-fs -d "Use a remote filesystem (<host/IP>[:<port>] a
 complete -c godot -l remote-fs-password -d "Password for remote filesystem" -x
 complete -c godot -l audio-driver -d "Set the audio driver" -x
 complete -c godot -l display-driver -d "Set the display driver" -x
+complete -c godot -l rendering-method -d "Set the renderer" -x -a "(godot_rendering_method_args)"
 complete -c godot -l rendering-driver -d "Set the rendering driver" -x -a "(godot_rendering_driver_args)"
 complete -c godot -l gpu-index -d "Use a specific GPU (run with --verbose to get available device list)" -x
 complete -c godot -l text-driver -d "Set the text driver" -x

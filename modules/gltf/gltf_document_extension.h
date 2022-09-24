@@ -41,6 +41,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual Vector<String> get_supported_extensions();
 	virtual Error import_preflight(Ref<GLTFState> p_state);
 	virtual Error import_post_parse(Ref<GLTFState> p_state);
 	virtual Error export_post(Ref<GLTFState> p_state);
@@ -48,6 +49,7 @@ public:
 	virtual Error export_preflight(Node *p_state);
 	virtual Error import_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
 	virtual Error export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_json, Node *p_node);
+	GDVIRTUAL0R(Vector<String>, _get_supported_extensions);
 	GDVIRTUAL1R(int, _import_preflight, Ref<GLTFState>);
 	GDVIRTUAL1R(int, _import_post_parse, Ref<GLTFState>);
 	GDVIRTUAL4R(int, _import_node, Ref<GLTFState>, Ref<GLTFNode>, Dictionary, Node *);

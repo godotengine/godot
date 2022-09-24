@@ -84,10 +84,10 @@ using OT::Layout::MediumTypes;
 namespace OT {
 
 template<typename Iterator>
-static inline void ClassDef_serialize (hb_serialize_context_t *c,
+static inline bool ClassDef_serialize (hb_serialize_context_t *c,
 				       Iterator it);
 
-static void ClassDef_remap_and_serialize (
+static bool ClassDef_remap_and_serialize (
     hb_serialize_context_t *c,
     const hb_set_t &klasses,
     bool use_class_zero,
@@ -186,6 +186,7 @@ struct hb_subset_layout_context_t :
   unsigned lookup_index_count;
 };
 
+struct VariationStore;
 struct hb_collect_variation_indices_context_t :
        hb_dispatch_context_t<hb_collect_variation_indices_context_t>
 {
@@ -194,15 +195,27 @@ struct hb_collect_variation_indices_context_t :
   static return_t default_return_value () { return hb_empty_t (); }
 
   hb_set_t *layout_variation_indices;
+  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map;
+  hb_font_t *font;
+  const VariationStore *var_store;
   const hb_set_t *glyph_set;
   const hb_map_t *gpos_lookups;
+  float *store_cache;
 
   hb_collect_variation_indices_context_t (hb_set_t *layout_variation_indices_,
+					  hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map_,
+					  hb_font_t *font_,
+					  const VariationStore *var_store_,
 					  const hb_set_t *glyph_set_,
-					  const hb_map_t *gpos_lookups_) :
+					  const hb_map_t *gpos_lookups_,
+					  float *store_cache_) :
 					layout_variation_indices (layout_variation_indices_),
+					varidx_delta_map (varidx_delta_map_),
+					font (font_),
+					var_store (var_store_),
 					glyph_set (glyph_set_),
-					gpos_lookups (gpos_lookups_) {}
+					gpos_lookups (gpos_lookups_),
+					store_cache (store_cache_) {}
 };
 
 template<typename OutputArray>
@@ -1380,17 +1393,14 @@ struct LookupOffsetList : List16OfOffsetTo<TLookup, OffsetType>
  */
 
 
-static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
+static bool ClassDef_remap_and_serialize (hb_serialize_context_t *c,
 					  const hb_set_t &klasses,
                                           bool use_class_zero,
                                           hb_sorted_vector_t<hb_pair_t<hb_codepoint_t, hb_codepoint_t>> &glyph_and_klass, /* IN/OUT */
 					  hb_map_t *klass_map /*IN/OUT*/)
 {
   if (!klass_map)
-  {
-    ClassDef_serialize (c, glyph_and_klass.iter ());
-    return;
-  }
+    return ClassDef_serialize (c, glyph_and_klass.iter ());
 
   /* any glyph not assigned a class value falls into Class zero (0),
    * if any glyph assigned to class 0, remapping must start with 0->0*/
@@ -1413,7 +1423,7 @@ static void ClassDef_remap_and_serialize (hb_serialize_context_t *c,
   }
 
   c->propagate_error (glyph_and_klass, klasses);
-  ClassDef_serialize (c, glyph_and_klass.iter ());
+  return ClassDef_serialize (c, glyph_and_klass.iter ());
 }
 
 /*
@@ -1495,11 +1505,12 @@ struct ClassDefFormat1_3
                            ? hb_len (hb_iter (glyph_map.keys()) | hb_filter (glyph_filter))
                            : glyph_map.get_population ();
     use_class_zero = use_class_zero && glyph_count <= glyph_and_klass.length;
-    ClassDef_remap_and_serialize (c->serializer,
-                                  orig_klasses,
-                                  use_class_zero,
-                                  glyph_and_klass,
-                                  klass_map);
+    if (!ClassDef_remap_and_serialize (c->serializer,
+                                       orig_klasses,
+                                       use_class_zero,
+                                       glyph_and_klass,
+                                       klass_map))
+      return_trace (false);
     return_trace (keep_empty_table || (bool) glyph_and_klass);
   }
 
@@ -1736,11 +1747,12 @@ struct ClassDefFormat2_4
                            ? hb_len (hb_iter (glyphset) | hb_filter (glyph_filter))
                            : glyph_map.get_population ();
     use_class_zero = use_class_zero && glyph_count <= glyph_and_klass.length;
-    ClassDef_remap_and_serialize (c->serializer,
-                                  orig_klasses,
-                                  use_class_zero,
-                                  glyph_and_klass,
-                                  klass_map);
+    if (!ClassDef_remap_and_serialize (c->serializer,
+                                       orig_klasses,
+                                       use_class_zero,
+                                       glyph_and_klass,
+                                       klass_map))
+      return_trace (false);
     return_trace (keep_empty_table || (bool) glyph_and_klass);
   }
 
@@ -2124,9 +2136,9 @@ struct ClassDef
 };
 
 template<typename Iterator>
-static inline void ClassDef_serialize (hb_serialize_context_t *c,
+static inline bool ClassDef_serialize (hb_serialize_context_t *c,
 				       Iterator it)
-{ c->start_embed<ClassDef> ()->serialize (c, it); }
+{ return (c->start_embed<ClassDef> ()->serialize (c, it)); }
 
 
 /*
@@ -2280,16 +2292,16 @@ struct VarData
    unsigned int count = regionIndices.len;
    bool is_long = longWords ();
    unsigned word_count = wordCount ();
-   unsigned int scount = is_long ? count - word_count : word_count;
+   unsigned int scount = is_long ? count : word_count;
    unsigned int lcount = is_long ? word_count : 0;
 
    const HBUINT8 *bytes = get_delta_bytes ();
-   const HBUINT8 *row = bytes + inner * (scount + count);
+   const HBUINT8 *row = bytes + inner * get_row_size ();
 
    float delta = 0.;
    unsigned int i = 0;
 
-   const HBINT16 *lcursor = reinterpret_cast<const HBINT16 *> (row);
+   const HBINT32 *lcursor = reinterpret_cast<const HBINT32 *> (row);
    for (; i < lcount; i++)
    {
      float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
@@ -2563,7 +2575,7 @@ struct VariationStore
 
   bool serialize (hb_serialize_context_t *c,
 		  const VariationStore *src,
-		  const hb_array_t <hb_inc_bimap_t> &inner_maps)
+		  const hb_array_t <const hb_inc_bimap_t> &inner_maps)
   {
     TRACE_SERIALIZE (this);
 #ifdef HB_NO_VAR
@@ -2618,7 +2630,7 @@ struct VariationStore
     return_trace (true);
   }
 
-  bool subset (hb_subset_context_t *c) const
+  bool subset (hb_subset_context_t *c, const hb_array_t<const hb_inc_bimap_t> &inner_maps) const
   {
     TRACE_SUBSET (this);
 #ifdef HB_NO_VAR
@@ -2628,22 +2640,7 @@ struct VariationStore
     VariationStore *varstore_prime = c->serializer->start_embed<VariationStore> ();
     if (unlikely (!varstore_prime)) return_trace (false);
 
-    const hb_set_t *variation_indices = c->plan->layout_variation_indices;
-    if (variation_indices->is_empty ()) return_trace (false);
-
-    hb_vector_t<hb_inc_bimap_t> inner_maps;
-    inner_maps.resize ((unsigned) dataSets.len);
-
-    for (unsigned idx : c->plan->layout_variation_indices->iter ())
-    {
-      uint16_t major = idx >> 16;
-      uint16_t minor = idx & 0xFFFF;
-
-      if (major >= inner_maps.length)
-	return_trace (false);
-      inner_maps[major].add (minor);
-    }
-    varstore_prime->serialize (c->serializer, this, inner_maps.as_array ());
+    varstore_prime->serialize (c->serializer, this, inner_maps);
 
     return_trace (
         !c->serializer->in_error()
@@ -3169,28 +3166,36 @@ struct VariationDevice
 			     VariationStore::cache_t *store_cache = nullptr) const
   { return font->em_scalef_y (get_delta (font, store, store_cache)); }
 
-  VariationDevice* copy (hb_serialize_context_t *c, const hb_map_t *layout_variation_idx_map) const
+  VariationDevice* copy (hb_serialize_context_t *c,
+                         const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map) const
   {
     TRACE_SERIALIZE (this);
+    if (!layout_variation_idx_delta_map) return_trace (nullptr);
     auto snap = c->snapshot ();
     auto *out = c->embed (this);
     if (unlikely (!out)) return_trace (nullptr);
-    if (!layout_variation_idx_map || layout_variation_idx_map->is_empty ()) return_trace (out);
 
     /* TODO Just get() and bail if NO_VARIATION. Needs to setup the map to return that. */
-    if (!layout_variation_idx_map->has (varIdx))
+    if (!layout_variation_idx_delta_map->has (varIdx))
     {
       c->revert (snap);
       return_trace (nullptr);
     }
-    unsigned new_idx = layout_variation_idx_map->get (varIdx);
+    unsigned new_idx = hb_first (layout_variation_idx_delta_map->get (varIdx));
     out->varIdx = new_idx;
     return_trace (out);
   }
 
-  void record_variation_index (hb_set_t *layout_variation_indices) const
+  void collect_variation_index (hb_collect_variation_indices_context_t *c) const
   {
-    layout_variation_indices->add (varIdx);
+    c->layout_variation_indices->add (varIdx);
+    int delta = 0;
+    if (c->font && c->var_store)
+      delta = roundf (get_delta (c->font, *c->var_store, c->store_cache));
+
+    /* set new varidx to HB_OT_LAYOUT_NO_VARIATIONS_INDEX here, will remap
+     * varidx later*/
+    c->varidx_delta_map->set (varIdx, hb_pair_t<unsigned, int> (HB_OT_LAYOUT_NO_VARIATIONS_INDEX, delta));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -3283,7 +3288,8 @@ struct Device
     }
   }
 
-  Device* copy (hb_serialize_context_t *c, const hb_map_t *layout_variation_idx_map=nullptr) const
+  Device* copy (hb_serialize_context_t *c,
+                const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map=nullptr) const
   {
     TRACE_SERIALIZE (this);
     switch (u.b.format) {
@@ -3295,14 +3301,14 @@ struct Device
 #endif
 #ifndef HB_NO_VAR
     case 0x8000:
-      return_trace (reinterpret_cast<Device *> (u.variation.copy (c, layout_variation_idx_map)));
+      return_trace (reinterpret_cast<Device *> (u.variation.copy (c, layout_variation_idx_delta_map)));
 #endif
     default:
       return_trace (nullptr);
     }
   }
 
-  void collect_variation_indices (hb_set_t *layout_variation_indices) const
+  void collect_variation_indices (hb_collect_variation_indices_context_t *c) const
   {
     switch (u.b.format) {
 #ifndef HB_NO_HINTING
@@ -3313,11 +3319,23 @@ struct Device
 #endif
 #ifndef HB_NO_VAR
     case 0x8000:
-      u.variation.record_variation_index (layout_variation_indices);
+      u.variation.collect_variation_index (c);
       return;
 #endif
     default:
       return;
+    }
+  }
+
+  unsigned get_variation_index () const
+  {
+    switch (u.b.format) {
+#ifndef HB_NO_VAR
+    case 0x8000:
+      return u.variation.varIdx;
+#endif
+    default:
+      return HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
     }
   }
 

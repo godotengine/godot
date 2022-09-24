@@ -120,6 +120,8 @@ private:
 	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
+	GDVIRTUAL1(_set_read_only, bool)
+
 	void _update_pin_flags();
 
 protected:

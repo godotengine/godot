@@ -62,7 +62,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	// Note that we should be checking "opengl3" as the driver, might never enable this seeing OpenGL is deprecated on iOS
 	// We are hardcoding the rendering_driver to "vulkan" down below
 
-	if (rendering_driver == "opengl_es") {
+	if (rendering_driver == "opengl3") {
 		bool gl_initialization_error = false;
 
 		// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
@@ -163,7 +163,7 @@ Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
 	drivers.push_back("vulkan");
 #endif
 #if defined(GLES3_ENABLED)
-	drivers.push_back("opengl_es");
+	drivers.push_back("opengl3");
 #endif
 
 	return drivers;

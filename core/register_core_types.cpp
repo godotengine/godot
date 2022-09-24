@@ -58,6 +58,7 @@
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_uid.h"
+#include "core/io/stream_peer_gzip.h"
 #include "core/io/stream_peer_tls.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
@@ -184,6 +185,7 @@ void register_core_types() {
 	GDREGISTER_ABSTRACT_CLASS(StreamPeer);
 	GDREGISTER_CLASS(StreamPeerExtension);
 	GDREGISTER_CLASS(StreamPeerBuffer);
+	GDREGISTER_CLASS(StreamPeerGZIP);
 	GDREGISTER_CLASS(StreamPeerTCP);
 	GDREGISTER_CLASS(TCPServer);
 
@@ -228,8 +230,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatLoader);
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
-	GDREGISTER_CLASS(core_bind::File);
-	GDREGISTER_CLASS(core_bind::Directory);
+	GDREGISTER_ABSTRACT_CLASS(FileAccess);
+	GDREGISTER_ABSTRACT_CLASS(DirAccess);
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);
 	GDREGISTER_CLASS(core_bind::Semaphore);
@@ -249,6 +251,8 @@ void register_core_types() {
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
 
+	GDREGISTER_ABSTRACT_CLASS(ImageFormatLoader);
+	GDREGISTER_CLASS(ImageFormatLoaderExtension);
 	GDREGISTER_ABSTRACT_CLASS(ResourceImporter);
 
 	GDREGISTER_CLASS(NativeExtension);

@@ -32,9 +32,6 @@ const GodotWebXR = {
 	$GodotWebXR: {
 		gl: null,
 
-		texture_ids: [null, null],
-		textures: [null, null],
-
 		session: null,
 		space: null,
 		frame: null,
@@ -75,110 +72,6 @@ const GodotWebXR = {
 			window.setTimeout(function () {
 				Browser.mainLoop.resume();
 			}, 0);
-		},
-
-		// Some custom WebGL code for blitting our eye textures to the
-		// framebuffer we get from WebXR.
-		shaderProgram: null,
-		programInfo: null,
-		buffer: null,
-		// Vertex shader source.
-		vsSource: `
-			const vec2 scale = vec2(0.5, 0.5);
-			attribute vec4 aVertexPosition;
-
-			varying highp vec2 vTextureCoord;
-
-			void main () {
-				gl_Position = aVertexPosition;
-				vTextureCoord = aVertexPosition.xy * scale + scale;
-			}
-		`,
-		// Fragment shader source.
-		fsSource: `
-			varying highp vec2 vTextureCoord;
-
-			uniform sampler2D uSampler;
-
-			void main() {
-				gl_FragColor = texture2D(uSampler, vTextureCoord);
-			}
-		`,
-
-		initShaderProgram: (gl, vsSource, fsSource) => {
-			const vertexShader = GodotWebXR.loadShader(gl, gl.VERTEX_SHADER, vsSource);
-			const fragmentShader = GodotWebXR.loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
-
-			const shaderProgram = gl.createProgram();
-			gl.attachShader(shaderProgram, vertexShader);
-			gl.attachShader(shaderProgram, fragmentShader);
-			gl.linkProgram(shaderProgram);
-
-			if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-				GodotRuntime.error(`Unable to initialize the shader program: ${gl.getProgramInfoLog(shaderProgram)}`);
-				return null;
-			}
-
-			return shaderProgram;
-		},
-		loadShader: (gl, type, source) => {
-			const shader = gl.createShader(type);
-			gl.shaderSource(shader, source);
-			gl.compileShader(shader);
-
-			if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-				GodotRuntime.error(`An error occurred compiling the shader: ${gl.getShaderInfoLog(shader)}`);
-				gl.deleteShader(shader);
-				return null;
-			}
-
-			return shader;
-		},
-		initBuffer: (gl) => {
-			const positionBuffer = gl.createBuffer();
-			gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-			const positions = [
-				-1.0, -1.0,
-				1.0, -1.0,
-				-1.0, 1.0,
-				1.0, 1.0,
-			];
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-			return positionBuffer;
-		},
-		blitTexture: (gl, texture) => {
-			if (GodotWebXR.shaderProgram === null) {
-				GodotWebXR.shaderProgram = GodotWebXR.initShaderProgram(gl, GodotWebXR.vsSource, GodotWebXR.fsSource);
-				GodotWebXR.programInfo = {
-					program: GodotWebXR.shaderProgram,
-					attribLocations: {
-						vertexPosition: gl.getAttribLocation(GodotWebXR.shaderProgram, 'aVertexPosition'),
-					},
-					uniformLocations: {
-						uSampler: gl.getUniformLocation(GodotWebXR.shaderProgram, 'uSampler'),
-					},
-				};
-				GodotWebXR.buffer = GodotWebXR.initBuffer(gl);
-			}
-
-			const orig_program = gl.getParameter(gl.CURRENT_PROGRAM);
-			gl.useProgram(GodotWebXR.shaderProgram);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, GodotWebXR.buffer);
-			gl.vertexAttribPointer(GodotWebXR.programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(GodotWebXR.programInfo.attribLocations.vertexPosition);
-
-			gl.activeTexture(gl.TEXTURE0);
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			gl.uniform1i(GodotWebXR.programInfo.uniformLocations.uSampler, 0);
-
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-			// Restore state.
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			gl.disableVertexAttribArray(GodotWebXR.programInfo.attribLocations.vertexPosition);
-			gl.bindBuffer(gl.ARRAY_BUFFER, null);
-			gl.useProgram(orig_program);
 		},
 
 		// Holds the controllers list between function calls.
@@ -370,22 +263,6 @@ const GodotWebXR = {
 				.catch((e) => { });
 		}
 
-		// Clean-up the textures we allocated for each view.
-		const gl = GodotWebXR.gl;
-		for (let i = 0; i < GodotWebXR.textures.length; i++) {
-			const texture = GodotWebXR.textures[i];
-			if (texture !== null) {
-				gl.deleteTexture(texture);
-			}
-			GodotWebXR.textures[i] = null;
-
-			const texture_id = GodotWebXR.texture_ids[i];
-			if (texture_id !== null) {
-				GL.textures[texture_id] = null;
-			}
-			GodotWebXR.texture_ids[i] = null;
-		}
-
 		GodotWebXR.session = null;
 		GodotWebXR.space = null;
 		GodotWebXR.frame = null;
@@ -460,50 +337,9 @@ const GodotWebXR = {
 		return buf;
 	},
 
-	godot_webxr_get_external_texture_for_eye__proxy: 'sync',
-	godot_webxr_get_external_texture_for_eye__sig: 'ii',
-	godot_webxr_get_external_texture_for_eye: function (p_eye) {
-		if (!GodotWebXR.session) {
-			return 0;
-		}
-
-		const view_index = (p_eye === 2 /* ARVRInterface::EYE_RIGHT */) ? 1 : 0;
-		if (GodotWebXR.texture_ids[view_index]) {
-			return GodotWebXR.texture_ids[view_index];
-		}
-
-		// Check pose separately and after returning the cached texture id,
-		// because we won't get a pose in some cases if we lose tracking, and
-		// we don't want to return 0 just because tracking was lost.
-		if (!GodotWebXR.pose) {
-			return 0;
-		}
-
-		const glLayer = GodotWebXR.session.renderState.baseLayer;
-		const view = GodotWebXR.pose.views[view_index];
-		const viewport = glLayer.getViewport(view);
-		const gl = GodotWebXR.gl;
-
-		const texture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, viewport.width, viewport.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-
-		const texture_id = GL.getNewId(GL.textures);
-		GL.textures[texture_id] = texture;
-		GodotWebXR.textures[view_index] = texture;
-		GodotWebXR.texture_ids[view_index] = texture_id;
-		return texture_id;
-	},
-
 	godot_webxr_commit_for_eye__proxy: 'sync',
-	godot_webxr_commit_for_eye__sig: 'vi',
-	godot_webxr_commit_for_eye: function (p_eye) {
+	godot_webxr_commit_for_eye__sig: 'vii',
+	godot_webxr_commit_for_eye: function (p_eye, p_destination_fbo) {
 		if (!GodotWebXR.session || !GodotWebXR.pose) {
 			return;
 		}
@@ -514,18 +350,29 @@ const GodotWebXR = {
 		const viewport = glLayer.getViewport(view);
 		const gl = GodotWebXR.gl;
 
+		const framebuffer = GL.framebuffers[p_destination_fbo];
+
 		const orig_framebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
-		const orig_viewport = gl.getParameter(gl.VIEWPORT);
+		const orig_read_framebuffer = gl.getParameter(gl.READ_FRAMEBUFFER_BINDING);
+		const orig_read_buffer = gl.getParameter(gl.READ_BUFFER);
+		const orig_draw_framebuffer = gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING);
 
-		// Bind to WebXR's framebuffer.
-		gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
-		gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+		// Copy from Godot render target into framebuffer from WebXR.
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer);
+		gl.readBuffer(gl.COLOR_ATTACHMENT0);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, glLayer.framebuffer);
 
-		GodotWebXR.blitTexture(gl, GodotWebXR.textures[view_index]);
+		// Flip Y upside down on destination.
+		gl.blitFramebuffer(0, 0, viewport.width, viewport.height,
+			viewport.x, viewport.height, viewport.width, viewport.y,
+			gl.COLOR_BUFFER_BIT, gl.NEAREST);
 
 		// Restore state.
 		gl.bindFramebuffer(gl.FRAMEBUFFER, orig_framebuffer);
-		gl.viewport(orig_viewport[0], orig_viewport[1], orig_viewport[2], orig_viewport[3]);
+		gl.bindFramebuffer(gl.READ_FRAMEBUFFER, orig_read_framebuffer);
+		gl.readBuffer(orig_read_buffer);
+		gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, orig_draw_framebuffer);
 	},
 
 	godot_webxr_sample_controller_data__proxy: 'sync',

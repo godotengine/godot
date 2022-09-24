@@ -159,6 +159,15 @@
 				Sets the order of a configuration value (influences when saved to the config file).
 			</description>
 		</method>
+		<method name="set_restart_if_changed">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="restart" type="bool" />
+			<description>
+				Sets whether a setting requires restarting the editor to properly take effect.
+				[b]Note:[/b] This is just a hint to display to the user that the editor must be restarted for changes to take effect. Enabling [method set_restart_if_changed] does [i]not[/i] delay the setting being set when changed.
+			</description>
+		</method>
 		<method name="set_setting">
 			<return type="void" />
 			<param index="0" name="name" type="String" />
@@ -562,14 +571,24 @@
 			Forces the main window to be borderless.
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
-		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
-			Sets the main window to full screen when the project starts. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
-			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
+		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
+			Main window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
+			[b]Note:[/b] This setting is implemented on macOS.
+		</member>
+		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
+			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
+		</member>
+		<member name="display/window/size/no_focus" type="bool" setter="" getter="" default="false">
+			Main window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 			[b]Note:[/b] This setting is ignored on iOS.
+		</member>
+		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
+			Main window background can be transparent.
+			[b]Note:[/b] To use transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
+			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
@@ -1705,13 +1724,6 @@
 			If [code]true[/code], performs a previous depth pass before rendering 3D materials. This increases performance significantly in scenes with high overdraw, when complex materials and lighting are used. However, in scenes with few occluded surfaces, the depth prepass may reduce performance. If your game is viewed from a fixed angle that makes it easy to avoid overdraw (such as top-down or side-scrolling perspective), consider disabling the depth prepass to improve performance. This setting can be changed at run-time to optimize performance depending on the scene currently being viewed.
 			[b]Note:[/b] Only supported when using the Vulkan Clustered backend or the OpenGL backend. When using Vulkan Mobile there is no depth prepass performed.
 		</member>
-		<member name="rendering/driver/driver_name" type="String" setter="" getter="" default="&quot;vulkan&quot;">
-			The video driver to use.
-			[b]Note:[/b] OpenGL support is currently incomplete. Only basic rendering is supported.
-			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
-			[b]FIXME:[/b] No longer valid after DisplayServer split:
-			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
-		</member>
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
@@ -1786,6 +1798,27 @@
 		</member>
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
+		</member>
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		</member>
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Android override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			iOS override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			LinuxBSD override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			macOS override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Web override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Windows override for [member rendering/gl_compatibility/driver].
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
@@ -1947,6 +1980,44 @@
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/renderer/rendering_method" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
+			Sets the renderer that will be used by the project. Options are:
+			[b]Clustered[/b]: High-end renderer designed for Desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
+			[b]Mobile[/b]: Modern renderer designed for mobile devices. Has a lower base overhead than Clustered, but does not scale as well to large scenes with many elements.
+			[b]Compatibility[/b]: Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3/ OpenGL ES 3.0 / WebGL 2 APIs.
+		</member>
+		<member name="rendering/renderer/rendering_method.mobile" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
+			Override for [member rendering/renderer/rendering_method] on mobile devices.
+		</member>
+		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
+			Override for [member rendering/renderer/rendering_method] on web.
+		</member>
+		<member name="rendering/rendering_device/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
+		</member>
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		</member>
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Android override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			iOS override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			LinuxBSD override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			macOS override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Windows override for [member rendering/rendering_device/driver].
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
+		</member>
+		<member name="rendering/rendering_device/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
+		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
@@ -2027,18 +2098,6 @@
 		</member>
 		<member name="rendering/vrs/texture" type="String" setter="" getter="" default="&quot;&quot;">
 			If [member rendering/vrs/mode] is set to texture, this is the path to default texture loaded as the VRS image.
-		</member>
-		<member name="rendering/vulkan/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
-		</member>
-		<member name="rendering/vulkan/rendering/back_end" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/vulkan/rendering/back_end.mobile" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/vulkan/staging_buffer/block_size_kb" type="int" setter="" getter="" default="256">
-		</member>
-		<member name="rendering/vulkan/staging_buffer/max_size_mb" type="int" setter="" getter="" default="128">
-		</member>
-		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="threading/worker_pool/low_priority_thread_ratio" type="float" setter="" getter="" default="0.3">
 		</member>

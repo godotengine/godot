@@ -30,6 +30,7 @@
 
 #include "display_server_macos.h"
 
+#include "godot_button_view.h"
 #include "godot_content_view.h"
 #include "godot_menu_delegate.h"
 #include "godot_menu_item.h"
@@ -2212,7 +2213,9 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	popup_open(p_id);
-	if (wd.no_focus || wd.is_popup) {
+	if ([wd.window_object isMiniaturized]) {
+		return;
+	} else if (wd.no_focus || wd.is_popup) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
@@ -2369,6 +2372,10 @@ void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	if ([wd.window_object isZoomed]) {
+		return;
+	}
+
 	Point2i position = p_position;
 	// OS X native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot passes a positive value.
@@ -2492,6 +2499,10 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	if ([wd.window_object isZoomed]) {
+		return;
+	}
 
 	Size2i size = p_size / screen_get_max_scale();
 
@@ -2639,27 +2650,59 @@ bool DisplayServerMacOS::window_minimize_on_title_dbl_click() const {
 	return false;
 }
 
+void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	wd.wb_offset = p_offset;
+}
+
 Vector2i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Vector2i());
 	const WindowData &wd = windows[p_window];
 
-	float max_x = 0.f;
-	NSButton *cb = [wd.window_object standardWindowButton:NSWindowCloseButton];
-	if (cb) {
-		max_x = MAX(max_x, [cb frame].origin.x + [cb frame].size.width);
-	}
-	NSButton *mb = [wd.window_object standardWindowButton:NSWindowMiniaturizeButton];
-	if (mb) {
-		max_x = MAX(max_x, [mb frame].origin.x + [mb frame].size.width);
-	}
-	NSButton *zb = [wd.window_object standardWindowButton:NSWindowZoomButton];
-	if (zb) {
-		max_x = MAX(max_x, [zb frame].origin.x + [zb frame].size.width);
+	if (!wd.window_button_view) {
+		return Vector2i();
 	}
 
-	return Vector2i(max_x * screen_get_max_scale(), 0);
+	float max_x = wd.wb_offset.x + [wd.window_button_view frame].size.width;
+
+	if ([wd.window_object windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft) {
+		return Vector2i(0, max_x * screen_get_max_scale());
+	} else {
+		return Vector2i(max_x * screen_get_max_scale(), 0);
+	}
+}
+
+void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled) {
+	if (p_wd.window_button_view) {
+		[p_wd.window_button_view removeFromSuperview];
+		p_wd.window_button_view = nil;
+	}
+	if (p_enabled) {
+		float cb_frame = NSMinX([[p_wd.window_object standardWindowButton:NSWindowCloseButton] frame]);
+		float mb_frame = NSMinX([[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] frame]);
+		bool is_rtl = ([p_wd.window_object windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft);
+
+		float window_buttons_spacing = (is_rtl) ? (cb_frame - mb_frame) : (mb_frame - cb_frame);
+
+		[p_wd.window_object setTitleVisibility:NSWindowTitleHidden];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:YES];
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:YES];
+		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:YES];
+
+		p_wd.window_button_view = [[GodotButtonView alloc] initWithFrame:NSZeroRect];
+		[p_wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(p_wd.wb_offset.x, p_wd.wb_offset.y) rtl:is_rtl];
+		[p_wd.window_view addSubview:p_wd.window_button_view];
+	} else {
+		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
+		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:NO];
+		[[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] setHidden:NO];
+		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:NO];
+	}
 }
 
 void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
@@ -2684,14 +2727,21 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			NSRect rect = [wd.window_object frame];
 			if (p_enabled) {
 				[wd.window_object setTitlebarAppearsTransparent:YES];
-				[wd.window_object setTitleVisibility:NSWindowTitleHidden];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskFullSizeContentView];
+
+				if (!wd.fullscreen) {
+					window_set_custom_window_buttons(wd, true);
+				}
 			} else {
 				[wd.window_object setTitlebarAppearsTransparent:NO];
-				[wd.window_object setTitleVisibility:NSWindowTitleVisible];
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskFullSizeContentView];
+
+				if (!wd.fullscreen) {
+					window_set_custom_window_buttons(wd, false);
+				}
 			}
 			[wd.window_object setFrame:rect display:YES];
+			send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			// OrderOut prevents a lose focus bug with the window.
@@ -2711,7 +2761,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			_update_window_style(wd);
 			if ([wd.window_object isVisible]) {
-				if (wd.no_focus || wd.is_popup) {
+				if ([wd.window_object isMiniaturized]) {
+					return;
+				} else if (wd.no_focus || wd.is_popup) {
 					[wd.window_object orderFront:nil];
 				} else {
 					[wd.window_object makeKeyAndOrderFront:nil];

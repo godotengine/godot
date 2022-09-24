@@ -383,8 +383,8 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 	emit_signal(SNAME("velocity_computed"), p_new_velocity);
 }
 
-TypedArray<String> NavigationAgent3D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationAgent3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node3D>(get_parent())) {
 		warnings.push_back(RTR("The NavigationAgent3D can be used only under a Node3D inheriting parent node."));

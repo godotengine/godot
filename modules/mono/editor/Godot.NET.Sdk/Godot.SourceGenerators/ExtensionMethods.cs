@@ -29,7 +29,7 @@ namespace Godot.SourceGenerators
         {
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly.Name == assemblyName &&
+                if (symbol.ContainingAssembly?.Name == assemblyName &&
                     symbol.ToString() == typeFullName)
                 {
                     return true;
@@ -47,7 +47,7 @@ namespace Godot.SourceGenerators
 
             while (symbol != null)
             {
-                if (symbol.ContainingAssembly.Name == "GodotSharp")
+                if (symbol.ContainingAssembly?.Name == "GodotSharp")
                     return symbol;
 
                 symbol = symbol.BaseType;

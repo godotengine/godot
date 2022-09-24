@@ -1206,7 +1206,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		Ref<FileAccessCompressed> facw;
 		facw.instantiate();
 		facw->configure("RSCC");
-		err = facw->_open(p_path + ".depren", FileAccess::WRITE);
+		err = facw->open_internal(p_path + ".depren", FileAccess::WRITE);
 		ERR_FAIL_COND_V_MSG(err, ERR_FILE_CORRUPT, "Cannot create file '" + p_path + ".depren'.");
 
 		fw = facw;
@@ -1986,7 +1986,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 		fac.instantiate();
 		fac->configure("RSCC");
 		f = fac;
-		err = fac->_open(p_path, FileAccess::WRITE);
+		err = fac->open_internal(p_path, FileAccess::WRITE);
 	} else {
 		f = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	}

@@ -125,6 +125,12 @@ public:
 		EDITOR_ASSETLIB
 	};
 
+	enum SceneNameCasing {
+		SCENE_NAME_CASING_AUTO,
+		SCENE_NAME_CASING_PASCAL_CASE,
+		SCENE_NAME_CASING_SNAKE_CASE
+	};
+
 	struct ExecuteThreadArgs {
 		String path;
 		List<String> args;
@@ -218,7 +224,7 @@ private:
 		HELP_ABOUT,
 		HELP_SUPPORT_GODOT_DEVELOPMENT,
 
-		SET_RENDERING_DRIVER_SAVE_AND_RESTART,
+		SET_RENDERER_NAME_SAVE_AND_RESTART,
 
 		GLOBAL_NEW_WINDOW,
 		GLOBAL_SCENE,
@@ -231,12 +237,6 @@ private:
 	enum {
 		MAX_INIT_CALLBACKS = 128,
 		MAX_BUILD_CALLBACKS = 128
-	};
-
-	enum ScriptNameCasing {
-		SCENE_NAME_CASING_AUTO,
-		SCENE_NAME_CASING_PASCAL_CASE,
-		SCENE_NAME_CASING_SNAKE_CASE
 	};
 
 	struct BottomPanelItem {
@@ -286,12 +286,12 @@ private:
 	Control *theme_base = nullptr;
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
-	OptionButton *rendering_driver = nullptr;
+	OptionButton *renderer = nullptr;
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
-	int rendering_driver_current = 0;
-	String rendering_driver_request;
+	int renderer_current = 0;
+	String renderer_request;
 
 	// Split containers.
 	HSplitContainer *left_l_hsplit = nullptr;
@@ -322,6 +322,9 @@ private:
 	HBoxContainer *bottom_hb = nullptr;
 	Control *vp_base = nullptr;
 
+	Label *project_title = nullptr;
+	Control *left_menu_spacer = nullptr;
+	Control *right_menu_spacer = nullptr;
 	EditorTitleBar *menu_hb = nullptr;
 	VBoxContainer *main_screen_vbox = nullptr;
 	MenuBar *main_menu = nullptr;
@@ -397,7 +400,7 @@ private:
 	String current_path;
 	MenuButton *update_spinner = nullptr;
 
-	HBoxContainer *main_editor_button_vb = nullptr;
+	HBoxContainer *main_editor_button_hb = nullptr;
 	Vector<Button *> main_editor_buttons;
 	Vector<EditorPlugin *> editor_table;
 
@@ -543,7 +546,6 @@ private:
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
-	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 	void _remove_plugin_from_enabled(const String &p_name);
 
 	void _fs_changed();
@@ -553,7 +555,6 @@ private:
 	void _node_renamed();
 	void _editor_select_next();
 	void _editor_select_prev();
-	void _editor_select(int p_which);
 	void _set_scene_metadata(const String &p_file, int p_idx = -1);
 	void _get_scene_metadata(const String &p_file);
 	void _update_title();
@@ -562,6 +563,7 @@ private:
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();
+	void _titlebar_resized();
 	void _version_button_pressed();
 
 	int _save_external_resources();
@@ -599,8 +601,8 @@ private:
 
 	void _update_from_settings();
 
-	void _rendering_driver_selected(int);
-	void _update_rendering_driver_color();
+	void _renderer_selected(int);
+	void _update_renderer_color();
 
 	void _exit_editor(int p_exit_code);
 
@@ -658,8 +660,6 @@ private:
 	void _update_layouts_menu();
 	void _layout_menu_option(int p_id);
 
-	void _clear_undo_history();
-
 	void _update_addon_config();
 
 	void _toggle_distraction_free_mode();
@@ -703,7 +703,11 @@ protected:
 	void set_current_tab(int p_tab);
 
 public:
-	void set_visible_editor(EditorTable p_table) { _editor_select(p_table); }
+	// Public for use with callable_mp.
+	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
+
+	void editor_select(int p_which);
+	void set_visible_editor(EditorTable p_table) { editor_select(p_table); }
 
 	bool call_build();
 
@@ -719,6 +723,8 @@ public:
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
+
+	static String adjust_scene_name_casing(const String &root_name);
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
