@@ -189,21 +189,21 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector4" />
 			<description>
-				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
 		<method name="posmod" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="mod" type="float" />
 			<description>
-				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
+				Returns a new vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param mod].
 			</description>
 		</method>
 		<method name="posmodv" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="modv" type="Vector4" />
 			<description>
-				Returns a vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
+				Returns a new vector composed of the [method @GlobalScope.fposmod] of this vector's components and [param modv]'s components.
 			</description>
 		</method>
 		<method name="round" qualifiers="const">
@@ -215,14 +215,14 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector4" />
 			<description>
-				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
 			<return type="Vector4" />
 			<param index="0" name="step" type="Vector4" />
 			<description>
-				Returns this vector with each component snapped to the nearest multiple of [param step]. This can also be used to round to an arbitrary number of decimals.
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>

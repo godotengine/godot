@@ -287,14 +287,14 @@
 			<return type="Vector3" />
 			<param index="0" name="b" type="Vector3" />
 			<description>
-				Returns this vector projected onto the vector [param b].
+				Returns the result of projecting the vector onto the given vector [param b].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns this vector reflected from a plane defined by the given normal.
+				Returns the result of reflecting the vector from a plane defined by the given normal [param n].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -302,7 +302,7 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Rotates this vector around a given axis by [param angle] (in radians). The axis must be a normalized vector.
+				Returns the result of rotating this vector around a given axis by [param angle] (in radians). The axis must be a normalized vector. See also [method @GlobalScope.deg_to_rad].
 			</description>
 		</method>
 		<method name="round" qualifiers="const">
@@ -314,7 +314,7 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector3" />
 			<description>
-				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="signed_angle_to" qualifiers="const">
@@ -338,14 +338,14 @@
 			<return type="Vector3" />
 			<param index="0" name="n" type="Vector3" />
 			<description>
-				Returns this vector slid along a plane defined by the given normal.
+				Returns a new vector slid along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="step" type="Vector3" />
 			<description>
-				Returns this vector with each component snapped to the nearest multiple of [param step]. This can also be used to round to an arbitrary number of decimals.
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>

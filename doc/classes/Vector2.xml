@@ -99,7 +99,7 @@
 			<return type="Vector2" />
 			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns the vector "bounced off" from a plane defined by the given normal.
+				Returns a new vector "bounced off" from a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="ceil" qualifiers="const">
@@ -276,7 +276,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
+				Returns a new vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
 		<method name="orthogonal" qualifiers="const">
@@ -303,21 +303,21 @@
 			<return type="Vector2" />
 			<param index="0" name="b" type="Vector2" />
 			<description>
-				Returns this vector projected onto the vector [code]b[/code].
+				Returns the result of projecting the vector onto the given vector [param b].
 			</description>
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns the vector reflected (i.e. mirrored, or symmetric) over a line defined by the given direction vector [param n].
+				Returns the result of reflecting the vector from a line defined by the given direction vector [param n].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="angle" type="float" />
 			<description>
-				Returns the vector rotated by [param angle] (in radians). See also [method @GlobalScope.deg_to_rad].
+				Returns the result of rotating this vector by [param angle] (in radians). See also [method @GlobalScope.deg_to_rad].
 			</description>
 		</method>
 		<method name="round" qualifiers="const">
@@ -329,7 +329,7 @@
 		<method name="sign" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns a new vector with each component set to one or negative one, depending on the signs of the components, or zero if the component is zero, by calling [method @GlobalScope.sign] on each component.
+				Returns a new vector with each component set to [code]1.0[/code] if it's positive, [code]-1.0[/code] if it's negative, and [code]0.0[/code] if it's zero. The result is identical to calling [method @GlobalScope.sign] on each component.
 			</description>
 		</method>
 		<method name="slerp" qualifiers="const">
@@ -345,14 +345,14 @@
 			<return type="Vector2" />
 			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns this vector slid along a plane defined by the given normal.
+				Returns the result of sliding the vector along a plane defined by the given normal.
 			</description>
 		</method>
 		<method name="snapped" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="step" type="Vector2" />
 			<description>
-				Returns this vector with each component snapped to the nearest multiple of [param step]. This can also be used to round to an arbitrary number of decimals.
+				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
 	</methods>
