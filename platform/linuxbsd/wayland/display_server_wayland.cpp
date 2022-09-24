@@ -209,17 +209,34 @@ void DisplayServerWayland::_seat_state_override_cursor_shape(SeatState &p_ss, Cu
 
 	ERR_FAIL_NULL(p_ss.wls);
 
-	struct wl_cursor_image *cursor_image = p_ss.wls->cursor_images[p_shape];
+	struct wl_buffer *cursor_buffer = nullptr;
+	Point2i hotspot;
 
-	if (!cursor_image) {
-		return;
+	if (!p_ss.wls->custom_cursors.has(p_shape)) {
+		// Select the default cursor data.
+		struct wl_cursor_image *cursor_image = p_ss.wls->cursor_images[p_shape];
+
+		if (!cursor_image) {
+			// TODO: Error out?
+			return;
+		}
+
+		cursor_buffer = p_ss.wls->cursor_bufs[p_shape];
+		hotspot.x = cursor_image->hotspot_x;
+		hotspot.y = cursor_image->hotspot_y;
+	} else {
+		// Select the custom cursor data.
+		CustomWaylandCursor &custom_cursor = p_ss.wls->custom_cursors[p_shape];
+
+		cursor_buffer = custom_cursor.wl_buffer;
+		hotspot = custom_cursor.hotspot;
 	}
 
 	// Update the cursor's hotspot.
-	wl_pointer_set_cursor(p_ss.wl_pointer, 0, p_ss.cursor_surface, cursor_image->hotspot_x, cursor_image->hotspot_y);
+	wl_pointer_set_cursor(p_ss.wl_pointer, 0, p_ss.cursor_surface, hotspot.x, hotspot.y);
 
 	// Attach the new cursor's buffer and damage it.
-	wl_surface_attach(p_ss.cursor_surface, p_ss.wls->cursor_bufs[p_shape], 0, 0);
+	wl_surface_attach(p_ss.cursor_surface, cursor_buffer, 0, 0);
 	wl_surface_damage_buffer(p_ss.cursor_surface, 0, 0, INT_MAX, INT_MAX);
 
 	// Commit everything.
@@ -522,6 +539,44 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 
 		wd.window_event_callback.callp((const Variant **)&arg, 1, ret, ce);
 	}
+}
+
+// Based on the wayland book's shared memory boilerplate (PD/CC0).
+// See: https://wayland-book.com/surfaces/shared-memory.html
+int DisplayServerWayland::_allocate_shm_file(size_t size) {
+	int retries = 100;
+
+	do {
+		// Generate a random name.
+		char name[] = "/wl_shm-godot-XXXXXX";
+		for (long unsigned int i = sizeof(name) - 7; i < sizeof(name) - 1; i++) {
+			name[i] = Math::random('A', 'Z');
+		}
+
+		// Try to open a shared memory object with that name.
+		int fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
+		if (fd >= 0) {
+			// Success, unlink its name as we just need the file descriptor.
+			shm_unlink(name);
+
+			// Resize the file to the requested length.
+			int ret;
+			do {
+				ret = ftruncate(fd, size);
+			} while (ret < 0 && errno == EINTR);
+
+			if (ret < 0) {
+				close(fd);
+				return -1;
+			}
+
+			return fd;
+		}
+
+		retries--;
+	} while (retries > 0 && errno == EEXIST);
+
+	return -1;
 }
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
@@ -2486,8 +2541,105 @@ DisplayServerWayland::CursorShape DisplayServerWayland::cursor_get_shape() const
 }
 
 void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub cursor_set_custom_image cursor %s shape %d hotspot %s", p_cursor, p_shape, p_hotspot));
+	MutexLock mutex_lock(wls.mutex);
+
+	if (p_cursor.is_valid()) {
+		HashMap<CursorShape, CustomWaylandCursor>::Iterator cursor_c = wls.custom_cursors.find(p_shape);
+
+		if (cursor_c) {
+			if (cursor_c->value.cursor_rid == p_cursor->get_rid() && cursor_c->value.hotspot == p_hotspot) {
+				cursor_set_shape(p_shape);
+				return;
+			}
+
+			wls.custom_cursors.erase(p_shape);
+		}
+
+		Ref<Texture2D> texture = p_cursor;
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Ref<Image> image;
+		Size2i texture_size;
+		Rect2i atlas_rect;
+
+		ERR_FAIL_COND(!texture.is_valid());
+
+		image = texture->get_image();
+
+		ERR_FAIL_COND(!image.is_valid());
+
+		if (!image.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.position.x = atlas_texture->get_region().position.x;
+			atlas_rect.position.y = atlas_texture->get_region().position.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
+		// NOTE: The Wayland protocol says nothing about cursor size limits, yet if
+		// the texture is larger than 256x256 it won't show at least on sway.
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
+		ERR_FAIL_COND(texture_size.height == 0 || texture_size.width == 0);
+
+		// NOTE: The stride is the width of the image in bytes.
+		unsigned int texture_stride = texture_size.width * 4;
+		unsigned int data_size = texture_stride * texture_size.height;
+
+		// We need a shared memory object file descriptor in order to create a
+		// wl_buffer through wl_shm.
+		int fd = _allocate_shm_file(data_size);
+		ERR_FAIL_COND(fd == -1);
+
+		CustomWaylandCursor &cursor = wls.custom_cursors[p_shape];
+		cursor.cursor_rid = p_cursor->get_rid();
+		cursor.hotspot = p_hotspot;
+
+		if (cursor.buffer_data) {
+			// Clean up the old buffer data.
+			munmap(cursor.buffer_data, cursor.buffer_data_size);
+		}
+
+		cursor.buffer_data = (uint32_t *)mmap(NULL, data_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+		if (cursor.wl_buffer) {
+			// Clean up the old Wayland buffer.
+			wl_buffer_destroy(cursor.wl_buffer);
+		}
+
+		// Create the Wayland buffer.
+		struct wl_shm_pool *wl_shm_pool = wl_shm_create_pool(wls.globals.wl_shm, fd, texture_size.height * data_size);
+		cursor.wl_buffer = wl_shm_pool_create_buffer(wl_shm_pool, 0, texture_size.width, texture_size.height, texture_stride, WL_SHM_FORMAT_XRGB8888);
+		wl_shm_pool_destroy(wl_shm_pool);
+
+		// Fill the cursor buffer with the texture data.
+		for (unsigned int index = 0; index < (unsigned int)(texture_size.width * texture_size.height); index++) {
+			int row_index = floor(index / texture_size.width) + atlas_rect.position.y;
+			int column_index = (index % int(texture_size.width)) + atlas_rect.position.x;
+
+			if (atlas_texture.is_valid()) {
+				column_index = MIN(column_index, atlas_rect.size.width - 1);
+				row_index = MIN(row_index, atlas_rect.size.height - 1);
+			}
+
+			cursor.buffer_data[index] = image->get_pixel(column_index, row_index).to_argb32();
+		}
+	} else {
+		// Reset to default system cursor.
+		if (wls.custom_cursors.has(p_shape)) {
+			wls.custom_cursors.erase(p_shape);
+		}
+	}
+
+	_wayland_state_update_cursor(wls);
 }
 
 int DisplayServerWayland::keyboard_get_layout_count() const {

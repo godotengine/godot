@@ -69,6 +69,8 @@
 #include "core/input/input.h"
 #include "core/os/thread.h"
 
+#include "scene/resources/texture.h"
+
 #undef CursorShape
 
 // Fix the wl_array_for_each macro to work with C++. This is based on the
@@ -290,6 +292,15 @@ class DisplayServerWayland : public DisplayServer {
 		Vector<uint8_t> primary_data;
 	};
 
+	struct CustomWaylandCursor {
+		struct wl_buffer *wl_buffer = nullptr;
+		uint32_t *buffer_data = nullptr;
+		uint32_t buffer_data_size = 0;
+
+		RID cursor_rid;
+		Point2i hotspot;
+	};
+
 	struct WaylandState {
 		Mutex mutex;
 
@@ -304,8 +315,10 @@ class DisplayServerWayland : public DisplayServer {
 		SeatState *current_seat = nullptr;
 
 		struct wl_cursor_theme *wl_cursor_theme = nullptr;
-		struct wl_cursor_image *cursor_images[CURSOR_MAX];
-		struct wl_buffer *cursor_bufs[CURSOR_MAX];
+		struct wl_cursor_image *cursor_images[CURSOR_MAX] = {};
+		struct wl_buffer *cursor_bufs[CURSOR_MAX] = {};
+
+		HashMap<CursorShape, CustomWaylandCursor> custom_cursors;
 
 		CursorShape cursor_shape = CURSOR_ARROW;
 		MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
@@ -352,6 +365,8 @@ class DisplayServerWayland : public DisplayServer {
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
 	void _window_data_set_mode(WindowData &p_wd, WindowMode p_mode);
 	void _send_window_event(WindowID p_window, WindowEvent p_event);
+
+	static int _allocate_shm_file(size_t size);
 
 	static void _poll_events_thread(void *p_wls);
 
