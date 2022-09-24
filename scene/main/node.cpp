@@ -2640,21 +2640,19 @@ void Node::clear_internal_tree_resource_paths() {
 	}
 }
 
-TypedArray<String> Node::get_configuration_warnings() const {
-	TypedArray<String> ret;
+PackedStringArray Node::get_configuration_warnings() const {
+	PackedStringArray ret;
 
 	Vector<String> warnings;
 	if (GDVIRTUAL_CALL(_get_configuration_warnings, warnings)) {
-		for (int i = 0; i < warnings.size(); i++) {
-			ret.push_back(warnings[i]);
-		}
+		ret.append_array(warnings);
 	}
 
 	return ret;
 }
 
 String Node::get_configuration_warnings_as_string() const {
-	TypedArray<String> warnings = get_configuration_warnings();
+	PackedStringArray warnings = get_configuration_warnings();
 	String all_warnings = String();
 	for (int i = 0; i < warnings.size(); i++) {
 		if (i > 0) {
@@ -2662,7 +2660,7 @@ String Node::get_configuration_warnings_as_string() const {
 		}
 		// Format as a bullet point list to make multiple warnings easier to distinguish
 		// from each other.
-		all_warnings += String::utf8("•  ") + String(warnings[i]);
+		all_warnings += String::utf8("•  ") + warnings[i];
 	}
 	return all_warnings;
 }

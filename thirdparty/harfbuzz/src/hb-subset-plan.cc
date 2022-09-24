@@ -89,8 +89,6 @@ _remap_indexes (const hb_set_t *indexes,
 }
 
 #ifndef HB_NO_SUBSET_LAYOUT
-typedef void (*layout_collect_func_t) (hb_face_t *face, hb_tag_t table_tag, const hb_tag_t *scripts, const hb_tag_t *languages, const hb_tag_t *features, hb_set_t *lookup_indexes /* OUT */);
-
 
 /*
  * Removes all tags from 'tags' that are not in filter. Additionally eliminates any duplicates.
@@ -130,8 +128,8 @@ static bool _filter_tag_list(hb_vector_t<hb_tag_t>* tags, /* IN/OUT */
 template <typename T>
 static void _collect_layout_indices (hb_subset_plan_t     *plan,
                                      const T&              table,
-                                     layout_collect_func_t layout_collect_func,
-                                     hb_set_t		  *indices /* OUT */)
+                                     hb_set_t		  *lookup_indices, /* OUT */
+                                     hb_set_t		  *feature_indices /* OUT */)
 {
   unsigned num_features = table.get_feature_count ();
   hb_vector_t<hb_tag_t> features;
@@ -149,12 +147,23 @@ static void _collect_layout_indices (hb_subset_plan_t     *plan,
       || !plan->check_success (!scripts.in_error ()) || !scripts)
     return;
 
-  layout_collect_func (plan->source,
-                       T::tableTag,
-                       retain_all_scripts ? nullptr : scripts.arrayZ,
-		       nullptr,
-		       retain_all_features ? nullptr : features.arrayZ,
-		       indices);
+  hb_ot_layout_collect_features (plan->source,
+                                 T::tableTag,
+                                 retain_all_scripts ? nullptr : scripts.arrayZ,
+                                 nullptr,
+                                 retain_all_features ? nullptr : features.arrayZ,
+                                 feature_indices);
+
+  for (unsigned feature_index : *feature_indices)
+  {
+    //TODO: replace HB_OT_LAYOUT_NO_VARIATIONS_INDEX with variation_index for
+    //instancing
+    const OT::Feature &f = table.get_feature_variation (feature_index, HB_OT_LAYOUT_NO_VARIATIONS_INDEX);
+    f.add_lookup_indexes_to (lookup_indices);
+  }
+
+  //TODO: update for instancing: only collect lookups from feature_indexes that have no variations
+  table.feature_variation_collect_lookups (feature_indices, lookup_indices);
 }
 
 
@@ -232,11 +241,11 @@ _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
 {
   hb_blob_ptr_t<T> table = plan->source_table<T> ();
   hb_tag_t table_tag = table->tableTag;
-  hb_set_t lookup_indices;
+  hb_set_t lookup_indices, feature_indices;
   _collect_layout_indices<T> (plan,
                               *table,
-                              hb_ot_layout_collect_lookups,
-                              &lookup_indices);
+                              &lookup_indices,
+                              &feature_indices);
 
   if (table_tag == HB_OT_TAG_GSUB)
     hb_ot_layout_lookups_substitute_closure (plan->source,
@@ -247,19 +256,13 @@ _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
                           &lookup_indices);
   _remap_indexes (&lookup_indices, lookups);
 
-  // Collect and prune features
-  hb_set_t feature_indices;
-  _collect_layout_indices<T> (plan,
-                              *table,
-                              hb_ot_layout_collect_features,
-                              &feature_indices);
-
+  // prune features
   table->prune_features (lookups, &feature_indices);
   hb_map_t duplicate_feature_map;
   _GSUBGPOS_find_duplicate_features (*table, lookups, &feature_indices, &duplicate_feature_map);
 
   feature_indices.clear ();
-  table->prune_langsys (&duplicate_feature_map, langsys_map, &feature_indices);
+  table->prune_langsys (&duplicate_feature_map, plan->layout_scripts, langsys_map, &feature_indices);
   _remap_indexes (&feature_indices, features);
 
   table.destroy ();
@@ -269,11 +272,46 @@ _closure_glyphs_lookups_features (hb_subset_plan_t   *plan,
 
 #ifndef HB_NO_VAR
 static inline void
-_collect_layout_variation_indices (hb_subset_plan_t* plan,
-				   const hb_set_t *glyphset,
-				   const hb_map_t *gpos_lookups,
-				   hb_set_t  *layout_variation_indices,
-				   hb_map_t  *layout_variation_idx_map)
+_generate_varstore_inner_maps (const hb_set_t& varidx_set,
+                               unsigned subtable_count,
+                               hb_vector_t<hb_inc_bimap_t> &inner_maps /* OUT */)
+{
+  if (varidx_set.is_empty () || subtable_count == 0) return;
+
+  inner_maps.resize (subtable_count);
+  for (unsigned idx : varidx_set)
+  {
+    uint16_t major = idx >> 16;
+    uint16_t minor = idx & 0xFFFF;
+
+    if (major >= subtable_count)
+      continue;
+    inner_maps[major].add (minor);
+  }
+}
+
+static inline hb_font_t*
+_get_hb_font_with_variations (const hb_subset_plan_t *plan)
+{
+  hb_font_t *font = hb_font_create (plan->source);
+
+  hb_vector_t<hb_variation_t> vars;
+  vars.alloc (plan->user_axes_location->get_population ());
+
+  for (auto _ : *plan->user_axes_location)
+  {
+    hb_variation_t var;
+    var.tag = _.first;
+    var.value = _.second;
+    vars.push (var);
+  }
+
+  hb_font_set_variations (font, vars.arrayZ, plan->user_axes_location->get_population ());
+  return font;
+}
+
+static inline void
+_collect_layout_variation_indices (hb_subset_plan_t* plan)
 {
   hb_blob_ptr_t<OT::GDEF> gdef = plan->source_table<OT::GDEF> ();
   hb_blob_ptr_t<GPOS> gpos = plan->source_table<GPOS> ();
@@ -284,13 +322,40 @@ _collect_layout_variation_indices (hb_subset_plan_t* plan,
     gpos.destroy ();
     return;
   }
-  OT::hb_collect_variation_indices_context_t c (layout_variation_indices, glyphset, gpos_lookups);
+
+  const OT::VariationStore *var_store = nullptr;
+  hb_set_t varidx_set;
+  hb_font_t *font = nullptr;
+  float *store_cache = nullptr;
+  bool collect_delta = plan->pinned_at_default ? false : true;
+  if (collect_delta)
+  {
+    font = _get_hb_font_with_variations (plan);
+    if (gdef->has_var_store ())
+    {
+      var_store = &(gdef->get_var_store ());
+      store_cache = var_store->create_cache ();
+    }
+  }
+
+  OT::hb_collect_variation_indices_context_t c (&varidx_set,
+                                                plan->layout_variation_idx_delta_map,
+                                                font, var_store,
+                                                plan->_glyphset_gsub,
+                                                plan->gpos_lookups,
+                                                store_cache);
   gdef->collect_variation_indices (&c);
 
   if (hb_ot_layout_has_positioning (plan->source))
     gpos->collect_variation_indices (&c);
 
-  gdef->remap_layout_variation_indices (layout_variation_indices, layout_variation_idx_map);
+  hb_font_destroy (font);
+  var_store->destroy_cache (store_cache);
+
+  gdef->remap_layout_variation_indices (&varidx_set, plan->layout_variation_idx_delta_map);
+
+  unsigned subtable_count = gdef->has_var_store () ? gdef->get_var_store ().get_sub_table_count () : 0;
+  _generate_varstore_inner_maps (varidx_set, subtable_count, plan->gdef_varstore_inner_maps);
 
   gdef.destroy ();
   gpos.destroy ();
@@ -506,11 +571,7 @@ _populate_gids_to_retain (hb_subset_plan_t* plan,
 
 #ifndef HB_NO_VAR
   if (close_over_gdef)
-    _collect_layout_variation_indices (plan,
-				       plan->_glyphset_gsub,
-				       plan->gpos_lookups,
-				       plan->layout_variation_indices,
-				       plan->layout_variation_idx_map);
+    _collect_layout_variation_indices (plan);
 #endif
 }
 
@@ -585,12 +646,9 @@ _nameid_closure (hb_face_t *face,
 
 #ifndef HB_NO_VAR
 static void
-_normalize_axes_location (hb_face_t *face,
-			  const hb_hashmap_t<hb_tag_t, float> *user_axes_location,
-			  hb_hashmap_t<hb_tag_t, int> *normalized_axes_location, /* OUT */
-			  bool &all_axes_pinned)
+_normalize_axes_location (hb_face_t *face, hb_subset_plan_t *plan)
 {
-  if (user_axes_location->is_empty ())
+  if (plan->user_axes_location->is_empty ())
     return;
 
   hb_array_t<const OT::AxisRecord> axes = face->table.fvar->get_axes ();
@@ -605,25 +663,27 @@ _normalize_axes_location (hb_face_t *face,
   for (const auto& axis : axes)
   {
     hb_tag_t axis_tag = axis.get_axis_tag ();
-    if (!user_axes_location->has (axis_tag))
+    if (!plan->user_axes_location->has (axis_tag))
     {
       axis_not_pinned = true;
     }
     else
     {
-      int normalized_v = axis.normalize_axis_value (user_axes_location->get (axis_tag));
+      int normalized_v = axis.normalize_axis_value (plan->user_axes_location->get (axis_tag));
       if (has_avar && axis_count < face->table.avar->get_axis_count ())
       {
         normalized_v = seg_maps->map (normalized_v);
       }
-      normalized_axes_location->set (axis_tag, normalized_v);
+      plan->axes_location->set (axis_tag, normalized_v);
+      if (normalized_v != 0)
+        plan->pinned_at_default = false;
     }
     if (has_avar)
       seg_maps = &StructAfter<OT::SegmentMaps> (*seg_maps);
-    
+
     axis_count++;
   }
-  all_axes_pinned = !axis_not_pinned;
+  plan->all_axes_pinned = !axis_not_pinned;
 }
 #endif
 /**
@@ -683,8 +743,8 @@ hb_subset_plan_create_or_fail (hb_face_t	 *face,
   plan->gpos_features = hb_map_create ();
   plan->colrv1_layers = hb_map_create ();
   plan->colr_palettes = hb_map_create ();
-  plan->layout_variation_indices = hb_set_create ();
-  plan->layout_variation_idx_map = hb_map_create ();
+  plan->check_success (plan->layout_variation_idx_delta_map = hb_hashmap_create<unsigned, hb_pair_t<unsigned, int>> ());
+  plan->gdef_varstore_inner_maps.init ();
 
   plan->check_success (plan->sanitized_table_cache = hb_hashmap_create<hb_tag_t, hb::unique_ptr<hb_blob_t>> ());
   plan->check_success (plan->axes_location = hb_hashmap_create<hb_tag_t, int> ());
@@ -692,11 +752,19 @@ hb_subset_plan_create_or_fail (hb_face_t	 *face,
   if (plan->user_axes_location && input->axes_location)
       *plan->user_axes_location = *input->axes_location;
   plan->all_axes_pinned = false;
+  plan->pinned_at_default = true;
+
+  plan->check_success (plan->vmtx_map = hb_hashmap_create<unsigned, hb_pair_t<unsigned, int>> ());
+  plan->check_success (plan->hmtx_map = hb_hashmap_create<unsigned, hb_pair_t<unsigned, int>> ());
 
   if (unlikely (plan->in_error ())) {
     hb_subset_plan_destroy (plan);
     return nullptr;
   }
+
+#ifndef HB_NO_VAR
+  _normalize_axes_location (face, plan);
+#endif
 
   _populate_unicodes_to_retain (input->sets.unicodes, input->sets.glyphs, plan);
 
@@ -725,13 +793,6 @@ hb_subset_plan_create_or_fail (hb_face_t	 *face,
         plan->glyph_map->get(plan->unicode_to_new_gid_list.arrayZ[i].second);
   }
 
-#ifndef HB_NO_VAR
-  _normalize_axes_location (face,
-                            input->axes_location,
-                            plan->axes_location,
-                            plan->all_axes_pinned);
-#endif
-
   _nameid_closure (face, plan->name_ids, plan->all_axes_pinned, plan->user_axes_location);
   if (unlikely (plan->in_error ())) {
     hb_subset_plan_destroy (plan);
@@ -753,44 +814,6 @@ void
 hb_subset_plan_destroy (hb_subset_plan_t *plan)
 {
   if (!hb_object_destroy (plan)) return;
-
-  hb_set_destroy (plan->unicodes);
-  hb_set_destroy (plan->name_ids);
-  hb_set_destroy (plan->name_languages);
-  hb_set_destroy (plan->layout_features);
-  hb_set_destroy (plan->layout_scripts);
-  hb_set_destroy (plan->glyphs_requested);
-  hb_set_destroy (plan->drop_tables);
-  hb_set_destroy (plan->no_subset_tables);
-  hb_face_destroy (plan->source);
-  hb_face_destroy (plan->dest);
-  hb_map_destroy (plan->codepoint_to_glyph);
-  hb_map_destroy (plan->glyph_map);
-  hb_map_destroy (plan->reverse_glyph_map);
-  hb_map_destroy (plan->glyph_map_gsub);
-  hb_set_destroy (plan->_glyphset);
-  hb_set_destroy (plan->_glyphset_gsub);
-  hb_set_destroy (plan->_glyphset_mathed);
-  hb_set_destroy (plan->_glyphset_colred);
-  hb_map_destroy (plan->gsub_lookups);
-  hb_map_destroy (plan->gpos_lookups);
-  hb_map_destroy (plan->gsub_features);
-  hb_map_destroy (plan->gpos_features);
-  hb_map_destroy (plan->colrv1_layers);
-  hb_map_destroy (plan->colr_palettes);
-  hb_set_destroy (plan->layout_variation_indices);
-  hb_map_destroy (plan->layout_variation_idx_map);
-
-  hb_hashmap_destroy (plan->gsub_langsys);
-  hb_hashmap_destroy (plan->gpos_langsys);
-  hb_hashmap_destroy (plan->axes_location);
-  hb_hashmap_destroy (plan->sanitized_table_cache);
-
-  if (plan->user_axes_location)
-  {
-    hb_object_destroy (plan->user_axes_location);
-    hb_free (plan->user_axes_location);
-  }
 
   hb_free (plan);
 }

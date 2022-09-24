@@ -650,15 +650,14 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						double c = Math::ease(p_time / first_key_time, transition);
 						Variant first_value = a->track_get_key_value(i, first_key);
 						first_value = _post_process_key_value(a, i, first_value, nc->node);
-						Variant interp_value;
-						Variant::interpolate(pa->capture, first_value, c, interp_value);
+						Variant interp_value = Animation::interpolate_variant(pa->capture, first_value, c);
 						if (pa->accum_pass != accum_pass) {
 							ERR_CONTINUE(cache_update_prop_size >= NODE_CACHE_UPDATE_MAX);
 							cache_update_prop[cache_update_prop_size++] = pa;
 							pa->value_accum = interp_value;
 							pa->accum_pass = accum_pass;
 						} else {
-							Variant::interpolate(pa->value_accum, interp_value, p_interp, pa->value_accum);
+							pa->value_accum = Animation::interpolate_variant(pa->value_accum, interp_value, p_interp);
 						}
 
 						continue; //handled
@@ -679,7 +678,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						pa->value_accum = value;
 						pa->accum_pass = accum_pass;
 					} else {
-						Variant::interpolate(pa->value_accum, value, p_interp, pa->value_accum);
+						pa->value_accum = Animation::interpolate_variant(pa->value_accum, value, p_interp);
 					}
 
 				} else if (p_is_current && p_delta != 0) {
@@ -1270,6 +1269,8 @@ void AnimationPlayer::_animation_set_cache_update() {
 		// If something was modified or removed, caches need to be cleared
 		clear_caches();
 	}
+
+	emit_signal(SNAME("animation_list_changed"));
 }
 
 void AnimationPlayer::_animation_added(const StringName &p_name, const StringName &p_library) {
@@ -2150,6 +2151,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
 	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_list_changed"));
 	ADD_SIGNAL(MethodInfo("caches_cleared"));
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);

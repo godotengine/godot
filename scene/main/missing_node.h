@@ -55,7 +55,7 @@ public:
 	void set_recording_properties(bool p_enable);
 	bool is_recording_properties() const;
 
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	MissingNode();
 };

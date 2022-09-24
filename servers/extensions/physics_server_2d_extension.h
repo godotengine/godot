@@ -94,7 +94,6 @@ public:
 	EXBIND1RC(Vector2, get_contact_local_position, int)
 	EXBIND1RC(Vector2, get_contact_local_normal, int)
 	EXBIND1RC(int, get_contact_local_shape, int)
-
 	EXBIND1RC(RID, get_contact_collider, int)
 	EXBIND1RC(Vector2, get_contact_collider_position, int)
 	EXBIND1RC(ObjectID, get_contact_collider_id, int)
@@ -183,13 +182,7 @@ public:
 
 typedef PhysicsServer2D::MotionResult PhysicsServer2DExtensionMotionResult;
 
-struct PhysicsServer2DExtensionStateCallback {
-	void *instance = nullptr;
-	void (*callback)(void *p_instance, PhysicsDirectBodyState2D *p_state);
-};
-
 GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionMotionResult)
-GDVIRTUAL_NATIVE_PTR(PhysicsServer2DExtensionStateCallback)
 
 class PhysicsServer2DExtension : public PhysicsServer2D {
 	GDCLASS(PhysicsServer2DExtension, PhysicsServer2D);
@@ -376,13 +369,7 @@ public:
 	EXBIND2(body_set_omit_force_integration, RID, bool)
 	EXBIND1RC(bool, body_is_omitting_force_integration, RID)
 
-	GDVIRTUAL2(_body_set_state_sync_callback, RID, GDNativePtr<PhysicsServer2DExtensionStateCallback>)
-	void body_set_state_sync_callback(RID p_body, void *p_instance, BodyStateCallback p_callback) override {
-		PhysicsServer2DExtensionStateCallback callback;
-		callback.callback = p_callback;
-		callback.instance = p_instance;
-		GDVIRTUAL_REQUIRED_CALL(_body_set_state_sync_callback, p_body, &callback);
-	}
+	EXBIND2(body_set_state_sync_callback, RID, const Callable &)
 	EXBIND3(body_set_force_integration_callback, RID, const Callable &, const Variant &)
 
 	virtual bool body_collide_shape(RID p_body, int p_body_shape, RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, Vector2 *r_results, int p_result_max, int &r_result_count) override {

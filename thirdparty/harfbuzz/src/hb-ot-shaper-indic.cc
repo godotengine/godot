@@ -276,7 +276,7 @@ struct indic_shape_plan_t
 {
   bool load_virama_glyph (hb_font_t *font, hb_codepoint_t *pglyph) const
   {
-    hb_codepoint_t glyph = virama_glyph.get_relaxed ();
+    hb_codepoint_t glyph = virama_glyph;
     if (unlikely (glyph == (hb_codepoint_t) -1))
     {
       if (!config->virama || !font->get_nominal_glyph (config->virama, &glyph))
@@ -286,7 +286,7 @@ struct indic_shape_plan_t
 
       /* Our get_nominal_glyph() function needs a font, so we can't get the virama glyph
        * during shape planning...  Instead, overwrite it here. */
-      virama_glyph.set_relaxed ((int) glyph);
+      virama_glyph = (int) glyph;
     }
 
     *pglyph = glyph;
@@ -330,7 +330,7 @@ data_create_indic (const hb_ot_shape_plan_t *plan)
 #ifndef HB_NO_UNISCRIBE_BUG_COMPATIBLE
   indic_plan->uniscribe_bug_compatible = hb_options ().uniscribe_bug_compatible;
 #endif
-  indic_plan->virama_glyph.set_relaxed (-1);
+  indic_plan->virama_glyph = -1;
 
   /* Use zero-context would_substitute() matching for new-spec of the main
    * Indic scripts, and scripts with one spec only, but not for old-specs.
@@ -992,7 +992,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
    * class of I_Cat(H) is desired but has been lost. */
   /* We don't call load_virama_glyph(), since we know it's already
    * loaded. */
-  hb_codepoint_t virama_glyph = indic_plan->virama_glyph.get_relaxed ();
+  hb_codepoint_t virama_glyph = indic_plan->virama_glyph;
   if (virama_glyph)
   {
     for (unsigned int i = start; i < end; i++)

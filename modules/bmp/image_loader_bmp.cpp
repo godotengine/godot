@@ -200,7 +200,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 	return err;
 }
 
-Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, uint32_t p_flags, float p_scale) {
+Error ImageLoaderBMP::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 

@@ -183,6 +183,8 @@ public:
 	virtual MainLoop *get_main_loop() const;
 
 	virtual String get_name() const;
+	virtual String get_distribution_name() const;
+	virtual String get_version() const;
 
 	virtual DateTime get_datetime(bool p_utc) const;
 	virtual TimeZoneInfo get_time_zone_info() const;

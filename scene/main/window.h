@@ -254,8 +254,6 @@ public:
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
 
-	void warp_mouse(const Vector2 &p_position) override;
-
 	void set_wrap_controls(bool p_enable);
 	bool is_wrapping_controls() const;
 	void child_controls_changed();

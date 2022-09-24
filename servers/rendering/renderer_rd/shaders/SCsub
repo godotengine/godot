@@ -18,3 +18,5 @@ if "RD_GLSL" in env["BUILDERS"]:
 
 SConscript("effects/SCsub")
 SConscript("environment/SCsub")
+SConscript("forward_clustered/SCsub")
+SConscript("forward_mobile/SCsub")

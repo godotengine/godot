@@ -235,6 +235,8 @@ namespace Godot.SourceGenerators
                     .Append(signalName)
                     .Append(";\n");
 
+                source.Append($"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedName()}\"/>\n");
+
                 source.Append("    public event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedName())
                     .Append(" ")

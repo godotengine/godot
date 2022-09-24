@@ -331,6 +331,10 @@
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="43">
 			Node3D nodes receives this notification when their visibility changes.
 		</constant>
+		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="44">
+			Node3D nodes receives this notification when their local transform changes. This is not received when the transform of a parent node is changed.
+			In order for [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_local_transform].
+		</constant>
 		<constant name="ROTATION_EDIT_MODE_EULER" value="0" enum="RotationEditMode">
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">

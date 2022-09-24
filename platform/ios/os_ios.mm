@@ -240,6 +240,15 @@ String OS_IOS::get_name() const {
 	return "iOS";
 }
 
+String OS_IOS::get_distribution_name() const {
+	return get_name();
+}
+
+String OS_IOS::get_version() const {
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	return vformat("%d.%d.%d", (int64_t)ver.majorVersion, (int64_t)ver.minorVersion, (int64_t)ver.patchVersion);
+}
+
 String OS_IOS::get_model_name() const {
 	String model = ios->get_model();
 	if (model != "") {

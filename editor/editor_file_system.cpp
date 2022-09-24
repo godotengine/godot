@@ -690,7 +690,6 @@ void EditorFileSystem::scan() {
 
 	_update_extensions();
 
-	abort_scan = false;
 	if (!use_threads) {
 		scanning = true;
 		scan_total = 0;
@@ -1162,8 +1161,6 @@ void EditorFileSystem::scan_changes() {
 	scanning_changes = true;
 	scanning_changes_done = false;
 
-	abort_scan = false;
-
 	if (!use_threads) {
 		if (filesystem) {
 			EditorProgressBG pr("sources", TTR("ScanSources"), 1000);
@@ -1195,8 +1192,6 @@ void EditorFileSystem::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			Thread &active_thread = thread.is_started() ? thread : thread_sources;
 			if (use_threads && active_thread.is_started()) {
-				//abort thread if in progress
-				abort_scan = true;
 				while (scanning) {
 					OS::get_singleton()->delay_usec(1000);
 				}

@@ -32,7 +32,7 @@
 #define SCENE_SHADER_FORWARD_MOBILE_H
 
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/shaders/scene_forward_mobile.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_mobile/scene_forward_mobile.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
 

@@ -47,7 +47,7 @@ enum RotOrder {
 	EulerZYX
 };
 
-Vector3 deg2rad(const Vector3 &p_rotation) {
+Vector3 deg_to_rad(const Vector3 &p_rotation) {
 	return p_rotation / 180.0 * Math_PI;
 }
 
@@ -155,7 +155,7 @@ void test_rotation(Vector3 deg_original_euler, RotOrder rot_order) {
 	// are correct.
 
 	// Euler to rotation
-	const Vector3 original_euler = deg2rad(deg_original_euler);
+	const Vector3 original_euler = deg_to_rad(deg_original_euler);
 	const Basis to_rotation = EulerToBasis(rot_order, original_euler);
 
 	// Euler from rotation
@@ -280,6 +280,59 @@ TEST_CASE("[Stress][Basis] Euler conversions") {
 			test_rotation(vectors_to_test[i], rotorder_to_test[h]);
 		}
 	}
+}
+
+TEST_CASE("[Basis] Set axis angle") {
+	Vector3 axis;
+	real_t angle;
+	real_t pi = (real_t)Math_PI;
+
+	// Testing the singularity when the angle is 0°.
+	Basis identity(1, 0, 0, 0, 1, 0, 0, 0, 1);
+	identity.get_axis_angle(axis, angle);
+	CHECK(angle == 0);
+
+	// Testing the singularity when the angle is 180°.
+	Basis singularityPi(-1, 0, 0, 0, 1, 0, 0, 0, -1);
+	singularityPi.get_axis_angle(axis, angle);
+	CHECK(Math::is_equal_approx(angle, pi));
+
+	// Testing reversing the an axis (of an 30° angle).
+	float cos30deg = Math::cos(Math::deg_to_rad((real_t)30.0));
+	Basis z_positive(cos30deg, -0.5, 0, 0.5, cos30deg, 0, 0, 0, 1);
+	Basis z_negative(cos30deg, 0.5, 0, -0.5, cos30deg, 0, 0, 0, 1);
+
+	z_positive.get_axis_angle(axis, angle);
+	CHECK(Math::is_equal_approx(angle, Math::deg_to_rad((real_t)30.0)));
+	CHECK(axis == Vector3(0, 0, 1));
+
+	z_negative.get_axis_angle(axis, angle);
+	CHECK(Math::is_equal_approx(angle, Math::deg_to_rad((real_t)30.0)));
+	CHECK(axis == Vector3(0, 0, -1));
+
+	// Testing a rotation of 90° on x-y-z.
+	Basis x90deg(1, 0, 0, 0, 0, -1, 0, 1, 0);
+	x90deg.get_axis_angle(axis, angle);
+	CHECK(Math::is_equal_approx(angle, pi / (real_t)2));
+	CHECK(axis == Vector3(1, 0, 0));
+
+	Basis y90deg(0, 0, 1, 0, 1, 0, -1, 0, 0);
+	y90deg.get_axis_angle(axis, angle);
+	CHECK(axis == Vector3(0, 1, 0));
+
+	Basis z90deg(0, -1, 0, 1, 0, 0, 0, 0, 1);
+	z90deg.get_axis_angle(axis, angle);
+	CHECK(axis == Vector3(0, 0, 1));
+
+	// Regression test: checks that the method returns a small angle (not 0).
+	Basis tiny(1, 0, 0, 0, 0.9999995, -0.001, 0, 001, 0.9999995); // The min angle possible with float is 0.001rad.
+	tiny.get_axis_angle(axis, angle);
+	CHECK(Math::is_equal_approx(angle, (real_t)0.001, (real_t)0.0001));
+
+	// Regression test: checks that the method returns an angle which is a number (not NaN)
+	Basis bugNan(1.00000024, 0, 0.000100001693, 0, 1, 0, -0.000100009143, 0, 1.00000024);
+	bugNan.get_axis_angle(axis, angle);
+	CHECK(!Math::is_nan(angle));
 }
 } // namespace TestBasis
 

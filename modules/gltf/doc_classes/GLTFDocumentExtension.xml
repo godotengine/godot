@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFDocumentExtension" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		[GLTFDocument] extension class.
 	</brief_description>
 	<description>
+		Extends the functionality of the [GLTFDocument] class by allowing you to run arbitrary code at various stages of GLTF import or export.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,6 +28,12 @@
 			<return type="int" />
 			<param index="0" name="root" type="Node" />
 			<description>
+			</description>
+		</method>
+		<method name="_get_supported_extensions" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of the GLTF extensions supported by this GLTFDocumentExtension class. This is used to validate if a GLTF file with required extensions can be loaded.
 			</description>
 		</method>
 		<method name="_import_node" qualifiers="virtual">

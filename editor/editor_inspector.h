@@ -120,6 +120,8 @@ private:
 	HashMap<StringName, Variant> cache;
 
 	GDVIRTUAL0(_update_property)
+	GDVIRTUAL1(_set_read_only, bool)
+
 	void _update_pin_flags();
 
 protected:
@@ -151,7 +153,7 @@ public:
 	void set_doc_path(const String &p_doc_path);
 
 	virtual void update_property();
-	void update_revert_and_pin_status();
+	void update_editor_property_status();
 
 	virtual bool use_keying_next() const;
 

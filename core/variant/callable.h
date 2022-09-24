@@ -71,6 +71,7 @@ public:
 
 	void callp(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const;
 	void call_deferredp(const Variant **p_arguments, int p_argcount) const;
+	Variant callv(const Array &p_arguments) const;
 
 	Error rpcp(int p_id, const Variant **p_arguments, int p_argcount, CallError &r_call_error) const;
 

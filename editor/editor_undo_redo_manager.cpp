@@ -131,12 +131,12 @@ void EditorUndoRedoManager::create_action(const String &p_name, UndoRedo::MergeM
 
 void EditorUndoRedoManager::add_do_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	UndoRedo *undo_redo = get_history_for_object(p_object).undo_redo;
-	undo_redo->add_do_methodp(p_object, p_method, p_args, p_argcount);
+	undo_redo->add_do_method(Callable(p_object, p_method).bindp(p_args, p_argcount));
 }
 
 void EditorUndoRedoManager::add_undo_methodp(Object *p_object, const StringName &p_method, const Variant **p_args, int p_argcount) {
 	UndoRedo *undo_redo = get_history_for_object(p_object).undo_redo;
-	undo_redo->add_undo_methodp(p_object, p_method, p_args, p_argcount);
+	undo_redo->add_undo_method(Callable(p_object, p_method).bindp(p_args, p_argcount));
 }
 
 void EditorUndoRedoManager::_add_do_method(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {

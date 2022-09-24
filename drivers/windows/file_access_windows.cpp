@@ -58,7 +58,7 @@ void FileAccessWindows::check_errors() const {
 	}
 }
 
-Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
+Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
 	_close();
 
 	path_src = p_path;

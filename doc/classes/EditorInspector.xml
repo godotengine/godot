@@ -13,6 +13,14 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_selected_path" qualifiers="const">
+			<return type="String" />
+			<description>
+				Gets the path of the currently selected property.
+			</description>
+		</method>
+	</methods>
 	<members>
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" overrides="ScrollContainer" enum="ScrollContainer.ScrollMode" default="0" />
 	</members>

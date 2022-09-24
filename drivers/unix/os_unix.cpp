@@ -51,7 +51,6 @@
 #include <sys/sysctl.h>
 #endif
 
-#include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
@@ -103,10 +102,6 @@ static void _setup_clock() {
 	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
 }
 #endif
-
-void OS_Unix::debug_break() {
-	assert(false);
-}
 
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
@@ -192,6 +187,14 @@ Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
 
 String OS_Unix::get_name() const {
 	return "Unix";
+}
+
+String OS_Unix::get_distribution_name() const {
+	return "";
+}
+
+String OS_Unix::get_version() const {
+	return "";
 }
 
 double OS_Unix::get_unix_time() const {

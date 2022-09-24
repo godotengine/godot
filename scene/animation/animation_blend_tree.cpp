@@ -1175,6 +1175,7 @@ void AnimationNodeBlendTree::_tree_changed() {
 void AnimationNodeBlendTree::_node_changed(const StringName &p_node) {
 	ERR_FAIL_COND(!nodes.has(p_node));
 	nodes[p_node].connections.resize(nodes[p_node].node->get_input_count());
+	emit_signal(SNAME("node_changed"), p_node);
 }
 
 void AnimationNodeBlendTree::_bind_methods() {
@@ -1200,6 +1201,8 @@ void AnimationNodeBlendTree::_bind_methods() {
 	BIND_CONSTANT(CONNECTION_ERROR_NO_OUTPUT);
 	BIND_CONSTANT(CONNECTION_ERROR_SAME_NODE);
 	BIND_CONSTANT(CONNECTION_ERROR_CONNECTION_EXISTS);
+
+	ADD_SIGNAL(MethodInfo("node_changed", PropertyInfo(Variant::STRING_NAME, "node_name")));
 }
 
 void AnimationNodeBlendTree::_initialize_node_tree() {

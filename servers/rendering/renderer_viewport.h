@@ -34,8 +34,8 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
-#include "servers/rendering/renderer_scene.h"
 #include "servers/rendering/renderer_scene_render.h"
+#include "servers/rendering/rendering_method.h"
 #include "servers/rendering_server.h"
 #include "servers/xr/xr_interface.h"
 #include "storage/render_scene_buffers.h"
@@ -54,6 +54,7 @@ public:
 
 		Size2i internal_size;
 		Size2i size;
+		uint32_t view_count;
 		RID camera;
 		RID scenario;
 
@@ -147,9 +148,10 @@ public:
 
 		HashMap<RID, CanvasData> canvas_map;
 
-		RendererScene::RenderInfo render_info;
+		RenderingMethod::RenderInfo render_info;
 
 		Viewport() {
+			view_count = 1;
 			update_mode = RS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = RS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;
@@ -176,8 +178,6 @@ public:
 			time_gpu_begin = 0;
 			time_gpu_end = 0;
 		}
-
-		uint32_t get_view_count();
 	};
 
 	HashMap<String, RID> timestamp_vp_map;
@@ -196,6 +196,7 @@ public:
 
 private:
 	Vector<Viewport *> _sort_active_viewports();
+	void _viewport_set_size(Viewport *p_viewport, int p_width, int p_height, uint32_t p_view_count);
 	void _configure_3d_render_buffers(Viewport *p_viewport);
 	void _draw_3d(Viewport *p_viewport);
 	void _draw_viewport(Viewport *p_viewport);

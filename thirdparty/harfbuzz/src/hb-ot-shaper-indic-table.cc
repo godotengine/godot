@@ -6,12 +6,12 @@
  *
  * on files with these headers:
  *
- * # IndicSyllabicCategory-14.0.0.txt
- * # Date: 2021-05-22, 01:01:00 GMT [KW, RP]
- * # IndicPositionalCategory-14.0.0.txt
- * # Date: 2021-05-22, 01:01:00 GMT [KW, RP]
- * # Blocks-14.0.0.txt
- * # Date: 2021-01-22, 23:29:00 GMT [KW]
+ * # IndicSyllabicCategory-15.0.0.txt
+ * # Date: 2022-05-26, 02:18:00 GMT [KW, RP]
+ * # IndicPositionalCategory-15.0.0.txt
+ * # Date: 2022-05-26, 02:18:00 GMT [KW, RP]
+ * # Blocks-15.0.0.txt
+ * # Date: 2022-01-28, 20:58:00 GMT [KW]
  */
 
 #include "hb.hh"
@@ -92,7 +92,7 @@ static_assert (OT_VPst == M_Cat(VPst), "");
 #define _OT_R    OT_Ra           /*  14 chars; Ra */
 #define _OT_Rf   OT_Repha        /*   1 chars; Repha */
 #define _OT_Rt   OT_Robatic      /*   3 chars; Robatic */
-#define _OT_SM   OT_SM           /*  55 chars; SM */
+#define _OT_SM   OT_SM           /*  56 chars; SM */
 #define _OT_S    OT_Symbol       /*  22 chars; Symbol */
 #define _OT_V    OT_V            /* 172 chars; V */
 #define _OT_VA   OT_VAbv         /*  18 chars; VAbv */
@@ -117,7 +117,7 @@ static_assert (OT_VPst == M_Cat(VPst), "");
 #define _POS_R   POS_POST_C      /*  13 chars; POST_C */
 #define _POS_L   POS_PRE_C       /*   5 chars; PRE_C */
 #define _POS_LM  POS_PRE_M       /*  14 chars; PRE_M */
-#define _POS_SM  POS_SMVD        /* 129 chars; SMVD */
+#define _POS_SM  POS_SMVD        /* 130 chars; SMVD */
 
 #pragma GCC diagnostic pop
 
@@ -301,7 +301,7 @@ static const uint16_t indic_table[] = {
   /* 0CD8 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(C,C),  _(C,C),  _(X,X),
   /* 0CE0 */  _(V,C),  _(V,C), _(M,BS), _(M,BS),  _(X,X),  _(X,X), _(GB,C), _(GB,C),
   /* 0CE8 */ _(GB,C), _(GB,C), _(GB,C), _(GB,C), _(GB,C), _(GB,C), _(GB,C), _(GB,C),
-  /* 0CF0 */  _(X,X), _(CS,C), _(CS,C),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
+  /* 0CF0 */  _(X,X), _(CS,C), _(CS,C),_(SM,SM),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
   /* 0CF8 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
 
   /* Malayalam */

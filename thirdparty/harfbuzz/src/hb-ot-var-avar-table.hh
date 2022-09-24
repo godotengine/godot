@@ -206,11 +206,10 @@ struct avar
       v = hb_clamp (v, -(1<<14), +(1<<14));
       out.push (v);
     }
-
-    OT::VariationStore::destroy_cache (var_store_cache);
-
     for (unsigned i = 0; i < coords_length; i++)
       coords[i] = out[i];
+
+    OT::VariationStore::destroy_cache (var_store_cache);
 #endif
   }
 

@@ -1324,6 +1324,7 @@
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="parent_window_id" type="int" />
 			<description>
+				Sets window transient parent. Transient window is will be destroyed with its transient parent and displayed on top of non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
 			</description>
 		</method>
 		<method name="window_set_vsync_mode">
@@ -1334,6 +1335,15 @@
 				Sets the V-Sync mode of the given window.
 				See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED], if the desired mode is not supported.
+			</description>
+		</method>
+		<method name="window_set_window_buttons_offset">
+			<return type="void" />
+			<param index="0" name="offset" type="Vector2i" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				When [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set, set offset to the center of the first titlebar button.
+				[b]Note:[/b] This flag is implemented on macOS.
 			</description>
 		</method>
 		<method name="window_set_window_event_callback">
@@ -1509,7 +1519,8 @@
 			Window is floating above other regular windows. This flag is ignored for full-screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
-			Window is will be destroyed with its transient parent and displayed on top of non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+			Window background can be transparent.
+			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			Window can't be focused. No-focus window will ignore all input, except mouse clicks.
@@ -1536,6 +1547,8 @@
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible).

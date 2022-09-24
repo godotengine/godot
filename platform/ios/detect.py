@@ -39,9 +39,6 @@ def get_flags():
         ("arch", "arm64"),  # Default for convenience.
         ("tools", False),
         ("use_volk", False),
-        # Disable by default even if production is set, as it makes linking in Xcode
-        # on exports very slow and that's not what most users expect.
-        ("lto", "none"),
     ]
 
 
@@ -58,22 +55,25 @@ def configure(env):
     ## Build type
 
     if env["target"].startswith("release"):
-        env.Append(CPPDEFINES=["NDEBUG", ("NS_BLOCK_ASSERTIONS", 1)])
+        env.Append(CPPDEFINES=[("NS_BLOCK_ASSERTIONS", 1)])
         if env["optimize"] == "speed":  # optimize for speed (default)
             # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
             # when using `target=release_debug`.
             opt = "-O3" if env["target"] == "release" else "-O2"
-            env.Append(CCFLAGS=[opt, "-ftree-vectorize", "-fomit-frame-pointer"])
+            env.Append(CCFLAGS=[opt])
             env.Append(LINKFLAGS=[opt])
         elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["-Os", "-ftree-vectorize"])
+            env.Append(CCFLAGS=["-Os"])
             env.Append(LINKFLAGS=["-Os"])
 
     elif env["target"] == "debug":
-        env.Append(CCFLAGS=["-gdwarf-2", "-O0"])
-        env.Append(CPPDEFINES=["_DEBUG", ("DEBUG", 1)])
+        env.Append(CCFLAGS=["-g", "-O0"])
 
-    # LTO
+    ## LTO
+
+    if env["lto"] == "auto":  # Disable by default as it makes linking in Xcode very slow.
+        env["lto"] = "none"
+
     if env["lto"] != "none":
         if env["lto"] == "thin":
             env.Append(CCFLAGS=["-flto=thin"])

@@ -489,7 +489,7 @@ bool ResourceCache::has(const String &p_path) {
 
 	Resource **res = resources.getptr(p_path);
 
-	if (res && (*res)->reference_get_count() == 0) {
+	if (res && (*res)->get_reference_count() == 0) {
 		// This resource is in the process of being deleted, ignore its existence.
 		(*res)->path_cache = String();
 		resources.erase(p_path);

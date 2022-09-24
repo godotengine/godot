@@ -78,7 +78,7 @@ public:
 	void apply_rest();
 	Transform2D get_skeleton_rest() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	void set_default_length(real_t p_length);
 	real_t get_default_length() const;

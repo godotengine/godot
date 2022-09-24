@@ -190,8 +190,8 @@ void GraphEditMinimap::_adjust_graph_scroll(const Vector2 &p_offset) {
 	ge->set_scroll_ofs(p_offset + graph_offset - camera_size / 2);
 }
 
-TypedArray<String> GraphEdit::get_configuration_warnings() const {
-	TypedArray<String> warnings = Control::get_configuration_warnings();
+PackedStringArray GraphEdit::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
 
 	warnings.push_back(RTR("Please be aware that GraphEdit and GraphNode will undergo extensive refactoring in a future beta version involving compatibility-breaking API changes."));
 

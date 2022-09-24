@@ -1,7 +1,7 @@
 
 /* png.c - location for general purpose libpng functions
  *
- * Copyright (c) 2018-2019 Cosmin Truta
+ * Copyright (c) 2018-2022 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -14,7 +14,7 @@
 #include "pngpriv.h"
 
 /* Generate a compiler error if there is an old png.h in the search path. */
-typedef png_libpng_version_1_6_37 Your_png_h_is_not_version_1_6_37;
+typedef png_libpng_version_1_6_38 Your_png_h_is_not_version_1_6_38;
 
 #ifdef __GNUC__
 /* The version tests may need to be added to, but the problem warning has
@@ -720,7 +720,7 @@ png_init_io(png_structrp png_ptr, png_FILE_p fp)
  *
  * Where UNSIGNED_MAX is the appropriate maximum unsigned value, so when the
  * negative integral value is added the result will be an unsigned value
- * correspnding to the 2's complement representation.
+ * corresponding to the 2's complement representation.
  */
 void PNGAPI
 png_save_int_32(png_bytep buf, png_int_32 i)
@@ -815,8 +815,8 @@ png_get_copyright(png_const_structrp png_ptr)
    return PNG_STRING_COPYRIGHT
 #else
    return PNG_STRING_NEWLINE \
-      "libpng version 1.6.37" PNG_STRING_NEWLINE \
-      "Copyright (c) 2018-2019 Cosmin Truta" PNG_STRING_NEWLINE \
+      "libpng version 1.6.38" PNG_STRING_NEWLINE \
+      "Copyright (c) 2018-2022 Cosmin Truta" PNG_STRING_NEWLINE \
       "Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson" \
       PNG_STRING_NEWLINE \
       "Copyright (c) 1996-1997 Andreas Dilger" PNG_STRING_NEWLINE \
@@ -1843,12 +1843,12 @@ png_icc_profile_error(png_const_structrp png_ptr, png_colorspacerp colorspace,
 #  ifdef PNG_WARNINGS_SUPPORTED
    else
       {
-         char number[PNG_NUMBER_BUFFER_SIZE]; /* +24 = 114*/
+         char number[PNG_NUMBER_BUFFER_SIZE]; /* +24 = 114 */
 
          pos = png_safecat(message, (sizeof message), pos,
              png_format_number(number, number+(sizeof number),
              PNG_NUMBER_FORMAT_x, value));
-         pos = png_safecat(message, (sizeof message), pos, "h: "); /*+2 = 116*/
+         pos = png_safecat(message, (sizeof message), pos, "h: "); /* +2 = 116 */
       }
 #  endif
    /* The 'reason' is an arbitrary message, allow +79 maximum 195 */

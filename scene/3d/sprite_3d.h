@@ -80,6 +80,9 @@ private:
 	RID mesh;
 	RID material;
 
+	RID last_shader;
+	RID last_texture;
+
 	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
@@ -94,6 +97,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _draw() = 0;
+	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
 	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
 	_FORCE_INLINE_ RID &get_material() { return material; }
@@ -167,9 +171,6 @@ class Sprite3D : public SpriteBase3D {
 	int vframes = 1;
 	int hframes = 1;
 
-	RID last_shader;
-	RID last_texture;
-
 protected:
 	virtual void _draw() override;
 	static void _bind_methods();
@@ -209,6 +210,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 
 	Ref<SpriteFrames> frames;
 	bool playing = false;
+	bool playing_backwards = false;
 	bool backwards = false;
 	StringName animation = "default";
 	int frame = 0;
@@ -224,9 +226,6 @@ class AnimatedSprite3D : public SpriteBase3D {
 	double _get_frame_duration();
 	void _reset_timeout();
 
-	RID last_shader;
-	RID last_texture;
-
 protected:
 	virtual void _draw() override;
 	static void _bind_methods();
@@ -237,7 +236,7 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
+	void play(const StringName &p_animation = StringName(), bool p_backwards = false);
 	void stop();
 
 	void set_playing(bool p_playing);
@@ -254,7 +253,7 @@ public:
 
 	virtual Rect2 get_item_rect() const override;
 
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	AnimatedSprite3D();

@@ -39,10 +39,10 @@ class NavigationRegion3D : public Node3D {
 
 	bool enabled = true;
 	RID region;
-	Ref<NavigationMesh> navmesh;
-
+	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
+	Ref<NavigationMesh> navmesh;
 
 	Thread bake_thread;
 
@@ -90,7 +90,7 @@ public:
 	void bake_navigation_mesh(bool p_on_thread);
 	void _bake_finished(Ref<NavigationMesh> p_nav_mesh);
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	NavigationRegion3D();
 	~NavigationRegion3D();

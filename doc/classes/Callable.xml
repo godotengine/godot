@@ -81,6 +81,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="callv" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="arguments" type="Array" />
+			<description>
+				Calls the method represented by this [Callable]. Contrary to [method call], this method does not take a variable number of arguments but expects all arguments to be passed via a single [Array].
+			</description>
+		</method>
 		<method name="get_method" qualifiers="const">
 			<return type="StringName" />
 			<description>

@@ -82,6 +82,15 @@ public:
 		MENU_SELECT_ALL,
 	};
 
+	enum DefaultFont {
+		NORMAL_FONT,
+		BOLD_FONT,
+		ITALICS_FONT,
+		BOLD_ITALICS_FONT,
+		MONO_FONT,
+		CUSTOM_FONT,
+	};
+
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
@@ -178,6 +187,7 @@ private:
 	};
 
 	struct ItemFont : public Item {
+		DefaultFont def_font = CUSTOM_FONT;
 		Ref<Font> font;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
@@ -272,6 +282,7 @@ private:
 
 	struct ItemFX : public Item {
 		double elapsed_time = 0.f;
+		bool connected = true;
 	};
 
 	struct ItemShake : public ItemFX {
@@ -560,6 +571,7 @@ public:
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
+	void _push_def_font(DefaultFont p_font);
 	void push_font(const Ref<Font> &p_font, int p_size = 0);
 	void push_font_size(int p_font_size);
 	void push_outline_size(int p_font_size);
@@ -579,9 +591,9 @@ public:
 	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP);
 	void push_fade(int p_start_index, int p_length);
-	void push_shake(int p_strength, float p_rate);
-	void push_wave(float p_frequency, float p_amplitude);
-	void push_tornado(float p_frequency, float p_radius);
+	void push_shake(int p_strength, float p_rate, bool p_connected);
+	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
+	void push_tornado(float p_frequency, float p_radius, bool p_connected);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);

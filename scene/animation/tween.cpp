@@ -32,6 +32,7 @@
 
 #include "scene/animation/easing_equations.h"
 #include "scene/main/node.h"
+#include "scene/resources/animation.h"
 
 Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
 	{ &linear::in, &linear::in, &linear::in, &linear::in }, // Linear is the same for each easing.
@@ -314,6 +315,7 @@ bool Tween::step(float p_delta) {
 					running = false;
 					dead = true;
 					emit_signal(SNAME("finished"));
+					break;
 				} else {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
@@ -375,264 +377,14 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, f
 	ERR_FAIL_INDEX_V(p_trans, TransitionType::TRANS_MAX, Variant());
 	ERR_FAIL_INDEX_V(p_ease, EaseType::EASE_MAX, Variant());
 
-// Helper macro to run equation on sub-elements of the value (e.g. x and y of Vector2).
-#define APPLY_EQUATION(element) \
-	r.element = run_equation(p_trans, p_ease, p_time, i.element, d.element, p_duration);
+	// Special case for bool.
+	if (p_initial_val.get_type() == Variant::BOOL) {
+		return run_equation(p_trans, p_ease, p_time, p_initial_val, p_delta_val, p_duration) >= 0.5;
+	}
 
-	switch (p_initial_val.get_type()) {
-		case Variant::BOOL: {
-			return (run_equation(p_trans, p_ease, p_time, p_initial_val, p_delta_val, p_duration)) >= 0.5;
-		}
-
-		case Variant::INT: {
-			return (int)run_equation(p_trans, p_ease, p_time, (int)p_initial_val, (int)p_delta_val, p_duration);
-		}
-
-		case Variant::FLOAT: {
-			return run_equation(p_trans, p_ease, p_time, (real_t)p_initial_val, (real_t)p_delta_val, p_duration);
-		}
-
-		case Variant::VECTOR2: {
-			Vector2 i = p_initial_val;
-			Vector2 d = p_delta_val;
-			Vector2 r;
-
-			APPLY_EQUATION(x);
-			APPLY_EQUATION(y);
-			return r;
-		}
-
-		case Variant::VECTOR2I: {
-			Vector2i i = p_initial_val;
-			Vector2i d = p_delta_val;
-			Vector2i r;
-
-			APPLY_EQUATION(x);
-			APPLY_EQUATION(y);
-			return r;
-		}
-
-		case Variant::RECT2: {
-			Rect2 i = p_initial_val;
-			Rect2 d = p_delta_val;
-			Rect2 r;
-
-			APPLY_EQUATION(position.x);
-			APPLY_EQUATION(position.y);
-			APPLY_EQUATION(size.x);
-			APPLY_EQUATION(size.y);
-			return r;
-		}
-
-		case Variant::RECT2I: {
-			Rect2i i = p_initial_val;
-			Rect2i d = p_delta_val;
-			Rect2i r;
-
-			APPLY_EQUATION(position.x);
-			APPLY_EQUATION(position.y);
-			APPLY_EQUATION(size.x);
-			APPLY_EQUATION(size.y);
-			return r;
-		}
-
-		case Variant::VECTOR3: {
-			Vector3 i = p_initial_val;
-			Vector3 d = p_delta_val;
-			Vector3 r;
-
-			APPLY_EQUATION(x);
-			APPLY_EQUATION(y);
-			APPLY_EQUATION(z);
-			return r;
-		}
-
-		case Variant::VECTOR3I: {
-			Vector3i i = p_initial_val;
-			Vector3i d = p_delta_val;
-			Vector3i r;
-
-			APPLY_EQUATION(x);
-			APPLY_EQUATION(y);
-			APPLY_EQUATION(z);
-			return r;
-		}
-
-		case Variant::TRANSFORM2D: {
-			Transform2D i = p_initial_val;
-			Transform2D d = p_delta_val;
-			Transform2D r;
-
-			APPLY_EQUATION(columns[0][0]);
-			APPLY_EQUATION(columns[0][1]);
-			APPLY_EQUATION(columns[1][0]);
-			APPLY_EQUATION(columns[1][1]);
-			APPLY_EQUATION(columns[2][0]);
-			APPLY_EQUATION(columns[2][1]);
-			return r;
-		}
-		case Variant::VECTOR4: {
-			Vector4 i = p_initial_val;
-			Vector4 d = p_delta_val;
-			Vector4 r;
-
-			APPLY_EQUATION(x);
-			APPLY_EQUATION(y);
-			APPLY_EQUATION(z);
-			APPLY_EQUATION(w);
-			return r;
-		}
-
-		case Variant::QUATERNION: {
-			Quaternion i = p_initial_val;
-			Quaternion d = p_delta_val;
-			Quaternion r = i * d;
-			r = i.slerp(r, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
-			return r;
-		}
-
-		case Variant::AABB: {
-			AABB i = p_initial_val;
-			AABB d = p_delta_val;
-			AABB r;
-
-			APPLY_EQUATION(position.x);
-			APPLY_EQUATION(position.y);
-			APPLY_EQUATION(position.z);
-			APPLY_EQUATION(size.x);
-			APPLY_EQUATION(size.y);
-			APPLY_EQUATION(size.z);
-			return r;
-		}
-
-		case Variant::BASIS: {
-			Basis i = p_initial_val;
-			Basis d = p_delta_val;
-			Basis r;
-
-			APPLY_EQUATION(rows[0][0]);
-			APPLY_EQUATION(rows[0][1]);
-			APPLY_EQUATION(rows[0][2]);
-			APPLY_EQUATION(rows[1][0]);
-			APPLY_EQUATION(rows[1][1]);
-			APPLY_EQUATION(rows[1][2]);
-			APPLY_EQUATION(rows[2][0]);
-			APPLY_EQUATION(rows[2][1]);
-			APPLY_EQUATION(rows[2][2]);
-			return r;
-		}
-
-		case Variant::TRANSFORM3D: {
-			Transform3D i = p_initial_val;
-			Transform3D d = p_delta_val;
-			Transform3D r;
-
-			APPLY_EQUATION(basis.rows[0][0]);
-			APPLY_EQUATION(basis.rows[0][1]);
-			APPLY_EQUATION(basis.rows[0][2]);
-			APPLY_EQUATION(basis.rows[1][0]);
-			APPLY_EQUATION(basis.rows[1][1]);
-			APPLY_EQUATION(basis.rows[1][2]);
-			APPLY_EQUATION(basis.rows[2][0]);
-			APPLY_EQUATION(basis.rows[2][1]);
-			APPLY_EQUATION(basis.rows[2][2]);
-			APPLY_EQUATION(origin.x);
-			APPLY_EQUATION(origin.y);
-			APPLY_EQUATION(origin.z);
-			return r;
-		}
-
-		case Variant::COLOR: {
-			Color i = p_initial_val;
-			Color d = p_delta_val;
-			Color r;
-
-			APPLY_EQUATION(r);
-			APPLY_EQUATION(g);
-			APPLY_EQUATION(b);
-			APPLY_EQUATION(a);
-			return r;
-		}
-
-		default: {
-			return p_initial_val;
-		}
-	};
-#undef APPLY_EQUATION
-}
-
-Variant Tween::calculate_delta_value(Variant p_intial_val, Variant p_final_val) {
-	ERR_FAIL_COND_V_MSG(p_intial_val.get_type() != p_final_val.get_type(), p_intial_val, "Type mismatch between initial and final value: " + Variant::get_type_name(p_intial_val.get_type()) + " and " + Variant::get_type_name(p_final_val.get_type()));
-
-	switch (p_intial_val.get_type()) {
-		case Variant::BOOL: {
-			return (int)p_final_val - (int)p_intial_val;
-		}
-
-		case Variant::RECT2: {
-			Rect2 i = p_intial_val;
-			Rect2 f = p_final_val;
-			return Rect2(f.position - i.position, f.size - i.size);
-		}
-
-		case Variant::RECT2I: {
-			Rect2i i = p_intial_val;
-			Rect2i f = p_final_val;
-			return Rect2i(f.position - i.position, f.size - i.size);
-		}
-
-		case Variant::TRANSFORM2D: {
-			Transform2D i = p_intial_val;
-			Transform2D f = p_final_val;
-			return Transform2D(f.columns[0][0] - i.columns[0][0],
-					f.columns[0][1] - i.columns[0][1],
-					f.columns[1][0] - i.columns[1][0],
-					f.columns[1][1] - i.columns[1][1],
-					f.columns[2][0] - i.columns[2][0],
-					f.columns[2][1] - i.columns[2][1]);
-		}
-
-		case Variant::AABB: {
-			AABB i = p_intial_val;
-			AABB f = p_final_val;
-			return AABB(f.position - i.position, f.size - i.size);
-		}
-
-		case Variant::BASIS: {
-			Basis i = p_intial_val;
-			Basis f = p_final_val;
-			return Basis(f.rows[0][0] - i.rows[0][0],
-					f.rows[0][1] - i.rows[0][1],
-					f.rows[0][2] - i.rows[0][2],
-					f.rows[1][0] - i.rows[1][0],
-					f.rows[1][1] - i.rows[1][1],
-					f.rows[1][2] - i.rows[1][2],
-					f.rows[2][0] - i.rows[2][0],
-					f.rows[2][1] - i.rows[2][1],
-					f.rows[2][2] - i.rows[2][2]);
-		}
-
-		case Variant::TRANSFORM3D: {
-			Transform3D i = p_intial_val;
-			Transform3D f = p_final_val;
-			return Transform3D(f.basis.rows[0][0] - i.basis.rows[0][0],
-					f.basis.rows[0][1] - i.basis.rows[0][1],
-					f.basis.rows[0][2] - i.basis.rows[0][2],
-					f.basis.rows[1][0] - i.basis.rows[1][0],
-					f.basis.rows[1][1] - i.basis.rows[1][1],
-					f.basis.rows[1][2] - i.basis.rows[1][2],
-					f.basis.rows[2][0] - i.basis.rows[2][0],
-					f.basis.rows[2][1] - i.basis.rows[2][1],
-					f.basis.rows[2][2] - i.basis.rows[2][2],
-					f.origin.x - i.origin.x,
-					f.origin.y - i.origin.y,
-					f.origin.z - i.origin.z);
-		}
-
-		default: {
-			return Variant::evaluate(Variant::OP_SUBTRACT, p_final_val, p_intial_val);
-		}
-	};
+	Variant ret = Animation::add_variant(p_initial_val, p_delta_val);
+	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
+	return ret;
 }
 
 void Tween::_bind_methods() {
@@ -748,10 +500,10 @@ void PropertyTweener::start() {
 	}
 
 	if (relative) {
-		final_val = Variant::evaluate(Variant::Operator::OP_ADD, initial_val, base_final_val);
+		final_val = Animation::add_variant(initial_val, base_final_val);
 	}
 
-	delta_val = tween->calculate_delta_value(initial_val, final_val);
+	delta_val = Animation::subtract_variant(final_val, initial_val);
 }
 
 bool PropertyTweener::step(float &r_delta) {
@@ -973,7 +725,7 @@ void MethodTweener::_bind_methods() {
 MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, float p_duration) {
 	callback = p_callback;
 	initial_val = p_from;
-	delta_val = tween->calculate_delta_value(p_from, p_to);
+	delta_val = Animation::subtract_variant(p_to, p_from);
 	final_val = p_to;
 	duration = p_duration;
 }

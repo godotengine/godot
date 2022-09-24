@@ -434,8 +434,8 @@ int Bone2D::get_index_in_skeleton() const {
 	return skeleton_index;
 }
 
-TypedArray<String> Bone2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray Bone2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 	if (!skeleton) {
 		if (parent_bone) {
 			warnings.push_back(RTR("This Bone2D chain should end at a Skeleton2D node."));

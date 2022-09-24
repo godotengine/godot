@@ -62,10 +62,10 @@
 			Do not save editor-specific metadata (identified by their [code]__editor[/code] prefix).
 		</constant>
 		<constant name="FLAG_SAVE_BIG_ENDIAN" value="16" enum="SaverFlags" is_bitfield="true">
-			Save as big endian (see [member File.big_endian]).
+			Save as big endian (see [member FileAccess.big_endian]).
 		</constant>
 		<constant name="FLAG_COMPRESS" value="32" enum="SaverFlags" is_bitfield="true">
-			Compress the resource on save using [constant File.COMPRESSION_ZSTD]. Only available for binary resource types.
+			Compress the resource on save using [constant FileAccess.COMPRESSION_ZSTD]. Only available for binary resource types.
 		</constant>
 		<constant name="FLAG_REPLACE_SUBRESOURCE_PATHS" value="64" enum="SaverFlags" is_bitfield="true">
 			Take over the paths of the saved subresources (see [method Resource.take_over_path]).

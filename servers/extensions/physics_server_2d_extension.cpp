@@ -280,7 +280,7 @@ void PhysicsServer2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_body_set_omit_force_integration, "body", "enable");
 	GDVIRTUAL_BIND(_body_is_omitting_force_integration, "body");
 
-	GDVIRTUAL_BIND(_body_set_state_sync_callback, "body", "callback");
+	GDVIRTUAL_BIND(_body_set_state_sync_callback, "body", "callable");
 	GDVIRTUAL_BIND(_body_set_force_integration_callback, "body", "callable", "userdata");
 
 	GDVIRTUAL_BIND(_body_collide_shape, "body", "body_shape", "shape", "shape_xform", "motion", "results", "result_max", "result_count");

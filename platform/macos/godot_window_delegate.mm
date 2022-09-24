@@ -31,6 +31,8 @@
 #include "godot_window_delegate.h"
 
 #include "display_server_macos.h"
+#include "godot_button_view.h"
+#include "godot_window.h"
 
 @implementation GodotWindowDelegate
 
@@ -68,6 +70,26 @@
 	ds->window_destroy(window_id);
 }
 
+- (NSArray<NSWindow *> *)customWindowsToEnterFullScreenForWindow:(NSWindow *)window {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return nullptr;
+	}
+
+	old_frame = [window frame];
+	old_style_mask = [window styleMask];
+
+	NSMutableArray<NSWindow *> *windows = [[NSMutableArray alloc] init];
+	[windows addObject:window];
+
+	return windows;
+}
+
+- (void)window:(NSWindow *)window startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
+	[(GodotWindow *)window setAnimDuration:duration];
+	[window setFrame:[[window screen] frame] display:YES animate:YES];
+}
+
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
@@ -76,12 +98,46 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fullscreen = true;
+
 	// Reset window size limits.
 	[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 	[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
+
+	// Reset custom window buttons.
+	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
+		ds->window_set_custom_window_buttons(wd, false);
+	}
 
 	// Force window resize event.
 	[self windowDidResize:notification];
+	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+}
+
+- (NSArray<NSWindow *> *)customWindowsToExitFullScreenForWindow:(NSWindow *)window {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (!ds || !ds->has_window(window_id)) {
+		return nullptr;
+	}
+
+	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+
+	// Restore custom window buttons.
+	if ([wd.window_object styleMask] & NSWindowStyleMaskFullSizeContentView) {
+		ds->window_set_custom_window_buttons(wd, true);
+	}
+
+	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
+
+	NSMutableArray<NSWindow *> *windows = [[NSMutableArray alloc] init];
+	[windows addObject:wd.window_object];
+	return windows;
+}
+
+- (void)window:(NSWindow *)window startCustomAnimationToExitFullScreenWithDuration:(NSTimeInterval)duration {
+	[(GodotWindow *)window setAnimDuration:duration];
+	[window setStyleMask:old_style_mask];
+	[window setFrame:old_frame display:YES animate:YES];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
@@ -92,6 +148,8 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	wd.fullscreen = false;
+
+	[(GodotWindow *)wd.window_object setAnimDuration:-1.0f];
 
 	// Set window size limits.
 	const float scale = ds->screen_get_max_scale();
@@ -151,7 +209,9 @@
 
 - (void)windowWillStartLiveResize:(NSNotification *)notification {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (ds) {
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		wd.last_frame_rect = [wd.window_object frame];
 		ds->set_is_resizing(true);
 	}
 }
@@ -217,6 +277,10 @@
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 
+	if (wd.window_button_view) {
+		[(GodotButtonView *)wd.window_button_view displayButtons];
+	}
+
 	if (ds->mouse_get_mode() == DisplayServer::MOUSE_MODE_CAPTURED) {
 		const NSRect content_rect = [wd.window_view frame];
 		NSRect point_in_window_rect = NSMakeRect(content_rect.size.width / 2, content_rect.size.height / 2, 0, 0);
@@ -238,6 +302,10 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+
+	if (wd.window_button_view) {
+		[(GodotButtonView *)wd.window_button_view displayButtons];
+	}
 
 	ds->release_pressed_events();
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);

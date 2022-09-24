@@ -282,6 +282,8 @@ private:
 	bool cache_valid = false;
 	void _node_removed(Node *p_node);
 
+	void _setup_animation_player();
+	void _animation_player_changed();
 	void _clear_caches();
 	bool _update_caches(AnimationPlayer *player);
 	void _process_graph(double p_delta);
@@ -340,7 +342,7 @@ public:
 	void set_advance_expression_base_node(const NodePath &p_advance_expression_base_node);
 	NodePath get_advance_expression_base_node() const;
 
-	TypedArray<String> get_configuration_warnings() const override;
+	PackedStringArray get_configuration_warnings() const override;
 
 	bool is_state_invalid() const;
 	String get_invalid_state_reason() const;

@@ -52,6 +52,7 @@
 #include <godot_cpp/variant/rect2.hpp>
 #include <godot_cpp/variant/rid.hpp>
 #include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
 #include <godot_cpp/variant/vector2.hpp>
 #include <godot_cpp/variant/vector2i.hpp>
 
@@ -705,7 +706,7 @@ public:
 
 	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
 
-	virtual int is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
+	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const override;
 	virtual bool spoof_check(const String &p_string) const override;
 
 	virtual String strip_diacritics(const String &p_string) const override;
