@@ -1637,7 +1637,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
-		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
+		const String text_to_drop = "^" + String(d["property"]).c_escape().quote(quote_style);
 
 		te->set_caret_line(row);
 		te->set_caret_column(col);
