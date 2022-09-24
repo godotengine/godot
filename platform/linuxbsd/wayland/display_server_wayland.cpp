@@ -696,61 +696,79 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 	WaylandGlobals &globals = wls->globals;
 
 	if (name == globals.wl_shm_name) {
-		wl_shm_destroy(globals.wl_shm);
+		if (globals.wl_shm) {
+			wl_shm_destroy(globals.wl_shm);
+		}
 		globals.wl_shm = nullptr;
 		globals.wl_shm_name = 0;
 		return;
 	}
 
 	if (name == globals.wl_compositor_name) {
-		wl_compositor_destroy(globals.wl_compositor);
+		if (globals.wl_compositor) {
+			wl_compositor_destroy(globals.wl_compositor);
+		}
 		globals.wl_compositor = nullptr;
 		globals.wl_compositor_name = 0;
 		return;
 	}
 
 	if (name == globals.wl_data_device_manager_name) {
-		wl_data_device_manager_destroy(globals.wl_data_device_manager);
+		if (globals.wl_data_device_manager) {
+			wl_data_device_manager_destroy(globals.wl_data_device_manager);
+		}
 		globals.wl_data_device_manager = nullptr;
 		globals.wl_data_device_manager_name = 0;
 
 		// Destroy any seat data device that's there.
 		for (SeatState &ss : wls->seats) {
-			wl_data_device_destroy(ss.wl_data_device);
+			if (ss.wl_data_device) {
+				wl_data_device_destroy(ss.wl_data_device);
+			}
 			ss.wl_data_device = nullptr;
 		}
 	}
 
 	if (name == globals.xdg_wm_base_name) {
-		xdg_wm_base_destroy(globals.xdg_wm_base);
+		if (globals.xdg_wm_base) {
+			xdg_wm_base_destroy(globals.xdg_wm_base);
+		}
 		globals.xdg_wm_base = nullptr;
 		globals.xdg_wm_base_name = 0;
 		return;
 	}
 
 	if (name == globals.xdg_decoration_manager_name) {
-		zxdg_decoration_manager_v1_destroy(globals.xdg_decoration_manager);
+		if (globals.xdg_decoration_manager) {
+			zxdg_decoration_manager_v1_destroy(globals.xdg_decoration_manager);
+		}
 		globals.xdg_decoration_manager = nullptr;
 		globals.xdg_decoration_manager_name = 0;
 		return;
 	}
 
 	if (name == globals.wp_pointer_constraints_name) {
-		zwp_pointer_constraints_v1_destroy(globals.wp_pointer_constraints);
+		if (globals.wp_pointer_constraints) {
+			zwp_pointer_constraints_v1_destroy(globals.wp_pointer_constraints);
+		}
 		globals.wp_pointer_constraints = nullptr;
 		globals.wp_pointer_constraints_name = 0;
 		return;
 	}
 
 	if (name == globals.wp_relative_pointer_manager_name) {
-		zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
+		if (globals.wp_relative_pointer_manager) {
+			zwp_relative_pointer_manager_v1_destroy(globals.wp_relative_pointer_manager);
+		}
 		globals.wp_relative_pointer_manager = nullptr;
 		globals.wp_relative_pointer_manager_name = 0;
 		return;
 	}
 
 	if (name == globals.wp_idle_inhibit_manager_name) {
-		zwp_idle_inhibit_manager_v1_destroy(globals.wp_idle_inhibit_manager);
+		if (globals.wp_idle_inhibit_manager) {
+			zwp_idle_inhibit_manager_v1_destroy(globals.wp_idle_inhibit_manager);
+		}
 		globals.wp_idle_inhibit_manager = nullptr;
 		globals.wp_idle_inhibit_manager_name = 0;
 		return;
@@ -764,7 +782,9 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 			ScreenData &sd = it->get();
 
 			if (sd.wl_output_name == name) {
-				wl_output_destroy(sd.wl_output);
+				if (sd.wl_output) {
+					wl_output_destroy(sd.wl_output);
+				}
 				wls->screens.erase(it);
 				return;
 			}
@@ -785,7 +805,10 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 					wl_data_device_destroy(ss.wl_data_device);
 				}
 
-				wl_seat_destroy(ss.wl_seat);
+				if (ss.wl_seat) {
+					wl_seat_destroy(ss.wl_seat);
+				}
+
 				wls->seats.erase(it);
 				return;
 			}
