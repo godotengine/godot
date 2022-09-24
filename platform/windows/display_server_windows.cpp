@@ -3352,7 +3352,7 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_ctrl_pressed(ke.control);
 					k->set_meta_pressed(ke.meta);
 					k->set_pressed(true);
-					k->set_keycode((Key)KeyMappingWindows::get_keysym(ke.wParam));
+					k->set_keycode((Key)KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK)));
 					k->set_physical_keycode((Key)(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24))));
 					k->set_unicode(unicode);
 					if (k->get_unicode() && gr_mem) {
