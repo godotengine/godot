@@ -44,6 +44,7 @@
 #include "node.h"
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/control.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
@@ -895,6 +896,8 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 
 	call_lock++;
 
+	Vector<Node *> no_context_nodes;
+
 	for (int i = gr_node_count - 1; i >= 0; i--) {
 		if (p_viewport->is_input_handled()) {
 			break;
@@ -913,9 +916,22 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 			case CALL_INPUT_TYPE_INPUT:
 				n->_call_input(p_input);
 				break;
-			case CALL_INPUT_TYPE_SHORTCUT_INPUT:
+			case CALL_INPUT_TYPE_SHORTCUT_INPUT: {
+				const Control *c = Object::cast_to<Control>(n);
+				if (c) {
+					// If calling shortcut input on a control, ensure it respects the shortcut context.
+					// Shortcut context (based on focus) only makes sense for controls (UI), so don't need to worry about it for nodes
+					if (c->get_shortcut_context() == nullptr) {
+						no_context_nodes.append(n);
+						continue;
+					}
+					if (!c->is_focus_owner_in_shortcut_context()) {
+						continue;
+					}
+				}
 				n->_call_shortcut_input(p_input);
 				break;
+			}
 			case CALL_INPUT_TYPE_UNHANDLED_INPUT:
 				n->_call_unhandled_input(p_input);
 				break;
@@ -923,6 +939,10 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 				n->_call_unhandled_key_input(p_input);
 				break;
 		}
+	}
+
+	for (Node *n : no_context_nodes) {
+		n->_call_shortcut_input(p_input);
 	}
 
 	call_lock--;
