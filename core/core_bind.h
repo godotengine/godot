@@ -32,9 +32,6 @@
 #define CORE_BIND_H
 
 #include "core/debugger/engine_profiler.h"
-#include "core/io/compression.h"
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
