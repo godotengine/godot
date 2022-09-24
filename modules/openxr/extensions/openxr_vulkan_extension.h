@@ -36,16 +36,25 @@
 
 #include "drivers/vulkan/vulkan_context.h"
 
-// Forward declare these so we don't need OpenXR headers where-ever this is included
-// Including OpenXR at this point gives loads and loads of compile issues especially
-// on Windows because windows.h is EVIL and really shouldn't be included outside of platform
-// but we really don't have a choice in the matter
+#include "../openxr_api.h"
+#include "../util.h"
 
-struct XrGraphicsRequirementsVulkanKHR;
-struct XrVulkanInstanceCreateInfoKHR;
-struct XrVulkanGraphicsDeviceGetInfoKHR;
-struct XrVulkanDeviceCreateInfoKHR;
-struct XrGraphicsBindingVulkanKHR;
+// need to include Vulkan so we know of type definitions
+#define XR_USE_GRAPHICS_API_VULKAN
+
+#ifdef WINDOWS_ENABLED
+// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
+// however due to the way the openxr headers are put together, we have no choice.
+#include <windows.h>
+#endif
+
+#ifdef ANDROID_ENABLED
+// The jobject type from jni.h is used by openxr_platform.h on Android.
+#include <jni.h>
+#endif
+
+// include platform dependent structs
+#include <openxr/openxr_platform.h>
 
 class OpenXRVulkanExtension : public OpenXRGraphicsExtensionWrapper, VulkanHooks {
 public:
@@ -84,10 +93,11 @@ private:
 	uint32_t vulkan_queue_family_index = 0;
 	uint32_t vulkan_queue_index = 0;
 
-	XrResult xrGetVulkanGraphicsRequirements2KHR(XrInstance p_instance, XrSystemId p_system_id, XrGraphicsRequirementsVulkanKHR *p_graphics_requirements);
-	XrResult xrCreateVulkanInstanceKHR(XrInstance p_instance, const XrVulkanInstanceCreateInfoKHR *p_create_info, VkInstance *r_vulkan_instance, VkResult *r_vulkan_result);
-	XrResult xrGetVulkanGraphicsDevice2KHR(XrInstance p_instance, const XrVulkanGraphicsDeviceGetInfoKHR *p_get_info, VkPhysicalDevice *r_vulkan_physical_device);
-	XrResult xrCreateVulkanDeviceKHR(XrInstance p_instance, const XrVulkanDeviceCreateInfoKHR *p_create_info, VkDevice *r_device, VkResult *r_result);
+	EXT_PROTO_XRRESULT_FUNC3(xrGetVulkanGraphicsRequirements2KHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsVulkanKHR *), p_graphics_requirements)
+	EXT_PROTO_XRRESULT_FUNC4(xrCreateVulkanInstanceKHR, (XrInstance), p_instance, (const XrVulkanInstanceCreateInfoKHR *), p_create_info, (VkInstance *), r_vulkan_instance, (VkResult *), r_vulkan_result)
+	EXT_PROTO_XRRESULT_FUNC3(xrGetVulkanGraphicsDevice2KHR, (XrInstance), p_instance, (const XrVulkanGraphicsDeviceGetInfoKHR *), p_get_info, (VkPhysicalDevice *), r_vulkan_physical_device)
+	EXT_PROTO_XRRESULT_FUNC4(xrCreateVulkanDeviceKHR, (XrInstance), p_instance, (const XrVulkanDeviceCreateInfoKHR *), p_create_info, (VkDevice *), r_device, (VkResult *), r_result)
+	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainImages, (XrSwapchain), p_swapchain, (uint32_t), p_image_capacity_input, (uint32_t *), p_image_count_output, (XrSwapchainImageBaseHeader *), p_images)
 };
 
 #endif // OPENXR_VULKAN_EXTENSION_H
