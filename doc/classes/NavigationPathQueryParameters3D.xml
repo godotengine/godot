@@ -16,6 +16,7 @@
 			The navigation layers the query will use (as a bitmask).
 		</member>
 		<member name="path_postprocessing" type="int" setter="set_path_postprocessing" getter="get_path_postprocessing" enum="NavigationPathQueryParameters3D.PathPostProcessing" default="0">
+			The path postprocessing applied to the raw path corridor found by the [member pathfinding_algorithm].
 		</member>
 		<member name="pathfinding_algorithm" type="int" setter="set_pathfinding_algorithm" getter="get_pathfinding_algorithm" enum="NavigationPathQueryParameters3D.PathfindingAlgorithm" default="0">
 			The pathfinding algorithm used in the path query.
