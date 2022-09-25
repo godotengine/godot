@@ -126,4 +126,4 @@ public:
 
 #endif // OS_IOS_H
 
-#endif // OS_IOS_H
+#endif // IOS_ENABLED
