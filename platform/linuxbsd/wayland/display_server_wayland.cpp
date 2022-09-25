@@ -3010,7 +3010,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
 
 	if (!wls.globals.xdg_decoration_manager) {
-		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported!");
+		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported yet!");
 	}
 
 #ifndef DBUS_ENABLED
