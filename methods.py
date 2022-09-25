@@ -105,7 +105,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("GODOT_VERSION_STATUS") != None:
         version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
         if not silent:
-            print(f"Using version status '{version_info.status}', overriding the original '{version.status}'.")
+            print(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
 
     # Parse Git hash if we're in a Git repo.
     githash = ""
