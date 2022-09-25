@@ -68,6 +68,7 @@
 
 #ifdef DBUS_ENABLED
 #include "../freedesktop_portal_desktop.h"
+#include "../freedesktop_screensaver.h"
 #endif
 
 #include "core/input/input.h"
@@ -353,7 +354,10 @@ class DisplayServerWayland : public DisplayServer {
 	Thread events_thread;
 
 #if DBUS_ENABLED
-	FreeDesktopPortalDesktop *portal_desktop;
+	FreeDesktopPortalDesktop *portal_desktop = nullptr;
+
+	FreeDesktopScreenSaver *screensaver = nullptr;
+	bool screensaver_inhibited = false;
 #endif
 
 	static String _string_read_fd(int fd);

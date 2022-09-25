@@ -1973,6 +1973,12 @@ bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
 }
 
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
+	MutexLock mutex_lock(wls.mutex);
+
+	if (screen_is_kept_on() == p_enable) {
+		return;
+	}
+
 	if (p_enable) {
 		if (wls.globals.wp_idle_inhibit_manager && !wls.wp_idle_inhibitor) {
 			ERR_FAIL_COND(!wls.windows.has(MAIN_WINDOW_ID));
@@ -1985,9 +1991,25 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 			wls.wp_idle_inhibitor = nullptr;
 		}
 	}
+
+#ifdef DBUS_ENABLED
+	if (screensaver) {
+		if (p_enable) {
+			screensaver->inhibit();
+		} else {
+			screensaver->uninhibit();
+		}
+
+		screensaver_inhibited = p_enable;
+	}
+#endif
 }
 
 bool DisplayServerWayland::screen_is_kept_on() const {
+#ifdef DBUS_ENABLED
+	return wls.wp_idle_inhibitor != nullptr || screensaver_inhibited;
+#endif
+
 	return wls.wp_idle_inhibitor != nullptr;
 }
 
@@ -2991,9 +3013,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported!");
 	}
 
+#ifndef DBUS_ENABLED
 	if (!wls.globals.wp_idle_inhibit_manager) {
 		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
 	}
+#endif
 
 	// Input.
 	Input::get_singleton()->set_event_dispatch_function(dispatch_input_events);
@@ -3111,6 +3135,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef DBUS_ENABLED
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	screensaver = memnew(FreeDesktopScreenSaver);
 #endif
 
 	r_error = OK;
@@ -3260,6 +3285,7 @@ DisplayServerWayland::~DisplayServerWayland() {
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
 		memdelete(portal_desktop);
+		memdelete(screensaver);
 	}
 #endif
 }
