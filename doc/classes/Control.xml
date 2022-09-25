@@ -383,7 +383,7 @@
 		<method name="get_global_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control relative to the top-left corner of the screen. See [member position] and [member size].
+				Returns the position and size of the control relative to the [CanvasLayer]. See [member global_position] and [member size].
 			</description>
 		</method>
 		<method name="get_minimum_size" qualifiers="const">
@@ -999,7 +999,7 @@
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
 		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
-			The node's global position, relative to the world (usually to the top-left corner of the window).
+			The node's global position, relative to the world (usually to the [CanvasLayer]).
 		</member>
 		<member name="grow_horizontal" type="int" setter="set_h_grow_direction" getter="get_h_grow_direction" enum="Control.GrowDirection" default="1">
 			Controls the direction on the horizontal axis in which the control should grow if its horizontal minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
