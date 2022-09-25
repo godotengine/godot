@@ -1201,13 +1201,14 @@ void TextEdit::_notification(int p_what) {
 								current_color.a = font_readonly_color.a;
 							}
 						}
+						Color gl_color = current_color;
 
 						if (selection.active && line >= selection.from_line && line <= selection.to_line) { // Selection
 							int sel_from = (line > selection.from_line) ? TS->shaped_text_get_range(rid).x : selection.from_column;
 							int sel_to = (line < selection.to_line) ? TS->shaped_text_get_range(rid).y : selection.to_column;
 
 							if (glyphs[j].start >= sel_from && glyphs[j].end <= sel_to && override_selected_font_color) {
-								current_color = font_selected_color;
+								gl_color = font_selected_color;
 							}
 						}
 
@@ -1217,29 +1218,29 @@ void TextEdit::_notification(int p_what) {
 								if ((brace_open_match_line == line && brace_open_match_column == glyphs[j].start) ||
 										(caret.column == glyphs[j].start && caret.line == line && caret_wrap_index == line_wrap_index && (brace_open_matching || brace_open_mismatch))) {
 									if (brace_open_mismatch) {
-										current_color = brace_mismatch_color;
+										gl_color = brace_mismatch_color;
 									}
 									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, MAX(font->get_underline_thickness(font_size) * get_theme_default_base_scale(), 1));
-									draw_rect(rect, current_color);
+									draw_rect(rect, gl_color);
 								}
 
 								if ((brace_close_match_line == line && brace_close_match_column == glyphs[j].start) ||
 										(caret.column == glyphs[j].start + 1 && caret.line == line && caret_wrap_index == line_wrap_index && (brace_close_matching || brace_close_mismatch))) {
 									if (brace_close_mismatch) {
-										current_color = brace_mismatch_color;
+										gl_color = brace_mismatch_color;
 									}
 									Rect2 rect = Rect2(char_pos, ofs_y + font->get_underline_position(font_size), glyphs[j].advance * glyphs[j].repeat, MAX(font->get_underline_thickness(font_size) * get_theme_default_base_scale(), 1));
-									draw_rect(rect, current_color);
+									draw_rect(rect, gl_color);
 								}
 							}
 
 							if (draw_tabs && ((glyphs[j].flags & TextServer::GRAPHEME_IS_TAB) == TextServer::GRAPHEME_IS_TAB)) {
 								int yofs = (text_height - tab_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
-								tab_icon->draw(ci, Point2(char_pos, ofs_y + yofs), current_color);
+								tab_icon->draw(ci, Point2(char_pos, ofs_y + yofs), gl_color);
 							} else if (draw_spaces && ((glyphs[j].flags & TextServer::GRAPHEME_IS_SPACE) == TextServer::GRAPHEME_IS_SPACE)) {
 								int yofs = (text_height - space_icon->get_height()) / 2 - ldata->get_line_ascent(line_wrap_index);
 								int xofs = (glyphs[j].advance * glyphs[j].repeat - space_icon->get_width()) / 2;
-								space_icon->draw(ci, Point2(char_pos + xofs, ofs_y + yofs), current_color);
+								space_icon->draw(ci, Point2(char_pos + xofs, ofs_y + yofs), gl_color);
 							}
 						}
 
@@ -1247,10 +1248,10 @@ void TextEdit::_notification(int p_what) {
 						for (int k = 0; k < glyphs[j].repeat; k++) {
 							if (!clipped && (char_ofs + char_margin) >= xmargin_beg && (char_ofs + glyphs[j].advance + char_margin) <= xmargin_end) {
 								if (glyphs[j].font_rid != RID()) {
-									TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, current_color);
+									TS->font_draw_glyph(glyphs[j].font_rid, ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
 								} else if ((glyphs[j].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-									TS->draw_hex_code_box(ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, current_color);
+									TS->draw_hex_code_box(ci, glyphs[j].font_size, Vector2(char_margin + char_ofs + ofs_x + glyphs[j].x_off, ofs_y + glyphs[j].y_off), glyphs[j].index, gl_color);
 									had_glyphs_drawn = true;
 								}
 							}
