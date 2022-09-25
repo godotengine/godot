@@ -199,17 +199,19 @@ void EditorSettingsDialog::_update_icons() {
 }
 
 void EditorSettingsDialog::_event_config_confirmed() {
-	Ref<InputEventKey> k = shortcut_editor->get_event();
-	if (k.is_null()) {
+	Ref<InputEvent> e = shortcut_editor->get_event();
+	Ref<InputEventKey> k = e;
+	Ref<InputEventMouseButton> mb = e;
+	if (k.is_null() && mb.is_null()) {
 		return;
 	}
 
 	if (current_event_index == -1) {
-		// Add new event
-		current_events.push_back(k);
+		// Add new event.
+		current_events.push_back(e);
 	} else {
-		// Edit existing event
-		current_events[current_event_index] = k;
+		// Edit existing event.
+		current_events[current_event_index] = e;
 	}
 
 	if (is_editing_action) {
@@ -255,7 +257,8 @@ Array EditorSettingsDialog::_event_list_to_array_helper(const List<Ref<InputEven
 	// Convert the list to an array, and only keep key events as this is for the editor.
 	for (const List<Ref<InputEvent>>::Element *E = p_events.front(); E; E = E->next()) {
 		Ref<InputEventKey> k = E->get();
-		if (k.is_valid()) {
+		Ref<InputEventMouseButton> mb = E->get();
+		if (k.is_valid() || mb.is_valid()) {
 			events.append(E->get());
 		}
 	}
@@ -388,12 +391,13 @@ void EditorSettingsDialog::_update_shortcuts() {
 		}
 
 		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
-		List<Ref<InputEventKey>> key_default_events;
+		List<Ref<InputEvent>> key_default_events;
 		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
 		for (const List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
 			Ref<InputEventKey> k = I->get();
-			if (k.is_valid()) {
-				key_default_events.push_back(k);
+			Ref<InputEventMouseButton> mb = I->get();
+			if (k.is_valid() || mb.is_valid()) {
+				key_default_events.push_back(I->get());
 			}
 		}
 
@@ -771,7 +775,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);
 	shortcut_editor->connect("confirmed", callable_mp(this, &EditorSettingsDialog::_event_config_confirmed));
-	shortcut_editor->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_KEY);
+	shortcut_editor->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_KEY | InputEventConfigurationDialog::InputType::INPUT_MOUSE_THUMB_BUTTON);
 	add_child(shortcut_editor);
 
 	set_hide_on_ok(true);

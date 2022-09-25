@@ -48,9 +48,11 @@ class InputEventConfigurationDialog : public ConfirmationDialog {
 public:
 	enum InputType {
 		INPUT_KEY = 1,
-		INPUT_MOUSE_BUTTON = 2,
-		INPUT_JOY_BUTTON = 4,
-		INPUT_JOY_MOTION = 8
+		INPUT_JOY_BUTTON = 2,
+		INPUT_JOY_MOTION = 4,
+		INPUT_MOUSE_COMMON_BUTTON = 8,
+		INPUT_MOUSE_THUMB_BUTTON = 16,
+		INPUT_MOUSE_BUTTON = 8 | 16,
 	};
 
 private:
