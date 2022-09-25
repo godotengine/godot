@@ -66,6 +66,10 @@
 #include "gl_manager_wayland.h"
 #endif
 
+#ifdef DBUS_ENABLED
+#include "../freedesktop_portal_desktop.h"
+#endif
+
 #include "core/input/input.h"
 #include "core/os/thread.h"
 
@@ -348,6 +352,10 @@ class DisplayServerWayland : public DisplayServer {
 
 	Thread events_thread;
 
+#if DBUS_ENABLED
+	FreeDesktopPortalDesktop *portal_desktop;
+#endif
+
 	static String _string_read_fd(int fd);
 
 	String _wl_data_offer_read(wl_data_offer *wl_data_offer) const;
@@ -556,6 +564,11 @@ public:
 	virtual bool has_feature(Feature p_feature) const override;
 
 	virtual String get_name() const override;
+
+#ifdef DBUS_ENABLED
+	virtual bool is_dark_mode_supported() const override;
+	virtual bool is_dark_mode() const override;
+#endif
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;

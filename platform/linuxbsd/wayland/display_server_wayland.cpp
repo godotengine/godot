@@ -1740,6 +1740,28 @@ String DisplayServerWayland::get_name() const {
 	return "Wayland";
 }
 
+#ifdef DBUS_ENABLED
+
+bool DisplayServerWayland::is_dark_mode_supported() const {
+	return portal_desktop->is_supported();
+}
+
+bool DisplayServerWayland::is_dark_mode() const {
+	switch (portal_desktop->get_appearance_color_scheme()) {
+		case 1:
+			// Prefers dark theme.
+			return true;
+		case 2:
+			// Prefers light theme.
+			return false;
+		default:
+			// Preference unknown.
+			return false;
+	}
+}
+
+#endif
+
 void DisplayServerWayland::mouse_set_mode(MouseMode p_mode) {
 	if (p_mode == wls.mouse_mode) {
 		return;
@@ -3087,6 +3109,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	events_thread.start(_poll_events_thread, &wls);
 
+#ifdef DBUS_ENABLED
+	portal_desktop = memnew(FreeDesktopPortalDesktop);
+#endif
+
 	r_error = OK;
 }
 
@@ -3228,6 +3254,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.context_vulkan) {
 		memdelete(wls.context_vulkan);
+	}
+#endif
+
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		memdelete(portal_desktop);
 	}
 #endif
 }
