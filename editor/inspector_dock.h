@@ -104,6 +104,8 @@ class InspectorDock : public VBoxContainer {
 	EditorPropertyNameProcessor::Style property_name_style;
 	List<Pair<StringName, Variant>> stored_properties;
 
+	Vector<Ref<Texture2D>> type_icon_cache;
+
 	void _prepare_menu();
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
@@ -155,6 +157,8 @@ public:
 
 	void store_script_properties(Object *p_object);
 	void apply_script_properties(Object *p_object);
+
+	const Ref<Texture2D> get_type_icon(int p_type);
 
 	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();

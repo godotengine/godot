@@ -452,6 +452,48 @@ void InspectorDock::_notification(int p_what) {
 				info->add_theme_color_override("font_color", get_theme_color(SNAME("font_color"), SNAME("Editor")));
 			}
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			type_icon_cache.resize(Variant::VARIANT_MAX);
+			type_icon_cache.write[Variant::NIL] = get_theme_icon("Variant", "EditorIcons");
+			type_icon_cache.write[Variant::BOOL] = get_theme_icon("bool", "EditorIcons");
+			type_icon_cache.write[Variant::INT] = get_theme_icon("int", "EditorIcons");
+			type_icon_cache.write[Variant::FLOAT] = get_theme_icon("float", "EditorIcons");
+			type_icon_cache.write[Variant::STRING] = get_theme_icon("String", "EditorIcons");
+			type_icon_cache.write[Variant::VECTOR2] = get_theme_icon("Vector2", "EditorIcons");
+			type_icon_cache.write[Variant::VECTOR2I] = get_theme_icon("Vector2i", "EditorIcons");
+			type_icon_cache.write[Variant::RECT2] = get_theme_icon("Rect2", "EditorIcons");
+			type_icon_cache.write[Variant::RECT2I] = get_theme_icon("Rect2i", "EditorIcons");
+			type_icon_cache.write[Variant::VECTOR3] = get_theme_icon("Vector3", "EditorIcons");
+			type_icon_cache.write[Variant::VECTOR3I] = get_theme_icon("Vector3i", "EditorIcons");
+			type_icon_cache.write[Variant::TRANSFORM2D] = get_theme_icon("Transform2D", "EditorIcons");
+			type_icon_cache.write[Variant::VECTOR4] = get_theme_icon("Vector4", "EditorIcons");
+			type_icon_cache.write[Variant::VECTOR4I] = get_theme_icon("Vector4i", "EditorIcons");
+			type_icon_cache.write[Variant::PLANE] = get_theme_icon("Plane", "EditorIcons");
+			type_icon_cache.write[Variant::QUATERNION] = get_theme_icon("Quaternion", "EditorIcons");
+			type_icon_cache.write[Variant::AABB] = get_theme_icon("AABB", "EditorIcons");
+			type_icon_cache.write[Variant::BASIS] = get_theme_icon("Basis", "EditorIcons");
+			type_icon_cache.write[Variant::TRANSFORM3D] = get_theme_icon("Transform3D", "EditorIcons");
+			type_icon_cache.write[Variant::PROJECTION] = get_theme_icon("Projection", "EditorIcons");
+			type_icon_cache.write[Variant::COLOR] = get_theme_icon("Color", "EditorIcons");
+			type_icon_cache.write[Variant::STRING_NAME] = get_theme_icon("StringName", "EditorIcons");
+			type_icon_cache.write[Variant::NODE_PATH] = get_theme_icon("NodePath", "EditorIcons");
+			type_icon_cache.write[Variant::RID] = get_theme_icon("RID", "EditorIcons");
+			type_icon_cache.write[Variant::OBJECT] = get_theme_icon("Object", "EditorIcons");
+			type_icon_cache.write[Variant::CALLABLE] = get_theme_icon("Callable", "EditorIcons");
+			type_icon_cache.write[Variant::SIGNAL] = get_theme_icon("Signal", "EditorIcons");
+			type_icon_cache.write[Variant::DICTIONARY] = get_theme_icon("Dictionary", "EditorIcons");
+			type_icon_cache.write[Variant::ARRAY] = get_theme_icon("Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_BYTE_ARRAY] = get_theme_icon("PackedByteArray", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_INT32_ARRAY] = get_theme_icon("PackedInt32Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_INT64_ARRAY] = get_theme_icon("PackedInt64Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_FLOAT32_ARRAY] = get_theme_icon("PackedFloat32Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_FLOAT64_ARRAY] = get_theme_icon("PackedFloat64Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_STRING_ARRAY] = get_theme_icon("PackedStringArray", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_VECTOR2_ARRAY] = get_theme_icon("PackedVector2Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_VECTOR3_ARRAY] = get_theme_icon("PackedVector3Array", "EditorIcons");
+			type_icon_cache.write[Variant::PACKED_COLOR_ARRAY] = get_theme_icon("PackedColorArray", "EditorIcons");
+		} break;
 	}
 }
 
@@ -616,6 +658,11 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 		}
 	}
 	stored_properties.clear();
+}
+
+const Ref<Texture2D> InspectorDock::get_type_icon(int p_type) {
+	ERR_FAIL_INDEX_V(p_type, type_icon_cache.size(), Ref<Texture2D>());
+	return type_icon_cache[p_type];
 }
 
 InspectorDock::InspectorDock(EditorData &p_editor_data) {
