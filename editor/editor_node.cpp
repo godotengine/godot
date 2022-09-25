@@ -966,6 +966,13 @@ void EditorNode::_fs_changed() {
 	String export_error;
 	Error err = OK;
 	if (!export_defer.preset.is_empty() && !EditorFileSystem::get_singleton()->is_scanning()) {
+		if (EditorPaths::get_singleton()->is_self_contained()) {
+			if (ProjectSettings::get_singleton()->get_resource_path() == OS::get_singleton()->get_executable_path().get_base_dir()) {
+				ERR_PRINT("You are trying to export from a self-contained editor at the same location as the project. This is not allowed, since editor settings and other files would be in the export.");
+				_exit_editor(EXIT_FAILURE);
+				return;
+			}
+		}
 		String preset_name = export_defer.preset;
 		// Ensures export_project does not loop infinitely, because notifications may
 		// come during the export.
