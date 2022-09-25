@@ -1856,6 +1856,46 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 }
 
 void Object::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+	if (p_idx == 0) {
+		if (p_function == "connect" || p_function == "is_connected" || p_function == "disconnect" || p_function == "emit_signal" || p_function == "has_signal") {
+			List<MethodInfo> signals;
+			get_signal_list(&signals);
+			for (const MethodInfo &E : signals) {
+				r_options->push_back(E.name.quote());
+			}
+		} else if (p_function == "call" || p_function == "call_deferred" || p_function == "callv" || p_function == "has_method") {
+			List<MethodInfo> methods;
+			get_method_list(&methods);
+			for (const MethodInfo &E : methods) {
+				if (E.name.begins_with("_") && !(E.flags & METHOD_FLAG_VIRTUAL)) {
+					continue;
+				}
+				r_options->push_back(E.name.quote());
+			}
+		} else if (p_function == "set" || p_function == "set_deferred" || p_function == "get") {
+			List<PropertyInfo> properties;
+			get_property_list(&properties);
+			for (const PropertyInfo &E : properties) {
+				if (E.usage & PROPERTY_USAGE_DEFAULT && !(E.usage & PROPERTY_USAGE_INTERNAL)) {
+					r_options->push_back(E.name.quote());
+				}
+			}
+		} else if (p_function == "set_meta" || p_function == "get_meta" || p_function == "has_meta" || p_function == "remove_meta") {
+			for (const KeyValue<StringName, Variant> &K : metadata) {
+				r_options->push_back(String(K.key).quote());
+			}
+		}
+	} else if (p_idx == 2) {
+		if (p_function == "connect") {
+			// Ideally, the constants should be inferred by the parameter.
+			// But a parameter's PropertyInfo does not store the enum they come from, so this will do for now.
+			List<StringName> constants;
+			ClassDB::get_enum_constants("Object", "ConnectFlags", &constants);
+			for (const StringName &E : constants) {
+				r_options->push_back(String(E));
+			}
+		}
+	}
 }
 
 SpinLock ObjectDB::spin_lock;
