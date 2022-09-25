@@ -151,8 +151,12 @@ public:
 	virtual Variant area_get_param(RID p_area, AreaParameter p_param) const override;
 	virtual Transform2D area_get_transform(RID p_area) const override;
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
-	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
+
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
+	virtual uint32_t area_get_collision_layer(RID p_area) const override;
+
+	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
+	virtual uint32_t area_get_collision_mask(RID p_area) const override;
 
 	virtual void area_set_monitor_callback(RID p_area, const Callable &p_callback) override;
 	virtual void area_set_area_monitor_callback(RID p_area, const Callable &p_callback) override;

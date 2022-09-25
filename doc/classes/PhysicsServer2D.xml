@@ -53,6 +53,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="area_get_collision_layer" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the physics layer or layers an area belongs to.
+			</description>
+		</method>
+		<method name="area_get_collision_mask" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the physics layer or layers an area can contact with.
+			</description>
+		</method>
 		<method name="area_get_object_instance_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="area" type="RID" />
