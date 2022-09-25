@@ -422,6 +422,7 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 	if (error == OK) {
 		if (script->load_source_code(path) == OK) {
 			script->reload(true);
+			ScriptEditor::get_singleton()->reload_scripts(true); // Refresh scripts opened in the internal editor.
 		}
 	}
 }
