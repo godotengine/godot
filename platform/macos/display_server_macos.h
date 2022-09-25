@@ -179,6 +179,12 @@ private:
 
 	IOPMAssertionID screen_keep_on_assertion = kIOPMNullAssertionID;
 
+	struct MenuCall {
+		Variant tag;
+		Callable callback;
+	};
+	Vector<MenuCall> deferred_menu_calls;
+
 	const NSMenu *_get_menu_root(const String &p_menu_root) const;
 	NSMenu *_get_menu_root(const String &p_menu_root);
 
