@@ -324,6 +324,7 @@ MainFrameTime MainTimerSync::advance_core(float p_frame_slice, int p_iterations_
 	MainFrameTime ret;
 
 	ret.idle_step = p_idle_step;
+	ret.interpolation_fraction = 0.0f;
 
 	// simple determination of number of physics iteration
 	time_accum += ret.idle_step;

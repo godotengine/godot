@@ -612,7 +612,9 @@ void InputDefault::action_press(const StringName &p_action, float p_strength) {
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = true;
+	action.exact = false;
 	action.strength = p_strength;
+	action.raw_strength = 0.f;
 
 	action_state[p_action] = action;
 }
@@ -623,7 +625,9 @@ void InputDefault::action_release(const StringName &p_action) {
 	action.physics_frame = Engine::get_singleton()->get_physics_frames();
 	action.idle_frame = Engine::get_singleton()->get_idle_frames();
 	action.pressed = false;
+	action.exact = false;
 	action.strength = 0.f;
+	action.raw_strength = 0.f;
 
 	action_state[p_action] = action;
 }
