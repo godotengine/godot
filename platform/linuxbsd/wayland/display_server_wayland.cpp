@@ -2993,6 +2993,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	ERR_FAIL_COND_MSG(!wls.wl_display, "Can't connect to a Wayland display.");
 
+	events_thread.start(_poll_events_thread, &wls);
+
 	wls.wl_registry = wl_display_get_registry(wls.wl_display);
 
 	ERR_FAIL_COND_MSG(!wls.wl_registry, "Can't obtain the Wayland registry global.");
@@ -3130,8 +3132,6 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		RendererCompositorRD::make_current();
 	}
 #endif
-
-	events_thread.start(_poll_events_thread, &wls);
 
 #ifdef DBUS_ENABLED
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
