@@ -3121,7 +3121,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	cursor_set_shape(CURSOR_BUSY);
 
-	WindowID main_window_id = _create_window(p_mode, p_vsync_mode, p_flags, screen_get_usable_rect());
+	WindowID main_window_id = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(Point2i(0, 0), p_resolution));
 	show_window(main_window_id);
 
 #ifdef VULKAN_ENABLED
