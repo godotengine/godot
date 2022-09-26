@@ -76,8 +76,9 @@ private:
 	Path3D *path = nullptr;
 	real_t prev_offset = 0.0; // Offset during the last _update_transform.
 	real_t progress = 0.0;
-	real_t h_offset = 0.0;
-	real_t v_offset = 0.0;
+	real_t offset_side = 0.0;
+	real_t offset_perpendicular = 0.0;
+	real_t offset_forward = 0.0;
 	bool cubic = true;
 	bool loop = true;
 	RotationMode rotation_mode = ROTATION_XYZ;
@@ -94,11 +95,14 @@ public:
 	void set_progress(real_t p_progress);
 	real_t get_progress() const;
 
-	void set_h_offset(real_t p_h_offset);
-	real_t get_h_offset() const;
+	void set_offset_side(real_t p_offset);
+	real_t get_offset_side() const;
 
-	void set_v_offset(real_t p_v_offset);
-	real_t get_v_offset() const;
+	void set_offset_perpendicular(real_t p_offset);
+	real_t get_offset_perpendicular() const;
+
+	void set_offset_forward(real_t p_offset);
+	real_t get_offset_forward() const;
 
 	void set_progress_ratio(real_t p_ratio);
 	real_t get_progress_ratio() const;

@@ -209,14 +209,14 @@ void PathFollow2D::_update_transform() {
 
 		Vector2 normal_of_curve = -tangent_to_curve.orthogonal();
 
-		pos += tangent_to_curve * h_offset;
-		pos += normal_of_curve * v_offset;
+		pos += tangent_to_curve * offset_parallel;
+		pos += normal_of_curve * offset_perpendicular;
 
 		set_rotation(tangent_to_curve.angle());
 
 	} else {
-		pos.x += h_offset;
-		pos.y += v_offset;
+		pos.x += offset_parallel;
+		pos.y += offset_perpendicular;
 	}
 
 	set_position(pos);
@@ -272,11 +272,11 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow2D::set_progress);
 	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow2D::get_progress);
 
-	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow2D::set_h_offset);
-	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow2D::get_h_offset);
+	ClassDB::bind_method(D_METHOD("set_offset_parallel", "offset"), &PathFollow2D::set_offset_parallel);
+	ClassDB::bind_method(D_METHOD("get_offset_parallel"), &PathFollow2D::get_offset_parallel);
 
-	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow2D::set_v_offset);
-	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow2D::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_offset_perpendicular", "offset"), &PathFollow2D::set_offset_perpendicular);
+	ClassDB::bind_method(D_METHOD("get_offset_perpendicular"), &PathFollow2D::get_offset_perpendicular);
 
 	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow2D::set_progress_ratio);
 	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow2D::get_progress_ratio);
@@ -295,8 +295,11 @@ void PathFollow2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:px"), "set_progress", "get_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
+
+	ADD_GROUP("Offset", "offset_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_parallel"), "set_offset_parallel", "get_offset_parallel");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_perpendicular"), "set_offset_perpendicular", "get_offset_perpendicular");
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
@@ -324,26 +327,26 @@ void PathFollow2D::set_progress(real_t p_progress) {
 	}
 }
 
-void PathFollow2D::set_h_offset(real_t p_h_offset) {
-	h_offset = p_h_offset;
+void PathFollow2D::set_offset_parallel(real_t p_offset) {
+	offset_parallel = p_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow2D::get_h_offset() const {
-	return h_offset;
+real_t PathFollow2D::get_offset_parallel() const {
+	return offset_parallel;
 }
 
-void PathFollow2D::set_v_offset(real_t p_v_offset) {
-	v_offset = p_v_offset;
+void PathFollow2D::set_offset_perpendicular(real_t p_offset) {
+	offset_perpendicular = p_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow2D::get_v_offset() const {
-	return v_offset;
+real_t PathFollow2D::get_offset_perpendicular() const {
+	return offset_perpendicular;
 }
 
 real_t PathFollow2D::get_progress() const {

@@ -239,7 +239,7 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		t.basis.set_columns(sideways, up, forward);
 		t.basis.scale_local(scale);
 
-		t.origin = pos + sideways * h_offset + up * v_offset;
+		t.origin = pos + sideways * offset_side + up * offset_perpendicular;
 	} else if (rotation_mode != ROTATION_NONE) {
 		// perform parallel transport
 		//
@@ -296,9 +296,9 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 			}
 		}
 
-		t.translate_local(Vector3(h_offset, v_offset, 0));
+		t.translate_local(Vector3(offset_side, offset_perpendicular, offset_forward));
 	} else {
-		t.origin = pos + Vector3(h_offset, v_offset, 0);
+		t.origin = pos + Vector3(offset_side, offset_perpendicular, offset_forward);
 	}
 
 	set_transform(t);
@@ -362,11 +362,14 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow3D::set_progress);
 	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow3D::get_progress);
 
-	ClassDB::bind_method(D_METHOD("set_h_offset", "h_offset"), &PathFollow3D::set_h_offset);
-	ClassDB::bind_method(D_METHOD("get_h_offset"), &PathFollow3D::get_h_offset);
+	ClassDB::bind_method(D_METHOD("set_offset_side", "offset"), &PathFollow3D::set_offset_side);
+	ClassDB::bind_method(D_METHOD("get_offset_side"), &PathFollow3D::get_offset_side);
 
-	ClassDB::bind_method(D_METHOD("set_v_offset", "v_offset"), &PathFollow3D::set_v_offset);
-	ClassDB::bind_method(D_METHOD("get_v_offset"), &PathFollow3D::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_offset_perpendicular", "offset"), &PathFollow3D::set_offset_perpendicular);
+	ClassDB::bind_method(D_METHOD("get_offset_perpendicular"), &PathFollow3D::get_offset_perpendicular);
+
+	ClassDB::bind_method(D_METHOD("set_offset_forward", "offset"), &PathFollow3D::set_offset_forward);
+	ClassDB::bind_method(D_METHOD("get_offset_forward"), &PathFollow3D::get_offset_forward);
 
 	ClassDB::bind_method(D_METHOD("set_progress_ratio", "ratio"), &PathFollow3D::set_progress_ratio);
 	ClassDB::bind_method(D_METHOD("get_progress_ratio"), &PathFollow3D::get_progress_ratio);
@@ -382,8 +385,12 @@ void PathFollow3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress", PROPERTY_HINT_RANGE, "0,10000,0.01,or_less,or_greater,suffix:m"), "set_progress", "get_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "progress_ratio", PROPERTY_HINT_RANGE, "0,1,0.0001,or_less,or_greater", PROPERTY_USAGE_EDITOR), "set_progress_ratio", "get_progress_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
+
+	ADD_GROUP("Offset", "offset_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_side", PROPERTY_HINT_NONE, "suffix:m"), "set_offset_side", "get_offset_side");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_perpendicular", PROPERTY_HINT_NONE, "suffix:m"), "set_offset_perpendicular", "get_offset_perpendicular");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_forward", PROPERTY_HINT_NONE, "suffix:m"), "set_offset_forward", "get_offset_forward");
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
@@ -418,26 +425,37 @@ void PathFollow3D::set_progress(real_t p_progress) {
 	}
 }
 
-void PathFollow3D::set_h_offset(real_t p_h_offset) {
-	h_offset = p_h_offset;
+void PathFollow3D::set_offset_side(real_t p_offset) {
+	offset_side = p_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow3D::get_h_offset() const {
-	return h_offset;
+real_t PathFollow3D::get_offset_side() const {
+	return offset_side;
 }
 
-void PathFollow3D::set_v_offset(real_t p_v_offset) {
-	v_offset = p_v_offset;
+void PathFollow3D::set_offset_perpendicular(real_t p_offset) {
+	offset_perpendicular = p_offset;
 	if (path) {
 		_update_transform();
 	}
 }
 
-real_t PathFollow3D::get_v_offset() const {
-	return v_offset;
+real_t PathFollow3D::get_offset_perpendicular() const {
+	return offset_perpendicular;
+}
+
+void PathFollow3D::set_offset_forward(real_t p_offset) {
+	offset_forward = p_offset;
+	if (path) {
+		_update_transform();
+	}
+}
+
+real_t PathFollow3D::get_offset_forward() const {
+	return offset_forward;
 }
 
 real_t PathFollow3D::get_progress() const {

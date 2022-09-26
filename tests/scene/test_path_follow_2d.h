@@ -143,7 +143,7 @@ TEST_CASE("[PathFollow2D] Removal of a point in curve") {
 	memdelete(path);
 }
 
-TEST_CASE("[PathFollow2D] Setting h_offset and v_offset") {
+TEST_CASE("[PathFollow2D] Setting offset_parallel and offset_perpendicular") {
 	const Ref<Curve2D> &curve = memnew(Curve2D());
 	curve->add_point(Vector2(0, 0));
 	curve->add_point(Vector2(100, 0));
@@ -155,16 +155,16 @@ TEST_CASE("[PathFollow2D] Setting h_offset and v_offset") {
 	path_follow_2d->set_progress_ratio(0.5);
 	CHECK(path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(50, 0)));
 
-	path_follow_2d->set_h_offset(25);
+	path_follow_2d->set_offset_parallel(25);
 	CHECK(path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(75, 0)));
 
-	path_follow_2d->set_v_offset(25);
+	path_follow_2d->set_offset_perpendicular(25);
 	CHECK(path_follow_2d->get_transform().get_origin().is_equal_approx(Vector2(75, 25)));
 
 	memdelete(path);
 }
 
-TEST_CASE("[PathFollow2D] Unit offset out of range") {
+TEST_CASE("[PathFollow2D] Progress ratio out of range") {
 	const Ref<Curve2D> &curve = memnew(Curve2D());
 	curve->add_point(Vector2(0, 0));
 	curve->add_point(Vector2(100, 0));

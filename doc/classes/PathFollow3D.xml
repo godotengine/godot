@@ -15,11 +15,17 @@
 			The points along the [Curve3D] of the [Path3D] are precomputed before use, for faster calculations. The point at the requested offset is then calculated interpolating between two adjacent cached points. This may present a problem if the curve makes sharp turns, as the cached points may not follow the curve closely enough.
 			There are two answers to this problem: either increase the number of cached points and increase memory consumption, or make a cubic interpolation between two points at the cost of (slightly) slower calculations.
 		</member>
-		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
-			The node's offset along the curve.
-		</member>
 		<member name="loop" type="bool" setter="set_loop" getter="has_loop" default="true">
 			If [code]true[/code], any offset outside the path's length will wrap around, instead of stopping at the ends. Use it for cyclic paths.
+		</member>
+		<member name="offset_forward" type="float" setter="set_offset_forward" getter="get_offset_forward" default="0.0">
+			The node's offset along the curve.
+		</member>
+		<member name="offset_perpendicular" type="float" setter="set_offset_perpendicular" getter="get_offset_perpendicular" default="0.0">
+			The node's offset perpendicular to the curve.
+		</member>
+		<member name="offset_side" type="float" setter="set_offset_side" getter="get_offset_side" default="0.0">
+			The node's offset to the sides of the curve.
 		</member>
 		<member name="progress" type="float" setter="set_progress" getter="get_progress" default="0.0">
 			The distance from the first vertex, measured in 3D units along the path. Changing this value sets this node's position to a point within the path.
@@ -29,9 +35,6 @@
 		</member>
 		<member name="rotation_mode" type="int" setter="set_rotation_mode" getter="get_rotation_mode" enum="PathFollow3D.RotationMode" default="3">
 			Allows or forbids rotation on one or more axes, depending on the [enum RotationMode] constants being used.
-		</member>
-		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
-			The node's offset perpendicular to the curve.
 		</member>
 	</members>
 	<constants>
