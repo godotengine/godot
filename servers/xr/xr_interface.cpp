@@ -68,6 +68,11 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_detection_is_enabled", "enable"), &XRInterface::set_anchor_detection_is_enabled);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &XRInterface::get_camera_feed_id);
 
+	ClassDB::bind_method(D_METHOD("is_passthrough_supported"), &XRInterface::is_passthrough_supported);
+	ClassDB::bind_method(D_METHOD("is_passthrough_enabled"), &XRInterface::is_passthrough_enabled);
+	ClassDB::bind_method(D_METHOD("start_passthrough"), &XRInterface::start_passthrough);
+	ClassDB::bind_method(D_METHOD("stop_passthrough"), &XRInterface::stop_passthrough);
+
 	ADD_GROUP("AR", "ar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
 

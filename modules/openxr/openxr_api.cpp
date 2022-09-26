@@ -49,6 +49,7 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
+#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
@@ -1764,6 +1765,7 @@ OpenXRAPI::OpenXRAPI() {
 	register_extension_wrapper(memnew(OpenXRPalmPoseExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
+	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {
@@ -1870,6 +1872,18 @@ void OpenXRAPI::parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_l
 	} else {
 		r_angular_velocity = Vector3();
 	}
+}
+
+bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const {
+	if (XR_SUCCEEDED(result))
+		return true;
+
+	char resultString[XR_MAX_RESULT_STRING_SIZE];
+	xrResultToString(instance, result, resultString);
+
+	print_error(String("OpenXR ") + String(format).format(args) + String(" [") + String(resultString) + String("]"));
+
+	return false;
 }
 
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
@@ -2562,4 +2576,12 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_freque
 	}
 
 	return true;
+}
+
+void OpenXRAPI::register_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
+	composition_layer_providers.append(provider);
+}
+
+void OpenXRAPI::unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
+	composition_layer_providers.erase(provider);
 }
