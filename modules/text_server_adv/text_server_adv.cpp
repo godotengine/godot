@@ -3826,19 +3826,11 @@ void TextServerAdvanced::shaped_set_span_update_font(const RID &p_shaped, int64_
 	ERR_FAIL_INDEX(p_index, sd->spans.size());
 
 	ShapedTextDataAdvanced::Span &span = sd->spans.ptrw()[p_index];
-	bool changed = (span.font_size != p_size) || (span.features != p_opentype_features) || (p_fonts.size() != span.fonts.size());
-	if (!changed) {
-		for (int i = 0; i < p_fonts.size(); i++) {
-			changed = changed || (span.fonts[i] != p_fonts[i]);
-		}
-	}
-	if (changed) {
-		span.fonts = p_fonts;
-		span.font_size = p_size;
-		span.features = p_opentype_features;
+	span.fonts = p_fonts;
+	span.font_size = p_size;
+	span.features = p_opentype_features;
 
-		invalidate(sd, false);
-	}
+	invalidate(sd, false);
 }
 
 bool TextServerAdvanced::shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
