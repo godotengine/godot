@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animation_node_state_machine.h"
+#include "scene/main/window.h"
 
 /////////////////////////////////////////////////
 
@@ -169,7 +170,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_GROUP("Advance", "advance_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_GROUP("Disabling", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
@@ -656,13 +657,15 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		ERR_FAIL_COND_V(tree_base == nullptr, false);
 
 		NodePath advance_expression_base_node_path;
-		if (!transition->advance_expression_base_node.is_empty()) {
-			advance_expression_base_node_path = transition->advance_expression_base_node;
+		Node *expression_base = nullptr;
+		if (!transition->get_advance_expression_base_node().is_empty()) {
+			advance_expression_base_node_path = transition->get_advance_expression_base_node();
+			expression_base = tree_base->get_tree()->get_root()->get_child(0)->get_node_or_null(advance_expression_base_node_path);
 		} else {
 			advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
+			expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
 		}
 
-		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
 			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
