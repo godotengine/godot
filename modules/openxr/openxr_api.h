@@ -102,7 +102,7 @@ private:
 	XrFormFactor form_factor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
-	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+	// XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -139,7 +139,10 @@ private:
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
 
+#ifdef ANDROID_ENABLED
+	// On Android we keep tracker of our external OpenXR loader
 	void *openxr_loader_library_handle = nullptr;
+#endif
 
 	// function pointers
 #ifdef ANDROID_ENABLED
@@ -269,9 +272,7 @@ private:
 	// convencience
 	void copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len);
 
-protected:
-	friend class OpenXRVulkanExtension;
-
+public:
 	XrInstance get_instance() const { return instance; };
 	XrSystemId get_system_id() const { return system_id; };
 	XrSession get_session() const { return session; };
@@ -284,7 +285,6 @@ protected:
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
-public:
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	static OpenXRAPI *get_singleton();
 
@@ -301,8 +301,9 @@ public:
 	bool initialize_session();
 	void finish();
 
-	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; };
-	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; };
+	XrSpace get_play_space() const { return play_space; }
+	XrTime get_next_frame_time() { return frame_state.predictedDisplayTime + frame_state.predictedDisplayPeriod; }
+	bool can_render() { return instance != XR_NULL_HANDLE && session != XR_NULL_HANDLE && running && view_pose_valid && frame_state.shouldRender; }
 
 	Size2 get_recommended_target_size();
 	XRPose::TrackingConfidence get_head_center(Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
