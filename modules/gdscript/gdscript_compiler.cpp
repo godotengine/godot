@@ -2041,7 +2041,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				codegen.generator->write_newline(field->initializer->start_line);
 
 				// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
-				if (field_type.is_hard_type() && field_type.builtin_type == Variant::ARRAY && field_type.has_container_element_type()) {
+				if (field_type.is_hard_type() && field_type.builtin_type == Variant::ARRAY) {
 					if (field_type.has_container_element_type()) {
 						codegen.generator->write_construct_typed_array(dst_address, _gdtype_from_datatype(field_type.get_container_element_type(), codegen.script), Vector<GDScriptCodeGenerator::Address>());
 					} else {
