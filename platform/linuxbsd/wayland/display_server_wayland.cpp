@@ -1543,7 +1543,7 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 
 	if (wls->current_seat && wls->current_seat->wp_locked_pointer && wd->id == wls->current_seat->pointer_data.pointed_window_id) {
 		// Since the cursor's currently locked and the window's rect might have
-		// changed, we have to recenter the position hint to ensure that the cursors
+		// changed, we have to recenter the position hint to ensure that the cursor
 		// stays centered on unlock.
 		wl_fixed_t unlock_x = wl_fixed_from_int(width / 2);
 		wl_fixed_t unlock_y = wl_fixed_from_int(height / 2);
