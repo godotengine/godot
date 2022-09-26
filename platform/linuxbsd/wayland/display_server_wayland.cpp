@@ -2014,10 +2014,14 @@ bool DisplayServerWayland::screen_is_kept_on() const {
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
-	// TODO
-	DEBUG_LOG_WAYLAND("wayland stub get_window_list, returning empty Vector<DisplayServer::WindowID>");
+	MutexLock mutex_lock(wls.mutex);
 
-	return Vector<DisplayServer::WindowID>();
+	Vector<int> ret;
+	for (const KeyValue<WindowID, WindowData> &E : wls.windows) {
+		ret.push_back(E.key);
+	}
+
+	return ret;
 }
 
 DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
