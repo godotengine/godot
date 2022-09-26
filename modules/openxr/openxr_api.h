@@ -139,7 +139,10 @@ private:
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
 
+#ifdef ANDROID_ENABLED
+	// On Android we keep tracker of our external OpenXR loader
 	void *openxr_loader_library_handle = nullptr;
+#endif
 
 	// function pointers
 #ifdef ANDROID_ENABLED
