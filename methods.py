@@ -105,7 +105,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("GODOT_VERSION_STATUS") != None:
         version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
         if not silent:
-            print(f"Using version status '{version_info.status}', overriding the original '{version.status}'.")
+            print(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
 
     # Parse Git hash if we're in a Git repo.
     githash = ""
@@ -846,7 +846,8 @@ def generate_vs_project(env, num_jobs):
         add_to_vs_project(env, env.servers_sources)
         if env["tests"]:
             add_to_vs_project(env, env.tests_sources)
-        add_to_vs_project(env, env.editor_sources)
+        if env["tools"]:
+            add_to_vs_project(env, env.editor_sources)
 
         for header in glob_recursive("**/*.h"):
             env.vs_incs.append(str(header))

@@ -148,8 +148,11 @@ public:
 
 	virtual void area_set_ray_pickable(RID p_area, bool p_enable) override;
 
-	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) override;
+	virtual uint32_t area_get_collision_layer(RID p_area) const override;
+
+	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) override;
+	virtual uint32_t area_get_collision_mask(RID p_area) const override;
 
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) override;
 

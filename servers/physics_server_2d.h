@@ -332,8 +332,11 @@ public:
 	virtual Variant area_get_param(RID p_parea, AreaParameter p_param) const = 0;
 	virtual Transform2D area_get_transform(RID p_area) const = 0;
 
-	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) = 0;
 	virtual void area_set_collision_layer(RID p_area, uint32_t p_layer) = 0;
+	virtual uint32_t area_get_collision_layer(RID p_area) const = 0;
+
+	virtual void area_set_collision_mask(RID p_area, uint32_t p_mask) = 0;
+	virtual uint32_t area_get_collision_mask(RID p_area) const = 0;
 
 	virtual void area_set_monitorable(RID p_area, bool p_monitorable) = 0;
 	virtual void area_set_pickable(RID p_area, bool p_pickable) = 0;

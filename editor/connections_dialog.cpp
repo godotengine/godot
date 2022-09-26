@@ -367,6 +367,10 @@ void ConnectDialog::popup_dialog(const String &p_for_signal) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
 
+	if (first_popup) {
+		first_popup = false;
+		_advanced_pressed();
+	}
 	popup_centered();
 }
 
@@ -389,6 +393,7 @@ void ConnectDialog::_advanced_pressed() {
 	}
 
 	_update_ok_enabled();
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "use_advanced_connections", advanced->is_pressed());
 
 	popup_centered();
 }
@@ -480,6 +485,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_child(advanced);
 	advanced->set_text(TTR("Advanced"));
 	advanced->set_h_size_flags(Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND);
+	advanced->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "use_advanced_connections", false));
 	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
 
 	HBoxContainer *hbox = memnew(HBoxContainer);

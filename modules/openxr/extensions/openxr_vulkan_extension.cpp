@@ -31,29 +31,11 @@
 #include "core/string/print_string.h"
 
 #include "../extensions/openxr_vulkan_extension.h"
-#include "../openxr_api.h"
 #include "../openxr_util.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
-
-// need to include Vulkan so we know of type definitions
-#define XR_USE_GRAPHICS_API_VULKAN
-
-#ifdef WINDOWS_ENABLED
-// Including windows.h here is absolutely evil, we shouldn't be doing this outside of platform
-// however due to the way the openxr headers are put together, we have no choice.
-#include <windows.h>
-#endif
-
-// include platform dependent structs
-#include <openxr/openxr_platform.h>
-
-PFN_xrGetVulkanGraphicsRequirements2KHR xrGetVulkanGraphicsRequirements2KHR_ptr = nullptr;
-PFN_xrCreateVulkanInstanceKHR xrCreateVulkanInstanceKHR_ptr = nullptr;
-PFN_xrGetVulkanGraphicsDevice2KHR xrGetVulkanGraphicsDevice2KHR_ptr = nullptr;
-PFN_xrCreateVulkanDeviceKHR xrCreateVulkanDeviceKHR_ptr = nullptr;
 
 OpenXRVulkanExtension::OpenXRVulkanExtension(OpenXRAPI *p_openxr_api) :
 		OpenXRGraphicsExtensionWrapper(p_openxr_api) {
@@ -69,36 +51,15 @@ OpenXRVulkanExtension::~OpenXRVulkanExtension() {
 }
 
 void OpenXRVulkanExtension::on_instance_created(const XrInstance p_instance) {
-	XrResult result;
-
 	ERR_FAIL_NULL(openxr_api);
 
 	// Obtain pointers to functions we're accessing here, they are (not yet) part of core.
-	result = xrGetInstanceProcAddr(p_instance, "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction *)&xrGetVulkanGraphicsRequirements2KHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrGetVulkanGraphicsRequirements2KHR entry point [", openxr_api->get_error_string(result), "]");
-	}
 
-	result = xrGetInstanceProcAddr(p_instance, "xrCreateVulkanInstanceKHR", (PFN_xrVoidFunction *)&xrCreateVulkanInstanceKHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrCreateVulkanInstanceKHR entry point [", openxr_api->get_error_string(result), "]");
-	}
-
-	result = xrGetInstanceProcAddr(p_instance, "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction *)&xrGetVulkanGraphicsDevice2KHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrGetVulkanGraphicsDevice2KHR entry point [", openxr_api->get_error_string(result), "]");
-	}
-
-	result = xrGetInstanceProcAddr(p_instance, "xrCreateVulkanDeviceKHR", (PFN_xrVoidFunction *)&xrCreateVulkanDeviceKHR_ptr);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to xrCreateVulkanDeviceKHR entry point [", openxr_api->get_error_string(result), "]");
-	}
-}
-
-XrResult OpenXRVulkanExtension::xrGetVulkanGraphicsRequirements2KHR(XrInstance p_instance, XrSystemId p_system_id, XrGraphicsRequirementsVulkanKHR *p_graphics_requirements) {
-	ERR_FAIL_NULL_V(xrGetVulkanGraphicsRequirements2KHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrGetVulkanGraphicsRequirements2KHR_ptr)(p_instance, p_system_id, p_graphics_requirements);
+	EXT_INIT_XR_FUNC(xrGetVulkanGraphicsRequirements2KHR);
+	EXT_INIT_XR_FUNC(xrCreateVulkanInstanceKHR);
+	EXT_INIT_XR_FUNC(xrGetVulkanGraphicsDevice2KHR);
+	EXT_INIT_XR_FUNC(xrCreateVulkanDeviceKHR);
+	EXT_INIT_XR_FUNC(xrEnumerateSwapchainImages);
 }
 
 bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_version) {
@@ -139,12 +100,6 @@ bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_versi
 	}
 
 	return true;
-}
-
-XrResult OpenXRVulkanExtension::xrCreateVulkanInstanceKHR(XrInstance p_instance, const XrVulkanInstanceCreateInfoKHR *p_create_info, VkInstance *r_vulkan_instance, VkResult *r_vulkan_result) {
-	ERR_FAIL_NULL_V(xrCreateVulkanInstanceKHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrCreateVulkanInstanceKHR_ptr)(p_instance, p_create_info, r_vulkan_instance, r_vulkan_result);
 }
 
 bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p_vulkan_create_info, VkInstance *r_instance) {
@@ -195,12 +150,6 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 	return true;
 }
 
-XrResult OpenXRVulkanExtension::xrGetVulkanGraphicsDevice2KHR(XrInstance p_instance, const XrVulkanGraphicsDeviceGetInfoKHR *p_get_info, VkPhysicalDevice *r_vulkan_physical_device) {
-	ERR_FAIL_NULL_V(xrGetVulkanGraphicsDevice2KHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrGetVulkanGraphicsDevice2KHR_ptr)(p_instance, p_get_info, r_vulkan_physical_device);
-}
-
 bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 	ERR_FAIL_NULL_V(openxr_api, false);
 
@@ -220,12 +169,6 @@ bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 	*r_device = vulkan_physical_device;
 
 	return true;
-}
-
-XrResult OpenXRVulkanExtension::xrCreateVulkanDeviceKHR(XrInstance p_instance, const XrVulkanDeviceCreateInfoKHR *p_create_info, VkDevice *r_device, VkResult *r_result) {
-	ERR_FAIL_NULL_V(xrCreateVulkanDeviceKHR_ptr, XR_ERROR_HANDLE_INVALID);
-
-	return (*xrCreateVulkanDeviceKHR_ptr)(p_instance, p_create_info, r_device, r_result);
 }
 
 bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) {

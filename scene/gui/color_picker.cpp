@@ -427,12 +427,15 @@ void ColorPicker::_html_submitted(const String &p_html) {
 		return;
 	}
 
-	float last_alpha = color.a;
+	Color previous_color = color;
 	color = Color::html(p_html);
 	if (!is_editing_alpha()) {
-		color.a = last_alpha;
+		color.a = previous_color.a;
 	}
 
+	if (color == previous_color) {
+		return;
+	}
 	if (!is_inside_tree()) {
 		return;
 	}

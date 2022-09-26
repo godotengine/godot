@@ -37,6 +37,14 @@
 
 namespace TestVector2i {
 
+TEST_CASE("[Vector2i] Constructor methods") {
+	const Vector2i vector_empty = Vector2i();
+	const Vector2i vector_zero = Vector2i(0, 0);
+	CHECK_MESSAGE(
+			vector_empty == vector_zero,
+			"Vector2i Constructor with no inputs should return a zero Vector2i.");
+}
+
 TEST_CASE("[Vector2i] Axis methods") {
 	Vector2i vector = Vector2i(2, 3);
 	CHECK_MESSAGE(
@@ -121,6 +129,14 @@ TEST_CASE("[Vector2i] Other methods") {
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector.aspect(), (real_t)1.0 / (real_t)3.0),
 			"Vector2i aspect should work as expected.");
+
+	CHECK_MESSAGE(
+			Vector2i(1, 2) == vector.min(Vector2i(3, 2)),
+			"Vector2i min should return expected value.");
+
+	CHECK_MESSAGE(
+			Vector2i(5, 3) == vector.max(Vector2i(5, 2)),
+			"Vector2i max should return expected value.");
 }
 
 TEST_CASE("[Vector2i] Abs and sign methods") {
