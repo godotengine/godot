@@ -2829,17 +2829,21 @@ void DisplayServerWayland::process_events() {
 			Rect2i rect = winrect_msg->rect;
 			WindowData &wd = wls.windows[id];
 
+			if (wd.visible && wd.rect == rect) {
+				// Resizing is very costly, do it only if this is the last rect update.
 #ifdef VULKAN_ENABLED
-			if (wd.visible && wls.context_vulkan) {
-				wls.context_vulkan->window_resize(id, rect.size.width, rect.size.height);
-			}
+				if (wls.context_vulkan) {
+					wls.context_vulkan->window_resize(id, rect.size.width, rect.size.height);
+				}
 #endif
 
 #ifdef GLES3_ENABLED
-			if (wd.visible && wls.gl_manager) {
-				wls.gl_manager->window_resize(id, rect.size.width, rect.size.height);
-			}
+				if (wls.gl_manager) {
+					wls.gl_manager->window_resize(id, rect.size.width, rect.size.height);
+				}
 #endif
+			}
+
 			if (wd.rect_changed_callback.is_valid()) {
 				Variant var_rect = Variant(rect);
 				Variant *arg = &var_rect;
