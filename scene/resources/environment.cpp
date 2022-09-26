@@ -1097,8 +1097,11 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 	};
 
 	static const char *high_end_prefixes[] = {
+		"volumetric_fog",
 		"ssr_",
 		"ssao_",
+		"ssil_",
+		"sdfgi_",
 		nullptr
 
 	};
