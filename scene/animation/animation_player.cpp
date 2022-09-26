@@ -793,7 +793,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				if (p_seeked) {
 					//find whatever should be playing
-					int idx = a->track_find_key(i, p_time);
+					int idx = a->track_find_key(i, p_time, false, backward);
 					if (idx < 0) {
 						continue;
 					}
@@ -833,7 +833,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				} else {
 					//find stuff to play
 					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_pingponged);
+					HashMap<StringName, real_t> duration_set;
+					// TODO Fill with duration
+					a->track_get_key_indices_in_range(&duration_set, i, p_time, p_delta, &to_play, p_pingponged);
 					if (to_play.size()) {
 						int idx = to_play.back()->get();
 
@@ -895,7 +897,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 				if (p_delta == 0 || p_seeked) {
 					//seek
-					int idx = a->track_find_key(i, p_time);
+					int idx = a->track_find_key(i, p_time, false, false);
 					if (idx < 0) {
 						continue;
 					}
@@ -929,8 +931,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					}
 
 					if (player->is_playing() || p_seeked) {
-						player->play(anim_name);
-						player->seek(at_anim_pos);
+						if(backward) {
+							player->play_backwards(anim_name);
+							player->seek(at_anim_pos);
+						}else {
+							player->play(anim_name);
+							player->seek(at_anim_pos);
+						}
 						nc->animation_playing = true;
 						playing_caches.insert(nc);
 					} else {
@@ -940,7 +947,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				} else {
 					//find stuff to play
 					List<int> to_play;
-					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_pingponged);
+					HashMap<StringName, real_t> duration_set;
+					player->get_animation_duration_set(&duration_set);
+					a->track_get_key_indices_in_range(&duration_set, i, p_time, p_delta, &to_play, p_pingponged, backward);
 					if (to_play.size()) {
 						int idx = to_play.back()->get();
 
@@ -952,8 +961,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 								nc->animation_playing = false;
 							}
 						} else {
-							player->play(anim_name);
-							player->seek(0.0, true);
+							if(backward) {
+								player->play_backwards(anim_name);
+								// player->seek(0.0, true);
+							}else {
+								player->play(anim_name);
+								player->seek(0.0, true);
+							}
 							nc->animation_playing = true;
 							playing_caches.insert(nc);
 						}
@@ -1522,7 +1536,12 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 		p_animations->push_back(E);
 	}
 }
-
+void AnimationPlayer::get_animation_duration_set(HashMap<StringName, real_t> *p_animations) const {
+	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
+		real_t duration = E.value.animation.ptr()->get_length();
+		p_animations->insert(E.key, duration);
+	}
+}
 void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation1), vformat("Animation not found: %s.", p_animation1));
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation2), vformat("Animation not found: %s.", p_animation2));
@@ -1623,7 +1642,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	}
 
 	if (get_current_animation() != p_name) {
-		_stop_playing_caches();
+		_stop_playing_caches(false);
 	}
 
 	c.current.from = &animation_set[name];
@@ -1697,7 +1716,7 @@ String AnimationPlayer::get_assigned_animation() const {
 }
 
 void AnimationPlayer::stop(bool p_reset) {
-	_stop_playing_caches();
+	_stop_playing_caches(p_reset);
 	Playback &c = playback;
 	c.blend.clear();
 	if (p_reset) {
@@ -1780,7 +1799,7 @@ void AnimationPlayer::_animation_changed() {
 	}
 }
 
-void AnimationPlayer::_stop_playing_caches() {
+void AnimationPlayer::_stop_playing_caches(bool p_reset) {
 	for (TrackNodeCache *E : playing_caches) {
 		if (E->node && E->audio_playing) {
 			E->node->call(SNAME("stop"));
@@ -1790,7 +1809,7 @@ void AnimationPlayer::_stop_playing_caches() {
 			if (!player) {
 				continue;
 			}
-			player->stop();
+			player->stop(p_reset);
 		}
 	}
 
@@ -1802,7 +1821,7 @@ void AnimationPlayer::_node_removed(Node *p_node) {
 }
 
 void AnimationPlayer::clear_caches() {
-	_stop_playing_caches();
+	_stop_playing_caches(true);
 
 	node_cache_map.clear();
 

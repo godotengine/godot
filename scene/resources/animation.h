@@ -208,7 +208,7 @@ private:
 		}
 	};
 
-	/* AUDIO TRACK */
+	/* ANIMATION TRACK */
 
 	struct AnimationTrack : public Track {
 		Vector<TKey<StringName>> values;
@@ -216,6 +216,14 @@ private:
 		AnimationTrack() {
 			type = TYPE_ANIMATION;
 		}
+		const Vector<TKey<StringName>> get_values(bool backward) const{
+			if(backward) {
+				// TODO Should put time value in frame == to value of frame + duration of animation
+				return values;
+			}else {
+				return values;
+			}
+		}	
 	};
 
 	Vector<Track *> tracks;
@@ -250,7 +258,7 @@ private:
 	_FORCE_INLINE_ T _interpolate(const Vector<TKey<T>> &p_keys, double p_time, InterpolationType p_interp, bool p_loop_wrap, bool *p_ok, bool p_backward = false) const;
 
 	template <class T>
-	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const;
+	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool backward = false) const;
 
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack *vt, double from_time, double to_time, List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack *mt, double from_time, double to_time, List<int> *p_indices) const;
@@ -412,7 +420,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, bool p_exact = false) const;
+	int track_find_key(int p_track, double p_time, bool p_exact = false, bool backward = false) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
@@ -480,8 +488,8 @@ public:
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
-	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0) const;
-
+	//void track_get_key_indices_in_range(HashMap<StringName, Ref<Animation>> animations, int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0, bool backward = false) const;
+	void track_get_key_indices_in_range(HashMap<StringName, real_t> *anim_durations, int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged = 0, bool backward = false) const;
 	void set_length(real_t p_length);
 	real_t get_length() const;
 

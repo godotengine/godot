@@ -277,7 +277,7 @@ private:
 	void _animation_process(double p_delta);
 
 	void _node_removed(Node *p_node);
-	void _stop_playing_caches();
+	void _stop_playing_caches(bool p_reset = true);
 
 	// bind helpers
 	Vector<String> _get_animation_list() const {
@@ -333,6 +333,9 @@ public:
 	Ref<Animation> get_animation(const StringName &p_name) const;
 	void get_animation_list(List<StringName> *p_animations) const;
 	bool has_animation(const StringName &p_name) const;
+
+	
+	void get_animation_duration_set(HashMap<StringName, real_t> *p_animations) const;
 
 	void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time);
 	float get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const;

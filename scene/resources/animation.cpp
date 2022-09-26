@@ -1403,7 +1403,7 @@ void Animation::track_remove_key(int p_track, int p_idx) {
 	emit_changed();
 }
 
-int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
+int Animation::track_find_key(int p_track, double p_time, bool p_exact, bool backward) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 
@@ -1566,7 +1566,7 @@ int Animation::track_find_key(int p_track, double p_time, bool p_exact) const {
 		} break;
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
-			int k = _find(at->values, p_time);
+			int k = _find(at->values, p_time, backward);
 			if (k < 0 || k >= at->values.size()) {
 				return -1;
 			}
@@ -2283,8 +2283,8 @@ int Animation::_find(const Vector<K> &p_keys, double p_time, bool p_backward) co
 
 	while (low <= high) {
 		middle = (low + high) / 2;
-
-		if (Math::is_equal_approx(p_time, (double)keys[middle].time)) { //match
+		double key_time = (double)keys[middle].time;
+		if (Math::is_equal_approx(p_time, key_time)) { //match
 			return middle;
 		} else if (p_time < keys[middle].time) {
 			high = middle - 1; //search low end of array
@@ -2835,12 +2835,12 @@ Animation::UpdateMode Animation::value_track_get_update_mode(int p_track) const 
 }
 
 template <class T>
-void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices) const {
+void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool backward) const {
 	if (from_time != length && to_time == length) {
 		to_time = length + CMP_EPSILON; //include a little more if at the end
 	}
 
-	int to = _find(p_array, to_time);
+	int to = _find(p_array, to_time, false);
 
 	// can't really send the events == time, will be sent in the next frame.
 	// if event>=len then it will probably never be requested by the anim player.
@@ -2868,7 +2868,8 @@ void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, double
 	}
 }
 
-void Animation::track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged) const {
+//void Animation::track_get_key_indices_in_range(HashMap<StringName, Ref<Animation>> animations, int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged, bool backward) const {
+void Animation::track_get_key_indices_in_range(HashMap<StringName, real_t> *anim_durations, int p_track, double p_time, double p_delta, List<int> *p_indices, int p_pingponged, bool backward) const {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	const Track *t = tracks[p_track];
 
@@ -3181,7 +3182,17 @@ void Animation::track_get_key_indices_in_range(int p_track, double p_time, doubl
 		} break;
 		case TYPE_ANIMATION: {
 			const AnimationTrack *an = static_cast<const AnimationTrack *>(t);
-			_track_get_key_indices_in_range(an->values, from_time, to_time, p_indices);
+			const Vector<Animation::TKey<StringName>> values = an->get_values(backward);
+			Vector<Animation::TKey<StringName>> formated_values;
+			for (int i=0; i<values.size(); i++) {
+				Animation::TKey<StringName> v = values[i];
+				if(backward) {
+					v.time = v.time + anim_durations->get(v.value);
+				}
+				formated_values.push_back(v);
+			}
+			// Mutate for backward
+			_track_get_key_indices_in_range(formated_values, from_time, to_time, p_indices, backward);
 		} break;
 	}
 }

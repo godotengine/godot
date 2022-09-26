@@ -1505,7 +1505,9 @@ void AnimationTree::_process_graph(double p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
+							HashMap<StringName, real_t> duration_set;
+							// TODO Fill with duration
+							a->track_get_key_indices_in_range(&duration_set, i, time, delta, &to_play, pingponged);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 
@@ -1627,7 +1629,9 @@ void AnimationTree::_process_graph(double p_delta) {
 						} else {
 							//find stuff to play
 							List<int> to_play;
-							a->track_get_key_indices_in_range(i, time, delta, &to_play, pingponged);
+							HashMap<StringName, real_t> duration_set;
+							// TODO Fill with duration
+							a->track_get_key_indices_in_range(&duration_set, i, time, delta, &to_play, pingponged);
 							if (to_play.size()) {
 								int idx = to_play.back()->get();
 
