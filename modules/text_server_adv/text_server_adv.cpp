@@ -5430,7 +5430,10 @@ bool TextServerAdvanced::shaped_text_shape(const RID &p_shaped) {
 							Array fonts_scr_only;
 							Array fonts_no_match;
 							int font_count = span.fonts.size();
-							for (int l = 0; l < font_count; l++) {
+							if (font_count > 0) {
+								fonts.push_back(sd->spans[k].fonts[0]);
+							}
+							for (int l = 1; l < font_count; l++) {
 								if (font_is_script_supported(span.fonts[l], script)) {
 									if (font_is_language_supported(span.fonts[l], span.language)) {
 										fonts.push_back(sd->spans[k].fonts[l]);

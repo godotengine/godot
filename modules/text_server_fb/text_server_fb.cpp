@@ -2844,7 +2844,10 @@ bool TextServerFallback::shaped_text_add_string(const RID &p_shaped, const Strin
 	// Pre-sort fonts, push fonts with the language support first.
 	Array fonts_no_match;
 	int font_count = p_fonts.size();
-	for (int i = 0; i < font_count; i++) {
+	if (font_count > 0) {
+		span.fonts.push_back(p_fonts[0]);
+	}
+	for (int i = 1; i < font_count; i++) {
 		if (font_is_language_supported(p_fonts[i], p_language)) {
 			span.fonts.push_back(p_fonts[i]);
 		} else {
