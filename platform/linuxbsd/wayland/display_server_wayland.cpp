@@ -2700,7 +2700,10 @@ void DisplayServerWayland::cursor_set_custom_image(const Ref<Resource> &p_cursor
 
 		// Create the Wayland buffer.
 		struct wl_shm_pool *wl_shm_pool = wl_shm_create_pool(wls.globals.wl_shm, fd, texture_size.height * data_size);
-		cursor.wl_buffer = wl_shm_pool_create_buffer(wl_shm_pool, 0, texture_size.width, texture_size.height, texture_stride, WL_SHM_FORMAT_XRGB8888);
+		// TODO: Make sure that WL_SHM_FORMAT_ARGB8888 format is supported. It
+		// technically isn't garaunteed to be supported, but I think that'd be a
+		// pretty unlikely thing to stumble upon.
+		cursor.wl_buffer = wl_shm_pool_create_buffer(wl_shm_pool, 0, texture_size.width, texture_size.height, texture_stride, WL_SHM_FORMAT_ARGB8888);
 		wl_shm_pool_destroy(wl_shm_pool);
 
 		// Fill the cursor buffer with the texture data.
