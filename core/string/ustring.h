@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Note: _GODOT suffix added to avoid conflict with ICU header with the same guard.
-
 #ifndef USTRING_GODOT_H
 #define USTRING_GODOT_H
+
+// Note: _GODOT suffix added to header guard to avoid conflict with ICU header.
 
 #include "core/string/char_utils.h"
 #include "core/templates/cowdata.h"

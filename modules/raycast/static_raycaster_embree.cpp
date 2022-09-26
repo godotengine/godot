@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  static_raycaster.cpp                                                 */
+/*  static_raycaster_embree.cpp                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "static_raycaster.h"
+#include "static_raycaster_embree.h"
 
 #ifdef __SSE2__
 #include <pmmintrin.h>
@@ -134,4 +134,4 @@ StaticRaycasterEmbree::~StaticRaycasterEmbree() {
 	}
 }
 
-#endif
+#endif // TOOLS_ENABLED

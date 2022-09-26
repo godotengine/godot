@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lightmap_raycaster.h                                                 */
+/*  lightmap_raycaster_embree.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#ifndef LIGHTMAP_RAYCASTER_EMBREE_H
+#define LIGHTMAP_RAYCASTER_EMBREE_H
 
 #ifdef TOOLS_ENABLED
 
@@ -74,4 +77,6 @@ public:
 	~LightmapRaycasterEmbree();
 };
 
-#endif // LIGHTMAP_RAYCASTER_H
+#endif // TOOLS_ENABLED
+
+#endif // LIGHTMAP_RAYCASTER_EMBREE_H

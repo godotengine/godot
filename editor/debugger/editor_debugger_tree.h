@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "scene/gui/tree.h"
-
 #ifndef EDITOR_DEBUGGER_TREE_H
 #define EDITOR_DEBUGGER_TREE_H
+
+#include "scene/gui/tree.h"
 
 class SceneDebuggerTree;
 class EditorFileDialog;

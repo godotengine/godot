@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lightmap_raycaster.cpp                                               */
+/*  lightmap_raycaster_embree.cpp                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "lightmap_raycaster.h"
+#include "lightmap_raycaster_embree.h"
 
 #ifdef __SSE2__
 #include <pmmintrin.h>
@@ -193,4 +193,4 @@ LightmapRaycasterEmbree::~LightmapRaycasterEmbree() {
 	}
 }
 
-#endif
+#endif // TOOLS_ENABLED

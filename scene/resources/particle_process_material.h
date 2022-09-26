@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/templates/rid.h"
-#include "scene/resources/material.h"
-
 #ifndef PARTICLE_PROCESS_MATERIAL_H
 #define PARTICLE_PROCESS_MATERIAL_H
+
+#include "core/templates/rid.h"
+#include "scene/resources/material.h"
 
 /*
  TODO:

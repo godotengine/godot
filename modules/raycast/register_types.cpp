@@ -30,9 +30,9 @@
 
 #include "register_types.h"
 
-#include "lightmap_raycaster.h"
+#include "lightmap_raycaster_embree.h"
 #include "raycast_occlusion_cull.h"
-#include "static_raycaster.h"
+#include "static_raycaster_embree.h"
 
 RaycastOcclusionCull *raycast_occlusion_cull = nullptr;
 
