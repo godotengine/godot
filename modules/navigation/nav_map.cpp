@@ -535,6 +535,11 @@ void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
 	}
 }
 
+void NavMap::step_agent(RvoAgent *agent, real_t p_delta) {
+	agent->get_agent()->computeNeighbors(&rvo);
+	agent->get_agent()->computeNewVelocity(p_delta);
+}
+
 void NavMap::sync() {
 	// Check if we need to update the links.
 	if (regenerate_polygons) {

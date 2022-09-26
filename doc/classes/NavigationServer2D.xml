@@ -23,6 +23,14 @@
 				Creates the agent.
 			</description>
 		</method>
+		<method name="agent_force_process_avoidance" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="agent" type="RID" />
+			<param index="1" name="delta" type="float" />
+			<description>
+				Performs collision avoidance immediately for the specified [param agent] with the provided [param delta]. This function runs slow and should only be used as a last resort to solve specific edge cases. This function will calculate the avoidance with the number of agent's and their positions and velocities from the last regular update.
+			</description>
+		</method>
 		<method name="agent_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="agent" type="RID" />

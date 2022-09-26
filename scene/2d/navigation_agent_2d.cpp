@@ -85,6 +85,7 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_navigation_finished"), &NavigationAgent2D::is_navigation_finished);
 	ClassDB::bind_method(D_METHOD("get_final_location"), &NavigationAgent2D::get_final_location);
 
+	ClassDB::bind_method(D_METHOD("force_process_avoidance", "delta"), &NavigationAgent2D::force_process_avoidance);
 	ClassDB::bind_method(D_METHOD("_avoidance_done", "new_velocity"), &NavigationAgent2D::_avoidance_done);
 
 	ADD_GROUP("Pathfinding", "");
@@ -366,6 +367,17 @@ void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
 	velocity_submitted = false;
 
 	emit_signal(SNAME("velocity_computed"), velocity);
+}
+
+Vector2 NavigationAgent2D::force_process_avoidance(real_t p_delta) {
+	if (!velocity_submitted) {
+		ERR_PRINT("Forced avoidance processing failed due to no velocity submitted. Use set_velocity() before calling the avoidance processing.");
+		target_velocity = Vector2();
+		return Vector2();
+	}
+	velocity_submitted = false;
+
+	return NavigationServer2D::get_singleton()->agent_force_process_avoidance(agent, p_delta);
 }
 
 PackedStringArray NavigationAgent2D::get_configuration_warnings() const {

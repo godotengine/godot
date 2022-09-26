@@ -691,6 +691,21 @@ COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_
 	}
 }
 
+Vector3 GodotNavigationServer::agent_force_process_avoidance(RID p_agent, real_t p_delta) const {
+	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	ERR_FAIL_COND_V(agent == nullptr, Vector3());
+	ERR_FAIL_COND_V(agent->get_map() == nullptr, Vector3());
+
+	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
+	MutexLock lock(mut_this->operations_mutex);
+	agent->get_map()->step_agent(agent, p_delta);
+
+	return Vector3(
+			agent->get_agent()->newVelocity_.x(),
+			agent->get_agent()->newVelocity_.y(),
+			agent->get_agent()->newVelocity_.z());
+}
+
 COMMAND_1(free, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap *map = map_owner.get_or_null(p_object);

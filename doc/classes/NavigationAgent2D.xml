@@ -16,6 +16,13 @@
 				Returns the distance to the target location, using the agent's global position. The user must set the target location with [method set_target_location] in order for this to be accurate.
 			</description>
 		</method>
+		<method name="force_process_avoidance">
+			<return type="Vector2" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Performs collision avoidance immediately for this agent with the provided [param delta]. This function runs slow and should only be used as a last resort to solve specific edge cases. This function will calculate the avoidance with the number of agent's and their positions and velocities from the last regular update.
+			</description>
+		</method>
 		<method name="get_final_location">
 			<return type="Vector2" />
 			<description>
