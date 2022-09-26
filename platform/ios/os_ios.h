@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef IOS_ENABLED
-
 #ifndef OS_IOS_H
 #define OS_IOS_H
+
+#ifdef IOS_ENABLED
 
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
@@ -124,6 +124,6 @@ public:
 	void on_focus_in();
 };
 
-#endif // OS_IOS_H
+#endif // IOS_ENABLED
 
 #endif // OS_IOS_H

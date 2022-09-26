@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Universal / Universal 2 fat binary file creator and extractor.
-
 #ifndef MACOS_LIPO_H
 #define MACOS_LIPO_H
+
+// Universal / Universal 2 fat binary file creator and extractor.
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"

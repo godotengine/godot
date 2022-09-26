@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  static_raycaster.h                                                   */
+/*  static_raycaster_embree.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#ifndef STATIC_RAYCASTER_EMBREE_H
+#define STATIC_RAYCASTER_EMBREE_H
 
 #ifdef TOOLS_ENABLED
 
@@ -61,4 +64,6 @@ public:
 	~StaticRaycasterEmbree();
 };
 
-#endif // STATIC_RAYCASTER_H
+#endif // TOOLS_ENABLED
+
+#endif // STATIC_RAYCASTER_EMBREE_H
