@@ -1548,6 +1548,8 @@
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
 		</constant>
+		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
+		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible).
 		</constant>

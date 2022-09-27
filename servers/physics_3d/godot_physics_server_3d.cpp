@@ -387,11 +387,25 @@ void GodotPhysicsServer3D::area_set_collision_layer(RID p_area, uint32_t p_layer
 	area->set_collision_layer(p_layer);
 }
 
+uint32_t GodotPhysicsServer3D::area_get_collision_layer(RID p_area) const {
+	GodotArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_layer();
+}
+
 void GodotPhysicsServer3D::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	GodotArea3D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
 
 	area->set_collision_mask(p_mask);
+}
+
+uint32_t GodotPhysicsServer3D::area_get_collision_mask(RID p_area) const {
+	GodotArea3D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_mask();
 }
 
 void GodotPhysicsServer3D::area_set_monitorable(RID p_area, bool p_monitorable) {

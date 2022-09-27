@@ -227,6 +227,7 @@ void ScriptEditorBase::_bind_methods() {
 	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
+	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
 }
 
 class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
@@ -2380,6 +2381,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::_on_find_in_files_requested));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
+	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
 	//test for modification, maybe the script was not edited but was loaded
 
@@ -2544,7 +2546,7 @@ void ScriptEditor::apply_scripts() const {
 	}
 }
 
-void ScriptEditor::reload_scripts() {
+void ScriptEditor::reload_scripts(bool p_refresh_only) {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
@@ -2557,30 +2559,33 @@ void ScriptEditor::reload_scripts() {
 			continue; //internal script, who cares
 		}
 
-		uint64_t last_date = edited_res->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
+		if (!p_refresh_only) {
+			uint64_t last_date = edited_res->get_last_modified_time();
+			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
 
-		if (last_date == date) {
-			continue;
+			if (last_date == date) {
+				continue;
+			}
+
+			Ref<Script> script = edited_res;
+			if (script != nullptr) {
+				Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+				ERR_CONTINUE(!rel_script.is_valid());
+				script->set_source_code(rel_script->get_source_code());
+				script->set_last_modified_time(rel_script->get_last_modified_time());
+				script->reload(true);
+			}
+
+			Ref<TextFile> text_file = edited_res;
+			if (text_file != nullptr) {
+				Error err;
+				Ref<TextFile> rel_text_file = _load_text_file(text_file->get_path(), &err);
+				ERR_CONTINUE(!rel_text_file.is_valid());
+				text_file->set_text(rel_text_file->get_text());
+				text_file->set_last_modified_time(rel_text_file->get_last_modified_time());
+			}
 		}
 
-		Ref<Script> script = edited_res;
-		if (script != nullptr) {
-			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-			ERR_CONTINUE(!rel_script.is_valid());
-			script->set_source_code(rel_script->get_source_code());
-			script->set_last_modified_time(rel_script->get_last_modified_time());
-			script->reload(true);
-		}
-
-		Ref<TextFile> text_file = edited_res;
-		if (text_file != nullptr) {
-			Error err;
-			Ref<TextFile> rel_text_file = _load_text_file(text_file->get_path(), &err);
-			ERR_CONTINUE(!rel_text_file.is_valid());
-			text_file->set_text(rel_text_file->get_text());
-			text_file->set_last_modified_time(rel_text_file->get_last_modified_time());
-		}
 		se->reload_text();
 	}
 
@@ -3357,10 +3362,12 @@ void ScriptEditor::_update_selected_editor_menu() {
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KeyModifierMask::SHIFT | Key::F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F), SEARCH_IN_FILES);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace_in_files", TTR("Replace in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R), REPLACE_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_tab_count() == 0) {
 			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F), SEARCH_IN_FILES);
+			script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace_in_files", TTR("Replace in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R), REPLACE_IN_FILES);
 			script_search_menu->show();
 		} else {
 			script_search_menu->hide();

@@ -65,3 +65,12 @@ bool OpenXRHTCViveTrackerExtension::on_event_polled(const XrEventDataBuffer &eve
 		} break;
 	}
 }
+
+bool OpenXRHTCViveTrackerExtension::is_path_supported(const String &p_path) {
+	if (p_path == "/interaction_profiles/htc/vive_tracker_htcx") {
+		return available;
+	}
+
+	// Not a path under this extensions control, so we return true;
+	return true;
+}

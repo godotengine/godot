@@ -176,33 +176,35 @@ void OpenXRInterface::_load_action_map() {
 
 			// Note, we can only have one entry per interaction profile so if it already exists we clear it out
 			RID ip = openxr_api->interaction_profile_create(xr_interaction_profile->get_interaction_profile_path());
-			openxr_api->interaction_profile_clear_bindings(ip);
+			if (ip.is_valid()) {
+				openxr_api->interaction_profile_clear_bindings(ip);
 
-			Array xr_bindings = xr_interaction_profile->get_bindings();
-			for (int j = 0; j < xr_bindings.size(); j++) {
-				Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
-				Ref<OpenXRAction> xr_action = xr_binding->get_action();
+				Array xr_bindings = xr_interaction_profile->get_bindings();
+				for (int j = 0; j < xr_bindings.size(); j++) {
+					Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
+					Ref<OpenXRAction> xr_action = xr_binding->get_action();
 
-				Action *action = nullptr;
-				if (xr_actions.has(xr_action)) {
-					action = xr_actions[xr_action];
-				} else {
-					print_line("Action ", xr_action->get_name(), " isn't part of an action set!");
-					continue;
+					Action *action = nullptr;
+					if (xr_actions.has(xr_action)) {
+						action = xr_actions[xr_action];
+					} else {
+						print_line("Action ", xr_action->get_name(), " isn't part of an action set!");
+						continue;
+					}
+
+					PackedStringArray paths = xr_binding->get_paths();
+					for (int k = 0; k < paths.size(); k++) {
+						openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
+					}
 				}
 
-				PackedStringArray paths = xr_binding->get_paths();
-				for (int k = 0; k < paths.size(); k++) {
-					openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
+				// Now submit our suggestions
+				openxr_api->interaction_profile_suggest_bindings(ip);
+
+				// And record it in our array so we can clean it up later on
+				if (interaction_profiles.has(ip)) {
+					interaction_profiles.push_back(ip);
 				}
-			}
-
-			// Now submit our suggestions
-			openxr_api->interaction_profile_suggest_bindings(ip);
-
-			// And record it in our array so we can clean it up later on
-			if (interaction_profiles.has(ip)) {
-				interaction_profiles.push_back(ip);
 			}
 		}
 	}

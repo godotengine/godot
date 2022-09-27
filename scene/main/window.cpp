@@ -389,6 +389,9 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 			_propagate_window_notification(this, NOTIFICATION_WM_DPI_CHANGE);
 			emit_signal(SNAME("dpi_changed"));
 		} break;
+		case DisplayServer::WINDOW_EVENT_TITLEBAR_CHANGE: {
+			emit_signal(SNAME("titlebar_changed"));
+		} break;
 	}
 }
 
@@ -1248,6 +1251,15 @@ void Window::popup(const Rect2i &p_screen_rect) {
 
 	set_transient(true);
 	set_visible(true);
+
+	int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
+	if (screen_rect != Rect2i() && !screen_rect.intersects(Rect2i(position, size))) {
+		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
+		// Window appeared on unavailable screen area, so force it to the center.
+		set_position(screen_rect.size / 2 - size / 2);
+	}
+
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
 }
@@ -1782,6 +1794,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
+	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);

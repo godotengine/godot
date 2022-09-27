@@ -33,6 +33,8 @@
 
 #include "core/io/image_loader.h"
 
+#define TGA_IMAGE_DESCRIPTOR_ALPHA_MASK 0xf
+
 class ImageLoaderTGA : public ImageFormatLoader {
 	enum tga_type_e {
 		TGA_TYPE_NO_DATA = 0,

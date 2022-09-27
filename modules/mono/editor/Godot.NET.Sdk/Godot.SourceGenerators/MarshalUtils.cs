@@ -124,8 +124,8 @@ namespace Godot.SourceGenerators
 
                     if (typeKind == TypeKind.Struct)
                     {
-                        if (type.ContainingAssembly.Name == "GodotSharp" &&
-                            type.ContainingNamespace.Name == "Godot")
+                        if (type.ContainingAssembly?.Name == "GodotSharp" &&
+                            type.ContainingNamespace?.Name == "Godot")
                         {
                             return type switch
                             {
@@ -208,9 +208,9 @@ namespace Godot.SourceGenerators
                         if (type.SimpleDerivesFrom(typeCache.GodotObjectType))
                             return MarshalType.GodotObjectOrDerived;
 
-                        if (type.ContainingAssembly.Name == "GodotSharp")
+                        if (type.ContainingAssembly?.Name == "GodotSharp")
                         {
-                            switch (type.ContainingNamespace.Name)
+                            switch (type.ContainingNamespace?.Name)
                             {
                                 case "Godot":
                                     return type switch
@@ -220,7 +220,7 @@ namespace Godot.SourceGenerators
                                         _ => null
                                     };
                                 case "Collections"
-                                    when type.ContainingNamespace.FullQualifiedName() == "Godot.Collections":
+                                    when type.ContainingNamespace?.FullQualifiedName() == "Godot.Collections":
                                     return type switch
                                     {
                                         { Name: "Dictionary" } =>

@@ -50,16 +50,16 @@ public:
 	virtual void set_loop(bool p_enable) = 0;
 	virtual bool has_loop() const = 0;
 
-	virtual float get_length() const = 0;
+	virtual double get_length() const = 0;
 
-	virtual float get_playback_position() const = 0;
-	virtual void seek(float p_time) = 0;
+	virtual double get_playback_position() const = 0;
+	virtual void seek(double p_time) = 0;
 
 	virtual void set_audio_track(int p_idx) = 0;
 
 	virtual Ref<Texture2D> get_texture() const = 0;
 
-	virtual void update(float p_delta) = 0;
+	virtual void update(double p_delta) = 0;
 
 	virtual void set_mix_callback(AudioMixCallback p_callback, void *p_userdata) = 0;
 	virtual int get_channels() const = 0;

@@ -565,11 +565,11 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 		}
 
 		if (value->callback != Callable()) {
-			Variant tag = value->meta;
-			Variant *tagp = &tag;
-			Variant ret;
-			Callable::CallError ce;
-			value->callback.callp((const Variant **)&tagp, 1, ret, ce);
+			MenuCall mc;
+			mc.tag = value->meta;
+			mc.callback = value->callback;
+			deferred_menu_calls.push_back(mc);
+			// Do not run callback from here! If it is opening a new window or calling process_events, it will corrupt OS event queue and crash.
 		}
 	}
 }
@@ -2664,21 +2664,17 @@ Vector2i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) co
 	ERR_FAIL_COND_V(!windows.has(p_window), Vector2i());
 	const WindowData &wd = windows[p_window];
 
-	float max_x = 0.f;
-	NSButton *cb = [wd.window_object standardWindowButton:NSWindowCloseButton];
-	if (cb) {
-		max_x = MAX(max_x, [cb frame].origin.x + [cb frame].size.width);
-	}
-	NSButton *mb = [wd.window_object standardWindowButton:NSWindowMiniaturizeButton];
-	if (mb) {
-		max_x = MAX(max_x, [mb frame].origin.x + [mb frame].size.width);
-	}
-	NSButton *zb = [wd.window_object standardWindowButton:NSWindowZoomButton];
-	if (zb) {
-		max_x = MAX(max_x, [zb frame].origin.x + [zb frame].size.width);
+	if (!wd.window_button_view) {
+		return Vector2i();
 	}
 
-	return Vector2i(max_x * screen_get_max_scale(), 0);
+	float max_x = wd.wb_offset.x + [wd.window_button_view frame].size.width;
+
+	if ([wd.window_object windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft) {
+		return Vector2i(0, max_x * screen_get_max_scale());
+	} else {
+		return Vector2i(max_x * screen_get_max_scale(), 0);
+	}
 }
 
 void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled) {
@@ -2687,7 +2683,11 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		p_wd.window_button_view = nil;
 	}
 	if (p_enabled) {
-		float window_buttons_spacing = NSMinX([[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] frame]) - NSMinX([[p_wd.window_object standardWindowButton:NSWindowCloseButton] frame]);
+		float cb_frame = NSMinX([[p_wd.window_object standardWindowButton:NSWindowCloseButton] frame]);
+		float mb_frame = NSMinX([[p_wd.window_object standardWindowButton:NSWindowMiniaturizeButton] frame]);
+		bool is_rtl = ([p_wd.window_object windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft);
+
+		float window_buttons_spacing = (is_rtl) ? (cb_frame - mb_frame) : (mb_frame - cb_frame);
 
 		[p_wd.window_object setTitleVisibility:NSWindowTitleHidden];
 		[[p_wd.window_object standardWindowButton:NSWindowZoomButton] setHidden:YES];
@@ -2695,7 +2695,7 @@ void DisplayServerMacOS::window_set_custom_window_buttons(WindowData &p_wd, bool
 		[[p_wd.window_object standardWindowButton:NSWindowCloseButton] setHidden:YES];
 
 		p_wd.window_button_view = [[GodotButtonView alloc] initWithFrame:NSZeroRect];
-		[p_wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(p_wd.wb_offset.x, p_wd.wb_offset.y)];
+		[p_wd.window_button_view initButtons:window_buttons_spacing offset:NSMakePoint(p_wd.wb_offset.x, p_wd.wb_offset.y) rtl:is_rtl];
 		[p_wd.window_view addSubview:p_wd.window_button_view];
 	} else {
 		[p_wd.window_object setTitleVisibility:NSWindowTitleVisible];
@@ -2741,6 +2741,7 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 				}
 			}
 			[wd.window_object setFrame:rect display:YES];
+			send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_TITLEBAR_CHANGE);
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
 			// OrderOut prevents a lose focus bug with the window.
@@ -3278,6 +3279,16 @@ void DisplayServerMacOS::process_events() {
 
 		[NSApp sendEvent:event];
 	}
+
+	// Process "menu_callback"s.
+	for (MenuCall &E : deferred_menu_calls) {
+		Variant tag = E.tag;
+		Variant *tagp = &tag;
+		Variant ret;
+		Callable::CallError ce;
+		E.callback.callp((const Variant **)&tagp, 1, ret, ce);
+	}
+	deferred_menu_calls.clear();
 
 	if (!drop_events) {
 		_process_key_events();

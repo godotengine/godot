@@ -1859,6 +1859,7 @@ static void _register_variant_builtin_methods() {
 
 	/* Callable */
 
+	bind_method(Callable, callv, sarray("arguments"), varray());
 	bind_method(Callable, is_null, sarray(), varray());
 	bind_method(Callable, is_custom, sarray(), varray());
 	bind_method(Callable, is_standard, sarray(), varray());
@@ -2065,6 +2066,14 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, all, sarray("method"), varray());
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
+	bind_method(Array, typed_assign, sarray("array"), varray());
+	bind_method(Array, set_typed, sarray("type", "class_name", "script"), varray());
+	bind_method(Array, is_typed, sarray(), varray());
+	bind_method(Array, get_typed_builtin, sarray(), varray());
+	bind_method(Array, get_typed_class_name, sarray(), varray());
+	bind_method(Array, get_typed_script, sarray(), varray());
+	bind_method(Array, set_read_only, sarray("enable"), varray());
+	bind_method(Array, is_read_only, sarray(), varray());
 
 	/* Byte Array */
 	bind_method(PackedByteArray, size, sarray(), varray());

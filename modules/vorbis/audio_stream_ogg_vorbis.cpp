@@ -223,7 +223,7 @@ bool AudioStreamPlaybackOggVorbis::_alloc_vorbis() {
 	return true;
 }
 
-void AudioStreamPlaybackOggVorbis::start(float p_from_pos) {
+void AudioStreamPlaybackOggVorbis::start(double p_from_pos) {
 	ERR_FAIL_COND(!ready);
 	loop_fade_remaining = FADE_SIZE;
 	active = true;
@@ -244,15 +244,15 @@ int AudioStreamPlaybackOggVorbis::get_loop_count() const {
 	return loops;
 }
 
-float AudioStreamPlaybackOggVorbis::get_playback_position() const {
-	return float(frames_mixed) / vorbis_data->get_sampling_rate();
+double AudioStreamPlaybackOggVorbis::get_playback_position() const {
+	return double(frames_mixed) / (double)vorbis_data->get_sampling_rate();
 }
 
 void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 	vorbis_stream->tag_used(get_playback_position());
 }
 
-void AudioStreamPlaybackOggVorbis::seek(float p_time) {
+void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	ERR_FAIL_COND(!ready);
 	ERR_FAIL_COND(vorbis_stream.is_null());
 	if (!active) {
@@ -462,15 +462,15 @@ bool AudioStreamOggVorbis::has_loop() const {
 	return loop;
 }
 
-void AudioStreamOggVorbis::set_loop_offset(float p_seconds) {
+void AudioStreamOggVorbis::set_loop_offset(double p_seconds) {
 	loop_offset = p_seconds;
 }
 
-float AudioStreamOggVorbis::get_loop_offset() const {
+double AudioStreamOggVorbis::get_loop_offset() const {
 	return loop_offset;
 }
 
-float AudioStreamOggVorbis::get_length() const {
+double AudioStreamOggVorbis::get_length() const {
 	ERR_FAIL_COND_V(packet_sequence.is_null(), 0);
 	return packet_sequence->get_length();
 }

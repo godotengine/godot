@@ -429,7 +429,7 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 
 void EditorNode::_update_title() {
 	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
-	String title = (appname.is_empty() ? TTR("Unnamed Project") : appname) + String(" - ") + VERSION_NAME;
+	String title = (appname.is_empty() ? TTR("Unnamed Project") : appname);
 	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_scene_file_path() : String();
 	if (!edited.is_empty()) {
 		// Display the edited scene name before the program name so that it can be seen in the OS task bar.
@@ -439,8 +439,10 @@ void EditorNode::_update_title() {
 		// Display the "modified" mark before anything else so that it can always be seen in the OS task bar.
 		title = vformat("(*) %s", title);
 	}
-
-	DisplayServer::get_singleton()->window_set_title(title);
+	DisplayServer::get_singleton()->window_set_title(title + String(" - ") + VERSION_NAME);
+	if (project_title) {
+		project_title->set_text(title);
+	}
 }
 
 void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -659,6 +661,12 @@ void EditorNode::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			Engine::get_singleton()->set_editor_hint(true);
 
+			Window *window = static_cast<Window *>(get_tree()->get_root());
+			if (window) {
+				// Handle macOS fullscreen and extend-to-title changes.
+				window->connect("titlebar_changed", callable_mp(this, &EditorNode::_titlebar_resized));
+			}
+
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 			get_tree()->get_root()->set_as_audio_listener_3d(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
@@ -712,6 +720,8 @@ void EditorNode::_notification(int p_what) {
 			if (DisplayServer::get_singleton()->window_can_draw()) {
 				ProjectSettings::get_singleton()->save();
 			}
+
+			_titlebar_resized();
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -1168,6 +1178,18 @@ void EditorNode::_reload_project_settings() {
 }
 
 void EditorNode::_vp_resized() {
+}
+
+void EditorNode::_titlebar_resized() {
+	const Size2 &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	if (left_menu_spacer) {
+		int w = (gui_base->is_layout_rtl()) ? margin.y : margin.x;
+		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+	}
+	if (right_menu_spacer) {
+		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
+		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+	}
 }
 
 void EditorNode::_version_button_pressed() {
@@ -3390,7 +3412,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		tb->add_theme_font_size_override("font_size", singleton->gui_base->get_theme_font_size(SNAME("main_button_font_size"), SNAME("EditorFonts")));
 
 		singleton->main_editor_buttons.push_back(tb);
-		singleton->main_editor_button_vb->add_child(tb);
+		singleton->main_editor_button_hb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
 
 		singleton->distraction_free->move_to_front();
@@ -6590,14 +6612,14 @@ EditorNode::EditorNode() {
 
 	if (can_expand) {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
-		Control *menu_spacer = memnew(Control);
-		menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		menu_spacer->set_custom_minimum_size(Size2(DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID).x, 0));
-		menu_hb->add_child(menu_spacer);
+		left_menu_spacer = memnew(Control);
+		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		menu_hb->add_child(left_menu_spacer);
 	}
 
 	main_menu = memnew(MenuBar);
 	menu_hb->add_child(main_menu);
+
 	main_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
 	main_menu->set_flat(true);
 	main_menu->set_start_index(0); // Main menu, add to the start of global menu.
@@ -6766,21 +6788,29 @@ EditorNode::EditorNode() {
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), RUN_PROJECT_MANAGER, true);
 
 	// Spacer to center 2D / 3D / Script buttons.
-	Control *left_spacer = memnew(Control);
+	HBoxContainer *left_spacer = memnew(HBoxContainer);
 	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	menu_hb->add_child(left_spacer);
 
-	menu_hb->add_spacer();
+	if (can_expand && global_menu) {
+		project_title = memnew(Label);
+		project_title->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+		project_title->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
+		project_title->set_focus_mode(Control::FOCUS_NONE);
+		project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		project_title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		left_spacer->add_child(project_title);
+	}
 
-	main_editor_button_vb = memnew(HBoxContainer);
-	menu_hb->add_child(main_editor_button_vb);
+	main_editor_button_hb = memnew(HBoxContainer);
+	menu_hb->add_child(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
 	debug_menu = memnew(PopupMenu);
 	debug_menu->set_name(TTR("Debug"));
 	main_menu->add_child(debug_menu);
-
-	menu_hb->add_spacer();
 
 	settings_menu = memnew(PopupMenu);
 	settings_menu->set_name(TTR("Editor"));
@@ -6855,6 +6885,7 @@ EditorNode::EditorNode() {
 	// Spacer to center 2D / 3D / Script buttons.
 	Control *right_spacer = memnew(Control);
 	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	menu_hb->add_child(right_spacer);
 
 	launch_pad = memnew(PanelContainer);
@@ -6870,23 +6901,24 @@ EditorNode::EditorNode() {
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY));
+	play_button->set_tooltip_text(TTR("Run the project's default scene."));
 
-	ED_SHORTCUT_AND_COMMAND("editor/play", TTR("Play"), Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/play", "macos", KeyModifierMask::META | Key::B);
-	play_button->set_shortcut(ED_GET_SHORTCUT("editor/play"));
+	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTR("Run Project"), Key::F5);
+	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
+	play_button->set_shortcut(ED_GET_SHORTCUT("editor/run_project"));
 
 	pause_button = memnew(Button);
 	pause_button->set_flat(true);
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->set_tooltip_text(TTR("Pause the scene execution for debugging."));
+	pause_button->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
 	pause_button->set_disabled(true);
 	launch_pad_hb->add_child(pause_button);
 
-	ED_SHORTCUT("editor/pause_scene", TTR("Pause Scene"), Key::F7);
-	ED_SHORTCUT_OVERRIDE("editor/pause_scene", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
-	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/pause_scene"));
+	ED_SHORTCUT("editor/pause_running_project", TTR("Pause Running Project"), Key::F7);
+	ED_SHORTCUT_OVERRIDE("editor/pause_running_project", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
+	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/pause_running_project"));
 
 	stop_button = memnew(Button);
 	stop_button->set_flat(true);
@@ -6894,12 +6926,12 @@ EditorNode::EditorNode() {
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_STOP));
-	stop_button->set_tooltip_text(TTR("Stop the scene."));
+	stop_button->set_tooltip_text(TTR("Stop the currently running project."));
 	stop_button->set_disabled(true);
 
-	ED_SHORTCUT("editor/stop", TTR("Stop"), Key::F8);
-	ED_SHORTCUT_OVERRIDE("editor/stop", "macos", KeyModifierMask::META | Key::PERIOD);
-	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop"));
+	ED_SHORTCUT("editor/stop_running_project", TTR("Stop Running Project"), Key::F8);
+	ED_SHORTCUT_OVERRIDE("editor/stop_running_project", "macos", KeyModifierMask::META | Key::PERIOD);
+	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
 
 	run_native = memnew(EditorRunNative);
 	launch_pad_hb->add_child(run_native);
@@ -6911,10 +6943,11 @@ EditorNode::EditorNode() {
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_SCENE));
+	play_scene_button->set_tooltip_text(TTR("Run the currently edited scene."));
 
-	ED_SHORTCUT_AND_COMMAND("editor/play_scene", TTR("Play Scene"), Key::F6);
-	ED_SHORTCUT_OVERRIDE("editor/play_scene", "macos", KeyModifierMask::META | Key::R);
-	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_scene"));
+	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTR("Run Current Scene"), Key::F6);
+	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
+	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_current_scene"));
 
 	play_custom_scene_button = memnew(Button);
 	play_custom_scene_button->set_flat(true);
@@ -6922,12 +6955,13 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_CUSTOM_SCENE));
+	play_custom_scene_button->set_tooltip_text(TTR("Run a specific scene."));
 
 	_reset_play_buttons();
 
-	ED_SHORTCUT_AND_COMMAND("editor/play_custom_scene", TTR("Play Custom Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/play_custom_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
-	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_custom_scene"));
+	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTR("Run Specific Scene"), KeyModifierMask::META | KeyModifierMask::SHIFT | Key::F5);
+	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
+	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_specific_scene"));
 
 	write_movie_panel = memnew(PanelContainer);
 	write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));
@@ -6965,10 +6999,9 @@ EditorNode::EditorNode() {
 
 	if (can_expand) {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
-		Control *menu_spacer = memnew(Control);
-		menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		menu_spacer->set_custom_minimum_size(Size2(DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID).y, 0));
-		menu_hb->add_child(menu_spacer);
+		right_menu_spacer = memnew(Control);
+		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+		menu_hb->add_child(right_menu_spacer);
 	}
 
 	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
@@ -7523,9 +7556,9 @@ EditorNode::EditorNode() {
 	screenshot_timer->set_owner(get_owner());
 
 	// Adjust spacers to center 2D / 3D / Script buttons.
-	int max_w = MAX(launch_pad_hb->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
+	int max_w = MAX(launch_pad->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu->get_minimum_size().x);
 	left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu->get_minimum_size().x), 0));
-	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - launch_pad_hb->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
+	right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - launch_pad->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
 
 	// Extend menu bar to window title.
 	if (can_expand) {

@@ -54,10 +54,6 @@ double OS::get_unix_time() const {
 	return 0;
 }
 
-void OS::debug_break() {
-	// something
-}
-
 void OS::_set_logger(CompositeLogger *p_logger) {
 	if (_logger) {
 		memdelete(_logger);

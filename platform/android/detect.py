@@ -121,16 +121,12 @@ def configure(env):
             # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
             # when using `target=release_debug`.
             opt = "-O3" if env["target"] == "release" else "-O2"
-            env.Append(CCFLAGS=[opt, "-fomit-frame-pointer"])
+            env.Append(CCFLAGS=[opt])
         elif env["optimize"] == "size":  # optimize for size
             env.Append(CCFLAGS=["-Oz"])
-        env.Append(CPPDEFINES=["NDEBUG"])
-        env.Append(CCFLAGS=["-ftree-vectorize"])
     elif env["target"] == "debug":
         env.Append(LINKFLAGS=["-O0"])
-        env.Append(CCFLAGS=["-O0", "-g", "-fno-limit-debug-info"])
-        env.Append(CPPDEFINES=["_DEBUG"])
-        env.Append(CPPFLAGS=["-UNDEBUG"])
+        env.Append(CCFLAGS=["-O0", "-g"])
 
     # LTO
 

@@ -485,6 +485,20 @@ void GodotPhysicsServer2D::area_set_monitorable(RID p_area, bool p_monitorable) 
 	area->set_monitorable(p_monitorable);
 }
 
+void GodotPhysicsServer2D::area_set_collision_layer(RID p_area, uint32_t p_layer) {
+	GodotArea2D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_collision_layer(p_layer);
+}
+
+uint32_t GodotPhysicsServer2D::area_get_collision_layer(RID p_area) const {
+	GodotArea2D *area = area_owner.get_or_null(p_area);
+	ERR_FAIL_COND_V(!area, 0);
+
+	return area->get_collision_layer();
+}
+
 void GodotPhysicsServer2D::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
 	ERR_FAIL_COND(!area);
@@ -492,11 +506,11 @@ void GodotPhysicsServer2D::area_set_collision_mask(RID p_area, uint32_t p_mask) 
 	area->set_collision_mask(p_mask);
 }
 
-void GodotPhysicsServer2D::area_set_collision_layer(RID p_area, uint32_t p_layer) {
+uint32_t GodotPhysicsServer2D::area_get_collision_mask(RID p_area) const {
 	GodotArea2D *area = area_owner.get_or_null(p_area);
-	ERR_FAIL_COND(!area);
+	ERR_FAIL_COND_V(!area, 0);
 
-	area->set_collision_layer(p_layer);
+	return area->get_collision_mask();
 }
 
 void GodotPhysicsServer2D::area_set_monitor_callback(RID p_area, const Callable &p_callback) {

@@ -32,7 +32,6 @@
 #define DOC_DATA_H
 
 #include "core/io/xml_parser.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/variant.h"
 
 struct ScriptMemberInfo {

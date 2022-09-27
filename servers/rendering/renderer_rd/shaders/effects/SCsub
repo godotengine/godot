@@ -4,7 +4,7 @@ Import("env")
 
 if "RD_GLSL" in env["BUILDERS"]:
     # find all include files
-    gl_include_files = [str(f) for f in Glob("*_inc.glsl")]
+    gl_include_files = [str(f) for f in Glob("*_inc.glsl")] + [str(f) for f in Glob("../*_inc.glsl")]
 
     # find all shader code(all glsl files excluding our include files)
     glsl_files = [str(f) for f in Glob("*.glsl") if str(f) not in gl_include_files]

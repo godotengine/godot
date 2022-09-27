@@ -39,15 +39,17 @@
 	offset = NSMakePoint(8, 8);
 	spacing = 20;
 	mouse_in_group = false;
+	rtl = false;
 
 	return self;
 }
 
-- (void)initButtons:(CGFloat)button_spacing offset:(NSPoint)button_offset {
+- (void)initButtons:(CGFloat)button_spacing offset:(NSPoint)button_offset rtl:(bool)is_rtl {
 	spacing = button_spacing;
+	rtl = is_rtl;
 
 	NSButton *close_button = [NSWindow standardWindowButton:NSWindowCloseButton forStyleMask:NSWindowStyleMaskTitled];
-	[close_button setFrameOrigin:NSMakePoint(0, 0)];
+	[close_button setFrameOrigin:NSMakePoint(rtl ? spacing * 2 : 0, 0)];
 	[self addSubview:close_button];
 
 	NSButton *miniaturize_button = [NSWindow standardWindowButton:NSWindowMiniaturizeButton forStyleMask:NSWindowStyleMaskTitled];
@@ -55,13 +57,17 @@
 	[self addSubview:miniaturize_button];
 
 	NSButton *zoom_button = [NSWindow standardWindowButton:NSWindowZoomButton forStyleMask:NSWindowStyleMaskTitled];
-	[zoom_button setFrameOrigin:NSMakePoint(spacing * 2, 0)];
+	[zoom_button setFrameOrigin:NSMakePoint(rtl ? 0 : spacing * 2, 0)];
 	[self addSubview:zoom_button];
 
 	offset.y = button_offset.y - zoom_button.frame.size.height / 2;
 	offset.x = button_offset.x - zoom_button.frame.size.width / 2;
 
-	[self setFrameSize:NSMakeSize(zoom_button.frame.origin.x + zoom_button.frame.size.width, zoom_button.frame.size.height)];
+	if (rtl) {
+		[self setFrameSize:NSMakeSize(close_button.frame.origin.x + close_button.frame.size.width, close_button.frame.size.height)];
+	} else {
+		[self setFrameSize:NSMakeSize(zoom_button.frame.origin.x + zoom_button.frame.size.width, zoom_button.frame.size.height)];
+	}
 	[self displayButtons];
 }
 
@@ -70,8 +76,13 @@
 		return;
 	}
 
-	[self setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
-	[self setFrameOrigin:NSMakePoint(offset.x, self.window.frame.size.height - self.frame.size.height - offset.y)];
+	if (rtl) {
+		[self setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
+		[self setFrameOrigin:NSMakePoint(self.window.frame.size.width - self.frame.size.width - offset.x, self.window.frame.size.height - self.frame.size.height - offset.y)];
+	} else {
+		[self setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+		[self setFrameOrigin:NSMakePoint(offset.x, self.window.frame.size.height - self.frame.size.height - offset.y)];
+	}
 }
 
 - (BOOL)_mouseInGroup:(NSButton *)button {

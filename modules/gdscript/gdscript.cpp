@@ -2390,7 +2390,7 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 	}
 
 	Error err;
-	Ref<GDScript> script = GDScriptCache::get_full_script(p_path, err);
+	Ref<GDScript> script = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
 
 	// TODO: Reintroduce binary and encrypted scripts.
 

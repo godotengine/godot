@@ -157,8 +157,11 @@ public:
 	FUNC2RC(Variant, area_get_param, RID, AreaParameter);
 	FUNC1RC(Transform3D, area_get_transform, RID);
 
-	FUNC2(area_set_collision_mask, RID, uint32_t);
 	FUNC2(area_set_collision_layer, RID, uint32_t);
+	FUNC1RC(uint32_t, area_get_collision_layer, RID);
+
+	FUNC2(area_set_collision_mask, RID, uint32_t);
+	FUNC1RC(uint32_t, area_get_collision_mask, RID);
 
 	FUNC2(area_set_monitorable, RID, bool);
 	FUNC2(area_set_ray_pickable, RID, bool);

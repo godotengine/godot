@@ -3826,19 +3826,11 @@ void TextServerAdvanced::shaped_set_span_update_font(const RID &p_shaped, int64_
 	ERR_FAIL_INDEX(p_index, sd->spans.size());
 
 	ShapedTextDataAdvanced::Span &span = sd->spans.ptrw()[p_index];
-	bool changed = (span.font_size != p_size) || (span.features != p_opentype_features) || (p_fonts.size() != span.fonts.size());
-	if (!changed) {
-		for (int i = 0; i < p_fonts.size(); i++) {
-			changed = changed || (span.fonts[i] != p_fonts[i]);
-		}
-	}
-	if (changed) {
-		span.fonts = p_fonts;
-		span.font_size = p_size;
-		span.features = p_opentype_features;
+	span.fonts = p_fonts;
+	span.font_size = p_size;
+	span.features = p_opentype_features;
 
-		invalidate(sd, false);
-	}
+	invalidate(sd, false);
 }
 
 bool TextServerAdvanced::shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features, const String &p_language, const Variant &p_meta) {
@@ -5430,7 +5422,10 @@ bool TextServerAdvanced::shaped_text_shape(const RID &p_shaped) {
 							Array fonts_scr_only;
 							Array fonts_no_match;
 							int font_count = span.fonts.size();
-							for (int l = 0; l < font_count; l++) {
+							if (font_count > 0) {
+								fonts.push_back(sd->spans[k].fonts[0]);
+							}
+							for (int l = 1; l < font_count; l++) {
 								if (font_is_script_supported(span.fonts[l], script)) {
 									if (font_is_language_supported(span.fonts[l], span.language)) {
 										fonts.push_back(sd->spans[k].fonts[l]);
@@ -5851,9 +5846,9 @@ String TextServerAdvanced::percent_sign(const String &p_language) const {
 	return "%";
 }
 
-int TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+int64_t TextServerAdvanced::is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
 	UErrorCode status = U_ZERO_ERROR;
-	int match_index = -1;
+	int64_t match_index = -1;
 
 	Char16String utf16 = p_string.utf16();
 	Vector<UChar *> skeletons;

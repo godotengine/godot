@@ -260,7 +260,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 
 	// Pass the debugger stop shortcut to the running instance(s).
 	String shortcut;
-	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop"), shortcut);
+	VariantWriter::write_to_string(ED_GET_SHORTCUT("editor/stop_running_project"), shortcut);
 	OS::get_singleton()->set_environment("__GODOT_EDITOR_STOP_SHORTCUT__", shortcut);
 
 	printf("Running: %s", exec.utf8().get_data());
