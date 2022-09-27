@@ -125,7 +125,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### Thirdparty
 
 - libpng updated to version 1.6.38.
-- SDL GameControllerDB updated to 2022-09-04 git snapshot.
+- SDL GameControllerDB updated to 2022-09-18 git snapshot.
 
 
 ## [3.5] - 2022-08-05
