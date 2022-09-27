@@ -120,6 +120,7 @@
     <Compile Include="Core\StringName.cs" />
     <Compile Include="Core\Transform2D.cs" />
     <Compile Include="Core\Transform3D.cs" />
+    <Compile Include="Core\Util\LevelOrderSearch.cs" />
     <Compile Include="Core\Vector2.cs" />
     <Compile Include="Core\Vector2i.cs" />
     <Compile Include="Core\Vector3.cs" />
