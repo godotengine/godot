@@ -58,10 +58,10 @@ if env["builtin_pcre2"]:
         env_pcre2["OBJSUFFIX"] = "_" + width + env_pcre2["OBJSUFFIX"]
         env_pcre2.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", width)])
         env_pcre2.add_source_files(thirdparty_obj, thirdparty_sources)
-        env.modules_sources += thirdparty_obj
 
     pcre2_builtin("16")
     pcre2_builtin("32")
+    env.modules_sources += thirdparty_obj
 
 
 # Godot source files
