@@ -540,7 +540,7 @@ void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton 
 		case FILE_MODE_OPEN_FILE:
 		case FILE_MODE_OPEN_FILES:
 			set_ok_button_text(TTR("Open"));
-			get_ok_button()->set_disabled(!item_list->is_anything_selected());
+			get_ok_button()->set_disabled(!item_list->has_selected_items());
 			break;
 
 		case FILE_MODE_OPEN_DIR:

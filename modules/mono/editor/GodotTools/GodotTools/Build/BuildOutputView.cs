@@ -338,7 +338,7 @@ namespace GodotTools.Build
             _issuesListContextMenu.Clear();
             _issuesListContextMenu.Size = new Vector2i(1, 1);
 
-            if (_issuesList.IsAnythingSelected())
+            if (_issuesList.HasSelectedItems())
             {
                 // Add menu entries for the selected item
                 _issuesListContextMenu.AddIconItem(GetThemeIcon("ActionCopy", "EditorIcons"),

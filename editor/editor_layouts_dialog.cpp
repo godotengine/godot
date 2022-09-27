@@ -69,7 +69,7 @@ void EditorLayoutsDialog::_bind_methods() {
 }
 
 void EditorLayoutsDialog::ok_pressed() {
-	if (layout_names->is_anything_selected()) {
+	if (layout_names->has_selected_items()) {
 		Vector<int> const selected_items = layout_names->get_selected_items();
 		for (int i = 0; i < selected_items.size(); ++i) {
 			emit_signal(SNAME("name_confirmed"), layout_names->get_item_text(selected_items[i]));

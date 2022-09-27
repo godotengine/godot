@@ -556,6 +556,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "triangulate_delaunay_2d", "triangulate_delaunay" }, // Geometry2D
 	{ "unselect", "deselect" }, // ItemList
 	{ "unselect_all", "deselect_all" }, // ItemList
+	{ "is_anything_selected", "has_selected_items" }, // ItemList
 	{ "update_configuration_warning", "update_configuration_warnings" }, // Node
 	{ "update_gizmo", "update_gizmos" }, // Node3D
 	{ "viewport_set_use_arvr", "viewport_set_use_xr" }, // RenderingServer

@@ -425,7 +425,7 @@ void FileDialog::deselect_all() {
 	tree->deselect_all();
 
 	// And change get_ok title.
-	if (!tree->is_anything_selected()) {
+	if (!tree->has_selected()) {
 		get_ok_button()->set_disabled(_is_open_should_be_disabled());
 
 		switch (mode) {

@@ -2783,7 +2783,7 @@ void TileMapEditorTerrainsPlugin::_update_selection() {
 		if (erase_button->is_pressed()) {
 			selected_type = SELECTED_TYPE_PATTERN;
 			selected_terrains_pattern = TileSet::TerrainsPattern(*tile_set, selected_terrain_set);
-		} else if (terrains_tile_list->is_anything_selected()) {
+		} else if (terrains_tile_list->has_selected_items()) {
 			metadata_dict = terrains_tile_list->get_item_metadata(terrains_tile_list->get_selected_items()[0]);
 			if (int(metadata_dict["type"]) == SELECTED_TYPE_CONNECT) {
 				selected_type = SELECTED_TYPE_CONNECT;

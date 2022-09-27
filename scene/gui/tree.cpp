@@ -4227,7 +4227,7 @@ void Tree::deselect_all() {
 	queue_redraw();
 }
 
-bool Tree::is_anything_selected() {
+bool Tree::has_selected() {
 	return (selected_item != nullptr);
 }
 

@@ -443,7 +443,7 @@ void ItemList::move_item(int p_from_idx, int p_to_idx) {
 	ERR_FAIL_INDEX(p_from_idx, items.size());
 	ERR_FAIL_INDEX(p_to_idx, items.size());
 
-	if (is_anything_selected() && get_selected_items()[0] == p_from_idx) {
+	if (has_selected_items() && get_selected_items()[0] == p_from_idx) {
 		current = p_to_idx;
 	}
 
@@ -1570,7 +1570,7 @@ Vector<int> ItemList::get_selected_items() {
 	return selected;
 }
 
-bool ItemList::is_anything_selected() {
+bool ItemList::has_selected_items() {
 	for (int i = 0; i < items.size(); i++) {
 		if (items[i].selected) {
 			return true;
@@ -1793,7 +1793,7 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_auto_height", "enable"), &ItemList::set_auto_height);
 	ClassDB::bind_method(D_METHOD("has_auto_height"), &ItemList::has_auto_height);
 
-	ClassDB::bind_method(D_METHOD("is_anything_selected"), &ItemList::is_anything_selected);
+	ClassDB::bind_method(D_METHOD("has_selected_items"), &ItemList::has_selected_items);
 
 	ClassDB::bind_method(D_METHOD("get_item_at_position", "position", "exact"), &ItemList::get_item_at_position, DEFVAL(false));
 

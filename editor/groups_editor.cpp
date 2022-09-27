@@ -46,7 +46,7 @@ void GroupDialog::_group_selected() {
 	nodes_to_remove->clear();
 	remove_node_root = nodes_to_remove->create_item();
 
-	if (!groups->is_anything_selected()) {
+	if (!groups->has_selected()) {
 		group_empty->hide();
 		return;
 	}

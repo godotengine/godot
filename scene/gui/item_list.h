@@ -213,7 +213,7 @@ public:
 	void deselect_all();
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
-	bool is_anything_selected();
+	bool has_selected_items();
 
 	void set_current(int p_current);
 	int get_current() const;
