@@ -89,7 +89,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-08-25 13:04+0000\n"
+"PO-Revision-Date: 2022-09-22 15:26+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -98,7 +98,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -15022,17 +15022,14 @@ msgid "Make Local"
 msgstr "转为本地"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
 msgstr "启用场景唯一名称"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
-msgstr "该场景中已有使用该唯一名称的节点。"
+msgstr "唯一名称已被该场景中的其他节点使用："
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
 msgstr "禁用场景唯一名称"
 
@@ -17086,19 +17083,16 @@ msgid "Auto Update Project"
 msgstr "自动更新项目"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Assembly Name"
-msgstr "显示名称"
+msgstr "程序集名称"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Solution Directory"
-msgstr "选择目录"
+msgstr "解决方案目录"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "C# Project Directory"
-msgstr "选择目录"
+msgstr "C# 项目目录"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -18801,7 +18795,6 @@ msgid "Custom BG Color"
 msgstr "自定义背景色"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Icons"
 msgstr "导出图标"
 
@@ -19593,6 +19586,8 @@ msgid ""
 "Godot's Mono version does not support the UWP platform. Use the standard "
 "build (no C# support) if you wish to target UWP."
 msgstr ""
+"Godot 的 Mono 版本不支持 UWP 平台。如果想要以 UWP 为目标，请使用标准构建（不"
+"支持 C#）。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -20647,7 +20642,7 @@ msgid ""
 "instead."
 msgstr ""
 "“Navigation2D”节点和“Navigation2D.get_simple_path()”已废弃，会在将来的版本中"
-"移除。请用“Navigation2DServer.map_get_path()”替代。"
+"移除。 请用“Navigation2DServer.map_get_path()”替代。"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Pathfinding"
@@ -21788,7 +21783,7 @@ msgid ""
 "instead."
 msgstr ""
 "“Navigation”节点和“Navigation.get_simple_path()”已废弃，会在将来的版本中移"
-"除。请用“NavigationServer.map_get_path()”替代。"
+"除。 请用“NavigationServer.map_get_path()”替代。"
 
 #: scene/3d/navigation.cpp scene/resources/curve.cpp
 msgid "Up Vector"
@@ -24227,7 +24222,7 @@ msgstr "自定义"
 
 #: scene/register_scene_types.cpp
 msgid "Custom Font"
-msgstr "自定字体"
+msgstr "自定义字体"
 
 #: scene/resources/audio_stream_sample.cpp
 #: servers/audio/effects/audio_stream_generator.cpp servers/audio_server.cpp

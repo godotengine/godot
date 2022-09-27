@@ -151,13 +151,15 @@
 # Avery <jarreed0@gmail.com>, 2022.
 # TheJC <the-green-green.0rvdk@simplelogin.fr>, 2022.
 # Mauricio Mazur <mauricio.mazur12@gmail.com>, 2022.
+# ! Zyll <emanueljunior756@gmail.com>, 2022.
+# Kirrby <kirrby.gaming@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2022-09-05 11:17+0000\n"
-"Last-Translator: TheJC <the-green-green.0rvdk@simplelogin.fr>\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
+"Last-Translator: Kirrby <kirrby.gaming@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -165,7 +167,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -1128,7 +1130,7 @@ msgstr "Máximo de luzes renderizáveis"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Reflections"
-msgstr "Máximo de Reflexos renderizáveis"
+msgstr "Max. Reflexões Renderizaveis"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
@@ -3383,7 +3385,7 @@ msgstr "Mostrar Arquivos Ocultos"
 
 #: editor/editor_file_dialog.cpp
 msgid "Disable Overwrite Warning"
-msgstr "Desativar Aviso de Substituição"
+msgstr "Desativar aviso de substituição"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -3486,7 +3488,7 @@ msgstr "(Re)Importando Assets"
 
 #: editor/editor_file_system.cpp
 msgid "Reimport Missing Imported Files"
-msgstr "Reimportar Arquivos Importados Ausentes"
+msgstr "Reimportar arquivos importados perdidos"
 
 #: editor/editor_help.cpp scene/2d/camera_2d.cpp scene/gui/control.cpp
 #: scene/gui/nine_patch_rect.cpp scene/resources/dynamic_font.cpp
@@ -3597,7 +3599,7 @@ msgstr "Ajuda"
 
 #: editor/editor_help.cpp
 msgid "Sort Functions Alphabetically"
-msgstr "Classificar Funções em Ordem Alfabética"
+msgstr "Ordenar funções alfabéticamente"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -4402,7 +4404,7 @@ msgstr "Redimensionar se Houver Muitas Guias"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Minimum Width"
-msgstr "Largura Mínima"
+msgstr "Largura mínima"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Output"
@@ -4410,7 +4412,7 @@ msgstr "Saída"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Clear Output On Play"
-msgstr "Sempre limpar saída ao jogar"
+msgstr "Sempre Limpar Output no modo Play"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Always Open Output On Play"
@@ -15375,19 +15377,16 @@ msgid "Make Local"
 msgstr "Tornar Local"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "Habilitar Nome Único de Cena"
+msgstr "Habilitar Nome(s) Único(s) de Cena"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
-msgstr "Outro nó já está usando este nome único na cena atual."
+msgstr "Nomes únicos já estão sendo usados por outro nó na cena:"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "Desabilitar Nome Único de Cena"
+msgstr "Desabilitar Nome(s) Único(s) de Cena"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -17483,14 +17482,12 @@ msgid "Assembly Name"
 msgstr "Nome de Exibição"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Solution Directory"
-msgstr "Escolha um Diretório"
+msgstr "Diretório da Solução"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "C# Project Directory"
-msgstr "Escolha um Diretório"
+msgstr "Diretório do Projeto C#"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -17572,8 +17569,9 @@ msgid "As Normal Map"
 msgstr "Como Mapa Normal"
 
 #: modules/opensimplex/noise_texture.cpp
+#, fuzzy
 msgid "Bump Strength"
-msgstr ""
+msgstr "Força da colisão"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise"
@@ -18454,12 +18452,14 @@ msgid "Optional Features"
 msgstr "Funcionalidades Opcionais"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Requested Reference Space Types"
-msgstr ""
+msgstr "Tipos de Espaço de Referência Solicitados"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Reference Space Type"
-msgstr ""
+msgstr "Tipo de Espaço de Referência"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Visibility State"
@@ -18493,8 +18493,9 @@ msgid "Debug Keystore Pass"
 msgstr ""
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Force System User"
-msgstr ""
+msgstr "Forçar Usuário do Sistema"
 
 #: platform/android/export/export.cpp
 msgid "Shutdown ADB On Exit"
@@ -19090,8 +19091,9 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "O caractere '%s' não é permitido no identificador."
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "Landscape Launch Screens"
-msgstr ""
+msgstr "Telas de Inicialização de Paisagem"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 2436 X 1125"
@@ -19299,9 +19301,8 @@ msgid "Custom BG Color"
 msgstr "Cor Personalizada de Fundo"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Icons"
-msgstr "Exportar Ícone"
+msgstr "Exportar Ícones"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
@@ -19520,8 +19521,9 @@ msgid "Invalid executable file."
 msgstr "Arquivo executável inválido."
 
 #: platform/osx/export/codesign.cpp
+#, fuzzy
 msgid "Can't resize signature load command."
-msgstr ""
+msgstr "Não é possível redimensionar o comando de carregamento da assinatura."
 
 #: platform/osx/export/codesign.cpp
 msgid "Failed to create fat binary."
@@ -20124,6 +20126,8 @@ msgid ""
 "Godot's Mono version does not support the UWP platform. Use the standard "
 "build (no C# support) if you wish to target UWP."
 msgstr ""
+"A versão Mono do Godot não suporta a plataforma UWP. Use a build padrão (sem "
+"suporte a C#) se deseja exportar para UWP."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
