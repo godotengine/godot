@@ -1735,7 +1735,6 @@ void TileMapEditorTilesPlugin::_tile_atlas_control_mouse_exited() {
 	hovered_tile.source_id = TileSet::INVALID_SOURCE;
 	hovered_tile.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
 	hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
-	tile_set_dragging_selection = false;
 	tile_atlas_control->queue_redraw();
 }
 
@@ -1894,7 +1893,6 @@ void TileMapEditorTilesPlugin::_tile_alternatives_control_mouse_exited() {
 	hovered_tile.source_id = TileSet::INVALID_SOURCE;
 	hovered_tile.set_atlas_coords(TileSetSource::INVALID_ATLAS_COORDS);
 	hovered_tile.alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE;
-	tile_set_dragging_selection = false;
 	alternative_tiles_control->queue_redraw();
 }
 
