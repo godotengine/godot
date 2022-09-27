@@ -45,6 +45,7 @@ class Array {
 	mutable ArrayPrivate *_p;
 	void _ref(const Array &p_from) const;
 	void _unref() const;
+	void _internal_shuffle(const Callable &p_callable);
 
 protected:
 	bool _assign(const Array &p_array);
@@ -83,6 +84,7 @@ public:
 	void sort();
 	void sort_custom(const Callable &p_callable);
 	void shuffle();
+	void shuffle_custom(const Callable &p_callable);
 	int bsearch(const Variant &p_value, bool p_before = true);
 	int bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before = true);
 	void reverse();
