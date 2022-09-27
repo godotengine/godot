@@ -360,15 +360,15 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 	const float FXAA_SPAN_MAX = 8.0;
 
 #ifdef MULTIVIEW
-	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(1.0, -1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(1.0, 1.0) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNE = textureLod(source_color, vec3(uv_interp + vec2(0.5, -0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSW = textureLod(source_color, vec3(uv_interp + vec2(-0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSE = textureLod(source_color, vec3(uv_interp + vec2(0.5, 0.5) * params.pixel_size, ViewIndex), 0.0).xyz * exposure * params.luminance_multiplier;
 #else
-	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(1.0, -1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
-	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(1.0, 1.0) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNW = textureLod(source_color, uv_interp + vec2(-0.5, -0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbNE = textureLod(source_color, uv_interp + vec2(0.5, -0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSW = textureLod(source_color, uv_interp + vec2(-0.5, 0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
+	vec3 rgbSE = textureLod(source_color, uv_interp + vec2(0.5, 0.5) * params.pixel_size, 0.0).xyz * exposure * params.luminance_multiplier;
 #endif
 	vec3 rgbM = color;
 	vec3 luma = vec3(0.299, 0.587, 0.114);
