@@ -2248,7 +2248,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 		String path = directories_to_check.get(directories_to_check.size() - 1); // Is there any pop_back function?
 		directories_to_check.resize(directories_to_check.size() - 1); // Remove last element
 
-		Ref<DirAccess> dir = DirAccess::create_for_path(path);
+		Ref<DirAccess> dir = DirAccess::open(path);
 		if (dir.is_valid()) {
 			dir->set_include_hidden(true);
 			dir->list_dir_begin();
