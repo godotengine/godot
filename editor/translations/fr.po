@@ -104,13 +104,14 @@
 # Helix Sir <vincentbarkmann@gmail.com>, 2022.
 # SCHUTZ Lucas <lucas.schutz0954@gmail.com>, 2022.
 # EGuillemot <Elouen.Guillemot@gmail.com>, 2022.
+# Entiz <maxime.salido@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-02 23:49+0000\n"
-"Last-Translator: DinosaurHorseSword <ewenlandry@mailfence.com>\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
+"Last-Translator: Entiz <maxime.salido@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -118,7 +119,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -150,7 +151,7 @@ msgstr "Lissage de Delta"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
-msgstr "Mode d'utilisation faible du processeur"
+msgstr "Mode d'utilisation du processeur bas en ressources"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -244,7 +245,7 @@ msgstr "Cible de FPS"
 
 #: core/bind/core_bind.cpp
 msgid "Time Scale"
-msgstr "Echelle de temps"
+msgstr "Échelle de temps"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Physics Jitter Fix"
@@ -5902,8 +5903,9 @@ msgid "Zoom Modifier"
 msgstr "Touche de combinaison : Zoom"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Warped Mouse Panning"
-msgstr ""
+msgstr "Panoramique déformé de la souris"
 
 #: editor/editor_settings.cpp
 msgid "Navigation Feel"
@@ -15421,19 +15423,16 @@ msgid "Make Local"
 msgstr "Rendre local"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "Activer le nom unique de la scène"
+msgstr "Activer le(s) nom(s) unique(s) de scène"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
-msgstr "Un autre Nœud utilise ce nom unique dans la scène."
+msgstr "Noms uniques déjà utilisés par un autre nœud de la scène :"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "Désactiver le nom unique de la scène"
+msgstr "Désactiver le(s) nom(s) unique(s) de la scène"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -16308,9 +16307,8 @@ msgid "Fallback To GLES2"
 msgstr "Se replier sur GLES2"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Use Nvidia Rect Flicker Workaround"
-msgstr "Utiliser le contournement Nvidia pour éviter le clignotement"
+msgstr "Utiliser la solution alternative Nvidia pour éviter le clignotement"
 
 #: main/main.cpp
 msgid "DPI"
@@ -16357,9 +16355,8 @@ msgid "Thread Model"
 msgstr "Modèle de Parallélisme"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Thread Safe BVH"
-msgstr "BVH avec Thread Sécurisés"
+msgstr "BVH avec le parallélisme sécurisé"
 
 #: main/main.cpp
 msgid "Handheld"
@@ -16598,7 +16595,7 @@ msgstr "Activer le support des SoftBody par le Monde"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "CSG"
-msgstr ""
+msgstr "GCS"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Cylinder Radius"
@@ -16988,17 +16985,16 @@ msgid "Max"
 msgstr "Max"
 
 #: modules/gltf/gltf_accessor.cpp
-#, fuzzy
 msgid "Sparse Count"
-msgstr "Instance"
+msgstr "Comptage épars"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Buffer View"
-msgstr ""
+msgstr "Affichage tampon des indices épars"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Byte Offset"
-msgstr ""
+msgstr "Décalage d'octet des indices épars"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Component Type"
@@ -17006,11 +17002,11 @@ msgstr "Type de composant d'indices épars"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Buffer View"
-msgstr ""
+msgstr "Affichage tampon des valeurs éparses"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Byte Offset"
-msgstr ""
+msgstr "Décalage d'octet des valeurs éparses"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Buffer"
@@ -17018,11 +17014,11 @@ msgstr "Tampon"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Length"
-msgstr "Longueur de byte"
+msgstr "Longueur d'octet"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Stride"
-msgstr ""
+msgstr "Foulée d'octet"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Indices"
@@ -17157,8 +17153,9 @@ msgid "Specular Factor"
 msgstr "Facteur Spéculaire"
 
 #: modules/gltf/gltf_spec_gloss.cpp
+#, fuzzy
 msgid "Spec Gloss Img"
-msgstr ""
+msgstr "Img Spéculaire Brillante"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
@@ -17242,9 +17239,8 @@ msgid "Physics Material"
 msgstr "Matériau physique"
 
 #: modules/gridmap/grid_map.cpp scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Use In Baked Light"
-msgstr "Précalculer les lightmaps"
+msgstr "Utiliser des lumières pré-calculées"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
 msgid "Cell"
@@ -17441,9 +17437,8 @@ msgid "Plotting lightmaps"
 msgstr "Tracer des lightmaps"
 
 #: modules/lightmapper_cpu/register_types.cpp
-#, fuzzy
 msgid "CPU Lightmapper"
-msgstr "Précalculer les lightmaps"
+msgstr "Mappeur de lumière processeur"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Low Quality Ray Count"
@@ -17509,19 +17504,16 @@ msgid "Auto Update Project"
 msgstr "Mettre à jour le projet automatiquement"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Assembly Name"
-msgstr "Afficher le nom"
+msgstr "Nom de l'assembly"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Solution Directory"
-msgstr "Choisir un répertoire"
+msgstr "Choisir un répertoire pour la solution"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "C# Project Directory"
-msgstr "Choisir un répertoire"
+msgstr "Choisir un répertoire pour le projet C#"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -17644,7 +17636,7 @@ msgstr "Paramètres"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Multicast If"
-msgstr ""
+msgstr "Révéler la multidiffusion si"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Local Port"
@@ -17652,7 +17644,7 @@ msgstr "Révéler le port local"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover IPv6"
-msgstr "Découvrir IPv6"
+msgstr "Révéler IPv6"
 
 #: modules/upnp/upnp_device.cpp
 msgid "Description URL"
@@ -17672,7 +17664,7 @@ msgstr "Type de service IGD"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Our Addr"
-msgstr ""
+msgstr "Notre adresse PGI"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Status"
@@ -18049,9 +18041,8 @@ msgid "Return"
 msgstr "Retour"
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Return Enabled"
-msgstr "Exécutable"
+msgstr "Retour activé"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Return Type"
@@ -18473,14 +18464,12 @@ msgid "Optional Features"
 msgstr "Fonctionnalités Optionnelles"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Requested Reference Space Types"
-msgstr "Type d'espace référence requis"
+msgstr "Types d'espaces référence requis"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "Reference Space Type"
-msgstr "Type d'espace référence"
+msgstr "Type d'espace de référence"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Visibility State"
@@ -18491,9 +18480,8 @@ msgid "Bounds Geometry"
 msgstr "Géométrie des limites"
 
 #: modules/webxr/webxr_interface.cpp
-#, fuzzy
 msgid "XR Standard Mapping"
-msgstr "Mapping Standard AR/VR"
+msgstr "Mappage Standard XR"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
@@ -18677,24 +18665,20 @@ msgid "Immersive Mode"
 msgstr "Mode immersif"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Support Small"
-msgstr "Support"
+msgstr "Supporte les petits écrans"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Support Normal"
-msgstr "Support"
+msgstr "Supporte les écrans normaux"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Support Large"
-msgstr "Support"
+msgstr "Supporte les grands écrans"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Support Xlarge"
-msgstr "Support"
+msgstr "Supporte les très grands écrans"
 
 #: platform/android/export/export_plugin.cpp
 msgid "User Data Backup"
@@ -18713,9 +18697,8 @@ msgid "Extra Args"
 msgstr "Arguments Supplémentaires"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "APK Expansion"
-msgstr "Expression"
+msgstr "Expansion APK"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Salt"
@@ -19107,7 +19090,7 @@ msgstr "Le caractère « %s » n'est pas autorisé dans l'identifiant."
 
 #: platform/iphone/export/export.cpp
 msgid "Landscape Launch Screens"
-msgstr ""
+msgstr "Écrans de lancement en mode paysage"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 2436 X 1125"
@@ -19284,11 +19267,11 @@ msgstr "Projecteur 80 X 80"
 
 #: platform/iphone/export/export.cpp
 msgid "Storyboard"
-msgstr ""
+msgstr "Storyboard"
 
 #: platform/iphone/export/export.cpp
 msgid "Use Launch Screen Storyboard"
-msgstr ""
+msgstr "Utiliser le storyboard de l'écran de lancement"
 
 #: platform/iphone/export/export.cpp
 msgid "Image Scale Mode"
@@ -19311,9 +19294,8 @@ msgid "Custom BG Color"
 msgstr "Couleur d'arrière-plan personnalisée"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Icons"
-msgstr "Icône d'exportation"
+msgstr "Exporter les icônes"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
@@ -19366,7 +19348,7 @@ msgstr "Impossible de lire le fichier : «%s »."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
-msgstr ""
+msgstr "PWA"
 
 #: platform/javascript/export/export.cpp
 msgid "Variant"
@@ -19620,7 +19602,6 @@ msgid "Allow JIT Code Execution"
 msgstr "Autoriser l'exécution du code JIT"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Allow Unsigned Executable Memory"
 msgstr "Autoriser la mémoire exécutable non signée"
 
@@ -19677,7 +19658,6 @@ msgid "Device Bluetooth"
 msgstr "Périphérique Bluetooth"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Files Downloads"
 msgstr "Téléchargement de fichiers"
 
@@ -20154,6 +20134,8 @@ msgid ""
 "Godot's Mono version does not support the UWP platform. Use the standard "
 "build (no C# support) if you wish to target UWP."
 msgstr ""
+"La version Mono de Godot ne supporte pas la plateforme UWP. Utilisé la "
+"version standard (sans le support C#) si vous souhaitez cibler UWP."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -20249,9 +20231,8 @@ msgid "Timestamp Server URL"
 msgstr "URL du serveur d'horodatage"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Digest Algorithm"
-msgstr "Débogueur"
+msgstr "Fonction de hachage"
 
 #: platform/windows/export/export.cpp
 msgid "Modify Resources"
@@ -20286,14 +20267,12 @@ msgid "Resources Modification"
 msgstr "Modification de ressources"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find rcedit executable at \"%s\"."
-msgstr "Impossible de trouver le keystore, impossible d'exporter."
+msgstr "Impossible de trouver rcedit à l'emplacement \"%s\"."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find wine executable at \"%s\"."
-msgstr "Impossible de trouver le keystore, impossible d'exporter."
+msgstr "Impossible de trouver wine à l'emplacement \"%s\"."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20371,9 +20350,8 @@ msgid "Windows executables cannot be >= 4 GiB."
 msgstr "Les exécutables Windows ne peuvent pas peser >= 4Gio."
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
-#, fuzzy
 msgid "Failed to open executable file \"%s\"."
-msgstr "Fichier exécutable invalide."
+msgstr "Fichier exécutable invalide : \"%s\"."
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable file header corrupted."
@@ -24222,12 +24200,11 @@ msgstr ""
 #: scene/gui/popup.cpp
 #, fuzzy
 msgid "Popup"
-msgstr "Peupler"
+msgstr "Fenêtre contextuelle"
 
 #: scene/gui/popup.cpp
-#, fuzzy
 msgid "Exclusive"
-msgstr "Inclusif"
+msgstr "Exclusif"
 
 #: scene/gui/popup.cpp
 msgid ""
@@ -24235,34 +24212,31 @@ msgid ""
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
-"Les pop-ups seront cachées par défaut jusqu'à ce que vous appeliez une "
-"fonction popup() ou une des fonctions popup*(). Les rendre visibles pour "
-"l'édition ne pose pas de problème, mais elles seront cachées lors de "
-"l'exécution."
+"Les fenêtres contextuelles seront cachées par défaut jusqu'à ce que vous "
+"appeliez une fonction popup() ou une des fonctions popup*(). Les rendre "
+"visibles pour l'édition ne pose pas de problème, mais elles seront cachées "
+"lors de l'exécution."
 
 #: scene/gui/popup_menu.cpp
-#, fuzzy
 msgid "Hide On Item Selection"
-msgstr "Centrer sur la sélection"
+msgstr "Masquer lors de la sélection de l'élément"
 
 #: scene/gui/popup_menu.cpp
-#, fuzzy
 msgid "Hide On Checkable Item Selection"
-msgstr "Suppression de la sélection de GridMap"
+msgstr "Masquer lors de la sélection de l'élément cochable"
 
 #: scene/gui/popup_menu.cpp
-#, fuzzy
 msgid "Hide On State Item Selection"
-msgstr "Supprimer la sélection"
-
-#: scene/gui/popup_menu.cpp
-msgid "Submenu Popup Delay"
-msgstr ""
+msgstr "Cacher lors de la sélection de l'élément d'état"
 
 #: scene/gui/popup_menu.cpp
 #, fuzzy
+msgid "Submenu Popup Delay"
+msgstr "Délai du pop-up du sous-menu"
+
+#: scene/gui/popup_menu.cpp
 msgid "Allow Search"
-msgstr "Rechercher"
+msgstr "Autoriser la recherche"
 
 #: scene/gui/progress_bar.cpp
 msgid "Percent"
@@ -24270,59 +24244,54 @@ msgstr "Pourcentage"
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr "Si « Exp Edit » est vrai, « Min Value » doit être supérieur à 0."
+msgstr ""
+"Si \"Édition Exponentielle\" est activée, \"Valeur Minimale\" doit être "
+"supérieure à 0."
 
 #: scene/gui/range.cpp scene/resources/curve.cpp
-#, fuzzy
 msgid "Min Value"
-msgstr "Épingler la valeur"
+msgstr "Valeur minimale"
 
 #: scene/gui/range.cpp scene/resources/curve.cpp
-#, fuzzy
 msgid "Max Value"
-msgstr "Valeur"
+msgstr "Valeur maximale"
 
 #: scene/gui/range.cpp
 msgid "Page"
 msgstr "Page"
 
 #: scene/gui/range.cpp
-#, fuzzy
 msgid "Exp Edit"
-msgstr "Édition"
+msgstr "Édition Exponentielle"
 
 #: scene/gui/range.cpp
 #, fuzzy
 msgid "Rounded"
-msgstr "Groupé"
+msgstr "Arrondir"
 
 #: scene/gui/range.cpp
 msgid "Allow Greater"
-msgstr ""
+msgstr "Autoriser supérieur"
 
 #: scene/gui/range.cpp
 msgid "Allow Lesser"
-msgstr ""
+msgstr "Autoriser inférieur"
 
 #: scene/gui/reference_rect.cpp
-#, fuzzy
 msgid "Border Color"
-msgstr "Renommer l'item de couleur"
+msgstr "Couleur de la bordure"
 
 #: scene/gui/reference_rect.cpp scene/resources/style_box.cpp
-#, fuzzy
 msgid "Border Width"
-msgstr "Pixels de bordure"
+msgstr "Largeur de la bordure"
 
 #: scene/gui/rich_text_effect.cpp
-#, fuzzy
 msgid "Relative Index"
-msgstr "Récupérer la position"
+msgstr "Position relative"
 
 #: scene/gui/rich_text_effect.cpp
-#, fuzzy
 msgid "Absolute Index"
-msgstr "Indentation automatique"
+msgstr "Indice absolu"
 
 #: scene/gui/rich_text_effect.cpp
 msgid "Elapsed Time"
@@ -24339,47 +24308,43 @@ msgstr "Caractère"
 
 #: scene/gui/rich_text_label.cpp
 msgid "BBCode"
-msgstr ""
+msgstr "BBCode"
 
 #: scene/gui/rich_text_label.cpp
 msgid "Meta Underlined"
-msgstr ""
+msgstr "Méta-données soulignées"
 
 #: scene/gui/rich_text_label.cpp
 msgid "Tab Size"
 msgstr "Taille de tabulation"
 
 #: scene/gui/rich_text_label.cpp
-#, fuzzy
 msgid "Fit Content Height"
-msgstr "Peindre les poids de l'os"
+msgstr "Ajuster à la hauteur du conteneur"
 
 #: scene/gui/rich_text_label.cpp
 msgid "Scroll Active"
-msgstr ""
+msgstr "Défilement actif"
 
 #: scene/gui/rich_text_label.cpp
 msgid "Scroll Following"
-msgstr ""
+msgstr "Suivi du défilement"
 
 #: scene/gui/rich_text_label.cpp
-#, fuzzy
 msgid "Selection Enabled"
-msgstr "Sélection uniquement"
+msgstr "Sélection activée"
 
 #: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 msgid "Override Selected Font Color"
-msgstr "Remplacer la couleur de police sélectionnée"
+msgstr "Surcharger la couleur de police sélectionnée"
 
 #: scene/gui/rich_text_label.cpp
-#, fuzzy
 msgid "Custom Effects"
-msgstr "Déplacer effet de transport"
+msgstr "Effets personnalisés"
 
 #: scene/gui/scroll_bar.cpp
-#, fuzzy
 msgid "Custom Step"
-msgstr "Nœud Personnalisé"
+msgstr "Pas personnalisé"
 
 #: scene/gui/scroll_container.cpp
 msgid ""

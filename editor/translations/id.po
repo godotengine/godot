@@ -40,13 +40,14 @@
 # Rizky Ramadhan <rizkyterm@gmail.com>, 2022.
 # Primananda Kurnia <primakurnia71@gmail.com>, 2022.
 # FellowMustard <rachmawanng33@gmail.com>, 2022.
+# Muhammad Zainal Abidin <eviepk12@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-07-31 18:34+0000\n"
-"Last-Translator: ProgrammerIndonesia 44 <elo.jhy@gmail.com>\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
+"Last-Translator: Muhammad Zainal Abidin <eviepk12@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -54,7 +55,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -2800,7 +2801,7 @@ msgstr "Pilih"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Proyek ekspor untuk platform:"
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2849,9 +2850,8 @@ msgid "Can't open file to read from path \"%s\"."
 msgstr "Tidak dapat membuka file untuk menulis:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Simpan Sebagai"
+msgstr "Simpan ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2878,7 +2878,7 @@ msgid ""
 msgstr ""
 "Platform target membutuhkan kompressi tekstur 'ETC' untuk mengembalikan "
 "driver ke GLES2. \n"
-"Aktifkan 'Impor Lainnya' di Pengaturan Proyek, atau matikan 'Driver Fallback "
+"Aktifkan 'Impor Etc' di Pengaturan Proyek, atau matikan 'Driver Fallback "
 "Enabled'."
 
 #: editor/editor_export.cpp
@@ -2895,7 +2895,7 @@ msgid ""
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
 "Platform target membutuhkan kompresi tekstur 'ETC2' atau 'PVRTC' untuk "
-"GLES3. Aktifkan 'Impor Lainnya 2' atau 'Import Pvrtc' di Pengaturan Proyek."
+"GLES3. Aktifkan 'Impor Etc 2' atau 'Import Pvrtc' di Pengaturan Proyek."
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2930,7 +2930,7 @@ msgstr "Operator warna."
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 Bits"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
