@@ -454,8 +454,8 @@ StringName AnimatedSprite2D::get_animation() const {
 	return animation;
 }
 
-TypedArray<String> AnimatedSprite2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray AnimatedSprite2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (frames.is_null()) {
 		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite2D to display frames."));

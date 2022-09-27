@@ -62,7 +62,7 @@ Ref<KinematicCollision2D> PhysicsBody2D::_move(const Vector2 &p_distance, bool p
 
 	if (move_and_collide(parameters, result, p_test_only)) {
 		// Create a new instance when the cached reference is invalid or still in use in script.
-		if (motion_cache.is_null() || motion_cache->reference_get_count() > 1) {
+		if (motion_cache.is_null() || motion_cache->get_reference_count() > 1) {
 			motion_cache.instantiate();
 			motion_cache->owner = this;
 		}
@@ -262,19 +262,14 @@ void AnimatableBody2D::_update_kinematic_motion() {
 #endif
 
 	if (sync_to_physics) {
-		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &AnimatableBody2D::_body_state_changed));
 		set_only_update_transform_changes(true);
 		set_notify_local_transform(true);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), nullptr, nullptr);
+		PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), Callable());
 		set_only_update_transform_changes(false);
 		set_notify_local_transform(false);
 	}
-}
-
-void AnimatableBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	AnimatableBody2D *body = static_cast<AnimatableBody2D *>(p_instance);
-	body->_body_state_changed(p_state);
 }
 
 void AnimatableBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
@@ -437,11 +432,6 @@ struct _RigidBody2DInOut {
 	int shape = 0;
 	int local_shape = 0;
 };
-
-void RigidBody2D::_body_state_changed_callback(void *p_instance, PhysicsDirectBodyState2D *p_state) {
-	RigidBody2D *body = static_cast<RigidBody2D *>(p_instance);
-	body->_body_state_changed(p_state);
-}
 
 void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
@@ -921,10 +911,10 @@ void RigidBody2D::_notification(int p_what) {
 #endif
 }
 
-TypedArray<String> RigidBody2D::get_configuration_warnings() const {
+PackedStringArray RigidBody2D::get_configuration_warnings() const {
 	Transform2D t = get_transform();
 
-	TypedArray<String> warnings = CollisionObject2D::get_configuration_warnings();
+	PackedStringArray warnings = CollisionObject2D::get_configuration_warnings();
 
 	if (ABS(t.columns[0].length() - 1.0) > 0.05 || ABS(t.columns[1].length() - 1.0) > 0.05) {
 		warnings.push_back(RTR("Size changes to RigidBody2D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead."));
@@ -1079,7 +1069,7 @@ void RigidBody2D::_validate_property(PropertyInfo &p_property) const {
 
 RigidBody2D::RigidBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_RIGID) {
-	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), this, _body_state_changed_callback);
+	PhysicsServer2D::get_singleton()->body_set_state_sync_callback(get_rid(), callable_mp(this, &RigidBody2D::_body_state_changed));
 }
 
 RigidBody2D::~RigidBody2D() {
@@ -1554,7 +1544,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 	}
 
 	// Create a new instance when the cached reference is invalid or still in use in script.
-	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->reference_get_count() > 1) {
+	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
 		slide_colliders.write[p_bounce]->owner = this;
 	}

@@ -135,6 +135,8 @@ void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
 		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
+	} else if (ED_IS_SHORTCUT("scene_tree/toggle_unique_name", p_event)) {
+		_tool_selected(TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	} else {
@@ -439,8 +441,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			bool collapsed = _is_collapsed_recursive(selected_item);
-			_set_collapsed_recursive(selected_item, !collapsed);
+			bool collapsed = selected_item->is_any_collapsed();
+			selected_item->set_collapsed_recursive(!collapsed);
 
 			tree->ensure_cursor_is_visible();
 
@@ -1074,6 +1076,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (first_selected == nullptr) {
 				return;
 			}
+			if (first_selected->get() == EditorNode::get_singleton()->get_edited_scene()) {
+				// Exclude Root Node. It should never be unique name in its own scene!
+				editor_selection->remove_node(first_selected->get());
+				first_selected = editor_selection->get_selected_node_list().front();
+				if (first_selected == nullptr) {
+					return;
+				}
+			}
 			bool enabling = !first_selected->get()->is_unique_name_in_owner();
 
 			List<Node *> full_selection = editor_selection->get_full_selected_node_list();
@@ -1211,17 +1221,6 @@ void SceneTreeDock::add_root_node(Node *p_node) {
 	editor_data->get_undo_redo()->add_do_reference(p_node);
 	editor_data->get_undo_redo()->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
 	editor_data->get_undo_redo()->commit_action();
-}
-
-void SceneTreeDock::_node_collapsed(Object *p_obj) {
-	TreeItem *ti = Object::cast_to<TreeItem>(p_obj);
-	if (!ti) {
-		return;
-	}
-
-	if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
-		_set_collapsed_recursive(ti, ti->is_collapsed());
-	}
 }
 
 void SceneTreeDock::_notification(int p_what) {
@@ -1933,48 +1932,6 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	perform_node_renames(nullptr, &path_renames);
 
 	editor_data->get_undo_redo()->commit_action();
-}
-
-bool SceneTreeDock::_is_collapsed_recursive(TreeItem *p_item) const {
-	bool is_branch_collapsed = false;
-
-	List<TreeItem *> needs_check;
-	needs_check.push_back(p_item);
-
-	while (!needs_check.is_empty()) {
-		TreeItem *item = needs_check.back()->get();
-		needs_check.pop_back();
-
-		TreeItem *child = item->get_first_child();
-		is_branch_collapsed = item->is_collapsed() && child;
-
-		if (is_branch_collapsed) {
-			break;
-		}
-		while (child) {
-			needs_check.push_back(child);
-			child = child->get_next();
-		}
-	}
-	return is_branch_collapsed;
-}
-
-void SceneTreeDock::_set_collapsed_recursive(TreeItem *p_item, bool p_collapsed) {
-	List<TreeItem *> to_collapse;
-	to_collapse.push_back(p_item);
-
-	while (!to_collapse.is_empty()) {
-		TreeItem *item = to_collapse.back()->get();
-		to_collapse.pop_back();
-
-		item->set_collapsed(p_collapsed);
-
-		TreeItem *child = item->get_first_child();
-		while (child) {
-			to_collapse.push_back(child);
-			child = child->get_next();
-		}
-	}
 }
 
 void SceneTreeDock::_script_created(Ref<Script> p_script) {
@@ -2866,10 +2823,13 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 		}
 		if (all_owned) {
-			menu->add_separator();
-			menu->add_icon_check_item(get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), TTR("Access as Scene Unique Name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
-			// Checked based on `selection[0]` because `full_selection` has undesired ordering.
-			menu->set_item_checked(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), selection[0]->is_unique_name_in_owner());
+			// Group "toggle_unique_name" with "copy_node_path", if it is available.
+			if (menu->get_item_index(TOOL_COPY_NODE_PATH) == -1) {
+				menu->add_separator();
+			}
+			Node *node = full_selection[0];
+			menu->add_icon_shortcut(get_theme_icon(SNAME("SceneUniqueName"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/toggle_unique_name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
+			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), node->is_unique_name_in_owner() ? TTR("Revoke Unique Name") : TTR("Access as Unique Name"));
 		}
 	}
 
@@ -3422,6 +3382,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
+	ED_SHORTCUT("scene_tree/toggle_unique_name", TTR("Toggle Access as Unique Name"));
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KeyModifierMask::SHIFT | Key::KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), Key::KEY_DELETE);
 
@@ -3518,7 +3479,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
 
 	scene_tree->get_scene_tree()->connect("item_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
-	scene_tree->get_scene_tree()->connect("item_collapsed", callable_mp(this, &SceneTreeDock::_node_collapsed));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
 

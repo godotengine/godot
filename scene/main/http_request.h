@@ -32,6 +32,7 @@
 #define HTTP_REQUEST_H
 
 #include "core/io/http_client.h"
+#include "core/io/stream_peer_gzip.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
@@ -84,10 +85,12 @@ private:
 
 	String download_to_file;
 
+	Ref<StreamPeerGZIP> decompressor;
 	Ref<FileAccess> file;
 
 	int body_len = -1;
 	SafeNumeric<int> downloaded;
+	SafeNumeric<int> final_body_size;
 	int body_size_limit = -1;
 
 	int redirections = 0;
@@ -113,6 +116,7 @@ private:
 
 	Thread thread;
 
+	void _defer_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data);
 	void _request_done(int p_status, int p_code, const PackedStringArray &p_headers, const PackedByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 

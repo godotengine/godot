@@ -227,8 +227,8 @@ void SubViewportContainer::unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-TypedArray<String> SubViewportContainer::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray SubViewportContainer::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	bool has_viewport = false;
 	for (int i = 0; i < get_child_count(); i++) {

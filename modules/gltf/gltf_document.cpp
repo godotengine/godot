@@ -198,7 +198,7 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 	}
 
 	/* STEP SERIALIZE EXTENSIONS */
-	err = _serialize_extensions(state);
+	err = _serialize_gltf_extensions(state);
 	if (err != OK) {
 		return Error::FAILED;
 	}
@@ -219,9 +219,9 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 	return OK;
 }
 
-Error GLTFDocument::_serialize_extensions(Ref<GLTFState> state) const {
-	Array extensions_used;
-	Array extensions_required;
+Error GLTFDocument::_serialize_gltf_extensions(Ref<GLTFState> state) const {
+	Vector<String> extensions_used = state->extensions_used;
+	Vector<String> extensions_required = state->extensions_required;
 	if (!state->lights.is_empty()) {
 		extensions_used.push_back("KHR_lights_punctual");
 	}
@@ -230,9 +230,11 @@ Error GLTFDocument::_serialize_extensions(Ref<GLTFState> state) const {
 		extensions_required.push_back("KHR_texture_transform");
 	}
 	if (!extensions_used.is_empty()) {
+		extensions_used.sort();
 		state->json["extensionsUsed"] = extensions_used;
 	}
 	if (!extensions_required.is_empty()) {
+		extensions_required.sort();
 		state->json["extensionsRequired"] = extensions_required;
 	}
 	return OK;
@@ -6917,12 +6919,32 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> r_state, uint
 
 Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> state) {
 	ERR_FAIL_NULL_V(state, ERR_PARSE_ERROR);
-	if (state->json.has("extensionsRequired") && state->json["extensionsRequired"].get_type() == Variant::ARRAY) {
-		Array extensions_required = state->json["extensionsRequired"];
-		if (extensions_required.find("KHR_draco_mesh_compression") != -1) {
-			ERR_PRINT("glTF2 extension KHR_draco_mesh_compression is not supported.");
-			return ERR_UNAVAILABLE;
+	if (state->json.has("extensionsUsed")) {
+		Vector<String> ext_array = state->json["extensionsUsed"];
+		state->extensions_used = ext_array;
+	}
+	if (state->json.has("extensionsRequired")) {
+		Vector<String> ext_array = state->json["extensionsRequired"];
+		state->extensions_required = ext_array;
+	}
+	HashSet<String> supported_extensions;
+	supported_extensions.insert("KHR_lights_punctual");
+	supported_extensions.insert("KHR_materials_pbrSpecularGlossiness");
+	supported_extensions.insert("KHR_texture_transform");
+	for (int ext_i = 0; ext_i < document_extensions.size(); ext_i++) {
+		Ref<GLTFDocumentExtension> ext = document_extensions[ext_i];
+		ERR_CONTINUE(ext.is_null());
+		Vector<String> ext_supported_extensions = ext->get_supported_extensions();
+		for (int i = 0; i < ext_supported_extensions.size(); ++i) {
+			supported_extensions.insert(ext_supported_extensions[i]);
 		}
 	}
-	return OK;
+	Error ret = Error::OK;
+	for (int i = 0; i < state->extensions_required.size(); i++) {
+		if (!supported_extensions.has(state->extensions_required[i])) {
+			ERR_PRINT("GLTF: Can't import file '" + state->filename + "', required extension '" + String(state->extensions_required[i]) + "' is not supported. Are you missing a GLTFDocumentExtension plugin?");
+			ret = ERR_UNAVAILABLE;
+		}
+	}
+	return ret;
 }

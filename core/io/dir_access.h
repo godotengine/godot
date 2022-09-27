@@ -136,8 +136,21 @@ public:
 	static Ref<DirAccess> open(const String &p_path, Error *r_error = nullptr);
 	static Ref<DirAccess> _open(const String &p_path);
 
+	static int _get_drive_count();
+	static String get_drive_name(int p_idx);
+
+	static Error make_dir_absolute(const String &p_dir);
+	static Error make_dir_recursive_absolute(const String &p_dir);
+	static bool dir_exists_absolute(const String &p_dir);
+
+	static Error copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags = -1);
+	static Error rename_absolute(const String &p_from, const String &p_to);
+	static Error remove_absolute(const String &p_path);
+
 	PackedStringArray get_files();
+	static PackedStringArray get_files_at(const String &p_path);
 	PackedStringArray get_directories();
+	static PackedStringArray get_directories_at(const String &p_path);
 	PackedStringArray _get_contents(bool p_directories);
 	String _get_next();
 

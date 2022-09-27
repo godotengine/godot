@@ -272,13 +272,15 @@ Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignmen
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
-		if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			buffer->set_horizontal_alignment(p_alignment);
-			buffer->set_width(p_width);
-			buffer->set_flags(p_jst_flags);
-		}
 		cache.insert(hash, buffer);
 	}
+
+	buffer->set_width(p_width);
+	buffer->set_horizontal_alignment(p_alignment);
+	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+		buffer->set_flags(p_jst_flags);
+	}
+
 	return buffer->get_size();
 }
 

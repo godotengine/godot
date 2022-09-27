@@ -92,9 +92,9 @@ private:
 	Container *name_container;
 	Container *path_container;
 	Container *install_path_container;
-	Container *rasterizer_container;
+	Container *renderer_container;
 	HBoxContainer *default_files_container;
-	Ref<ButtonGroup> rasterizer_button_group;
+	Ref<ButtonGroup> renderer_button_group;
 	Label *msg;
 	LineEdit *project_path;
 	LineEdit *project_name;
@@ -473,16 +473,19 @@ private:
 					}
 					PackedStringArray project_features = ProjectSettings::get_required_features();
 					ProjectSettings::CustomMap initial_settings;
+
 					// Be sure to change this code if/when renderers are changed.
-					int renderer_type = rasterizer_button_group->get_pressed_button()->get_meta(SNAME("driver_name"));
-					initial_settings["rendering/vulkan/rendering/back_end"] = renderer_type;
-					if (renderer_type == 0) {
-						project_features.push_back("Vulkan Clustered");
-					} else if (renderer_type == 1) {
-						project_features.push_back("Vulkan Mobile");
+					String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
+					initial_settings["rendering/renderer/rendering_method"] = renderer_type;
+
+					if (renderer_type == "forward_plus") {
+						project_features.push_back("Forward Plus");
+					} else if (renderer_type == "mobile") {
+						project_features.push_back("Mobile");
 					} else {
 						WARN_PRINT("Unknown renderer type. Please report this as a bug on GitHub.");
 					}
+
 					project_features.sort();
 					initial_settings["application/config/features"] = project_features;
 					initial_settings["application/config/name"] = project_name->get_text().strip_edges();
@@ -684,7 +687,7 @@ public:
 			msg->hide();
 			install_path_container->hide();
 			install_status_rect->hide();
-			rasterizer_container->hide();
+			renderer_container->hide();
 			default_files_container->hide();
 			get_ok_button()->set_disabled(false);
 
@@ -735,7 +738,7 @@ public:
 				set_ok_button_text(TTR("Import & Edit"));
 				name_container->hide();
 				install_path_container->hide();
-				rasterizer_container->hide();
+				renderer_container->hide();
 				default_files_container->hide();
 				project_path->grab_focus();
 
@@ -744,7 +747,7 @@ public:
 				set_ok_button_text(TTR("Create & Edit"));
 				name_container->show();
 				install_path_container->hide();
-				rasterizer_container->show();
+				renderer_container->show();
 				default_files_container->show();
 				project_name->call_deferred(SNAME("grab_focus"));
 				project_name->call_deferred(SNAME("select_all"));
@@ -755,7 +758,7 @@ public:
 				project_name->set_text(zip_title);
 				name_container->show();
 				install_path_container->hide();
-				rasterizer_container->hide();
+				renderer_container->hide();
 				default_files_container->hide();
 				project_path->grab_focus();
 			}
@@ -843,23 +846,23 @@ public:
 		msg->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		vb->add_child(msg);
 
-		// rasterizer selection
-		rasterizer_container = memnew(VBoxContainer);
-		vb->add_child(rasterizer_container);
+		// Renderer selection.
+		renderer_container = memnew(VBoxContainer);
+		vb->add_child(renderer_container);
 		l = memnew(Label);
 		l->set_text(TTR("Renderer:"));
-		rasterizer_container->add_child(l);
-		Container *rshb = memnew(HBoxContainer);
-		rasterizer_container->add_child(rshb);
-		rasterizer_button_group.instantiate();
+		renderer_container->add_child(l);
+		HBoxContainer *rshc = memnew(HBoxContainer);
+		renderer_container->add_child(rshc);
+		renderer_button_group.instantiate();
 
 		Container *rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		rshb->add_child(rvb);
+		rshc->add_child(rvb);
 		Button *rs_button = memnew(CheckBox);
-		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan Clustered"));
-		rs_button->set_meta(SNAME("driver_name"), 0); // Vulkan backend "Forward Clustered"
+		rs_button->set_button_group(renderer_button_group);
+		rs_button->set_text(TTR("Forward+"));
+		rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
 		rs_button->set_pressed(true);
 		rvb->add_child(rs_button);
 		l = memnew(Label);
@@ -871,15 +874,15 @@ public:
 		l->set_modulate(Color(1, 1, 1, 0.7));
 		rvb->add_child(l);
 
-		rshb->add_child(memnew(VSeparator));
+		rshc->add_child(memnew(VSeparator));
 
 		rvb = memnew(VBoxContainer);
 		rvb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		rshb->add_child(rvb);
+		rshc->add_child(rvb);
 		rs_button = memnew(CheckBox);
-		rs_button->set_button_group(rasterizer_button_group);
-		rs_button->set_text(TTR("Vulkan Mobile"));
-		rs_button->set_meta(SNAME("driver_name"), 1); // Vulkan backend "Forward Mobile"
+		rs_button->set_button_group(renderer_button_group);
+		rs_button->set_text(TTR("Mobile"));
+		rs_button->set_meta(SNAME("rendering_method"), "mobile");
 		rvb->add_child(rs_button);
 		l = memnew(Label);
 		l->set_text(
@@ -897,7 +900,7 @@ public:
 		l->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		l->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 		l->set_modulate(Color(1, 1, 1, 0.7));
-		rasterizer_container->add_child(l);
+		renderer_container->add_child(l);
 
 		default_files_container = memnew(HBoxContainer);
 		vb->add_child(default_files_container);

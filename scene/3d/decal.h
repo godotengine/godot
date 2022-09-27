@@ -65,7 +65,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	virtual TypedArray<String> get_configuration_warnings() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;

@@ -265,7 +265,7 @@ private:
 	Dictionary _serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_material);
 	Error _serialize_version(Ref<GLTFState> state);
 	Error _serialize_file(Ref<GLTFState> state, const String p_path);
-	Error _serialize_extensions(Ref<GLTFState> state) const;
+	Error _serialize_gltf_extensions(Ref<GLTFState> state) const;
 
 public:
 	// https://www.itu.int/rec/R-REC-BT.601

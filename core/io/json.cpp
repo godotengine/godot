@@ -56,6 +56,8 @@ String JSON::_make_indent(const String &p_indent, int p_size) {
 }
 
 String JSON::_stringify(const Variant &p_var, const String &p_indent, int p_cur_indent, bool p_sort_keys, HashSet<const void *> &p_markers, bool p_full_precision) {
+	ERR_FAIL_COND_V_MSG(p_cur_indent > Variant::MAX_RECURSION_DEPTH, "...", "JSON structure is too deep. Bailing.");
+
 	String colon = ":";
 	String end_statement = "";
 
@@ -357,17 +359,22 @@ Error JSON::_get_token(const char32_t *p_str, int &index, int p_len, Token &r_to
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
+	if (p_depth > Variant::MAX_RECURSION_DEPTH) {
+		r_err_str = "JSON structure is too deep. Bailing.";
+		return ERR_OUT_OF_MEMORY;
+	}
+
 	if (token.type == TK_CURLY_BRACKET_OPEN) {
 		Dictionary d;
-		Error err = _parse_object(d, p_str, index, p_len, line, r_err_str);
+		Error err = _parse_object(d, p_str, index, p_len, line, p_depth + 1, r_err_str);
 		if (err) {
 			return err;
 		}
 		value = d;
 	} else if (token.type == TK_BRACKET_OPEN) {
 		Array a;
-		Error err = _parse_array(a, p_str, index, p_len, line, r_err_str);
+		Error err = _parse_array(a, p_str, index, p_len, line, p_depth + 1, r_err_str);
 		if (err) {
 			return err;
 		}
@@ -396,7 +403,7 @@ Error JSON::_parse_value(Variant &value, Token &token, const char32_t *p_str, in
 	return OK;
 }
 
-Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
 	Token token;
 	bool need_comma = false;
 
@@ -421,7 +428,7 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 		}
 
 		Variant v;
-		err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
+		err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
 		if (err) {
 			return err;
 		}
@@ -434,7 +441,7 @@ Error JSON::_parse_array(Array &array, const char32_t *p_str, int &index, int p_
 	return ERR_PARSE_ERROR;
 }
 
-Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, String &r_err_str) {
+Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index, int p_len, int &line, int p_depth, String &r_err_str) {
 	bool at_key = true;
 	String key;
 	Token token;
@@ -483,7 +490,7 @@ Error JSON::_parse_object(Dictionary &object, const char32_t *p_str, int &index,
 			}
 
 			Variant v;
-			err = _parse_value(v, token, p_str, index, p_len, line, r_err_str);
+			err = _parse_value(v, token, p_str, index, p_len, line, p_depth, r_err_str);
 			if (err) {
 				return err;
 			}
@@ -514,7 +521,7 @@ Error JSON::_parse_string(const String &p_json, Variant &r_ret, String &r_err_st
 		return err;
 	}
 
-	err = _parse_value(r_ret, token, str, idx, len, r_err_line, r_err_str);
+	err = _parse_value(r_ret, token, str, idx, len, r_err_line, 0, r_err_str);
 
 	// Check if EOF is reached
 	// or it's a type of the next token.

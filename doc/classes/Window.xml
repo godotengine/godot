@@ -381,7 +381,8 @@
 			Note that behavior might be different depending on the platform.
 		</member>
 		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows. Currently non-embedded [Window] transparency is implemented only for MacOS.
+			If [code]true[/code], the [Window]'s background can be transparent. This is best used with embedded windows.
+			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.

@@ -120,8 +120,8 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 	agent = RID(); // Pointless
 }
 
-TypedArray<String> NavigationObstacle2D::get_configuration_warnings() const {
-	TypedArray<String> warnings = Node::get_configuration_warnings();
+PackedStringArray NavigationObstacle2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
 
 	if (!Object::cast_to<Node2D>(get_parent())) {
 		warnings.push_back(RTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object."));

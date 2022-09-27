@@ -6,6 +6,14 @@
 	<description>
 		Directory type. It is used to manage directories and their content (not restricted to the project folder).
 		[DirAccess] can't be instantiated directly. Instead it is created with a static method that takes a path for which it will be opened.
+		Most of the methods have a static alternative that can be used without creating a [DirAccess]. Static methods only support absolute paths (including [code]res://[/code] and [code]user://[/code]).
+		[codeblock]
+		# Standard
+		var dir = DirAccess.open("user://levels")
+		dir.make_dir("world1")
+		# Static
+		DirAccess.make_dir_absolute("user://levels/world1")
+		[/codeblock]
 		[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and their source asset will not be included in the exported game, as only the imported version is used. Use [ResourceLoader] to access imported resources.
 		Here is an example on how to iterate through the files of a directory:
 		[codeblocks]
@@ -27,7 +35,7 @@
 		[csharp]
 		public void DirContents(string path)
 		{
-		    var dir = DirAccess.Open(path);
+		    using var dir = DirAccess.Open(path);
 		    if (dir != null)
 		    {
 		        dir.ListDirBegin();
@@ -59,7 +67,7 @@
 	<methods>
 		<method name="change_dir">
 			<return type="int" enum="Error" />
-			<param index="0" name="todir" type="String" />
+			<param index="0" name="to_dir" type="String" />
 			<description>
 				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
@@ -76,6 +84,15 @@
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
+		<method name="copy_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<param index="2" name="chmod_flags" type="int" default="-1" />
+			<description>
+				Static version of [method copy]. Supports only absolute paths.
+			</description>
+		</method>
 		<method name="current_is_dir" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -87,7 +104,13 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns whether the target directory exists. The argument can be relative to the current directory, or an absolute path.
-				If the [DirAccess] is not open, the path is relative to [code]res://[/code].
+			</description>
+		</method>
+		<method name="dir_exists_absolute" qualifiers="static">
+			<return type="bool" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method dir_exists]. Supports only absolute paths.
 			</description>
 		</method>
 		<method name="file_exists">
@@ -95,7 +118,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns whether the target file exists. The argument can be relative to the current directory, or an absolute path.
-				If the [DirAccess] is not open, the path is relative to [code]res://[/code].
+				For a static equivalent, use [method FileAccess.file_exists].
 			</description>
 		</method>
 		<method name="get_current_dir" qualifiers="const">
@@ -108,7 +131,7 @@
 		<method name="get_current_drive">
 			<return type="int" />
 			<description>
-				Returns the currently opened directory's drive index. See [method get_drive] to convert returned index to the name of the drive.
+				Returns the currently opened directory's drive index. See [method get_drive_name] to convert returned index to the name of the drive.
 			</description>
 		</method>
 		<method name="get_directories">
@@ -118,7 +141,24 @@
 				Affected by [member include_hidden] and [member include_navigational].
 			</description>
 		</method>
-		<method name="get_drive">
+		<method name="get_directories_at" qualifiers="static">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding files, at the given [param path]. The array is sorted alphabetically.
+				Use [method get_directories] if you want more control of what gets included.
+			</description>
+		</method>
+		<method name="get_drive_count" qualifiers="static">
+			<return type="int" />
+			<description>
+				On Windows, returns the number of drives (partitions) mounted on the current filesystem.
+				On macOS, returns the number of mounted volumes.
+				On Linux, returns the number of mounted volumes and GTK 3 bookmarks.
+				On other platforms, the method returns 0.
+			</description>
+		</method>
+		<method name="get_drive_name" qualifiers="static">
 			<return type="String" />
 			<param index="0" name="idx" type="int" />
 			<description>
@@ -128,20 +168,19 @@
 				On other platforms, or if the requested drive does not exist, the method returns an empty String.
 			</description>
 		</method>
-		<method name="get_drive_count">
-			<return type="int" />
-			<description>
-				On Windows, returns the number of drives (partitions) mounted on the current filesystem.
-				On macOS, returns the number of mounted volumes.
-				On Linux, returns the number of mounted volumes and GTK 3 bookmarks.
-				On other platforms, the method returns 0.
-			</description>
-		</method>
 		<method name="get_files">
 			<return type="PackedStringArray" />
 			<description>
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories. The array is sorted alphabetically.
 				Affected by [member include_hidden].
+			</description>
+		</method>
+		<method name="get_files_at" qualifiers="static">
+			<return type="PackedStringArray" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories, at the given [param path]. The array is sorted alphabetically.
+				Use [method get_files] if you want more control of what gets included.
 			</description>
 		</method>
 		<method name="get_next">
@@ -185,12 +224,26 @@
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
+		<method name="make_dir_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method make_dir]. Supports only absolute paths.
+			</description>
+		</method>
 		<method name="make_dir_recursive">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<description>
 				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+			</description>
+		</method>
+		<method name="make_dir_recursive_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method make_dir_recursive]. Supports only absolute paths.
 			</description>
 		</method>
 		<method name="open" qualifiers="static">
@@ -210,6 +263,13 @@
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
+		<method name="remove_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Static version of [method remove]. Supports only absolute paths.
+			</description>
+		</method>
 		<method name="rename">
 			<return type="int" enum="Error" />
 			<param index="0" name="from" type="String" />
@@ -217,6 +277,14 @@
 			<description>
 				Renames (move) the [param from] file or directory to the [param to] destination. Both arguments should be paths to files or directories, either relative or absolute. If the destination file or directory exists and is not access-protected, it will be overwritten.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
+			</description>
+		</method>
+		<method name="rename_absolute" qualifiers="static">
+			<return type="int" enum="Error" />
+			<param index="0" name="from" type="String" />
+			<param index="1" name="to" type="String" />
+			<description>
+				Static version of [method rename]. Supports only absolute paths.
 			</description>
 		</method>
 	</methods>

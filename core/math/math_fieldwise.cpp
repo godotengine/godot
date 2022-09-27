@@ -76,6 +76,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 			return target;
 		}
+
 		case Variant::VECTOR3I: {
 			SETUP_TYPE(Vector3i)
 
@@ -85,6 +86,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 			return target;
 		}
+
 		case Variant::VECTOR4: {
 			SETUP_TYPE(Vector4)
 
@@ -95,6 +97,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 			return target;
 		}
+
 		case Variant::VECTOR4I: {
 			SETUP_TYPE(Vector4i)
 
@@ -105,7 +108,6 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 
 			return target;
 		}
-
 
 		case Variant::PLANE: {
 			SETUP_TYPE(Plane)

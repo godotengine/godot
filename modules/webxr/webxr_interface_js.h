@@ -45,6 +45,7 @@ class WebXRInterfaceJS : public WebXRInterface {
 private:
 	bool initialized;
 	Ref<XRPositionalTracker> head_tracker;
+	Transform3D head_transform;
 
 	String session_mode;
 	String required_features;

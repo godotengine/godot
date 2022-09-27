@@ -416,45 +416,50 @@ void EditorSettingsDialog::_update_shortcuts() {
 
 	List<String> slist;
 	EditorSettings::get_singleton()->get_shortcut_list(&slist);
+	slist.sort(); // Sort alphabetically.
 
 	const EditorPropertyNameProcessor::Style name_style = EditorPropertyNameProcessor::get_settings_style();
 	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
 
+	// Create all sections first.
+	for (const String &E : slist) {
+		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
+		String section_name = E.get_slice("/", 0);
+
+		if (sections.has(section_name)) {
+			continue;
+		}
+
+		TreeItem *section = shortcuts->create_item(root);
+
+		const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, name_style);
+		const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style);
+
+		section->set_text(0, item_name);
+		section->set_tooltip_text(0, tooltip);
+		section->set_selectable(0, false);
+		section->set_selectable(1, false);
+		section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+		section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
+
+		if (collapsed.has(item_name)) {
+			section->set_collapsed(collapsed[item_name]);
+		}
+
+		sections[section_name] = section;
+	}
+
+	// Add shortcuts to sections.
 	for (const String &E : slist) {
 		Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(E);
 		if (!sc->has_meta("original")) {
 			continue;
 		}
 
-		// Shortcut Section
-
-		TreeItem *section;
 		String section_name = E.get_slice("/", 0);
-
-		if (sections.has(section_name)) {
-			section = sections[section_name];
-		} else {
-			section = shortcuts->create_item(root);
-
-			const String item_name = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, name_style);
-			const String tooltip = EditorPropertyNameProcessor::get_singleton()->process_name(section_name, tooltip_style);
-
-			section->set_text(0, item_name);
-			section->set_tooltip_text(0, tooltip);
-			section->set_selectable(0, false);
-			section->set_selectable(1, false);
-			section->set_custom_bg_color(0, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-			section->set_custom_bg_color(1, shortcuts->get_theme_color(SNAME("prop_subsection"), SNAME("Editor")));
-
-			if (collapsed.has(item_name)) {
-				section->set_collapsed(collapsed[item_name]);
-			}
-
-			sections[section_name] = section;
-		}
+		TreeItem *section = sections[section_name];
 
 		// Shortcut Item
-
 		if (!shortcut_filter.is_subsequence_ofn(sc->get_name())) {
 			continue;
 		}

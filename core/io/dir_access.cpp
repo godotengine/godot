@@ -261,6 +261,51 @@ Ref<DirAccess> DirAccess::_open(const String &p_path) {
 	return da;
 }
 
+int DirAccess::_get_drive_count() {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return d->get_drive_count();
+}
+
+String DirAccess::get_drive_name(int p_idx) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	return d->get_drive(p_idx);
+}
+
+Error DirAccess::make_dir_absolute(const String &p_dir) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
+	return d->make_dir(p_dir);
+}
+
+Error DirAccess::make_dir_recursive_absolute(const String &p_dir) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
+	return d->make_dir_recursive(p_dir);
+}
+
+bool DirAccess::dir_exists_absolute(const String &p_dir) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_dir);
+	return d->dir_exists(p_dir);
+}
+
+Error DirAccess::copy_absolute(const String &p_from, const String &p_to, int p_chmod_flags) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	// Support copying from res:// to user:// etc.
+	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
+	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
+	return d->copy(from, to, p_chmod_flags);
+}
+
+Error DirAccess::rename_absolute(const String &p_from, const String &p_to) {
+	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String from = ProjectSettings::get_singleton()->globalize_path(p_from);
+	String to = ProjectSettings::get_singleton()->globalize_path(p_to);
+	return d->rename(from, to);
+}
+
+Error DirAccess::remove_absolute(const String &p_path) {
+	Ref<DirAccess> d = DirAccess::create_for_path(p_path);
+	return d->remove(p_path);
+}
+
 Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	Ref<DirAccess> da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da.is_valid()) {
@@ -445,8 +490,18 @@ PackedStringArray DirAccess::get_files() {
 	return _get_contents(false);
 }
 
+PackedStringArray DirAccess::get_files_at(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	return da->get_files();
+}
+
 PackedStringArray DirAccess::get_directories() {
 	return _get_contents(true);
+}
+
+PackedStringArray DirAccess::get_directories_at(const String &p_path) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	return da->get_directories();
 }
 
 PackedStringArray DirAccess::_get_contents(bool p_directories) {
@@ -498,20 +553,28 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
 	ClassDB::bind_method(D_METHOD("get_files"), &DirAccess::get_files);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_files_at", "path"), &DirAccess::get_files_at);
 	ClassDB::bind_method(D_METHOD("get_directories"), &DirAccess::get_directories);
-	ClassDB::bind_method(D_METHOD("get_drive_count"), &DirAccess::get_drive_count);
-	ClassDB::bind_method(D_METHOD("get_drive", "idx"), &DirAccess::get_drive);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_directories_at", "path"), &DirAccess::get_directories_at);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_count"), &DirAccess::_get_drive_count);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("get_drive_name", "idx"), &DirAccess::get_drive_name);
 	ClassDB::bind_method(D_METHOD("get_current_drive"), &DirAccess::get_current_drive);
-	ClassDB::bind_method(D_METHOD("change_dir", "todir"), &DirAccess::change_dir);
+	ClassDB::bind_method(D_METHOD("change_dir", "to_dir"), &DirAccess::change_dir);
 	ClassDB::bind_method(D_METHOD("get_current_dir", "include_drive"), &DirAccess::get_current_dir, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("make_dir", "path"), &DirAccess::make_dir);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_absolute", "path"), &DirAccess::make_dir_absolute);
 	ClassDB::bind_method(D_METHOD("make_dir_recursive", "path"), &DirAccess::make_dir_recursive);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("make_dir_recursive_absolute", "path"), &DirAccess::make_dir_recursive_absolute);
 	ClassDB::bind_method(D_METHOD("file_exists", "path"), &DirAccess::file_exists);
 	ClassDB::bind_method(D_METHOD("dir_exists", "path"), &DirAccess::dir_exists);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("dir_exists_absolute", "path"), &DirAccess::dir_exists_absolute);
 	ClassDB::bind_method(D_METHOD("get_space_left"), &DirAccess::get_space_left);
 	ClassDB::bind_method(D_METHOD("copy", "from", "to", "chmod_flags"), &DirAccess::copy, DEFVAL(-1));
+	ClassDB::bind_static_method("DirAccess", D_METHOD("copy_absolute", "from", "to", "chmod_flags"), &DirAccess::copy_absolute, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("rename", "from", "to"), &DirAccess::rename);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("rename_absolute", "from", "to"), &DirAccess::rename_absolute);
 	ClassDB::bind_method(D_METHOD("remove", "path"), &DirAccess::remove);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("remove_absolute", "path"), &DirAccess::remove_absolute);
 
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
