@@ -2528,7 +2528,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		log->clear();
 	}
 
-	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
+	if ((EditorDebuggerNode::OpenPanelOnPlay)(int)EDITOR_GET("run/output/open_panel_on_play") == EditorDebuggerNode::OpenPanelOnPlay::OUTPUT) {
 		make_bottom_panel_item_visible(log);
 	}
 

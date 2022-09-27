@@ -706,7 +706,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Output
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/output/font_size", 13, "8,48,1")
 	_initial_set("run/output/always_clear_output_on_play", true);
-	_initial_set("run/output/always_open_output_on_play", true);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/output/open_panel_on_play", 1, "None,Output,Debugger")
 	_initial_set("run/output/always_close_output_on_stop", false);
 
 	/* Network */

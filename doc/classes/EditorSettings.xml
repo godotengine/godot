@@ -631,11 +631,11 @@
 		<member name="run/output/always_close_output_on_stop" type="bool" setter="" getter="">
 			If [code]true[/code], the editor will collapse the Output panel when stopping the project.
 		</member>
-		<member name="run/output/always_open_output_on_play" type="bool" setter="" getter="">
-			If [code]true[/code], the editor will expand the Output panel when running the project.
-		</member>
 		<member name="run/output/font_size" type="int" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
+		</member>
+		<member name="run/output/open_panel_on_play" type="int" setter="" getter="">
+			The editor will expand the selected panel when running the project.
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.

@@ -56,6 +56,12 @@ public:
 		OVERRIDE_3D_4 // 3D Viewport 4
 	};
 
+	enum OpenPanelOnPlay {
+		NONE,
+		OUTPUT,
+		DEBUGGER,
+	};
+
 private:
 	enum Options {
 		DEBUG_NEXT,

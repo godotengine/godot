@@ -209,9 +209,9 @@ String EditorDebuggerNode::get_server_uri() const {
 Error EditorDebuggerNode::start(const String &p_uri) {
 	stop();
 	ERR_FAIL_COND_V(p_uri.find("://") < 0, ERR_INVALID_PARAMETER);
-	if (EDITOR_GET("run/output/always_open_output_on_play")) {
+	if ((EditorDebuggerNode::OpenPanelOnPlay)(int)EDITOR_GET("run/output/open_panel_on_play") == EditorDebuggerNode::OpenPanelOnPlay::OUTPUT) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
-	} else {
+	} else if ((EditorDebuggerNode::OpenPanelOnPlay)(int)EDITOR_GET("run/output/open_panel_on_play") == EditorDebuggerNode::OpenPanelOnPlay::DEBUGGER) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 	server = Ref<EditorDebuggerServer>(EditorDebuggerServer::create(p_uri.substr(0, p_uri.find("://") + 3)));
