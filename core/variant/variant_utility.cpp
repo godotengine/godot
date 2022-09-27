@@ -129,7 +129,7 @@ struct VariantUtilityFunctions {
 	}
 
 	static inline int floori(double x) {
-		return int(x);
+		return int(Math::floor(x));
 	}
 
 	static inline Variant ceil(Variant x, Callable::CallError &r_error) {
