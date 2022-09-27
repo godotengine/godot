@@ -42,14 +42,14 @@ protected:
 	int max_queued_messages = 4096;
 
 public:
-	virtual bool is_peer_connected() = 0;
-	virtual bool has_message() = 0;
-	virtual Error put_message(const Array &p_arr) = 0;
-	virtual Array get_message() = 0;
-	virtual void close() = 0;
-	virtual void poll() = 0;
-	virtual int get_max_message_size() const = 0;
-	virtual bool can_block() const { return true; } // If blocking io is allowed on main thread (debug).
+	bool is_peer_connected() = 0;
+	bool has_message() = 0;
+	Error put_message(const Array &p_arr) = 0;
+	Array get_message() = 0;
+	void close() = 0;
+	void poll() = 0;
+	int get_max_message_size() const = 0;
+	bool can_block() const { return true; } // If blocking io is allowed on main thread (debug).
 
 	RemoteDebuggerPeer();
 };
