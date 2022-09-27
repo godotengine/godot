@@ -1485,10 +1485,11 @@ bool AtlasTexture::has_alpha() const {
 }
 
 void AtlasTexture::set_atlas(const Ref<Texture2D> &p_atlas) {
-	ERR_FAIL_COND(p_atlas == this);
 	if (atlas == p_atlas) {
 		return;
 	}
+	ERR_FAIL_COND_MSG(Ref<AtlasTexture>(p_atlas).is_valid(), "Nesting AtlasTexture inside another AtlasTexture is not supported.");
+
 	atlas = p_atlas;
 	emit_changed();
 }
