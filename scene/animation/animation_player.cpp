@@ -156,7 +156,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 	} else if (name == "blend_times") {
 		Vector<BlendKey> keys;
-		for (const KeyValue<BlendKey, float> &E : blend_times) {
+		for (const KeyValue<BlendKey, double> &E : blend_times) {
 			keys.ordered_insert(E.key);
 		}
 
@@ -216,7 +216,7 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
-void AnimationPlayer::advance(float p_time) {
+void AnimationPlayer::advance(double p_time) {
 	_animation_process(p_time);
 }
 
@@ -1287,7 +1287,7 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 
 	// Erase blends if needed
 	List<BlendKey> to_erase;
-	for (const KeyValue<BlendKey, float> &E : blend_times) {
+	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
 		if (bk.from == name || bk.to == name) {
 			to_erase.push_back(bk);
@@ -1303,8 +1303,8 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 void AnimationPlayer::_rename_animation(const StringName &p_from_name, const StringName &p_to_name) {
 	// Rename autoplay or blends if needed.
 	List<BlendKey> to_erase;
-	HashMap<BlendKey, float, BlendKey> to_insert;
-	for (const KeyValue<BlendKey, float> &E : blend_times) {
+	HashMap<BlendKey, double, BlendKey> to_insert;
+	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
 		BlendKey new_bk = bk;
 		bool erase = false;
@@ -1523,7 +1523,7 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 	}
 }
 
-void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, float p_time) {
+void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, double p_time) {
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation1), vformat("Animation not found: %s.", p_animation1));
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation2), vformat("Animation not found: %s.", p_animation2));
 	ERR_FAIL_COND_MSG(p_time < 0, "Blend time cannot be smaller than 0.");
@@ -1538,7 +1538,7 @@ void AnimationPlayer::set_blend_time(const StringName &p_animation1, const Strin
 	}
 }
 
-float AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
+double AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
 	BlendKey bk;
 	bk.from = p_animation1;
 	bk.to = p_animation2;
@@ -1571,11 +1571,11 @@ void AnimationPlayer::clear_queue() {
 	queued.clear();
 }
 
-void AnimationPlayer::play_backwards(const StringName &p_name, float p_custom_blend) {
+void AnimationPlayer::play_backwards(const StringName &p_name, double p_custom_blend) {
 	play(p_name, p_custom_blend, -1, true);
 }
 
-void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float p_custom_scale, bool p_from_end) {
+void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
 	if (String(name) == "") {
@@ -1587,7 +1587,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	Playback &c = playback;
 
 	if (c.current.from) {
-		float blend_time = 0.0;
+		double blend_time = 0.0;
 		// find if it can blend
 		BlendKey bk;
 		bk.from = c.current.from->name;
@@ -1741,7 +1741,7 @@ void AnimationPlayer::seek(double p_time, bool p_update) {
 	}
 }
 
-void AnimationPlayer::seek_delta(double p_time, float p_delta) {
+void AnimationPlayer::seek_delta(double p_time, double p_delta) {
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
@@ -1762,12 +1762,12 @@ bool AnimationPlayer::is_valid() const {
 	return (playback.current.from);
 }
 
-float AnimationPlayer::get_current_animation_position() const {
+double AnimationPlayer::get_current_animation_position() const {
 	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
 	return playback.current.pos;
 }
 
-float AnimationPlayer::get_current_animation_length() const {
+double AnimationPlayer::get_current_animation_length() const {
 	ERR_FAIL_COND_V_MSG(!playback.current.from, 0, "AnimationPlayer has no current animation");
 	return playback.current.from->animation->get_length();
 }
@@ -1933,11 +1933,11 @@ StringName AnimationPlayer::animation_get_next(const StringName &p_animation) co
 	return animation_set[p_animation].next;
 }
 
-void AnimationPlayer::set_default_blend_time(float p_default) {
+void AnimationPlayer::set_default_blend_time(double p_default) {
 	default_blend_time = p_default;
 }
 
-float AnimationPlayer::get_default_blend_time() const {
+double AnimationPlayer::get_default_blend_time() const {
 	return default_blend_time;
 }
 

@@ -357,7 +357,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 	audio_frames_wrote = 0;
 };
 
-float VideoStreamPlaybackTheora::get_time() const {
+double VideoStreamPlaybackTheora::get_time() const {
 	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
 	// systematically return 0. Now that it gives a proper latency, it broke this
 	// code where the delay compensation likely never really worked.
@@ -368,7 +368,7 @@ Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 	return texture;
 }
 
-void VideoStreamPlaybackTheora::update(float p_delta) {
+void VideoStreamPlaybackTheora::update(double p_delta) {
 	if (file.is_null()) {
 		return;
 	}
@@ -529,7 +529,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 			//printf("frame at %f not ready (time %f), ready %i\n", (float)videobuf_time, get_time(), videobuf_ready);
 		}
 
-		float tdiff = videobuf_time - get_time();
+		double tdiff = videobuf_time - get_time();
 		/*If we have lots of extra time, increase the post-processing level.*/
 		if (tdiff > ti.fps_denominator * 0.25 / ti.fps_numerator) {
 			pp_inc = pp_level < pp_level_max ? 1 : 0;
@@ -581,7 +581,7 @@ bool VideoStreamPlaybackTheora::has_loop() const {
 	return false;
 };
 
-float VideoStreamPlaybackTheora::get_length() const {
+double VideoStreamPlaybackTheora::get_length() const {
 	return 0;
 };
 
@@ -593,11 +593,11 @@ int VideoStreamPlaybackTheora::get_loop_count() const {
 	return 0;
 };
 
-float VideoStreamPlaybackTheora::get_playback_position() const {
+double VideoStreamPlaybackTheora::get_playback_position() const {
 	return get_time();
 };
 
-void VideoStreamPlaybackTheora::seek(float p_time) {
+void VideoStreamPlaybackTheora::seek(double p_time) {
 	WARN_PRINT_ONCE("Seeking in Theora videos is not implemented yet (it's only supported for GDExtension-provided video streams).");
 }
 
