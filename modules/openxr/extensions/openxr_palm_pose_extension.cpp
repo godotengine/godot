@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_htc_vive_tracker_extension.cpp                                */
+/*  openxr_palm_pose_extension.cpp                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,36 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "openxr_htc_vive_tracker_extension.h"
+#include "openxr_palm_pose_extension.h"
 #include "core/string/print_string.h"
 
-OpenXRHTCViveTrackerExtension *OpenXRHTCViveTrackerExtension::singleton = nullptr;
+OpenXRPalmPoseExtension *OpenXRPalmPoseExtension::singleton = nullptr;
 
-OpenXRHTCViveTrackerExtension *OpenXRHTCViveTrackerExtension::get_singleton() {
+OpenXRPalmPoseExtension *OpenXRPalmPoseExtension::get_singleton() {
 	return singleton;
 }
 
-OpenXRHTCViveTrackerExtension::OpenXRHTCViveTrackerExtension(OpenXRAPI *p_openxr_api) :
+OpenXRPalmPoseExtension::OpenXRPalmPoseExtension(OpenXRAPI *p_openxr_api) :
 		OpenXRExtensionWrapper(p_openxr_api) {
 	singleton = this;
 
-	request_extensions[XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME] = &available;
+	request_extensions[XR_EXT_PALM_POSE_EXTENSION_NAME] = &available;
 }
 
-OpenXRHTCViveTrackerExtension::~OpenXRHTCViveTrackerExtension() {
+OpenXRPalmPoseExtension::~OpenXRPalmPoseExtension() {
 	singleton = nullptr;
 }
 
-bool OpenXRHTCViveTrackerExtension::is_available() {
+bool OpenXRPalmPoseExtension::is_available() {
 	return available;
 }
 
-bool OpenXRHTCViveTrackerExtension::on_event_polled(const XrEventDataBuffer &event) {
-	switch (event.type) {
-		case XR_TYPE_EVENT_DATA_VIVE_TRACKER_CONNECTED_HTCX: {
-			// Investigate if we need to do more here
-			print_verbose("OpenXR EVENT: VIVE tracker connected");
-
-			return true;
-		} break;
-		default: {
-			return false;
-		} break;
+bool OpenXRPalmPoseExtension::is_path_supported(const String &p_path) {
+	if (p_path == "/user/hand/left/input/palm_ext/pose") {
+		return available;
 	}
-}
 
-bool OpenXRHTCViveTrackerExtension::is_path_supported(const String &p_path) {
-	if (p_path == "/interaction_profiles/htc/vive_tracker_htcx") {
+	if (p_path == "/user/hand/right/input/palm_ext/pose") {
 		return available;
 	}
 

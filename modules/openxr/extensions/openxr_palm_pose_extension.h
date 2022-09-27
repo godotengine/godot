@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_htc_vive_tracker_extension.cpp                                */
+/*  openxr_palm_pose_extension.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "openxr_htc_vive_tracker_extension.h"
-#include "core/string/print_string.h"
+#ifndef OPENXR_PALM_POSE_EXTENSION_H
+#define OPENXR_PALM_POSE_EXTENSION_H
 
-OpenXRHTCViveTrackerExtension *OpenXRHTCViveTrackerExtension::singleton = nullptr;
+#include "openxr_extension_wrapper.h"
 
-OpenXRHTCViveTrackerExtension *OpenXRHTCViveTrackerExtension::get_singleton() {
-	return singleton;
-}
+class OpenXRPalmPoseExtension : public OpenXRExtensionWrapper {
+public:
+	static OpenXRPalmPoseExtension *get_singleton();
 
-OpenXRHTCViveTrackerExtension::OpenXRHTCViveTrackerExtension(OpenXRAPI *p_openxr_api) :
-		OpenXRExtensionWrapper(p_openxr_api) {
-	singleton = this;
+	OpenXRPalmPoseExtension(OpenXRAPI *p_openxr_api);
+	virtual ~OpenXRPalmPoseExtension() override;
 
-	request_extensions[XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME] = &available;
-}
+	bool is_available();
 
-OpenXRHTCViveTrackerExtension::~OpenXRHTCViveTrackerExtension() {
-	singleton = nullptr;
-}
+	virtual bool is_path_supported(const String &p_path) override;
 
-bool OpenXRHTCViveTrackerExtension::is_available() {
-	return available;
-}
+private:
+	static OpenXRPalmPoseExtension *singleton;
 
-bool OpenXRHTCViveTrackerExtension::on_event_polled(const XrEventDataBuffer &event) {
-	switch (event.type) {
-		case XR_TYPE_EVENT_DATA_VIVE_TRACKER_CONNECTED_HTCX: {
-			// Investigate if we need to do more here
-			print_verbose("OpenXR EVENT: VIVE tracker connected");
+	bool available = false;
+};
 
-			return true;
-		} break;
-		default: {
-			return false;
-		} break;
-	}
-}
-
-bool OpenXRHTCViveTrackerExtension::is_path_supported(const String &p_path) {
-	if (p_path == "/interaction_profiles/htc/vive_tracker_htcx") {
-		return available;
-	}
-
-	// Not a path under this extensions control, so we return true;
-	return true;
-}
+#endif // OPENXR_PALM_POSE_EXTENSION_H
