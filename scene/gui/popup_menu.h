@@ -121,6 +121,8 @@ class PopupMenu : public Popup {
 	void _ref_shortcut(Ref<Shortcut> p_sc);
 	void _unref_shortcut(Ref<Shortcut> p_sc);
 
+	void _shortcut_changed();
+
 	bool allow_search = true;
 	uint64_t search_time_msec = 0;
 	String search_string = "";
