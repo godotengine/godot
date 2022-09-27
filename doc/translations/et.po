@@ -1,139 +1,139 @@
-# LANGUAGE translation of the Godot Engine class reference.
+# Estonian translation of the Godot Engine class reference.
 # Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 #
-# EVOKZH <avip.ady@gmail.com>, 2020.
-# f0roots <f0rootss@gmail.com>, 2020.
-# Pierre Stempin <pierre.stempin@gmail.com>, 2020.
-# FlooferLand <yunaflarf@gmail.com>, 2021.
-# N3mEee <n3mebusiness@gmail.com>, 2021.
-# Psynt <nichita@cadvegra.com>, 2022.
+# dogyx <aaronloit@zohomail.eu>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-05-15 09:39+0000\n"
-"Last-Translator: Psynt <nichita@cadvegra.com>\n"
-"Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
-"godot-class-reference/ro/>\n"
-"Language: ro\n"
+"PO-Revision-Date: 2022-09-12 01:18+0000\n"
+"Last-Translator: dogyx <aaronloit@zohomail.eu>\n"
+"Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
+"godot-class-reference/et/>\n"
+"Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
-"20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.13-dev\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
-msgstr "Descriere"
+msgstr "Kirjeldus"
 
 #: doc/tools/make_rst.py
 msgid "Tutorials"
-msgstr "Tutoriale"
+msgstr "Õpetused"
 
 #: doc/tools/make_rst.py
 msgid "Properties"
-msgstr "Proprietăți"
+msgstr "Atribuudid"
 
 #: doc/tools/make_rst.py
 msgid "Methods"
-msgstr "Metode"
+msgstr "Meetodid"
 
 #: doc/tools/make_rst.py
 msgid "Theme Properties"
-msgstr "Proprietățile Temei"
+msgstr "Teema atribuudid"
 
 #: doc/tools/make_rst.py
 msgid "Signals"
-msgstr "Semnale"
+msgstr "Signaalid"
 
 #: doc/tools/make_rst.py
 msgid "Enumerations"
-msgstr "Enumerări"
+msgstr "Loendused"
 
 #: doc/tools/make_rst.py
 msgid "Constants"
-msgstr "Constante"
+msgstr "Konstandid"
 
 #: doc/tools/make_rst.py
 msgid "Property Descriptions"
-msgstr "Descrieri Proprietate"
+msgstr "Atribuutide kirjeldused"
 
 #: doc/tools/make_rst.py
 msgid "Method Descriptions"
-msgstr "Descrierile Metodei"
+msgstr "Meetodite kirjeldused"
 
 #: doc/tools/make_rst.py
 msgid "Theme Property Descriptions"
-msgstr "Descrieri Proprietate Tema"
+msgstr "Teema atribuutide kirjeldused"
 
 #: doc/tools/make_rst.py
 msgid "Inherits:"
-msgstr "Mosteneste:"
+msgstr "Pärandub:"
 
 #: doc/tools/make_rst.py
 msgid "Inherited By:"
-msgstr "Mostenit de:"
+msgstr "Pärandanud:"
 
 #: doc/tools/make_rst.py
 msgid "(overrides %s)"
-msgstr "(suprascrie %s)"
+msgstr "(võtab üle %s)"
 
 #: doc/tools/make_rst.py
 msgid "Default"
-msgstr "Implicit"
+msgstr "Vaikimisi"
 
 #: doc/tools/make_rst.py
 msgid "Setter"
-msgstr "setter"
+msgstr "Setter"
 
 #: doc/tools/make_rst.py
 msgid "value"
-msgstr "valoare"
+msgstr "väärtus"
 
 #: doc/tools/make_rst.py
 msgid "Getter"
-msgstr "getter"
+msgstr "Getter"
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method should typically be overridden by the user to have any effect."
-msgstr "Pentru a avea efectul dorit, metoda trebuie suprascrisa de utilizator."
+msgstr ""
+"Kasutaja peaks selle meetodi tavaliselt üle võtma, et sellel oleks mingit "
+"mõju."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method has no side effects. It doesn't modify any of the instance's "
 "member variables."
-msgstr "Metoda nu are efecte adverse. Nu modifica niciun camp al obiectului."
+msgstr ""
+"Sellel meetodil ei ole kõrvalmõjusid. See ei muuda ühtegi eksemplari "
+"liikmemuutujat."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method accepts any number of arguments after the ones described here."
-msgstr "Metoda accepta oricate argumente in urma celor definite aici."
+msgstr ""
+"See meetod võtab vastu mis tahes arvu argumente pärast siin kirjeldatud "
+"argumente."
 
 #: doc/tools/make_rst.py
 msgid "This method is used to construct a type."
-msgstr "Metoda folosita la construirea unui tip."
+msgstr "Seda meetodit kasutatakse tüübi konstrueerimiseks."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method doesn't need an instance to be called, so it can be called "
 "directly using the class name."
 msgstr ""
-"Nu e nevoie de o instanta. Metoda asta poate fi apelata direct folosind "
-"numele clasei."
+"Selle meetodi kutsumiseks pole vaja eksemplari, nii et seda saab kutsuda "
+"otse kasutades klassi nime."
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method describes a valid operator to use with this type as left-hand "
 "operand."
-msgstr "Operator cu tipul descris la stanga."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Built-in GDScript functions."
-msgstr "Funcții incorporate GDScript."
+msgstr ""
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -141,9 +141,6 @@ msgid ""
 "utilities. Everything else is provided by objects. (Keywords: builtin, built "
 "in, global functions.)"
 msgstr ""
-"Lista funcţiilor de bază GDScript încorporate. Funcții matematice și alte "
-"utilități. Orice altceva este oferit de obiecte. (Cuvinte cheie: "
-"încorporate, integrate, funcţii globale.)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -158,16 +155,6 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"Returnează o culoare construită din canalele cu valori întregi roșu, verde, "
-"albastru, și alpha. Fiecare canal ar trebui să aibă 8 biți de informație de "
-"la 0 la 255.\n"
-"[code] r8 [/code] canalul roșu\n"
-"[code] g8 [/code] canalul verde\n"
-"[code] b8 [/code] canalul albastru\n"
-"[code] a8 [/code] canalul alpha\n"
-"[codeblock]\n"
-"roșu = Color8(255, 0 0)\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -187,11 +174,6 @@ msgid ""
 "a = abs(-1) # a is 1\n"
 "[/codeblock]"
 msgstr ""
-"Întoarce valoarea absolută parametrului [code]s[/code] (adică valoarea "
-"pozitivă).\n"
-"[codeblock]\n"
-"a = abs(-1) # a este 1\n"
-"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -283,8 +265,6 @@ msgid ""
 "axis) to the polar coordinate system (a distance from the origin and an "
 "angle)."
 msgstr ""
-"Schimbă un punct 2D din sistemul de coordonate cartezian (axa X si Z) la "
-"sistemul de coordonate polar (o distanță de la origine și un unghi)."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1455,7 +1435,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [AudioServer] singleton."
-msgstr "Singletonul [AudioServer]."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [CameraServer] singleton."
@@ -1506,19 +1486,16 @@ msgid "The [Marshalls] singleton."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Navigation2DServer] singleton."
-msgstr "Singletonul [AudioServer]."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [NavigationMeshGenerator] singleton."
-msgstr "Singletonul [AudioServer]."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [NavigationServer] singleton."
-msgstr "Singletonul [AudioServer]."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [OS] singleton."
@@ -1549,9 +1526,8 @@ msgid "The [ResourceSaver] singleton."
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid "The [Time] singleton."
-msgstr "Singletonul [AudioServer]."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "The [TranslationServer] singleton."
@@ -1584,19 +1560,19 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Top-left corner."
-msgstr "Colțul din stânga sus."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Top-right corner."
-msgstr "Colțul din dreapta sus."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bottom-right corner."
-msgstr "Colțul din dreapta jos."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Bottom-left corner."
-msgstr "Colțul din stânga jos."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -1640,11 +1616,11 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Escape key."
-msgstr "Tasta de ieșire."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Tab key."
-msgstr "Tasta tab."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Shift+Tab key."
@@ -1652,7 +1628,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Backspace key."
-msgstr "Tasta backspace."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Return key (on the main keyboard)."
@@ -1672,7 +1648,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Pause key."
-msgstr "Tasta de pauza."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Print Screen key."
@@ -1748,67 +1724,67 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F1 key."
-msgstr "Tasta F1."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F2 key."
-msgstr "Tasta F2."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F3 key."
-msgstr "Tasta F3."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F4 key."
-msgstr "Tasta F4."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F5 key."
-msgstr "Tasta F5."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F6 key."
-msgstr "Tasta F6."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F7 key."
-msgstr "Tasta F7."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F8 key."
-msgstr "Tasta F8."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F9 key."
-msgstr "Tasta F9."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F10 key."
-msgstr "Tasta F10."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F11 key."
-msgstr "Tasta F11."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F12 key."
-msgstr "Tasta F12."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F13 key."
-msgstr "Tasta F13."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F14 key."
-msgstr "Tasta F14."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F15 key."
-msgstr "Tasta F15."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F16 key."
-msgstr "Tasta F16."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Multiply (*) key on the numeric keypad."
@@ -2069,107 +2045,107 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "! key."
-msgstr "Tasta ! ."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "\" key."
-msgstr "Tasta \"."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "# key."
-msgstr "Tasta #."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "$ key."
-msgstr "Tasta $."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "% key."
-msgstr "Tasta %."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "& key."
-msgstr "Tasta &."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "' key."
-msgstr "Tasta '"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "( key."
-msgstr "Tasta (."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ") key."
-msgstr "Tasta )"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "* key."
-msgstr "Tasta *"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "+ key."
-msgstr "Tasta +"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ", key."
-msgstr "Tasta ,"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "- key."
-msgstr "Tasta -"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ". key."
-msgstr "Tasta ."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "/ key."
-msgstr "Tasta /"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 0."
-msgstr "Numărul 0."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 1."
-msgstr "Numărul 1."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 2."
-msgstr "Numărul 2."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 3."
-msgstr "Numărul 3."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 4."
-msgstr "Numărul 4."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 5."
-msgstr "Numărul 5."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 6."
-msgstr "Numărul 6."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 7."
-msgstr "Numărul 7."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 8."
-msgstr "Numărul 8."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Number 9."
-msgstr "Numărul 9."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid ": key."
-msgstr "Tasta :"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "; key."
@@ -2197,147 +2173,147 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "A key."
-msgstr "Tasta A."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "B key."
-msgstr "Tasta B."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "C key."
-msgstr "Tasta C."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "D key."
-msgstr "Tasta D."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "E key."
-msgstr "Tasta E."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "F key."
-msgstr "Tasta F."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "G key."
-msgstr "Tasta G."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "H key."
-msgstr "Tasta H."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "I key."
-msgstr "Tasta I."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "J key."
-msgstr "Tasta J."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "K key."
-msgstr "Tasta K."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "L key."
-msgstr "Tasta L."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "M key."
-msgstr "Tasta M."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "N key."
-msgstr "Tasta N."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "O key."
-msgstr "Tasta O."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "P key."
-msgstr "Tasta P."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Q key."
-msgstr "Tasta Q."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "R key."
-msgstr "Tasta R."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "S key."
-msgstr "Tasta S."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "T key."
-msgstr "Tasta T."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "U key."
-msgstr "Tasta U."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "V key."
-msgstr "Tasta V."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "W key."
-msgstr "Tasta W."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "X key."
-msgstr "Tasta X."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Y key."
-msgstr "Tasta Y."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Z key."
-msgstr "Tasta Z."
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "[ key."
-msgstr "Tasta ["
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "\\ key."
-msgstr "Tasta \\"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "] key."
-msgstr "Tasta ]"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "^ key."
-msgstr "Tasta ^"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "_ key."
-msgstr "Tasta _"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "` key."
-msgstr "Tasta `"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "{ key."
-msgstr "Tasta {"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "| key."
-msgstr "Tasta |"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "} key."
-msgstr "Tasta }"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "~ key."
-msgstr "Tasta ~"
+msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "Non-breakable space key."
@@ -23171,11 +23147,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Environment.xml doc/classes/WorldEnvironment.xml
-#, fuzzy
 msgid "Environment and post-processing"
 msgstr ""
-"https://docs.godotengine.org/en/latest/tutorials/3d/"
-"environment_and_post_processing.html"
 
 #: doc/classes/Environment.xml
 msgid "Light transport in game engines"
@@ -37077,9 +37050,8 @@ msgid ""
 msgstr ""
 
 #: doc/classes/NavigationPolygonInstance.xml
-#, fuzzy
 msgid "The [NavigationPolygon] resource to use."
-msgstr "Singletonul [AudioServer]."
+msgstr ""
 
 #: doc/classes/NavigationServer.xml
 msgid "Server interface for low-level 3D navigation access."
@@ -41466,79 +41438,79 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Sunday."
-msgstr "Duminică."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Monday."
-msgstr "Luni."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Tuesday."
-msgstr "Marți."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Wednesday."
-msgstr "Miercuri."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Thursday."
-msgstr "Joi."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Friday."
-msgstr "Vineri."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Saturday."
-msgstr "Sâmbătă."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "January."
-msgstr "Ianuarie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "February."
-msgstr "Februarie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "March."
-msgstr "Martie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "April."
-msgstr "Aprilie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "May."
-msgstr "Mai."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "June."
-msgstr "Iunie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "July."
-msgstr "Iulie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "August."
-msgstr "August."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "September."
-msgstr "Septembrie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "October."
-msgstr "Octombrie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "November."
-msgstr "Noiembrie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid "December."
-msgstr "Decembrie."
+msgstr ""
 
 #: doc/classes/OS.xml
 msgid ""
@@ -50508,7 +50480,7 @@ msgstr ""
 
 #: doc/classes/Quat.xml
 msgid "Quaternion."
-msgstr "Cuaternion."
+msgstr ""
 
 #: doc/classes/Quat.xml
 msgid ""
@@ -65547,7 +65519,7 @@ msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "OK."
-msgstr "OK."
+msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "Empty HTTP response."
@@ -65563,7 +65535,7 @@ msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "Disconnected."
-msgstr "Deconectat."
+msgstr ""
 
 #: modules/upnp/doc_classes/UPNPDevice.xml
 msgid "Unknown device."
