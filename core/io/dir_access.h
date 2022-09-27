@@ -52,8 +52,10 @@ public:
 private:
 	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
+	static Ref<DirAccess> _open(const String &p_path);
 
 	Error _copy_dir(Ref<DirAccess> &p_target_da, String p_to, int p_chmod_flags, bool p_copy_links);
+	PackedStringArray _get_contents(bool p_directories);
 
 	thread_local static Error last_dir_open_error;
 	bool include_navigational = false;
@@ -134,7 +136,6 @@ public:
 	}
 
 	static Ref<DirAccess> open(const String &p_path, Error *r_error = nullptr);
-	static Ref<DirAccess> _open(const String &p_path);
 
 	static int _get_drive_count();
 	static String get_drive_name(int p_idx);
@@ -151,7 +152,6 @@ public:
 	static PackedStringArray get_files_at(const String &p_path);
 	PackedStringArray get_directories();
 	static PackedStringArray get_directories_at(const String &p_path);
-	PackedStringArray _get_contents(bool p_directories);
 	String _get_next();
 
 	void set_include_navigational(bool p_enable);
