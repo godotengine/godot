@@ -28,13 +28,14 @@
 # Zé Beato Página Oficial <zebeato@gmail.com>, 2022.
 # Rafael Testa <rafael1testa@gmail.com>, 2022.
 # Baiterson <baiter160@gmail.com>, 2022.
+# Tuily <brizolla.tuily@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-25 13:04+0000\n"
-"Last-Translator: Baiterson <baiter160@gmail.com>\n"
+"PO-Revision-Date: 2022-09-19 05:22+0000\n"
+"Last-Translator: Tuily <brizolla.tuily@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -42,7 +43,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -5662,9 +5663,8 @@ msgid "Pick Distance"
 msgstr "Escolher Distância"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Size"
-msgstr "Pré-visualização"
+msgstr "Tamanho de Pré-visualização"
 
 #: editor/editor_settings.cpp
 msgid "Primary Grid Color"

@@ -37,13 +37,14 @@
 # marktwtn <marktwtn@gmail.com>, 2022.
 # Shi-Xun Hong <jimmy3421@gmail.com>, 2022.
 # Hugel <qihu@nfschina.com>, 2022.
+# nitenook <admin@alterbaum.net>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-07 06:16+0000\n"
-"Last-Translator: Chia-Hsiang Cheng <cche0109@student.monash.edu>\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -51,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -10679,6 +10680,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "自骨骼建立靜止姿勢"
 
 #: editor/plugins/skeleton_2d_editor_plugin.cpp
+#, fuzzy
 msgid "Skeleton2D"
 msgstr "Sekeleton2D"
 

@@ -91,8 +91,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-30 03:11+0000\n"
-"Last-Translator: Felix Bitsch <felix.a.bitsch@gmail.com>\n"
+"PO-Revision-Date: 2022-09-11 22:22+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -15364,20 +15364,18 @@ msgid "Make Local"
 msgstr "Lokal machen"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "Szenen-eindeutigen Namen aktivieren"
+msgstr "Szenen-eindeutige(n) Namen aktivieren"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
 msgstr ""
-"Ein anderes Node nutzt schon diesen einzigartigen Namen in dieser Szene."
+"Einzigartige Namen, die bereits von anderen Nodes dieser Szene verwendet "
+"werden:"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "Szenen-eindeutigen Namen deaktivieren"
+msgstr "Szenen-eindeutige(n) Namen deaktivieren"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -17444,19 +17442,16 @@ msgid "Auto Update Project"
 msgstr "Projekt automatisch aktualisieren"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Assembly Name"
-msgstr "Anzeigename"
+msgstr "Assembly-Name"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Solution Directory"
-msgstr "Wähle ein Verzeichnis"
+msgstr "Solution-Verzeichnis"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "C# Project Directory"
-msgstr "Wähle ein Verzeichnis"
+msgstr "C#-Projektverzeichnis"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -19224,9 +19219,8 @@ msgid "Custom BG Color"
 msgstr "Eigene Hintergrundfarbe"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Icons"
-msgstr "Export-Icon"
+msgstr "Export-Icons"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
@@ -20062,6 +20056,9 @@ msgid ""
 "Godot's Mono version does not support the UWP platform. Use the standard "
 "build (no C# support) if you wish to target UWP."
 msgstr ""
+"Die von Godot genutzte Mono-Version unterstützt die UWP-Plattform nicht. "
+"Falls UWP-Unterstützung erforderlich ist, muss Standard-Godot (ohne C#-"
+"Unterstützung) verwendet werden."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."

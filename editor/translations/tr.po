@@ -84,13 +84,14 @@
 # Volkan Gezer <volkangezer@gmail.com>, 2022.
 # bsr <bsndrn16@gmail.com>, 2022.
 # Ramazan SANCAR <ramazansancar4545@gmail.com>, 2022.
+# Burak Orcun OZKABLAN <borcunozkablan@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-30 03:11+0000\n"
-"Last-Translator: Ramazan SANCAR <ramazansancar4545@gmail.com>\n"
+"PO-Revision-Date: 2022-09-11 22:22+0000\n"
+"Last-Translator: Burak Orcun OZKABLAN <borcunozkablan@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -263,9 +264,8 @@ msgid "Limits"
 msgstr "Limitler"
 
 #: core/command_queue_mt.cpp
-#, fuzzy
 msgid "Command Queue"
-msgstr "Komut Sırası"
+msgstr "Komut Kuyruğu"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
@@ -1153,9 +1153,8 @@ msgid "Anim Duplicate Keys"
 msgstr "Animasyon Anahtarları Çoğalt"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Delete Keys"
-msgstr "Animasyon Anahtarları Sil"
+msgstr "Animasyon Silme Tuşları"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy

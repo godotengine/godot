@@ -65,7 +65,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-30 03:11+0000\n"
+"PO-Revision-Date: 2022-09-23 04:16+0000\n"
 "Last-Translator: Nnn <irri2020@outlook.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -74,7 +74,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -249,9 +249,8 @@ msgstr ""
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Functies"
+msgstr "Functie"
 
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
@@ -263,14 +262,12 @@ msgstr ""
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Network"
-msgstr "Netwerk Profiler"
+msgstr "Netwerk"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Remote "
+msgstr "Remote"
 
 #: core/io/file_access_network.cpp
 msgid "Page Size"
@@ -293,14 +290,12 @@ msgid "Read Chunk Size"
 msgstr ""
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "Objecten Getekend"
+msgstr "Object ID"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "\"Onion Skinning\" Inschakelen"
+msgstr "Object Decoding Toestaan"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
@@ -317,9 +312,8 @@ msgid "Root Node"
 msgstr "Wortelknoopnaam"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Verbinden"
+msgstr "Nieuwe Verbindingen Weigeren"
 
 #: core/io/networked_multiplayer_peer.cpp
 #, fuzzy
@@ -411,7 +405,6 @@ msgid "Seed"
 msgstr ""
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
 msgstr "Status"
 
@@ -424,9 +417,8 @@ msgid "Max Size (KB)"
 msgstr ""
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Verplaatsingsmodus"
+msgstr "Muismodus"
 
 #: core/os/input.cpp
 #, fuzzy
@@ -457,21 +449,18 @@ msgid "Meta"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Command"
-msgstr "Gemeenschap"
+msgstr "Commando"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr "Physics Frame %"
+msgstr "Fysiek"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "Voorinstellingen"
+msgstr "Gedrukt"
 
 #: core/os/input_event.cpp
 msgid "Scancode"
@@ -490,24 +479,20 @@ msgid "Echo"
 msgstr ""
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
-#, fuzzy
 msgid "Button Mask"
-msgstr "Button (Knop)"
+msgstr "Knop Masker"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Constante"
+msgstr "Globale Positie"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Factor"
-msgstr "Vector"
+msgstr "Factor"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Muis Knop Index:"
+msgstr "Knop Index"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
@@ -518,26 +503,23 @@ msgid "Tilt"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Voorinstellingen"
+msgstr "Druk"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Relative"
-msgstr "Relatief kleven"
+msgstr "Relatief"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Snelheid:"
+msgstr "Snelheid"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
@@ -545,14 +527,12 @@ msgid "Axis"
 msgstr "As"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "Waarde vastzetten"
+msgstr "As Waarde"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Index:"
+msgstr "Index"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -570,14 +550,12 @@ msgid "Delta"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Wijzig"
+msgstr "Kanaal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Commit veranderingen"
+msgstr "Bericht"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -587,18 +565,16 @@ msgstr "Pitch"
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Velocity"
-msgstr "Initialiseren"
+msgstr "Versnelling"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
 msgstr ""
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Controller Number"
-msgstr "Regelnummer:"
+msgstr "Controller Nummer"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
@@ -607,14 +583,12 @@ msgstr ""
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Actie"
+msgstr "Applicatie"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Kleven instellen"
+msgstr "Configuratie"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -653,14 +627,12 @@ msgid "Main Scene"
 msgstr "Startscène"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stdout"
-msgstr "Autotile uitschakelen"
+msgstr "Stdout Uitschakelen"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stderr"
-msgstr "Item Uitschakelen"
+msgstr "Stderr Uitschakelen"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
@@ -677,9 +649,8 @@ msgstr ""
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "Alles tonen"
+msgstr "Tonen"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
@@ -693,23 +664,20 @@ msgstr ""
 #: scene/resources/capsule_shape_2d.cpp scene/resources/cylinder_shape.cpp
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
-#, fuzzy
 msgid "Height"
-msgstr "Licht"
+msgstr "Hoogte"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Linkerbreedte"
+msgstr "Test Breedte"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Testen"
+msgstr "Test Hoogte"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -752,58 +720,49 @@ msgid "Version Control Autoload On Startup"
 msgstr "Versiebeheersysteem"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Versiebeheer"
+msgstr "Versiebeheer Controle Plugin Naam"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Voeg invoer toe"
+msgstr "Invoer"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Selecteer"
+msgstr "UI Selecteer"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "Annuleer"
+msgstr "UI Annuleer"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "Focus Pad"
+msgstr "UI Focus Volgende"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "Focus Pad"
+msgstr "UI Focus Vorige"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "Linksboven"
+msgstr "UI Links"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "Rechtsboves"
+msgstr "UI Rechts"
 
 #: core/project_settings.cpp
 msgid "UI Up"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Omlaag"
+msgstr "UI Omlaag"
 
 #: core/project_settings.cpp
 #, fuzzy
