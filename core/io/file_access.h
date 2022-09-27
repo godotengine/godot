@@ -53,6 +53,20 @@ public:
 		ACCESS_MAX
 	};
 
+	enum ModeFlags {
+		READ = 1,
+		WRITE = 2,
+		READ_WRITE = 3,
+		WRITE_READ = 7,
+	};
+
+	enum CompressionMode {
+		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
+		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
+		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
+		COMPRESSION_GZIP = Compression::MODE_GZIP
+	};
+
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef Ref<FileAccess> (*CreateFunc)();
@@ -69,6 +83,7 @@ protected:
 	String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
+	virtual void _set_access_type(AccessType p_access);
 
 	static FileCloseFailNotify close_fail_notify;
 
@@ -83,24 +98,10 @@ private:
 		return memnew(T);
 	}
 
+	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags);
+
 public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
-
-	virtual void _set_access_type(AccessType p_access);
-
-	enum ModeFlags {
-		READ = 1,
-		WRITE = 2,
-		READ_WRITE = 3,
-		WRITE_READ = 7,
-	};
-
-	enum CompressionMode {
-		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
-		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
-		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
-		COMPRESSION_GZIP = Compression::MODE_GZIP
-	};
 
 	virtual bool is_open() const = 0; ///< true when file is open
 
@@ -173,7 +174,6 @@ public:
 	static Ref<FileAccess> create_for_path(const String &p_path);
 	static Ref<FileAccess> open(const String &p_path, int p_mode_flags, Error *r_error = nullptr); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 
-	static Ref<FileAccess> _open(const String &p_path, ModeFlags p_mode_flags);
 	static Ref<FileAccess> open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
 	static Ref<FileAccess> open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass);
 	static Ref<FileAccess> open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode = COMPRESSION_FASTLZ);
