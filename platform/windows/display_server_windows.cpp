@@ -2554,24 +2554,27 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if ((tablet_get_current_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				PACKET packet;
 				if (wintab_WTPacket(windows[window_id].wtctx, wParam, &packet)) {
-					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
-					windows[window_id].last_pressure = pressure;
-					windows[window_id].last_pressure_update = 0;
-
-					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
-					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
-
-					if (windows[window_id].tilt_supported) {
-						windows[window_id].last_tilt = Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt));
-					} else {
-						windows[window_id].last_tilt = Vector2();
-					}
-
-					windows[window_id].last_pen_inverted = packet.pkStatus & TPS_INVERT;
-
 					POINT coords;
 					GetCursorPos(&coords);
 					ScreenToClient(windows[window_id].hWnd, &coords);
+
+					windows[window_id].last_pressure_update = 0;
+
+					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
+					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
+					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+					bool inverted = packet.pkStatus & TPS_INVERT;
+
+					Vector2 tilt = (windows[window_id].tilt_supported) ? Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt)) : Vector2();
+
+					// Nothing changed, ignore event.
+					if (!old_invalid && coords.x == old_x && coords.y == old_y && windows[window_id].last_pressure == pressure && windows[window_id].last_tilt == tilt && windows[window_id].last_pen_inverted == inverted) {
+						break;
+					}
+
+					windows[window_id].last_pressure = pressure;
+					windows[window_id].last_tilt = tilt;
+					windows[window_id].last_pen_inverted = inverted;
 
 					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
 					if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
