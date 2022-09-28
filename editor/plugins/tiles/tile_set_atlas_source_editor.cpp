@@ -30,6 +30,10 @@
 
 #include "tile_set_atlas_source_editor.h"
 
+#include "core/os/memory.h"
+#include "scene/gui/center_container.h"
+#include "scene/gui/container.h"
+#include "scene/gui/scroll_container.h"
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_inspector.h"
@@ -530,7 +534,9 @@ void TileSetAtlasSourceEditor::_update_tile_id_label() {
 		tool_tile_id_label->set_tooltip_text(vformat(TTR("Selected tile:\nSource: %d\nAtlas coordinates: %s\nAlternative: %d"), tile_set_atlas_source_id, selected.tile, selected.alternative));
 		tool_tile_id_label->show();
 	} else {
-		tool_tile_id_label->hide();
+		tool_tile_id_label->set_text(" "); // Avoid shrinking by setting to a whitespace character instead of hiding.
+		tool_tile_id_label->set_tooltip_text("");
+		tool_tile_id_label->show();
 	}
 }
 
@@ -783,6 +789,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editor_dropdown_button->set_text(TTR("Select a property editor"));
 	}
 	tile_data_editors_label->set_visible(is_visible);
+	tile_data_painting_editor_container->set_visible(is_visible);
 }
 
 void TileSetAtlasSourceEditor::_update_current_tile_data_editor() {
@@ -2340,36 +2347,40 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	add_child(split_container_right_side);
 
 	// Middle panel.
-	ScrollContainer *middle_panel = memnew(ScrollContainer);
-	middle_panel->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	VBoxContainer *middle_panel = memnew(VBoxContainer);
 	middle_panel->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	split_container_right_side->add_child(middle_panel);
 
-	VBoxContainer *middle_vbox_container = memnew(VBoxContainer);
-	middle_vbox_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	middle_panel->add_child(middle_vbox_container);
+	HBoxContainer *middle_panel_header = memnew(HBoxContainer);
+	middle_panel_header->set_h_size_flags(SIZE_EXPAND_FILL);
+	middle_panel->add_child(middle_panel_header);
+
+	VBoxContainer *middle_panel_container = memnew(VBoxContainer);
+	middle_panel_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	middle_panel_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	middle_panel->add_child(middle_panel_container);
 
 	// Tile inspector.
 	tile_inspector_label = memnew(Label);
 	tile_inspector_label->set_text(TTR("Tile Properties:"));
 	tile_inspector_label->set_theme_type_variation("HeaderSmall");
-	middle_vbox_container->add_child(tile_inspector_label);
+	middle_panel_header->add_child(tile_inspector_label);
 
 	tile_proxy_object = memnew(AtlasTileProxyObject(this));
 	tile_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_proxy_object_changed));
 
 	tile_inspector = memnew(EditorInspector);
+	tile_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	tile_inspector->set_undo_redo(undo_redo);
-	tile_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
-	middle_vbox_container->add_child(tile_inspector);
+	middle_panel_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
 	tile_inspector_no_tile_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	tile_inspector_no_tile_selected_label->set_text(TTR("No tiles selected."));
-	middle_vbox_container->add_child(tile_inspector_no_tile_selected_label);
+	middle_panel_container->add_child(tile_inspector_no_tile_selected_label);
 
 	// Property values palette.
 	tile_data_editors_popup = memnew(Popup);
@@ -2377,13 +2388,13 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_data_editors_label = memnew(Label);
 	tile_data_editors_label->set_text(TTR("Paint Properties:"));
 	tile_data_editors_label->set_theme_type_variation("HeaderSmall");
-	middle_vbox_container->add_child(tile_data_editors_label);
+	middle_panel_header->add_child(tile_data_editors_label);
 
 	tile_data_editor_dropdown_button = memnew(Button);
 	tile_data_editor_dropdown_button->connect("draw", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_draw));
 	tile_data_editor_dropdown_button->connect("pressed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_data_editor_dropdown_button_pressed));
-	middle_vbox_container->add_child(tile_data_editor_dropdown_button);
 	tile_data_editor_dropdown_button->add_child(tile_data_editors_popup);
+	middle_panel_container->add_child(tile_data_editor_dropdown_button);
 
 	tile_data_editors_tree = memnew(Tree);
 	tile_data_editors_tree->set_hide_root(true);
@@ -2395,22 +2406,22 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 
 	tile_data_painting_editor_container = memnew(VBoxContainer);
 	tile_data_painting_editor_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	middle_vbox_container->add_child(tile_data_painting_editor_container);
+	middle_panel_container->add_child(tile_data_painting_editor_container);
 
 	// Atlas source inspector.
 	atlas_source_inspector_label = memnew(Label);
 	atlas_source_inspector_label->set_text(TTR("Atlas Properties:"));
 	atlas_source_inspector_label->set_theme_type_variation("HeaderSmall");
-	middle_vbox_container->add_child(atlas_source_inspector_label);
+	middle_panel_header->add_child(atlas_source_inspector_label);
 
 	atlas_source_proxy_object = memnew(TileSetAtlasSourceProxyObject());
 	atlas_source_proxy_object->connect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed));
 
 	atlas_source_inspector = memnew(EditorInspector);
+	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_undo_redo(undo_redo);
-	atlas_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
-	middle_vbox_container->add_child(atlas_source_inspector);
+	middle_panel_container->add_child(atlas_source_inspector);
 
 	// Right panel.
 	VBoxContainer *right_panel = memnew(VBoxContainer);

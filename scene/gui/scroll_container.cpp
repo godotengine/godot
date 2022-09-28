@@ -84,6 +84,7 @@ void ScrollContainer::_update_theme_item_cache() {
 	Container::_update_theme_item_cache();
 
 	theme_cache.panel_style = get_theme_stylebox(SNAME("panel"));
+	theme_cache.focus_style = get_theme_stylebox(SNAME("focus"));
 }
 
 void ScrollContainer::_cancel_drag() {
@@ -342,6 +343,12 @@ void ScrollContainer::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
+			if (has_focus()) {
+				RID canvas_item = get_canvas_item();
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(canvas_item, true);
+				draw_style_box(theme_cache.focus_style, Rect2(Point2(), get_size()));
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(canvas_item, false);
+			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {

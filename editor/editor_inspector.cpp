@@ -4089,6 +4089,7 @@ EditorInspector::EditorInspector() {
 	search_box = nullptr;
 	_prop_edited = "property_edited";
 	set_process(false);
+	set_focus_mode(FocusMode::FOCUS_ALL);
 	property_focusable = -1;
 	property_clipboard = Variant();
 

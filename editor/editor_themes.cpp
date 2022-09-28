@@ -643,6 +643,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_widget_focus->set_draw_center(false);
 	style_widget_focus->set_border_width_all(Math::round(2 * MAX(1, EDSCALE)));
 	style_widget_focus->set_border_color(accent_color);
+	// Make the focus outline appear to be flush with the buttons it's focusing, so not draw on top of the content.
+	style_widget_focus->set_expand_margin_size_all(2);
 
 	Ref<StyleBoxFlat> style_widget_pressed = style_widget->duplicate();
 	style_widget_pressed->set_bg_color(dark_color_1.darkened(0.125));
@@ -1375,6 +1377,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * EDSCALE);
 
 	// Containers
+	theme->set_stylebox("focus", "ScrollContainer", style_widget_focus);
 	theme->set_constant("separation", "BoxContainer", default_margin_size * EDSCALE);
 	theme->set_constant("separation", "HBoxContainer", default_margin_size * EDSCALE);
 	theme->set_constant("separation", "VBoxContainer", default_margin_size * EDSCALE);

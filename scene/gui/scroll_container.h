@@ -33,6 +33,7 @@
 
 #include "container.h"
 
+#include "scene/resources/style_box.h"
 #include "scroll_bar.h"
 
 class ScrollContainer : public Container {
@@ -71,6 +72,7 @@ private:
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
+		Ref<StyleBox> focus_style;
 	} theme_cache;
 
 	void _cancel_drag();
