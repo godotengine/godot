@@ -160,7 +160,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 		p_dir = current_dir.path_join(p_dir);
 	}
 
-	p_dir = p_dir.replace("/", "\\");
+	p_dir = p_dir.simplify_path().replace("/", "\\");
 
 	bool success;
 	int err;
