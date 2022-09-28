@@ -220,6 +220,8 @@ public:
 	void set_visible(bool p_visible);
 	bool is_visible() const;
 
+	void update_mouse_cursor_shape();
+
 	void show();
 	void hide();
 
