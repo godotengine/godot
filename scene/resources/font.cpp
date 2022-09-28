@@ -259,7 +259,7 @@ Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignmen
 	hash = hash_djb2_one_64(p_font_size, hash);
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-		hash = hash_djb2_one_64(p_jst_flags.operator uint32_t(), hash);
+		hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
 	}
 	hash = hash_djb2_one_64(p_direction, hash);
 	hash = hash_djb2_one_64(p_orientation, hash);
@@ -288,8 +288,8 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 	uint64_t hash = p_text.hash64();
 	hash = hash_djb2_one_64(p_font_size, hash);
 	hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-	hash = hash_djb2_one_64(p_brk_flags.operator uint32_t(), hash);
-	hash = hash_djb2_one_64(p_jst_flags.operator uint32_t(), hash);
+	hash = hash_djb2_one_64(p_brk_flags.operator int64_t(), hash);
+	hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
 	hash = hash_djb2_one_64(p_direction, hash);
 	hash = hash_djb2_one_64(p_orientation, hash);
 
@@ -318,7 +318,7 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 	hash = hash_djb2_one_64(p_font_size, hash);
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-		hash = hash_djb2_one_64(p_jst_flags.operator uint32_t(), hash);
+		hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
 	}
 	hash = hash_djb2_one_64(p_direction, hash);
 	hash = hash_djb2_one_64(p_orientation, hash);
@@ -354,8 +354,8 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 	uint64_t hash = p_text.hash64();
 	hash = hash_djb2_one_64(p_font_size, hash);
 	hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-	hash = hash_djb2_one_64(p_brk_flags.operator uint32_t(), hash);
-	hash = hash_djb2_one_64(p_jst_flags.operator uint32_t(), hash);
+	hash = hash_djb2_one_64(p_brk_flags.operator int64_t(), hash);
+	hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
 	hash = hash_djb2_one_64(p_direction, hash);
 	hash = hash_djb2_one_64(p_orientation, hash);
 
@@ -391,7 +391,7 @@ void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const Str
 	hash = hash_djb2_one_64(p_font_size, hash);
 	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-		hash = hash_djb2_one_64(p_jst_flags.operator uint32_t(), hash);
+		hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
 	}
 	hash = hash_djb2_one_64(p_direction, hash);
 	hash = hash_djb2_one_64(p_orientation, hash);
@@ -427,8 +427,8 @@ void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos,
 	uint64_t hash = p_text.hash64();
 	hash = hash_djb2_one_64(p_font_size, hash);
 	hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-	hash = hash_djb2_one_64(p_brk_flags.operator uint32_t(), hash);
-	hash = hash_djb2_one_64(p_jst_flags.operator uint32_t(), hash);
+	hash = hash_djb2_one_64(p_brk_flags.operator int64_t(), hash);
+	hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
 	hash = hash_djb2_one_64(p_direction, hash);
 	hash = hash_djb2_one_64(p_orientation, hash);
 
