@@ -172,18 +172,20 @@ void FileDialog::shortcut_input(const Ref<InputEvent> &p_event) {
 
 void FileDialog::set_enable_multiple_selection(bool p_enable) {
 	tree->set_select_mode(p_enable ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
-};
+}
 
 Vector<String> FileDialog::get_selected_files() const {
 	Vector<String> list;
 
 	TreeItem *item = tree->get_root();
-	while ((item = tree->get_next_selected(item))) {
+	item = tree->get_next_selected(item);
+	while (item) {
 		list.push_back(dir_access->get_current_dir().path_join(item->get_text(0)));
-	};
+		item = tree->get_next_selected(item);
+	}
 
 	return list;
-};
+}
 
 void FileDialog::update_dir() {
 	if (root_prefix.is_empty()) {

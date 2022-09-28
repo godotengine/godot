@@ -153,8 +153,11 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 			return -1;
 		}
 
-		ERR_FAIL_COND_V_MSG((err = vorbis_synthesis(&block, packet)), 0, "Error during vorbis synthesis " + itos(err));
-		ERR_FAIL_COND_V_MSG((err = vorbis_synthesis_blockin(&dsp_state, &block)), 0, "Error during vorbis block processing " + itos(err));
+		err = vorbis_synthesis(&block, packet);
+		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
+
+		err = vorbis_synthesis_blockin(&dsp_state, &block);
+		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
 	}
@@ -290,11 +293,15 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 			headers_remaining = 3;
 		}
 		if (!headers_remaining) {
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis(&block, packet)), "Error during vorbis synthesis " + itos(err));
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_blockin(&dsp_state, &block)), "Error during vorbis block processing " + itos(err));
+			err = vorbis_synthesis(&block, packet);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
+
+			err = vorbis_synthesis_blockin(&dsp_state, &block);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
 
 			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_read(&dsp_state, samples_out)), "Error during vorbis read updating " + itos(err));
+			err = vorbis_synthesis_read(&dsp_state, samples_out);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err));
 
 			samples_in_page += samples_out;
 
@@ -341,12 +348,16 @@ void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 			headers_remaining = 3;
 		}
 		if (!headers_remaining) {
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis(&block, packet)), "Error during vorbis synthesis " + itos(err));
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_blockin(&dsp_state, &block)), "Error during vorbis block processing " + itos(err));
+			err = vorbis_synthesis(&block, packet);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
+
+			err = vorbis_synthesis_blockin(&dsp_state, &block);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
 
 			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
 			int read_samples = samples_to_burn > samples_out ? samples_out : samples_to_burn;
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_read(&dsp_state, samples_out)), "Error during vorbis read updating " + itos(err));
+			err = vorbis_synthesis_read(&dsp_state, samples_out);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err));
 			samples_to_burn -= read_samples;
 
 			if (samples_to_burn <= 0) {
