@@ -93,6 +93,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix wrong method called when setting NavigationRegion `travel_cost` ([GH-64068](https://github.com/godotengine/godot/pull/64068)).
 - Fix NavigationObstacle nodes not registering to default navigation map ([GH-64372](https://github.com/godotengine/godot/pull/64372)).
 - Exclude disabled StaticBody collisions from NavigationMesh baking ([GH-65775](https://github.com/godotengine/godot/pull/65775)).
+- Fix TileMaps placing baked NavigationPolygons with wrong offset without a Navigation2D node ([GH-66262](https://github.com/godotengine/godot/pull/66262)).
 
 #### Networking
 
