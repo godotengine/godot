@@ -129,8 +129,8 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 
 	bool collided = false;
 	Vector2 res_point, res_normal;
-	int res_shape;
-	const GodotCollisionObject2D *res_obj;
+	int res_shape = -1;
+	const GodotCollisionObject2D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
 	for (int i = 0; i < amount; i++) {
@@ -190,6 +190,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 	if (!collided) {
 		return false;
 	}
+	ERR_FAIL_NULL_V(res_obj, false); // Shouldn't happen but silences warning.
 
 	r_result.collider_id = res_obj->get_instance_id();
 	if (r_result.collider_id.is_valid()) {
