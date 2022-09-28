@@ -565,7 +565,7 @@ bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
 #ifndef _MSC_VER
 #warning touchscreen not working
 #endif
-	return false;
+	return DisplayServer::screen_is_touchscreen(p_screen);
 }
 
 void DisplayServerWindows::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
