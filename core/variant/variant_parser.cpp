@@ -1913,6 +1913,22 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, ")");
 
 		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			p_store_string_func(p_store_string_ud, "PackedVector2iArray(");
+			Vector<Vector2i> data = p_variant;
+			int len = data.size();
+			const Vector2i *ptr = data.ptr();
+
+			for (int i = 0; i < len; i++) {
+				if (i > 0) {
+					p_store_string_func(p_store_string_ud, ", ");
+				}
+				p_store_string_func(p_store_string_ud, itos(ptr[i].x) + ", " + itos(ptr[i].y));
+			}
+
+			p_store_string_func(p_store_string_ud, ")");
+
+		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			p_store_string_func(p_store_string_ud, "PackedVector3Array(");
 			Vector<Vector3> data = p_variant;
@@ -1924,6 +1940,22 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					p_store_string_func(p_store_string_ud, ", ");
 				}
 				p_store_string_func(p_store_string_ud, rtos_fix(ptr[i].x) + ", " + rtos_fix(ptr[i].y) + ", " + rtos_fix(ptr[i].z));
+			}
+
+			p_store_string_func(p_store_string_ud, ")");
+
+		} break;
+		case Variant::PACKED_VECTOR3I_ARRAY: {
+			p_store_string_func(p_store_string_ud, "PackedVector3iArray(");
+			Vector<Vector3i> data = p_variant;
+			int len = data.size();
+			const Vector3i *ptr = data.ptr();
+
+			for (int i = 0; i < len; i++) {
+				if (i > 0) {
+					p_store_string_func(p_store_string_ud, ", ");
+				}
+				p_store_string_func(p_store_string_ud, itos(ptr[i].x) + ", " + itos(ptr[i].y) + ", " + itos(ptr[i].z));
 			}
 
 			p_store_string_func(p_store_string_ud, ")");

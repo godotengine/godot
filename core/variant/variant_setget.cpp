@@ -834,7 +834,9 @@ INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedInt64Array, int64_t, int64_t)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedFloat32Array, double, float)
 INDEXED_SETGET_STRUCT_TYPED_NUMERIC(PackedFloat64Array, double, double)
 INDEXED_SETGET_STRUCT_TYPED(PackedVector2Array, Vector2)
+INDEXED_SETGET_STRUCT_TYPED(PackedVector2iArray, Vector2i)
 INDEXED_SETGET_STRUCT_TYPED(PackedVector3Array, Vector3)
+INDEXED_SETGET_STRUCT_TYPED(PackedVector3iArray, Vector3i)
 INDEXED_SETGET_STRUCT_TYPED(PackedStringArray, String)
 INDEXED_SETGET_STRUCT_TYPED(PackedColorArray, Color)
 
@@ -899,7 +901,9 @@ void register_indexed_setters_getters() {
 	REGISTER_INDEXED_MEMBER(PackedFloat32Array);
 	REGISTER_INDEXED_MEMBER(PackedFloat64Array);
 	REGISTER_INDEXED_MEMBER(PackedVector2Array);
+	REGISTER_INDEXED_MEMBER(PackedVector2iArray);
 	REGISTER_INDEXED_MEMBER(PackedVector3Array);
+	REGISTER_INDEXED_MEMBER(PackedVector3iArray);
 	REGISTER_INDEXED_MEMBER(PackedStringArray);
 	REGISTER_INDEXED_MEMBER(PackedColorArray);
 
@@ -1419,8 +1423,24 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			r_iter = 0;
 			return true;
 		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			const Vector<Vector2i> *arr = &PackedArrayRef<Vector2i>::get_array(_data.packed_array);
+			if (arr->size() == 0) {
+				return false;
+			}
+			r_iter = 0;
+			return true;
+		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
+			if (arr->size() == 0) {
+				return false;
+			}
+			r_iter = 0;
+			return true;
+		} break;
+		case PACKED_VECTOR3I_ARRAY: {
+			const Vector<Vector3i> *arr = &PackedArrayRef<Vector3i>::get_array(_data.packed_array);
 			if (arr->size() == 0) {
 				return false;
 			}
@@ -1665,8 +1685,28 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			r_iter = idx;
 			return true;
 		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			const Vector<Vector2i> *arr = &PackedArrayRef<Vector2i>::get_array(_data.packed_array);
+			int idx = r_iter;
+			idx++;
+			if (idx >= arr->size()) {
+				return false;
+			}
+			r_iter = idx;
+			return true;
+		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
+			int idx = r_iter;
+			idx++;
+			if (idx >= arr->size()) {
+				return false;
+			}
+			r_iter = idx;
+			return true;
+		} break;
+		case PACKED_VECTOR3I_ARRAY: {
+			const Vector<Vector3i> *arr = &PackedArrayRef<Vector3i>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
 			if (idx >= arr->size()) {
@@ -1837,8 +1877,30 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
+		case PACKED_VECTOR2I_ARRAY: {
+			const Vector<Vector2i> *arr = &PackedArrayRef<Vector2i>::get_array(_data.packed_array);
+			int idx = r_iter;
+#ifdef DEBUG_ENABLED
+			if (idx < 0 || idx >= arr->size()) {
+				r_valid = false;
+				return Variant();
+			}
+#endif
+			return arr->get(idx);
+		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
+			int idx = r_iter;
+#ifdef DEBUG_ENABLED
+			if (idx < 0 || idx >= arr->size()) {
+				r_valid = false;
+				return Variant();
+			}
+#endif
+			return arr->get(idx);
+		} break;
+		case PACKED_VECTOR3I_ARRAY: {
+			const Vector<Vector3i> *arr = &PackedArrayRef<Vector3i>::get_array(_data.packed_array);
 			int idx = r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx < 0 || idx >= arr->size()) {
@@ -1902,8 +1964,12 @@ Variant Variant::recursive_duplicate(bool p_deep, int recursion_count) const {
 			return operator Vector<String>().duplicate();
 		case PACKED_VECTOR2_ARRAY:
 			return operator Vector<Vector2>().duplicate();
+		case PACKED_VECTOR2I_ARRAY:
+			return operator Vector<Vector2i>().duplicate();
 		case PACKED_VECTOR3_ARRAY:
 			return operator Vector<Vector3>().duplicate();
+		case PACKED_VECTOR3I_ARRAY:
+			return operator Vector<Vector3i>().duplicate();
 		case PACKED_COLOR_ARRAY:
 			return operator Vector<Color>().duplicate();
 		default:

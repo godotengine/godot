@@ -1101,9 +1101,19 @@ void EditorPropertyDictionary::update_property() {
 					editor->setup(Variant::PACKED_VECTOR2_ARRAY);
 					prop = editor;
 				} break;
+				case Variant::PACKED_VECTOR2I_ARRAY: {
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::PACKED_VECTOR2I_ARRAY);
+					prop = editor;
+				} break;
 				case Variant::PACKED_VECTOR3_ARRAY: {
 					EditorPropertyArray *editor = memnew(EditorPropertyArray);
 					editor->setup(Variant::PACKED_VECTOR3_ARRAY);
+					prop = editor;
+				} break;
+				case Variant::PACKED_VECTOR3I_ARRAY: {
+					EditorPropertyArray *editor = memnew(EditorPropertyArray);
+					editor->setup(Variant::PACKED_VECTOR3I_ARRAY);
 					prop = editor;
 				} break;
 				case Variant::PACKED_COLOR_ARRAY: {

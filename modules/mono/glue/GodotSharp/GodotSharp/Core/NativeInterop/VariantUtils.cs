@@ -156,9 +156,21 @@ namespace Godot.NativeInterop
             return ret;
         }
 
+        public static godot_variant CreateFromPackedVector2iArray(in godot_packed_vector2i_array from)
+        {
+            NativeFuncs.godotsharp_variant_new_packed_vector2i_array(out godot_variant ret, from);
+            return ret;
+        }
+
         public static godot_variant CreateFromPackedVector3Array(in godot_packed_vector3_array from)
         {
             NativeFuncs.godotsharp_variant_new_packed_vector3_array(out godot_variant ret, from);
+            return ret;
+        }
+
+        public static godot_variant CreateFromPackedVector3iArray(in godot_packed_vector3i_array from)
+        {
+            NativeFuncs.godotsharp_variant_new_packed_vector3i_array(out godot_variant ret, from);
             return ret;
         }
 
@@ -557,10 +569,22 @@ namespace Godot.NativeInterop
             return Marshaling.ConvertNativePackedVector2ArrayToSystemArray(packedArray);
         }
 
+        public static Vector2i[] ConvertAsPackedVector2iArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector2i_array(p_var);
+            return Marshaling.ConvertNativePackedVector2iArrayToSystemArray(packedArray);
+        }
+
         public static Vector3[] ConvertAsPackedVector3ArrayToSystemArray(in godot_variant p_var)
         {
             using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector3_array(p_var);
             return Marshaling.ConvertNativePackedVector3ArrayToSystemArray(packedArray);
+        }
+
+        public static Vector3i[] ConvertAsPackedVector3iArrayToSystemArray(in godot_variant p_var)
+        {
+            using var packedArray = NativeFuncs.godotsharp_variant_as_packed_vector3i_array(p_var);
+            return Marshaling.ConvertNativePackedVector3iArrayToSystemArray(packedArray);
         }
 
         public static Color[] ConvertAsPackedColorArrayToSystemArray(in godot_variant p_var)

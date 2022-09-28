@@ -371,8 +371,12 @@ static GDNativeVariantFromTypeConstructorFunc gdnative_get_variant_from_type_con
 			return VariantTypeConstructor<PackedStringArray>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR2_ARRAY:
 			return VariantTypeConstructor<PackedVector2Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR2I_ARRAY:
+			return VariantTypeConstructor<PackedVector2iArray>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR3_ARRAY:
 			return VariantTypeConstructor<PackedVector3Array>::variant_from_type;
+		case GDNATIVE_VARIANT_TYPE_PACKED_VECTOR3I_ARRAY:
+			return VariantTypeConstructor<PackedVector3iArray>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_PACKED_COLOR_ARRAY:
 			return VariantTypeConstructor<PackedColorArray>::variant_from_type;
 		case GDNATIVE_VARIANT_TYPE_NIL:
@@ -772,6 +776,18 @@ static GDNativeTypePtr gdnative_packed_vector2_array_operator_index_const(const 
 	return (GDNativeTypePtr)&self->ptr()[p_index];
 }
 
+static GDNativeTypePtr gdnative_packed_vector2i_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedVector2iArray *self = (PackedVector2iArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptrw()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector2i_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedVector2iArray *self = (const PackedVector2iArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptr()[p_index];
+}
+
 static GDNativeTypePtr gdnative_packed_vector3_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
 	PackedVector3Array *self = (PackedVector3Array *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
@@ -780,6 +796,18 @@ static GDNativeTypePtr gdnative_packed_vector3_array_operator_index(GDNativeType
 
 static GDNativeTypePtr gdnative_packed_vector3_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
 	const PackedVector3Array *self = (const PackedVector3Array *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptr()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector3i_array_operator_index(GDNativeTypePtr p_self, GDNativeInt p_index) {
+	PackedVector3iArray *self = (PackedVector3iArray *)p_self;
+	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
+	return (GDNativeTypePtr)&self->ptrw()[p_index];
+}
+
+static GDNativeTypePtr gdnative_packed_vector3i_array_operator_index_const(const GDNativeTypePtr p_self, GDNativeInt p_index) {
+	const PackedVector3iArray *self = (const PackedVector3iArray *)p_self;
 	ERR_FAIL_INDEX_V(p_index, self->size(), nullptr);
 	return (GDNativeTypePtr)&self->ptr()[p_index];
 }
@@ -1023,8 +1051,12 @@ void gdnative_setup_interface(GDNativeInterface *p_interface) {
 
 	gdni.packed_vector2_array_operator_index = gdnative_packed_vector2_array_operator_index;
 	gdni.packed_vector2_array_operator_index_const = gdnative_packed_vector2_array_operator_index_const;
+	gdni.packed_vector2i_array_operator_index = gdnative_packed_vector2i_array_operator_index;
+	gdni.packed_vector2i_array_operator_index_const = gdnative_packed_vector2i_array_operator_index_const;
 	gdni.packed_vector3_array_operator_index = gdnative_packed_vector3_array_operator_index;
 	gdni.packed_vector3_array_operator_index_const = gdnative_packed_vector3_array_operator_index_const;
+	gdni.packed_vector3i_array_operator_index = gdnative_packed_vector3i_array_operator_index;
+	gdni.packed_vector3i_array_operator_index_const = gdnative_packed_vector3i_array_operator_index_const;
 
 	gdni.array_operator_index = gdnative_array_operator_index;
 	gdni.array_operator_index_const = gdnative_array_operator_index_const;

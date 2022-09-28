@@ -72,7 +72,9 @@ typedef Vector<float> PackedFloat32Array;
 typedef Vector<double> PackedFloat64Array;
 typedef Vector<String> PackedStringArray;
 typedef Vector<Vector2> PackedVector2Array;
+typedef Vector<Vector2i> PackedVector2iArray;
 typedef Vector<Vector3> PackedVector3Array;
+typedef Vector<Vector3i> PackedVector3iArray;
 typedef Vector<Color> PackedColorArray;
 
 class Variant {
@@ -123,7 +125,9 @@ public:
 		PACKED_FLOAT64_ARRAY,
 		PACKED_STRING_ARRAY,
 		PACKED_VECTOR2_ARRAY,
+		PACKED_VECTOR2I_ARRAY,
 		PACKED_VECTOR3_ARRAY,
+		PACKED_VECTOR3I_ARRAY,
 		PACKED_COLOR_ARRAY,
 
 		VARIANT_MAX
@@ -294,7 +298,9 @@ private:
 			true, //PACKED_FLOAT64_ARRAY,
 			true, //PACKED_STRING_ARRAY,
 			true, //PACKED_VECTOR2_ARRAY,
+			true, //PACKED_VECTOR2I_ARRAY,
 			true, //PACKED_VECTOR3_ARRAY,
+			true, //PACKED_VECTOR3I_ARRAY,
 			true, //PACKED_COLOR_ARRAY,
 		};
 
@@ -403,6 +409,7 @@ public:
 	operator Vector<double>() const;
 	operator Vector<String>() const;
 	operator Vector<Vector3>() const;
+	operator Vector<Vector3i>() const;
 	operator Vector<Color>() const;
 	operator Vector<Plane>() const;
 	operator Vector<Face3>() const;
@@ -411,6 +418,7 @@ public:
 	operator Vector<StringName>() const;
 	operator Vector<::RID>() const;
 	operator Vector<Vector2>() const;
+	operator Vector<Vector2i>() const;
 
 	// some core type enums to convert to
 	operator Side() const;
@@ -473,6 +481,7 @@ public:
 	Variant(const Vector<double> &p_float64_array);
 	Variant(const Vector<String> &p_string_array);
 	Variant(const Vector<Vector3> &p_vector3_array);
+	Variant(const Vector<Vector3i> &p_vector3i_array);
 	Variant(const Vector<Color> &p_color_array);
 	Variant(const Vector<Face3> &p_face_array);
 
@@ -480,6 +489,7 @@ public:
 	Variant(const Vector<StringName> &p_array);
 	Variant(const Vector<::RID> &p_array); // helper
 	Variant(const Vector<Vector2> &p_array); // helper
+	Variant(const Vector<Vector2i> &p_array); // helper
 
 	Variant(const IPAddress &p_address);
 

@@ -1042,6 +1042,30 @@ namespace Godot.NativeInterop
                 return NativeFuncs.godotsharp_packed_vector2_array_new_mem_copy(src, p_array.Length);
         }
 
+        // PackedVector2iArray
+
+        public static unsafe Vector2i[] ConvertNativePackedVector2iArrayToSystemArray(godot_packed_vector2i_array p_array)
+        {
+            Vector2i* buffer = p_array.Buffer;
+            int size = p_array.Size;
+            if (size == 0)
+                return Array.Empty<Vector2i>();
+            int sizeInBytes = size * sizeof(Vector2i);
+            var array = new Vector2i[size];
+            fixed (Vector2i* dest = array)
+                Buffer.MemoryCopy(buffer, dest, sizeInBytes, sizeInBytes);
+            return array;
+        }
+
+        public static unsafe godot_packed_vector2i_array ConvertSystemArrayToNativePackedVector2iArray(
+            Span<Vector2i> p_array)
+        {
+            if (p_array.IsEmpty)
+                return new godot_packed_vector2i_array();
+            fixed (Vector2i* src = p_array)
+                return NativeFuncs.godotsharp_packed_vector2i_array_new_mem_copy(src, p_array.Length);
+        }
+
         // PackedVector3Array
 
         public static unsafe Vector3[] ConvertNativePackedVector3ArrayToSystemArray(godot_packed_vector3_array p_array)
@@ -1064,6 +1088,30 @@ namespace Godot.NativeInterop
                 return new godot_packed_vector3_array();
             fixed (Vector3* src = p_array)
                 return NativeFuncs.godotsharp_packed_vector3_array_new_mem_copy(src, p_array.Length);
+        }
+
+        // PackedVector3iArray
+
+        public static unsafe Vector3i[] ConvertNativePackedVector3iArrayToSystemArray(godot_packed_vector3i_array p_array)
+        {
+            Vector3i* buffer = p_array.Buffer;
+            int size = p_array.Size;
+            if (size == 0)
+                return Array.Empty<Vector3i>();
+            int sizeInBytes = size * sizeof(Vector3i);
+            var array = new Vector3i[size];
+            fixed (Vector3i* dest = array)
+                Buffer.MemoryCopy(buffer, dest, sizeInBytes, sizeInBytes);
+            return array;
+        }
+
+        public static unsafe godot_packed_vector3i_array ConvertSystemArrayToNativePackedVector3iArray(
+            Span<Vector3i> p_array)
+        {
+            if (p_array.IsEmpty)
+                return new godot_packed_vector3i_array();
+            fixed (Vector3i* src = p_array)
+                return NativeFuncs.godotsharp_packed_vector3i_array_new_mem_copy(src, p_array.Length);
         }
 
         // PackedColorArray

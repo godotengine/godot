@@ -280,6 +280,22 @@ public static class CustomUnsafe
         => ref *ReadOnlyRefAsPointer(in source);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe godot_packed_vector2i_array* AsPointer(ref godot_packed_vector2i_array value)
+        => value.GetUnsafeAddress();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe godot_packed_vector2i_array* ReadOnlyRefAsPointer(in godot_packed_vector2i_array value)
+        => value.GetUnsafeAddress();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ref godot_packed_vector2i_array AsRef(godot_packed_vector2i_array* source)
+        => ref *source;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ref godot_packed_vector2i_array AsRef(in godot_packed_vector2i_array source)
+        => ref *ReadOnlyRefAsPointer(in source);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe godot_packed_vector3_array* AsPointer(ref godot_packed_vector3_array value)
         => value.GetUnsafeAddress();
 
@@ -293,6 +309,22 @@ public static class CustomUnsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref godot_packed_vector3_array AsRef(in godot_packed_vector3_array source)
+        => ref *ReadOnlyRefAsPointer(in source);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe godot_packed_vector3i_array* AsPointer(ref godot_packed_vector3i_array value)
+        => value.GetUnsafeAddress();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe godot_packed_vector3i_array* ReadOnlyRefAsPointer(in godot_packed_vector3i_array value)
+        => value.GetUnsafeAddress();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ref godot_packed_vector3i_array AsRef(godot_packed_vector3i_array* source)
+        => ref *source;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ref godot_packed_vector3i_array AsRef(in godot_packed_vector3i_array source)
         => ref *ReadOnlyRefAsPointer(in source);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

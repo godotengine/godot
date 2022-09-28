@@ -129,8 +129,16 @@ func test():
 	value = PackedVector2Array()
 	print(value != null)
 
+	# PackedVector2iArray
+	value = PackedVector2iArray()
+	print(value != null)
+
 	# PackedVector3Array
 	value = PackedVector3Array()
+	print(value != null)
+
+	# PackedVector3iArray
+	value = PackedVector3iArray()
 	print(value != null)
 
 	# PackedColorArray

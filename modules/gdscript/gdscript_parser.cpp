@@ -85,7 +85,9 @@ Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 		builtin_types["PackedFloat64Array"] = Variant::PACKED_FLOAT64_ARRAY;
 		builtin_types["PackedStringArray"] = Variant::PACKED_STRING_ARRAY;
 		builtin_types["PackedVector2Array"] = Variant::PACKED_VECTOR2_ARRAY;
+		builtin_types["PackedVector2iArray"] = Variant::PACKED_VECTOR2I_ARRAY;
 		builtin_types["PackedVector3Array"] = Variant::PACKED_VECTOR3_ARRAY;
+		builtin_types["PackedVector3iArray"] = Variant::PACKED_VECTOR3I_ARRAY;
 		builtin_types["PackedColorArray"] = Variant::PACKED_COLOR_ARRAY;
 		// NIL is not here, hence the -1.
 		if (builtin_types.size() != Variant::VARIANT_MAX - 1) {
@@ -4033,8 +4035,12 @@ static Variant::Type _variant_type_to_typed_array_element_type(Variant::Type p_t
 			return Variant::STRING;
 		case Variant::PACKED_VECTOR2_ARRAY:
 			return Variant::VECTOR2;
+		case Variant::PACKED_VECTOR2I_ARRAY:
+			return Variant::VECTOR2I;
 		case Variant::PACKED_VECTOR3_ARRAY:
 			return Variant::VECTOR3;
+		case Variant::PACKED_VECTOR3I_ARRAY:
+			return Variant::VECTOR3I;
 		case Variant::PACKED_COLOR_ARRAY:
 			return Variant::COLOR;
 		default:

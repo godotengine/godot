@@ -423,6 +423,16 @@ godot_packed_array godotsharp_packed_vector2_array_new_mem_copy(const Vector2 *p
 	return ret;
 }
 
+godot_packed_array godotsharp_packed_vector2i_array_new_mem_copy(const Vector2i *p_src, int32_t p_length) {
+	godot_packed_array ret;
+	memnew_placement(&ret, PackedVector2iArray);
+	PackedVector2iArray *array = reinterpret_cast<PackedVector2iArray *>(&ret);
+	array->resize(p_length);
+	Vector2i *dst = array->ptrw();
+	memcpy(dst, p_src, p_length * sizeof(Vector2i));
+	return ret;
+}
+
 godot_packed_array godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p_src, int32_t p_length) {
 	godot_packed_array ret;
 	memnew_placement(&ret, PackedVector3Array);
@@ -430,6 +440,16 @@ godot_packed_array godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p
 	array->resize(p_length);
 	Vector3 *dst = array->ptrw();
 	memcpy(dst, p_src, p_length * sizeof(Vector3));
+	return ret;
+}
+
+godot_packed_array godotsharp_packed_vector3i_array_new_mem_copy(const Vector3i *p_src, int32_t p_length) {
+	godot_packed_array ret;
+	memnew_placement(&ret, PackedVector3iArray);
+	PackedVector3iArray *array = reinterpret_cast<PackedVector3iArray *>(&ret);
+	array->resize(p_length);
+	Vector3i *dst = array->ptrw();
+	memcpy(dst, p_src, p_length * sizeof(Vector3i));
 	return ret;
 }
 
@@ -600,7 +620,15 @@ void godotsharp_variant_new_packed_vector2_array(godot_variant *r_dest, const Pa
 	memnew_placement(r_dest, Variant(*p_pv2a));
 }
 
+void godotsharp_variant_new_packed_vector2i_array(godot_variant *r_dest, const PackedVector2iArray *p_pv2a) {
+	memnew_placement(r_dest, Variant(*p_pv2a));
+}
+
 void godotsharp_variant_new_packed_vector3_array(godot_variant *r_dest, const PackedVector3Array *p_pv3a) {
+	memnew_placement(r_dest, Variant(*p_pv3a));
+}
+
+void godotsharp_variant_new_packed_vector3i_array(godot_variant *r_dest, const PackedVector3iArray *p_pv3a) {
 	memnew_placement(r_dest, Variant(*p_pv3a));
 }
 
@@ -837,10 +865,24 @@ godot_packed_array godotsharp_variant_as_packed_vector2_array(const Variant *p_s
 	return raw_dest;
 }
 
+godot_packed_array godotsharp_variant_as_packed_vector2i_array(const Variant *p_self) {
+	godot_packed_array raw_dest;
+	PackedVector2iArray *dest = (PackedVector2iArray *)&raw_dest;
+	memnew_placement(dest, PackedVector2iArray(p_self->operator PackedVector2iArray()));
+	return raw_dest;
+}
+
 godot_packed_array godotsharp_variant_as_packed_vector3_array(const Variant *p_self) {
 	godot_packed_array raw_dest;
 	PackedVector3Array *dest = (PackedVector3Array *)&raw_dest;
 	memnew_placement(dest, PackedVector3Array(p_self->operator PackedVector3Array()));
+	return raw_dest;
+}
+
+godot_packed_array godotsharp_variant_as_packed_vector3i_array(const Variant *p_self) {
+	godot_packed_array raw_dest;
+	PackedVector3iArray *dest = (PackedVector3iArray *)&raw_dest;
+	memnew_placement(dest, PackedVector3iArray(p_self->operator PackedVector3iArray()));
 	return raw_dest;
 }
 
@@ -928,8 +970,16 @@ void godotsharp_packed_vector2_array_destroy(PackedVector2Array *p_self) {
 	p_self->~PackedVector2Array();
 }
 
+void godotsharp_packed_vector2i_array_destroy(PackedVector2iArray *p_self) {
+	p_self->~PackedVector2iArray();
+}
+
 void godotsharp_packed_vector3_array_destroy(PackedVector3Array *p_self) {
 	p_self->~PackedVector3Array();
+}
+
+void godotsharp_packed_vector3i_array_destroy(PackedVector3iArray *p_self) {
+	p_self->~PackedVector3iArray();
 }
 
 void godotsharp_packed_color_array_destroy(PackedColorArray *p_self) {
@@ -1355,7 +1405,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_packed_float32_array_new_mem_copy,
 	(void *)godotsharp_packed_float64_array_new_mem_copy,
 	(void *)godotsharp_packed_vector2_array_new_mem_copy,
+	(void *)godotsharp_packed_vector2i_array_new_mem_copy,
 	(void *)godotsharp_packed_vector3_array_new_mem_copy,
+	(void *)godotsharp_packed_vector3i_array_new_mem_copy,
 	(void *)godotsharp_packed_color_array_new_mem_copy,
 	(void *)godotsharp_packed_string_array_add,
 	(void *)godotsharp_callable_new_with_delegate,
@@ -1382,7 +1434,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_new_packed_float64_array,
 	(void *)godotsharp_variant_new_packed_string_array,
 	(void *)godotsharp_variant_new_packed_vector2_array,
+	(void *)godotsharp_variant_new_packed_vector2i_array,
 	(void *)godotsharp_variant_new_packed_vector3_array,
+	(void *)godotsharp_variant_new_packed_vector3i_array,
 	(void *)godotsharp_variant_new_packed_color_array,
 	(void *)godotsharp_variant_as_bool,
 	(void *)godotsharp_variant_as_int,
@@ -1418,7 +1472,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_as_packed_float64_array,
 	(void *)godotsharp_variant_as_packed_string_array,
 	(void *)godotsharp_variant_as_packed_vector2_array,
+	(void *)godotsharp_variant_as_packed_vector2i_array,
 	(void *)godotsharp_variant_as_packed_vector3_array,
+	(void *)godotsharp_variant_as_packed_vector3i_array,
 	(void *)godotsharp_variant_as_packed_color_array,
 	(void *)godotsharp_variant_equals,
 	(void *)godotsharp_string_new_with_utf16_chars,
@@ -1436,7 +1492,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_packed_float64_array_destroy,
 	(void *)godotsharp_packed_string_array_destroy,
 	(void *)godotsharp_packed_vector2_array_destroy,
+	(void *)godotsharp_packed_vector2i_array_destroy,
 	(void *)godotsharp_packed_vector3_array_destroy,
+	(void *)godotsharp_packed_vector3i_array_destroy,
 	(void *)godotsharp_packed_color_array_destroy,
 	(void *)godotsharp_variant_destroy,
 	(void *)godotsharp_string_destroy,

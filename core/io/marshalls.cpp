@@ -986,6 +986,39 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			r_variant = varray;
 
 		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
+			buf += 4;
+			len -= 4;
+
+			Vector<Vector2i> varray;
+
+			if (r_len) {
+				(*r_len) += 4; // Size of count number.
+			}
+
+			if (count) {
+				varray.resize(count);
+				ERR_FAIL_COND_V(len < 4 * 2, ERR_INVALID_DATA);
+				Vector2i *w = varray.ptrw();
+
+				for (int32_t i = 0; i < count; i++) {
+					w[i].x = decode_uint32(buf + i * sizeof(uint32_t) * 2 + sizeof(uint32_t) * 0);
+					w[i].y = decode_uint32(buf + i * sizeof(uint32_t) * 2 + sizeof(uint32_t) * 1);
+				}
+
+				int adv = sizeof(uint32_t) * 2 * count;
+
+				if (r_len) {
+					(*r_len) += 4 * 2;
+				}
+				len -= adv;
+				buf += adv;
+			}
+			r_variant = varray;
+
+		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
@@ -1046,6 +1079,40 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					len -= adv;
 					buf += adv;
 				}
+			}
+			r_variant = varray;
+
+		} break;
+		case Variant::PACKED_VECTOR3I_ARRAY: {
+			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
+			int32_t count = decode_uint32(buf);
+			buf += 4;
+			len -= 4;
+
+			Vector<Vector3i> varray;
+
+			if (r_len) {
+				(*r_len) += 4; // Size of count number.
+			}
+
+			if (count) {
+				varray.resize(count);
+				ERR_FAIL_COND_V(len < 4 * 3, ERR_INVALID_DATA);
+				Vector3i *w = varray.ptrw();
+
+				for (int32_t i = 0; i < count; i++) {
+					w[i].x = decode_uint32(buf + i * sizeof(uint32_t) * 3 + sizeof(uint32_t) * 0);
+					w[i].y = decode_uint32(buf + i * sizeof(uint32_t) * 3 + sizeof(uint32_t) * 1);
+					w[i].z = decode_uint32(buf + i * sizeof(uint32_t) * 3 + sizeof(uint32_t) * 1);
+				}
+
+				int adv = sizeof(uint32_t) * 3 * count;
+
+				if (r_len) {
+					(*r_len) += 4 * 3;
+				}
+				len -= adv;
+				buf += adv;
 			}
 			r_variant = varray;
 
@@ -1755,6 +1822,30 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			r_len += sizeof(real_t) * 2 * len;
 
 		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			Vector<Vector2i> data = p_variant;
+			int len = data.size();
+
+			if (buf) {
+				encode_uint32(len, buf);
+				buf += 4;
+			}
+
+			r_len += 4;
+
+			if (buf) {
+				for (int i = 0; i < len; i++) {
+					Vector2i v = data.get(i);
+
+					encode_uint32(v.x, &buf[0]);
+					encode_uint32(v.y, &buf[sizeof(uint32_t)]);
+					buf += sizeof(uint32_t) * 2;
+				}
+			}
+
+			r_len += sizeof(uint32_t) * 2 * len;
+
+		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			Vector<Vector3> data = p_variant;
 			int len = data.size();
@@ -1778,6 +1869,31 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 			r_len += sizeof(real_t) * 3 * len;
+
+		} break;
+		case Variant::PACKED_VECTOR3I_ARRAY: {
+			Vector<Vector3i> data = p_variant;
+			int len = data.size();
+
+			if (buf) {
+				encode_uint32(len, buf);
+				buf += 4;
+			}
+
+			r_len += 4;
+
+			if (buf) {
+				for (int i = 0; i < len; i++) {
+					Vector3i v = data.get(i);
+
+					encode_uint32(v.x, &buf[0]);
+					encode_uint32(v.y, &buf[sizeof(uint32_t)]);
+					encode_uint32(v.z, &buf[sizeof(uint32_t) * 2]);
+					buf += sizeof(uint32_t) * 3;
+				}
+			}
+
+			r_len += sizeof(uint32_t) * 3 * len;
 
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {

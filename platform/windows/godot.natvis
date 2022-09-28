@@ -96,7 +96,9 @@
 		<DisplayString Condition="type == Variant::PACKED_FLOAT64_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;double&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type == Variant::PACKED_STRING_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;String&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type == Variant::PACKED_VECTOR2_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector2&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_VECTOR2I_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector2i&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type == Variant::PACKED_VECTOR3_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector3&gt;*&gt;(_data.packed_array)->array}</DisplayString>
+		<DisplayString Condition="type == Variant::PACKED_VECTOR3I_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Vector3i&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 		<DisplayString Condition="type == Variant::PACKED_COLOR_ARRAY">{reinterpret_cast&lt;const Variant::PackedArrayRef&lt;Color&gt;*&gt;(_data.packed_array)->array}</DisplayString>
 
 		<StringView Condition="type == Variant::STRING &amp;&amp; ((String *)(_data._mem))->_cowdata._ptr">((String *)(_data._mem))->_cowdata._ptr,s32</StringView>
@@ -128,7 +130,9 @@
 			<Item Name="[value]" Condition="type == Variant::PACKED_FLOAT64_ARRAY">*(PackedFloat64Array *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::PACKED_STRING_ARRAY">*(PackedStringArray *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR2_ARRAY">*(PackedVector2Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR2I_ARRAY">*(PackedVector2iArray *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR3_ARRAY">*(PackedVector3Array *)_data._mem</Item>
+			<Item Name="[value]" Condition="type == Variant::PACKED_VECTOR3I_ARRAY">*(PackedVector3iArray *)_data._mem</Item>
 			<Item Name="[value]" Condition="type == Variant::PACKED_COLOR_ARRAY">*(PackedColorArray *)_data._mem</Item>
 		</Expand>
 	</Type>

@@ -110,7 +110,9 @@ uint32_t GDScriptByteCodeGenerator::add_temporary(const GDScriptDataType &p_type
 				case Variant::PACKED_FLOAT64_ARRAY:
 				case Variant::PACKED_STRING_ARRAY:
 				case Variant::PACKED_VECTOR2_ARRAY:
+				case Variant::PACKED_VECTOR2I_ARRAY:
 				case Variant::PACKED_VECTOR3_ARRAY:
+				case Variant::PACKED_VECTOR3I_ARRAY:
 				case Variant::PACKED_COLOR_ARRAY:
 				case Variant::VARIANT_MAX:
 					// Packed arrays are reference counted, so we don't use the pool for them.
@@ -528,8 +530,14 @@ void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Varia
 		case Variant::PACKED_VECTOR2_ARRAY:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY, 1);
 			break;
+		case Variant::PACKED_VECTOR2I_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2I_ARRAY, 1);
+			break;
 		case Variant::PACKED_VECTOR3_ARRAY:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY, 1);
+			break;
+		case Variant::PACKED_VECTOR3I_ARRAY:
+			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR3I_ARRAY, 1);
 			break;
 		case Variant::PACKED_COLOR_ARRAY:
 			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY, 1);
@@ -1163,7 +1171,9 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 			CASE_TYPE(PACKED_FLOAT64_ARRAY);
 			CASE_TYPE(PACKED_STRING_ARRAY);
 			CASE_TYPE(PACKED_VECTOR2_ARRAY);
+			CASE_TYPE(PACKED_VECTOR2I_ARRAY);
 			CASE_TYPE(PACKED_VECTOR3_ARRAY);
+			CASE_TYPE(PACKED_VECTOR3I_ARRAY);
 			CASE_TYPE(PACKED_COLOR_ARRAY);
 			default:
 				append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
@@ -1457,9 +1467,17 @@ void GDScriptByteCodeGenerator::write_for() {
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR2_ARRAY;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR2_ARRAY;
 					break;
+				case Variant::PACKED_VECTOR2I_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR2I_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR2I_ARRAY;
+					break;
 				case Variant::PACKED_VECTOR3_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR3_ARRAY;
 					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR3_ARRAY;
+					break;
+				case Variant::PACKED_VECTOR3I_ARRAY:
+					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_VECTOR3I_ARRAY;
+					iterate_opcode = GDScriptFunction::OPCODE_ITERATE_PACKED_VECTOR3I_ARRAY;
 					break;
 				case Variant::PACKED_COLOR_ARRAY:
 					begin_opcode = GDScriptFunction::OPCODE_ITERATE_BEGIN_PACKED_COLOR_ARRAY;

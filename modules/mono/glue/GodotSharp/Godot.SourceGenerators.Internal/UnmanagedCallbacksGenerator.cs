@@ -457,7 +457,9 @@ using Godot.NativeInterop;
         "Godot.NativeInterop.godot_packed_float64_array",
         "Godot.NativeInterop.godot_packed_string_array",
         "Godot.NativeInterop.godot_packed_vector2_array",
+        "Godot.NativeInterop.godot_packed_vector2i_array",
         "Godot.NativeInterop.godot_packed_vector3_array",
+        "Godot.NativeInterop.godot_packed_vector3i_array",
         "Godot.NativeInterop.godot_packed_color_array",
     };
 }

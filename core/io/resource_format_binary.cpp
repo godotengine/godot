@@ -71,6 +71,8 @@ enum {
 	VARIANT_PACKED_VECTOR3_ARRAY = 35,
 	VARIANT_PACKED_COLOR_ARRAY = 36,
 	VARIANT_PACKED_VECTOR2_ARRAY = 37,
+	VARIANT_PACKED_VECTOR2I_ARRAY = 38,
+	VARIANT_PACKED_VECTOR3I_ARRAY = 39,
 	VARIANT_INT64 = 40,
 	VARIANT_DOUBLE = 41,
 	VARIANT_CALLABLE = 42,
@@ -619,6 +621,17 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			r_v = array;
 
 		} break;
+		case VARIANT_PACKED_VECTOR2I_ARRAY: {
+			uint32_t len = f->get_32();
+
+			Vector<Vector2i> array;
+			array.resize(len);
+			Vector2i *w = array.ptrw();
+			static_assert(sizeof(Vector2i) == 2 * sizeof(uint32_t));
+			f->get_buffer((uint8_t *)w, len * sizeof(Vector2i));
+			r_v = array;
+
+		} break;
 		case VARIANT_PACKED_VECTOR3_ARRAY: {
 			uint32_t len = f->get_32();
 
@@ -629,6 +642,17 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			const Error err = read_reals(reinterpret_cast<real_t *>(w), f, len * 3);
 			ERR_FAIL_COND_V(err != OK, err);
 
+			r_v = array;
+
+		} break;
+		case VARIANT_PACKED_VECTOR3I_ARRAY: {
+			uint32_t len = f->get_32();
+
+			Vector<Vector3i> array;
+			array.resize(len);
+			Vector3i *w = array.ptrw();
+			static_assert(sizeof(Vector3i) == 3 * sizeof(uint32_t));
+			f->get_buffer((uint8_t *)w, len * sizeof(Vector3i));
 			r_v = array;
 
 		} break;
@@ -1829,6 +1853,19 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
+		case Variant::PACKED_VECTOR3I_ARRAY: {
+			f->store_32(VARIANT_PACKED_VECTOR3I_ARRAY);
+			Vector<Vector3i> arr = p_property;
+			int len = arr.size();
+			f->store_32(len);
+			const Vector3i *r = arr.ptr();
+			for (int i = 0; i < len; i++) {
+				f->store_32(r[i].x);
+				f->store_32(r[i].y);
+				f->store_32(r[i].z);
+			}
+
+		} break;
 		case Variant::PACKED_VECTOR2_ARRAY: {
 			f->store_32(VARIANT_PACKED_VECTOR2_ARRAY);
 			Vector<Vector2> arr = p_property;
@@ -1838,6 +1875,18 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			for (int i = 0; i < len; i++) {
 				f->store_real(r[i].x);
 				f->store_real(r[i].y);
+			}
+
+		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			f->store_32(VARIANT_PACKED_VECTOR2I_ARRAY);
+			Vector<Vector2i> arr = p_property;
+			int len = arr.size();
+			f->store_32(len);
+			const Vector2i *r = arr.ptr();
+			for (int i = 0; i < len; i++) {
+				f->store_32(r[i].x);
+				f->store_32(r[i].y);
 			}
 
 		} break;

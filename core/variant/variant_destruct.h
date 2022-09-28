@@ -68,7 +68,9 @@ MAKE_PTRDESTRUCT(PackedFloat32Array);
 MAKE_PTRDESTRUCT(PackedFloat64Array);
 MAKE_PTRDESTRUCT(PackedStringArray);
 MAKE_PTRDESTRUCT(PackedVector2Array);
+MAKE_PTRDESTRUCT(PackedVector2iArray);
 MAKE_PTRDESTRUCT(PackedVector3Array);
+MAKE_PTRDESTRUCT(PackedVector3iArray);
 MAKE_PTRDESTRUCT(PackedColorArray);
 
 #undef MAKE_PTRDESTRUCT

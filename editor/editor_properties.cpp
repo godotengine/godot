@@ -4658,9 +4658,19 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			editor->setup(Variant::PACKED_VECTOR2_ARRAY);
 			return editor;
 		} break;
+		case Variant::PACKED_VECTOR2I_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_VECTOR2I_ARRAY);
+			return editor;
+		} break;
 		case Variant::PACKED_VECTOR3_ARRAY: {
 			EditorPropertyArray *editor = memnew(EditorPropertyArray);
 			editor->setup(Variant::PACKED_VECTOR3_ARRAY);
+			return editor;
+		} break;
+		case Variant::PACKED_VECTOR3I_ARRAY: {
+			EditorPropertyArray *editor = memnew(EditorPropertyArray);
+			editor->setup(Variant::PACKED_VECTOR3I_ARRAY);
 			return editor;
 		} break;
 		case Variant::PACKED_COLOR_ARRAY: {

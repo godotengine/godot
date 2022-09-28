@@ -38,5 +38,7 @@ func test():
 	print(PackedFloat64Array([-1, 0, 1]))
 	print(PackedStringArray(["hello", "world"]))
 	print(PackedVector2Array([Vector2.ONE, Vector2.ZERO]))
+	print(PackedVector2iArray([Vector2i.ONE, Vector2i.ZERO]))
 	print(PackedVector3Array([Vector3.ONE, Vector3.ZERO]))
+	print(PackedVector3iArray([Vector3i.ONE, Vector3i.ZERO]))
 	print(PackedColorArray([Color.RED, Color.BLUE, Color.GREEN]))

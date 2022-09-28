@@ -95,7 +95,9 @@ typedef enum {
 	GDNATIVE_VARIANT_TYPE_PACKED_FLOAT64_ARRAY,
 	GDNATIVE_VARIANT_TYPE_PACKED_STRING_ARRAY,
 	GDNATIVE_VARIANT_TYPE_PACKED_VECTOR2_ARRAY,
+	GDNATIVE_VARIANT_TYPE_PACKED_VECTOR2I_ARRAY,
 	GDNATIVE_VARIANT_TYPE_PACKED_VECTOR3_ARRAY,
+	GDNATIVE_VARIANT_TYPE_PACKED_VECTOR3I_ARRAY,
 	GDNATIVE_VARIANT_TYPE_PACKED_COLOR_ARRAY,
 
 	GDNATIVE_VARIANT_TYPE_VARIANT_MAX
@@ -507,8 +509,12 @@ typedef struct {
 
 	GDNativeTypePtr (*packed_vector2_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector2Array, returns Vector2 ptr
 	GDNativeTypePtr (*packed_vector2_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector2Array, returns Vector2 ptr
+	GDNativeTypePtr (*packed_vector2i_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector2iArray, returns Vector2i ptr
+	GDNativeTypePtr (*packed_vector2i_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector2iArray, returns Vector2i ptr
 	GDNativeTypePtr (*packed_vector3_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector3Array, returns Vector3 ptr
 	GDNativeTypePtr (*packed_vector3_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector3Array, returns Vector3 ptr
+	GDNativeTypePtr (*packed_vector3i_array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector3iArray, returns Vector3i ptr
+	GDNativeTypePtr (*packed_vector3i_array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be a PackedVector3iArray, returns Vector3i ptr
 
 	GDNativeVariantPtr (*array_operator_index)(GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be an Array ptr
 	GDNativeVariantPtr (*array_operator_index_const)(const GDNativeTypePtr p_self, GDNativeInt p_index); // p_self should be an Array ptr
