@@ -134,7 +134,7 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 }
 
 void NavigationObstacle2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav) {
+	if (navigation == p_nav && navigation != nullptr) {
 		return; // Pointless
 	}
 
