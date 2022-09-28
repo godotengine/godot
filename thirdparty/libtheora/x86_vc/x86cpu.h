@@ -9,24 +9,28 @@
  * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
  *                                                                  *
  ********************************************************************
-
-  function:
+ function:
     last mod: $Id$
 
  ********************************************************************/
 
-#if !defined(_huffdec_H)
-# define _huffdec_H (1)
-# include "huffman.h"
-# include "bitpack.h"
+#if !defined(_x86_vc_x86cpu_H)
+# define _x86_vc_x86cpu_H (1)
+#include "../internal.h"
 
+#define OC_CPU_X86_MMX      (1<<0)
+#define OC_CPU_X86_3DNOW    (1<<1)
+#define OC_CPU_X86_3DNOWEXT (1<<2)
+#define OC_CPU_X86_MMXEXT   (1<<3)
+#define OC_CPU_X86_SSE      (1<<4)
+#define OC_CPU_X86_SSE2     (1<<5)
+#define OC_CPU_X86_PNI      (1<<6)
+#define OC_CPU_X86_SSSE3    (1<<7)
+#define OC_CPU_X86_SSE4_1   (1<<8)
+#define OC_CPU_X86_SSE4_2   (1<<9)
+#define OC_CPU_X86_SSE4A    (1<<10)
+#define OC_CPU_X86_SSE5     (1<<11)
 
-
-int oc_huff_trees_unpack(oc_pack_buf *_opb,
- ogg_int16_t *_nodes[TH_NHUFFMAN_TABLES]);
-int oc_huff_trees_copy(ogg_int16_t *_dst[TH_NHUFFMAN_TABLES],
- const ogg_int16_t *const _src[TH_NHUFFMAN_TABLES]);
-void oc_huff_trees_clear(ogg_int16_t *_nodes[TH_NHUFFMAN_TABLES]);
-int oc_huff_token_decode_c(oc_pack_buf *_opb,const ogg_int16_t *_node);
+ogg_uint32_t oc_cpu_flags_get(void);
 
 #endif
