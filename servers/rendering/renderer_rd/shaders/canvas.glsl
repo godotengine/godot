@@ -313,6 +313,14 @@ vec4 light_compute(
 		vec2 uv,
 		vec4 color, bool is_directional) {
 	vec4 light = vec4(0.0);
+	vec3 light_direction = vec3(0.0);
+
+	if (is_directional) {
+		light_direction = normalize(mix(vec3(light_position.xy, 0.0), vec3(0, 0, 1), light_position.z));
+		light_position = vec3(0.0);
+	} else {
+		light_direction = normalize(light_position - light_vertex);
+	}
 
 #CODE : LIGHT
 
@@ -686,7 +694,6 @@ void main() {
 			vec3 light_pos = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 			vec3 pos = light_vertex;
 			vec3 light_vec = normalize(light_pos - pos);
-			float cNdotL = max(0.0, dot(normal, light_vec));
 
 			light_color.rgb = light_normal_compute(light_vec, normal, base_color, light_color.rgb, specular_shininess, specular_shininess_used);
 		}
