@@ -666,6 +666,10 @@ void add_exposed_classes(Context &r_context) {
 			} else {
 				exposed_class.methods.push_back(method);
 			}
+
+			if (method.is_virtual) {
+				TEST_COND(String(method.name)[0] != '_', "Virtual method ", String(method.name), " does not start with underscore.");
+			}
 		}
 
 		// Add signals
