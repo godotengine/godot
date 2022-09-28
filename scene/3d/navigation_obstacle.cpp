@@ -140,7 +140,7 @@ NavigationObstacle::~NavigationObstacle() {
 }
 
 void NavigationObstacle::set_navigation(Navigation *p_nav) {
-	if (navigation == p_nav) {
+	if (navigation == p_nav && navigation != nullptr) {
 		return; // Pointless
 	}
 
