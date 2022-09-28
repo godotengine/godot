@@ -595,6 +595,8 @@ void main() {
 		color = vec4(0.0); //invisible by default due to using light mask
 	}
 
+	vec4 original_color = color;
+
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
 #elif !defined(MODE_UNSHADED)
@@ -635,6 +637,8 @@ void main() {
 #endif
 			);
 		}
+
+		light_color.rgb *= original_color.rgb;
 
 		light_blend_compute(light_base, light_color, color.rgb);
 	}
@@ -731,6 +735,8 @@ void main() {
 #endif
 			);
 		}
+
+		light_color.rgb *= original_color.rgb;
 
 		light_blend_compute(light_base, light_color, color.rgb);
 	}

@@ -2535,30 +2535,32 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 	bool release_lmb = (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT); // Required to properly release some stuff (e.g. selection box) while panning.
 
 	if (EditorSettings::get_singleton()->get("editors/panning/simple_panning") || !pan_pressed || release_lmb) {
-		if ((accepted = _gui_input_rulers_and_guides(p_event))) {
+		accepted = true;
+		if (_gui_input_rulers_and_guides(p_event)) {
 			// print_line("Rulers and guides");
-		} else if ((accepted = EditorNode::get_singleton()->get_editor_plugins_over()->forward_gui_input(p_event))) {
+		} else if (EditorNode::get_singleton()->get_editor_plugins_over()->forward_gui_input(p_event)) {
 			// print_line("Plugin");
-		} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
+		} else if (_gui_input_open_scene_on_double_click(p_event)) {
 			// print_line("Open scene on double click");
-		} else if ((accepted = _gui_input_scale(p_event))) {
+		} else if (_gui_input_scale(p_event)) {
 			// print_line("Set scale");
-		} else if ((accepted = _gui_input_pivot(p_event))) {
+		} else if (_gui_input_pivot(p_event)) {
 			// print_line("Set pivot");
-		} else if ((accepted = _gui_input_resize(p_event))) {
+		} else if (_gui_input_resize(p_event)) {
 			// print_line("Resize");
-		} else if ((accepted = _gui_input_rotate(p_event))) {
+		} else if (_gui_input_rotate(p_event)) {
 			// print_line("Rotate");
-		} else if ((accepted = _gui_input_move(p_event))) {
+		} else if (_gui_input_move(p_event)) {
 			// print_line("Move");
-		} else if ((accepted = _gui_input_anchors(p_event))) {
+		} else if (_gui_input_anchors(p_event)) {
 			// print_line("Anchors");
-		} else if ((accepted = _gui_input_select(p_event))) {
+		} else if (_gui_input_select(p_event)) {
 			// print_line("Selection");
-		} else if ((accepted = _gui_input_ruler_tool(p_event))) {
+		} else if (_gui_input_ruler_tool(p_event)) {
 			// print_line("Measure");
 		} else {
 			// print_line("Not accepted");
+			accepted = false;
 		}
 	}
 

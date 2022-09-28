@@ -378,8 +378,8 @@ Files extracted from upstream repository:
 - `minimp3_ex.h`
 - `LICENSE`
 
-Some changes have been made in order to fix Windows on ARM build errors.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+Some changes have been made in order to fix Windows on ARM build errors, and
+to solve some MSVC warnings. See the patches in the `patches` directory.
 
 
 ## miniupnpc

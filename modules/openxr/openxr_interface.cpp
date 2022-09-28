@@ -176,33 +176,35 @@ void OpenXRInterface::_load_action_map() {
 
 			// Note, we can only have one entry per interaction profile so if it already exists we clear it out
 			RID ip = openxr_api->interaction_profile_create(xr_interaction_profile->get_interaction_profile_path());
-			openxr_api->interaction_profile_clear_bindings(ip);
+			if (ip.is_valid()) {
+				openxr_api->interaction_profile_clear_bindings(ip);
 
-			Array xr_bindings = xr_interaction_profile->get_bindings();
-			for (int j = 0; j < xr_bindings.size(); j++) {
-				Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
-				Ref<OpenXRAction> xr_action = xr_binding->get_action();
+				Array xr_bindings = xr_interaction_profile->get_bindings();
+				for (int j = 0; j < xr_bindings.size(); j++) {
+					Ref<OpenXRIPBinding> xr_binding = xr_bindings[j];
+					Ref<OpenXRAction> xr_action = xr_binding->get_action();
 
-				Action *action = nullptr;
-				if (xr_actions.has(xr_action)) {
-					action = xr_actions[xr_action];
-				} else {
-					print_line("Action ", xr_action->get_name(), " isn't part of an action set!");
-					continue;
+					Action *action = nullptr;
+					if (xr_actions.has(xr_action)) {
+						action = xr_actions[xr_action];
+					} else {
+						print_line("Action ", xr_action->get_name(), " isn't part of an action set!");
+						continue;
+					}
+
+					PackedStringArray paths = xr_binding->get_paths();
+					for (int k = 0; k < paths.size(); k++) {
+						openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
+					}
 				}
 
-				PackedStringArray paths = xr_binding->get_paths();
-				for (int k = 0; k < paths.size(); k++) {
-					openxr_api->interaction_profile_add_binding(ip, action->action_rid, paths[k]);
+				// Now submit our suggestions
+				openxr_api->interaction_profile_suggest_bindings(ip);
+
+				// And record it in our array so we can clean it up later on
+				if (interaction_profiles.has(ip)) {
+					interaction_profiles.push_back(ip);
 				}
-			}
-
-			// Now submit our suggestions
-			openxr_api->interaction_profile_suggest_bindings(ip);
-
-			// And record it in our array so we can clean it up later on
-			if (interaction_profiles.has(ip)) {
-				interaction_profiles.push_back(ip);
 			}
 		}
 	}
@@ -744,6 +746,24 @@ void OpenXRInterface::end_frame() {
 	}
 }
 
+bool OpenXRInterface::is_passthrough_supported() {
+	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_supported();
+}
+
+bool OpenXRInterface::is_passthrough_enabled() {
+	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_enabled();
+}
+
+bool OpenXRInterface::start_passthrough() {
+	return passthrough_wrapper != nullptr && passthrough_wrapper->start_passthrough();
+}
+
+void OpenXRInterface::stop_passthrough() {
+	if (passthrough_wrapper) {
+		passthrough_wrapper->stop_passthrough();
+	}
+}
+
 void OpenXRInterface::on_state_ready() {
 	emit_signal(SNAME("session_begun"));
 }
@@ -774,6 +794,8 @@ OpenXRInterface::OpenXRInterface() {
 	_set_default_pos(head_transform, 1.0, 0);
 	_set_default_pos(transform_for_view[0], 1.0, 1);
 	_set_default_pos(transform_for_view[1], 1.0, 2);
+
+	passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
 }
 
 OpenXRInterface::~OpenXRInterface() {

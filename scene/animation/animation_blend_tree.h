@@ -102,18 +102,18 @@ public:
 	};
 
 private:
-	float fade_in = 0.0;
-	float fade_out = 0.0;
+	double fade_in = 0.0;
+	double fade_out = 0.0;
 
 	bool autorestart = false;
-	float autorestart_delay = 1.0;
-	float autorestart_random_delay = 0.0;
+	double autorestart_delay = 1.0;
+	double autorestart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
 
 	/*	bool active;
 	bool do_start;
-	float time;
-	float remaining;*/
+	double time;
+	double remaining;*/
 
 	StringName active = PNAME("active");
 	StringName prev_active = "prev_active";
@@ -130,19 +130,19 @@ public:
 
 	virtual String get_caption() const override;
 
-	void set_fadein_time(float p_time);
-	void set_fadeout_time(float p_time);
+	void set_fadein_time(double p_time);
+	void set_fadeout_time(double p_time);
 
-	float get_fadein_time() const;
-	float get_fadeout_time() const;
+	double get_fadein_time() const;
+	double get_fadeout_time() const;
 
 	void set_autorestart(bool p_active);
-	void set_autorestart_delay(float p_time);
-	void set_autorestart_random_delay(float p_time);
+	void set_autorestart_delay(double p_time);
+	void set_autorestart_random_delay(double p_time);
 
 	bool has_autorestart() const;
-	float get_autorestart_delay() const;
-	float get_autorestart_random_delay() const;
+	double get_autorestart_delay() const;
+	double get_autorestart_random_delay() const;
 
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
@@ -285,9 +285,9 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	int enabled_inputs = 0;
 
 	/*
-	float prev_xfading;
+	double prev_xfading;
 	int prev;
-	float time;
+	double time;
 	int current;
 	int prev_current; */
 
@@ -297,7 +297,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	StringName current = PNAME("current");
 	StringName prev_current = "prev_current";
 
-	float xfade_time = 0.0;
+	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
 	bool from_start = true;
 
@@ -322,8 +322,8 @@ public:
 	void set_input_caption(int p_input, const String &p_name);
 	String get_input_caption(int p_input) const;
 
-	void set_xfade_time(float p_fade);
-	float get_xfade_time() const;
+	void set_xfade_time(double p_fade);
+	double get_xfade_time() const;
 
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;

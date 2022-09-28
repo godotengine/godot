@@ -52,12 +52,14 @@
 # SonicStalker Games <dmitriyusolsev1971@gmail.com>, 2022.
 # Kedr <lava20121991@gmail.com>, 2022.
 # Lost Net <pc.mirkn@gmail.com>, 2022.
+# Vladimir Kirillovskiy <vladimir.kirillovskiy@gmail.com>, 2022.
+# motismob <evt.mixail@ya.ru>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-08-28 00:17+0000\n"
-"Last-Translator: Алексей Смирнов <tir74@mail.ru>\n"
+"PO-Revision-Date: 2022-09-16 07:12+0000\n"
+"Last-Translator: Rish Alternative <ii4526668@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ru/>\n"
 "Language: ru\n"
@@ -2871,7 +2873,7 @@ msgid ""
 "Media back key. Not to be confused with the Back button on an Android device."
 msgstr ""
 "Мультимедийная клавиша \"Назад\". Не путать с кнопкой \"Назад\" на "
-"устройствах Android"
+"устройствах Android."
 
 #: doc/classes/@GlobalScope.xml
 #, fuzzy
@@ -4122,42 +4124,59 @@ msgid ""
 "MIDI pitch bend message. This message is sent to indicate a change in the "
 "pitch bender (wheel or lever, typically)."
 msgstr ""
+"Сообщение MIDI об изменении высоты тона. Это сообщение отправляется для "
+"обозначения изменения питч-бенда ( как правило, колесо или рычаг)."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI system exclusive message. This has behavior exclusive to the device "
 "you're receiving input from. Getting this data is not implemented in Godot."
 msgstr ""
+"Эксклюзивное сообщение MIDI системы. Это поведение эксклюзивно для "
+"устройства от которого вы получаете данные. Получение этих данных не "
+"реализовано в Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI quarter frame message. Contains timing information that is used to "
 "synchronize MIDI devices. Getting this data is not implemented in Godot."
 msgstr ""
+"MIDI сообщение о четверти кадра. Содержит информацию о времени, которая "
+"используется для синхронизации MIDI-устройств. Получение этих данных не "
+"реализовано в Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI song position pointer message. Gives the number of 16th notes since the "
 "start of the song. Getting this data is not implemented in Godot."
 msgstr ""
+"MIDI сообщение указателя позиции композиции. Дает число 16-ых нот с момента "
+"начала композиции. Получение этих данных не реализовано в Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI song select message. Specifies which sequence or song is to be played. "
 "Getting this data is not implemented in Godot."
 msgstr ""
+"MIDI сообщение о выборе композиции. Указывает, какая последовательность или "
+"песня должна быть воспроизведена. Получение этих данных не реализовано в "
+"Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI tune request message. Upon receiving a tune request, all analog "
 "synthesizers should tune their oscillators."
 msgstr ""
+"MIDI сообщение с запросом на подстройку. При получении запроса на подстройку "
+"все аналоговые синтезаторы должны подстроить свои осцилляторы."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI timing clock message. Sent 24 times per quarter note when "
 "synchronization is required."
 msgstr ""
+"MIDI сообщение синхронизации времени. Отправляется 24 раза на четверть ноты, "
+"когда требуется синхронизация."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4171,7 +4190,7 @@ msgstr ""
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI stop message. Stop the current sequence."
-msgstr ""
+msgstr "MIDI сообщение об остановке. Останавливает текущую последовательность."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -4180,10 +4199,13 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
+#, fuzzy
 msgid ""
 "MIDI system reset message. Reset all receivers in the system to power-up "
 "status. It should not be sent on power-up itself."
 msgstr ""
+"MIDI сообщение о сбросе системы. Сбрасывает все получатели системы до "
+"выключенного статуса. Не должен быть отправлен на включение сам по себе."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -8000,7 +8022,12 @@ msgstr ""
 msgid ""
 "3D area that detects [CollisionObject] nodes overlapping, entering, or "
 "exiting. Can also alter or override local physics parameters (gravity, "
-"damping) and route audio to custom audio buses."
+"damping) and route audio to a custom audio bus.\n"
+"To give the area its shape, add a [CollisionShape] or a [CollisionPolygon] "
+"node as a [i]direct[/i] child (or add multiple such nodes as direct "
+"children) of the area.\n"
+"[b]Warning:[/b] See [ConcavePolygonShape] (also called \"trimesh\") for a "
+"warning about possibly unexpected behavior when using that shape for an area."
 msgstr ""
 
 #: doc/classes/Area.xml doc/classes/QuadMesh.xml doc/classes/Viewport.xml
@@ -8237,7 +8264,12 @@ msgstr ""
 msgid ""
 "2D area that detects [CollisionObject2D] nodes overlapping, entering, or "
 "exiting. Can also alter or override local physics parameters (gravity, "
-"damping) and route audio to a custom audio bus."
+"damping) and route audio to a custom audio bus.\n"
+"To give the area its shape, add a [CollisionShape2D] or a "
+"[CollisionPolygon2D] node as a [i]direct[/i] child (or add multiple such "
+"nodes as direct children) of the area.\n"
+"[b]Warning:[/b] See [ConcavePolygonShape2D] for a warning about possibly "
+"unexpected behavior when using that shape for an area."
 msgstr ""
 
 #: doc/classes/Area2D.xml
@@ -9019,7 +9051,15 @@ msgid ""
 "mode\" where the vertex and other arrays become the sources of data and the "
 "index array defines the vertex order. All sub-arrays must have the same "
 "length as the vertex array or be empty, except for [constant ARRAY_INDEX] if "
-"it is used."
+"it is used.\n"
+"[code]compress_flags[/code] is a bitfield made of [enum Mesh.ArrayFormat] "
+"values. It defaults to [constant Mesh.ARRAY_COMPRESS_DEFAULT].\n"
+"[b]Note:[/b] The default [code]compress_flags[/code] enable [constant Mesh."
+"ARRAY_COMPRESS_COLOR], which makes vertex colors stored as 8-bit unsigned "
+"integers. This will clamp overbright vertex colors to [code]Color(1, 1, 1, 1)"
+"[/code] and reduce their precision. To store HDR vertex colors, remove the "
+"vertex color compression flag by passing [code]Mesh.ARRAY_COMPRESS_DEFAULT ^ "
+"Mesh.ARRAY_COMPRESS_COLOR[/code] as the value of [code]compress_flags[/code]."
 msgstr ""
 
 #: doc/classes/ArrayMesh.xml
@@ -15461,17 +15501,17 @@ msgstr ""
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid ""
 "If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/"
-"code] in the the [member collision_layer].\n"
+"code] in the [member collision_layer].\n"
 "If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/"
-"code] in the the [member collision_layer]."
+"code] in the [member collision_layer]."
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
 msgid ""
 "If [code]value[/code] is [code]true[/code], sets the specified [code]bit[/"
-"code] in the the [member collision_mask].\n"
+"code] in the [member collision_mask].\n"
 "If [code]value[/code] is [code]false[/code], clears the specified [code]bit[/"
-"code] in the the [member collision_mask]."
+"code] in the [member collision_mask]."
 msgstr ""
 
 #: doc/classes/CollisionObject.xml doc/classes/CollisionObject2D.xml
@@ -15780,12 +15820,13 @@ msgstr ""
 
 #: doc/classes/CollisionShape.xml
 msgid ""
-"Editor facility for creating and editing collision shapes in 3D space. You "
-"can use this node to represent all sorts of collision shapes, for example, "
-"add this to an [Area] to give it a detection shape, or add it to a "
-"[PhysicsBody] to create a solid object. [b]IMPORTANT[/b]: this is an Editor-"
-"only helper to create shapes, use [method CollisionObject."
-"shape_owner_get_shape] to get the actual shape."
+"Editor facility for creating and editing collision shapes in 3D space. Set "
+"the [member shape] property to configure the shape. [b]IMPORTANT[/b]: this "
+"is an Editor-only helper to create shapes, use [method CollisionObject."
+"shape_owner_get_shape] to get the actual shape.\n"
+"You can use this node to represent all sorts of collision shapes, for "
+"example, add this to an [Area] to give it a detection shape, or add it to a "
+"[PhysicsBody] to create a solid object."
 msgstr ""
 
 #: doc/classes/CollisionShape.xml doc/classes/CollisionShape2D.xml
@@ -15822,12 +15863,13 @@ msgstr ""
 
 #: doc/classes/CollisionShape2D.xml
 msgid ""
-"Editor facility for creating and editing collision shapes in 2D space. You "
-"can use this node to represent all sorts of collision shapes, for example, "
-"add this to an [Area2D] to give it a detection shape, or add it to a "
-"[PhysicsBody2D] to create a solid object. [b]IMPORTANT[/b]: this is an "
-"Editor-only helper to create shapes, use [method CollisionObject2D."
-"shape_owner_get_shape] to get the actual shape."
+"Editor facility for creating and editing collision shapes in 2D space. Set "
+"the [member shape] property to configure the shape. [b]IMPORTANT[/b]: this "
+"is an Editor-only helper to create shapes, use [method CollisionObject2D."
+"shape_owner_get_shape] to get the actual shape.\n"
+"You can use this node to represent all sorts of collision shapes, for "
+"example, add this to an [Area2D] to give it a detection shape, or add it to "
+"a [PhysicsBody2D] to create a solid object."
 msgstr ""
 
 #: doc/classes/CollisionShape2D.xml doc/classes/KinematicBody2D.xml
@@ -16988,7 +17030,15 @@ msgid ""
 "area. This shape is created by feeding a list of triangles.\n"
 "[b]Note:[/b] When used for collision, [ConcavePolygonShape] is intended to "
 "work with static [PhysicsBody] nodes like [StaticBody] and will not work "
-"with [KinematicBody] or [RigidBody] with a mode other than Static."
+"with [KinematicBody] or [RigidBody] with a mode other than Static.\n"
+"[b]Warning:[/b] Using this shape for an [Area] (via a [CollisionShape] node, "
+"created e.g. by using the [i]Create Trimesh Collision Sibling[/i] option in "
+"the [i]Mesh[/i] menu that appears when selecting a [MeshInstance] node) may "
+"give unexpected results: when using Godot Physics, the area will only detect "
+"collisions with the triangle faces in the [ConcavePolygonShape] (and not "
+"with any \"inside\" of the shape, for example), and when using Bullet "
+"Physics the area will not detect any collisions with the concave shape at "
+"all (this is a known bug)."
 msgstr ""
 
 #: doc/classes/ConcavePolygonShape.xml
@@ -17014,7 +17064,11 @@ msgid ""
 "The main difference between a [ConvexPolygonShape2D] and a "
 "[ConcavePolygonShape2D] is that a concave polygon assumes it is concave and "
 "uses a more complex method of collision detection, and a convex one forces "
-"itself to be convex in order to speed up collision detection."
+"itself to be convex in order to speed up collision detection.\n"
+"[b]Warning:[/b] Using this shape for an [Area2D] (via a [CollisionShape2D] "
+"node) may give unexpected results: the area will only detect collisions with "
+"the segments in the [ConcavePolygonShape2D] (and not with any \"inside\" of "
+"the shape, for example)."
 msgstr ""
 
 #: doc/classes/ConcavePolygonShape2D.xml
@@ -36388,8 +36442,12 @@ msgstr ""
 msgid "Flag used to mark a compressed (half float) tangent array."
 msgstr ""
 
-#: doc/classes/Mesh.xml doc/classes/VisualServer.xml
-msgid "Flag used to mark a compressed (half float) color array."
+#: doc/classes/Mesh.xml
+msgid ""
+"Flag used to mark a compressed (half float) color array.\n"
+"[b]Note:[/b] If this flag is enabled, vertex colors will be stored as 8-bit "
+"unsigned integers. This will clamp overbright colors to [code]Color(1, 1, 1, "
+"1)[/code] and reduce colors' precision."
 msgstr ""
 
 #: doc/classes/Mesh.xml doc/classes/VisualServer.xml
@@ -36434,7 +36492,10 @@ msgid ""
 "ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant "
 "ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant "
 "ARRAY_COMPRESS_TEX_UV2], [constant ARRAY_COMPRESS_WEIGHTS], and [constant "
-"ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION] quickly."
+"ARRAY_FLAG_USE_OCTAHEDRAL_COMPRESSION] quickly.\n"
+"[b]Note:[/b] Since this flag enables [constant ARRAY_COMPRESS_COLOR], vertex "
+"colors will be stored as 8-bit unsigned integers. This will clamp overbright "
+"colors to [code]Color(1, 1, 1, 1)[/code] and reduce colors' precision."
 msgstr ""
 
 #: doc/classes/Mesh.xml
@@ -55682,11 +55743,15 @@ msgstr ""
 msgid ""
 "Switches the portal culling system on and off.\n"
 "It is important to note that when portal culling is active, it is "
-"responsible for [b]all[/b] the 3d culling. Some editor functionality may be "
-"more difficult to use, so switching the active flag is intended to be used "
-"to make sure your [Room] / [Portal] layout works within the editor.\n"
+"responsible for [b]all[/b] the 3d culling. Some editor visual debugging "
+"helpers may not be available when active, so switching the active flag is "
+"intended to be used to ensure your [Room] / [Portal] layout works within the "
+"editor.\n"
 "Switching to [code]active[/code] will have no effect when the [code]room "
-"graph[/code] is unloaded (the rooms have not yet been converted)."
+"graph[/code] is unloaded (the rooms have not yet been converted).\n"
+"[b]Note:[/b] For efficiency, the portal system is designed to work with only "
+"the core visual object types. In particular, only nodes derived from "
+"[VisualInstance] are expected to show when the system is active."
 msgstr ""
 
 #: doc/classes/RoomManager.xml
@@ -56605,6 +56670,18 @@ msgid ""
 "[/codeblock]\n"
 "In the example above, all children of a node are moved one after another to "
 "position (0, 0).\n"
+"You should avoid using more than one [SceneTreeTween] per object's property. "
+"If two or more tweens animate one property at the same time, the last one "
+"created will take priority and assign the final value. If you want to "
+"interrupt and restart an animation, consider assigning the [SceneTreeTween] "
+"to a variable:\n"
+"[codeblock]\n"
+"var tween\n"
+"func animate():\n"
+"    if tween:\n"
+"        tween.kill() # Abort the previous animation.\n"
+"    tween = create_tween()\n"
+"[/codeblock]\n"
 "Some [Tweener]s use transitions and eases. The first accepts a [enum Tween."
 "TransitionType] constant, and refers to the way the timing of the animation "
 "is handled (see [url=https://easings.net/]easings.net[/url] for some "
@@ -56617,7 +56694,10 @@ msgid ""
 "tween_cheatsheet.png]Tween easing and transition types cheatsheet[/url]\n"
 "[b]Note:[/b] All [SceneTreeTween]s will automatically start by default. To "
 "prevent a [SceneTreeTween] from autostarting, you can call [method stop] "
-"immediately after it is created."
+"immediately after it is created.\n"
+"[b]Note:[/b] [SceneTreeTween]s are processing after all of nodes in the "
+"current frame, i.e. after [method Node._process] or [method Node."
+"_physics_process] (depending on [enum Tween.TweenProcessMode])."
 msgstr ""
 
 #: doc/classes/SceneTreeTween.xml
@@ -63866,7 +63946,7 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Clears the [Color] at [code]name[/code] if the theme has [code]node_type[/"
+"Clears the [Color] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
 "Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
@@ -63875,7 +63955,7 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Clears the constant at [code]name[/code] if the theme has [code]node_type[/"
+"Clears the constant at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
 "Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
@@ -63884,7 +63964,7 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Clears the [Font] at [code]name[/code] if the theme has [code]node_type[/"
+"Clears the [Font] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr ""
 "Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
@@ -63893,7 +63973,8 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Clears the icon at [code]name[/code] if the theme has [code]node_type[/code]."
+"Clears the icon at [code]name[/code] if the theme has [code]theme_type[/"
+"code]."
 msgstr ""
 "Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
 "code]."
@@ -63901,15 +63982,18 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Clears [StyleBox] at [code]name[/code] if the theme has [code]node_type[/"
+"Clears [StyleBox] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Clears the theme item of [code]data_type[/code] at [code]name[/code] if the "
-"theme has [code]node_type[/code]."
+"theme has [code]theme_type[/code]."
 msgstr ""
+"Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
+"code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63928,15 +64012,17 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Returns the [Color] at [code]name[/code] if the theme has [code]node_type[/"
+"Returns the [Color] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns all the [Color]s as a [PoolStringArray] filled with each [Color]'s "
-"name, for use in [method get_color], if the theme has [code]node_type[/code]."
-msgstr ""
+"name, for use in [method get_color], if the theme has [code]theme_type[/"
+"code]."
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63947,16 +64033,17 @@ msgstr ""
 #: doc/classes/Theme.xml
 #, fuzzy
 msgid ""
-"Returns the constant at [code]name[/code] if the theme has [code]node_type[/"
+"Returns the constant at [code]name[/code] if the theme has [code]theme_type[/"
 "code]."
 msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns all the constants as a [PoolStringArray] filled with each constant's "
-"name, for use in [method get_constant], if the theme has [code]node_type[/"
+"name, for use in [method get_constant], if the theme has [code]theme_type[/"
 "code]."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63967,16 +64054,17 @@ msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
-"Returns the [Font] at [code]name[/code] if the theme has [code]node_type[/"
+"Returns the [Font] at [code]name[/code] if the theme has [code]theme_type[/"
 "code]. If such item does not exist and [member default_font] is set on the "
 "theme, the default font will be returned."
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns all the [Font]s as a [PoolStringArray] filled with each [Font]'s "
-"name, for use in [method get_font], if the theme has [code]node_type[/code]."
-msgstr ""
+"name, for use in [method get_font], if the theme has [code]theme_type[/code]."
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -63988,14 +64076,15 @@ msgstr ""
 #, fuzzy
 msgid ""
 "Returns the icon [Texture] at [code]name[/code] if the theme has "
-"[code]node_type[/code]."
+"[code]theme_type[/code]."
 msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns all the icons as a [PoolStringArray] filled with each [Texture]'s "
-"name, for use in [method get_icon], if the theme has [code]node_type[/code]."
-msgstr ""
+"name, for use in [method get_icon], if the theme has [code]theme_type[/code]."
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -64006,17 +64095,19 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Returns the [StyleBox] at [code]name[/code] if the theme has "
-"[code]node_type[/code].\n"
+"[code]theme_type[/code].\n"
 "Valid [code]name[/code]s may be found using [method get_stylebox_list]. "
-"Valid [code]node_type[/code]s may be found using [method get_stylebox_types]."
+"Valid [code]theme_type[/code]s may be found using [method "
+"get_stylebox_types]."
 msgstr ""
 
 #: doc/classes/Theme.xml
 msgid ""
 "Returns all the [StyleBox]s as a [PoolStringArray] filled with each "
 "[StyleBox]'s name, for use in [method get_stylebox], if the theme has "
-"[code]node_type[/code].\n"
-"Valid [code]node_type[/code]s may be found using [method get_stylebox_types]."
+"[code]theme_type[/code].\n"
+"Valid [code]theme_type[/code]s may be found using [method "
+"get_stylebox_types]."
 msgstr ""
 
 #: doc/classes/Theme.xml
@@ -64029,9 +64120,9 @@ msgstr ""
 #: doc/classes/Theme.xml
 msgid ""
 "Returns the theme item of [code]data_type[/code] at [code]name[/code] if the "
-"theme has [code]node_type[/code].\n"
+"theme has [code]theme_type[/code].\n"
 "Valid [code]name[/code]s may be found using [method get_theme_item_list] or "
-"a data type specific method. Valid [code]node_type[/code]s may be found "
+"a data type specific method. Valid [code]theme_type[/code]s may be found "
 "using [method get_theme_item_types] or a data type specific method."
 msgstr ""
 
@@ -64039,8 +64130,8 @@ msgstr ""
 msgid ""
 "Returns all the theme items of [code]data_type[/code] as a [PoolStringArray] "
 "filled with each theme items's name, for use in [method get_theme_item] or a "
-"data type specific method, if the theme has [code]node_type[/code].\n"
-"Valid [code]node_type[/code]s may be found using [method "
+"data type specific method, if the theme has [code]theme_type[/code].\n"
+"Valid [code]theme_type[/code]s may be found using [method "
 "get_theme_item_types] or a data type specific method."
 msgstr ""
 
@@ -64055,7 +64146,7 @@ msgstr ""
 msgid ""
 "Returns all the theme types as a [PoolStringArray] filled with unique type "
 "names, for use in other [code]get_*[/code] functions of this theme.\n"
-"[b]Note:[/b] [code]node_type[/code] has no effect and will be removed in "
+"[b]Note:[/b] [code]theme_type[/code] has no effect and will be removed in "
 "future version."
 msgstr ""
 
@@ -64075,18 +64166,23 @@ msgstr "Возвращает [code]true[/code] если массив содер�
 #, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Color] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
 "Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
 "приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if constant with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
 #, fuzzy
@@ -64099,32 +64195,45 @@ msgstr "Возвращает [code]true[/code] если массив содер�
 #, fuzzy
 msgid ""
 "Returns [code]true[/code] if [Font] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
 "Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
 "приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if icon [Texture] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if [StyleBox] with [code]name[/code] is in "
-"[code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Returns [code]true[/code] if a theme item of [code]data_type[/code] with "
-"[code]name[/code] is in [code]node_type[/code].\n"
-"Returns [code]false[/code] if the theme does not have [code]node_type[/code]."
+"[code]name[/code] is in [code]theme_type[/code].\n"
+"Returns [code]false[/code] if the theme does not have [code]theme_type[/"
+"code]."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
 #, fuzzy
@@ -64152,90 +64261,115 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Renames the [Color] at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Renames the constant at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Renames the [Font] at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
 msgstr ""
+"Сдвигает вектор к [code]to[/code] на фиксированное значение [code]delta[/"
+"code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Renames the icon at [code]old_name[/code] to [code]name[/code] if the theme "
-"has [code]node_type[/code]. If [code]name[/code] is already taken, this "
+"has [code]theme_type[/code]. If [code]name[/code] is already taken, this "
 "method fails."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Renames [StyleBox] at [code]old_name[/code] to [code]name[/code] if the "
-"theme has [code]node_type[/code]. If [code]name[/code] is already taken, "
+"theme has [code]theme_type[/code]. If [code]name[/code] is already taken, "
 "this method fails."
-msgstr ""
+msgstr "Возвращает [code]true[/code] если массив содержит [code]value[/code]."
 
 #: doc/classes/Theme.xml
 msgid ""
 "Renames the theme item of [code]data_type[/code] at [code]old_name[/code] to "
-"[code]name[/code] if the theme has [code]node_type[/code]. If [code]name[/"
+"[code]name[/code] if the theme has [code]theme_type[/code]. If [code]name[/"
 "code] is already taken, this method fails."
 msgstr ""
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Sets the theme's [Color] to [code]color[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Sets the theme's constant to [code]constant[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Sets the theme's [Font] to [code]font[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Sets the theme's icon [Texture] to [code]texture[/code] at [code]name[/code] "
-"in [code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"in [code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Sets theme's [StyleBox] to [code]stylebox[/code] at [code]name[/code] in "
-"[code]node_type[/code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"[code]theme_type[/code].\n"
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
+#, fuzzy
 msgid ""
 "Sets the theme item of [code]data_type[/code] to [code]value[/code] at "
-"[code]name[/code] in [code]node_type[/code].\n"
+"[code]name[/code] in [code]theme_type[/code].\n"
 "Does nothing if the [code]value[/code] type does not match [code]data_type[/"
 "code].\n"
-"Creates [code]node_type[/code] if the theme does not have it."
+"Creates [code]theme_type[/code] if the theme does not have it."
 msgstr ""
+"Возвращает [code]true[/code] если [code]a[/code] и [code]b[/code] "
+"приблизительно равны друг другу."
 
 #: doc/classes/Theme.xml
 msgid ""
@@ -74069,6 +74203,10 @@ msgid "Flag used to mark an index array."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+msgid "Flag used to mark a compressed (half float) color array."
+msgstr ""
+
+#: doc/classes/VisualServer.xml
 msgid ""
 "Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant "
 "ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant "
@@ -74395,8 +74533,9 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "The instance does not have a type."
-msgstr ""
+msgstr "Данный экземпляр не имеет типа."
 
 #: doc/classes/VisualServer.xml
 msgid "The instance is a mesh."
@@ -74407,28 +74546,32 @@ msgid "The instance is a multimesh."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "The instance is an immediate geometry."
-msgstr ""
+msgstr "Дынный экземпляр - геометрическая фигура."
 
 #: doc/classes/VisualServer.xml
 msgid "The instance is a particle emitter."
-msgstr ""
+msgstr "Данный экземпляр - источник частиц."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "The instance is a light."
-msgstr ""
+msgstr "Данный экземпляр - источник освещения."
 
 #: doc/classes/VisualServer.xml
 msgid "The instance is a reflection probe."
-msgstr ""
+msgstr "Данный экземпляр - проба отражения."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "The instance is a GI probe."
-msgstr ""
+msgstr "Данный экземпляр - проба GI."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "The instance is a lightmap capture."
-msgstr ""
+msgstr "Данный экземпляр - захваченная карта освещения."
 
 #: doc/classes/VisualServer.xml
 msgid "Represents the size of the [enum InstanceType] enum."
@@ -74454,7 +74597,7 @@ msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "Disable shadows from this instance."
-msgstr ""
+msgstr "Отключает тени в данном экземпляре."
 
 #: doc/classes/VisualServer.xml
 msgid "Cast shadows from this instance."
@@ -74502,8 +74645,9 @@ msgid "The light adds color depending on mask."
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "Do not apply a filter to canvas light shadows."
-msgstr ""
+msgstr "Не применяет фильтры на холст теней."
 
 #: doc/classes/VisualServer.xml
 msgid "Use PCF3 filtering to filter canvas light shadows."
@@ -74565,19 +74709,20 @@ msgstr ""
 
 #: doc/classes/VisualServer.xml
 msgid "The amount of surface changes in the frame."
-msgstr ""
+msgstr "Количество изменений поверхности в кадр."
 
 #: doc/classes/VisualServer.xml
 msgid "The amount of draw calls in frame."
-msgstr ""
+msgstr "Количество вызовов отрисовки в кадр."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "The amount of 2d items in the frame."
-msgstr ""
+msgstr "Количество 2d-объектов в кадре."
 
 #: doc/classes/VisualServer.xml
 msgid "The amount of 2d draw calls in frame."
-msgstr ""
+msgstr "Количество вызовов отрисовки 2d в кадре."
 
 #: doc/classes/VisualServer.xml
 msgid "Hardware supports shaders. This enum is currently unused in Godot 3.x."
@@ -74621,34 +74766,45 @@ msgid ""
 msgstr ""
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "MultiMesh custom data uses a float per component."
 msgstr ""
+"Пользовательские данные MultiMesh используют для хранения число с плавающей "
+"точкой."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "Reflection probe will update reflections once and then stop."
-msgstr ""
+msgstr "Проба отражения будет обновлена единожды и затем остановлена."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid ""
 "Reflection probe will update each frame. This mode is necessary to capture "
 "moving objects."
 msgstr ""
+"Проба отражения будет обновляться каждый кадр. Режим нужен для захвата "
+"движущихся объектов."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "Draw particles in the order that they appear in the particles array."
-msgstr ""
+msgstr "Отрисует частицы исходя из их расположения в массиве"
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "Sort particles based on their lifetime."
-msgstr ""
+msgstr "Отсортирует частицы исходя из их времени жизни."
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "Sort particles based on their distance to the camera."
-msgstr ""
+msgstr "Отсортирует частицы исходя из расстояния от камеры"
 
 #: doc/classes/VisualServer.xml
+#, fuzzy
 msgid "Use the clear color as background."
-msgstr ""
+msgstr "Используйте сплошной цвет как задний фон."
 
 #: doc/classes/VisualServer.xml
 msgid "Use a specified color as the background."

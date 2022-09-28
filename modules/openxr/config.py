@@ -18,6 +18,7 @@ def get_doc_classes():
         "OpenXRActionMap",
         "OpenXRInteractionProfile",
         "OpenXRIPBinding",
+        "OpenXRHand",
     ]
 
 

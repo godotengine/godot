@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 
-void AudioStreamPlaybackWAV::start(float p_from_pos) {
+void AudioStreamPlaybackWAV::start(double p_from_pos) {
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
@@ -67,16 +67,16 @@ int AudioStreamPlaybackWAV::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackWAV::get_playback_position() const {
+double AudioStreamPlaybackWAV::get_playback_position() const {
 	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
 }
 
-void AudioStreamPlaybackWAV::seek(float p_time) {
+void AudioStreamPlaybackWAV::seek(double p_time) {
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		return; //no seeking in ima-adpcm
 	}
 
-	float max = base->get_length();
+	double max = base->get_length();
 	if (p_time < 0) {
 		p_time = 0;
 	} else if (p_time >= max) {
@@ -463,7 +463,7 @@ bool AudioStreamWAV::is_stereo() const {
 	return stereo;
 }
 
-float AudioStreamWAV::get_length() const {
+double AudioStreamWAV::get_length() const {
 	int len = data_bytes;
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
@@ -481,7 +481,7 @@ float AudioStreamWAV::get_length() const {
 		len /= 2;
 	}
 
-	return float(len) / mix_rate;
+	return double(len) / mix_rate;
 }
 
 bool AudioStreamWAV::is_monophonic() const {

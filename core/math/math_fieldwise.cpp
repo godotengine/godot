@@ -56,8 +56,28 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			return target;
 		}
 
+		case Variant::VECTOR2I: {
+			SETUP_TYPE(Vector2i)
+
+			/**/ TRY_TRANSFER_FIELD("x", x)
+			else TRY_TRANSFER_FIELD("y", y)
+
+			return target;
+		}
+
 		case Variant::RECT2: {
 			SETUP_TYPE(Rect2)
+
+			/**/ TRY_TRANSFER_FIELD("x", position.x)
+			else TRY_TRANSFER_FIELD("y", position.y)
+			else TRY_TRANSFER_FIELD("w", size.x)
+			else TRY_TRANSFER_FIELD("h", size.y)
+
+			return target;
+		}
+
+		case Variant::RECT2I: {
+			SETUP_TYPE(Rect2i)
 
 			/**/ TRY_TRANSFER_FIELD("x", position.x)
 			else TRY_TRANSFER_FIELD("y", position.y)
@@ -188,6 +208,29 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			else TRY_TRANSFER_FIELD("xo", origin.x)
 			else TRY_TRANSFER_FIELD("yo", origin.y)
 			else TRY_TRANSFER_FIELD("zo", origin.z)
+
+			return target;
+		}
+
+		case Variant::PROJECTION: {
+			SETUP_TYPE(Projection)
+
+			/**/ TRY_TRANSFER_FIELD("xx", matrix[0].x)
+			else TRY_TRANSFER_FIELD("xy", matrix[0].y)
+			else TRY_TRANSFER_FIELD("xz", matrix[0].z)
+			else TRY_TRANSFER_FIELD("xw", matrix[0].w)
+			else TRY_TRANSFER_FIELD("yx", matrix[1].x)
+			else TRY_TRANSFER_FIELD("yy", matrix[1].y)
+			else TRY_TRANSFER_FIELD("yz", matrix[1].z)
+			else TRY_TRANSFER_FIELD("yw", matrix[1].w)
+			else TRY_TRANSFER_FIELD("zx", matrix[2].x)
+			else TRY_TRANSFER_FIELD("zy", matrix[2].y)
+			else TRY_TRANSFER_FIELD("zz", matrix[2].z)
+			else TRY_TRANSFER_FIELD("zw", matrix[2].w)
+			else TRY_TRANSFER_FIELD("xo", matrix[3].x)
+			else TRY_TRANSFER_FIELD("yo", matrix[3].y)
+			else TRY_TRANSFER_FIELD("zo", matrix[3].z)
+			else TRY_TRANSFER_FIELD("wo", matrix[3].w)
 
 			return target;
 		}

@@ -2624,10 +2624,11 @@ double String::to_float() const {
 
 uint32_t String::hash(const char *p_cstr) {
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *p_cstr++;
 
-	while ((c = *p_cstr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
@@ -2653,10 +2654,11 @@ uint32_t String::hash(const wchar_t *p_cstr, int p_len) {
 
 uint32_t String::hash(const wchar_t *p_cstr) {
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *p_cstr++;
 
-	while ((c = *p_cstr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
@@ -2673,10 +2675,11 @@ uint32_t String::hash(const char32_t *p_cstr, int p_len) {
 
 uint32_t String::hash(const char32_t *p_cstr) {
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *p_cstr++;
 
-	while ((c = *p_cstr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *p_cstr++;
 	}
 
 	return hashv;
@@ -2687,10 +2690,11 @@ uint32_t String::hash() const {
 
 	const char32_t *chr = get_data();
 	uint32_t hashv = 5381;
-	uint32_t c;
+	uint32_t c = *chr++;
 
-	while ((c = *chr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *chr++;
 	}
 
 	return hashv;
@@ -2701,10 +2705,11 @@ uint64_t String::hash64() const {
 
 	const char32_t *chr = get_data();
 	uint64_t hashv = 5381;
-	uint64_t c;
+	uint64_t c = *chr++;
 
-	while ((c = *chr++)) {
+	while (c) {
 		hashv = ((hashv << 5) + hashv) + c; /* hash * 33 + c */
+		c = *chr++;
 	}
 
 	return hashv;

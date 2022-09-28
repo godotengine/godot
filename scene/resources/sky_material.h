@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/templates/rid.h"
-#include "scene/resources/material.h"
-
 #ifndef SKY_MATERIAL_H
 #define SKY_MATERIAL_H
+
+#include "core/templates/rid.h"
+#include "scene/resources/material.h"
 
 class ProceduralSkyMaterial : public Material {
 	GDCLASS(ProceduralSkyMaterial, Material);

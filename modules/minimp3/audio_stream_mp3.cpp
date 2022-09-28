@@ -104,7 +104,7 @@ float AudioStreamPlaybackMP3::get_stream_sampling_rate() {
 	return mp3_stream->sample_rate;
 }
 
-void AudioStreamPlaybackMP3::start(float p_from_pos) {
+void AudioStreamPlaybackMP3::start(double p_from_pos) {
 	active = true;
 	seek(p_from_pos);
 	loops = 0;
@@ -123,11 +123,11 @@ int AudioStreamPlaybackMP3::get_loop_count() const {
 	return loops;
 }
 
-float AudioStreamPlaybackMP3::get_playback_position() const {
-	return float(frames_mixed) / mp3_stream->sample_rate;
+double AudioStreamPlaybackMP3::get_playback_position() const {
+	return double(frames_mixed) / mp3_stream->sample_rate;
 }
 
-void AudioStreamPlaybackMP3::seek(float p_time) {
+void AudioStreamPlaybackMP3::seek(double p_time) {
 	if (!active) {
 		return;
 	}
@@ -217,15 +217,15 @@ bool AudioStreamMP3::has_loop() const {
 	return loop;
 }
 
-void AudioStreamMP3::set_loop_offset(float p_seconds) {
+void AudioStreamMP3::set_loop_offset(double p_seconds) {
 	loop_offset = p_seconds;
 }
 
-float AudioStreamMP3::get_loop_offset() const {
+double AudioStreamMP3::get_loop_offset() const {
 	return loop_offset;
 }
 
-float AudioStreamMP3::get_length() const {
+double AudioStreamMP3::get_length() const {
 	return length;
 }
 

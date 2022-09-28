@@ -1762,7 +1762,7 @@ void PopupMenu::clear() {
 void PopupMenu::_ref_shortcut(Ref<Shortcut> p_sc) {
 	if (!shortcut_refcount.has(p_sc)) {
 		shortcut_refcount[p_sc] = 1;
-		p_sc->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		p_sc->connect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
 	} else {
 		shortcut_refcount[p_sc] += 1;
 	}
@@ -1772,9 +1772,16 @@ void PopupMenu::_unref_shortcut(Ref<Shortcut> p_sc) {
 	ERR_FAIL_COND(!shortcut_refcount.has(p_sc));
 	shortcut_refcount[p_sc]--;
 	if (shortcut_refcount[p_sc] == 0) {
-		p_sc->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::queue_redraw));
+		p_sc->disconnect("changed", callable_mp(this, &PopupMenu::_shortcut_changed));
 		shortcut_refcount.erase(p_sc);
 	}
+}
+
+void PopupMenu::_shortcut_changed() {
+	for (int i = 0; i < items.size(); i++) {
+		items.write[i].dirty = true;
+	}
+	control->queue_redraw();
 }
 
 // Hide on item selection determines whether or not the popup will close after item selection

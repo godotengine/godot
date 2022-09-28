@@ -31,13 +31,14 @@
 # Petr Voparil <voparil.petr96@gmail.com>, 2022.
 # JoeMoos <josephmoose13@gmail.com>, 2022.
 # Mirinek <mirek.nozicka77@gmail.com>, 2022.
+# Lubomír Baloun <lubosbaloun@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-30 03:11+0000\n"
-"Last-Translator: Petr Voparil <voparil.petr96@gmail.com>\n"
+"PO-Revision-Date: 2022-09-19 05:22+0000\n"
+"Last-Translator: Lubomír Baloun <lubosbaloun@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -45,11 +46,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Ovladač Grafického Tabletu"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
@@ -70,7 +71,7 @@ msgstr "V-Sync Zapnutý"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-Sync Pomocí Kompozitoru"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
@@ -28525,9 +28526,8 @@ msgid "Ninepatch Mode"
 msgstr "Interpolační režim"
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "OpenGL"
-msgstr "Otevřít"
+msgstr "OpenGL"
 
 #: servers/visual_server.cpp
 msgid "Batching Send Null"

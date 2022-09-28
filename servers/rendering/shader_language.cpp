@@ -4396,8 +4396,6 @@ bool ShaderLanguage::_is_operator_assign(Operator p_op) const {
 		default:
 			return false;
 	}
-
-	return false;
 }
 
 bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message) {
@@ -5344,8 +5342,8 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				last_type = IDENTIFIER_MAX;
 				_set_tkpos(pos);
 
-				DataType data_type;
-				IdentifierType ident_type;
+				DataType data_type = TYPE_MAX;
+				IdentifierType ident_type = IDENTIFIER_MAX;
 				int array_size = 0;
 				StringName struct_name;
 				bool is_local = false;

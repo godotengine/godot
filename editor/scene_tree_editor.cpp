@@ -1437,6 +1437,9 @@ void SceneTreeDialog::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
 				tree->update_tree();
+
+				// Select the search bar by default.
+				filter->call_deferred(SNAME("grab_focus"));
 			}
 		} break;
 

@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef GODOT_JACOBIAN_ENTRY_3D_H
+#define GODOT_JACOBIAN_ENTRY_3D_H
+
 /*
 Adapted to Godot from the Bullet library.
 */
-
-#ifndef GODOT_JACOBIAN_ENTRY_3D_H
-#define GODOT_JACOBIAN_ENTRY_3D_H
 
 /*
 Bullet Continuous Collision Detection and Physics Library

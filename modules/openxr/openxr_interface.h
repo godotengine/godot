@@ -37,6 +37,8 @@
 #include "action_map/openxr_action_map.h"
 #include "openxr_api.h"
 
+#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
 
@@ -47,6 +49,7 @@ private:
 	OpenXRAPI *openxr_api = nullptr;
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
+	OpenXRFbPassthroughExtensionWrapper *passthrough_wrapper = nullptr;
 
 	// At a minimum we need a tracker for our head
 	Ref<XRPositionalTracker> head;
@@ -128,6 +131,11 @@ public:
 	bool pre_draw_viewport(RID p_render_target) override;
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) override;
 	virtual void end_frame() override;
+
+	virtual bool is_passthrough_supported() override;
+	virtual bool is_passthrough_enabled() override;
+	virtual bool start_passthrough() override;
+	virtual void stop_passthrough() override;
 
 	void on_state_ready();
 	void on_state_visible();

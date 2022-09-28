@@ -24,13 +24,14 @@
 # Гліб Соколов <ramithes@i.ua>, 2022.
 # Max Donchenko <maxx.donchenko@gmail.com>, 2022.
 # Artem <artem@molotov.work>, 2022.
+# Teashrock <kajitsu22@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-25 13:04+0000\n"
-"Last-Translator: Artem <artem@molotov.work>\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
+"Last-Translator: Teashrock <kajitsu22@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -466,7 +467,6 @@ msgid "Pressure"
 msgstr "Тиск"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pen Inverted"
 msgstr "Перо перевернуте"
 
@@ -5498,10 +5498,9 @@ msgstr "Додаткові кнопки миші для навігації жу�
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "Перетягніть виділення"
+msgstr "Перетягніть виділене"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Stay In Script Editor On Node Selected"
 msgstr "Залишитися в редакторі скриптів на вибраному вузлі"
 
@@ -6377,7 +6376,7 @@ msgstr "Поточна версія:"
 #: editor/export_template_manager.cpp
 msgid "Export templates are missing. Download them or install from a file."
 msgstr ""
-"Не вистачає шаблонів експортування. Отримайте їх або встановіть з файла."
+"Не вистачає шаблонів експортування. Отримайте їх або встановіть із файлу."
 
 #: editor/export_template_manager.cpp
 msgid "Export templates are installed and ready to be used."
@@ -14159,7 +14158,7 @@ msgstr "Експортування проєкту"
 
 #: editor/project_export.cpp
 msgid "Manage Export Templates"
-msgstr "Управління шаблонами експорту"
+msgstr "Керування шаблонами експорту"
 
 #: editor/project_export.cpp
 msgid "Export With Debug"
@@ -15189,7 +15188,7 @@ msgstr "Вилучити вузол «%s»?"
 msgid ""
 "Saving the branch as a scene requires having a scene open in the editor."
 msgstr ""
-"Щоб можна було зберегти гілку як сцену, сцену має бути відкрито у редакторі."
+"Щоб можна було зберегти гілку як сцену, сцена має бути відкрита у редакторі."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -15276,9 +15275,8 @@ msgid "Enable Scene Unique Name(s)"
 msgstr "Увімкнути унікальну назву сцени"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
-msgstr "Цю унікальну назву у сцені вже використано іншим вузлом."
+msgstr "Цю унікальну назву у сцені вже використано іншим вузлом:"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -16966,7 +16964,6 @@ msgid "Joints Original"
 msgstr "Початок з'єднання"
 
 #: modules/gltf/gltf_skin.cpp
-#, fuzzy
 msgid "Inverse Binds"
 msgstr "Зворотні зв'язки"
 
@@ -18771,10 +18768,8 @@ msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
 msgstr ""
-"Не вдалося знайти «apksigner».\n"
-"Будь ласка, перевірте, чи є програма доступною у каталозі build-tools набору "
-"засобів для розробки Android.\n"
-"Отриманий у результаті %s не підписано."
+"Не вдалося знайти «apksigner». Будь ласка, перевірте, чи є команда доступною "
+"у каталозі build-tools Android SDK. Отриманий результат %s не підписано."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Signing debug %s..."
@@ -18791,7 +18786,7 @@ msgstr "Не вдалося знайти сховище ключів. Немож
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not start apksigner executable."
-msgstr "Не вдалося запустити підпроцес!"
+msgstr "Не вдалося запустити виконуваний файл apksigner."
 
 #: platform/android/export/export_plugin.cpp
 msgid "'apksigner' returned with error #%d"
@@ -18825,9 +18820,8 @@ msgstr ""
 "Некоректна назва файла! Пакунок Android APK повинен мати суфікс назви *.apk."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Unsupported export format!"
-msgstr "Непідтримуваний формат експортування!\n"
+msgstr "Непідтримуваний формат експортування!"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18839,28 +18833,24 @@ msgstr ""
 "допомогою меню «Проєкт»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
-"Невідповідність версія для збирання для Android:\n"
-"   Встановлений шаблон: %s\n"
-"   Версія Godot: %s\n"
-"Будь ласка, повторно встановіть шаблон для збирання для Android за допомогою "
-"меню «Проєкт»."
+"Невідповідність версія для збирання під Android: Встановлений шаблон: %s, "
+"Версія Godot: %s. Будь ласка, повторно встановіть шаблон для збирання під "
+"Android за допомогою меню «Проєкт»."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
-"Не вдалося перезаписати файли res://android/build/res/*.xml із назвою проєкту"
+"Не вдалося перезаписати файли res://android/build/res/*.xml із назвою "
+"проєкту."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files to gradle project."
-msgstr "Не вдалося експортувати файли проєкту до проєкту gradle\n"
+msgstr "Не вдалося експортувати файли проєкту до проєкту gradle."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not write expansion package file!"
@@ -18871,15 +18861,13 @@ msgid "Building Android Project (gradle)"
 msgstr "Збирання проєкту Android (gradle)"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error. "
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
-"Не вдалося виконати збирання проєкту Android. Ознайомтеся із виведеними "
-"даними, щоб визначити причину помилки.\n"
-"Крім того, можете відвідати docs.godotengine.org і ознайомитися із "
-"документацією щодо збирання для Android."
+"Не вдалося виконати збирання проєкту для Android. Ознайомтеся із виведеними "
+"даними, щоб визначити причину помилки. Крім того, можете відвідати docs."
+"godotengine.org і ознайомитися із документацією щодо збирання для Android."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Moving output"
@@ -18894,29 +18882,24 @@ msgstr ""
 "дані можна знайти у каталозі проєкту gradle."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "Пакунок не знайдено: %s"
+msgstr "Пакунок не знайдено: \"%s\"."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Creating APK..."
 msgstr "Створення APK…"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not find template APK to export: \"%s\"."
-msgstr ""
-"Не вдалося знайти шаблон APK для експортування:\n"
-"%s"
+msgstr "Не вдалося знайти шаблон APK для експортування: %s."
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
 "Please build a template with all required libraries, or uncheck the missing "
 "architectures in the export preset."
 msgstr ""
-"Не вистачає бібліотек у шаблоні експортування для вибраних архітектур: %s.\n"
+"Не вистачає бібліотек у шаблоні експортування для вибраних архітектур: %s. "
 "Будь ласка, створіть шаблон з усіма необхідними бібліотеками або зніміть "
 "позначку з архітектур із пропущеними бібліотеками у стилі експортування."
 
@@ -18925,9 +18908,8 @@ msgid "Adding files..."
 msgstr "Додавання файлів…"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Could not export project files."
-msgstr "Не вдалося експортувати файли проєкту"
+msgstr "Не вдалося експортувати файли проєкту."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -19199,19 +19181,16 @@ msgid "Run exported HTML in the system's default browser."
 msgstr "Виконати експортований HTML у браузері за умовчанням системи."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "Не вдалося відкрити шаблон для експорту:"
+msgstr "Не вдалося відкрити шаблон для експорту: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "Неправильний шаблон експорту:"
+msgstr "Неправильний шаблон експорту: \"%s\"."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "Не вдалося записати файл:"
+msgstr "Не вдалося записати файл: \"%s\"."
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19219,9 +19198,8 @@ msgid "Icon Creation"
 msgstr "Поле піктограми"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "Не вдалося прочитати файл:"
+msgstr "Не вдалося прочитати файл: \"%s\"."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
@@ -19296,19 +19274,17 @@ msgid "Icon 512 X 512"
 msgstr "Піктограма 512⨯12"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "Не вдалося прочитати оболонку HTML:"
+msgstr "Не вдалося прочитати оболонку HTML: \"%s\"."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "Не вдалося створити каталог на сервері HTTP:"
+msgstr "Не вдалося створити каталог для сервера HTTP: %s."
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Error starting HTTP server: %d."
-msgstr "Помилка під час спроби запуску сервера HTTP:"
+msgstr "Помилка під час спроби запуску сервера HTTP: %d."
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
@@ -19574,17 +19550,17 @@ msgstr ""
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not open icon file \"%s\"."
-msgstr "Не вдалося експортувати файли проєкту"
+msgstr "Не вдалося відкрити файл іконки \"%s\"."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not start xcrun executable."
-msgstr "Не вдалося запустити підпроцес!"
+msgstr "Не вдалося запустити виконуваний файл xcrun."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Notarization failed."
-msgstr "Засвідчення"
+msgstr "Нотаріальне засвідчення не відбулося."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization request UUID: \"%s\""
@@ -19649,9 +19625,8 @@ msgid "No identity found."
 msgstr "Не знайдено профілю."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Cannot sign file %s."
-msgstr "Помилка під час збереження файла: %s"
+msgstr "Не вдається підписати файл %s."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19668,7 +19643,7 @@ msgstr "Напрямок"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not start hdiutil executable."
-msgstr "Не вдалося запустити підпроцес!"
+msgstr "Не вдалося запустити виконуваний файл hdiutil."
 
 #: platform/osx/export/export.cpp
 msgid "`hdiutil create` failed - file exists."
@@ -19683,14 +19658,12 @@ msgid "Creating app bundle"
 msgstr "Створюємо комплект програми"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not find template app to export: \"%s\"."
-msgstr "Не вдалося знайти програму-шаблон для експортування:"
+msgstr "Не вдалося знайти шаблон програми для експортування: \"%s\"."
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Invalid export format."
-msgstr "Неправильний шаблон експорту:"
+msgstr "Неправильний формат експорту."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19757,7 +19730,7 @@ msgstr "Проєкція"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr "Не вдалося експортувати файли проєкту до проєкту gradle\n"
+msgstr "Не вдалося відкрити файл для читання з шляху \"%s\"."
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -20102,9 +20075,8 @@ msgid "Debug Algorithm"
 msgstr "Алгоритм діагностики"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to rename temporary file \"%s\"."
-msgstr "Не вдалося вилучити тимчасовий файл:"
+msgstr "Не вдалося перейменувати тимчасовий файл \"%s\"."
 
 #: platform/windows/export/export.cpp
 msgid "Identity Type"
@@ -20190,7 +20162,7 @@ msgstr "Не вдалося знайти сховище ключів. Немож
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Invalid identity type."
-msgstr "Тип профілю"
+msgstr "Невірний тип профілю."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20214,9 +20186,8 @@ msgid "Signtool failed to sign executable: %s."
 msgstr "Некоректний виконуваний файл."
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "Не вдалося вилучити тимчасовий файл:"
+msgstr "Не вдалося вилучити тимчасовий файл \"%s\"."
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -26126,7 +26097,7 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Sampling"
-msgstr "Масштаб:"
+msgstr "Масштаб"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy

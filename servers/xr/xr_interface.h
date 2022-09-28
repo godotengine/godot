@@ -130,6 +130,13 @@ public:
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* inform XR interface we finished our viewport draw process */
 	virtual void end_frame(){};
 
+	/** passthrough **/
+
+	virtual bool is_passthrough_supported() { return false; }
+	virtual bool is_passthrough_enabled() { return false; }
+	virtual bool start_passthrough() { return false; }
+	virtual void stop_passthrough() {}
+
 	virtual void notification(int p_what){};
 
 	XRInterface();
