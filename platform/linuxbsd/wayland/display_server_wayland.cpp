@@ -3112,10 +3112,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 #endif
 
-	// FIXME: We should get the cursor size from the user, somehow.
-	wls.wl_cursor_theme = wl_cursor_theme_load(nullptr, 24, wls.globals.wl_shm);
+	int64_t cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
+	if (cursor_size <= 0) {
+		print_verbose("Detected invalid cursor size preference, defaulting to 24.");
+		cursor_size = 24;
+	}
 
-	ERR_FAIL_NULL(wls.wl_cursor_theme);
+	print_verbose(vformat("Loading default cursor theme size %d.", cursor_size));
+	wls.wl_cursor_theme = wl_cursor_theme_load(nullptr, cursor_size, wls.globals.wl_shm);
+
+	ERR_FAIL_NULL_MSG(wls.wl_cursor_theme, "Can't find a cursor theme.");
 
 	static const char *cursor_names[] = {
 		"left_ptr",
