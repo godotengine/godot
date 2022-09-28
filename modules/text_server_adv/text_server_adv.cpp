@@ -2035,6 +2035,7 @@ void TextServerAdvanced::font_set_generate_mipmaps(const RID &p_font_rid, bool p
 		for (KeyValue<Vector2i, FontForSizeAdvanced *> &E : fd->cache) {
 			for (int i = 0; i < E.value->textures.size(); i++) {
 				E.value->textures.write[i].dirty = true;
+				E.value->textures.write[i].texture = Ref<ImageTexture>();
 			}
 		}
 		fd->mipmaps = p_generate_mipmaps;
