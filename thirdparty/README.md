@@ -307,17 +307,14 @@ Files extracted from upstream source:
 ## libtheora
 
 - Upstream: https://www.theora.org
-- Version: 1.1.1 (2010)
+- Version: git (7180717276af1ebc7da15c83162d6c5d6203aabf, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- all .c, .h in lib/
+- all .c, .h in lib/, except arm/ and c64x/ folders
 - all .h files in include/theora/ as theora/
 - COPYING and LICENSE
-
-Upstream patches included in the `patches` directory have been applied
-on top of the 1.1.1 source (not included in any stable release yet).
 
 
 ## libvorbis

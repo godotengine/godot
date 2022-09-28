@@ -12,6 +12,7 @@
  /*MMX fDCT implementation for x86_32*/
 /*$Id: fdct_ses2.c 14579 2008-03-12 06:42:40Z xiphmont $*/
 #include "x86enc.h"
+#include "x86zigzag.h"
 
 #if defined(OC_X86_ASM)
 
@@ -462,18 +463,22 @@
 }
 
 /*MMX implementation of the fDCT.*/
-void oc_enc_fdct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
-  ptrdiff_t a;
+void oc_enc_fdct8x8_mmxext(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
+  OC_ALIGN8(ogg_int16_t buf[64]);
+  ogg_int16_t *bufp;
+  bufp=buf;
   __asm{
+#define X edx
 #define Y eax
 #define A ecx
-#define X edx
+#define BUF esi
     /*Add two extra bits of working precision to improve accuracy; any more and
        we could overflow.*/
     /*We also add biases to correct for some systematic error that remains in
        the full fDCT->iDCT round trip.*/
     mov X, _x
     mov Y, _y
+	mov BUF, bufp
     movq mm0,[0x00+X]
     movq mm1,[0x10+X]
     movq mm2,[0x20+X]
@@ -591,79 +596,90 @@ void oc_enc_fdct8x8_mmx(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
     movq mm3,[0x30+Y]
     OC_FDCT_STAGE1_8x4
     OC_FDCT8x4(0x00,0x10,0x20,0x30,0x08,0x18,0x28,0x38)
-    OC_TRANSPOSE8x4(0x00,0x10,0x20,0x30,0x08,0x18,0x28,0x38)
     /*mm0={-2}x4*/
-    pcmpeqw mm0,mm0
-    paddw mm0,mm0
-    /*Round the results.*/
-    psubw mm1,mm0
-    psubw mm2,mm0
-    psraw mm1,2
-    psubw mm3,mm0
-    movq [0x18+Y],mm1
-    psraw mm2,2
-    psubw mm4,mm0
-    movq mm1,[0x08+Y]
-    psraw mm3,2
-    psubw mm5,mm0
+    pcmpeqw mm2,mm2
+    paddw mm2,mm2
+    /*Round and store the results (no transpose).*/
+    movq mm7,[Y+0x10]
+    psubw mm4,mm2
+    psubw mm6,mm2
     psraw mm4,2
-    psubw mm6,mm0
-    psraw mm5,2
-    psubw mm7,mm0
+    psubw mm0,mm2
+    movq [BUF+0x00],mm4
+    movq mm4,[Y+0x30]
     psraw mm6,2
-    psubw mm1,mm0
-    psraw mm7,2
-    movq mm0,[0x40+Y]
+    psubw mm5,mm2
+    movq [BUF+0x20],mm6
+    psraw mm0,2
+    psubw mm3,mm2
+    movq [BUF+0x40],mm0
+    psraw mm5,2
+    psubw mm1,mm2
+    movq [BUF+0x50],mm5
+    psraw mm3,2
+    psubw mm7,mm2
+    movq [BUF+0x60],mm3
     psraw mm1,2
-    movq [0x30+Y],mm7
+    psubw mm4,mm2
+    movq [BUF+0x70],mm1
+    psraw mm7,2
+    movq [BUF+0x10],mm7
+    psraw mm4,2
+    movq [BUF+0x30],mm4
+    /*Load the next block.*/
+    movq mm0,[0x40+Y]
     movq mm7,[0x78+Y]
-    movq [0x08+Y],mm1
     movq mm1,[0x50+Y]
-    movq [0x20+Y],mm6
     movq mm6,[0x68+Y]
-    movq [0x28+Y],mm2
     movq mm2,[0x60+Y]
-    movq [0x10+Y],mm5
     movq mm5,[0x58+Y]
-    movq [0x38+Y],mm3
     movq mm3,[0x70+Y]
-    movq [0x00+Y],mm4
     movq mm4,[0x48+Y]
     OC_FDCT_STAGE1_8x4
     OC_FDCT8x4(0x40,0x50,0x60,0x70,0x48,0x58,0x68,0x78)
-    OC_TRANSPOSE8x4(0x40,0x50,0x60,0x70,0x48,0x58,0x68,0x78)
     /*mm0={-2}x4*/
-    pcmpeqw mm0,mm0
-    paddw mm0,mm0
-    /*Round the results.*/
-    psubw mm1,mm0
-    psubw mm2,mm0
-    psraw mm1,2
-    psubw mm3,mm0
-    movq [0x58+Y],mm1
-    psraw mm2,2
-    psubw mm4,mm0
-    movq mm1,[0x48+Y]
-    psraw mm3,2
-    psubw mm5,mm0
-    movq [0x68+Y],mm2
+    pcmpeqw mm2,mm2
+    paddw mm2,mm2
+    /*Round and store the results (no transpose).*/
+    movq mm7,[Y+0x50]
+    psubw mm4,mm2
+    psubw mm6,mm2
     psraw mm4,2
-    psubw mm6,mm0
-    movq [0x78+Y],mm3
-    psraw mm5,2
-    psubw mm7,mm0
-    movq [0x40+Y],mm4
+    psubw mm0,mm2
+    movq [BUF+0x08],mm4
+    movq mm4,[Y+0x70]
     psraw mm6,2
-    psubw mm1,mm0
-    movq [0x50+Y],mm5
-    psraw mm7,2
-    movq [0x60+Y],mm6
+    psubw mm5,mm2
+    movq [BUF+0x28],mm6
+    psraw mm0,2
+    psubw mm3,mm2
+    movq [BUF+0x48],mm0
+    psraw mm5,2
+    psubw mm1,mm2
+    movq [BUF+0x58],mm5
+    psraw mm3,2
+    psubw mm7,mm2
+    movq [BUF+0x68],mm3
     psraw mm1,2
-    movq [0x70+Y],mm7
-    movq [0x48+Y],mm1
+    psubw mm4,mm2
+    movq [BUF+0x78],mm1
+    psraw mm7,2
+    movq [BUF+0x18],mm7
+    psraw mm4,2
+    movq [BUF+0x38],mm4
+#define OC_ZZ_LOAD_ROW_LO(_row,_reg) \
+    __asm movq _reg,[BUF+16*(_row)] \
+
+#define OC_ZZ_LOAD_ROW_HI(_row,_reg) \
+    __asm movq _reg,[BUF+16*(_row)+8] \
+
+    OC_TRANSPOSE_ZIG_ZAG_MMXEXT
+#undef OC_ZZ_LOAD_ROW_LO
+#undef OC_ZZ_LOAD_ROW_HI
+#undef X
 #undef Y
 #undef A
-#undef X
+#undef BUF
   }
 }
 
