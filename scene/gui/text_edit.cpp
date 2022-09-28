@@ -5088,6 +5088,14 @@ bool TextEdit::is_scroll_past_end_of_file_enabled() const {
 	return scroll_past_end_of_file_enabled;
 }
 
+VScrollBar *TextEdit::get_v_scroll_bar() const {
+	return v_scroll;
+}
+
+HScrollBar *TextEdit::get_h_scroll_bar() const {
+	return h_scroll;
+}
+
 void TextEdit::set_v_scroll(double p_scroll) {
 	v_scroll->set_value(p_scroll);
 	int max_v_scroll = v_scroll->get_max() - v_scroll->get_page();
@@ -6019,6 +6027,9 @@ void TextEdit::_bind_methods() {
 	// Scrolling.
 	ClassDB::bind_method(D_METHOD("set_smooth_scroll_enabled", "enable"), &TextEdit::set_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &TextEdit::get_v_scroll_bar);
+	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &TextEdit::get_h_scroll_bar);
 
 	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
