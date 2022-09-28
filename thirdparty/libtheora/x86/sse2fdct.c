@@ -13,12 +13,14 @@
 /*$Id: fdct_ses2.c 14579 2008-03-12 06:42:40Z xiphmont $*/
 #include <stddef.h>
 #include "x86enc.h"
+#include "x86zigzag.h"
+#include "sse2trans.h"
 
 #if defined(OC_X86_64_ASM)
 
-# define OC_FDCT8x8 \
+# define OC_FDCT_8x8 \
  /*Note: xmm15={0}x8 and xmm14={-1}x8.*/ \
- "#OC_FDCT8x8\n\t" \
+ "#OC_FDCT_8x8\n\t" \
  /*Stage 1:*/ \
  "movdqa %%xmm0,%%xmm11\n\t" \
  "movdqa %%xmm1,%%xmm10\n\t" \
@@ -349,81 +351,6 @@
  "psubw %%xmm14,%%xmm10\n\t" \
  "paddw %%xmm10,%%xmm7\n\t " \
 
-# define OC_TRANSPOSE8x8 \
- "#OC_TRANSPOSE8x8\n\t" \
- "movdqa %%xmm4,%%xmm8\n\t" \
- /*xmm4 = f3 e3 f2 e2 f1 e1 f0 e0*/ \
- "punpcklwd %%xmm5,%%xmm4\n\t" \
- /*xmm8 = f7 e7 f6 e6 f5 e5 f4 e4*/ \
- "punpckhwd %%xmm5,%%xmm8\n\t" \
- /*xmm5 is free.*/ \
- "movdqa %%xmm0,%%xmm5\n\t" \
- /*xmm0 = b3 a3 b2 a2 b1 a1 b0 a0*/ \
- "punpcklwd %%xmm1,%%xmm0\n\t" \
- /*xmm5 = b7 a7 b6 a6 b5 a5 b4 a4*/ \
- "punpckhwd %%xmm1,%%xmm5\n\t" \
- /*xmm1 is free.*/ \
- "movdqa %%xmm6,%%xmm1\n\t" \
- /*xmm6 = h3 g3 h2 g2 h1 g1 h0 g0*/ \
- "punpcklwd %%xmm7,%%xmm6\n\t" \
- /*xmm1 = h7 g7 h6 g6 h5 g5 h4 g4*/ \
- "punpckhwd %%xmm7,%%xmm1\n\t" \
- /*xmm7 is free.*/ \
- "movdqa %%xmm2,%%xmm7\n\t" \
- /*xmm7 = d3 c3 d2 c2 d1 c1 d0 c0*/ \
- "punpcklwd %%xmm3,%%xmm7\n\t" \
- /*xmm2 = d7 c7 d6 c6 d5 c5 d4 c4*/ \
- "punpckhwd %%xmm3,%%xmm2\n\t" \
- /*xmm3 is free.*/ \
- "movdqa %%xmm0,%%xmm3\n\t" \
- /*xmm0 = d1 c1 b1 a1 d0 c0 b0 a0*/ \
- "punpckldq %%xmm7,%%xmm0\n\t" \
- /*xmm3 = d3 c3 b3 a3 d2 c2 b2 a2*/ \
- "punpckhdq %%xmm7,%%xmm3\n\t" \
- /*xmm7 is free.*/ \
- "movdqa %%xmm5,%%xmm7\n\t" \
- /*xmm5 = d5 c5 b5 a5 d4 c4 b4 a4*/ \
- "punpckldq %%xmm2,%%xmm5\n\t" \
- /*xmm7 = d7 c7 b7 a7 d6 c6 b6 a6*/ \
- "punpckhdq %%xmm2,%%xmm7\n\t" \
- /*xmm2 is free.*/ \
- "movdqa %%xmm4,%%xmm2\n\t" \
- /*xmm2 = h1 g1 f1 e1 h0 g0 f0 e0*/ \
- "punpckldq %%xmm6,%%xmm2\n\t" \
- /*xmm4 = h3 g3 f3 e3 h2 g2 f2 e2*/ \
- "punpckhdq %%xmm6,%%xmm4\n\t" \
- /*xmm6 is free.*/ \
- "movdqa %%xmm8,%%xmm6\n\t" \
- /*xmm6 = h5 g5 f5 e5 h4 g4 f4 e4*/ \
- "punpckldq %%xmm1,%%xmm6\n\t" \
- /*xmm8 = h7 g7 f7 e7 h6 g6 f6 e6*/ \
- "punpckhdq %%xmm1,%%xmm8\n\t" \
- /*xmm1 is free.*/ \
- "movdqa %%xmm0,%%xmm1\n\t" \
- /*xmm0 = h0 g0 f0 e0 d0 c0 b0 a0*/ \
- "punpcklqdq %%xmm2,%%xmm0\n\t" \
- /*xmm1 = h1 g1 f1 e1 d1 c1 b1 a1*/ \
- "punpckhqdq %%xmm2,%%xmm1\n\t" \
- /*xmm2 is free.*/ \
- "movdqa %%xmm3,%%xmm2\n\t" \
- /*xmm2 = h2 g2 f2 e2 d2 c2 b2 a2*/ \
- "punpcklqdq %%xmm4,%%xmm2\n\t" \
- /*xmm3 = h3 g3 f3 e3 d3 c3 b3 a3*/ \
- "punpckhqdq %%xmm4,%%xmm3\n\t" \
- /*xmm4 is free.*/ \
- "movdqa %%xmm5,%%xmm4\n\t" \
- /*xmm4 = h4 g4 f4 e4 d4 c4 b4 a4*/ \
- "punpcklqdq %%xmm6,%%xmm4\n\t" \
- /*xmm5 = h5 g5 f5 e5 d5 c5 b5 a5*/ \
- "punpckhqdq %%xmm6,%%xmm5\n\t" \
- /*xmm6 is free.*/ \
- "movdqa %%xmm7,%%xmm6\n\t" \
- /*xmm6 = h6 g6 f6 e6 d6 c6 b6 a6*/ \
- "punpcklqdq %%xmm8,%%xmm6\n\t" \
- /*xmm7 = h7 g7 f7 e7 d7 c7 b7 a7*/ \
- "punpckhqdq %%xmm8,%%xmm7\n\t" \
- /*xmm8 is free.*/ \
-
 /*SSE2 implementation of the fDCT for x86-64 only.
   Because of the 8 extra XMM registers on x86-64, this version can operate
    without any temporary stack access at all.*/
@@ -482,12 +409,10 @@ void oc_enc_fdct8x8_x86_64sse2(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
     /*xmm1=_x[15...8]-{0,0,0,0,0,0,0,1}*/
     "psubw %%xmm9,%%xmm1\n\t"
     /*Transform columns.*/
-    OC_FDCT8x8
+    OC_FDCT_8x8
     /*Transform rows.*/
-    OC_TRANSPOSE8x8
-    OC_FDCT8x8
-    /*TODO: zig-zag ordering?*/
-    OC_TRANSPOSE8x8
+    OC_TRANSPOSE_8x8
+    OC_FDCT_8x8
     /*xmm14={-2,-2,-2,-2,-2,-2,-2,-2}*/
     "paddw %%xmm14,%%xmm14\n\t"
     "psubw %%xmm14,%%xmm0\n\t"
@@ -506,15 +431,19 @@ void oc_enc_fdct8x8_x86_64sse2(ogg_int16_t _y[64],const ogg_int16_t _x[64]){
     "psubw %%xmm14,%%xmm7\n\t"
     "psraw $2,%%xmm6\n\t"
     "psraw $2,%%xmm7\n\t"
-    /*Store the result.*/
-    "movdqa %%xmm0,0x00(%[y])\n\t"
-    "movdqa %%xmm1,0x10(%[y])\n\t"
-    "movdqa %%xmm2,0x20(%[y])\n\t"
-    "movdqa %%xmm3,0x30(%[y])\n\t"
-    "movdqa %%xmm4,0x40(%[y])\n\t"
-    "movdqa %%xmm5,0x50(%[y])\n\t"
-    "movdqa %%xmm6,0x60(%[y])\n\t"
-    "movdqa %%xmm7,0x70(%[y])\n\t"
+    /*Transpose, zig-zag, and store the result.*/
+    /*We could probably do better using SSSE3's palignr, but re-using MMXEXT
+       version will do for now.*/
+#define OC_ZZ_LOAD_ROW_LO(_row,_reg) \
+    "movdq2q %%xmm"#_row","_reg"\n\t" \
+
+#define OC_ZZ_LOAD_ROW_HI(_row,_reg) \
+    "punpckhqdq %%xmm"#_row",%%xmm"#_row"\n\t" \
+    "movdq2q %%xmm"#_row","_reg"\n\t" \
+
+    OC_TRANSPOSE_ZIG_ZAG_MMXEXT
+#undef OC_ZZ_LOAD_ROW_LO
+#undef OC_ZZ_LOAD_ROW_HI
     :[a]"=&r"(a)
     :[y]"r"(_y),[x]"r"(_x)
     :"memory"

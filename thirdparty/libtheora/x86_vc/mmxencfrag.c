@@ -266,7 +266,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
 /*Performs the first two stages of an 8-point 1-D Hadamard transform.
   The transform is performed in place, except that outputs 0-3 are swapped with
    outputs 4-7.
-  Outputs 2, 3, 6 and 7 from the second stage are negated (which allows us to
+  Outputs 2, 3, 6, and 7 from the second stage are negated (which allows us to
    perform this stage in place with no temporary registers).*/
 #define OC_HADAMARD_AB_8x4 __asm{ \
   /*Stage A: \
@@ -299,7 +299,7 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
 }
 
 /*Performs the last stage of an 8-point 1-D Hadamard transform in place.
-  Ouputs 1, 3, 5, and 7 are negated (which allows us to perform this stage in
+  Outputs 1, 3, 5, and 7 are negated (which allows us to perform this stage in
    place with no temporary registers).*/
 #define OC_HADAMARD_C_8x4 __asm{ \
   /*Stage C:*/ \
@@ -468,12 +468,14 @@ unsigned oc_enc_frag_sad2_thresh_mmxext(const unsigned char *_src,
     mm7 = d3 c3 b3 a3*/ \
 }
 
-static unsigned oc_int_frag_satd_thresh_mmxext(const unsigned char *_src,
- int _src_ystride,const unsigned char *_ref,int _ref_ystride,unsigned _thresh){
-  OC_ALIGN8(ogg_int16_t  buf[64]);
-  ogg_int16_t           *bufp;
-  unsigned               ret1;
-  unsigned               ret2;
+static unsigned oc_int_frag_satd_mmxext(int *_dc,
+ const unsigned char *_src,int _src_ystride,
+ const unsigned char *_ref,int _ref_ystride){
+  OC_ALIGN8(ogg_int16_t buf[64]);
+  ogg_int16_t *bufp;
+  unsigned     ret;
+  unsigned     ret2;
+  int          dc;
   bufp=buf;
   __asm{
 #define SRC esi
@@ -481,8 +483,10 @@ static unsigned oc_int_frag_satd_thresh_mmxext(const unsigned char *_src,
 #define SRC_YSTRIDE ecx
 #define REF_YSTRIDE edx
 #define BUF edi
-#define RET eax
-#define RET2 edx
+#define RET edx
+#define RET2 ecx
+#define DC eax
+#define DC_WORD ax
     mov SRC,_src
     mov SRC_YSTRIDE,_src_ystride
     mov REF,_ref
@@ -508,14 +512,18 @@ static unsigned oc_int_frag_satd_thresh_mmxext(const unsigned char *_src,
     movq mm2,[0x20+BUF]
     movq mm3,[0x30+BUF]
     movq mm0,[0x00+BUF]
-    OC_HADAMARD_ABS_ACCUM_8x4(0x28,0x38)
+    /*We split out the stages here so we can save the DC coefficient in the
+       middle.*/
+    OC_HADAMARD_AB_8x4
+    OC_HADAMARD_C_ABS_ACCUM_A_8x4(0x28,0x38)
+    movd DC,mm1
+    OC_HADAMARD_C_ABS_ACCUM_B_8x4(0x28,0x38)
     /*Up to this point, everything fit in 16 bits (8 input + 1 for the
        difference + 2*3 for the two 8-point 1-D Hadamards - 1 for the abs - 1
        for the factor of two we dropped + 3 for the vertical accumulation).
       Now we finally have to promote things to dwords.
       We break this part out of OC_HADAMARD_ABS_ACCUM_8x4 to hide the long
        latency of pmaddwd by starting the next series of loads now.*/
-    mov RET2,_thresh
     pmaddwd mm0,mm7
     movq mm1,[0x50+BUF]
     movq mm5,[0x58+BUF]
@@ -525,29 +533,28 @@ static unsigned oc_int_frag_satd_thresh_mmxext(const unsigned char *_src,
     movq mm6,[0x68+BUF]
     paddd mm4,mm0
     movq mm3,[0x70+BUF]
-    movd RET,mm4
+    movd RET2,mm4
     movq mm7,[0x78+BUF]
-    /*The sums produced by OC_HADAMARD_ABS_ACCUM_8x4 each have an extra 4
-       added to them, and a factor of two removed; correct the final sum here.*/
-    lea RET,[RET+RET-32]
     movq mm0,[0x40+BUF]
-    cmp RET,RET2
     movq mm4,[0x48+BUF]
-    jae at_end
     OC_HADAMARD_ABS_ACCUM_8x4(0x68,0x78)
     pmaddwd mm0,mm7
-    /*There isn't much to stick in here to hide the latency this time, but the
-       alternative to pmaddwd is movq->punpcklwd->punpckhwd->paddd, whose
-       latency is even worse.*/
-    sub RET,32
+    /*Subtract abs(dc) from 2*ret2.*/
+    movsx DC,DC_WORD
+    cdq
+    lea RET2,[RET+RET2*2]
     movq mm4,mm0
     punpckhdq mm0,mm0
+    xor RET,DC
     paddd mm4,mm0
-    movd RET2,mm4
-    lea RET,[RET+RET2*2]
-    align 16
-at_end:
-    mov ret1,RET
+    /*The sums produced by OC_HADAMARD_ABS_ACCUM_8x4 each have an extra 4
+       added to them, a factor of two removed, and the DC value included;
+       correct the final sum here.*/
+    sub RET2,RET
+    movd RET,mm4
+    lea RET,[RET2+RET*2-64]
+    mov ret,RET
+    mov dc,DC
 #undef SRC
 #undef REF
 #undef SRC_YSTRIDE
@@ -555,18 +562,21 @@ at_end:
 #undef BUF
 #undef RET
 #undef RET2
+#undef DC
+#undef DC_WORD
   }
-  return ret1;
+  *_dc=dc;
+  return ret;
 }
 
-unsigned oc_enc_frag_satd_thresh_mmxext(const unsigned char *_src,
- const unsigned char *_ref,int _ystride,unsigned _thresh){
-  return oc_int_frag_satd_thresh_mmxext(_src,_ystride,_ref,_ystride,_thresh);
+unsigned oc_enc_frag_satd_mmxext(int *_dc,const unsigned char *_src,
+ const unsigned char *_ref,int _ystride){
+  return oc_int_frag_satd_mmxext(_dc,_src,_ystride,_ref,_ystride);
 }
 
 
 /*Our internal implementation of frag_copy2 takes an extra stride parameter so
-   we can share code with oc_enc_frag_satd2_thresh_mmxext().*/
+   we can share code with oc_enc_frag_satd2_mmxext().*/
 static void oc_int_frag_copy2_mmxext(unsigned char *_dst,int _dst_ystride,
  const unsigned char *_src1,const unsigned char *_src2,int _src_ystride){
   __asm{
@@ -694,30 +704,31 @@ static void oc_int_frag_copy2_mmxext(unsigned char *_dst,int _dst_ystride,
   }
 }
 
-unsigned oc_enc_frag_satd2_thresh_mmxext(const unsigned char *_src,
- const unsigned char *_ref1,const unsigned char *_ref2,int _ystride,
- unsigned _thresh){
+unsigned oc_enc_frag_satd2_mmxext(int *_dc,const unsigned char *_src,
+ const unsigned char *_ref1,const unsigned char *_ref2,int _ystride){
   OC_ALIGN8(unsigned char ref[64]);
   oc_int_frag_copy2_mmxext(ref,8,_ref1,_ref2,_ystride);
-  return oc_int_frag_satd_thresh_mmxext(_src,_ystride,ref,8,_thresh);
+  return oc_int_frag_satd_mmxext(_dc,_src,_ystride,ref,8);
 }
 
-unsigned oc_enc_frag_intra_satd_mmxext(const unsigned char *_src,
+unsigned oc_enc_frag_intra_satd_mmxext(int *_dc,const unsigned char *_src,
  int _ystride){
-  OC_ALIGN8(ogg_int16_t  buf[64]);
-  ogg_int16_t           *bufp;
-  unsigned               ret1;
-  unsigned               ret2;
+  OC_ALIGN8(ogg_int16_t buf[64]);
+  ogg_int16_t *bufp;
+  unsigned     ret1;
+  unsigned     ret2;
+  int          dc;
   bufp=buf;
   __asm{
 #define SRC eax
 #define SRC4 esi
 #define BUF edi
-#define RET eax
-#define RET_WORD ax
-#define RET2 ecx
 #define YSTRIDE edx
 #define YSTRIDE3 ecx
+#define RET eax
+#define RET2 ecx
+#define DC edx
+#define DC_WORD dx
     mov SRC,_src
     mov BUF,bufp
     mov YSTRIDE,_ystride
@@ -749,7 +760,7 @@ unsigned oc_enc_frag_intra_satd_mmxext(const unsigned char *_src,
       middle.*/
     OC_HADAMARD_AB_8x4
     OC_HADAMARD_C_ABS_ACCUM_A_8x4(0x28,0x38)
-    movd RET,mm1
+    movd DC,mm1
     OC_HADAMARD_C_ABS_ACCUM_B_8x4(0x28,0x38)
     /*Up to this point, everything fit in 16 bits (8 input + 1 for the
       difference + 2*3 for the two 8-point 1-D Hadamards - 1 for the abs - 1
@@ -767,31 +778,34 @@ unsigned oc_enc_frag_intra_satd_mmxext(const unsigned char *_src,
     movq mm3,[0x70+BUF]
     paddd mm4,mm0
     movq mm7,[0x78+BUF]
-    movd RET2,mm4
+    movd RET,mm4
     movq mm0,[0x40+BUF]
     movq mm4,[0x48+BUF]
     OC_HADAMARD_ABS_ACCUM_8x4(0x68,0x78)
     pmaddwd mm0,mm7
     /*We assume that the DC coefficient is always positive (which is true,
     because the input to the INTRA transform was not a difference).*/
-    movzx RET,RET_WORD
-    add RET2,RET2
-    sub RET2,RET
+    movzx DC,DC_WORD
+    add RET,RET
+    sub RET,DC
     movq mm4,mm0
     punpckhdq mm0,mm0
     paddd mm4,mm0
-    movd RET,mm4
-    lea RET,[-64+RET2+RET*2]
+    movd RET2,mm4
+    lea RET,[-64+RET+RET2*2]
+    mov [dc],DC
     mov [ret1],RET
 #undef SRC
 #undef SRC4
 #undef BUF
-#undef RET
-#undef RET_WORD
-#undef RET2
 #undef YSTRIDE
 #undef YSTRIDE3
+#undef RET
+#undef RET2
+#undef DC
+#undef DC_WORD
   }
+  *_dc=dc;
   return ret1;
 }
 

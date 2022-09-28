@@ -11,18 +11,13 @@
  ********************************************************************
 
   function:
-  last mod: $Id: encfrag.c 16503 2009-08-22 18:14:02Z giles $
+  last mod: $Id$
 
  ********************************************************************/
 #include <stdlib.h>
 #include <string.h>
 #include "encint.h"
 
-
-void oc_enc_frag_sub(const oc_enc_ctx *_enc,ogg_int16_t _diff[64],
- const unsigned char *_src,const unsigned char *_ref,int _ystride){
-  (*_enc->opt_vtable.frag_sub)(_diff,_src,_ref,_ystride);
-}
 
 void oc_enc_frag_sub_c(ogg_int16_t _diff[64],const unsigned char *_src,
  const unsigned char *_ref,int _ystride){
@@ -35,11 +30,6 @@ void oc_enc_frag_sub_c(ogg_int16_t _diff[64],const unsigned char *_src,
   }
 }
 
-void oc_enc_frag_sub_128(const oc_enc_ctx *_enc,ogg_int16_t _diff[64],
- const unsigned char *_src,int _ystride){
-  (*_enc->opt_vtable.frag_sub_128)(_diff,_src,_ystride);
-}
-
 void oc_enc_frag_sub_128_c(ogg_int16_t *_diff,
  const unsigned char *_src,int _ystride){
   int i;
@@ -48,11 +38,6 @@ void oc_enc_frag_sub_128_c(ogg_int16_t *_diff,
     for(j=0;j<8;j++)_diff[i*8+j]=(ogg_int16_t)(_src[j]-128);
     _src+=_ystride;
   }
-}
-
-unsigned oc_enc_frag_sad(const oc_enc_ctx *_enc,const unsigned char *_x,
- const unsigned char *_y,int _ystride){
-  return (*_enc->opt_vtable.frag_sad)(_x,_y,_ystride);
 }
 
 unsigned oc_enc_frag_sad_c(const unsigned char *_src,
@@ -67,12 +52,6 @@ unsigned oc_enc_frag_sad_c(const unsigned char *_src,
     _ref+=_ystride;
   }
   return sad;
-}
-
-unsigned oc_enc_frag_sad_thresh(const oc_enc_ctx *_enc,
- const unsigned char *_src,const unsigned char *_ref,int _ystride,
- unsigned _thresh){
-  return (*_enc->opt_vtable.frag_sad_thresh)(_src,_ref,_ystride,_thresh);
 }
 
 unsigned oc_enc_frag_sad_thresh_c(const unsigned char *_src,
@@ -90,13 +69,6 @@ unsigned oc_enc_frag_sad_thresh_c(const unsigned char *_src,
   return sad;
 }
 
-unsigned oc_enc_frag_sad2_thresh(const oc_enc_ctx *_enc,
- const unsigned char *_src,const unsigned char *_ref1,
- const unsigned char *_ref2,int _ystride,unsigned _thresh){
-  return (*_enc->opt_vtable.frag_sad2_thresh)(_src,_ref1,_ref2,_ystride,
-   _thresh);
-}
-
 unsigned oc_enc_frag_sad2_thresh_c(const unsigned char *_src,
  const unsigned char *_ref1,const unsigned char *_ref2,int _ystride,
  unsigned _thresh){
@@ -110,6 +82,27 @@ unsigned oc_enc_frag_sad2_thresh_c(const unsigned char *_src,
     _src+=_ystride;
     _ref1+=_ystride;
     _ref2+=_ystride;
+  }
+  return sad;
+}
+
+unsigned oc_enc_frag_intra_sad_c(const unsigned char *_src, int _ystride){
+  const unsigned char *src = _src;
+  unsigned dc;
+  unsigned sad;
+  int      i;
+  dc=0;
+  for(i=8;i-->0;){
+    int j;
+    for(j=0;j<8;j++)dc+=src[j];
+    src+=_ystride;
+  }
+  dc=dc+32>>6;
+  sad=0;
+  for(i=8;i-->0;){
+    int j;
+    for(j=0;j<8;j++)sad+=abs(_src[j]-dc);
+    _src+=_ystride;
   }
   return sad;
 }
@@ -269,19 +262,20 @@ static void oc_intra_hadamard(ogg_int16_t _buf[64],const unsigned char *_src,
   }
 }
 
-unsigned oc_hadamard_sad_thresh(const ogg_int16_t _buf[64],unsigned _thresh){
-  unsigned    sad;
-  int         t0;
-  int         t1;
-  int         t2;
-  int         t3;
-  int         t4;
-  int         t5;
-  int         t6;
-  int         t7;
-  int         r;
-  int         i;
-  sad=0;
+unsigned oc_hadamard_sad(int *_dc,const ogg_int16_t _buf[64]){
+  unsigned sad;
+  int      dc;
+  int      t0;
+  int      t1;
+  int      t2;
+  int      t3;
+  int      t4;
+  int      t5;
+  int      t6;
+  int      t7;
+  int      r;
+  int      i;
+  sad=dc=0;
   for(i=0;i<8;i++){
     /*Hadamard stage 1:*/
     t0=_buf[i*8+0]+_buf[i*8+4];
@@ -306,7 +300,7 @@ unsigned oc_hadamard_sad_thresh(const ogg_int16_t _buf[64],unsigned _thresh){
     t5+=t7;
     t7=r-t7;
     /*Hadamard stage 3:*/
-    r=abs(t0+t1);
+    r=abs(t0+t1)&-(i>0);
     r+=abs(t0-t1);
     r+=abs(t2+t3);
     r+=abs(t2-t3);
@@ -315,54 +309,61 @@ unsigned oc_hadamard_sad_thresh(const ogg_int16_t _buf[64],unsigned _thresh){
     r+=abs(t6+t7);
     r+=abs(t6-t7);
     sad+=r;
-    if(sad>_thresh)break;
   }
+  dc=_buf[0]+_buf[1]+_buf[2]+_buf[3]+_buf[4]+_buf[5]+_buf[6]+_buf[7];
+  *_dc=dc;
   return sad;
 }
 
-unsigned oc_enc_frag_satd_thresh(const oc_enc_ctx *_enc,
- const unsigned char *_src,const unsigned char *_ref,int _ystride,
- unsigned _thresh){
-  return (*_enc->opt_vtable.frag_satd_thresh)(_src,_ref,_ystride,_thresh);
-}
-
-unsigned oc_enc_frag_satd_thresh_c(const unsigned char *_src,
- const unsigned char *_ref,int _ystride,unsigned _thresh){
+unsigned oc_enc_frag_satd_c(int *_dc,const unsigned char *_src,
+ const unsigned char *_ref,int _ystride){
   ogg_int16_t buf[64];
   oc_diff_hadamard(buf,_src,_ref,_ystride);
-  return oc_hadamard_sad_thresh(buf,_thresh);
+  return oc_hadamard_sad(_dc,buf);
 }
 
-unsigned oc_enc_frag_satd2_thresh(const oc_enc_ctx *_enc,
- const unsigned char *_src,const unsigned char *_ref1,
- const unsigned char *_ref2,int _ystride,unsigned _thresh){
-  return (*_enc->opt_vtable.frag_satd2_thresh)(_src,_ref1,_ref2,_ystride,
-   _thresh);
-}
-
-unsigned oc_enc_frag_satd2_thresh_c(const unsigned char *_src,
- const unsigned char *_ref1,const unsigned char *_ref2,int _ystride,
- unsigned _thresh){
+unsigned oc_enc_frag_satd2_c(int *_dc,const unsigned char *_src,
+ const unsigned char *_ref1,const unsigned char *_ref2,int _ystride){
   ogg_int16_t buf[64];
   oc_diff_hadamard2(buf,_src,_ref1,_ref2,_ystride);
-  return oc_hadamard_sad_thresh(buf,_thresh);
+  return oc_hadamard_sad(_dc,buf);
 }
 
-unsigned oc_enc_frag_intra_satd(const oc_enc_ctx *_enc,
+unsigned oc_enc_frag_intra_satd_c(int *_dc,
  const unsigned char *_src,int _ystride){
-  return (*_enc->opt_vtable.frag_intra_satd)(_src,_ystride);
-}
-
-unsigned oc_enc_frag_intra_satd_c(const unsigned char *_src,int _ystride){
   ogg_int16_t buf[64];
   oc_intra_hadamard(buf,_src,_ystride);
-  return oc_hadamard_sad_thresh(buf,UINT_MAX)
-   -abs(buf[0]+buf[1]+buf[2]+buf[3]+buf[4]+buf[5]+buf[6]+buf[7]);
+  return oc_hadamard_sad(_dc,buf);
 }
 
-void oc_enc_frag_copy2(const oc_enc_ctx *_enc,unsigned char *_dst,
- const unsigned char *_src1,const unsigned char *_src2,int _ystride){
-  (*_enc->opt_vtable.frag_copy2)(_dst,_src1,_src2,_ystride);
+unsigned oc_enc_frag_ssd_c(const unsigned char *_src,
+ const unsigned char *_ref,int _ystride){
+  unsigned ret;
+  int      y;
+  int      x;
+  ret=0;
+  for(y=0;y<8;y++){
+    for(x=0;x<8;x++)ret+=(_src[x]-_ref[x])*(_src[x]-_ref[x]);
+    _src+=_ystride;
+    _ref+=_ystride;
+  }
+  return ret;
+}
+
+unsigned oc_enc_frag_border_ssd_c(const unsigned char *_src,
+ const unsigned char *_ref,int _ystride,ogg_int64_t _mask){
+  unsigned ret;
+  int      y;
+  int      x;
+  ret=0;
+  for(y=0;y<8;y++){
+    for(x=0;x<8;x++,_mask>>=1){
+      if(_mask&1)ret+=(_src[x]-_ref[x])*(_src[x]-_ref[x]);
+    }
+    _src+=_ystride;
+    _ref+=_ystride;
+  }
+  return ret;
 }
 
 void oc_enc_frag_copy2_c(unsigned char *_dst,
@@ -375,14 +376,4 @@ void oc_enc_frag_copy2_c(unsigned char *_dst,
     _src1+=_ystride;
     _src2+=_ystride;
   }
-}
-
-void oc_enc_frag_recon_intra(const oc_enc_ctx *_enc,
- unsigned char *_dst,int _ystride,const ogg_int16_t _residue[64]){
-  (*_enc->opt_vtable.frag_recon_intra)(_dst,_ystride,_residue);
-}
-
-void oc_enc_frag_recon_inter(const oc_enc_ctx *_enc,unsigned char *_dst,
- const unsigned char *_src,int _ystride,const ogg_int16_t _residue[64]){
-  (*_enc->opt_vtable.frag_recon_inter)(_dst,_src,_ystride,_residue);
 }

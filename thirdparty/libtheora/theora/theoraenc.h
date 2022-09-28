@@ -43,7 +43,7 @@ extern "C" {
  * <tt>NULL</tt> may be specified to revert to the default tables.
  *
  * \param[in] _buf <tt>#th_huff_code[#TH_NHUFFMAN_TABLES][#TH_NDCT_TOKENS]</tt>
- * \retval TH_EFAULT \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc is <tt>NULL</tt>.
  * \retval TH_EINVAL Encoding has already begun or one or more of the given
  *                     tables is not full or prefix-free, \a _buf is
  *                     <tt>NULL</tt> and \a _buf_sz is not zero, or \a _buf is
@@ -57,8 +57,8 @@ extern "C" {
  * <tt>NULL</tt> may be specified to revert to the default parameters.
  *
  * \param[in] _buf #th_quant_info
- * \retval TH_EFAULT \a _enc_ctx is <tt>NULL</tt>.
- * \retval TH_EINVAL Encoding has already begun, \a _buf is 
+ * \retval TH_EFAULT \a _enc is <tt>NULL</tt>.
+ * \retval TH_EINVAL Encoding has already begun, \a _buf is
  *                    <tt>NULL</tt> and \a _buf_sz is not zero,
  *                    or \a _buf is non-<tt>NULL</tt> and
  *                    \a _buf_sz is not <tt>sizeof(#th_quant_info)</tt>.
@@ -73,7 +73,7 @@ extern "C" {
  * \param[in]  _buf <tt>ogg_uint32_t</tt>: The maximum distance between key
  *                   frames.
  * \param[out] _buf <tt>ogg_uint32_t</tt>: The actual maximum distance set.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(ogg_uint32_t)</tt>.
  * \retval TH_EIMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_KEYFRAME_FREQUENCY_FORCE (4)
@@ -101,7 +101,7 @@ extern "C" {
  *                   4:2:0, the picture region is smaller than the full frame,
  *                   or if encoding has begun, preventing the quantization
  *                   tables and codebooks from being set.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
  * \retval TH_EIMPL   Not supported by this implementation.*/
 #define TH_ENCCTL_SET_VP3_COMPATIBLE (10)
@@ -114,7 +114,7 @@ extern "C" {
  *  the current encoding mode (VBR vs. constant quality, etc.).
  *
  * \param[out] _buf <tt>int</tt>: The maximum encoding speed level.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
  * \retval TH_EIMPL   Not supported by this implementation in the current
  *                    encoding mode.*/
@@ -124,7 +124,7 @@ extern "C" {
  *
  * \param[in] _buf <tt>int</tt>: The new encoding speed level.
  *                 0 is slowest, larger values use less CPU.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
  *                    encoding speed level is out of bounds.
  *                   The maximum encoding speed level may be
@@ -142,7 +142,7 @@ extern "C" {
  *
  * \param[out] _buf <tt>int</tt>: The current encoding speed level.
  *                  0 is slowest, larger values use less CPU.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>.
  * \retval TH_EIMPL   Not supported by this implementation in the current
  *                    encoding mode.*/
@@ -162,7 +162,7 @@ extern "C" {
  *
  * \param[in] _buf <tt>int</tt>: The number of duplicates to produce.
  *                 If this is negative or zero, no duplicates will be produced.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or the
  *                    number of duplicates is greater than or equal to the
  *                    maximum keyframe interval.
@@ -187,7 +187,7 @@ extern "C" {
  *                    use.
  *                 - #TH_RATECTL_CAP_UNDERFLOW: Don't try to make up shortfalls
  *                    later.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt> or rate control
  *                    is not enabled.
  * \retval TH_EIMPL   Not supported by this implementation in the current
@@ -211,7 +211,7 @@ extern "C" {
  * \param[in]  _buf <tt>int</tt>: Requested size of the reservoir measured in
  *                   frames.
  * \param[out] _buf <tt>int</tt>: The actual size of the reservoir set.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(int)</tt>, or rate control
  *                    is not enabled.  The buffer has an implementation
  *                    defined minimum and maximum size and the value in _buf
@@ -243,7 +243,7 @@ extern "C" {
  *              application.
  * \retval >=0       The number of bytes of metric data available in the
  *                    returned buffer.
- * \retval TH_EFAULT \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL \a _buf_sz is not <tt>sizeof(char *)</tt>, no target
  *                    bitrate has been set, or the first call was made after
  *                    the first frame was submitted for encoding.
@@ -283,7 +283,7 @@ extern "C" {
  *                  of bytes consumed.
  * \retval >0            The number of bytes of metric data required/consumed.
  * \retval 0             No more data is required before the next frame.
- * \retval TH_EFAULT     \a _enc_ctx is <tt>NULL</tt>.
+ * \retval TH_EFAULT     \a _enc is <tt>NULL</tt>.
  * \retval TH_EINVAL     No target bitrate has been set, or the first call was
  *                        made after the first frame was submitted for
  *                        encoding.
@@ -306,7 +306,7 @@ extern "C" {
  * \param[in] _buf <tt>int</tt>: The new target quality, in the range 0...63,
  *                  inclusive.
  * \retval 0             Success.
- * \retval TH_EFAULT     \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT     \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL     A target bitrate has already been specified, or the
  *                        quality index was not in the range 0...63.
  * \retval TH_EIMPL       Not supported by this implementation.*/
@@ -328,10 +328,54 @@ extern "C" {
  *
  * \param[in] _buf <tt>long</tt>: The new target bitrate, in bits per second.
  * \retval 0             Success.
- * \retval TH_EFAULT     \a _enc_ctx or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EFAULT     \a _enc or \a _buf is <tt>NULL</tt>.
  * \retval TH_EINVAL     The target bitrate was not positive.
- * \retval TH_EIMPL       Not supported by this implementation.*/
+ *                       A future version of this library may allow passing 0
+ *                        to disabled rate-controlled mode and return to a
+ *                        quality-based mode, in which case this function will
+ *                        not return an error for that value.
+ * \retval TH_EIMPL      Not supported by this implementation.*/
 #define TH_ENCCTL_SET_BITRATE (30)
+/**Sets the configuration to be compatible with that from the given setup
+ *  header.
+ * This sets the Huffman codebooks and quantization parameters to match those
+ *  found in the given setup header.
+ * This guarantees that packets encoded by this encoder will be decodable using
+ *  a decoder configured with the passed-in setup header.
+ * It does <em>not</em> guarantee that th_encode_flushheader() will produce a
+ *  bit-identical setup header, only that they will be compatible.
+ * If you need a bit-identical setup header, then use the one you passed into
+ *  this command, and not the one returned by th_encode_flushheader().
+ *
+ * This also does <em>not</em> enable or disable VP3 compatibility; that is not
+ *  signaled in the setup header (or anywhere else in the encoded stream), and
+ *  is controlled independently by the #TH_ENCCTL_SET_VP3_COMPATIBLE function.
+ * If you wish to enable VP3 compatibility mode <em>and</em> want the codebooks
+ *  and quantization parameters to match the given setup header, you should
+ *  enable VP3 compatibility before invoking this command, otherwise the
+ *  codebooks and quantization parameters will be reset to the VP3 defaults.
+ *
+ * The current encoder does not support Huffman codebooks which do not contain
+ *  codewords for all 32 tokens.
+ * Such codebooks are legal, according to the specification, but cannot be
+ *  configured with this function.
+ *
+ * \param[in] _buf <tt>unsigned char[]</tt>: The encoded setup header to copy
+ *                                            the configuration from.
+ *                                           This should be the original,
+ *                                            undecoded setup header packet,
+ *                                            and <em>not</em> a #th_setup_info
+ *                                            structure filled in by
+ *                                            th_decode_headerin().
+ * \retval TH_EFAULT     \a _enc or \a _buf is <tt>NULL</tt>.
+ * \retval TH_EINVAL     Encoding has already begun, so the codebooks and
+ *                        quantization parameters cannot be changed, or the
+ *                        data in the setup header was not supported by this
+ *                        encoder.
+ * \retval TH_EBADHEADER \a _buf did not contain a valid setup header packet.
+ * \retval TH_ENOTFORMAT \a _buf did not contain a Theora header at all.
+ * \retval TH_EIMPL   Not supported by this implementation.*/
+#define TH_ENCCTL_SET_COMPAT_CONFIG (32)
 
 /*@}*/
 
@@ -342,7 +386,8 @@ extern "C" {
 /*@{*/
 /**Drop frames to keep within bitrate buffer constraints.
  * This can have a severe impact on quality, but is the only way to ensure that
- *  bitrate targets are met at low rates during sudden bursts of activity.*/
+ *  bitrate targets are met at low rates during sudden bursts of activity.
+ * It is enabled by default.*/
 #define TH_RATECTL_DROP_FRAMES   (0x1)
 /**Ignore bitrate buffer overflows.
  * If the encoder uses so few bits that the reservoir of available bits
@@ -350,14 +395,14 @@ extern "C" {
  * The encoder will not try to use these extra bits in future frames.
  * At high rates this may cause the result to be undersized, but allows a
  *  client to play the stream using a finite buffer; it should normally be
- *  enabled.*/
+ *  enabled, which is the default.*/
 #define TH_RATECTL_CAP_OVERFLOW  (0x2)
 /**Ignore bitrate buffer underflows.
  * If the encoder uses so many bits that the reservoir of available bits
  *  underflows, ignore the deficit.
  * The encoder will not try to make up these extra bits in future frames.
  * At low rates this may cause the result to be oversized; it should normally
- *  be disabled.*/
+ *  be disabled, which is the default.*/
 #define TH_RATECTL_CAP_UNDERFLOW (0x4)
 /*@}*/
 
@@ -401,8 +446,8 @@ typedef struct th_enc_ctx    th_enc_ctx;
  *    packets.
  * - For each uncompressed frame:
  *   - Submit the uncompressed frame via th_encode_ycbcr_in()
- *   - Repeatedly call th_encode_packetout() to retrieve any video data packets
- *      that are ready.
+ *   - Repeatedly call th_encode_packetout() to retrieve any video
+ *      data packets that are ready.
  * - Call th_encode_free() to release all encoder memory.*/
 /*@{*/
 /**Allocates an encoder instance.
@@ -417,7 +462,10 @@ extern th_enc_ctx *th_encode_alloc(const th_info *_info);
  *                See \ref encctlcodes "the list of available control codes"
  *                 for details.
  * \param _buf    The parameters for this control code.
- * \param _buf_sz The size of the parameter buffer.*/
+ * \param _buf_sz The size of the parameter buffer.
+ * \return Possible return values depend on the control code used.
+ *          See \ref encctlcodes "the list of control codes" for
+ *          specific values. Generally 0 indicates success.*/
 extern int th_encode_ctl(th_enc_ctx *_enc,int _req,void *_buf,size_t _buf_sz);
 /**Outputs the next header packet.
  * This should be called repeatedly after encoder initialization until it
@@ -441,11 +489,25 @@ extern int th_encode_flushheader(th_enc_ctx *_enc,
 /**Submits an uncompressed frame to the encoder.
  * \param _enc   A #th_enc_ctx handle.
  * \param _ycbcr A buffer of Y'CbCr data to encode.
+ *               If the width and height of the buffer matches the frame size
+ *                the encoder was initialized with, the encoder will only
+ *                reference the portion inside the picture region.
+ *               Any data outside this region will be ignored, and need not map
+ *                to a valid address.
+ *               Alternatively, you can pass a buffer equal to the size of the
+ *                picture region, if this is less than the full frame size.
+ *               When using subsampled chroma planes, odd picture sizes or odd
+ *                picture offsets may require an unexpected chroma plane size,
+ *                and their use is generally discouraged, as they will not be
+ *                well-supported by players and other media frameworks.
+ *               See Section 4.4 of
+ *                <a href="http://www.theora.org/doc/Theora.pdf">the Theora
+ *                specification</a> for details if you wish to use them anyway.
  * \retval 0         Success.
  * \retval TH_EFAULT \a _enc or \a _ycbcr is <tt>NULL</tt>.
- * \retval TH_EINVAL The buffer size does not match the frame size the encoder
- *                    was initialized with, or encoding has already
- *                    completed.*/
+ * \retval TH_EINVAL The buffer size matches neither the frame size nor the
+ *                    picture size the encoder was initialized with, or
+ *                    encoding has already completed.*/
 extern int th_encode_ycbcr_in(th_enc_ctx *_enc,th_ycbcr_buffer _ycbcr);
 /**Retrieves encoded video data packets.
  * This should be called repeatedly after each frame is submitted to flush any

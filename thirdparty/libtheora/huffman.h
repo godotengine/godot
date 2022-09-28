@@ -11,12 +11,12 @@
  ********************************************************************
 
   function:
-    last mod: $Id: huffman.h 16503 2009-08-22 18:14:02Z giles $
+    last mod: $Id$
 
  ********************************************************************/
 
 #if !defined(_huffman_H)
-# define _hufffman_H (1)
+# define _huffman_H (1)
 # include "theora/codec.h"
 # include "ocintrin.h"
 
