@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-void AudioStreamPlayback::start(float p_from_pos) {
+void AudioStreamPlayback::start(double p_from_pos) {
 	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
 		return;
 	}
@@ -61,14 +61,14 @@ int AudioStreamPlayback::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlayback::get_playback_position() const {
-	float ret;
+double AudioStreamPlayback::get_playback_position() const {
+	double ret;
 	if (GDVIRTUAL_CALL(_get_playback_position, ret)) {
 		return ret;
 	}
 	ERR_FAIL_V_MSG(0, "AudioStreamPlayback::get_playback_position unimplemented!");
 }
-void AudioStreamPlayback::seek(float p_time) {
+void AudioStreamPlayback::seek(double p_time) {
 	if (GDVIRTUAL_CALL(_seek, p_time)) {
 		return;
 	}
@@ -207,8 +207,8 @@ String AudioStream::get_stream_name() const {
 	return String();
 }
 
-float AudioStream::get_length() const {
-	float ret;
+double AudioStream::get_length() const {
+	double ret;
 	if (GDVIRTUAL_CALL(_get_length, ret)) {
 		return ret;
 	}
@@ -309,7 +309,7 @@ String AudioStreamMicrophone::get_stream_name() const {
 	return "Microphone";
 }
 
-float AudioStreamMicrophone::get_length() const {
+double AudioStreamMicrophone::get_length() const {
 	return 0;
 }
 
@@ -382,7 +382,7 @@ float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
 	return AudioDriver::get_singleton()->get_mix_rate();
 }
 
-void AudioStreamPlaybackMicrophone::start(float p_from_pos) {
+void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 	if (active) {
 		return;
 	}
@@ -415,11 +415,11 @@ int AudioStreamPlaybackMicrophone::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackMicrophone::get_playback_position() const {
+double AudioStreamPlaybackMicrophone::get_playback_position() const {
 	return 0;
 }
 
-void AudioStreamPlaybackMicrophone::seek(float p_time) {
+void AudioStreamPlaybackMicrophone::seek(double p_time) {
 	// Can't seek a microphone input
 }
 
@@ -664,7 +664,7 @@ String AudioStreamRandomizer::get_stream_name() const {
 	return "Randomizer";
 }
 
-float AudioStreamRandomizer::get_length() const {
+double AudioStreamRandomizer::get_length() const {
 	return 0;
 }
 
@@ -769,7 +769,7 @@ void AudioStreamRandomizer::_bind_methods() {
 
 AudioStreamRandomizer::AudioStreamRandomizer() {}
 
-void AudioStreamPlaybackRandomizer::start(float p_from_pos) {
+void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 	playing = playback;
 	{
 		float range_from = 1.0 / randomizer->random_pitch_scale;
@@ -812,7 +812,7 @@ int AudioStreamPlaybackRandomizer::get_loop_count() const {
 	return 0;
 }
 
-float AudioStreamPlaybackRandomizer::get_playback_position() const {
+double AudioStreamPlaybackRandomizer::get_playback_position() const {
 	if (playing.is_valid()) {
 		return playing->get_playback_position();
 	}
@@ -820,7 +820,7 @@ float AudioStreamPlaybackRandomizer::get_playback_position() const {
 	return 0;
 }
 
-void AudioStreamPlaybackRandomizer::seek(float p_time) {
+void AudioStreamPlaybackRandomizer::seek(double p_time) {
 	if (playing.is_valid()) {
 		playing->seek(p_time);
 	}

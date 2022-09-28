@@ -6,118 +6,111 @@
 # Mattias Aabmets <mattias.aabmets@gmail.com>, 2019.
 # StReef <streef.gtx@gmail.com>, 2020, 2021.
 # René <renepiik@gmail.com>, 2020.
-# Kritzmensch <streef.gtx@gmail.com>, 2021.
+# Kritzmensch <streef.gtx@gmail.com>, 2021, 2022.
+# dogyx <aaronloit@zohomail.eu>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2021-07-16 05:47+0000\n"
-"Last-Translator: Kritzmensch <streef.gtx@gmail.com>\n"
+"PO-Revision-Date: 2022-09-16 07:12+0000\n"
+"Last-Translator: dogyx <aaronloit@zohomail.eu>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
 "Language: et\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.2-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
-msgstr ""
+msgstr "Graafikatahvli draiver"
 
 #: core/bind/core_bind.cpp
 msgid "Clipboard"
-msgstr ""
+msgstr "Lõikelaud"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Virnakaadrid"
+msgstr "Avatud Ekraan"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Lõpukood"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Luba"
+msgstr "V-Sync Sees"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr ""
+msgstr "V-sync komposiitori kaudu"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr ""
+msgstr "Delta silumine"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Liigutamisrežiim"
+msgstr "Protsessori madala võimsuse režiim"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr ""
+msgstr "Protsessori madala võimsuse režiimi puhkeaeg (µsek)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr ""
+msgstr "Hoia ekraan sees"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Min Window Size"
-msgstr "Suurus: "
+msgstr "Minimaalne akna suurus"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Max Window Size"
-msgstr "Suurus: "
+msgstr "Maksimaalne akna suurus"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Screen Orientation"
-msgstr "Ava dokumentatsioon"
+msgstr "Ekraani orientatsioon"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Window"
-msgstr "Uus aken"
+msgstr "Aken"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Borderless"
-msgstr ""
+msgstr "Ääriseta"
 
 #: core/bind/core_bind.cpp
 msgid "Per Pixel Transparency Enabled"
-msgstr ""
+msgstr "Läbipaistvus piksli kohta lubatud"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp
 msgid "Fullscreen"
-msgstr ""
+msgstr "Täisekraan"
 
 #: core/bind/core_bind.cpp
 msgid "Maximized"
-msgstr ""
+msgstr "Maksimeeritud"
 
 #: core/bind/core_bind.cpp
 msgid "Minimized"
-msgstr ""
+msgstr "Minimeeritud"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp scene/gui/dialogs.cpp
 #: scene/gui/graph_node.cpp
 msgid "Resizable"
-msgstr ""
+msgstr "Suurust muudetav"
 
 #: core/bind/core_bind.cpp core/os/input_event.cpp scene/2d/node_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/physics_body.cpp scene/3d/remote_transform.cpp
 #: scene/gui/control.cpp scene/gui/line_edit.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Position"
-msgstr "Doki asukoht"
+msgstr "Asend"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp editor/editor_settings.cpp
 #: main/main.cpp modules/gridmap/grid_map.cpp
@@ -128,63 +121,56 @@ msgstr "Doki asukoht"
 #: scene/resources/primitive_meshes.cpp scene/resources/sky.cpp
 #: scene/resources/style_box.cpp scene/resources/texture.cpp
 #: scene/resources/visual_shader.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Size"
-msgstr "Suurus: "
+msgstr "Suurus"
 
 #: core/bind/core_bind.cpp
 msgid "Endian Swap"
-msgstr ""
+msgstr "Endiani vahetus"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Editor Hint"
-msgstr "Redaktor"
+msgstr "Toimeti vihje"
 
 #: core/bind/core_bind.cpp
 msgid "Print Error Messages"
-msgstr ""
+msgstr "Trüki veateated"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Iterations Per Second"
-msgstr "Interpolatsiooni režiim"
+msgstr "Iteratsioone sekundis"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Target FPS"
-msgstr "Ressursi tee"
+msgstr "Kaadrisageduse eesmärk"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Skaleerimisrežiim"
+msgstr "Ajaskaala"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Physics Jitter Fix"
-msgstr ""
+msgstr "Füüsika värisemise parandus"
 
 #: core/bind/core_bind.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
-msgstr ""
+msgstr "Viga"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error String"
-msgstr "Redaktori sätted"
+msgstr "Veasõne"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Error Line"
-msgstr "Viga:"
+msgstr "Vearida"
 
 #: core/bind/core_bind.cpp
 msgid "Result"
-msgstr ""
+msgstr "Tulemus"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp main/main.cpp
 msgid "Memory"
-msgstr ""
+msgstr "Mälu"
 
 #: core/command_queue_mt.cpp core/message_queue.cpp
 #: core/register_core_types.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
@@ -195,128 +181,119 @@ msgstr ""
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: servers/visual_server.cpp
 msgid "Limits"
-msgstr ""
+msgstr "Limiidid"
 
 #: core/command_queue_mt.cpp
 msgid "Command Queue"
-msgstr ""
+msgstr "Käskude järjekord"
 
 #: core/command_queue_mt.cpp
 msgid "Multithreading Queue Size (KB)"
-msgstr ""
+msgstr "Lõimtöötluse järjekorra suurus (KB)"
 
 #: core/func_ref.cpp modules/visual_script/visual_script_builtin_funcs.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Function"
-msgstr "Funktsioonid"
+msgstr "Funktsioon"
 
 #: core/image.cpp core/packed_data_container.cpp scene/2d/polygon_2d.cpp
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Data"
-msgstr ""
+msgstr "Andmed"
 
 #: core/io/file_access_network.cpp core/register_core_types.cpp
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp main/main.cpp
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Network"
-msgstr "Võrgu profileerija"
+msgstr "Võrk"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Eemalda"
+msgstr "Kaugfailisüsteem"
 
 #: core/io/file_access_network.cpp
 msgid "Page Size"
-msgstr ""
+msgstr "Lehekülje suurus"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
-msgstr ""
+msgstr "Lehekülje ettelaadimine"
 
 #: core/io/http_client.cpp
 msgid "Blocking Mode Enabled"
-msgstr ""
+msgstr "Blokeerimisrežiim lubatud"
 
 #: core/io/http_client.cpp
-#, fuzzy
 msgid "Connection"
-msgstr "Ühenda"
+msgstr "Ühendus"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
-msgstr ""
+msgstr "Loe tüki suurust"
 
 #: core/io/marshalls.cpp
-#, fuzzy
 msgid "Object ID"
-msgstr "Objekte kuvatud"
+msgstr "Objekti ID"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
 msgid "Allow Object Decoding"
-msgstr ""
+msgstr "Luba objekti dekodeerimine"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
-msgstr ""
+msgstr "Keeldu uutest võrguühendustest"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Network Peer"
-msgstr "Võrgu profileerija"
+msgstr "Võrgukaaslane"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
-#, fuzzy
 msgid "Root Node"
-msgstr "Sõlm"
+msgstr "Juur Node"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Refuse New Connections"
-msgstr "Ühenda"
+msgstr "Keeldu uutest ühendustest"
 
 #: core/io/networked_multiplayer_peer.cpp
-#, fuzzy
 msgid "Transfer Mode"
-msgstr "Skaleerimisrežiim"
+msgstr "Ülekanderežiim"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
-msgstr ""
+msgstr "Kodeerimispuhvri maksimaalne suurus"
 
 #: core/io/packet_peer.cpp
 msgid "Input Buffer Max Size"
-msgstr ""
+msgstr "Sisendpuhvri maksimaalne suurus"
 
 #: core/io/packet_peer.cpp
 msgid "Output Buffer Max Size"
-msgstr ""
+msgstr "Väljundpuhvri maksimaalne suurus"
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
-msgstr ""
+msgstr "Voogedastuskaaslane"
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
-msgstr ""
+msgstr "Suur Endian"
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Andmemassiiv"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
-msgstr ""
+msgstr "Käepigistuse blokeerimine"
 
 #: core/io/udp_server.cpp
 msgid "Max Pending Connections"
-msgstr ""
+msgstr "Maksimaalne ootel ühenduste arv"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -326,7 +303,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Eeldati sõne pikkusega 1 (trükimärk)."
+msgstr "Eeldati sõne pikkusega 1 (tähemärk)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -335,7 +312,6 @@ msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Ebapiisav kogus baite nende dekodeerimiseks või kehtetu formaat."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Väljendis on kehtetu sisend %i (mitte edastatud)"
 
@@ -366,209 +342,193 @@ msgstr "'%' kutsudes:"
 #: core/math/random_number_generator.cpp
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Seed"
-msgstr ""
+msgstr "Seeme"
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
 msgstr "Olek"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
-msgstr ""
+msgstr "Sõnumijärjekord"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Maksimaalne suurus (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Liigutamisrežiim"
+msgstr "Hiire režiim"
 
 #: core/os/input.cpp
 msgid "Use Accumulated Input"
-msgstr ""
+msgstr "Kasuta akumuleeritud sisendit"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
 msgid "Device"
-msgstr ""
+msgstr "Seade"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Alt"
-msgstr "Tähelepanu!"
+msgstr "Alt"
 
 #: core/os/input_event.cpp
 msgid "Shift"
-msgstr ""
+msgstr "Shift"
 
 #: core/os/input_event.cpp
 msgid "Control"
-msgstr ""
+msgstr "Control"
 
 #: core/os/input_event.cpp
 msgid "Meta"
-msgstr ""
+msgstr "Meta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Command"
-msgstr "Kogukond"
+msgstr "Command"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Physical"
-msgstr "Luba"
+msgstr "Füüsiline"
 
 #: core/os/input_event.cpp scene/2d/touch_screen_button.cpp
 #: scene/gui/base_button.cpp scene/gui/texture_button.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Pressed"
-msgstr "Eelseadistus"
+msgstr "Vajutatud"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Scancode"
-msgstr "Otsi"
+msgstr "Klahvikood"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
-msgstr ""
+msgstr "Füüsiline klahvikood"
 
 #: core/os/input_event.cpp
 msgid "Unicode"
-msgstr ""
+msgstr "Unicode"
 
 #: core/os/input_event.cpp
 msgid "Echo"
-msgstr ""
+msgstr "Kaja"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
 msgid "Button Mask"
-msgstr ""
+msgstr "Nupu mask"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Konstant"
+msgstr "Globaalne positsioon"
 
 #: core/os/input_event.cpp
 msgid "Factor"
-msgstr ""
+msgstr "Faktor"
 
 #: core/os/input_event.cpp
 msgid "Button Index"
-msgstr ""
+msgstr "Nupu indeks"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
-msgstr ""
+msgstr "Topeltklõps"
 
 #: core/os/input_event.cpp
 msgid "Tilt"
-msgstr ""
+msgstr "Kallutus"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pressure"
-msgstr "Eelseadistus"
+msgstr "Surve"
 
 #: core/os/input_event.cpp
 msgid "Pen Inverted"
-msgstr ""
+msgstr "Pliiats ümberpööratud"
 
 #: core/os/input_event.cpp
 msgid "Relative"
-msgstr ""
+msgstr "Suhteline"
 
 #: core/os/input_event.cpp scene/2d/camera_2d.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/resources/environment.cpp
 #: scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Speed"
-msgstr "Skaleerimisrežiim"
+msgstr "Kiirus"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
 msgid "Axis"
-msgstr ""
+msgstr "Telg"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "(väärtus)"
+msgstr "Telje väärtus"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
 msgid "Index"
-msgstr ""
+msgstr "Indeks"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
 #: scene/2d/touch_screen_button.cpp
 msgid "Action"
-msgstr ""
+msgstr "Tegevus"
 
 #: core/os/input_event.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
 msgid "Strength"
-msgstr ""
+msgstr "Tugevus"
 
 #: core/os/input_event.cpp
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Muuda"
+msgstr "Kanal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Kasutus"
+msgstr "Sõnum"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pitch"
-msgstr "Frontaal"
+msgstr "Helikõrgus"
 
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
 msgid "Velocity"
-msgstr ""
+msgstr "Kiirus"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
-msgstr ""
+msgstr "Instrument"
 
 #: core/os/input_event.cpp
 msgid "Controller Number"
-msgstr ""
+msgstr "Kontrolleri number"
 
 #: core/os/input_event.cpp
 msgid "Controller Value"
-msgstr ""
+msgstr "Kontrolleri väärtus"
 
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Animatsioon"
+msgstr "Rakendus"
 
 #: core/project_settings.cpp main/main.cpp
 msgid "Config"
-msgstr ""
+msgstr "Konfiig"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Projekti sätted..."
+msgstr "Projekti seadete ülekirjutamine"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -599,40 +559,39 @@ msgstr "Käivita"
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/run_settings_dialog.cpp main/main.cpp
 msgid "Main Scene"
-msgstr ""
+msgstr "Peamine stseen"
 
 #: core/project_settings.cpp
 msgid "Disable stdout"
-msgstr ""
+msgstr "Lülita stdout välja"
 
 #: core/project_settings.cpp
 msgid "Disable stderr"
-msgstr ""
+msgstr "Lülita stderr välja"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Kasuta varjatud projektiandmete kausta"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Kasuta kohandatud kasutaja kausta"
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Kohandatud kasutaja kausta nimi"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "Kuva kõik"
+msgstr "Ekraan"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Laius"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -641,20 +600,19 @@ msgstr ""
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
 msgid "Height"
-msgstr ""
+msgstr "Kõrgus"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Alati pealmine"
 
 #: core/project_settings.cpp
 msgid "Test Width"
-msgstr ""
+msgstr "Testimise laius"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Testimine"
+msgstr "Testimise kõrgus"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -662,9 +620,8 @@ msgid "Audio"
 msgstr "Heli"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Default Bus Layout"
-msgstr "Lae vaikimise siini paigutus."
+msgstr "Siini vaikepaigutus"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -675,90 +632,84 @@ msgstr "Redaktor"
 
 #: core/project_settings.cpp
 msgid "Main Run Args"
-msgstr ""
+msgstr "Peamised jooksuargumendid"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Scene Naming"
-msgstr "Stseeni tee:"
+msgstr "Stseeni nimetamine"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
-msgstr ""
+msgstr "Otsi faililaienditest"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Skriptimallide otsingutee"
 
 #: core/project_settings.cpp
 msgid "Version Control Autoload On Startup"
-msgstr ""
+msgstr "Versioonikontrolli automaatne laadimine käivitamisel"
 
 #: core/project_settings.cpp
 msgid "Version Control Plugin Name"
-msgstr ""
+msgstr "Versioonikontrolli plugina nimi"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
 msgid "Input"
-msgstr ""
+msgstr "Sisend"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "UI Aktsepteeri"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Vali"
+msgstr "UI Vali"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Cancel"
-msgstr "Tühista"
+msgstr "UI Tühista"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "Fookuse tee"
+msgstr "UI Fokusseeri järgmine"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "Fookuse tee"
+msgstr "UI fokusseeri eelmine"
 
 #: core/project_settings.cpp
 msgid "UI Left"
-msgstr ""
+msgstr "UI Vasakule"
 
 #: core/project_settings.cpp
 msgid "UI Right"
-msgstr ""
+msgstr "UI Paremale"
 
 #: core/project_settings.cpp
 msgid "UI Up"
-msgstr ""
+msgstr "UI Üles"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Alla"
+msgstr "UI Alla"
 
 #: core/project_settings.cpp
 msgid "UI Page Up"
-msgstr ""
+msgstr "UI Leht üles"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
-msgstr ""
+msgstr "UI leht alla"
 
 #: core/project_settings.cpp
 msgid "UI Home"
-msgstr ""
+msgstr "UI Kodu"
 
 #: core/project_settings.cpp
 msgid "UI End"
-msgstr ""
+msgstr "UI Lõpp"
 
 #: core/project_settings.cpp main/main.cpp modules/bullet/register_types.cpp
 #: modules/bullet/space_bullet.cpp scene/2d/physics_body_2d.cpp
@@ -769,7 +720,7 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Physics"
-msgstr ""
+msgstr "Füüsika"
 
 #: core/project_settings.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -779,11 +730,11 @@ msgstr ""
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 msgid "Smooth Trimesh Collision"
-msgstr ""
+msgstr "Sujuv Trimeshi kokkupõrge"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -795,7 +746,7 @@ msgstr ""
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Rendering"
-msgstr ""
+msgstr "Renderdamine"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -805,18 +756,17 @@ msgstr ""
 #: scene/resources/multimesh.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Quality"
-msgstr ""
+msgstr "Kvaliteet"
 
 #: core/project_settings.cpp scene/gui/file_dialog.cpp
 #: scene/main/scene_tree.cpp scene/resources/navigation_mesh.cpp
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Filters"
-msgstr "Filtreeri sõlmed"
+msgstr "Filtrid"
 
 #: core/project_settings.cpp scene/main/viewport.cpp
 msgid "Sharpen Intensity"
-msgstr ""
+msgstr "Teravdamise intensiivsus"
 
 #: core/project_settings.cpp editor/editor_export.cpp editor/editor_node.cpp
 #: editor/editor_settings.cpp editor/plugins/script_editor_plugin.cpp
@@ -832,9 +782,8 @@ msgstr "Silumine"
 
 #: core/project_settings.cpp main/main.cpp modules/gdscript/gdscript.cpp
 #: modules/visual_script/visual_script.cpp scene/resources/dynamic_font.cpp
-#, fuzzy
 msgid "Settings"
-msgstr "Sätted..."
+msgstr "Seaded"
 
 #: core/project_settings.cpp editor/script_editor_debugger.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -842,22 +791,20 @@ msgid "Profiler"
 msgstr "Profileerija"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Max Functions"
-msgstr "Loo funktsioon"
+msgstr "Funktsioone maksimaalselt"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
 msgid "Compression"
-msgstr ""
+msgstr "Kompressioon"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Formats"
-msgstr "Formaat"
+msgstr "Formaadid"
 
 #: core/project_settings.cpp
 msgid "Zstd"
-msgstr ""
+msgstr "Zstd"
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
@@ -865,35 +812,36 @@ msgstr ""
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr ""
+msgstr "Kompressiooni tase"
 
 #: core/project_settings.cpp
+#, fuzzy
 msgid "Window Log Size"
-msgstr ""
+msgstr "Akna logi suurus"
 
 #: core/project_settings.cpp
 msgid "Zlib"
-msgstr ""
+msgstr "Zlib"
 
 #: core/project_settings.cpp
 msgid "Gzip"
-msgstr ""
+msgstr "Gzip"
 
 #: core/project_settings.cpp platform/android/export/export.cpp
 msgid "Android"
-msgstr ""
+msgstr "Android"
 
 #: core/project_settings.cpp
 msgid "Modules"
-msgstr ""
+msgstr "Moodulid"
 
 #: core/register_core_types.cpp
 msgid "TCP"
-msgstr ""
+msgstr "TCP"
 
 #: core/register_core_types.cpp
 msgid "Connect Timeout Seconds"
-msgstr ""
+msgstr "Ühendamise aegumistähtaeg sekundites"
 
 #: core/register_core_types.cpp
 msgid "Packet Peer Stream"
@@ -905,12 +853,11 @@ msgstr ""
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
-#, fuzzy
 msgid "Certificates"
-msgstr "Tipud"
+msgstr "Sertifikaadid"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_resource_picker.cpp
@@ -919,9 +866,8 @@ msgid "Resource"
 msgstr "Ressurss"
 
 #: core/resource.cpp
-#, fuzzy
 msgid "Local To Scene"
-msgstr "Sule stseen"
+msgstr "Kohalik stseenile"
 
 #: core/resource.cpp editor/dependency_editor.cpp
 #: editor/editor_autoload_settings.cpp editor/plugins/path_editor_plugin.cpp
@@ -932,20 +878,19 @@ msgstr "Tee"
 
 #: core/script_language.cpp
 msgid "Source Code"
-msgstr ""
+msgstr "Lähtekood"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr ""
+msgstr "Lokaal"
 
 #: core/translation.cpp
-#, fuzzy
 msgid "Test"
-msgstr "Testimine"
+msgstr "Test"
 
 #: core/translation.cpp scene/resources/font.cpp
 msgid "Fallback"
-msgstr ""
+msgstr "Varuvariant"
 
 #: core/ustring.cpp scene/resources/segment_shape_2d.cpp
 msgid "B"
@@ -981,17 +926,17 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "Puhvrid"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Buffer Size (KB)"
-msgstr ""
+msgstr "Lõuendipolügooni puhvri suurus (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "Lõuendipolügoonide indekspuhvri suurus (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -1003,54 +948,52 @@ msgstr ""
 #: servers/physics_2d/space_2d_sw.cpp servers/physics_2d_server.cpp
 #: servers/visual_server.cpp
 msgid "2D"
-msgstr ""
+msgstr "2D"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Snapping"
-msgstr "Intervall:"
+msgstr "Naksamine"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
-#, fuzzy
 msgid "Use GPU Pixel Snap"
-msgstr "Kasuta ruudustiku naksamist"
+msgstr "Kasuta GPU piksli naksamist"
 
 #: drivers/gles2/rasterizer_scene_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Immediate Buffer Size (KB)"
-msgstr ""
+msgstr "Kohene puhvri suurus (KB)"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Lightmapping"
-msgstr ""
+msgstr "Valguskaardistamine"
 
 #: drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Use Bicubic Sampling"
-msgstr ""
+msgstr "Kasutage bikuubilist proovivõtmist"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Max renderdatavaid elemente"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Max renderdatavaid tulesid"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Reflections"
-msgstr ""
+msgstr "Max renderdatavaid peegeldusi"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Max tulesid objekti kohta"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
-msgstr ""
+msgstr "Pinnaalune hajumine"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -1062,29 +1005,28 @@ msgstr ""
 #: scene/animation/animation_blend_tree.cpp scene/gui/control.cpp
 #: scene/main/canvas_layer.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Scale"
-msgstr "Skaleerimisrežiim"
+msgstr "Skaala"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Follow Surface"
-msgstr ""
+msgstr "Jälgi pinda"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
-msgstr ""
+msgstr "Kaalu proovid"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Voxel Cone Tracing"
-msgstr ""
+msgstr "Vokseli koonuse jälgimine"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Kõrge kvaliteet"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
-msgstr ""
+msgstr "Segu kuju max puhvri suurus (KB)"
 
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
@@ -1128,12 +1070,14 @@ msgid "Move Bezier Points"
 msgstr "Liiguta Bezieri punkte"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "Anim duplikaatvõtmed"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "Anim kustuta võtmed"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -1158,9 +1102,8 @@ msgstr ""
 #: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Frame"
-msgstr "Kaadri %"
+msgstr "Kaader"
 
 #: editor/animation_track_editor.cpp editor/editor_profiler.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
@@ -1171,16 +1114,14 @@ msgstr "Aeg"
 
 #: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Location"
-msgstr "Tõlked"
+msgstr "Asukoht"
 
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Rotation"
-msgstr "Pööramisrežiim"
+msgstr "Pööramine"
 
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
@@ -1188,14 +1129,13 @@ msgid "Value"
 msgstr "Väärtus"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Arg Count"
-msgstr "Sisesta võti siia"
+msgstr "Arg kogus"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Argumendid"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
@@ -1206,28 +1146,26 @@ msgstr "Tüüp"
 
 #: editor/animation_track_editor.cpp
 msgid "In Handle"
-msgstr ""
+msgstr "Käepidemes"
 
 #: editor/animation_track_editor.cpp
 msgid "Out Handle"
-msgstr ""
+msgstr "Väljas käepide"
 
 #: editor/animation_track_editor.cpp
 #: editor/import/resource_importer_texture.cpp
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
 msgid "Stream"
-msgstr ""
+msgstr "Voog"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start Offset"
-msgstr "Liigutamisrežiim"
+msgstr "Algnihe"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "End Offset"
-msgstr "Kustuta sõlm(ed)"
+msgstr "Lõpunihe"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1241,7 +1179,7 @@ msgstr "Animatsioon"
 
 #: editor/animation_track_editor.cpp
 msgid "Easing"
-msgstr ""
+msgstr "Lõdvendamine"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Multi Change Keyframe Time"
@@ -1270,7 +1208,7 @@ msgstr "Muuda animatsiooni pikkust"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Muuda animatsiooni silmust"
+msgstr "Muuda animatsiooni tsüklit"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -1278,23 +1216,23 @@ msgstr "Atribuudi rada"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr "3D muundus rada"
+msgstr "3D transformatsiooni rada"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr ""
+msgstr "Meetodi kutsumise rada"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr "Bezieri kurvi rada"
+msgstr "Bezier-kõvera rada"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr "Heli taasesituse rada"
+msgstr "Helimängimise rada"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr "Animatsiooni taasesituse rada"
+msgstr "Animatsiooni mängimise rada"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
@@ -1335,40 +1273,38 @@ msgstr "Lülita see rada sisse/välja."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Uuendusrežiim (kuidas see omadus on seatud)"
+msgstr "Uuendusrežiim (kuidas see atribuut on määratud)"
 
 #: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
 msgstr "Interpolatsiooni režiim"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Korduse mähise režiim (nterpoleeri lõpp silmuse alguses)"
+msgstr "Korduse mähise režiim (interpoleeri lõpp algusega tsükli kordudes)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
 msgstr "Eemalda see rada."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Aeg (sek): "
+msgstr "Aeg (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Doki asukoht"
+msgstr "Asukoht:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "Pööramisrežiim"
+msgstr "Pööramine:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Scale:"
-msgstr ""
+msgstr "Skaala:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
@@ -1379,13 +1315,12 @@ msgid "Type:"
 msgstr "Tüüp:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "Vigane nimi."
+msgstr "(Kehtetu, eeldatav tüüp: %s)"
 
 #: editor/animation_track_editor.cpp
 msgid "Easing:"
-msgstr ""
+msgstr "Lõdvestumine:"
 
 #: editor/animation_track_editor.cpp
 msgid "In-Handle:"
@@ -1401,22 +1336,20 @@ msgid "Stream:"
 msgstr "Heli kuulaja"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Start (s):"
-msgstr "Käivita"
+msgstr "Algus (s):"
 
 #: editor/animation_track_editor.cpp
 msgid "End (s):"
-msgstr ""
+msgstr "Lõpp (s):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Clip:"
-msgstr "Animatsiooni klipid:"
+msgstr "Animatsiooni klipp:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Lülita rada sisse"
+msgstr "Lülita raja seesolekut"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -1496,14 +1429,12 @@ msgstr "Eemalda animatsiooni rada"
 #: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "Editors"
-msgstr "Redaktor"
+msgstr "Toimetid"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
-#, fuzzy
 msgid "Confirm Insert Track"
-msgstr "Sisesta animatsiooni rada ja võti"
+msgstr "Kinnitage raja lisamine"
 
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
@@ -1512,7 +1443,7 @@ msgstr "Loo uus rada %s-le ja sisesta võti?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr ""
+msgstr "Kas luua %d UUT rada ja sisestada võtmed?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
 #: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
@@ -1528,6 +1459,7 @@ msgid "Create"
 msgstr "Loo"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Insert"
 msgstr "Animatsiooni sisestus"
 
@@ -1698,7 +1630,7 @@ msgstr "Vali AnimationPlayer sõlm, et luua ja redigeerida animatsioone."
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
-msgstr ""
+msgstr "Näita ainult radu puus valitud node'idelt."
 
 #: editor/animation_track_editor.cpp
 msgid "Group tracks by node or display them as plain list."
@@ -1884,31 +1816,31 @@ msgstr ""
 
 #: editor/code_editor.cpp
 msgid "Go to Line"
-msgstr ""
+msgstr "Mine reale"
 
 #: editor/code_editor.cpp
 msgid "Line Number:"
-msgstr ""
+msgstr "Reanumber:"
 
 #: editor/code_editor.cpp
 msgid "%d replaced."
-msgstr ""
+msgstr "%d asendatud."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "%d vaste."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d matches."
-msgstr ""
+msgstr "%d vastet."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
-msgstr ""
+msgstr "Sobita suur- ja väiketähed"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
-msgstr ""
+msgstr "Terved sõnad"
 
 #: editor/code_editor.cpp
 msgid "Replace"
@@ -1916,76 +1848,78 @@ msgstr "Asenda"
 
 #: editor/code_editor.cpp
 msgid "Replace All"
-msgstr ""
+msgstr "Asenda kõik"
 
 #: editor/code_editor.cpp
 msgid "Selection Only"
-msgstr ""
+msgstr "Ainult valik"
 
 #: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/text_editor.cpp
 msgid "Standard"
-msgstr ""
+msgstr "Standard"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr ""
+msgstr "Lülita skriptide paneel sisse/välja"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom In"
-msgstr ""
+msgstr "Suurenda"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Out"
-msgstr ""
+msgstr "Vähenda"
 
 #: editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "Lähtesta suum"
 
 #: editor/code_editor.cpp modules/gdscript/gdscript.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Hoiatused"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
-msgstr ""
+msgstr "Rea- ja veerunumbrid."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr ""
+msgstr "Tuleb täpsustada siht-node'i meetod."
 
 #: editor/connections_dialog.cpp
 msgid "Method name must be a valid identifier."
-msgstr ""
+msgstr "Meetodi nimi peab olema kehtiv identifikaator."
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
+"Sihtmeetodit ei leitud. Määrake kehtiv meetod või lisage siht-node'ile "
+"skript."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
-msgstr ""
+msgstr "Ühenda node'iga:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Script:"
-msgstr ""
+msgstr "Ühenda skriptiga:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
-msgstr ""
+msgstr "Signaalilt:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr ""
+msgstr "Stseen ei sisalda skripti."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp
@@ -2007,15 +1941,15 @@ msgstr "Eemalda"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Lisa ekstra kutsumisargument:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Ekstra kutsumisargumendid:"
 
 #: editor/connections_dialog.cpp
 msgid "Receiver Method:"
-msgstr ""
+msgstr "Vastuvõtjameetod:"
 
 #: editor/connections_dialog.cpp scene/3d/room_manager.cpp
 #: servers/visual_server.cpp
@@ -2024,12 +1958,14 @@ msgstr "Täpsem"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr ""
+msgstr "Edasi lükatud"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr ""
+"Lükkab signaali edasi, salvestades selle järjekorda ja väljastab seda ainult "
+"tühikäigul."
 
 #: editor/connections_dialog.cpp scene/resources/texture.cpp
 msgid "Oneshot"
@@ -2037,11 +1973,11 @@ msgstr "Ainulaadne"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Ühendab signaali lahti pärast selle esimest väljastamist."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
-msgstr ""
+msgstr "Signaali ei saa ühendada"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -2064,19 +2000,19 @@ msgstr "Ühenda"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
-msgstr ""
+msgstr "Signaal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Ühenda '%s' ja '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr ""
+msgstr "Ühenda '%s' ja '%s' lahti"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr ""
+msgstr "Ühenda kõik lahti signaalist: %s"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -2089,45 +2025,45 @@ msgstr "Katkesta ühendus"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
-msgstr ""
+msgstr "Signaali ühendamine meetodiga"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
-msgstr ""
+msgstr "Muuda ühendust:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
+"Kas olete kindel, et soovite eemaldada kõik ühendused signaalist \"%s\"?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
 msgstr "Signaalid"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Filter signals"
-msgstr "Filtreeri sõlmed"
+msgstr "Filtreeri signaale"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
+"Kas olete kindel, et soovite sellest signaalist kõik ühendused eemaldada?"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr ""
+msgstr "Ühenda kõik lahti"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
 msgstr "Muuda..."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Go to Method"
-msgstr "Mine järmisesse kausta."
+msgstr "Mine meetodi juurde"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr ""
+msgstr "Muuda %s tüüpi"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
@@ -2135,15 +2071,15 @@ msgstr "Muuda"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr ""
+msgstr "Loo uus %s"
 
 #: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "No results for \"%s\"."
-msgstr ""
+msgstr "Päringule \"%s\" pole tulemusi."
 
 #: editor/create_dialog.cpp editor/property_selector.cpp
 msgid "No description available for %s."
-msgstr ""
+msgstr "%s jaoks kirjeldus puudub."
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
@@ -2177,23 +2113,27 @@ msgstr "Kirjeldus:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
-msgstr ""
+msgstr "Otsi asendust järgnevale:"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies For:"
-msgstr ""
+msgstr "Sõltuvused järgneva jaoks:"
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Stseeni '%s' redigeeritakse praegu.\n"
+"Muudatused jõustuvad ainult uuesti laadimisel."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Ressurss '%s' on kasutusel.\n"
+"Muudatused jõustuvad ainult uuesti laadimisel."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -2206,15 +2146,15 @@ msgstr "Sõltuvused:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Paranda katkised"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Sõltuvuste toimeti"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
-msgstr ""
+msgstr "Otsi asendusressurssi:"
 
 #: editor/dependency_editor.cpp editor/editor_file_dialog.cpp
 #: editor/editor_help_search.cpp editor/editor_node.cpp
@@ -2228,7 +2168,7 @@ msgstr "Ava"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "Omanikud: %s (Kokku: %d)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2236,6 +2176,9 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
+"Kas eemaldada valitud failid projektist? (Ei saa tagasi võtta.)\n"
+"Sõltuvalt teie failisüsteemi konfiguratsioonist teisaldatakse failid "
+"süsteemi prügikasti või kustutatakse jäädavalt."
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -2245,46 +2188,50 @@ msgid ""
 "Depending on your filesystem configuration, the files will either be moved "
 "to the system trash or deleted permanently."
 msgstr ""
+"Eemaldatavaid faile vajavad toimimiseks muud ressursid.\n"
+"Eemaldage need ikkagi? (Ei saa tagasi võtta.)\n"
+"Sõltuvalt teie failisüsteemi konfiguratsioonist teisaldatakse failid "
+"süsteemi prügikasti või kustutatakse jäädavalt."
 
 #: editor/dependency_editor.cpp
 msgid "Cannot remove:"
-msgstr ""
+msgstr "Ei saa eemaldada:"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
-msgstr ""
+msgstr "Viga laadimisel:"
 
 #: editor/dependency_editor.cpp
 msgid "Load failed due to missing dependencies:"
-msgstr ""
+msgstr "Laadimine ebaõnnestus puuduvate sõltuvuste tõttu:"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Ava ikkagi"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Mida tuleks teha?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Paranda sõltuvused"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
-msgstr ""
+msgstr "Laadimisel ilmnesid vead!"
 
 #: editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr ""
+msgstr "Kas kustutada jäädavalt %d üksus(t)? (Ei saa tagasi võtta!)"
 
 #: editor/dependency_editor.cpp
 msgid "Show Dependencies"
-msgstr ""
+msgstr "Näita sõltuvusi"
 
 #: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
-msgstr ""
+msgstr "Orbressursside haldur"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -2296,19 +2243,19 @@ msgstr "Kustuta"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Omab"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
-msgstr ""
+msgstr "Ressursid ilma selge omandiõiguseta:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
-msgstr ""
+msgstr "Muuda sõnastiku võtit"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Value"
-msgstr ""
+msgstr "Muuda sõnastiku väärtust"
 
 #: editor/editor_about.cpp
 msgid "Thanks from the Godot community!"
@@ -2332,10 +2279,9 @@ msgstr "Juhtiv arendaja"
 
 #. TRANSLATORS: This refers to a job title.
 #: editor/editor_about.cpp
-#, fuzzy
 msgctxt "Job Title"
 msgid "Project Manager"
-msgstr "projektihaldur"
+msgstr "Projekti juht"
 
 #: editor/editor_about.cpp
 msgid "Developers"
@@ -2415,35 +2361,35 @@ msgstr "Litsensid"
 
 #: editor/editor_asset_installer.cpp
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
-msgstr ""
+msgstr "Viga varade faili \"%s\" avamisel (pole ZIP-formaadis)."
 
 #: editor/editor_asset_installer.cpp
 msgid "%s (already exists)"
-msgstr ""
+msgstr "%s (juba olemas)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - %d file(s) conflict with your project:"
-msgstr ""
+msgstr "Vara \"%s\" - %d faili(de) sisu on vastuolus teie projektiga:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Contents of asset \"%s\" - No files conflict with your project:"
-msgstr ""
+msgstr "Vara \"%s\" sisu - ükski fail ei ole teie projektiga vastuolus:"
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "Varade lahtipakkimine"
 
 #: editor/editor_asset_installer.cpp
 msgid "The following files failed extraction from asset \"%s\":"
-msgstr ""
+msgstr "Järgmised failid ebaõnnestusid varast \"%s\" väljavõtmisel:"
 
 #: editor/editor_asset_installer.cpp
 msgid "(and %s more files)"
-msgstr ""
+msgstr "(ja veel %s faili)"
 
 #: editor/editor_asset_installer.cpp
 msgid "Asset \"%s\" installed successfully!"
-msgstr ""
+msgstr "Vara \"%s\" paigaldatud edukalt!"
 
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -2455,9 +2401,8 @@ msgid "Install"
 msgstr "Paigalda"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "Asset Installer"
-msgstr "Paigalda"
+msgstr "Varade paigaldaja"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -2469,19 +2414,19 @@ msgstr "Lisa efekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Rename Audio Bus"
-msgstr ""
+msgstr "Nimeta ümber audiosiin"
 
 #: editor/editor_audio_buses.cpp
 msgid "Change Audio Bus Volume"
-msgstr ""
+msgstr "Muuda audiosiini helitugevust"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr ""
+msgstr "Lülita audiosiini soolo sisse/välja"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr ""
+msgstr "Lülita helisiini vaigistamine sisse/välja"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
@@ -2505,7 +2450,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Drag & drop to rearrange."
-msgstr ""
+msgstr "Ümberkorraldamiseks lohistage."
 
 #: editor/editor_audio_buses.cpp
 msgid "Solo"
@@ -2520,9 +2465,8 @@ msgid "Bypass"
 msgstr "Jäta vahele"
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Bus Options"
-msgstr "Klassi valikud"
+msgstr "Siinivalikud"
 
 #: editor/editor_audio_buses.cpp editor/filesystem_dock.cpp
 #: editor/project_export.cpp editor/scene_tree_dock.cpp
@@ -2535,23 +2479,23 @@ msgstr "Lähtesta valjus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Effect"
-msgstr ""
+msgstr "Kustuta efekt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
-msgstr ""
+msgstr "Lisa audiosiin"
 
 #: editor/editor_audio_buses.cpp
 msgid "Master bus can't be deleted!"
-msgstr ""
+msgstr "Põhisiini ei saa kustutada!"
 
 #: editor/editor_audio_buses.cpp
 msgid "Delete Audio Bus"
-msgstr ""
+msgstr "Kustuta audiosiin"
 
 #: editor/editor_audio_buses.cpp
 msgid "Duplicate Audio Bus"
-msgstr ""
+msgstr "Duplikeeri audiosiin"
 
 #: editor/editor_audio_buses.cpp
 msgid "Reset Bus Volume"
@@ -2559,15 +2503,15 @@ msgstr "Lähtesta siini valjus"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Audio Bus"
-msgstr ""
+msgstr "Liiguta audiosiin"
 
 #: editor/editor_audio_buses.cpp
 msgid "Save Audio Bus Layout As..."
-msgstr ""
+msgstr "Salvesta audiosiini paigutus kui..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr ""
+msgstr "Uue paigutuse asukoht..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -2578,9 +2522,8 @@ msgid "There is no '%s' file."
 msgstr "Faili '%s' ei ole eksisteeri."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Layout:"
-msgstr "Paigutus"
+msgstr "Paigutus:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2629,9 +2572,8 @@ msgid "Create a new Bus Layout."
 msgstr "Loo uus siini paigutus."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Audio Bus Layout"
-msgstr "Ava heliliinide paigutus"
+msgstr "Audiosiini paigutus"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
@@ -2639,7 +2581,7 @@ msgstr "Vigane nimi."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Ei saa alata numbriga."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2651,11 +2593,11 @@ msgstr "Ei tohi kokkupõrkuda mängumootori juba olemasoleva klassi nimega."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing built-in type name."
-msgstr ""
+msgstr "Ei tohi põrkuda olemasoleva sisse-ehitatud tüübinimega."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing global constant name."
-msgstr ""
+msgstr "Ei tohi põrkuda olemasoleva globaalse konstandi nimega."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
@@ -2663,11 +2605,11 @@ msgstr "Võtmesõnu ei saa kasutada automaatsete nimedena."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr ""
+msgstr "Automaatlaadimine '%s' on juba olemas!"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
-msgstr ""
+msgstr "Nimeta automaatlaadimine ümber"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
@@ -2675,11 +2617,11 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
-msgstr ""
+msgstr "Liiguta automaatlaadimist"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Remove Autoload"
-msgstr ""
+msgstr "Eemalda automaatlaadimine"
 
 #: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 #: modules/gdscript/gdscript.cpp platform/android/export/export_plugin.cpp
@@ -2692,31 +2634,30 @@ msgstr "Luba"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
-msgstr ""
+msgstr "Paiguta automaatlaadimised ümber"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Can't add autoload:"
-msgstr ""
+msgstr "Ei saa lisada automaatlaadimist:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "%s is an invalid path. File does not exist."
-msgstr "Faili ei ole olemas."
+msgstr "%s on kehtetu failitee. Faili pole olemas."
 
 #: editor/editor_autoload_settings.cpp
 msgid "%s is an invalid path. Not in resource path (res://)."
-msgstr ""
+msgstr "%s on kehtetu failitee. Ei ole ressursiteel (res://)."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
-msgstr ""
+msgstr "Lisa automaatlaadimine"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
 #: editor/editor_plugin_settings.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
-msgstr "Tee:"
+msgstr "Failitee:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
@@ -2724,7 +2665,7 @@ msgstr "Sõlme nimi:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Global Variable"
-msgstr ""
+msgstr "Globaalne muutuja"
 
 #: editor/editor_data.cpp
 msgid "Paste Params"
@@ -2732,11 +2673,11 @@ msgstr "Kleebi parameetrid"
 
 #: editor/editor_data.cpp
 msgid "Updating Scene"
-msgstr "Värskendan stseeni"
+msgstr "Stseeni värskendamine"
 
 #: editor/editor_data.cpp
 msgid "Storing local changes..."
-msgstr "Salvestan kohalikud muudatused..."
+msgstr "Kohalike muudatuste salvestamine..."
 
 #: editor/editor_data.cpp
 msgid "Updating scene..."
@@ -2754,11 +2695,11 @@ msgstr "[salvestamata]"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Please select a base directory first."
-msgstr "Palun valige kõigepealt baaskataloog."
+msgstr "Palun valige kõigepealt baaskaust."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
-msgstr "Vali kataloog"
+msgstr "Valige kaust"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
@@ -2785,20 +2726,19 @@ msgstr "Vali"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Projekti eksportimine platvormi jaoks:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Kopeeri sõlme tee"
+msgstr "Lõpetas koos hoiatustega."
 
 #: editor/editor_export.cpp
 msgid "Completed successfully."
-msgstr ""
+msgstr "Lõpetas edukalt."
 
 #: editor/editor_export.cpp
 msgid "Failed."
-msgstr ""
+msgstr "Ebaõnnestus."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2813,29 +2753,24 @@ msgid "Packing"
 msgstr "Pakin"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Salvesta kui"
+msgstr "Salvesta PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Ei saanud luua kausta."
+msgstr "Ei saa luua faili \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Ei saanud luua kausta."
+msgstr "Projektifailide eksportimine ebaõnnestus."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Faili ei saa kirjutamiseks avada:"
+msgstr "Faili ei saa avada lugemiseks teelt \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Salvesta kui"
+msgstr "Salvesta ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2865,22 +2800,20 @@ msgstr ""
 "tagasilangemine lubatud”."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'PVRTC' texture compression for GLES2. Enable "
 "'Import Pvrtc' in Project Settings."
 msgstr ""
-"Sihtplatvorm nõuab GLES2 jaoks 'ETC' tekstuuri tihendamist. Projekti "
-"seadetes lubage „Impordi ETC”."
+"Sihtplatvorm nõuab GLES2 jaoks 'PVRTC' tekstuuri tihendamist. Projekti "
+"seadetes lubage „Impordi PVRTC”."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid ""
 "Target platform requires 'ETC2' or 'PVRTC' texture compression for GLES3. "
 "Enable 'Import Etc 2' or 'Import Pvrtc' in Project Settings."
 msgstr ""
-"Sihtplatvorm nõuab GLES3 jaoks 'ETC2' tekstuuri tihendamist. Projekti "
-"seadetes lubage „Impordi ETC2”."
+"Sihtplatvorm nõuab GLES3 jaoks \"ETC2\" või \"PVRTC\" tekstuuri tihendamist. "
+"Lubage projekti seadetes \"Impordi Etc 2\" või \"Impordi Pvrtc\"."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2890,103 +2823,100 @@ msgid ""
 "Enable 'Import Pvrtc' in Project Settings, or disable 'Driver Fallback "
 "Enabled'."
 msgstr ""
-"Sihtplatvorm nõuab juhi varundamiseks GLES2-ga 'ETC' tekstuuri tihendamist.\n"
-"Lülitage projekti sätetes sisse „Impordi ETC” või keelake „Draiveri "
-"tagasilangemine lubatud”."
+"Sihtplatvorm nõuab 'PVRTC' tekstuuride tihendamist, et draiver saaks tagasi "
+"pöörduda GLES2-le.\n"
+"Lülitage projekti seadetes sisse 'Import Pvrtc' või lülitage välja 'Driver "
+"Fallback Enabled'."
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom Template"
-msgstr "Redaktor"
+msgstr "Kohandatud mall"
 
 #: editor/editor_export.cpp editor/project_export.cpp
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/export/export.cpp
 msgid "Release"
-msgstr ""
+msgstr "Avalda"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Binary Format"
-msgstr "Formaat"
+msgstr "Binaarne formaat"
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 bitti"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
-msgstr ""
+msgstr "Manusta PCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Texture Format"
-msgstr "Pööramisrežiim"
+msgstr "Tekstuuriformaat"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
-msgstr ""
+msgstr "BPTC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "S3TC"
-msgstr ""
+msgstr "S3TC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC"
-msgstr ""
+msgstr "ETC"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "ETC2"
-msgstr ""
+msgstr "ETC2"
 
 #: editor/editor_export.cpp
 msgid "No BPTC Fallbacks"
-msgstr ""
+msgstr "Puuduvad BPTC varuvariandid"
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom debug template not found."
-msgstr ""
+msgstr "Kohandatud silumismalli ei leitud."
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 msgid "Custom release template not found."
-msgstr ""
+msgstr "Kohandatud väljalaskemalli ei leitud."
 
 #: editor/editor_export.cpp
 msgid "Prepare Template"
-msgstr ""
+msgstr "Malli ettevalmistamine"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 msgid "The given export path doesn't exist."
-msgstr ""
+msgstr "Antud eksporditee ei ole olemas."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Mallifaili ei leitud:"
+msgstr "Mallifaili ei leitud: \"%s\"."
 
 #: editor/editor_export.cpp
 msgid "Failed to copy export template."
-msgstr ""
+msgstr "Eksportmalli kopeerimine ebaõnnestus."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
 msgid "PCK Embedding"
-msgstr ""
+msgstr "PCK manustamine"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "32-bitise ekspordi puhul ei saa manustatud PCK olla suurem kui 4 GiB."
 
 #: editor/editor_export.cpp
 msgid "Convert Text Resources To Binary On Export"
-msgstr ""
+msgstr "Teisenda tekstiressursid eksportimisel binaarseks"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3007,20 +2937,19 @@ msgstr "Stseenipuu redigeerimine"
 
 #: editor/editor_feature_profile.cpp
 msgid "Node Dock"
-msgstr ""
+msgstr "Node'i dokk"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem Dock"
-msgstr "Failikuvaja"
+msgstr "Failisüsteemi dokk"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
-msgstr ""
+msgstr "Impordi dokk"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Võimaldab vaadata ja redigeerida 3D stseene."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
@@ -3439,7 +3368,7 @@ msgstr "Klass:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr "Pärib:"
+msgstr "Pärandub:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
@@ -3491,7 +3420,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr "Loetelu"
+msgstr "Loendused"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -3509,7 +3438,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
-msgstr "Meetodi kirjeldused"
+msgstr "Meetodite kirjeldused"
 
 #: editor/editor_help.cpp
 msgid ""
@@ -10191,7 +10120,7 @@ msgstr ""
 #: editor/plugins/polygon_2d_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Snap"
-msgstr ""
+msgstr "Naksamine"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Enable Snap"
@@ -14700,7 +14629,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
-msgstr ""
+msgstr "Sisendikaart"
 
 #: editor/project_settings_editor.cpp
 msgid "Action:"
@@ -14720,7 +14649,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Localization"
-msgstr "Tõlked"
+msgstr "Lokaliseerimine"
 
 #: editor/project_settings_editor.cpp
 msgid "Translations"
@@ -15448,7 +15377,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "File does not exist."
-msgstr "Faili ei ole olemas."
+msgstr "Faili pole olemas."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid extension."
@@ -15492,7 +15421,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid path."
-msgstr "Kehtetu tee."
+msgstr "Kehtetu failitee."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid class name."
@@ -24597,9 +24526,8 @@ msgid "Draw 2D Outlines"
 msgstr ""
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
-#, fuzzy
 msgid "Reflections"
-msgstr "Kopeeri valik"
+msgstr "Peegeldused"
 
 #: scene/main/scene_tree.cpp
 msgid "Atlas Size"

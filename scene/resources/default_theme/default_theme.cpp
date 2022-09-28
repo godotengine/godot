@@ -43,6 +43,8 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
+static const int default_font_size = 16;
+
 static float scale = 1.0;
 
 static const int default_margin = 4;

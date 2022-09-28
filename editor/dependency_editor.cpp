@@ -286,7 +286,11 @@ void DependencyEditorOwners::_list_rmb_clicked(int p_item, const Vector2 &p_pos,
 	file_options->clear();
 	file_options->reset_size();
 	if (p_item >= 0) {
-		file_options->add_item(TTR("Open"), FILE_OPEN);
+		if (owners->get_selected_items().size() == 1) {
+			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scene"), FILE_OPEN);
+		} else {
+			file_options->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scenes"), FILE_OPEN);
+		}
 	}
 
 	file_options->set_position(owners->get_screen_position() + p_pos);
@@ -307,11 +311,14 @@ void DependencyEditorOwners::_select_file(int p_idx) {
 void DependencyEditorOwners::_file_option(int p_option) {
 	switch (p_option) {
 		case FILE_OPEN: {
-			int idx = owners->get_current();
-			if (idx < 0 || idx >= owners->get_item_count()) {
-				break;
+			PackedInt32Array selected_items = owners->get_selected_items();
+			for (int i = 0; i < selected_items.size(); i++) {
+				int item_idx = selected_items[i];
+				if (item_idx < 0 || item_idx >= owners->get_item_count()) {
+					break;
+				}
+				_select_file(item_idx);
 			}
-			_select_file(idx);
 		} break;
 	}
 }
@@ -362,7 +369,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
-	owners->set_select_mode(ItemList::SELECT_SINGLE);
+	owners->set_select_mode(ItemList::SELECT_MULTI);
 	owners->connect("item_clicked", callable_mp(this, &DependencyEditorOwners::_list_rmb_clicked));
 	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->set_allow_rmb_select(true);

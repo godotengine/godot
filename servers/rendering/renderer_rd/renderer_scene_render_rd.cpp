@@ -282,8 +282,6 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		panorama->fill(panorama_color);
 		return panorama;
 	}
-
-	return Ref<Image>();
 }
 
 ////////////////////////////////////////////////////////////

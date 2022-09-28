@@ -565,11 +565,11 @@ void DisplayServerMacOS::menu_callback(id p_sender) {
 		}
 
 		if (value->callback != Callable()) {
-			Variant tag = value->meta;
-			Variant *tagp = &tag;
-			Variant ret;
-			Callable::CallError ce;
-			value->callback.callp((const Variant **)&tagp, 1, ret, ce);
+			MenuCall mc;
+			mc.tag = value->meta;
+			mc.callback = value->callback;
+			deferred_menu_calls.push_back(mc);
+			// Do not run callback from here! If it is opening a new window or calling process_events, it will corrupt OS event queue and crash.
 		}
 	}
 }
@@ -3279,6 +3279,16 @@ void DisplayServerMacOS::process_events() {
 
 		[NSApp sendEvent:event];
 	}
+
+	// Process "menu_callback"s.
+	for (MenuCall &E : deferred_menu_calls) {
+		Variant tag = E.tag;
+		Variant *tagp = &tag;
+		Variant ret;
+		Callable::CallError ce;
+		E.callback.callp((const Variant **)&tagp, 1, ret, ce);
+	}
+	deferred_menu_calls.clear();
 
 	if (!drop_events) {
 		_process_key_events();

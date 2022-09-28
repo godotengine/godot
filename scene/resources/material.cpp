@@ -3123,8 +3123,6 @@ bool StandardMaterial3D::_set(const StringName &p_name, const Variant &p_value) 
 		WARN_PRINT("Godot 3.x SpatialMaterial remapped parameter not found: " + String(p_name));
 		return true;
 	}
-
-	return false;
 }
 
 #endif // DISABLE_DEPRECATED

@@ -1874,8 +1874,6 @@ AABB ParticlesStorage::particles_collision_get_aabb(RID p_particles_collision) c
 			return aabb;
 		}
 	}
-
-	return AABB();
 }
 
 Vector3 ParticlesStorage::particles_collision_get_extents(RID p_particles_collision) const {

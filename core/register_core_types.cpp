@@ -44,6 +44,7 @@
 #include "core/input/input_map.h"
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
+#include "core/io/dir_access.h"
 #include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"

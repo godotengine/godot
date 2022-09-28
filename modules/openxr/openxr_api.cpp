@@ -41,6 +41,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
+#define OPENXR_LOADER_NAME "libopenxr_loader.so"
 #include "extensions/openxr_android_extension.h"
 #endif
 
@@ -48,7 +49,10 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
+#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
+#include "extensions/openxr_palm_pose_extension.h"
 
 #include "modules/openxr/openxr_interface.h"
 
@@ -184,6 +188,20 @@ bool OpenXRAPI::is_extension_supported(const String &p_extension) const {
 	return false;
 }
 
+bool OpenXRAPI::is_path_supported(const String &p_path) {
+	// This checks with extensions whether a path is *unsupported* and returns false if this is so.
+	// This allows us to filter out paths that are only available if related extensions are supported.
+	// WARNING: This method will return true for unknown/mistyped paths as we have no way to validate those.
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		if (!wrapper->is_path_supported(p_path)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void OpenXRAPI::copy_string_to_char_buffer(const String p_string, char *p_buffer, int p_buffer_len) {
 	CharString char_string = p_string.utf8();
 	int len = char_string.length();
@@ -284,6 +302,9 @@ bool OpenXRAPI::create_instance() {
 		0, // runtimeVersion, from here will be set by our get call
 		"" // runtimeName
 	};
+
+	OPENXR_API_INIT_XR_FUNC_V(xrGetInstanceProperties);
+
 	result = xrGetInstanceProperties(instance, &instanceProps);
 	if (XR_FAILED(result)) {
 		// not fatal probably
@@ -992,8 +1013,93 @@ bool OpenXRAPI::is_running() {
 	return running;
 }
 
+bool OpenXRAPI::openxr_loader_init() {
+#ifdef ANDROID_ENABLED
+	ERR_FAIL_COND_V_MSG(openxr_loader_library_handle != nullptr, false, "OpenXR Loader library is already loaded.");
+
+	{
+		Error error_code = OS::get_singleton()->open_dynamic_library(OPENXR_LOADER_NAME, openxr_loader_library_handle);
+		ERR_FAIL_COND_V_MSG(error_code != OK, false, "OpenXR loader not found.");
+	}
+
+	{
+		Error error_code = OS::get_singleton()->get_dynamic_library_symbol_handle(openxr_loader_library_handle, "xrGetInstanceProcAddr", (void *&)xrGetInstanceProcAddr);
+		ERR_FAIL_COND_V_MSG(error_code != OK, false, "Symbol xrGetInstanceProcAddr not found in OpenXR Loader library.");
+	}
+#endif
+
+	// Resolve the symbols that don't require an instance
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateInstance);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateApiLayerProperties);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateInstanceExtensionProperties);
+
+	return true;
+}
+
+bool OpenXRAPI::resolve_instance_openxr_symbols() {
+	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
+
+	OPENXR_API_INIT_XR_FUNC_V(xrAcquireSwapchainImage);
+	OPENXR_API_INIT_XR_FUNC_V(xrApplyHapticFeedback);
+	OPENXR_API_INIT_XR_FUNC_V(xrAttachSessionActionSets);
+	OPENXR_API_INIT_XR_FUNC_V(xrBeginFrame);
+	OPENXR_API_INIT_XR_FUNC_V(xrBeginSession);
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateAction);
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateActionSet);
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateActionSpace);
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateReferenceSpace);
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateSession);
+	OPENXR_API_INIT_XR_FUNC_V(xrCreateSwapchain);
+	OPENXR_API_INIT_XR_FUNC_V(xrDestroyAction);
+	OPENXR_API_INIT_XR_FUNC_V(xrDestroyActionSet);
+	OPENXR_API_INIT_XR_FUNC_V(xrDestroyInstance);
+	OPENXR_API_INIT_XR_FUNC_V(xrDestroySession);
+	OPENXR_API_INIT_XR_FUNC_V(xrDestroySpace);
+	OPENXR_API_INIT_XR_FUNC_V(xrDestroySwapchain);
+	OPENXR_API_INIT_XR_FUNC_V(xrEndFrame);
+	OPENXR_API_INIT_XR_FUNC_V(xrEndSession);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateReferenceSpaces);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateSwapchainFormats);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateViewConfigurations);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateViewConfigurationViews);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateBoolean);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateFloat);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetActionStateVector2f);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetCurrentInteractionProfile);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetSystem);
+	OPENXR_API_INIT_XR_FUNC_V(xrGetSystemProperties);
+	OPENXR_API_INIT_XR_FUNC_V(xrLocateViews);
+	OPENXR_API_INIT_XR_FUNC_V(xrLocateSpace);
+	OPENXR_API_INIT_XR_FUNC_V(xrPathToString);
+	OPENXR_API_INIT_XR_FUNC_V(xrPollEvent);
+	OPENXR_API_INIT_XR_FUNC_V(xrReleaseSwapchainImage);
+	OPENXR_API_INIT_XR_FUNC_V(xrResultToString);
+	OPENXR_API_INIT_XR_FUNC_V(xrStringToPath);
+	OPENXR_API_INIT_XR_FUNC_V(xrSuggestInteractionProfileBindings);
+	OPENXR_API_INIT_XR_FUNC_V(xrSyncActions);
+	OPENXR_API_INIT_XR_FUNC_V(xrWaitFrame);
+	OPENXR_API_INIT_XR_FUNC_V(xrWaitSwapchainImage);
+
+	return true;
+}
+
+XrResult OpenXRAPI::get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr) {
+	XrResult result = xrGetInstanceProcAddr(instance, p_name, p_addr);
+
+	if (result != XR_SUCCESS) {
+		String error_message = String("Symbol ") + p_name + " not found in OpenXR instance.";
+		ERR_FAIL_COND_V_MSG(true, result, error_message.utf8().get_data());
+	}
+
+	return result;
+}
+
 bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	ERR_FAIL_COND_V_MSG(instance != XR_NULL_HANDLE, false, "OpenXR instance was already created");
+
+	if (!openxr_loader_init()) {
+		return false;
+	}
 
 	if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
@@ -1017,6 +1123,10 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	}
 
 	// initialize
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_before_instance_created();
+	}
+
 	if (!load_layer_properties()) {
 		destroy_instance();
 		return false;
@@ -1028,6 +1138,11 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	}
 
 	if (!create_instance()) {
+		destroy_instance();
+		return false;
+	}
+
+	if (!resolve_instance_openxr_symbols()) {
 		destroy_instance();
 		return false;
 	}
@@ -1382,6 +1497,10 @@ void OpenXRAPI::pre_render() {
 	// 2) It will use the previous timing to pause our thread so that rendering starts as close to displaying as possible
 	// This must thus be called as close to when we start rendering as possible
 	XrFrameWaitInfo frame_wait_info = { XR_TYPE_FRAME_WAIT_INFO, nullptr };
+	frame_state.predictedDisplayTime = 0;
+	frame_state.predictedDisplayPeriod = 0;
+	frame_state.shouldRender = false;
+
 	XrResult result = xrWaitFrame(session, &frame_wait_info, &frame_state);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: xrWaitFrame() was not successful [", get_error_string(result), "]");
@@ -1643,7 +1762,10 @@ OpenXRAPI::OpenXRAPI() {
 #endif
 
 	// register our other extensions
+	register_extension_wrapper(memnew(OpenXRPalmPoseExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
+	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
+	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {
@@ -1668,6 +1790,13 @@ OpenXRAPI::~OpenXRAPI() {
 		memfree(layer_properties);
 		layer_properties = nullptr;
 	}
+
+#ifdef ANDROID_ENABLED
+	if (openxr_loader_library_handle) {
+		OS::get_singleton()->close_dynamic_library(openxr_loader_library_handle);
+		openxr_loader_library_handle = nullptr;
+	}
+#endif
 
 	singleton = nullptr;
 }
@@ -1743,6 +1872,18 @@ void OpenXRAPI::parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_l
 	} else {
 		r_angular_velocity = Vector3();
 	}
+}
+
+bool OpenXRAPI::xr_result(XrResult result, const char *format, Array args) const {
+	if (XR_SUCCEEDED(result))
+		return true;
+
+	char resultString[XR_MAX_RESULT_STRING_SIZE];
+	xrResultToString(instance, result, resultString);
+
+	print_error(String("OpenXR ") + String(format).format(args) + String(" [") + String(resultString) + String("]"));
+
+	return false;
 }
 
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
@@ -2063,6 +2204,11 @@ XrPath OpenXRAPI::get_interaction_profile_path(RID p_interaction_profile) {
 }
 
 RID OpenXRAPI::interaction_profile_create(const String p_name) {
+	if (!is_path_supported(p_name)) {
+		// The extension enabling this path must not be active, we will silently skip this interaction profile
+		return RID();
+	}
+
 	InteractionProfile new_interaction_profile;
 
 	XrResult result = xrStringToPath(instance, p_name.utf8().get_data(), &new_interaction_profile.path);
@@ -2099,6 +2245,11 @@ void OpenXRAPI::interaction_profile_clear_bindings(RID p_interaction_profile) {
 }
 
 bool OpenXRAPI::interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path) {
+	if (!is_path_supported(p_path)) {
+		// The extension enabling this path must not be active, we will silently skip this binding
+		return false;
+	}
+
 	InteractionProfile *ip = interaction_profile_owner.get_or_null(p_interaction_profile);
 	ERR_FAIL_NULL_V(ip, false);
 
@@ -2425,4 +2576,12 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_freque
 	}
 
 	return true;
+}
+
+void OpenXRAPI::register_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
+	composition_layer_providers.append(provider);
+}
+
+void OpenXRAPI::unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
+	composition_layer_providers.erase(provider);
 }

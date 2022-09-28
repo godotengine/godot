@@ -153,8 +153,11 @@ int AudioStreamPlaybackOggVorbis::_mix_frames_vorbis(AudioFrame *p_buffer, int p
 			return -1;
 		}
 
-		ERR_FAIL_COND_V_MSG((err = vorbis_synthesis(&block, packet)), 0, "Error during vorbis synthesis " + itos(err));
-		ERR_FAIL_COND_V_MSG((err = vorbis_synthesis_blockin(&dsp_state, &block)), 0, "Error during vorbis block processing " + itos(err));
+		err = vorbis_synthesis(&block, packet);
+		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis synthesis " + itos(err));
+
+		err = vorbis_synthesis_blockin(&dsp_state, &block);
+		ERR_FAIL_COND_V_MSG(err != 0, 0, "Error during vorbis block processing " + itos(err));
 
 		have_packets_left = !packet->e_o_s;
 	}
@@ -223,7 +226,7 @@ bool AudioStreamPlaybackOggVorbis::_alloc_vorbis() {
 	return true;
 }
 
-void AudioStreamPlaybackOggVorbis::start(float p_from_pos) {
+void AudioStreamPlaybackOggVorbis::start(double p_from_pos) {
 	ERR_FAIL_COND(!ready);
 	loop_fade_remaining = FADE_SIZE;
 	active = true;
@@ -244,15 +247,15 @@ int AudioStreamPlaybackOggVorbis::get_loop_count() const {
 	return loops;
 }
 
-float AudioStreamPlaybackOggVorbis::get_playback_position() const {
-	return float(frames_mixed) / vorbis_data->get_sampling_rate();
+double AudioStreamPlaybackOggVorbis::get_playback_position() const {
+	return double(frames_mixed) / (double)vorbis_data->get_sampling_rate();
 }
 
 void AudioStreamPlaybackOggVorbis::tag_used_streams() {
 	vorbis_stream->tag_used(get_playback_position());
 }
 
-void AudioStreamPlaybackOggVorbis::seek(float p_time) {
+void AudioStreamPlaybackOggVorbis::seek(double p_time) {
 	ERR_FAIL_COND(!ready);
 	ERR_FAIL_COND(vorbis_stream.is_null());
 	if (!active) {
@@ -290,11 +293,15 @@ void AudioStreamPlaybackOggVorbis::seek(float p_time) {
 			headers_remaining = 3;
 		}
 		if (!headers_remaining) {
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis(&block, packet)), "Error during vorbis synthesis " + itos(err));
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_blockin(&dsp_state, &block)), "Error during vorbis block processing " + itos(err));
+			err = vorbis_synthesis(&block, packet);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
+
+			err = vorbis_synthesis_blockin(&dsp_state, &block);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
 
 			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_read(&dsp_state, samples_out)), "Error during vorbis read updating " + itos(err));
+			err = vorbis_synthesis_read(&dsp_state, samples_out);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err));
 
 			samples_in_page += samples_out;
 
@@ -341,12 +348,16 @@ void AudioStreamPlaybackOggVorbis::seek(float p_time) {
 			headers_remaining = 3;
 		}
 		if (!headers_remaining) {
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis(&block, packet)), "Error during vorbis synthesis " + itos(err));
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_blockin(&dsp_state, &block)), "Error during vorbis block processing " + itos(err));
+			err = vorbis_synthesis(&block, packet);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis synthesis " + itos(err));
+
+			err = vorbis_synthesis_blockin(&dsp_state, &block);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis block processing " + itos(err));
 
 			int samples_out = vorbis_synthesis_pcmout(&dsp_state, nullptr);
 			int read_samples = samples_to_burn > samples_out ? samples_out : samples_to_burn;
-			ERR_FAIL_COND_MSG((err = vorbis_synthesis_read(&dsp_state, samples_out)), "Error during vorbis read updating " + itos(err));
+			err = vorbis_synthesis_read(&dsp_state, samples_out);
+			ERR_FAIL_COND_MSG(err != 0, "Error during vorbis read updating " + itos(err));
 			samples_to_burn -= read_samples;
 
 			if (samples_to_burn <= 0) {
@@ -462,15 +473,15 @@ bool AudioStreamOggVorbis::has_loop() const {
 	return loop;
 }
 
-void AudioStreamOggVorbis::set_loop_offset(float p_seconds) {
+void AudioStreamOggVorbis::set_loop_offset(double p_seconds) {
 	loop_offset = p_seconds;
 }
 
-float AudioStreamOggVorbis::get_loop_offset() const {
+double AudioStreamOggVorbis::get_loop_offset() const {
 	return loop_offset;
 }
 
-float AudioStreamOggVorbis::get_length() const {
+double AudioStreamOggVorbis::get_length() const {
 	ERR_FAIL_COND_V(packet_sequence.is_null(), 0);
 	return packet_sequence->get_length();
 }

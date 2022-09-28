@@ -1149,7 +1149,7 @@ TypedArray<Vector3i> GridMap::get_used_cells() const {
 TypedArray<Vector3i> GridMap::get_used_cells_by_item(int p_item) const {
 	TypedArray<Vector3i> a;
 	for (const KeyValue<IndexKey, Cell> &E : cell_map) {
-		if (E.value.item == p_item) {
+		if ((int)E.value.item == p_item) {
 			Vector3i p(E.key.x, E.key.y, E.key.z);
 			a.push_back(p);
 		}

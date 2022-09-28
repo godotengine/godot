@@ -720,7 +720,10 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("area_clear_shapes", "area"), &PhysicsServer3D::area_clear_shapes);
 
 	ClassDB::bind_method(D_METHOD("area_set_collision_layer", "area", "layer"), &PhysicsServer3D::area_set_collision_layer);
+	ClassDB::bind_method(D_METHOD("area_get_collision_layer", "area"), &PhysicsServer3D::area_get_collision_layer);
+
 	ClassDB::bind_method(D_METHOD("area_set_collision_mask", "area", "mask"), &PhysicsServer3D::area_set_collision_mask);
+	ClassDB::bind_method(D_METHOD("area_get_collision_mask", "area"), &PhysicsServer3D::area_get_collision_mask);
 
 	ClassDB::bind_method(D_METHOD("area_set_param", "area", "param", "value"), &PhysicsServer3D::area_set_param);
 	ClassDB::bind_method(D_METHOD("area_set_transform", "area", "transform"), &PhysicsServer3D::area_set_transform);

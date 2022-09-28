@@ -188,7 +188,7 @@
 			</description>
 		</method>
 		<method name="get_used_rect">
-			<return type="Rect2" />
+			<return type="Rect2i" />
 			<description>
 				Returns a rectangle enclosing the used (non-empty) tiles of the map, including all layers.
 			</description>

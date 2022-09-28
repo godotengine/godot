@@ -38,6 +38,7 @@
 #include "scene/resources/bit_map.h"
 #include "scene/resources/mesh.h"
 #include "servers/camera/camera_feed.h"
+
 int Texture2D::get_width() const {
 	int ret;
 	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
@@ -3105,7 +3106,7 @@ Error CompressedTextureLayered::_load_data(const String &p_path, Vector<Ref<Imag
 
 	uint32_t layer_count = f->get_32(); //layer count
 	uint32_t type = f->get_32(); //layer count
-	ERR_FAIL_COND_V(type != layered_type, ERR_INVALID_DATA);
+	ERR_FAIL_COND_V((int)type != layered_type, ERR_INVALID_DATA);
 
 	uint32_t df = f->get_32(); //data format
 	mipmap_limit = int(f->get_32());

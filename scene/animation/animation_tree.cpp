@@ -1745,7 +1745,7 @@ Variant AnimationTree::_post_process_key_value(const Ref<Animation> &p_anim, int
 	return p_value;
 }
 
-void AnimationTree::advance(real_t p_time) {
+void AnimationTree::advance(double p_time) {
 	_process_graph(p_time);
 }
 

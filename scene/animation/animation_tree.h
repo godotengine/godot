@@ -353,7 +353,7 @@ public:
 	Transform3D get_root_motion_transform() const;
 
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
-	void advance(real_t p_time);
+	void advance(double p_time);
 
 	void rename_parameter(const String &p_base, const String &p_new_base);
 

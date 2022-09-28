@@ -385,19 +385,23 @@ static void _complete_include_paths(List<ScriptLanguage::CodeCompletionOption> *
 
 void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) {
 	List<ScriptLanguage::CodeCompletionOption> pp_options;
+	List<ScriptLanguage::CodeCompletionOption> pp_defines;
 	ShaderPreprocessor preprocessor;
 	String code;
 	complete_from_path = (shader.is_valid() ? shader->get_path() : shader_inc->get_path()).get_base_dir();
 	if (!complete_from_path.ends_with("/")) {
 		complete_from_path += "/";
 	}
-	preprocessor.preprocess(p_code, "", code, nullptr, nullptr, nullptr, nullptr, &pp_options, _complete_include_paths);
+	preprocessor.preprocess(p_code, "", code, nullptr, nullptr, nullptr, nullptr, &pp_options, &pp_defines, _complete_include_paths);
 	complete_from_path = String();
 	if (pp_options.size()) {
 		for (const ScriptLanguage::CodeCompletionOption &E : pp_options) {
 			r_options->push_back(E);
 		}
 		return;
+	}
+	for (const ScriptLanguage::CodeCompletionOption &E : pp_defines) {
+		r_options->push_back(E);
 	}
 
 	ShaderLanguage sl;

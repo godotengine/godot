@@ -35,6 +35,13 @@
 				Emitted when the user requests a specific documentation page.
 			</description>
 		</signal>
+		<signal name="go_to_method">
+			<param index="0" name="script" type="Object" />
+			<param index="1" name="method" type="String" />
+			<description>
+				Emitted when the user requests to view a specific method of a script, similar to [signal request_open_script_at_line].
+			</description>
+		</signal>
 		<signal name="name_changed">
 			<description>
 				Emitted after script validation or when the edited resource has changed.
@@ -56,7 +63,7 @@
 			<param index="0" name="script" type="Object" />
 			<param index="1" name="line" type="int" />
 			<description>
-				Emitted when the user requests a script.
+				Emitted when the user requests to view a specific line of a script, similar to [signal go_to_method].
 			</description>
 		</signal>
 		<signal name="request_save_history">

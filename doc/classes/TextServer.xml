@@ -1565,6 +1565,8 @@
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_VBGR" value="4" enum="FontLCDSubpixelLayout">
 			Vertical BGR sub-pixel layout.
 		</constant>
+		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_MAX" value="5" enum="FontLCDSubpixelLayout">
+		</constant>
 		<constant name="DIRECTION_AUTO" value="0" enum="Direction">
 			Text direction is determined based on contents and current locale.
 		</constant>

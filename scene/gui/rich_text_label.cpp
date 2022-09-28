@@ -52,7 +52,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->next()) {
 			return p_item->E->next()->get();
 		} else {
-			//go up until something with a next is found
+			// Go up until something with a next is found.
 			while (p_item->parent && !p_item->E->next()) {
 				p_item = p_item->parent;
 			}
@@ -72,7 +72,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->next()) {
 			return p_item->E->next()->get();
 		} else {
-			//go up until something with a next is found
+			// Go up until something with a next is found.
 			while (p_item->type != ITEM_FRAME && !p_item->E->next()) {
 				p_item = p_item->parent;
 			}
@@ -84,8 +84,6 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) co
 			}
 		}
 	}
-
-	return nullptr;
 }
 
 RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) const {
@@ -97,7 +95,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->prev()) {
 			return p_item->E->prev()->get();
 		} else {
-			//go back until something with a prev is found
+			// Go back until something with a prev is found.
 			while (p_item->parent && !p_item->E->prev()) {
 				p_item = p_item->parent;
 			}
@@ -117,7 +115,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->prev()) {
 			return p_item->E->prev()->get();
 		} else {
-			//go back until something with a prev is found
+			// Go back until something with a prev is found.
 			while (p_item->type != ITEM_FRAME && !p_item->E->prev()) {
 				p_item = p_item->parent;
 			}
@@ -129,8 +127,6 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 			}
 		}
 	}
-
-	return nullptr;
 }
 
 Rect2 RichTextLabel::_get_text_rect() {
@@ -2196,24 +2192,69 @@ RichTextLabel::ItemFont *RichTextLabel::_find_font(Item *p_item) {
 			ItemFont *fi = static_cast<ItemFont *>(fontitem);
 			switch (fi->def_font) {
 				case NORMAL_FONT: {
-					fi->font = theme_cache.normal_font;
-					fi->font_size = theme_cache.normal_font_size;
+					if (fi->variation) {
+						Ref<FontVariation> fc = fi->font;
+						if (fc.is_valid()) {
+							fc->set_base_font(theme_cache.normal_font);
+						}
+					} else {
+						fi->font = theme_cache.normal_font;
+					}
+					if (fi->def_size) {
+						fi->font_size = theme_cache.normal_font_size;
+					}
 				} break;
 				case BOLD_FONT: {
-					fi->font = theme_cache.bold_font;
-					fi->font_size = theme_cache.bold_font_size;
+					if (fi->variation) {
+						Ref<FontVariation> fc = fi->font;
+						if (fc.is_valid()) {
+							fc->set_base_font(theme_cache.bold_font);
+						}
+					} else {
+						fi->font = theme_cache.bold_font;
+					}
+					if (fi->def_size) {
+						fi->font_size = theme_cache.bold_font_size;
+					}
 				} break;
 				case ITALICS_FONT: {
-					fi->font = theme_cache.italics_font;
-					fi->font_size = theme_cache.italics_font_size;
+					if (fi->variation) {
+						Ref<FontVariation> fc = fi->font;
+						if (fc.is_valid()) {
+							fc->set_base_font(theme_cache.italics_font);
+						}
+					} else {
+						fi->font = theme_cache.italics_font;
+					}
+					if (fi->def_size) {
+						fi->font_size = theme_cache.italics_font_size;
+					}
 				} break;
 				case BOLD_ITALICS_FONT: {
-					fi->font = theme_cache.bold_italics_font;
-					fi->font_size = theme_cache.bold_italics_font_size;
+					if (fi->variation) {
+						Ref<FontVariation> fc = fi->font;
+						if (fc.is_valid()) {
+							fc->set_base_font(theme_cache.bold_italics_font);
+						}
+					} else {
+						fi->font = theme_cache.bold_italics_font;
+					}
+					if (fi->def_size) {
+						fi->font_size = theme_cache.bold_italics_font_size;
+					}
 				} break;
 				case MONO_FONT: {
-					fi->font = theme_cache.mono_font;
-					fi->font_size = theme_cache.mono_font_size;
+					if (fi->variation) {
+						Ref<FontVariation> fc = fi->font;
+						if (fc.is_valid()) {
+							fc->set_base_font(theme_cache.mono_font);
+						}
+					} else {
+						fi->font = theme_cache.mono_font;
+					}
+					if (fi->def_size) {
+						fi->font_size = theme_cache.mono_font_size;
+					}
 				} break;
 				default: {
 				} break;
@@ -3034,14 +3075,30 @@ void RichTextLabel::push_dropcap(const String &p_string, const Ref<Font> &p_font
 	_add_item(item, false);
 }
 
-void RichTextLabel::_push_def_font(DefaultFont p_font) {
+void RichTextLabel::_push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
 	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ItemFont *item = memnew(ItemFont);
 
-	item->def_font = p_font;
+	item->def_font = p_def_font;
+	item->variation = true;
+	item->font = p_font;
+	item->font_size = p_size;
+	item->def_size = (p_size <= 0);
+	_add_item(item, true);
+}
+
+void RichTextLabel::_push_def_font(DefaultFont p_def_font) {
+	_stop_thread();
+	MutexLock data_lock(data_mutex);
+
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
+	ItemFont *item = memnew(ItemFont);
+
+	item->def_font = p_def_font;
+	item->def_size = true;
 	_add_item(item, true);
 }
 
@@ -4122,24 +4179,21 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			pos = brk_end + 1;
 			tag_stack.push_front("font_size");
 
-		} else if (tag.begins_with("opentype_features=")) {
-			String fnt_ftr = tag.substr(18, tag.length());
+		} else if (tag.begins_with("opentype_features=") || tag.begins_with("otf=")) {
+			int value_pos = tag.find("=");
+			String fnt_ftr = tag.substr(value_pos + 1);
 			Vector<String> subtag = fnt_ftr.split(",");
 			if (subtag.size() > 0) {
 				Ref<Font> font = theme_cache.normal_font;
-				int font_size = 0;
+				DefaultFont def_font = NORMAL_FONT;
+
 				ItemFont *font_it = _find_font(current);
 				if (font_it) {
 					if (font_it->font.is_valid()) {
 						font = font_it->font;
-					}
-					if (font_it->font_size > 0) {
-						font_size = font_it->font_size;
+						def_font = font_it->def_font;
 					}
 				}
-				Ref<FontVariation> fc;
-				fc.instantiate();
-				fc->set_base_font(font);
 				Dictionary features;
 				for (int i = 0; i < subtag.size(); i++) {
 					Vector<String> subtag_a = subtag[i].split("=");
@@ -4149,11 +4203,21 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						features[TS->name_to_tag(subtag_a[0])] = 1;
 					}
 				}
+
+				Ref<FontVariation> fc;
+				fc.instantiate();
+
+				fc->set_base_font(font);
 				fc->set_opentype_features(features);
-				push_font(fc, font_size);
+
+				if (def_font != CUSTOM_FONT) {
+					_push_def_font_var(def_font, fc);
+				} else {
+					push_font(fc);
+				}
 			}
 			pos = brk_end + 1;
-			tag_stack.push_front("opentype_features");
+			tag_stack.push_front(tag.substr(0, value_pos));
 
 		} else if (tag.begins_with("font=")) {
 			String fnt = tag.substr(5, tag.length());
@@ -4169,9 +4233,21 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		} else if (tag.begins_with("font ")) {
 			Vector<String> subtag = tag.substr(2, tag.length()).split(" ");
 
+			Ref<Font> font = theme_cache.normal_font;
+			DefaultFont def_font = NORMAL_FONT;
+
+			ItemFont *font_it = _find_font(current);
+			if (font_it) {
+				if (font_it->font.is_valid()) {
+					font = font_it->font;
+					def_font = font_it->def_font;
+				}
+			}
+
 			Ref<FontVariation> fc;
 			fc.instantiate();
-			int fnt_size = 0;
+
+			int fnt_size = -1;
 			for (int i = 1; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=", true, 2);
 				if (subtag_a.size() == 2) {
@@ -4179,7 +4255,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						String fnt = subtag_a[1];
 						Ref<Font> font_data = ResourceLoader::load(fnt, "Font");
 						if (font_data.is_valid()) {
-							fc->set_base_font(font_data);
+							font = font_data;
+							def_font = CUSTOM_FONT;
 						}
 					} else if (subtag_a[0] == "size" || subtag_a[0] == "s") {
 						fnt_size = subtag_a[1].to_int();
@@ -4233,7 +4310,14 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 			}
-			push_font(fc, fnt_size);
+			fc->set_base_font(font);
+
+			if (def_font != CUSTOM_FONT) {
+				_push_def_font_var(def_font, fc, fnt_size);
+			} else {
+				push_font(fc, fnt_size);
+			}
+
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
 

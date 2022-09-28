@@ -36,10 +36,9 @@
 // Interface for OpenXR extensions that provide a composition layer.
 class OpenXRCompositionLayerProvider {
 public:
-	// TODO changed to normal method definition for now
-	// CI complains until we implement this, haven't ported it yet from plugin
-	// virtual XrCompositionLayerBaseHeader *get_composition_layer() = 0;
-	XrCompositionLayerBaseHeader *get_composition_layer() { return nullptr; };
+	virtual XrCompositionLayerBaseHeader *get_composition_layer() = 0;
+
+	virtual ~OpenXRCompositionLayerProvider() {}
 };
 
 #endif // OPENXR_COMPOSITION_LAYER_PROVIDER_H

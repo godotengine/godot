@@ -271,8 +271,11 @@ public:
 	EXBIND2RC(Variant, area_get_param, RID, AreaParameter)
 	EXBIND1RC(Transform3D, area_get_transform, RID)
 
-	EXBIND2(area_set_collision_mask, RID, uint32_t)
 	EXBIND2(area_set_collision_layer, RID, uint32_t)
+	EXBIND1RC(uint32_t, area_get_collision_layer, RID)
+
+	EXBIND2(area_set_collision_mask, RID, uint32_t)
+	EXBIND1RC(uint32_t, area_get_collision_mask, RID)
 
 	EXBIND2(area_set_monitorable, RID, bool)
 	EXBIND2(area_set_ray_pickable, RID, bool)

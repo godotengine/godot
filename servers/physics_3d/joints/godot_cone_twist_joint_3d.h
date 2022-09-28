@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#ifndef GODOT_CONE_TWIST_JOINT_3D_H
+#define GODOT_CONE_TWIST_JOINT_3D_H
+
 /*
 Adapted to Godot from the Bullet library.
 */
@@ -48,9 +51,6 @@ subject to the following restrictions:
 
 Written by: Marcus Hennix
 */
-
-#ifndef GODOT_CONE_TWIST_JOINT_3D_H
-#define GODOT_CONE_TWIST_JOINT_3D_H
 
 #include "servers/physics_3d/godot_joint_3d.h"
 #include "servers/physics_3d/joints/godot_jacobian_entry_3d.h"

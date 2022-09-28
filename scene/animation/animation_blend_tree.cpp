@@ -217,19 +217,19 @@ Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_pa
 	}
 }
 
-void AnimationNodeOneShot::set_fadein_time(float p_time) {
+void AnimationNodeOneShot::set_fadein_time(double p_time) {
 	fade_in = p_time;
 }
 
-void AnimationNodeOneShot::set_fadeout_time(float p_time) {
+void AnimationNodeOneShot::set_fadeout_time(double p_time) {
 	fade_out = p_time;
 }
 
-float AnimationNodeOneShot::get_fadein_time() const {
+double AnimationNodeOneShot::get_fadein_time() const {
 	return fade_in;
 }
 
-float AnimationNodeOneShot::get_fadeout_time() const {
+double AnimationNodeOneShot::get_fadeout_time() const {
 	return fade_out;
 }
 
@@ -237,11 +237,11 @@ void AnimationNodeOneShot::set_autorestart(bool p_active) {
 	autorestart = p_active;
 }
 
-void AnimationNodeOneShot::set_autorestart_delay(float p_time) {
+void AnimationNodeOneShot::set_autorestart_delay(double p_time) {
 	autorestart_delay = p_time;
 }
 
-void AnimationNodeOneShot::set_autorestart_random_delay(float p_time) {
+void AnimationNodeOneShot::set_autorestart_random_delay(double p_time) {
 	autorestart_random_delay = p_time;
 }
 
@@ -249,11 +249,11 @@ bool AnimationNodeOneShot::has_autorestart() const {
 	return autorestart;
 }
 
-float AnimationNodeOneShot::get_autorestart_delay() const {
+double AnimationNodeOneShot::get_autorestart_delay() const {
 	return autorestart_delay;
 }
 
-float AnimationNodeOneShot::get_autorestart_random_delay() const {
+double AnimationNodeOneShot::get_autorestart_random_delay() const {
 	return autorestart_random_delay;
 }
 
@@ -313,7 +313,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_roo
 		set_parameter(this->prev_active, true);
 	}
 
-	float blend;
+	real_t blend;
 
 	if (time < fade_in) {
 		if (fade_in > 0) {
@@ -351,7 +351,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_seek_roo
 			set_parameter(this->active, false);
 			set_parameter(this->prev_active, false);
 			if (autorestart) {
-				float restart_sec = autorestart_delay + Math::randf() * autorestart_random_delay;
+				double restart_sec = autorestart_delay + Math::randd() * autorestart_random_delay;
 				set_parameter(this->time_to_restart, restart_sec);
 			}
 		}
@@ -676,11 +676,11 @@ String AnimationNodeTransition::get_input_caption(int p_input) const {
 	return inputs[p_input].name;
 }
 
-void AnimationNodeTransition::set_xfade_time(float p_fade) {
+void AnimationNodeTransition::set_xfade_time(double p_fade) {
 	xfade_time = p_fade;
 }
 
-float AnimationNodeTransition::get_xfade_time() const {
+double AnimationNodeTransition::get_xfade_time() const {
 	return xfade_time;
 }
 
@@ -748,7 +748,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_seek_
 
 	} else { // cross-fading from prev to current
 
-		float blend = xfade_time == 0 ? 0 : (prev_xfading / xfade_time);
+		real_t blend = xfade_time == 0 ? 0 : (prev_xfading / xfade_time);
 		if (xfade_curve.is_valid()) {
 			blend = xfade_curve->sample(blend);
 		}

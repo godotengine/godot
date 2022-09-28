@@ -36,6 +36,14 @@
 
 namespace TestVector4i {
 
+TEST_CASE("[Vector4i] Constructor methods") {
+	const Vector4i vector_empty = Vector4i();
+	const Vector4i vector_zero = Vector4i(0, 0, 0, 0);
+	CHECK_MESSAGE(
+			vector_empty == vector_zero,
+			"Vector4i Constructor with no inputs should return a zero Vector4i.");
+}
+
 TEST_CASE("[Vector4i] Axis methods") {
 	Vector4i vector = Vector4i(1, 2, 3, 4);
 	CHECK_MESSAGE(

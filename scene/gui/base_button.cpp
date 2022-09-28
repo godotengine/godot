@@ -264,7 +264,7 @@ bool BaseButton::is_hovered() const {
 BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	if (status.disabled) {
 		return DRAW_DISABLED;
-	};
+	}
 
 	if (!status.press_attempt && status.hovering) {
 		if (status.pressed) {
@@ -273,8 +273,7 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 
 		return DRAW_HOVER;
 	} else {
-		/* determine if pressed or not */
-
+		// Determine if pressed or not.
 		bool pressing;
 		if (status.press_attempt) {
 			pressing = (status.pressing_inside || keep_pressed_outside);
@@ -291,8 +290,6 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 			return DRAW_NORMAL;
 		}
 	}
-
-	return DRAW_NORMAL;
 }
 
 void BaseButton::set_toggle_mode(bool p_on) {
