@@ -12,13 +12,14 @@
 # Tuomas Lähteenmäki <lahtis@gmail.com>, 2019, 2022.
 # Matti Niskanen <matti.t.niskanen@gmail.com>, 2020.
 # Severi Vidnäs <severi.vidnas@gmail.com>, 2021.
+# Akseli Pihlajamaa <akselijuhanipihlajamaa@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-03-17 13:58+0000\n"
-"Last-Translator: Tuomas Lähteenmäki <lahtis@gmail.com>\n"
+"PO-Revision-Date: 2022-09-11 22:22+0000\n"
+"Last-Translator: Akseli Pihlajamaa <akselijuhanipihlajamaa@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -26,30 +27,27 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.12-dev\n"
+"X-Generator: Weblate 4.14.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Clipboard"
-msgstr "Leikepöytä on tyhjä!"
+msgstr "Leikepöytä"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Current Screen"
-msgstr "Nykyinen kohtaus"
+msgstr "Nykyinen näkymä"
 
 #: core/bind/core_bind.cpp
 msgid "Exit Code"
-msgstr ""
+msgstr "Poistumiskoodi"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "V-Sync Enabled"
-msgstr "Ota käyttöön"
+msgstr "V-Sync käytössä"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
@@ -60,9 +58,8 @@ msgid "Delta Smoothing"
 msgstr ""
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Siirtotila"
+msgstr "Matala prosessorin käyttötila"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"

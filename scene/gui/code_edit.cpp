@@ -1216,30 +1216,39 @@ bool CodeEdit::is_drawing_executing_lines_gutter() const {
 }
 
 void CodeEdit::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+	bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+
 	if (draw_breakpoints && breakpoint_icon.is_valid()) {
 		bool hovering = p_region.has_point(get_local_mouse_pos());
 		bool breakpointed = is_line_breakpointed(p_line);
 
-		if (breakpointed || (hovering && !is_dragging_cursor())) {
+		if (breakpointed || (hovering && !is_dragging_cursor() && !shift_pressed)) {
 			int padding = p_region.size.x / 6;
 			Rect2 icon_region = p_region;
 			icon_region.position += Point2(padding, padding);
 			icon_region.size -= Point2(padding, padding) * 2;
 
-			// Darken icon when hovering & not yet breakpointed.
-			Color use_color = hovering && !breakpointed ? breakpoint_color.darkened(0.4) : breakpoint_color;
+			// Darken icon when hovering, shift not pressed & not yet breakpointed.
+			Color use_color = hovering && !breakpointed && !shift_pressed ? breakpoint_color.darkened(0.4) : breakpoint_color;
 			breakpoint_icon->draw_rect(get_canvas_item(), icon_region, false, use_color);
 		}
 	}
 
-	if (draw_bookmarks && is_line_bookmarked(p_line) && bookmark_icon.is_valid()) {
-		int horizontal_padding = p_region.size.x / 2;
-		int vertical_padding = p_region.size.y / 4;
+	if (draw_bookmarks && bookmark_icon.is_valid()) {
+		bool hovering = p_region.has_point(get_local_mouse_pos());
+		bool bookmarked = is_line_bookmarked(p_line);
 
-		Rect2 bookmark_region = p_region;
-		bookmark_region.position += Point2(horizontal_padding, 0);
-		bookmark_region.size -= Point2(horizontal_padding * 1.1, vertical_padding);
-		bookmark_icon->draw_rect(get_canvas_item(), bookmark_region, false, bookmark_color);
+		if (bookmarked || (hovering && !is_dragging_cursor() && shift_pressed)) {
+			int horizontal_padding = p_region.size.x / 2;
+			int vertical_padding = p_region.size.y / 4;
+			Rect2 icon_region = p_region;
+			icon_region.position += Point2(horizontal_padding, 0);
+			icon_region.size -= Point2(horizontal_padding * 1.1, vertical_padding);
+
+			// Darken icon when hovering, shift pressed & not yet bookmarked.
+			Color use_color = hovering && !bookmarked && shift_pressed ? bookmark_color.darkened(0.4) : bookmark_color;
+			bookmark_icon->draw_rect(get_canvas_item(), icon_region, false, use_color);
+		}
 	}
 
 	if (draw_executing_lines && is_line_executing(p_line) && executing_line_icon.is_valid()) {
@@ -2378,9 +2387,13 @@ int CodeEdit::_get_auto_brace_pair_close_at_pos(int p_line, int p_col) {
 
 /* Gutters */
 void CodeEdit::_gutter_clicked(int p_line, int p_gutter) {
+	bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+
 	if (p_gutter == main_gutter) {
-		if (draw_breakpoints) {
+		if (draw_breakpoints && !shift_pressed) {
 			set_line_as_breakpoint(p_line, !is_line_breakpointed(p_line));
+		} else if (draw_bookmarks && shift_pressed) {
+			set_line_as_bookmarked(p_line, !is_line_bookmarked(p_line));
 		}
 		return;
 	}

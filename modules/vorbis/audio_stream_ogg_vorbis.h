@@ -83,14 +83,14 @@ protected:
 	virtual float get_stream_sampling_rate() override;
 
 public:
-	virtual void start(float p_from_pos = 0.0) override;
+	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;
 	virtual bool is_playing() const override;
 
 	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const override;
-	virtual void seek(float p_time) override;
+	virtual double get_playback_position() const override;
+	virtual void seek(double p_time) override;
 
 	virtual void tag_used_streams() override;
 
@@ -127,8 +127,8 @@ public:
 	void set_loop(bool p_enable);
 	virtual bool has_loop() const override;
 
-	void set_loop_offset(float p_seconds);
-	float get_loop_offset() const;
+	void set_loop_offset(double p_seconds);
+	double get_loop_offset() const;
 
 	void set_bpm(double p_bpm);
 	virtual double get_bpm() const override;
@@ -145,7 +145,7 @@ public:
 	void set_packet_sequence(Ref<OggPacketSequence> p_packet_sequence);
 	Ref<OggPacketSequence> get_packet_sequence() const;
 
-	virtual float get_length() const override; //if supported, otherwise return 0
+	virtual double get_length() const override; //if supported, otherwise return 0
 
 	virtual bool is_monophonic() const override;
 

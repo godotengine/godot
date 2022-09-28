@@ -3615,7 +3615,7 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 	return a;
 }
 
-Rect2 TileMap::get_used_rect() { // Not const because of cache
+Rect2i TileMap::get_used_rect() { // Not const because of cache
 	// Return the rect of the currently used area
 	if (used_rect_cache_dirty) {
 		bool first = true;

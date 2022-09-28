@@ -189,6 +189,8 @@ private:
 	struct ItemFont : public Item {
 		DefaultFont def_font = CUSTOM_FONT;
 		Ref<Font> font;
+		bool variation = false;
+		bool def_size = false;
 		int font_size = 0;
 		ItemFont() { type = ITEM_FONT; }
 	};
@@ -571,7 +573,8 @@ public:
 	void add_newline();
 	bool remove_line(const int p_line);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
-	void _push_def_font(DefaultFont p_font);
+	void _push_def_font(DefaultFont p_def_font);
+	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size = -1);
 	void push_font(const Ref<Font> &p_font, int p_size = 0);
 	void push_font_size(int p_font_size);
 	void push_outline_size(int p_font_size);

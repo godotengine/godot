@@ -4878,7 +4878,7 @@ void EditorNode::_load_docks() {
 	editor_data.set_plugin_window_layout(config);
 }
 
-void EditorNode::_update_dock_slots_visibility() {
+void EditorNode::_update_dock_slots_visibility(bool p_keep_selected_tabs) {
 	if (!docks_visible) {
 		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
 			dock_slot[i]->hide();
@@ -4913,9 +4913,11 @@ void EditorNode::_update_dock_slots_visibility() {
 			}
 		}
 
-		for (int i = 0; i < DOCK_SLOT_MAX; i++) {
-			if (dock_slot[i]->is_visible() && dock_slot[i]->get_tab_count()) {
-				dock_slot[i]->set_current_tab(0);
+		if (!p_keep_selected_tabs) {
+			for (int i = 0; i < DOCK_SLOT_MAX; i++) {
+				if (dock_slot[i]->is_visible() && dock_slot[i]->get_tab_count()) {
+					dock_slot[i]->set_current_tab(0);
+				}
 			}
 		}
 
@@ -5528,7 +5530,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 
 void EditorNode::set_docks_visible(bool p_show) {
 	docks_visible = p_show;
-	_update_dock_slots_visibility();
+	_update_dock_slots_visibility(true);
 }
 
 bool EditorNode::get_docks_visible() const {
@@ -6901,23 +6903,24 @@ EditorNode::EditorNode() {
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY));
+	play_button->set_tooltip_text(TTR("Run the project's default scene."));
 
-	ED_SHORTCUT_AND_COMMAND("editor/play", TTR("Play"), Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/play", "macos", KeyModifierMask::META | Key::B);
-	play_button->set_shortcut(ED_GET_SHORTCUT("editor/play"));
+	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTR("Run Project"), Key::F5);
+	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
+	play_button->set_shortcut(ED_GET_SHORTCUT("editor/run_project"));
 
 	pause_button = memnew(Button);
 	pause_button->set_flat(true);
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_theme_icon(SNAME("Pause"), SNAME("EditorIcons")));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
-	pause_button->set_tooltip_text(TTR("Pause the scene execution for debugging."));
+	pause_button->set_tooltip_text(TTR("Pause the running project's execution for debugging."));
 	pause_button->set_disabled(true);
 	launch_pad_hb->add_child(pause_button);
 
-	ED_SHORTCUT("editor/pause_scene", TTR("Pause Scene"), Key::F7);
-	ED_SHORTCUT_OVERRIDE("editor/pause_scene", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
-	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/pause_scene"));
+	ED_SHORTCUT("editor/pause_running_project", TTR("Pause Running Project"), Key::F7);
+	ED_SHORTCUT_OVERRIDE("editor/pause_running_project", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
+	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/pause_running_project"));
 
 	stop_button = memnew(Button);
 	stop_button->set_flat(true);
@@ -6925,12 +6928,12 @@ EditorNode::EditorNode() {
 	stop_button->set_focus_mode(Control::FOCUS_NONE);
 	stop_button->set_icon(gui_base->get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 	stop_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_STOP));
-	stop_button->set_tooltip_text(TTR("Stop the scene."));
+	stop_button->set_tooltip_text(TTR("Stop the currently running project."));
 	stop_button->set_disabled(true);
 
-	ED_SHORTCUT("editor/stop", TTR("Stop"), Key::F8);
-	ED_SHORTCUT_OVERRIDE("editor/stop", "macos", KeyModifierMask::META | Key::PERIOD);
-	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop"));
+	ED_SHORTCUT("editor/stop_running_project", TTR("Stop Running Project"), Key::F8);
+	ED_SHORTCUT_OVERRIDE("editor/stop_running_project", "macos", KeyModifierMask::META | Key::PERIOD);
+	stop_button->set_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
 
 	run_native = memnew(EditorRunNative);
 	launch_pad_hb->add_child(run_native);
@@ -6942,10 +6945,11 @@ EditorNode::EditorNode() {
 	play_scene_button->set_toggle_mode(true);
 	play_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_SCENE));
+	play_scene_button->set_tooltip_text(TTR("Run the currently edited scene."));
 
-	ED_SHORTCUT_AND_COMMAND("editor/play_scene", TTR("Play Scene"), Key::F6);
-	ED_SHORTCUT_OVERRIDE("editor/play_scene", "macos", KeyModifierMask::META | Key::R);
-	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_scene"));
+	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTR("Run Current Scene"), Key::F6);
+	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
+	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_current_scene"));
 
 	play_custom_scene_button = memnew(Button);
 	play_custom_scene_button->set_flat(true);
@@ -6953,12 +6957,13 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_toggle_mode(true);
 	play_custom_scene_button->set_focus_mode(Control::FOCUS_NONE);
 	play_custom_scene_button->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(RUN_PLAY_CUSTOM_SCENE));
+	play_custom_scene_button->set_tooltip_text(TTR("Run a specific scene."));
 
 	_reset_play_buttons();
 
-	ED_SHORTCUT_AND_COMMAND("editor/play_custom_scene", TTR("Play Custom Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
-	ED_SHORTCUT_OVERRIDE("editor/play_custom_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
-	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/play_custom_scene"));
+	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTR("Run Specific Scene"), KeyModifierMask::META | KeyModifierMask::SHIFT | Key::F5);
+	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
+	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_specific_scene"));
 
 	write_movie_panel = memnew(PanelContainer);
 	write_movie_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("MovieWriterButtonNormal"), SNAME("EditorStyles")));

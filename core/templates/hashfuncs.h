@@ -61,10 +61,11 @@
 static _FORCE_INLINE_ uint32_t hash_djb2(const char *p_cstr) {
 	const unsigned char *chr = (const unsigned char *)p_cstr;
 	uint32_t hash = 5381;
-	uint32_t c;
+	uint32_t c = *chr++;
 
-	while ((c = *chr++)) {
+	while (c) {
 		hash = ((hash << 5) + hash) ^ c; /* hash * 33 ^ c */
+		c = *chr++;
 	}
 
 	return hash;

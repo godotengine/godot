@@ -28,9 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// note, swapped java and godot around in the file name so all the java
-// wrappers are together
-
 #ifndef JAVA_GODOT_IO_WRAPPER_H
 #define JAVA_GODOT_IO_WRAPPER_H
 

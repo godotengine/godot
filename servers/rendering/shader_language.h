@@ -483,7 +483,7 @@ public:
 		int array_size = 0;
 
 		union Value {
-			bool boolean;
+			bool boolean = false;
 			float real;
 			int32_t sint;
 			uint32_t uint;

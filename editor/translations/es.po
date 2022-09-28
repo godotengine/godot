@@ -94,7 +94,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-07 21:02+0000\n"
+"PO-Revision-Date: 2022-09-27 21:37+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -103,7 +103,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -5564,7 +5564,7 @@ msgstr "Ancho del Minimapa"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
-msgstr "Botones Extra del Ratón Navegar por el Historial"
+msgstr "Botones Extra del Mouse para Navegar por el Historial"
 
 #: editor/editor_settings.cpp
 msgid "Drag And Drop Selection"
@@ -8638,7 +8638,7 @@ msgstr ""
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Bake Lightmaps"
-msgstr "Calcular Lightmaps"
+msgstr "Bakear Lightmaps"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "LightMap Bake"
@@ -9507,7 +9507,7 @@ msgstr "Clic derecho para añadir punto"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
-msgstr "Calcular GI Probe"
+msgstr "Bakear GI Probe"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
@@ -15357,19 +15357,16 @@ msgid "Make Local"
 msgstr "Crear Local"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "Activar Nombre Único de Escena"
+msgstr "Activar Nombre(s) Único(s) de Escena"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Unique names already used by another node in the scene:"
-msgstr "Otro nodo ya utiliza este nombre único en la escena."
+msgstr "Nombres únicos ya utilizados por otro nodo en la escena:"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "Desactivar Nombre Único de Escena"
+msgstr "Desactivar Nombre(s) Único(s) de Escena"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -16813,7 +16810,7 @@ msgstr "Color de la Ruta del Nodo"
 
 #: modules/gdscript/gdscript.cpp modules/visual_script/visual_script.cpp
 msgid "Max Call Stack"
-msgstr ""
+msgstr "Pila de llamadas Máxima"
 
 #: modules/gdscript/gdscript.cpp
 msgid "Treat Warnings As Errors"
@@ -16953,7 +16950,7 @@ msgstr "Longitud de Bytes"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Stride"
-msgstr ""
+msgstr "Cadencia de Byte"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Indices"
@@ -17089,11 +17086,11 @@ msgstr "Factor Specular"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Spec Gloss Img"
-msgstr ""
+msgstr "Espec. Brillo Img"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
-msgstr ""
+msgstr "Json"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Major Version"
@@ -17109,7 +17106,7 @@ msgstr "Datos GLB"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Use Named Skin Binds"
-msgstr ""
+msgstr "Usar Vínculos de Skins con Nombre"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Buffer Views"
@@ -17117,7 +17114,7 @@ msgstr "Vistas del Buffer"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Accessors"
-msgstr ""
+msgstr "Accesos"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Scene Name"
@@ -17138,7 +17135,7 @@ msgstr "Imágenes"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Cameras"
-msgstr ""
+msgstr "Cámaras"
 
 #: modules/gltf/gltf_state.cpp servers/visual_server.cpp
 msgid "Lights"
@@ -17178,7 +17175,7 @@ msgstr "Uso en Luz Bakeada"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
 msgid "Cell"
-msgstr ""
+msgstr "Celda"
 
 #: modules/gridmap/grid_map.cpp
 msgid "Octant Size"
@@ -17200,7 +17197,7 @@ msgstr "Centro Z"
 #: scene/2d/tile_map.cpp scene/3d/collision_object.cpp scene/3d/soft_body.cpp
 #: scene/resources/material.cpp
 msgid "Mask"
-msgstr ""
+msgstr "Máscara"
 
 #: modules/gridmap/grid_map.cpp scene/2d/tile_map.cpp
 msgid "Bake Navigation"
@@ -17376,19 +17373,19 @@ msgstr "CPU Lightmapper"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Low Quality Ray Count"
-msgstr ""
+msgstr "Conteo de Rayos de Baja Calidad"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Medium Quality Ray Count"
-msgstr ""
+msgstr "Conteo de Rayos de Calidad Media"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "High Quality Ray Count"
-msgstr ""
+msgstr "Conteo de Rayos de Calidad Alta"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Ultra Quality Ray Count"
-msgstr ""
+msgstr "Conteo de Rayos de Calidad Ultra"
 
 #: modules/minimp3/audio_stream_mp3.cpp
 #: modules/minimp3/resource_importer_mp3.cpp
@@ -17399,11 +17396,11 @@ msgstr "Offset de Bucle"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Eye Height"
-msgstr ""
+msgstr "Altura Ocular"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "IOD"
-msgstr ""
+msgstr "IOD"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Display Width"
@@ -17415,15 +17412,15 @@ msgstr "Pantalla a Lente"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Oversample"
-msgstr ""
+msgstr "Sobremuestreo"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K1"
-msgstr ""
+msgstr "K1"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K2"
-msgstr ""
+msgstr "K2"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -17438,23 +17435,20 @@ msgid "Auto Update Project"
 msgstr "Actualización Automática del Proyecto"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Assembly Name"
-msgstr "Nombre a Mostrar"
+msgstr "Nombre del Conjunto"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Solution Directory"
-msgstr "Selecciona un directorio"
+msgstr "Directorio de Soluciones"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "C# Project Directory"
-msgstr "Selecciona un directorio"
+msgstr "Directorio de Proyectos C#"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
-msgstr "Fin del reporte de la pila de excepciones"
+msgstr "Fin de la pila de excepciones internas"
 
 #: modules/navigation/navigation_mesh_editor_plugin.cpp
 #: scene/3d/navigation_mesh_instance.cpp
@@ -17465,7 +17459,7 @@ msgstr ""
 
 #: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Bake NavMesh"
-msgstr "Calcular NavMesh"
+msgstr "Bakear NavMesh"
 
 #: modules/navigation/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -17525,7 +17519,7 @@ msgstr "¡Hecho!"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Seamless"
-msgstr ""
+msgstr "Sin costuras"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "As Normal Map"
@@ -17533,11 +17527,11 @@ msgstr "Como Mapa Normal"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Bump Strength"
-msgstr ""
+msgstr "Fuerza de Choque"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise"
-msgstr ""
+msgstr "Ruido"
 
 #: modules/opensimplex/noise_texture.cpp
 msgid "Noise Offset"
@@ -17545,11 +17539,11 @@ msgstr "Offset de Ruido"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Octaves"
-msgstr ""
+msgstr "Octavas"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Period"
-msgstr ""
+msgstr "Periodo"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Persistence"
@@ -17557,11 +17551,11 @@ msgstr "Persistencia"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Lacunarity"
-msgstr ""
+msgstr "Lacunaridad"
 
 #: modules/regex/regex.cpp
 msgid "Subject"
-msgstr ""
+msgstr "Asunto"
 
 #: modules/regex/regex.cpp
 msgid "Names"
@@ -17573,15 +17567,15 @@ msgstr "Cadenas"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Multicast If"
-msgstr ""
+msgstr "Descubrir Multicast si"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Local Port"
-msgstr ""
+msgstr "Descubrir Puerto Local"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover IPv6"
-msgstr ""
+msgstr "Descubrir IPV6"
 
 #: modules/upnp/upnp_device.cpp
 msgid "Description URL"
@@ -17593,7 +17587,7 @@ msgstr "Tipo de Servicio"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Control URL"
-msgstr ""
+msgstr "IGD Control URL"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Service Type"
@@ -17601,7 +17595,7 @@ msgstr "Tipo de Servicio IGD"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Our Addr"
-msgstr ""
+msgstr "Dirección de IGD"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Status"
@@ -18261,7 +18255,7 @@ msgstr "SubCall"
 
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/graph_node.cpp
 msgid "Title"
-msgstr ""
+msgstr "Título"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Construct %s"
@@ -18329,7 +18323,7 @@ msgstr "Modo de Escritura"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "WebRTC"
-msgstr ""
+msgstr "WebRTC"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "Max Channel In Buffer (KB)"
@@ -18337,11 +18331,11 @@ msgstr "Buffer de Canal Máximo (KB)"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Verify SSL"
-msgstr ""
+msgstr "Verificar SSL"
 
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
-msgstr ""
+msgstr "Certificado SSL de Confianza"
 
 #: modules/websocket/websocket_macros.h
 msgid "WebSocket Client"
@@ -18353,7 +18347,7 @@ msgstr "Buffer de Entrada Máximo (KB)"
 
 #: modules/websocket/websocket_macros.h
 msgid "Max In Packets"
-msgstr ""
+msgstr "Paquetes Máximos de Entrada"
 
 #: modules/websocket/websocket_macros.h
 msgid "Max Out Buffer (KB)"
@@ -18361,7 +18355,7 @@ msgstr "Buffer de Salida Máximo (KB)"
 
 #: modules/websocket/websocket_macros.h
 msgid "Max Out Packets"
-msgstr ""
+msgstr "Paquetes Máximos de Salida"
 
 #: modules/websocket/websocket_macros.h
 msgid "WebSocket Server"
@@ -18369,7 +18363,7 @@ msgstr "Servidor WebSocket"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Bind IP"
-msgstr ""
+msgstr "Vincular IP"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Private Key"
@@ -18377,7 +18371,7 @@ msgstr "Clave Privada"
 
 #: modules/websocket/websocket_server.cpp platform/javascript/export/export.cpp
 msgid "SSL Certificate"
-msgstr ""
+msgstr "Certificado SSL"
 
 #: modules/websocket/websocket_server.cpp
 msgid "CA Chain"
@@ -18401,11 +18395,11 @@ msgstr "Características Opcionales"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Requested Reference Space Types"
-msgstr ""
+msgstr "Tipos de Espacios de Referencia Requeridos"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Reference Space Type"
-msgstr ""
+msgstr "Tipo de Espacio de Referencia"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Visibility State"
@@ -18421,7 +18415,7 @@ msgstr "Mapeo Estándar XR"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
-msgstr ""
+msgstr "Ruta del SDK de Android"
 
 #: platform/android/export/export.cpp
 msgid "Debug Keystore"
@@ -18429,35 +18423,35 @@ msgstr "Debug Keystore"
 
 #: platform/android/export/export.cpp
 msgid "Debug Keystore User"
-msgstr ""
+msgstr "Usuario Debug Keystore"
 
 #: platform/android/export/export.cpp
 msgid "Debug Keystore Pass"
-msgstr ""
+msgstr "Contraseña Debug Keystore"
 
 #: platform/android/export/export.cpp
 msgid "Force System User"
-msgstr ""
+msgstr "Forzar Usuario del Sistema"
 
 #: platform/android/export/export.cpp
 msgid "Shutdown ADB On Exit"
-msgstr ""
+msgstr "Apagar el ADB al Salir"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Launcher Icons"
-msgstr ""
+msgstr "Iconos del Launcher"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Main 192 X 192"
-msgstr ""
+msgstr "Principal 192 X 192"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adaptive Foreground 432 X 432"
-msgstr ""
+msgstr "Primer Plano Adaptable 432 X 432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adaptive Background 432 X 432"
-msgstr ""
+msgstr "Fondo Adaptable 432 X 432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -18532,7 +18526,7 @@ msgstr "Contraseña de Release"
 
 #: platform/android/export/export_plugin.cpp
 msgid "One Click Deploy"
-msgstr ""
+msgstr "Despliegue con Un Clic"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Clear Previous Install"
@@ -18540,7 +18534,7 @@ msgstr "Limpiar Instalación Previa"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
-msgstr ""
+msgstr "Código"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 msgid "Package"
@@ -18560,7 +18554,7 @@ msgstr "Clasificar Como Juego"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Retain Data On Uninstall"
-msgstr ""
+msgstr "Conservar Datos al Desinstalar"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Exclude From Recents"
@@ -18588,11 +18582,11 @@ msgstr "Seguimiento de Manos"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Hand Tracking Frequency"
-msgstr ""
+msgstr "Frecuencia de Seguimiento de la Mano"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Passthrough"
-msgstr ""
+msgstr "Pasar por"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Immersive Mode"
@@ -18620,7 +18614,7 @@ msgstr "Backup de Datos del Usuario"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Allow"
-msgstr ""
+msgstr "Permitir"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 msgid "Command Line"
@@ -18636,7 +18630,7 @@ msgstr "Expansión del APK"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Salt"
-msgstr ""
+msgstr "Sal"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Public Key"
@@ -18808,12 +18802,15 @@ msgstr ""
 #: platform/android/export/export_plugin.cpp
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
+"\"Min SDK\" debería ser un entero válido, pero obtuvo \"%s\" que es inválido."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the "
 "Godot library."
 msgstr ""
+"\"Min SDK\" no puede ser inferior a %d, que es la versión que necesita la "
+"librería de Godot."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -19012,67 +19009,67 @@ msgstr "El carácter '% s' no está permitido en el Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "Landscape Launch Screens"
-msgstr ""
+msgstr "Pantalla de Inicio Landscape"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 2436 X 1125"
-msgstr ""
+msgstr "iPhone 2436 X 1125"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 2208 X 1242"
-msgstr ""
+msgstr "iPhone 2208 X 1242"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 1024 X 768"
-msgstr ""
+msgstr "iPad 1024 X 768"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 2048 X 1536"
-msgstr ""
+msgstr "iPad 2048 X 1536"
 
 #: platform/iphone/export/export.cpp
 msgid "Portrait Launch Screens"
-msgstr ""
+msgstr "Pantalla de Inicio Portrait"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 640 X 960"
-msgstr ""
+msgstr "iPhone 640 X 960"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 640 X 1136"
-msgstr ""
+msgstr "iPhone 640 X 1136"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 750 X 1334"
-msgstr ""
+msgstr "iPhone 750 X 1334"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 1125 X 2436"
-msgstr ""
+msgstr "iPhone 1125 X 2436"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 768 X 1024"
-msgstr ""
+msgstr "iPad 768 X 1024"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 1536 X 2048"
-msgstr ""
+msgstr "iPad 1536 X 2048"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 1242 X 2208"
-msgstr ""
+msgstr "iPhone 1242 X 2208"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID"
-msgstr ""
+msgstr "ID del Equipo de la App Store"
 
 #: platform/iphone/export/export.cpp
 msgid "Provisioning Profile UUID Debug"
-msgstr ""
+msgstr "Depuración del Perfil de Aprovisionamiento UUID"
 
 #: platform/iphone/export/export.cpp
 msgid "Code Sign Identity Debug"
-msgstr ""
+msgstr "Depuración de la Identidad del Código"
 
 #: platform/iphone/export/export.cpp
 msgid "Export Method Debug"
@@ -19080,11 +19077,11 @@ msgstr "Exportar Método de Depuración"
 
 #: platform/iphone/export/export.cpp
 msgid "Provisioning Profile UUID Release"
-msgstr ""
+msgstr "Release UUID del Perfil de Aprovisionamiento"
 
 #: platform/iphone/export/export.cpp
 msgid "Code Sign Identity Release"
-msgstr ""
+msgstr "Release de Código de Identidad"
 
 #: platform/iphone/export/export.cpp
 msgid "Export Method Release"
@@ -19092,11 +19089,11 @@ msgstr "Método de Exportación de Release"
 
 #: platform/iphone/export/export.cpp
 msgid "Targeted Device Family"
-msgstr ""
+msgstr "Familia de Dispositivos de Destino"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Info"
-msgstr ""
+msgstr "Información"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Identifier"
@@ -19133,11 +19130,11 @@ msgstr "Datos de Usuario"
 
 #: platform/iphone/export/export.cpp
 msgid "Accessible From Files App"
-msgstr ""
+msgstr "Accesible desde la Aplicación de Archivos"
 
 #: platform/iphone/export/export.cpp
 msgid "Accessible From iTunes Sharing"
-msgstr ""
+msgstr "Accesible desde iTunes Sharing"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 msgid "Privacy"
@@ -19157,43 +19154,43 @@ msgstr "Descripción del Uso de la Fotolibrería"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 120 X 120"
-msgstr ""
+msgstr "iPhone 120 X 120"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 180 X 180"
-msgstr ""
+msgstr "iPhone 180 X 180"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 76 X 76"
-msgstr ""
+msgstr "iPad 76 X 76"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 152 X 152"
-msgstr ""
+msgstr "iPad 152 X 152"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 167 X 167"
-msgstr ""
+msgstr "iPad 167 X 167"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store 1024 X 1024"
-msgstr ""
+msgstr "App Store 1024 X 1024"
 
 #: platform/iphone/export/export.cpp
 msgid "Spotlight 40 X 40"
-msgstr ""
+msgstr "Spotlight 40 X 40"
 
 #: platform/iphone/export/export.cpp
 msgid "Spotlight 80 X 80"
-msgstr ""
+msgstr "Spotlight 80 X 80"
 
 #: platform/iphone/export/export.cpp
 msgid "Storyboard"
-msgstr ""
+msgstr "Storyboard"
 
 #: platform/iphone/export/export.cpp
 msgid "Use Launch Screen Storyboard"
-msgstr ""
+msgstr "Usar Storyboard en la Pantalla de Inicio"
 
 #: platform/iphone/export/export.cpp
 msgid "Image Scale Mode"
@@ -19216,9 +19213,8 @@ msgid "Custom BG Color"
 msgstr "Color de Fondo Personalizado"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Icons"
-msgstr "Icono de Exportación"
+msgstr "Iconos de Exportación"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
@@ -19272,7 +19268,7 @@ msgstr "No se pudo leer el archivo: \"%s\"."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
-msgstr ""
+msgstr "PWA"
 
 #: platform/javascript/export/export.cpp
 msgid "Variant"
@@ -19288,15 +19284,15 @@ msgstr "Compresión de Texturas en la VRAM"
 
 #: platform/javascript/export/export.cpp
 msgid "For Desktop"
-msgstr ""
+msgstr "Para Escritorio"
 
 #: platform/javascript/export/export.cpp
 msgid "For Mobile"
-msgstr ""
+msgstr "Para Móviles"
 
 #: platform/javascript/export/export.cpp
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: platform/javascript/export/export.cpp
 msgid "Export Icon"
@@ -19308,15 +19304,15 @@ msgstr "HTML Shell Personalizado"
 
 #: platform/javascript/export/export.cpp
 msgid "Head Include"
-msgstr ""
+msgstr "Incluyendo Cabecera"
 
 #: platform/javascript/export/export.cpp
 msgid "Canvas Resize Policy"
-msgstr ""
+msgstr "Política de Redimensionamiento del Canvas"
 
 #: platform/javascript/export/export.cpp
 msgid "Focus Canvas On Start"
-msgstr ""
+msgstr "Enfocar Lienzo Al Inicio"
 
 #: platform/javascript/export/export.cpp
 msgid "Experimental Virtual Keyboard"
@@ -19324,23 +19320,23 @@ msgstr "Teclado Virtual Experimental"
 
 #: platform/javascript/export/export.cpp
 msgid "Progressive Web App"
-msgstr ""
+msgstr "App Web Progresiva"
 
 #: platform/javascript/export/export.cpp
 msgid "Offline Page"
-msgstr ""
+msgstr "Página Offline"
 
 #: platform/javascript/export/export.cpp
 msgid "Icon 144 X 144"
-msgstr ""
+msgstr "Icono 144 X 144"
 
 #: platform/javascript/export/export.cpp
 msgid "Icon 180 X 180"
-msgstr ""
+msgstr "Icono 180 X 180"
 
 #: platform/javascript/export/export.cpp
 msgid "Icon 512 X 512"
-msgstr ""
+msgstr "Icono 512 X 512"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read HTML shell: \"%s\"."
@@ -19356,15 +19352,15 @@ msgstr "Error al iniciar el servidor HTTP: %d."
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
-msgstr ""
+msgstr "Web"
 
 #: platform/javascript/export/export.cpp
 msgid "HTTP Host"
-msgstr ""
+msgstr "HTTP Host"
 
 #: platform/javascript/export/export.cpp
 msgid "HTTP Port"
-msgstr ""
+msgstr "Puerto HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Use SSL"
@@ -19372,7 +19368,7 @@ msgstr "Usar SSL"
 
 #: platform/javascript/export/export.cpp
 msgid "SSL Key"
-msgstr ""
+msgstr "Clave SSL"
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't get filesystem access."
@@ -19452,7 +19448,7 @@ msgstr "Categoría De La Aplicación"
 
 #: platform/osx/export/export.cpp
 msgid "High Res"
-msgstr ""
+msgstr "Alta Resolución"
 
 #: platform/osx/export/export.cpp
 msgid "Location Usage Description"
@@ -19460,7 +19456,7 @@ msgstr "Ubicación de la Descripción de Uso"
 
 #: platform/osx/export/export.cpp
 msgid "Address Book Usage Description"
-msgstr ""
+msgstr "Descripción de Uso de la Libreta de Direcciones"
 
 #: platform/osx/export/export.cpp
 msgid "Calendar Usage Description"
@@ -19480,15 +19476,15 @@ msgstr "Descripción de Uso de la Carpeta de Documentos"
 
 #: platform/osx/export/export.cpp
 msgid "Downloads Folder Usage Description"
-msgstr ""
+msgstr "Descripción de Uso de la Carpeta de Descargas"
 
 #: platform/osx/export/export.cpp
 msgid "Network Volumes Usage Description"
-msgstr ""
+msgstr "Descripción de Uso de Volúmenes de Red"
 
 #: platform/osx/export/export.cpp
 msgid "Removable Volumes Usage Description"
-msgstr ""
+msgstr "Descripción de Uso de Volúmenes Extraíbles"
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 msgid "Codesign"
@@ -19521,15 +19517,15 @@ msgstr "Archivo Personalizado"
 
 #: platform/osx/export/export.cpp
 msgid "Allow JIT Code Execution"
-msgstr ""
+msgstr "Permitir Ejecución de Código JIT"
 
 #: platform/osx/export/export.cpp
 msgid "Allow Unsigned Executable Memory"
-msgstr ""
+msgstr "Permitir Memoria Ejecutable Desfasada"
 
 #: platform/osx/export/export.cpp
 msgid "Allow Dyld Environment Variables"
-msgstr ""
+msgstr "Permitir Variables de Entorno Dyld"
 
 #: platform/osx/export/export.cpp
 msgid "Disable Library Validation"
@@ -19541,11 +19537,11 @@ msgstr "Entrada de Audio"
 
 #: platform/osx/export/export.cpp
 msgid "Address Book"
-msgstr ""
+msgstr "Libreta de Direcciones"
 
 #: platform/osx/export/export.cpp
 msgid "Calendars"
-msgstr ""
+msgstr "Calendarios"
 
 #: platform/osx/export/export.cpp
 msgid "Photos Library"
@@ -19561,7 +19557,7 @@ msgstr "Depuración"
 
 #: platform/osx/export/export.cpp
 msgid "App Sandbox"
-msgstr ""
+msgstr "App Sandbox"
 
 #: platform/osx/export/export.cpp
 msgid "Network Server"
@@ -19577,7 +19573,7 @@ msgstr "Dispositivo USB"
 
 #: platform/osx/export/export.cpp
 msgid "Device Bluetooth"
-msgstr ""
+msgstr "Dispositivo Bluetooth"
 
 #: platform/osx/export/export.cpp
 msgid "Files Downloads"
@@ -19605,7 +19601,7 @@ msgstr "Notarización"
 
 #: platform/osx/export/export.cpp
 msgid "Apple ID Name"
-msgstr ""
+msgstr "Nombre del ID de Apple"
 
 #: platform/osx/export/export.cpp
 msgid "Apple ID Password"
@@ -19613,7 +19609,7 @@ msgstr "Contraseña del ID de Apple"
 
 #: platform/osx/export/export.cpp
 msgid "Apple Team ID"
-msgstr ""
+msgstr "ID del Equipo Apple"
 
 #: platform/osx/export/export.cpp
 msgid "Could not open icon file \"%s\"."
@@ -19629,7 +19625,7 @@ msgstr "La notarización ha fallado."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization request UUID: \"%s\""
-msgstr ""
+msgstr "Solicitud de notarización UUID: \"%s\""
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19668,11 +19664,11 @@ msgstr ""
 
 #: platform/osx/export/export.cpp
 msgid "Built-in CodeSign failed with error \"%s\"."
-msgstr ""
+msgstr "El CodeSign incorporado falló con el error \"%s\"."
 
 #: platform/osx/export/export.cpp
 msgid "Built-in CodeSign require regex module."
-msgstr ""
+msgstr "El CodeSign incorporado requiere un módulo regex."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -20049,6 +20045,8 @@ msgid ""
 "Godot's Mono version does not support the UWP platform. Use the standard "
 "build (no C# support) if you wish to target UWP."
 msgstr ""
+"La versión Mono de Godot no es compatible con la plataforma UWP. Utiliza la "
+"compilación estándar (sin soporte para C#) si deseas enfocarte en UWP."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."

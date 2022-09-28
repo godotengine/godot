@@ -1325,7 +1325,7 @@ bool InputEventAction::is_match(const Ref<InputEvent> &p_event, bool p_exact_mat
 		return false;
 	}
 
-	return p_event->is_action(action);
+	return p_event->is_action(action, p_exact_match);
 }
 
 bool InputEventAction::is_action(const StringName &p_action) const {

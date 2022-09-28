@@ -66,6 +66,7 @@ public:
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; }
 
+	virtual void on_before_instance_created() {}
 	virtual void on_instance_created(const XrInstance p_instance) {}
 	virtual void on_instance_destroyed() {}
 	virtual void on_session_created(const XrSession p_instance) {}
@@ -85,6 +86,11 @@ public:
 	// Returns true if the event was handled, false otherwise.
 	virtual bool on_event_polled(const XrEventDataBuffer &event) {
 		return false;
+	}
+
+	// Return false if this extension is responsible for this path but the path is not enabled
+	virtual bool is_path_supported(const String &p_path) {
+		return true;
 	}
 
 	OpenXRExtensionWrapper(OpenXRAPI *p_openxr_api) { openxr_api = p_openxr_api; };

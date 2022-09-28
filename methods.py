@@ -49,17 +49,12 @@ def disable_warnings(self):
     if self.msvc:
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
-        warn_flags = ["/Wall", "/W4", "/W3", "/W2", "/W1", "/WX"]
-        self.Append(CCFLAGS=["/w"])
-        self.Append(CFLAGS=["/w"])
-        self.Append(CXXFLAGS=["/w"])
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not x in warn_flags]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if not x in warn_flags]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not x in warn_flags]
+        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        self["CFLAGS"] = [x for x in self["CFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        self.AppendUnique(CCFLAGS=["/w"])
     else:
-        self.Append(CCFLAGS=["-w"])
-        self.Append(CFLAGS=["-w"])
-        self.Append(CXXFLAGS=["-w"])
+        self.AppendUnique(CCFLAGS=["-w"])
 
 
 def force_optimization_on_debug(self):
@@ -68,9 +63,14 @@ def force_optimization_on_debug(self):
         return
 
     if self.msvc:
-        self.Append(CCFLAGS=["/O2"])
+        # We have to remove existing optimization level defines before appending /O2,
+        # otherwise we get: "warning D9025 : overriding '/0d' with '/02'"
+        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not x.startswith("/O")]
+        self["CFLAGS"] = [x for x in self["CFLAGS"] if not x.startswith("/O")]
+        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not x.startswith("/O")]
+        self.AppendUnique(CCFLAGS=["/O2"])
     else:
-        self.Append(CCFLAGS=["-O3"])
+        self.AppendUnique(CCFLAGS=["-O3"])
 
 
 def add_module_version_string(self, s):
@@ -105,7 +105,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("GODOT_VERSION_STATUS") != None:
         version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
         if not silent:
-            print(f"Using version status '{version_info.status}', overriding the original '{version.status}'.")
+            print(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
 
     # Parse Git hash if we're in a Git repo.
     githash = ""
@@ -846,7 +846,8 @@ def generate_vs_project(env, num_jobs):
         add_to_vs_project(env, env.servers_sources)
         if env["tests"]:
             add_to_vs_project(env, env.tests_sources)
-        add_to_vs_project(env, env.editor_sources)
+        if env["tools"]:
+            add_to_vs_project(env, env.editor_sources)
 
         for header in glob_recursive("**/*.h"):
             env.vs_incs.append(str(header))

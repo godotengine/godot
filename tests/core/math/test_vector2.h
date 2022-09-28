@@ -37,6 +37,14 @@
 
 namespace TestVector2 {
 
+TEST_CASE("[Vector2] Constructor methods") {
+	const Vector2 vector_empty = Vector2();
+	const Vector2 vector_zero = Vector2(0.0, 0.0);
+	CHECK_MESSAGE(
+			vector_empty == vector_zero,
+			"Vector2 Constructor with no inputs should return a zero Vector2.");
+}
+
 TEST_CASE("[Vector2] Angle methods") {
 	const Vector2 vector_x = Vector2(1, 0);
 	const Vector2 vector_y = Vector2(0, 1);
@@ -101,6 +109,9 @@ TEST_CASE("[Vector2] Interpolation methods") {
 	CHECK_MESSAGE(
 			Vector2(1, 1).slerp(Vector2(), 0.5) == Vector2(0.5, 0.5),
 			"Vector2 slerp with one input as zero should behave like a regular lerp.");
+	CHECK_MESSAGE(
+			Vector2(4, 6).slerp(Vector2(8, 10), 0.5).is_equal_approx(Vector2(5.9076470794008017626, 8.07918879020090480697)),
+			"Vector2 slerp should work as expected.");
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector1.slerp(vector2, 0.5).length(), (real_t)4.31959610746631919),
 			"Vector2 slerp with different length input should return a vector with an interpolated length.");
@@ -171,6 +182,15 @@ TEST_CASE("[Vector2] Normalization methods") {
 	CHECK_MESSAGE(
 			Vector2(1, 1).normalized().is_equal_approx(Vector2(Math_SQRT12, Math_SQRT12)),
 			"Vector2 normalized should work as expected.");
+
+	Vector2 vector = Vector2(3.2, -5.4);
+	vector.normalize();
+	CHECK_MESSAGE(
+			vector == Vector2(3.2, -5.4).normalized(),
+			"Vector2 normalize should convert same way as Vector2 normalized.");
+	CHECK_MESSAGE(
+			vector.is_equal_approx(Vector2(0.509802390301732898898, -0.860291533634174266891)),
+			"Vector2 normalize should work as expected.");
 }
 
 TEST_CASE("[Vector2] Operators") {
@@ -276,12 +296,14 @@ TEST_CASE("[Vector2] Other methods") {
 	CHECK_MESSAGE(
 			Math::is_equal_approx(vector.aspect(), (real_t)1.2 / (real_t)3.4),
 			"Vector2 aspect should work as expected.");
+
 	CHECK_MESSAGE(
 			vector.direction_to(Vector2()).is_equal_approx(-vector.normalized()),
 			"Vector2 direction_to should work as expected.");
 	CHECK_MESSAGE(
 			Vector2(1, 1).direction_to(Vector2(2, 2)).is_equal_approx(Vector2(Math_SQRT12, Math_SQRT12)),
 			"Vector2 direction_to should work as expected.");
+
 	CHECK_MESSAGE(
 			vector.posmod(2).is_equal_approx(Vector2(1.2, 1.4)),
 			"Vector2 posmod should work as expected.");
@@ -294,9 +316,20 @@ TEST_CASE("[Vector2] Other methods") {
 	CHECK_MESSAGE(
 			(-vector).posmodv(Vector2(2, 3)).is_equal_approx(Vector2(0.8, 2.6)),
 			"Vector2 posmodv should work as expected.");
+
+	CHECK_MESSAGE(
+			vector.rotated(Math_TAU).is_equal_approx(Vector2(1.2, 3.4)),
+			"Vector2 rotated should work as expected.");
 	CHECK_MESSAGE(
 			vector.rotated(Math_TAU / 4).is_equal_approx(Vector2(-3.4, 1.2)),
 			"Vector2 rotated should work as expected.");
+	CHECK_MESSAGE(
+			vector.rotated(Math_TAU / 3).is_equal_approx(Vector2(-3.544486372867091398996, -0.660769515458673623883)),
+			"Vector2 rotated should work as expected.");
+	CHECK_MESSAGE(
+			vector.rotated(Math_TAU / 2).is_equal_approx(vector.rotated(Math_TAU / -2)),
+			"Vector2 rotated should work as expected.");
+
 	CHECK_MESSAGE(
 			vector.snapped(Vector2(1, 1)) == Vector2(1, 3),
 			"Vector2 snapped to integers should be the same as rounding.");
@@ -306,23 +339,57 @@ TEST_CASE("[Vector2] Other methods") {
 	CHECK_MESSAGE(
 			vector.snapped(Vector2(0.25, 0.25)) == Vector2(1.25, 3.5),
 			"Vector2 snapped to 0.25 should give exact results.");
+
+	CHECK_MESSAGE(
+			Vector2(1.2, 2.5).is_equal_approx(vector.min(Vector2(3.0, 2.5))),
+			"Vector2 min should return expected value.");
+
+	CHECK_MESSAGE(
+			Vector2(5.3, 3.4).is_equal_approx(vector.max(Vector2(5.3, 2.0))),
+			"Vector2 max should return expected value.");
 }
 
 TEST_CASE("[Vector2] Plane methods") {
 	const Vector2 vector = Vector2(1.2, 3.4);
 	const Vector2 vector_y = Vector2(0, 1);
+	const Vector2 vector_normal = Vector2(0.95879811270838721622267, 0.2840883296913739899919);
+	const Vector2 vector_non_normal = Vector2(5.4, 1.6);
 	CHECK_MESSAGE(
 			vector.bounce(vector_y) == Vector2(1.2, -3.4),
 			"Vector2 bounce on a plane with normal of the Y axis should.");
 	CHECK_MESSAGE(
+			vector.bounce(vector_normal).is_equal_approx(Vector2(-2.85851197982345523329, 2.197477931904161412358)),
+			"Vector2 bounce with normal should return expected value.");
+	CHECK_MESSAGE(
 			vector.reflect(vector_y) == Vector2(-1.2, 3.4),
 			"Vector2 reflect on a plane with normal of the Y axis should.");
 	CHECK_MESSAGE(
+			vector.reflect(vector_normal).is_equal_approx(Vector2(2.85851197982345523329, -2.197477931904161412358)),
+			"Vector2 reflect with normal should return expected value.");
+	CHECK_MESSAGE(
 			vector.project(vector_y) == Vector2(0, 3.4),
-			"Vector2 projected on the X axis should only give the Y component.");
+			"Vector2 projected on the Y axis should only give the Y component.");
+	CHECK_MESSAGE(
+			vector.project(vector_normal).is_equal_approx(Vector2(2.0292559899117276166, 0.60126103404791929382)),
+			"Vector2 projected on a normal should return expected value.");
 	CHECK_MESSAGE(
 			vector.slide(vector_y) == Vector2(1.2, 0),
 			"Vector2 slide on a plane with normal of the Y axis should set the Y to zero.");
+	CHECK_MESSAGE(
+			vector.slide(vector_normal).is_equal_approx(Vector2(-0.8292559899117276166456, 2.798738965952080706179)),
+			"Vector2 slide with normal should return expected value.");
+	// There's probably a better way to test these ones?
+	ERR_PRINT_OFF;
+	CHECK_MESSAGE(
+			vector.bounce(vector_non_normal).is_equal_approx(Vector2()),
+			"Vector2 bounce should return empty Vector2 with non-normalised input.");
+	CHECK_MESSAGE(
+			vector.reflect(vector_non_normal).is_equal_approx(Vector2()),
+			"Vector2 reflect should return empty Vector2 with non-normalised input.");
+	CHECK_MESSAGE(
+			vector.slide(vector_non_normal).is_equal_approx(Vector2()),
+			"Vector2 slide should return empty Vector2 with non-normalised input.");
+	ERR_PRINT_ON;
 }
 
 TEST_CASE("[Vector2] Rounding methods") {
@@ -367,12 +434,20 @@ TEST_CASE("[Vector2] Rounding methods") {
 TEST_CASE("[Vector2] Linear algebra methods") {
 	const Vector2 vector_x = Vector2(1, 0);
 	const Vector2 vector_y = Vector2(0, 1);
+	const Vector2 a = Vector2(3.5, 8.5);
+	const Vector2 b = Vector2(5.2, 4.6);
 	CHECK_MESSAGE(
 			vector_x.cross(vector_y) == 1,
 			"Vector2 cross product of X and Y should give 1.");
 	CHECK_MESSAGE(
 			vector_y.cross(vector_x) == -1,
 			"Vector2 cross product of Y and X should give negative 1.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(a.cross(b), (real_t)-28.1),
+			"Vector2 cross should return expected value.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Vector2(-a.x, a.y).cross(Vector2(b.x, -b.y)), (real_t)-28.1),
+			"Vector2 cross should return expected value.");
 
 	CHECK_MESSAGE(
 			vector_x.dot(vector_y) == 0.0,
@@ -383,6 +458,12 @@ TEST_CASE("[Vector2] Linear algebra methods") {
 	CHECK_MESSAGE(
 			(vector_x * 10).dot(vector_x * 10) == 100.0,
 			"Vector2 dot product of same direction vectors should behave as expected.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(a.dot(b), (real_t)57.3),
+			"Vector2 dot should return expected value.");
+	CHECK_MESSAGE(
+			Math::is_equal_approx(Vector2(-a.x, a.y).dot(Vector2(b.x, -b.y)), (real_t)-57.3),
+			"Vector2 dot should return expected value.");
 }
 } // namespace TestVector2
 

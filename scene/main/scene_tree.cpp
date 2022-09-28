@@ -510,7 +510,7 @@ bool SceneTree::process(double p_time) {
 	return _quit;
 }
 
-void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
+void SceneTree::process_timers(double p_delta, bool p_physics_frame) {
 	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
@@ -542,7 +542,7 @@ void SceneTree::process_timers(float p_delta, bool p_physics_frame) {
 	}
 }
 
-void SceneTree::process_tweens(float p_delta, bool p_physics) {
+void SceneTree::process_tweens(double p_delta, bool p_physics) {
 	// This methods works similarly to how SceneTreeTimers are handled.
 	List<Ref<Tween>>::Element *L = tweens.back();
 
@@ -1085,6 +1085,7 @@ void SceneTree::_change_scene(Node *p_to) {
 	if (p_to) {
 		current_scene = p_to;
 		root->add_child(p_to);
+		root->update_mouse_cursor_shape();
 	}
 }
 

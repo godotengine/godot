@@ -395,6 +395,18 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 	}
 }
 
+void Window::update_mouse_cursor_shape() {
+	// The default shape is set in Viewport::_gui_input_event. To instantly
+	// see the shape in the viewport we need to trigger a mouse motion event.
+	Ref<InputEventMouseMotion> mm;
+	Vector2 pos = get_mouse_position();
+	Transform2D xform = get_global_canvas_transform().affine_inverse();
+	mm.instantiate();
+	mm->set_position(pos);
+	mm->set_global_position(xform.xform(pos));
+	push_input(mm);
+}
+
 void Window::show() {
 	set_visible(true);
 }
@@ -1251,6 +1263,15 @@ void Window::popup(const Rect2i &p_screen_rect) {
 
 	set_transient(true);
 	set_visible(true);
+
+	int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
+	if (screen_rect != Rect2i() && !screen_rect.intersects(Rect2i(position, size))) {
+		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
+		// Window appeared on unavailable screen area, so force it to the center.
+		set_position(screen_rect.size / 2 - size / 2);
+	}
+
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
 }

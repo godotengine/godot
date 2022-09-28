@@ -381,14 +381,14 @@ String VideoStreamPlayer::get_stream_name() const {
 	return stream->get_name();
 }
 
-float VideoStreamPlayer::get_stream_position() const {
+double VideoStreamPlayer::get_stream_position() const {
 	if (playback.is_null()) {
 		return 0;
 	}
 	return playback->get_playback_position();
 }
 
-void VideoStreamPlayer::set_stream_position(float p_position) {
+void VideoStreamPlayer::set_stream_position(double p_position) {
 	if (playback.is_valid()) {
 		playback->seek(p_position);
 	}

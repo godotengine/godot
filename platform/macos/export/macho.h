@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-// Mach-O binary object file format parser and editor.
-
 #ifndef MACOS_MACHO_H
 #define MACOS_MACHO_H
+
+// Mach-O binary object file format parser and editor.
 
 #include "core/crypto/crypto.h"
 #include "core/crypto/crypto_core.h"
