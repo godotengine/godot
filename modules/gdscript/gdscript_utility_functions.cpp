@@ -85,7 +85,7 @@
 #endif
 
 struct GDScriptUtilityFunctionsDefinitions {
-	static inline void convert(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void convert(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(2);
 		VALIDATE_ARG_INT(1);
 		int type = *p_args[1];
@@ -101,19 +101,19 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void type_exists(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void type_exists(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		*r_ret = ClassDB::class_exists(*p_args[0]);
 	}
 
-	static inline void _char(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void _char(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		VALIDATE_ARG_INT(0);
 		char32_t result[2] = { *p_args[0], 0 };
 		*r_ret = String(result);
 	}
 
-	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		switch (p_arg_count) {
 			case 0: {
 				r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -229,7 +229,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void load(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void load(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		if (p_args[0]->get_type() != Variant::STRING) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -237,11 +237,16 @@ struct GDScriptUtilityFunctionsDefinitions {
 			r_error.expected = Variant::STRING;
 			*r_ret = Variant();
 		} else {
-			*r_ret = ResourceLoader::load(*p_args[0]);
+			String path = *p_args[0];
+			if (p_script.is_valid() && p_script->get_path() != "" && !path.is_absolute_path()) {
+				path = p_script->get_path().get_base_dir().path_join(path);
+				path = path.replace("///", "//").simplify_path();
+			}
+			*r_ret = ResourceLoader::load(path);
 		}
 	}
 
-	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void inst_to_dict(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
 		if (p_args[0]->get_type() == Variant::NIL) {
@@ -309,7 +314,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void dict_to_inst(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 
 		if (p_args[0]->get_type() != Variant::DICTIONARY) {
@@ -385,7 +390,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void Color8(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void Color8(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		if (p_arg_count < 3) {
 			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = 3;
@@ -413,7 +418,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = color;
 	}
 
-	static inline void print_debug(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void print_debug(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		String s;
 		for (int i = 0; i < p_arg_count; i++) {
 			s += p_args[i]->operator String();
@@ -432,7 +437,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = Variant();
 	}
 
-	static inline void print_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void print_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
 		if (Thread::get_caller_id() != Thread::get_main_id()) {
 			print_line("Cannot retrieve debug info outside the main thread. Thread ID: " + itos(Thread::get_caller_id()));
@@ -446,7 +451,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = Variant();
 	}
 
-	static inline void get_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void get_stack(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(0);
 		if (Thread::get_caller_id() != Thread::get_main_id()) {
 			*r_ret = TypedArray<Dictionary>();
@@ -465,7 +470,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = ret;
 	}
 
-	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void len(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(1);
 		switch (p_args[0]->get_type()) {
 			case Variant::STRING: {
@@ -525,7 +530,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 		}
 	}
 
-	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, const Ref<GDScript> p_script, Callable::CallError &r_error) {
 		VALIDATE_ARG_COUNT(2);
 
 		if (p_args[1]->get_type() == Variant::INT) {

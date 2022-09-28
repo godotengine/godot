@@ -1,0 +1,46 @@
+GDTEST_OK
+>> WARNING
+>> Line: 3
+>> UNSAFE_METHOD_ACCESS
+>> The method "new()" is not present on the inferred type "Resource" (but may be present on a subtype).
+>> WARNING
+>> Line: 4
+>> UNSAFE_METHOD_ACCESS
+>> The method "hello()" is not present on the inferred type "Variant" (but may be present on a subtype).
+>> WARNING
+>> Line: 7
+>> UNSAFE_METHOD_ACCESS
+>> The method "new()" is not present on the inferred type "Resource" (but may be present on a subtype).
+>> WARNING
+>> Line: 8
+>> UNSAFE_METHOD_ACCESS
+>> The method "hello()" is not present on the inferred type "Variant" (but may be present on a subtype).
+>> WARNING
+>> Line: 11
+>> UNSAFE_METHOD_ACCESS
+>> The method "new()" is not present on the inferred type "Resource" (but may be present on a subtype).
+>> WARNING
+>> Line: 12
+>> UNSAFE_METHOD_ACCESS
+>> The method "hello()" is not present on the inferred type "Variant" (but may be present on a subtype).
+>> WARNING
+>> Line: 15
+>> UNSAFE_METHOD_ACCESS
+>> The method "new()" is not present on the inferred type "Resource" (but may be present on a subtype).
+>> WARNING
+>> Line: 16
+>> UNSAFE_METHOD_ACCESS
+>> The method "hello()" is not present on the inferred type "Variant" (but may be present on a subtype).
+>> WARNING
+>> Line: 19
+>> UNSAFE_METHOD_ACCESS
+>> The method "new()" is not present on the inferred type "Resource" (but may be present on a subtype).
+>> WARNING
+>> Line: 20
+>> UNSAFE_METHOD_ACCESS
+>> The method "hello()" is not present on the inferred type "Variant" (but may be present on a subtype).
+loaded
+loaded
+loaded
+withdot
+withdot2

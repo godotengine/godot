@@ -2200,7 +2200,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_INSTRUCTION_ARG(dst, argc);
 
 				Callable::CallError err;
-				function(dst, (const Variant **)argptrs, argc, err);
+				function(dst, (const Variant **)argptrs, argc, p_instance->script, err);
 
 #ifdef DEBUG_ENABLED
 				if (err.error != Callable::CallError::CALL_OK) {
