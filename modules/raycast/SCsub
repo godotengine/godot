@@ -79,6 +79,9 @@ if env["builtin_embree"]:
         else:
             env.Append(LIBS=["psapi"])
 
+    if env.msvc:  # Disable bogus warning about intentional struct padding.
+        env_raycast.Append(CCFLAGS=["/wd4324"])
+
     env_thirdparty = env_raycast.Clone()
     env_thirdparty.force_optimization_on_debug()
     env_thirdparty.disable_warnings()
