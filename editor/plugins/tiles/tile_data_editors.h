@@ -220,6 +220,7 @@ protected:
 
 	StringName type;
 	String property;
+	Variant::Type property_type;
 	void _notification(int p_what);
 
 	virtual Variant _get_painted_value();
@@ -237,6 +238,7 @@ public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;
 
 	void setup_property_editor(Variant::Type p_type, String p_property, String p_label = "", Variant p_default_value = Variant());
+	Variant::Type get_property_type();
 
 	TileDataDefaultEditor();
 	~TileDataDefaultEditor();
