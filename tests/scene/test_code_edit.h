@@ -3886,6 +3886,84 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	memdelete(code_edit);
 }
 
+TEST_CASE("[SceneTree][CodeEdit] Duplicate Lines") {
+	CodeEdit *code_edit = memnew(CodeEdit);
+	SceneTree::get_singleton()->get_root()->add_child(code_edit);
+	code_edit->grab_focus();
+
+	code_edit->set_text(R"(extends Node
+
+func _ready():
+	var a := len(OS.get_cmdline_args())
+	var b := get_child_count()
+	var c := a + b
+	for i in range(c):
+		print("This is the solution: ", sin(i))
+	var pos = get_index() - 1
+	print("Make sure this exits: %b" % pos)
+)");
+
+	/* Duplicate a single line without selection. */
+	code_edit->set_caret_line(0);
+	code_edit->duplicate_lines();
+	CHECK(code_edit->get_line(0) == "extends Node");
+	CHECK(code_edit->get_line(1) == "extends Node");
+	CHECK(code_edit->get_line(2) == "");
+
+	/* Duplicate multiple lines with selection. */
+	code_edit->set_caret_line(6);
+	code_edit->set_caret_column(15);
+	code_edit->select(4, 8, 6, 15);
+	code_edit->duplicate_lines();
+	CHECK(code_edit->get_line(6) == "\tvar c := a + b");
+	CHECK(code_edit->get_line(7) == "\tvar a := len(OS.get_cmdline_args())");
+	CHECK(code_edit->get_line(8) == "\tvar b := get_child_count()");
+	CHECK(code_edit->get_line(9) == "\tvar c := a + b");
+	CHECK(code_edit->get_line(10) == "\tfor i in range(c):");
+
+	/* Duplicate single lines with multiple carets. */
+	code_edit->deselect();
+	code_edit->set_caret_line(10);
+	code_edit->set_caret_column(1);
+	code_edit->add_caret(11, 2);
+	code_edit->add_caret(12, 1);
+	code_edit->duplicate_lines();
+	CHECK(code_edit->get_line(9) == "\tvar c := a + b");
+	CHECK(code_edit->get_line(10) == "\tfor i in range(c):");
+	CHECK(code_edit->get_line(11) == "\tfor i in range(c):");
+	CHECK(code_edit->get_line(12) == "\t\tprint(\"This is the solution: \", sin(i))");
+	CHECK(code_edit->get_line(13) == "\t\tprint(\"This is the solution: \", sin(i))");
+	CHECK(code_edit->get_line(14) == "\tvar pos = get_index() - 1");
+	CHECK(code_edit->get_line(15) == "\tvar pos = get_index() - 1");
+	CHECK(code_edit->get_line(16) == "\tprint(\"Make sure this exits: %b\" % pos)");
+
+	/* Duplicate multiple lines with multiple carets. */
+	code_edit->select(0, 0, 1, 2, 0);
+	code_edit->select(3, 0, 4, 2, 1);
+	code_edit->select(16, 0, 17, 0, 2);
+	code_edit->set_caret_line(1, false, true, 0, 0);
+	code_edit->set_caret_column(2, false, 0);
+	code_edit->set_caret_line(4, false, true, 0, 1);
+	code_edit->set_caret_column(2, false, 1);
+	code_edit->set_caret_line(17, false, true, 0, 2);
+	code_edit->set_caret_column(0, false, 2);
+	code_edit->duplicate_lines();
+	CHECK(code_edit->get_line(1) == "extends Node");
+	CHECK(code_edit->get_line(2) == "extends Node");
+	CHECK(code_edit->get_line(3) == "extends Node");
+	CHECK(code_edit->get_line(4) == "");
+	CHECK(code_edit->get_line(6) == "\tvar a := len(OS.get_cmdline_args())");
+	CHECK(code_edit->get_line(7) == "func _ready():");
+	CHECK(code_edit->get_line(8) == "\tvar a := len(OS.get_cmdline_args())");
+	CHECK(code_edit->get_line(9) == "\tvar b := get_child_count()");
+	CHECK(code_edit->get_line(20) == "\tprint(\"Make sure this exits: %b\" % pos)");
+	CHECK(code_edit->get_line(21) == "");
+	CHECK(code_edit->get_line(22) == "\tprint(\"Make sure this exits: %b\" % pos)");
+	CHECK(code_edit->get_line(23) == "");
+
+	memdelete(code_edit);
+}
+
 } // namespace TestCodeEdit
 
 #endif // TEST_CODE_EDIT_H
