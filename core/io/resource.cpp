@@ -68,7 +68,7 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 
 	if (existing.is_valid()) {
 		if (p_take_over) {
-			existing->path_cache = String();
+			//existing->path_cache = String();
 			ResourceCache::resources.erase(p_path);
 		} else {
 			ResourceCache::lock.unlock();

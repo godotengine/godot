@@ -183,30 +183,30 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, const Stri
 	return script;
 }
 
-Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner, bool p_update_from_disk) {
+Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_error, const String &p_owner, ResourceFormatLoader::CacheMode p_cache_mode) {
 	MutexLock lock(singleton->lock);
 
 	if (!p_owner.is_empty()) {
 		singleton->dependencies[p_owner].insert(p_path);
 	}
 
-	Ref<GDScript> script;
 	r_error = OK;
-	if (singleton->full_gdscript_cache.has(p_path)) {
-		script = Ref<GDScript>(singleton->full_gdscript_cache[p_path]);
-		if (!p_update_from_disk) {
-			return script;
-		}
+	Ref<GDScript> old_script = singleton->full_gdscript_cache.has(p_path) ? singleton->full_gdscript_cache[p_path] : Ref<GDScript>();
+	if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REUSE && !old_script.is_null()) {
+		return old_script;
 	}
 
-	if (script.is_null()) {
-		script = get_shallow_script(p_path);
-		ERR_FAIL_COND_V(script.is_null(), Ref<GDScript>());
-	}
+	Ref<GDScript> script;
+	script.instantiate();
+	script->set_path(p_path, true);
+	script->set_script_path(p_path);
 
 	r_error = script->load_source_code(p_path);
 
 	if (r_error) {
+		if (p_cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE && !old_script.is_null()) {
+			return old_script;
+		}
 		return script;
 	}
 
@@ -215,7 +215,10 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 		return script;
 	}
 
-	singleton->full_gdscript_cache[p_path] = script.ptr();
+	if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+		old_script.unref();
+		singleton->full_gdscript_cache[p_path] = script.ptr();
+	}
 	singleton->shallow_gdscript_cache.erase(p_path);
 
 	return script;

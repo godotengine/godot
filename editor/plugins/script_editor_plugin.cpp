@@ -996,14 +996,14 @@ void ScriptEditor::_live_auto_reload_running_scripts() {
 	EditorDebuggerNode::get_singleton()->reload_scripts();
 }
 
-bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
+bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script, bool p_force_auto_reload) {
 	disk_changed_list->clear();
 	TreeItem *r = disk_changed_list->create_item();
 	disk_changed_list->set_hide_root(true);
 
-	bool need_ask = false;
 	bool need_reload = false;
 	bool use_autoreload = bool(EDITOR_GET("text_editor/behavior/files/auto_reload_scripts_on_external_change"));
+	bool need_ask = !use_autoreload && !p_force_auto_reload;
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -1024,7 +1024,7 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 				TreeItem *ti = disk_changed_list->create_item(r);
 				ti->set_text(0, edited_res->get_path().get_file());
 
-				if (!use_autoreload || se->is_unsaved()) {
+				if (se->is_unsaved()) {
 					need_ask = true;
 				}
 				need_reload = true;
@@ -3595,7 +3595,7 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 }
 
 void ScriptEditor::_on_find_in_files_modified_files(PackedStringArray paths) {
-	_test_script_times_on_disk();
+	_test_script_times_on_disk(Ref<Resource>(), true);
 	_update_modified_scripts_for_external_editor();
 }
 
