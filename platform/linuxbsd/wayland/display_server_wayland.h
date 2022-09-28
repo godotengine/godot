@@ -66,6 +66,10 @@
 #include "gl_manager_wayland.h"
 #endif
 
+#if defined(SPEECHD_ENABLED)
+#include "../tts_linux.h"
+#endif
+
 #ifdef DBUS_ENABLED
 #include "../freedesktop_portal_desktop.h"
 #include "../freedesktop_screensaver.h"
@@ -353,6 +357,10 @@ class DisplayServerWayland : public DisplayServer {
 
 	Thread events_thread;
 
+#ifdef SPEECHD_ENABLED
+	TTS_Linux *tts = nullptr;
+#endif
+
 #if DBUS_ENABLED
 	FreeDesktopPortalDesktop *portal_desktop = nullptr;
 
@@ -568,6 +576,17 @@ public:
 	virtual bool has_feature(Feature p_feature) const override;
 
 	virtual String get_name() const override;
+
+#ifdef SPEECHD_ENABLED
+	virtual bool tts_is_speaking() const override;
+	virtual bool tts_is_paused() const override;
+	virtual TypedArray<Dictionary> tts_get_voices() const override;
+
+	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
+	virtual void tts_pause() override;
+	virtual void tts_resume() override;
+	virtual void tts_stop() override;
+#endif
 
 #ifdef DBUS_ENABLED
 	virtual bool is_dark_mode_supported() const override;

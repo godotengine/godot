@@ -1740,6 +1740,45 @@ String DisplayServerWayland::get_name() const {
 	return "Wayland";
 }
 
+#ifdef SPEECHD_ENABLED
+
+bool DisplayServerWayland::tts_is_speaking() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_speaking();
+}
+
+bool DisplayServerWayland::tts_is_paused() const {
+	ERR_FAIL_COND_V(!tts, false);
+	return tts->is_paused();
+}
+
+TypedArray<Dictionary> DisplayServerWayland::tts_get_voices() const {
+	ERR_FAIL_COND_V(!tts, TypedArray<Dictionary>());
+	return tts->get_voices();
+}
+
+void DisplayServerWayland::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	ERR_FAIL_COND(!tts);
+	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
+}
+
+void DisplayServerWayland::tts_pause() {
+	ERR_FAIL_COND(!tts);
+	tts->pause();
+}
+
+void DisplayServerWayland::tts_resume() {
+	ERR_FAIL_COND(!tts);
+	tts->resume();
+}
+
+void DisplayServerWayland::tts_stop() {
+	ERR_FAIL_COND(!tts);
+	tts->stop();
+}
+
+#endif
+
 #ifdef DBUS_ENABLED
 
 bool DisplayServerWayland::is_dark_mode_supported() const {
@@ -3040,6 +3079,11 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 	xdg_wm_base_add_listener(wls.globals.xdg_wm_base, &xdg_wm_base_listener, nullptr);
 
+#ifdef SPEECHD_ENABLED
+	// Init TTS
+	tts = memnew(TTS_Linux);
+#endif
+
 #if defined(VULKAN_ENABLED)
 	if (p_rendering_driver == "vulkan") {
 		wls.context_vulkan = memnew(VulkanContextWayland);
@@ -3290,6 +3334,12 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.context_vulkan) {
 		memdelete(wls.context_vulkan);
+	}
+#endif
+
+#ifdef SPEECHD_ENABLED
+	if (tts) {
+		memdelete(tts);
 	}
 #endif
 
