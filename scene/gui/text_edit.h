@@ -549,6 +549,8 @@ private:
 	bool draw_tabs = false;
 	bool draw_spaces = false;
 
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_AUTO;
+
 	/*** Super internal Core API. Everything builds on it. ***/
 	bool text_changed_dirty = false;
 	void _text_changed_emit();
@@ -645,6 +647,9 @@ public:
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
+
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
 
 	void set_language(const String &p_language);
 	String get_language() const;

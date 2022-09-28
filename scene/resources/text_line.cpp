@@ -67,7 +67,7 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &TextLine::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &TextLine::get_horizontal_alignment);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill,Auto"), "set_horizontal_alignment", "get_horizontal_alignment");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextLine::tab_align);
 
@@ -222,6 +222,7 @@ Rect2 TextLine::get_object_rect(Variant p_key) const {
 }
 
 void TextLine::set_horizontal_alignment(HorizontalAlignment p_alignment) {
+	ERR_FAIL_INDEX((int)p_alignment, int(HORIZONTAL_ALIGNMENT_MAX));
 	if (alignment != p_alignment) {
 		if (alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			alignment = p_alignment;
@@ -316,6 +317,15 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 	float length = TS->shaped_text_get_width(rid);
 	if (width > 0) {
 		switch (alignment) {
+			case HORIZONTAL_ALIGNMENT_AUTO:
+				if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += width - length;
+					} else {
+						ofs.y += width - length;
+					}
+				}
+				break;
 			case HORIZONTAL_ALIGNMENT_FILL:
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				break;
@@ -341,6 +351,8 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 					ofs.y += width - length;
 				}
 			} break;
+			default:
+				break;
 		}
 	}
 
@@ -363,6 +375,15 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 	float length = TS->shaped_text_get_width(rid);
 	if (width > 0) {
 		switch (alignment) {
+			case HORIZONTAL_ALIGNMENT_AUTO:
+				if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
+					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += width - length;
+					} else {
+						ofs.y += width - length;
+					}
+				}
+				break;
 			case HORIZONTAL_ALIGNMENT_FILL:
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				break;
@@ -388,6 +409,8 @@ void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_si
 					ofs.y += width - length;
 				}
 			} break;
+			default:
+				break;
 		}
 	}
 

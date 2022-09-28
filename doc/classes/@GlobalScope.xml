@@ -1392,6 +1392,9 @@
 		<constant name="HORIZONTAL_ALIGNMENT_FILL" value="3" enum="HorizontalAlignment">
 			Expand row to fit width, usually for text-derived classes.
 		</constant>
+		<constant name="HORIZONTAL_ALIGNMENT_AUTO" value="4" enum="HorizontalAlignment">
+			Horizontal left or right alignment, depending on text writing direction, usually for text-derived classes.
+		</constant>
 		<constant name="VERTICAL_ALIGNMENT_TOP" value="0" enum="VerticalAlignment">
 			Vertical top alignment, usually for text-derived classes.
 		</constant>

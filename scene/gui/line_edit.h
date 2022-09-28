@@ -82,7 +82,7 @@ public:
 	};
 
 private:
-	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_AUTO;
 
 	bool editable = false;
 	bool pass = false;

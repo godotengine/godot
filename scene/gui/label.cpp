@@ -394,6 +394,8 @@ void Label::_notification(int p_what) {
 						}
 
 					} break;
+					default:
+						break;
 				}
 			}
 
@@ -404,6 +406,13 @@ void Label::_notification(int p_what) {
 				ofs.x = 0;
 				ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
 				switch (horizontal_alignment) {
+					case HORIZONTAL_ALIGNMENT_AUTO:
+						if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
+						} else {
+							ofs.x = style->get_offset().x;
+						}
+						break;
 					case HORIZONTAL_ALIGNMENT_FILL:
 						if (rtl && autowrap_mode != TextServer::AUTOWRAP_OFF) {
 							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
@@ -428,6 +437,8 @@ void Label::_notification(int p_what) {
 							ofs.x = int(size.width - style->get_margin(SIDE_RIGHT) - line_size.width);
 						}
 					} break;
+					default:
+						break;
 				}
 
 				const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
@@ -630,7 +641,7 @@ int Label::get_visible_line_count() const {
 }
 
 void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(HORIZONTAL_ALIGNMENT_MAX));
 	if (horizontal_alignment == p_alignment) {
 		return;
 	}
@@ -648,7 +659,7 @@ HorizontalAlignment Label::get_horizontal_alignment() const {
 }
 
 void Label::set_vertical_alignment(VerticalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(VERTICAL_ALIGNMENT_MAX));
 
 	if (vertical_alignment == p_alignment) {
 		return;
@@ -919,7 +930,7 @@ void Label::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "label_settings", PROPERTY_HINT_RESOURCE_TYPE, "LabelSettings"), "set_label_settings", "get_label_settings");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill,Auto"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");

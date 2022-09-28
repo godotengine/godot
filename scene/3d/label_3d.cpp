@@ -140,7 +140,7 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "font_size", PROPERTY_HINT_RANGE, "1,256,1,or_greater,suffix:px"), "set_font_size", "get_font_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_size", PROPERTY_HINT_RANGE, "0,127,1,suffix:px"), "set_outline_size", "get_outline_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill,Auto"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
@@ -262,22 +262,11 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 		case VERTICAL_ALIGNMENT_BOTTOM: {
 			vbegin = (total_h - line_spacing);
 		} break;
-	}
-
-	Vector2 offset = Vector2(0, vbegin);
-	switch (horizontal_alignment) {
-		case HORIZONTAL_ALIGNMENT_LEFT:
+		default:
 			break;
-		case HORIZONTAL_ALIGNMENT_FILL:
-		case HORIZONTAL_ALIGNMENT_CENTER: {
-			offset.x = -max_line_w / 2.0;
-		} break;
-		case HORIZONTAL_ALIGNMENT_RIGHT: {
-			offset.x = -max_line_w;
-		} break;
 	}
 
-	Rect2 final_rect = Rect2(offset + lbl_offset, Size2(max_line_w, total_h));
+	Rect2 final_rect = Rect2(Vector2(0, vbegin) + lbl_offset, Size2(max_line_w, total_h));
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0) {
 		return Ref<TriangleMesh>();
@@ -522,6 +511,8 @@ void Label3D::_shape() {
 		case VERTICAL_ALIGNMENT_BOTTOM: {
 			vbegin = (total_h - line_spacing * pixel_size);
 		} break;
+		default:
+			break;
 	}
 
 	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
@@ -531,6 +522,13 @@ void Label3D::_shape() {
 		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
 
 		switch (horizontal_alignment) {
+			case HORIZONTAL_ALIGNMENT_AUTO:
+				if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+					offset.x = -line_width;
+				} else {
+					offset.x = 0.0;
+				}
+				break;
 			case HORIZONTAL_ALIGNMENT_LEFT:
 				offset.x = 0.0;
 				break;
@@ -541,6 +539,8 @@ void Label3D::_shape() {
 			case HORIZONTAL_ALIGNMENT_RIGHT: {
 				offset.x = -line_width;
 			} break;
+			default:
+				break;
 		}
 		offset.x += lbl_offset.x * pixel_size;
 		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
@@ -591,7 +591,7 @@ String Label3D::get_text() const {
 }
 
 void Label3D::set_horizontal_alignment(HorizontalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(HORIZONTAL_ALIGNMENT_MAX));
 	if (horizontal_alignment != p_alignment) {
 		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
 			dirty_lines = true; // Reshape lines.
@@ -606,7 +606,7 @@ HorizontalAlignment Label3D::get_horizontal_alignment() const {
 }
 
 void Label3D::set_vertical_alignment(VerticalAlignment p_alignment) {
-	ERR_FAIL_INDEX((int)p_alignment, 4);
+	ERR_FAIL_INDEX((int)p_alignment, int(VERTICAL_ALIGNMENT_MAX));
 	if (vertical_alignment != p_alignment) {
 		vertical_alignment = p_alignment;
 		_queue_update();

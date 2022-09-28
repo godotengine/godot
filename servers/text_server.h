@@ -199,7 +199,8 @@ public:
 		STRUCTURED_TEXT_EMAIL,
 		STRUCTURED_TEXT_LIST,
 		STRUCTURED_TEXT_NONE,
-		STRUCTURED_TEXT_CUSTOM
+		STRUCTURED_TEXT_CUSTOM,
+		STRUCTURED_TEXT_MAX,
 	};
 
 	void _draw_hex_code_box_number(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, uint8_t p_index, const Color &p_color) const;

@@ -38,7 +38,7 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
-	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_AUTO;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
