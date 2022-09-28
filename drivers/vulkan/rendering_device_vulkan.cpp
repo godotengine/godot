@@ -4828,7 +4828,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 				for (uint32_t j = 0; j < binding_count; j++) {
 					const SpvReflectDescriptorBinding &binding = *bindings[j];
 
-					RenderingDeviceVulkanShaderBinaryDataBinding info;
+					RenderingDeviceVulkanShaderBinaryDataBinding info{};
 
 					bool need_array_dimensions = false;
 					bool need_block_size = false;
@@ -4979,7 +4979,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 
 					for (uint32_t j = 0; j < sc_count; j++) {
 						int32_t existing = -1;
-						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst;
+						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst{};
 						SpvReflectSpecializationConstant *spc = spec_constants[j];
 
 						sconst.constant_id = spc->constant_id;
