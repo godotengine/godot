@@ -660,7 +660,10 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		Node *expression_base = nullptr;
 		if (!transition->get_advance_expression_base_node().is_empty()) {
 			advance_expression_base_node_path = transition->get_advance_expression_base_node();
-			expression_base = tree_base->get_tree()->get_root()->get_child(0)->get_node_or_null(advance_expression_base_node_path);
+			Window *root = tree_base->get_tree()->get_root();
+			int child_count = root->get_child_count();
+			// Autoloaded nodes are the first children of the root node
+			expression_base = root->get_child(child_count - 1)->get_node_or_null(advance_expression_base_node_path);
 		} else {
 			advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
 			expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
