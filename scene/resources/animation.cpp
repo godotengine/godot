@@ -2102,11 +2102,9 @@ bool Animation::track_is_compressed(int p_track) const {
 			return bst->compressed_track >= 0;
 		} break;
 		default: {
-			return false; //animation does not really use transitions
+			return false; // Animation does not really use transitions.
 		} break;
 	}
-
-	ERR_FAIL_V(false);
 }
 
 void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p_value) {

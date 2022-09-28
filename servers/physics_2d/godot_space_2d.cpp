@@ -1036,8 +1036,6 @@ void *GodotSpace2D::_broadphase_pair(GodotCollisionObject2D *A, int p_subindex_A
 		GodotBodyPair2D *b = memnew(GodotBodyPair2D(static_cast<GodotBody2D *>(A), p_subindex_A, static_cast<GodotBody2D *>(B), p_subindex_B));
 		return b;
 	}
-
-	return nullptr;
 }
 
 void GodotSpace2D::_broadphase_unpair(GodotCollisionObject2D *A, int p_subindex_A, GodotCollisionObject2D *B, int p_subindex_B, void *p_data, void *p_self) {

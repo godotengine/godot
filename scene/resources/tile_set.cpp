@@ -1537,7 +1537,6 @@ Vector<Point2> TileSet::get_terrain_polygon(int p_terrain_set) {
 		}
 		return _get_half_offset_terrain_polygon(tile_size, overlap, tile_offset_axis);
 	}
-	return Vector<Point2>();
 }
 
 Vector<Point2> TileSet::get_terrain_peering_bit_polygon(int p_terrain_set, TileSet::CellNeighbor p_bit) {

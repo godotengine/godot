@@ -1130,31 +1130,38 @@ VisualShaderNodeParticleAccelerator::VisualShaderNodeParticleAccelerator() {
 // VisualShaderNodeParticleOutput
 
 String VisualShaderNodeParticleOutput::get_caption() const {
-	if (shader_type == VisualShader::TYPE_START) {
-		return "StartOutput";
-	} else if (shader_type == VisualShader::TYPE_PROCESS) {
-		return "ProcessOutput";
-	} else if (shader_type == VisualShader::TYPE_COLLIDE) {
-		return "CollideOutput";
-	} else if (shader_type == VisualShader::TYPE_START_CUSTOM) {
-		return "CustomStartOutput";
-	} else if (shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		return "CustomProcessOutput";
+	switch (shader_type) {
+		case VisualShader::TYPE_START:
+			return "StartOutput";
+		case VisualShader::TYPE_PROCESS:
+			return "ProcessOutput";
+		case VisualShader::TYPE_COLLIDE:
+			return "CollideOutput";
+		case VisualShader::TYPE_START_CUSTOM:
+			return "CustomStartOutput";
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return "CustomProcessOutput";
+		default:
+			ERR_PRINT(vformat("Unexpected shader_type %d for VisualShaderNodeParticleOutput.", shader_type));
+			return "";
 	}
-	return String();
 }
 
 int VisualShaderNodeParticleOutput::get_input_port_count() const {
-	if (shader_type == VisualShader::TYPE_START) {
-		return 8;
-	} else if (shader_type == VisualShader::TYPE_COLLIDE) {
-		return 5;
-	} else if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		return 6;
-	} else { // TYPE_PROCESS
-		return 7;
+	switch (shader_type) {
+		case VisualShader::TYPE_START:
+			return 8;
+		case VisualShader::TYPE_PROCESS:
+			return 7;
+		case VisualShader::TYPE_COLLIDE:
+			return 5;
+		case VisualShader::TYPE_START_CUSTOM:
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return 6;
+		default:
+			ERR_PRINT(vformat("Unexpected shader_type %d for VisualShaderNodeParticleOutput.", shader_type));
+			return 0;
 	}
-	return 0;
 }
 
 VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_input_port_type(int p_port) const {
