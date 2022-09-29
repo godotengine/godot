@@ -1416,7 +1416,7 @@ void Control::set_rect(const Rect2 &p_rect) {
 }
 
 Rect2 Control::get_rect() const {
-	return Rect2(get_position(), get_size());
+	return Rect2(get_position(), get_scale() * get_size());
 }
 
 Rect2 Control::get_global_rect() const {

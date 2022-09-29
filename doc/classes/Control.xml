@@ -414,7 +414,7 @@
 		<method name="get_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the position and size of the control relative to the top-left corner of the parent Control. See [member position] and [member size].
+				Returns the position and size of the control in the coordinate system of the containing node. See [member position], [member scale] and [member size].
 			</description>
 		</method>
 		<method name="get_screen_position" qualifiers="const">
@@ -1041,7 +1041,7 @@
 			By default, the node's pivot is its top-left corner. When you change its [member rotation] or [member scale], it will rotate or scale around this pivot. Set this property to [member size] / 2 to pivot around the Control's center.
 		</member>
 		<member name="position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
-			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].
+			The node's position, relative to its containing node. It corresponds to the rectangle's top-left corner. The property is not affected by [member pivot_offset].
 		</member>
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
 			The node's rotation around its pivot, in radians. See [member pivot_offset] to change the pivot's position.
@@ -1052,7 +1052,7 @@
 			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member scale] property.
 		</member>
 		<member name="size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
-			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
+			The size of the node's bounding rectangle, in the node's coordinate system. [Container] nodes update this property automatically.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
