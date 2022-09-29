@@ -606,6 +606,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
 	_results_display->set_allow_rmb_select(true);
+	_results_display->set_allow_reselect(true);
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 
@@ -717,6 +718,10 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 		file_item = E->value;
 	}
 
+	Color file_item_color = _results_display->get_theme_color(SNAME("font_color")) * Color(1, 1, 1, 0.67);
+	file_item->set_custom_color(0, file_item_color);
+	file_item->set_selectable(0, false);
+
 	int text_index = _with_replace ? 1 : 0;
 
 	TreeItem *item = _results_display->create_item(file_item);
@@ -763,13 +768,13 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
 
 	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
+	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 2;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
-	// Use the inverted accent color to help match rectangles stand out even on the currently selected line.
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5));
+	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.33), false, 2.0);
+	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.17), true);
 
 	// Text is drawn by Tree already.
 }
@@ -777,14 +782,12 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 void FindInFilesPanel::_on_item_edited() {
 	TreeItem *item = _results_display->get_selected();
 
-	if (item->is_checked(0)) {
-		item->set_custom_color(1, _results_display->get_theme_color(SNAME("font_color")));
-	} else {
-		// Grey out.
-		Color color = _results_display->get_theme_color(SNAME("font_color"));
-		color.a /= 2.0;
-		item->set_custom_color(1, color);
+	// Change opacity to half if checkbox is checked, otherwise full.
+	Color use_color = _results_display->get_theme_color(SNAME("font_color"));
+	if (!item->is_checked(0)) {
+		use_color.a *= 0.5;
 	}
+	item->set_custom_color(1, use_color);
 }
 
 void FindInFilesPanel::_on_finished() {
@@ -793,11 +796,11 @@ void FindInFilesPanel::_on_finished() {
 	int file_count = _file_items.size();
 
 	if (result_count == 1 && file_count == 1) {
-		results_text = vformat(TTR("%d match in %d file."), result_count, file_count);
+		results_text = vformat(TTR("%d match in %d file"), result_count, file_count);
 	} else if (result_count != 1 && file_count == 1) {
-		results_text = vformat(TTR("%d matches in %d file."), result_count, file_count);
+		results_text = vformat(TTR("%d matches in %d file"), result_count, file_count);
 	} else {
-		results_text = vformat(TTR("%d matches in %d files."), result_count, file_count);
+		results_text = vformat(TTR("%d matches in %d files"), result_count, file_count);
 	}
 
 	_status_label->set_text(results_text);
