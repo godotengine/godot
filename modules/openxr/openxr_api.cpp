@@ -1199,6 +1199,10 @@ void OpenXRAPI::set_xr_interface(OpenXRInterface *p_xr_interface) {
 	xr_interface = p_xr_interface;
 }
 
+OpenXRInterface *OpenXRAPI::get_xr_interface() {
+	return xr_interface;
+}
+
 void OpenXRAPI::register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
 	registered_extension_wrappers.push_back(p_extension_wrapper);
 }
@@ -1766,6 +1770,9 @@ OpenXRAPI::OpenXRAPI() {
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
 	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));
+#ifdef OPENXR_SCENE_CAPTURE
+	register_extension_wrapper(memnew(OpenXRFbSceneCaptureExtensionWrapper(this)));
+#endif
 }
 
 OpenXRAPI::~OpenXRAPI() {

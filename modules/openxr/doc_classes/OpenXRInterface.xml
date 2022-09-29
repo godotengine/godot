@@ -16,6 +16,11 @@
 				Informs the user queued a recenter of the player position.
 			</description>
 		</signal>
+		<signal name="scene_capture_completed">
+			<description>
+				Informs a scene capture has been completed.
+			</description>
+		</signal>
 		<signal name="session_begun">
 			<description>
 				Informs our OpenXR session has been started.

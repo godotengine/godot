@@ -41,6 +41,9 @@ void OpenXRInterface::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("pose_recentered"));
+
+	// Scene capture signals
+	ADD_SIGNAL(MethodInfo("scene_capture_completed"));
 }
 
 StringName OpenXRInterface::get_name() const {
@@ -764,6 +767,34 @@ void OpenXRInterface::stop_passthrough() {
 	}
 }
 
+bool OpenXRInterface::is_scene_capture_supported() {
+#ifdef OPENXR_SCENE_CAPTURE
+	return scene_capture_wrapper != nullptr && scene_capture_wrapper->is_scene_capture_supported();
+#else
+	return false;
+#endif
+}
+
+bool OpenXRInterface::is_scene_capture_enabled() {
+#ifdef OPENXR_SCENE_CAPTURE
+	return scene_capture_wrapper != nullptr && scene_capture_wrapper->is_scene_capture_enabled();
+#else
+	return false;
+#endif
+}
+
+bool OpenXRInterface::request_scene_capture() {
+#ifdef OPENXR_SCENE_CAPTURE
+	return scene_capture_wrapper != nullptr && scene_capture_wrapper->request_scene_capture();
+#else
+	return false;
+#endif
+}
+
+void OpenXRInterface::on_scene_capture_completed() {
+	emit_signal(SNAME("scene_capture_completed"));
+}
+
 void OpenXRInterface::on_state_ready() {
 	emit_signal(SNAME("session_begun"));
 }
@@ -796,6 +827,9 @@ OpenXRInterface::OpenXRInterface() {
 	_set_default_pos(transform_for_view[1], 1.0, 2);
 
 	passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
+#ifdef OPENXR_SCENE_CAPTURE
+	scene_capture_wrapper = OpenXRFbSceneCaptureExtensionWrapper::get_singleton();
+#endif
 }
 
 OpenXRInterface::~OpenXRInterface() {

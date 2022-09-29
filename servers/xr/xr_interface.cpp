@@ -73,6 +73,10 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start_passthrough"), &XRInterface::start_passthrough);
 	ClassDB::bind_method(D_METHOD("stop_passthrough"), &XRInterface::stop_passthrough);
 
+	ClassDB::bind_method(D_METHOD("is_scene_capture_supported"), &XRInterface::is_scene_capture_supported);
+	ClassDB::bind_method(D_METHOD("is_scene_capture_enabled"), &XRInterface::is_scene_capture_enabled);
+	ClassDB::bind_method(D_METHOD("request_scene_capture"), &XRInterface::request_scene_capture);
+
 	ADD_GROUP("AR", "ar_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ar_is_anchor_detection_enabled"), "set_anchor_detection_is_enabled", "get_anchor_detection_is_enabled");
 

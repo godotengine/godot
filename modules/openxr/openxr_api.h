@@ -298,6 +298,7 @@ public:
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
+	OpenXRInterface *get_xr_interface();
 	void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 
 	bool is_initialized();

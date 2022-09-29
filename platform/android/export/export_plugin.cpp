@@ -787,6 +787,12 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 				r_permissions.push_back("com.oculus.permission.HAND_TRACKING");
 			}
 		}
+		bool use_anchor_api = p_preset->get("xr_features/use_anchor_api");
+		if (use_anchor_api) {
+			if (r_permissions.find("com.oculus.permission.USE_ANCHOR_API") == -1) {
+				r_permissions.push_back("com.oculus.permission.USE_ANCHOR_API");
+			}
+		}
 	}
 }
 
@@ -1733,6 +1739,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_HAND_TRACKING_NONE));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/hand_tracking_frequency", PROPERTY_HINT_ENUM, "Low,High"), XR_HAND_TRACKING_FREQUENCY_LOW));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/passthrough", PROPERTY_HINT_ENUM, "None,Optional,Required"), XR_PASSTHROUGH_NONE));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "xr_features/use_anchor_api"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -2214,6 +2221,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	int xr_mode_index = p_preset->get("xr_features/xr_mode");
 	int hand_tracking = p_preset->get("xr_features/hand_tracking");
 	int passthrough_mode = p_preset->get("xr_features/passthrough");
+	bool use_anchor_api = p_preset->get("xr_features/use_anchor_api");
 	if (xr_mode_index != XR_MODE_OPENXR) {
 		if (hand_tracking > XR_HAND_TRACKING_NONE) {
 			valid = false;
@@ -2224,6 +2232,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		if (passthrough_mode > XR_PASSTHROUGH_NONE) {
 			valid = false;
 			err += TTR("\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\".");
+			err += "\n";
+		}
+
+		if (use_anchor_api) {
+			valid = false;
+			err += TTR("\"Use anchor API\" is only valid when \"XR Mode\" is \"OpenXR\".");
 			err += "\n";
 		}
 	}

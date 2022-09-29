@@ -81,6 +81,24 @@
 				Is [code]true[/code] if this interface supports passthrough.
 			</description>
 		</method>
+		<method name="is_scene_capture_enabled">
+			<return type="bool" />
+			<description>
+				Is [code]true[/code] if scene capture is enabled.
+			</description>
+		</method>
+		<method name="is_scene_capture_supported">
+			<return type="bool" />
+			<description>
+				Is [code]true[/code] if this interface supports scene capture.
+			</description>
+		</method>
+		<method name="request_scene_capture">
+			<return type="bool" />
+			<description>
+				Request scene capture, will return [code]false[/code] if scene capture couldn't be started.
+			</description>
+		</method>
 		<method name="set_play_area_mode">
 			<return type="bool" />
 			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />

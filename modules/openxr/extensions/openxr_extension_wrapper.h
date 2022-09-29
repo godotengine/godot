@@ -35,6 +35,7 @@
 #include "core/math/projection.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
+#include "core/templates/vset.h"
 
 #include "thirdparty/openxr/src/common/xr_linear.h"
 #include <openxr/openxr.h>

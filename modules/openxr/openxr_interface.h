@@ -38,6 +38,9 @@
 #include "openxr_api.h"
 
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#ifdef OPENXR_SCENE_CAPTURE
+#include "extensions/openxr_fb_scene_capture_extension_wrapper.h"
+#endif
 
 // declare some default strings
 #define INTERACTION_PROFILE_NONE "/interaction_profiles/none"
@@ -50,6 +53,9 @@ private:
 	bool initialized = false;
 	XRInterface::TrackingStatus tracking_state;
 	OpenXRFbPassthroughExtensionWrapper *passthrough_wrapper = nullptr;
+#ifdef OPENXR_SCENE_CAPTURE
+	OpenXRFbSceneCaptureExtensionWrapper *scene_capture_wrapper = nullptr;
+#endif
 
 	// At a minimum we need a tracker for our head
 	Ref<XRPositionalTracker> head;
@@ -136,6 +142,12 @@ public:
 	virtual bool is_passthrough_enabled() override;
 	virtual bool start_passthrough() override;
 	virtual void stop_passthrough() override;
+
+	virtual bool is_scene_capture_supported() override;
+	virtual bool is_scene_capture_enabled() override;
+	virtual bool request_scene_capture() override;
+
+	void on_scene_capture_completed();
 
 	void on_state_ready();
 	void on_state_visible();
