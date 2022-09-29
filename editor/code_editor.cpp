@@ -184,7 +184,7 @@ void FindReplaceBar::_replace() {
 		selection_end = Point2i(text_editor->get_selection_to_line(0), text_editor->get_selection_to_column(0));
 	}
 
-	String replace_text = get_replace_text();
+	String repl_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
 	text_editor->begin_complex_operation();
@@ -201,13 +201,13 @@ void FindReplaceBar::_replace() {
 			Point2i match_from(result_line, result_col);
 			Point2i match_to(result_line, result_col + search_text_len);
 			if (!(match_from < selection_begin || match_to > selection_end)) {
-				text_editor->insert_text_at_caret(replace_text, 0);
+				text_editor->insert_text_at_caret(repl_text, 0);
 				if (match_to.x == selection_end.x) { // Adjust selection bounds if necessary
-					selection_end.y += replace_text.length() - search_text_len;
+					selection_end.y += repl_text.length() - search_text_len;
 				}
 			}
 		} else {
-			text_editor->insert_text_at_caret(replace_text, 0);
+			text_editor->insert_text_at_caret(repl_text, 0);
 		}
 	}
 	text_editor->end_complex_operation();
@@ -241,7 +241,7 @@ void FindReplaceBar::_replace_all() {
 	text_editor->set_caret_line(0, false, true, 0, 0);
 	text_editor->set_caret_column(0, true, 0);
 
-	String replace_text = get_replace_text();
+	String repl_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
 	int rc = 0;
@@ -264,7 +264,7 @@ void FindReplaceBar::_replace_all() {
 				break; // Done.
 			}
 
-			prev_match = Point2i(result_line, result_col + replace_text.length());
+			prev_match = Point2i(result_line, result_col + repl_text.length());
 
 			text_editor->unfold_line(result_line);
 			text_editor->select(result_line, result_col, result_line, match_to.y, 0);
@@ -275,14 +275,14 @@ void FindReplaceBar::_replace_all() {
 				}
 
 				// Replace but adjust selection bounds.
-				text_editor->insert_text_at_caret(replace_text, 0);
+				text_editor->insert_text_at_caret(repl_text, 0);
 				if (match_to.x == selection_end.x) {
-					selection_end.y += replace_text.length() - search_text_len;
+					selection_end.y += repl_text.length() - search_text_len;
 				}
 
 			} else {
 				// Just replace.
-				text_editor->insert_text_at_caret(replace_text, 0);
+				text_editor->insert_text_at_caret(repl_text, 0);
 			}
 
 			rc++;

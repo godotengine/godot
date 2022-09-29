@@ -301,14 +301,14 @@ private:
 			_current_rng = Math::rand();
 		}
 
-		uint64_t offset_random(int index) {
-			return (_current_rng >> (index % 64)) |
-					(_current_rng << (64 - (index % 64)));
+		uint64_t offset_random(int p_index) {
+			return (_current_rng >> (p_index % 64)) |
+					(_current_rng << (64 - (p_index % 64)));
 		}
 
-		uint64_t offset_previous_random(int index) {
-			return (_previous_rng >> (index % 64)) |
-					(_previous_rng << (64 - (index % 64)));
+		uint64_t offset_previous_random(int p_index) {
+			return (_previous_rng >> (p_index % 64)) |
+					(_previous_rng << (64 - (p_index % 64)));
 		}
 	};
 

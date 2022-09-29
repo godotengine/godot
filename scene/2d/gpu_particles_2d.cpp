@@ -353,13 +353,13 @@ void GPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 }
 
 void GPUParticles2D::emit_particle(const Transform2D &p_transform2d, const Vector2 &p_velocity2d, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
-	Transform3D transform;
-	transform.basis.set_column(0, Vector3(p_transform2d.columns[0].x, p_transform2d.columns[0].y, 0));
-	transform.basis.set_column(1, Vector3(p_transform2d.columns[1].x, p_transform2d.columns[1].y, 0));
-	transform.set_origin(Vector3(p_transform2d.get_origin().x, p_transform2d.get_origin().y, 0));
+	Transform3D emit_transform;
+	emit_transform.basis.set_column(0, Vector3(p_transform2d.columns[0].x, p_transform2d.columns[0].y, 0));
+	emit_transform.basis.set_column(1, Vector3(p_transform2d.columns[1].x, p_transform2d.columns[1].y, 0));
+	emit_transform.set_origin(Vector3(p_transform2d.get_origin().x, p_transform2d.get_origin().y, 0));
 	Vector3 velocity = Vector3(p_velocity2d.x, p_velocity2d.y, 0);
 
-	RS::get_singleton()->particles_emit(particles, transform, velocity, p_color, p_custom, p_emit_flags);
+	RS::get_singleton()->particles_emit(particles, emit_transform, velocity, p_color, p_custom, p_emit_flags);
 }
 
 void GPUParticles2D::_attach_sub_emitter() {

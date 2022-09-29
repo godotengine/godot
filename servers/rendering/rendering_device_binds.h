@@ -407,10 +407,10 @@ protected:
 		List<Variant> keys;
 		p_versions.get_key_list(&keys);
 		for (const Variant &E : keys) {
-			StringName name = E;
+			StringName vname = E;
 			Ref<RDShaderSPIRV> bc = p_versions[E];
 			ERR_CONTINUE(bc.is_null());
-			versions[name] = bc;
+			versions[vname] = bc;
 		}
 
 		emit_changed();

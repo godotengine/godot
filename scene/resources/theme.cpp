@@ -40,20 +40,20 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 	if (sname.contains("/")) {
 		String type = sname.get_slicec('/', 1);
 		String theme_type = sname.get_slicec('/', 0);
-		String name = sname.get_slicec('/', 2);
+		String prop_name = sname.get_slicec('/', 2);
 
 		if (type == "icons") {
-			set_icon(name, theme_type, p_value);
+			set_icon(prop_name, theme_type, p_value);
 		} else if (type == "styles") {
-			set_stylebox(name, theme_type, p_value);
+			set_stylebox(prop_name, theme_type, p_value);
 		} else if (type == "fonts") {
-			set_font(name, theme_type, p_value);
+			set_font(prop_name, theme_type, p_value);
 		} else if (type == "font_sizes") {
-			set_font_size(name, theme_type, p_value);
+			set_font_size(prop_name, theme_type, p_value);
 		} else if (type == "colors") {
-			set_color(name, theme_type, p_value);
+			set_color(prop_name, theme_type, p_value);
 		} else if (type == "constants") {
-			set_constant(name, theme_type, p_value);
+			set_constant(prop_name, theme_type, p_value);
 		} else if (type == "base_type") {
 			set_type_variation(theme_type, p_value);
 		} else {
@@ -72,32 +72,32 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 	if (sname.contains("/")) {
 		String type = sname.get_slicec('/', 1);
 		String theme_type = sname.get_slicec('/', 0);
-		String name = sname.get_slicec('/', 2);
+		String prop_name = sname.get_slicec('/', 2);
 
 		if (type == "icons") {
-			if (!has_icon(name, theme_type)) {
+			if (!has_icon(prop_name, theme_type)) {
 				r_ret = Ref<Texture2D>();
 			} else {
-				r_ret = get_icon(name, theme_type);
+				r_ret = get_icon(prop_name, theme_type);
 			}
 		} else if (type == "styles") {
-			if (!has_stylebox(name, theme_type)) {
+			if (!has_stylebox(prop_name, theme_type)) {
 				r_ret = Ref<StyleBox>();
 			} else {
-				r_ret = get_stylebox(name, theme_type);
+				r_ret = get_stylebox(prop_name, theme_type);
 			}
 		} else if (type == "fonts") {
-			if (!has_font(name, theme_type)) {
+			if (!has_font(prop_name, theme_type)) {
 				r_ret = Ref<Font>();
 			} else {
-				r_ret = get_font(name, theme_type);
+				r_ret = get_font(prop_name, theme_type);
 			}
 		} else if (type == "font_sizes") {
-			r_ret = get_font_size(name, theme_type);
+			r_ret = get_font_size(prop_name, theme_type);
 		} else if (type == "colors") {
-			r_ret = get_color(name, theme_type);
+			r_ret = get_color(prop_name, theme_type);
 		} else if (type == "constants") {
-			r_ret = get_constant(name, theme_type);
+			r_ret = get_constant(prop_name, theme_type);
 		} else if (type == "base_type") {
 			r_ret = get_type_variation_base(theme_type);
 		} else {

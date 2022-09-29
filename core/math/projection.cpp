@@ -169,7 +169,7 @@ Projection Projection::perspective_znear_adjusted(real_t p_new_znear) const {
 }
 
 Plane Projection::get_projection_plane(Planes p_plane) const {
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 
 	switch (p_plane) {
 		case PLANE_NEAR: {
@@ -402,7 +402,7 @@ void Projection::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, r
 }
 
 real_t Projection::get_z_far() const {
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 	Plane new_plane = Plane(matrix[3] - matrix[2],
 			matrix[7] - matrix[6],
 			matrix[11] - matrix[10],
@@ -415,7 +415,7 @@ real_t Projection::get_z_far() const {
 }
 
 real_t Projection::get_z_near() const {
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 	Plane new_plane = Plane(matrix[3] + matrix[2],
 			matrix[7] + matrix[6],
 			matrix[11] + matrix[10],
@@ -426,7 +426,7 @@ real_t Projection::get_z_near() const {
 }
 
 Vector2 Projection::get_viewport_half_extents() const {
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 	///////--- Near Plane ---///////
 	Plane near_plane = Plane(matrix[3] + matrix[2],
 			matrix[7] + matrix[6],
@@ -454,7 +454,7 @@ Vector2 Projection::get_viewport_half_extents() const {
 }
 
 Vector2 Projection::get_far_plane_half_extents() const {
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 	///////--- Far Plane ---///////
 	Plane far_plane = Plane(matrix[3] - matrix[2],
 			matrix[7] - matrix[6],
@@ -514,7 +514,7 @@ Vector<Plane> Projection::get_projection_planes(const Transform3D &p_transform) 
 	Vector<Plane> planes;
 	planes.resize(6);
 
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 
 	Plane new_plane;
 
@@ -807,7 +807,7 @@ bool Projection::is_orthogonal() const {
 }
 
 real_t Projection::get_fov() const {
-	const real_t *matrix = (const real_t *)this->columns;
+	const real_t *matrix = (const real_t *)columns;
 
 	Plane right_plane = Plane(matrix[3] - matrix[0],
 			matrix[7] - matrix[4],

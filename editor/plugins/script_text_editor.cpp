@@ -703,25 +703,25 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 	}
 
 	for (const Ref<Script> &E : scripts) {
-		Ref<Script> script = E;
+		Ref<Script> scr = E;
 
-		if (p_for_script.is_valid() && p_for_script != script) {
+		if (p_for_script.is_valid() && p_for_script != scr) {
 			continue;
 		}
 
-		if (script->is_built_in()) {
+		if (scr->is_built_in()) {
 			continue; //internal script, who cares, though weird
 		}
 
-		uint64_t last_date = script->get_last_modified_time();
-		uint64_t date = FileAccess::get_modified_time(script->get_path());
+		uint64_t last_date = scr->get_last_modified_time();
+		uint64_t date = FileAccess::get_modified_time(scr->get_path());
 
 		if (last_date != date) {
-			Ref<Script> rel_script = ResourceLoader::load(script->get_path(), script->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-			ERR_CONTINUE(!rel_script.is_valid());
-			script->set_source_code(rel_script->get_source_code());
-			script->set_last_modified_time(rel_script->get_last_modified_time());
-			script->update_exports();
+			Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+			ERR_CONTINUE(!rel_scr.is_valid());
+			scr->set_source_code(rel_scr->get_source_code());
+			scr->set_last_modified_time(rel_scr->get_last_modified_time());
+			scr->update_exports();
 
 			_trigger_live_script_reload();
 		}
@@ -982,10 +982,10 @@ void ScriptTextEditor::_update_connected_methods() {
 	Vector<Node *> nodes = _find_all_node_for_script(base, base, script);
 	HashSet<StringName> methods_found;
 	for (int i = 0; i < nodes.size(); i++) {
-		List<Connection> connections;
-		nodes[i]->get_signals_connected_to_this(&connections);
+		List<Connection> signal_connections;
+		nodes[i]->get_signals_connected_to_this(&signal_connections);
 
-		for (const Connection &connection : connections) {
+		for (const Connection &connection : signal_connections) {
 			if (!(connection.flags & CONNECT_PERSIST)) {
 				continue;
 			}

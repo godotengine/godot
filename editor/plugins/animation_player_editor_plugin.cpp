@@ -826,13 +826,13 @@ void AnimationPlayerEditor::_update_player() {
 		}
 
 		// Check if the global library is foreign since we want to disable options for adding/remove/renaming animations if it is.
-		Ref<AnimationLibrary> library = player->get_animation_library(K);
+		Ref<AnimationLibrary> anim_library = player->get_animation_library(K);
 		if (K == "") {
-			foreign_global_anim_lib = EditorNode::get_singleton()->is_resource_read_only(library);
+			foreign_global_anim_lib = EditorNode::get_singleton()->is_resource_read_only(anim_library);
 		}
 
 		List<StringName> animlist;
-		library->get_animation_list(&animlist);
+		anim_library->get_animation_list(&animlist);
 
 		for (const StringName &E : animlist) {
 			String path = K;
@@ -913,19 +913,19 @@ void AnimationPlayerEditor::_update_player() {
 
 void AnimationPlayerEditor::_update_animation_list_icons() {
 	for (int i = 0; i < animation->get_item_count(); i++) {
-		String name = animation->get_item_text(i);
+		String anim_name = animation->get_item_text(i);
 		if (animation->is_item_disabled(i) || animation->is_item_separator(i)) {
 			continue;
 		}
 
 		Ref<Texture2D> icon;
-		if (name == player->get_autoplay()) {
-			if (name == SceneStringNames::get_singleton()->RESET) {
+		if (anim_name == player->get_autoplay()) {
+			if (anim_name == SceneStringNames::get_singleton()->RESET) {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (name == SceneStringNames::get_singleton()->RESET) {
+		} else if (anim_name == SceneStringNames::get_singleton()->RESET) {
 			icon = reset_icon;
 		}
 
@@ -1356,8 +1356,8 @@ void AnimationPlayerEditor::_free_onion_layers() {
 
 void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	// This would be called per viewport and we want to act once only.
-	int64_t frame = get_tree()->get_frame();
-	if (frame == onion.last_frame) {
+	int64_t cur_frame = get_tree()->get_frame();
+	if (cur_frame == onion.last_frame) {
 		return;
 	}
 
@@ -1366,7 +1366,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 		return;
 	}
 
-	onion.last_frame = frame;
+	onion.last_frame = cur_frame;
 
 	// Refresh viewports with no onion layers overlaid.
 	onion.can_overlay = false;

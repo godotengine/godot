@@ -167,17 +167,17 @@ String RichTextLabel::_roman(int p_num, bool p_capitalize) const {
 	};
 	String s;
 	if (p_capitalize) {
-		const String M[] = { "", "M", "MM", "MMM" };
-		const String C[] = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
-		const String X[] = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
-		const String I[] = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
-		s = M[p_num / 1000] + C[(p_num % 1000) / 100] + X[(p_num % 100) / 10] + I[p_num % 10];
+		const String roman_M[] = { "", "M", "MM", "MMM" };
+		const String roman_C[] = { "", "C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM" };
+		const String roman_X[] = { "", "X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC" };
+		const String roman_I[] = { "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX" };
+		s = roman_M[p_num / 1000] + roman_C[(p_num % 1000) / 100] + roman_X[(p_num % 100) / 10] + roman_I[p_num % 10];
 	} else {
-		const String M[] = { "", "m", "mm", "mmm" };
-		const String C[] = { "", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm" };
-		const String X[] = { "", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc" };
-		const String I[] = { "", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix" };
-		s = M[p_num / 1000] + C[(p_num % 1000) / 100] + X[(p_num % 100) / 10] + I[p_num % 10];
+		const String roman_M[] = { "", "m", "mm", "mmm" };
+		const String roman_C[] = { "", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm" };
+		const String roman_X[] = { "", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc" };
+		const String roman_I[] = { "", "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix" };
+		s = roman_M[p_num / 1000] + roman_C[(p_num % 1000) / 100] + roman_X[(p_num % 100) / 10] + roman_I[p_num % 10];
 	}
 	return s;
 }
@@ -468,7 +468,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	}
 
 	// Shape current paragraph.
-	String text;
+	String txt;
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	int remaining_characters = visible_characters - l.char_offset;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
@@ -502,7 +502,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					font_size = font_size_it->font_size;
 				}
 				l.text_buf->add_string("\n", font, font_size);
-				text += "\n";
+				txt += "\n";
 				l.char_count++;
 				remaining_characters--;
 			} break;
@@ -532,13 +532,13 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				remaining_characters -= tx.length();
 
 				l.text_buf->add_string(tx, font, font_size, lang, (uint64_t)it);
-				text += tx;
+				txt += tx;
 				l.char_count += tx.length();
 			} break;
 			case ITEM_IMAGE: {
 				ItemImage *img = static_cast<ItemImage *>(it);
 				l.text_buf->add_object((uint64_t)it, img->size, img->inline_align, 1);
-				text += String::chr(0xfffc);
+				txt += String::chr(0xfffc);
 				l.char_count++;
 				remaining_characters--;
 			} break;
@@ -693,15 +693,15 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				}
 
 				l.text_buf->add_object((uint64_t)it, Size2(table->total_width, table->total_height), table->inline_align, t_char_count);
-				text += String::chr(0xfffc).repeat(t_char_count);
+				txt += String::chr(0xfffc).repeat(t_char_count);
 			} break;
 			default:
 				break;
 		}
 	}
 
-	//Apply BiDi override.
-	l.text_buf->set_bidi_override(structured_text_parser(_find_stt(l.from), st_args, text));
+	// Apply BiDi override.
+	l.text_buf->set_bidi_override(structured_text_parser(_find_stt(l.from), st_args, txt));
 
 	*r_char_offset = l.char_offset + l.char_count;
 
@@ -987,7 +987,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				font_shadow_color.a = faded_visibility;
 			}
 
-			bool visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
+			bool txt_visible = (font_outline_color.a != 0) || (font_shadow_color.a != 0);
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
@@ -1002,7 +1002,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->elapsed_time = item_custom->elapsed_time;
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
-						charfx->visibility = visible;
+						charfx->visibility = txt_visible;
 						charfx->outline = true;
 						charfx->font = frid;
 						charfx->glyph_index = gl;
@@ -1018,7 +1018,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						font_color = charfx->color;
 						frid = charfx->font;
 						gl = charfx->glyph_index;
-						visible &= charfx->visibility;
+						txt_visible &= charfx->visibility;
 					}
 				} else if (item_fx->type == ITEM_SHAKE) {
 					ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
@@ -1062,7 +1062,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			const Color modulated_outline_color = font_outline_color * Color(1, 1, 1, font_color.a);
 			const Color modulated_shadow_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 			for (int j = 0; j < glyphs[i].repeat; j++) {
-				if (visible) {
+				if (txt_visible) {
 					bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (processed_glyphs_ol >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_ol < total_glyphs - visible_glyphs));
 					if (!skip && frid != RID()) {
 						if (modulated_shadow_color.a > 0) {
@@ -1205,7 +1205,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 				font_color.a = faded_visibility;
 			}
 
-			bool visible = (font_color.a != 0);
+			bool txt_visible = (font_color.a != 0);
 
 			for (int j = 0; j < fx_stack.size(); j++) {
 				ItemFX *item_fx = fx_stack[j];
@@ -1220,7 +1220,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					if (!custom_effect.is_null()) {
 						charfx->elapsed_time = item_custom->elapsed_time;
 						charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
-						charfx->visibility = visible;
+						charfx->visibility = txt_visible;
 						charfx->outline = false;
 						charfx->font = frid;
 						charfx->glyph_index = gl;
@@ -1236,7 +1236,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						font_color = charfx->color;
 						frid = charfx->font;
 						gl = charfx->glyph_index;
-						visible &= charfx->visibility;
+						txt_visible &= charfx->visibility;
 					}
 				} else if (item_fx->type == ITEM_SHAKE) {
 					ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
@@ -1283,7 +1283,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 			// Draw glyphs.
 			for (int j = 0; j < glyphs[i].repeat; j++) {
 				bool skip = (trim_chars && l.char_offset + glyphs[i].end > visible_characters) || (trim_glyphs_ltr && (r_processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (r_processed_glyphs < total_glyphs - visible_glyphs));
-				if (visible) {
+				if (txt_visible) {
 					if (!skip) {
 						if (frid != RID()) {
 							TS->font_draw_glyph(frid, ci, glyphs[i].font_size, p_ofs + fx_offset + off, gl, selected ? selection_fg : font_color);
@@ -3609,21 +3609,21 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			brk_pos = p_bbcode.length();
 		}
 
-		String text = brk_pos > pos ? p_bbcode.substr(pos, brk_pos - pos) : "";
+		String txt = brk_pos > pos ? p_bbcode.substr(pos, brk_pos - pos) : "";
 
 		// Trim the first newline character, it may be added later as needed.
 		if (after_list_close_tag || after_list_open_tag) {
-			text = text.trim_prefix("\n");
+			txt = txt.trim_prefix("\n");
 		}
 
 		if (brk_pos == p_bbcode.length()) {
 			// For tags that are not properly closed.
-			if (text.is_empty() && after_list_open_tag) {
-				text = "\n";
+			if (txt.is_empty() && after_list_open_tag) {
+				txt = "\n";
 			}
 
-			if (!text.is_empty()) {
-				add_text(text);
+			if (!txt.is_empty()) {
+				add_text(txt);
 			}
 			break; //nothing else to add
 		}
@@ -3632,8 +3632,8 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		if (brk_end == -1) {
 			//no close, add the rest
-			text += p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos);
-			add_text(text);
+			txt += p_bbcode.substr(brk_pos, p_bbcode.length() - brk_pos);
+			add_text(txt);
 			break;
 		}
 
@@ -3679,36 +3679,36 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			}
 
 			if (!tag_ok) {
-				text += "[" + tag;
-				add_text(text);
+				txt += "[" + tag;
+				add_text(txt);
 				after_list_open_tag = false;
 				after_list_close_tag = false;
 				pos = brk_end;
 				continue;
 			}
 
-			if (text.is_empty() && after_list_open_tag) {
-				text = "\n"; // Make empty list have at least one item.
+			if (txt.is_empty() && after_list_open_tag) {
+				txt = "\n"; // Make empty list have at least one item.
 			}
 			after_list_open_tag = false;
 
 			if (tag == "/ol" || tag == "/ul") {
-				if (!text.is_empty()) {
+				if (!txt.is_empty()) {
 					// Make sure text ends with a newline character, that is, the last item
 					// will wrap at the end of block.
-					if (!text.ends_with("\n")) {
-						text += "\n";
+					if (!txt.ends_with("\n")) {
+						txt += "\n";
 					}
 				} else if (!after_list_close_tag) {
-					text = "\n"; // Make the innermost list item wrap at the end of lists.
+					txt = "\n"; // Make the innermost list item wrap at the end of lists.
 				}
 				after_list_close_tag = true;
 			} else {
 				after_list_close_tag = false;
 			}
 
-			if (!text.is_empty()) {
-				add_text(text);
+			if (!txt.is_empty()) {
+				add_text(txt);
 			}
 
 			tag_stack.pop_front();
@@ -3720,15 +3720,15 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 		}
 
 		if (tag == "ol" || tag.begins_with("ol ") || tag == "ul" || tag.begins_with("ul ")) {
-			if (text.is_empty() && after_list_open_tag) {
-				text = "\n"; // Make each list have at least one item at the beginning.
+			if (txt.is_empty() && after_list_open_tag) {
+				txt = "\n"; // Make each list have at least one item at the beginning.
 			}
 			after_list_open_tag = true;
 		} else {
 			after_list_open_tag = false;
 		}
-		if (!text.is_empty()) {
-			add_text(text);
+		if (!txt.is_empty()) {
+			add_text(txt);
 		}
 		after_list_close_tag = false;
 
@@ -3970,7 +3970,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang;
-			TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+			TextServer::StructuredTextParser st_parser_type = TextServer::STRUCTURED_TEXT_DEFAULT;
 			for (int i = 0; i < subtag.size(); i++) {
 				Vector<String> subtag_a = subtag[i].split("=");
 				if (subtag_a.size() == 2) {
@@ -3996,24 +3996,24 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 						lang = subtag_a[1];
 					} else if (subtag_a[0] == "st" || subtag_a[0] == "bidi_override") {
 						if (subtag_a[1] == "d" || subtag_a[1] == "default") {
-							st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
+							st_parser_type = TextServer::STRUCTURED_TEXT_DEFAULT;
 						} else if (subtag_a[1] == "u" || subtag_a[1] == "uri") {
-							st_parser = TextServer::STRUCTURED_TEXT_URI;
+							st_parser_type = TextServer::STRUCTURED_TEXT_URI;
 						} else if (subtag_a[1] == "f" || subtag_a[1] == "file") {
-							st_parser = TextServer::STRUCTURED_TEXT_FILE;
+							st_parser_type = TextServer::STRUCTURED_TEXT_FILE;
 						} else if (subtag_a[1] == "e" || subtag_a[1] == "email") {
-							st_parser = TextServer::STRUCTURED_TEXT_EMAIL;
+							st_parser_type = TextServer::STRUCTURED_TEXT_EMAIL;
 						} else if (subtag_a[1] == "l" || subtag_a[1] == "list") {
-							st_parser = TextServer::STRUCTURED_TEXT_LIST;
+							st_parser_type = TextServer::STRUCTURED_TEXT_LIST;
 						} else if (subtag_a[1] == "n" || subtag_a[1] == "none") {
-							st_parser = TextServer::STRUCTURED_TEXT_NONE;
+							st_parser_type = TextServer::STRUCTURED_TEXT_NONE;
 						} else if (subtag_a[1] == "c" || subtag_a[1] == "custom") {
-							st_parser = TextServer::STRUCTURED_TEXT_CUSTOM;
+							st_parser_type = TextServer::STRUCTURED_TEXT_CUSTOM;
 						}
 					}
 				}
 			}
-			push_paragraph(alignment, dir, lang, st_parser);
+			push_paragraph(alignment, dir, lang, st_parser_type);
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag == "url") {
@@ -4079,9 +4079,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				end = p_bbcode.length();
 			}
 
-			String txt = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
+			String dc_txt = p_bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			push_dropcap(txt, f, fs, dropcap_margins, color, outline_size, outline_color);
+			push_dropcap(dc_txt, f, fs, dropcap_margins, color, outline_size, outline_color);
 
 			pos = end;
 			tag_stack.push_front(bbcode_name);
@@ -4668,19 +4668,19 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 
 	Line &l = p_frame->lines[p_line];
 
-	String text;
+	String txt;
 	Item *it_to = (p_line + 1 < (int)p_frame->lines.size()) ? p_frame->lines[p_line + 1].from : nullptr;
 	for (Item *it = l.from; it && it != it_to; it = _get_next_item(it)) {
 		switch (it->type) {
 			case ITEM_NEWLINE: {
-				text += "\n";
+				txt += "\n";
 			} break;
 			case ITEM_TEXT: {
 				ItemText *t = static_cast<ItemText *>(it);
-				text += t->text;
+				txt += t->text;
 			} break;
 			case ITEM_IMAGE: {
-				text += " ";
+				txt += " ";
 			} break;
 			case ITEM_TABLE: {
 				ItemTable *table = static_cast<ItemTable *>(it);
@@ -4696,9 +4696,9 @@ bool RichTextLabel::_search_line(ItemFrame *p_frame, int p_line, const String &p
 
 	int sp = -1;
 	if (p_reverse_search) {
-		sp = text.rfindn(p_string, p_char_idx);
+		sp = txt.rfindn(p_string, p_char_idx);
 	} else {
-		sp = text.findn(p_string, p_char_idx);
+		sp = txt.findn(p_string, p_char_idx);
 	}
 
 	if (sp != -1) {
@@ -4802,10 +4802,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 }
 
 String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p_selection) const {
-	String text;
+	String txt;
 
-	ERR_FAIL_COND_V(p_frame == nullptr, text);
-	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), text);
+	ERR_FAIL_COND_V(p_frame == nullptr, txt);
+	ERR_FAIL_COND_V(p_line < 0 || p_line >= (int)p_frame->lines.size(), txt);
 
 	Line &l = p_frame->lines[p_line];
 
@@ -4825,7 +4825,7 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 				ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 				ItemFrame *frame = static_cast<ItemFrame *>(E);
 				for (int i = 0; i < (int)frame->lines.size(); i++) {
-					text += _get_line_text(frame, i, p_selection);
+					txt += _get_line_text(frame, i, p_selection);
 				}
 			}
 		}
@@ -4837,23 +4837,23 @@ String RichTextLabel::_get_line_text(ItemFrame *p_frame, int p_line, Selection p
 		}
 		if (it->type == ITEM_DROPCAP) {
 			const ItemDropcap *dc = static_cast<ItemDropcap *>(it);
-			text += dc->text;
+			txt += dc->text;
 		} else if (it->type == ITEM_TEXT) {
 			const ItemText *t = static_cast<ItemText *>(it);
-			text += t->text;
+			txt += t->text;
 		} else if (it->type == ITEM_NEWLINE) {
-			text += "\n";
+			txt += "\n";
 		} else if (it->type == ITEM_IMAGE) {
-			text += " ";
+			txt += " ";
 		}
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.to_frame) && (p_selection.to_item != nullptr) && (p_selection.to_item->index >= l.from->index) && (p_selection.to_item->index < end_idx)) {
-		text = text.substr(0, p_selection.to_char);
+		txt = txt.substr(0, p_selection.to_char);
 	}
 	if ((l.from != nullptr) && (p_frame == p_selection.from_frame) && (p_selection.from_item != nullptr) && (p_selection.from_item->index >= l.from->index) && (p_selection.from_item->index < end_idx)) {
-		text = text.substr(p_selection.from_char, -1);
+		txt = txt.substr(p_selection.from_char, -1);
 	}
-	return text;
+	return txt;
 }
 
 void RichTextLabel::set_context_menu_enabled(bool p_enabled) {
@@ -4887,12 +4887,12 @@ String RichTextLabel::get_selected_text() const {
 		return "";
 	}
 
-	String text;
+	String txt;
 	int to_line = main->first_invalid_line.load();
 	for (int i = 0; i < to_line; i++) {
-		text += _get_line_text(main, i, selection);
+		txt += _get_line_text(main, i, selection);
 	}
-	return text;
+	return txt;
 }
 
 void RichTextLabel::deselect() {
@@ -4901,10 +4901,10 @@ void RichTextLabel::deselect() {
 }
 
 void RichTextLabel::selection_copy() {
-	String text = get_selected_text();
+	String txt = get_selected_text();
 
-	if (!text.is_empty()) {
-		DisplayServer::get_singleton()->clipboard_set(text);
+	if (!txt.is_empty()) {
+		DisplayServer::get_singleton()->clipboard_set(txt);
 	}
 }
 
@@ -5018,25 +5018,25 @@ bool RichTextLabel::is_using_bbcode() const {
 }
 
 String RichTextLabel::get_parsed_text() const {
-	String text = "";
+	String txt = "";
 	Item *it = main;
 	while (it) {
 		if (it->type == ITEM_DROPCAP) {
 			ItemDropcap *dc = static_cast<ItemDropcap *>(it);
-			text += dc->text;
+			txt += dc->text;
 		} else if (it->type == ITEM_TEXT) {
 			ItemText *t = static_cast<ItemText *>(it);
-			text += t->text;
+			txt += t->text;
 		} else if (it->type == ITEM_NEWLINE) {
-			text += "\n";
+			txt += "\n";
 		} else if (it->type == ITEM_IMAGE) {
-			text += " ";
+			txt += " ";
 		} else if (it->type == ITEM_INDENT || it->type == ITEM_LIST) {
-			text += "\t";
+			txt += "\t";
 		}
 		it = _get_next_item(it, true);
 	}
-	return text;
+	return txt;
 }
 
 void RichTextLabel::set_text_direction(Control::TextDirection p_text_direction) {

@@ -829,9 +829,9 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			ERR_CONTINUE(prim >= Mesh::PRIMITIVE_MAX);
 			Array arr = s["arrays"];
 			Dictionary lods;
-			String name;
+			String surf_name;
 			if (s.has("name")) {
-				name = s["name"];
+				surf_name = s["name"];
 			}
 			if (s.has("lods")) {
 				lods = s["lods"];
@@ -848,7 +848,7 @@ void ImporterMesh::_set_data(const Dictionary &p_data) {
 			if (s.has("flags")) {
 				flags = s["flags"];
 			}
-			add_surface(prim, arr, b_shapes, lods, material, name, flags);
+			add_surface(prim, arr, b_shapes, lods, material, surf_name, flags);
 		}
 	}
 }

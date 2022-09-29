@@ -570,7 +570,7 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_forward_canvas_gui_input, p_event, success)) {
 		return success;
 	}
@@ -605,7 +605,7 @@ int EditorPlugin::update_overlays() const {
 }
 
 EditorPlugin::AfterGUIInput EditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	int success;
+	int success = EditorPlugin::AFTER_GUI_INPUT_PASS;
 
 	if (GDVIRTUAL_CALL(_forward_3d_gui_input, p_camera, p_event, success)) {
 		return static_cast<EditorPlugin::AfterGUIInput>(success);
@@ -662,7 +662,7 @@ void EditorPlugin::edit(Object *p_object) {
 }
 
 bool EditorPlugin::handles(Object *p_object) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_handles, p_object, success)) {
 		return success;
 	}

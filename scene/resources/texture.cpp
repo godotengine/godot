@@ -1288,15 +1288,15 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 	f->get_32(); // ignored (data format)
 
 	f->get_32(); //ignored
-	int mipmaps = f->get_32();
+	int mipmap_count = f->get_32();
 	f->get_32(); //ignored
 	f->get_32(); //ignored
 
-	r_mipmaps = mipmaps != 0;
+	r_mipmaps = mipmap_count != 0;
 
 	r_data.clear();
 
-	for (int i = 0; i < (r_depth + mipmaps); i++) {
+	for (int i = 0; i < (r_depth + mipmap_count); i++) {
 		Ref<Image> image = CompressedTexture2D::load_image_from_file(f, 0);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		if (i == 0) {

@@ -146,9 +146,9 @@ void Bone2D::_notification(int p_what) {
 			queue_redraw();
 
 			if (get_parent()) {
-				Bone2D *parent_bone = Object::cast_to<Bone2D>(get_parent());
-				if (parent_bone) {
-					parent_bone->queue_redraw();
+				Bone2D *p_bone = Object::cast_to<Bone2D>(get_parent());
+				if (p_bone) {
+					p_bone->queue_redraw();
 				}
 			}
 #endif // TOOLS_ENABLED

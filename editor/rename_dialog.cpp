@@ -652,9 +652,9 @@ void RenameDialog::_features_toggled(bool pressed) {
 	}
 
 	// Adjust to minimum size in y
-	Size2i size = get_size();
-	size.y = 0;
-	set_size(size);
+	Size2i new_size = get_size();
+	new_size.y = 0;
+	set_size(new_size);
 }
 
 #endif // MODULE_REGEX_ENABLED

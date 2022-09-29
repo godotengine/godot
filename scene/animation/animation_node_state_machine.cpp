@@ -728,11 +728,11 @@ void AnimationNodeStateMachine::add_node(const StringName &p_name, Ref<Animation
 	ERR_FAIL_COND(p_node.is_null());
 	ERR_FAIL_COND(String(p_name).contains("/"));
 
-	State state;
-	state.node = p_node;
-	state.position = p_position;
+	State state_new;
+	state_new.node = p_node;
+	state_new.position = p_position;
 
-	states[p_name] = state;
+	states[p_name] = state_new;
 
 	Ref<AnimationNodeStateMachine> anodesm = p_node;
 
@@ -960,8 +960,8 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<An
 		return true;
 	}
 
-	String name = p_name;
-	Vector<String> path = name.split("/");
+	String node_name = p_name;
+	Vector<String> path = node_name.split("/");
 
 	if (path.size() < 2) {
 		return false;
@@ -969,12 +969,12 @@ bool AnimationNodeStateMachine::_can_connect(const StringName &p_name, Vector<An
 
 	if (path[0] == "..") {
 		if (prev_state_machine != nullptr) {
-			return prev_state_machine->_can_connect(name.replace_first("../", ""), p_parents);
+			return prev_state_machine->_can_connect(node_name.replace_first("../", ""), p_parents);
 		}
 	} else if (states.has(path[0])) {
 		Ref<AnimationNodeStateMachine> anodesm = states[path[0]].node;
 		if (anodesm.is_valid()) {
-			return anodesm->_can_connect(name.replace_first(path[0] + "/", ""), p_parents);
+			return anodesm->_can_connect(node_name.replace_first(path[0] + "/", ""), p_parents);
 		}
 	}
 
@@ -1151,10 +1151,10 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 }
 
 double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_seek_root) {
-	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
-	ERR_FAIL_COND_V(playback.is_null(), 0.0);
+	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
+	ERR_FAIL_COND_V(playback_new.is_null(), 0.0);
 
-	return playback->process(this, p_time, p_seek, p_seek_root);
+	return playback_new->process(this, p_time, p_seek, p_seek_root);
 }
 
 String AnimationNodeStateMachine::get_caption() const {
@@ -1178,10 +1178,10 @@ Ref<AnimationNode> AnimationNodeStateMachine::get_child_by_name(const StringName
 }
 
 bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.begins_with("states/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	String prop_name = p_name;
+	if (prop_name.begins_with("states/")) {
+		String node_name = prop_name.get_slicec('/', 1);
+		String what = prop_name.get_slicec('/', 2);
 
 		if (what == "node") {
 			Ref<AnimationNode> anode = p_value;
@@ -1197,7 +1197,7 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 			}
 			return true;
 		}
-	} else if (name == "transitions") {
+	} else if (prop_name == "transitions") {
 		Array trans = p_value;
 		ERR_FAIL_COND_V(trans.size() % 3 != 0, false);
 
@@ -1205,7 +1205,7 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 			add_transition(trans[i], trans[i + 1], trans[i + 2]);
 		}
 		return true;
-	} else if (name == "graph_offset") {
+	} else if (prop_name == "graph_offset") {
 		set_graph_offset(p_value);
 		return true;
 	}
@@ -1214,10 +1214,10 @@ bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_
 }
 
 bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name.begins_with("states/")) {
-		String node_name = name.get_slicec('/', 1);
-		String what = name.get_slicec('/', 2);
+	String prop_name = p_name;
+	if (prop_name.begins_with("states/")) {
+		String node_name = prop_name.get_slicec('/', 1);
+		String what = prop_name.get_slicec('/', 2);
 
 		if (what == "node") {
 			if (states.has(node_name) && can_edit_node(node_name)) {
@@ -1232,7 +1232,7 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 				return true;
 			}
 		}
-	} else if (name == "transitions") {
+	} else if (prop_name == "transitions") {
 		Array trans;
 		for (int i = 0; i < transitions.size(); i++) {
 			String from = transitions[i].from;
@@ -1249,7 +1249,7 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 
 		r_ret = trans;
 		return true;
-	} else if (name == "graph_offset") {
+	} else if (prop_name == "graph_offset") {
 		r_ret = get_graph_offset();
 		return true;
 	}
@@ -1264,9 +1264,9 @@ void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) c
 	}
 	names.sort_custom<StringName::AlphCompare>();
 
-	for (const StringName &name : names) {
-		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
+	for (const StringName &prop_name : names) {
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "states/" + prop_name + "/node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode", PROPERTY_USAGE_NO_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2, "states/" + prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));
 	}
 
 	p_list->push_back(PropertyInfo(Variant::ARRAY, "transitions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR));

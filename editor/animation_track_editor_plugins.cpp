@@ -412,9 +412,9 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 		sf->get_animation_list(&animations);
 
 		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-		String animation;
+		String animation_name;
 		if (animations.size() == 1) {
-			animation = animations.front()->get();
+			animation_name = animations.front()->get();
 		} else {
 			// Go through other track to find if animation is set
 			String animation_path = get_animation()->track_get_path(get_track());
@@ -422,10 +422,10 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
 			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
 			int animaiton_index = get_animation()->track_find_key(animation_track, track_time);
-			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
+			animation_name = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
-		Ref<Texture2D> texture = sf->get_frame(animation, frame);
+		Ref<Texture2D> texture = sf->get_frame(animation_name, frame);
 		if (!texture.is_valid()) {
 			return AnimationTrackEdit::get_key_rect(p_index, p_pixels_sec);
 		}
@@ -504,9 +504,9 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 		sf->get_animation_list(&animations);
 
 		int frame = get_animation()->track_get_key_value(get_track(), p_index);
-		String animation;
+		String animation_name;
 		if (animations.size() == 1) {
-			animation = animations.front()->get();
+			animation_name = animations.front()->get();
 		} else {
 			// Go through other track to find if animation is set
 			String animation_path = get_animation()->track_get_path(get_track());
@@ -514,10 +514,10 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 			int animation_track = get_animation()->find_track(animation_path, get_animation()->track_get_type(get_track()));
 			float track_time = get_animation()->track_get_key_time(get_track(), p_index);
 			int animaiton_index = get_animation()->track_find_key(animation_track, track_time);
-			animation = get_animation()->track_get_key_value(animation_track, animaiton_index);
+			animation_name = get_animation()->track_get_key_value(animation_track, animaiton_index);
 		}
 
-		texture = sf->get_frame(animation, frame);
+		texture = sf->get_frame(animation_name, frame);
 		if (!texture.is_valid()) {
 			AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
 			return;
@@ -670,15 +670,15 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		Vector<Vector2> lines;
 		Vector<Color> colorv;
 		{
-			Ref<Animation> animation = ap->get_animation(anim);
+			Ref<Animation> ap_anim = ap->get_animation(anim);
 
-			for (int i = 0; i < animation->get_track_count(); i++) {
-				float h = (rect.size.height - 2) / animation->get_track_count();
+			for (int i = 0; i < ap_anim->get_track_count(); i++) {
+				float h = (rect.size.height - 2) / ap_anim->get_track_count();
 
 				int y = 2 + h * i + h / 2;
 
-				for (int j = 0; j < animation->track_get_key_count(i); j++) {
-					float ofs = animation->track_get_key_time(i, j);
+				for (int j = 0; j < ap_anim->track_get_key_count(i); j++) {
+					float ofs = ap_anim->track_get_key_time(i, j);
 					int x = p_x + ofs * p_pixels_sec + 2;
 
 					if (x < from_x || x >= (to_x - 4)) {
@@ -1244,15 +1244,15 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		Vector<Vector2> lines;
 		Vector<Color> colorv;
 		{
-			Ref<Animation> animation = ap->get_animation(anim);
+			Ref<Animation> ap_anim = ap->get_animation(anim);
 
-			for (int i = 0; i < animation->get_track_count(); i++) {
-				float h = (rect.size.height - 2) / animation->get_track_count();
+			for (int i = 0; i < ap_anim->get_track_count(); i++) {
+				float h = (rect.size.height - 2) / ap_anim->get_track_count();
 
 				int y = 2 + h * i + h / 2;
 
-				for (int j = 0; j < animation->track_get_key_count(i); j++) {
-					float ofs = animation->track_get_key_time(i, j);
+				for (int j = 0; j < ap_anim->track_get_key_count(i); j++) {
+					float ofs = ap_anim->track_get_key_time(i, j);
 					int x = p_x + ofs * p_pixels_sec + 2;
 
 					if (x < from_x || x >= (to_x - 4)) {

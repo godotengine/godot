@@ -184,8 +184,8 @@ void ConnectDialog::_add_bind() {
 	Variant::Type type = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
-	Callable::CallError error;
-	Variant::construct(type, value, nullptr, 0, error);
+	Callable::CallError err;
+	Variant::construct(type, value, nullptr, 0, err);
 
 	cdbinds->params.push_back(value);
 	cdbinds->notify_changed();
@@ -583,19 +583,19 @@ void ConnectionsDock::_make_or_edit_connection() {
 	// Conditions to add function: must have a script and must not have the method already
 	// (in the class, the script itself, or inherited).
 	bool add_script_function = false;
-	Ref<Script> script = target->get_script();
-	if (!target->get_script().is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
+	Ref<Script> scr = target->get_script();
+	if (!scr.is_null() && !ClassDB::has_method(target->get_class(), cd.method)) {
 		// There is a chance that the method is inherited from another script.
 		bool found_inherited_function = false;
-		Ref<Script> inherited_script = script->get_base_script();
-		while (!inherited_script.is_null()) {
-			int line = inherited_script->get_language()->find_function(cd.method, inherited_script->get_source_code());
+		Ref<Script> inherited_scr = scr->get_base_script();
+		while (!inherited_scr.is_null()) {
+			int line = inherited_scr->get_language()->find_function(cd.method, inherited_scr->get_source_code());
 			if (line != -1) {
 				found_inherited_function = true;
 				break;
 			}
 
-			inherited_script = inherited_script->get_base_script();
+			inherited_scr = inherited_scr->get_base_script();
 		}
 
 		add_script_function = !found_inherited_function;
@@ -816,13 +816,13 @@ void ConnectionsDock::_go_to_script(TreeItem &p_item) {
 		return;
 	}
 
-	Ref<Script> script = cd.target->get_script();
+	Ref<Script> scr = cd.target->get_script();
 
-	if (script.is_null()) {
+	if (scr.is_null()) {
 		return;
 	}
 
-	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, cd.method)) {
+	if (scr.is_valid() && ScriptEditor::get_singleton()->script_goto_method(scr, cd.method)) {
 		EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
 	}
 }
@@ -1077,10 +1077,10 @@ void ConnectionsDock::update_tree() {
 			}
 
 			// List existing connections.
-			List<Object::Connection> connections;
-			selected_node->get_signal_connection_list(signal_name, &connections);
+			List<Object::Connection> existing_connections;
+			selected_node->get_signal_connection_list(signal_name, &existing_connections);
 
-			for (const Object::Connection &F : connections) {
+			for (const Object::Connection &F : existing_connections) {
 				Connection connection = F;
 				if (!(connection.flags & CONNECT_PERSIST)) {
 					continue;

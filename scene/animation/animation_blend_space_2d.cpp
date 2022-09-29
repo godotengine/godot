@@ -343,10 +343,10 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 		points.write[i] = blend_points[i].position;
 	}
 
-	Vector<Delaunay2D::Triangle> triangles = Delaunay2D::triangulate(points);
+	Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(points);
 
-	for (int i = 0; i < triangles.size(); i++) {
-		add_triangle(triangles[i].points[0], triangles[i].points[1], triangles[i].points[2]);
+	for (int i = 0; i < tr.size(); i++) {
+		add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 	}
 	emit_signal(SNAME("triangles_updated"));
 }
@@ -376,9 +376,9 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 				points[j],
 				points[(j + 1) % 3]
 			};
-			Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, s);
-			if (first || closest.distance_to(p_point) < best_point.distance_to(p_point)) {
-				best_point = closest;
+			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, s);
+			if (first || closest_point.distance_to(p_point) < best_point.distance_to(p_point)) {
+				best_point = closest_point;
 				first = false;
 			}
 		}
@@ -436,8 +436,8 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
-	int closest = get_parameter(this->closest);
-	double length_internal = get_parameter(this->length_internal);
+	int cur_closest = get_parameter(closest);
+	double cur_length_internal = get_parameter(length_internal);
 	double mind = 0.0; //time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
@@ -528,37 +528,37 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_see
 			}
 		}
 
-		if (new_closest != closest && new_closest != -1) {
+		if (new_closest != cur_closest && new_closest != -1) {
 			double from = 0.0;
-			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
+			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
 				//for ping-pong loop
-				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[closest].node);
+				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
 				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
 				if (!na_c.is_null() && !na_n.is_null()) {
 					na_n->set_backward(na_c->is_backward());
 				}
 				//see how much animation remains
-				from = length_internal - blend_node(blend_points[closest].name, blend_points[closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, true);
+				from = cur_length_internal - blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, false, p_seek_root, 0.0, FILTER_IGNORE, true);
 			}
 
 			mind = blend_node(blend_points[new_closest].name, blend_points[new_closest].node, from, true, p_seek_root, 1.0, FILTER_IGNORE, true);
-			length_internal = from + mind;
+			cur_length_internal = from + mind;
 
-			closest = new_closest;
+			cur_closest = new_closest;
 
 		} else {
-			mind = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
+			mind = blend_node(blend_points[cur_closest].name, blend_points[cur_closest].node, p_time, p_seek, p_seek_root, 1.0, FILTER_IGNORE, true);
 		}
 
 		for (int i = 0; i < blend_points_used; i++) {
-			if (i != closest) {
+			if (i != cur_closest) {
 				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, p_seek_root, 0, FILTER_IGNORE, sync);
 			}
 		}
 	}
 
-	set_parameter(this->closest, closest);
-	set_parameter(this->length_internal, length_internal);
+	set_parameter(this->closest, cur_closest);
+	set_parameter(this->length_internal, cur_length_internal);
 	return mind;
 }
 

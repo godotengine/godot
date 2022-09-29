@@ -103,7 +103,6 @@ bool AudioListener2D::is_current() const {
 	} else {
 		return current;
 	}
-	return false;
 }
 
 void AudioListener2D::_bind_methods() {

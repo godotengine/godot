@@ -153,7 +153,7 @@ void NavigationObstacle2D::reevaluate_agent_radius() {
 real_t NavigationObstacle2D::estimate_agent_radius() const {
 	if (parent_node2d && parent_node2d->is_inside_tree()) {
 		// Estimate the radius of this physics body
-		real_t radius = 0.0;
+		real_t max_radius = 0.0;
 		for (int i(0); i < parent_node2d->get_child_count(); i++) {
 			// For each collision shape
 			CollisionShape2D *cs = Object::cast_to<CollisionShape2D>(parent_node2d->get_child(i));
@@ -167,17 +167,17 @@ real_t NavigationObstacle2D::estimate_agent_radius() const {
 				Size2 s = cs->get_global_scale();
 				r *= MAX(s.x, s.y);
 				// Takes the biggest radius
-				radius = MAX(radius, r);
+				max_radius = MAX(max_radius, r);
 			} else if (cs && !cs->is_inside_tree()) {
 				WARN_PRINT("A CollisionShape2D of the NavigationObstacle2D parent node was not inside the SceneTree when estimating the obstacle radius."
 						   "\nMove the NavigationObstacle2D to a child position below any CollisionShape2D node of the parent node so the CollisionShape2D is already inside the SceneTree.");
 			}
 		}
 		Vector2 s = parent_node2d->get_global_scale();
-		radius *= MAX(s.x, s.y);
+		max_radius *= MAX(s.x, s.y);
 
-		if (radius > 0.0) {
-			return radius;
+		if (max_radius > 0.0) {
+			return max_radius;
 		}
 	}
 	return 1.0; // Never a 0 radius

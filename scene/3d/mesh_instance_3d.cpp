@@ -346,9 +346,9 @@ Ref<Material> MeshInstance3D::get_surface_override_material(int p_surface) const
 }
 
 Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
-	Ref<Material> material_override = get_material_override();
-	if (material_override.is_valid()) {
-		return material_override;
+	Ref<Material> mat_override = get_material_override();
+	if (mat_override.is_valid()) {
+		return mat_override;
 	}
 
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
@@ -356,9 +356,9 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return surface_material;
 	}
 
-	Ref<Mesh> mesh = get_mesh();
-	if (mesh.is_valid()) {
-		return mesh->surface_get_material(p_surface);
+	Ref<Mesh> m = get_mesh();
+	if (m.is_valid()) {
+		return m->surface_get_material(p_surface);
 	}
 
 	return Ref<Material>();
@@ -394,13 +394,13 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 	Vector<Vector3> lines;
 	Vector<Color> colors;
 
-	Ref<Mesh> mesh = get_mesh();
-	if (!mesh.is_valid()) {
+	Ref<Mesh> m = get_mesh();
+	if (!m.is_valid()) {
 		return nullptr;
 	}
 
-	for (int i = 0; i < mesh->get_surface_count(); i++) {
-		Array arrays = mesh->surface_get_arrays(i);
+	for (int i = 0; i < m->get_surface_count(); i++) {
+		Array arrays = m->surface_get_arrays(i);
 		ERR_CONTINUE(arrays.size() != Mesh::ARRAY_MAX);
 
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];

@@ -97,8 +97,8 @@ void AnimationNode::blend_animation(const StringName &p_animation, double p_time
 	if (animation.is_null()) {
 		AnimationNodeBlendTree *btree = Object::cast_to<AnimationNodeBlendTree>(parent);
 		if (btree) {
-			String name = btree->get_node_name(Ref<AnimationNodeAnimation>(this));
-			make_invalid(vformat(RTR("In node '%s', invalid animation: '%s'."), name, p_animation));
+			String node_name = btree->get_node_name(Ref<AnimationNodeAnimation>(this));
+			make_invalid(vformat(RTR("In node '%s', invalid animation: '%s'."), node_name, p_animation));
 		} else {
 			make_invalid(vformat(RTR("Invalid animation: '%s'."), p_animation));
 		}
@@ -160,8 +160,8 @@ double AnimationNode::blend_input(int p_input, double p_time, bool p_seek, bool 
 	StringName node_name = connections[p_input];
 
 	if (!blend_tree->has_node(node_name)) {
-		String name = blend_tree->get_node_name(Ref<AnimationNode>(this));
-		make_invalid(vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), name));
+		String node_name2 = blend_tree->get_node_name(Ref<AnimationNode>(this));
+		make_invalid(vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), node_name2));
 		return 0;
 	}
 

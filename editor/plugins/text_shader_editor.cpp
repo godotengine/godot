@@ -202,12 +202,12 @@ void ShaderTextEditor::set_warnings_panel(RichTextLabel *p_warnings_panel) {
 }
 
 void ShaderTextEditor::_load_theme_settings() {
-	CodeEdit *text_editor = get_text_editor();
+	CodeEdit *te = get_text_editor();
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	if (updated_marked_line_color != marked_line_color) {
-		for (int i = 0; i < text_editor->get_line_count(); i++) {
-			if (text_editor->get_line_background_color(i) == marked_line_color) {
-				text_editor->set_line_background_color(i, updated_marked_line_color);
+		for (int i = 0; i < te->get_line_count(); i++) {
+			if (te->get_line_background_color(i) == marked_line_color) {
+				te->set_line_background_color(i, updated_marked_line_color);
 			}
 		}
 		marked_line_color = updated_marked_line_color;
@@ -257,14 +257,14 @@ void ShaderTextEditor::_load_theme_settings() {
 			const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(i));
 
 			for (int j = 0; j < modes.size(); j++) {
-				const ShaderLanguage::ModeInfo &info = modes[j];
+				const ShaderLanguage::ModeInfo &mode_info = modes[j];
 
-				if (!info.options.is_empty()) {
-					for (int k = 0; k < info.options.size(); k++) {
-						built_ins.push_back(String(info.name) + "_" + String(info.options[k]));
+				if (!mode_info.options.is_empty()) {
+					for (int k = 0; k < mode_info.options.size(); k++) {
+						built_ins.push_back(String(mode_info.name) + "_" + String(mode_info.options[k]));
 					}
 				} else {
-					built_ins.push_back(String(info.name));
+					built_ins.push_back(String(mode_info.name));
 				}
 			}
 		}
@@ -278,14 +278,14 @@ void ShaderTextEditor::_load_theme_settings() {
 		const Vector<ShaderLanguage::ModeInfo> &modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
 
 		for (int i = 0; i < modes.size(); i++) {
-			const ShaderLanguage::ModeInfo &info = modes[i];
+			const ShaderLanguage::ModeInfo &mode_info = modes[i];
 
-			if (!info.options.is_empty()) {
-				for (int j = 0; j < info.options.size(); j++) {
-					built_ins.push_back(String(info.name) + "_" + String(info.options[j]));
+			if (!mode_info.options.is_empty()) {
+				for (int j = 0; j < mode_info.options.size(); j++) {
+					built_ins.push_back(String(mode_info.name) + "_" + String(mode_info.options[j]));
 				}
 			} else {
-				built_ins.push_back(String(info.name));
+				built_ins.push_back(String(mode_info.name));
 			}
 		}
 	}
@@ -303,12 +303,12 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
 	syntax_highlighter->set_disabled_branch_color(comment_color);
 
-	text_editor->clear_comment_delimiters();
-	text_editor->add_comment_delimiter("/*", "*/", false);
-	text_editor->add_comment_delimiter("//", "", true);
+	te->clear_comment_delimiters();
+	te->add_comment_delimiter("/*", "*/", false);
+	te->add_comment_delimiter("//", "", true);
 
-	if (!text_editor->has_auto_brace_completion_open_key("/*")) {
-		text_editor->add_auto_brace_completion_pair("/*", "*/");
+	if (!te->has_auto_brace_completion_open_key("/*")) {
+		te->add_auto_brace_completion_pair("/*", "*/");
 	}
 
 	// Colorize preprocessor include strings.
@@ -399,22 +399,22 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptLa
 
 	ShaderLanguage sl;
 	String calltip;
-	ShaderLanguage::ShaderCompileInfo info;
-	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+	ShaderLanguage::ShaderCompileInfo comp_info;
+	comp_info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
 	if (shader.is_null()) {
-		info.is_include = true;
+		comp_info.is_include = true;
 
-		sl.complete(code, info, r_options, calltip);
+		sl.complete(code, comp_info, r_options, calltip);
 		get_text_editor()->set_code_hint(calltip);
 		return;
 	}
 	_check_shader_mode();
-	info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()));
-	info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
-	info.shader_types = ShaderTypes::get_singleton()->get_types();
+	comp_info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode()));
+	comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode()));
+	comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 
-	sl.complete(code, info, r_options, calltip);
+	sl.complete(code, comp_info, r_options, calltip);
 	get_text_editor()->set_code_hint(calltip);
 }
 
@@ -464,22 +464,22 @@ void ShaderTextEditor::_validate_script() {
 		//preprocessor error
 		ERR_FAIL_COND(err_positions.size() == 0);
 
-		String error_text = error_pp;
-		int error_line = err_positions.front()->get().line;
+		String err_text = error_pp;
+		int err_line = err_positions.front()->get().line;
 		if (err_positions.size() == 1) {
 			// Error in main file
-			error_text = "error(" + itos(error_line) + "): " + error_text;
+			err_text = "error(" + itos(err_line) + "): " + err_text;
 		} else {
-			error_text = "error(" + itos(error_line) + ") in include " + err_positions.back()->get().file.get_file() + ":" + itos(err_positions.back()->get().line) + ": " + error_text;
+			err_text = "error(" + itos(err_line) + ") in include " + err_positions.back()->get().file.get_file() + ":" + itos(err_positions.back()->get().line) + ": " + err_text;
 			set_error_count(err_positions.size() - 1);
 		}
 
-		set_error(error_text);
-		set_error_pos(error_line - 1, 0);
+		set_error(err_text);
+		set_error_pos(err_line - 1, 0);
 		for (int i = 0; i < get_text_editor()->get_line_count(); i++) {
 			get_text_editor()->set_line_background_color(i, Color(0, 0, 0, 0));
 		}
-		get_text_editor()->set_line_background_color(error_line - 1, marked_line_color);
+		get_text_editor()->set_line_background_color(err_line - 1, marked_line_color);
 
 		set_warning_count(0);
 
@@ -507,39 +507,39 @@ void ShaderTextEditor::_validate_script() {
 		}
 		sl.set_warning_flags(flags);
 
-		ShaderLanguage::ShaderCompileInfo info;
-		info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
+		ShaderLanguage::ShaderCompileInfo comp_info;
+		comp_info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
 		if (shader.is_null()) {
-			info.is_include = true;
+			comp_info.is_include = true;
 		} else {
 			Shader::Mode mode = shader->get_mode();
-			info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(mode));
-			info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(mode));
-			info.shader_types = ShaderTypes::get_singleton()->get_types();
+			comp_info.functions = ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(mode));
+			comp_info.render_modes = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(mode));
+			comp_info.shader_types = ShaderTypes::get_singleton()->get_types();
 		}
 
 		code = code_pp;
 		//compiler error
-		last_compile_result = sl.compile(code, info);
+		last_compile_result = sl.compile(code, comp_info);
 
 		if (last_compile_result != OK) {
-			String error_text;
-			int error_line;
+			String err_text;
+			int err_line;
 			Vector<ShaderLanguage::FilePosition> include_positions = sl.get_include_positions();
 			if (include_positions.size() > 1) {
 				//error is in an include
-				error_line = include_positions[0].line;
-				error_text = "error(" + itos(error_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
+				err_line = include_positions[0].line;
+				err_text = "error(" + itos(err_line) + ") in include " + include_positions[include_positions.size() - 1].file + ":" + itos(include_positions[include_positions.size() - 1].line) + ": " + sl.get_error_text();
 				set_error_count(include_positions.size() - 1);
 			} else {
-				error_line = sl.get_error_line();
-				error_text = "error(" + itos(error_line) + "): " + sl.get_error_text();
+				err_line = sl.get_error_line();
+				err_text = "error(" + itos(err_line) + "): " + sl.get_error_text();
 				set_error_count(0);
 			}
-			set_error(error_text);
-			set_error_pos(error_line - 1, 0);
-			get_text_editor()->set_line_background_color(error_line - 1, marked_line_color);
+			set_error(err_text);
+			set_error_pos(err_line - 1, 0);
+			get_text_editor()->set_line_background_color(err_line - 1, marked_line_color);
 		} else {
 			set_error("");
 		}

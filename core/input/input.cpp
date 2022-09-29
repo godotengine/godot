@@ -365,7 +365,6 @@ Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_po
 		// Inverse lerp length to map (p_deadzone, 1) to (0, 1).
 		return vector * (Math::inverse_lerp(p_deadzone, 1.0f, length) / length);
 	}
-	return vector;
 }
 
 float Input::get_joy_axis(int p_device, JoyAxis p_axis) const {

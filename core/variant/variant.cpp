@@ -1101,8 +1101,6 @@ bool Variant::is_one() const {
 			return !is_zero();
 		}
 	}
-
-	return false;
 }
 
 bool Variant::is_null() const {
@@ -3573,8 +3571,6 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			evaluate(OP_EQUAL, *this, p_variant, r, v);
 			return r;
 	}
-
-	return false;
 }
 
 bool Variant::is_ref_counted() const {

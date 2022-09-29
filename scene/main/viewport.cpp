@@ -60,8 +60,8 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 void ViewportTexture::setup_local_to_scene() {
-	Node *local_scene = get_local_scene();
-	if (!local_scene) {
+	Node *loc_scene = get_local_scene();
+	if (!loc_scene) {
 		return;
 	}
 
@@ -71,7 +71,7 @@ void ViewportTexture::setup_local_to_scene() {
 
 	vp = nullptr;
 
-	Node *vpn = local_scene->get_node(path);
+	Node *vpn = loc_scene->get_node(path);
 	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
 
 	vp = Object::cast_to<Viewport>(vpn);
@@ -635,19 +635,19 @@ void Viewport::_process_picking() {
 
 			PhysicsDirectSpaceState2D::ShapeResult res[64];
 			for (const CanvasLayer *E : canvas_layers) {
-				Transform2D canvas_transform;
+				Transform2D canvas_layer_transform;
 				ObjectID canvas_layer_id;
 				if (E) {
 					// A descendant CanvasLayer.
-					canvas_transform = E->get_transform();
+					canvas_layer_transform = E->get_transform();
 					canvas_layer_id = E->get_instance_id();
 				} else {
 					// This Viewport's builtin canvas.
-					canvas_transform = get_canvas_transform();
+					canvas_layer_transform = get_canvas_transform();
 					canvas_layer_id = ObjectID();
 				}
 
-				Vector2 point = canvas_transform.affine_inverse().xform(pos);
+				Vector2 point = canvas_layer_transform.affine_inverse().xform(pos);
 
 				PhysicsDirectSpaceState2D::PointParameters point_params;
 				point_params.position = point;
@@ -4054,16 +4054,10 @@ Viewport::Viewport() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 #ifndef _3D_DISABLED
-	Viewport::Scaling3DMode scaling_3d_mode = (Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode");
-	set_scaling_3d_mode(scaling_3d_mode);
-
+	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));
 	set_scaling_3d_scale(GLOBAL_GET("rendering/scaling_3d/scale"));
-
-	float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
-	set_fsr_sharpness(fsr_sharpness);
-
-	float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
-	set_texture_mipmap_bias(texture_mipmap_bias);
+	set_fsr_sharpness((float)GLOBAL_GET("rendering/scaling_3d/fsr_sharpness"));
+	set_texture_mipmap_bias((float)GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias"));
 #endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); // Set to server.

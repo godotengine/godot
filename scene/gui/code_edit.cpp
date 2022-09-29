@@ -201,7 +201,7 @@ void CodeEdit::_notification(int p_what) {
 			if (caret_visible && !code_hint.is_empty() && (!code_completion_active || (code_completion_below != code_hint_draw_below))) {
 				const int font_height = font->get_height(font_size);
 				Ref<StyleBox> sb = get_theme_stylebox(SNAME("panel"), SNAME("TooltipPanel"));
-				Color font_color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
+				Color color = get_theme_color(SNAME("font_color"), SNAME("TooltipLabel"));
 
 				Vector<String> code_hint_lines = code_hint.split("\n");
 				int line_count = code_hint_lines.size();
@@ -238,17 +238,17 @@ void CodeEdit::_notification(int p_what) {
 
 					Point2 round_ofs = hint_ofs + sb->get_offset() + Vector2(0, font->get_ascent(font_size) + font_height * i + yofs);
 					round_ofs = round_ofs.round();
-					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, font_color);
+					draw_string(font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color);
 					if (end > 0) {
 						// Draw an underline for the currently edited function parameter.
 						const Vector2 b = hint_ofs + sb->get_offset() + Vector2(begin, font_height + font_height * i + yofs);
-						draw_line(b, b + Vector2(end - begin, 0), font_color, 2);
+						draw_line(b, b + Vector2(end - begin, 0), color, 2);
 
 						// Draw a translucent text highlight as well.
 						const Rect2 highlight_rect = Rect2(
 								b - Vector2(0, font_height),
 								Vector2(end - begin, font_height));
-						draw_rect(highlight_rect, font_color * Color(1, 1, 1, 0.2));
+						draw_rect(highlight_rect, color * Color(1, 1, 1, 0.2));
 					}
 					yofs += line_spacing;
 				}
@@ -2135,15 +2135,15 @@ String CodeEdit::get_text_for_symbol_lookup() {
 	StringBuilder lookup_text;
 	const int text_size = get_line_count();
 	for (int i = 0; i < text_size; i++) {
-		String text = get_line(i);
+		String line_text = get_line(i);
 
 		if (i == line) {
-			lookup_text += text.substr(0, col);
+			lookup_text += line_text.substr(0, col);
 			/* Not unicode, represents the cursor. */
 			lookup_text += String::chr(0xFFFF);
-			lookup_text += text.substr(col, text.size());
+			lookup_text += line_text.substr(col, line_text.size());
 		} else {
-			lookup_text += text;
+			lookup_text += line_text;
 		}
 
 		if (i != text_size - 1) {

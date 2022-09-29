@@ -51,9 +51,9 @@ void EditorPropertyNil::update_property() {
 }
 
 EditorPropertyNil::EditorPropertyNil() {
-	Label *label = memnew(Label);
-	label->set_text("<null>");
-	add_child(label);
+	Label *prop_label = memnew(Label);
+	prop_label->set_text("<null>");
+	add_child(prop_label);
 }
 
 ///////////////////// TEXT /////////////////////////
@@ -3644,8 +3644,8 @@ bool EditorPropertyNodePath::can_drop_data_fw(const Point2 &p_point, const Varia
 
 void EditorPropertyNodePath::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	ERR_FAIL_COND(!is_drop_valid(p_data));
-	Dictionary data = p_data;
-	Array nodes = data["nodes"];
+	Dictionary data_dict = p_data;
+	Array nodes = data_dict["nodes"];
 	Node *node = get_tree()->get_edited_scene_root()->get_node(nodes[0]);
 
 	if (node) {
@@ -3973,19 +3973,19 @@ void EditorPropertyResource::_update_preferred_shader() {
 
 	if (parent_property) {
 		EditorShaderPicker *shader_picker = Object::cast_to<EditorShaderPicker>(resource_picker);
-		Object *object = parent_property->get_edited_object();
-		const StringName &property = parent_property->get_edited_property();
+		Object *ed_object = parent_property->get_edited_object();
+		const StringName &ed_property = parent_property->get_edited_property();
 
 		// Set preferred shader based on edited parent type.
-		if ((Object::cast_to<GPUParticles2D>(object) || Object::cast_to<GPUParticles3D>(object)) && property == SNAME("process_material")) {
+		if ((Object::cast_to<GPUParticles2D>(ed_object) || Object::cast_to<GPUParticles3D>(ed_object)) && ed_property == SNAME("process_material")) {
 			shader_picker->set_preferred_mode(Shader::MODE_PARTICLES);
-		} else if (Object::cast_to<FogVolume>(object)) {
+		} else if (Object::cast_to<FogVolume>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_FOG);
-		} else if (Object::cast_to<CanvasItem>(object)) {
+		} else if (Object::cast_to<CanvasItem>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_CANVAS_ITEM);
-		} else if (Object::cast_to<Node3D>(object) || Object::cast_to<Mesh>(object)) {
+		} else if (Object::cast_to<Node3D>(ed_object) || Object::cast_to<Mesh>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
-		} else if (Object::cast_to<Sky>(object)) {
+		} else if (Object::cast_to<Sky>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SKY);
 		}
 	}

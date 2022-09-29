@@ -738,9 +738,9 @@ TreeItem *TreeItem::get_first_child() const {
 TreeItem *TreeItem::_get_prev_visible(bool p_wrap) {
 	TreeItem *current = this;
 
-	TreeItem *prev = current->get_prev();
+	TreeItem *prev_item = current->get_prev();
 
-	if (!prev) {
+	if (!prev_item) {
 		current = current->parent;
 		if (current == tree->root && tree->hide_root) {
 			return nullptr;
@@ -757,7 +757,7 @@ TreeItem *TreeItem::_get_prev_visible(bool p_wrap) {
 			}
 		}
 	} else {
-		current = prev;
+		current = prev_item;
 		while (!current->collapsed && current->first_child) {
 			//go to the very end
 
@@ -773,16 +773,16 @@ TreeItem *TreeItem::_get_prev_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_prev_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *prev = this->_get_prev_visible(p_wrap);
-	while (prev && !prev->is_visible()) {
-		prev = prev->_get_prev_visible(p_wrap);
-		if (prev == loop) {
+	TreeItem *prev_item = this->_get_prev_visible(p_wrap);
+	while (prev_item && !prev_item->is_visible()) {
+		prev_item = prev_item->_get_prev_visible(p_wrap);
+		if (prev_item == loop) {
 			// Check that we haven't looped all the way around to the start.
-			prev = nullptr;
+			prev_item = nullptr;
 			break;
 		}
 	}
-	return prev;
+	return prev_item;
 }
 
 TreeItem *TreeItem::_get_next_visible(bool p_wrap) {
@@ -814,16 +814,16 @@ TreeItem *TreeItem::_get_next_visible(bool p_wrap) {
 
 TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	TreeItem *loop = this;
-	TreeItem *next = this->_get_next_visible(p_wrap);
-	while (next && !next->is_visible()) {
-		next = next->_get_next_visible(p_wrap);
-		if (next == loop) {
+	TreeItem *next_item = this->_get_next_visible(p_wrap);
+	while (next_item && !next_item->is_visible()) {
+		next_item = next_item->_get_next_visible(p_wrap);
+		if (next_item == loop) {
 			// Check that we haven't looped all the way around to the start.
-			next = nullptr;
+			next_item = nullptr;
 			break;
 		}
 	}
-	return next;
+	return next_item;
 }
 
 TreeItem *TreeItem::get_child(int p_idx) {
@@ -1317,8 +1317,8 @@ bool TreeItem::is_folding_disabled() const {
 
 Size2 TreeItem::get_minimum_size(int p_column) {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Size2());
-	Tree *tree = get_tree();
-	ERR_FAIL_COND_V(!tree, Size2());
+	Tree *parent_tree = get_tree();
+	ERR_FAIL_COND_V(!parent_tree, Size2());
 
 	const TreeItem::Cell &cell = cells[p_column];
 
@@ -1328,7 +1328,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		// Text.
 		if (!cell.text.is_empty()) {
 			if (cell.dirty) {
-				tree->update_item_cell(this, p_column);
+				parent_tree->update_item_cell(this, p_column);
 			}
 			Size2 text_size = cell.text_buf->get_size();
 			size.width += text_size.width;
@@ -1337,14 +1337,14 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 		// Icon.
 		if (cell.mode == CELL_MODE_CHECK) {
-			size.width += tree->theme_cache.checked->get_width() + tree->theme_cache.hseparation;
+			size.width += parent_tree->theme_cache.checked->get_width() + parent_tree->theme_cache.hseparation;
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = cell.get_icon_size();
 			if (cell.icon_max_w > 0 && icon_size.width > cell.icon_max_w) {
 				icon_size.width = cell.icon_max_w;
 			}
-			size.width += icon_size.width + tree->theme_cache.hseparation;
+			size.width += icon_size.width + parent_tree->theme_cache.hseparation;
 			size.height = MAX(size.height, icon_size.height);
 		}
 
@@ -1352,13 +1352,13 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		for (int i = 0; i < cell.buttons.size(); i++) {
 			Ref<Texture2D> texture = cell.buttons[i].texture;
 			if (texture.is_valid()) {
-				Size2 button_size = texture->get_size() + tree->theme_cache.button_pressed->get_minimum_size();
+				Size2 button_size = texture->get_size() + parent_tree->theme_cache.button_pressed->get_minimum_size();
 				size.width += button_size.width;
 				size.height = MAX(size.height, button_size.height);
 			}
 		}
 		if (cell.buttons.size() >= 2) {
-			size.width += (cell.buttons.size() - 1) * tree->theme_cache.button_margin;
+			size.width += (cell.buttons.size() - 1) * parent_tree->theme_cache.button_margin;
 		}
 
 		cells.write[p_column].cached_minimum_size = size;

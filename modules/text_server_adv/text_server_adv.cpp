@@ -5401,7 +5401,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 					int32_t script_run_end = MIN(sd->script_iter->script_ranges[j].end, bidi_run_end);
 					char scr_buffer[5] = { 0, 0, 0, 0, 0 };
 					hb_tag_to_string(hb_script_to_iso15924_tag(sd->script_iter->script_ranges[j].script), scr_buffer);
-					String script = String(scr_buffer);
+					String script_code = String(scr_buffer);
 
 					int spn_from = (is_rtl) ? 0 : sd->spans.size() - 1;
 					int spn_to = (is_rtl) ? sd->spans.size() : -1;
@@ -5441,7 +5441,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 								fonts.push_back(sd->spans[k].fonts[0]);
 							}
 							for (int l = 1; l < font_count; l++) {
-								if (_font_is_script_supported(span.fonts[l], script)) {
+								if (_font_is_script_supported(span.fonts[l], script_code)) {
 									if (_font_is_language_supported(span.fonts[l], span.language)) {
 										fonts.push_back(sd->spans[k].fonts[l]);
 									} else {

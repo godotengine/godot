@@ -1793,7 +1793,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		}
 	}
 
-	bool ret;
+	bool ret = false;
 	if (GDVIRTUAL_CALL(_can_drop_data, p_point, p_data, ret)) {
 		return ret;
 	}
