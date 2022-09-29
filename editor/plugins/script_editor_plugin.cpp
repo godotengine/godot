@@ -2502,7 +2502,7 @@ void ScriptEditor::apply_scripts() const {
 	}
 }
 
-void ScriptEditor::reload_scripts(bool p_refresh_only) {
+void ScriptEditor::reload_scripts() {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
@@ -2515,27 +2515,28 @@ void ScriptEditor::reload_scripts(bool p_refresh_only) {
 			continue; //internal script, who cares
 		}
 
-		if (!p_refresh_only) {
-			uint64_t last_date = edited_res->get_last_modified_time();
-			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
+		String path = edited_res->get_path();
+		uint64_t last_date = edited_res->get_last_modified_time();
+		uint64_t date = FileAccess::get_modified_time(path);
 
-			if (last_date == date) {
-				continue;
-			}
+		if (last_date == date) {
+			continue;
+		}
 
-			Ref<Script> scr = edited_res;
-			if (scr.is_valid()) {
-				Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-				ERR_CONTINUE(!rel_scr.is_valid());
-				scr->set_source_code(rel_scr->get_source_code());
-				scr->set_last_modified_time(rel_scr->get_last_modified_time());
+		Ref<Script> scr = edited_res;
+		if (scr.is_valid()) {
+			clear_docs_from_script(scr);
+
+			scr->load_source_code(path);
+			if (scr->is_tool()) {
+				scr->get_language()->reload_tool_script(scr, true);
+			} else {
 				scr->reload(true);
 			}
 
-			Ref<TextFile> text_file = edited_res;
-			if (text_file.is_valid()) {
-				text_file->reload_from_file();
-			}
+			update_docs_from_script(scr);
+		} else {
+			edited_res->reload_from_file();
 		}
 
 		se->reload_text();
@@ -3892,7 +3893,7 @@ ScriptEditor::ScriptEditor() {
 		vbc->add_child(disk_changed_list);
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
-		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts).bind(false));
+		disk_changed->connect("confirmed", callable_mp(this, &ScriptEditor::reload_scripts));
 		disk_changed->set_ok_button_text(TTR("Reload"));
 
 		disk_changed->add_button(TTR("Resave"), !DisplayServer::get_singleton()->get_swap_cancel_ok(), "resave");

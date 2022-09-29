@@ -476,7 +476,7 @@ public:
 	bool toggle_scripts_panel();
 	bool is_scripts_panel_toggled();
 	void apply_scripts() const;
-	void reload_scripts(bool p_refresh_only = false);
+	void reload_scripts();
 	void open_script_create_dialog(const String &p_base_name, const String &p_base_path);
 	void open_text_file_create_dialog(const String &p_base_path, const String &p_base_name = "");
 	Ref<Resource> open_file(const String &p_file);
