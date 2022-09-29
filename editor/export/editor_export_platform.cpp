@@ -176,7 +176,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 		}
 	}
 
-	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
+	if (p_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
 		r_flags.push_back("--debug-collisions");
 	}
 
@@ -1609,7 +1609,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		}
 	}
 
-	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
+	if (p_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
 		r_flags.push_back("--debug-collisions");
 	}
 
