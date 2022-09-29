@@ -355,7 +355,6 @@ void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 
 	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
 		on_action_event(p_event);
-		accept_event();
 	}
 }
 
