@@ -276,7 +276,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 	SceneState::PushConstant push_constant;
 
-	if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+	if constexpr (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
 		push_constant.uv_offset = Math::make_half_float(p_params->uv_offset.y) << 16;
 		push_constant.uv_offset |= Math::make_half_float(p_params->uv_offset.x);
 	} else {
@@ -355,7 +355,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		uint32_t pipeline_color_pass_flags = 0;
 		uint32_t pipeline_specialization = 0;
 
-		if (p_pass_mode == PASS_MODE_COLOR) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR) {
 			if (element_info.uses_softshadow) {
 				pipeline_specialization |= SceneShaderForwardClustered::SHADER_SPECIALIZATION_SOFT_SHADOWS;
 			}
