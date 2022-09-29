@@ -474,7 +474,7 @@ protected:
 	Size2i _get_size() const;
 	Size2i _get_size_2d_override() const;
 	bool _is_size_allocated() const;
-
+	Ref<InputEvent> last_event;
 	void _notification(int p_what);
 	void _process_picking();
 	static void _bind_methods();

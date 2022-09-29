@@ -2755,6 +2755,8 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = p_event;
 	}
 
+	last_event = ev;
+
 	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
@@ -2797,6 +2799,8 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 	} else {
 		ev = p_event;
 	}
+
+	last_event = ev;
 
 	// Shortcut Input.
 	if (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr) {
@@ -3037,7 +3041,11 @@ bool Viewport::gui_is_drag_successful() const {
 }
 
 void Viewport::set_input_as_handled() {
-	_drop_physics_mouseover();
+	const Ref<InputEventMouseMotion> mm = last_event;
+	if (mm.is_valid()) {
+		physics_picking_events.push_back(mm);
+		_process_picking();
+	}
 
 	if (!handle_input_locally) {
 		ERR_FAIL_COND(!is_inside_tree());
