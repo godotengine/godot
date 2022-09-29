@@ -195,32 +195,6 @@ void RendererSceneRenderRD::environment_set_sdfgi_frames_to_update_light(RS::Env
 	gi.sdfgi_frames_to_update_light = p_update;
 }
 
-void RendererSceneRenderRD::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
-	ssr_roughness_quality = p_quality;
-}
-
-RS::EnvironmentSSRRoughnessQuality RendererSceneRenderRD::environment_get_ssr_roughness_quality() const {
-	return ssr_roughness_quality;
-}
-
-void RendererSceneRenderRD::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
-	ssao_quality = p_quality;
-	ssao_half_size = p_half_size;
-	ssao_adaptive_target = p_adaptive_target;
-	ssao_blur_passes = p_blur_passes;
-	ssao_fadeout_from = p_fadeout_from;
-	ssao_fadeout_to = p_fadeout_to;
-}
-
-void RendererSceneRenderRD::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
-	ssil_quality = p_quality;
-	ssil_half_size = p_half_size;
-	ssil_adaptive_target = p_adaptive_target;
-	ssil_blur_passes = p_blur_passes;
-	ssil_fadeout_from = p_fadeout_from;
-	ssil_fadeout_to = p_fadeout_to;
-}
-
 Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
 	ERR_FAIL_COND_V(p_env.is_null(), Ref<Image>());
 
@@ -916,19 +890,6 @@ void RendererSceneRenderRD::gi_set_use_half_resolution(bool p_enable) {
 	gi.half_resolution = p_enable;
 }
 
-void RendererSceneRenderRD::sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) {
-	sss_quality = p_quality;
-}
-
-RS::SubSurfaceScatteringQuality RendererSceneRenderRD::sub_surface_scattering_get_quality() const {
-	return sss_quality;
-}
-
-void RendererSceneRenderRD::sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) {
-	sss_scale = p_scale;
-	sss_depth_scale = p_depth_scale;
-}
-
 void RendererSceneRenderRD::positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) {
 	ERR_FAIL_INDEX_MSG(p_quality, RS::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
 
@@ -1446,18 +1407,11 @@ void RendererSceneRenderRD::init() {
 	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
 
-	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/environment/ssao/quality"))), GLOBAL_GET("rendering/environment/ssao/half_size"), GLOBAL_GET("rendering/environment/ssao/adaptive_target"), GLOBAL_GET("rendering/environment/ssao/blur_passes"), GLOBAL_GET("rendering/environment/ssao/fadeout_from"), GLOBAL_GET("rendering/environment/ssao/fadeout_to"));
 	screen_space_roughness_limiter = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
 	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
 	glow_high_quality = GLOBAL_GET("rendering/environment/glow/use_high_quality");
-	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/environment/screen_space_reflection/roughness_quality")));
-	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_quality")));
-	sss_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_scale");
-	sss_depth_scale = GLOBAL_GET("rendering/environment/subsurface_scattering/subsurface_scattering_depth_scale");
-
-	environment_set_ssil_quality(RS::EnvironmentSSILQuality(int(GLOBAL_GET("rendering/environment/ssil/quality"))), GLOBAL_GET("rendering/environment/ssil/half_size"), GLOBAL_GET("rendering/environment/ssil/adaptive_target"), GLOBAL_GET("rendering/environment/ssil/blur_passes"), GLOBAL_GET("rendering/environment/ssil/fadeout_from"), GLOBAL_GET("rendering/environment/ssil/fadeout_to"));
 
 	directional_penumbra_shadow_kernel = memnew_arr(float, 128);
 	directional_soft_shadow_kernel = memnew_arr(float, 128);

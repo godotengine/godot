@@ -113,28 +113,8 @@ protected:
 
 	/* ENVIRONMENT */
 
-	RS::EnvironmentSSAOQuality ssao_quality = RS::ENV_SSAO_QUALITY_MEDIUM;
-	bool ssao_half_size = false;
-	float ssao_adaptive_target = 0.5;
-	int ssao_blur_passes = 2;
-	float ssao_fadeout_from = 50.0;
-	float ssao_fadeout_to = 300.0;
-
-	RS::EnvironmentSSILQuality ssil_quality = RS::ENV_SSIL_QUALITY_MEDIUM;
-	bool ssil_half_size = false;
-	bool ssil_using_half_size = false;
-	float ssil_adaptive_target = 0.5;
-	int ssil_blur_passes = 4;
-	float ssil_fadeout_from = 50.0;
-	float ssil_fadeout_to = 300.0;
-
 	bool glow_bicubic_upscale = false;
 	bool glow_high_quality = false;
-	RS::EnvironmentSSRRoughnessQuality ssr_roughness_quality = RS::ENV_SSR_ROUGHNESS_QUALITY_LOW;
-
-	RS::SubSurfaceScatteringQuality sss_quality = RS::SUB_SURFACE_SCATTERING_QUALITY_MEDIUM;
-	float sss_scale = 0.05;
-	float sss_depth_scale = 0.01;
 
 	bool use_physical_light_units = false;
 
@@ -264,16 +244,9 @@ public:
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) override;
 
-	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
-
-	virtual void environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) override;
-
 	virtual void environment_set_sdfgi_ray_count(RS::EnvironmentSDFGIRayCount p_ray_count) override;
 	virtual void environment_set_sdfgi_frames_to_converge(RS::EnvironmentSDFGIFramesToConverge p_frames) override;
 	virtual void environment_set_sdfgi_frames_to_update_light(RS::EnvironmentSDFGIFramesToUpdateLight p_update) override;
-
-	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) override;
-	RS::EnvironmentSSRRoughnessQuality environment_get_ssr_roughness_quality() const;
 
 	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) override;
 
@@ -335,10 +308,6 @@ public:
 	virtual bool screen_space_roughness_limiter_is_active() const override;
 	virtual float screen_space_roughness_limiter_get_amount() const;
 	virtual float screen_space_roughness_limiter_get_limit() const;
-
-	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) override;
-	RS::SubSurfaceScatteringQuality sub_surface_scattering_get_quality() const;
-	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) override;
 
 	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;
 	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override;

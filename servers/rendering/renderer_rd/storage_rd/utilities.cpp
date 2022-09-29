@@ -108,9 +108,9 @@ bool Utilities::free(RID p_rid) {
 	} else if (owns_visibility_notifier(p_rid)) {
 		visibility_notifier_free(p_rid);
 		return true;
+	} else {
+		return false;
 	}
-
-	return false;
 }
 
 /* DEPENDENCIES */

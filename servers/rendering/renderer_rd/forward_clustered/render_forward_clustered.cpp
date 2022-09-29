@@ -1256,13 +1256,6 @@ void RenderForwardClustered::_process_ssao(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.detail = environment_get_ssao_detail(p_environment);
 	settings.horizon = environment_get_ssao_horizon(p_environment);
 	settings.sharpness = environment_get_ssao_sharpness(p_environment);
-
-	settings.quality = ssao_quality;
-	settings.half_size = ssao_half_size;
-	settings.adaptive_target = ssao_adaptive_target;
-	settings.blur_passes = ssao_blur_passes;
-	settings.fadeout_from = ssao_fadeout_from;
-	settings.fadeout_to = ssao_fadeout_to;
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
 	ss_effects->ssao_allocate_buffers(rb_data->ss_effects_data.ssao, settings, rb_data->ss_effects_data.linear_depth);
@@ -1284,13 +1277,6 @@ void RenderForwardClustered::_process_ssil(Ref<RenderSceneBuffersRD> p_render_bu
 	settings.intensity = environment_get_ssil_intensity(p_environment);
 	settings.sharpness = environment_get_ssil_sharpness(p_environment);
 	settings.normal_rejection = environment_get_ssil_normal_rejection(p_environment);
-
-	settings.quality = ssil_quality;
-	settings.half_size = ssil_half_size;
-	settings.adaptive_target = ssil_adaptive_target;
-	settings.blur_passes = ssil_blur_passes;
-	settings.fadeout_from = ssil_fadeout_from;
-	settings.fadeout_to = ssil_fadeout_to;
 	settings.full_screen_size = p_render_buffers->get_internal_size();
 
 	Projection correction;
@@ -1444,7 +1430,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 			}
 
 			RID depth_texture = rb->get_depth_texture();
-			ss_effects->downsample_depth(depth_texture, rb_data->ss_effects_data.linear_depth_slices, ssao_quality, ssil_quality, invalidate_uniform_set, ssao_half_size, ssil_half_size, size, p_render_data->scene_data->cam_projection);
+			ss_effects->downsample_depth(depth_texture, rb_data->ss_effects_data.linear_depth_slices, invalidate_uniform_set, size, p_render_data->scene_data->cam_projection);
 		}
 
 		if (p_use_ssao) {
@@ -1515,7 +1501,7 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 
 	Size2i half_size = Size2i(internal_size.x / 2, internal_size.y / 2);
 	if (rb_data->ss_effects_data.ssr.output.is_null()) {
-		ss_effects->ssr_allocate_buffers(rb_data->ss_effects_data.ssr, _render_buffers_get_color_format(), ssr_roughness_quality, half_size, view_count);
+		ss_effects->ssr_allocate_buffers(rb_data->ss_effects_data.ssr, _render_buffers_get_color_format(), half_size, view_count);
 	}
 	RID texture_slices[RendererSceneRender::MAX_RENDER_VIEWS];
 	RID depth_slices[RendererSceneRender::MAX_RENDER_VIEWS];
@@ -1523,7 +1509,7 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 		texture_slices[v] = p_render_buffers->get_internal_texture(v);
 		depth_slices[v] = p_render_buffers->get_depth_texture(v);
 	}
-	ss_effects->screen_space_reflection(rb_data->ss_effects_data.ssr, texture_slices, p_normal_slices, ssr_roughness_quality, p_metallic_slices, depth_slices, half_size, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), view_count, p_projections, p_eye_offsets);
+	ss_effects->screen_space_reflection(rb_data->ss_effects_data.ssr, texture_slices, p_normal_slices, p_metallic_slices, depth_slices, half_size, environment_get_ssr_max_steps(p_environment), environment_get_ssr_fade_in(p_environment), environment_get_ssr_fade_out(p_environment), environment_get_ssr_depth_tolerance(p_environment), view_count, p_projections, p_eye_offsets);
 	copy_effects->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : p_render_buffers->get_internal_texture(), rb_data->ss_effects_data.ssr.output, view_count);
 }
 
@@ -1543,7 +1529,7 @@ void RenderForwardClustered::_process_sss(Ref<RenderSceneBuffersRD> p_render_buf
 	for (uint32_t v = 0; v < p_render_buffers->get_view_count(); v++) {
 		RID internal_texture = p_render_buffers->get_internal_texture(v);
 		RID depth_texture = p_render_buffers->get_depth_texture(v);
-		ss_effects->sub_surface_scattering(p_render_buffers, internal_texture, depth_texture, p_camera, internal_size, sss_scale, sss_depth_scale, sss_quality);
+		ss_effects->sub_surface_scattering(p_render_buffers, internal_texture, depth_texture, p_camera, internal_size);
 	}
 }
 
@@ -1727,7 +1713,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_end_label();
 
-	bool using_sss = rb_data.is_valid() && scene_state.used_sss && sub_surface_scattering_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
+	bool using_sss = rb_data.is_valid() && scene_state.used_sss && ss_effects->sss_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
 	if (using_sss && !using_separate_specular) {
 		using_separate_specular = true;
@@ -3272,6 +3258,26 @@ RID RenderForwardClustered::_render_buffers_get_normal_texture(Ref<RenderSceneBu
 
 RID RenderForwardClustered::_render_buffers_get_velocity_texture(Ref<RenderSceneBuffersRD> p_render_buffers) {
 	return p_render_buffers->get_velocity_buffer(p_render_buffers->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED);
+}
+
+void RenderForwardClustered::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+	ss_effects->ssao_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
+}
+
+void RenderForwardClustered::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+	ss_effects->ssil_set_quality(p_quality, p_half_size, p_adaptive_target, p_blur_passes, p_fadeout_from, p_fadeout_to);
+}
+
+void RenderForwardClustered::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
+	ss_effects->ssr_set_roughness_quality(p_quality);
+}
+
+void RenderForwardClustered::sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) {
+	ss_effects->sss_set_quality(p_quality);
+}
+
+void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) {
+	ss_effects->sss_set_scale(p_scale, p_depth_scale);
 }
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
