@@ -786,6 +786,7 @@ void Node3D::set_identity() {
 }
 
 void Node3D::look_at(const Vector3 &p_target, const Vector3 &p_up) {
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Node not inside tree. Use look_at_from_position() instead.");
 	Vector3 origin = get_global_transform().origin;
 	look_at_from_position(origin, p_target, p_up);
 }
