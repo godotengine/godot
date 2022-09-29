@@ -36,13 +36,13 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 	for (int i = 0; i < p_frame_count; i++) {
 		float f = p_src_frames[i].l;
 		filter_process[0][0].process_one(f);
-		if (S > 1) {
+		if constexpr (S > 1) {
 			filter_process[0][1].process_one(f);
 		}
-		if (S > 2) {
+		if constexpr (S > 2) {
 			filter_process[0][2].process_one(f);
 		}
-		if (S > 3) {
+		if constexpr (S > 3) {
 			filter_process[0][3].process_one(f);
 		}
 
@@ -52,13 +52,13 @@ void AudioEffectFilterInstance::_process_filter(const AudioFrame *p_src_frames, 
 	for (int i = 0; i < p_frame_count; i++) {
 		float f = p_src_frames[i].r;
 		filter_process[1][0].process_one(f);
-		if (S > 1) {
+		if constexpr (S > 1) {
 			filter_process[1][1].process_one(f);
 		}
-		if (S > 2) {
+		if constexpr (S > 2) {
 			filter_process[1][2].process_one(f);
 		}
-		if (S > 3) {
+		if constexpr (S > 3) {
 			filter_process[1][3].process_one(f);
 		}
 

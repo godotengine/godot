@@ -559,7 +559,7 @@ static void gdnative_string_new_with_utf32_chars(GDNativeStringPtr r_dest, const
 
 static void gdnative_string_new_with_wide_chars(GDNativeStringPtr r_dest, const wchar_t *p_contents) {
 	String *dest = (String *)r_dest;
-	if (sizeof(wchar_t) == 2) {
+	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
 		memnew_placement(dest, String);
 		dest->parse_utf16((const char16_t *)p_contents);
@@ -596,7 +596,7 @@ static void gdnative_string_new_with_utf32_chars_and_len(GDNativeStringPtr r_des
 
 static void gdnative_string_new_with_wide_chars_and_len(GDNativeStringPtr r_dest, const wchar_t *p_contents, const GDNativeInt p_size) {
 	String *dest = (String *)r_dest;
-	if (sizeof(wchar_t) == 2) {
+	if constexpr (sizeof(wchar_t) == 2) {
 		// wchar_t is 16 bit, parse.
 		memnew_placement(dest, String);
 		dest->parse_utf16((const char16_t *)p_contents, p_size);
@@ -655,7 +655,7 @@ static GDNativeInt gdnative_string_to_utf32_chars(const GDNativeStringPtr p_self
 	return len;
 }
 static GDNativeInt gdnative_string_to_wide_chars(const GDNativeStringPtr p_self, wchar_t *r_text, GDNativeInt p_max_write_length) {
-	if (sizeof(wchar_t) == 4) {
+	if constexpr (sizeof(wchar_t) == 4) {
 		return gdnative_string_to_utf32_chars(p_self, (char32_t *)r_text, p_max_write_length);
 	} else {
 		return gdnative_string_to_utf16_chars(p_self, (char16_t *)r_text, p_max_write_length);

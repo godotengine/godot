@@ -276,7 +276,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 
 template <typename T>
 inline StringName __constant_get_enum_name(T param, const String &p_constant) {
-	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
+	if constexpr (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
 		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
 	}
 	return GetTypeInfo<T>::get_class_info().class_name;
