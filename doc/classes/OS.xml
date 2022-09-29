@@ -523,7 +523,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Moves the file or directory to the system's recycle bin. See also [method DirAccess.remove].
-				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported project.
+				The method takes only global paths, so you may need to use [method ProjectSettings.globalize_path]. Do not use it for files in [code]res://[/code] as it will not work in exported projects.
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 				[codeblocks]
 				[gdscript]
