@@ -212,6 +212,12 @@
 				Sets the number of subdivisions to use in the specified quadrant. A higher number of subdivisions allows you to have more shadows in the scene at once, but reduces the quality of the shadows. A good practice is to have quadrants with a varying number of subdivisions and to have as few subdivisions as possible.
 			</description>
 		</method>
+		<method name="update_mouse_cursor_state">
+			<return type="void" />
+			<description>
+				Force instantly updating the display based on the current mouse cursor position. This includes updating the mouse cursor shape and sending necessary [signal Control.mouse_entered], [signal CollisionObject2D.mouse_entered], [signal CollisionObject3D.mouse_entered] and [signal Window.mouse_entered] signals and their respective [code]mouse_exited[/code] counterparts.
+			</description>
+		</method>
 		<method name="warp_mouse">
 			<return type="void" />
 			<param index="0" name="position" type="Vector2" />
