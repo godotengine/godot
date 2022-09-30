@@ -2526,7 +2526,7 @@ void MaterialStorage::_update_queued_materials() {
 		material_update_list.remove(&material->update_element);
 
 		if (uniforms_changed) {
-			//some implementations such as 3D renderer cache the matreial uniform set, so update is required
+			//some implementations such as 3D renderer cache the material uniform set, so update is required
 			material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 		}
 	}

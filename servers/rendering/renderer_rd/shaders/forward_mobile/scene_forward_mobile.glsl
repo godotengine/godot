@@ -345,7 +345,7 @@ void main() {
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
 #ifdef USE_DOUBLE_PRECISION
-	// We separate the basis from the origin becasue the basis is fine with single point precision.
+	// We separate the basis from the origin because the basis is fine with single point precision.
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
 	// We add the result to the vertex and ignore the final lost precision.
 	vec3 model_origin = model_matrix[3].xyz;

@@ -283,7 +283,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_applied_torque", "get_constant_torque" }, //RigidBody2D
 	{ "get_audio_bus", "get_audio_bus_name" }, // Area3D
 	{ "get_bound_child_nodes_to_bone", "get_bone_children" }, // Skeleton3D
-	{ "get_camera", "get_camera_3d" }, // Viewport -> this is also convertable to get_camera_2d, broke GLTFNode
+	{ "get_camera", "get_camera_3d" }, // Viewport -> this is also convertible to get_camera_2d, broke GLTFNode
 	{ "get_cancel", "get_cancel_button" }, // ConfirmationDialog
 	{ "get_caption", "_get_caption" }, // AnimationNode
 	{ "get_cast_to", "get_target_position" }, // RayCast2D, RayCast3D
@@ -716,7 +716,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetAppliedTorque", "GetConstantTorque" }, //RigidBody2D
 	{ "GetAudioBus", "GetAudioBusName" }, // Area3D
 	{ "GetBoundChildNodesToBone", "GetBoneChildren" }, // Skeleton3D
-	{ "GetCamera", "GetCamera3d" }, // Viewport -> this is also convertable to getCamera2d, broke GLTFNode
+	{ "GetCamera", "GetCamera3d" }, // Viewport -> this is also convertible to getCamera2d, broke GLTFNode
 	{ "GetCancel", "GetCancelButton" }, // ConfirmationDialog
 	{ "GetCaption", "_GetCaption" }, // AnimationNode
 	{ "GetCastTo", "GetTargetPosition" }, // RayCast2D, RayCast3D
@@ -3061,7 +3061,7 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 
 	// -- \t.func() -> \tsuper.func()       Object
 	if (line.contains("(") && line.contains(".")) {
-		line = reg_container.reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this broke String text e.g. "Choosen .gitignore" -> "Choosen super.gitignore"
+		line = reg_container.reg_super.sub(line, "$1super.$2", true); // TODO, not sure if possible, but for now this broke String text e.g. "Chosen .gitignore" -> "Chosen super.gitignore"
 	}
 
 	// -- JSON.parse(a) -> JSON.new().parse(a) etc.    JSON

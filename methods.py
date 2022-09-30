@@ -781,7 +781,7 @@ def generate_vs_project(env, num_jobs):
                     f'bin\\godot.windows.{config}{dev}.{plat_id}{f".{name}" if name else ""}.exe'
                     for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
-                    for dev in ModuleConfig.DEV_SUFFIX
+                    for dev in ModuleConfigs.DEV_SUFFIX
                 ]
                 self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
                 self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)

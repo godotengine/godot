@@ -395,7 +395,7 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 		uint32_t finished_users = group->finished.increment(); // fetch happens before inc, so increment later.
 
 		if (finished_users == max_users) {
-			// All tasks using this group are gone (finished before the group), so clear the gorup too.
+			// All tasks using this group are gone (finished before the group), so clear the group too.
 			task_mutex.lock();
 			group_allocator.free(group);
 			task_mutex.unlock();
