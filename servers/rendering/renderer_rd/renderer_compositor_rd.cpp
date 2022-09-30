@@ -170,6 +170,10 @@ void RendererCompositorRD::finalize() {
 }
 
 void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	if (p_image.is_null() || p_image->is_empty()) {
+		return;
+	}
+
 	RD::get_singleton()->prepare_screen_for_drawing();
 
 	RID texture = texture_storage->texture_allocate();
