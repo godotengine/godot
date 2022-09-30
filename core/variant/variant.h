@@ -234,17 +234,17 @@ private:
 	_ALWAYS_INLINE_ const ObjData &_get_obj() const;
 
 	union {
-		bool _bool;
-		int64_t _int;
-		double _float;
-		Transform2D *_transform2d;
-		::AABB *_aabb;
-		Basis *_basis;
-		Transform3D *_transform3d;
-		Projection *_projection;
-		PackedArrayRefBase *packed_array;
-		void *_ptr; //generic pointer
-		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 };
+		bool _bool = false;
+		int64_t _int = 0;
+		double _float = 0.0;
+		Transform2D *_transform2d = nullptr;
+		::AABB *_aabb = nullptr;
+		Basis *_basis = nullptr;
+		Transform3D *_transform3d = nullptr;
+		Projection *_projection = nullptr;
+		PackedArrayRefBase *packed_array = nullptr;
+		void *_ptr = nullptr; //generic pointer
+		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 } = 0;
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
