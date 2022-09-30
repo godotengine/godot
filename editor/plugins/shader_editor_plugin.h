@@ -219,6 +219,8 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	LocalVector<EditedShader> edited_shaders;
 
+	// Always valid operations come first in the enum, file-specific ones
+	// should go after FILE_SAVE which is used to build the menu accordingly.
 	enum {
 		FILE_NEW,
 		FILE_NEW_INCLUDE,
