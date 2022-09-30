@@ -5,6 +5,7 @@ import os.path
 import shlex
 import subprocess
 from dataclasses import dataclass
+from typing import Optional, List
 
 
 def find_dotnet_cli():
@@ -150,10 +151,7 @@ def find_any_msbuild_tool(mono_prefix):
     return None
 
 
-def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: [str] = None):
-    if msbuild_args is None:
-        msbuild_args = []
-
+def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]] = None):
     using_msbuild_mono = False
 
     # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
@@ -169,7 +167,7 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: [str] = None):
 
     args += [sln]
 
-    if len(msbuild_args) > 0:
+    if msbuild_args:
         args += msbuild_args
 
     print("Running MSBuild: ", " ".join(shlex.quote(arg) for arg in args), flush=True)

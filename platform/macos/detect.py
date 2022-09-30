@@ -3,6 +3,11 @@ import sys
 from methods import detect_darwin_sdk_path
 from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -72,7 +77,7 @@ def get_mvk_sdk_path():
     return os.path.join(os.path.join(dirname, ver_file), "MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/")
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:

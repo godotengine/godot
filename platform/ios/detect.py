@@ -2,6 +2,11 @@ import os
 import sys
 from methods import detect_darwin_sdk_path
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -42,7 +47,7 @@ def get_flags():
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:

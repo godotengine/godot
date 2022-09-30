@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 import glob
 import subprocess
 from collections import OrderedDict
@@ -663,7 +662,6 @@ def detect_visual_c_compiler_version(tools_env):
         if vc_x86_amd64_compiler_detection_index > -1 and (
             vc_chosen_compiler_index == -1 or vc_chosen_compiler_index > vc_x86_amd64_compiler_detection_index
         ):
-            vc_chosen_compiler_index = vc_x86_amd64_compiler_detection_index
             vc_chosen_compiler_str = "x86_amd64"
 
     return vc_chosen_compiler_str

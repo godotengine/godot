@@ -11,6 +11,10 @@ from emscripten_helpers import (
 )
 from methods import get_compiler_version
 from SCons.Util import WhereIs
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
 
 
 def is_active():
@@ -60,7 +64,7 @@ def get_flags():
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["wasm32"]
     if env["arch"] not in supported_arches:
