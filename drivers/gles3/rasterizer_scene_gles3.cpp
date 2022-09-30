@@ -737,7 +737,6 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
 	if (sky) {
-		ERR_FAIL_COND(!sky);
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
