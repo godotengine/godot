@@ -710,6 +710,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool force_res = false;
 
 	String default_renderer = "";
+	String default_renderer_mobile = "";
 	String renderer_hints = "";
 
 	packed_data = PackedData::get_singleton();
@@ -1517,6 +1518,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Start with RenderingDevice-based backends. Should be included if any RD driver present.
 #ifdef VULKAN_ENABLED
 	renderer_hints = "forward_plus,mobile";
+	default_renderer_mobile = "mobile";
 #endif
 
 	// And Compatibility next, or first if Vulkan is disabled.
@@ -1525,6 +1527,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		renderer_hints += ",";
 	}
 	renderer_hints += "gl_compatibility";
+	if (default_renderer_mobile.is_empty()) {
+		default_renderer_mobile = "gl_compatibility";
+	}
 #endif
 	if (renderer_hints.is_empty()) {
 		ERR_PRINT("No renderers available.");
@@ -1616,7 +1621,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	default_renderer = renderer_hints.get_slice(",", 0);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method", default_renderer);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer);
+	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/renderer/rendering_method",
