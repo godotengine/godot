@@ -34,6 +34,11 @@
 #include <locale.h>
 #include <stdio.h>
 
+#ifdef LIVEPP_PATH
+#include "API/LPP_API.h"
+HMODULE livePP;
+#endif
+
 // For export templates, add a section; the exporter will patch it to enclose
 // the data appended to the executable (bundled PCK)
 #ifndef TOOLS_ENABLED
@@ -149,6 +154,16 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
+#ifdef LIVEPP_PATH
+#define _MKSTR_L(x) _STR_L(x)
+#define _STR_L(x) L#x
+	livePP = lpp::lppLoadAndRegister(_MKSTR_L(LIVEPP_PATH), "Godot");
+	lpp::lppEnableAllCallingModulesSync(livePP);
+	lpp::lppInstallExceptionHandler(livePP);
+#undef _MKSTR_L
+#undef _STR_L
+#endif
+
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");
@@ -184,6 +199,11 @@ int widechar_main(int argc, wchar_t **argv) {
 		delete[] argv_utf8[i];
 	}
 	delete[] argv_utf8;
+
+#ifdef LIVEPP_PATH
+	lpp::lppShutdown(livePP);
+	::FreeLibrary(livePP);
+#endif
 
 	return os.get_exit_code();
 }

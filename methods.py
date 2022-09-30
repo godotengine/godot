@@ -814,6 +814,7 @@ def generate_vs_project(env, num_jobs):
                     f"target={configuration_getter}",
                     "progress=no",
                     "tools=!tools!",
+                    "livepp=%s" % env["livepp"],
                     "-j%s" % num_jobs,
                 ]
 

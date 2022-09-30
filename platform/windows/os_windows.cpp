@@ -54,6 +54,11 @@
 #include <regstr.h>
 #include <shlobj.h>
 
+#ifdef LIVEPP_PATH
+#include "API/LPP_API.h"
+extern HMODULE livePP;
+#endif
+
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
 __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -913,6 +918,9 @@ void OS_Windows::run() {
 		if (Main::iteration()) {
 			break;
 		}
+#ifdef LIVEPP_PATH
+		lpp::lppSyncPoint(livePP);
+#endif
 	}
 
 	main_loop->finalize();
