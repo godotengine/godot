@@ -59,7 +59,7 @@ def disable_warnings(self):
 
 def force_optimization_on_debug(self):
     # 'self' is the environment
-    if self["target"] != "debug":
+    if self["target"] != "template-release":
         return
 
     if self.msvc:
@@ -737,20 +737,19 @@ def generate_vs_project(env, num_jobs):
     if batch_file:
 
         class ModuleConfigs(Mapping):
-            # This version information (Win32, x64, Debug, Release, Release_Debug seems to be
+            # This version information (Win32, x64, Debug, Release) seems to be
             # required for Visual Studio to understand that it needs to generate an NMAKE
             # project. Do not modify without knowing what you are doing.
             PLATFORMS = ["Win32", "x64"]
             PLATFORM_IDS = ["x86_32", "x86_64"]
-            CONFIGURATIONS = ["debug", "release", "release_debug"]
-            CONFIGURATION_IDS = ["tools", "opt", "opt.tools"]
+            CONFIGURATIONS = ["editor", "template_release", "template_debug"]
+            DEV_SUFFIX = ["", ".dev"]
 
             @staticmethod
             def for_every_variant(value):
                 return [value for _ in range(len(ModuleConfigs.CONFIGURATIONS) * len(ModuleConfigs.PLATFORMS))]
 
             def __init__(self):
-
                 shared_targets_array = []
                 self.names = []
                 self.arg_dict = {
@@ -779,16 +778,16 @@ def generate_vs_project(env, num_jobs):
                     for platform in ModuleConfigs.PLATFORMS
                 ]
                 self.arg_dict["runfile"] += [
-                    f'bin\\godot.windows.{config_id}.{plat_id}{f".{name}" if name else ""}.exe'
-                    for config_id in ModuleConfigs.CONFIGURATION_IDS
+                    f'bin\\godot.windows.{config}{dev}.{plat_id}{f".{name}" if name else ""}.exe'
+                    for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
+                    for dev in ModuleConfig.DEV_SUFFIX
                 ]
                 self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
                 self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
                 self.arg_dict["cmdargs"] += ModuleConfigs.for_every_variant(cli_args)
 
             def build_commandline(self, commands):
-
                 configuration_getter = (
                     "$(Configuration"
                     + "".join([f'.Replace("{name}", "")' for name in self.names[1:]])
@@ -799,8 +798,6 @@ def generate_vs_project(env, num_jobs):
                 common_build_prefix = [
                     'cmd /V /C set "plat=$(PlatformTarget)"',
                     '(if "$(PlatformTarget)"=="x64" (set "plat=x86_amd64"))',
-                    'set "tools=%s"' % env["tools"],
-                    f'(if "{configuration_getter}"=="release" (set "tools=no"))',
                     'call "' + batch_file + '" !plat!',
                 ]
 
@@ -813,9 +810,11 @@ def generate_vs_project(env, num_jobs):
                     "platform=windows",
                     f"target={configuration_getter}",
                     "progress=no",
-                    "tools=!tools!",
                     "-j%s" % num_jobs,
                 ]
+
+                if env["dev_build"]:
+                    common_build_postfix.append("dev_build=yes")
 
                 if env["tests"]:
                     common_build_postfix.append("tests=yes")
@@ -846,7 +845,7 @@ def generate_vs_project(env, num_jobs):
         add_to_vs_project(env, env.servers_sources)
         if env["tests"]:
             add_to_vs_project(env, env.tests_sources)
-        if env["tools"]:
+        if env.editor_build:
             add_to_vs_project(env, env.editor_sources)
 
         for header in glob_recursive("**/*.h"):
@@ -855,7 +854,7 @@ def generate_vs_project(env, num_jobs):
         module_configs = ModuleConfigs()
 
         if env.get("module_mono_enabled"):
-            mono_defines = [("GD_MONO_HOT_RELOAD",)] if env["tools"] else []
+            mono_defines = [("GD_MONO_HOT_RELOAD",)] if env.editor_build else []
             module_configs.add_mode(
                 "mono",
                 cli_args="module_mono_enabled=yes",

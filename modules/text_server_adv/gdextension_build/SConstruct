@@ -193,7 +193,7 @@ if env["freetype_enabled"]:
             "FT_CONFIG_OPTION_SYSTEM_ZLIB",
         ]
     )
-    if env["target"] == "debug":
+    if env.dev_build:
         env_freetype.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
