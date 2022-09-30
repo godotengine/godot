@@ -37,6 +37,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/scene_tree_dock.h"
 #include "plugins/script_editor_plugin.h"
+#include "scene/resources/packed_scene.h"
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
@@ -690,9 +691,11 @@ void ConnectionsDock::_disconnect_all() {
 
 	while (child) {
 		Connection connection = child->get_metadata(0);
-		ConnectDialog::ConnectionData cd = connection;
-		undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
-		undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.binds, cd.flags);
+		if (!_is_connection_inherited(connection)) {
+			ConnectDialog::ConnectionData cd = connection;
+			undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
+			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.binds, cd.flags);
+		}
 		child = child->get_next();
 	}
 
@@ -735,6 +738,26 @@ void ConnectionsDock::_tree_item_activated() { // "Activation" on double-click.
 
 bool ConnectionsDock::_is_item_signal(TreeItem &p_item) {
 	return (p_item.get_parent() == tree->get_root() || p_item.get_parent()->get_parent() == tree->get_root());
+}
+
+bool ConnectionsDock::_is_connection_inherited(Connection &p_connection) {
+	Node *scene_root = EditorNode::get_singleton()->get_edited_scene();
+	Ref<PackedScene> scn = ResourceLoader::load(scene_root->get_scene_file_path());
+	ERR_FAIL_NULL_V(scn, false);
+
+	Ref<SceneState> state = scn->get_state();
+	ERR_FAIL_NULL_V(state, false);
+
+	Node *source = Object::cast_to<Node>(p_connection.signal.get_object());
+	Node *target = Object::cast_to<Node>(p_connection.callable.get_object());
+
+	const NodePath source_path = scene_root->get_path_to(source);
+	const NodePath target_path = scene_root->get_path_to(target);
+	const StringName signal_name = p_connection.signal.get_name();
+	const StringName method_name = p_connection.callable.get_method();
+
+	// If it cannot be found in PackedScene, this connection was inherited.
+	return !state->has_connection(source_path, signal_name, target_path, method_name, true);
 }
 
 /*
@@ -849,6 +872,19 @@ void ConnectionsDock::_handle_signal_menu_option(int p_option) {
 	}
 }
 
+void ConnectionsDock::_signal_menu_about_to_popup() {
+	TreeItem *signal_item = tree->get_selected();
+
+	bool disable_disconnect_all = true;
+	for (int i = 0; i < signal_item->get_child_count(); i++) {
+		if (!signal_item->get_child(i)->has_meta("_inherited_connection")) {
+			disable_disconnect_all = false;
+		}
+	}
+
+	signal_menu->set_item_disabled(slot_menu->get_item_index(DISCONNECT_ALL), disable_disconnect_all);
+}
+
 void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 	TreeItem *item = tree->get_selected();
 
@@ -869,6 +905,13 @@ void ConnectionsDock::_handle_slot_menu_option(int p_option) {
 			update_tree();
 		} break;
 	}
+}
+
+void ConnectionsDock::_slot_menu_about_to_popup() {
+	bool connection_is_inherited = tree->get_selected()->has_meta("_inherited_connection");
+
+	slot_menu->set_item_disabled(slot_menu->get_item_index(EDIT), connection_is_inherited);
+	slot_menu->set_item_disabled(slot_menu->get_item_index(DISCONNECT), connection_is_inherited);
 }
 
 void ConnectionsDock::_rmb_pressed(Vector2 p_position, MouseButton p_button) {
@@ -984,7 +1027,7 @@ void ConnectionsDock::update_tree() {
 			name = base;
 		}
 
-		if (!icon.is_valid()) {
+		if (icon.is_null()) {
 			icon = get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
 		}
 
@@ -1116,6 +1159,12 @@ void ConnectionsDock::update_tree() {
 				connection_item->set_text(0, path);
 				connection_item->set_metadata(0, connection);
 				connection_item->set_icon(0, get_theme_icon(SNAME("Slot"), SNAME("EditorIcons")));
+
+				if (_is_connection_inherited(connection)) {
+					// The scene inherits this connection.
+					connection_item->set_custom_color(0, get_theme_color(SNAME("warning_color"), SNAME("Editor")));
+					connection_item->set_meta("_inherited_connection", true);
+				}
 			}
 		}
 
@@ -1168,6 +1217,7 @@ ConnectionsDock::ConnectionsDock() {
 	signal_menu = memnew(PopupMenu);
 	add_child(signal_menu);
 	signal_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
+	signal_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_signal_menu_about_to_popup));
 	signal_menu->add_item(TTR("Connect..."), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
 	signal_menu->add_item(TTR("Copy Name"), COPY_NAME);
@@ -1175,6 +1225,7 @@ ConnectionsDock::ConnectionsDock() {
 	slot_menu = memnew(PopupMenu);
 	add_child(slot_menu);
 	slot_menu->connect("id_pressed", callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
+	slot_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_slot_menu_about_to_popup));
 	slot_menu->add_item(TTR("Edit..."), EDIT);
 	slot_menu->add_item(TTR("Go to Method"), GO_TO_SCRIPT);
 	slot_menu->add_item(TTR("Disconnect"), DISCONNECT);
