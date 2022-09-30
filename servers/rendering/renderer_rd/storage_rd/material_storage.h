@@ -311,6 +311,18 @@ public:
 		}
 	}
 
+	// http://andrewthall.org/papers/df64_qf128.pdf
+#ifdef REAL_T_IS_DOUBLE
+	static _FORCE_INLINE_ void split_double(double a, float *ahi, float *alo) {
+		const double SPLITTER = (1 << 29) + 1;
+		double t = a * SPLITTER;
+		double thi = t - (t - a);
+		double tlo = a - thi;
+		*ahi = (float)thi;
+		*alo = (float)tlo;
+	}
+#endif
+
 	/* Samplers */
 
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
