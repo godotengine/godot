@@ -475,7 +475,7 @@ void main() {
 
 		float particle_size = FRAME.particle_size;
 
-#ifdef USE_COLLISON_SCALE
+#ifdef USE_COLLISION_SCALE
 
 		particle_size *= dot(vec3(length(PARTICLE.xform[0].xyz), length(PARTICLE.xform[1].xyz), length(PARTICLE.xform[2].xyz)), vec3(0.33333333333));
 
