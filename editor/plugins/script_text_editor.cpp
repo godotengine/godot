@@ -1056,14 +1056,22 @@ void ScriptTextEditor::_update_connected_methods() {
 			inherited_script = inherited_script->get_base_script();
 		}
 
-		if (found_base_class.is_empty() && base_class) {
-			List<MethodInfo> methods;
-			ClassDB::get_method_list(base_class, &methods);
-			for (int j = 0; j < methods.size(); j++) {
-				if (methods[j].name == name) {
-					found_base_class = "builtin:" + base_class;
+		if (found_base_class.is_empty()) {
+			while (base_class) {
+				List<MethodInfo> methods;
+				ClassDB::get_method_list(base_class, &methods, true);
+				for (int j = 0; j < methods.size(); j++) {
+					if (methods[j].name == name) {
+						found_base_class = "builtin:" + base_class;
+						break;
+					}
+				}
+
+				ClassDB::ClassInfo *base_class_ptr = ClassDB::classes.getptr(base_class)->inherits_ptr;
+				if (base_class_ptr == nullptr) {
 					break;
 				}
+				base_class = base_class_ptr->name;
 			}
 		}
 
