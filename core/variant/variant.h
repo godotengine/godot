@@ -244,7 +244,7 @@ private:
 		Projection *_projection = nullptr;
 		PackedArrayRefBase *packed_array = nullptr;
 		void *_ptr = nullptr; //generic pointer
-		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 } = 0;
+		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)]{ 0 };
 	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
