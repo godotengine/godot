@@ -67,6 +67,12 @@
 				Returns the average frames rendered every second (FPS), also known as the framerate.
 			</description>
 		</method>
+		<method name="get_frames_per_second_1_percent_low" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the lowest 1 percentile of the running project's framerate as a rolling value. In other words, this returns the FPS equivalent to the [i]worst[/i] (highest) frametime in the last 100 rendered frames. This value is generally a better indicator of overall smoothness compared to [method get_frames_per_second]. The value of [method get_frames_per_second_1_percent_low] should ideally always be greater than or equal to the target framerate to ensure a smooth experience (typically 60 FPS).
+			</description>
+		</method>
 		<method name="get_license_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>

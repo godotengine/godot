@@ -504,6 +504,7 @@ public:
 	int get_max_fps() const;
 
 	double get_frames_per_second() const;
+	double get_frames_per_second_1_percent_low() const;
 	uint64_t get_physics_frames() const;
 	uint64_t get_process_frames() const;
 

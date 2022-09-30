@@ -3978,6 +3978,7 @@ uint64_t Main::last_ticks = 0;
 uint32_t Main::frames = 0;
 uint32_t Main::hide_print_fps_attempts = 3;
 uint32_t Main::frame = 0;
+int Main::recent_frametimes[100] = {};
 bool Main::force_redraw_requested = false;
 int Main::iterating = 0;
 
@@ -4141,15 +4142,33 @@ bool Main::iteration() {
 	frames++;
 	Engine::get_singleton()->_process_frames++;
 
+	// Determine the frame that took the most time to render in the last 100 rendered frames.
+	recent_frametimes[Engine::get_singleton()->get_frames_drawn() % 100] = ticks_elapsed;
+	int frametime_1_percent_low = 1;
+	for (int i = 0; i < 100; i++) {
+		frametime_1_percent_low = MAX(frametime_1_percent_low, recent_frametimes[i]);
+	}
+	Engine::get_singleton()->_fps_1_percent_low = 1'000'000.0 / frametime_1_percent_low;
+
 	if (frame > 1000000) {
 		// Wait a few seconds before printing FPS, as FPS reporting just after the engine has started is inaccurate.
 		if (hide_print_fps_attempts == 0) {
 			if (editor || project_manager) {
 				if (print_fps) {
-					print_line(vformat("Editor FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+					print_line(
+							vformat("Editor FPS: %d (%s mspf) - 1%% low: %d (%s mspf)",
+									frames,
+									rtos(1000.0 / frames).pad_decimals(2),
+									Engine::get_singleton()->_fps_1_percent_low,
+									rtos(1000.0 / Engine::get_singleton()->_fps_1_percent_low).pad_decimals(2)));
 				}
 			} else if (print_fps || GLOBAL_GET("debug/settings/stdout/print_fps")) {
-				print_line(vformat("Project FPS: %d (%s mspf)", frames, rtos(1000.0 / frames).pad_decimals(2)));
+				print_line(
+						vformat("Project FPS: %d (%s mspf) - 1%% low: %d (%s mspf)",
+								frames,
+								rtos(1000.0 / frames).pad_decimals(2),
+								Engine::get_singleton()->_fps_1_percent_low,
+								rtos(1000.0 / Engine::get_singleton()->_fps_1_percent_low).pad_decimals(2)));
 			}
 		} else {
 			hide_print_fps_attempts--;
