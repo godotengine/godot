@@ -371,7 +371,7 @@ protected:
 
 	/* Geometry instance */
 
-	// check which ones of these apply, probably all except GI and SDFGI
+	// When changing any of these enums, remember to change the corresponding enums in the shader files as well.
 	enum {
 		INSTANCE_DATA_FLAGS_NON_UNIFORM_SCALE = 1 << 4,
 		INSTANCE_DATA_FLAG_USE_GI_BUFFERS = 1 << 5,
