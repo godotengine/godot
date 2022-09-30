@@ -3607,6 +3607,9 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	if (line.contains("OS.get_unix_time")) {
 		line = line.replace("OS.get_unix_time", "Time.get_unix_time_from_system");
 	}
+	if (line.contains("OS.get_datetime")) {
+		line = line.replace("OS.get_datetime", "Time.get_datetime_dict_from_system");
+	}
 }
 
 void ProjectConverter3To4::process_csharp_line(String &line, const RegExContainer &reg_container) {
