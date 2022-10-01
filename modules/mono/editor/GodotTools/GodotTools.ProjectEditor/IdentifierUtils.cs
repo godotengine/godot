@@ -44,7 +44,7 @@ namespace GodotTools.ProjectEditor
                     case UnicodeCategory.NonSpacingMark: break;
                     case UnicodeCategory.SpacingCombiningMark: break;
                     case UnicodeCategory.ConnectorPunctuation: break;
-                    case UnicodeCategory.DecimalDigitNumber: break;
+                    case UnicodeCategory.DecimalDigitNumber:
                         // Identifiers may start with underscore
                         if (outputBuilder.Length > startIndex || @char == '_')
                             outputBuilder.Append(@char);
