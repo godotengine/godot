@@ -95,12 +95,8 @@ class LightmapperRD : public Lightmapper {
 		Edge() {
 		}
 
-		Edge(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_na, const Vector3 &p_nb) {
-			a = p_a;
-			b = p_b;
-			na = p_na;
-			nb = p_nb;
-		}
+		Edge(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_na, const Vector3 &p_nb): a(p_a), b(p_b), na(p_na), nb(p_nb) {}
+			
 	};
 
 	struct Probe {
@@ -128,11 +124,9 @@ class LightmapperRD : public Lightmapper {
 			return a == p_uv2.a && b == p_uv2.b;
 		}
 		bool seam_found = false;
-		EdgeUV2(Vector2 p_a, Vector2 p_b, Vector2i p_indices) {
-			a = p_a;
-			b = p_b;
-			indices = p_indices;
-		}
+		
+		EdgeUV2(Vector2 p_a, Vector2 p_b, Vector2i p_indices): a(p_a), b(p_b), indices(p_indices) {}
+
 		EdgeUV2() {}
 	};
 
