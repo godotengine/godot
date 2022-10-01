@@ -136,6 +136,7 @@
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
+				Performs input handling of the event within the viewport. If [code]in_local_coords[/code] is [code]false[/code], the events position is in the embedders coordinates. If [code]in_local_coords[/code] is [code]true[/code], the events position is in viewport coordinates.
 			</description>
 		</method>
 		<method name="push_text_input">
@@ -149,6 +150,7 @@
 			<param index="0" name="event" type="InputEvent" />
 			<param index="1" name="in_local_coords" type="bool" default="false" />
 			<description>
+				Performs unhandled input handling of the event within the viewport. If [code]in_local_coords[/code] is [code]false[/code], the events position is in the embedders coordinates. If [code]in_local_coords[/code] is [code]true[/code], the events position is in viewport coordinates.
 			</description>
 		</method>
 		<method name="set_input_as_handled">

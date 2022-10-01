@@ -468,7 +468,7 @@
 		<signal name="window_input">
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument.
+				Emitted when the [Window] is currently focused and receives any input, passing the received event as an argument. The events position, if present, is in the embedders coordinate system.
 			</description>
 		</signal>
 	</signals>
