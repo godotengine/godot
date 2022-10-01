@@ -276,7 +276,9 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
 	bool from_editor = p_args[1];
+#ifndef _2D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_2d_override(enable);
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
@@ -479,6 +481,7 @@ Error SceneDebugger::_msg_runtime_node_select_set_prefer_group(const Array &p_ar
 	return OK;
 }
 
+#ifndef _2D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
@@ -494,6 +497,7 @@ Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
+#endif // _2D_DISABLED
 
 #ifndef _3D_DISABLED
 Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
@@ -626,7 +630,9 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["hdr_output_request_state"] = _msg_hdr_output_request_state;
 	message_handlers["hdr_output_toggle_requested"] = _msg_hdr_output_toggle_requested;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+#ifndef _2D_DISABLED
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
 #endif // _3D_DISABLED
@@ -655,10 +661,12 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
 	message_handlers["runtime_node_select_set_avoid_locked"] = _msg_runtime_node_select_set_avoid_locked;
 	message_handlers["runtime_node_select_set_prefer_group"] = _msg_runtime_node_select_set_prefer_group;
+#ifndef _2D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
+#endif // _2D_DISABLED
 #ifndef _3D_DISABLED
 	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
-#endif
+#endif // _3D_DISABLED
 	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 	message_handlers["report_window_focused"] = _msg_report_window_focused;
 }
