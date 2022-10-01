@@ -33,21 +33,24 @@ namespace GodotTools.ProjectEditor
 
                 switch (char.GetUnicodeCategory(@char))
                 {
-                    case UnicodeCategory.UppercaseLetter:
-                    case UnicodeCategory.LowercaseLetter:
-                    case UnicodeCategory.TitlecaseLetter:
-                    case UnicodeCategory.ModifierLetter:
-                    case UnicodeCategory.LetterNumber:
-                    case UnicodeCategory.OtherLetter:
+                    case UnicodeCategory.UppercaseLetter: break;
+                    case UnicodeCategory.LowercaseLetter: break;
+                    case UnicodeCategory.TitlecaseLetter: break;
+                    case UnicodeCategory.ModifierLetter: break;
+                    case UnicodeCategory.LetterNumber: break;
+                    case UnicodeCategory.OtherLetter: break;
                         outputBuilder.Append(@char);
                         break;
-                    case UnicodeCategory.NonSpacingMark:
-                    case UnicodeCategory.SpacingCombiningMark:
-                    case UnicodeCategory.ConnectorPunctuation:
-                    case UnicodeCategory.DecimalDigitNumber:
+                    case UnicodeCategory.NonSpacingMark: break;
+                    case UnicodeCategory.SpacingCombiningMark: break;
+                    case UnicodeCategory.ConnectorPunctuation: break;
+                    case UnicodeCategory.DecimalDigitNumber: break;
                         // Identifiers may start with underscore
                         if (outputBuilder.Length > startIndex || @char == '_')
                             outputBuilder.Append(@char);
+                        break;
+                    default:
+                        throw new ArgumentException ("Error inside SkipInvalidCharacters function");
                         break;
                 }
             }
