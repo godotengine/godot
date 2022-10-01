@@ -752,6 +752,7 @@ private:
 	};
 #endif // DEBUG_ENABLED
 
+#ifndef _2D_DISABLED
 	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
 	friend class AudioListener2D; // Needs _audio_listener_2d_set and _audio_listener_2d_remove
 	AudioListener2D *audio_listener_2d = nullptr;
@@ -782,6 +783,7 @@ private:
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 #endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 public:
 	AudioListener2D *get_audio_listener_2d() const;
