@@ -2537,7 +2537,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		XcursorImageDestroy(cursor_image);
 	} else {
 		// Reset to default system cursor
-		if (img[p_shape]) {
+		if (cursors_cache.find(p_shape) && img[p_shape]) {
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
 		}
 
