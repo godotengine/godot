@@ -55,7 +55,7 @@
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the total transform of the viewport.
+				Returns the transform from the viewport's coordinate system to the embedder's coordinate system.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
