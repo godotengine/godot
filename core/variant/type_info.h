@@ -276,7 +276,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 
 template <typename T>
 inline StringName __constant_get_enum_name(T param, const String &p_constant) {
-	if (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
+	if constexpr (GetTypeInfo<T>::VARIANT_TYPE == Variant::NIL) {
 		ERR_PRINT("Missing VARIANT_ENUM_CAST for constant's enum: " + p_constant);
 	}
 	return GetTypeInfo<T>::get_class_info().class_name;
@@ -284,14 +284,14 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 
 template <class T>
 class BitField {
-	uint32_t value = 0;
+	int64_t value = 0;
 
 public:
 	_FORCE_INLINE_ void set_flag(T p_flag) { value |= p_flag; }
 	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & p_flag; }
 	_FORCE_INLINE_ void clear_flag(T p_flag) { return value &= ~p_flag; }
-	_FORCE_INLINE_ BitField(uint32_t p_value) { value = p_value; }
-	_FORCE_INLINE_ operator uint32_t() const { return value; }
+	_FORCE_INLINE_ BitField(int64_t p_value) { value = p_value; }
+	_FORCE_INLINE_ operator int64_t() const { return value; }
 	_FORCE_INLINE_ operator Variant() const { return value; }
 };
 

@@ -528,7 +528,7 @@
 			<param index="0" name="at_position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
 				Returns the tooltip text [param at_position] in local coordinates, which will typically appear when the cursor is resting over this control. By default, it returns [member tooltip_text].
-				[b]Note:[/b] This method can be overriden to customise its behaviour. If this method returns an empty [String], no tooltip is displayed.
+				[b]Note:[/b] This method can be overridden to customise its behaviour. If this method returns an empty [String], no tooltip is displayed.
 			</description>
 		</method>
 		<method name="grab_click_focus">

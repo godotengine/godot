@@ -57,14 +57,14 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		uint32_t pos_next = (pos + 1) & rb_mask;
 
 		// since this is a template with a known compile time value (C), conditionals go away when compiling.
-		if (C == 1) {
+		if constexpr (C == 1) {
 			float v0 = rb[pos];
 			float v0n = rb[pos_next];
 			v0 += (v0n - v0) * frac;
 			p_dest[i] = AudioFrame(v0, v0);
 		}
 
-		if (C == 2) {
+		if constexpr (C == 2) {
 			float v0 = rb[(pos << 1) + 0];
 			float v1 = rb[(pos << 1) + 1];
 			float v0n = rb[(pos_next << 1) + 0];
@@ -76,7 +76,7 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 
 		// This will probably never be used, but added anyway
-		if (C == 4) {
+		if constexpr (C == 4) {
 			float v0 = rb[(pos << 2) + 0];
 			float v1 = rb[(pos << 2) + 1];
 			float v0n = rb[(pos_next << 2) + 0];
@@ -86,7 +86,7 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 			p_dest[i] = AudioFrame(v0, v1);
 		}
 
-		if (C == 6) {
+		if constexpr (C == 6) {
 			float v0 = rb[(pos * 6) + 0];
 			float v1 = rb[(pos * 6) + 1];
 			float v0n = rb[(pos_next * 6) + 0];

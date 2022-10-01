@@ -57,7 +57,7 @@ import glsl_builders
 import gles3_builders
 from platform_methods import architectures, architecture_aliases
 
-if methods.get_cmdline_bool("tools", True):
+if ARGUMENTS.get("target", "editor") == "editor":
     _helper_module("editor.editor_builders", "editor/editor_builders.py")
     _helper_module("editor.template_builders", "editor/template_builders.py")
 
@@ -164,27 +164,33 @@ opts = Variables(customs, ARGUMENTS)
 # Target build options
 opts.Add("platform", "Target platform (%s)" % ("|".join(platform_list),), "")
 opts.Add("p", "Platform (alias for 'platform')", "")
-opts.Add(BoolVariable("tools", "Build the tools (a.k.a. the Godot editor)", True))
-opts.Add(EnumVariable("target", "Compilation target", "debug", ("debug", "release_debug", "release")))
+opts.Add(EnumVariable("target", "Compilation target", "editor", ("editor", "template_release", "template_debug")))
 opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectures, architecture_aliases))
-opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
-opts.Add(EnumVariable("optimize", "Optimization type", "speed", ("speed", "size", "none")))
+opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
+opts.Add(
+    EnumVariable(
+        "optimize", "Optimization level", "speed_trace", ("none", "custom", "debug", "speed", "speed_trace", "size")
+    )
+)
+opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", True))
+opts.Add(BoolVariable("separate_debug_symbols", "Extract debugging symbols to a separate file", False))
+opts.Add(EnumVariable("lto", "Link-time optimization (production builds)", "none", ("none", "auto", "thin", "full")))
 opts.Add(BoolVariable("production", "Set defaults to build Godot for use in production", False))
-opts.Add(EnumVariable("lto", "Link-time optimization (for production buids)", "none", ("none", "auto", "thin", "full")))
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
+opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan video driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 video driver", True))
 opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
+opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
 opts.Add(BoolVariable("custom_modules_recursive", "Detect custom modules recursively for each specified path.", True))
-opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 
 # Advanced options
-opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
+opts.Add(BoolVariable("dev_mode", "Alias for dev options: verbose=yes warnings=extra werror=yes tests=yes", False))
 opts.Add(BoolVariable("tests", "Build the unit tests", False))
 opts.Add(BoolVariable("fast_unsafe", "Enable unsafe options for faster rebuilds", False))
 opts.Add(BoolVariable("compiledb", "Generate compilation DB (`compile_commands.json`) for external tools", False))
@@ -376,13 +382,36 @@ env_base.Prepend(CPPPATH=["#"])
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
-# Build type defines - more platform-specific ones can be in detect.py.
-if env_base["target"] == "release_debug" or env_base["target"] == "debug":
+# Configuration of build targets:
+# - Editor or template
+# - Debug features (DEBUG_ENABLED code)
+# - Dev only code (DEV_ENABLED code)
+# - Optimization level
+# - Debug symbols for crash traces / debuggers
+
+env_base.editor_build = env_base["target"] == "editor"
+env_base.dev_build = env_base["dev_build"]
+env_base.debug_features = env_base["target"] in ["editor", "template_debug"]
+
+if env_base.dev_build:
+    opt_level = "none"
+elif env_base.debug_features:
+    opt_level = "speed_trace"
+else:  # Release
+    opt_level = "speed"
+
+env_base["optimize"] = ARGUMENTS.get("optimize", opt_level)
+env_base["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", env_base.dev_build)
+
+if env_base.editor_build:
+    env_base.Append(CPPDEFINES=["TOOLS_ENABLED"])
+
+if env_base.debug_features:
     # DEBUG_ENABLED enables debugging *features* and debug-only code, which is intended
     # to give *users* extra debugging information for their game development.
     env_base.Append(CPPDEFINES=["DEBUG_ENABLED"])
 
-if env_base["target"] == "debug":
+if env_base.dev_build:
     # DEV_ENABLED enables *engine developer* code which should only be compiled for those
     # working on the engine itself.
     env_base.Append(CPPDEFINES=["DEV_ENABLED"])
@@ -395,7 +424,7 @@ else:
 # Unsafe as they reduce the certainty of rebuilding all changed files, so it's
 # enabled by default for `debug` builds, and can be overridden from command line.
 # Ref: https://github.com/SCons/scons/wiki/GoFastButton
-if methods.get_cmdline_bool("fast_unsafe", env_base["target"] == "debug"):
+if methods.get_cmdline_bool("fast_unsafe", env_base.dev_build):
     # Renamed to `content-timestamp` in SCons >= 4.2, keeping MD5 for compat.
     env_base.Decider("MD5-timestamp")
     env_base.SetOption("implicit_cache", 1)
@@ -470,31 +499,63 @@ if selected_platform in platform_list:
         if not (f[0] in ARGUMENTS) or ARGUMENTS[f[0]] == "auto":  # Allow command line to override platform flags
             env[f[0]] = f[1]
 
-    # 'dev' and 'production' are aliases to set default options if they haven't been
+    # 'dev_mode' and 'production' are aliases to set default options if they haven't been
     # set manually by the user.
     # These need to be checked *after* platform specific flags so that different
     # default values can be set (e.g. to keep LTO off for `production` on some platforms).
-    if env["dev"]:
+    if env["dev_mode"]:
         env["verbose"] = methods.get_cmdline_bool("verbose", True)
         env["warnings"] = ARGUMENTS.get("warnings", "extra")
         env["werror"] = methods.get_cmdline_bool("werror", True)
-        if env["tools"]:
-            env["tests"] = methods.get_cmdline_bool("tests", True)
+        env["tests"] = methods.get_cmdline_bool("tests", True)
     if env["production"]:
         env["use_static_cpp"] = methods.get_cmdline_bool("use_static_cpp", True)
         env["debug_symbols"] = methods.get_cmdline_bool("debug_symbols", False)
         # LTO "auto" means we handle the preferred option in each platform detect.py.
         env["lto"] = ARGUMENTS.get("lto", "auto")
-        if not env["tools"] and env["target"] == "debug":
-            print(
-                "WARNING: Requested `production` build with `tools=no target=debug`, "
-                "this will give you a full debug template (use `target=release_debug` "
-                "for an optimized template with debug features)."
-            )
 
     # Must happen after the flags' definition, as configure is when most flags
     # are actually handled to change compile options, etc.
     detect.configure(env)
+
+    print(f'Building for platform "{selected_platform}", architecture "{env["arch"]}", target "{env["target"]}.')
+    if env.dev_build:
+        print("NOTE: Developer build, with debug optimization level and debug symbols (unless overridden).")
+
+    # Set optimize and debug_symbols flags.
+    # "custom" means do nothing and let users set their own optimization flags.
+    # Needs to happen after configure to have `env.msvc` defined.
+    if env.msvc:
+        if env["debug_symbols"]:
+            env.Append(CCFLAGS=["/Zi", "/FS"])
+            env.Append(LINKFLAGS=["/DEBUG:FULL"])
+
+        if env["optimize"] == "speed" or env["optimize"] == "speed_trace":
+            env.Append(CCFLAGS=["/O2"])
+            env.Append(LINKFLAGS=["/OPT:REF"])
+        elif env["optimize"] == "size":
+            env.Append(CCFLAGS=["/O1"])
+            env.Append(LINKFLAGS=["/OPT:REF"])
+        elif env["optimize"] == "debug" or env["optimize"] == "none":
+            env.Append(CCFLAGS=["/Od"])
+    else:
+        if env["debug_symbols"]:
+            if env.dev_build:
+                env.Append(CCFLAGS=["-g3"])
+            else:
+                env.Append(CCFLAGS=["-g2"])
+
+        if env["optimize"] == "speed":
+            env.Append(CCFLAGS=["-O3"])
+        # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
+        elif env["optimize"] == "speed_trace":
+            env.Append(CCFLAGS=["-O2"])
+        elif env["optimize"] == "size":
+            env.Append(CCFLAGS=["-Os"])
+        elif env["optimize"] == "debug":
+            env.Append(CCFLAGS=["-Og"])
+        elif env["optimize"] == "none":
+            env.Append(CCFLAGS=["-O0"])
 
     # Needs to happen after configure to handle "auto".
     if env["lto"] != "none":
@@ -513,11 +574,6 @@ if selected_platform in platform_list:
         # MSVC doesn't have clear C standard support, /std only covers C++.
         # We apply it to CCFLAGS (both C and C++ code) in case it impacts C features.
         env.Prepend(CCFLAGS=["/std:c++17"])
-
-    print(
-        'Building for platform "%s", architecture "%s", %s, target "%s".'
-        % (selected_platform, env["arch"], "editor" if env["tools"] else "template", env["target"])
-    )
 
     # Enforce our minimal compiler version requirements
     cc_version = methods.get_compiler_version(env) or {
@@ -663,31 +719,12 @@ if selected_platform in platform_list:
     else:
         suffix = "." + selected_platform
 
+    suffix += "." + env["target"]
+    if env.dev_build:
+        suffix += ".dev"
+
     if env_base["float"] == "64":
         suffix += ".double"
-
-    if env["target"] == "release":
-        if env["tools"]:
-            print("ERROR: The editor can only be built with `target=debug` or `target=release_debug`.")
-            print("       Use `tools=no target=release` to build a release export template.")
-            Exit(255)
-        suffix += ".opt"
-    elif env["target"] == "release_debug":
-        if env["tools"]:
-            suffix += ".opt.tools"
-        else:
-            suffix += ".opt.debug"
-    else:
-        if env["tools"]:
-            print(
-                "Note: Building a debug binary (which will run slowly). Use `target=release_debug` to build an optimized release binary."
-            )
-            suffix += ".tools"
-        else:
-            print(
-                "Note: Building a debug binary (which will run slowly). Use `target=release` to build an optimized release binary."
-            )
-            suffix += ".debug"
 
     suffix += "." + env["arch"]
     suffix += env.extra_suffix
@@ -753,9 +790,6 @@ if selected_platform in platform_list:
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
-    if env["tools"]:
-        env.Append(CPPDEFINES=["TOOLS_ENABLED"])
-
     disabled_classes = []
 
     if env["build_feature_profile"] != "":
@@ -777,19 +811,16 @@ if selected_platform in platform_list:
     methods.write_disabled_classes(disabled_classes)
 
     if env["disable_3d"]:
-        if env["tools"]:
-            print(
-                "Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), "
-                "only with 'tools=no' (export template)."
-            )
+        if env.editor_build:
+            print("Build option 'disable_3d=yes' cannot be used for editor builds, but only for export templates.")
             Exit(255)
         else:
             env.Append(CPPDEFINES=["_3D_DISABLED"])
     if env["disable_advanced_gui"]:
-        if env["tools"]:
+        if env.editor_build:
             print(
-                "Build option 'disable_advanced_gui=yes' cannot be used with 'tools=yes' (editor), "
-                "only with 'tools=no' (export template)."
+                "Build option 'disable_advanced_gui=yes' cannot be used for editor builds, "
+                "but only for export templates."
             )
             Exit(255)
         else:
@@ -847,7 +878,7 @@ if selected_platform in platform_list:
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
-    if env["tools"]:
+    if env.editor_build:
         SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 

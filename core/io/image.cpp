@@ -444,7 +444,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 
 			uint8_t rgba[4] = { 0, 0, 0, 255 };
 
-			if (read_gray) {
+			if constexpr (read_gray) {
 				rgba[0] = rofs[0];
 				rgba[1] = rofs[0];
 				rgba[2] = rofs[0];
@@ -454,11 +454,11 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 				}
 			}
 
-			if (read_alpha || write_alpha) {
+			if constexpr (read_alpha || write_alpha) {
 				rgba[3] = read_alpha ? rofs[read_bytes] : 255;
 			}
 
-			if (write_gray) {
+			if constexpr (write_gray) {
 				//TODO: not correct grayscale, should use fixed point version of actual weights
 				wofs[0] = uint8_t((uint16_t(rgba[0]) + uint16_t(rgba[1]) + uint16_t(rgba[2])) / 3);
 			} else {
@@ -467,7 +467,7 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 				}
 			}
 
-			if (write_alpha) {
+			if constexpr (write_alpha) {
 				wofs[write_bytes] = rgba[3];
 			}
 		}
@@ -640,7 +640,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 	double xfac = (double)width / p_dst_width;
 	double yfac = (double)height / p_dst_height;
 	// coordinates of source points and coefficients
-	double ox, oy, dx, dy, k1, k2;
+	double ox, oy, dx, dy;
 	int ox1, oy1, ox2, oy2;
 	// destination pixel values
 	// width and height decreased by 1
@@ -671,7 +671,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 			for (int n = -1; n < 3; n++) {
 				// get Y coefficient
-				k1 = _bicubic_interp_kernel(dy - (double)n);
+				[[maybe_unused]] double k1 = _bicubic_interp_kernel(dy - (double)n);
 
 				oy2 = oy1 + n;
 				if (oy2 < 0) {
@@ -683,7 +683,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 				for (int m = -1; m < 3; m++) {
 					// get X coefficient
-					k2 = k1 * _bicubic_interp_kernel((double)m - dx);
+					[[maybe_unused]] double k2 = k1 * _bicubic_interp_kernel((double)m - dx);
 
 					ox2 = ox1 + m;
 					if (ox2 < 0) {
@@ -697,7 +697,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 					const T *__restrict p = ((T *)p_src) + (oy2 * p_src_width + ox2) * CC;
 
 					for (int i = 0; i < CC; i++) {
-						if (sizeof(T) == 2) { //half float
+						if constexpr (sizeof(T) == 2) { //half float
 							color[i] = Math::half_to_float(p[i]);
 						} else {
 							color[i] += p[i] * k2;
@@ -707,9 +707,9 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 			}
 
 			for (int i = 0; i < CC; i++) {
-				if (sizeof(T) == 1) { //byte
+				if constexpr (sizeof(T) == 1) { //byte
 					dst[i] = CLAMP(Math::fast_ftoi(color[i]), 0, 255);
-				} else if (sizeof(T) == 2) { //half float
+				} else if constexpr (sizeof(T) == 2) { //half float
 					dst[i] = Math::make_half_float(color[i]);
 				} else {
 					dst[i] = color[i];
@@ -758,7 +758,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 			src_xofs_right *= CC;
 
 			for (uint32_t l = 0; l < CC; l++) {
-				if (sizeof(T) == 1) { //uint8
+				if constexpr (sizeof(T) == 1) { //uint8
 					uint32_t p00 = p_src[y_ofs_up + src_xofs_left + l] << FRAC_BITS;
 					uint32_t p10 = p_src[y_ofs_up + src_xofs_right + l] << FRAC_BITS;
 					uint32_t p01 = p_src[y_ofs_down + src_xofs_left + l] << FRAC_BITS;
@@ -769,7 +769,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
 					interp >>= FRAC_BITS;
 					p_dst[i * p_dst_width * CC + j * CC + l] = uint8_t(interp);
-				} else if (sizeof(T) == 2) { //half float
+				} else if constexpr (sizeof(T) == 2) { //half float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
 					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
@@ -786,7 +786,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					float interp = interp_up + ((interp_down - interp_up) * yofs_frac);
 
 					dst[i * p_dst_width * CC + j * CC + l] = Math::make_half_float(interp);
-				} else if (sizeof(T) == 4) { //float
+				} else if constexpr (sizeof(T) == 4) { //float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
 					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
@@ -877,7 +877,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 					const T *__restrict src_data = ((const T *)p_src) + (buffer_y * src_width + target_x) * CC;
 
 					for (uint32_t i = 0; i < CC; i++) {
-						if (sizeof(T) == 2) { //half float
+						if constexpr (sizeof(T) == 2) { //half float
 							pixel[i] += Math::half_to_float(src_data[i]) * lanczos_val;
 						} else {
 							pixel[i] += src_data[i] * lanczos_val;
@@ -934,9 +934,9 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 				for (uint32_t i = 0; i < CC; i++) {
 					pixel[i] /= weight;
 
-					if (sizeof(T) == 1) { //byte
+					if constexpr (sizeof(T) == 1) { //byte
 						dst_data[i] = CLAMP(Math::fast_ftoi(pixel[i]), 0, 255);
-					} else if (sizeof(T) == 2) { //half float
+					} else if constexpr (sizeof(T) == 2) { //half float
 						dst_data[i] = Math::make_half_float(pixel[i]);
 					} else { // float
 						dst_data[i] = pixel[i];

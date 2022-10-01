@@ -1986,7 +1986,7 @@
 			[b]Mobile[/b]: Modern renderer designed for mobile devices. Has a lower base overhead than Clustered, but does not scale as well to large scenes with many elements.
 			[b]Compatibility[/b]: Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3/ OpenGL ES 3.0 / WebGL 2 APIs.
 		</member>
-		<member name="rendering/renderer/rendering_method.mobile" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
+		<member name="rendering/renderer/rendering_method.mobile" type="String" setter="" getter="" default="&quot;mobile&quot;">
 			Override for [member rendering/renderer/rendering_method] on mobile devices.
 		</member>
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">

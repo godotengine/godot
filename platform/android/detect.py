@@ -3,6 +3,11 @@ import sys
 import platform
 import subprocess
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -17,8 +22,6 @@ def can_build():
 
 
 def get_opts():
-    from SCons.Variables import BoolVariable, EnumVariable
-
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
         ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
@@ -46,7 +49,7 @@ def get_ndk_version():
 def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
-        ("tools", False),
+        ("target", "template_debug"),
     ]
 
 
@@ -74,7 +77,7 @@ def install_ndk_if_needed(env):
     env["ANDROID_NDK_ROOT"] = get_android_ndk_root(env)
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
@@ -113,20 +116,6 @@ def configure(env):
     env.Append(ASFLAGS=[target_option, "-c"])
     env.Append(CCFLAGS=target_option)
     env.Append(LINKFLAGS=target_option)
-
-    # Build type
-
-    if env["target"].startswith("release"):
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
-            # when using `target=release_debug`.
-            opt = "-O3" if env["target"] == "release" else "-O2"
-            env.Append(CCFLAGS=[opt])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["-Oz"])
-    elif env["target"] == "debug":
-        env.Append(LINKFLAGS=["-O0"])
-        env.Append(CCFLAGS=["-O0", "-g"])
 
     # LTO
 
@@ -168,7 +157,7 @@ def configure(env):
     env["AS"] = compiler_path + "/clang"
 
     # Disable exceptions and rtti on non-tools (template) builds
-    if env["tools"]:
+    if env.editor_build:
         env.Append(CXXFLAGS=["-frtti"])
     elif env["builtin_icu"]:
         env.Append(CXXFLAGS=["-frtti", "-fno-exceptions"])
