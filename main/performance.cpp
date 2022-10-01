@@ -36,8 +36,10 @@
 #include "scene/main/scene_tree.h"
 #include "servers/audio_server.h"
 #include "servers/navigation_server_3d.h"
-#include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
+
+// 2D
+#include "servers/physics_server_2d.h"
 
 #ifndef _3D_DISABLED
 #include "servers/physics_server_3d.h"
