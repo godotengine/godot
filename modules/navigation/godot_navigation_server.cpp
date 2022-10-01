@@ -383,6 +383,20 @@ real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
 	return region->get_travel_cost();
 }
 
+COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_owner_id(p_owner_id);
+}
+
+ObjectID GodotNavigationServer::region_get_owner_id(RID p_region) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, ObjectID());
+
+	return region->get_owner_id();
+}
+
 bool GodotNavigationServer::region_owns_point(RID p_region, const Vector3 &p_point) const {
 	const NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND_V(region == nullptr, false);
@@ -568,6 +582,20 @@ real_t GodotNavigationServer::link_get_travel_cost(const RID p_link) const {
 	ERR_FAIL_COND_V(link == nullptr, 0);
 
 	return link->get_travel_cost();
+}
+
+COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_owner_id(p_owner_id);
+}
+
+ObjectID GodotNavigationServer::link_get_owner_id(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, ObjectID());
+
+	return link->get_owner_id();
 }
 
 RID GodotNavigationServer::agent_create() const {

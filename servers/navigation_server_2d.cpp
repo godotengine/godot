@@ -152,6 +152,10 @@ static Variant var_to_var(const Variant &d) {
 	return d;
 }
 
+static ObjectID id_to_id(const ObjectID &id) {
+	return id;
+}
+
 static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 	if (d.is_valid()) {
 		return d->get_mesh();
@@ -250,6 +254,8 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_enter_cost", "region"), &NavigationServer2D::region_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("region_set_travel_cost", "region", "travel_cost"), &NavigationServer2D::region_set_travel_cost);
 	ClassDB::bind_method(D_METHOD("region_get_travel_cost", "region"), &NavigationServer2D::region_get_travel_cost);
+	ClassDB::bind_method(D_METHOD("region_set_owner_id", "region", "owner_id"), &NavigationServer2D::region_set_owner_id);
+	ClassDB::bind_method(D_METHOD("region_get_owner_id", "region"), &NavigationServer2D::region_get_owner_id);
 	ClassDB::bind_method(D_METHOD("region_owns_point", "region", "point"), &NavigationServer2D::region_owns_point);
 	ClassDB::bind_method(D_METHOD("region_set_map", "region", "map"), &NavigationServer2D::region_set_map);
 	ClassDB::bind_method(D_METHOD("region_get_map", "region"), &NavigationServer2D::region_get_map);
@@ -276,6 +282,8 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("link_get_enter_cost", "link"), &NavigationServer2D::link_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_set_travel_cost", "link", "travel_cost"), &NavigationServer2D::link_set_travel_cost);
 	ClassDB::bind_method(D_METHOD("link_get_travel_cost", "link"), &NavigationServer2D::link_get_travel_cost);
+	ClassDB::bind_method(D_METHOD("link_set_owner_id", "link", "owner_id"), &NavigationServer2D::link_set_owner_id);
+	ClassDB::bind_method(D_METHOD("link_get_owner_id", "link"), &NavigationServer2D::link_get_owner_id);
 
 	ClassDB::bind_method(D_METHOD("agent_create"), &NavigationServer2D::agent_create);
 	ClassDB::bind_method(D_METHOD("agent_set_map", "agent", "map"), &NavigationServer2D::agent_set_map);
@@ -348,6 +356,8 @@ void FORWARD_2_C(region_set_enter_cost, RID, p_region, real_t, p_enter_cost, rid
 real_t FORWARD_1_C(region_get_enter_cost, RID, p_region, rid_to_rid);
 void FORWARD_2_C(region_set_travel_cost, RID, p_region, real_t, p_travel_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(region_get_travel_cost, RID, p_region, rid_to_rid);
+void FORWARD_2_C(region_set_owner_id, RID, p_region, ObjectID, p_owner_id, rid_to_rid, id_to_id);
+ObjectID FORWARD_1_C(region_get_owner_id, RID, p_region, rid_to_rid);
 bool FORWARD_2_C(region_owns_point, RID, p_region, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
 void FORWARD_2_C(region_set_map, RID, p_region, RID, p_map, rid_to_rid, rid_to_rid);
@@ -379,6 +389,8 @@ void FORWARD_2_C(link_set_enter_cost, RID, p_link, real_t, p_enter_cost, rid_to_
 real_t FORWARD_1_C(link_get_enter_cost, RID, p_link, rid_to_rid);
 void FORWARD_2_C(link_set_travel_cost, RID, p_link, real_t, p_travel_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(link_get_travel_cost, RID, p_link, rid_to_rid);
+void FORWARD_2_C(link_set_owner_id, RID, p_link, ObjectID, p_owner_id, rid_to_rid, id_to_id);
+ObjectID FORWARD_1_C(link_get_owner_id, RID, p_link, rid_to_rid);
 
 RID NavigationServer2D::agent_create() const {
 	RID agent = NavigationServer3D::get_singleton()->agent_create();
