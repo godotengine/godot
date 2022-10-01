@@ -221,6 +221,8 @@ void NavigationLink3D::_notification(int p_what) {
 
 NavigationLink3D::NavigationLink3D() {
 	link = NavigationServer3D::get_singleton()->link_create();
+	NavigationServer3D::get_singleton()->link_set_owner_id(link, get_instance_id());
+
 	set_notify_transform(true);
 }
 

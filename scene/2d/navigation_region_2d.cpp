@@ -634,7 +634,9 @@ void NavigationRegion2D::_bind_methods() {
 
 NavigationRegion2D::NavigationRegion2D() {
 	set_notify_transform(true);
+
 	region = NavigationServer2D::get_singleton()->region_create();
+	NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 	NavigationServer2D::get_singleton()->region_set_enter_cost(region, get_enter_cost());
 	NavigationServer2D::get_singleton()->region_set_travel_cost(region, get_travel_cost());
 
