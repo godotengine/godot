@@ -5275,6 +5275,7 @@ void TileData::set_terrain_set(int p_terrain_set) {
 	}
 	if (tile_set) {
 		ERR_FAIL_COND(p_terrain_set >= tile_set->get_terrain_sets_count());
+		terrain = -1;
 		for (int i = 0; i < 16; i++) {
 			terrain_peering_bits[i] = -1;
 		}

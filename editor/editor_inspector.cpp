@@ -3463,7 +3463,7 @@ void EditorInspector::expand_revertable() {
 		}
 	}
 
-	// Climb up the hierachy doing double buffering with the sets.
+	// Climb up the hierarchy doing double buffering with the sets.
 	int a = 0;
 	int b = 1;
 	while (sections_to_unfold[a].size()) {

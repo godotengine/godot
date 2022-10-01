@@ -735,29 +735,6 @@ void GodotCylinderShape3D::get_supports(const Vector3 &p_normal, int p_max, Vect
 		r_amount = 1;
 		r_type = FEATURE_POINT;
 		r_supports[0] = get_support(p_normal);
-		return;
-
-		Vector3 n = p_normal;
-		real_t h = n.y * Math::sqrt(0.25 * height * height + radius * radius);
-		if (Math::abs(h) > 1.0) {
-			// Top or bottom surface.
-			n.y = (n.y > 0.0) ? height * 0.5 : -height * 0.5;
-		} else {
-			// Lateral surface.
-			n.y = height * 0.5 * h;
-		}
-
-		real_t s = Math::sqrt(n.x * n.x + n.z * n.z);
-		if (Math::is_zero_approx(s)) {
-			n.x = 0.0;
-			n.z = 0.0;
-		} else {
-			real_t scaled_radius = radius / s;
-			n.x = n.x * scaled_radius;
-			n.z = n.z * scaled_radius;
-		}
-
-		r_supports[0] = n;
 	}
 }
 

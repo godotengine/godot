@@ -3,6 +3,10 @@
 All such functions are invoked in a subprocess on Windows to prevent build flakiness.
 
 """
+import os.path
+
+from typing import Optional
+
 from platform_methods import subprocess_main
 
 
@@ -30,7 +34,7 @@ class GLES3HeaderStruct:
         self.specialization_values = []
 
 
-def include_file_in_gles3_header(filename, header_data, depth):
+def include_file_in_gles3_header(filename: str, header_data: GLES3HeaderStruct, depth: int):
     fs = open(filename, "r")
     line = fs.readline()
 
@@ -90,8 +94,6 @@ def include_file_in_gles3_header(filename, header_data, depth):
 
         while line.find("#include ") != -1:
             includeline = line.replace("#include ", "").strip()[1:-1]
-
-            import os.path
 
             included_file = os.path.relpath(os.path.dirname(filename) + "/" + includeline)
             if not included_file in header_data.vertex_included_files and header_data.reading == "vertex":
@@ -182,7 +184,7 @@ def include_file_in_gles3_header(filename, header_data, depth):
     return header_data
 
 
-def build_gles3_header(filename, include, class_suffix, header_data=None):
+def build_gles3_header(filename: str, include: str, class_suffix: str, header_data: Optional[GLES3HeaderStruct] = None):
     header_data = header_data or GLES3HeaderStruct()
     include_file_in_gles3_header(filename, header_data, 0)
 

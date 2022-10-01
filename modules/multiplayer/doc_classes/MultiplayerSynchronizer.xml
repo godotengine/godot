@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		By default, [MultiplayerSynchronizer] synchronizes configured properties to all peers.
-		Visiblity can be handled directly with [method set_visibility_for] or as-needed with [method add_visibility_filter] and [method update_visibility].
+		Visibility can be handled directly with [method set_visibility_for] or as-needed with [method add_visibility_filter] and [method update_visibility].
 
 		[MultiplayerSpawner]s will handle nodes according to visibility of synchronizers as long as the node at [member root_path] was spawned by one.
 
@@ -34,7 +34,7 @@
 			<return type="void" />
 			<param index="0" name="filter" type="Callable" />
 			<description>
-				Removes a peer visiblity filter from this synchronizer.
+				Removes a peer visibility filter from this synchronizer.
 			</description>
 		</method>
 		<method name="set_visibility_for">

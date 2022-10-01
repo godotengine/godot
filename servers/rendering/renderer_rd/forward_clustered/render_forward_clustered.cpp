@@ -276,7 +276,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 
 	SceneState::PushConstant push_constant;
 
-	if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
+	if constexpr (p_pass_mode == PASS_MODE_DEPTH_MATERIAL) {
 		push_constant.uv_offset = Math::make_half_float(p_params->uv_offset.y) << 16;
 		push_constant.uv_offset |= Math::make_half_float(p_params->uv_offset.x);
 	} else {
@@ -355,7 +355,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 		uint32_t pipeline_color_pass_flags = 0;
 		uint32_t pipeline_specialization = 0;
 
-		if (p_pass_mode == PASS_MODE_COLOR) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR) {
 			if (element_info.uses_softshadow) {
 				pipeline_specialization |= SceneShaderForwardClustered::SHADER_SPECIALIZATION_SOFT_SHADOWS;
 			}
@@ -713,6 +713,14 @@ void RenderForwardClustered::_fill_instance_data(RenderListType p_render_list, i
 		instance_data.lightmap_uv_scale[1] = inst->lightmap_uv_scale.position.y;
 		instance_data.lightmap_uv_scale[2] = inst->lightmap_uv_scale.size.x;
 		instance_data.lightmap_uv_scale[3] = inst->lightmap_uv_scale.size.y;
+
+#ifdef REAL_T_IS_DOUBLE
+		// Split the origin into two components, the float approximation and the missing precision
+		// In the shader we will combine these back together to restore the lost precision.
+		RendererRD::MaterialStorage::split_double(inst->transform.origin.x, &instance_data.transform[12], &instance_data.transform[3]);
+		RendererRD::MaterialStorage::split_double(inst->transform.origin.y, &instance_data.transform[13], &instance_data.transform[7]);
+		RendererRD::MaterialStorage::split_double(inst->transform.origin.z, &instance_data.transform[14], &instance_data.transform[11]);
+#endif
 
 		bool cant_repeat = instance_data.flags & INSTANCE_DATA_FLAG_MULTIMESH || inst->mesh_instance.is_valid();
 
@@ -3039,6 +3047,11 @@ RenderForwardClustered::RenderForwardClustered() {
 		{
 			defines += "\n#define MATERIAL_UNIFORM_SET " + itos(MATERIAL_UNIFORM_SET) + "\n";
 		}
+#ifdef REAL_T_IS_DOUBLE
+		{
+			defines += "\n#define USE_DOUBLE_PRECISION \n";
+		}
+#endif
 
 		scene_shader.init(defines);
 	}

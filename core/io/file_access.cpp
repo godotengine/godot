@@ -548,7 +548,7 @@ void FileAccess::store_64(uint64_t p_dest) {
 }
 
 void FileAccess::store_real(real_t p_real) {
-	if (sizeof(real_t) == 4) {
+	if constexpr (sizeof(real_t) == 4) {
 		store_float(p_real);
 	} else {
 		store_double(p_real);

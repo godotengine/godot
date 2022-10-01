@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This class can be used to augment or replace the default [MultiplayerAPI] implementation via script or extensions.
-		The following example augment the default implemenation ([SceneMultiplayer]) by logging every RPC being made, and every object being configured for replication.
+		The following example augment the default implementation ([SceneMultiplayer]) by logging every RPC being made, and every object being configured for replication.
 		[codeblocks]
 		[gdscript]
 		extends MultiplayerAPIExtension

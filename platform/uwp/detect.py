@@ -3,6 +3,11 @@ import os
 import sys
 from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -39,7 +44,7 @@ def get_flags():
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32"]
     if env["arch"] not in supported_arches:
@@ -83,7 +88,7 @@ def configure(env):
     env.AppendUnique(CCFLAGS=["/utf-8"])
 
     # ANGLE
-    angle_root = os.getenv("ANGLE_SRC_PATH")
+    angle_root = os.environ["ANGLE_SRC_PATH"]
     env.Prepend(CPPPATH=[angle_root + "/include"])
     jobs = str(env.GetOption("num_jobs"))
     angle_build_cmd = (
@@ -94,7 +99,7 @@ def configure(env):
         + " /p:Configuration=Release /p:Platform="
     )
 
-    if os.path.isfile(str(os.getenv("ANGLE_SRC_PATH")) + "/winrt/10/src/angle.sln"):
+    if os.path.isfile(f"{angle_root}/winrt/10/src/angle.sln"):
         env["build_angle"] = True
 
     ## Architecture

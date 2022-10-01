@@ -107,7 +107,7 @@ void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 
 static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 	if (f->real_is_double) {
-		if (sizeof(real_t) == 8) {
+		if constexpr (sizeof(real_t) == 8) {
 			// Ideal case with double-precision
 			f->get_buffer((uint8_t *)dst, count * sizeof(double));
 #ifdef BIG_ENDIAN_ENABLED
@@ -118,7 +118,7 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 				}
 			}
 #endif
-		} else if (sizeof(real_t) == 4) {
+		} else if constexpr (sizeof(real_t) == 4) {
 			// May be slower, but this is for compatibility. Eventually the data should be converted.
 			for (size_t i = 0; i < count; ++i) {
 				dst[i] = f->get_double();
@@ -127,7 +127,7 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "real_t size is neither 4 nor 8!");
 		}
 	} else {
-		if (sizeof(real_t) == 4) {
+		if constexpr (sizeof(real_t) == 4) {
 			// Ideal case with float-precision
 			f->get_buffer((uint8_t *)dst, count * sizeof(float));
 #ifdef BIG_ENDIAN_ENABLED
@@ -138,7 +138,7 @@ static Error read_reals(real_t *dst, Ref<FileAccess> &f, size_t count) {
 				}
 			}
 #endif
-		} else if (sizeof(real_t) == 8) {
+		} else if constexpr (sizeof(real_t) == 8) {
 			for (size_t i = 0; i < count; ++i) {
 				dst[i] = f->get_float();
 			}

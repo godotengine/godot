@@ -2085,7 +2085,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 		if (group_file_cache.has(file)) {
 			//maybe the file itself is a group!
 			groups_to_reimport.insert(file);
-			//groups do not belong to grups
+			//groups do not belong to groups
 			group_file = String();
 		} else if (!group_file.is_empty()) {
 			//it's a group file, add group to import and skip this file

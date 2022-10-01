@@ -77,7 +77,7 @@ bool EditorExportPlatform::fill_log_messages(RichTextLabel *p_log, Error p_err) 
 		} else {
 			p_log->add_image(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("StatusSuccess"), SNAME("EditorIcons")), 16 * EDSCALE, 16 * EDSCALE, Color(1.0, 1.0, 1.0), INLINE_ALIGNMENT_CENTER);
 			p_log->add_text(" ");
-			p_log->add_text(TTR("Completed sucessfully."));
+			p_log->add_text(TTR("Completed successfully."));
 			if (msg_count > 0) {
 				has_messages = true;
 			}
@@ -176,7 +176,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 		}
 	}
 
-	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
+	if (p_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
 		r_flags.push_back("--debug-collisions");
 	}
 
@@ -1609,7 +1609,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		}
 	}
 
-	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
+	if (p_flags & DEBUG_FLAG_VIEW_COLLISIONS) {
 		r_flags.push_back("--debug-collisions");
 	}
 

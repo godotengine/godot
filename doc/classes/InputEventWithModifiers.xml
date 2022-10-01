@@ -23,7 +23,7 @@
 			State of the [kbd]Alt[/kbd] modifier.
 		</member>
 		<member name="command_or_control_autoremap" type="bool" setter="set_command_or_control_autoremap" getter="is_command_or_control_autoremap" default="false">
-			Automaticaly use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
+			Automatically use [kbd]Meta[/kbd] ([kbd]Command[/kbd]) on macOS and [kbd]Ctrl[/kbd] on other platforms. If [code]true[/code], [member ctrl_pressed] and [member meta_pressed] cannot be set.
 		</member>
 		<member name="ctrl_pressed" type="bool" setter="set_ctrl_pressed" getter="is_ctrl_pressed" default="false">
 			State of the [kbd]Ctrl[/kbd] modifier.
