@@ -297,6 +297,7 @@ private:
 	};
 
 	HashMap<BoneKey, BoneList> bone_list;
+	MenuButton *skeleton_menu = nullptr;
 
 	struct PoseClipboard {
 		Vector2 pos;
@@ -329,7 +330,6 @@ private:
 	Button *group_button = nullptr;
 	Button *ungroup_button = nullptr;
 
-	MenuButton *skeleton_menu = nullptr;
 	Button *override_camera_button = nullptr;
 	MenuButton *view_menu = nullptr;
 	PopupMenu *grid_menu = nullptr;
