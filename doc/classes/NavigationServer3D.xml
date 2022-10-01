@@ -167,6 +167,13 @@
 				Returns the navigation layers for this [code]link[/code].
 			</description>
 		</method>
+		<method name="link_get_owner_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the [code]ObjectID[/code] of the object which manages this link.
+			</description>
+		</method>
 		<method name="link_get_start_location" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
@@ -226,6 +233,14 @@
 			<param index="1" name="navigation_layers" type="int" />
 			<description>
 				Set the links's navigation layers. This allows selecting links from a path request (when using [method NavigationServer3D.map_get_path]).
+			</description>
+		</method>
+		<method name="link_set_owner_id" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="link" type="RID" />
+			<param index="1" name="owner_id" type="int" />
+			<description>
+				Set the [code]ObjectID[/code] of the object which manages this link.
 			</description>
 		</method>
 		<method name="link_set_start_location" qualifiers="const">
@@ -476,6 +491,13 @@
 				Returns the region's navigation layers.
 			</description>
 		</method>
+		<method name="region_get_owner_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the [code]ObjectID[/code] of the object which manages this region.
+			</description>
+		</method>
 		<method name="region_get_travel_cost" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
@@ -523,6 +545,14 @@
 			<param index="1" name="nav_mesh" type="NavigationMesh" />
 			<description>
 				Sets the navigation mesh for the region.
+			</description>
+		</method>
+		<method name="region_set_owner_id" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="owner_id" type="int" />
+			<description>
+				Set the [code]ObjectID[/code] of the object which manages this region.
 			</description>
 		</method>
 		<method name="region_set_transform" qualifiers="const">

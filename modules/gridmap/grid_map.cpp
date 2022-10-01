@@ -656,6 +656,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 			if (bake_navigation) {
 				RID region = NavigationServer3D::get_singleton()->region_create();
+				NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
 				NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 				NavigationServer3D::get_singleton()->region_set_navmesh(region, navmesh);
 				NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
@@ -779,6 +780,7 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 				Ref<NavigationMesh> nm = mesh_library->get_item_navmesh(cell_map[F.key].item);
 				if (nm.is_valid()) {
 					RID region = NavigationServer3D::get_singleton()->region_create();
+					NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());
 					NavigationServer3D::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 					NavigationServer3D::get_singleton()->region_set_navmesh(region, nm);
 					NavigationServer3D::get_singleton()->region_set_transform(region, get_global_transform() * F.value.xform);
