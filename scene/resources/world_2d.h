@@ -40,12 +40,17 @@ class VisibleOnScreenNotifier2D;
 class Viewport;
 struct SpatialIndexer2D;
 
+// World2D is needed for Viewport for CanvasItem rendering even when 2D is disabled.
 class World2D : public Resource {
 	GDCLASS(World2D, Resource);
 
 	RID canvas;
-	mutable RID space;
+#ifndef _2D_DISABLED
 	mutable RID navigation_map;
+#ifndef PHYSICS_2D_DISABLED
+	mutable RID space;
+#endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 	HashSet<Viewport *> viewports;
 
@@ -55,12 +60,14 @@ protected:
 
 public:
 	RID get_canvas() const;
+#ifndef _2D_DISABLED
 	RID get_navigation_map() const;
 
 #ifndef PHYSICS_2D_DISABLED
 	RID get_space() const;
 	PhysicsDirectSpaceState2D *get_direct_space_state();
 #endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 	void register_viewport(Viewport *p_viewport);
 	void remove_viewport(Viewport *p_viewport);
