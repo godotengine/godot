@@ -265,9 +265,9 @@ private:
 	float spread = 0.0f;
 	float flatness = 0.0f;
 
-	float params_min[PARAM_MAX];
-	float params_max[PARAM_MAX];
-	float params[PARAM_MAX];
+	float params_min[PARAM_MAX] = {};
+	float params_max[PARAM_MAX] = {};
+	float params[PARAM_MAX] = {};
 
 	Ref<Texture2D> tex_parameters[PARAM_MAX];
 	Color color;

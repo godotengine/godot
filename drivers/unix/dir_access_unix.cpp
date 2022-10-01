@@ -74,7 +74,7 @@ bool DirAccessUnix::file_exists(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	struct stat flags;
+	struct stat flags = {};
 	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success && S_ISDIR(flags.st_mode)) {
@@ -93,7 +93,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 
-	struct stat flags;
+	struct stat flags = {};
 	bool success = (stat(p_dir.utf8().get_data(), &flags) == 0);
 
 	return (success && S_ISDIR(flags.st_mode));
@@ -128,7 +128,7 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	struct stat flags;
+	struct stat flags = {};
 	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success) {
@@ -161,7 +161,7 @@ String DirAccessUnix::get_next() {
 	if (entry->d_type == DT_UNKNOWN || entry->d_type == DT_LNK) {
 		String f = current_dir.path_join(fname);
 
-		struct stat flags;
+		struct stat flags = {};
 		if (stat(f.utf8().get_data(), &flags) == 0) {
 			_cisdir = S_ISDIR(flags.st_mode);
 		} else {
@@ -415,7 +415,7 @@ Error DirAccessUnix::remove(String p_path) {
 
 	p_path = fix_path(p_path);
 
-	struct stat flags;
+	struct stat flags = {};
 	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}
@@ -434,7 +434,7 @@ bool DirAccessUnix::is_link(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	struct stat flags;
+	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}

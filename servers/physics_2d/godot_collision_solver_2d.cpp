@@ -197,7 +197,7 @@ bool GodotCollisionSolver2D::solve_concave(const GodotShape2D *p_shape_A, const 
 		real_t axis_scale = 1.0 / axis.length();
 		axis *= axis_scale;
 
-		real_t smin, smax;
+		real_t smin = 0.0, smax = 0.0;
 		p_shape_A->project_rangev(axis, rel_transform, smin, smax);
 		smin *= axis_scale;
 		smax *= axis_scale;
