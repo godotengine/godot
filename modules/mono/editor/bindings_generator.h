@@ -50,11 +50,7 @@ class BindingsGenerator {
 
 		ConstantInterface() {}
 
-		ConstantInterface(const String &p_name, const String &p_proxy_name, int64_t p_value) {
-			name = p_name;
-			proxy_name = p_proxy_name;
-			value = p_value;
-		}
+		ConstantInterface(const String &p_name, const String &p_proxy_name, int64_t p_value): name(p_name), proxy_name(p_proxy_name), value(p_value) {}
 	};
 
 	struct EnumInterface {
@@ -68,9 +64,7 @@ class BindingsGenerator {
 
 		EnumInterface() {}
 
-		EnumInterface(const StringName &p_cname) {
-			cname = p_cname;
-		}
+		EnumInterface(const StringName &p_cname): cname(p_cname) {}
 	};
 
 	struct PropertyInterface {
@@ -531,9 +525,7 @@ class BindingsGenerator {
 
 		InternalCall() {}
 
-		InternalCall(ClassDB::APIType api_type, const String &p_name, const String &p_unique_sig = String()) {
-			name = p_name;
-			unique_sig = p_unique_sig;
+		InternalCall(ClassDB::APIType api_type, const String &p_name, const String &p_unique_sig = String()): name(p_name), unique_sig(p_unique_sig) {
 			editor_only = api_type == ClassDB::API_EDITOR;
 		}
 
