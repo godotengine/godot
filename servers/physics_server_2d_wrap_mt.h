@@ -31,6 +31,8 @@
 #ifndef PHYSICS_SERVER_2D_WRAP_MT_H
 #define PHYSICS_SERVER_2D_WRAP_MT_H
 
+#ifndef _2D_DISABLED
+
 #include "core/config/project_settings.h"
 #include "core/os/thread.h"
 #include "core/templates/command_queue_mt.h"
@@ -337,5 +339,7 @@ public:
 #undef DEBUG_SYNC
 #endif
 #undef SYNC_DEBUG
+
+#endif // _2D_DISABLED
 
 #endif // PHYSICS_SERVER_2D_WRAP_MT_H
