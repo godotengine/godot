@@ -392,27 +392,25 @@ Node3D::RotationEditMode Node3D::get_rotation_edit_mode() const {
 	return data.rotation_edit_mode;
 }
 
-void Node3D::set_rotation_order(RotationOrder p_order) {
-	EulerOrder order = EulerOrder(p_order);
-
-	if (data.euler_rotation_order == order) {
+void Node3D::set_rotation_order(EulerOrder p_order) {
+	if (data.euler_rotation_order == p_order) {
 		return;
 	}
 
-	ERR_FAIL_INDEX(int32_t(order), 6);
+	ERR_FAIL_INDEX(int32_t(p_order), 6);
 	bool transform_changed = false;
 
 	if (data.dirty & DIRTY_EULER_ROTATION_AND_SCALE) {
 		_update_rotation_and_scale();
 	} else if (data.dirty & DIRTY_LOCAL_TRANSFORM) {
-		data.euler_rotation = Basis::from_euler(data.euler_rotation, data.euler_rotation_order).get_euler_normalized(order);
+		data.euler_rotation = Basis::from_euler(data.euler_rotation, data.euler_rotation_order).get_euler_normalized(p_order);
 		transform_changed = true;
 	} else {
 		data.dirty |= DIRTY_LOCAL_TRANSFORM;
 		transform_changed = true;
 	}
 
-	data.euler_rotation_order = order;
+	data.euler_rotation_order = p_order;
 
 	if (transform_changed) {
 		_propagate_transform_changed(this);
@@ -423,8 +421,8 @@ void Node3D::set_rotation_order(RotationOrder p_order) {
 	notify_property_list_changed(); // Will change the rotation property.
 }
 
-Node3D::RotationOrder Node3D::get_rotation_order() const {
-	return RotationOrder(data.euler_rotation_order);
+EulerOrder Node3D::get_rotation_order() const {
+	return data.euler_rotation_order;
 }
 
 void Node3D::set_rotation(const Vector3 &p_euler_rad) {
@@ -1041,13 +1039,6 @@ void Node3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_EULER);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_QUATERNION);
 	BIND_ENUM_CONSTANT(ROTATION_EDIT_MODE_BASIS);
-
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_XYZ);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_XZY);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_YXZ);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_YZX);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZXY);
-	BIND_ENUM_CONSTANT(ROTATION_ORDER_ZYX);
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "transform", PROPERTY_HINT_NONE, "suffix:m", PROPERTY_USAGE_NO_EDITOR), "set_transform", "get_transform");

@@ -61,15 +61,6 @@ public:
 		ROTATION_EDIT_MODE_BASIS,
 	};
 
-	enum RotationOrder {
-		ROTATION_ORDER_XYZ,
-		ROTATION_ORDER_XZY,
-		ROTATION_ORDER_YXZ,
-		ROTATION_ORDER_YZX,
-		ROTATION_ORDER_ZXY,
-		ROTATION_ORDER_ZYX
-	};
-
 private:
 	// For the sake of ease of use, Node3D can operate with Transforms (Basis+Origin), Quaternion/Scale and Euler Rotation/Scale.
 	// Transform and Quaternion are stored in data.local_transform Basis (so quaternion is not really stored, but converted back/forth from 3x3 matrix on demand).
@@ -179,7 +170,7 @@ public:
 	void set_rotation_edit_mode(RotationEditMode p_mode);
 	RotationEditMode get_rotation_edit_mode() const;
 
-	void set_rotation_order(RotationOrder p_order);
+	void set_rotation_order(EulerOrder p_order);
 	void set_rotation(const Vector3 &p_euler_rad);
 	void set_scale(const Vector3 &p_scale);
 
@@ -188,7 +179,7 @@ public:
 
 	Vector3 get_position() const;
 
-	RotationOrder get_rotation_order() const;
+	EulerOrder get_rotation_order() const;
 	Vector3 get_rotation() const;
 	Vector3 get_scale() const;
 
@@ -277,6 +268,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(Node3D::RotationEditMode)
-VARIANT_ENUM_CAST(Node3D::RotationOrder)
 
 #endif // NODE_3D_H
