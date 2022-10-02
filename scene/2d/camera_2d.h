@@ -60,7 +60,6 @@ protected:
 	StringName canvas_group_name;
 	RID canvas;
 	Vector2 offset;
-	Vector2 zoom = Vector2(1, 1);
 	Vector2 zoom_scale = Vector2(1, 1);
 	AnchorMode anchor_mode = ANCHOR_MODE_DRAG_CENTER;
 	bool ignore_rotation = true;
@@ -146,8 +145,8 @@ public:
 	void clear_current();
 	bool is_current() const;
 
-	void set_zoom(const Vector2 &p_zoom);
-	Vector2 get_zoom() const;
+	void set_zoom_scale(const Vector2 &p_scale);
+	Vector2 get_zoom_scale() const;
 
 	Point2 get_camera_screen_center() const;
 

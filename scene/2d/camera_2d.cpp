@@ -74,19 +74,21 @@ void Camera2D::_update_process_callback() {
 	}
 }
 
-void Camera2D::set_zoom(const Vector2 &p_zoom) {
+void Camera2D::set_zoom_scale(const Vector2 &p_scale) {
 	// Setting zoom to zero causes 'affine_invert' issues
-	ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
+	//ERR_FAIL_COND_MSG(Math::is_zero_approx(p_zoom.x) || Math::is_zero_approx(p_zoom.y), "Zoom level must be different from 0 (can be negative).");
+	if (zoom_scale == p_scale) {
+		return;
+	}
 
-	zoom = p_zoom;
-	zoom_scale = Vector2(1, 1) / zoom;
+	zoom_scale = p_scale;
 	Point2 old_smoothed_camera_pos = smoothed_camera_pos;
 	_update_scroll();
 	smoothed_camera_pos = old_smoothed_camera_pos;
 };
 
-Vector2 Camera2D::get_zoom() const {
-	return zoom;
+Vector2 Camera2D::get_zoom_scale() const {
+	return zoom_scale;
 };
 
 Transform2D Camera2D::get_camera_transform() {
@@ -704,8 +706,8 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_target_position"), &Camera2D::get_camera_position);
 	ClassDB::bind_method(D_METHOD("get_screen_center_position"), &Camera2D::get_camera_screen_center);
 
-	ClassDB::bind_method(D_METHOD("set_zoom", "zoom"), &Camera2D::set_zoom);
-	ClassDB::bind_method(D_METHOD("get_zoom"), &Camera2D::get_zoom);
+	ClassDB::bind_method(D_METHOD("set_zoom_scale", "zoom_scale"), &Camera2D::set_zoom_scale);
+	ClassDB::bind_method(D_METHOD("get_zoom_scale"), &Camera2D::get_zoom_scale);
 
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &Camera2D::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &Camera2D::get_custom_viewport);
@@ -735,7 +737,7 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_mode", PROPERTY_HINT_ENUM, "Fixed TopLeft,Drag Center"), "set_anchor_mode", "get_anchor_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_rotation"), "set_ignore_rotation", "is_ignoring_rotation");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom", PROPERTY_HINT_LINK), "set_zoom", "get_zoom");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "zoom_scale", PROPERTY_HINT_LINK), "set_zoom_scale", "get_zoom_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_callback", "get_process_callback");
 
