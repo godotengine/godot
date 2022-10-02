@@ -74,8 +74,8 @@ class PopupMenu : public Popup {
 		bool shortcut_is_disabled = false;
 
 		// Returns (0,0) if icon is null.
-		Size2 get_icon_size() const {
-			return icon.is_null() ? Size2() : icon->get_size();
+		Size2i get_icon_size() const {
+			return icon.is_null() ? Size2i() : icon->get_size();
 		}
 
 		Item() {
