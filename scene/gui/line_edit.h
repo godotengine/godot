@@ -199,8 +199,6 @@ private:
 		float base_scale = 1.0;
 	} theme_cache;
 
-	bool _is_over_clear_button(const Point2 &p_pos) const;
-
 	void _clear_undo_stack();
 	void _clear_redo();
 	void _create_undo_state();
@@ -240,6 +238,7 @@ private:
 	void _ensure_menu();
 
 protected:
+	bool _is_over_clear_button(const Point2 &p_pos) const;
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	static void _bind_methods();
