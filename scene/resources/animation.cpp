@@ -5562,6 +5562,9 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 // Helper math functions for Variant.
 Variant Animation::add_variant(const Variant &a, const Variant &b) {
 	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			return real_t(a) + real_t(b);
+		}
 		return a;
 	}
 
@@ -5602,6 +5605,71 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 			return (a.operator Transform3D()) * (b.operator Transform3D());
 		}
 		default: {
+			if (a.is_array()) {
+				switch (a.get_type()) {
+					case Variant::ARRAY: {
+						Array arr_a = a;
+						Array arr_b = b;
+						int size = arr_a.size();
+						if (size == 0 || arr_b.size() != size) {
+							return a;
+						}
+
+						Array result;
+
+						if (arr_a.is_typed() && arr_b.is_typed()) {
+							uint32_t type_a = arr_a.get_typed_builtin();
+							uint32_t type_b = arr_b.get_typed_builtin();
+
+							if (type_a != type_b) {
+								// Do not add different typed Arrays, make an exception for numbers.
+								if ((type_a != Variant::FLOAT && type_b != Variant::INT) &&
+										type_a != Variant::INT && type_b != Variant::FLOAT) {
+									return a;
+								}
+							}
+
+							result.set_typed(type_a, StringName(), Variant());
+						}
+
+						result.resize(size);
+						for (int i = 0; i < size; i++) {
+							result[i] = add_variant(arr_a[i], arr_b[i]);
+						}
+						return result;
+					};
+					case Variant::PACKED_BYTE_ARRAY: {
+						return add_packed_array(PackedByteArray(a), PackedByteArray(b));
+					}
+					case Variant::PACKED_INT32_ARRAY: {
+						return add_packed_array(PackedInt32Array(a), PackedInt32Array(b));
+					}
+					case Variant::PACKED_INT64_ARRAY: {
+						return add_packed_array(PackedInt64Array(a), PackedInt64Array(b));
+					}
+					case Variant::PACKED_FLOAT32_ARRAY: {
+						return add_packed_array(PackedFloat32Array(a), PackedFloat32Array(b));
+					}
+					case Variant::PACKED_FLOAT64_ARRAY: {
+						return add_packed_array(PackedFloat64Array(a), PackedFloat64Array(b));
+					}
+					case Variant::PACKED_STRING_ARRAY: {
+						return b; // Special case. Just override.
+					}
+					case Variant::PACKED_VECTOR2_ARRAY: {
+						return add_packed_array(PackedVector2Array(a), PackedVector2Array(b));
+					}
+					case Variant::PACKED_VECTOR3_ARRAY: {
+						return add_packed_array(PackedVector3Array(a), PackedVector3Array(b));
+					}
+					case Variant::PACKED_COLOR_ARRAY: {
+						return add_packed_array(PackedColorArray(a), PackedColorArray(b));
+					}
+					default: {
+						return a;
+					}
+				}
+			}
 			return Variant::evaluate(Variant::OP_ADD, a, b);
 		}
 	}
@@ -5609,6 +5677,9 @@ Variant Animation::add_variant(const Variant &a, const Variant &b) {
 
 Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 	if (a.get_type() != b.get_type()) {
+		if (a.is_num() && b.is_num()) {
+			return real_t(a) - real_t(b);
+		}
 		return a;
 	}
 
@@ -5649,6 +5720,71 @@ Variant Animation::subtract_variant(const Variant &a, const Variant &b) {
 			return (b.operator Transform3D()).inverse() * (a.operator Transform3D());
 		}
 		default: {
+			if (a.is_array()) {
+				switch (a.get_type()) {
+					case Variant::ARRAY: {
+						Array arr_a = a;
+						Array arr_b = b;
+						int size = arr_a.size();
+						if (size == 0 || arr_b.size() != size) {
+							return a;
+						}
+
+						Array result;
+
+						if (arr_a.is_typed() && arr_b.is_typed()) {
+							uint32_t type_a = arr_a.get_typed_builtin();
+							uint32_t type_b = arr_b.get_typed_builtin();
+
+							if (type_a != type_b) {
+								// Do not subtract different typed Arrays, make an exception for numbers.
+								if ((type_a != Variant::FLOAT && type_b != Variant::INT) &&
+										type_a != Variant::INT && type_b != Variant::FLOAT) {
+									return a;
+								}
+							}
+
+							result.set_typed(type_a, StringName(), Variant());
+						}
+
+						result.resize(size);
+						for (int i = 0; i < size; i++) {
+							result[i] = subtract_variant(arr_a[i], arr_b[i]);
+						}
+						return result;
+					};
+					case Variant::PACKED_BYTE_ARRAY: {
+						return subtract_packed_array(PackedByteArray(a), PackedByteArray(b));
+					}
+					case Variant::PACKED_INT32_ARRAY: {
+						return subtract_packed_array(PackedInt32Array(a), PackedInt32Array(b));
+					}
+					case Variant::PACKED_INT64_ARRAY: {
+						return subtract_packed_array(PackedInt64Array(a), PackedInt64Array(b));
+					}
+					case Variant::PACKED_FLOAT32_ARRAY: {
+						return subtract_packed_array(PackedFloat32Array(a), PackedFloat32Array(b));
+					}
+					case Variant::PACKED_FLOAT64_ARRAY: {
+						return subtract_packed_array(PackedFloat64Array(a), PackedFloat64Array(b));
+					}
+					case Variant::PACKED_STRING_ARRAY: {
+						return a; // Special case. Leave as is.
+					}
+					case Variant::PACKED_VECTOR2_ARRAY: {
+						return subtract_packed_array(PackedVector2Array(a), PackedVector2Array(b));
+					}
+					case Variant::PACKED_VECTOR3_ARRAY: {
+						return subtract_packed_array(PackedVector3Array(a), PackedVector3Array(b));
+					}
+					case Variant::PACKED_COLOR_ARRAY: {
+						return subtract_packed_array(PackedColorArray(a), PackedColorArray(b));
+					}
+					default: {
+						return a;
+					}
+				}
+			}
 			return Variant::evaluate(Variant::OP_SUBTRACT, a, b);
 		}
 	}
@@ -5858,164 +5994,134 @@ Variant Animation::interpolate_variant(const Variant &a, const Variant &b, float
 
 			return dst;
 		}
-		case Variant::PACKED_INT32_ARRAY: {
-			const Vector<int32_t> *arr_a = Object::cast_to<Vector<int32_t>>(a);
-			const Vector<int32_t> *arr_b = Object::cast_to<Vector<int32_t>>(b);
-			int32_t sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<int32_t> v;
-				v.resize(sz);
-				{
-					int32_t *vw = v.ptrw();
-					const int32_t *ar = arr_a->ptr();
-					const int32_t *br = arr_b->ptr();
-
-					Variant va;
-					for (int32_t i = 0; i < sz; i++) {
-						va = interpolate_variant(ar[i], br[i], c);
-						vw[i] = va;
-					}
-				}
-				return v;
-			}
-		}
-		case Variant::PACKED_INT64_ARRAY: {
-			const Vector<int64_t> *arr_a = Object::cast_to<Vector<int64_t>>(a);
-			const Vector<int64_t> *arr_b = Object::cast_to<Vector<int64_t>>(b);
-			int64_t sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<int64_t> v;
-				v.resize(sz);
-				{
-					int64_t *vw = v.ptrw();
-					const int64_t *ar = arr_a->ptr();
-					const int64_t *br = arr_b->ptr();
-
-					Variant va;
-					for (int64_t i = 0; i < sz; i++) {
-						va = interpolate_variant(ar[i], br[i], c);
-						vw[i] = va;
-					}
-				}
-				return v;
-			}
-		}
-		case Variant::PACKED_FLOAT32_ARRAY: {
-			const Vector<float> *arr_a = Object::cast_to<Vector<float>>(a);
-			const Vector<float> *arr_b = Object::cast_to<Vector<float>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<float> v;
-				v.resize(sz);
-				{
-					float *vw = v.ptrw();
-					const float *ar = arr_a->ptr();
-					const float *br = arr_b->ptr();
-
-					Variant va;
-					for (int i = 0; i < sz; i++) {
-						va = interpolate_variant(ar[i], br[i], c);
-						vw[i] = va;
-					}
-				}
-				return v;
-			}
-		}
-		case Variant::PACKED_FLOAT64_ARRAY: {
-			const Vector<double> *arr_a = Object::cast_to<Vector<double>>(a);
-			const Vector<double> *arr_b = Object::cast_to<Vector<double>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<double> v;
-				v.resize(sz);
-				{
-					double *vw = v.ptrw();
-					const double *ar = arr_a->ptr();
-					const double *br = arr_b->ptr();
-
-					Variant va;
-					for (int i = 0; i < sz; i++) {
-						va = interpolate_variant(ar[i], br[i], c);
-						vw[i] = va;
-					}
-				}
-				return v;
-			}
-		}
-		case Variant::PACKED_VECTOR2_ARRAY: {
-			const Vector<Vector2> *arr_a = Object::cast_to<Vector<Vector2>>(a);
-			const Vector<Vector2> *arr_b = Object::cast_to<Vector<Vector2>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<Vector2> v;
-				v.resize(sz);
-				{
-					Vector2 *vw = v.ptrw();
-					const Vector2 *ar = arr_a->ptr();
-					const Vector2 *br = arr_b->ptr();
-
-					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].lerp(br[i], c);
-					}
-				}
-				return v;
-			}
-		}
-		case Variant::PACKED_VECTOR3_ARRAY: {
-			const Vector<Vector3> *arr_a = Object::cast_to<Vector<Vector3>>(a);
-			const Vector<Vector3> *arr_b = Object::cast_to<Vector<Vector3>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<Vector3> v;
-				v.resize(sz);
-				{
-					Vector3 *vw = v.ptrw();
-					const Vector3 *ar = arr_a->ptr();
-					const Vector3 *br = arr_b->ptr();
-
-					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].lerp(br[i], c);
-					}
-				}
-				return v;
-			}
-		}
-		case Variant::PACKED_COLOR_ARRAY: {
-			const Vector<Color> *arr_a = Object::cast_to<Vector<Color>>(a);
-			const Vector<Color> *arr_b = Object::cast_to<Vector<Color>>(b);
-			int sz = arr_a->size();
-			if (sz == 0 || arr_b->size() != sz) {
-				return a;
-			} else {
-				Vector<Color> v;
-				v.resize(sz);
-				{
-					Color *vw = v.ptrw();
-					const Color *ar = arr_a->ptr();
-					const Color *br = arr_b->ptr();
-
-					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].lerp(br[i], c);
-					}
-				}
-				return v;
-			}
-		}
 		default: {
+			if (a.is_array()) {
+				switch (a.get_type()) {
+					case Variant::ARRAY: {
+						Array arr_a = a;
+						Array arr_b = b;
+						int size = arr_a.size();
+						if (size == 0 || arr_b.size() != size) {
+							return a;
+						}
+
+						Array result;
+
+						if (arr_a.is_typed() && arr_b.is_typed()) {
+							uint32_t type_a = arr_a.get_typed_builtin();
+							uint32_t type_b = arr_b.get_typed_builtin();
+
+							if (type_a != type_b) {
+								// Do not interpolate different typed Arrays, make an exception for numbers.
+								if ((type_a != Variant::FLOAT && type_b != Variant::INT) &&
+										type_a != Variant::INT && type_b != Variant::FLOAT) {
+									return a;
+								}
+							}
+
+							result.set_typed(type_a, StringName(), Variant());
+						}
+
+						result.resize(size);
+						for (int i = 0; i < size; i++) {
+							result[i] = interpolate_variant(arr_a[i], arr_b[i], c);
+						}
+						return result;
+					} break;
+					case Variant::PACKED_BYTE_ARRAY: {
+						return interpolate_packed_array(PackedByteArray(a), PackedByteArray(b), c);
+					}
+					case Variant::PACKED_INT32_ARRAY: {
+						return interpolate_packed_array(PackedInt32Array(a), PackedInt32Array(b), c);
+					}
+					case Variant::PACKED_INT64_ARRAY: {
+						return interpolate_packed_array(PackedInt64Array(a), PackedInt64Array(b), c);
+					}
+					case Variant::PACKED_FLOAT32_ARRAY: {
+						return interpolate_packed_array(PackedFloat32Array(a), PackedFloat32Array(b), c);
+					}
+					case Variant::PACKED_FLOAT64_ARRAY: {
+						return interpolate_packed_array(PackedFloat64Array(a), PackedFloat64Array(b), c);
+					}
+					case Variant::PACKED_STRING_ARRAY: {
+						return interpolate_packed_array(PackedStringArray(a), PackedStringArray(b), c);
+					}
+					case Variant::PACKED_VECTOR2_ARRAY: {
+						return interpolate_packed_array(PackedVector2Array(a), PackedVector2Array(b), c);
+					}
+					case Variant::PACKED_VECTOR3_ARRAY: {
+						return interpolate_packed_array(PackedVector3Array(a), PackedVector3Array(b), c);
+					}
+					case Variant::PACKED_COLOR_ARRAY: {
+						return interpolate_packed_array(PackedColorArray(a), PackedColorArray(b), c);
+					}
+					default: {
+						return a;
+					}
+				}
+			}
 			return c < 0.5 ? a : b;
 		}
+	}
+}
+
+template <class T>
+Vector<T> Animation::add_packed_array(Vector<T> a, Vector<T> b) {
+	int size = a.size();
+	if (size == 0 || b.size() != size) {
+		return a;
+	} else {
+		Vector<T> result;
+		result.resize(size);
+
+		T *result_ptr = result.ptrw();
+		const T *a_ptr = a.ptr();
+		const T *b_ptr = b.ptr();
+
+		for (int i = 0; i < size; i++) {
+			result_ptr[i] = a_ptr[i] + b_ptr[i];
+		}
+		return result;
+	}
+}
+
+template <class T>
+Vector<T> Animation::subtract_packed_array(Vector<T> a, Vector<T> b) {
+	int size = a.size();
+	if (size == 0 || b.size() != size) {
+		return a;
+	} else {
+		Vector<T> result;
+		result.resize(size);
+
+		T *result_ptr = result.ptrw();
+		const T *a_ptr = a.ptr();
+		const T *b_ptr = b.ptr();
+
+		for (int i = 0; i < size; i++) {
+			result_ptr[i] = a_ptr[i] - b_ptr[i];
+		}
+		return result;
+	}
+}
+
+template <class T>
+Vector<T> Animation::interpolate_packed_array(Vector<T> a, Vector<T> b, float c) {
+	int size = a.size();
+	if (size == 0 || b.size() != size) {
+		return a;
+	} else {
+		Vector<T> result;
+		result.resize(size);
+
+		T *result_ptr = result.ptrw();
+		const T *a_ptr = a.ptr();
+		const T *b_ptr = b.ptr();
+
+		for (int i = 0; i < size; i++) {
+			result_ptr[i] = interpolate_variant(a_ptr[i], b_ptr[i], c);
+		}
+		return result;
 	}
 }
 

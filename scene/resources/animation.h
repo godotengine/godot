@@ -502,6 +502,13 @@ public:
 	static Variant blend_variant(const Variant &a, const Variant &b, float c);
 	static Variant interpolate_variant(const Variant &a, const Variant &b, float c);
 
+	template <class T>
+	static Vector<T> add_packed_array(Vector<T> a, Vector<T> b);
+	template <class T>
+	static Vector<T> subtract_packed_array(Vector<T> a, Vector<T> b);
+	template <class T>
+	static Vector<T> interpolate_packed_array(Vector<T> a, Vector<T> b, float c);
+
 	Animation();
 	~Animation();
 };
