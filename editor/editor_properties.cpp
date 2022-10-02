@@ -2725,7 +2725,7 @@ void EditorPropertyQuaternion::update_property() {
 	spin[2]->set_value(val.z);
 	spin[3]->set_value(val.w);
 	if (!is_grabbing_euler()) {
-		Vector3 v = val.normalized().get_euler_yxz();
+		Vector3 v = val.normalized().get_euler();
 		edit_euler.x = Math::rad_to_deg(v.x);
 		edit_euler.y = Math::rad_to_deg(v.y);
 		edit_euler.z = Math::rad_to_deg(v.z);

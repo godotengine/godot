@@ -99,8 +99,9 @@
 		</method>
 		<method name="get_euler" qualifiers="const">
 			<return type="Vector3" />
+			<param index="0" name="order" type="int" default="2" />
 			<description>
-				Returns Euler angles (in the YXZ convention: when decomposing, first Z, then X, and Y last) corresponding to the rotation represented by the unit quaternion. Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
+				Returns the quaternion's rotation in the form of Euler angles. The Euler order depends on the [param order] parameter, for example using the YXZ convention: since this method decomposes, first Z, then X, and Y last. See the [enum EulerOrder] enum for possible values. The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
