@@ -69,7 +69,7 @@ protected:
 public:
 	virtual int get_width() const;
 	virtual int get_height() const;
-	virtual Size2 get_size() const;
+	virtual Size2i get_size() const;
 
 	virtual bool is_pixel_opaque(int p_x, int p_y) const;
 

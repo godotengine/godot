@@ -55,8 +55,8 @@ int Texture2D::get_height() const {
 	return 0;
 }
 
-Size2 Texture2D::get_size() const {
-	return Size2(get_width(), get_height());
+Size2i Texture2D::get_size() const {
+	return Size2i(get_width(), get_height());
 }
 
 bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
