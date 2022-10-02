@@ -453,7 +453,7 @@ void Basis::get_rotation_axis_angle_local(Vector3 &p_axis, real_t &p_angle) cons
 
 Vector3 Basis::get_euler(EulerOrder p_order) const {
 	switch (p_order) {
-		case EULER_ORDER_XYZ: {
+		case EulerOrder::XYZ: {
 			// Euler angles in XYZ convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -488,7 +488,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 			return euler;
 		} break;
-		case EULER_ORDER_XZY: {
+		case EulerOrder::XZY: {
 			// Euler angles in XZY convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -517,7 +517,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 			return euler;
 		} break;
-		case EULER_ORDER_YXZ: {
+		case EulerOrder::YXZ: {
 			// Euler angles in YXZ convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -555,7 +555,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 
 			return euler;
 		} break;
-		case EULER_ORDER_YZX: {
+		case EulerOrder::YZX: {
 			// Euler angles in YZX convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -584,7 +584,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 			return euler;
 		} break;
-		case EULER_ORDER_ZXY: {
+		case EulerOrder::ZXY: {
 			// Euler angles in ZXY convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -612,7 +612,7 @@ Vector3 Basis::get_euler(EulerOrder p_order) const {
 			}
 			return euler;
 		} break;
-		case EULER_ORDER_ZYX: {
+		case EulerOrder::ZYX: {
 			// Euler angles in ZYX convention.
 			// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 			//
@@ -663,22 +663,22 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 	Basis zmat(c, -s, 0, s, c, 0, 0, 0, 1);
 
 	switch (p_order) {
-		case EULER_ORDER_XYZ: {
+		case EulerOrder::XYZ: {
 			*this = xmat * (ymat * zmat);
 		} break;
-		case EULER_ORDER_XZY: {
+		case EulerOrder::XZY: {
 			*this = xmat * zmat * ymat;
 		} break;
-		case EULER_ORDER_YXZ: {
+		case EulerOrder::YXZ: {
 			*this = ymat * xmat * zmat;
 		} break;
-		case EULER_ORDER_YZX: {
+		case EulerOrder::YZX: {
 			*this = ymat * zmat * xmat;
 		} break;
-		case EULER_ORDER_ZXY: {
+		case EulerOrder::ZXY: {
 			*this = zmat * xmat * ymat;
 		} break;
-		case EULER_ORDER_ZYX: {
+		case EulerOrder::ZYX: {
 			*this = zmat * ymat * xmat;
 		} break;
 		default: {

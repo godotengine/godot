@@ -116,6 +116,15 @@ enum Corner {
 	CORNER_BOTTOM_LEFT
 };
 
+enum class EulerOrder {
+	XYZ,
+	XZY,
+	YXZ,
+	YZX,
+	ZXY,
+	ZYX
+};
+
 /**
  * The "Real" type is an abstract type used for real numbers, such as 1.5,
  * in contrast to integer numbers. Precision can be controlled with the

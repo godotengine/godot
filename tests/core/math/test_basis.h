@@ -46,26 +46,26 @@ Vector3 rad2deg(const Vector3 &p_rotation) {
 	return p_rotation / Math_PI * 180.0;
 }
 
-String get_rot_order_name(Basis::EulerOrder ro) {
+String get_rot_order_name(EulerOrder ro) {
 	switch (ro) {
-		case Basis::EULER_ORDER_XYZ:
+		case EulerOrder::XYZ:
 			return "XYZ";
-		case Basis::EULER_ORDER_XZY:
+		case EulerOrder::XZY:
 			return "XZY";
-		case Basis::EULER_ORDER_YZX:
+		case EulerOrder::YZX:
 			return "YZX";
-		case Basis::EULER_ORDER_YXZ:
+		case EulerOrder::YXZ:
 			return "YXZ";
-		case Basis::EULER_ORDER_ZXY:
+		case EulerOrder::ZXY:
 			return "ZXY";
-		case Basis::EULER_ORDER_ZYX:
+		case EulerOrder::ZYX:
 			return "ZYX";
 		default:
 			return "[Not supported]";
 	}
 }
 
-void test_rotation(Vector3 deg_original_euler, Basis::EulerOrder rot_order) {
+void test_rotation(Vector3 deg_original_euler, EulerOrder rot_order) {
 	// This test:
 	// 1. Converts the rotation vector from deg to rad.
 	// 2. Converts euler to basis.
@@ -98,8 +98,8 @@ void test_rotation(Vector3 deg_original_euler, Basis::EulerOrder rot_order) {
 	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Fail due to Z %s\n", String(res.get_column(2))).utf8().ptr());
 
 	// Double check `to_rotation` decomposing with XYZ rotation order.
-	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler(Basis::EULER_ORDER_XYZ);
-	Basis rotation_from_xyz_computed_euler = Basis::from_euler(euler_xyz_from_rotation, Basis::EULER_ORDER_XYZ);
+	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler(EulerOrder::XYZ);
+	Basis rotation_from_xyz_computed_euler = Basis::from_euler(euler_xyz_from_rotation, EulerOrder::XYZ);
 
 	res = to_rotation.inverse() * rotation_from_xyz_computed_euler;
 
@@ -113,13 +113,13 @@ void test_rotation(Vector3 deg_original_euler, Basis::EulerOrder rot_order) {
 }
 
 TEST_CASE("[Basis] Euler conversions") {
-	Vector<Basis::EulerOrder> euler_order_to_test;
-	euler_order_to_test.push_back(Basis::EULER_ORDER_XYZ);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_XZY);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_YZX);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_YXZ);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_ZXY);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_ZYX);
+	Vector<EulerOrder> euler_order_to_test;
+	euler_order_to_test.push_back(EulerOrder::XYZ);
+	euler_order_to_test.push_back(EulerOrder::XZY);
+	euler_order_to_test.push_back(EulerOrder::YZX);
+	euler_order_to_test.push_back(EulerOrder::YXZ);
+	euler_order_to_test.push_back(EulerOrder::ZXY);
+	euler_order_to_test.push_back(EulerOrder::ZYX);
 
 	Vector<Vector3> vectors_to_test;
 
@@ -185,13 +185,13 @@ TEST_CASE("[Basis] Euler conversions") {
 }
 
 TEST_CASE("[Stress][Basis] Euler conversions") {
-	Vector<Basis::EulerOrder> euler_order_to_test;
-	euler_order_to_test.push_back(Basis::EULER_ORDER_XYZ);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_XZY);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_YZX);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_YXZ);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_ZXY);
-	euler_order_to_test.push_back(Basis::EULER_ORDER_ZYX);
+	Vector<EulerOrder> euler_order_to_test;
+	euler_order_to_test.push_back(EulerOrder::XYZ);
+	euler_order_to_test.push_back(EulerOrder::XZY);
+	euler_order_to_test.push_back(EulerOrder::YZX);
+	euler_order_to_test.push_back(EulerOrder::YXZ);
+	euler_order_to_test.push_back(EulerOrder::ZXY);
+	euler_order_to_test.push_back(EulerOrder::ZYX);
 
 	Vector<Vector3> vectors_to_test;
 	// Add 1000 random vectors with weirds numbers.
