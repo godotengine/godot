@@ -350,24 +350,24 @@ public:
 				if (validator & 0x80000000) {
 					continue; //uninitialized
 				}
-				if (validator != 0xFFFFFFFF) {
+				if (chunks != nullptr && validator != 0xFFFFFFFF) {
 					chunks[i / elements_in_chunk][i % elements_in_chunk].~T();
 				}
 			}
 		}
 
 		uint32_t chunk_count = max_alloc / elements_in_chunk;
+		if (chunks != nullptr) {
+			memfree(chunks);
+			memfree(free_list_chunks);
+			memfree(validator_chunks);
+		}
 		for (uint32_t i = 0; i < chunk_count; i++) {
 			memfree(chunks[i]);
 			memfree(validator_chunks[i]);
 			memfree(free_list_chunks[i]);
 		}
 
-		if (chunks) {
-			memfree(chunks);
-			memfree(free_list_chunks);
-			memfree(validator_chunks);
-		}
 	}
 };
 
