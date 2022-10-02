@@ -676,6 +676,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 			if (c->extends_used) {
 				String path = "";
+				int entends_idx = 0;
 				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
 					path = c->extends_path;
 					if (path.is_relative_path()) {
@@ -687,7 +688,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						}
 					}
 				} else if (c->extends.size() != 0) {
-					const StringName &base = c->extends[0];
+					const StringName &base = c->extends[entends_idx++];
 
 					if (ScriptServer::is_global_class(base)) {
 						path = ScriptServer::get_global_class_path(base);
@@ -697,6 +698,19 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				if (!path.is_empty()) {
 					if (path != get_path()) {
 						Ref<GDScript> bf = ResourceLoader::load(path);
+
+						for (int i = entends_idx; i < c->extends.size(); ++i) {
+							if (bf.is_null()) {
+								break;
+							}
+							HashMap<StringName, Ref<GDScript>>::ConstIterator E = bf->get_subclasses().find(c->extends[i]);
+							if (!E) {
+								bf = Ref<GDScript>();
+								break;
+							}
+							Ref<GDScript> tmp_script = bf; // because inner_script may hold the only ref to is subclass...
+							bf = E->value;
+						}
 
 						if (bf.is_valid()) {
 							base_cache = bf;
