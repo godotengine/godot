@@ -290,7 +290,7 @@
 		<member name="rotation_edit_mode" type="int" setter="set_rotation_edit_mode" getter="get_rotation_edit_mode" enum="Node3D.RotationEditMode" default="0">
 			Specify how rotation (and scale) will be presented in the editor.
 		</member>
-		<member name="rotation_order" type="int" setter="set_rotation_order" getter="get_rotation_order" enum="Node3D.RotationOrder" default="2">
+		<member name="rotation_order" type="int" setter="set_rotation_order" getter="get_rotation_order" enum="EulerOrder" default="2">
 			Specify the axis rotation order of the [member rotation] property. The final orientation is constructed by rotating the Euler angles in the order specified by this property.
 		</member>
 		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
@@ -341,18 +341,6 @@
 		<constant name="ROTATION_EDIT_MODE_QUATERNION" value="1" enum="RotationEditMode">
 		</constant>
 		<constant name="ROTATION_EDIT_MODE_BASIS" value="2" enum="RotationEditMode">
-		</constant>
-		<constant name="ROTATION_ORDER_XYZ" value="0" enum="RotationOrder">
-		</constant>
-		<constant name="ROTATION_ORDER_XZY" value="1" enum="RotationOrder">
-		</constant>
-		<constant name="ROTATION_ORDER_YXZ" value="2" enum="RotationOrder">
-		</constant>
-		<constant name="ROTATION_ORDER_YZX" value="3" enum="RotationOrder">
-		</constant>
-		<constant name="ROTATION_ORDER_ZXY" value="4" enum="RotationOrder">
-		</constant>
-		<constant name="ROTATION_ORDER_ZYX" value="5" enum="RotationOrder">
 		</constant>
 	</constants>
 </class>
