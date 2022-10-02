@@ -115,8 +115,8 @@ int ViewportTexture::get_height() const {
 	return vp->size.height;
 }
 
-Size2 ViewportTexture::get_size() const {
-	ERR_FAIL_COND_V_MSG(!vp, Size2(), "Viewport Texture must be set to use it.");
+Size2i ViewportTexture::get_size() const {
+	ERR_FAIL_COND_V_MSG(!vp, Size2i(), "Viewport Texture must be set to use it.");
 	return vp->size;
 }
 
