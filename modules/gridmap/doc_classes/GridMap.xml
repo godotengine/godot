@@ -57,7 +57,7 @@
 			<return type="Basis" />
 			<param index="0" name="position" type="Vector3i" />
 			<description>
-				Returns the basis that gives the specificed cell its orientation.
+				Returns the basis that gives the specified cell its orientation.
 			</description>
 		</method>
 		<method name="get_cell_item_orientation" qualifiers="const">

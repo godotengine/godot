@@ -94,7 +94,7 @@ PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 		warnings.push_back(RTR("A valid NodePath must be set in the \"Spawn Path\" property in order for MultiplayerSpawner to be able to spawn Nodes."));
 	}
 	bool has_scenes = get_spawnable_scene_count() > 0;
-	// Can't check if method is overriden in placeholder scripts.
+	// Can't check if method is overridden in placeholder scripts.
 	bool has_placeholder_script = get_script_instance() && get_script_instance()->is_placeholder();
 	if (!has_scenes && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom) && !has_placeholder_script) {
 		warnings.push_back(RTR("A list of PackedScenes must be set in the \"Auto Spawn List\" property in order for MultiplayerSpawner to automatically spawn them remotely when added as child of \"spawn_path\"."));

@@ -874,6 +874,11 @@ void AnimationPlayerEditor::_update_player() {
 	onion_toggle->set_disabled(no_anims_found);
 	onion_skinning->set_disabled(no_anims_found);
 
+	if (hack_disable_onion_skinning) {
+		onion_toggle->set_disabled(true);
+		onion_skinning->set_disabled(true);
+	}
+
 	_update_animation_list_icons();
 
 	updating = false;
@@ -1677,6 +1682,16 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
 	onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
 	hb->add_child(onion_skinning);
+
+	// FIXME: Onion skinning disabled for now as it's broken and triggers fast
+	// flickering red/blue modulation (GH-53870).
+	if (hack_disable_onion_skinning) {
+		onion_toggle->set_disabled(true);
+		onion_toggle->set_tooltip_text(TTR("Onion Skinning temporarily disabled due to rendering bug."));
+
+		onion_skinning->set_disabled(true);
+		onion_skinning->set_tooltip_text(TTR("Onion Skinning temporarily disabled due to rendering bug."));
+	}
 
 	hb->add_child(memnew(VSeparator));
 

@@ -4152,8 +4152,8 @@ RID RenderingDeviceVulkan::framebuffer_create_multipass(const Vector<RID> &p_tex
 				size.height = texture->height;
 				size_set = true;
 			} else if (texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
-				// If this is not the first attachement we assume this is used as the VRS attachment.
-				// In this case this texture will be 1/16th the size of the color attachement.
+				// If this is not the first attachment we assume this is used as the VRS attachment.
+				// In this case this texture will be 1/16th the size of the color attachment.
 				// So we skip the size check.
 			} else {
 				ERR_FAIL_COND_V_MSG((uint32_t)size.width != texture->width || (uint32_t)size.height != texture->height, RID(),
@@ -4828,7 +4828,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 				for (uint32_t j = 0; j < binding_count; j++) {
 					const SpvReflectDescriptorBinding &binding = *bindings[j];
 
-					RenderingDeviceVulkanShaderBinaryDataBinding info;
+					RenderingDeviceVulkanShaderBinaryDataBinding info{};
 
 					bool need_array_dimensions = false;
 					bool need_block_size = false;
@@ -4979,7 +4979,7 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 
 					for (uint32_t j = 0; j < sc_count; j++) {
 						int32_t existing = -1;
-						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst;
+						RenderingDeviceVulkanShaderBinarySpecializationConstant sconst{};
 						SpvReflectSpecializationConstant *spc = spec_constants[j];
 
 						sconst.constant_id = spc->constant_id;

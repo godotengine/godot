@@ -38,9 +38,15 @@ const Vector<Vector3> &NavigationPathQueryResult3D::get_path() const {
 	return path;
 }
 
+void NavigationPathQueryResult3D::reset() {
+	path.clear();
+}
+
 void NavigationPathQueryResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult3D::set_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult3D::get_path);
+
+	ClassDB::bind_method(D_METHOD("reset"), &NavigationPathQueryResult3D::reset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "path"), "set_path", "get_path");
 }

@@ -113,7 +113,12 @@ void ResourceUID::set_id(ID p_id, const String &p_path) {
 	MutexLock l(mutex);
 	ERR_FAIL_COND(!unique_ids.has(p_id));
 	CharString cs = p_path.utf8();
-	if (strcmp(cs.ptr(), unique_ids[p_id].cs.ptr()) != 0) {
+	const char *update_ptr = cs.ptr();
+	const char *cached_ptr = unique_ids[p_id].cs.ptr();
+	if (update_ptr == nullptr && cached_ptr == nullptr) {
+		return; // Both are empty strings.
+	}
+	if ((update_ptr == nullptr) != (cached_ptr == nullptr) || strcmp(update_ptr, cached_ptr) != 0) {
 		unique_ids[p_id].cs = cs;
 		unique_ids[p_id].saved_to_cache = false; //changed
 		changed = true;

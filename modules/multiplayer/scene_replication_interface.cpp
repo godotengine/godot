@@ -125,9 +125,12 @@ Error SceneReplicationInterface::on_replication_start(Object *p_obj, Variant p_c
 	MultiplayerSynchronizer *sync = Object::cast_to<MultiplayerSynchronizer>(p_config.get_validated_object());
 	ERR_FAIL_COND_V(!sync, ERR_INVALID_PARAMETER);
 
+	const ObjectID oid = node->get_instance_id();
+	MultiplayerSpawner *spawner = rep_state->get_spawner(oid);
+	ERR_FAIL_COND_V_MSG(spawner && spawner->get_multiplayer_authority() != sync->get_multiplayer_authority(), ERR_INVALID_PARAMETER, "The authority of the MultiplayerSynchronizer \"" + String(sync->get_path()) + "\" differs from the authority of its \"root_node\" spawner and will not sync. Change the \"root_node\" of the MultiplayerSynchronizer to be a child of the scene root instead.");
+
 	// Add to synchronizer list and setup visibility.
 	rep_state->config_add_sync(node, sync);
-	const ObjectID oid = node->get_instance_id();
 	sync->connect("visibility_changed", callable_mp(this, &SceneReplicationInterface::_visibility_changed).bind(oid));
 	if (multiplayer->has_multiplayer_peer() && sync->is_multiplayer_authority()) {
 		_update_sync_visibility(0, oid);

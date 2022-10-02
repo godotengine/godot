@@ -60,7 +60,7 @@ BASE_STRINGS = [
 ## <xml-line-number-hack from="https://stackoverflow.com/a/36430270/10846399">
 import sys
 
-sys.modules["_elementtree"] = None
+sys.modules["_elementtree"] = None  # type: ignore
 import xml.etree.ElementTree as ET
 
 ## override the parser to get the line number

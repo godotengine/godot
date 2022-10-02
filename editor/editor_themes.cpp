@@ -286,7 +286,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme, f
 	saturation_exceptions.insert("Logo");
 
 	// Accent color conversion map.
-	// It is used on soem icons (checkbox, radio, toggle, etc.), regardless of the dark
+	// It is used on some icons (checkbox, radio, toggle, etc.), regardless of the dark
 	// or light mode.
 	HashMap<Color, Color> accent_color_map;
 	HashSet<StringName> accent_color_icons;
