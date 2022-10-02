@@ -362,7 +362,6 @@ public:
 			memfree(validator_chunks[i]);
 			memfree(free_list_chunks[i]);
 		}
-		
 		if (chunks != nullptr) {
 			memfree(chunks);
 			memfree(free_list_chunks);
