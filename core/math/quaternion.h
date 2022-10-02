@@ -66,9 +66,7 @@ struct _NO_DISCARD_ Quaternion {
 	_FORCE_INLINE_ real_t dot(const Quaternion &p_q) const;
 	real_t angle_to(const Quaternion &p_to) const;
 
-	Vector3 get_euler_xyz() const;
-	Vector3 get_euler_yxz() const;
-	Vector3 get_euler() const { return get_euler_yxz(); };
+	Vector3 get_euler(EulerOrder p_order = EulerOrder::YXZ) const;
 	static Quaternion from_euler(const Vector3 &p_euler);
 
 	Quaternion slerp(const Quaternion &p_to, const real_t &p_weight) const;
