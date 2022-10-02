@@ -505,6 +505,9 @@ void RasterizerStorage::_multimesh_add_to_interpolation_lists(RID p_multimesh, M
 void RasterizerStorage::multimesh_set_as_bulk_array_interpolated(RID p_multimesh, const PoolVector<float> &p_array, const PoolVector<float> &p_array_prev) {
 	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
+		ERR_FAIL_COND_MSG(p_array.size() != mmi->_data_curr.size(), vformat("Array for current frame should have %d elements, got %d instead.", mmi->_data_curr.size(), p_array.size()));
+		ERR_FAIL_COND_MSG(p_array_prev.size() != mmi->_data_prev.size(), vformat("Array for previous frame should have %d elements, got %d instead.", mmi->_data_prev.size(), p_array_prev.size()));
+
 		// We are assuming that mmi->interpolated is the case,
 		// (can possibly assert this?)
 		// even if this flag hasn't been set - just calling this function suggests
@@ -528,6 +531,8 @@ void RasterizerStorage::multimesh_set_as_bulk_array(RID p_multimesh, const PoolV
 	MMInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
 		if (mmi->interpolated) {
+			ERR_FAIL_COND_MSG(p_array.size() != mmi->_data_curr.size(), vformat("Array should have %d elements, got %d instead.", mmi->_data_curr.size(), p_array.size()));
+
 			mmi->_data_curr = p_array;
 			_multimesh_add_to_interpolation_lists(p_multimesh, *mmi);
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
