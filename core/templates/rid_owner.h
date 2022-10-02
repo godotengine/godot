@@ -357,15 +357,16 @@ public:
 		}
 
 		uint32_t chunk_count = max_alloc / elements_in_chunk;
-		if (chunks != nullptr) {
-			memfree(chunks);
-			memfree(free_list_chunks);
-			memfree(validator_chunks);
-		}
 		for (uint32_t i = 0; i < chunk_count; i++) {
 			memfree(chunks[i]);
 			memfree(validator_chunks[i]);
 			memfree(free_list_chunks[i]);
+		}
+		
+		if (chunks != nullptr) {
+			memfree(chunks);
+			memfree(free_list_chunks);
+			memfree(validator_chunks);
 		}
 
 	}
