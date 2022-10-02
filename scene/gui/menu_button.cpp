@@ -40,17 +40,19 @@ void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (disable_shortcuts) {
-		return;
-	}
-
-	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event) || Object::cast_to<InputEventShortcut>(*p_event))) {
-		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
-			return;
-		}
-
-		if (popup->activate_item_by_event(p_event, false)) {
+	if (popup->activate_item_by_event(p_event, false)) {
+		
+		if (!is_disabled() && is_visible_in_tree() && get_parent() && p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event) || Object::cast_to<InputEventShortcut>(*p_event))) {
 			accept_event();
+			if (p_event->is_pressed()) {
+				set_action_mode(ACTION_MODE_BUTTON_RELEASE)
+				pressed();
+				emit_signal(SNAME("button_down"));
+			} else
+			{
+				clicked = false;
+				emit_signal(SNAME("button_up"));
+			}
 		}
 	}
 }
