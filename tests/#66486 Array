@@ -1,0 +1,24 @@
+class MyClass:
+    func _init(num: int):
+        print(num)
+
+
+func _ready():
+    var my_object: MyClass = MyClass.new(1)
+    
+    print(foo(my_object))
+    print(bar(my_object))
+
+
+# MyClass is highlighted
+func foo(x: MyClass): -> MyClass:
+    var y: MyClass = x
+    return y
+
+
+# MyClass is not highlighted
+# func bar(x: Array[MyClass]) -> Array[MyClass]:
+
+func bar(x: Array[MyClass]) -> Array[class, MyClass]:
+    var y: Array[MyClass] = x
+    return y
