@@ -148,6 +148,9 @@ public:
 	void ssr_set_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality);
 
 	struct SSRRenderBuffers {
+		Size2i size;
+		RenderingServer::EnvironmentSSRRoughnessQuality roughness_quality = RenderingServer::ENV_SSR_ROUGHNESS_QUALITY_DISABLED;
+
 		RID normal_scaled;
 		RID depth_scaled;
 		RID blur_radius[2];
