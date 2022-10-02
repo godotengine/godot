@@ -73,8 +73,8 @@ private:
 		TileSetScenesCollectionSourceEditor *tile_set_scenes_collection_source_editor = nullptr;
 
 		TileSetScenesCollectionSource *tile_set_scenes_collection_source = nullptr;
-		int source_id;
-		int scene_id;
+		int source_id = 0;
+		int scene_id = 0;
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);

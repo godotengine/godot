@@ -154,7 +154,7 @@ struct CanvasShaderData : public ShaderData {
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
-	uint32_t ubo_size;
+	uint32_t ubo_size = 0;
 
 	String code;
 	HashMap<StringName, HashMap<int, RID>> default_texture_params;
@@ -203,17 +203,17 @@ struct SkyShaderData : public ShaderData {
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
-	uint32_t ubo_size;
+	uint32_t ubo_size = 0;
 
 	String path;
 	String code;
 	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
-	bool uses_time;
-	bool uses_position;
-	bool uses_half_res;
-	bool uses_quarter_res;
-	bool uses_light;
+	bool uses_time = false;
+	bool uses_position = false;
+	bool uses_half_res = false;
+	bool uses_quarter_res = false;
+	bool uses_light = false;
 
 	virtual void set_code(const String &p_Code);
 	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
@@ -286,7 +286,7 @@ struct SceneShaderData : public ShaderData {
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
-	uint32_t ubo_size;
+	uint32_t ubo_size = 0;
 
 	String code;
 	HashMap<StringName, HashMap<int, RID>> default_texture_params;
@@ -297,39 +297,39 @@ struct SceneShaderData : public ShaderData {
 	DepthTest depth_test;
 	Cull cull_mode;
 
-	bool uses_point_size;
-	bool uses_alpha;
-	bool uses_blend_alpha;
-	bool uses_alpha_clip;
-	bool uses_depth_pre_pass;
-	bool uses_discard;
-	bool uses_roughness;
-	bool uses_normal;
-	bool uses_particle_trails;
-	bool wireframe;
+	bool uses_point_size = false;
+	bool uses_alpha = false;
+	bool uses_blend_alpha = false;
+	bool uses_alpha_clip = false;
+	bool uses_depth_pre_pass = false;
+	bool uses_discard = false;
+	bool uses_roughness = false;
+	bool uses_normal = false;
+	bool uses_particle_trails = false;
+	bool wireframe = false;
 
-	bool unshaded;
-	bool uses_vertex;
-	bool uses_position;
-	bool uses_sss;
-	bool uses_transmittance;
-	bool uses_screen_texture;
-	bool uses_screen_texture_mipmaps;
-	bool uses_depth_texture;
-	bool uses_normal_texture;
-	bool uses_time;
-	bool writes_modelview_or_projection;
-	bool uses_world_coordinates;
-	bool uses_tangent;
-	bool uses_color;
-	bool uses_uv;
-	bool uses_uv2;
-	bool uses_custom0;
-	bool uses_custom1;
-	bool uses_custom2;
-	bool uses_custom3;
-	bool uses_bones;
-	bool uses_weights;
+	bool unshaded = false;
+	bool uses_vertex = false;
+	bool uses_position = false;
+	bool uses_sss = false;
+	bool uses_transmittance = false;
+	bool uses_screen_texture = false;
+	bool uses_screen_texture_mipmaps = false;
+	bool uses_depth_texture = false;
+	bool uses_normal_texture = false;
+	bool uses_time = false;
+	bool writes_modelview_or_projection = false;
+	bool uses_world_coordinates = false;
+	bool uses_tangent = false;
+	bool uses_color = false;
+	bool uses_uv = false;
+	bool uses_uv2 = false;
+	bool uses_custom0 = false;
+	bool uses_custom1 = false;
+	bool uses_custom2 = false;
+	bool uses_custom3 = false;
+	bool uses_bones = false;
+	bool uses_weights = false;
 
 	uint32_t vertex_input_mask = 0;
 

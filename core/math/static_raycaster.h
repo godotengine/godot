@@ -80,20 +80,20 @@ public:
 
 	public:
 		Vector3 org; //!< Ray origin + tnear
-		float tnear; //!< Start of ray segment
+		float tnear = 0; //!< Start of ray segment
 		Vector3 dir; //!< Ray direction + tfar
-		float time; //!< Time of this ray for motion blur.
-		float tfar; //!< End of ray segment
-		unsigned int mask; //!< used to mask out objects during traversal
-		unsigned int id; //!< ray ID
-		unsigned int flags; //!< ray flags
+		float time = 0; //!< Time of this ray for motion blur.
+		float tfar = 0; //!< End of ray segment
+		unsigned int mask = 0; //!< used to mask out objects during traversal
+		unsigned int id = 0; //!< ray ID
+		unsigned int flags = 0; //!< ray flags
 
 		Vector3 normal; //!< Not normalized geometry normal
-		float u; //!< Barycentric u coordinate of hit
-		float v; //!< Barycentric v coordinate of hit
-		unsigned int primID; //!< primitive ID
-		unsigned int geomID; //!< geometry ID
-		unsigned int instID; //!< instance ID
+		float u = 0; //!< Barycentric u coordinate of hit
+		float v = 0; //!< Barycentric v coordinate of hit
+		unsigned int primID = 0; //!< primitive ID
+		unsigned int geomID = 0; //!< geometry ID
+		unsigned int instID = 0; //!< instance ID
 	};
 
 	virtual bool intersect(Ray &p_ray) = 0;

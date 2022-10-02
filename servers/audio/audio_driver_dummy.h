@@ -49,7 +49,7 @@ class AudioDriverDummy : public AudioDriver {
 	int32_t mix_rate = -1;
 	SpeakerMode speaker_mode = SPEAKER_MODE_STEREO;
 
-	int channels;
+	int channels = 0;
 
 	SafeFlag active;
 	SafeFlag exit_thread;
