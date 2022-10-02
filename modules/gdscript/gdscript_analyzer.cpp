@@ -2147,7 +2147,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 				GDScriptParser::DataType test_type = right_type;
 				test_type.is_meta_type = false;
 
-				if (!is_type_compatible(test_type, p_binary_op->left_operand->get_datatype(), false)) {
+				if (!is_type_compatible(test_type, left_type, false)) {
 					push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)"), p_binary_op->left_operand);
 					p_binary_op->reduced_value = false;
 				} else {
@@ -2181,11 +2181,11 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 				GDScriptParser::DataType test_type = right_type;
 				test_type.is_meta_type = false;
 
-				if (!is_type_compatible(test_type, p_binary_op->left_operand->get_datatype(), false)) {
+				if (!is_type_compatible(test_type, left_type, false)) {
 					// Test reverse as well to consider for subtypes.
-					if (!is_type_compatible(p_binary_op->left_operand->get_datatype(), test_type, false)) {
-						if (p_binary_op->left_operand->get_datatype().is_hard_type()) {
-							push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", p_binary_op->left_operand->get_datatype().to_string(), test_type.to_string()), p_binary_op->left_operand);
+					if (!is_type_compatible(left_type, test_type, false)) {
+						if (left_type.is_hard_type()) {
+							push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", left_type.to_string(), test_type.to_string()), p_binary_op->left_operand);
 						} else {
 							// TODO: Warning.
 							mark_node_unsafe(p_binary_op);
@@ -3542,6 +3542,7 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) {
 	reduce_expression(p_unary_op->operand);
 
+	GDScriptParser::DataType operand_type = p_unary_op->operand->get_datatype();
 	GDScriptParser::DataType result;
 
 	if (p_unary_op->operand == nullptr) {
@@ -3554,15 +3555,17 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 		p_unary_op->is_constant = true;
 		p_unary_op->reduced_value = Variant::evaluate(p_unary_op->variant_op, p_unary_op->operand->reduced_value, Variant());
 		result = type_from_variant(p_unary_op->reduced_value, p_unary_op);
-	} else if (p_unary_op->operand->get_datatype().is_variant()) {
+	}
+
+	if (operand_type.is_variant()) {
 		result.kind = GDScriptParser::DataType::VARIANT;
 		mark_node_unsafe(p_unary_op);
 	} else {
 		bool valid = false;
-		result = get_operation_type(p_unary_op->variant_op, p_unary_op->operand->get_datatype(), valid, p_unary_op);
+		result = get_operation_type(p_unary_op->variant_op, operand_type, valid, p_unary_op);
 
 		if (!valid) {
-			push_error(vformat(R"(Invalid operand of type "%s" for unary operator "%s".)", p_unary_op->operand->get_datatype().to_string(), Variant::get_operator_name(p_unary_op->variant_op)), p_unary_op->operand);
+			push_error(vformat(R"(Invalid operand of type "%s" for unary operator "%s".)", operand_type.to_string(), Variant::get_operator_name(p_unary_op->variant_op)), p_unary_op);
 		}
 	}
 
