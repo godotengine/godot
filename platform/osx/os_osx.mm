@@ -137,7 +137,7 @@ static NSCursor *cursorFromSelector(SEL selector, SEL fallback = nil) {
 	// special case handling of command-period, which is traditionally a special
 	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
 	if ([event type] == NSEventTypeKeyDown) {
-		if (([event modifierFlags] & NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
+		if ((([event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) && [event keyCode] == 0x2f) {
 			Ref<InputEventKey> k;
 			k.instance();
 
