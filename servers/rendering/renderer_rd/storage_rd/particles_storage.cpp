@@ -102,7 +102,7 @@ ParticlesStorage::ParticlesStorage() {
 		actions.render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 		actions.render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
 		actions.render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
-		actions.render_mode_defines["collision_use_scale"] = "#define USE_COLLISON_SCALE\n";
+		actions.render_mode_defines["collision_use_scale"] = "#define USE_COLLISION_SCALE\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
@@ -1874,8 +1874,6 @@ AABB ParticlesStorage::particles_collision_get_aabb(RID p_particles_collision) c
 			return aabb;
 		}
 	}
-
-	return AABB();
 }
 
 Vector3 ParticlesStorage::particles_collision_get_extents(RID p_particles_collision) const {

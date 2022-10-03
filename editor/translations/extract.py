@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+from typing import Dict, Tuple
 
 
 class Message:
@@ -42,7 +43,7 @@ class Message:
         return "\n".join(lines)
 
 
-messages_map = {}  # (id, context) -> Message.
+messages_map: Dict[Tuple[str, str], Message] = {}  # (id, context) -> Message.
 
 line_nb = False
 
@@ -51,11 +52,11 @@ for arg in sys.argv[1:]:
         print("Enabling line numbers in the context locations.")
         line_nb = True
     else:
-        os.sys.exit("Non supported argument '" + arg + "'. Aborting.")
+        sys.exit("Non supported argument '" + arg + "'. Aborting.")
 
 
 if not os.path.exists("editor"):
-    os.sys.exit("ERROR: This script should be started from the root of the git repo.")
+    sys.exit("ERROR: This script should be started from the root of the git repo.")
 
 
 matches = []

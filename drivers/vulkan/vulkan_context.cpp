@@ -608,10 +608,10 @@ Error VulkanContext::_check_capabilities() {
 		device_properties_func = (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2KHR");
 	}
 	if (device_properties_func != nullptr) {
-		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties;
-		VkPhysicalDeviceMultiviewProperties multiviewProperties;
-		VkPhysicalDeviceSubgroupProperties subgroupProperties;
-		VkPhysicalDeviceProperties2 physicalDeviceProperties;
+		VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties{};
+		VkPhysicalDeviceMultiviewProperties multiviewProperties{};
+		VkPhysicalDeviceSubgroupProperties subgroupProperties{};
+		VkPhysicalDeviceProperties2 physicalDeviceProperties{};
 		void *nextptr = nullptr;
 
 		subgroupProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SUBGROUP_PROPERTIES;

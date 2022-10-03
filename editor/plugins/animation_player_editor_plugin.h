@@ -131,6 +131,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
 
+	bool hack_disable_onion_skinning = true; // Temporary hack for GH-53870.
+
 	// Onion skinning.
 	struct {
 		// Settings.

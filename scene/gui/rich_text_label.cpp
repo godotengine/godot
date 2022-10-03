@@ -52,7 +52,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->next()) {
 			return p_item->E->next()->get();
 		} else {
-			//go up until something with a next is found
+			// Go up until something with a next is found.
 			while (p_item->parent && !p_item->E->next()) {
 				p_item = p_item->parent;
 			}
@@ -72,7 +72,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->next()) {
 			return p_item->E->next()->get();
 		} else {
-			//go up until something with a next is found
+			// Go up until something with a next is found.
 			while (p_item->type != ITEM_FRAME && !p_item->E->next()) {
 				p_item = p_item->parent;
 			}
@@ -84,8 +84,6 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) co
 			}
 		}
 	}
-
-	return nullptr;
 }
 
 RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) const {
@@ -97,7 +95,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->prev()) {
 			return p_item->E->prev()->get();
 		} else {
-			//go back until something with a prev is found
+			// Go back until something with a prev is found.
 			while (p_item->parent && !p_item->E->prev()) {
 				p_item = p_item->parent;
 			}
@@ -117,7 +115,7 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 		} else if (p_item->E->prev()) {
 			return p_item->E->prev()->get();
 		} else {
-			//go back until something with a prev is found
+			// Go back until something with a prev is found.
 			while (p_item->type != ITEM_FRAME && !p_item->E->prev()) {
 				p_item = p_item->parent;
 			}
@@ -129,8 +127,6 @@ RichTextLabel::Item *RichTextLabel::_get_prev_item(Item *p_item, bool p_free) co
 			}
 		}
 	}
-
-	return nullptr;
 }
 
 Rect2 RichTextLabel::_get_text_rect() {

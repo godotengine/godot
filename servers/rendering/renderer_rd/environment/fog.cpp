@@ -122,8 +122,6 @@ AABB Fog::fog_volume_get_aabb(RID p_fog_volume) const {
 			return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 		}
 	}
-
-	return AABB();
 }
 
 Vector3 Fog::fog_volume_get_extents(RID p_fog_volume) const {

@@ -118,7 +118,7 @@ TEST_CASE("[InputEventKey] Key correctly converts itself to text") {
 
 	InputEventKey none_key2;
 
-	// Key is None without modifers with a physical key.
+	// Key is None without modifiers with a physical key.
 	none_key2.set_keycode(Key::NONE);
 	none_key2.set_physical_keycode(Key::ENTER);
 

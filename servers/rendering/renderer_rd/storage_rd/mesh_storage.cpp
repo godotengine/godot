@@ -2021,6 +2021,7 @@ Transform2D MeshStorage::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bo
 void MeshStorage::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
+	ERR_FAIL_NULL(skeleton);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
 	skeleton->base_transform_2d = p_base_transform;

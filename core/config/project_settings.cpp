@@ -119,6 +119,10 @@ const PackedStringArray ProjectSettings::get_unsupported_features(const PackedSt
 	PackedStringArray supported_features = singleton->_get_supported_features();
 	for (int i = 0; i < p_project_features.size(); i++) {
 		if (!supported_features.has(p_project_features[i])) {
+			// Temporary compatibility code to ease upgrade to 4.0 beta 2+.
+			if (p_project_features[i].begins_with("Vulkan")) {
+				continue;
+			}
 			unsupported_features.append(p_project_features[i]);
 		}
 	}

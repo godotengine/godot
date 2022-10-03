@@ -746,6 +746,24 @@ void OpenXRInterface::end_frame() {
 	}
 }
 
+bool OpenXRInterface::is_passthrough_supported() {
+	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_supported();
+}
+
+bool OpenXRInterface::is_passthrough_enabled() {
+	return passthrough_wrapper != nullptr && passthrough_wrapper->is_passthrough_enabled();
+}
+
+bool OpenXRInterface::start_passthrough() {
+	return passthrough_wrapper != nullptr && passthrough_wrapper->start_passthrough();
+}
+
+void OpenXRInterface::stop_passthrough() {
+	if (passthrough_wrapper) {
+		passthrough_wrapper->stop_passthrough();
+	}
+}
+
 void OpenXRInterface::on_state_ready() {
 	emit_signal(SNAME("session_begun"));
 }
@@ -776,6 +794,8 @@ OpenXRInterface::OpenXRInterface() {
 	_set_default_pos(head_transform, 1.0, 0);
 	_set_default_pos(transform_for_view[0], 1.0, 1);
 	_set_default_pos(transform_for_view[1], 1.0, 2);
+
+	passthrough_wrapper = OpenXRFbPassthroughExtensionWrapper::get_singleton();
 }
 
 OpenXRInterface::~OpenXRInterface() {

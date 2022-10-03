@@ -737,7 +737,6 @@ void RasterizerSceneGLES3::_draw_sky(RID p_env, const Projection &p_projection, 
 	RS::EnvironmentBG background = environment_get_background(p_env);
 
 	if (sky) {
-		ERR_FAIL_COND(!sky);
 		sky_material = sky->material;
 
 		if (sky_material.is_valid()) {
@@ -2043,7 +2042,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		} break;
 	}
 
-	if (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+	if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 2);
 		GLuint texture_to_bind = texture_storage->get_texture(texture_storage->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_CUBEMAP_BLACK))->tex_id;
 		if (p_render_data->environment.is_valid()) {
@@ -2074,7 +2073,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		GLES3::SceneMaterialData *material_data;
 		void *mesh_surface;
 
-		if (p_pass_mode == PASS_MODE_SHADOW) {
+		if constexpr (p_pass_mode == PASS_MODE_SHADOW) {
 			shader = surf->shader_shadow;
 			material_data = surf->material_shadow;
 			mesh_surface = surf->surface_shadow;
@@ -2088,7 +2087,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			continue;
 		}
 
-		if (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
 			if (scene_state.current_depth_test != shader->depth_test) {
 				if (shader->depth_test == GLES3::SceneShaderData::DEPTH_TEST_DISABLED) {
 					glDisable(GL_DEPTH_TEST);
@@ -2115,9 +2114,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			scene_state.current_depth_draw = shader->depth_draw;
 		}
 
-		if (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT || p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
+		if constexpr (p_pass_mode == PASS_MODE_COLOR_TRANSPARENT || p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
 			GLES3::SceneShaderData::BlendMode desired_blend_mode;
-			if (p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
+			if constexpr (p_pass_mode == PASS_MODE_COLOR_ADDITIVE) {
 				desired_blend_mode = GLES3::SceneShaderData::BLEND_MODE_ADD;
 			} else {
 				desired_blend_mode = shader->blend_mode;
@@ -2241,9 +2240,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 		if (prev_shader != shader || prev_variant != instance_variant) {
 			material_storage->shaders.scene_shader.version_bind_shader(shader->version, instance_variant);
 			float opaque_prepass_threshold = 0.0;
-			if (p_pass_mode == PASS_MODE_DEPTH) {
+			if constexpr (p_pass_mode == PASS_MODE_DEPTH) {
 				opaque_prepass_threshold = 0.99;
-			} else if (p_pass_mode == PASS_MODE_SHADOW) {
+			} else if constexpr (p_pass_mode == PASS_MODE_SHADOW) {
 				opaque_prepass_threshold = 0.1;
 			}
 

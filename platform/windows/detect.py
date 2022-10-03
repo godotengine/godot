@@ -4,6 +4,11 @@ import subprocess
 import sys
 from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 # To match other platforms
 STACK_SIZE = 8388608
 
@@ -173,17 +178,7 @@ def get_opts():
             "Targeted Windows version, >= 0x0601 (Windows 7)",
             "0x0601",
         ),
-        BoolVariable(
-            "debug_symbols",
-            "Add debugging symbols to release/release_debug builds",
-            True,
-        ),
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
-        BoolVariable(
-            "separate_debug_symbols",
-            "Create a separate file containing debugging symbols",
-            False,
-        ),
         (
             "msvc_version",
             "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.",
@@ -330,31 +325,11 @@ def setup_mingw(env):
 def configure_msvc(env, vcvars_msvc_config):
     """Configure env to work with MSVC"""
 
-    # Build type
-    if env["target"] == "release":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
+    ## Build type
+
+    # TODO: Re-evaluate the need for this / streamline with common config.
+    if env["target"] == "template_release":
         env.Append(LINKFLAGS=["/ENTRY:mainCRTStartup"])
-
-    elif env["target"] == "release_debug":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["/O2"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["/O1"])
-            env.Append(LINKFLAGS=["/OPT:REF"])
-
-    elif env["target"] == "debug":
-        env.AppendUnique(CCFLAGS=["/Zi", "/FS", "/Od", "/EHsc"])
-        env.Append(LINKFLAGS=["/DEBUG"])
-
-    if env["debug_symbols"]:
-        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
-        env.AppendUnique(LINKFLAGS=["/DEBUG"])
 
     if env["windows_subsystem"] == "gui":
         env.Append(LINKFLAGS=["/SUBSYSTEM:WINDOWS"])
@@ -491,31 +466,10 @@ def configure_mingw(env):
     if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
         env["use_llvm"] = False
 
-    if env["target"] == "release":
+    # TODO: Re-evaluate the need for this / streamline with common config.
+    if env["target"] == "template_release":
         env.Append(CCFLAGS=["-msse2"])
-
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            if env["arch"] == "x86_32":
-                env.Append(CCFLAGS=["-O2"])
-            else:
-                env.Append(CCFLAGS=["-O3"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=["-O2"])
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Append(CCFLAGS=["-O2"])
-        else:  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-    elif env["target"] == "debug":
-        env.Append(CCFLAGS=["-g3"])
+    elif env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
         # and are the only ones with too big objects).
@@ -639,7 +593,7 @@ def configure_mingw(env):
     env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:

@@ -36,6 +36,7 @@
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/os/memory.h"
+#include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
@@ -287,6 +288,8 @@ public:
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
+	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	static OpenXRAPI *get_singleton();
 
@@ -348,6 +351,9 @@ public:
 	Vector2 get_action_vector2(RID p_action, RID p_tracker);
 	XRPose::TrackingConfidence get_action_pose(RID p_action, RID p_tracker, Transform3D &r_transform, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 	bool trigger_haptic_pulse(RID p_action, RID p_tracker, float p_frequency, float p_amplitude, XrDuration p_duration_ns);
+
+	void register_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
+	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 
 	OpenXRAPI();
 	~OpenXRAPI();

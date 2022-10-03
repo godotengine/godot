@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 
 // TODO:
 //   Determine a proper way to emit the signal.
-//   'Emit(nameof(TheEvent))' creates a StringName everytime and has the overhead of string marshaling.
+//   'Emit(nameof(TheEvent))' creates a StringName every time and has the overhead of string marshaling.
 //   I haven't decided on the best option yet. Some possibilities:
 //     - Expose the generated StringName fields to the user, for use with 'Emit(...)'.
 //     - Generate a 'EmitSignalName' method for each event signal.

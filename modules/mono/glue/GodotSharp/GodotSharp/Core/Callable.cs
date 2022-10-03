@@ -72,7 +72,7 @@ namespace Godot
         /// <param name="delegate">Delegate method that will be called.</param>
         public Callable(Delegate @delegate)
         {
-            _target = null;
+            _target = @delegate?.Target as Object;
             _method = null;
             _delegate = @delegate;
         }

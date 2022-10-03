@@ -4,6 +4,11 @@ import sys
 from methods import get_compiler_version, using_gcc
 from platform_methods import detect_arch
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -44,8 +49,6 @@ def get_opts():
         BoolVariable("fontconfig", "Detect and use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
-        BoolVariable("debug_symbols", "Add debugging symbols to release/release_debug builds", True),
-        BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
     ]
@@ -57,7 +60,7 @@ def get_flags():
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
     if env["arch"] not in supported_arches:
@@ -69,26 +72,9 @@ def configure(env):
 
     ## Build type
 
-    if env["target"] == "release":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O3"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "release_debug":
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            env.Prepend(CCFLAGS=["-O2"])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Prepend(CCFLAGS=["-Os"])
-
-        if env["debug_symbols"]:
-            env.Prepend(CCFLAGS=["-g2"])
-
-    elif env["target"] == "debug":
-        env.Prepend(CCFLAGS=["-g3"])
+    if env.dev_build:
+        # This is needed for our crash handler to work properly.
+        # gdb works fine without it though, so maybe our crash handler could too.
         env.Append(LINKFLAGS=["-rdynamic"])
 
     # CPU architecture flags.
@@ -383,7 +369,7 @@ def configure(env):
     if env["execinfo"]:
         env.Append(LIBS=["execinfo"])
 
-    if not env["tools"]:
+    if not env.editor_build:
         import subprocess
         import re
 

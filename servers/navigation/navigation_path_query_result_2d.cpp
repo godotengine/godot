@@ -38,9 +38,15 @@ const Vector<Vector2> &NavigationPathQueryResult2D::get_path() const {
 	return path;
 }
 
+void NavigationPathQueryResult2D::reset() {
+	path.clear();
+}
+
 void NavigationPathQueryResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult2D::set_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult2D::get_path);
+
+	ClassDB::bind_method(D_METHOD("reset"), &NavigationPathQueryResult2D::reset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "path"), "set_path", "get_path");
 }

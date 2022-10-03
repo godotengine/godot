@@ -183,7 +183,7 @@ TEST_CASE("[BitMap] Get true bit count") {
 	CHECK(bit_map.get_true_bit_count() == 0);
 
 	bit_map.create(dim);
-	CHECK_MESSAGE(bit_map.get_true_bit_count() == 0, "Unitialized bit map should have no true bits");
+	CHECK_MESSAGE(bit_map.get_true_bit_count() == 0, "Uninitialized bit map should have no true bits");
 	bit_map.set_bit_rect(Rect2i{ 0, 0, 256, 256 }, true);
 	CHECK(bit_map.get_true_bit_count() == 65536);
 	bit_map.set_bitv(Point2i{ 0, 0 }, false);
@@ -196,7 +196,7 @@ TEST_CASE("[BitMap] Get size") {
 	const Size2i dim{ 256, 256 };
 	BitMap bit_map{};
 
-	CHECK_MESSAGE(bit_map.get_size() == Size2i(0, 0), "Unitialized bit map should have a size of 0x0");
+	CHECK_MESSAGE(bit_map.get_size() == Size2i(0, 0), "Uninitialized bit map should have a size of 0x0");
 
 	bit_map.create(dim);
 	CHECK(bit_map.get_size() == Size2i(256, 256));
@@ -390,7 +390,7 @@ TEST_CASE("[BitMap] Convert to image") {
 	bit_map.create(dim);
 	img = bit_map.convert_to_image();
 	CHECK_MESSAGE(img->get_size() == dim, "Image should have the same dimensions as the BitMap");
-	CHECK_MESSAGE(img->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0)), "BitMap is intialized to all 0's, so Image should be all black");
+	CHECK_MESSAGE(img->get_pixel(0, 0).is_equal_approx(Color(0, 0, 0)), "BitMap is initialized to all 0's, so Image should be all black");
 
 	reset_bit_map(bit_map);
 	bit_map.set_bit_rect(Rect2i(0, 0, 128, 128), true);

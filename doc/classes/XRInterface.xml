@@ -69,11 +69,36 @@
 				Is [code]true[/code] if this interface has been initialised.
 			</description>
 		</method>
+		<method name="is_passthrough_enabled">
+			<return type="bool" />
+			<description>
+				Is [code]true[/code] if passthrough is enabled.
+			</description>
+		</method>
+		<method name="is_passthrough_supported">
+			<return type="bool" />
+			<description>
+				Is [code]true[/code] if this interface supports passthrough.
+			</description>
+		</method>
 		<method name="set_play_area_mode">
 			<return type="bool" />
 			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
+			</description>
+		</method>
+		<method name="start_passthrough">
+			<return type="bool" />
+			<description>
+				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
+				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
+			</description>
+		</method>
+		<method name="stop_passthrough">
+			<return type="void" />
+			<description>
+				Stops passthrough.
 			</description>
 		</method>
 		<method name="supports_play_area_mode">

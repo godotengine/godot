@@ -178,6 +178,13 @@ NavigationAgent2D::NavigationAgent2D() {
 	set_time_horizon(20.0);
 	set_radius(10.0);
 	set_max_speed(200.0);
+
+	// Preallocate query and result objects to improve performance.
+	navigation_query = Ref<NavigationPathQueryParameters2D>();
+	navigation_query.instantiate();
+
+	navigation_result = Ref<NavigationPathQueryResult2D>();
+	navigation_result.instantiate();
 }
 
 NavigationAgent2D::~NavigationAgent2D() {
@@ -314,12 +321,18 @@ Vector2 NavigationAgent2D::get_target_location() const {
 
 Vector2 NavigationAgent2D::get_next_location() {
 	update_navigation();
+
+	const Vector<Vector2> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
 		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector2(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[nav_path_index];
 	}
+}
+
+const Vector<Vector2> &NavigationAgent2D::get_nav_path() const {
+	return navigation_result->get_path();
 }
 
 real_t NavigationAgent2D::distance_to_target() const {
@@ -342,6 +355,8 @@ bool NavigationAgent2D::is_navigation_finished() {
 
 Vector2 NavigationAgent2D::get_final_location() {
 	update_navigation();
+
+	const Vector<Vector2> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
 		return Vector2();
 	}
@@ -391,22 +406,24 @@ void NavigationAgent2D::update_navigation() {
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
-	Vector2 o = agent_parent->get_global_position();
+	Vector2 origin = agent_parent->get_global_position();
 
 	bool reload_path = false;
 
 	if (NavigationServer2D::get_singleton()->agent_is_map_changed(agent)) {
 		reload_path = true;
-	} else if (navigation_path.size() == 0) {
+	} else if (navigation_result->get_path().size() == 0) {
 		reload_path = true;
 	} else {
 		// Check if too far from the navigation path
 		if (nav_path_index > 0) {
+			const Vector<Vector2> &navigation_path = navigation_result->get_path();
+
 			Vector2 segment[2];
 			segment[0] = navigation_path[nav_path_index - 1];
 			segment[1] = navigation_path[nav_path_index];
-			Vector2 p = Geometry2D::get_closest_point_to_segment(o, segment);
-			if (o.distance_to(p) >= path_max_distance) {
+			Vector2 p = Geometry2D::get_closest_point_to_segment(origin, segment);
+			if (origin.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;
 			}
@@ -414,24 +431,31 @@ void NavigationAgent2D::update_navigation() {
 	}
 
 	if (reload_path) {
+		navigation_query->set_start_position(origin);
+		navigation_query->set_target_position(target_location);
+		navigation_query->set_navigation_layers(navigation_layers);
+
 		if (map_override.is_valid()) {
-			navigation_path = NavigationServer2D::get_singleton()->map_get_path(map_override, o, target_location, true, navigation_layers);
+			navigation_query->set_map(map_override);
 		} else {
-			navigation_path = NavigationServer2D::get_singleton()->map_get_path(agent_parent->get_world_2d()->get_navigation_map(), o, target_location, true, navigation_layers);
+			navigation_query->set_map(agent_parent->get_world_2d()->get_navigation_map());
 		}
+
+		NavigationServer2D::get_singleton()->query_path(navigation_query, navigation_result);
 		navigation_finished = false;
 		nav_path_index = 0;
 		emit_signal(SNAME("path_changed"));
 	}
 
-	if (navigation_path.size() == 0) {
+	if (navigation_result->get_path().size() == 0) {
 		return;
 	}
 
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
-		while (o.distance_to(navigation_path[nav_path_index]) < path_desired_distance) {
+		const Vector<Vector2> &navigation_path = navigation_result->get_path();
+		while (origin.distance_to(navigation_path[nav_path_index]) < path_desired_distance) {
 			nav_path_index += 1;
 			if (nav_path_index == navigation_path.size()) {
 				_check_distance_to_target();
@@ -445,7 +469,7 @@ void NavigationAgent2D::update_navigation() {
 }
 
 void NavigationAgent2D::_request_repath() {
-	navigation_path.clear();
+	navigation_result->reset();
 	target_reached = false;
 	navigation_finished = false;
 	update_frame_id = 0;

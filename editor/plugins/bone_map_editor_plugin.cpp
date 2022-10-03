@@ -1309,7 +1309,7 @@ void BoneMapEditor::create_editors() {
 
 void BoneMapEditor::fetch_objects() {
 	skeleton = nullptr;
-	// Hackey... but it may be the easist way to get a selected object from "ImporterScene".
+	// Hackey... but it may be the easiest way to get a selected object from "ImporterScene".
 	SceneImportSettings *si = SceneImportSettings::get_singleton();
 	if (!si) {
 		return;

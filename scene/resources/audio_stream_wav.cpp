@@ -180,7 +180,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				final_r = p_src[pos + 1];
 			}
 
-			if (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
+			if constexpr (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
 				final <<= 8;
 				if (is_stereo) {
 					final_r <<= 8;
@@ -194,7 +194,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				next = p_src[pos + 1];
 			}
 
-			if (sizeof(Depth) == 1) {
+			if constexpr (sizeof(Depth) == 1) {
 				next <<= 8;
 				if (is_stereo) {
 					next_r <<= 8;

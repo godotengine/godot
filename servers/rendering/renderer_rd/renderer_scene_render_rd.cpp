@@ -282,8 +282,6 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 		panorama->fill(panorama_color);
 		return panorama;
 	}
-
-	return Ref<Image>();
 }
 
 ////////////////////////////////////////////////////////////
@@ -3623,6 +3621,7 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 	//RID sampled_light;
 
 	RenderGeometryInstance *gi = geometry_instance_create(p_base);
+	ERR_FAIL_NULL_V(gi, TypedArray<Image>());
 
 	uint32_t sc = RSG::mesh_storage->mesh_get_surface_count(p_base);
 	Vector<RID> materials;

@@ -1210,6 +1210,7 @@ RID GodotPhysicsServer3D::joint_create() {
 
 void GodotPhysicsServer3D::joint_clear(RID p_joint) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
+	ERR_FAIL_NULL(joint);
 	if (joint->get_type() != JOINT_TYPE_MAX) {
 		GodotJoint3D *empty_joint = memnew(GodotJoint3D);
 		empty_joint->copy_settings_from(joint);

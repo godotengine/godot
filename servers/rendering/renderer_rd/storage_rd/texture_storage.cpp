@@ -673,6 +673,8 @@ void TextureStorage::texture_free(RID p_texture) {
 }
 
 void TextureStorage::texture_2d_initialize(RID p_texture, const Ref<Image> &p_image) {
+	ERR_FAIL_COND(p_image.is_null());
+
 	TextureToRDFormat ret_format;
 	Ref<Image> image = _validate_texture_format(p_image, ret_format);
 
