@@ -238,6 +238,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			to_visit.clear();
 			to_visit.push_back(0);
 			least_cost_id = 0;
+			prev_least_cost_id = -1;
 
 			reachable_end = nullptr;
 

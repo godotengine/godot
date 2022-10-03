@@ -261,7 +261,7 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 #define ADD_OPTION_ENUM(PATH, ENUM_HINT, VALUE) \
 	r_options->push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, SNAME(PATH), PROPERTY_HINT_ENUM, ENUM_HINT), VALUE));
 
-	ADD_OPTION_ENUM("blender/nodes/visible", "Visible Only,Renderable,All", BLEND_VISIBLE_ALL);
+	ADD_OPTION_ENUM("blender/nodes/visible", "All,Visible Only,Renderable", BLEND_VISIBLE_ALL);
 	ADD_OPTION_BOOL("blender/nodes/punctual_lights", true);
 	ADD_OPTION_BOOL("blender/nodes/cameras", true);
 	ADD_OPTION_BOOL("blender/nodes/custom_properties", true);

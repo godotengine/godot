@@ -68,9 +68,6 @@ struct _NO_DISCARD_ Vector4i {
 		return coord[p_axis];
 	}
 
-	void set_axis(const int p_axis, const int32_t p_value);
-	int32_t get_axis(const int p_axis) const;
-
 	Vector4i::Axis min_axis_index() const;
 	Vector4i::Axis max_axis_index() const;
 

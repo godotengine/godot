@@ -84,16 +84,12 @@ TEST_CASE("[Vector3] Axis methods") {
 			vector.min_axis_index() == Vector3::Axis::AXIS_X,
 			"Vector3 min_axis_index should work as expected.");
 	CHECK_MESSAGE(
-			vector.get_axis(vector.max_axis_index()) == (real_t)5.6,
-			"Vector3 get_axis should work as expected.");
+			vector[vector.max_axis_index()] == (real_t)5.6,
+			"Vector3 array operator should work as expected.");
 	CHECK_MESSAGE(
 			vector[vector.min_axis_index()] == (real_t)1.2,
 			"Vector3 array operator should work as expected.");
 
-	vector.set_axis(Vector3::Axis::AXIS_Y, 4.7);
-	CHECK_MESSAGE(
-			vector.get_axis(Vector3::Axis::AXIS_Y) == (real_t)4.7,
-			"Vector3 set_axis should work as expected.");
 	vector[Vector3::Axis::AXIS_Y] = 3.7;
 	CHECK_MESSAGE(
 			vector[Vector3::Axis::AXIS_Y] == (real_t)3.7,

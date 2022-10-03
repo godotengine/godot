@@ -53,16 +53,12 @@ TEST_CASE("[Vector4i] Axis methods") {
 			vector.min_axis_index() == Vector4i::Axis::AXIS_X,
 			"Vector4i min_axis_index should work as expected.");
 	CHECK_MESSAGE(
-			vector.get_axis(vector.max_axis_index()) == 4,
-			"Vector4i get_axis should work as expected.");
+			vector[vector.max_axis_index()] == 4,
+			"Vector4i array operator should work as expected.");
 	CHECK_MESSAGE(
 			vector[vector.min_axis_index()] == 1,
 			"Vector4i array operator should work as expected.");
 
-	vector.set_axis(Vector4i::Axis::AXIS_Y, 5);
-	CHECK_MESSAGE(
-			vector.get_axis(Vector4i::Axis::AXIS_Y) == 5,
-			"Vector4i set_axis should work as expected.");
 	vector[Vector4i::Axis::AXIS_Y] = 5;
 	CHECK_MESSAGE(
 			vector[Vector4i::Axis::AXIS_Y] == 5,

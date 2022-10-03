@@ -31,181 +31,14 @@
 #ifndef SHADER_EDITOR_PLUGIN_H
 #define SHADER_EDITOR_PLUGIN_H
 
-#include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/panel_container.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/main/timer.h"
-#include "scene/resources/shader.h"
-#include "scene/resources/shader_include.h"
-#include "servers/rendering/shader_warnings.h"
 
-class ItemList;
-class VisualShaderEditor;
 class HSplitContainer;
+class ItemList;
 class ShaderCreateDialog;
-
-class GDShaderSyntaxHighlighter : public CodeHighlighter {
-	GDCLASS(GDShaderSyntaxHighlighter, CodeHighlighter)
-
-private:
-	Vector<Point2i> disabled_branch_regions;
-	Color disabled_branch_color;
-
-public:
-	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override;
-
-	void add_disabled_branch_region(const Point2i &p_region);
-	void clear_disabled_branch_regions();
-	void set_disabled_branch_color(const Color &p_color);
-};
-
-class ShaderTextEditor : public CodeTextEditor {
-	GDCLASS(ShaderTextEditor, CodeTextEditor);
-
-	Color marked_line_color = Color(1, 1, 1);
-
-	struct WarningsComparator {
-		_ALWAYS_INLINE_ bool operator()(const ShaderWarning &p_a, const ShaderWarning &p_b) const { return (p_a.get_line() < p_b.get_line()); }
-	};
-
-	Ref<GDShaderSyntaxHighlighter> syntax_highlighter;
-	RichTextLabel *warnings_panel = nullptr;
-	Ref<Shader> shader;
-	Ref<ShaderInclude> shader_inc;
-	List<ShaderWarning> warnings;
-	Error last_compile_result = Error::OK;
-
-	void _check_shader_mode();
-	void _update_warning_panel();
-
-	bool block_shader_changed = false;
-	void _shader_changed();
-
-	uint32_t dependencies_version = 0; // Incremented if deps changed
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	virtual void _load_theme_settings() override;
-
-	virtual void _code_complete_script(const String &p_code, List<ScriptLanguage::CodeCompletionOption> *r_options) override;
-
-public:
-	void set_block_shader_changed(bool p_block) { block_shader_changed = p_block; }
-	uint32_t get_dependencies_version() const { return dependencies_version; }
-
-	virtual void _validate_script() override;
-
-	void reload_text();
-	void set_warnings_panel(RichTextLabel *p_warnings_panel);
-
-	Ref<Shader> get_edited_shader() const;
-	Ref<ShaderInclude> get_edited_shader_include() const;
-
-	void set_edited_shader(const Ref<Shader> &p_shader);
-	void set_edited_shader(const Ref<Shader> &p_shader, const String &p_code);
-	void set_edited_shader_include(const Ref<ShaderInclude> &p_include);
-	void set_edited_shader_include(const Ref<ShaderInclude> &p_include, const String &p_code);
-	void set_edited_code(const String &p_code);
-
-	ShaderTextEditor();
-};
-
-class ShaderEditor : public MarginContainer {
-	GDCLASS(ShaderEditor, MarginContainer);
-
-	enum {
-		EDIT_UNDO,
-		EDIT_REDO,
-		EDIT_CUT,
-		EDIT_COPY,
-		EDIT_PASTE,
-		EDIT_SELECT_ALL,
-		EDIT_MOVE_LINE_UP,
-		EDIT_MOVE_LINE_DOWN,
-		EDIT_INDENT,
-		EDIT_UNINDENT,
-		EDIT_DELETE_LINE,
-		EDIT_DUPLICATE_SELECTION,
-		EDIT_TOGGLE_COMMENT,
-		EDIT_COMPLETE,
-		SEARCH_FIND,
-		SEARCH_FIND_NEXT,
-		SEARCH_FIND_PREV,
-		SEARCH_REPLACE,
-		SEARCH_GOTO_LINE,
-		BOOKMARK_TOGGLE,
-		BOOKMARK_GOTO_NEXT,
-		BOOKMARK_GOTO_PREV,
-		BOOKMARK_REMOVE_ALL,
-		HELP_DOCS,
-	};
-
-	MenuButton *edit_menu = nullptr;
-	MenuButton *search_menu = nullptr;
-	PopupMenu *bookmarks_menu = nullptr;
-	MenuButton *help_menu = nullptr;
-	PopupMenu *context_menu = nullptr;
-	RichTextLabel *warnings_panel = nullptr;
-	uint64_t idle = 0;
-
-	GotoLineDialog *goto_line_dialog = nullptr;
-	ConfirmationDialog *erase_tab_confirm = nullptr;
-	ConfirmationDialog *disk_changed = nullptr;
-
-	ShaderTextEditor *shader_editor = nullptr;
-	bool compilation_success = true;
-
-	void _menu_option(int p_option);
-	mutable Ref<Shader> shader;
-	mutable Ref<ShaderInclude> shader_inc;
-
-	void _editor_settings_changed();
-	void _project_settings_changed();
-
-	void _check_for_external_edit();
-	void _reload_shader_from_disk();
-	void _reload_shader_include_from_disk();
-	void _reload();
-	void _show_warnings_panel(bool p_show);
-	void _warning_clicked(Variant p_line);
-	void _update_warnings(bool p_validate);
-
-	void _script_validated(bool p_valid) {
-		compilation_success = p_valid;
-		emit_signal(SNAME("validation_changed"));
-	}
-
-	uint32_t dependencies_version = 0xFFFFFFFF;
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-	void _make_context_menu(bool p_selection, Vector2 p_position);
-	void _text_edit_gui_input(const Ref<InputEvent> &p_ev);
-
-	void _update_bookmark_list();
-	void _bookmark_item_pressed(int p_idx);
-
-public:
-	bool was_compilation_successful() const { return compilation_success; }
-	void apply_shaders();
-	void ensure_select_current();
-	void edit(const Ref<Shader> &p_shader);
-	void edit(const Ref<ShaderInclude> &p_shader_inc);
-	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void save_external_data(const String &p_str = "");
-	void validate_script();
-	bool is_unsaved() const;
-
-	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
-
-	ShaderEditor();
-};
+class TabContainer;
+class TextShaderEditor;
+class VisualShaderEditor;
 
 class ShaderEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
@@ -213,12 +46,14 @@ class ShaderEditorPlugin : public EditorPlugin {
 	struct EditedShader {
 		Ref<Shader> shader;
 		Ref<ShaderInclude> shader_inc;
-		ShaderEditor *shader_editor = nullptr;
+		TextShaderEditor *shader_editor = nullptr;
 		VisualShaderEditor *visual_shader_editor = nullptr;
 	};
 
 	LocalVector<EditedShader> edited_shaders;
 
+	// Always valid operations come first in the enum, file-specific ones
+	// should go after FILE_SAVE which is used to build the menu accordingly.
 	enum {
 		FILE_NEW,
 		FILE_NEW_INCLUDE,
@@ -265,7 +100,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 	virtual void selected_notify() override;
 
-	ShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
+	TextShaderEditor *get_shader_editor(const Ref<Shader> &p_for_shader);
 	VisualShaderEditor *get_visual_shader_editor(const Ref<Shader> &p_for_shader);
 
 	virtual void save_external_data() override;
