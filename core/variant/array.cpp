@@ -362,9 +362,12 @@ void Array::remove_at(int p_pos) {
 
 void Array::set(int p_idx, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	ERR_FAIL_COND(!_p->typed.validate(p_value, "set"));
-
-	operator[](p_idx) = p_value;
+	Variant casted_variant = Variant(p_value);
+	if (_p->typed.type == Variant::FLOAT && p_value.get_type() == Variant::INT) {
+		casted_variant = static_cast<float>(p_value);
+	}
+	ERR_FAIL_COND(!_p->typed.validate(casted_variant, "set"));
+	operator[](p_idx) = casted_variant;
 }
 
 const Variant &Array::get(int p_idx) const {
