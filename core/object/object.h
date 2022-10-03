@@ -733,34 +733,12 @@ public:
 
 	template <class T>
 	static T *cast_to(Object *p_object) {
-#ifndef NO_SAFE_CAST
 		return dynamic_cast<T *>(p_object);
-#else
-		if (!p_object) {
-			return nullptr;
-		}
-		if (p_object->is_class_ptr(T::get_class_ptr_static())) {
-			return static_cast<T *>(p_object);
-		} else {
-			return nullptr;
-		}
-#endif
 	}
 
 	template <class T>
 	static const T *cast_to(const Object *p_object) {
-#ifndef NO_SAFE_CAST
 		return dynamic_cast<const T *>(p_object);
-#else
-		if (!p_object) {
-			return nullptr;
-		}
-		if (p_object->is_class_ptr(T::get_class_ptr_static())) {
-			return static_cast<const T *>(p_object);
-		} else {
-			return nullptr;
-		}
-#endif
 	}
 
 	enum {

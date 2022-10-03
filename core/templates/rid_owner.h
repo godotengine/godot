@@ -335,15 +335,8 @@ public:
 
 	~RID_Alloc() {
 		if (alloc_count) {
-			if (description) {
-				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + description + "' were leaked at exit.");
-			} else {
-#ifdef NO_SAFE_CAST
-				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type 'unknown' were leaked at exit.");
-#else
-				print_error("ERROR: " + itos(alloc_count) + " RID allocations of type '" + typeid(T).name() + "' were leaked at exit.");
-#endif
-			}
+			print_error(vformat("ERROR: %d RID allocations of type '%s' were leaked at exit.",
+					alloc_count, description ? description : typeid(T).name()));
 
 			for (size_t i = 0; i < max_alloc; i++) {
 				uint64_t validator = validator_chunks[i / elements_in_chunk][i % elements_in_chunk];
