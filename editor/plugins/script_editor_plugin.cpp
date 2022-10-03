@@ -1613,7 +1613,7 @@ void ScriptEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->disconnect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 		} break;
 
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_test_script_times_on_disk();
 			_update_modified_scripts_for_external_editor();
 		} break;
