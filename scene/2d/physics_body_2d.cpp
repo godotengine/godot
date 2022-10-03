@@ -1394,7 +1394,6 @@ void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
-	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;
@@ -1430,7 +1429,6 @@ bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
-	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;
