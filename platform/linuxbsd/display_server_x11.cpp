@@ -3142,6 +3142,11 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		return;
 	}
 
+	// Query display server about a possible new window state.
+	wd.fullscreen = _window_fullscreen_check(window_id);
+	wd.minimized = _window_minimize_check(window_id);
+	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE");
+
 	{
 		//the position in xconfigure is not useful here, obtain it manually
 		int x, y;
