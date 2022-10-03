@@ -2136,16 +2136,6 @@ void ScriptEditor::_update_script_names() {
 	_update_script_colors();
 }
 
-void ScriptEditor::_update_script_connections() {
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(tab_container->get_tab_control(i));
-		if (!ste) {
-			continue;
-		}
-		ste->_update_connected_methods();
-	}
-}
-
 Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) const {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -2819,7 +2809,6 @@ void ScriptEditor::_tree_changed() {
 
 	waiting_update_names = true;
 	call_deferred(SNAME("_update_script_names"));
-	call_deferred(SNAME("_update_script_connections"));
 }
 
 void ScriptEditor::_split_dragged(float) {
@@ -3616,7 +3605,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
-	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
 	ClassDB::bind_method("_help_tab_goto", &ScriptEditor::_help_tab_goto);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);
