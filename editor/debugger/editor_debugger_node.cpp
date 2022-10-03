@@ -119,8 +119,8 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	}
 
 	if (!debugger_plugins.is_empty()) {
-		for (const Ref<Script> &i : debugger_plugins) {
-			node->add_debugger_plugin(i);
+		for (Ref<EditorDebuggerPlugin> plugin : debugger_plugins) {
+			plugin->create_session(node);
 		}
 	}
 
@@ -723,22 +723,36 @@ EditorDebuggerNode::CameraOverride EditorDebuggerNode::get_camera_override() {
 	return camera_override;
 }
 
-void EditorDebuggerNode::add_debugger_plugin(const Ref<Script> &p_script) {
-	ERR_FAIL_COND_MSG(debugger_plugins.has(p_script), "Debugger plugin already exists.");
-	ERR_FAIL_COND_MSG(p_script.is_null(), "Debugger plugin script is null");
-	ERR_FAIL_COND_MSG(p_script->get_instance_base_type() == StringName(), "Debugger plugin script has error.");
-	ERR_FAIL_COND_MSG(String(p_script->get_instance_base_type()) != "EditorDebuggerPlugin", "Base type of debugger plugin is not 'EditorDebuggerPlugin'.");
-	ERR_FAIL_COND_MSG(!p_script->is_tool(), "Debugger plugin script is not in tool mode.");
-	debugger_plugins.insert(p_script);
+void EditorDebuggerNode::add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
+	ERR_FAIL_COND_MSG(p_plugin.is_null(), "Debugger plugin is null.");
+	ERR_FAIL_COND_MSG(debugger_plugins.has(p_plugin), "Debugger plugin already exists.");
+	debugger_plugins.insert(p_plugin);
+
+	Ref<EditorDebuggerPlugin> plugin = p_plugin;
 	for (int i = 0; get_debugger(i); i++) {
-		get_debugger(i)->add_debugger_plugin(p_script);
+		plugin->create_session(get_debugger(i));
 	}
 }
 
-void EditorDebuggerNode::remove_debugger_plugin(const Ref<Script> &p_script) {
-	ERR_FAIL_COND_MSG(!debugger_plugins.has(p_script), "Debugger plugin doesn't exists.");
-	debugger_plugins.erase(p_script);
-	for (int i = 0; get_debugger(i); i++) {
-		get_debugger(i)->remove_debugger_plugin(p_script);
+void EditorDebuggerNode::remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin) {
+	ERR_FAIL_COND_MSG(p_plugin.is_null(), "Debugger plugin is null.");
+	ERR_FAIL_COND_MSG(!debugger_plugins.has(p_plugin), "Debugger plugin doesn't exists.");
+	debugger_plugins.erase(p_plugin);
+	Ref<EditorDebuggerPlugin>(p_plugin)->clear();
+}
+
+bool EditorDebuggerNode::plugins_capture(ScriptEditorDebugger *p_debugger, const String &p_message, const Array &p_data) {
+	int session_index = tabs->get_tab_idx_from_control(p_debugger);
+	ERR_FAIL_COND_V(session_index < 0, false);
+	int colon_index = p_message.find_char(':');
+	ERR_FAIL_COND_V_MSG(colon_index < 1, false, "Invalid message received.");
+
+	const String cap = p_message.substr(0, colon_index);
+	bool parsed = false;
+	for (Ref<EditorDebuggerPlugin> plugin : debugger_plugins) {
+		if (plugin->has_capture(cap)) {
+			parsed |= plugin->capture(p_message, p_data, session_index);
+		}
 	}
+	return parsed;
 }

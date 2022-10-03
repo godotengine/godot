@@ -163,10 +163,6 @@ private:
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
-	HashMap<Ref<Script>, EditorDebuggerPlugin *> debugger_plugins;
-
-	HashMap<StringName, Callable> captures;
-
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);
@@ -286,14 +282,11 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	void add_debugger_tab(Control *p_control);
+	void remove_debugger_tab(Control *p_control);
 
 	void send_message(const String &p_message, const Array &p_args);
-
-	void register_message_capture(const StringName &p_name, const Callable &p_callable);
-	void unregister_message_capture(const StringName &p_name);
-	bool has_capture(const StringName &p_name);
+	void toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data);
 
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
