@@ -82,8 +82,10 @@ class NavMap : public NavRid {
 	/// Change the id each time the map is updated.
 	uint32_t map_update_id = 0;
 
+#ifndef NO_THREADS
 	/// Pooled threads for computing steps
 	ThreadWorkPool step_work_pool;
+#endif // NO_THREADS
 
 public:
 	NavMap();

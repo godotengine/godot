@@ -690,6 +690,7 @@ void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
 void NavMap::step(real_t p_deltatime) {
 	deltatime = p_deltatime;
 	if (controlled_agents.size() > 0) {
+#ifndef NO_THREADS
 		if (step_work_pool.get_thread_count() == 0) {
 			step_work_pool.init();
 		}
@@ -698,6 +699,12 @@ void NavMap::step(real_t p_deltatime) {
 				this,
 				&NavMap::compute_single_step,
 				controlled_agents.ptr());
+#else
+		for (int i(0); i < static_cast<int>(controlled_agents.size()); i++) {
+			controlled_agents[i]->get_agent()->computeNeighbors(&rvo);
+			controlled_agents[i]->get_agent()->computeNewVelocity(deltatime);
+		}
+#endif // NO_THREADS
 	}
 }
 
@@ -743,5 +750,7 @@ NavMap::NavMap() {
 }
 
 NavMap::~NavMap() {
+#ifndef NO_THREADS
 	step_work_pool.finish();
+#endif // !NO_THREADS
 }
