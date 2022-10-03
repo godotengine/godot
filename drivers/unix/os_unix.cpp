@@ -137,10 +137,8 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-#ifndef NO_NETWORK
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
-#endif
 
 	_setup_clock();
 }
@@ -170,6 +168,7 @@ Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
 		left -= chunk;
 		ofs += chunk;
 	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
 #elif !defined(NO_URANDOM)
 	int r = open("/dev/urandom", O_RDONLY);
 	ERR_FAIL_COND_V(r < 0, FAILED);

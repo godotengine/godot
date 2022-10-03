@@ -49,10 +49,14 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
+#include <dlfcn.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -65,17 +69,6 @@
 // EWMH
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
-
-#include <dlfcn.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-//stupid linux.h
-#ifdef KEY_TAB
-#undef KEY_TAB
-#endif
 
 #undef CursorShape
 #include <X11/XKBlib.h>

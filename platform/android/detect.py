@@ -171,7 +171,7 @@ def configure(env: "Environment"):
             "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
         )
     )
-    env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
+    env.Append(CPPDEFINES=["GLES_ENABLED"])
 
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
@@ -193,7 +193,7 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS="-Wl,-soname,libgodot_android.so")
 
     env.Prepend(CPPPATH=["#platform/android"])
-    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "NO_FCNTL"])
+    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED"])
     env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "android", "log", "z", "dl"])
 
     if env["vulkan"]:

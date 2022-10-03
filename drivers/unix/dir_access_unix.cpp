@@ -30,7 +30,7 @@
 
 #include "dir_access_unix.h"
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include "core/os/memory.h"
 #include "core/os/os.h"
@@ -41,10 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifndef ANDROID_ENABLED
 #include <sys/statvfs.h>
-#endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
@@ -475,17 +472,12 @@ Error DirAccessUnix::create_link(String p_source, String p_target) {
 }
 
 uint64_t DirAccessUnix::get_space_left() {
-#ifndef NO_STATVFS
 	struct statvfs vfs;
 	if (statvfs(current_dir.utf8().get_data(), &vfs) != 0) {
 		return 0;
 	}
 
 	return (uint64_t)vfs.f_bavail * (uint64_t)vfs.f_frsize;
-#else
-	// FIXME: Implement this.
-	return 0;
-#endif
 }
 
 String DirAccessUnix::get_filesystem_type() const {
@@ -516,4 +508,4 @@ DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();
 }
 
-#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX_ENABLED
