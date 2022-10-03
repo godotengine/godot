@@ -715,7 +715,7 @@ void TextShaderEditor::_notification(int p_what) {
 			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 		} break;
 
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_check_for_external_edit();
 		} break;
 	}
