@@ -46,9 +46,7 @@ class CharString;
 template <class T, class V>
 class VMap;
 
-#if !defined(NO_THREADS)
 SAFE_NUMERIC_TYPE_PUN_GUARANTEES(uint32_t)
-#endif
 
 // Silence a false positive warning (see GH-52119).
 #if defined(__GNUC__) && !defined(__clang__)

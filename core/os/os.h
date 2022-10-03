@@ -299,8 +299,6 @@ public:
 
 	virtual String get_unique_id() const;
 
-	virtual bool can_use_threads() const;
-
 	bool has_feature(const String &p_feature);
 
 	void set_has_server_feature_callback(HasServerFeatureCallback p_callback);

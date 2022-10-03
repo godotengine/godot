@@ -328,14 +328,6 @@ String OS::get_processor_name() const {
 	return "";
 }
 
-bool OS::can_use_threads() const {
-#ifdef NO_THREADS
-	return false;
-#else
-	return true;
-#endif
-}
-
 void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
 	has_server_feature_callback = p_callback;
 }

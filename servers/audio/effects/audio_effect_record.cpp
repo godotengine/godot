@@ -116,19 +116,11 @@ void AudioEffectRecordInstance::init() {
 	recording_data.clear(); //Clear data completely and reset length
 	is_recording = true;
 
-#ifdef NO_THREADS
-	AudioServer::get_singleton()->add_update_callback(&AudioEffectRecordInstance::_update, this);
-#else
 	io_thread.start(_thread_callback, this);
-#endif
 }
 
 void AudioEffectRecordInstance::finish() {
-#ifdef NO_THREADS
-	AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
-#else
 	io_thread.wait_to_finish();
-#endif
 }
 
 AudioEffectRecordInstance::~AudioEffectRecordInstance() {
