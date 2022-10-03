@@ -4174,6 +4174,7 @@ void EditorNode::register_editor_types() {
 	GDREGISTER_CLASS(EditorScenePostImport);
 	GDREGISTER_CLASS(EditorCommandPalette);
 	GDREGISTER_CLASS(EditorDebuggerPlugin);
+	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
 }
 
 void EditorNode::unregister_editor_types() {

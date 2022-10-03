@@ -741,22 +741,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
 
-		bool parsed = false;
-		const String cap = p_msg.substr(0, colon_index);
-		HashMap<StringName, Callable>::Iterator element = captures.find(cap);
-		if (element) {
-			Callable &c = element->value;
-			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
-			Variant cmd = p_msg.substr(colon_index + 1), cmd_data = p_data;
-			const Variant *args[2] = { &cmd, &cmd_data };
-			Variant retval;
-			Callable::CallError err;
-			c.callp(args, 2, retval, err);
-			ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(c, args, 2, err));
-			ERR_FAIL_COND_MSG(retval.get_type() != Variant::BOOL, "Error calling 'capture' to callable: " + String(c) + ". Return type is not bool.");
-			parsed = retval;
-		}
-
+		bool parsed = EditorDebuggerNode::get_singleton()->plugins_capture(this, p_msg, p_data);
 		if (!parsed) {
 			WARN_PRINT("unknown message " + p_msg);
 		}
@@ -1658,41 +1643,25 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
 }
 
-void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
-	if (!debugger_plugins.has(p_script)) {
-		EditorDebuggerPlugin *plugin = memnew(EditorDebuggerPlugin());
-		plugin->attach_debugger(this);
-		plugin->set_script(p_script);
-		tabs->add_child(plugin);
-		debugger_plugins.insert(p_script, plugin);
-	}
+void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
+	tabs->add_child(p_control);
 }
 
-void ScriptEditorDebugger::remove_debugger_plugin(const Ref<Script> &p_script) {
-	if (debugger_plugins.has(p_script)) {
-		tabs->remove_child(debugger_plugins[p_script]);
-		debugger_plugins[p_script]->detach_debugger(false);
-		memdelete(debugger_plugins[p_script]);
-		debugger_plugins.erase(p_script);
-	}
+void ScriptEditorDebugger::remove_debugger_tab(Control *p_control) {
+	int idx = tabs->get_tab_idx_from_control(p_control);
+	ERR_FAIL_COND(idx < 0);
+	p_control->queue_free();
 }
 
 void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_args) {
 	_put_msg(p_message, p_args);
 }
 
-void ScriptEditorDebugger::register_message_capture(const StringName &p_name, const Callable &p_callable) {
-	ERR_FAIL_COND_MSG(has_capture(p_name), "Capture already registered: " + p_name);
-	captures.insert(p_name, p_callable);
-}
-
-void ScriptEditorDebugger::unregister_message_capture(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!has_capture(p_name), "Capture not registered: " + p_name);
-	captures.erase(p_name);
-}
-
-bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
-	return captures.has(p_name);
+void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enable, const Array &p_data) {
+	Array msg_data;
+	msg_data.push_back(p_enable);
+	msg_data.append_array(p_data);
+	_put_msg("profiler:" + p_profiler, msg_data);
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
