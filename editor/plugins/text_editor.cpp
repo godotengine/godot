@@ -150,6 +150,7 @@ void TextEditor::reload_text() {
 	te->tag_saved_version();
 
 	code_editor->update_line_and_column();
+	_validate_script();
 }
 
 void TextEditor::_validate_script() {

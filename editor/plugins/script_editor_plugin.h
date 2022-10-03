@@ -403,7 +403,6 @@ class ScriptEditor : public PanelContainer {
 	void _filter_scripts_text_changed(const String &p_newtext);
 	void _filter_methods_text_changed(const String &p_newtext);
 	void _update_script_names();
-	void _update_script_connections();
 	bool _sort_list_on_update;
 
 	void _members_overview_selected(int p_idx);
