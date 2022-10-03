@@ -155,7 +155,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 
 			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
 
-			if (!any_type_matches) {
+			if (any_type_matches) {
 				break;
 			}
 		}
