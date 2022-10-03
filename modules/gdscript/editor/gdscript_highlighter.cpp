@@ -34,7 +34,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
 
-Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) { //func ends at line 544
+Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 
 	Dictionary color_map;
 
@@ -414,11 +414,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[')) { 
 				//detects = sign or previous is char. we want a type to be expected inside the array. 
-				// So before, we didn't have anything to check if 
+				// So before, we didn't have anything to check if we are referring to an inner class and we do that with the open bracket
+				// if not an inner class, then we set expect_type false (no highlight)
 				expect_type = false;
 			}
 
-			if (j > 0 && str[j] == '>' && str[j - 1] == '-' ||) { //detects arrow function 
+			if (j > 0 && str[j] == '>' && str[j - 1] == '-') { //detects arrow function 
 				expect_type = true;
 			}
 
