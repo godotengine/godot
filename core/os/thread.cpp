@@ -34,9 +34,6 @@
 #include "thread.h"
 
 #include "core/object/script_language.h"
-
-#if !defined(NO_THREADS)
-
 #include "core/templates/safe_refcount.h"
 
 Error (*Thread::set_name_func)(const String &) = nullptr;
@@ -128,5 +125,4 @@ Thread::~Thread() {
 	}
 }
 
-#endif
 #endif // PLATFORM_THREAD_OVERRIDE

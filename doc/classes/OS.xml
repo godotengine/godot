@@ -18,12 +18,6 @@
 				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
 			</description>
 		</method>
-		<method name="can_use_threads" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the current host platform is using multiple threads.
-			</description>
-		</method>
 		<method name="close_midi_inputs">
 			<return type="void" />
 			<description>

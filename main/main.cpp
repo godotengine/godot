@@ -1706,13 +1706,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rtm >= 0 && rtm < 3) {
-#ifdef NO_THREADS
-		rtm = OS::RENDER_THREAD_UNSAFE; // No threads available on this platform.
-#else
 		if (editor) {
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
-#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
@@ -1932,11 +1928,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
-#if !defined(NO_THREADS)
 	if (p_main_tid_override) {
 		Thread::main_thread_id = p_main_tid_override;
 	}
-#endif
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {

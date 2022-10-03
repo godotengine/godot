@@ -239,9 +239,6 @@ OS_Web::OS_Web() {
 	godot_js_pwa_cb(&OS_Web::update_pwa_state_callback);
 
 	if (AudioDriverWeb::is_available()) {
-#ifdef NO_THREADS
-		audio_drivers.push_back(memnew(AudioDriverScriptProcessor));
-#endif
 		audio_drivers.push_back(memnew(AudioDriverWorklet));
 	}
 	for (int i = 0; i < audio_drivers.size(); i++) {

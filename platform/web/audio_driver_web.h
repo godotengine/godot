@@ -89,46 +89,6 @@ public:
 	AudioDriverWeb() {}
 };
 
-#ifdef NO_THREADS
-class AudioDriverScriptProcessor : public AudioDriverWeb {
-private:
-	static void _process_callback();
-
-	static AudioDriverScriptProcessor *singleton;
-
-protected:
-	Error create(int &p_buffer_samples, int p_channels) override;
-	void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
-
-public:
-	virtual const char *get_name() const override { return "ScriptProcessor"; }
-
-	virtual void lock() override {}
-	virtual void unlock() override {}
-
-	AudioDriverScriptProcessor() { singleton = this; }
-};
-
-class AudioDriverWorklet : public AudioDriverWeb {
-private:
-	static void _process_callback(int p_pos, int p_samples);
-	static void _capture_callback(int p_pos, int p_samples);
-
-	static AudioDriverWorklet *singleton;
-
-protected:
-	virtual Error create(int &p_buffer_size, int p_output_channels) override;
-	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
-
-public:
-	virtual const char *get_name() const override { return "AudioWorklet"; }
-
-	virtual void lock() override {}
-	virtual void unlock() override {}
-
-	AudioDriverWorklet() { singleton = this; }
-};
-#else
 class AudioDriverWorklet : public AudioDriverWeb {
 private:
 	enum {
@@ -156,6 +116,5 @@ public:
 	void lock() override;
 	void unlock() override;
 };
-#endif
 
 #endif // AUDIO_DRIVER_WEB_H

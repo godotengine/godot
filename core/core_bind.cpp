@@ -429,10 +429,6 @@ void OS::delay_msec(int p_msec) const {
 	::OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
-bool OS::can_use_threads() const {
-	return ::OS::get_singleton()->can_use_threads();
-}
-
 bool OS::is_userfs_persistent() const {
 	return ::OS::get_singleton()->is_userfs_persistent();
 }
@@ -565,8 +561,6 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &OS::is_stdout_verbose);
-
-	ClassDB::bind_method(D_METHOD("can_use_threads"), &OS::can_use_threads);
 
 	ClassDB::bind_method(D_METHOD("is_debug_build"), &OS::is_debug_build);
 
