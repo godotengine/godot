@@ -34,7 +34,8 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_settings.h"
 
-Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
+Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) { //func ends at line 544
+
 	Dictionary color_map;
 
 	Type next_type = NONE;
@@ -44,6 +45,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	String prev_text = "";
 	int prev_column = 0;
 
+	//what things are highlighted by. if true, mark w color
 	bool prev_is_char = false;
 	bool prev_is_digit = false;
 	bool prev_is_binary_op = false;
@@ -62,7 +64,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	bool in_string_name = false;
 	bool is_hex_notation = false;
 	bool is_bin_notation = false;
-	bool expect_type = false;
+	bool expect_type = false; // we are concerned with this. if we expect a type, then we want it highlighted.
 	Color keyword_color;
 	Color color;
 
@@ -70,7 +72,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	int in_region = -1;
 	if (p_line != 0) {
 		int prev_region_line = p_line - 1;
-		while (prev_region_line > 0 && !color_region_cache.has(prev_region_line)) {
+		while (prev_region_line > 0 && !color_region_cache.has(prev_region_line)) { // some pre-processing to check for previous lines
 			prev_region_line--;
 		}
 		for (int i = prev_region_line; i < p_line - 1; i++) {
@@ -82,6 +84,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		in_region = color_region_cache[p_line - 1];
 	}
 
+// important: in: p_line, the line number of the editor text we want to highlight.
 	const String &str = text_edit->get_line(p_line);
 	const int line_length = str.length();
 	Color prev_color;
@@ -89,8 +92,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	if (in_region != -1 && line_length == 0) {
 		color_region_cache[p_line] = in_region;
 	}
+
+
+//begin parsing line
 	for (int j = 0; j < line_length; j++) {
-		Dictionary highlighter_info;
+		Dictionary highlighter_info; 
 
 		color = font_color;
 		bool is_char = !is_symbol(str[j]);
@@ -397,7 +403,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 		}
 
-		if (is_a_symbol) {
+		if (is_a_symbol) { //settings for new code
 			if (in_function_name) {
 				in_function_args = true;
 			}
@@ -406,11 +412,13 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				in_function_args = false;
 			}
 
-			if (expect_type && (prev_is_char || str[j] == '=')) {
+			if (expect_type && (prev_is_char || str[j] == '=') && str[j] != '[')) { 
+				//detects = sign or previous is char. we want a type to be expected inside the array. 
+				// So before, we didn't have anything to check if 
 				expect_type = false;
 			}
 
-			if (j > 0 && str[j] == '>' && str[j - 1] == '-') {
+			if (j > 0 && str[j] == '>' && str[j - 1] == '-' ||) { //detects arrow function 
 				expect_type = true;
 			}
 
@@ -542,6 +550,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 	}
 	return color_map;
 }
+//implements a map of colors
+//what is being mapped here?
+
+
 
 String GDScriptSyntaxHighlighter::_get_name() const {
 	return "GDScript";
@@ -671,7 +683,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		}
 	}
 
-	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
+	const String text_edit_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme"); //set colors
 	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
 
 	if (godot_2_theme || EditorSettings::get_singleton()->is_dark_theme()) {
@@ -732,6 +744,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	type_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
 }
 
+
+//helper function to add color region
 void GDScriptSyntaxHighlighter::add_color_region(const String &p_start_key, const String &p_end_key, const Color &p_color, bool p_line_only) {
 	for (int i = 0; i < p_start_key.length(); i++) {
 		ERR_FAIL_COND_MSG(!is_symbol(p_start_key[i]), "color regions must start with a symbol");
