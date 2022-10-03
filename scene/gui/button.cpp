@@ -34,7 +34,7 @@
 #include "servers/visual_server.h"
 
 Size2 Button::get_minimum_size() const {
-	Size2 minsize = get_font("font")->get_string_size(xl_text);
+	Size2 minsize = get_font("font")->total_size_of_lines(xl_text.split("\n"));
 	if (clip_text) {
 		minsize.width = 0;
 	}
@@ -82,6 +82,8 @@ void Button::_notification(int p_what) {
 			Color color_icon(1, 1, 1, 1);
 
 			Ref<StyleBox> style = get_stylebox("normal");
+
+			Vector<String> lines = xl_text.split("\n");
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
@@ -202,7 +204,7 @@ void Button::_notification(int p_what) {
 					int icon_text_separation = text.empty() ? 0 : get_constant("h_separation");
 					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align != ALIGN_CENTER) {
-						_size.width -= get_font("font")->get_string_size(xl_text).width;
+						_size.width -= get_font("font")->total_size_of_lines(lines).width;
 					}
 					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
@@ -240,45 +242,51 @@ void Button::_notification(int p_what) {
 				text_clip -= _internal_margin[MARGIN_RIGHT] + get_constant("hseparation");
 			}
 
-			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text) - Point2(_internal_margin[MARGIN_RIGHT] - _internal_margin[MARGIN_LEFT], 0)) / 2.0;
+			int num_lines = lines.size();
+			float line_height = font->get_height();
 
-			switch (align) {
-				case ALIGN_LEFT: {
-					if (icon_align != ALIGN_LEFT) {
-						icon_ofs.x = 0;
-					}
-					if (_internal_margin[MARGIN_LEFT] > 0) {
-						text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
-					} else {
-						text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
-					}
-					text_ofs.y += style->get_offset().y;
-				} break;
-				case ALIGN_CENTER: {
-					if (text_ofs.x < 0) {
-						text_ofs.x = 0;
-					}
-					if (icon_align == ALIGN_LEFT) {
-						text_ofs += icon_ofs;
-					}
-					text_ofs += style->get_offset();
-				} break;
-				case ALIGN_RIGHT: {
-					int text_width = font->get_string_size(xl_text).x;
-					if (_internal_margin[MARGIN_RIGHT] > 0) {
-						text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width - _internal_margin[MARGIN_RIGHT] - get_constant("hseparation");
-					} else {
-						text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width;
-					}
-					text_ofs.y += style->get_offset().y;
-					if (icon_align == ALIGN_RIGHT) {
-						text_ofs.x -= icon_ofs.x;
-					}
-				} break;
+			for (int i = 0; i < num_lines; i++) {
+				String line_text = lines[i];
+				Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(line_text) - Point2(_internal_margin[MARGIN_RIGHT] - _internal_margin[MARGIN_LEFT], 0)) / 2.0;
+				switch (align) {
+					case ALIGN_LEFT: {
+						if (icon_align != ALIGN_LEFT) {
+							icon_ofs.x = 0;
+						}
+						if (_internal_margin[MARGIN_LEFT] > 0) {
+							text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+						} else {
+							text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
+						}
+						text_ofs.y += style->get_offset().y;
+					} break;
+					case ALIGN_CENTER: {
+						if (text_ofs.x < 0) {
+							text_ofs.x = 0;
+						}
+						if (icon_align == ALIGN_LEFT) {
+							text_ofs += icon_ofs;
+						}
+						text_ofs += style->get_offset();
+					} break;
+					case ALIGN_RIGHT: {
+						int text_width = font->get_string_size(line_text).x;
+						if (_internal_margin[MARGIN_RIGHT] > 0) {
+							text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width - _internal_margin[MARGIN_RIGHT] - get_constant("hseparation");
+						} else {
+							text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - text_width;
+						}
+						text_ofs.y += style->get_offset().y;
+						if (icon_align == ALIGN_RIGHT) {
+							text_ofs.x -= icon_ofs.x;
+						}
+					} break;
+				}
+
+				text_ofs.y += font->get_ascent();
+				text_ofs.y += line_height * (((float)i) - (((float)(num_lines - 1)) / 2.0));
+				font->draw(ci, text_ofs.floor(), line_text, color, clip_text ? text_clip : -1);
 			}
-
-			text_ofs.y += font->get_ascent();
-			font->draw(ci, text_ofs.floor(), xl_text, color, clip_text ? text_clip : -1);
 		} break;
 	}
 }
@@ -380,7 +388,7 @@ void Button::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
 	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_button_icon", "get_button_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
