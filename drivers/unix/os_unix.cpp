@@ -38,6 +38,9 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/net_socket_posix.h"
+#ifndef WEB_ENABLED
+#include "drivers/unix/process_unix.h"
+#endif
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
@@ -103,6 +106,8 @@ static void _setup_clock() {
 }
 #endif
 
+Vector<OS_Unix::SigchldCallbackItem *> OS_Unix::sigchld_handler_callbacks;
+
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
@@ -110,6 +115,41 @@ static void handle_interrupt(int sig) {
 
 	EngineDebugger::get_script_debugger()->set_depth(-1);
 	EngineDebugger::get_script_debugger()->set_lines_left(1);
+}
+
+void OS_Unix::handle_sigchld(int sig, siginfo_t *info, void *ucontext) {
+	OS_Unix *os = OS_Unix::get_singleton();
+	os->mutex.lock();
+	for (int i = 0; i < os->sigchld_handler_callbacks.size(); i++) {
+		os->sigchld_handler_callbacks[i]->callback(info->si_pid, os->sigchld_handler_callbacks[i]->userdata);
+	}
+	os->mutex.unlock();
+
+	if (os->old_sigaction.sa_flags & SA_SIGINFO) {
+		os->old_sigaction.sa_sigaction(sig, info, ucontext);
+	} else if (os->old_sigaction.sa_handler != SIG_IGN && os->old_sigaction.sa_handler != SIG_DFL) {
+		os->old_sigaction.sa_handler(sig);
+	}
+}
+
+void OS_Unix::add_sigchld_callback(SigchldHandlerCallback p_callback, void *userdata) {
+	SigchldCallbackItem *callback = memnew(SigchldCallbackItem);
+	callback->callback = p_callback;
+	callback->userdata = userdata;
+	mutex.lock();
+	sigchld_handler_callbacks.push_back(callback);
+	mutex.unlock();
+}
+
+void OS_Unix::remove_sigchld_callback(SigchldHandlerCallback p_callback, void *userdata) {
+	mutex.lock();
+	for (int i = sigchld_handler_callbacks.size() - 1; i >= 1; i--) {
+		SigchldCallbackItem *ci = sigchld_handler_callbacks[i];
+		if (ci->callback == p_callback && ci->userdata == userdata) {
+			sigchld_handler_callbacks.erase(ci);
+		}
+	}
+	mutex.unlock();
 }
 
 void OS_Unix::initialize_debugging() {
@@ -138,6 +178,16 @@ void OS_Unix::initialize_core() {
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
 
+#ifndef WEB_ENABLED
+	ProcessUnix::make_default();
+#endif
+	struct sigaction sa;
+	sa.sa_sigaction = handle_sigchld;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP | SA_SIGINFO;
+	// We store the old sigaction so we can chain them
+	sigaction(SIGCHLD, &sa, &old_sigaction);
+
 	_setup_clock();
 }
 
@@ -147,6 +197,10 @@ void OS_Unix::finalize_core() {
 
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 	return Vector<String>();
+}
+
+OS_Unix *OS_Unix::get_singleton() {
+	return static_cast<OS_Unix *>(OS::get_singleton());
 }
 
 String OS_Unix::get_stdin_string(bool p_block) {

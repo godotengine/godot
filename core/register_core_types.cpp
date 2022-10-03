@@ -56,6 +56,7 @@
 #include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
+#include "core/io/process.h"
 #include "core/io/resource_format_binary.h"
 #include "core/io/resource_importer.h"
 #include "core/io/resource_uid.h"
@@ -232,6 +233,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(ResourceFormatSaver);
 
 	GDREGISTER_ABSTRACT_CLASS(FileAccess);
+	GDREGISTER_ABSTRACT_CLASS(Process);
 	GDREGISTER_ABSTRACT_CLASS(DirAccess);
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);

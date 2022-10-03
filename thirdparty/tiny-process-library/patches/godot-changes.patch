@@ -1,0 +1,45 @@
+diff --git a/thirdparty/tiny-process-library/process_unix.cpp b/thirdparty/tiny-process-library/process_unix.cpp
+index b2bbaa1804..aec4bbe7a2 100644
+--- a/thirdparty/tiny-process-library/process_unix.cpp
++++ b/thirdparty/tiny-process-library/process_unix.cpp
+@@ -19,7 +19,10 @@ Process::Process(const std::function<void()> &function,
+                  bool open_stdin, const Config &config)
+     : closed(true), read_stdout(std::move(read_stdout)), read_stderr(std::move(read_stderr)), open_stdin(open_stdin), config(config) {
+   if(config.flatpak_spawn_host)
+-    throw std::invalid_argument("Cannot break out of a flatpak sandbox with this overload.");
++    // -- GODOT START --
++    //throw std::invalid_argument("Cannot break out of a flatpak sandbox with this overload.");
++    abort();
++    // -- GODOT END --
+   open(function);
+   async_read();
+ }
+@@ -343,7 +346,10 @@ void Process::close_fds() noexcept {
+ 
+ bool Process::write(const char *bytes, size_t n) {
+   if(!open_stdin)
+-    throw std::invalid_argument("Can't write to an unopened stdin pipe. Please set open_stdin=true when constructing the process.");
++    // -- GODOT START --
++    //throw std::invalid_argument("Can't write to an unopened stdin pipe. Please set open_stdin=true when constructing the process.");
++    abort();
++    // -- GODOT END --
+ 
+   std::lock_guard<std::mutex> lock(stdin_mutex);
+   if(stdin_fd) {
+diff --git a/thirdparty/tiny-process-library/process_win.cpp b/thirdparty/tiny-process-library/process_win.cpp
+index 846788d2b3..97e2ceb902 100644
+--- a/thirdparty/tiny-process-library/process_win.cpp
++++ b/thirdparty/tiny-process-library/process_win.cpp
+@@ -272,8 +272,10 @@ void Process::close_fds() noexcept {
+ 
+ bool Process::write(const char *bytes, size_t n) {
+   if(!open_stdin)
+-    throw std::invalid_argument("Can't write to an unopened stdin pipe. Please set open_stdin=true when constructing the process.");
+-
++    // -- GODOT START --
++    //throw std::invalid_argument("Can't write to an unopened stdin pipe. Please set open_stdin=true when constructing the process.");
++    abort();
++    // -- GODOT END --
+   std::lock_guard<std::mutex> lock(stdin_mutex);
+   if(stdin_fd) {
+     DWORD written;
