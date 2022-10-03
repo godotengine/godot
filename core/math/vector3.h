@@ -68,13 +68,6 @@ struct _NO_DISCARD_ Vector3 {
 		return coord[p_axis];
 	}
 
-	void set_axis(const int p_axis, const real_t p_value);
-	real_t get_axis(const int p_axis) const;
-
-	_FORCE_INLINE_ void set_all(const real_t p_value) {
-		x = y = z = p_value;
-	}
-
 	_FORCE_INLINE_ Vector3::Axis min_axis_index() const {
 		return x < y ? (x < z ? Vector3::AXIS_X : Vector3::AXIS_Z) : (y < z ? Vector3::AXIS_Y : Vector3::AXIS_Z);
 	}

@@ -65,11 +65,6 @@ struct _NO_DISCARD_ Vector4 {
 		return components[p_axis];
 	}
 
-	_FORCE_INLINE_ void set_all(const real_t p_value);
-
-	void set_axis(const int p_axis, const real_t p_value);
-	real_t get_axis(const int p_axis) const;
-
 	Vector4::Axis min_axis_index() const;
 	Vector4::Axis max_axis_index() const;
 
@@ -149,10 +144,6 @@ struct _NO_DISCARD_ Vector4 {
 		w = p_vec4.w;
 	}
 };
-
-void Vector4::set_all(const real_t p_value) {
-	x = y = z = p_value;
-}
 
 real_t Vector4::dot(const Vector4 &p_vec4) const {
 	return x * p_vec4.x + y * p_vec4.y + z * p_vec4.z + w * p_vec4.w;

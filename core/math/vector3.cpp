@@ -45,16 +45,6 @@ Vector3 Vector3::rotated(const Vector3 &p_axis, const real_t p_angle) const {
 	return r;
 }
 
-void Vector3::set_axis(const int p_axis, const real_t p_value) {
-	ERR_FAIL_INDEX(p_axis, 3);
-	coord[p_axis] = p_value;
-}
-
-real_t Vector3::get_axis(const int p_axis) const {
-	ERR_FAIL_INDEX_V(p_axis, 3, 0);
-	return operator[](p_axis);
-}
-
 Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
 	return Vector3(
 			CLAMP(x, p_min.x, p_max.x),

@@ -33,16 +33,6 @@
 #include "core/math/basis.h"
 #include "core/string/print_string.h"
 
-void Vector4::set_axis(const int p_axis, const real_t p_value) {
-	ERR_FAIL_INDEX(p_axis, 4);
-	components[p_axis] = p_value;
-}
-
-real_t Vector4::get_axis(const int p_axis) const {
-	ERR_FAIL_INDEX_V(p_axis, 4, 0);
-	return operator[](p_axis);
-}
-
 Vector4::Axis Vector4::min_axis_index() const {
 	uint32_t min_index = 0;
 	real_t min_value = x;
