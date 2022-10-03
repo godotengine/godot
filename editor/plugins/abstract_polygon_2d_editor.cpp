@@ -566,9 +566,12 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 
 			if (vertex == hover_point) {
 				Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-				int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+				int font_size = 2 * get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 				String num = String::num(vertex.vertex);
-				Size2 num_size = font->get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+				Size2 num_size = 2 * font->get_string_size(num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);	
+				Vector2 rect_size = Vector2(num_size.x, 0.75 * num_size.y);
+				Rect2 hover_box = Rect2(Vector2(point.x - num_size.x * 0.75, point.y - num_size.y), rect_size);
+				p_overlay->draw_rect(hover_box, Color(0.0, 0.0, 0.0, 0.5), true);
 				p_overlay->draw_string(font, point - num_size * 0.5, num, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1.0, 1.0, 1.0, 0.5));
 			}
 		}
