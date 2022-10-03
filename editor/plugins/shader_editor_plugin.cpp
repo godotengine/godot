@@ -1241,7 +1241,7 @@ void ShaderEditorPlugin::_update_shader_list() {
 		shader_list->select(shader_tabs->get_current_tab());
 	}
 
-	for (int i = 1; i < FILE_MAX; i++) {
+	for (int i = FILE_SAVE; i < FILE_MAX; i++) {
 		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), edited_shaders.size() == 0);
 	}
 
@@ -1592,7 +1592,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	file_menu->get_popup()->connect("id_pressed", callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
 	file_hb->add_child(file_menu);
 
-	for (int i = 2; i < FILE_MAX; i++) {
+	for (int i = FILE_SAVE; i < FILE_MAX; i++) {
 		file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(i), true);
 	}
 
