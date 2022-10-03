@@ -137,10 +137,8 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-#ifndef NO_NETWORK
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
-#endif
 
 	_setup_clock();
 }
