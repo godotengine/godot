@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gltf_defines.h                                                       */
+/*  gltf_texture_sampler.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLTF_DEFINES_H
-#define GLTF_DEFINES_H
+#include "gltf_texture_sampler.h"
 
-// This file should only be included by other headers.
+void GLTFTextureSampler::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_mag_filter"), &GLTFTextureSampler::get_mag_filter);
+	ClassDB::bind_method(D_METHOD("set_mag_filter", "filter_mode"), &GLTFTextureSampler::set_mag_filter);
+	ClassDB::bind_method(D_METHOD("get_min_filter"), &GLTFTextureSampler::get_min_filter);
+	ClassDB::bind_method(D_METHOD("set_min_filter", "filter_mode"), &GLTFTextureSampler::set_min_filter);
+	ClassDB::bind_method(D_METHOD("get_wrap_s"), &GLTFTextureSampler::get_wrap_s);
+	ClassDB::bind_method(D_METHOD("set_wrap_s", "wrap_mode"), &GLTFTextureSampler::set_wrap_s);
+	ClassDB::bind_method(D_METHOD("get_wrap_t"), &GLTFTextureSampler::get_wrap_t);
+	ClassDB::bind_method(D_METHOD("set_wrap_t", "wrap_mode"), &GLTFTextureSampler::set_wrap_t);
 
-// Godot classes used by GLTF headers.
-class BoneAttachment3D;
-class CSGShape3D;
-class DirectionalLight3D;
-class GridMap;
-class Light3D;
-class MultiMeshInstance3D;
-class Skeleton3D;
-class Skin;
-
-// GLTF classes.
-struct GLTFAccessor;
-class GLTFAnimation;
-class GLTFBufferView;
-class GLTFCamera;
-class GLTFDocument;
-class GLTFDocumentExtension;
-class GLTFLight;
-class GLTFMesh;
-class GLTFNode;
-class GLTFSkeleton;
-class GLTFSkin;
-class GLTFSpecGloss;
-class GLTFState;
-class GLTFTexture;
-class GLTFTextureSampler;
-
-// GLTF index aliases.
-using GLTFAccessorIndex = int;
-using GLTFAnimationIndex = int;
-using GLTFBufferIndex = int;
-using GLTFBufferViewIndex = int;
-using GLTFCameraIndex = int;
-using GLTFImageIndex = int;
-using GLTFLightIndex = int;
-using GLTFMaterialIndex = int;
-using GLTFMeshIndex = int;
-using GLTFNodeIndex = int;
-using GLTFSkeletonIndex = int;
-using GLTFSkinIndex = int;
-using GLTFTextureIndex = int;
-using GLTFTextureSamplerIndex = int;
-
-enum GLTFType {
-	TYPE_SCALAR,
-	TYPE_VEC2,
-	TYPE_VEC3,
-	TYPE_VEC4,
-	TYPE_MAT2,
-	TYPE_MAT3,
-	TYPE_MAT4,
-};
-
-#endif // GLTF_DEFINES_H
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mag_filter"), "set_mag_filter", "get_mag_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "min_filter"), "set_min_filter", "get_min_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_s"), "set_wrap_s", "get_wrap_s");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "wrap_t"), "set_wrap_t", "get_wrap_t");
+}
