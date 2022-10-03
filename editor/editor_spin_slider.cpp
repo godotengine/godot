@@ -398,7 +398,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
 
-		bool display_grabber = (mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+		bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
 		if (grabber->is_visible() != display_grabber) {
 			if (display_grabber) {
 				grabber->show();
