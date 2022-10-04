@@ -154,6 +154,7 @@ class GDScript : public Script {
 
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
+	Ref<GDScript> _find_subclass(const Vector<StringName> &p_names);
 	void _save_orphaned_subclasses();
 	void _init_rpc_methods_properties();
 

@@ -676,7 +676,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 
 			if (c->extends_used) {
 				String path = "";
-				int entends_idx = 0;
+				Vector<StringName> class_names = c->extends;
 				if (String(c->extends_path) != "" && String(c->extends_path) != get_path()) {
 					path = c->extends_path;
 					if (path.is_relative_path()) {
@@ -688,7 +688,8 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						}
 					}
 				} else if (c->extends.size() != 0) {
-					const StringName &base = c->extends[entends_idx++];
+					const StringName &base = c->extends[0];
+					class_names.remove_at(0);
 
 					if (ScriptServer::is_global_class(base)) {
 						path = ScriptServer::get_global_class_path(base);
@@ -698,19 +699,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				if (!path.is_empty()) {
 					if (path != get_path()) {
 						Ref<GDScript> bf = ResourceLoader::load(path);
-
-						for (int i = entends_idx; i < c->extends.size(); ++i) {
-							if (bf.is_null()) {
-								break;
-							}
-							HashMap<StringName, Ref<GDScript>>::ConstIterator E = bf->get_subclasses().find(c->extends[i]);
-							if (!E) {
-								bf = Ref<GDScript>();
-								break;
-							}
-							Ref<GDScript> tmp_script = bf; // because inner_script may hold the only ref to is subclass...
-							bf = E->value;
-						}
+						bf = bf->_find_subclass(class_names);
 
 						if (bf.is_valid()) {
 							base_cache = bf;
@@ -1206,6 +1195,22 @@ GDScript::GDScript() :
 		GDScriptLanguage::get_singleton()->script_list.add(&script_list);
 	}
 #endif
+}
+
+Ref<GDScript> GDScript::_find_subclass(const Vector<StringName> &p_names) {
+	Ref<GDScript> result = Ref<GDScript>(this);
+	for (int i = 1; i < p_names.size(); ++i) {
+		if (result.is_null()) {
+			return Ref<GDScript>();
+		}
+		HashMap<StringName, Ref<GDScript>>::ConstIterator E = result->subclasses.find(p_names[i]);
+		if (!E) {
+			return Ref<GDScript>();
+		}
+		Ref<GDScript> tmp_script = result; // Because it may hold the only ref to its subclass...
+		result = E->value;
+	}
+	return result;
 }
 
 void GDScript::_save_orphaned_subclasses() {

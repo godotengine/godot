@@ -165,30 +165,16 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						}
 					}
 					if (result.script_type_ref.is_null()) {
+						Error err = OK;
+						Ref<GDScript> script_ref = GDScriptCache::get_full_script(p_datatype.script_path, err, main_script->path);
 						if (classes.size() > 1) {
-							auto find_subclass_script = [&classes](Ref<GDScript> lp_script) -> Ref<GDScript> {
-								for (int i = 1; i < classes.size(); ++i) {
-									if (lp_script.is_null()) {
-										return Ref<GDScript>();
-									}
-									HashMap<StringName, Ref<GDScript>>::ConstIterator E = lp_script->get_subclasses().find(classes[i]);
-									if (!E) {
-										return Ref<GDScript>();
-									}
-									Ref<GDScript> tmp_script = lp_script; // because inner_script may hold the only ref to is subclass...
-									lp_script = E->value;
-								}
-								return lp_script;
-							};
-							Ref<GDScript> inner_script = find_subclass_script(GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path));
-							if (inner_script.is_null()) {
-								Error err = OK;
-								inner_script = find_subclass_script(GDScriptCache::get_full_script(p_datatype.script_path, err, main_script->path));
+							Vector<StringName> class_names;
+							for (int i = 1; i < classes.size(); i++) {
+								class_names.push_back(classes[i]);
 							}
-							result.script_type_ref = inner_script;
-						} else {
-							result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
+							script_ref = script_ref->_find_subclass(class_names);
 						}
+						result.script_type_ref = script_ref;
 					}
 
 					result.script_type = result.script_type_ref.ptr();
@@ -2302,10 +2288,10 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->_base = base.ptr();
 
 			if (p_class->base_type.kind == GDScriptParser::DataType::CLASS && p_class->base_type.class_type != nullptr) {
+				String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
 				if (p_class->base_type.script_path == main_script->path) {
 					if (!parsed_classes.has(p_script->_base)) {
 						if (parsing_classes.has(p_script->_base)) {
-							String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
 							_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
 							return ERR_PARSE_ERROR;
 						}
@@ -2314,10 +2300,9 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 							return err;
 						}
 					}
-				} else {
-					if (base.is_null() || !base->is_valid()) {
-						return ERR_COMPILATION_FAILED;
-					}
+				} else if (base.is_null() || !base->is_valid()) {
+					_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
+					return ERR_PARSE_ERROR;
 				}
 			}
 
