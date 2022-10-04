@@ -53,7 +53,7 @@ public:
 
 	virtual String get_stdin_string(bool p_block) override;
 
-	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override; // Should return cryptographycally-safe random bytes.
+	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;

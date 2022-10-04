@@ -80,7 +80,7 @@
 			<param index="2" name="chmod_flags" type="int" default="-1" />
 			<description>
 				Copies the [param from] file to the [param to] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				If [param chmod_flags] is different than [code]-1[/code], the unix permissions for the destination path will be set to the provided value, if available on the current operating system.
+				If [param chmod_flags] is different than [code]-1[/code], the Unix permissions for the destination path will be set to the provided value, if available on the current operating system.
 				Returns one of the [enum Error] code constants ([code]OK[/code] on success).
 			</description>
 		</method>
@@ -199,7 +199,7 @@
 		<method name="get_space_left">
 			<return type="int" />
 			<description>
-				On UNIX desktop systems, returns the available space on the current directory's disk. On other platforms, this information is not available and the method returns 0 or -1.
+				Returns the available space on the current directory's disk, in bytes. Returns [code]0[/code] if the platform-specific method to query the available space fails.
 			</description>
 		</method>
 		<method name="list_dir_begin">

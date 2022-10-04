@@ -40,6 +40,7 @@
 #include "drivers/winmidi/midi_driver_winmidi.h"
 #include "key_mapping_windows.h"
 #include "servers/audio_server.h"
+
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
@@ -49,10 +50,10 @@
 #include "platform/windows/vulkan_context_win.h"
 #endif
 
-#include <fcntl.h>
 #include <io.h>
 #include <shellapi.h>
 #include <stdio.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>

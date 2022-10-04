@@ -31,15 +31,15 @@
 #ifndef DIR_ACCESS_MACOS_H
 #define DIR_ACCESS_MACOS_H
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
+
+#include "core/io/dir_access.h"
+#include "drivers/unix/dir_access_unix.h"
 
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include "core/io/dir_access.h"
-#include "drivers/unix/dir_access_unix.h"
 
 class DirAccessMacOS : public DirAccessUnix {
 protected:
@@ -51,6 +51,6 @@ protected:
 	virtual bool is_hidden(const String &p_name) override;
 };
 
-#endif // UNIX ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX ENABLED
 
 #endif // DIR_ACCESS_MACOS_H
