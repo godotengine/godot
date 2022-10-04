@@ -508,6 +508,8 @@ public:
 
 	void goto_help(const String &p_desc) { _help_class_goto(p_desc); }
 	void update_doc(const String &p_name);
+	void clear_docs_from_script(const Ref<Script> &p_script);
+	void update_docs_from_script(const Ref<Script> &p_script);
 
 	bool can_take_away_focus() const;
 
