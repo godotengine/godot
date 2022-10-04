@@ -41,6 +41,9 @@ private:
 	String text;
 	String path;
 
+protected:
+	static void _bind_methods();
+
 public:
 	virtual bool has_text() const;
 	virtual String get_text() const;

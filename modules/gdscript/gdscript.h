@@ -190,6 +190,8 @@ protected:
 
 	static void _bind_methods();
 
+	virtual Error _reload(bool p_keep_state = false) override;
+
 public:
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
@@ -248,8 +250,6 @@ public:
 		return docs;
 	}
 #endif // TOOLS_ENABLED
-
-	virtual Error reload(bool p_keep_state = false) override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	String get_script_path() const;

@@ -46,6 +46,7 @@ void TextFile::set_text(const String &p_code) {
 
 void TextFile::reload_from_file() {
 	load_text(path);
+	emit_signal(SNAME("reload_finished"));
 }
 
 Error TextFile::load_text(const String &p_path) {
@@ -73,4 +74,8 @@ Error TextFile::load_text(const String &p_path) {
 	}
 #endif // TOOLS_ENABLED
 	return OK;
+}
+
+void TextFile::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("reload_finished"));
 }
