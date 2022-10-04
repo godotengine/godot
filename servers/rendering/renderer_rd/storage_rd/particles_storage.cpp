@@ -208,6 +208,21 @@ ParticlesStorage::~ParticlesStorage() {
 	singleton = nullptr;
 }
 
+bool ParticlesStorage::free(RID p_rid) {
+	if (owns_particles(p_rid)) {
+		particles_free(p_rid);
+		return true;
+	} else if (owns_particles_collision(p_rid)) {
+		particles_collision_free(p_rid);
+		return true;
+	} else if (owns_particles_collision_instance(p_rid)) {
+		particles_collision_instance_free(p_rid);
+		return true;
+	}
+
+	return false;
+}
+
 /* PARTICLES */
 
 RID ParticlesStorage::particles_allocate() {

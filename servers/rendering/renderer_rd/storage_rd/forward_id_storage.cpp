@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  fog.h                                                                */
+/*  forward_id_storage.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FOG_DUMMY_H
-#define FOG_DUMMY_H
+#include "forward_id_storage.h"
 
-#include "servers/rendering/environment/renderer_fog.h"
+using namespace RendererRD;
 
-namespace RendererDummy {
+ForwardIDStorage *ForwardIDStorage::singleton = nullptr;
 
-class Fog : public RendererFog {
-public:
-	/* FOG VOLUMES */
+ForwardIDStorage::ForwardIDStorage() {
+	singleton = this;
+}
 
-	virtual RID fog_volume_allocate() override { return RID(); }
-	virtual void fog_volume_initialize(RID p_rid) override {}
-	virtual void fog_volume_free(RID p_rid) override {}
-
-	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override {}
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override {}
-	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override {}
-	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override { return AABB(); }
-	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override { return RS::FOG_VOLUME_SHAPE_BOX; }
-};
-
-} // namespace RendererDummy
-
-#endif // FOG_DUMMY_H
+ForwardIDStorage::~ForwardIDStorage() {
+	singleton = nullptr;
+}

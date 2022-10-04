@@ -31,8 +31,12 @@
 #ifndef TEXTURE_STORAGE_RD_H
 #define TEXTURE_STORAGE_RD_H
 
+#include "core/templates/local_vector.h"
+#include "core/templates/paged_array.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_rd/shaders/canvas_sdf.glsl.gen.h"
+#include "servers/rendering/renderer_rd/storage_rd/forward_id_storage.h"
+#include "servers/rendering/rendering_server_default.h"
 #include "servers/rendering/storage/texture_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -245,7 +249,52 @@ private:
 	};
 
 	mutable RID_Owner<Decal, true> decal_owner;
-	Decal *get_decal(RID p_rid) const { return decal_owner.get_or_null(p_rid); };
+
+	/* DECAL INSTANCE */
+
+	struct DecalInstance {
+		RID decal;
+		Transform3D transform;
+		uint32_t cull_mask = 0;
+		RendererRD::ForwardID forward_id = -1;
+	};
+
+	mutable RID_Owner<DecalInstance> decal_instance_owner;
+
+	/* DECAL DATA (UBO) */
+
+	struct DecalData {
+		float xform[16];
+		float inv_extents[3];
+		float albedo_mix;
+		float albedo_rect[4];
+		float normal_rect[4];
+		float orm_rect[4];
+		float emission_rect[4];
+		float modulate[4];
+		float emission_energy;
+		uint32_t mask;
+		float upper_fade;
+		float lower_fade;
+		float normal_xform[12];
+		float normal[3];
+		float normal_fade;
+	};
+
+	struct DecalInstanceSort {
+		float depth;
+		DecalInstance *decal_instance;
+		Decal *decal;
+		bool operator<(const DecalInstanceSort &p_sort) const {
+			return depth < p_sort.depth;
+		}
+	};
+
+	uint32_t max_decals = 0;
+	uint32_t decal_count = 0;
+	DecalData *decals = nullptr;
+	DecalInstanceSort *decal_sort = nullptr;
+	RID decal_buffer;
 
 	/* RENDER TARGET API */
 
@@ -342,6 +391,8 @@ public:
 
 	TextureStorage();
 	virtual ~TextureStorage();
+
+	bool free(RID p_rid);
 
 	/* Canvas Texture API */
 
@@ -544,6 +595,46 @@ public:
 
 	virtual AABB decal_get_aabb(RID p_decal) const override;
 	Dependency *decal_get_dependency(RID p_decal);
+
+	/* DECAL INSTANCE API */
+
+	bool owns_decal_instance(RID p_rid) const { return decal_instance_owner.owns(p_rid); }
+
+	virtual RID decal_instance_create(RID p_decal) override;
+	virtual void decal_instance_free(RID p_decal_instance) override;
+	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) override;
+
+	_FORCE_INLINE_ RID decal_instance_get_base(RID p_decal_instance) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->decal;
+	}
+
+	_FORCE_INLINE_ RendererRD::ForwardID decal_instance_get_forward_id(RID p_decal_instance) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->forward_id;
+	}
+
+	_FORCE_INLINE_ Transform3D decal_instance_get_transform(RID p_decal_instance) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->transform;
+	}
+
+	_FORCE_INLINE_ ForwardID decal_instance_get_forward_id(RID p_decal_instance) {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		return di->forward_id;
+	}
+
+	_FORCE_INLINE_ void decal_instance_set_cullmask(RID p_decal_instance, uint32_t p_cull_mask) const {
+		DecalInstance *di = decal_instance_owner.get_or_null(p_decal_instance);
+		di->cull_mask = p_cull_mask;
+	}
+
+	/* DECAL DATA API */
+
+	void free_decal_data();
+	void set_max_decals(const uint32_t p_max_decals);
+	RID get_decal_buffer() { return decal_buffer; }
+	void update_decal_buffer(const PagedArray<RID> &p_decals, const Transform3D &p_camera_inverse_xform);
 
 	/* RENDER TARGET API */
 

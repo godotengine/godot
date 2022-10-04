@@ -231,6 +231,8 @@ public:
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
+	bool free(RID p_rid);
+
 	/* Helpers */
 
 	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {

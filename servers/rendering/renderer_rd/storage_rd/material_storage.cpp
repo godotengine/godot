@@ -1528,6 +1528,18 @@ MaterialStorage::~MaterialStorage() {
 	singleton = nullptr;
 }
 
+bool MaterialStorage::free(RID p_rid) {
+	if (owns_shader(p_rid)) {
+		shader_free(p_rid);
+		return true;
+	} else if (owns_material(p_rid)) {
+		material_free(p_rid);
+		return true;
+	}
+
+	return false;
+}
+
 /* Samplers */
 
 void MaterialStorage::sampler_rd_configure_custom(float p_mipmap_bias) {
