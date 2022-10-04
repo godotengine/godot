@@ -317,6 +317,24 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		mono_other_fc->set_opentype_features(ftrs);
 	}
 
+	// Use fake bold/italics to style the editor log's `print_rich()` output.
+	// Use stronger embolden strength to make bold easier to distinguish from regular text.
+	Ref<FontVariation> mono_other_fc_bold = mono_other_fc->duplicate();
+	mono_other_fc_bold->set_variation_embolden(0.8);
+
+	Ref<FontVariation> mono_other_fc_italic = mono_other_fc->duplicate();
+	mono_other_fc_italic->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
+	Ref<FontVariation> mono_other_fc_bold_italic = mono_other_fc->duplicate();
+	mono_other_fc_bold_italic->set_variation_embolden(0.8);
+	mono_other_fc_bold_italic->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
+
+	Ref<FontVariation> mono_other_fc_mono = mono_other_fc->duplicate();
+	// Use a different font style to distinguish `[code]` in rich prints.
+	// This emulates the "faint" styling used in ANSI escape codes by using a slightly thinner font.
+	mono_other_fc_mono->set_variation_embolden(-0.25);
+	mono_other_fc_mono->set_variation_transform(Transform2D(1.0, 0.1, 0.0, 1.0, 0.0, 0.0));
+
 	Ref<FontVariation> italic_fc = default_fc->duplicate();
 	italic_fc->set_variation_transform(Transform2D(1.0, 0.2, 0.0, 1.0, 0.0, 0.0));
 
@@ -386,6 +404,10 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	p_theme->set_font_size("output_source_size", "EditorFonts", int(EDITOR_GET("run/output/font_size")) * EDSCALE);
 	p_theme->set_font("output_source", "EditorFonts", mono_other_fc);
+	p_theme->set_font("output_source_bold", "EditorFonts", mono_other_fc_bold);
+	p_theme->set_font("output_source_italic", "EditorFonts", mono_other_fc_italic);
+	p_theme->set_font("output_source_bold_italic", "EditorFonts", mono_other_fc_bold_italic);
+	p_theme->set_font("output_source_mono", "EditorFonts", mono_other_fc_mono);
 
 	p_theme->set_font_size("status_source_size", "EditorFonts", default_font_size);
 	p_theme->set_font("status_source", "EditorFonts", mono_other_fc);
