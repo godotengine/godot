@@ -272,6 +272,10 @@ public:
 	bool is_process_running(int p_pid) const;
 	int get_process_id() const;
 
+	void set_restart_on_exit(bool p_restart, const Vector<String> &p_restart_arguments = Vector<String>());
+	bool is_restart_on_exit_set() const;
+	Vector<String> get_restart_on_exit_arguments() const;
+
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
 	bool set_environment(const String &p_var, const String &p_value) const;
