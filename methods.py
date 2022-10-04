@@ -742,7 +742,7 @@ def generate_vs_project(env, num_jobs):
             PLATFORMS = ["Win32", "x64"]
             PLATFORM_IDS = ["x86_32", "x86_64"]
             CONFIGURATIONS = ["editor", "template_release", "template_debug"]
-            DEV_SUFFIX = ["", ".dev"]
+            DEV_SUFFIX = ".dev" if env["dev_build"] else ""
 
             @staticmethod
             def for_every_variant(value):
@@ -777,10 +777,9 @@ def generate_vs_project(env, num_jobs):
                     for platform in ModuleConfigs.PLATFORMS
                 ]
                 self.arg_dict["runfile"] += [
-                    f'bin\\godot.windows.{config}{dev}.{plat_id}{f".{name}" if name else ""}.exe'
+                    f'bin\\godot.windows.{config}{ModuleConfigs.DEV_SUFFIX}.{plat_id}{f".{name}" if name else ""}.exe'
                     for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
-                    for dev in ModuleConfigs.DEV_SUFFIX
                 ]
                 self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
                 self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
