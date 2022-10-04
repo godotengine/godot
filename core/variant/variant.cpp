@@ -3121,22 +3121,22 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 		case PROJECTION: {
 			uint32_t h = HASH_MURMUR3_SEED;
 			const Projection &t = *_data._projection;
-			h = hash_murmur3_one_real(t.matrix[0].x, h);
-			h = hash_murmur3_one_real(t.matrix[0].y, h);
-			h = hash_murmur3_one_real(t.matrix[0].z, h);
-			h = hash_murmur3_one_real(t.matrix[0].w, h);
-			h = hash_murmur3_one_real(t.matrix[1].x, h);
-			h = hash_murmur3_one_real(t.matrix[1].y, h);
-			h = hash_murmur3_one_real(t.matrix[1].z, h);
-			h = hash_murmur3_one_real(t.matrix[1].w, h);
-			h = hash_murmur3_one_real(t.matrix[2].x, h);
-			h = hash_murmur3_one_real(t.matrix[2].y, h);
-			h = hash_murmur3_one_real(t.matrix[2].z, h);
-			h = hash_murmur3_one_real(t.matrix[2].w, h);
-			h = hash_murmur3_one_real(t.matrix[3].x, h);
-			h = hash_murmur3_one_real(t.matrix[3].y, h);
-			h = hash_murmur3_one_real(t.matrix[3].z, h);
-			h = hash_murmur3_one_real(t.matrix[3].w, h);
+			h = hash_murmur3_one_real(t.columns[0].x, h);
+			h = hash_murmur3_one_real(t.columns[0].y, h);
+			h = hash_murmur3_one_real(t.columns[0].z, h);
+			h = hash_murmur3_one_real(t.columns[0].w, h);
+			h = hash_murmur3_one_real(t.columns[1].x, h);
+			h = hash_murmur3_one_real(t.columns[1].y, h);
+			h = hash_murmur3_one_real(t.columns[1].z, h);
+			h = hash_murmur3_one_real(t.columns[1].w, h);
+			h = hash_murmur3_one_real(t.columns[2].x, h);
+			h = hash_murmur3_one_real(t.columns[2].y, h);
+			h = hash_murmur3_one_real(t.columns[2].z, h);
+			h = hash_murmur3_one_real(t.columns[2].w, h);
+			h = hash_murmur3_one_real(t.columns[3].x, h);
+			h = hash_murmur3_one_real(t.columns[3].y, h);
+			h = hash_murmur3_one_real(t.columns[3].z, h);
+			h = hash_murmur3_one_real(t.columns[3].w, h);
 			return hash_fmix32(h);
 		} break;
 		// misc types
@@ -3507,7 +3507,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			const Projection *r = p_variant._data._projection;
 
 			for (int i = 0; i < 4; i++) {
-				if (!(hash_compare_vector4(l->matrix[i], r->matrix[i]))) {
+				if (!(hash_compare_vector4(l->columns[i], r->columns[i]))) {
 					return false;
 				}
 			}

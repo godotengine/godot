@@ -1634,7 +1634,7 @@ void GI::SDFGI::debug_draw(uint32_t p_view_count, const Projection *p_projection
 		Projection inv_projection = p_projections[v].inverse();
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
-				push_constant.inv_projection[j][i] = inv_projection.matrix[i][j];
+				push_constant.inv_projection[j][i] = inv_projection.columns[i][j];
 			}
 		}
 
@@ -3285,7 +3285,7 @@ void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, c
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			push_constant.projection[i * 4 + j] = cam_transform.matrix[i][j];
+			push_constant.projection[i * 4 + j] = cam_transform.columns[i][j];
 		}
 	}
 
@@ -3820,10 +3820,10 @@ void GI::process_gi(Ref<RenderSceneBuffersRD> p_render_buffers, const RID *p_nor
 	push_constant.z_far = p_projections[0].get_z_far();
 
 	// these are only used if we have 1 view, else we use the projections in our scene data
-	push_constant.proj_info[0] = -2.0f / (internal_size.x * p_projections[0].matrix[0][0]);
-	push_constant.proj_info[1] = -2.0f / (internal_size.y * p_projections[0].matrix[1][1]);
-	push_constant.proj_info[2] = (1.0f - p_projections[0].matrix[0][2]) / p_projections[0].matrix[0][0];
-	push_constant.proj_info[3] = (1.0f + p_projections[0].matrix[1][2]) / p_projections[0].matrix[1][1];
+	push_constant.proj_info[0] = -2.0f / (internal_size.x * p_projections[0].columns[0][0]);
+	push_constant.proj_info[1] = -2.0f / (internal_size.y * p_projections[0].columns[1][1]);
+	push_constant.proj_info[2] = (1.0f - p_projections[0].columns[0][2]) / p_projections[0].columns[0][0];
+	push_constant.proj_info[3] = (1.0f + p_projections[0].columns[1][2]) / p_projections[0].columns[1][1];
 
 	bool use_sdfgi = p_render_buffers->has_custom_data(RB_SCOPE_SDFGI);
 	bool use_voxel_gi_instances = push_constant.max_voxel_gi_instances > 0;

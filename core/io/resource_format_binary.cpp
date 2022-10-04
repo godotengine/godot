@@ -327,22 +327,22 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 		case VARIANT_PROJECTION: {
 			Projection v;
-			v.matrix[0].x = f->get_real();
-			v.matrix[0].y = f->get_real();
-			v.matrix[0].z = f->get_real();
-			v.matrix[0].w = f->get_real();
-			v.matrix[1].x = f->get_real();
-			v.matrix[1].y = f->get_real();
-			v.matrix[1].z = f->get_real();
-			v.matrix[1].w = f->get_real();
-			v.matrix[2].x = f->get_real();
-			v.matrix[2].y = f->get_real();
-			v.matrix[2].z = f->get_real();
-			v.matrix[2].w = f->get_real();
-			v.matrix[3].x = f->get_real();
-			v.matrix[3].y = f->get_real();
-			v.matrix[3].z = f->get_real();
-			v.matrix[3].w = f->get_real();
+			v.columns[0].x = f->get_real();
+			v.columns[0].y = f->get_real();
+			v.columns[0].z = f->get_real();
+			v.columns[0].w = f->get_real();
+			v.columns[1].x = f->get_real();
+			v.columns[1].y = f->get_real();
+			v.columns[1].z = f->get_real();
+			v.columns[1].w = f->get_real();
+			v.columns[2].x = f->get_real();
+			v.columns[2].y = f->get_real();
+			v.columns[2].z = f->get_real();
+			v.columns[2].w = f->get_real();
+			v.columns[3].x = f->get_real();
+			v.columns[3].y = f->get_real();
+			v.columns[3].z = f->get_real();
+			v.columns[3].w = f->get_real();
 			r_v = v;
 		} break;
 		case VARIANT_COLOR: {
@@ -1630,22 +1630,22 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::PROJECTION: {
 			f->store_32(VARIANT_PROJECTION);
 			Projection val = p_property;
-			f->store_real(val.matrix[0].x);
-			f->store_real(val.matrix[0].y);
-			f->store_real(val.matrix[0].z);
-			f->store_real(val.matrix[0].w);
-			f->store_real(val.matrix[1].x);
-			f->store_real(val.matrix[1].y);
-			f->store_real(val.matrix[1].z);
-			f->store_real(val.matrix[1].w);
-			f->store_real(val.matrix[2].x);
-			f->store_real(val.matrix[2].y);
-			f->store_real(val.matrix[2].z);
-			f->store_real(val.matrix[2].w);
-			f->store_real(val.matrix[3].x);
-			f->store_real(val.matrix[3].y);
-			f->store_real(val.matrix[3].z);
-			f->store_real(val.matrix[3].w);
+			f->store_real(val.columns[0].x);
+			f->store_real(val.columns[0].y);
+			f->store_real(val.columns[0].z);
+			f->store_real(val.columns[0].w);
+			f->store_real(val.columns[1].x);
+			f->store_real(val.columns[1].y);
+			f->store_real(val.columns[1].z);
+			f->store_real(val.columns[1].w);
+			f->store_real(val.columns[2].x);
+			f->store_real(val.columns[2].y);
+			f->store_real(val.columns[2].z);
+			f->store_real(val.columns[2].w);
+			f->store_real(val.columns[3].x);
+			f->store_real(val.columns[3].y);
+			f->store_real(val.columns[3].z);
+			f->store_real(val.columns[3].w);
 
 		} break;
 		case Variant::COLOR: {
