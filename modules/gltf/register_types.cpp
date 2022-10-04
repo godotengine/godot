@@ -78,6 +78,7 @@ void register_gltf_types() {
 	ClassDB::register_class<GLTFBufferView>();
 	ClassDB::register_class<GLTFAccessor>();
 	ClassDB::register_class<GLTFTexture>();
+	ClassDB::register_class<GLTFTextureSampler>();
 	ClassDB::register_class<GLTFSkeleton>();
 	ClassDB::register_class<GLTFSkin>();
 	ClassDB::register_class<GLTFCamera>();
