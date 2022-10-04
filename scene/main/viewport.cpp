@@ -4139,7 +4139,7 @@ Transform2D SubViewport::_stretch_transform() {
 	Transform2D transform = Transform2D();
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
-		Size2 scale = _get_size() / view_size_2d_override;
+		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
 		transform.scale(scale);
 	}
 
