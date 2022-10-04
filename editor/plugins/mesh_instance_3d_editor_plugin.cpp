@@ -270,6 +270,24 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 			outline_dialog->popup_centered(Vector2(200, 90));
 		} break;
+		case MENU_OPTION_CREATE_DEBUG_TANGENTS: {
+			Ref<EditorUndoRedoManager> ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Create Debug Tangents"));
+
+			MeshInstance3D *tangents = node->create_debug_tangents_node();
+
+			if (tangents) {
+				Node *owner = get_tree()->get_edited_scene_root();
+
+				ur->add_do_reference(tangents);
+				ur->add_do_method(node, "add_child", tangents, true);
+				ur->add_do_method(tangents, "set_owner", owner);
+
+				ur->add_undo_method(node, "remove_child", tangents);
+			}
+
+			ur->commit_action();
+		} break;
 		case MENU_OPTION_CREATE_UV2: {
 			Ref<ArrayMesh> mesh2 = node->get_mesh();
 			if (!mesh2.is_valid()) {
@@ -511,6 +529,7 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh..."), MENU_OPTION_CREATE_OUTLINE_MESH);
 	options->get_popup()->set_item_tooltip(options->get_popup()->get_item_count() - 1, TTR("Creates a static outline mesh. The outline mesh will have its normals flipped automatically.\nThis can be used instead of the StandardMaterial Grow property when using that property isn't possible."));
+	options->get_popup()->add_item(TTR("Create Debug Tangents"), MENU_OPTION_CREATE_DEBUG_TANGENTS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("View UV1"), MENU_OPTION_DEBUG_UV1);
 	options->get_popup()->add_item(TTR("View UV2"), MENU_OPTION_DEBUG_UV2);
