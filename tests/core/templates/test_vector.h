@@ -250,13 +250,13 @@ TEST_CASE("[Vector] To byte array") {
 }
 
 TEST_CASE("[Vector] PackedByteArray to PackedInt32Array") {
-	PackedByteArray byte_array = { 
-		  0,   0,   0,   0, // 0
-		255, 255, 255, 255, // -1
-		216,   7,   0,   0, // 2008
-        255, 201, 154,  59, // 999999999
-		255, 255, 255, 127, // INT32_MAX
-		  0,   0,   0, 128, // INT32_MIN
+	PackedByteArray byte_array = {
+		0x00, 0x00, 0x00, 0x00, // 0
+		0xff, 0xff, 0xff, 0xff, // -1
+		0xd8, 0x07, 0x00, 0x00, // 2008
+		0xff, 0xc9, 0x9a, 0x3b, // 999999999
+		0xff, 0xff, 0xff, 0x7f, // INT32_MAX
+		0x00, 0x00, 0x00, 0x80, // INT32_MIN
 	};
 
 	PackedInt32Array int_array = Variant(byte_array).call("to_int32_array");
@@ -270,74 +270,74 @@ TEST_CASE("[Vector] PackedByteArray to PackedInt32Array") {
 }
 
 TEST_CASE("[Vector] PackedByteArray to PackedVector2Array") {
-    PackedByteArray vector2_byte_array = {
+	PackedByteArray vector2_byte_array = {
 #ifdef REAL_T_IS_DOUBLE
-          0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, // 0, 0
-          0,   0,   0,   0,   0,   0, 240,  63,   0,   0,   0,   0,   0,   0, 240, 191, // 1, -1
-          0,   0,   0,   0,   0,  16,  96,  64,   0,   0,   0,   0,   0,   8,  89, 192, // 128.5, -100.125
-         56, 223,   6,   0,   0,   0, 240,  63, 144,  65, 242, 255, 255, 255, 239,  63, // 1.0 +/- CMP_EPSILON2
-          0,   0,   0,   0,   0,   0, 240, 127,   0,   0,   0,   0,   0,   0, 240, 255, // +/- infinity
-          0,   0,   0,   0,   0,   0, 248, 127,  32,  16,   0,   0,   0,   0, 248, 127, // various NaNs
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0, 0
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf, // 1, -1
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x59, 0xc0, // 128.5, -100.125
+		0x38, 0xdf, 0x06, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x90, 0x41, 0xf2, 0xff, 0xff, 0xff, 0xef, 0x3f, // 1.0 +/- CMP_EPSILON2
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xff, // +/- infinity
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f, 0x20, 0x10, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f, // various NaNs
 #else
-          0,   0,   0,   0,   0,   0,   0,   0, // 0, 0
-          0,   0, 128,  63,   0,   0, 128, 191, // 1, -1
-          0, 128,   0,  67,   0,  64, 200, 194, // 128.5, -100.125
-          0,   0, 128,  63,   0,   0, 128,  63, // 1.0 +/- CMP_EPSILON2
-          0,   0, 128, 127,   0,   0, 128, 255, // +/- infinity
-          0,   0, 192, 127,  32,  16, 192, 127, // various NaNs
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0, 0
+		0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x80, 0xbf, // 1, -1
+		0x00, 0x80, 0x00, 0x43, 0x00, 0x40, 0xc8, 0xc2, // 128.5, -100.125
+		0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x80, 0x3f, // 1.0 +/- CMP_EPSILON2
+		0x00, 0x00, 0x80, 0x7f, 0x00, 0x00, 0x80, 0xff, // +/- infinity
+		0x00, 0x00, 0xc0, 0x7f, 0x20, 0x10, 0xc0, 0x7f, // various NaNs
 #endif // REAL_T_IS_DOUBLE
-    };
+	};
 
-    PackedVector2Array vector2_array = Variant(vector2_byte_array).call("to_vector2_array");
-    CHECK(vector2_array[0] == Vector2 {0, 0});
-    CHECK(vector2_array[1] == Vector2 {1, -1});
-    CHECK(vector2_array[2] == Vector2 {128.5, -100.125});
-    CHECK(vector2_array[3] == Vector2 {1.0 + CMP_EPSILON2, 1.0 - CMP_EPSILON2});
-    CHECK(vector2_array[4] == Vector2 {INFINITY, -(INFINITY)});
-    CHECK(isnan(vector2_array[5].x));
-    CHECK(isnan(vector2_array[5].y));
+	PackedVector2Array vector2_array = Variant(vector2_byte_array).call("to_vector2_array");
+	CHECK(vector2_array[0] == Vector2{ 0, 0 });
+	CHECK(vector2_array[1] == Vector2{ 1, -1 });
+	CHECK(vector2_array[2] == Vector2{ 128.5, -100.125 });
+	CHECK(vector2_array[3] == Vector2{ 1.0 + CMP_EPSILON2, 1.0 - CMP_EPSILON2 });
+	CHECK(vector2_array[4] == Vector2{ INFINITY, -(INFINITY) });
+	CHECK(isnan(vector2_array[5].x));
+	CHECK(isnan(vector2_array[5].y));
 }
 
 TEST_CASE("[Vector] PackedByteArray to PackedVector3Array") {
-    PackedByteArray vector3_byte_array = {
+	PackedByteArray vector3_byte_array = {
 #ifdef REAL_T_IS_DOUBLE
-          0,   0,   0,   0,   0,   0, 240,  63,   0,   0,   0,   0,   0,   0, 240, 191,   0,   0,   0,   0,   0,   0,   0,   0, // 1, -1, 0
-          0,   0,   0,   0,   0,  16,  96,  64,   0,   0,   0,   0,   0,   8,  89, 192,  11, 181, 166, 249, 129, 179, 245,  64, // 128.5, -100.125, 88888.12345
-        188, 189, 215, 217, 223, 124, 219,  61,  56, 223,   6,   0,   0,   0, 240,  63, 144,  65, 242, 255, 255, 255, 239,  63, // CMP_EPSILON2, 1.0 +/- CMP_EPSILON2
-          0,   0,   0,   0,   0,   0, 240, 127,   0,   0,   0,   0,   0,   0, 240, 255,   0,   0,   0,   0,   0,   0, 248, 127, // +/- infinity, NaN
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 1, -1, 0
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x59, 0xc0, 0x0b, 0xb5, 0xa6, 0xf9, 0x81, 0xb3, 0xf5, 0x40, // 128.5, -100.125, 88888.12345
+		0xbc, 0xbd, 0xd7, 0xd9, 0xdf, 0x7c, 0xdb, 0x3d, 0x38, 0xdf, 0x06, 0x00, 0x00, 0x00, 0xf0, 0x3f, 0x90, 0x41, 0xf2, 0xff, 0xff, 0xff, 0xef, 0x3f, // CMP_EPSILON2, 1.0 +/- CMP_EPSILON2
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x7f, // +/- infinity, NaN
 #else
-          0,   0, 128,  63,   0,   0, 128, 191,   0,   0,   0,   0, // 1, -1, 0
-          0, 128,   0,  67,   0,  64, 200, 194,  16, 156, 173,  71, // 128.5, -100.125, 88888.12345
-        255, 230, 219,  46,   0,   0, 128,  63,   0,   0, 128,  63, // CMP_EPSILON2, 1.0 +/- CMP_EPSILON2
-          0,   0, 128, 127,   0,   0, 128, 255,   0,   0, 192, 127, // +/- infinity, NaN
+		0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x80, 0xbf, 0x00, 0x00, 0x00, 0x00, // 1, -1, 0
+		0x00, 0x80, 0x00, 0x43, 0x00, 0x40, 0xc8, 0xc2, 0x10, 0x9c, 0xad, 0x47, // 128.5, -100.125, 88888.12345
+		0xff, 0xe6, 0xdb, 0x2e, 0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x80, 0x3f, // CMP_EPSILON2, 1.0 +/- CMP_EPSILON2
+		0x00, 0x00, 0x80, 0x7f, 0x00, 0x00, 0x80, 0xff, 0x00, 0x00, 0xc0, 0x7f, // +/- infinity, NaN
 #endif // REAL_T_IS_DOUBLE
-    };
+	};
 
-    PackedVector3Array vector3_array = Variant(vector3_byte_array).call("to_vector3_array");
-    CHECK(vector3_array[0] == Vector3 {1, -1, 0});
-    CHECK(vector3_array[1] == Vector3 {128.5, -100.125, 88888.12345});
-    CHECK(vector3_array[2] == Vector3 {CMP_EPSILON2, 1.0 + CMP_EPSILON2, 1.0 - CMP_EPSILON2});
-    CHECK(vector3_array[3].x == INFINITY);
-    CHECK(vector3_array[3].y == -(INFINITY));
-    CHECK(isnan(vector3_array[3].z));
+	PackedVector3Array vector3_array = Variant(vector3_byte_array).call("to_vector3_array");
+	CHECK(vector3_array[0] == Vector3{ 1, -1, 0 });
+	CHECK(vector3_array[1] == Vector3{ 128.5, -100.125, 88888.12345 });
+	CHECK(vector3_array[2] == Vector3{ CMP_EPSILON2, 1.0 + CMP_EPSILON2, 1.0 - CMP_EPSILON2 });
+	CHECK(vector3_array[3].x == INFINITY);
+	CHECK(vector3_array[3].y == -(INFINITY));
+	CHECK(isnan(vector3_array[3].z));
 }
 
 TEST_CASE("[Vector] PackedByteArray to PackedColorArray") {
-    PackedByteArray color_byte_array = {
-          0,   0, 128,  63,   0,   0, 128, 191,   0,   0,   0,   0,   0,   0,   0,   0, // 1, -1, 0, -0
-          0, 128,   0,  67,   0,  64, 200, 194,  16, 156, 173,  71,   5, 197, 119, 191, // 128.5, -100.125, 88888.12345, -0.96785
-        255, 230, 219,  46, 255, 230, 219, 174,   0,   0, 128,  63,   0,   0, 128,  63, // +/- CMP_EPSILON2, 1.0 +/- CMP_EPSILON2
-          0,   0, 128, 127,   0,   0, 128, 255,   0,   0, 192, 127,  32,  16, 192, 127, // +/- infinity, various NaNs
-    };
+	PackedByteArray color_byte_array = {
+		0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x80, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 1, -1, 0, -0
+		0x00, 0x80, 0x00, 0x43, 0x00, 0x40, 0xc8, 0xc2, 0x10, 0x9c, 0xad, 0x47, 0x05, 0xc5, 0x77, 0xbf, // 128.5, -100.125, 88888.12345, -0.96785
+		0xff, 0xe6, 0xdb, 0x2e, 0xff, 0xe6, 0xdb, 0xae, 0x00, 0x00, 0x80, 0x3f, 0x00, 0x00, 0x80, 0x3f, // +/- CMP_EPSILON2, 1.0 +/- CMP_EPSILON2
+		0x00, 0x00, 0x80, 0x7f, 0x00, 0x00, 0x80, 0xff, 0x00, 0x00, 0xc0, 0x7f, 0x20, 0x10, 0xc0, 0x7f, // +/- infinity, various NaNs
+	};
 
-    PackedColorArray color_array = Variant(color_byte_array).call("to_color_array");
-    CHECK(color_array[0] == Color {1, -1, 0, 0});
-    CHECK(color_array[1] == Color {128.5, -100.125, 88888.12345, -0.96785});
-    CHECK(color_array[2] == Color {CMP_EPSILON2, -(CMP_EPSILON2), 1.0 + CMP_EPSILON2, 1.0 - CMP_EPSILON2});
-    CHECK(color_array[3].r == INFINITY);
-    CHECK(color_array[3].g == -(INFINITY));
-    CHECK(isnan(color_array[3].b));
-    CHECK(isnan(color_array[3].a));
+	PackedColorArray color_array = Variant(color_byte_array).call("to_color_array");
+	CHECK(color_array[0] == Color{ 1, -1, 0, 0 });
+	CHECK(color_array[1] == Color{ 128.5, -100.125, 88888.12345, -0.96785 });
+	CHECK(color_array[2] == Color{ CMP_EPSILON2, -(CMP_EPSILON2), 1.0 + CMP_EPSILON2, 1.0 - CMP_EPSILON2 });
+	CHECK(color_array[3].r == INFINITY);
+	CHECK(color_array[3].g == -(INFINITY));
+	CHECK(isnan(color_array[3].b));
+	CHECK(isnan(color_array[3].a));
 }
 
 TEST_CASE("[Vector] Slice") {
