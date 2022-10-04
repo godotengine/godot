@@ -721,6 +721,9 @@
 		<member name="text_editor/behavior/files/trim_trailing_whitespace_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], trims trailing whitespace when saving a script. Trailing whitespace refers to tab and space characters placed at the end of lines. Since these serve no practical purpose, they can and should be removed to make version control diffs less noisy.
 		</member>
+		<member name="text_editor/behavior/history/following_links_always_saves_to_history" type="bool" setter="" getter="">
+			If enabled, following a link in the text editor will always save to the editor history, even if the link doesn't lead to a new tab.
+		</member>
 		<member name="text_editor/behavior/indent/auto_indent" type="bool" setter="" getter="">
 			If [code]true[/code], automatically indents code when pressing the [kbd]Enter[/kbd] key based on blocks above the new line.
 		</member>
