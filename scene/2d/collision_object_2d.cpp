@@ -121,6 +121,49 @@ void CollisionObject2D::_notification(int p_what) {
 		case NOTIFICATION_ENABLED: {
 			_apply_enabled();
 		} break;
+
+		case NOTIFICATION_DRAW: {
+			ERR_FAIL_COND(!is_inside_tree());
+
+			if (Engine::get_singleton()->is_editor_hint() || !get_tree()->is_debugging_collisions_hint()) {
+				break;
+			}
+
+			for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+				const ShapeData &shapedata = E.value;
+
+				draw_set_transform_matrix(get_canvas_transform() * shapedata.xform);
+
+				const ShapeData::Shape *shapes = shapedata.shapes.ptr();
+				for (int i = 0; i < shapedata.shapes.size(); i++) {
+					Ref<Shape2D> shape = shapes[i].shape;
+					if (!shape.is_valid() || shapedata.disabled) {
+						continue;
+					}
+
+					Color draw_col = get_tree()->get_debug_collisions_color();
+					shape->draw(get_canvas_item(), draw_col);
+
+					if (shapedata.one_way_collision) {
+						// Draw an arrow indicating the one-way collision direction
+						draw_col = draw_col.inverted();
+						Vector2 line_to(0, 20);
+						draw_line(Vector2(), line_to, draw_col, 2);
+						real_t tsize = 8;
+
+						Vector<Vector2> pts{
+							line_to + Vector2(0, tsize),
+							line_to + Vector2(Math_SQRT12 * tsize, 0),
+							line_to + Vector2(-Math_SQRT12 * tsize, 0)
+						};
+
+						Vector<Color> cols{ draw_col, draw_col, draw_col };
+
+						draw_primitive(pts, cols, Vector<Vector2>());
+					}
+				}
+			}
+		} break;
 	}
 }
 
@@ -307,6 +350,8 @@ void CollisionObject2D::shape_owner_set_disabled(uint32_t p_owner, bool p_disabl
 			PhysicsServer2D::get_singleton()->body_set_shape_disabled(rid, sd.shapes[i].index, p_disabled);
 		}
 	}
+
+	_update_debug_shapes(false);
 }
 
 bool CollisionObject2D::is_shape_owner_disabled(uint32_t p_owner) const {
@@ -327,6 +372,8 @@ void CollisionObject2D::shape_owner_set_one_way_collision(uint32_t p_owner, bool
 	for (int i = 0; i < sd.shapes.size(); i++) {
 		PhysicsServer2D::get_singleton()->body_set_shape_as_one_way_collision(rid, sd.shapes[i].index, sd.one_way_collision, sd.one_way_collision_margin);
 	}
+
+	_update_debug_shapes(false);
 }
 
 bool CollisionObject2D::is_shape_owner_one_way_collision_enabled(uint32_t p_owner) const {
@@ -383,6 +430,8 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 			PhysicsServer2D::get_singleton()->body_set_shape_transform(rid, sd.shapes[i].index, sd.xform);
 		}
 	}
+
+	_update_debug_shapes(false);
 }
 
 Transform2D CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const {
@@ -413,6 +462,11 @@ void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2
 	sd.shapes.push_back(s);
 
 	total_subshapes++;
+
+	if (s.shape.is_valid() && !s.shape->is_connected("changed", callable_mp(this, &CollisionObject2D::_shape_changed))) {
+		s.shape->connect("changed", callable_mp(this, &CollisionObject2D::_shape_changed));
+	}
+	_update_debug_shapes(false);
 }
 
 int CollisionObject2D::shape_owner_get_shape_count(uint32_t p_owner) const {
@@ -446,6 +500,11 @@ void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 		PhysicsServer2D::get_singleton()->body_remove_shape(rid, index_to_remove);
 	}
 
+	Ref<Shape2D> shape = shapes[p_owner].shapes[p_shape].shape;
+	if (shape.is_valid() && shape->is_connected("changed", callable_mp(this, &CollisionObject2D::_shape_changed))) {
+		shape->disconnect("changed", callable_mp(this, &CollisionObject2D::_shape_changed));
+	}
+
 	shapes[p_owner].shapes.remove_at(p_shape);
 
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
@@ -457,6 +516,8 @@ void CollisionObject2D::shape_owner_remove_shape(uint32_t p_owner, int p_shape) 
 	}
 
 	total_subshapes--;
+
+	_update_debug_shapes(true);
 }
 
 void CollisionObject2D::shape_owner_clear_shapes(uint32_t p_owner) {
@@ -480,6 +541,32 @@ uint32_t CollisionObject2D::shape_find_owner(int p_shape_index) const {
 
 	//in theory it should be unreachable
 	ERR_FAIL_V_MSG(UINT32_MAX, "Can't find owner for shape index " + itos(p_shape_index) + ".");
+}
+
+bool CollisionObject2D::_are_debug_shapes_visible() const {
+	return !Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->is_debugging_collisions_hint();
+}
+
+void CollisionObject2D::_update_debug_shapes(bool p_reconnect_signals) {
+	if (_are_debug_shapes_visible()) {
+		update();
+	}
+	if (p_reconnect_signals) {
+		for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
+			const ShapeData &shapedata = E.value;
+			const ShapeData::Shape *shapes = shapedata.shapes.ptr();
+			for (int i = 0; i < shapedata.shapes.size(); i++) {
+				Ref<Shape2D> shape = shapes[i].shape;
+				if (shape.is_valid() && !shape->is_connected("changed", callable_mp(this, &CollisionObject2D::_shape_changed))) {
+					shape->connect("changed", callable_mp(this, &CollisionObject2D::_shape_changed));
+				}
+			}
+		}
+	}
+}
+
+void CollisionObject2D::_shape_changed() {
+	_update_debug_shapes(false);
 }
 
 void CollisionObject2D::set_pickable(bool p_enabled) {

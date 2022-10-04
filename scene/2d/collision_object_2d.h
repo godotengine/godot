@@ -154,6 +154,10 @@ public:
 
 	uint32_t shape_find_owner(int p_shape_index) const;
 
+	bool _are_debug_shapes_visible() const;
+	void _update_debug_shapes(bool p_reconnect_signals);
+	void _shape_changed();
+
 	void set_pickable(bool p_enabled);
 	bool is_pickable() const;
 

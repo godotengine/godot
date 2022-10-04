@@ -85,15 +85,13 @@ void CollisionShape2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			ERR_FAIL_COND(!is_inside_tree());
 
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			if (!Engine::get_singleton()->is_editor_hint()) {
 				break;
 			}
 
 			if (!shape.is_valid()) {
 				break;
 			}
-
-			rect = Rect2();
 
 			Color draw_col = get_tree()->get_debug_collisions_color();
 			if (disabled) {
@@ -104,9 +102,6 @@ void CollisionShape2D::_notification(int p_what) {
 				draw_col.a *= 0.5;
 			}
 			shape->draw(get_canvas_item(), draw_col);
-
-			rect = shape->get_rect();
-			rect = rect.grow(3);
 
 			if (one_way_collision) {
 				// Draw an arrow indicating the one-way collision direction
