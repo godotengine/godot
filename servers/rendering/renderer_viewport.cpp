@@ -678,11 +678,13 @@ void RendererViewport::draw_viewports() {
 
 			// commit our eyes
 			Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
-			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && blits.size() > 0) {
+			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
 				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
-					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+					if (blits.size() > 0) {
+						RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+					}
 					RSG::rasterizer->end_frame(true);
-				} else {
+				} else if (blits.size() > 0) {
 					if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
 						blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 					}
