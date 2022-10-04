@@ -165,16 +165,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						}
 					}
 					if (result.script_type_ref.is_null()) {
-						Error err = OK;
-						Ref<GDScript> script_ref = GDScriptCache::get_full_script(p_datatype.script_path, err, main_script->path);
-						if (classes.size() > 1) {
-							Vector<StringName> class_names;
-							for (int i = 1; i < classes.size(); i++) {
-								class_names.push_back(classes[i]);
-							}
-							script_ref = script_ref->_find_subclass(class_names);
-						}
-						result.script_type_ref = script_ref;
+						result.script_type_ref = GDScriptCache::get_shallow_script(p_datatype.script_path, main_script->path);
 					}
 
 					result.script_type = result.script_type_ref.ptr();
@@ -2288,10 +2279,10 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			p_script->_base = base.ptr();
 
 			if (p_class->base_type.kind == GDScriptParser::DataType::CLASS && p_class->base_type.class_type != nullptr) {
-				String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
 				if (p_class->base_type.script_path == main_script->path) {
 					if (!parsed_classes.has(p_script->_base)) {
 						if (parsing_classes.has(p_script->_base)) {
+							String class_name = p_class->identifier ? p_class->identifier->name : "<main>";
 							_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
 							return ERR_PARSE_ERROR;
 						}
@@ -2300,9 +2291,27 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 							return err;
 						}
 					}
-				} else if (base.is_null() || !base->is_valid()) {
-					_set_error("Cyclic class reference for '" + class_name + "'.", p_class);
-					return ERR_PARSE_ERROR;
+				} else {
+					Error err = OK;
+					base = GDScriptCache::get_full_script(p_class->base_type.script_path, err, main_script->path);
+					if (err) {
+						return err;
+					}
+					if (!base.is_null() && base->is_valid()) {
+						GDScriptParser::ClassNode *c = p_class->base_type.class_type;
+						if (c->extends_used) {
+							Vector<StringName> class_names = c->extends;
+							if (c->extends_path.is_empty()) {
+								class_names.remove_at(0);
+							}
+							if (!class_names.is_empty()) {
+								base = base->_find_subclass(class_names);
+							}
+						}
+					}
+					if (base.is_null() || !base->is_valid()) {
+						return ERR_COMPILATION_FAILED;
+					}
 				}
 			}
 
