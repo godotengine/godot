@@ -499,6 +499,13 @@ void Viewport::_notification(int p_what) {
 			// exit event if the change in focus results in the mouse exiting
 			// the window.
 		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			if (gui_parent) {
+				gui_parent->gui.tooltip_popup = nullptr;
+				gui_parent->gui.tooltip_label = nullptr;
+			}
+		} break;
 	}
 }
 
@@ -1155,8 +1162,6 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
 	}
 }
 
@@ -1219,8 +1224,6 @@ void Viewport::_gui_show_tooltip() {
 	// Remove previous popup if we change something.
 	if (gui.tooltip_popup) {
 		memdelete(gui.tooltip_popup);
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
 	}
 
 	if (!tooltip_owner) {
@@ -1252,6 +1255,7 @@ void Viewport::_gui_show_tooltip() {
 	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
+	panel->gui_parent = this;
 
 	gui.tooltip_popup = panel;
 
