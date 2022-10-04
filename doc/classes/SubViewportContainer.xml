@@ -13,6 +13,7 @@
 	<members>
 		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
 			If [code]true[/code], the sub-viewport will be automatically resized to the control's size.
+			[b]Note:[/b] If [code]true[/code], this will prohibit changing [member SubViewport.size] of its children manually.
 		</member>
 		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
 			Divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
