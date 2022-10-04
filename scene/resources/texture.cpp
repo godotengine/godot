@@ -1209,6 +1209,8 @@ Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, 
 
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_replace(texture, tex);
+	} else {
+		texture = tex;
 	}
 
 	return OK;
