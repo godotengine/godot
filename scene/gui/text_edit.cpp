@@ -463,12 +463,18 @@ void TextEdit::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (scrolling && get_v_scroll() != target_v_scroll) {
-				double target_y = target_v_scroll - get_v_scroll();
-				double dist = abs(target_y);
-				// To ensure minimap is responsive override the speed setting.
-				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
+				double delta_y = target_v_scroll - get_v_scroll();
+				double dist = Math::abs(delta_y);
+				// To ensure minimap is responsive, override the speed setting.
+				double vel = SIGN(delta_y) * (minimap_clicked ? 900 : v_scroll_speed) * get_physics_process_delta_time();
 
-				// Prevent too small velocity to block scrolling
+				// Speed up scrolling when the target line is relatively far away (won't be reached in 0.15sec).
+				int physics_frames_till_speedup = (int)(0.15 / get_physics_process_delta_time());
+				if (abs(vel) * physics_frames_till_speedup < dist) {
+					vel *= dist / physics_frames_till_speedup;
+				}
+
+				// Prevent very small velocities from blocking scrolling.
 				if (Math::abs(vel) < v_scroll->get_step()) {
 					vel = v_scroll->get_step() * SIGN(vel);
 				}
