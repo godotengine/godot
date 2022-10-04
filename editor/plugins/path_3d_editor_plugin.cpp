@@ -297,12 +297,12 @@ void Path3DGizmo::redraw() {
 
 Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 	path = p_path;
-	set_spatial_node(p_path);
+	set_node_3d(p_path);
 	orig_in_length = 0;
 	orig_out_length = 0;
 }
 
-EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!path) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}

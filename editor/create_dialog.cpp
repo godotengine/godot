@@ -126,10 +126,6 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 		return true; // Do not show editor nodes.
 	}
 
-	if (p_type == base_type && !EditorNode::get_editor_data().get_custom_types().has(p_type)) {
-		return true; // Root is already added.
-	}
-
 	if (ClassDB::class_exists(p_type)) {
 		if (!ClassDB::can_instantiate(p_type) || ClassDB::is_virtual(p_type)) {
 			return true; // Can't create abstract or virtual class.
@@ -343,6 +339,11 @@ String CreateDialog::_top_result(const Vector<String> p_candidates, const String
 }
 
 float CreateDialog::_score_type(const String &p_type, const String &p_search) const {
+	if (p_type == p_search) {
+		// Always favor an exact match (case-sensitive), since clicking a favorite will set the search text to the type.
+		return 1.0f;
+	}
+
 	float inverse_length = 1.f / float(p_type.length());
 
 	// Favor types where search term is a substring close to the start of the type.
@@ -351,13 +352,13 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 	float score = (pos > -1) ? 1.0f - w * MIN(1, 3 * pos * inverse_length) : MAX(0.f, .9f - w);
 
 	// Favor shorter items: they resemble the search term more.
-	w = 0.1f;
-	score *= (1 - w) + w * (p_search.length() * inverse_length);
+	w = 0.9f;
+	score *= (1 - w) + w * MIN(1.0f, p_search.length() * inverse_length);
 
-	score *= _is_type_preferred(p_type) ? 1.0f : 0.8f;
+	score *= _is_type_preferred(p_type) ? 1.0f : 0.9f;
 
 	// Add score for being a favorite type.
-	score *= (favorite_list.find(p_type) > -1) ? 1.0f : 0.7f;
+	score *= (favorite_list.find(p_type) > -1) ? 1.0f : 0.8f;
 
 	// Look through at most 5 recent items
 	bool in_recent = false;
@@ -367,7 +368,7 @@ float CreateDialog::_score_type(const String &p_type, const String &p_search) co
 			break;
 		}
 	}
-	score *= in_recent ? 1.0f : 0.8f;
+	score *= in_recent ? 1.0f : 0.9f;
 
 	return score;
 }

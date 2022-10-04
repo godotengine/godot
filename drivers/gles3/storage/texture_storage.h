@@ -509,6 +509,12 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 
+	/* DECAL INSTANCE */
+
+	virtual RID decal_instance_create(RID p_decal) override;
+	virtual void decal_instance_free(RID p_decal_instance) override;
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override;
+
 	/* RENDER TARGET API */
 
 	static GLuint system_fbo;

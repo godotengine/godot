@@ -586,7 +586,7 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 	// Special case handling of command-period, which is traditionally a special
 	// shortcut in macOS and doesn't arrive at our regular keyDown handler.
 	if ([p_event type] == NSEventTypeKeyDown) {
-		if (([p_event modifierFlags] & NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
+		if ((([p_event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask) == NSEventModifierFlagCommand) && [p_event keyCode] == 0x2f) {
 			Ref<InputEventKey> k;
 			k.instantiate();
 

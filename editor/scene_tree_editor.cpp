@@ -804,6 +804,10 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 	TreeItem *item = Object::cast_to<TreeItem>(p_object);
 	ERR_FAIL_COND(!item);
 
+	if (!item->is_visible()) {
+		return;
+	}
+
 	NodePath np = item->get_metadata(0);
 
 	Node *n = get_node(np);

@@ -2036,11 +2036,7 @@ void Collada::_merge_skeletons(VisualScene *p_vscene, Node *p_node) {
 
 				ERR_CONTINUE(!state.scene_map.has(nodeid)); //weird, it should have it...
 
-#ifdef NO_SAFE_CAST
-				NodeJoint *nj = static_cast<NodeJoint *>(state.scene_map[nodeid]);
-#else
 				NodeJoint *nj = dynamic_cast<NodeJoint *>(state.scene_map[nodeid]);
-#endif
 				ERR_CONTINUE(!nj); //broken collada
 				ERR_CONTINUE(!nj->owner); //weird, node should have a skeleton owner
 
@@ -2197,11 +2193,7 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, L
 			String nodeid = ng->skeletons[0];
 
 			ERR_FAIL_COND_V(!state.scene_map.has(nodeid), false); //weird, it should have it...
-#ifdef NO_SAFE_CAST
-			NodeJoint *nj = static_cast<NodeJoint *>(state.scene_map[nodeid]);
-#else
 			NodeJoint *nj = dynamic_cast<NodeJoint *>(state.scene_map[nodeid]);
-#endif
 			ERR_FAIL_COND_V(!nj, false);
 			ERR_FAIL_COND_V(!nj->owner, false); //weird, node should have a skeleton owner
 

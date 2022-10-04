@@ -715,7 +715,7 @@ void TextShaderEditor::_notification(int p_what) {
 			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 		} break;
 
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_check_for_external_edit();
 		} break;
 	}
@@ -915,6 +915,10 @@ void TextShaderEditor::validate_script() {
 
 bool TextShaderEditor::is_unsaved() const {
 	return shader_editor->get_text_editor()->get_saved_version() != shader_editor->get_text_editor()->get_version();
+}
+
+void TextShaderEditor::tag_saved_version() {
+	shader_editor->get_text_editor()->tag_saved_version();
 }
 
 void TextShaderEditor::apply_shaders() {

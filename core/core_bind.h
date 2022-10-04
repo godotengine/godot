@@ -488,8 +488,8 @@ public:
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;
 
-	void set_target_fps(int p_fps);
-	int get_target_fps() const;
+	void set_max_fps(int p_fps);
+	int get_max_fps() const;
 
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;

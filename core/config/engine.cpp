@@ -59,12 +59,12 @@ double Engine::get_physics_jitter_fix() const {
 	return physics_jitter_fix;
 }
 
-void Engine::set_target_fps(int p_fps) {
-	_target_fps = p_fps > 0 ? p_fps : 0;
+void Engine::set_max_fps(int p_fps) {
+	_max_fps = p_fps > 0 ? p_fps : 0;
 }
 
-int Engine::get_target_fps() const {
-	return _target_fps;
+int Engine::get_max_fps() const {
+	return _max_fps;
 }
 
 uint64_t Engine::get_frames_drawn() {

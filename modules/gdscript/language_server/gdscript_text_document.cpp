@@ -42,6 +42,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
 	ClassDB::bind_method(D_METHOD("didClose"), &GDScriptTextDocument::didClose);
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
+	ClassDB::bind_method(D_METHOD("willSaveWaitUntil"), &GDScriptTextDocument::willSaveWaitUntil);
 	ClassDB::bind_method(D_METHOD("didSave"), &GDScriptTextDocument::didSave);
 	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
 	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
@@ -81,6 +82,16 @@ void GDScriptTextDocument::didChange(const Variant &p_param) {
 	sync_script_content(doc.uri, doc.text);
 }
 
+void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
+	lsp::TextDocumentItem doc = load_document_item(p_param);
+
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
+	Ref<Script> script = ResourceLoader::load(path);
+	if (script.is_valid()) {
+		ScriptEditor::get_singleton()->clear_docs_from_script(script);
+	}
+}
+
 void GDScriptTextDocument::didSave(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
 	Dictionary dict = p_param;
@@ -88,11 +99,16 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 
 	sync_script_content(doc.uri, text);
 
-	/*String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
-
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<GDScript> script = ResourceLoader::load(path);
-	script->load_source_code(path);
-	script->reload(true);*/
+	if (script.is_valid() && (script->load_source_code(path) == OK)) {
+		if (script->is_tool()) {
+			script->get_language()->reload_tool_script(script, true);
+		} else {
+			script->reload(true);
+		}
+		ScriptEditor::get_singleton()->update_docs_from_script(script);
+	}
 }
 
 lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_param) {
@@ -417,14 +433,6 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
 
 	EditorFileSystem::get_singleton()->update_file(path);
-	Error error;
-	Ref<GDScript> script = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &error);
-	if (error == OK) {
-		if (script->load_source_code(path) == OK) {
-			script->reload(true);
-			ScriptEditor::get_singleton()->reload_scripts(true); // Refresh scripts opened in the internal editor.
-		}
-	}
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  fog.h                                                                */
+/*  forward_id_storage.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,28 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef FOG_DUMMY_H
-#define FOG_DUMMY_H
+#ifndef FORWARD_ID_STORAGE_H
+#define FORWARD_ID_STORAGE_H
 
-#include "servers/rendering/environment/renderer_fog.h"
+#include "servers/rendering/storage/utilities.h"
 
-namespace RendererDummy {
+class RendererSceneRenderRD;
 
-class Fog : public RendererFog {
-public:
-	/* FOG VOLUMES */
+namespace RendererRD {
 
-	virtual RID fog_volume_allocate() override { return RID(); }
-	virtual void fog_volume_initialize(RID p_rid) override {}
-	virtual void fog_volume_free(RID p_rid) override {}
+typedef int32_t ForwardID;
 
-	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override {}
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override {}
-	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override {}
-	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override { return AABB(); }
-	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override { return RS::FOG_VOLUME_SHAPE_BOX; }
+enum ForwardIDType {
+	FORWARD_ID_TYPE_OMNI_LIGHT,
+	FORWARD_ID_TYPE_SPOT_LIGHT,
+	FORWARD_ID_TYPE_REFLECTION_PROBE,
+	FORWARD_ID_TYPE_DECAL,
+	FORWARD_ID_MAX,
 };
 
-} // namespace RendererDummy
+class ForwardIDStorage {
+private:
+	static ForwardIDStorage *singleton;
 
-#endif // FOG_DUMMY_H
+public:
+	static ForwardIDStorage *get_singleton() { return singleton; }
+
+	ForwardIDStorage();
+	virtual ~ForwardIDStorage();
+
+	virtual RendererRD::ForwardID allocate_forward_id(RendererRD::ForwardIDType p_type) { return -1; }
+	virtual void free_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id) {}
+	virtual void map_forward_id(RendererRD::ForwardIDType p_type, RendererRD::ForwardID p_id, uint32_t p_index) {}
+	virtual bool uses_forward_ids() const { return false; }
+};
+
+} // namespace RendererRD
+
+#endif // FORWARD_ID_STORAGE_H

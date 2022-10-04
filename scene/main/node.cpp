@@ -1466,19 +1466,9 @@ bool Node::is_greater_than(const Node *p_node) const {
 
 	ERR_FAIL_COND_V(data.depth < 0, false);
 	ERR_FAIL_COND_V(p_node->data.depth < 0, false);
-#ifdef NO_ALLOCA
-
-	Vector<int> this_stack;
-	Vector<int> that_stack;
-	this_stack.resize(data.depth);
-	that_stack.resize(p_node->data.depth);
-
-#else
 
 	int *this_stack = (int *)alloca(sizeof(int) * data.depth);
 	int *that_stack = (int *)alloca(sizeof(int) * p_node->data.depth);
-
-#endif
 
 	const Node *n = this;
 

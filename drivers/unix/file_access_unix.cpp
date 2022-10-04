@@ -30,22 +30,18 @@
 
 #include "file_access_unix.h"
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <errno.h>
-
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
-#endif
-
-#ifndef ANDROID_ENABLED
-#include <sys/statvfs.h>
 #endif
 
 #ifdef MSVC
@@ -54,12 +50,6 @@
 #endif
 #ifndef S_ISREG
 #define S_ISREG(m) ((m)&S_IFREG)
-#endif
-
-#ifndef NO_FCNTL
-#include <fcntl.h>
-#else
-#include <sys/ioctl.h>
 #endif
 
 void FileAccessUnix::check_errors() const {
@@ -131,13 +121,8 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 	int fd = fileno(f);
 
 	if (fd != -1) {
-#if defined(NO_FCNTL)
-		unsigned long par = 0;
-		ioctl(fd, FIOCLEX, &par);
-#else
 		int opts = fcntl(fd, F_GETFD);
 		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
-#endif
 	}
 
 	last_error = OK;
@@ -339,4 +324,4 @@ FileAccessUnix::~FileAccessUnix() {
 	_close();
 }
 
-#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX_ENABLED

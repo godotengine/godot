@@ -1183,6 +1183,18 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
 }
 
+/* DECAL INSTANCE API */
+
+RID TextureStorage::decal_instance_create(RID p_decal) {
+	return RID();
+}
+
+void TextureStorage::decal_instance_free(RID p_decal_instance) {
+}
+
+void TextureStorage::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
+}
+
 /* RENDER TARGET API */
 
 GLuint TextureStorage::system_fbo = 0;
