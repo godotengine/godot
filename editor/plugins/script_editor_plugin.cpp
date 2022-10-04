@@ -1301,26 +1301,15 @@ void ScriptEditor::_menu_option(int p_option) {
 					break;
 				}
 
-				if (script != nullptr) {
-					Vector<DocData::ClassDoc> documentations = script->get_documentation();
-					for (int j = 0; j < documentations.size(); j++) {
-						const DocData::ClassDoc &doc = documentations.get(j);
-						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-							EditorHelp::get_doc_data()->remove_doc(doc.name);
-						}
-					}
+				if (script.is_valid()) {
+					clear_docs_from_script(script);
 				}
 
 				EditorNode::get_singleton()->push_item(resource.ptr());
 				EditorNode::get_singleton()->save_resource_as(resource);
 
-				if (script != nullptr) {
-					Vector<DocData::ClassDoc> documentations = script->get_documentation();
-					for (int j = 0; j < documentations.size(); j++) {
-						const DocData::ClassDoc &doc = documentations.get(j);
-						EditorHelp::get_doc_data()->add_doc(doc);
-						update_doc(doc.name);
-					}
+				if (script.is_valid()) {
+					update_docs_from_script(script);
 				}
 			} break;
 
@@ -2418,14 +2407,8 @@ void ScriptEditor::save_current_script() {
 		return;
 	}
 
-	if (script != nullptr) {
-		Vector<DocData::ClassDoc> documentations = script->get_documentation();
-		for (int j = 0; j < documentations.size(); j++) {
-			const DocData::ClassDoc &doc = documentations.get(j);
-			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-				EditorHelp::get_doc_data()->remove_doc(doc.name);
-			}
-		}
+	if (script.is_valid()) {
+		clear_docs_from_script(script);
 	}
 
 	if (resource->is_built_in()) {
@@ -2440,13 +2423,8 @@ void ScriptEditor::save_current_script() {
 		EditorNode::get_singleton()->save_resource(resource);
 	}
 
-	if (script != nullptr) {
-		Vector<DocData::ClassDoc> documentations = script->get_documentation();
-		for (int j = 0; j < documentations.size(); j++) {
-			const DocData::ClassDoc &doc = documentations.get(j);
-			EditorHelp::get_doc_data()->add_doc(doc);
-			update_doc(doc.name);
-		}
+	if (script.is_valid()) {
+		update_docs_from_script(script);
 	}
 }
 
@@ -2491,25 +2469,14 @@ void ScriptEditor::save_all_scripts() {
 				continue;
 			}
 
-			if (script != nullptr) {
-				Vector<DocData::ClassDoc> documentations = script->get_documentation();
-				for (int j = 0; j < documentations.size(); j++) {
-					const DocData::ClassDoc &doc = documentations.get(j);
-					if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-						EditorHelp::get_doc_data()->remove_doc(doc.name);
-					}
-				}
+			if (script.is_valid()) {
+				clear_docs_from_script(script);
 			}
 
 			EditorNode::get_singleton()->save_resource(edited_res); //external script, save it
 
-			if (script != nullptr) {
-				Vector<DocData::ClassDoc> documentations = script->get_documentation();
-				for (int j = 0; j < documentations.size(); j++) {
-					const DocData::ClassDoc &doc = documentations.get(j);
-					EditorHelp::get_doc_data()->add_doc(doc);
-					update_doc(doc.name);
-				}
+			if (script.is_valid()) {
+				update_docs_from_script(script);
 			}
 		} else {
 			// For built-in scripts, save their scenes instead.
@@ -3328,6 +3295,29 @@ void ScriptEditor::update_doc(const String &p_name) {
 			eh->update_doc();
 			return;
 		}
+	}
+}
+
+void ScriptEditor::clear_docs_from_script(const Ref<Script> &p_script) {
+	ERR_FAIL_COND(p_script.is_null());
+
+	Vector<DocData::ClassDoc> documentations = p_script->get_documentation();
+	for (int j = 0; j < documentations.size(); j++) {
+		const DocData::ClassDoc &doc = documentations.get(j);
+		if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+			EditorHelp::get_doc_data()->remove_doc(doc.name);
+		}
+	}
+}
+
+void ScriptEditor::update_docs_from_script(const Ref<Script> &p_script) {
+	ERR_FAIL_COND(p_script.is_null());
+
+	Vector<DocData::ClassDoc> documentations = p_script->get_documentation();
+	for (int j = 0; j < documentations.size(); j++) {
+		const DocData::ClassDoc &doc = documentations.get(j);
+		EditorHelp::get_doc_data()->add_doc(doc);
+		update_doc(doc.name);
 	}
 }
 
