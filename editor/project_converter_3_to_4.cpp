@@ -230,6 +230,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "add_force", "apply_force" }, //RigidBody2D
 	{ "add_icon_override", "add_theme_icon_override" }, // Control
 	{ "add_scene_import_plugin", "add_scene_format_importer_plugin" }, //EditorPlugin
+	{ "add_spatial_gizmo_plugin", "add_node_3d_gizmo_plugin" }, // EditorPlugin
 	{ "add_stylebox_override", "add_theme_stylebox_override" }, // Control
 	{ "add_torque", "apply_torque" }, //RigidBody2D
 	{ "agent_set_neighbor_dist", "agent_set_neighbor_distance" }, // NavigationServer2D, NavigationServer3D
@@ -367,6 +368,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_slide_count", "get_slide_collision_count" }, // CharacterBody2D, CharacterBody3D
 	{ "get_slips_on_slope", "get_slide_on_slope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "get_space_override_mode", "get_gravity_space_override_mode" }, // Area2D
+	{ "get_spatial_node", "get_node_3d" }, // EditorNode3DGizmo
 	{ "get_speed", "get_velocity" }, // InputEventMouseMotion
 	{ "get_stylebox_types", "get_stylebox_type_list" }, // Theme
 	{ "get_surface_material", "get_surface_override_material" }, // MeshInstance3D broke ImporterMesh
@@ -466,6 +468,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "remove_font_override", "remove_theme_font_override" }, // Control
 	{ "remove_icon_override", "remove_theme_icon_override" }, // Control
 	{ "remove_scene_import_plugin", "remove_scene_format_importer_plugin" }, //EditorPlugin
+	{ "remove_spatial_gizmo_plugin", "remove_node_3d_gizmo_plugin" }, // EditorPlugin
 	{ "remove_stylebox_override", "remove_theme_stylebox_override" }, // Control
 	{ "rename_animation", "rename_animation_library" }, // AnimationPlayer
 	{ "rename_dependencies", "_rename_dependencies" }, // ResourceFormatLoader
@@ -532,6 +535,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_slips_on_slope", "set_slide_on_slope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "set_sort_enabled", "set_y_sort_enabled" }, // Node2D
 	{ "set_space_override_mode", "set_gravity_space_override_mode" }, // Area2D
+	{ "set_spatial_node", "set_node_3d" }, // EditorNode3DGizmo
 	{ "set_speed", "set_velocity" }, // InputEventMouseMotion
 	{ "set_ssao_edge_sharpness", "set_ssao_sharpness" }, // Environment
 	{ "set_surface_material", "set_surface_override_material" }, // MeshInstance3D broke ImporterMesh
@@ -651,6 +655,7 @@ static const char *csharp_function_renames[][2] = {
 	// { "SetVOffset", "SetDragVerticalOffset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// {"GetPoints","GetPointsId"},// Astar, broke Line2D, Convexpolygonshape
 	// {"GetVScroll","GetVScrollBar"},//ItemList, broke TextView
+	{ "AddSpatialGizmoPlugin", "AddNode3dGizmoPlugin" }, // EditorPlugin
 	{ "RenderingServer", "GetTabAlignment" }, // Tab
 	{ "_AboutToShow", "_AboutToPopup" }, // ColorPickerButton
 	{ "_GetConfigurationWarning", "_GetConfigurationWarnings" }, // Node
@@ -796,6 +801,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetSizeOverride", "GetSize2dOverride" }, // SubViewport
 	{ "GetSlipsOnSlope", "GetSlideOnSlope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "GetSpaceOverrideMode", "GetGravitySpaceOverrideMode" }, // Area2D
+	{ "GetSpatialNode", "GetNode3d" }, // EditorNode3DGizmo
 	{ "GetSpeed", "GetVelocity" }, // InputEventMouseMotion
 	{ "GetStyleboxTypes", "GetStyleboxTypeList" }, // Theme
 	{ "GetSurfaceMaterial", "GetSurfaceOverrideMaterial" }, // MeshInstance3D broke ImporterMesh
@@ -890,6 +896,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "RemoveConstantOverride", "RemoveThemeConstantOverride" }, // Control
 	{ "RemoveFontOverride", "RemoveThemeFontOverride" }, // Control
 	{ "RemoveSceneImportPlugin", "RemoveSceneFormatImporterPlugin" }, //EditorPlugin
+	{ "RemoveSpatialGizmoPlugin", "RemoveNode3dGizmoPlugin" }, // EditorPlugin
 	{ "RemoveStyleboxOverride", "RemoveThemeStyleboxOverride" }, // Control
 	{ "RenameAnimation", "RenameAnimationLibrary" }, // AnimationPlayer
 	{ "RenameDependencies", "_RenameDependencies" }, // ResourceFormatLoader
@@ -952,6 +959,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetSlipsOnSlope", "SetSlideOnSlope" }, // SeparationRayShape2D, SeparationRayShape3D
 	{ "SetSortEnabled", "SetYSortEnabled" }, // Node2D
 	{ "SetSpaceOverrideMode", "SetGravitySpaceOverrideMode" }, // Area2D
+	{ "SetSpatialNode", "SetNode3d" }, // EditorNode3DGizmo
 	{ "SetSpeed", "SetVelocity" }, // InputEventMouseMotion
 	{ "SetSsaoEdgeSharpness", "SetSsaoSharpness" }, // Environment
 	{ "SetSurfaceMaterial", "SetSurfaceOverrideMaterial" }, // MeshInstance3D broke ImporterMesh
