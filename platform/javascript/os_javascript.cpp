@@ -454,6 +454,10 @@ void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 	godot_js_display_cursor_set_shape(godot2dom_cursor(cursor_shape));
 }
 
+OS::CursorShape OS_JavaScript::get_cursor_shape() const {
+	return cursor_shape;
+}
+
 void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	if (p_cursor.is_valid()) {
 		Ref<Texture> texture = p_cursor;
