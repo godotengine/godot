@@ -190,6 +190,7 @@ public:
 	void save_external_data(const String &p_str = "");
 	void validate_script();
 	bool is_unsaved() const;
+	void tag_saved_version();
 
 	virtual Size2 get_minimum_size() const override { return Size2(0, 200); }
 

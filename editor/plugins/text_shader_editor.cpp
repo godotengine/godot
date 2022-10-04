@@ -917,6 +917,10 @@ bool TextShaderEditor::is_unsaved() const {
 	return shader_editor->get_text_editor()->get_saved_version() != shader_editor->get_text_editor()->get_version();
 }
 
+void TextShaderEditor::tag_saved_version() {
+	shader_editor->get_text_editor()->tag_saved_version();
+}
+
 void TextShaderEditor::apply_shaders() {
 	String editor_code = shader_editor->get_text_editor()->get_text();
 	if (shader.is_valid()) {
