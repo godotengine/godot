@@ -3054,7 +3054,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 						!uri.begins_with("data:image/png;base64") &&
 						!uri.begins_with("data:image/jpeg;base64")) {
 					WARN_PRINT(vformat("glTF: Image index '%d' uses an unsupported URI data type: %s. Skipping it.", i, uri));
-					state->images.push_back(Ref<Texture>()); // Placeholder to keep count.
+					state->images.push_back(Ref<Image>()); // Placeholder to keep count.
 					continue;
 				}
 				data = _parse_base64_uri(uri);
@@ -3078,7 +3078,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 				// the material), so we do this only as fallback.
 				Ref<Texture> texture = ResourceLoader::load(uri);
 				if (texture.is_valid()) {
-					state->images.push_back(texture);
+					state->images.push_back(texture->get_data());
 					continue;
 				} else if (mimetype == "image/png" || mimetype == "image/jpeg") {
 					// Fallback to loading as byte array.
@@ -3087,14 +3087,14 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 					data = FileAccess::get_file_as_array(uri);
 					if (data.size() == 0) {
 						WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s. Skipping it.", i, mimetype, uri));
-						state->images.push_back(Ref<Texture>()); // Placeholder to keep count.
+						state->images.push_back(Ref<Image>()); // Placeholder to keep count.
 						continue;
 					}
 					data_ptr = data.ptr();
 					data_size = data.size();
 				} else {
 					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded from URI: %s. Skipping it.", i, uri));
-					state->images.push_back(Ref<Texture>()); // Placeholder to keep count.
+					state->images.push_back(Ref<Image>()); // Placeholder to keep count.
 					continue;
 				}
 			}
@@ -3147,7 +3147,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> state, const String &p_base_pat
 		// Now we've done our best, fix your scenes.
 		if (img.is_null()) {
 			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
-			state->images.push_back(Ref<Texture>());
+			state->images.push_back(Ref<Image>());
 			continue;
 		}
 
@@ -3195,7 +3195,11 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 
 		Ref<GLTFTexture> t;
 		t.instance();
-		t->set_src_image(d["source"]);
+
+		GLTFImageIndex gltf_src_image_i = d["source"];
+		ERR_FAIL_INDEX_V(gltf_src_image_i, state->images.size(), ERR_PARSE_ERROR);
+
+		t->set_src_image(gltf_src_image_i);
 		if (d.has("sampler")) {
 			t->set_sampler(d["sampler"]);
 		} else {
@@ -3209,7 +3213,7 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 		imgTex->create_from_image(state->images[t->get_src_image()]);
 
 		// Set texture filter and repeat based on sampler settings
-		const Ref<GLTFTextureSampler> sampler = _get_sampler_for_texture(state, t->get_sampler());
+		const Ref<GLTFTextureSampler> sampler = _get_sampler_for_texture(state, i);
 		Texture::Flags flags = sampler->get_texture_flags();
 		imgTex->set_flags(flags);
 
@@ -3262,13 +3266,13 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> state
 }
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), state->default_texture_sampler);
 	const GLTFTextureSamplerIndex sampler = state->textures[p_texture]->get_sampler();
 
 	if (sampler == -1) {
 		return state->default_texture_sampler;
 	} else {
-		ERR_FAIL_INDEX_V(sampler, state->texture_samplers.size(), Ref<GLTFTextureSampler>());
+		ERR_FAIL_INDEX_V(sampler, state->texture_samplers.size(), state->default_texture_sampler);
 
 		return state->texture_samplers[sampler];
 	}
