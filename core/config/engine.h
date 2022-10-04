@@ -60,7 +60,7 @@ private:
 	int ips = 60;
 	double physics_jitter_fix = 0.5;
 	double _fps = 1;
-	int _target_fps = 0;
+	int _max_fps = 0;
 	double _time_scale = 1.0;
 	uint64_t _physics_frames = 0;
 	double _physics_interpolation_fraction = 0.0f;
@@ -96,8 +96,8 @@ public:
 	void set_physics_jitter_fix(double p_threshold);
 	double get_physics_jitter_fix() const;
 
-	virtual void set_target_fps(int p_fps);
-	virtual int get_target_fps() const;
+	virtual void set_max_fps(int p_fps);
+	virtual int get_max_fps() const;
 
 	virtual double get_frames_per_second() const { return _fps; }
 

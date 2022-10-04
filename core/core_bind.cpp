@@ -1483,12 +1483,12 @@ double Engine::get_physics_interpolation_fraction() const {
 	return ::Engine::get_singleton()->get_physics_interpolation_fraction();
 }
 
-void Engine::set_target_fps(int p_fps) {
-	::Engine::get_singleton()->set_target_fps(p_fps);
+void Engine::set_max_fps(int p_fps) {
+	::Engine::get_singleton()->set_max_fps(p_fps);
 }
 
-int Engine::get_target_fps() const {
-	return ::Engine::get_singleton()->get_target_fps();
+int Engine::get_max_fps() const {
+	return ::Engine::get_singleton()->get_max_fps();
 }
 
 double Engine::get_frames_per_second() const {
@@ -1625,8 +1625,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &Engine::set_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_jitter_fix"), &Engine::get_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_interpolation_fraction"), &Engine::get_physics_interpolation_fraction);
-	ClassDB::bind_method(D_METHOD("set_target_fps", "target_fps"), &Engine::set_target_fps);
-	ClassDB::bind_method(D_METHOD("get_target_fps"), &Engine::get_target_fps);
+	ClassDB::bind_method(D_METHOD("set_max_fps", "max_fps"), &Engine::set_max_fps);
+	ClassDB::bind_method(D_METHOD("get_max_fps"), &Engine::get_max_fps);
 
 	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &Engine::set_time_scale);
 	ClassDB::bind_method(D_METHOD("get_time_scale"), &Engine::get_time_scale);
@@ -1669,7 +1669,7 @@ void Engine::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "target_fps"), "set_target_fps", "get_target_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }
