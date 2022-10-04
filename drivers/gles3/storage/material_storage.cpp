@@ -1393,7 +1393,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["TEXTURE"] = "color_texture";
-		actions.renames["TEXTURE_PIXEL_SIZE"] = "draw_data.color_texture_pixel_size";
+		actions.renames["TEXTURE_PIXEL_SIZE"] = "color_texture_pixel_size";
 		actions.renames["NORMAL_TEXTURE"] = "normal_texture";
 		actions.renames["SPECULAR_SHININESS_TEXTURE"] = "specular_texture";
 		actions.renames["SPECULAR_SHININESS"] = "specular_shininess";
