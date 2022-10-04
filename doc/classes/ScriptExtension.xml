@@ -151,6 +151,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_load_source_code" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+			</description>
+		</method>
 		<method name="_placeholder_erased" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="placeholder" type="void*" />

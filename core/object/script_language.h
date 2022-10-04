@@ -138,6 +138,7 @@ public:
 	virtual String get_source_code() const = 0;
 	virtual void set_source_code(const String &p_code) = 0;
 	virtual Error reload(bool p_keep_state = false) = 0;
+	virtual Error load_source_code(const String &p_path) = 0;
 
 #ifdef TOOLS_ENABLED
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;

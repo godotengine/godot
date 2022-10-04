@@ -68,9 +68,7 @@ Error TextFile::load_text(const String &p_path) {
 	text = s;
 	path = p_path;
 #ifdef TOOLS_ENABLED
-	if (ResourceLoader::get_timestamp_on_load()) {
-		set_last_modified_time(FileAccess::get_modified_time(path));
-	}
+	set_last_modified_time(FileAccess::get_modified_time(path));
 #endif // TOOLS_ENABLED
 	return OK;
 }

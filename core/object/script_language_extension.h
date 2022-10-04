@@ -75,6 +75,7 @@ public:
 	EXBIND0RC(String, get_source_code)
 	EXBIND1(set_source_code, const String &)
 	EXBIND1R(Error, reload, bool)
+	EXBIND1R(Error, load_source_code, const String &)
 
 	GDVIRTUAL0RC(TypedArray<Dictionary>, _get_documentation)
 #ifdef TOOLS_ENABLED

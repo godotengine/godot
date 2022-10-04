@@ -207,7 +207,7 @@ public:
 	}
 #endif
 
-	Error load_source_code(const String &p_path);
+	virtual Error load_source_code(const String &p_path) override;
 
 	CSharpScript();
 	~CSharpScript();
