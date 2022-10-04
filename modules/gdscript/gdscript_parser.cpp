@@ -4350,7 +4350,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 											_set_error("Expected \")\" in the layers 2D navigation hint.");
 											return;
 										}
-										current_export.hint = PROPERTY_HINT_LAYERS_2D_PHYSICS;
+										current_export.hint = PROPERTY_HINT_LAYERS_2D_NAVIGATION;
 										break;
 									}
 
