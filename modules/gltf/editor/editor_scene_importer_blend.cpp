@@ -77,20 +77,19 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_arg += "export_extras=False,";
 	}
-	if (p_options.has(SNAME("blender/meshes/skins")) && p_options[SNAME("blender/meshes/skins")]) {
+	if (p_options.has(SNAME("blender/meshes/skins"))) {
 		int32_t skins = p_options["blender/meshes/skins"];
 		if (skins == BLEND_BONE_INFLUENCES_NONE) {
-			parameters_arg += "export_all_influences=False,";
+			parameters_arg += "export_skins=False,";
 		} else if (skins == BLEND_BONE_INFLUENCES_COMPATIBLE) {
-			parameters_arg += "export_all_influences=False,";
+			parameters_arg += "export_all_influences=False,export_skins=True,";
 		} else if (skins == BLEND_BONE_INFLUENCES_ALL) {
-			parameters_arg += "export_all_influences=True,";
+			parameters_arg += "export_all_influences=True,export_skins=True,";
 		}
-		parameters_arg += "export_skins=True,";
 	} else {
 		parameters_arg += "export_skins=False,";
 	}
-	if (p_options.has(SNAME("blender/materials/export_materials")) && p_options[SNAME("blender/materials/export_materials")]) {
+	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
 		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
 			parameters_arg += "export_materials='PLACEHOLDER',";
@@ -115,7 +114,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	} else {
 		parameters_arg += "export_colors=False,";
 	}
-	if (p_options.has(SNAME("blender/nodes/visible")) && p_options[SNAME("blender/nodes/visible")]) {
+	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
 			parameters_arg += "use_visible=True,";
