@@ -31,135 +31,16 @@
 #ifndef ACTION_MAP_EDITOR_H
 #define ACTION_MAP_EDITOR_H
 
-#include "scene/gui/check_box.h"
-#include "scene/gui/check_button.h"
-#include "scene/gui/color_rect.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tab_container.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/control.h"
 
-enum InputType {
-	INPUT_KEY = 1,
-	INPUT_MOUSE_BUTTON = 2,
-	INPUT_JOY_BUTTON = 4,
-	INPUT_JOY_MOTION = 8
-};
-
-class EventListenerLineEdit : public LineEdit {
-	GDCLASS(EventListenerLineEdit, LineEdit)
-
-	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
-	bool ignore = true;
-	bool share_keycodes = false;
-	Ref<InputEvent> event;
-
-	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
-
-	void gui_input(const Ref<InputEvent> &p_event) override;
-	void _on_text_changed(const String &p_text);
-
-	void _on_focus();
-	void _on_unfocus();
-
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	Ref<InputEvent> get_event() const;
-	void clear_event();
-
-	void set_allowed_input_types(int input_types);
-	int get_allowed_input_types() const;
-
-public:
-	EventListenerLineEdit();
-};
-
-// Confirmation Dialog used when configuring an input event.
-// Separate from ActionMapEditor for code cleanliness and separation of responsibilities.
-class InputEventConfigurationDialog : public ConfirmationDialog {
-	GDCLASS(InputEventConfigurationDialog, ConfirmationDialog)
-private:
-	struct IconCache {
-		Ref<Texture2D> keyboard;
-		Ref<Texture2D> mouse;
-		Ref<Texture2D> joypad_button;
-		Ref<Texture2D> joypad_axis;
-	} icon_cache;
-
-	Ref<InputEvent> event = Ref<InputEvent>();
-
-	// Listening for input
-	EventListenerLineEdit *event_listener = nullptr;
-	Label *event_as_text = nullptr;
-
-	// List of All Key/Mouse/Joypad input options.
-	int allowed_input_types;
-	Tree *input_list_tree = nullptr;
-	LineEdit *input_list_search = nullptr;
-
-	// Additional Options, shown depending on event selected
-	VBoxContainer *additional_options_container = nullptr;
-
-	HBoxContainer *device_container = nullptr;
-	OptionButton *device_id_option = nullptr;
-
-	HBoxContainer *mod_container = nullptr; // Contains the subcontainer and the store command checkbox.
-
-	enum ModCheckbox {
-		MOD_ALT,
-		MOD_SHIFT,
-		MOD_CTRL,
-		MOD_META,
-		MOD_MAX
-	};
-#if defined(MACOS_ENABLED)
-	String mods[MOD_MAX] = { "Option", "Shift", "Ctrl", "Command" };
-#elif defined(WINDOWS_ENABLED)
-	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Windows" };
-#else
-	String mods[MOD_MAX] = { "Alt", "Shift", "Ctrl", "Meta" };
-#endif
-	String mods_tip[MOD_MAX] = { "Alt or Option key", "Shift key", "Control key", "Meta/Windows or Command key" };
-
-	CheckBox *mod_checkboxes[MOD_MAX];
-	CheckBox *autoremap_command_or_control_checkbox = nullptr;
-
-	CheckBox *physical_key_checkbox = nullptr;
-
-	void _set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection = true);
-	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
-	void _on_listen_focus_changed();
-
-	void _search_term_updated(const String &p_term);
-	void _update_input_list();
-	void _input_list_item_selected();
-
-	void _mod_toggled(bool p_checked, int p_index);
-	void _autoremap_command_or_control_toggled(bool p_checked);
-	void _physical_keycode_toggled(bool p_checked);
-
-	void _device_selection_changed(int p_option_button_index);
-	void _set_current_device(int p_device);
-	int _get_current_device() const;
-	String _get_device_string(int p_device) const;
-
-protected:
-	void _notification(int p_what);
-
-public:
-	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.
-	void popup_and_configure(const Ref<InputEvent> &p_event = Ref<InputEvent>());
-	Ref<InputEvent> get_event() const;
-	String get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) const;
-
-	void set_allowed_input_types(int p_type_masks);
-
-	InputEventConfigurationDialog();
-};
+class Button;
+class HBoxContainer;
+class EventListenerLineEdit;
+class LineEdit;
+class CheckButton;
+class AcceptDialog;
+class InputEventConfigurationDialog;
+class Tree;
 
 class ActionMapEditor : public Control {
 	GDCLASS(ActionMapEditor, Control);
