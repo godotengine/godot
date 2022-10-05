@@ -437,11 +437,11 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 
 	if (!p_docs_down) { // inline comment
 		String inline_comment = lines[p_line];
-		int comment_start = inline_comment.find("#");
+		int comment_start = inline_comment.find("##");
 		if (comment_start != -1) {
 			inline_comment = inline_comment.substr(comment_start, inline_comment.length()).strip_edges();
 			if (inline_comment.length() > 1) {
-				doc_lines.push_back(inline_comment.substr(1, inline_comment.length()));
+				doc_lines.push_back(inline_comment.substr(2, inline_comment.length()));
 			}
 		}
 	}
@@ -454,8 +454,8 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 		}
 
 		String line_comment = lines[i].strip_edges(true, false);
-		if (line_comment.begins_with("#")) {
-			line_comment = line_comment.substr(1, line_comment.length());
+		if (line_comment.begins_with("##")) {
+			line_comment = line_comment.substr(2, line_comment.length());
 			if (p_docs_down) {
 				doc_lines.push_back(line_comment);
 			} else {
