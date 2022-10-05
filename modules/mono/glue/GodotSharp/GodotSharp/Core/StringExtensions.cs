@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -939,19 +940,94 @@ namespace Godot
             return instance.IsSubsequenceOf(text, caseSensitive: false);
         }
 
+        private static readonly char[] _invalidFileNameCharacters = { ':', '/', '\\', '?', '*', '"', '|', '%', '<', '>' };
+
         /// <summary>
-        /// Check whether the string contains a valid <see langword="float"/>.
+        /// Returns <see langword="true"/> if this string is free from characters that
+        /// aren't allowed in file names.
         /// </summary>
+        /// <param name="instance">The string to check.</param>
+        /// <returns>If the string contains a valid file name.</returns>
+        public static bool IsValidFileName(this string instance)
+        {
+            var stripped = instance.Trim();
+            if (instance != stripped)
+                return false;
+
+            if (string.IsNullOrEmpty(stripped))
+                return false;
+
+            return instance.IndexOfAny(_invalidFileNameCharacters) == -1;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this string contains a valid <see langword="float"/>.
+        /// This is inclusive of integers, and also supports exponents.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print("1.7".IsValidFloat())  // Prints "True"
+        /// GD.Print("24".IsValidFloat())  // Prints "True"
+        /// GD.Print("7e3".IsValidFloat())  // Prints "True"
+        /// GD.Print("Hello".IsValidFloat())  // Prints "False"
+        /// </code>
+        /// </example>
         /// <param name="instance">The string to check.</param>
         /// <returns>If the string contains a valid floating point number.</returns>
         public static bool IsValidFloat(this string instance)
         {
-            float f;
-            return float.TryParse(instance, out f);
+            return float.TryParse(instance, out _);
         }
 
         /// <summary>
-        /// Check whether the string contains a valid color in HTML notation.
+        /// Returns <see langword="true"/> if this string contains a valid hexadecimal number.
+        /// If <paramref name="withPrefix"/> is <see langword="true"/>, then a validity of the
+        /// hexadecimal number is determined by <c>0x</c> prefix, for instance: <c>0xDEADC0DE</c>.
+        /// </summary>
+        /// <param name="instance">The string to check.</param>
+        /// <param name="withPrefix">If the string must contain the <c>0x</c> prefix to be valid.</param>
+        /// <returns>If the string contains a valid hexadecimal number.</returns>
+        public static bool IsValidHexNumber(this string instance, bool withPrefix = false)
+        {
+            if (string.IsNullOrEmpty(instance))
+                return false;
+
+            int from = 0;
+            if (instance.Length != 1 && instance[0] == '+' || instance[0] == '-')
+            {
+                from++;
+            }
+
+            if (withPrefix)
+            {
+                if (instance.Length < 3)
+                    return false;
+                if (instance[from] != '0' || instance[from + 1] != 'x')
+                    return false;
+                from += 2;
+            }
+
+            for (int i = from; i < instance.Length; i++)
+            {
+                char c = instance[i];
+                if (IsHexDigit(c))
+                    continue;
+
+                return false;
+            }
+
+            return true;
+
+            static bool IsHexDigit(char c)
+            {
+                return char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+            }
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this string contains a valid color in hexadecimal
+        /// HTML notation. Other HTML notations such as named colors or <c>hsl()</c> aren't
+        /// considered valid by this method and will return <see langword="false"/>.
         /// </summary>
         /// <param name="instance">The string to check.</param>
         /// <returns>If the string contains a valid HTML color.</returns>
@@ -961,10 +1037,17 @@ namespace Godot
         }
 
         /// <summary>
-        /// Check whether the string is a valid identifier. As is common in
-        /// programming languages, a valid identifier may contain only letters,
-        /// digits and underscores (_) and the first character may not be a digit.
+        /// Returns <see langword="true"/> if this string is a valid identifier.
+        /// A valid identifier may contain only letters, digits and underscores (<c>_</c>)
+        /// and the first character may not be a digit.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print("good_ident_1".IsValidIdentifier())  // Prints "True"
+        /// GD.Print("1st_bad_ident".IsValidIdentifier())  // Prints "False"
+        /// GD.Print("bad_ident_#2".IsValidIdentifier())  // Prints "False"
+        /// </code>
+        /// </example>
         /// <param name="instance">The string to check.</param>
         /// <returns>If the string contains a valid identifier.</returns>
         public static bool IsValidIdentifier(this string instance)
@@ -992,38 +1075,73 @@ namespace Godot
         }
 
         /// <summary>
-        /// Check whether the string contains a valid integer.
+        /// Returns <see langword="true"/> if this string contains a valid <see langword="int"/>.
         /// </summary>
+        /// <example>
+        /// <code>
+        /// GD.Print("7".IsValidInt())  // Prints "True"
+        /// GD.Print("14.6".IsValidInt())  // Prints "False"
+        /// GD.Print("L".IsValidInt())  // Prints "False"
+        /// GD.Print("+3".IsValidInt())  // Prints "True"
+        /// GD.Print("-12".IsValidInt())  // Prints "True"
+        /// </code>
+        /// </example>
         /// <param name="instance">The string to check.</param>
         /// <returns>If the string contains a valid integer.</returns>
-        public static bool IsValidInteger(this string instance)
+        public static bool IsValidInt(this string instance)
         {
-            int f;
-            return int.TryParse(instance, out f);
+            return int.TryParse(instance, out _);
         }
 
         /// <summary>
-        /// Check whether the string contains a valid IP address.
+        /// Returns <see langword="true"/> if this string contains only a well-formatted
+        /// IPv4 or IPv6 address. This method considers reserved IP addresses such as
+        /// <c>0.0.0.0</c> as valid.
         /// </summary>
         /// <param name="instance">The string to check.</param>
         /// <returns>If the string contains a valid IP address.</returns>
         public static bool IsValidIPAddress(this string instance)
         {
-            // TODO: Support IPv6 addresses
-            string[] ip = instance.Split(".");
-
-            if (ip.Length != 4)
-                return false;
-
-            for (int i = 0; i < ip.Length; i++)
+            if (instance.Contains(':'))
             {
-                string n = ip[i];
-                if (!n.IsValidInteger())
+                string[] ip = instance.Split(':');
+
+                for (int i = 0; i < ip.Length; i++)
+                {
+                    string n = ip[i];
+                    if (n.Length == 0)
+                        continue;
+
+                    if (n.IsValidHexNumber(withPrefix: false))
+                    {
+                        long nint = n.HexToInt();
+                        if (nint < 0 || nint > 0xffff)
+                            return false;
+
+                        continue;
+                    }
+
+                    if (!n.IsValidIPAddress())
+                        return false;
+                }
+            }
+            else
+            {
+                string[] ip = instance.Split('.');
+
+                if (ip.Length != 4)
                     return false;
 
-                int val = n.ToInt();
-                if (val < 0 || val > 255)
-                    return false;
+                for (int i = 0; i < ip.Length; i++)
+                {
+                    string n = ip[i];
+                    if (!n.IsValidInt())
+                        return false;
+
+                    int val = n.ToInt();
+                    if (val < 0 || val > 255)
+                        return false;
+                }
             }
 
             return true;
@@ -1743,6 +1861,25 @@ namespace Godot
         public static string URIEncode(this string instance)
         {
             return Uri.EscapeDataString(instance);
+        }
+
+        private const string _uniqueNodePrefix = "%";
+        private static readonly string[] _invalidNodeNameCharacters = { ".", ":", "@", "/", "\"", _uniqueNodePrefix };
+
+        /// <summary>
+        /// Removes any characters from the string that are prohibited in
+        /// <see cref="Node"/> names (<c>.</c> <c>:</c> <c>@</c> <c>/</c> <c>"</c>).
+        /// </summary>
+        /// <param name="instance">The string to sanitize.</param>
+        /// <returns>The string sanitized as a valid node name.</returns>
+        public static string ValidateNodeName(this string instance)
+        {
+            string name = instance.Replace(_invalidNodeNameCharacters[0], "");
+            for (int i = 1; i < _invalidNodeNameCharacters.Length; i++)
+            {
+                name = name.Replace(_invalidNodeNameCharacters[i], "");
+            }
+            return name;
         }
 
         /// <summary>
