@@ -228,6 +228,7 @@ public:
 	void goto_line_centered(int p_line);
 	virtual void set_executing_line(int p_line) override;
 	virtual void clear_executing_line() override;
+	void lookup_symbol_under_caret();
 
 	virtual void reload(bool p_soft) override;
 	virtual PackedInt32Array get_breakpoints() override;
