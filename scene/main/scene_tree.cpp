@@ -1382,22 +1382,22 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	const int msaa_mode_2d = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/msaa_2d", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa_2d", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
+	const int msaa_mode_2d = GLOBAL_DEF_BASIC("rendering/antialiasing/quality/msaa_2d", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/antialiasing/quality/msaa_2d", PropertyInfo(Variant::INT, "rendering/antialiasing/quality/msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa_2d(Viewport::MSAA(msaa_mode_2d));
 
-	const int msaa_mode_3d = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/msaa_3d", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa_3d", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
+	const int msaa_mode_3d = GLOBAL_DEF_BASIC("rendering/antialiasing/quality/msaa_3d", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/antialiasing/quality/msaa_3d", PropertyInfo(Variant::INT, "rendering/antialiasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa_3d(Viewport::MSAA(msaa_mode_3d));
 
-	const int ssaa_mode = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/screen_space_aa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
+	const int ssaa_mode = GLOBAL_DEF_BASIC("rendering/antialiasing/quality/screen_space_aa", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/antialiasing/quality/screen_space_aa", PropertyInfo(Variant::INT, "rendering/antialiasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
-	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);
+	const bool use_taa = GLOBAL_DEF_BASIC("rendering/antialiasing/quality/use_taa", false);
 	root->set_use_taa(use_taa);
 
-	const bool use_debanding = GLOBAL_DEF("rendering/anti_aliasing/quality/use_debanding", false);
+	const bool use_debanding = GLOBAL_DEF("rendering/antialiasing/quality/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 
 	const bool use_occlusion_culling = GLOBAL_DEF("rendering/occlusion_culling/use_occlusion_culling", false);

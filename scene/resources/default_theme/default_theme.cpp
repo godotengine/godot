@@ -56,7 +56,7 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	style->set_default_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
 
 	style->set_corner_radius_all(p_corner_radius);
-	style->set_anti_aliased(true);
+	style->set_antialiased(true);
 	// Adjust level of detail based on the corners' effective sizes.
 	style->set_corner_detail(MIN(Math::ceil(1.5 * p_corner_radius), 6) * scale);
 
@@ -911,7 +911,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxFlat> preset_sb = make_flat_stylebox(Color(1, 1, 1), 2, 2, 2, 2);
 	preset_sb->set_corner_radius_all(2);
 	preset_sb->set_corner_detail(2);
-	preset_sb->set_anti_aliased(false);
+	preset_sb->set_antialiased(false);
 
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
 	theme->set_icon("preset_bg", "ColorPresetButton", icons["mini_checkerboard"]);

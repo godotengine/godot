@@ -216,7 +216,7 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 	style->set_corner_radius_all(p_corner_width * EDSCALE);
 	style->set_default_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
 	// Work around issue about antialiased edges being blurrier (GH-35279).
-	style->set_anti_aliased(false);
+	style->set_antialiased(false);
 	return style;
 }
 
@@ -752,7 +752,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	toolbar_stylebox->set_bg_color(accent_color * Color(1, 1, 1, 0.1));
 	toolbar_stylebox->set_corner_radius(CORNER_TOP_LEFT, corner_radius * EDSCALE);
 	toolbar_stylebox->set_corner_radius(CORNER_TOP_RIGHT, corner_radius * EDSCALE);
-	toolbar_stylebox->set_anti_aliased(false);
+	toolbar_stylebox->set_antialiased(false);
 	// Add an underline to the StyleBox, but prevent its minimum vertical size from changing.
 	toolbar_stylebox->set_border_color(accent_color);
 	toolbar_stylebox->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
@@ -1051,7 +1051,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 		// EditorProperty background while it has a sub-inspector open.
 		Ref<StyleBoxFlat> bg_color = make_flat_stylebox(si_base_color * Color(0.7, 0.7, 0.7, 0.8), 0, 0, 0, 0, corner_radius);
-		bg_color->set_anti_aliased(false);
+		bg_color->set_antialiased(false);
 		bg_color->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 		bg_color->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
 

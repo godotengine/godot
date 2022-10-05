@@ -161,7 +161,7 @@ class StyleBoxFlat : public StyleBox {
 	bool draw_center = true;
 	bool blend_border = false;
 	Vector2 skew;
-	bool anti_aliased = true;
+	bool antialiased = true;
 
 	int corner_detail = 8;
 	int shadow_size = 0;
@@ -218,8 +218,8 @@ public:
 	void set_shadow_offset(const Point2 &p_offset);
 	Point2 get_shadow_offset() const;
 
-	void set_anti_aliased(const bool &p_anti_aliased);
-	bool is_anti_aliased() const;
+	void set_antialiased(const bool &p_antialiased);
+	bool is_antialiased() const;
 	void set_aa_size(const real_t p_aa_size);
 	real_t get_aa_size() const;
 

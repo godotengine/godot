@@ -531,14 +531,14 @@ Point2 StyleBoxFlat::get_shadow_offset() const {
 	return shadow_offset;
 }
 
-void StyleBoxFlat::set_anti_aliased(const bool &p_anti_aliased) {
-	anti_aliased = p_anti_aliased;
+void StyleBoxFlat::set_antialiased(const bool &p_antialiased) {
+	antialiased = p_antialiased;
 	emit_changed();
 	notify_property_list_changed();
 }
 
-bool StyleBoxFlat::is_anti_aliased() const {
-	return anti_aliased;
+bool StyleBoxFlat::is_antialiased() const {
+	return antialiased;
 }
 
 void StyleBoxFlat::set_aa_size(const real_t p_aa_size) {
@@ -719,7 +719,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	const bool rounded_corners = (corner_radius[0] > 0) || (corner_radius[1] > 0) || (corner_radius[2] > 0) || (corner_radius[3] > 0);
 	// Only enable antialiasing if it is actually needed. This improve performances
 	// and maximizes sharpness for non-skewed StyleBoxes with sharp corners.
-	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && anti_aliased;
+	const bool aa_on = (rounded_corners || !skew.is_zero_approx()) && antialiased;
 
 	const bool blend_on = blend_border && draw_border;
 
@@ -875,7 +875,7 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 }
 
 void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
-	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
+	if (!antialiased && p_property.name == "antialiasing_size") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
@@ -920,8 +920,8 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_offset", "offset"), &StyleBoxFlat::set_shadow_offset);
 	ClassDB::bind_method(D_METHOD("get_shadow_offset"), &StyleBoxFlat::get_shadow_offset);
 
-	ClassDB::bind_method(D_METHOD("set_anti_aliased", "anti_aliased"), &StyleBoxFlat::set_anti_aliased);
-	ClassDB::bind_method(D_METHOD("is_anti_aliased"), &StyleBoxFlat::is_anti_aliased);
+	ClassDB::bind_method(D_METHOD("set_antialiased", "antialiased"), &StyleBoxFlat::set_antialiased);
+	ClassDB::bind_method(D_METHOD("is_antialiased"), &StyleBoxFlat::is_antialiased);
 
 	ClassDB::bind_method(D_METHOD("set_aa_size", "size"), &StyleBoxFlat::set_aa_size);
 	ClassDB::bind_method(D_METHOD("get_aa_size"), &StyleBoxFlat::get_aa_size);
@@ -964,9 +964,9 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadow_size", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:px"), "set_shadow_size", "get_shadow_size");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shadow_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_shadow_offset", "get_shadow_offset");
 
-	ADD_GROUP("Anti Aliasing", "anti_aliasing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
+	ADD_GROUP("Anti Aliasing", "antialiasing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "antialiasing"), "set_antialiased", "is_antialiased");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "antialiasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
 }
 
 StyleBoxFlat::StyleBoxFlat() {}

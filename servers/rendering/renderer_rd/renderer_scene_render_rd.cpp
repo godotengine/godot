@@ -1407,9 +1407,9 @@ void RendererSceneRenderRD::init() {
 	RSG::camera_attributes->camera_attributes_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_use_jitter"));
 	use_physical_light_units = GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units");
 
-	screen_space_roughness_limiter = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/enabled");
-	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
-	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit");
+	screen_space_roughness_limiter = GLOBAL_GET("rendering/antialiasing/screen_space_roughness_limiter/enabled");
+	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/antialiasing/screen_space_roughness_limiter/amount");
+	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/antialiasing/screen_space_roughness_limiter/limit");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
 	glow_high_quality = GLOBAL_GET("rendering/environment/glow/use_high_quality");
 
