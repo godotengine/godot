@@ -79,7 +79,7 @@ open class GodotEditor : FullScreenGodotApp() {
 		super.onCreate(savedInstanceState)
 
 		// Enable long press, panning and scaling gestures
-		godotFragment?.mView?.inputHandler?.apply {
+		godotFragment?.renderView?.inputHandler?.apply {
 			enableLongPress(enableLongPressGestures())
 			enablePanningAndScalingGestures(enablePanAndScaleGestures())
 		}
