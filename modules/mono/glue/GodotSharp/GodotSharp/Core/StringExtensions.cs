@@ -67,24 +67,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// If the string is a path to a file, return the path to the file without the extension.
-        /// </summary>
-        /// <seealso cref="GetExtension(string)"/>
-        /// <seealso cref="GetBaseDir(string)"/>
-        /// <seealso cref="GetFile(string)"/>
-        /// <param name="instance">The path to a file.</param>
-        /// <returns>The path to the file without the extension.</returns>
-        public static string GetBaseName(this string instance)
-        {
-            int index = instance.LastIndexOf('.');
-
-            if (index > 0)
-                return instance.Substring(0, index);
-
-            return instance;
-        }
-
-        /// <summary>
         /// Returns <see langword="true"/> if the strings begins
         /// with the given string <paramref name="text"/>.
         /// </summary>
@@ -144,15 +126,15 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the amount of substrings <paramref name="what"/> in the string.
+        /// Returns the number of occurrences of substring <paramref name="what"/> in the string.
         /// </summary>
         /// <param name="instance">The string where the substring will be searched.</param>
         /// <param name="what">The substring that will be counted.</param>
-        /// <param name="caseSensitive">If the search is case sensitive.</param>
         /// <param name="from">Index to start searching from.</param>
         /// <param name="to">Index to stop searching at.</param>
-        /// <returns>Amount of substrings in the string.</returns>
-        public static int Count(this string instance, string what, bool caseSensitive = true, int from = 0, int to = 0)
+        /// <param name="caseSensitive">If the search is case sensitive.</param>
+        /// <returns>Number of occurrences of the substring in the string.</returns>
+        public static int Count(this string instance, string what, int from = 0, int to = 0, bool caseSensitive = true)
         {
             if (what.Length == 0)
             {
@@ -208,6 +190,82 @@ namespace Godot
             } while (idx != -1);
 
             return c;
+        }
+
+        /// <summary>
+        /// Returns the number of occurrences of substring <paramref name="what"/> (ignoring case)
+        /// between <paramref name="from"/> and <paramref name="to"/> positions. If <paramref name="from"/>
+        /// and <paramref name="to"/> equals 0 the whole string will be used. If only <paramref name="to"/>
+        /// equals 0 the remained substring will be used.
+        /// </summary>
+        /// <param name="instance">The string where the substring will be searched.</param>
+        /// <param name="what">The substring that will be counted.</param>
+        /// <param name="from">Index to start searching from.</param>
+        /// <param name="to">Index to stop searching at.</param>
+        /// <returns>Number of occurrences of the substring in the string.</returns>
+        public static int CountN(this string instance, string what, int from = 0, int to = 0)
+        {
+            return instance.Count(what, from, to, caseSensitive: false);
+        }
+
+        /// <summary>
+        /// Returns a copy of the string with indentation (leading tabs and spaces) removed.
+        /// See also <see cref="Indent"/> to add indentation.
+        /// </summary>
+        /// <param name="instance">The string to remove the indentation from.</param>
+        /// <returns>The string with the indentation removed.</returns>
+        public static string Dedent(this string instance)
+        {
+            var sb = new StringBuilder();
+            string indent = "";
+            bool hasIndent = false;
+            bool hasText = false;
+            int lineStart = 0;
+            int indentStop = -1;
+
+            for (int i = 0; i < instance.Length; i++)
+            {
+                char c = instance[i];
+                if (c == '\n')
+                {
+                    if (hasText)
+                    {
+                        sb.Append(instance.Substring(indentStop, i - indentStop));
+                    }
+                    sb.Append('\n');
+                    hasText = false;
+                    lineStart = i + 1;
+                    indentStop = -1;
+                }
+                else if (!hasText)
+                {
+                    if (c > 32)
+                    {
+                        hasText = true;
+                        if (!hasIndent)
+                        {
+                            hasIndent = true;
+                            indent = instance.Substring(lineStart, i - lineStart);
+                            indentStop = i;
+                        }
+                    }
+                    if (hasIndent && indentStop < 0)
+                    {
+                        int j = i - lineStart;
+                        if (j >= indent.Length || c != indent[j])
+                        {
+                            indentStop = i;
+                        }
+                    }
+                }
+            }
+
+            if (hasText)
+            {
+                sb.Append(instance.Substring(indentStop, instance.Length - indentStop));
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -455,17 +513,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Erase <paramref name="chars"/> characters from the string starting from <paramref name="pos"/>.
-        /// </summary>
-        /// <param name="instance">The string to modify.</param>
-        /// <param name="pos">Starting position from which to erase.</param>
-        /// <param name="chars">Amount of characters to erase.</param>
-        public static void Erase(this StringBuilder instance, int pos, int chars)
-        {
-            instance.Remove(pos, chars);
-        }
-
-        /// <summary>
         /// Returns the extension without the leading period character (<c>.</c>)
         /// if the string is a valid file name or path. If the string does not contain
         /// an extension, returns an empty string instead.
@@ -489,7 +536,7 @@ namespace Godot
         /// <returns>The extension of the file or an empty string.</returns>
         public static string GetExtension(this string instance)
         {
-            int pos = instance.FindLast(".");
+            int pos = instance.RFind(".");
 
             if (pos < 0)
                 return instance;
@@ -498,12 +545,16 @@ namespace Godot
         }
 
         /// <summary>
-        /// Find the first occurrence of a substring. Optionally, the search starting position can be passed.
+        /// Returns the index of the first occurrence of the specified string in this instance,
+        /// or <c>-1</c>. Optionally, the starting search index can be specified, continuing
+        /// to the end of the string.
+        /// Note: If you just want to know whether a string contains a substring, use the
+        /// <see cref="string.Contains(string)"/> method.
         /// </summary>
         /// <seealso cref="Find(string, char, int, bool)"/>
-        /// <seealso cref="FindLast(string, string, bool)"/>
-        /// <seealso cref="FindLast(string, string, int, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
+        /// <seealso cref="RFind(string, string, int, bool)"/>
+        /// <seealso cref="RFindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to find.</param>
         /// <param name="from">The search starting position.</param>
@@ -519,9 +570,9 @@ namespace Godot
         /// Find the first occurrence of a char. Optionally, the search starting position can be passed.
         /// </summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
-        /// <seealso cref="FindLast(string, string, bool)"/>
-        /// <seealso cref="FindLast(string, string, int, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
+        /// <seealso cref="RFind(string, string, int, bool)"/>
+        /// <seealso cref="RFindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to find.</param>
         /// <param name="from">The search starting position.</param>
@@ -529,50 +580,21 @@ namespace Godot
         /// <returns>The first instance of the char, or -1 if not found.</returns>
         public static int Find(this string instance, char what, int from = 0, bool caseSensitive = true)
         {
-            // TODO: Could be more efficient if we get a char version of `IndexOf`.
-            // See https://github.com/dotnet/runtime/issues/44116
-            return instance.IndexOf(what.ToString(), from,
-                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
-        }
+            if (caseSensitive)
+                return instance.IndexOf(what, from);
 
-        /// <summary>Find the last occurrence of a substring.</summary>
-        /// <seealso cref="Find(string, string, int, bool)"/>
-        /// <seealso cref="Find(string, char, int, bool)"/>
-        /// <seealso cref="FindLast(string, string, int, bool)"/>
-        /// <seealso cref="FindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The starting position of the substring, or -1 if not found.</returns>
-        public static int FindLast(this string instance, string what, bool caseSensitive = true)
-        {
-            return instance.FindLast(what, instance.Length - 1, caseSensitive);
-        }
-
-        /// <summary>Find the last occurrence of a substring specifying the search starting position.</summary>
-        /// <seealso cref="Find(string, string, int, bool)"/>
-        /// <seealso cref="Find(string, char, int, bool)"/>
-        /// <seealso cref="FindLast(string, string, bool)"/>
-        /// <seealso cref="FindN(string, string, int)"/>
-        /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
-        /// <param name="from">The search starting position.</param>
-        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The starting position of the substring, or -1 if not found.</returns>
-        public static int FindLast(this string instance, string what, int from, bool caseSensitive = true)
-        {
-            return instance.LastIndexOf(what, from,
-                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+            return CultureInfo.InvariantCulture.CompareInfo.IndexOf(instance, what, from, CompareOptions.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Find the first occurrence of a substring but search as case-insensitive.
-        /// Optionally, the search starting position can be passed.
+        /// Returns the index of the first case-insensitive occurrence of the specified string in this instance,
+        /// or <c>-1</c>. Optionally, the starting search index can be specified, continuing
+        /// to the end of the string.
         /// </summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
         /// <seealso cref="Find(string, char, int, bool)"/>
-        /// <seealso cref="FindLast(string, string, bool)"/>
-        /// <seealso cref="FindLast(string, string, int, bool)"/>
+        /// <seealso cref="RFind(string, string, int, bool)"/>
+        /// <seealso cref="RFindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to find.</param>
         /// <param name="from">The search starting position.</param>
@@ -616,12 +638,30 @@ namespace Godot
                 }
             }
 
-            int sep = Mathf.Max(rs.FindLast("/"), rs.FindLast("\\"));
+            int sep = Mathf.Max(rs.RFind("/"), rs.RFind("\\"));
 
             if (sep == -1)
                 return directory;
 
             return directory + rs.Substr(0, sep);
+        }
+
+        /// <summary>
+        /// If the string is a path to a file, return the path to the file without the extension.
+        /// </summary>
+        /// <seealso cref="GetExtension(string)"/>
+        /// <seealso cref="GetBaseDir(string)"/>
+        /// <seealso cref="GetFile(string)"/>
+        /// <param name="instance">The path to a file.</param>
+        /// <returns>The path to the file without the extension.</returns>
+        public static string GetBaseName(this string instance)
+        {
+            int index = instance.RFind(".");
+
+            if (index > 0)
+                return instance.Substring(0, index);
+
+            return instance;
         }
 
         /// <summary>
@@ -634,7 +674,7 @@ namespace Godot
         /// <returns>The file name.</returns>
         public static string GetFile(this string instance)
         {
-            int sep = Mathf.Max(instance.FindLast("/"), instance.FindLast("\\"));
+            int sep = Mathf.Max(instance.RFind("/"), instance.RFind("\\"));
 
             if (sep == -1)
                 return instance;
@@ -766,18 +806,44 @@ namespace Godot
         }
 
         /// <summary>
-        /// Inserts a substring at a given position.
+        /// Returns a copy of the string with lines indented with <paramref name="prefix"/>.
+        /// For example, the string can be indented with two tabs using <c>"\t\t"</c>,
+        /// or four spaces using <c>"    "</c>. The prefix can be any string so it can
+        /// also be used to comment out strings with e.g. <c>"// </c>.
+        /// See also <see cref="Dedent"/> to remove indentation.
+        /// Note: Empty lines are kept empty.
         /// </summary>
-        /// <param name="instance">The string to modify.</param>
-        /// <param name="pos">Position at which to insert the substring.</param>
-        /// <param name="what">Substring to insert.</param>
-        /// <returns>
-        /// The string with <paramref name="what"/> inserted at the given
-        /// position <paramref name="pos"/>.
-        /// </returns>
-        public static string Insert(this string instance, int pos, string what)
+        /// <param name="instance">The string to add indentation to.</param>
+        /// <param name="prefix">The string to use as indentation.</param>
+        /// <returns>The string with indentation added.</returns>
+        public static string Indent(this string instance, string prefix)
         {
-            return instance.Insert(pos, what);
+            var sb = new StringBuilder();
+            int lineStart = 0;
+
+            for (int i = 0; i < instance.Length; i++)
+            {
+                char c = instance[i];
+                if (c == '\n')
+                {
+                    if (i == lineStart)
+                    {
+                        sb.Append(c); // Leave empty lines empty.
+                    }
+                    else
+                    {
+                        sb.Append(prefix);
+                        sb.Append(instance.Substring(lineStart, i - lineStart + 1));
+                    }
+                    lineStart = i + 1;
+                }
+            }
+            if (lineStart != instance.Length)
+            {
+                sb.Append(prefix);
+                sb.Append(instance.Substring(lineStart));
+            }
+            return sb.ToString();
         }
 
         /// <summary>
@@ -1003,17 +1069,24 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the length of the string in characters.
+        /// Formats a string to be at least <paramref name="minLength"/> long by
+        /// adding <paramref name="character"/>s to the left of the string.
         /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <returns>The length of the string.</returns>
-        public static int Length(this string instance)
+        /// <param name="instance">String that will be padded.</param>
+        /// <param name="minLength">Minimum length that the resulting string must have.</param>
+        /// <param name="character">Character to add to the left of the string.</param>
+        /// <returns>String padded with the specified character.</returns>
+        public static string LPad(this string instance, int minLength, char character = ' ')
         {
-            return instance.Length;
+            return instance.PadLeft(minLength, character);
         }
 
         /// <summary>
         /// Returns a copy of the string with characters removed from the left.
+        /// The <paramref name="chars"/> argument is a string specifying the set of characters
+        /// to be removed.
+        /// Note: The <paramref name="chars"/> is not a prefix. See <see cref="TrimPrefix"/>
+        /// method that will remove a single prefix string rather than a set of characters.
         /// </summary>
         /// <seealso cref="RStrip(string, string)"/>
         /// <param name="instance">The string to remove characters from.</param>
@@ -1021,23 +1094,7 @@ namespace Godot
         /// <returns>A copy of the string with characters removed from the left.</returns>
         public static string LStrip(this string instance, string chars)
         {
-            int len = instance.Length;
-            int beg;
-
-            for (beg = 0; beg < len; beg++)
-            {
-                if (chars.Find(instance[beg]) == -1)
-                {
-                    break;
-                }
-            }
-
-            if (beg == 0)
-            {
-                return instance;
-            }
-
-            return instance.Substr(beg, len - beg);
+            return instance.TrimStart(chars.ToCharArray());
         }
 
         /// <summary>
@@ -1148,17 +1205,6 @@ namespace Godot
         public static int NocasecmpTo(this string instance, string to)
         {
             return instance.CompareTo(to, caseSensitive: false);
-        }
-
-        /// <summary>
-        /// Returns the character code at position <paramref name="at"/>.
-        /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="at">The position int the string for the character to check.</param>
-        /// <returns>The character code.</returns>
-        public static int OrdAt(this string instance, int at)
-        {
-            return instance[at];
         }
 
         /// <summary>
@@ -1282,34 +1328,47 @@ namespace Godot
         }
 
         /// <summary>
-        /// Perform a search for a substring, but start from the end of the string instead of the beginning.
+        /// Returns the index of the last occurrence of the specified string in this instance,
+        /// or <c>-1</c>. Optionally, the starting search index can be specified, continuing to
+        /// the beginning of the string.
         /// </summary>
+        /// <seealso cref="Find(string, string, int, bool)"/>
+        /// <seealso cref="Find(string, char, int, bool)"/>
+        /// <seealso cref="FindN(string, string, int)"/>
         /// <seealso cref="RFindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to search in the string.</param>
         /// <param name="from">The position at which to start searching.</param>
+        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
         /// <returns>The position at which the substring was found, or -1 if not found.</returns>
-        public static int RFind(this string instance, string what, int from = -1)
+        public static int RFind(this string instance, string what, int from = -1, bool caseSensitive = true)
         {
-            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
-            using godot_string whatStr = Marshaling.ConvertStringToNative(instance);
-            return NativeFuncs.godotsharp_string_rfind(instanceStr, whatStr, from);
+            if (from == -1)
+                from = instance.Length - 1;
+
+            return instance.LastIndexOf(what, from,
+                caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Perform a search for a substring, but start from the end of the string instead of the beginning.
-        /// Also search case-insensitive.
+        /// Returns the index of the last case-insensitive occurrence of the specified string in this instance,
+        /// or <c>-1</c>. Optionally, the starting search index can be specified, continuing to
+        /// the beginning of the string.
         /// </summary>
-        /// <seealso cref="RFind(string, string, int)"/>
+        /// <seealso cref="Find(string, string, int, bool)"/>
+        /// <seealso cref="Find(string, char, int, bool)"/>
+        /// <seealso cref="FindN(string, string, int)"/>
+        /// <seealso cref="RFind(string, string, int, bool)"/>
         /// <param name="instance">The string that will be searched.</param>
         /// <param name="what">The substring to search in the string.</param>
         /// <param name="from">The position at which to start searching.</param>
         /// <returns>The position at which the substring was found, or -1 if not found.</returns>
         public static int RFindN(this string instance, string what, int from = -1)
         {
-            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
-            using godot_string whatStr = Marshaling.ConvertStringToNative(instance);
-            return NativeFuncs.godotsharp_string_rfindn(instanceStr, whatStr, from);
+            if (from == -1)
+                from = instance.Length - 1;
+
+            return instance.LastIndexOf(what, from, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1331,7 +1390,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Formats a string to be at least <paramref name="minLength"/> long by
+        /// adding <paramref name="character"/>s to the right of the string.
+        /// </summary>
+        /// <param name="instance">String that will be padded.</param>
+        /// <param name="minLength">Minimum length that the resulting string must have.</param>
+        /// <param name="character">Character to add to the right of the string.</param>
+        /// <returns>String padded with the specified character.</returns>
+        public static string RPad(this string instance, int minLength, char character = ' ')
+        {
+            return instance.PadRight(minLength, character);
+        }
+
+        /// <summary>
         /// Returns a copy of the string with characters removed from the right.
+        /// The <paramref name="chars"/> argument is a string specifying the set of characters
+        /// to be removed.
+        /// Note: The <paramref name="chars"/> is not a suffix. See <see cref="TrimSuffix"/>
+        /// method that will remove a single suffix string rather than a set of characters.
         /// </summary>
         /// <seealso cref="LStrip(string, string)"/>
         /// <param name="instance">The string to remove characters from.</param>
@@ -1339,16 +1415,8 @@ namespace Godot
         /// <returns>A copy of the string with characters removed from the right.</returns>
         public static string RStrip(this string instance, string chars)
         {
-            int len = instance.Length;
-            int end;
-
-            for (end = len - 1; end >= 0; end--)
-            {
-                if (chars.Find(instance[end]) == -1)
-                {
-                    break;
-                }
-            }
+            return instance.TrimEnd(chars.ToCharArray());
+        }
 
             if (end == len - 1)
             {
@@ -1455,7 +1523,7 @@ namespace Godot
         /// <returns>The array of strings split from the string.</returns>
         public static string[] Split(this string instance, string divisor, bool allowEmpty = true)
         {
-            return instance.Split(new[] { divisor },
+            return instance.Split(divisor,
                 allowEmpty ? StringSplitOptions.None : StringSplitOptions.RemoveEmptyEntries);
         }
 
@@ -1503,8 +1571,10 @@ namespace Godot
         };
 
         /// <summary>
-        /// Returns a copy of the string stripped of any non-printable character at the beginning and the end.
-        /// The optional arguments are used to toggle stripping on the left and right edges respectively.
+        /// Returns a copy of the string stripped of any non-printable character
+        /// (including tabulations, spaces and line breaks) at the beginning and the end.
+        /// The optional arguments are used to toggle stripping on the left and right
+        /// edges respectively.
         /// </summary>
         /// <param name="instance">The string to strip.</param>
         /// <param name="left">If the left side should be stripped.</param>
@@ -1520,6 +1590,30 @@ namespace Godot
             }
 
             return instance.TrimEnd(_nonPrintable);
+        }
+
+
+        /// <summary>
+        /// Returns a copy of the string stripped of any escape character.
+        /// These include all non-printable control characters of the first page
+        /// of the ASCII table (&lt; 32), such as tabulation (<c>\t</c>) and
+        /// newline (<c>\n</c> and <c>\r</c>) characters, but not spaces.
+        /// </summary>
+        /// <param name="instance">The string to strip.</param>
+        /// <returns>The string stripped of any escape characters.</returns>
+        public static string StripEscapes(this string instance)
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < instance.Length; i++)
+            {
+                // Escape characters on first page of the ASCII table, before 32 (Space).
+                if (instance[i] < 32)
+                    continue;
+
+                sb.Append(instance[i]);
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -1573,28 +1667,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the string converted to lowercase.
-        /// </summary>
-        /// <seealso cref="ToUpper(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The string converted to lowercase.</returns>
-        public static string ToLower(this string instance)
-        {
-            return instance.ToLower();
-        }
-
-        /// <summary>
-        /// Returns the string converted to uppercase.
-        /// </summary>
-        /// <seealso cref="ToLower(string)"/>
-        /// <param name="instance">The string to convert.</param>
-        /// <returns>The string converted to uppercase.</returns>
-        public static string ToUpper(this string instance)
-        {
-            return instance.ToUpper();
-        }
-
-        /// <summary>
         /// Converts the String (which is an array of characters) to PackedByteArray (which is an array of bytes).
         /// The conversion is a bit slower than <see cref="ToAscii(string)"/>, but supports all UTF-8 characters.
         /// Therefore, you should prefer this function over <see cref="ToAscii(string)"/>.
@@ -1605,6 +1677,45 @@ namespace Godot
         public static byte[] ToUTF8(this string instance)
         {
             return Encoding.UTF8.GetBytes(instance);
+        }
+
+        /// <summary>
+        /// Removes a given string from the start if it starts with it or leaves the string unchanged.
+        /// </summary>
+        /// <param name="instance">The string to remove the prefix from.</param>
+        /// <param name="prefix">The string to remove from the start.</param>
+        /// <returns>A copy of the string with the prefix string removed from the start.</returns>
+        public static string TrimPrefix(this string instance, string prefix)
+        {
+            if (instance.StartsWith(prefix))
+                return instance.Substring(prefix.Length);
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Removes a given string from the end if it ends with it or leaves the string unchanged.
+        /// </summary>
+        /// <param name="instance">The string to remove the suffix from.</param>
+        /// <param name="suffix">The string to remove from the end.</param>
+        /// <returns>A copy of the string with the suffix string removed from the end.</returns>
+        public static string TrimSuffix(this string instance, string suffix)
+        {
+            if (instance.EndsWith(suffix))
+                return instance.Substring(0, instance.Length - suffix.Length);
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Returns the character code at position <paramref name="at"/>.
+        /// </summary>
+        /// <param name="instance">The string to check.</param>
+        /// <param name="at">The position int the string for the character to check.</param>
+        /// <returns>The character code.</returns>
+        public static int UnicodeAt(this string instance, int at)
+        {
+            return instance[at];
         }
 
         /// <summary>
