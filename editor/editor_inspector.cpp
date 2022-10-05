@@ -2928,17 +2928,20 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		// Get the property label's string.
-		String name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
+		// Get the property label's string if no alias is provided.
+		String name_override = p.alias;
 		String feature_tag;
-		{
-			const int dot = name_override.find(".");
-			if (dot != -1) {
-				feature_tag = name_override.substr(dot);
-				name_override = name_override.substr(0, dot);
+		if (name_override.is_empty()) {
+			name_override = (path.contains("/")) ? path.substr(path.rfind("/") + 1) : path;
+			{
+				const int dot = name_override.find(".");
+				if (dot != -1) {
+					feature_tag = name_override.substr(dot);
+					name_override = name_override.substr(0, dot);
+				}
 			}
 		}
-
+		
 		// Don't localize script variables.
 		EditorPropertyNameProcessor::Style name_style = property_name_style;
 		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
