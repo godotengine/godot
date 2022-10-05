@@ -568,6 +568,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		return mView.getHolder().getSurface();
 	}
 
+	@Keep
+	public GodotView getRenderView() { // used by native side to get renderView
+		return mView;
+	}
+
 	/**
 	 * Used by the native code (java_godot_wrapper.h) to access the input fallback mapping.
 	 * @return The input fallback mapping for the current XR mode.

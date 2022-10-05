@@ -273,17 +273,43 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 	return OK;
 }
 
-void OS_Android::set_mouse_show(bool p_show) {
-	//android has no mouse...
+void OS_Android::set_mouse_mode(MouseMode p_mode) {
+	if (!godot_java->get_godot_view()->can_update_pointer_icon()) {
+		return;
+	}
+	if (mouse_mode == p_mode || p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+		return;
+	}
+
+	if (p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+		godot_java->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
+	} else {
+		set_cursor_shape(cursor_shape);
+	}
+
+	mouse_mode = p_mode;
 }
 
-void OS_Android::set_mouse_grab(bool p_grab) {
-	//it really has no mouse...!
+OS::MouseMode OS_Android::get_mouse_mode() const {
+	return mouse_mode;
 }
 
-bool OS_Android::is_mouse_grab_enabled() const {
-	//*sigh* technology has evolved so much since i was a kid..
-	return false;
+void OS_Android::set_cursor_shape(CursorShape p_shape) {
+	if (!godot_java->get_godot_view()->can_update_pointer_icon()) {
+		return;
+	}
+	if (cursor_shape == p_shape) {
+		return;
+	}
+
+	cursor_shape = p_shape;
+	if (mouse_mode == MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == MouseMode::MOUSE_MODE_CONFINED) {
+		godot_java->get_godot_view()->set_pointer_icon(android_cursors[cursor_shape]);
+	}
+}
+
+OS::CursorShape OS_Android::get_cursor_shape() const {
+	return cursor_shape;
 }
 
 Point2 OS_Android::get_mouse_position() const {
