@@ -1436,13 +1436,6 @@ Rect2 Control::get_screen_rect() const {
 	return r;
 }
 
-Rect2 Control::get_window_rect() const {
-	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
-	Rect2 gr = get_global_rect();
-	gr.position += get_viewport()->get_visible_rect().position;
-	return gr;
-}
-
 Rect2 Control::get_anchorable_rect() const {
 	return Rect2(Point2(), get_size());
 }
