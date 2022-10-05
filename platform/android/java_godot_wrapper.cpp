@@ -78,13 +78,23 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
 	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)V");
+	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
 
 	// get some Activity method pointers...
 	_get_class_loader = p_env->GetMethodID(activity_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
-	// nothing to do here for now
+	if (godot_view) {
+		delete godot_view;
+	}
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+	env->DeleteGlobalRef(godot_instance);
+	env->DeleteGlobalRef(godot_class);
+	env->DeleteGlobalRef(activity);
+	env->DeleteGlobalRef(activity_class);
 }
 
 jobject GodotJavaWrapper::get_activity() {
@@ -115,14 +125,18 @@ jobject GodotJavaWrapper::get_class_loader() {
 }
 
 GodotJavaViewWrapper *GodotJavaWrapper::get_godot_view() {
-	if (_godot_view != nullptr) {
-		return _godot_view;
+	if (godot_view != nullptr) {
+		return godot_view;
 	}
-	JNIEnv *env = get_jni_env();
-	ERR_FAIL_NULL_V(env, nullptr);
-	jmethodID godot_view_getter = env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotRenderView;");
-	_godot_view = new GodotJavaViewWrapper(env->CallObjectMethod(godot_instance, godot_view_getter));
-	return _godot_view;
+	if (_get_render_view) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, nullptr);
+		jobject godot_render_view = env->CallObjectMethod(godot_instance, _get_render_view);
+		if (!env->IsSameObject(godot_render_view, nullptr)) {
+			godot_view = new GodotJavaViewWrapper(godot_render_view);
+		}
+	}
+	return godot_view;
 }
 
 bool GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
