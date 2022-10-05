@@ -44,8 +44,12 @@ import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
+
+import androidx.annotation.Keep;
 
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
@@ -89,6 +93,10 @@ public class GodotView extends GLSurfaceView {
 		this.inputHandler = new GodotInputHandler(this);
 		this.godotRenderer = new GodotRenderer();
 
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
+		}
+
 		init(xrMode, p_translucent);
 	}
 
@@ -116,6 +124,24 @@ public class GodotView extends GLSurfaceView {
 	@Override
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		return inputHandler.onGenericMotionEvent(event) || super.onGenericMotionEvent(event);
+	}
+
+	/**
+	 * Called from JNI to change the pointer icon
+	 */
+	@Keep
+	private void setPointerIcon(int pointerType) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			setPointerIcon(PointerIcon.getSystemIcon(getContext(), pointerType));
+		}
+	}
+
+	@Override
+	public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			return getPointerIcon();
+		}
+		return super.onResolvePointerIcon(event, pointerIndex);
 	}
 
 	private void init(XRMode xrMode, boolean translucent) {
