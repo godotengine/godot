@@ -5377,7 +5377,8 @@ void Node3DEditorViewportContainer::gui_input(const Ref<InputEvent> &p_event) {
 				} break;
 				case VIEW_USE_3_VIEWPORTS:
 				case VIEW_USE_3_VIEWPORTS_ALT:
-				case VIEW_USE_4_VIEWPORTS: {
+				case VIEW_USE_4_VIEWPORTS:
+				case VIEW_HIDE_ALL: {
 					// Do nothing.
 
 				} break;
@@ -5511,6 +5512,8 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 						}
 
 					} break;
+					case VIEW_HIDE_ALL: {
+					} break;
 				}
 			}
 		} break;
@@ -5622,6 +5625,12 @@ void Node3DEditorViewportContainer::_notification(int p_what) {
 					fit_child_in_rect(viewports[3], Rect2(Vector2(mid_w + h_sep / 2, mid_h + v_sep / 2), Vector2(size_right, size_bottom)));
 
 				} break;
+				case VIEW_HIDE_ALL: {
+					// Don't show any, this is used in our VR editor where the 3D environment is handled separately
+					for (int i = 0; i < 4; i++) {
+						viewports[i]->hide();
+					}
+				}
 			}
 		} break;
 	}
@@ -5856,28 +5865,30 @@ Dictionary Node3DEditor::get_state() const {
 
 	d["local_coords"] = tool_option_button[TOOL_OPT_LOCAL_COORDS]->is_pressed();
 
-	int vc = 0;
-	if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT))) {
-		vc = 1;
-	} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS))) {
-		vc = 2;
-	} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS))) {
-		vc = 3;
-	} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS))) {
-		vc = 4;
-	} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT))) {
-		vc = 5;
-	} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT))) {
-		vc = 6;
-	}
+	if (enable_3d_viewports) {
+		int vc = 0;
+		if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT))) {
+			vc = 1;
+		} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS))) {
+			vc = 2;
+		} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS))) {
+			vc = 3;
+		} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS))) {
+			vc = 4;
+		} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT))) {
+			vc = 5;
+		} else if (view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT))) {
+			vc = 6;
+		}
 
-	d["viewport_mode"] = vc;
-	Array vpdata;
-	for (int i = 0; i < 4; i++) {
-		vpdata.push_back(viewports[i]->get_state());
-	}
+		d["viewport_mode"] = vc;
+		Array vpdata;
+		for (int i = 0; i < 4; i++) {
+			vpdata.push_back(viewports[i]->get_state());
+		}
 
-	d["viewports"] = vpdata;
+		d["viewports"] = vpdata;
+	}
 
 	d["show_grid"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID));
 	d["show_origin"] = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN));
@@ -5949,7 +5960,9 @@ void Node3DEditor::set_state(const Dictionary &p_state) {
 		update_transform_gizmo();
 	}
 
-	if (d.has("viewport_mode")) {
+	if (!enable_3d_viewports) {
+		disable_3d_viewports();
+	} else if (d.has("viewport_mode")) {
 		int vc = d["viewport_mode"];
 
 		if (vc == 1) {
@@ -7587,7 +7600,12 @@ void Node3DEditor::_update_theme() {
 void Node3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
+			if (enable_3d_viewports) {
+				_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
+			} else {
+				// reissue this nor that we're ready
+				disable_3d_viewports();
+			}
 
 			_refresh_menu_icons();
 
@@ -8181,6 +8199,28 @@ void Node3DEditor::_sun_direction_angle_set() {
 	sun_rotation.x = Math::deg_to_rad(-sun_angle_altitude->get_value());
 	sun_rotation.y = Math::deg_to_rad(180.0 - sun_angle_azimuth->get_value());
 	_preview_settings_changed();
+}
+
+void Node3DEditor::disable_3d_viewports() {
+	enable_3d_viewports = false;
+
+	if (is_inside_tree()) {
+		viewport_base->set_view(Node3DEditorViewportContainer::VIEW_HIDE_ALL);
+
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false);
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false);
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false);
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false);
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false);
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false);
+
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), true);
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), true);
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), true);
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), true);
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), true);
+		view_menu->get_popup()->set_item_disabled(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), true);
+	}
 }
 
 Node3DEditor::Node3DEditor() {

@@ -528,6 +528,7 @@ public:
 		VIEW_USE_3_VIEWPORTS,
 		VIEW_USE_3_VIEWPORTS_ALT,
 		VIEW_USE_4_VIEWPORTS,
+		VIEW_HIDE_ALL,
 	};
 
 private:
@@ -596,6 +597,7 @@ private:
 
 	ToolMode tool_mode;
 
+	bool enable_3d_viewports = true; // We disable viewports in our VR editor.
 	RID origin;
 	RID origin_instance;
 	bool origin_enabled = false;
@@ -925,6 +927,8 @@ public:
 
 	void edit(Node3D *p_spatial);
 	void clear();
+
+	void disable_3d_viewports();
 
 	Node3DEditor();
 	~Node3DEditor();

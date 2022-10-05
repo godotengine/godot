@@ -47,11 +47,12 @@ class OpenXRInterface : public XRInterface {
 private:
 	OpenXRAPI *openxr_api = nullptr;
 	bool initialized = false;
-	XRInterface::TrackingStatus tracking_state;
+	XRInterface::TrackingStatus tracking_state = XRInterface::XR_UNKNOWN_TRACKING;
 	OpenXRFbPassthroughExtensionWrapper *passthrough_wrapper = nullptr;
 
 	// At a minimum we need a tracker for our head
 	Ref<XRPositionalTracker> head;
+	XRPose::TrackingConfidence head_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
 	Transform3D head_transform;
 	Vector3 head_linear_velocity;
 	Vector3 head_angular_velocity;
@@ -107,7 +108,6 @@ public:
 	virtual PackedStringArray get_suggested_tracker_names() const override;
 	virtual TrackingStatus get_tracking_status() const override;
 
-	bool initialize_on_startup() const;
 	virtual bool is_initialized() const override;
 	virtual bool initialize() override;
 	virtual void uninitialize() override;

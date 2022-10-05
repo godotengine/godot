@@ -48,6 +48,7 @@ protected:
 	StringName pose_name = "default";
 	Ref<XRPositionalTracker> tracker;
 
+	static void _bind_methods();
 	void _bind_tracker();
 	void _unbind_tracker();
 	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
@@ -56,6 +57,8 @@ protected:
 
 public:
 	PackedStringArray get_configuration_warnings() const override;
+
+	XRPose::TrackingConfidence get_tracking_confidence();
 
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const override;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const override;
@@ -108,6 +111,7 @@ public:
 	void trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0);
 
 	Ref<XRPose> get_pose();
+	XRPose::TrackingConfidence get_tracking_confidence();
 
 	PackedStringArray get_configuration_warnings() const override;
 

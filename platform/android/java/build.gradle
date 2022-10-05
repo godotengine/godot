@@ -36,9 +36,10 @@ allprojects {
 
 ext {
     supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
-    supportedFlavors = ["editor", "template"]
+    supportedFlavors = ["editor", "xr_editor", "template"]
     supportedFlavorsBuildTypes = [
         "editor": ["dev", "debug", "release"],
+        "xr_editor": ["dev", "debug", "release"],
         "template": ["dev", "debug", "release"]
     ]
 
@@ -53,6 +54,7 @@ ext {
 def rootDir = "../../.."
 def binDir = "$rootDir/bin/"
 def androidEditorBuildsDir = "$binDir/android_editor_builds/"
+def androidXrEditorBuildsDir = "$binDir/android_xr_editor_builds/"
 
 def getSconsTaskName(String flavor, String buildType, String abi) {
     return "compileGodotNativeLibs" + flavor.capitalize() + buildType.capitalize() + abi.capitalize()
@@ -221,52 +223,106 @@ def isAndroidStudio() {
 }
 
 task copyEditorReleaseApkToBin(type: Copy) {
-    dependsOn ':editor:assembleRelease'
-    from('editor/build/outputs/apk/release')
+    dependsOn ':editor:assemblePancakeGoogleRelease'
+
+    from('editor/build/outputs/apk/pancakeGoogle/release')
     into(androidEditorBuildsDir)
-    include('android_editor-release*.apk')
+    include('android_editor-pancake-google-release*.apk')
+}
+
+task copyXrEditorReleaseApkToBin(type: Copy) {
+    dependsOn ':editor:assembleOpenxrMetaRelease'
+
+    from('editor/build/outputs/apk/openxrMeta/release')
+    into(androidXrEditorBuildsDir)
+    include('android_editor-openxr-meta-release*.apk')
 }
 
 task copyEditorReleaseAabToBin(type: Copy) {
-    dependsOn ':editor:bundleRelease'
-    from('editor/build/outputs/bundle/release')
+    dependsOn ':editor:bundlePancakeGoogleRelease'
+
+    from('editor/build/outputs/bundle/pancakeGoogleRelease')
     into(androidEditorBuildsDir)
-    include('android_editor-release*.aab')
+    include('android_editor-pancake-google-release*.aab')
+}
+
+task copyXrEditorReleaseAabToBin(type: Copy) {
+    dependsOn ':editor:bundleOpenxrMetaRelease'
+
+    from('editor/build/outputs/bundle/openxrMetaRelease')
+    into(androidXrEditorBuildsDir)
+    include('android_editor-openxr-meta-release*.aab')
 }
 
 task copyEditorDebugApkToBin(type: Copy) {
-    dependsOn ':editor:assembleDebug'
-    from('editor/build/outputs/apk/debug')
+    dependsOn ':editor:assemblePancakeGoogleDebug'
+
+    from('editor/build/outputs/apk/pancakeGoogle/debug')
     into(androidEditorBuildsDir)
-    include('android_editor-debug.apk')
+    include('android_editor-pancake-google-debug.apk')
+}
+
+task copyXrEditorDebugApkToBin(type: Copy) {
+    dependsOn ':editor:assembleOpenxrMetaDebug'
+
+    from('editor/build/outputs/apk/openxrMeta/debug')
+    into(androidXrEditorBuildsDir)
+    include('android_editor-openxr-meta-debug.apk')
 }
 
 task copyEditorDebugAabToBin(type: Copy) {
-    dependsOn ':editor:bundleDebug'
-    from('editor/build/outputs/bundle/debug')
+    dependsOn ':editor:bundlePancakeGoogleDebug'
+
+    from('editor/build/outputs/bundle/pancakeGoogleDebug')
     into(androidEditorBuildsDir)
-    include('android_editor-debug.aab')
+    include('android_editor-pancake-google-debug.aab')
+}
+
+task copyXrEditorDebugAabToBin(type: Copy) {
+    dependsOn ':editor:bundleOpenxrMetaDebug'
+
+    from('editor/build/outputs/bundle/openxrMetaDebug')
+    into(androidXrEditorBuildsDir)
+    include('android_editor-openxr-meta-debug.aab')
 }
 
 task copyEditorDevApkToBin(type: Copy) {
-    dependsOn ':editor:assembleDev'
-    from('editor/build/outputs/apk/dev')
+    dependsOn ':editor:assemblePancakeGoogleDev'
+
+    from('editor/build/outputs/apk/pancakeGoogle/dev')
     into(androidEditorBuildsDir)
-    include('android_editor-dev.apk')
+    include('android_editor-pancake-google-dev.apk')
+}
+
+task copyXrEditorDevApkToBin(type: Copy) {
+    dependsOn ':editor:assembleOpenxrMetaDev'
+
+    from('editor/build/outputs/apk/openxrMeta/dev')
+    into(androidXrEditorBuildsDir)
+    include('android_editor-openxr-meta-dev.apk')
 }
 
 task copyEditorDevAabToBin(type: Copy) {
-    dependsOn ':editor:bundleDev'
-    from('editor/build/outputs/bundle/dev')
+    dependsOn ':editor:bundlePancakeGoogleDev'
+
+    from('editor/build/outputs/bundle/pancakeGoogleDev')
     into(androidEditorBuildsDir)
-    include('android_editor-dev.aab')
+    include('android_editor-pancake-google-dev.aab')
+}
+
+task copyXrEditorDevAabToBin(type: Copy) {
+    dependsOn ':editor:bundleOpenxrMetaDev'
+
+    from('editor/build/outputs/bundle/openxrMetaDev')
+    into(androidXrEditorBuildsDir)
+    include('android_editor-openxr-meta-dev.aab')
 }
 
 /**
- * Generate the Godot Editor Android apk.
+ * Generate the Godot Editor Android binaries.
  *
  * Note: The Godot 'tools' shared libraries must have been generated (via scons) prior to running
- * this gradle task. The task will only build the apk(s) for which the shared libraries is
+ * this gradle task. The task will only build the binaries for which the shared libraries is
  * available.
  */
 task generateGodotEditor {
@@ -282,6 +338,32 @@ task generateGodotEditor {
             && targetLibs.listFiles().length > 0) {
             tasks += "copyEditor${target.capitalize()}ApkToBin"
             tasks += "copyEditor${target.capitalize()}AabToBin"
+        }
+    }
+
+    dependsOn = tasks
+}
+
+/**
+ * Generate the Godot XR Editor Android binaries.
+ *
+ * Note: The Godot 'xr_tools' shared libraries must have been generated (via scons) prior to running
+ * this gradle task. The task will only build the binaries for which the shared libraries is
+ * available.
+ */
+task generateGodotXrEditor {
+    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
+
+    def tasks = []
+
+    for (String target : supportedFlavorsBuildTypes["xr_editor"]) {
+        File targetLibs = new File("lib/libs/xr_tools/" + target)
+        if (targetLibs != null
+            && targetLibs.isDirectory()
+            && targetLibs.listFiles() != null
+            && targetLibs.listFiles().length > 0) {
+            tasks += "copyXrEditor${target.capitalize()}ApkToBin"
+            tasks += "copyXrEditor${target.capitalize()}AabToBin"
         }
     }
 
@@ -313,6 +395,7 @@ task generateDevTemplate {
 
 task clean(type: Delete) {
     dependsOn 'cleanGodotEditor'
+    dependsOn 'cleanGodotXrEditor'
     dependsOn 'cleanGodotTemplates'
 }
 
@@ -334,6 +417,26 @@ task cleanGodotEditor(type: Delete) {
 
     // Delete the Godot editor apks & aabs in the Godot bin directory
     delete(androidEditorBuildsDir)
+}
+
+/**
+ * Clean the generated xr editor artifacts.
+ */
+task cleanGodotXrEditor(type: Delete) {
+    // Delete the generated native tools libs
+    delete("lib/libs/xr_tools")
+
+    // Delete the library generated AAR files
+    delete("lib/build/outputs/aar")
+
+    // Delete the generated binary apks
+    delete("editor/build/outputs/apk")
+
+    // Delete the generated aab binaries
+    delete("editor/build/outputs/bundle")
+
+    // Delete the Godot editor apks & aabs in the Godot bin directory
+    delete(androidXrEditorBuildsDir)
 }
 
 /**

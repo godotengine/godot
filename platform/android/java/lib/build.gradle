@@ -45,9 +45,10 @@ android {
         }
     }
 
-    flavorDimensions "products"
+    flavorDimensions = ["products"]
     productFlavors {
         editor {}
+        xr_editor {}
         template {}
     }
 
@@ -83,6 +84,11 @@ android {
         editorRelease.jniLibs.srcDirs = ['libs/tools/release']
         editorDebug.jniLibs.srcDirs = ['libs/tools/debug']
         editorDev.jniLibs.srcDirs = ['libs/tools/dev']
+
+        // Xr Editor jni library
+        xr_editorRelease.jniLibs.srcDirs = ['libs/xr_tools/release']
+        xr_editorDebug.jniLibs.srcDirs = ['libs/xr_tools/debug']
+        xr_editorDev.jniLibs.srcDirs = ['libs/xr_tools/dev']
     }
 
     libraryVariants.all { variant ->
@@ -101,8 +107,12 @@ android {
         boolean productionBuild = !devBuild
         boolean storeRelease = buildType == "release"
 
+        boolean xr_editor_enabled = false
         def sconsTarget = flavorName
-        if (sconsTarget == "template") {
+        if (sconsTarget == "xr_editor") {
+            xr_editor_enabled = true
+            sconsTarget = "editor"
+        } else if (sconsTarget == "template") {
             // Tests are not supported on template builds
             runTests = false
             switch (buildType) {
@@ -113,7 +123,7 @@ android {
                 case "dev":
                 default:
                     sconsTarget += "_debug"
-                    break;
+                    break
             }
         }
 
@@ -164,7 +174,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "store_release=${storeRelease}", "production=${productionBuild}", "dev_mode=${devBuild}", "dev_build=${devBuild}", "tests=${runTests}", "target=${sconsTarget}", "arch=${selectedAbi}", "module_vr_editor_enabled=${xr_editor_enabled}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.

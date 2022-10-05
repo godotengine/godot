@@ -4,14 +4,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-dependencies {
-    implementation libraries.kotlinStdLib
-    implementation libraries.androidxFragment
-    implementation project(":lib")
-
-    implementation "androidx.window:window:1.0.0"
-}
-
 ext {
     // Retrieve the build number from the environment variable; default to 0 if none is specified.
     // The build number is added as a suffix to the version code for upload to the Google Play store.
@@ -130,10 +122,67 @@ android {
         }
     }
 
+    flavorDimensions = ["xrMode", "xrRuntime"]
+    productFlavors {
+        pancake {
+            dimension "xrMode"
+            missingDimensionStrategy 'products', 'editor'
+            buildConfigField('boolean', 'XR_MODE', 'false')
+        }
+        openxr {
+            dimension "xrMode"
+            ndk {
+                //noinspection ChromeOsAbiSupport
+                abiFilters "arm64-v8a"
+            }
+            applicationIdSuffix ".openxr"
+            versionNameSuffix "-openxr"
+            missingDimensionStrategy 'products', 'xr_editor'
+            buildConfigField('boolean', 'XR_MODE', 'true')
+        }
+
+        google {
+            dimension "xrRuntime"
+        }
+        meta {
+            dimension "xrRuntime"
+            applicationIdSuffix ".meta"
+            versionNameSuffix "-meta"
+        }
+    }
+
     packagingOptions {
         // 'doNotStrip' is enabled for development within Android Studio
         if (shouldNotStrip()) {
             doNotStrip '**/*.so'
         }
     }
+
+    variantFilter { variant ->
+        // Disable invalid flavors combinations
+        def names = variant.flavors*.name
+        if (names.contains("pancake")) {
+            if (names.contains("meta")) {
+                setIgnore(true)
+            }
+        }
+        if (names.contains("openxr") && names.contains("google")) {
+            setIgnore(true)
+        }
+    }
+}
+
+configurations {
+    openxrMetaImplementation {}
+}
+
+dependencies {
+    implementation libraries.kotlinStdLib
+    implementation libraries.androidxFragment
+    implementation project(":lib")
+
+    implementation "androidx.window:window:1.0.0"
+
+    // Meta OpenXR dependencies
+    openxrMetaImplementation "org.godotengine:godot-openxr-loaders-meta:1.0.0"
 }

@@ -10,4 +10,12 @@
 	<tutorials>
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
+	<methods>
+		<method name="get_tracking_confidence">
+			<return type="int" enum="XRPose.TrackingConfidence" />
+			<description>
+				Returns the tracking confidence of the camera.
+			</description>
+		</method>
+	</methods>
 </class>

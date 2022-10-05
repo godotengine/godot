@@ -563,16 +563,6 @@ void OpenXRInterface::free_interaction_profiles() {
 	interaction_profiles.clear();
 }
 
-bool OpenXRInterface::initialize_on_startup() const {
-	if (openxr_api == nullptr) {
-		return false;
-	} else if (!openxr_api->is_initialized()) {
-		return false;
-	} else {
-		return true;
-	}
-}
-
 bool OpenXRInterface::is_initialized() const {
 	return initialized;
 };
@@ -581,9 +571,11 @@ bool OpenXRInterface::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, false);
 
-	if (openxr_api == nullptr) {
-		return false;
-	} else if (!openxr_api->is_initialized()) {
+	openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL_V(openxr_api, false);
+	openxr_api->set_xr_interface(this);
+
+	if (!openxr_api->is_initialized()) {
 		return false;
 	} else if (initialized) {
 		return true;
@@ -637,6 +629,11 @@ void OpenXRInterface::uninitialize() {
 	}
 
 	initialized = false;
+
+	if (openxr_api && openxr_api->get_xr_interface() == this) {
+		openxr_api->set_xr_interface(nullptr);
+	}
+	openxr_api = nullptr;
 }
 
 Dictionary OpenXRInterface::get_system_info() {
@@ -842,8 +839,8 @@ void OpenXRInterface::process() {
 			Transform3D t;
 			Vector3 linear_velocity;
 			Vector3 angular_velocity;
-			XRPose::TrackingConfidence confidence = openxr_api->get_head_center(t, linear_velocity, angular_velocity);
-			if (confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
+			head_confidence = openxr_api->get_head_center(t, linear_velocity, angular_velocity);
+			if (head_confidence != XRPose::XR_TRACKING_CONFIDENCE_NONE) {
 				// Only update our transform if we have one to update it with
 				// note that poses are stored without world scale and reference frame applied!
 				head_transform = t;
@@ -868,11 +865,7 @@ void OpenXRInterface::process() {
 	}
 
 	if (head.is_valid()) {
-		// TODO figure out how to get our velocities
-
-		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity);
-
-		// TODO set confidence on pose once we support tracking this..
+		head->set_pose("default", head_transform, head_linear_velocity, head_angular_velocity, head_confidence);
 	}
 }
 
@@ -1139,11 +1132,6 @@ Vector3 OpenXRInterface::get_hand_joint_angular_velocity(Hand p_hand, HandJoints
 }
 
 OpenXRInterface::OpenXRInterface() {
-	openxr_api = OpenXRAPI::get_singleton();
-	if (openxr_api) {
-		openxr_api->set_xr_interface(this);
-	}
-
 	// while we don't have head tracking, don't put the headset on the floor...
 	_set_default_pos(head_transform, 1.0, 0);
 	_set_default_pos(transform_for_view[0], 1.0, 1);
@@ -1155,10 +1143,5 @@ OpenXRInterface::OpenXRInterface() {
 OpenXRInterface::~OpenXRInterface() {
 	if (is_initialized()) {
 		uninitialize();
-	}
-
-	if (openxr_api) {
-		openxr_api->set_xr_interface(nullptr);
-		openxr_api = nullptr;
 	}
 }

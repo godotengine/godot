@@ -28,6 +28,12 @@
 				Returns the [XRPose] containing the current state of the pose being tracked. This gives access to additional properties of this pose.
 			</description>
 		</method>
+		<method name="get_tracking_confidence">
+			<return type="int" enum="XRPose.TrackingConfidence" />
+			<description>
+				Returns the tracking confidence of this node.
+			</description>
+		</method>
 		<method name="trigger_haptic_pulse">
 			<return type="void" />
 			<param index="0" name="action_name" type="String" />

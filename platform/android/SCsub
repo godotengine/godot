@@ -64,7 +64,10 @@ if lib_arch_dir != "":
         lib_type_dir = "release"
 
     if env.editor_build:
-        lib_tools_dir = "tools/"
+        if env["module_vr_editor_enabled"]:
+            lib_tools_dir = "xr_tools/"
+        else:
+            lib_tools_dir = "tools/"
     else:
         lib_tools_dir = ""
 

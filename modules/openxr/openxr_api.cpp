@@ -89,17 +89,14 @@ OpenXRAPI *OpenXRAPI::singleton = nullptr;
 Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
 
 bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
-	// @TODO we need an overrule switch so we can force enable openxr, i.e run "godot --openxr_enabled"
-
-	if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
-		// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
-		return false;
-	} else {
-		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-			return GLOBAL_GET("xr/openxr/enabled");
+	if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
+		if (Engine::get_singleton()->is_editor_hint() && p_check_run_in_editor) {
+			return GLOBAL_GET("xr/openxr/enabled.editor");
 		} else {
-			return XRServer::get_xr_mode() == XRServer::XRMODE_ON;
+			return GLOBAL_GET("xr/openxr/enabled");
 		}
+	} else {
+		return XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 	}
 }
 
@@ -340,7 +337,7 @@ bool OpenXRAPI::create_instance() {
 
 	// Create our OpenXR instance
 	XrApplicationInfo application_info{
-		"", // applicationName, we'll set this down below
+		"Godot Game Engine", // applicationName, if we're running a game we'll update this down below.
 		1, // applicationVersion, we don't currently have this
 		"Godot Game Engine", // engineName
 		VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
@@ -366,7 +363,9 @@ bool OpenXRAPI::create_instance() {
 		extension_ptrs.ptr() // enabledExtensionNames
 	};
 
-	copy_string_to_char_buffer(project_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
+	if (project_name != "") {
+		copy_string_to_char_buffer(project_name, instance_create_info.applicationInfo.applicationName, XR_MAX_APPLICATION_NAME_SIZE);
+	}
 
 	XrResult result = xrCreateInstance(&instance_create_info, &instance);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance.");

@@ -116,6 +116,11 @@
 #include "modules/gdscript/gdscript.h"
 #endif
 
+#ifdef MODULE_VR_EDITOR_ENABLED
+#include "modules/vr_editor/vr_editor.h"
+#include "modules/vr_editor/vr_project_manager.h"
+#endif
+
 /* Static members */
 
 // Singletons
@@ -869,7 +874,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (I->get() == "--audio-driver" ||
 				I->get() == "--display-driver" ||
 				I->get() == "--rendering-method" ||
-				I->get() == "--rendering-driver") {
+				I->get() == "--rendering-driver" ||
+				I->get() == "--xr-mode") {
 			if (I->next()) {
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->get());
 				forwardable_cli_arguments[CLI_SCOPE_TOOL].push_back(I->next()->get());
@@ -1603,7 +1609,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor) {
 		packed_data->set_disabled(true);
 		main_args.push_back("--editor");
-		if (!init_windowed) {
+		if (!init_windowed && XRServer::get_xr_mode() != XRServer::XRMODE_ON) {
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 		}
@@ -3147,8 +3153,14 @@ bool Main::start() {
 		EditorNode *editor_node = nullptr;
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("editor");
-			editor_node = memnew(EditorNode);
-			sml->get_root()->add_child(editor_node);
+
+#ifdef MODULE_VR_EDITOR_ENABLED
+			editor_node = VREditor::init_editor(sml);
+#endif
+			if (!editor_node) {
+				editor_node = memnew(EditorNode);
+				sml->get_root()->add_child(editor_node);
+			}
 
 			if (!_export_preset.is_empty()) {
 				editor_node->export_preset(_export_preset, positional_arg, export_debug, export_pack_only);
@@ -3340,10 +3352,18 @@ bool Main::start() {
 		if (project_manager) {
 			OS::get_singleton()->benchmark_begin_measure("project_manager");
 			Engine::get_singleton()->set_editor_hint(true);
-			ProjectManager *pmanager = memnew(ProjectManager);
-			ProgressDialog *progress_dialog = memnew(ProgressDialog);
-			pmanager->add_child(progress_dialog);
-			sml->get_root()->add_child(pmanager);
+
+			bool has_vr_editor = false;
+#ifdef MODULE_VR_EDITOR_ENABLED
+			has_vr_editor = VRProjectManager::init_project_manager(sml);
+#endif
+
+			if (!has_vr_editor) {
+				ProjectManager *pmanager = memnew(ProjectManager);
+				ProgressDialog *progress_dialog = memnew(ProgressDialog);
+				pmanager->add_child(progress_dialog);
+				sml->get_root()->add_child(pmanager);
+			}
 			DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_PROJECTMAN);
 			OS::get_singleton()->benchmark_end_measure("project_manager");
 		}

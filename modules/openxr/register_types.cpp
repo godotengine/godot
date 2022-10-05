@@ -160,10 +160,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		if (xr_server) {
 			openxr_interface.instantiate();
 			xr_server->add_interface(openxr_interface);
-
-			if (openxr_interface->initialize_on_startup()) {
-				openxr_interface->initialize();
-			}
+			openxr_interface->initialize();
 		}
 
 #ifdef TOOLS_ENABLED

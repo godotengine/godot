@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="org.godotengine.editor">
+
+    <uses-feature
+        android:name="android.hardware.vr.headtracking"
+        android:required="true"
+        android:version="1"/>
+
+    <!-- Oculus Quest hand tracking -->
+    <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+    <uses-feature
+        android:name="oculus.software.handtracking"
+        android:required="false" />
+
+    <!--
+    Passthrough feature flag.
+    -->
+    <uses-feature android:name="com.oculus.feature.PASSTHROUGH"
+        android:required="false" />
+
+    <application>
+
+        <!-- Supported Meta devices -->
+        <meta-data
+            android:name="com.oculus.supportedDevices"
+            android:value="quest|quest2|questpro" />
+
+        <meta-data
+            android:name="org.godotengine.plugin.v1.GodotOpenXRMeta"
+            android:value="org.godotengine.openxrloaders.meta.GodotOpenXRMeta"
+            tools:node="remove" />
+
+        <meta-data android:name="com.oculus.ossplash" android:value="true"/>
+
+    </application>
+
+</manifest>
