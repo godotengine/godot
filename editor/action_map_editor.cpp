@@ -35,6 +35,106 @@
 #include "editor/editor_scale.h"
 #include "scene/gui/separator.h"
 
+bool EventListenerLineEdit::_is_event_allowed(const Ref<InputEvent> &p_event) const {
+	const Ref<InputEventMouseButton> mb = p_event;
+	const Ref<InputEventKey> k = p_event;
+	const Ref<InputEventJoypadButton> jb = p_event;
+	const Ref<InputEventJoypadMotion> jm = p_event;
+
+	return (mb.is_valid() && (allowed_input_types & INPUT_MOUSE_BUTTON)) ||
+			(k.is_valid() && (allowed_input_types & INPUT_KEY)) ||
+			(jb.is_valid() && (allowed_input_types & INPUT_JOY_BUTTON)) ||
+			(jm.is_valid() && (allowed_input_types & INPUT_JOY_MOTION));
+}
+
+void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
+	const Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		LineEdit::gui_input(p_event);
+		return;
+	}
+
+	// Allow mouse button click on the clear button without being treated as an event.
+	const Ref<InputEventMouseButton> b = p_event;
+	if (b.is_valid() && _is_over_clear_button(b->get_position())) {
+		LineEdit::gui_input(p_event);
+		return;
+	}
+
+	// First event will be an event which is used to focus this control - i.e. a mouse click, or a tab press.
+	// Ignore the first one so that clicking into the LineEdit does not override the current event.
+	// Ignore is reset to true when the control is unfocused.
+	if (ignore) {
+		ignore = false;
+		return;
+	}
+
+	accept_event();
+	if (!p_event->is_pressed() || p_event->is_echo() || p_event->is_match(event) || !_is_event_allowed(p_event)) {
+		return;
+	}
+
+	event = p_event;
+	set_text(event->as_text());
+	emit_signal("event_changed", event);
+}
+
+void EventListenerLineEdit::_on_text_changed(const String &p_text) {
+	if (p_text.is_empty()) {
+		clear_event();
+	}
+}
+
+void EventListenerLineEdit::_on_focus() {
+	set_placeholder(TTR("Listening for input..."));
+}
+
+void EventListenerLineEdit::_on_unfocus() {
+	ignore = true;
+	set_placeholder(TTR("Filter by event..."));
+}
+
+Ref<InputEvent> EventListenerLineEdit::get_event() const {
+	return event;
+}
+
+void EventListenerLineEdit::clear_event() {
+	if (event.is_valid()) {
+		event = Ref<InputEvent>();
+		set_text("");
+		emit_signal("event_changed", event);
+	}
+}
+
+void EventListenerLineEdit::set_allowed_input_types(int input_types) {
+	allowed_input_types = input_types;
+}
+
+int EventListenerLineEdit::get_allowed_input_types() const {
+	return allowed_input_types;
+}
+
+void EventListenerLineEdit::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("text_changed", callable_mp(this, &EventListenerLineEdit::_on_text_changed));
+			connect("focus_entered", callable_mp(this, &EventListenerLineEdit::_on_focus));
+			connect("focus_exited", callable_mp(this, &EventListenerLineEdit::_on_unfocus));
+			set_right_icon(get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+			set_clear_button_enabled(true);
+		} break;
+	}
+}
+
+void EventListenerLineEdit::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("event_changed", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+}
+
+EventListenerLineEdit::EventListenerLineEdit() {
+	set_caret_blink_enabled(false);
+	set_placeholder(TTR("Filter by event..."));
+}
+
 /////////////////////////////////////////
 
 // Maps to 2*axis if value is neg, or 2*axis+1 if value is pos.
@@ -97,6 +197,13 @@ String InputEventConfigurationDialog::get_event_text(const Ref<InputEvent> &p_ev
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
 		event = p_event;
+
+		// If the event is changed to something which is not the same as the listener,
+		// clear out the event from the listener text box to avoid confusion.
+		const Ref<InputEvent> listener_event = event_listener->get_event();
+		if (listener_event.is_valid() && !listener_event->is_match(p_event)) {
+			event_listener->clear_event();
+		}
 
 		// Update Label
 		event_as_text->set_text(get_event_text(event, true));
@@ -175,31 +282,8 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 	} else {
 		// Event is not valid, reset dialog
 		event = p_event;
-		Vector<String> strings;
-
-		// Reset message, promp for input according to which input types are allowed.
-		String text = TTR("Perform an Input (%s).");
-
-		if (allowed_input_types & INPUT_KEY) {
-			strings.append(TTR("Key"));
-		}
-
-		if (allowed_input_types & INPUT_JOY_BUTTON) {
-			strings.append(TTR("Joypad Button"));
-		}
-		if (allowed_input_types & INPUT_JOY_MOTION) {
-			strings.append(TTR("Joypad Axis"));
-		}
-		if (allowed_input_types & INPUT_MOUSE_BUTTON) {
-			strings.append(TTR("Mouse Button in area below"));
-		}
-		if (strings.size() == 0) {
-			text = TTR("Input Event dialog has been misconfigured: No input types are allowed.");
-			event_as_text->set_text(text);
-		} else {
-			String insert_text = String(", ").join(strings);
-			event_as_text->set_text(vformat(text, insert_text));
-		}
+		event_listener->clear_event();
+		event_as_text->set_text(TTR("No Event Configured"));
 
 		additional_options_container->hide();
 		input_list_tree->deselect_all();
@@ -207,54 +291,19 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 	}
 }
 
-void InputEventConfigurationDialog::_tab_selected(int p_tab) {
-	Callable signal_method = callable_mp(this, &InputEventConfigurationDialog::_listen_window_input);
-	if (p_tab == 0) {
-		// Start Listening.
-		if (!is_connected("window_input", signal_method)) {
-			connect("window_input", signal_method);
-		}
-	} else {
-		// Stop Listening.
-		if (is_connected("window_input", signal_method)) {
-			disconnect("window_input", signal_method);
-		}
-		input_list_tree->call_deferred(SNAME("ensure_cursor_is_visible"));
-		if (input_list_tree->get_selected() == nullptr) {
-			// If nothing selected, scroll to top.
-			input_list_tree->scroll_to_item(input_list_tree->get_root());
-		}
-	}
-}
-
-void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &p_event) {
-	// Ignore if echo or not pressed
-	if (p_event->is_echo() || !p_event->is_pressed()) {
+void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEvent> &p_event) {
+	// Ignore if invalid, echo or not pressed
+	if (p_event.is_null() || p_event->is_echo() || !p_event->is_pressed()) {
 		return;
-	}
-
-	// Ignore mouse motion
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid()) {
-		return;
-	}
-
-	// Ignore mouse button if not in the detection rect
-	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid()) {
-		Rect2 r = mouse_detection_rect->get_rect();
-		if (!r.has_point(mouse_detection_rect->get_local_mouse_position() + r.get_position())) {
-			return;
-		}
 	}
 
 	// Create an editable reference
 	Ref<InputEvent> received_event = p_event;
-
 	// Check what the type is and if it is allowed.
 	Ref<InputEventKey> k = received_event;
 	Ref<InputEventJoypadButton> joyb = received_event;
 	Ref<InputEventJoypadMotion> joym = received_event;
+	Ref<InputEventMouseButton> mb = received_event;
 
 	int type = 0;
 	if (k.is_valid()) {
@@ -301,7 +350,14 @@ void InputEventConfigurationDialog::_listen_window_input(const Ref<InputEvent> &
 	received_event->set_device(_get_current_device());
 
 	_set_event(received_event);
-	set_input_as_handled();
+}
+
+void InputEventConfigurationDialog::_on_listen_focus_changed() {
+	if (event_listener->has_focus()) {
+		set_close_on_escape(false);
+	} else {
+		set_close_on_escape(true);
+	}
 }
 
 void InputEventConfigurationDialog::_search_term_updated(const String &) {
@@ -478,10 +534,10 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 		return;
 	}
 
-	InputEventConfigurationDialog::InputType input_type = (InputEventConfigurationDialog::InputType)(int)selected->get_parent()->get_meta("__type");
+	InputType input_type = (InputType)(int)selected->get_parent()->get_meta("__type");
 
 	switch (input_type) {
-		case InputEventConfigurationDialog::INPUT_KEY: {
+		case INPUT_KEY: {
 			Key keycode = (Key)(int)selected->get_meta("__keycode");
 			Ref<InputEventKey> k;
 			k.instantiate();
@@ -506,7 +562,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			_set_event(k, false);
 		} break;
-		case InputEventConfigurationDialog::INPUT_MOUSE_BUTTON: {
+		case INPUT_MOUSE_BUTTON: {
 			MouseButton idx = (MouseButton)(int)selected->get_meta("__index");
 			Ref<InputEventMouseButton> mb;
 			mb.instantiate();
@@ -526,7 +582,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			_set_event(mb, false);
 		} break;
-		case InputEventConfigurationDialog::INPUT_JOY_BUTTON: {
+		case INPUT_JOY_BUTTON: {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
 			Ref<InputEventJoypadButton> jb = InputEventJoypadButton::create_reference(idx);
 
@@ -535,7 +591,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 
 			_set_event(jb, false);
 		} break;
-		case InputEventConfigurationDialog::INPUT_JOY_MOTION: {
+		case INPUT_JOY_MOTION: {
 			JoyAxis axis = (JoyAxis)(int)selected->get_meta("__axis");
 			int value = selected->get_meta("__value");
 
@@ -611,10 +667,6 @@ void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p
 		physical_key_checkbox->set_pressed(true);
 
 		autoremap_command_or_control_checkbox->set_pressed(false);
-		_set_current_device(0);
-
-		// Switch to "Listen" tab
-		tab_container->set_current_tab(0);
 
 		// Select "All Devices" by default.
 		device_id_option->select(0);
@@ -632,7 +684,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 }
 
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
-	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION | INPUT_MOUSE_BUTTON;
+	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
 	set_title(TTR("Event Configuration"));
 	set_min_size(Size2i(550 * EDSCALE, 0)); // Min width
@@ -640,31 +692,28 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
 
-	tab_container = memnew(TabContainer);
-	tab_container->set_use_hidden_tabs_for_min_size(true);
-	tab_container->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	tab_container->set_theme_type_variation("TabContainerOdd");
-	tab_container->connect("tab_selected", callable_mp(this, &InputEventConfigurationDialog::_tab_selected));
-	main_vbox->add_child(tab_container);
-
-	// Listen to input tab
-	VBoxContainer *vb = memnew(VBoxContainer);
-	vb->set_name(TTR("Listen for Input"));
 	event_as_text = memnew(Label);
+	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	vb->add_child(event_as_text);
-	// Mouse button detection rect (Mouse button event outside this rect will be ignored)
-	mouse_detection_rect = memnew(Panel);
-	mouse_detection_rect->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	vb->add_child(mouse_detection_rect);
-	tab_container->add_child(vb);
+	event_as_text->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+	event_as_text->add_theme_font_size_override("font_size", 18 * EDSCALE);
+	main_vbox->add_child(event_as_text);
+
+	event_listener = memnew(EventListenerLineEdit);
+	event_listener->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	event_listener->set_stretch_ratio(0.75);
+	event_listener->connect("event_changed", callable_mp(this, &InputEventConfigurationDialog::_on_listen_input_changed));
+	event_listener->connect("focus_entered", callable_mp(this, &InputEventConfigurationDialog::_on_listen_focus_changed));
+	event_listener->connect("focus_exited", callable_mp(this, &InputEventConfigurationDialog::_on_listen_focus_changed));
+	main_vbox->add_child(event_listener);
+
+	main_vbox->add_child(memnew(HSeparator));
 
 	// List of all input options to manually select from.
-
 	VBoxContainer *manual_vbox = memnew(VBoxContainer);
 	manual_vbox->set_name(TTR("Manual Selection"));
 	manual_vbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	tab_container->add_child(manual_vbox);
+	main_vbox->add_child(manual_vbox);
 
 	input_list_search = memnew(LineEdit);
 	input_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -747,9 +796,6 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	additional_options_container->add_child(physical_key_checkbox);
 
 	main_vbox->add_child(additional_options_container);
-
-	// Default to first tab
-	tab_container->set_current_tab(0);
 }
 
 /////////////////////////////////////////
@@ -944,6 +990,12 @@ void ActionMapEditor::_search_term_updated(const String &) {
 	update_action_list();
 }
 
+void ActionMapEditor::_search_by_event(const Ref<InputEvent> &p_event) {
+	if (p_event.is_null() || (p_event->is_pressed() && !p_event->is_echo())) {
+		update_action_list();
+	}
+}
+
 Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	TreeItem *selected = action_tree->get_selected();
 	if (!selected) {
@@ -1084,6 +1136,22 @@ InputEventConfigurationDialog *ActionMapEditor::get_configuration_dialog() {
 	return event_config_dialog;
 }
 
+bool ActionMapEditor::_should_display_action(const String &p_name, const Array &p_events) const {
+	const Ref<InputEvent> search_ev = action_list_search_by_event->get_event();
+	bool event_match = true;
+	if (search_ev.is_valid()) {
+		event_match = false;
+		for (int i = 0; i < p_events.size(); ++i) {
+			const Ref<InputEvent> ev = p_events[i];
+			if (ev.is_valid() && ev->is_match(search_ev, true)) {
+				event_match = true;
+			}
+		}
+	}
+
+	return event_match && action_list_search->get_text().is_subsequence_ofn(p_name);
+}
+
 void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_infos) {
 	if (!p_action_infos.is_empty()) {
 		actions_cache = p_action_infos;
@@ -1101,8 +1169,8 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			uneditable_count++;
 		}
 
-		String search_term = action_list_search->get_text();
-		if (!search_term.is_empty() && action_info.name.findn(search_term) == -1) {
+		const Array events = action_info.action["events"];
+		if (!_should_display_action(action_info.name, events)) {
 			continue;
 		}
 
@@ -1110,7 +1178,6 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			continue;
 		}
 
-		const Array events = action_info.action["events"];
 		const Variant deadzone = action_info.action["deadzone"];
 
 		// Update Tree...
@@ -1206,16 +1273,22 @@ ActionMapEditor::ActionMapEditor() {
 
 	action_list_search = memnew(LineEdit);
 	action_list_search->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	action_list_search->set_placeholder(TTR("Filter Actions"));
+	action_list_search->set_placeholder(TTR("Filter by name..."));
 	action_list_search->set_clear_button_enabled(true);
 	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
 	top_hbox->add_child(action_list_search);
 
-	show_builtin_actions_checkbutton = memnew(CheckButton);
-	show_builtin_actions_checkbutton->set_pressed(false);
-	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
-	top_hbox->add_child(show_builtin_actions_checkbutton);
+	action_list_search_by_event = memnew(EventListenerLineEdit);
+	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	action_list_search_by_event->set_stretch_ratio(0.75);
+	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
+	top_hbox->add_child(action_list_search_by_event);
+
+	Button *clear_all_search = memnew(Button);
+	clear_all_search->set_text(TTR("Clear All"));
+	clear_all_search->connect("pressed", callable_mp(action_list_search_by_event, &EventListenerLineEdit::clear_event));
+	clear_all_search->connect("pressed", callable_mp(action_list_search, &LineEdit::clear));
+	top_hbox->add_child(clear_all_search);
 
 	// Adding Action line edit + button
 	add_hbox = memnew(HBoxContainer);
@@ -1235,6 +1308,12 @@ ActionMapEditor::ActionMapEditor() {
 	add_hbox->add_child(add_button);
 	// Disable the button and set its tooltip.
 	_add_edit_text_changed(add_edit->get_text());
+
+	show_builtin_actions_checkbutton = memnew(CheckButton);
+	show_builtin_actions_checkbutton->set_pressed(false);
+	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
+	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	add_hbox->add_child(show_builtin_actions_checkbutton);
 
 	main_vbox->add_child(add_hbox);
 

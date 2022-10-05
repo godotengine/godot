@@ -40,19 +40,48 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 
+enum InputType {
+	INPUT_KEY = 1,
+	INPUT_MOUSE_BUTTON = 2,
+	INPUT_JOY_BUTTON = 4,
+	INPUT_JOY_MOTION = 8
+};
+
+class EventListenerLineEdit : public LineEdit {
+	GDCLASS(EventListenerLineEdit, LineEdit)
+
+	int allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
+	bool ignore = true;
+	bool share_keycodes = false;
+	Ref<InputEvent> event;
+
+	bool _is_event_allowed(const Ref<InputEvent> &p_event) const;
+
+	void gui_input(const Ref<InputEvent> &p_event) override;
+	void _on_text_changed(const String &p_text);
+
+	void _on_focus();
+	void _on_unfocus();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	Ref<InputEvent> get_event() const;
+	void clear_event();
+
+	void set_allowed_input_types(int input_types);
+	int get_allowed_input_types() const;
+
+public:
+	EventListenerLineEdit();
+};
+
 // Confirmation Dialog used when configuring an input event.
 // Separate from ActionMapEditor for code cleanliness and separation of responsibilities.
 class InputEventConfigurationDialog : public ConfirmationDialog {
-	GDCLASS(InputEventConfigurationDialog, ConfirmationDialog);
-
-public:
-	enum InputType {
-		INPUT_KEY = 1,
-		INPUT_MOUSE_BUTTON = 2,
-		INPUT_JOY_BUTTON = 4,
-		INPUT_JOY_MOTION = 8
-	};
-
+	GDCLASS(InputEventConfigurationDialog, ConfirmationDialog)
 private:
 	struct IconCache {
 		Ref<Texture2D> keyboard;
@@ -63,11 +92,9 @@ private:
 
 	Ref<InputEvent> event = Ref<InputEvent>();
 
-	TabContainer *tab_container = nullptr;
-
 	// Listening for input
+	EventListenerLineEdit *event_listener = nullptr;
 	Label *event_as_text = nullptr;
-	Panel *mouse_detection_rect = nullptr;
 
 	// List of All Key/Mouse/Joypad input options.
 	int allowed_input_types;
@@ -104,9 +131,8 @@ private:
 	CheckBox *physical_key_checkbox = nullptr;
 
 	void _set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection = true);
-
-	void _tab_selected(int p_tab);
-	void _listen_window_input(const Ref<InputEvent> &p_event);
+	void _on_listen_input_changed(const Ref<InputEvent> &p_event);
+	void _on_listen_focus_changed();
 
 	void _search_term_updated(const String &p_term);
 	void _update_input_list();
@@ -174,6 +200,7 @@ private:
 	bool show_builtin_actions = false;
 	CheckButton *show_builtin_actions_checkbutton = nullptr;
 	LineEdit *action_list_search = nullptr;
+	EventListenerLineEdit *action_list_search_by_event = nullptr;
 
 	HBoxContainer *add_hbox = nullptr;
 	LineEdit *add_edit = nullptr;
@@ -191,6 +218,8 @@ private:
 	void _tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _tree_item_activated();
 	void _search_term_updated(const String &p_search_term);
+	void _search_by_event(const Ref<InputEvent> &p_event);
+	bool _should_display_action(const String &p_name, const Array &p_events) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

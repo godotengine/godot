@@ -63,13 +63,13 @@ void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
 	Ref<InputEventJoypadMotion> jm = p_event;
 
 	if (k.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_KEY);
+		config_dialog->set_allowed_input_types(INPUT_KEY);
 	} else if (m.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_MOUSE_BUTTON);
+		config_dialog->set_allowed_input_types(INPUT_MOUSE_BUTTON);
 	} else if (jb.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_JOY_BUTTON);
+		config_dialog->set_allowed_input_types(INPUT_JOY_BUTTON);
 	} else if (jm.is_valid()) {
-		config_dialog->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_JOY_MOTION);
+		config_dialog->set_allowed_input_types(INPUT_JOY_MOTION);
 	}
 
 	input_event = p_event;
