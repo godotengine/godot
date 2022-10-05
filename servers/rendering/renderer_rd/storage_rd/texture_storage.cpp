@@ -30,6 +30,7 @@
 
 #include "texture_storage.h"
 #include "../effects/copy_effects.h"
+#include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 
@@ -2359,10 +2360,26 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 
 /* RENDER TARGET API */
 
+RID TextureStorage::RenderTarget::get_framebuffer() {
+	// Note that if we're using an overridden color buffer, we're likely cycling through a texture chain.
+	// this is where our framebuffer cache comes in clutch..
+
+	if (msaa != RS::VIEWPORT_MSAA_DISABLED) {
+		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, color_multisample, overridden.color.is_valid() ? overridden.color : color);
+	} else {
+		return FramebufferCacheRD::get_singleton()->get_cache_multiview(view_count, overridden.color.is_valid() ? overridden.color : color);
+	}
+}
+
 void TextureStorage::_clear_render_target(RenderTarget *rt) {
-	//free in reverse dependency order
-	if (rt->framebuffer.is_valid()) {
-		RD::get_singleton()->free(rt->framebuffer);
+	// clear overrides, we assume these are freed by the object that created them
+	rt->overridden.color = RID();
+	rt->overridden.depth = RID();
+	rt->overridden.velocity = RID();
+	rt->overridden.cached_slices.clear(); // these are automatically freed when their parent textures are freed so just clear
+
+	// free in reverse dependency order
+	if (rt->framebuffer_uniform_set.is_valid()) {
 		rt->framebuffer_uniform_set = RID(); //chain deleted
 	}
 
@@ -2384,7 +2401,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 	_render_target_clear_sdf(rt);
 
-	rt->framebuffer = RID();
 	rt->color = RID();
 	rt->color_multisample = RID();
 }
@@ -2432,10 +2448,9 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		}
 	}
 
+	// TODO see if we can lazy create this once we actually use it as we may not need to create this if we have an overridden color buffer...
 	rt->color = RD::get_singleton()->texture_create(rd_color_attachment_format, rd_view);
 	ERR_FAIL_COND(rt->color.is_null());
-
-	Vector<RID> fb_textures;
 
 	if (rt->msaa != RS::VIEWPORT_MSAA_DISABLED) {
 		// Use the texture format of the color attachment for the multisample color attachment.
@@ -2450,14 +2465,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
-		fb_textures.push_back(rt->color_multisample);
 		ERR_FAIL_COND(rt->color_multisample.is_null());
-	}
-	fb_textures.push_back(rt->color);
-	rt->framebuffer = RD::get_singleton()->framebuffer_create(fb_textures, RenderingDevice::INVALID_ID, rt->view_count);
-	if (rt->framebuffer.is_null()) {
-		_clear_render_target(rt);
-		ERR_FAIL_COND(rt->framebuffer.is_null());
 	}
 
 	{ //update texture
@@ -2568,6 +2576,11 @@ void TextureStorage::render_target_set_position(RID p_render_target, int p_x, in
 	//unused for this render target
 }
 
+Point2i TextureStorage::render_target_get_position(RID p_render_target) const {
+	//unused for this render target
+	return Point2i();
+}
+
 void TextureStorage::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -2579,6 +2592,13 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 	}
 }
 
+Size2i TextureStorage::render_target_get_size(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, Size2i());
+
+	return rt->size;
+}
+
 RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
@@ -2586,7 +2606,84 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
-void TextureStorage::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
+void TextureStorage::render_target_set_override_color(RID p_render_target, RID p_texture) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->overridden.color = p_texture;
+}
+
+RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->overridden.color;
+}
+
+void TextureStorage::render_target_set_override_depth(RID p_render_target, RID p_texture) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->overridden.depth = p_texture;
+}
+
+RID TextureStorage::render_target_get_override_depth(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->overridden.depth;
+}
+
+RID TextureStorage::render_target_get_override_depth_slice(RID p_render_target, const uint32_t p_layer) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (rt->overridden.depth.is_null()) {
+		return RID();
+	} else if (rt->view_count == 1) {
+		return rt->overridden.depth;
+	} else {
+		RenderTarget::RTOverridden::SliceKey key(rt->overridden.depth, p_layer);
+
+		if (!rt->overridden.cached_slices.has(key)) {
+			rt->overridden.cached_slices[key] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->overridden.depth, p_layer, 0);
+		}
+
+		return rt->overridden.cached_slices[key];
+	}
+}
+
+void TextureStorage::render_target_set_override_velocity(RID p_render_target, RID p_texture) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->overridden.velocity = p_texture;
+}
+
+RID TextureStorage::render_target_get_override_velocity(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->overridden.velocity;
+}
+
+RID TextureStorage::render_target_get_override_velocity_slice(RID p_render_target, const uint32_t p_layer) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (rt->overridden.velocity.is_null()) {
+		return RID();
+	} else if (rt->view_count == 1) {
+		return rt->overridden.velocity;
+	} else {
+		RenderTarget::RTOverridden::SliceKey key(rt->overridden.velocity, p_layer);
+
+		if (!rt->overridden.cached_slices.has(key)) {
+			rt->overridden.cached_slices[key] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->overridden.velocity, p_layer, 0);
+		}
+
+		return rt->overridden.cached_slices[key];
+	}
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_is_transparent) {
@@ -2596,10 +2693,21 @@ void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_i
 	_update_render_target(rt);
 }
 
+bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->is_transparent;
+}
+
 void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_value) {
 }
 
-bool TextureStorage::render_target_was_used(RID p_render_target) {
+bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {
+	return false;
+}
+
+bool TextureStorage::render_target_was_used(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, false);
 	return rt->was_used;
@@ -2622,25 +2730,29 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 	_update_render_target(rt);
 }
 
-Size2 TextureStorage::render_target_get_size(RID p_render_target) {
+RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Size2());
+	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_MSAA_DISABLED);
 
-	return rt->size;
+	return rt->msaa;
 }
 
 RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	return rt->framebuffer;
+	return rt->get_framebuffer();
 }
 
 RID TextureStorage::render_target_get_rd_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	return rt->color;
+	if (rt->overridden.color.is_valid()) {
+		return rt->overridden.color;
+	} else {
+		return rt->color;
+	}
 }
 
 RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer) {
@@ -2711,7 +2823,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	}
 	Vector<Color> clear_colors;
 	clear_colors.push_back(rt->clear_color);
-	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
+	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
 	RD::get_singleton()->draw_list_end();
 	rt->clear_requested = false;
 }
@@ -3140,18 +3252,18 @@ void TextureStorage::render_target_set_vrs_mode(RID p_render_target, RS::Viewpor
 	rt->vrs_mode = p_mode;
 }
 
-void TextureStorage::render_target_set_vrs_texture(RID p_render_target, RID p_texture) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	rt->vrs_texture = p_texture;
-}
-
 RS::ViewportVRSMode TextureStorage::render_target_get_vrs_mode(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_VRS_DISABLED);
 
 	return rt->vrs_mode;
+}
+
+void TextureStorage::render_target_set_vrs_texture(RID p_render_target, RID p_texture) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->vrs_texture = p_texture;
 }
 
 RID TextureStorage::render_target_get_vrs_texture(RID p_render_target) const {

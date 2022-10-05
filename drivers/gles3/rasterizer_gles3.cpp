@@ -280,11 +280,7 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (rt->external.fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
-	} else {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
-	}
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	// Flip content upside down to correct for coordinates.

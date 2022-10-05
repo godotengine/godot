@@ -664,9 +664,9 @@ void RendererViewport::draw_viewports() {
 
 		RSG::texture_storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
-			// check for an external texture destination (disabled for now, not yet supported)
-			// RSG::texture_storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
-			RSG::texture_storage->render_target_set_external_texture(vp->render_target, 0);
+			RSG::texture_storage->render_target_set_override_color(vp->render_target, xr_interface->get_color_texture());
+			RSG::texture_storage->render_target_set_override_depth(vp->render_target, xr_interface->get_depth_texture());
+			RSG::texture_storage->render_target_set_override_velocity(vp->render_target, xr_interface->get_velocity_texture());
 
 			// render...
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
@@ -695,7 +695,9 @@ void RendererViewport::draw_viewports() {
 				}
 			}
 		} else {
-			RSG::texture_storage->render_target_set_external_texture(vp->render_target, 0);
+			RSG::texture_storage->render_target_set_override_color(vp->render_target, RID()); // TODO if fullscreen output, we can set this to our texture chain
+			RSG::texture_storage->render_target_set_override_depth(vp->render_target, RID());
+			RSG::texture_storage->render_target_set_override_velocity(vp->render_target, RID());
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 

@@ -178,7 +178,7 @@ void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_interna
 
 	// Create our depth buffer
 	{
-		// TODO If we have depth buffer supplied externally, pick this up
+		// TODO Lazy create this in case we've got an external depth buffer
 
 		RD::DataFormat format;
 		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
@@ -490,6 +490,28 @@ Ref<RenderBufferCustomDataRD> RenderSceneBuffersRD::get_custom_data(const String
 	return ret;
 }
 
+// Depth texture
+
+RID RenderSceneBuffersRD::get_depth_texture() {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RID depth = texture_storage->render_target_get_override_depth(render_target);
+	if (depth.is_valid()) {
+		return depth;
+	} else {
+		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_DEPTH);
+	}
+}
+
+RID RenderSceneBuffersRD::get_depth_texture(const uint32_t p_layer) {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RID depth_slice = texture_storage->render_target_get_override_depth_slice(render_target, p_layer);
+	if (depth_slice.is_valid()) {
+		return depth_slice;
+	} else {
+		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_DEPTH, p_layer, 0);
+	}
+}
+
 // Velocity texture.
 
 void RenderSceneBuffersRD::ensure_velocity() {
@@ -516,6 +538,20 @@ void RenderSceneBuffersRD::ensure_velocity() {
 	}
 }
 
+bool RenderSceneBuffersRD::has_velocity_buffer(bool p_has_msaa) {
+	if (p_has_msaa) {
+		return has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA);
+	} else {
+		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+		RID velocity = texture_storage->render_target_get_override_velocity(render_target);
+		if (velocity.is_valid()) {
+			return true;
+		} else {
+			return has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY);
+		}
+	}
+}
+
 RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa) {
 	if (p_get_msaa) {
 		if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA)) {
@@ -524,10 +560,28 @@ RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa) {
 			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA);
 		}
 	} else {
-		if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY)) {
+		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+		RID velocity = texture_storage->render_target_get_override_velocity(render_target);
+		if (velocity.is_valid()) {
+			return velocity;
+		} else if (!has_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY)) {
 			return RID();
 		} else {
 			return get_texture(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY);
+		}
+	}
+}
+
+RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa, uint32_t p_layer) {
+	if (p_get_msaa) {
+		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY_MSAA, p_layer, 0);
+	} else {
+		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+		RID velocity_slice = texture_storage->render_target_get_override_velocity_slice(render_target, p_layer);
+		if (velocity_slice.is_valid()) {
+			return velocity_slice;
+		} else {
+			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, p_layer, 0);
 		}
 	}
 }

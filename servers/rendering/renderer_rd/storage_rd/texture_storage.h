@@ -301,7 +301,6 @@ private:
 	struct RenderTarget {
 		Size2i size;
 		uint32_t view_count;
-		RID framebuffer;
 		RID color;
 		Vector<RID> color_slices;
 		RID color_multisample; // Needed when MSAA is enabled.
@@ -339,6 +338,43 @@ private:
 		RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
 		RID vrs_texture;
 
+		// overridden textures
+		struct RTOverridden {
+			RID color;
+			RID depth;
+			RID velocity;
+
+			// In a multiview scenario, which is the most likely where we
+			// override our destination textures, we need to obtain slices
+			// for each layer of these textures.
+			// These are likely changing every frame as we loop through
+			// texture chains hence we add a cache to manage these slices.
+			// For this we define a key using the RID of the texture and
+			// the layer for which we create a slice.
+			struct SliceKey {
+				RID rid;
+				uint32_t layer = 0;
+
+				bool operator==(const SliceKey &p_val) const {
+					return (rid == p_val.rid) && (layer == p_val.layer);
+				}
+
+				static uint32_t hash(const SliceKey &p_val) {
+					uint32_t h = hash_one_uint64(p_val.rid.get_id());
+					h = hash_murmur3_one_32(p_val.layer, h);
+					return hash_fmix32(h);
+				}
+
+				SliceKey() {}
+				SliceKey(RID p_rid, uint32_t p_layer) {
+					rid = p_rid;
+					layer = p_layer;
+				}
+			};
+
+			mutable HashMap<SliceKey, RID, SliceKey> cached_slices;
+		} overridden;
+
 		//texture generated for this owner (nor RD).
 		RID texture;
 		bool was_used;
@@ -346,6 +382,8 @@ private:
 		//clear request
 		bool clear_requested;
 		Color clear_color;
+
+		RID get_framebuffer();
 	};
 
 	mutable RID_Owner<RenderTarget> render_target_owner;
@@ -644,14 +682,17 @@ public:
 	virtual void render_target_free(RID p_rid) override;
 
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
+	virtual Point2i render_target_get_position(RID p_render_target) const override;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
-	virtual RID render_target_get_texture(RID p_render_target) override;
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
+	virtual Size2i render_target_get_size(RID p_render_target) const override;
 	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override;
+	virtual bool render_target_get_transparent(RID p_render_target) const override;
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
-	virtual bool render_target_was_used(RID p_render_target) override;
+	virtual bool render_target_get_direct_to_screen(RID p_render_target) const override;
+	virtual bool render_target_was_used(RID p_render_target) const override;
 	virtual void render_target_set_as_unused(RID p_render_target) override;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
+	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
@@ -673,12 +714,21 @@ public:
 	bool render_target_is_sdf_enabled(RID p_render_target) const;
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override;
+	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override;
+	virtual RID render_target_get_vrs_texture(RID p_render_target) const override;
 
-	RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const;
-	RID render_target_get_vrs_texture(RID p_render_target) const;
+	virtual void render_target_set_override_color(RID p_render_target, RID p_texture) override;
+	virtual RID render_target_get_override_color(RID p_render_target) const override;
+	virtual void render_target_set_override_depth(RID p_render_target, RID p_texture) override;
+	virtual RID render_target_get_override_depth(RID p_render_target) const override;
+	RID render_target_get_override_depth_slice(RID p_render_target, const uint32_t p_layer) const;
+	virtual void render_target_set_override_velocity(RID p_render_target, RID p_texture) override;
+	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
+	RID render_target_get_override_velocity_slice(RID p_render_target, const uint32_t p_layer) const;
 
-	Size2 render_target_get_size(RID p_render_target);
+	virtual RID render_target_get_texture(RID p_render_target) override;
+
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 	RID render_target_get_rd_texture(RID p_render_target);
 	RID render_target_get_rd_texture_slice(RID p_render_target, uint32_t p_layer);
