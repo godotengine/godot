@@ -1067,30 +1067,6 @@ void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
 
-void godotsharp_string_md5_buffer(const String *p_self, PackedByteArray *r_md5_buffer) {
-	memnew_placement(r_md5_buffer, PackedByteArray(p_self->md5_buffer()));
-}
-
-void godotsharp_string_md5_text(const String *p_self, String *r_md5_text) {
-	memnew_placement(r_md5_text, String(p_self->md5_text()));
-}
-
-int32_t godotsharp_string_rfind(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfind(*p_what, p_from);
-}
-
-int32_t godotsharp_string_rfindn(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfindn(*p_what, p_from);
-}
-
-void godotsharp_string_sha256_buffer(const String *p_self, PackedByteArray *r_sha256_buffer) {
-	memnew_placement(r_sha256_buffer, PackedByteArray(p_self->sha256_buffer()));
-}
-
-void godotsharp_string_sha256_text(const String *p_self, String *r_sha256_text) {
-	memnew_placement(r_sha256_text, String(p_self->sha256_text()));
-}
-
 void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_path) {
 	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
 }
@@ -1473,12 +1449,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_duplicate,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_to_string,
-	(void *)godotsharp_string_md5_buffer,
-	(void *)godotsharp_string_md5_text,
-	(void *)godotsharp_string_rfind,
-	(void *)godotsharp_string_rfindn,
-	(void *)godotsharp_string_sha256_buffer,
-	(void *)godotsharp_string_sha256_text,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
 	(void *)godotsharp_string_to_pascal_case,
