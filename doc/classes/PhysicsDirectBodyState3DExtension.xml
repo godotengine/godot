@@ -159,6 +159,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_inverse_inertia_tensor" qualifiers="virtual const">
+			<return type="Basis" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_inverse_mass" qualifiers="virtual const">
 			<return type="float" />
 			<description>
