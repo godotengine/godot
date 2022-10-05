@@ -360,18 +360,6 @@ private:
 
 	int _get_char_pos_for_line(int p_px, int p_line, int p_wrap_index = 0) const;
 
-	/* Caret. */
-	struct Caret {
-		Point2 draw_pos;
-		bool visible = false;
-		int last_fit_x = 0;
-		int line = 0;
-		int column = 0;
-		int x_ofs = 0;
-		int line_ofs = 0;
-		int wrap_ofs = 0;
-	} caret;
-
 	bool setting_caret_line = false;
 	bool caret_pos_dirty = false;
 
@@ -577,6 +565,18 @@ private:
 	void _move_caret_document_end(bool p_select);
 
 protected:
+	/* Caret. */
+	struct Caret {
+		Point2 draw_pos;
+		bool visible = false;
+		int last_fit_x = 0;
+		int line = 0;
+		int column = 0;
+		int x_ofs = 0;
+		int line_ofs = 0;
+		int wrap_ofs = 0;
+	} caret;
+
 	void _notification(int p_what);
 
 	static void _bind_methods();

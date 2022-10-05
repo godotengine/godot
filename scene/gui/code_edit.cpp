@@ -1536,7 +1536,9 @@ void CodeEdit::fold_line(int p_line) {
 	/* Reset caret. */
 	if (_is_line_hidden(get_caret_line())) {
 		set_caret_line(p_line, false, false);
-		set_caret_column(get_line(p_line).length(), false);
+		if (caret.last_fit_x != INT_MAX) {
+			set_caret_column(get_line(p_line).length(), false);
+		}
 	}
 	queue_redraw();
 }

@@ -2393,6 +2393,8 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 		set_caret_column(row_end_col);
 	}
 
+	caret.last_fit_x = INT_MAX;
+
 	if (p_select) {
 		_post_shift_selection();
 	}
