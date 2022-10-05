@@ -2043,6 +2043,13 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 }
 
 void TileSetAtlasSourceEditor::_tile_set_changed() {
+	if (tile_set->get_source_count() == 0) {
+		// No sources, so nothing to do here anymore.
+		tile_set->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set = Ref<TileSet>();
+		return;
+	}
+
 	tile_set_changed_needs_update = true;
 }
 
