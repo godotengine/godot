@@ -33,6 +33,7 @@
 
 #include "nav_rid.h"
 #include "nav_utils.h"
+#include "servers/navigation/navigation_utilities.h"
 
 class NavMap;
 
@@ -42,8 +43,11 @@ protected:
 	float enter_cost = 0.0;
 	float travel_cost = 1.0;
 	ObjectID owner_id;
+	NavigationUtilities::PathSegmentType type;
 
 public:
+	NavigationUtilities::PathSegmentType get_type() const { return type; }
+
 	void set_navigation_layers(uint32_t p_navigation_layers) { navigation_layers = p_navigation_layers; }
 	uint32_t get_navigation_layers() const { return navigation_layers; }
 

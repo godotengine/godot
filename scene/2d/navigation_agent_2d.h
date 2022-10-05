@@ -32,10 +32,10 @@
 #define NAVIGATION_AGENT_2D_H
 
 #include "scene/main/node.h"
+#include "servers/navigation/navigation_path_query_parameters_2d.h"
+#include "servers/navigation/navigation_path_query_result_2d.h"
 
 class Node2D;
-class NavigationPathQueryParameters2D;
-class NavigationPathQueryResult2D;
 
 class NavigationAgent2D : public Node {
 	GDCLASS(NavigationAgent2D, Node);
@@ -48,6 +48,7 @@ class NavigationAgent2D : public Node {
 
 	bool avoidance_enabled = false;
 	uint32_t navigation_layers = 1;
+	BitField<NavigationPathQueryParameters2D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
@@ -95,6 +96,11 @@ public:
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
 
+	void set_path_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_flags);
+	BitField<NavigationPathQueryParameters2D::PathMetadataFlags> get_path_metadata_flags() const {
+		return path_metadata_flags;
+	}
+
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
 
@@ -141,8 +147,12 @@ public:
 
 	Vector2 get_next_location();
 
-	const Vector<Vector2> &get_current_navigation_path() const;
-
+	Ref<NavigationPathQueryResult2D> get_current_navigation_result() const {
+		return navigation_result;
+	}
+	const Vector<Vector2> &get_current_navigation_path() const {
+		return navigation_result->get_path();
+	}
 	int get_current_navigation_path_index() const {
 		return navigation_path_index;
 	}

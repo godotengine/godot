@@ -43,6 +43,10 @@ class NavLink : public NavBase {
 	bool link_dirty = true;
 
 public:
+	NavLink() {
+		type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
+	}
+
 	void set_map(NavMap *p_map);
 	NavMap *get_map() const {
 		return map;

@@ -427,4 +427,7 @@ void NavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &
 	const NavigationUtilities::PathQueryResult _query_result = NavigationServer3D::get_singleton()->_query_path(p_query_parameters->get_parameters());
 
 	p_query_result->set_path(vector_v3_to_v2(_query_result.path));
+	p_query_result->set_path_types(_query_result.path_types);
+	p_query_result->set_path_rids(_query_result.path_rids);
+	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
 }

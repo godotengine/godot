@@ -48,7 +48,9 @@ class NavRegion : public NavBase {
 	LocalVector<gd::Polygon> polygons;
 
 public:
-	NavRegion() {}
+	NavRegion() {
+		type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	}
 
 	void scratch_polygons() {
 		polygons_dirty = true;

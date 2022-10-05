@@ -74,6 +74,9 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationAgent3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationAgent3D::get_navigation_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_path_metadata_flags", "flags"), &NavigationAgent3D::set_path_metadata_flags);
+	ClassDB::bind_method(D_METHOD("get_path_metadata_flags"), &NavigationAgent3D::get_path_metadata_flags);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent3D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent3D::get_navigation_map);
 
@@ -83,6 +86,7 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent3D::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent3D::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent3D::set_velocity);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_result"), &NavigationAgent3D::get_current_navigation_result);
 	ClassDB::bind_method(D_METHOD("get_current_navigation_path"), &NavigationAgent3D::get_current_navigation_path);
 	ClassDB::bind_method(D_METHOD("get_current_navigation_path_index"), &NavigationAgent3D::get_current_navigation_path_index);
 	ClassDB::bind_method(D_METHOD("is_target_reached"), &NavigationAgent3D::is_target_reached);
@@ -99,6 +103,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "agent_height_offset", PROPERTY_HINT_RANGE, "-100.0,100,0.01,suffix:m"), "set_agent_height_offset", "get_agent_height_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1,suffix:m"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
 
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
@@ -111,6 +116,8 @@ void NavigationAgent3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
+	ADD_SIGNAL(MethodInfo("waypoint_reached", PropertyInfo(Variant::DICTIONARY, "details")));
+	ADD_SIGNAL(MethodInfo("link_reached", PropertyInfo(Variant::DICTIONARY, "details")));
 	ADD_SIGNAL(MethodInfo("navigation_finished"));
 	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR3, "safe_velocity")));
 }
@@ -263,6 +270,14 @@ bool NavigationAgent3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
+void NavigationAgent3D::set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_path_metadata_flags) {
+	if (path_metadata_flags == p_path_metadata_flags) {
+		return;
+	}
+
+	path_metadata_flags = p_path_metadata_flags;
+}
+
 void NavigationAgent3D::set_navigation_map(RID p_navigation_map) {
 	map_override = p_navigation_map;
 	NavigationServer3D::get_singleton()->agent_set_map(agent, map_override);
@@ -347,10 +362,6 @@ Vector3 NavigationAgent3D::get_next_location() {
 	} else {
 		return navigation_path[navigation_path_index] - Vector3(0, navigation_height_offset, 0);
 	}
-}
-
-const Vector<Vector3> &NavigationAgent3D::get_current_navigation_path() const {
-	return navigation_result->get_path();
 }
 
 real_t NavigationAgent3D::distance_to_target() const {
@@ -453,6 +464,7 @@ void NavigationAgent3D::update_navigation() {
 		navigation_query->set_start_position(origin);
 		navigation_query->set_target_position(target_location);
 		navigation_query->set_navigation_layers(navigation_layers);
+		navigation_query->set_metadata_flags(path_metadata_flags);
 
 		if (map_override.is_valid()) {
 			navigation_query->set_map(map_override);
@@ -474,8 +486,52 @@ void NavigationAgent3D::update_navigation() {
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
 		const Vector<Vector3> &navigation_path = navigation_result->get_path();
+		const Vector<int32_t> &navigation_path_types = navigation_result->get_path_types();
+		const TypedArray<RID> &navigation_path_rids = navigation_result->get_path_rids();
+		const Vector<int64_t> &navigation_path_owners = navigation_result->get_path_owner_ids();
+
 		while (origin.distance_to(navigation_path[navigation_path_index] - Vector3(0, navigation_height_offset, 0)) < path_desired_distance) {
+			Dictionary details;
+
+			const Vector3 waypoint = navigation_path[navigation_path_index];
+			details[SNAME("location")] = waypoint;
+
+			int waypoint_type = -1;
+			if (path_metadata_flags.has_flag(NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {
+				const NavigationPathQueryResult3D::PathSegmentType type = NavigationPathQueryResult3D::PathSegmentType(navigation_path_types[navigation_path_index]);
+
+				details[SNAME("type")] = type;
+				waypoint_type = type;
+			}
+
+			if (path_metadata_flags.has_flag(NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_RIDS)) {
+				details[SNAME("rid")] = navigation_path_rids[navigation_path_index];
+			}
+
+			if (path_metadata_flags.has_flag(NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_OWNERS)) {
+				const ObjectID waypoint_owner_id = ObjectID(navigation_path_owners[navigation_path_index]);
+
+				// Get a reference to the owning object.
+				Object *owner = nullptr;
+				if (waypoint_owner_id.is_valid()) {
+					owner = ObjectDB::get_instance(waypoint_owner_id);
+				}
+
+				details[SNAME("owner")] = owner;
+			}
+
+			// Emit a signal for the waypoint
+			emit_signal(SNAME("waypoint_reached"), details);
+
+			// Emit a signal if we've reached a navigation link
+			if (waypoint_type == NavigationPathQueryResult3D::PATH_SEGMENT_TYPE_LINK) {
+				emit_signal(SNAME("link_reached"), details);
+			}
+
+			// Move to the next waypoint on the list
 			navigation_path_index += 1;
+
+			// Check to see if we've finished our route
 			if (navigation_path_index == navigation_path.size()) {
 				_check_distance_to_target();
 				navigation_path_index -= 1;
