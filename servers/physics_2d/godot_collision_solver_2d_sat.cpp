@@ -234,7 +234,7 @@ public:
 			axis = Vector2(0.0, 1.0);
 		}
 
-		real_t min_A, max_A, min_B, max_B;
+		real_t min_A = 0.0, max_A = 0.0, min_B = 0.0, max_B = 0.0;
 
 		if (castA) {
 			shape_A->project_range_cast(motion_A, axis, *transform_A, min_A, max_A);

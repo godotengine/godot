@@ -3142,7 +3142,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	{
 		//the position in xconfigure is not useful here, obtain it manually
-		int x, y;
+		int x = 0, y = 0;
 		Window child;
 		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
 		new_rect.position.x = x;
@@ -3305,7 +3305,7 @@ void DisplayServerX11::_check_pending_events(LocalVector<XEvent> &r_events) {
 	XFlush(x11_display);
 
 	// Non-blocking wait for next event and remove it from the queue.
-	XEvent ev;
+	XEvent ev = {};
 	while (XCheckIfEvent(x11_display, &ev, _predicate_all_events, nullptr)) {
 		// Check if the input manager wants to process the event.
 		if (XFilterEvent(&ev, None)) {
