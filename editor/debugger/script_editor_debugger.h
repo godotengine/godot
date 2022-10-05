@@ -50,7 +50,6 @@ class ItemList;
 class EditorProfiler;
 class EditorFileDialog;
 class EditorVisualProfiler;
-class EditorNetworkProfiler;
 class EditorPerformanceProfiler;
 class SceneDebuggerTree;
 class EditorDebuggerPlugin;
@@ -72,7 +71,6 @@ private:
 	};
 
 	enum ProfilerType {
-		PROFILER_NETWORK,
 		PROFILER_VISUAL,
 		PROFILER_SCRIPTS_SERVERS
 	};
@@ -151,7 +149,6 @@ private:
 
 	EditorProfiler *profiler = nullptr;
 	EditorVisualProfiler *visual_profiler = nullptr;
-	EditorNetworkProfiler *network_profiler = nullptr;
 	EditorPerformanceProfiler *performance_profiler = nullptr;
 
 	OS::ProcessID remote_pid = 0;
