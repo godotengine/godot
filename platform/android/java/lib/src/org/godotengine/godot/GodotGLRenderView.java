@@ -74,7 +74,6 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	private final Godot godot;
 	private final GodotInputHandler inputHandler;
 	private final GodotRenderer godotRenderer;
-	private PointerIcon pointerIcon;
 
 	public GodotGLRenderView(Context context, Godot godot, XRMode xrMode, boolean p_use_debug_opengl) {
 		super(context);
@@ -84,7 +83,7 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 		this.inputHandler = new GodotInputHandler(this);
 		this.godotRenderer = new GodotRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			pointerIcon = PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT);
+			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		}
 		init(xrMode, false);
 	}
@@ -175,13 +174,16 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	@Keep
 	public void setPointerIcon(int pointerType) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
+			setPointerIcon(PointerIcon.getSystemIcon(getContext(), pointerType));
 		}
 	}
 
 	@Override
 	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
-		return pointerIcon;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			return getPointerIcon();
+		}
+		return super.onResolvePointerIcon(me, pointerIndex);
 	}
 
 	private void init(XRMode xrMode, boolean translucent) {
