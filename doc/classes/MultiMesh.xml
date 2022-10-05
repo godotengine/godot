@@ -19,7 +19,7 @@
 		<method name="get_aabb" qualifiers="const">
 			<return type="AABB" />
 			<description>
-				Returns the visibility axis-aligned bounding box in local space. See also [method VisualInstance3D.get_transformed_aabb].
+				Returns the visibility axis-aligned bounding box in local space.
 			</description>
 		</method>
 		<method name="get_instance_color" qualifiers="const">
