@@ -347,6 +347,10 @@ void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	}
 }
 
+Variant ScriptTextEditor::get_navigation_state() {
+	return code_editor->get_navigation_state();
+}
+
 void ScriptTextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 	code_editor->convert_case(p_case);
 }

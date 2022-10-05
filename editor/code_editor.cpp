@@ -1526,19 +1526,7 @@ void CodeTextEditor::clear_executing_line() {
 
 Variant CodeTextEditor::get_edit_state() {
 	Dictionary state;
-
-	state["scroll_position"] = text_editor->get_v_scroll();
-	state["h_scroll_position"] = text_editor->get_h_scroll();
-	state["column"] = text_editor->get_caret_column();
-	state["row"] = text_editor->get_caret_line();
-
-	state["selection"] = get_text_editor()->has_selection();
-	if (get_text_editor()->has_selection()) {
-		state["selection_from_line"] = text_editor->get_selection_from_line();
-		state["selection_from_column"] = text_editor->get_selection_from_column();
-		state["selection_to_line"] = text_editor->get_selection_to_line();
-		state["selection_to_column"] = text_editor->get_selection_to_column();
-	}
+	state.merge(get_navigation_state());
 
 	state["folded_lines"] = text_editor->get_folded_lines();
 	state["breakpoints"] = text_editor->get_breakpointed_lines();
@@ -1559,8 +1547,10 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	text_editor->set_v_scroll(state["scroll_position"]);
 	text_editor->set_h_scroll(state["h_scroll_position"]);
 
-	if (state.has("selection")) {
+	if (state.get("selection", false)) {
 		text_editor->select(state["selection_from_line"], state["selection_from_column"], state["selection_to_line"], state["selection_to_column"]);
+	} else {
+		text_editor->deselect();
 	}
 
 	if (state.has("folded_lines")) {
@@ -1583,6 +1573,25 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 			text_editor->set_line_as_bookmarked(bookmarks[i], true);
 		}
 	}
+}
+
+Variant CodeTextEditor::get_navigation_state() {
+	Dictionary state;
+
+	state["scroll_position"] = text_editor->get_v_scroll();
+	state["h_scroll_position"] = text_editor->get_h_scroll();
+	state["column"] = text_editor->get_caret_column();
+	state["row"] = text_editor->get_caret_line();
+
+	state["selection"] = get_text_editor()->has_selection();
+	if (get_text_editor()->has_selection()) {
+		state["selection_from_line"] = text_editor->get_selection_from_line();
+		state["selection_from_column"] = text_editor->get_selection_from_column();
+		state["selection_to_line"] = text_editor->get_selection_to_line();
+		state["selection_to_column"] = text_editor->get_selection_to_column();
+	}
+
+	return state;
 }
 
 void CodeTextEditor::set_error(const String &p_error) {

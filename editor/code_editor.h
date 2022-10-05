@@ -246,6 +246,7 @@ public:
 
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
+	Variant get_navigation_state();
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);
