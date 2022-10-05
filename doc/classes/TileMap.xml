@@ -155,6 +155,7 @@
 		<method name="get_layers_count" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the number of layers in the TileMap.
 			</description>
 		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
