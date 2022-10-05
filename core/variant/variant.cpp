@@ -1835,11 +1835,13 @@ String Variant::stringify(int recursion_count) const {
 		case DICTIONARY: {
 			const Dictionary &d = *reinterpret_cast<const Dictionary *>(_data._mem);
 			if (recursion_count > MAX_RECURSION) {
-				ERR_PRINT("Max recursion reached");
-				return "{...}";
+				ERR_PRINT("Maximum dictionary recursion reached!");
+				return "{ ... }";
 			}
 
-			String str("{");
+			// Add leading and trailing space to Dictionary printing. This distinguishes it
+			// from array printing on fonts that have similar-looking {} and [] characters.
+			String str("{ ");
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
@@ -1858,9 +1860,9 @@ String Variant::stringify(int recursion_count) const {
 				if (i > 0) {
 					str += ", ";
 				}
-				str += pairs[i].key + ":" + pairs[i].value;
+				str += pairs[i].key + ": " + pairs[i].value;
 			}
-			str += "}";
+			str += " }";
 
 			return str;
 		} break;
@@ -1894,7 +1896,7 @@ String Variant::stringify(int recursion_count) const {
 		case ARRAY: {
 			Array arr = operator Array();
 			if (recursion_count > MAX_RECURSION) {
-				ERR_PRINT("Max recursion reached");
+				ERR_PRINT("Maximum array recursion reached!");
 				return "[...]";
 			}
 
