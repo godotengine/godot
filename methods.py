@@ -777,7 +777,7 @@ def generate_vs_project(env, num_jobs):
                     for platform in ModuleConfigs.PLATFORMS
                 ]
                 self.arg_dict["runfile"] += [
-                    f'bin\\godot.windows.{config}{ModuleConfigs.DEV_SUFFIX}.{plat_id}{f".{name}" if name else ""}.exe'
+                    f'bin\\godot.windows.{config}{ModuleConfigs.DEV_SUFFIX}{".double" if env["float"] == "64" else ""}.{plat_id}{f".{name}" if name else ""}.exe'
                     for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
                 ]
@@ -814,11 +814,17 @@ def generate_vs_project(env, num_jobs):
                 if env["dev_build"]:
                     common_build_postfix.append("dev_build=yes")
 
-                if env["tests"]:
+                if env["dev_mode"]:
+                    common_build_postfix.append("dev_mode=yes")
+
+                elif env["tests"]:
                     common_build_postfix.append("tests=yes")
 
                 if env["custom_modules"]:
                     common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+
+                if env["float"] == "64":
+                    common_build_postfix.append("float=64")
 
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result
