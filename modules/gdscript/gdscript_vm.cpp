@@ -813,7 +813,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
 					}
-					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'";
+					err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
 					OPCODE_BREAK;
 				}
 #endif
@@ -843,7 +843,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
 					}
-					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'";
+					err_text = "Invalid assignment of property or key " + v + " with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
 					OPCODE_BREAK;
 				}
 #endif
@@ -906,7 +906,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(index) + "'";
 					}
-					err_text = "Invalid get index " + v + " (on base: '" + _get_var_type(src) + "').";
+					err_text = "Invalid access to property or key " + v + " on a base object of type '" + _get_var_type(src) + "'.";
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -942,7 +942,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					} else {
 						v = "of type '" + _get_var_type(key) + "'";
 					}
-					err_text = "Invalid get index " + v + " (on base: '" + _get_var_type(src) + "').";
+					err_text = "Invalid access to property or key " + v + " on a base object of type '" + _get_var_type(src) + "'.";
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -1000,7 +1000,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 				if (!valid) {
 					String err_type;
-					err_text = "Invalid set index '" + String(*index) + "' (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
+					err_text = "Invalid assignment of property or key '" + String(*index) + "' with value of type '" + _get_var_type(value) + "' on a base object of type '" + _get_var_type(dst) + "'.";
 					OPCODE_BREAK;
 				}
 #endif
@@ -1044,7 +1044,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					err_text = "Invalid get index '" + index->operator String() + "' (on base: '" + _get_var_type(src) + "').";
+					err_text = "Invalid access to property or key '" + index->operator String() + "' on a base object of type '" + _get_var_type(src) + "'.";
 					OPCODE_BREAK;
 				}
 				*dst = ret;
@@ -2413,7 +2413,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						Variant::construct(ret_type, retvalue, const_cast<const Variant **>(&r), 1, ce);
 					} else {
 #ifdef DEBUG_ENABLED
-						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
+						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
 								Variant::get_type_name(r->get_type()), Variant::get_type_name(ret_type));
 #endif // DEBUG_ENABLED
 
@@ -2443,7 +2443,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (r->get_type() != Variant::ARRAY) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "Array[%s]".)",
+					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "Array[%s]".)",
 							Variant::get_type_name(r->get_type()), Variant::get_type_name(builtin_type));
 #endif
 					OPCODE_BREAK;
@@ -2481,7 +2481,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GD_ERR_BREAK(!nc);
 
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
-					err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
+					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
 							Variant::get_type_name(r->get_type()), nc->get_name());
 					OPCODE_BREAK;
 				}
@@ -2499,7 +2499,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif // DEBUG_ENABLED
 				if (ret_obj && !ClassDB::is_parent_class(ret_obj->get_class_name(), nc->get_name())) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
+					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
 							ret_obj->get_class_name(), nc->get_name());
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
@@ -2522,7 +2522,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (r->get_type() != Variant::OBJECT && r->get_type() != Variant::NIL) {
 #ifdef DEBUG_ENABLED
-					err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
+					err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
 							Variant::get_type_name(r->get_type()), _get_script_name(Ref<Script>(base_type)));
 #endif // DEBUG_ENABLED
 					OPCODE_BREAK;
@@ -2544,7 +2544,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					ScriptInstance *ret_inst = ret_obj->get_script_instance();
 					if (!ret_inst) {
 #ifdef DEBUG_ENABLED
-						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
+						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
 								ret_obj->get_class_name(), _get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
@@ -2563,7 +2563,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 					if (!valid) {
 #ifdef DEBUG_ENABLED
-						err_text = vformat(R"(Trying to return value of type "%s" from a function which the return type is "%s".)",
+						err_text = vformat(R"(Trying to return value of type "%s" from a function whose return type is "%s".)",
 								_get_script_name(ret_obj->get_script_instance()->get_script()), _get_script_name(Ref<GDScript>(base_type)));
 #endif // DEBUG_ENABLED
 						OPCODE_BREAK;
