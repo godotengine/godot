@@ -300,10 +300,10 @@ void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineC
 
 	for (uint32_t v = 0; v < p_view_count; v++) {
 		// We only need key components of our projection matrix
-		sky_push_constant.projections[v][0] = p_projections[v].matrix[2][0];
-		sky_push_constant.projections[v][1] = p_projections[v].matrix[0][0];
-		sky_push_constant.projections[v][2] = p_projections[v].matrix[2][1];
-		sky_push_constant.projections[v][3] = p_projections[v].matrix[1][1];
+		sky_push_constant.projections[v][0] = p_projections[v].columns[2][0];
+		sky_push_constant.projections[v][1] = p_projections[v].columns[0][0];
+		sky_push_constant.projections[v][2] = p_projections[v].columns[2][1];
+		sky_push_constant.projections[v][3] = p_projections[v].columns[1][1];
 	}
 	sky_push_constant.position[0] = p_position.x;
 	sky_push_constant.position[1] = p_position.y;

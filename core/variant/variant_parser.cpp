@@ -1651,7 +1651,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 					if (i != 0 || j != 0) {
 						s += ", ";
 					}
-					s += rtos_fix(t.matrix[i][j]);
+					s += rtos_fix(t.columns[i][j]);
 				}
 			}
 

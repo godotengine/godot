@@ -436,7 +436,7 @@ def build_gles3_header(filename: str, include: str, class_suffix: str, header_da
         )
 
         fd.write(
-            """_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const Projection& p_matrix,RID p_version,ShaderVariant p_variant"""
+            """_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const Projection& p_matrix, RID p_version, ShaderVariant p_variant"""
             + defvariant
             + """,uint64_t p_specialization="""
             + str(defspec)
@@ -444,13 +444,13 @@ def build_gles3_header(filename: str, include: str, class_suffix: str, header_da
 
             GLfloat matrix[16];
 
-            for (int i=0;i<4;i++) {
-                for (int j=0;j<4;j++) {
-                    matrix[i*4+j]=p_matrix.matrix[i][j];
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    matrix[i * 4 + j] = p_matrix.columns[i][j];
                 }
             }
 
-            glUniformMatrix4fv(version_get_uniform(p_uniform,p_version,p_variant,p_specialization),1,false,matrix);
+            glUniformMatrix4fv(version_get_uniform(p_uniform, p_version, p_variant, p_specialization), 1, false, matrix);
     }"""
         )
 

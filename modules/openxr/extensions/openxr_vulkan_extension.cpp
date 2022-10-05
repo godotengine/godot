@@ -382,7 +382,7 @@ bool OpenXRVulkanExtension::create_projection_fov(const XrFovf p_fov, double p_z
 
 	for (int j = 0; j < 4; j++) {
 		for (int i = 0; i < 4; i++) {
-			r_camera_matrix.matrix[j][i] = matrix.m[j * 4 + i];
+			r_camera_matrix.columns[j][i] = matrix.m[j * 4 + i];
 		}
 	}
 
