@@ -158,6 +158,7 @@ struct PropertyInfo {
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
+	String alias; // alternative display name
 
 	// If you are thinking about adding another member to this class, ask the maintainer (Juan) first.
 
@@ -173,12 +174,13 @@ struct PropertyInfo {
 
 	PropertyInfo() {}
 
-	PropertyInfo(const Variant::Type p_type, const String p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
+	PropertyInfo(const Variant::Type p_type, const String p_name, const PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", const uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName(), const String &p_alias = "") :
 			type(p_type),
 			name(p_name),
 			hint(p_hint),
 			hint_string(p_hint_string),
-			usage(p_usage) {
+			usage(p_usage),
+			alias(p_alias){
 		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			class_name = hint_string;
 		} else {
@@ -196,7 +198,8 @@ struct PropertyInfo {
 			class_name(pinfo.class_name), // can be null
 			hint((PropertyHint)pinfo.hint),
 			hint_string(pinfo.hint_string), // can be null
-			usage(pinfo.usage) {}
+			usage(pinfo.usage),
+			alias(pinfo.alias) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
 		return ((type == p_info.type) &&
@@ -204,7 +207,8 @@ struct PropertyInfo {
 				(class_name == p_info.class_name) &&
 				(hint == p_info.hint) &&
 				(hint_string == p_info.hint_string) &&
-				(usage == p_info.usage));
+				(usage == p_info.usage) &&
+				(alias == p_info.alias));
 	}
 
 	bool operator<(const PropertyInfo &p_info) const {

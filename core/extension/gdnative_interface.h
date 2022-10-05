@@ -207,6 +207,7 @@ typedef struct {
 	uint32_t hint;
 	const char *hint_string;
 	uint32_t usage;
+	const char *alias;
 } GDNativePropertyInfo;
 
 typedef struct {
