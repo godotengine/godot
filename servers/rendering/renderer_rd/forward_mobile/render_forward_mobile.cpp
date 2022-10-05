@@ -1128,11 +1128,11 @@ void RenderForwardMobile::_render_shadow_pass(RID p_light, RID p_shadow_atlas, i
 			}
 		}
 
-		int directional_shadow_size = light_storage->directional_shadow_get_size();
-		atlas_rect.position /= directional_shadow_size;
-		atlas_rect.size /= directional_shadow_size;
-
-		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect);
+		float directional_shadow_size = light_storage->directional_shadow_get_size();
+		Rect2 atlas_rect_norm = atlas_rect;
+		atlas_rect_norm.position /= directional_shadow_size;
+		atlas_rect_norm.size /= directional_shadow_size;
+		light_storage->light_instance_set_directional_shadow_atlas_rect(p_light, p_pass, atlas_rect_norm);
 
 		zfar = RSG::light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE);
 
