@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  replication_editor_plugin.cpp                                        */
+/*  replication_editor.cpp                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "replication_editor_plugin.h"
+#include "replication_editor.h"
+
+#include "../multiplayer_synchronizer.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -37,7 +39,6 @@
 #include "editor/inspector_dock.h"
 #include "editor/property_selector.h"
 #include "editor/scene_tree_editor.h"
-#include "modules/multiplayer/multiplayer_synchronizer.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
@@ -141,7 +142,7 @@ void ReplicationEditor::_add_sync_property(String p_path) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 	undo_redo->create_action(TTR("Add property to synchronizer"));
 
 	if (config.is_null()) {
@@ -492,63 +493,4 @@ void ReplicationEditor::_add_property(const NodePath &p_property, bool p_spawn, 
 	item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
 	item->set_checked(2, p_sync);
 	item->set_editable(2, true);
-}
-
-/// ReplicationEditorPlugin
-ReplicationEditorPlugin::ReplicationEditorPlugin() {
-	repl_editor = memnew(ReplicationEditor);
-	button = EditorNode::get_singleton()->add_bottom_panel_item(TTR("Replication"), repl_editor);
-	button->hide();
-	repl_editor->get_pin()->connect("pressed", callable_mp(this, &ReplicationEditorPlugin::_pinned));
-}
-
-ReplicationEditorPlugin::~ReplicationEditorPlugin() {
-}
-
-void ReplicationEditorPlugin::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", callable_mp(this, &ReplicationEditorPlugin::_node_removed));
-		} break;
-	}
-}
-
-void ReplicationEditorPlugin::_node_removed(Node *p_node) {
-	if (p_node && p_node == repl_editor->get_current()) {
-		repl_editor->edit(nullptr);
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
-		repl_editor->get_pin()->set_pressed(false);
-	}
-}
-
-void ReplicationEditorPlugin::_pinned() {
-	if (!repl_editor->get_pin()->is_pressed()) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
-	}
-}
-
-void ReplicationEditorPlugin::edit(Object *p_object) {
-	repl_editor->edit(Object::cast_to<MultiplayerSynchronizer>(p_object));
-}
-
-bool ReplicationEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("MultiplayerSynchronizer");
-}
-
-void ReplicationEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		button->show();
-		EditorNode::get_singleton()->make_bottom_panel_item_visible(repl_editor);
-	} else if (!repl_editor->get_pin()->is_pressed()) {
-		if (repl_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
-		button->hide();
-	}
 }

@@ -37,7 +37,6 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
-#include "editor/debugger/editor_network_profiler.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -52,6 +51,7 @@
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/debugger/scene_debugger.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
@@ -713,17 +713,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			profiler->add_frame_metric(metric, true);
 		}
 
-	} else if (p_msg == "multiplayer:rpc") {
-		SceneDebugger::RPCProfilerFrame frame;
-		frame.deserialize(p_data);
-		for (int i = 0; i < frame.infos.size(); i++) {
-			network_profiler->add_node_frame_data(frame.infos[i]);
-		}
-
-	} else if (p_msg == "multiplayer:bandwidth") {
-		ERR_FAIL_COND(p_data.size() < 2);
-		network_profiler->set_bandwidth(p_data[0], p_data[1]);
-
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
@@ -967,10 +956,6 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 	Array msg_data;
 	msg_data.push_back(p_enable);
 	switch (p_type) {
-		case PROFILER_NETWORK:
-			_put_msg("profiler:multiplayer", msg_data);
-			_put_msg("profiler:rpc", msg_data);
-			break;
 		case PROFILER_VISUAL:
 			_put_msg("profiler:visual", msg_data);
 			break;
@@ -1871,13 +1856,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_VISUAL));
-	}
-
-	{ //network profiler
-		network_profiler = memnew(EditorNetworkProfiler);
-		network_profiler->set_name(TTR("Network Profiler"));
-		tabs->add_child(network_profiler);
-		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate).bind(PROFILER_NETWORK));
 	}
 
 	{ //monitors

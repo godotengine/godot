@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  editor_network_profiler.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,36 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef EDITOR_NETWORK_PROFILER_H
+#define EDITOR_NETWORK_PROFILER_H
 
-#include "multiplayer_spawner.h"
-#include "multiplayer_synchronizer.h"
-#include "scene_multiplayer.h"
-#include "scene_replication_interface.h"
-#include "scene_rpc_interface.h"
+#include "scene/debugger/scene_debugger.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/split_container.h"
+#include "scene/gui/tree.h"
 
-#include "multiplayer_debugger.h"
+#include "../multiplayer_debugger.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/multiplayer_editor_plugin.h"
-#endif
+class EditorNetworkProfiler : public VBoxContainer {
+	GDCLASS(EditorNetworkProfiler, VBoxContainer)
 
-void initialize_multiplayer_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-		GDREGISTER_CLASS(SceneReplicationConfig);
-		GDREGISTER_CLASS(MultiplayerSpawner);
-		GDREGISTER_CLASS(MultiplayerSynchronizer);
-		GDREGISTER_CLASS(SceneMultiplayer);
-		MultiplayerAPI::set_default_interface("SceneMultiplayer");
-		MultiplayerDebugger::initialize();
-	}
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<MultiplayerEditorPlugin>();
-	}
-#endif
-}
+private:
+	using RPCNodeInfo = MultiplayerDebugger::RPCNodeInfo;
 
-void uninitialize_multiplayer_module(ModuleInitializationLevel p_level) {
-	MultiplayerDebugger::deinitialize();
-}
+	Button *activate = nullptr;
+	Button *clear_button = nullptr;
+	Tree *counters_display = nullptr;
+	LineEdit *incoming_bandwidth_text = nullptr;
+	LineEdit *outgoing_bandwidth_text = nullptr;
+
+	Timer *frame_delay = nullptr;
+
+	HashMap<ObjectID, RPCNodeInfo> nodes_data;
+
+	void _update_frame();
+
+	void _activate_pressed();
+	void _clear_pressed();
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+	void add_node_frame_data(const RPCNodeInfo p_frame);
+	void set_bandwidth(int p_incoming, int p_outgoing);
+	bool is_profiling();
+
+	EditorNetworkProfiler();
+};
+
+#endif // EDITOR_NETWORK_PROFILER_H
