@@ -2260,10 +2260,10 @@
 			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
 		</constant>
 		<constant name="MOUSE_BUTTON_LEFT" value="1" enum="MouseButton">
-			Left mouse button.
+			Primary mouse button, usually the left button.
 		</constant>
 		<constant name="MOUSE_BUTTON_RIGHT" value="2" enum="MouseButton">
-			Right mouse button.
+			Secondary mouse button, usually the right button.
 		</constant>
 		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
@@ -2287,10 +2287,10 @@
 			Extra mouse button 2 (only present on some mice).
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
-			Left mouse button mask.
+			Primary mouse button mask, usually for the left button.
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="MouseButton">
-			Right mouse button mask.
+			Secondary mouse button mask, usually for the right button.
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="MouseButton">
 			Middle mouse button mask.
