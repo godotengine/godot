@@ -82,9 +82,9 @@ platform/android/java/*/libs/
 # iOS
 *.dSYM
 
-# Javascript
+# Web platform
 *.bc
-platform/javascript/node_modules/
+platform/web/node_modules/
 
 # Misc
 *.debug
