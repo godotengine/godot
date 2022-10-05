@@ -53,10 +53,10 @@ else:
     print("WARN: Architecture not suitable for embedding into APK; keeping .so at \\bin")
 
 if lib_arch_dir != "":
-    if env.debug_features:
-        lib_type_dir = "debug"
-    elif env.dev_build:
+    if env.dev_build:
         lib_type_dir = "dev"
+    elif env.debug_features:
+        lib_type_dir = "debug"
     else:  # Release
         lib_type_dir = "release"
 
