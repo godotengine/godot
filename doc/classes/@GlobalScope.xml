@@ -902,10 +902,10 @@
 			Group Switch key mask.
 		</constant>
 		<constant name="BUTTON_LEFT" value="1" enum="ButtonList">
-			Left mouse button.
+			Primary mouse button, usually the left button.
 		</constant>
 		<constant name="BUTTON_RIGHT" value="2" enum="ButtonList">
-			Right mouse button.
+			Secondary mouse button, usually the right button.
 		</constant>
 		<constant name="BUTTON_MIDDLE" value="3" enum="ButtonList">
 			Middle mouse button.
@@ -929,10 +929,10 @@
 			Mouse wheel right button (only present on some mice).
 		</constant>
 		<constant name="BUTTON_MASK_LEFT" value="1" enum="ButtonList">
-			Left mouse button mask.
+			Primary mouse button mask, usually for the left button.
 		</constant>
 		<constant name="BUTTON_MASK_RIGHT" value="2" enum="ButtonList">
-			Right mouse button mask.
+			Secondary mouse button mask, usually for the right button.
 		</constant>
 		<constant name="BUTTON_MASK_MIDDLE" value="4" enum="ButtonList">
 			Middle mouse button mask.
