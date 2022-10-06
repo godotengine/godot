@@ -28,12 +28,14 @@
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
+				Returns the maximum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_param_min" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<description>
+				Returns the minimum value range for the given parameter.
 			</description>
 		</method>
 		<method name="get_particle_flag" qualifiers="const">
@@ -62,7 +64,7 @@
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Sets the maximum value for the given parameter
+				Sets the maximum value for the given parameter.
 			</description>
 		</method>
 		<method name="set_param_min">
@@ -70,7 +72,7 @@
 			<param index="0" name="param" type="int" enum="CPUParticles3D.Parameter" />
 			<param index="1" name="value" type="float" />
 			<description>
-				Sets the minimum value for the given parameter
+				Sets the minimum value for the given parameter.
 			</description>
 		</method>
 		<method name="set_particle_flag">

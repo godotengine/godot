@@ -61,6 +61,7 @@
 		<method name="update_property">
 			<return type="void" />
 			<description>
+				Forces refresh of the property display.
 			</description>
 		</method>
 	</methods>

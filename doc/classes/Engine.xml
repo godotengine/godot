@@ -146,11 +146,13 @@
 			<return type="ScriptLanguage" />
 			<param index="0" name="index" type="int" />
 			<description>
+				Returns an instance of a [ScriptLanguage] with the given index.
 			</description>
 		</method>
 		<method name="get_script_language_count">
 			<return type="int" />
 			<description>
+				Returns the number of available script languages. Use with [method get_script_language].
 			</description>
 		</method>
 		<method name="get_singleton" qualifiers="const">
@@ -163,6 +165,7 @@
 		<method name="get_singleton_list" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
+				Returns a list of available global singletons.
 			</description>
 		</method>
 		<method name="get_version_info" qualifiers="const">
@@ -244,6 +247,7 @@
 			<return type="void" />
 			<param index="0" name="language" type="ScriptLanguage" />
 			<description>
+				Registers a [ScriptLanguage] instance to be available with [code]ScriptServer[/code].
 			</description>
 		</method>
 		<method name="register_singleton">
@@ -251,12 +255,14 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="instance" type="Object" />
 			<description>
+				Registers the given object as a singleton, globally available under [param name].
 			</description>
 		</method>
 		<method name="unregister_singleton">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
 			<description>
+				Unregisters the singleton registered under [param name]. The singleton object is not freed. Only works with user-defined singletons created with [method register_singleton].
 			</description>
 		</method>
 	</methods>
