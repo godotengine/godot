@@ -245,7 +245,7 @@ bool OpenXRAPI::create_instance() {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
 				// nullptr means this is a manditory extension so we fail
-				ERR_FAIL_V_MSG(false, "OpenXR: OpenXR Runtime does not support OpenGL extension!");
+				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
 			} else {
 				// set this extension as not supported
 				*requested_extension.value = false;
