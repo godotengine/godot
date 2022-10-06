@@ -1500,9 +1500,8 @@ void RenderForwardClustered::_process_ssr(Ref<RenderSceneBuffersRD> p_render_buf
 	ERR_FAIL_COND(!environment_get_ssr_enabled(p_environment));
 
 	Size2i half_size = Size2i(internal_size.x / 2, internal_size.y / 2);
-	if (rb_data->ss_effects_data.ssr.output.is_null()) {
-		ss_effects->ssr_allocate_buffers(rb_data->ss_effects_data.ssr, _render_buffers_get_color_format(), half_size, view_count);
-	}
+	ss_effects->ssr_allocate_buffers(rb_data->ss_effects_data.ssr, _render_buffers_get_color_format(), half_size, view_count);
+
 	RID texture_slices[RendererSceneRender::MAX_RENDER_VIEWS];
 	RID depth_slices[RendererSceneRender::MAX_RENDER_VIEWS];
 	for (uint32_t v = 0; v < view_count; v++) {

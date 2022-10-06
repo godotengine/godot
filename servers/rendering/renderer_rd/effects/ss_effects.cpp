@@ -1457,6 +1457,17 @@ void SSEffects::ssr_set_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_q
 
 void SSEffects::ssr_allocate_buffers(SSRRenderBuffers &p_ssr_buffers, const RenderingDevice::DataFormat p_color_format, const Size2i &p_screen_size, const uint32_t p_view_count) {
 	// As we are processing one view at a time, we can reuse buffers, only our output needs to have layers for each view.
+	if (p_ssr_buffers.size != p_screen_size || p_ssr_buffers.roughness_quality != ssr_roughness_quality) {
+		ssr_free(p_ssr_buffers);
+	}
+
+	if (p_ssr_buffers.output.is_valid()) {
+		// already allocated
+		return;
+	}
+
+	p_ssr_buffers.size = p_screen_size;
+	p_ssr_buffers.roughness_quality = ssr_roughness_quality;
 
 	if (p_ssr_buffers.depth_scaled.is_null()) {
 		RD::TextureFormat tf;
@@ -1581,8 +1592,13 @@ void SSEffects::screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const R
 			RD::Uniform u_normal_roughness(RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE, 1, Vector<RID>({ default_sampler, p_normal_roughness_slices[v] }));
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_depth, u_normal_roughness), 1);
 
-			RD::Uniform u_output_blur(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.output_slices[v] }));
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 2, u_output_blur), 2);
+			if (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
+				RD::Uniform u_output(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.output_slices[v] }));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 2, u_output), 2);
+			} else {
+				RD::Uniform u_intermediate(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.intermediate }));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 2, u_intermediate), 2);
+			}
 
 			RD::Uniform u_scale_depth(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.depth_scaled }));
 			RD::Uniform u_scale_normal(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_ssr_buffers.normal_scaled }));
@@ -1624,17 +1640,25 @@ void SSEffects::screen_space_reflection(SSRRenderBuffers &p_ssr_buffers, const R
 			RD::Uniform u_scene_data(RD::UNIFORM_TYPE_UNIFORM_BUFFER, 0, ssr.ubo);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 4, u_scene_data), 4);
 
-			RD::Uniform u_output_blur(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.output_slices[v] }));
-			RD::Uniform u_scale_depth(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_ssr_buffers.depth_scaled }));
-			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_output_blur, u_scale_depth), 0);
-
 			if (ssr_roughness_quality != RS::ENV_SSR_ROUGHNESS_QUALITY_DISABLED) {
+				// read from output slices (our scale wrote into these)
+				RD::Uniform u_output(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.output_slices[v] }));
+				RD::Uniform u_scale_depth(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_ssr_buffers.depth_scaled }));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_output, u_scale_depth), 0);
+
+				// write to intermediate (our roughness pass will output into output slices)
 				RD::Uniform u_intermediate(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.intermediate }));
 				RD::Uniform u_blur_radius(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_ssr_buffers.blur_radius[0] }));
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_intermediate, u_blur_radius), 1);
 			} else {
+				// read from intermediate (our scale wrote into these)
 				RD::Uniform u_intermediate(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.intermediate }));
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_intermediate), 1);
+				RD::Uniform u_scale_depth(RD::UNIFORM_TYPE_IMAGE, 1, Vector<RID>({ p_ssr_buffers.depth_scaled }));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 0, u_intermediate, u_scale_depth), 0);
+
+				// We are not performing our blur so go directly to output.
+				RD::Uniform u_output(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.output_slices[v] }));
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set_cache->get_cache(shader, 1, u_output), 1);
 			}
 
 			RD::Uniform u_scale_normal(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ssr_buffers.normal_scaled }));
