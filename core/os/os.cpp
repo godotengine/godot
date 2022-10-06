@@ -38,6 +38,7 @@
 #include "core/version_generated.gen.h"
 
 #include <stdarg.h>
+#include <thread>
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -321,7 +322,7 @@ String OS::get_unique_id() const {
 }
 
 int OS::get_processor_count() const {
-	return 1;
+	return std::thread::hardware_concurrency();
 }
 
 String OS::get_processor_name() const {

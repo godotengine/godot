@@ -84,8 +84,6 @@ public:
 	virtual bool set_environment(const String &p_var, const String &p_value) const override;
 	virtual String get_locale() const override;
 
-	virtual int get_processor_count() const override;
-
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
