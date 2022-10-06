@@ -119,6 +119,8 @@
 			[b]Note:[/b] Negative X scales in 2D are not decomposable from the transformation matrix. Due to the way scale is represented with transformation matrices in Godot, negative scales on the X axis will be changed to negative scales on the Y axis and a rotation of 180 degrees when decomposed.
 		</member>
 		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">
+			Slants the node.
+			[b]Note:[/b] Skew is X axis only.
 		</member>
 		<member name="transform" type="Transform2D" setter="set_transform" getter="get_transform">
 			Local [Transform2D].
