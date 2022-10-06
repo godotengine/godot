@@ -1563,8 +1563,22 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ti = ti->get_parent();
 			}
 
-			// We only need the first child here (C++ source stack trace).
+			// Find the child with the "C++ Source".
+			// It's not at a fixed position as "C++ Error" may come first.
 			TreeItem *ci = ti->get_first_child();
+			const String cpp_source = "<" + TTR("C++ Source") + ">";
+			while (ci) {
+				if (ci->get_text(0) == cpp_source) {
+					break;
+				}
+				ci = ci->get_next();
+			}
+
+			if (!ci) {
+				WARN_PRINT_ED("No C++ source reference is available for this error.");
+				return;
+			}
+
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");
