@@ -267,6 +267,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 
 void ScriptTextEditor::_error_clicked(Variant p_line) {
 	if (p_line.get_type() == Variant::INT) {
+		code_editor->get_text_editor()->remove_secondary_carets();
 		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
 	}
 }
@@ -295,6 +296,7 @@ void ScriptTextEditor::reload_text() {
 void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray p_args) {
 	String code = code_editor->get_text_editor()->get_text();
 	int pos = script->get_language()->find_function(p_function, code);
+	code_editor->get_text_editor()->remove_secondary_carets();
 	if (pos == -1) {
 		//does not exist
 		code_editor->get_text_editor()->deselect();
@@ -1367,6 +1369,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
+			tx->remove_secondary_carets();
 			int line = tx->get_caret_line();
 
 			// wrap around
@@ -1393,6 +1396,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				return;
 			}
 
+			tx->remove_secondary_carets();
 			int line = tx->get_caret_line();
 			// wrap around
 			if (line <= (int)bpoints[0]) {
@@ -1413,21 +1417,21 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 		} break;
 		case HELP_CONTEXTUAL: {
-			String text = tx->get_selected_text();
+			String text = tx->get_selected_text(0);
 			if (text.is_empty()) {
-				text = tx->get_word_under_caret();
+				text = tx->get_word_under_caret(0);
 			}
 			if (!text.is_empty()) {
 				emit_signal(SNAME("request_help"), text);
 			}
 		} break;
 		case LOOKUP_SYMBOL: {
-			String text = tx->get_word_under_caret();
+			String text = tx->get_word_under_caret(0);
 			if (text.is_empty()) {
-				text = tx->get_selected_text();
+				text = tx->get_selected_text(0);
 			}
 			if (!text.is_empty()) {
-				_lookup_symbol(text, tx->get_caret_line(), tx->get_caret_column());
+				_lookup_symbol(text, tx->get_caret_line(0), tx->get_caret_column(0));
 			}
 		} break;
 	}
@@ -1605,6 +1609,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	int col = pos.x;
 
 	if (d.has("type") && String(d["type"]) == "resource") {
+		te->remove_secondary_carets();
 		Ref<Resource> res = d["resource"];
 		if (!res.is_valid()) {
 			return;
@@ -1622,6 +1627,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && (String(d["type"]) == "files" || String(d["type"]) == "files_and_dirs")) {
+		te->remove_secondary_carets();
 		Array files = d["files"];
 
 		String text_to_drop;
@@ -1645,6 +1651,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "nodes") {
+		te->remove_secondary_carets();
 		Node *scene_root = get_tree()->get_edited_scene_root();
 		if (!scene_root) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't drop nodes without an open scene."));
@@ -1729,6 +1736,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (d.has("type") && String(d["type"]) == "obj_property") {
+		te->remove_secondary_carets();
 		const String text_to_drop = String(d["property"]).c_escape().quote(quote_style);
 
 		te->set_caret_line(row);
@@ -1749,8 +1757,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		local_pos = mb->get_global_position() - tx->get_global_position();
 		create_menu = true;
 	} else if (k.is_valid() && k->is_action("ui_menu", true)) {
-		tx->adjust_viewport_to_caret();
-		local_pos = tx->get_caret_draw_pos();
+		tx->adjust_viewport_to_caret(0);
+		local_pos = tx->get_caret_draw_pos(0);
 		create_menu = true;
 	}
 
@@ -1761,6 +1769,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
 		if (tx->is_move_caret_on_right_click_enabled()) {
+			tx->remove_secondary_carets();
 			if (tx->has_selection()) {
 				int from_line = tx->get_selection_from_line();
 				int to_line = tx->get_selection_to_line();
@@ -1780,10 +1789,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 		String word_at_pos = tx->get_word_at_pos(local_pos);
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_word_under_caret();
+			word_at_pos = tx->get_word_under_caret(0);
 		}
 		if (word_at_pos.is_empty()) {
-			word_at_pos = tx->get_selected_text();
+			word_at_pos = tx->get_selected_text(0);
 		}
 
 		bool has_color = (word_at_pos == "Color");
