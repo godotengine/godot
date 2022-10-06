@@ -256,7 +256,57 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, flo
     return 0
 
 
+def generate_sdk_package_versions():
+    # I can't believe importing files in Python is so convoluted when not
+    # following the golden standard for packages/modules.
+    import os
+    import sys
+    from os.path import dirname
+
+    # We want ../../../methods.py.
+    script_path = dirname(os.path.abspath(__file__))
+    root_path = dirname(dirname(dirname(script_path)))
+
+    sys.path.insert(0, root_path)
+    from methods import get_version_info
+
+    version_info = get_version_info("")
+    sys.path.remove(root_path)
+
+    version_str = "{major}.{minor}.{patch}".format(**version_info)
+    version_status = version_info["status"]
+    if version_status != "stable":  # Pre-release
+        # If version was overridden to be e.g. "beta3", we insert a dot between
+        # "beta" and "3" to follow SemVer 2.0.
+        import re
+
+        match = re.search(r"[\d]+$", version_status)
+        if match:
+            pos = match.start()
+            version_status = version_status[:pos] + "." + version_status[pos:]
+        version_str += "-" + version_status
+
+    props = """<Project>
+  <PropertyGroup>
+    <PackageVersion_GodotSharp>{0}</PackageVersion_GodotSharp>
+    <PackageVersion_Godot_NET_Sdk>{0}</PackageVersion_Godot_NET_Sdk>
+    <PackageVersion_Godot_SourceGenerators>{0}</PackageVersion_Godot_SourceGenerators>
+  </PropertyGroup>
+</Project>
+""".format(
+        version_str
+    )
+
+    # We write in ../SdkPackageVersions.props.
+    with open(os.path.join(dirname(script_path), "SdkPackageVersions.props"), "w") as f:
+        f.write(props)
+        f.close()
+
+
 def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, float_size):
+    # Generate SdkPackageVersions.props
+    generate_sdk_package_versions()
+
     # Godot API
     exit_code = build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, float_size)
     if exit_code != 0:
