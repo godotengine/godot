@@ -142,8 +142,8 @@ bool Basis::is_symmetric() const {
 #endif
 
 Basis Basis::diagonalize() {
-//NOTE: only implemented for symmetric matrices
-//with the Jacobi iterative method
+// NOTE: only implemented for symmetric matrices
+// with the Jacobi iterative method
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif

@@ -1627,7 +1627,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		ShadowRenderPushConstant push_constant;
 		for (int y = 0; y < 4; y++) {
 			for (int x = 0; x < 4; x++) {
-				push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+				push_constant.projection[y * 4 + x] = projection.columns[y][x];
 			}
 		}
 		static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
@@ -1702,7 +1702,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
-			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+			push_constant.projection[y * 4 + x] = projection.columns[y][x];
 		}
 	}
 
@@ -1770,7 +1770,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
-			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+			push_constant.projection[y * 4 + x] = projection.columns[y][x];
 		}
 	}
 
@@ -2324,7 +2324,7 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false);
 }
 
 RendererCanvasRenderRD::CanvasMaterialData::~CanvasMaterialData() {

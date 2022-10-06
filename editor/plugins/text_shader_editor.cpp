@@ -715,7 +715,7 @@ void TextShaderEditor::_notification(int p_what) {
 			popup->set_item_icon(popup->get_item_index(HELP_DOCS), get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")));
 		} break;
 
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_check_for_external_edit();
 		} break;
 	}
@@ -917,6 +917,10 @@ bool TextShaderEditor::is_unsaved() const {
 	return shader_editor->get_text_editor()->get_saved_version() != shader_editor->get_text_editor()->get_version();
 }
 
+void TextShaderEditor::tag_saved_version() {
+	shader_editor->get_text_editor()->tag_saved_version();
+}
+
 void TextShaderEditor::apply_shaders() {
 	String editor_code = shader_editor->get_text_editor()->get_text();
 	if (shader.is_valid()) {
@@ -954,6 +958,7 @@ void TextShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			tx->set_move_caret_on_right_click_enabled(EditorSettings::get_singleton()->get("text_editor/behavior/navigation/move_caret_on_right_click"));
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
+				tx->remove_secondary_carets();
 				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();

@@ -127,6 +127,8 @@ void main() {
 	}
 #endif
 
+	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
+
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
 #endif
@@ -392,6 +394,8 @@ void main() {
 #else
 	vec2 screen_uv = vec2(0.0);
 #endif
+
+	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
 
 	vec3 light_vertex = vec3(vertex, 0.0);
 	vec2 shadow_vertex = vertex;

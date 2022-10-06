@@ -499,6 +499,13 @@ void Viewport::_notification(int p_what) {
 			// exit event if the change in focus results in the mouse exiting
 			// the window.
 		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			if (gui_parent) {
+				gui_parent->gui.tooltip_popup = nullptr;
+				gui_parent->gui.tooltip_label = nullptr;
+			}
+		} break;
 	}
 }
 
@@ -1155,8 +1162,6 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
 	}
 }
 
@@ -1219,8 +1224,6 @@ void Viewport::_gui_show_tooltip() {
 	// Remove previous popup if we change something.
 	if (gui.tooltip_popup) {
 		memdelete(gui.tooltip_popup);
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
 	}
 
 	if (!tooltip_owner) {
@@ -1252,6 +1255,7 @@ void Viewport::_gui_show_tooltip() {
 	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
+	panel->gui_parent = this;
 
 	gui.tooltip_popup = panel;
 
@@ -4135,7 +4139,7 @@ Transform2D SubViewport::_stretch_transform() {
 	Transform2D transform = Transform2D();
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
-		Size2 scale = _get_size() / view_size_2d_override;
+		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
 		transform.scale(scale);
 	}
 

@@ -403,6 +403,7 @@ Variant AABB::intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to
 	}
 	return Variant();
 }
+
 Variant AABB::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
 	Vector3 inters;
 	if (intersects_ray(p_from, p_dir, &inters)) {

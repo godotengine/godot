@@ -79,7 +79,7 @@ public:
 		virtual ~MaterialData();
 
 		//to be used internally by update_parameters, in the most common configuration of material parameters
-		bool update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
+		bool update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, uint32_t p_barrier = RD::BARRIER_MASK_ALL);
 		void free_parameters_uniform_set(RID p_uniform_set);
 
 	private:
@@ -231,6 +231,8 @@ public:
 	MaterialStorage();
 	virtual ~MaterialStorage();
 
+	bool free(RID p_rid);
+
 	/* Helpers */
 
 	static _FORCE_INLINE_ void store_transform(const Transform3D &p_mtx, float *p_array) {
@@ -300,7 +302,7 @@ public:
 	static _FORCE_INLINE_ void store_camera(const Projection &p_mtx, float *p_array) {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
-				p_array[i * 4 + j] = p_mtx.matrix[i][j];
+				p_array[i * 4 + j] = p_mtx.columns[i][j];
 			}
 		}
 	}

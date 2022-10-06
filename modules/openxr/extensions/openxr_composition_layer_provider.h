@@ -31,6 +31,7 @@
 #ifndef OPENXR_COMPOSITION_LAYER_PROVIDER_H
 #define OPENXR_COMPOSITION_LAYER_PROVIDER_H
 
+#include "openxr_extension_wrapper.h"
 #include <openxr/openxr.h>
 
 // Interface for OpenXR extensions that provide a composition layer.

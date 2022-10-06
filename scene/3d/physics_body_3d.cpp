@@ -1200,6 +1200,7 @@ bool CharacterBody3D::move_and_slide() {
 
 	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
@@ -1264,6 +1265,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
 		parameters.max_collisions = 6; // There can be 4 collisions between 2 walls + 2 more for the floor.
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, !sliding_enabled);
@@ -1508,6 +1510,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer3D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer3D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
@@ -1562,7 +1565,7 @@ void CharacterBody3D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
-	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;
@@ -1598,7 +1601,7 @@ bool CharacterBody3D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 
 	PhysicsServer3D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
 	parameters.max_collisions = 4;
-	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer3D::MotionResult result;

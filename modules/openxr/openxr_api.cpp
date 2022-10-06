@@ -49,6 +49,7 @@
 #include "extensions/openxr_vulkan_extension.h"
 #endif
 
+#include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
@@ -244,7 +245,7 @@ bool OpenXRAPI::create_instance() {
 		if (!is_extension_supported(requested_extension.key)) {
 			if (requested_extension.value == nullptr) {
 				// nullptr means this is a manditory extension so we fail
-				ERR_FAIL_V_MSG(false, "OpenXR: OpenXR Runtime does not support OpenGL extension!");
+				ERR_FAIL_V_MSG(false, String("OpenXR: OpenXR Runtime does not support ") + requested_extension.key + String(" extension!"));
 			} else {
 				// set this extension as not supported
 				*requested_extension.value = false;
@@ -663,7 +664,7 @@ bool OpenXRAPI::is_swapchain_format_supported(int64_t p_swapchain_format) {
 	return false;
 }
 
-bool OpenXRAPI::create_main_swapchain() {
+bool OpenXRAPI::create_swapchains() {
 	ERR_FAIL_NULL_V(graphics_extension, false);
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 
@@ -681,34 +682,36 @@ bool OpenXRAPI::create_main_swapchain() {
 		already rendering the next frame.
 
 		Finally an area we need to expand upon is that Foveated rendering is only enabled for the swap chain we create,
-		as we render 3D content into internal buffers that are copied into the swapchain, we don't get any of the performance gains
-		until such time as we implement VRS.
+		as we render 3D content into internal buffers that are copied into the swapchain, we do now have (basic) VRS support
 	*/
-
-	// Build a vector with swapchain formats we want to use, from best fit to worst
-	Vector<int64_t> usable_swapchain_formats;
-	int64_t swapchain_format_to_use = 0;
-
-	graphics_extension->get_usable_swapchain_formats(usable_swapchain_formats);
-
-	// now find out which one is supported
-	for (int i = 0; i < usable_swapchain_formats.size() && swapchain_format_to_use == 0; i++) {
-		if (is_swapchain_format_supported(usable_swapchain_formats[i])) {
-			swapchain_format_to_use = usable_swapchain_formats[i];
-		}
-	}
-
-	if (swapchain_format_to_use == 0) {
-		swapchain_format_to_use = usable_swapchain_formats[0]; // just use the first one and hope for the best...
-		print_line("Couldn't find usable swap chain format, using", get_swapchain_format_name(swapchain_format_to_use), "instead.");
-	} else {
-		print_line("Using swap chain format:", get_swapchain_format_name(swapchain_format_to_use));
-	}
 
 	Size2 recommended_size = get_recommended_target_size();
 
-	if (!create_swapchain(swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchain, &swapchain_graphics_data)) {
-		return false;
+	// We start with our color swapchain...
+	{
+		// Build a vector with swapchain formats we want to use, from best fit to worst
+		Vector<int64_t> usable_swapchain_formats;
+		int64_t swapchain_format_to_use = 0;
+
+		graphics_extension->get_usable_swapchain_formats(usable_swapchain_formats);
+
+		// now find out which one is supported
+		for (int i = 0; i < usable_swapchain_formats.size() && swapchain_format_to_use == 0; i++) {
+			if (is_swapchain_format_supported(usable_swapchain_formats[i])) {
+				swapchain_format_to_use = usable_swapchain_formats[i];
+			}
+		}
+
+		if (swapchain_format_to_use == 0) {
+			swapchain_format_to_use = usable_swapchain_formats[0]; // just use the first one and hope for the best...
+			print_line("Couldn't find usable color swap chain format, using", get_swapchain_format_name(swapchain_format_to_use), "instead.");
+		} else {
+			print_line("Using color swap chain format:", get_swapchain_format_name(swapchain_format_to_use));
+		}
+
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
+			return false;
+		}
 	}
 
 	views = (XrView *)memalloc(sizeof(XrView) * view_count);
@@ -717,18 +720,73 @@ bool OpenXRAPI::create_main_swapchain() {
 	projection_views = (XrCompositionLayerProjectionView *)memalloc(sizeof(XrCompositionLayerProjectionView) * view_count);
 	ERR_FAIL_NULL_V_MSG(projection_views, false, "OpenXR Couldn't allocate memory for projection views");
 
+	// We create our depth swapchain if:
+	// - we support our depth layer extension
+	// - we have our spacewarp extension (not yet implemented)
+	if (OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
+		// Build a vector with swapchain formats we want to use, from best fit to worst
+		Vector<int64_t> usable_swapchain_formats;
+		int64_t swapchain_format_to_use = 0;
+
+		graphics_extension->get_usable_depth_formats(usable_swapchain_formats);
+
+		// now find out which one is supported
+		for (int i = 0; i < usable_swapchain_formats.size() && swapchain_format_to_use == 0; i++) {
+			if (is_swapchain_format_supported(usable_swapchain_formats[i])) {
+				swapchain_format_to_use = usable_swapchain_formats[i];
+			}
+		}
+
+		if (swapchain_format_to_use == 0) {
+			swapchain_format_to_use = usable_swapchain_formats[0]; // just use the first one and hope for the best...
+			print_line("Couldn't find usable depth swap chain format, using", get_swapchain_format_name(swapchain_format_to_use), "instead.");
+		} else {
+			print_line("Using depth swap chain format:", get_swapchain_format_name(swapchain_format_to_use));
+		}
+
+		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
+			return false;
+		}
+
+		depth_views = (XrCompositionLayerDepthInfoKHR *)memalloc(sizeof(XrCompositionLayerDepthInfoKHR) * view_count);
+		ERR_FAIL_NULL_V_MSG(depth_views, false, "OpenXR Couldn't allocate memory for depth views");
+	}
+
+	// We create our velocity swapchain if:
+	// - we have our spacewarp extension (not yet implemented)
+	{
+		// TBD
+	}
+
 	for (uint32_t i = 0; i < view_count; i++) {
 		views[i].type = XR_TYPE_VIEW;
 		views[i].next = nullptr;
 
 		projection_views[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
 		projection_views[i].next = nullptr;
-		projection_views[i].subImage.swapchain = swapchain;
+		projection_views[i].subImage.swapchain = swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain;
 		projection_views[i].subImage.imageArrayIndex = i;
 		projection_views[i].subImage.imageRect.offset.x = 0;
 		projection_views[i].subImage.imageRect.offset.y = 0;
 		projection_views[i].subImage.imageRect.extent.width = recommended_size.width;
 		projection_views[i].subImage.imageRect.extent.height = recommended_size.height;
+
+		if (OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && depth_views) {
+			projection_views[i].next = &depth_views[i];
+
+			depth_views[i].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
+			depth_views[i].next = nullptr;
+			depth_views[i].subImage.swapchain = swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain;
+			depth_views[i].subImage.imageArrayIndex = 0;
+			depth_views[i].subImage.imageRect.offset.x = 0;
+			depth_views[i].subImage.imageRect.offset.y = 0;
+			depth_views[i].subImage.imageRect.extent.width = recommended_size.width;
+			depth_views[i].subImage.imageRect.extent.height = recommended_size.height;
+			depth_views[i].minDepth = 0.0;
+			depth_views[i].maxDepth = 1.0;
+			depth_views[i].nearZ = 0.01; // Near and far Z will be set to the correct values in fill_projection_matrix
+			depth_views[i].farZ = 100.0;
+		}
 	};
 
 	return true;
@@ -740,7 +798,7 @@ void OpenXRAPI::destroy_session() {
 	}
 
 	if (graphics_extension) {
-		graphics_extension->cleanup_swapchain_graphics_data(&swapchain_graphics_data);
+		graphics_extension->cleanup_swapchain_graphics_data(&swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data);
 	}
 
 	if (views != nullptr) {
@@ -753,9 +811,16 @@ void OpenXRAPI::destroy_session() {
 		projection_views = nullptr;
 	}
 
-	if (swapchain != XR_NULL_HANDLE) {
-		xrDestroySwapchain(swapchain);
-		swapchain = XR_NULL_HANDLE;
+	if (depth_views != nullptr) {
+		memfree(depth_views);
+		depth_views = nullptr;
+	}
+
+	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
+		if (swapchains[i].swapchain != XR_NULL_HANDLE) {
+			xrDestroySwapchain(swapchains[i].swapchain);
+			swapchains[i].swapchain = XR_NULL_HANDLE;
+		}
 	}
 
 	if (supported_swapchain_formats != nullptr) {
@@ -789,7 +854,7 @@ void OpenXRAPI::destroy_session() {
 	}
 }
 
-bool OpenXRAPI::create_swapchain(int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, XrSwapchain &r_swapchain, void **r_swapchain_graphics_data) {
+bool OpenXRAPI::create_swapchain(XrSwapchainUsageFlags p_usage_flags, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, XrSwapchain &r_swapchain, void **r_swapchain_graphics_data) {
 	ERR_FAIL_COND_V(session == XR_NULL_HANDLE, false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
 
@@ -807,7 +872,7 @@ bool OpenXRAPI::create_swapchain(int64_t p_swapchain_format, uint32_t p_width, u
 		XR_TYPE_SWAPCHAIN_CREATE_INFO, // type
 		next_pointer, // next
 		0, // createFlags
-		XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, // usageFlags
+		p_usage_flags, // usageFlags
 		p_swapchain_format, // format
 		p_sample_count, // sampleCount
 		p_width, // width
@@ -871,7 +936,7 @@ bool OpenXRAPI::on_state_ready() {
 	// That will be very very ugly
 	// The other possibility is to create a separate OpenXRViewport type specifically for this goal as part of our OpenXR module
 
-	if (!create_main_swapchain()) {
+	if (!create_swapchains()) {
 		return false;
 	}
 
@@ -1304,6 +1369,15 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 		return false;
 	}
 
+	// if we're using depth views, make sure we update our near and far there...
+	if (depth_views != nullptr) {
+		for (uint32_t i = 0; i < view_count; i++) {
+			depth_views[i].nearZ = p_z_near;
+			depth_views[i].farZ = p_z_far;
+		}
+	}
+
+	// now update our projection
 	return graphics_extension->create_projection_fov(views[p_view].fov, p_z_near, p_z_far, p_camera_matrix);
 }
 
@@ -1442,15 +1516,15 @@ bool OpenXRAPI::process() {
 	return true;
 }
 
-bool OpenXRAPI::acquire_image(XrSwapchain p_swapchain, uint32_t &r_image_index) {
-	ERR_FAIL_COND_V(image_acquired, true); // this was not released when it should be, error out and re-use...
+bool OpenXRAPI::acquire_image(OpenXRSwapChainInfo &p_swapchain) {
+	ERR_FAIL_COND_V(p_swapchain.image_acquired, true); // this was not released when it should be, error out and re-use...
 
 	XrResult result;
 	XrSwapchainImageAcquireInfo swapchain_image_acquire_info = {
 		XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO, // type
 		nullptr // next
 	};
-	result = xrAcquireSwapchainImage(p_swapchain, &swapchain_image_acquire_info, &r_image_index);
+	result = xrAcquireSwapchainImage(p_swapchain.swapchain, &swapchain_image_acquire_info, &p_swapchain.image_index);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to acquire swapchain image [", get_error_string(result), "]");
 		return false;
@@ -1462,7 +1536,7 @@ bool OpenXRAPI::acquire_image(XrSwapchain p_swapchain, uint32_t &r_image_index) 
 		17000000 // timeout in nanoseconds
 	};
 
-	result = xrWaitSwapchainImage(p_swapchain, &swapchain_image_wait_info);
+	result = xrWaitSwapchainImage(p_swapchain.swapchain, &swapchain_image_wait_info);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to wait for swapchain image [", get_error_string(result), "]");
 		return false;
@@ -1471,12 +1545,12 @@ bool OpenXRAPI::acquire_image(XrSwapchain p_swapchain, uint32_t &r_image_index) 
 	return true;
 }
 
-bool OpenXRAPI::release_image(XrSwapchain p_swapchain) {
+bool OpenXRAPI::release_image(OpenXRSwapChainInfo &p_swapchain) {
 	XrSwapchainImageReleaseInfo swapchain_image_release_info = {
 		XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO, // type
 		nullptr // next
 	};
-	XrResult result = xrReleaseSwapchainImage(swapchain, &swapchain_image_release_info);
+	XrResult result = xrReleaseSwapchainImage(p_swapchain.swapchain, &swapchain_image_release_info);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to release swapchain image! [", get_error_string(result), "]");
 		return false;
@@ -1590,7 +1664,33 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 
 	// TODO: at some point in time we may support multiple viewports in which case we need to handle that...
 
+	// Acquire our images
+	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
+		if (!swapchains[i].image_acquired && swapchains[i].swapchain != XR_NULL_HANDLE) {
+			if (!acquire_image(swapchains[i])) {
+				return false;
+			}
+			swapchains[i].image_acquired = true;
+		}
+	}
+
 	return true;
+}
+
+RID OpenXRAPI::get_color_texture() {
+	if (swapchains[OPENXR_SWAPCHAIN_COLOR].image_acquired) {
+		return graphics_extension->get_texture(swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data, swapchains[OPENXR_SWAPCHAIN_COLOR].image_index);
+	} else {
+		return RID();
+	}
+}
+
+RID OpenXRAPI::get_depth_texture() {
+	if (swapchains[OPENXR_SWAPCHAIN_DEPTH].image_acquired) {
+		return graphics_extension->get_texture(swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data, swapchains[OPENXR_SWAPCHAIN_DEPTH].image_index);
+	} else {
+		return RID();
+	}
 }
 
 void OpenXRAPI::post_draw_viewport(RID p_render_target) {
@@ -1598,20 +1698,7 @@ void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 		return;
 	}
 
-	// TODO: at some point in time we may support multiple viewports in which case we need to handle that...
-
-	// TODO: if we can get PR 51179 to work properly we can change away from this approach and move this into get_external_texture or something
-	if (!image_acquired) {
-		if (!acquire_image(swapchain, image_index)) {
-			return;
-		}
-		image_acquired = true;
-
-		// print_line("OpenXR: acquired image " + itos(image_index) + ", copying...");
-
-		// Copy our buffer into our swap chain (remove once PR 51179 is done)
-		graphics_extension->copy_render_target_to_image(p_render_target, swapchain_graphics_data, image_index);
-	}
+	// Nothing to do here at this point in time...
 };
 
 void OpenXRAPI::end_frame() {
@@ -1623,7 +1710,7 @@ void OpenXRAPI::end_frame() {
 		return;
 	}
 
-	if (frame_state.shouldRender && view_pose_valid && !image_acquired) {
+	if (frame_state.shouldRender && view_pose_valid && !swapchains[OPENXR_SWAPCHAIN_COLOR].image_acquired) {
 		print_line("OpenXR: No viewport was marked with use_xr, there is no rendered output!");
 	}
 
@@ -1631,7 +1718,7 @@ void OpenXRAPI::end_frame() {
 	// - shouldRender set to true
 	// - a valid view pose for projection_views[eye].pose to submit layer
 	// - an image to render
-	if (!frame_state.shouldRender || !view_pose_valid || !image_acquired) {
+	if (!frame_state.shouldRender || !view_pose_valid || !swapchains[OPENXR_SWAPCHAIN_COLOR].image_acquired) {
 		// submit 0 layers when we shouldn't render
 		XrFrameEndInfo frame_end_info = {
 			XR_TYPE_FRAME_END_INFO, // type
@@ -1652,10 +1739,12 @@ void OpenXRAPI::end_frame() {
 	}
 
 	// release our swapchain image if we acquired it
-	if (image_acquired) {
-		image_acquired = false; // whether we succeed or not, consider this released.
+	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
+		if (swapchains[i].image_acquired) {
+			swapchains[i].image_acquired = false; // whether we succeed or not, consider this released.
 
-		release_image(swapchain);
+			release_image(swapchains[i]);
+		}
 	}
 
 	for (uint32_t eye = 0; eye < view_count; eye++) {
@@ -1763,6 +1852,7 @@ OpenXRAPI::OpenXRAPI() {
 
 	// register our other extensions
 	register_extension_wrapper(memnew(OpenXRPalmPoseExtension(this)));
+	register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
 	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));

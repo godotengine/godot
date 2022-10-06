@@ -264,6 +264,9 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			} else {
 				EditorNode::get_singleton()->save_resource(edited_shaders[index].shader_inc);
 			}
+			if (edited_shaders[index].shader_editor) {
+				edited_shaders[index].shader_editor->tag_saved_version();
+			}
 		} break;
 		case FILE_SAVE_AS: {
 			int index = shader_tabs->get_current_tab();
@@ -281,6 +284,9 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 					path = "";
 				}
 				EditorNode::get_singleton()->save_resource_as(edited_shaders[index].shader_inc, path);
+			}
+			if (edited_shaders[index].shader_editor) {
+				edited_shaders[index].shader_editor->tag_saved_version();
 			}
 		} break;
 		case FILE_INSPECT: {

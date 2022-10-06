@@ -49,8 +49,6 @@ struct ThreadArrayProcessData {
 	}
 };
 
-#ifndef NO_THREADS
-
 template <class T>
 void process_array_thread(void *ud) {
 	T &data = *(T *)ud;
@@ -85,22 +83,5 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	}
 	memdelete_arr(threads);
 }
-
-#else
-
-template <class C, class M, class U>
-void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-	ThreadArrayProcessData<C, U> data;
-	data.method = p_method;
-	data.instance = p_instance;
-	data.userdata = p_userdata;
-	data.index.set(0);
-	data.elements = p_elements;
-	for (uint32_t i = 0; i < p_elements; i++) {
-		data.process(i);
-	}
-}
-
-#endif
 
 #endif // THREADED_ARRAY_PROCESSOR_H

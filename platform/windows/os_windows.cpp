@@ -295,11 +295,12 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	typedef LONG NTSTATUS, *PNTSTATUS;
+	typedef LONG NTSTATUS;
 	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
-		RTL_OSVERSIONINFOW fow = { 0 };
+		RTL_OSVERSIONINFOW fow;
+		ZeroMemory(&fow, sizeof(fow));
 		fow.dwOSVersionInfoSize = sizeof(fow);
 		if (version_ptr(&fow) == 0x00000000) {
 			return vformat("%d.%d.%d", (int64_t)fow.dwMajorVersion, (int64_t)fow.dwMinorVersion, (int64_t)fow.dwBuildNumber);
@@ -868,17 +869,6 @@ BOOL is_wow64() {
 	}
 
 	return wow64;
-}
-
-int OS_Windows::get_processor_count() const {
-	SYSTEM_INFO sysinfo;
-	if (is_wow64()) {
-		GetNativeSystemInfo(&sysinfo);
-	} else {
-		GetSystemInfo(&sysinfo);
-	}
-
-	return sysinfo.dwNumberOfProcessors;
 }
 
 String OS_Windows::get_processor_name() const {

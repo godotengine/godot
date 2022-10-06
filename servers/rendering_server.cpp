@@ -701,6 +701,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 }
 
 uint32_t RenderingServer::mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_array_index) const {
+	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
 	p_format &= ~ARRAY_FORMAT_INDEX;
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t vstr;

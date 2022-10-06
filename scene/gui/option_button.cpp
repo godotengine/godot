@@ -231,32 +231,7 @@ void OptionButton::pressed() {
 		return;
 	}
 
-	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
-	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
-	popup->set_size(Size2(size.width, 0));
-
-	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
-	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
-		if (!_was_pressed_by_mouse()) {
-			popup->set_focused_item(current);
-		} else {
-			popup->scroll_to_item(current);
-		}
-	} else {
-		for (int i = 0; i < popup->get_item_count(); i++) {
-			if (!popup->is_item_disabled(i)) {
-				if (!_was_pressed_by_mouse()) {
-					popup->set_focused_item(i);
-				} else {
-					popup->scroll_to_item(i);
-				}
-
-				break;
-			}
-		}
-	}
-
-	popup->popup();
+	show_popup();
 }
 
 void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
@@ -511,6 +486,39 @@ PopupMenu *OptionButton::get_popup() const {
 	return popup;
 }
 
+void OptionButton::show_popup() {
+	if (!get_viewport()) {
+		return;
+	}
+
+	Size2 size = get_size() * get_viewport()->get_canvas_transform().get_scale();
+	popup->set_position(get_screen_position() + Size2(0, size.height * get_global_transform().get_scale().y));
+	popup->set_size(Size2(size.width, 0));
+
+	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
+	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
+		if (!_was_pressed_by_mouse()) {
+			popup->set_focused_item(current);
+		} else {
+			popup->scroll_to_item(current);
+		}
+	} else {
+		for (int i = 0; i < popup->get_item_count(); i++) {
+			if (!popup->is_item_disabled(i)) {
+				if (!_was_pressed_by_mouse()) {
+					popup->set_focused_item(i);
+				} else {
+					popup->scroll_to_item(i);
+				}
+
+				break;
+			}
+		}
+	}
+
+	popup->popup();
+}
+
 void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 	popup->get_translatable_strings(p_strings);
 }
@@ -548,6 +556,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_int", "idx"), &OptionButton::_select_int);
 
 	ClassDB::bind_method(D_METHOD("get_popup"), &OptionButton::get_popup);
+	ClassDB::bind_method(D_METHOD("show_popup"), &OptionButton::show_popup);
 
 	ClassDB::bind_method(D_METHOD("set_item_count", "count"), &OptionButton::set_item_count);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &OptionButton::get_item_count);

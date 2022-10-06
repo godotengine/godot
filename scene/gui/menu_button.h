@@ -44,8 +44,6 @@ class MenuButton : public Button {
 
 	Vector2i mouse_pos_adjusted;
 
-	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-
 	void _popup_visibility_changed(bool p_visible);
 
 protected:
@@ -60,6 +58,8 @@ public:
 	virtual void pressed() override;
 
 	PopupMenu *get_popup() const;
+	void show_popup();
+
 	void set_switch_on_hover(bool p_enabled);
 	bool is_switch_on_hover();
 	void set_disable_shortcuts(bool p_disabled);

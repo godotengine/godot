@@ -405,6 +405,8 @@ public:
 	ParticlesStorage();
 	virtual ~ParticlesStorage();
 
+	bool free(RID p_rid);
+
 	/* PARTICLES */
 
 	bool owns_particles(RID p_rid) { return particles_owner.owns(p_rid); }

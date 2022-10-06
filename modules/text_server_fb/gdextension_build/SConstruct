@@ -63,7 +63,7 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
-        f'msdfgen_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+        f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_msdfgen_sources,
     )
     env.Append(LIBS=[lib])
@@ -194,7 +194,7 @@ if env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
 
     lib = env_freetype.Library(
-        f'freetype_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+        f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_freetype_sources,
     )
     env.Append(LIBS=[lib])
@@ -217,7 +217,7 @@ if env["platform"] == "macos":
     )
 else:
     library = env.SharedLibrary(
-        f'./bin/libtextserver_fallback.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["SHLIBSUFFIX"]}',
+        f'./bin/libtextserver_fallback{env["suffix"]}{env["SHLIBSUFFIX"]}',
         source=sources,
     )
 

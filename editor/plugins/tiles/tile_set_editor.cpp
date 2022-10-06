@@ -329,6 +329,7 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 		}
 	}
 	_update_sources_list(old_selected);
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
 }
 
 void TileSetEditor::_notification(int p_what) {
@@ -648,7 +649,12 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	// Add the listener again.
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
-		_update_sources_list();
+		if (first_edit) {
+			first_edit = false;
+			_set_source_sort(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_source_sort", 0));
+		} else {
+			_update_sources_list();
+		}
 		_update_patterns_list();
 	}
 

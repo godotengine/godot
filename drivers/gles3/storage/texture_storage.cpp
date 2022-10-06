@@ -1183,6 +1183,18 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
 }
 
+/* DECAL INSTANCE API */
+
+RID TextureStorage::decal_instance_create(RID p_decal) {
+	return RID();
+}
+
+void TextureStorage::decal_instance_free(RID p_decal_instance) {
+}
+
+void TextureStorage::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
+}
+
 /* RENDER TARGET API */
 
 GLuint TextureStorage::system_fbo = 0;
@@ -1331,24 +1343,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->fbo = 0;
 		rt->color = 0;
 	}
-	/*
-	if (rt->external.fbo != 0) {
-		// free this
-		glDeleteFramebuffers(1, &rt->external.fbo);
-
-		// clean up our texture
-		Texture *t = get_texture(rt->external.texture);
-		t->alloc_height = 0;
-		t->alloc_width = 0;
-		t->width = 0;
-		t->height = 0;
-		t->active = false;
-		texture_free(rt->external.texture);
-		memdelete(t);
-
-		rt->external.fbo = 0;
-	}
-	*/
 
 	Texture *tex = get_texture(rt->texture);
 	tex->alloc_height = 0;
@@ -1400,6 +1394,13 @@ void TextureStorage::render_target_set_position(RID p_render_target, int p_x, in
 	rt->position = Point2i(p_x, p_y);
 }
 
+Point2i TextureStorage::render_target_get_position(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, Point2i());
+
+	return rt->position;
+};
+
 void TextureStorage::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -1416,9 +1417,9 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 }
 
 // TODO: convert to Size2i internally
-Size2i TextureStorage::render_target_get_size(RID p_render_target) {
+Size2i TextureStorage::render_target_get_size(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Size2());
+	ERR_FAIL_COND_V(!rt, Size2i());
 
 	return rt->size;
 }
@@ -1427,105 +1428,7 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	if (rt->external.fbo == 0) {
-		return rt->texture;
-	} else {
-		return rt->external.texture;
-	}
-}
-
-void TextureStorage::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	if (p_texture_id == 0) {
-		if (rt->external.fbo != 0) {
-			// free this
-			glDeleteFramebuffers(1, &rt->external.fbo);
-
-			// and this
-			if (rt->external.depth != 0) {
-				glDeleteRenderbuffers(1, &rt->external.depth);
-			}
-
-			// clean up our texture
-			Texture *t = get_texture(rt->external.texture);
-			t->alloc_height = 0;
-			t->alloc_width = 0;
-			t->width = 0;
-			t->height = 0;
-			t->active = false;
-			texture_free(rt->external.texture);
-			//memdelete(t);
-
-			rt->external.fbo = 0;
-			rt->external.color = 0;
-			rt->external.depth = 0;
-		}
-	} else {
-		Texture *t;
-
-		if (rt->external.fbo == 0) {
-			// create our fbo
-			glGenFramebuffers(1, &rt->external.fbo);
-			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
-
-			// allocate a texture
-			t = memnew(Texture);
-
-			t->type = Texture::TYPE_2D;
-			t->width = 0;
-			t->height = 0;
-			t->alloc_height = 0;
-			t->alloc_width = 0;
-			t->format = Image::FORMAT_RGBA8;
-			t->target = GL_TEXTURE_2D;
-			t->gl_format_cache = 0;
-			t->gl_internal_format_cache = 0;
-			t->gl_type_cache = 0;
-			t->total_data_size = 0;
-			t->mipmaps = 1;
-			t->active = true;
-			t->tex_id = 0;
-			t->render_target = rt;
-			t->is_render_target = true;
-
-			//rt->external.texture = make_rid(t);
-
-		} else {
-			// bind our frame buffer
-			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
-
-			// find our texture
-			t = get_texture(rt->external.texture);
-		}
-
-		// set our texture
-		t->tex_id = p_texture_id;
-		rt->external.color = p_texture_id;
-
-		// size shouldn't be different
-		t->width = rt->size.x;
-		t->height = rt->size.y;
-		t->alloc_height = rt->size.x;
-		t->alloc_width = rt->size.y;
-
-		// Switch our texture on our frame buffer
-		{
-			// set our texture as the destination for our framebuffer
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
-		}
-
-		// check status and unbind
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("framebuffer fail, status: " + get_framebuffer_error(status));
-		}
-
-		ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-	}
+	return rt->texture;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {
@@ -1536,6 +1439,13 @@ void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_t
 
 	_clear_render_target(rt);
 	_update_render_target(rt);
+}
+
+bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->is_transparent;
 }
 
 void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) {
@@ -1552,7 +1462,14 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 	_update_render_target(rt);
 }
 
-bool TextureStorage::render_target_was_used(RID p_render_target) {
+bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->direct_to_screen;
+}
+
+bool TextureStorage::render_target_was_used(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, false);
 
@@ -1577,6 +1494,13 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 	_clear_render_target(rt);
 	rt->msaa = p_msaa;
 	_update_render_target(rt);
+}
+
+RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_MSAA_DISABLED);
+
+	return rt->msaa;
 }
 
 void TextureStorage::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {

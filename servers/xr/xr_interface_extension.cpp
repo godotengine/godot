@@ -74,6 +74,15 @@ void XRInterfaceExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_anchor_detection_is_enabled, "enabled");
 	GDVIRTUAL_BIND(_get_camera_feed_id);
 
+	// override output methods
+	GDVIRTUAL_BIND(_get_color_texture);
+	GDVIRTUAL_BIND(_get_depth_texture);
+	GDVIRTUAL_BIND(_get_velocity_texture);
+
+	ClassDB::bind_method(D_METHOD("get_color_texture"), &XRInterfaceExtension::get_color_texture);
+	ClassDB::bind_method(D_METHOD("get_depth_texture"), &XRInterfaceExtension::get_depth_texture);
+	ClassDB::bind_method(D_METHOD("get_velocity_texture"), &XRInterfaceExtension::get_velocity_texture);
+
 	// helper methods
 	ClassDB::bind_method(D_METHOD("add_blit", "render_target", "src_rect", "dst_rect", "use_layer", "layer", "apply_lens_distortion", "eye_center", "k1", "k2", "upscale", "aspect_ratio"), &XRInterfaceExtension::add_blit);
 	ClassDB::bind_method(D_METHOD("get_render_target_texture", "render_target"), &XRInterfaceExtension::get_render_target_texture);
@@ -264,7 +273,7 @@ Projection XRInterfaceExtension::get_projection_for_view(uint32_t p_view, double
 
 	if (GDVIRTUAL_CALL(_get_projection_for_view, p_view, p_aspect, p_z_near, p_z_far, arr)) {
 		ERR_FAIL_COND_V_MSG(arr.size() != 16, Projection(), "Projection matrix must contain 16 floats");
-		real_t *m = (real_t *)cm.matrix;
+		real_t *m = (real_t *)cm.columns;
 		for (int i = 0; i < 16; i++) {
 			m[i] = arr[i];
 		}
@@ -280,6 +289,33 @@ RID XRInterfaceExtension::get_vrs_texture() {
 		return vrs_texture;
 	} else {
 		return XRInterface::get_vrs_texture();
+	}
+}
+
+RID XRInterfaceExtension::get_color_texture() {
+	RID texture;
+	if (GDVIRTUAL_CALL(_get_color_texture, texture)) {
+		return texture;
+	} else {
+		return RID();
+	}
+}
+
+RID XRInterfaceExtension::get_depth_texture() {
+	RID texture;
+	if (GDVIRTUAL_CALL(_get_depth_texture, texture)) {
+		return texture;
+	} else {
+		return RID();
+	}
+}
+
+RID XRInterfaceExtension::get_velocity_texture() {
+	RID texture;
+	if (GDVIRTUAL_CALL(_get_velocity_texture, texture)) {
+		return texture;
+	} else {
+		return RID();
 	}
 }
 

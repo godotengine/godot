@@ -150,6 +150,7 @@ void TextEditor::reload_text() {
 	te->tag_saved_version();
 
 	code_editor->update_line_and_column();
+	_validate_script();
 }
 
 void TextEditor::_validate_script() {
@@ -219,6 +220,10 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 	}
 
 	ensure_focus();
+}
+
+Variant TextEditor::get_navigation_state() {
+	return code_editor->get_navigation_state();
 }
 
 void TextEditor::trim_trailing_whitespace() {
@@ -440,6 +445,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			bool is_folded = tx->is_line_folded(row);
 
 			if (tx->is_move_caret_on_right_click_enabled()) {
+				tx->remove_secondary_carets();
 				if (tx->has_selection()) {
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
@@ -466,9 +472,9 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	Ref<InputEventKey> k = ev;
 	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
 		CodeEdit *tx = code_editor->get_text_editor();
-		int line = tx->get_caret_line();
-		tx->adjust_viewport_to_caret();
-		_make_context_menu(tx->has_selection(), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos()));
+		int line = tx->get_caret_line(0);
+		tx->adjust_viewport_to_caret(0);
+		_make_context_menu(tx->has_selection(0), tx->can_fold_line(line), tx->is_line_folded(line), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->get_caret_draw_pos(0)));
 		context_menu->grab_focus();
 	}
 }

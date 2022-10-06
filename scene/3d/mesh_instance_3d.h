@@ -90,6 +90,7 @@ public:
 	Node *create_multiple_convex_collisions_node();
 	void create_multiple_convex_collisions();
 
+	MeshInstance3D *create_debug_tangents_node();
 	void create_debug_tangents();
 
 	virtual AABB get_aabb() const override;

@@ -580,6 +580,9 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 }
 
 void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon() || !OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_capture_pointer()) {
+		return;
+	}
 	if (mouse_mode == p_mode) {
 		return;
 	}
@@ -612,6 +615,9 @@ MouseButton DisplayServerAndroid::mouse_get_button_state() const {
 }
 
 void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon()) {
+		return;
+	}
 	if (cursor_shape == p_shape) {
 		return;
 	}

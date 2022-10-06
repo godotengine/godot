@@ -566,7 +566,7 @@ void ScriptEditor::_save_history() {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -601,7 +601,7 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 		Node *n = tab_container->get_current_tab_control();
 
 		if (Object::cast_to<ScriptEditorBase>(n)) {
-			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+			history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
 		}
 		if (Object::cast_to<EditorHelp>(n)) {
 			history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -1301,26 +1301,15 @@ void ScriptEditor::_menu_option(int p_option) {
 					break;
 				}
 
-				if (script != nullptr) {
-					Vector<DocData::ClassDoc> documentations = script->get_documentation();
-					for (int j = 0; j < documentations.size(); j++) {
-						const DocData::ClassDoc &doc = documentations.get(j);
-						if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-							EditorHelp::get_doc_data()->remove_doc(doc.name);
-						}
-					}
+				if (script.is_valid()) {
+					clear_docs_from_script(script);
 				}
 
 				EditorNode::get_singleton()->push_item(resource.ptr());
 				EditorNode::get_singleton()->save_resource_as(resource);
 
-				if (script != nullptr) {
-					Vector<DocData::ClassDoc> documentations = script->get_documentation();
-					for (int j = 0; j < documentations.size(); j++) {
-						const DocData::ClassDoc &doc = documentations.get(j);
-						EditorHelp::get_doc_data()->add_doc(doc);
-						update_doc(doc.name);
-					}
+				if (script.is_valid()) {
+					update_docs_from_script(script);
 				}
 			} break;
 
@@ -1613,7 +1602,7 @@ void ScriptEditor::_notification(int p_what) {
 			EditorNode::get_singleton()->disconnect("stop_pressed", callable_mp(this, &ScriptEditor::_editor_stop));
 		} break;
 
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+		case NOTIFICATION_APPLICATION_FOCUS_IN: {
 			_test_script_times_on_disk();
 			_update_modified_scripts_for_external_editor();
 		} break;
@@ -2136,16 +2125,6 @@ void ScriptEditor::_update_script_names() {
 	_update_script_colors();
 }
 
-void ScriptEditor::_update_script_connections() {
-	for (int i = 0; i < tab_container->get_tab_count(); i++) {
-		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(tab_container->get_tab_control(i));
-		if (!ste) {
-			continue;
-		}
-		ste->_update_connected_methods();
-	}
-}
-
 Ref<TextFile> ScriptEditor::_load_text_file(const String &p_path, Error *r_error) const {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -2428,14 +2407,8 @@ void ScriptEditor::save_current_script() {
 		return;
 	}
 
-	if (script != nullptr) {
-		Vector<DocData::ClassDoc> documentations = script->get_documentation();
-		for (int j = 0; j < documentations.size(); j++) {
-			const DocData::ClassDoc &doc = documentations.get(j);
-			if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-				EditorHelp::get_doc_data()->remove_doc(doc.name);
-			}
-		}
+	if (script.is_valid()) {
+		clear_docs_from_script(script);
 	}
 
 	if (resource->is_built_in()) {
@@ -2450,13 +2423,8 @@ void ScriptEditor::save_current_script() {
 		EditorNode::get_singleton()->save_resource(resource);
 	}
 
-	if (script != nullptr) {
-		Vector<DocData::ClassDoc> documentations = script->get_documentation();
-		for (int j = 0; j < documentations.size(); j++) {
-			const DocData::ClassDoc &doc = documentations.get(j);
-			EditorHelp::get_doc_data()->add_doc(doc);
-			update_doc(doc.name);
-		}
+	if (script.is_valid()) {
+		update_docs_from_script(script);
 	}
 }
 
@@ -2501,25 +2469,14 @@ void ScriptEditor::save_all_scripts() {
 				continue;
 			}
 
-			if (script != nullptr) {
-				Vector<DocData::ClassDoc> documentations = script->get_documentation();
-				for (int j = 0; j < documentations.size(); j++) {
-					const DocData::ClassDoc &doc = documentations.get(j);
-					if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
-						EditorHelp::get_doc_data()->remove_doc(doc.name);
-					}
-				}
+			if (script.is_valid()) {
+				clear_docs_from_script(script);
 			}
 
 			EditorNode::get_singleton()->save_resource(edited_res); //external script, save it
 
-			if (script != nullptr) {
-				Vector<DocData::ClassDoc> documentations = script->get_documentation();
-				for (int j = 0; j < documentations.size(); j++) {
-					const DocData::ClassDoc &doc = documentations.get(j);
-					EditorHelp::get_doc_data()->add_doc(doc);
-					update_doc(doc.name);
-				}
+			if (script.is_valid()) {
+				update_docs_from_script(script);
 			}
 		} else {
 			// For built-in scripts, save their scenes instead.
@@ -2819,7 +2776,6 @@ void ScriptEditor::_tree_changed() {
 
 	waiting_update_names = true;
 	call_deferred(SNAME("_update_script_names"));
-	call_deferred(SNAME("_update_script_connections"));
 }
 
 void ScriptEditor::_split_dragged(float) {
@@ -3342,6 +3298,29 @@ void ScriptEditor::update_doc(const String &p_name) {
 	}
 }
 
+void ScriptEditor::clear_docs_from_script(const Ref<Script> &p_script) {
+	ERR_FAIL_COND(p_script.is_null());
+
+	Vector<DocData::ClassDoc> documentations = p_script->get_documentation();
+	for (int j = 0; j < documentations.size(); j++) {
+		const DocData::ClassDoc &doc = documentations.get(j);
+		if (EditorHelp::get_doc_data()->has_doc(doc.name)) {
+			EditorHelp::get_doc_data()->remove_doc(doc.name);
+		}
+	}
+}
+
+void ScriptEditor::update_docs_from_script(const Ref<Script> &p_script) {
+	ERR_FAIL_COND(p_script.is_null());
+
+	Vector<DocData::ClassDoc> documentations = p_script->get_documentation();
+	for (int j = 0; j < documentations.size(); j++) {
+		const DocData::ClassDoc &doc = documentations.get(j);
+		EditorHelp::get_doc_data()->add_doc(doc);
+		update_doc(doc.name);
+	}
+}
+
 void ScriptEditor::_update_selected_editor_menu() {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		bool current = tab_container->get_current_tab() == i;
@@ -3381,7 +3360,7 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 	Node *n = tab_container->get_current_tab_control();
 
 	if (Object::cast_to<ScriptEditorBase>(n)) {
-		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_edit_state();
+		history.write[history_pos].state = Object::cast_to<ScriptEditorBase>(n)->get_navigation_state();
 	}
 	if (Object::cast_to<EditorHelp>(n)) {
 		history.write[history_pos].state = Object::cast_to<EditorHelp>(n)->get_scroll();
@@ -3392,11 +3371,12 @@ void ScriptEditor::_update_history_pos(int p_new_pos) {
 
 	n = history[history_pos].control;
 
-	if (Object::cast_to<ScriptEditorBase>(n)) {
-		Object::cast_to<ScriptEditorBase>(n)->set_edit_state(history[history_pos].state);
-		Object::cast_to<ScriptEditorBase>(n)->ensure_focus();
+	ScriptEditorBase *seb = Object::cast_to<ScriptEditorBase>(n);
+	if (seb) {
+		seb->set_edit_state(history[history_pos].state);
+		seb->ensure_focus();
 
-		Ref<Script> script = Object::cast_to<ScriptEditorBase>(n)->get_edited_resource();
+		Ref<Script> script = seb->get_edited_resource();
 		if (script != nullptr) {
 			notify_script_changed(script);
 		}
@@ -3616,7 +3596,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_goto_script_line2", &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method("_copy_script_path", &ScriptEditor::_copy_script_path);
 
-	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
 	ClassDB::bind_method("_help_class_open", &ScriptEditor::_help_class_open);
 	ClassDB::bind_method("_help_tab_goto", &ScriptEditor::_help_tab_goto);
 	ClassDB::bind_method("_live_auto_reload_running_scripts", &ScriptEditor::_live_auto_reload_running_scripts);

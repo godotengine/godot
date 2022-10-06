@@ -48,7 +48,6 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	private final Godot godot;
 	private final GodotInputHandler mInputHandler;
 	private final VkRenderer mRenderer;
-	private PointerIcon pointerIcon;
 
 	public GodotVulkanRenderView(Context context, Godot godot) {
 		super(context);
@@ -57,7 +56,7 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 		mInputHandler = new GodotInputHandler(this);
 		mRenderer = new VkRenderer();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			pointerIcon = PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT);
+			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
 		}
 		setFocusableInTouchMode(true);
 		startRenderer(mRenderer);
@@ -149,13 +148,16 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	@Keep
 	public void setPointerIcon(int pointerType) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
+			setPointerIcon(PointerIcon.getSystemIcon(getContext(), pointerType));
 		}
 	}
 
 	@Override
 	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
-		return pointerIcon;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			return getPointerIcon();
+		}
+		return super.onResolvePointerIcon(me, pointerIndex);
 	}
 
 	@Override

@@ -38,6 +38,7 @@
 #include "core/version_generated.gen.h"
 
 #include <stdarg.h>
+#include <thread>
 
 OS *OS::singleton = nullptr;
 uint64_t OS::target_ticks = 0;
@@ -321,19 +322,11 @@ String OS::get_unique_id() const {
 }
 
 int OS::get_processor_count() const {
-	return 1;
+	return std::thread::hardware_concurrency();
 }
 
 String OS::get_processor_name() const {
 	return "";
-}
-
-bool OS::can_use_threads() const {
-#ifdef NO_THREADS
-	return false;
-#else
-	return true;
-#endif
 }
 
 void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
@@ -519,10 +512,10 @@ void OS::add_frame_delay(bool p_can_draw) {
 	if (is_in_low_processor_usage_mode() || !p_can_draw) {
 		dynamic_delay = get_low_processor_usage_mode_sleep_usec();
 	}
-	const int target_fps = Engine::get_singleton()->get_target_fps();
-	if (target_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
+	const int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0 && !Engine::get_singleton()->is_editor_hint()) {
 		// Override the low processor usage mode sleep delay if the target FPS is lower.
-		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / target_fps));
+		dynamic_delay = MAX(dynamic_delay, (uint64_t)(1000000 / max_fps));
 	}
 
 	if (dynamic_delay > 0) {

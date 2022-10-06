@@ -30,7 +30,7 @@
 
 #include "dir_access_macos.h"
 
-#if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include <errno.h>
 
@@ -78,4 +78,4 @@ bool DirAccessMacOS::is_hidden(const String &p_name) {
 	return [hidden boolValue];
 }
 
-#endif // UNIX_ENABLED || LIBC_FILEIO_ENABLED
+#endif // UNIX_ENABLED

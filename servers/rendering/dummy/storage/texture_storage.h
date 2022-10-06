@@ -146,19 +146,28 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 
+	/* DECAL INSTANCE */
+
+	virtual RID decal_instance_create(RID p_decal) override { return RID(); }
+	virtual void decal_instance_free(RID p_decal_instance) override {}
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
+
 	/* RENDER TARGET */
 
 	virtual RID render_target_create() override { return RID(); }
 	virtual void render_target_free(RID p_rid) override {}
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override {}
+	virtual Point2i render_target_get_position(RID p_render_target) const override { return Point2i(); }
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override {}
-	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override {}
+	virtual Size2i render_target_get_size(RID p_render_target) const override { return Size2i(); }
 	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override {}
+	virtual bool render_target_get_transparent(RID p_render_target) const override { return false; }
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override {}
-	virtual bool render_target_was_used(RID p_render_target) override { return false; }
+	virtual bool render_target_get_direct_to_screen(RID p_render_target) const override { return false; }
+	virtual bool render_target_was_used(RID p_render_target) const override { return false; }
 	virtual void render_target_set_as_unused(RID p_render_target) override {}
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override {}
+	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override { return RS::VIEWPORT_MSAA_DISABLED; }
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) override {}
 	virtual bool render_target_is_clear_requested(RID p_render_target) override { return false; }
@@ -170,8 +179,19 @@ public:
 	virtual Rect2i render_target_get_sdf_rect(RID p_render_target) const override { return Rect2i(); }
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) override {}
 
-	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override{};
-	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override{};
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override {}
+	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_DISABLED; }
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
+
+	virtual void render_target_set_override_color(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_override_color(RID p_render_target) const override { return RID(); }
+	virtual void render_target_set_override_depth(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_override_depth(RID p_render_target) const override { return RID(); }
+	virtual void render_target_set_override_velocity(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_override_velocity(RID p_render_target) const override { return RID(); }
+
+	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
 };
 
 } // namespace RendererDummy

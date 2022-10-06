@@ -81,6 +81,15 @@ public:
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
 	virtual uint64_t light_get_version(RID p_light) const override { return 0; }
 
+	/* LIGHT INSTANCE API */
+
+	RID light_instance_create(RID p_light) override { return RID(); }
+	void light_instance_free(RID p_light) override {}
+	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override {}
+	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override {}
+	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override {}
+	void light_instance_mark_visible(RID p_light_instance) override {}
+
 	/* PROBE API */
 	virtual RID reflection_probe_allocate() override { return RID(); }
 	virtual void reflection_probe_initialize(RID p_rid) override {}
@@ -110,7 +119,26 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override { return 0.0; }
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const override { return false; }
 
+	/* REFLECTION ATLAS */
+
+	virtual RID reflection_atlas_create() override { return RID(); }
+	virtual void reflection_atlas_free(RID p_ref_atlas) override {}
+	virtual int reflection_atlas_get_size(RID p_ref_atlas) const override { return 0; }
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override {}
+
+	/* REFLECTION PROBE INSTANCE */
+
+	virtual RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
+	virtual void reflection_probe_instance_free(RID p_instance) override {}
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override {}
+	virtual void reflection_probe_release_atlas_index(RID p_instance) override {}
+	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
+	virtual bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }
+	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override { return false; }
+	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) override { return true; }
+
 	/* LIGHTMAP CAPTURE */
+
 	virtual RID lightmap_allocate() override { return RID(); }
 	virtual void lightmap_initialize(RID p_rid) override {}
 	virtual void lightmap_free(RID p_rid) override {}
@@ -129,6 +157,25 @@ public:
 	virtual bool lightmap_is_interior(RID p_lightmap) const override { return false; }
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override {}
 	virtual float lightmap_get_probe_capture_update_speed() const override { return 0; }
+
+	/* LIGHTMAP INSTANCE */
+
+	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
+	void lightmap_instance_free(RID p_lightmap) override {}
+	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override {}
+
+	/* SHADOW ATLAS API */
+	virtual RID shadow_atlas_create() override { return RID(); }
+	virtual void shadow_atlas_free(RID p_atlas) override {}
+	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override {}
+	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
+
+	virtual void shadow_atlas_update(RID p_atlas) override {}
+
+	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
+	virtual int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
+	virtual void set_directional_shadow_count(int p_count) override {}
 };
 
 } // namespace RendererDummy

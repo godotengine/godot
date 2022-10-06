@@ -490,7 +490,7 @@ public:
 		bool collide_separation_ray = false;
 		HashSet<RID> exclude_bodies;
 		HashSet<ObjectID> exclude_objects;
-		bool recovery_as_collision = false; // Don't report margin recovery as collision by default, only used for floor snapping.
+		bool recovery_as_collision = false;
 
 		MotionParameters() {}
 

@@ -197,7 +197,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _update_status_bar_theme();
 
-	void _delete_line(int p_line);
+	void _delete_line(int p_line, int p_caret);
 	void _toggle_scripts_pressed();
 
 protected:
@@ -246,6 +246,7 @@ public:
 
 	Variant get_edit_state();
 	void set_edit_state(const Variant &p_state);
+	Variant get_navigation_state();
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);

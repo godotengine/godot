@@ -1489,12 +1489,12 @@ void EditorPropertyFloat::update_property() {
 void EditorPropertyFloat::_bind_methods() {
 }
 
-void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_angle_in_radians) {
+void EditorPropertyFloat::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_exp_range, bool p_greater, bool p_lesser, const String &p_suffix, bool p_angle_in_radians) {
 	angle_in_radians = p_angle_in_radians;
 	spin->set_min(p_min);
 	spin->set_max(p_max);
 	spin->set_step(p_step);
-	spin->set_hide_slider(p_no_slider);
+	spin->set_hide_slider(p_hide_slider);
 	spin->set_exp_ratio(p_exp_range);
 	spin->set_allow_greater(p_greater);
 	spin->set_allow_lesser(p_lesser);
@@ -1797,12 +1797,12 @@ void EditorPropertyVector2::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link, const String &p_suffix) {
+void EditorPropertyVector2::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 2; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -1907,12 +1907,12 @@ void EditorPropertyRect2::_notification(int p_what) {
 void EditorPropertyRect2::_bind_methods() {
 }
 
-void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyRect2::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2078,13 +2078,13 @@ void EditorPropertyVector3::_notification(int p_what) {
 void EditorPropertyVector3::_bind_methods() {
 }
 
-void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_no_slider, bool p_link, const String &p_suffix, bool p_angle_in_radians) {
+void EditorPropertyVector3::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_angle_in_radians) {
 	angle_in_radians = p_angle_in_radians;
 	for (int i = 0; i < 3; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2210,12 +2210,12 @@ void EditorPropertyVector2i::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_no_slider, bool p_link, const String &p_suffix) {
+void EditorPropertyVector2i::setup(int p_min, int p_max, bool p_hide_slider, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 2; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(1);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2320,12 +2320,12 @@ void EditorPropertyRect2i::_notification(int p_what) {
 void EditorPropertyRect2i::_bind_methods() {
 }
 
-void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyRect2i::setup(int p_min, int p_max, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(1);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2464,12 +2464,12 @@ void EditorPropertyVector3i::_notification(int p_what) {
 void EditorPropertyVector3i::_bind_methods() {
 }
 
-void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_no_slider, bool p_link, const String &p_suffix) {
+void EditorPropertyVector3i::setup(int p_min, int p_max, bool p_hide_slider, bool p_link, const String &p_suffix) {
 	for (int i = 0; i < 3; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(1);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -2573,12 +2573,12 @@ void EditorPropertyPlane::_notification(int p_what) {
 void EditorPropertyPlane::_bind_methods() {
 }
 
-void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyPlane::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 	}
@@ -2734,12 +2734,12 @@ void EditorPropertyQuaternion::_notification(int p_what) {
 void EditorPropertyQuaternion::_bind_methods() {
 }
 
-void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix, bool p_hide_editor) {
+void EditorPropertyQuaternion::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix, bool p_hide_editor) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		// Quaternion is inherently unitless, however someone may want to use it as
@@ -2882,16 +2882,14 @@ void EditorPropertyVector4::_notification(int p_what) {
 void EditorPropertyVector4::_bind_methods() {
 }
 
-void EditorPropertyVector4::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyVector4::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
-		// Vector4 is inherently unitless, however someone may want to use it as
-		// a generic way to store 4 values, so we'll still respect the suffix.
 		spin[i]->set_suffix(p_suffix);
 	}
 }
@@ -2974,11 +2972,11 @@ void EditorPropertyVector4i::_notification(int p_what) {
 void EditorPropertyVector4i::_bind_methods() {
 }
 
-void EditorPropertyVector4i::setup(double p_min, double p_max, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyVector4i::setup(double p_min, double p_max, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 4; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -3069,12 +3067,12 @@ void EditorPropertyAABB::_notification(int p_what) {
 void EditorPropertyAABB::_bind_methods() {
 }
 
-void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyAABB::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 6; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
@@ -3157,12 +3155,12 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 void EditorPropertyTransform2D::_bind_methods() {
 }
 
-void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyTransform2D::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 6; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 3 == 2) {
@@ -3249,12 +3247,12 @@ void EditorPropertyBasis::_notification(int p_what) {
 void EditorPropertyBasis::_bind_methods() {
 }
 
-void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyBasis::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 9; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		// Basis is inherently unitless, however someone may want to use it as
@@ -3347,12 +3345,12 @@ void EditorPropertyTransform3D::_notification(int p_what) {
 void EditorPropertyTransform3D::_bind_methods() {
 }
 
-void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyTransform3D::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 12; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 4 == 3) {
@@ -3393,22 +3391,22 @@ void EditorPropertyProjection::_value_changed(double val, const String &p_name) 
 	}
 
 	Projection p;
-	p.matrix[0][0] = spin[0]->get_value();
-	p.matrix[0][1] = spin[1]->get_value();
-	p.matrix[0][2] = spin[2]->get_value();
-	p.matrix[0][3] = spin[3]->get_value();
-	p.matrix[1][0] = spin[4]->get_value();
-	p.matrix[1][1] = spin[5]->get_value();
-	p.matrix[1][2] = spin[6]->get_value();
-	p.matrix[1][3] = spin[7]->get_value();
-	p.matrix[2][0] = spin[8]->get_value();
-	p.matrix[2][1] = spin[9]->get_value();
-	p.matrix[2][2] = spin[10]->get_value();
-	p.matrix[2][3] = spin[11]->get_value();
-	p.matrix[3][0] = spin[12]->get_value();
-	p.matrix[3][1] = spin[13]->get_value();
-	p.matrix[3][2] = spin[14]->get_value();
-	p.matrix[3][3] = spin[15]->get_value();
+	p.columns[0][0] = spin[0]->get_value();
+	p.columns[0][1] = spin[1]->get_value();
+	p.columns[0][2] = spin[2]->get_value();
+	p.columns[0][3] = spin[3]->get_value();
+	p.columns[1][0] = spin[4]->get_value();
+	p.columns[1][1] = spin[5]->get_value();
+	p.columns[1][2] = spin[6]->get_value();
+	p.columns[1][3] = spin[7]->get_value();
+	p.columns[2][0] = spin[8]->get_value();
+	p.columns[2][1] = spin[9]->get_value();
+	p.columns[2][2] = spin[10]->get_value();
+	p.columns[2][3] = spin[11]->get_value();
+	p.columns[3][0] = spin[12]->get_value();
+	p.columns[3][1] = spin[13]->get_value();
+	p.columns[3][2] = spin[14]->get_value();
+	p.columns[3][3] = spin[15]->get_value();
 
 	emit_changed(get_edited_property(), p, p_name);
 }
@@ -3419,22 +3417,22 @@ void EditorPropertyProjection::update_property() {
 
 void EditorPropertyProjection::update_using_transform(Projection p_transform) {
 	setting = true;
-	spin[0]->set_value(p_transform.matrix[0][0]);
-	spin[1]->set_value(p_transform.matrix[0][1]);
-	spin[2]->set_value(p_transform.matrix[0][2]);
-	spin[3]->set_value(p_transform.matrix[0][3]);
-	spin[4]->set_value(p_transform.matrix[1][0]);
-	spin[5]->set_value(p_transform.matrix[1][1]);
-	spin[6]->set_value(p_transform.matrix[1][2]);
-	spin[7]->set_value(p_transform.matrix[1][3]);
-	spin[8]->set_value(p_transform.matrix[2][0]);
-	spin[9]->set_value(p_transform.matrix[2][1]);
-	spin[10]->set_value(p_transform.matrix[2][2]);
-	spin[11]->set_value(p_transform.matrix[2][3]);
-	spin[12]->set_value(p_transform.matrix[3][0]);
-	spin[13]->set_value(p_transform.matrix[3][1]);
-	spin[14]->set_value(p_transform.matrix[3][2]);
-	spin[15]->set_value(p_transform.matrix[3][3]);
+	spin[0]->set_value(p_transform.columns[0][0]);
+	spin[1]->set_value(p_transform.columns[0][1]);
+	spin[2]->set_value(p_transform.columns[0][2]);
+	spin[3]->set_value(p_transform.columns[0][3]);
+	spin[4]->set_value(p_transform.columns[1][0]);
+	spin[5]->set_value(p_transform.columns[1][1]);
+	spin[6]->set_value(p_transform.columns[1][2]);
+	spin[7]->set_value(p_transform.columns[1][3]);
+	spin[8]->set_value(p_transform.columns[2][0]);
+	spin[9]->set_value(p_transform.columns[2][1]);
+	spin[10]->set_value(p_transform.columns[2][2]);
+	spin[11]->set_value(p_transform.columns[2][3]);
+	spin[12]->set_value(p_transform.columns[3][0]);
+	spin[13]->set_value(p_transform.columns[3][1]);
+	spin[14]->set_value(p_transform.columns[3][2]);
+	spin[15]->set_value(p_transform.columns[3][3]);
 	setting = false;
 }
 
@@ -3453,12 +3451,12 @@ void EditorPropertyProjection::_notification(int p_what) {
 void EditorPropertyProjection::_bind_methods() {
 }
 
-void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, bool p_no_slider, const String &p_suffix) {
+void EditorPropertyProjection::setup(double p_min, double p_max, double p_step, bool p_hide_slider, const String &p_suffix) {
 	for (int i = 0; i < 16; i++) {
 		spin[i]->set_min(p_min);
 		spin[i]->set_max(p_max);
 		spin[i]->set_step(p_step);
-		spin[i]->set_hide_slider(p_no_slider);
+		spin[i]->set_hide_slider(p_hide_slider);
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		if (i % 4 == 3) {
@@ -4218,7 +4216,7 @@ static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const Stri
 				hint.or_greater = true;
 			} else if (slice == "or_less") {
 				hint.or_less = true;
-			} else if (slice == "no_slider") {
+			} else if (slice == "hide_slider") {
 				hint.hide_slider = true;
 			} else if (slice == "exp") {
 				hint.exp_range = true;

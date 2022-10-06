@@ -235,14 +235,14 @@ public:
 		GLuint vertex_buffer;
 		GLuint vertex_array;
 		GLuint index_buffer;
-		int count;
+		int count = 0;
 		bool color_disabled = false;
 		Color color;
 	};
 
 	struct {
 		HashMap<PolygonID, PolygonBuffers> polygons;
-		PolygonID last_id;
+		PolygonID last_id = 0;
 	} polygon_buffers;
 
 	RendererCanvasRender::PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;

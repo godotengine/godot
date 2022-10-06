@@ -3772,7 +3772,7 @@ int EditorNode::new_scene() {
 	if (editor_data.get_edited_scene_count() > 1) {
 		for (int i = 0; i < editor_data.get_edited_scene_count() - 1; i++) {
 			bool unsaved = get_undo_redo()->is_history_unsaved(editor_data.get_scene_history_id(i));
-			if (!unsaved && editor_data.get_scene_path(i).is_empty()) {
+			if (!unsaved && editor_data.get_scene_path(i).is_empty() && editor_data.get_edited_scene_root(i) == nullptr) {
 				editor_data.remove_scene(i);
 				idx--;
 			}
@@ -7618,7 +7618,7 @@ bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
 	return discard;
 }
 
-EditorPlugin::AfterGUIInput EditorPluginList::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
+EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
 	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
@@ -7626,7 +7626,7 @@ EditorPlugin::AfterGUIInput EditorPluginList::forward_spatial_gui_input(Camera3D
 			continue;
 		}
 
-		EditorPlugin::AfterGUIInput current_after = plugins_list[i]->forward_spatial_gui_input(p_camera, p_event);
+		EditorPlugin::AfterGUIInput current_after = plugins_list[i]->forward_3d_gui_input(p_camera, p_event);
 		if (current_after == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 			after = EditorPlugin::AFTER_GUI_INPUT_STOP;
 		}
@@ -7650,15 +7650,15 @@ void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overla
 	}
 }
 
-void EditorPluginList::forward_spatial_draw_over_viewport(Control *p_overlay) {
+void EditorPluginList::forward_3d_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_spatial_draw_over_viewport(p_overlay);
+		plugins_list[i]->forward_3d_draw_over_viewport(p_overlay);
 	}
 }
 
-void EditorPluginList::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
+void EditorPluginList::forward_3d_force_draw_over_viewport(Control *p_overlay) {
 	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_spatial_force_draw_over_viewport(p_overlay);
+		plugins_list[i]->forward_3d_force_draw_over_viewport(p_overlay);
 	}
 }
 

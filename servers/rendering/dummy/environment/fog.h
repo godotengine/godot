@@ -41,7 +41,7 @@ public:
 
 	virtual RID fog_volume_allocate() override { return RID(); }
 	virtual void fog_volume_initialize(RID p_rid) override {}
-	virtual void fog_free(RID p_rid) override {}
+	virtual void fog_volume_free(RID p_rid) override {}
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override {}
 	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override {}

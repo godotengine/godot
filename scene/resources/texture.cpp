@@ -1209,6 +1209,8 @@ Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, 
 
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_replace(texture, tex);
+	} else {
+		texture = tex;
 	}
 
 	return OK;
@@ -1489,7 +1491,15 @@ void AtlasTexture::set_atlas(const Ref<Texture2D> &p_atlas) {
 	if (atlas == p_atlas) {
 		return;
 	}
+	// Support recursive AtlasTextures.
+	if (Ref<AtlasTexture>(atlas).is_valid()) {
+		atlas->disconnect(CoreStringNames::get_singleton()->changed, callable_mp((Resource *)this, &AtlasTexture::emit_changed));
+	}
 	atlas = p_atlas;
+	if (Ref<AtlasTexture>(atlas).is_valid()) {
+		atlas->connect(CoreStringNames::get_singleton()->changed, callable_mp((Resource *)this, &AtlasTexture::emit_changed));
+	}
+
 	emit_changed();
 }
 

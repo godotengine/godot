@@ -145,6 +145,12 @@ Error GLTFDocument::_serialize(Ref<GLTFState> state, const String &p_path) {
 		return Error::FAILED;
 	}
 
+	/* STEP SERIALIZE TEXTURE SAMPLERS */
+	err = _serialize_texture_samplers(state);
+	if (err != OK) {
+		return Error::FAILED;
+	}
+
 	/* STEP SERIALIZE ANIMATIONS */
 	err = _serialize_animations(state);
 	if (err != OK) {
@@ -3219,6 +3225,11 @@ Error GLTFDocument::_serialize_textures(Ref<GLTFState> state) {
 		Ref<GLTFTexture> t = state->textures[i];
 		ERR_CONTINUE(t->get_src_image() == -1);
 		d["source"] = t->get_src_image();
+
+		GLTFTextureSamplerIndex sampler_index = t->get_sampler();
+		if (sampler_index != -1) {
+			d["sampler"] = sampler_index;
+		}
 		textures.push_back(d);
 	}
 	state->json["textures"] = textures;
@@ -3240,13 +3251,18 @@ Error GLTFDocument::_parse_textures(Ref<GLTFState> state) {
 		Ref<GLTFTexture> t;
 		t.instantiate();
 		t->set_src_image(d["source"]);
+		if (d.has("sampler")) {
+			t->set_sampler(d["sampler"]);
+		} else {
+			t->set_sampler(-1);
+		}
 		state->textures.push_back(t);
 	}
 
 	return OK;
 }
 
-GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture2D> p_texture) {
+GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture2D> p_texture, StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats) {
 	ERR_FAIL_COND_V(p_texture.is_null(), -1);
 	Ref<GLTFTexture> gltf_texture;
 	gltf_texture.instantiate();
@@ -3254,6 +3270,7 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> state, Ref<Texture2D>
 	GLTFImageIndex gltf_src_image_i = state->images.size();
 	state->images.push_back(p_texture);
 	gltf_texture->set_src_image(gltf_src_image_i);
+	gltf_texture->set_sampler(_set_sampler_for_mode(state, p_filter_mode, p_repeats));
 	GLTFTextureIndex gltf_texture_i = state->textures.size();
 	state->textures.push_back(gltf_texture);
 	return gltf_texture_i;
@@ -3266,6 +3283,102 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> state, const GLTFTextur
 	ERR_FAIL_INDEX_V(image, state->images.size(), Ref<Texture2D>());
 
 	return state->images[image];
+}
+
+GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> state, StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats) {
+	for (int i = 0; i < state->texture_samplers.size(); ++i) {
+		if (state->texture_samplers[i]->get_filter_mode() == p_filter_mode) {
+			return i;
+		}
+	}
+
+	GLTFTextureSamplerIndex gltf_sampler_i = state->texture_samplers.size();
+	Ref<GLTFTextureSampler> gltf_sampler;
+	gltf_sampler.instantiate();
+	gltf_sampler->set_filter_mode(p_filter_mode);
+	gltf_sampler->set_wrap_mode(p_repeats);
+	state->texture_samplers.push_back(gltf_sampler);
+	return gltf_sampler_i;
+}
+
+Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> state, const GLTFTextureIndex p_texture) {
+	ERR_FAIL_INDEX_V(p_texture, state->textures.size(), Ref<Texture2D>());
+	const GLTFTextureSamplerIndex sampler = state->textures[p_texture]->get_sampler();
+
+	if (sampler == -1) {
+		return state->default_texture_sampler;
+	} else {
+		ERR_FAIL_INDEX_V(sampler, state->texture_samplers.size(), Ref<GLTFTextureSampler>());
+
+		return state->texture_samplers[sampler];
+	}
+}
+
+Error GLTFDocument::_serialize_texture_samplers(Ref<GLTFState> state) {
+	if (!state->texture_samplers.size()) {
+		return OK;
+	}
+
+	Array samplers;
+	for (int32_t i = 0; i < state->texture_samplers.size(); ++i) {
+		Dictionary d;
+		Ref<GLTFTextureSampler> s = state->texture_samplers[i];
+		d["magFilter"] = s->get_mag_filter();
+		d["minFilter"] = s->get_min_filter();
+		d["wrapS"] = s->get_wrap_s();
+		d["wrapT"] = s->get_wrap_t();
+		samplers.push_back(d);
+	}
+	state->json["samplers"] = samplers;
+
+	return OK;
+}
+
+Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> state) {
+	state->default_texture_sampler.instantiate();
+	state->default_texture_sampler->set_min_filter(GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR);
+	state->default_texture_sampler->set_mag_filter(GLTFTextureSampler::FilterMode::LINEAR);
+	state->default_texture_sampler->set_wrap_s(GLTFTextureSampler::WrapMode::REPEAT);
+	state->default_texture_sampler->set_wrap_t(GLTFTextureSampler::WrapMode::REPEAT);
+
+	if (!state->json.has("samplers")) {
+		return OK;
+	}
+
+	const Array &samplers = state->json["samplers"];
+	for (int i = 0; i < samplers.size(); ++i) {
+		const Dictionary &d = samplers[i];
+
+		Ref<GLTFTextureSampler> sampler;
+		sampler.instantiate();
+
+		if (d.has("minFilter")) {
+			sampler->set_min_filter(d["minFilter"]);
+		} else {
+			sampler->set_min_filter(GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR);
+		}
+		if (d.has("magFilter")) {
+			sampler->set_mag_filter(d["magFilter"]);
+		} else {
+			sampler->set_mag_filter(GLTFTextureSampler::FilterMode::LINEAR);
+		}
+
+		if (d.has("wrapS")) {
+			sampler->set_wrap_s(d["wrapS"]);
+		} else {
+			sampler->set_wrap_s(GLTFTextureSampler::WrapMode::DEFAULT);
+		}
+
+		if (d.has("wrapT")) {
+			sampler->set_wrap_t(d["wrapT"]);
+		} else {
+			sampler->set_wrap_t(GLTFTextureSampler::WrapMode::DEFAULT);
+		}
+
+		state->texture_samplers.push_back(sampler);
+	}
+
+	return OK;
 }
 
 Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
@@ -3299,7 +3412,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 
 				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
 					albedo_texture->set_name(material->get_name() + "_albedo");
-					gltf_texture_index = _set_texture(state, albedo_texture);
+					gltf_texture_index = _set_texture(state, albedo_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 				}
 				if (gltf_texture_index != -1) {
 					bct["index"] = gltf_texture_index;
@@ -3429,7 +3542,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
 					orm_texture->set_name(material->get_name() + "_orm");
-					orm_texture_index = _set_texture(state, orm_texture);
+					orm_texture_index = _set_texture(state, orm_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 				}
 				if (has_ao) {
 					Dictionary occt;
@@ -3484,7 +3597,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_image().is_valid()) {
 				tex->set_name(material->get_name() + "_normal");
-				gltf_texture_index = _set_texture(state, tex);
+				gltf_texture_index = _set_texture(state, tex, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			nt["scale"] = material->get_normal_scale();
 			if (gltf_texture_index != -1) {
@@ -3507,7 +3620,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
 				emission_texture->set_name(material->get_name() + "_emission");
-				gltf_texture_index = _set_texture(state, emission_texture);
+				gltf_texture_index = _set_texture(state, emission_texture, material->get_texture_filter(), material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 
 			if (gltf_texture_index != -1) {
@@ -3566,6 +3679,11 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (sgm.has("diffuseTexture")) {
 				const Dictionary &diffuse_texture_dict = sgm["diffuseTexture"];
 				if (diffuse_texture_dict.has("index")) {
+					Ref<GLTFTextureSampler> diffuse_sampler = _get_sampler_for_texture(state, diffuse_texture_dict["index"]);
+					if (diffuse_sampler.is_valid()) {
+						material->set_texture_filter(diffuse_sampler->get_filter_mode());
+						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, diffuse_sampler->get_wrap_mode());
+					}
 					Ref<Texture2D> diffuse_texture = _get_texture(state, diffuse_texture_dict["index"]);
 					if (diffuse_texture.is_valid()) {
 						spec_gloss->diffuse_img = diffuse_texture->get_image();
@@ -3614,6 +3732,9 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
+					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(state, bct["index"]);
+					material->set_texture_filter(bct_sampler->get_filter_mode());
+					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
 					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(state, bct["index"]));
 				}
 				if (!mr.has("baseColorFactor")) {
@@ -6477,8 +6598,10 @@ Error GLTFDocument::_parse(Ref<GLTFState> state, String p_path, Ref<FileAccess> 
 		err = ext->import_preflight(state);
 		ERR_FAIL_COND_V(err != OK, err);
 	}
+
 	err = _parse_gltf_state(state, p_path, p_bake_fps);
 	ERR_FAIL_COND_V(err != OK, err);
+
 	return OK;
 }
 
@@ -6831,6 +6954,11 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> state, const String &p_sear
 	if (!state->discard_meshes_and_materials) {
 		/* PARSE IMAGES */
 		err = _parse_images(state, p_search_path);
+
+		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
+
+		/* PARSE TEXTURE SAMPLERS */
+		err = _parse_texture_samplers(state);
 
 		ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 

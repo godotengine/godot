@@ -120,20 +120,29 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 
+	/* DECAL INSTANCE */
+
+	virtual RID decal_instance_create(RID p_decal) = 0;
+	virtual void decal_instance_free(RID p_decal_instance) = 0;
+	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) = 0;
+
 	/* RENDER TARGET */
 
 	virtual RID render_target_create() = 0;
 	virtual void render_target_free(RID p_rid) = 0;
 
-	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0;
-	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) = 0;
-	virtual RID render_target_get_texture(RID p_render_target) = 0;
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) = 0;
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0; // Q change input to const Point2i &p_position ?
+	virtual Point2i render_target_get_position(RID p_render_target) const = 0;
+	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) = 0; // Q change input to const Size2i &p_size ?
+	virtual Size2i render_target_get_size(RID p_render_target) const = 0;
 	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) = 0;
+	virtual bool render_target_get_transparent(RID p_render_target) const = 0;
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) = 0;
-	virtual bool render_target_was_used(RID p_render_target) = 0;
+	virtual bool render_target_get_direct_to_screen(RID p_render_target) const = 0;
+	virtual bool render_target_was_used(RID p_render_target) const = 0;
 	virtual void render_target_set_as_unused(RID p_render_target) = 0;
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) = 0;
+	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const = 0;
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color) = 0;
 	virtual bool render_target_is_clear_requested(RID p_render_target) = 0;
@@ -146,7 +155,20 @@ public:
 	virtual void render_target_mark_sdf_enabled(RID p_render_target, bool p_enabled) = 0;
 
 	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) = 0;
+	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const = 0;
 	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) = 0;
+	virtual RID render_target_get_vrs_texture(RID p_render_target) const = 0;
+
+	// override color, depth and velocity buffers (depth and velocity only for 3D)
+	virtual void render_target_set_override_color(RID p_render_target, RID p_texture) = 0;
+	virtual RID render_target_get_override_color(RID p_render_target) const = 0;
+	virtual void render_target_set_override_depth(RID p_render_target, RID p_texture) = 0;
+	virtual RID render_target_get_override_depth(RID p_render_target) const = 0;
+	virtual void render_target_set_override_velocity(RID p_render_target, RID p_texture) = 0;
+	virtual RID render_target_get_override_velocity(RID p_render_target) const = 0;
+
+	// get textures
+	virtual RID render_target_get_texture(RID p_render_target) = 0;
 };
 
 #endif // TEXTURE_STORAGE_H

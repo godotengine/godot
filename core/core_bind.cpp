@@ -253,6 +253,10 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
+String OS::read_string_from_stdin(bool p_block) {
+	return ::OS::get_singleton()->get_stdin_string(true);
+}
+
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
 	List<String> args;
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -425,10 +429,6 @@ void OS::delay_msec(int p_msec) const {
 	::OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
-bool OS::can_use_threads() const {
-	return ::OS::get_singleton()->can_use_threads();
-}
-
 bool OS::is_userfs_persistent() const {
 	return ::OS::get_singleton()->is_userfs_persistent();
 }
@@ -530,6 +530,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
 	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "block"), &OS::read_string_from_stdin, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
@@ -560,8 +561,6 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_userfs_persistent"), &OS::is_userfs_persistent);
 	ClassDB::bind_method(D_METHOD("is_stdout_verbose"), &OS::is_stdout_verbose);
-
-	ClassDB::bind_method(D_METHOD("can_use_threads"), &OS::can_use_threads);
 
 	ClassDB::bind_method(D_METHOD("is_debug_build"), &OS::is_debug_build);
 
@@ -1484,12 +1483,12 @@ double Engine::get_physics_interpolation_fraction() const {
 	return ::Engine::get_singleton()->get_physics_interpolation_fraction();
 }
 
-void Engine::set_target_fps(int p_fps) {
-	::Engine::get_singleton()->set_target_fps(p_fps);
+void Engine::set_max_fps(int p_fps) {
+	::Engine::get_singleton()->set_max_fps(p_fps);
 }
 
-int Engine::get_target_fps() const {
-	return ::Engine::get_singleton()->get_target_fps();
+int Engine::get_max_fps() const {
+	return ::Engine::get_singleton()->get_max_fps();
 }
 
 double Engine::get_frames_per_second() const {
@@ -1626,8 +1625,8 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &Engine::set_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_jitter_fix"), &Engine::get_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_interpolation_fraction"), &Engine::get_physics_interpolation_fraction);
-	ClassDB::bind_method(D_METHOD("set_target_fps", "target_fps"), &Engine::set_target_fps);
-	ClassDB::bind_method(D_METHOD("get_target_fps"), &Engine::get_target_fps);
+	ClassDB::bind_method(D_METHOD("set_max_fps", "max_fps"), &Engine::set_max_fps);
+	ClassDB::bind_method(D_METHOD("get_max_fps"), &Engine::get_max_fps);
 
 	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &Engine::set_time_scale);
 	ClassDB::bind_method(D_METHOD("get_time_scale"), &Engine::get_time_scale);
@@ -1670,7 +1669,7 @@ void Engine::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_ticks_per_second"), "set_physics_ticks_per_second", "get_physics_ticks_per_second");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "target_fps"), "set_target_fps", "get_target_fps");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_fps"), "set_max_fps", "get_max_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_scale"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "physics_jitter_fix"), "set_physics_jitter_fix", "get_physics_jitter_fix");
 }

@@ -20,13 +20,13 @@
 		[csharp]
 		public void Save(string content)
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", File.ModeFlags.Write);
+		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
 		    file.StoreString(content);
 		}
 
 		public string Load()
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", File.ModeFlags.Read);
+		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
 		    string content = file.GetAsText();
 		    return content;
 		}
@@ -316,8 +316,7 @@
 				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
 
 				func _ready():
-				    var f = File.new()
-				    f.open("user://file.dat", File.WRITE_READ)
+				    var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
 				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
 				    f.store_16(121) # In bounds, will store 121.
 				    f.seek(0) # Go back to start to read the stored value.
@@ -329,8 +328,7 @@
 				[csharp]
 				public override void _Ready()
 				{
-				    var f = new File();
-				    f.Open("user://file.dat", File.ModeFlags.WriteRead);
+				    using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
 				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
 				    f.Store16(121); // In bounds, will store 121.
 				    f.Seek(0); // Go back to start to read the stored value.
