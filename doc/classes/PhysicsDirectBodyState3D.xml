@@ -226,6 +226,9 @@
 		<member name="inverse_inertia" type="Vector3" setter="" getter="get_inverse_inertia">
 			The inverse of the inertia of the body.
 		</member>
+		<member name="inverse_inertia_tensor" type="Basis" setter="" getter="get_inverse_inertia_tensor">
+			The inverse of the inertia tensor of the body.
+		</member>
 		<member name="inverse_mass" type="float" setter="" getter="get_inverse_mass">
 			The inverse of the mass of the body.
 		</member>

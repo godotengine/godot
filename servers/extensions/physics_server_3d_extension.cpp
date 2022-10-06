@@ -60,6 +60,7 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_inverse_mass);
 	GDVIRTUAL_BIND(_get_inverse_inertia);
+	GDVIRTUAL_BIND(_get_inverse_inertia_tensor);
 
 	GDVIRTUAL_BIND(_set_linear_velocity, "velocity");
 	GDVIRTUAL_BIND(_get_linear_velocity);
