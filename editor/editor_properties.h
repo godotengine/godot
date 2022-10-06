@@ -357,6 +357,7 @@ protected:
 public:
 	void setup(LayerType p_layer_type);
 	void set_layer_name(int p_index, const String &p_name);
+	String get_layer_name(int p_index) const;
 	virtual void update_property() override;
 	EditorPropertyLayers();
 };
