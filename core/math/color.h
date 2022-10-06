@@ -32,7 +32,8 @@
 #define COLOR_H
 
 #include "core/math/math_funcs.h"
-#include "core/string/ustring.h"
+
+class String;
 
 struct _NO_DISCARD_ Color {
 	union {

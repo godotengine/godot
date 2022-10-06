@@ -31,10 +31,11 @@
 #ifndef PROJECTION_H
 #define PROJECTION_H
 
-#include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
-#include "core/templates/vector.h"
+
+template <class T>
+class Vector;
 
 struct AABB;
 struct Plane;
@@ -42,7 +43,7 @@ struct Rect2;
 struct Transform3D;
 struct Vector2;
 
-struct Projection {
+struct _NO_DISCARD_ Projection {
 	enum Planes {
 		PLANE_NEAR,
 		PLANE_FAR,

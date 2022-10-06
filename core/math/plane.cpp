@@ -147,6 +147,7 @@ Variant Plane::intersect_3_bind(const Plane &p_plane1, const Plane &p_plane2) co
 		return Variant();
 	}
 }
+
 Variant Plane::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
 	Vector3 inters;
 	if (intersects_ray(p_from, p_dir, &inters)) {
@@ -155,6 +156,7 @@ Variant Plane::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) 
 		return Variant();
 	}
 }
+
 Variant Plane::intersects_segment_bind(const Vector3 &p_begin, const Vector3 &p_end) const {
 	Vector3 inters;
 	if (intersects_segment(p_begin, p_end, &inters)) {
