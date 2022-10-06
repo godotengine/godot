@@ -1163,7 +1163,7 @@ bool TreeItem::is_editable(int p_column) {
 void TreeItem::set_custom_color(int p_column, const Color &p_color) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
-	if (cells[p_column].custom_color == true) {
+	if (cells[p_column].custom_color && cells[p_column].color == p_color) {
 		return;
 	}
 
