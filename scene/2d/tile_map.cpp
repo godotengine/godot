@@ -1007,6 +1007,22 @@ void TileMap::_recompute_rect_cache() {
 
 void TileMap::_rendering_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			bool visible = is_visible_in_tree();
+			for (int layer = 0; layer < (int)layers.size(); layer++) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+					TileMapQuadrant &q = E_quadrant.value;
+					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+						Transform2D xform;
+						xform.set_origin(map_to_local(kv.key));
+						RS::get_singleton()->canvas_light_occluder_attach_to_canvas(kv.value, get_canvas());
+						RS::get_singleton()->canvas_light_occluder_set_transform(kv.value, get_global_transform() * xform);
+						RS::get_singleton()->canvas_light_occluder_set_enabled(kv.value, visible);
+					}
+				}
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			bool visible = is_visible_in_tree();
 			for (int layer = 0; layer < (int)layers.size(); layer++) {
@@ -1017,8 +1033,8 @@ void TileMap::_rendering_notification(int p_what) {
 					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
 						Transform2D xform;
 						xform.set_origin(E_cell.key);
-						for (const RID &occluder : q.occluders) {
-							RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, visible);
+						for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+							RS::get_singleton()->canvas_light_occluder_set_enabled(kv.value, visible);
 						}
 					}
 				}
@@ -1034,12 +1050,10 @@ void TileMap::_rendering_notification(int p_what) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
-					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
+					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
 						Transform2D xform;
-						xform.set_origin(E_cell.key);
-						for (const RID &occluder : q.occluders) {
-							RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform() * xform);
-						}
+						xform.set_origin(map_to_local(kv.key));
+						RenderingServer::get_singleton()->canvas_light_occluder_set_transform(kv.value, get_global_transform() * xform);
 					}
 				}
 			}
@@ -1048,6 +1062,17 @@ void TileMap::_rendering_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (tile_set.is_valid()) {
 				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), is_y_sort_enabled());
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_CANVAS: {
+			for (int layer = 0; layer < (int)layers.size(); layer++) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+					TileMapQuadrant &q = E_quadrant.value;
+					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+						RS::get_singleton()->canvas_light_occluder_attach_to_canvas(kv.value, RID());
+					}
+				}
 			}
 		} break;
 	}
@@ -1106,8 +1131,8 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		q.canvas_items.clear();
 
 		// Free the occluders.
-		for (const RID &occluder : q.occluders) {
-			rs->free(occluder);
+		for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+			rs->free(kv.value);
 		}
 		q.occluders.clear();
 
@@ -1211,7 +1236,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 							rs->canvas_light_occluder_set_polygon(occluder_id, tile_data->get_occluder(i)->get_rid());
 							rs->canvas_light_occluder_attach_to_canvas(occluder_id, get_canvas());
 							rs->canvas_light_occluder_set_light_mask(occluder_id, tile_set->get_occlusion_layer_light_mask(i));
-							q.occluders.push_back(occluder_id);
+							q.occluders[E_cell.value] = occluder_id;
 						}
 					}
 				}
@@ -1259,8 +1284,8 @@ void TileMap::_rendering_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
 	p_quadrant->canvas_items.clear();
 
 	// Free the occluders.
-	for (const RID &occluder : p_quadrant->occluders) {
-		RenderingServer::get_singleton()->free(occluder);
+	for (const KeyValue<Vector2i, RID> &kv : p_quadrant->occluders) {
+		RenderingServer::get_singleton()->free(kv.value);
 	}
 	p_quadrant->occluders.clear();
 }
