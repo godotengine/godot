@@ -22,14 +22,11 @@
 		<member name="advance_expression" type="String" setter="set_advance_expression" getter="get_advance_expression" default="&quot;&quot;">
 			Use an expression as a condition for state machine transitions. It is possible to create complex animation advance conditions for switching between states and gives much greater flexibility for creating complex state machines by directly interfacing with the script code.
 		</member>
-		<member name="auto_advance" type="bool" setter="set_auto_advance" getter="has_auto_advance" default="false">
-			Turn on the transition automatically when this state is reached. This works best with [constant SWITCH_MODE_AT_END].
-		</member>
-		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false">
-			Don't use this transition during [method AnimationNodeStateMachinePlayback.travel] or [member auto_advance].
+		<member name="advance_mode" type="int" setter="set_advance_mode" getter="get_advance_mode" enum="AnimationNodeStateMachineTransition.AdvanceMode" default="1">
+			Determines whether the transition should disabled, enabled when using [method AnimationNodeStateMachinePlayback.travel], or traversed automatically if the [member advance_condition] and [member advance_expression] checks are true (if assigned).
 		</member>
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="1">
-			Lower priority transitions are preferred when travelling through the tree via [method AnimationNodeStateMachinePlayback.travel] or [member auto_advance].
+			Lower priority transitions are preferred when travelling through the tree via [method AnimationNodeStateMachinePlayback.travel] or [member advance_mode] is set to [constant ADVANCE_MODE_AUTO].
 		</member>
 		<member name="switch_mode" type="int" setter="set_switch_mode" getter="get_switch_mode" enum="AnimationNodeStateMachineTransition.SwitchMode" default="0">
 			The transition type.
@@ -57,6 +54,15 @@
 		</constant>
 		<constant name="SWITCH_MODE_AT_END" value="2" enum="SwitchMode">
 			Wait for the current state playback to end, then switch to the beginning of the next state animation.
+		</constant>
+		<constant name="ADVANCE_MODE_DISABLED" value="0" enum="AdvanceMode">
+			Don't use this transition.
+		</constant>
+		<constant name="ADVANCE_MODE_ENABLED" value="1" enum="AdvanceMode">
+			Only use this transition during [method AnimationNodeStateMachinePlayback.travel].
+		</constant>
+		<constant name="ADVANCE_MODE_AUTO" value="2" enum="AdvanceMode">
+			Automatically use this transition if the [member advance_condition] and [member advance_expression] checks are true (if assigned).
 		</constant>
 	</constants>
 </class>
