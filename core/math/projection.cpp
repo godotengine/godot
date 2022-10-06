@@ -838,8 +838,9 @@ float Projection::get_lod_multiplier() const {
 		return 1.0 / (zn / width);
 	}
 
-	//usage is lod_size / (lod_distance * multiplier) < threshold
+	// Usage is lod_size / (lod_distance * multiplier) < threshold
 }
+
 void Projection::make_scale(const Vector3 &p_scale) {
 	set_identity();
 	columns[0][0] = p_scale.x;

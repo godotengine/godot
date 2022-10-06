@@ -31,10 +31,10 @@
 #ifndef QUATERNION_H
 #define QUATERNION_H
 
-#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
 #include "core/math/vector3.h"
-#include "core/string/ustring.h"
+
+class String;
 
 struct _NO_DISCARD_ Quaternion {
 	union {
