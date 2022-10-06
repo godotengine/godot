@@ -699,7 +699,11 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 				if (!path.is_empty()) {
 					if (path != get_path()) {
 						Ref<GDScript> bf = ResourceLoader::load(path);
-						bf = bf->_find_subclass(class_names);
+
+						if (bf.is_valid()) {
+							Ref<GDScript> bf_inner = bf->_find_subclass(class_names);
+							bf = bf_inner;
+						}
 
 						if (bf.is_valid()) {
 							base_cache = bf;
