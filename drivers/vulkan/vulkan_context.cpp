@@ -2260,8 +2260,6 @@ Error VulkanContext::swap_buffers() {
 		}
 	}
 #endif
-	static int total_frames = 0;
-	total_frames++;
 	//	print_line("current buffer:  " + itos(current_buffer));
 	err = fpQueuePresentKHR(present_queue, &present);
 
