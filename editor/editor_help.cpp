@@ -230,7 +230,7 @@ void EditorHelp::_add_type_icon(const String &p_type, int p_size) {
 		size.height *= ratio;
 	}
 
-	class_desc->add_image(icon, size.width, size.height);
+	class_desc->add_image(icon, size.width, size.height, RichTextLabel::INLINE_ALIGN_CENTER);
 }
 
 String EditorHelp::_fix_constant(const String &p_constant) const {
