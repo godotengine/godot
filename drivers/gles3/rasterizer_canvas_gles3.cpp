@@ -433,10 +433,10 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, starting_index, false);
 				item_count = 0;
 
-				Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
-
 				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
+					Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
+					items[item_count++] = ci->canvas_group_owner;
 				} else if (!backbuffer_cleared) {
 					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
 					backbuffer_cleared = true;
@@ -544,9 +544,16 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 		}
 
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
-
-		if (material.is_null() && ci->canvas_group != nullptr) {
-			material = default_canvas_group_material;
+		if (ci->canvas_group != nullptr) {
+			if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
+				if (!p_to_backbuffer) {
+					material = default_clip_children_material;
+				}
+			} else {
+				if (material.is_null()) {
+					material = default_canvas_group_material;
+				}
+			}
 		}
 
 		GLES3::CanvasShaderData *shader_data_cache = nullptr;
@@ -2074,6 +2081,26 @@ void fragment() {
 		material_storage->material_set_shader(default_canvas_group_material, default_canvas_group_shader);
 	}
 
+	{
+		default_clip_children_shader = material_storage->shader_allocate();
+		material_storage->shader_initialize(default_clip_children_shader);
+
+		material_storage->shader_set_code(default_clip_children_shader, R"(
+// Default clip children shader.
+
+shader_type canvas_item;
+
+void fragment() {
+	vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
+	COLOR.rgb = c.rgb;
+}
+)");
+		default_clip_children_material = material_storage->material_allocate();
+		material_storage->material_initialize(default_clip_children_material);
+
+		material_storage->material_set_shader(default_clip_children_material, default_clip_children_shader);
+	}
+
 	default_canvas_texture = texture_storage->canvas_texture_allocate();
 	texture_storage->canvas_texture_initialize(default_canvas_texture);
 
@@ -2086,6 +2113,8 @@ RasterizerCanvasGLES3::~RasterizerCanvasGLES3() {
 	material_storage->shaders.canvas_shader.version_free(data.canvas_shader_default_version);
 	material_storage->material_free(default_canvas_group_material);
 	material_storage->shader_free(default_canvas_group_shader);
+	material_storage->material_free(default_clip_children_material);
+	material_storage->shader_free(default_clip_children_shader);
 	singleton = nullptr;
 
 	glDeleteBuffers(1, &data.canvas_quad_vertices);
