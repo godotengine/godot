@@ -282,7 +282,7 @@ Transform2D Transform2D::interpolate_with(const Transform2D &p_transform, const 
 
 	real_t dot = v1.dot(v2);
 
-	dot = CLAMP(dot, -1.0f, 1.0f);
+	dot = CLAMP(dot, (real_t)-1.0, (real_t)1.0);
 
 	Vector2 v;
 

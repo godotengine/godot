@@ -143,8 +143,7 @@ struct _NO_DISCARD_ Quaternion {
 		w = p_q.w;
 	}
 
-	Quaternion(const Vector3 &v0, const Vector3 &v1) // shortest arc
-	{
+	Quaternion(const Vector3 &v0, const Vector3 &v1) { // Shortest arc.
 		Vector3 c = v0.cross(v1);
 		real_t d = v0.dot(v1);
 

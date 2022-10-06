@@ -30,7 +30,7 @@
 
 #include "aabb.h"
 
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 #include "core/variant/variant.h"
 
 real_t AABB::get_volume() const {
