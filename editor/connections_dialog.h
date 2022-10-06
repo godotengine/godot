@@ -144,6 +144,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
 	Node *get_source() const;
 	StringName get_signal_name() const;
 	NodePath get_dst_path() const;
