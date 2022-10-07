@@ -1265,7 +1265,12 @@ void Viewport::_gui_show_tooltip() {
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 
 	Window *window = gui.tooltip_popup->get_parent_visible_window();
-	Rect2i vr = window->get_usable_parent_rect();
+	Rect2i vr;
+	if (gui.tooltip_popup->is_embedded()) {
+		vr = gui.tooltip_popup->_get_embedder()->get_visible_rect();
+	} else {
+		vr = window->get_usable_parent_rect();
+	}
 
 	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
 		// Place it in the opposite direction. If it fails, just hug the border.
