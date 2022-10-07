@@ -463,7 +463,7 @@ void DisplayServerAndroid::reset_window() {
 		context_vulkan->window_destroy(MAIN_WINDOW_ID);
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		if (context_vulkan->window_create(native_window, last_vsync_mode, display_size.width, display_size.height) == -1) {
+		if (context_vulkan->window_create(native_window, last_vsync_mode, display_size.width, display_size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to reset Vulkan window.");
@@ -529,7 +529,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		if (context_vulkan->window_create(native_window, p_vsync_mode, display_size.width, display_size.height) == -1) {
+		if (context_vulkan->window_create(native_window, p_vsync_mode, display_size.width, display_size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");

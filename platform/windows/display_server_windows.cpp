@@ -3555,7 +3555,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 #ifdef VULKAN_ENABLED
 		if (context_vulkan) {
-			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) == -1) {
+			if (context_vulkan->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
 				memdelete(context_vulkan);
 				context_vulkan = nullptr;
 				windows.erase(id);
@@ -3566,10 +3566,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
-			Error err = gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top);
-
-			// shut down OpenGL, to mirror behavior of Vulkan code
-			if (err != OK) {
+			if (gl_manager->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
 				memdelete(gl_manager);
 				gl_manager = nullptr;
 				windows.erase(id);
