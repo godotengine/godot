@@ -89,14 +89,6 @@ String AnimationNodeStateMachineTransition::get_advance_expression() const {
 	return advance_expression;
 }
 
-void AnimationNodeStateMachineTransition::set_advance_expression_base_node(const NodePath &p_expression_base_node) {
-	advance_expression_base_node = p_expression_base_node;
-}
-
-NodePath AnimationNodeStateMachineTransition::get_advance_expression_base_node() const {
-	return advance_expression_base_node;
-}
-
 void AnimationNodeStateMachineTransition::set_xfade_time(float p_xfade) {
 	ERR_FAIL_COND(p_xfade < 0);
 	xfade_time = p_xfade;
@@ -158,9 +150,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_advance_expression", "text"), &AnimationNodeStateMachineTransition::set_advance_expression);
 	ClassDB::bind_method(D_METHOD("get_advance_expression"), &AnimationNodeStateMachineTransition::get_advance_expression);
 
-	ClassDB::bind_method(D_METHOD("set_advance_expression_base_node", "path"), &AnimationNodeStateMachineTransition::set_advance_expression_base_node);
-	ClassDB::bind_method(D_METHOD("get_advance_expression_base_node"), &AnimationNodeStateMachineTransition::get_advance_expression_base_node);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,240,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
@@ -170,7 +159,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_GROUP("Advance", "advance_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 	ADD_GROUP("Disabling", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
@@ -656,15 +644,10 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		AnimationTree *tree_base = state_machine->get_animation_tree();
 		ERR_FAIL_COND_V(tree_base == nullptr, false);
 
-		NodePath advance_expression_base_node_path;
-		Node *expression_base = nullptr;
-		if (!transition->get_advance_expression_base_node().is_empty()) {
-			advance_expression_base_node_path = transition->get_advance_expression_base_node();
-			expression_base = tree_base->get_tree()->get_root()->get_child(0)->get_node_or_null(advance_expression_base_node_path);
-		} else {
-			advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
-			expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
-		}
+		NodePath advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
+		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
+
+		WARN_PRINT_ONCE("Animation transition has a valid expression, but no expression base node was set on its AnimationTree.");
 
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
