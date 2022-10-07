@@ -674,27 +674,37 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 
 			if (parameter == "type" || parameter == "t") {
 				// Filter by Type.
-				String node_type = get_node(p_item->get_metadata(0))->get_class().to_lower();
+				String type = get_node(p_item->get_metadata(0))->get_class();
+				bool term_in_inherited_class = false;
+				// Every Node is is a Node, duh!
+				while (type != "Node") {
+					if (type.to_lower().contains(argument)) {
+						term_in_inherited_class = true;
+						break;
+					}
 
-				if (!node_type.contains(argument)) {
+					type = ClassDB::get_parent_class(type);
+				}
+				if (!term_in_inherited_class) {
 					return false;
 				}
 			} else if (parameter == "group" || parameter == "g") {
 				// Filter by Group.
 				Node *node = get_node(p_item->get_metadata(0));
 
-				List<Node::GroupInfo> group_info_list;
-				node->get_groups(&group_info_list);
-				if (group_info_list.is_empty()) {
-					return false;
-				}
-				// When argument is empty, match all Nodes belonging to any group.
-				if (!argument.is_empty()) {
+				if (argument.is_empty()) {
+					// When argument is empty, match all Nodes belonging to any exposed group.
+					if (node->get_persistent_group_count() == 0) {
+						return false;
+					}
+				} else {
+					List<Node::GroupInfo> group_info_list;
+					node->get_groups(&group_info_list);
+
 					bool term_in_groups = false;
 					for (int j = 0; j < group_info_list.size(); j++) {
-						// Ignore private groups.
-						if (String(group_info_list[j].name).begins_with("__")) {
-							continue;
+						if (!group_info_list[j].persistent) {
+							continue; // Ignore internal groups.
 						}
 						if (String(group_info_list[j].name).to_lower().contains(argument)) {
 							term_in_groups = true;
