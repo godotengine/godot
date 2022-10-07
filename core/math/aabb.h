@@ -31,7 +31,6 @@
 #ifndef AABB_H
 #define AABB_H
 
-#include "core/math/math_defs.h"
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
 

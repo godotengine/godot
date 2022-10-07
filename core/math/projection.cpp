@@ -35,7 +35,7 @@
 #include "core/math/plane.h"
 #include "core/math/rect2.h"
 #include "core/math/transform_3d.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 float Projection::determinant() const {
 	return columns[0][3] * columns[1][2] * columns[2][1] * columns[3][0] - columns[0][2] * columns[1][3] * columns[2][1] * columns[3][0] -
@@ -496,7 +496,10 @@ bool Projection::get_endpoints(const Transform3D &p_transform, Vector3 *p_8point
 
 	for (int i = 0; i < 8; i++) {
 		Vector3 point;
-		bool res = planes[intersections[i][0]].intersect_3(planes[intersections[i][1]], planes[intersections[i][2]], &point);
+		Plane a = planes[intersections[i][0]];
+		Plane b = planes[intersections[i][1]];
+		Plane c = planes[intersections[i][2]];
+		bool res = a.intersect_3(b, c, &point);
 		ERR_FAIL_COND_V(!res, false);
 		p_8points[i] = p_transform.xform(point);
 	}
