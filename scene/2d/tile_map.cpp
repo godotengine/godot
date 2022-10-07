@@ -755,6 +755,7 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 	_clear_internals();
 	_recreate_internals();
 	emit_signal(SNAME("changed"));
+	update_configuration_warnings();
 }
 
 Vector2i TileMap::_coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const {
@@ -3958,6 +3959,22 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 		}
 	}
 
+	if (tile_set.is_valid() && tile_set->get_tile_shape() == TileSet::TILE_SHAPE_ISOMETRIC) {
+		bool warn = !is_y_sort_enabled();
+		if (!warn) {
+			for (int layer = 0; layer < (int)layers.size(); layer++) {
+				if (!layers[layer].y_sort_enabled) {
+					warn = true;
+					break;
+				}
+			}
+		}
+
+		if (warn) {
+			warnings.push_back(RTR("Isometric TileSet will likely not look as intended without Y-sort enabled for the TileMap and all of its layers."));
+		}
+	}
+
 	return warnings;
 }
 
@@ -4054,6 +4071,7 @@ void TileMap::_tile_set_changed() {
 	_tile_set_changed_deferred_update_needed = true;
 	instantiated_scenes.clear();
 	call_deferred(SNAME("_tile_set_changed_deferred_update"));
+	update_configuration_warnings();
 }
 
 void TileMap::_tile_set_changed_deferred_update() {
