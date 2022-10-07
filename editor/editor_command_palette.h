@@ -66,7 +66,11 @@ class EditorCommandPalette : public ConfirmationDialog {
 
 	struct CommandHistoryComparator {
 		_FORCE_INLINE_ bool operator()(const CommandEntry &A, const CommandEntry &B) const {
-			return A.last_used > B.last_used;
+			if (A.last_used == B.last_used) {
+				return A.display_name < B.display_name;
+			} else {
+				return A.last_used > B.last_used;
+			}
 		}
 	};
 
