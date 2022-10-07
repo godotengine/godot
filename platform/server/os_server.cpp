@@ -207,33 +207,54 @@ void OS_Server::run() {
 }
 
 String OS_Server::get_config_path() const {
+#ifndef __APPLE__
 	if (has_environment("XDG_CONFIG_HOME")) {
-		return get_environment("XDG_CONFIG_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".config");
-	} else {
-		return ".";
+		if (get_environment("XDG_CONFIG_HOME").is_abs_path()) {
+			return get_environment("XDG_CONFIG_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.config` or `.` per the XDG Base Directory specification.");
+		}
 	}
+#endif
+
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".config");
+	}
+	return ".";
 }
 
 String OS_Server::get_data_path() const {
+#ifndef __APPLE__
 	if (has_environment("XDG_DATA_HOME")) {
-		return get_environment("XDG_DATA_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".local/share");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_DATA_HOME").is_abs_path()) {
+			return get_environment("XDG_DATA_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.local/share` or `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+#endif
+
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".local/share");
+	}
+	return get_config_path();
 }
 
 String OS_Server::get_cache_path() const {
+#ifndef __APPLE__
 	if (has_environment("XDG_CACHE_HOME")) {
-		return get_environment("XDG_CACHE_HOME");
-	} else if (has_environment("HOME")) {
-		return get_environment("HOME").plus_file(".cache");
-	} else {
-		return get_config_path();
+		if (get_environment("XDG_CACHE_HOME").is_abs_path()) {
+			return get_environment("XDG_CACHE_HOME");
+		} else {
+			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/.cache` or `get_config_path()` per the XDG Base Directory specification.");
+		}
 	}
+#endif
+
+	if (has_environment("HOME")) {
+		return get_environment("HOME").plus_file(".cache");
+	}
+	return get_config_path();
 }
 
 String OS_Server::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
