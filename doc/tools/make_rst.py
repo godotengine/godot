@@ -1561,7 +1561,7 @@ def make_rst_index(grouped_classes: Dict[str, List[str]], dry_run: bool, output_
 # Formatting helpers.
 
 
-RESERVED_FORMATTING_TAGS = ["i", "b", "u", "code", "kbd", "center", "url", "br"]
+RESERVED_FORMATTING_TAGS = ["i", "b", "u", "code", "kbd", "center", "url", "br", "ul"]
 RESERVED_CODEBLOCK_TAGS = ["codeblocks", "codeblock", "gdscript", "csharp"]
 RESERVED_CROSSLINK_TAGS = ["method", "member", "signal", "constant", "enum", "annotation", "theme_item", "param"]
 
@@ -1600,14 +1600,18 @@ def format_text_block(
             indent_level += 1
         post_text = text[pos + 1 :]
 
-        # Handle codeblocks
+        # Handle codeblocks and lists
         if (
             post_text.startswith("[codeblock]")
             or post_text.startswith("[gdscript]")
             or post_text.startswith("[csharp]")
+            or post_text.startswith("[ul]")
         ):
             block_type = post_text[1:].split("]")[0]
-            result = format_codeblock(block_type, post_text, indent_level, state)
+            if block_type == "ul":
+                result = format_list(block_type, post_text, state)
+            else:
+                result = format_codeblock(block_type, post_text, indent_level, state)
             if result is None:
                 return ""
             text = f"{pre_text}{result[0]}"
@@ -1999,6 +2003,13 @@ def format_text_block(
                     tag_depth += 1
                     escape_pre = True
 
+            elif cmd == "ul" or cmd == "/ul":
+                if cmd == "/ul":
+                    tag_depth -= 1
+                else:
+                    tag_depth += 1
+                tag_text = ""
+
             # Invalid syntax checks.
             elif cmd.startswith("/"):
                 print_error(f'{state.current_class}.xml: Unrecognized closing tag "{cmd}" in {context_name}.', state)
@@ -2125,6 +2136,29 @@ def format_codeblock(code_type: str, post_text: str, indent_level: int, state: S
             code_text = f"{code_text[:code_pos]}\n    {code_text[code_pos + to_skip + 1 :]}"
             code_pos += 5 - to_skip
     return (f"\n[{code_type}]{code_text}{post_text}", len(f"\n[{code_type}]{code_text}"))
+
+
+def format_list(list_type: str, post_text: str, state: State) -> Union[Tuple[str, int], None]:
+    end_pos = post_text.find("[/" + list_type + "]")
+    if end_pos == -1:
+        print_error(f"{state.current_class}.xml: [{list_type}] without a closing tag.", state)
+        return None
+
+    list_text = post_text[len(f"[{list_type}]") : end_pos]
+    post_text = post_text[end_pos:]
+
+    def format_line(line: str):
+        # Remove indentation.
+        to_skip = 0
+        while to_skip < len(line) and line[to_skip] == "\t":
+            to_skip += 1
+        if len(line[to_skip:]) == 0:
+            return ""
+        # Add list prefix to the line.
+        return "- " + line[to_skip:]
+
+    list_text = "\n".join(map(format_line, list_text.splitlines()))
+    return (f"\n[{list_type}]{list_text}{post_text}", len(f"\n[{list_type}]{list_text}"))
 
 
 def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:
