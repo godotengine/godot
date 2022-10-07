@@ -80,7 +80,7 @@
 			</description>
 		</method>
 		<method name="get_stack">
-			<return type="Array" />
+			<return type="Dictionary[]" />
 			<description>
 				Returns an array of dictionaries representing the current call stack. See also [method print_stack].
 				[codeblock]
@@ -187,7 +187,7 @@
 			</description>
 		</method>
 		<method name="range" qualifiers="vararg">
-			<return type="Array" />
+			<return type="int[]" />
 			<description>
 				Returns an array with the given range. [method range] can be called in three ways:
 				[code]range(n: int)[/code]: Starts from 0, increases by steps of 1, and stops [i]before[/i] [code]n[/code]. The argument [code]n[/code] is [b]exclusive[/b].
