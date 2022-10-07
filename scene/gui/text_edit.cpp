@@ -1350,9 +1350,14 @@ void TextEdit::_notification(int p_what) {
 												draw_rect(ts_caret.t_caret, caret_color, overtype_mode);
 
 												if (ts_caret.l_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
+													// Draw split caret (leading part).
 													ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
 													ts_caret.l_caret.size.x = caret_width;
-													draw_rect(ts_caret.l_caret, caret_color * Color(1, 1, 1, 0.5));
+													draw_rect(ts_caret.l_caret, caret_color);
+													// Draw extra direction marker on top of split caret.
+													float d = (ts_caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+													Rect2 trect = Rect2(ts_caret.l_caret.position.x + d * caret_width, ts_caret.l_caret.position.y + ts_caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+													RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 												}
 											} else { // End of the line.
 												if (gl_size > 0) {
@@ -1383,7 +1388,18 @@ void TextEdit::_notification(int p_what) {
 											// Normal caret.
 											if (ts_caret.l_caret != Rect2() && ts_caret.l_dir == TextServer::DIRECTION_AUTO) {
 												// Draw extra marker on top of mid caret.
-												Rect2 trect = Rect2(ts_caret.l_caret.position.x - 3 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
+												Rect2 trect = Rect2(ts_caret.l_caret.position.x - 2.5 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
+												trect.position += Vector2(char_margin + ofs_x, ofs_y);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+											} else if (ts_caret.l_caret != Rect2() && ts_caret.t_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
+												// Draw extra direction marker on top of split caret.
+												float d = (ts_caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+												Rect2 trect = Rect2(ts_caret.l_caret.position.x + d * caret_width, ts_caret.l_caret.position.y + ts_caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+												trect.position += Vector2(char_margin + ofs_x, ofs_y);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+
+												d = (ts_caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+												trect = Rect2(ts_caret.t_caret.position.x + d * caret_width, ts_caret.t_caret.position.y, 3 * caret_width, caret_width);
 												trect.position += Vector2(char_margin + ofs_x, ofs_y);
 												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 											}
