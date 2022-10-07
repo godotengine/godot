@@ -38,16 +38,35 @@
 #include "particles_storage.h"
 #include "texture_storage.h"
 
+#include "servers/rendering/rendering_server_globals.h"
+
 using namespace GLES3;
 
 Utilities *Utilities::singleton = nullptr;
 
 Utilities::Utilities() {
 	singleton = this;
+	frame = 0;
+	for (int i = 0; i < FRAME_COUNT; i++) {
+		frames[i].index = 0;
+		glGenQueries(max_timestamp_query_elements, frames[i].queries);
+
+		frames[i].timestamp_names.resize(max_timestamp_query_elements);
+		frames[i].timestamp_cpu_values.resize(max_timestamp_query_elements);
+		frames[i].timestamp_count = 0;
+
+		frames[i].timestamp_result_names.resize(max_timestamp_query_elements);
+		frames[i].timestamp_cpu_result_values.resize(max_timestamp_query_elements);
+		frames[i].timestamp_result_values.resize(max_timestamp_query_elements);
+		frames[i].timestamp_result_count = 0;
+	}
 }
 
 Utilities::~Utilities() {
 	singleton = nullptr;
+	for (int i = 0; i < FRAME_COUNT; i++) {
+		glDeleteQueries(max_timestamp_query_elements, frames[i].queries);
+	}
 }
 
 Vector<uint8_t> Utilities::buffer_get_data(GLenum p_target, GLuint p_buffer, uint32_t p_buffer_size) {
@@ -213,87 +232,69 @@ void Utilities::visibility_notifier_call(RID p_notifier, bool p_enter, bool p_de
 
 /* TIMING */
 
-//void Utilities::render_info_begin_capture() {
-//	info.snap = info.render;
-//}
+void Utilities::capture_timestamps_begin() {
+	capture_timestamp("Frame Begin");
+}
 
-//void Utilities::render_info_end_capture() {
-//	info.snap.object_count = info.render.object_count - info.snap.object_count;
-//	info.snap.draw_call_count = info.render.draw_call_count - info.snap.draw_call_count;
-//	info.snap.material_switch_count = info.render.material_switch_count - info.snap.material_switch_count;
-//	info.snap.surface_switch_count = info.render.surface_switch_count - info.snap.surface_switch_count;
-//	info.snap.shader_rebind_count = info.render.shader_rebind_count - info.snap.shader_rebind_count;
-//	info.snap.vertices_count = info.render.vertices_count - info.snap.vertices_count;
-//	info.snap._2d_item_count = info.render._2d_item_count - info.snap._2d_item_count;
-//	info.snap._2d_draw_call_count = info.render._2d_draw_call_count - info.snap._2d_draw_call_count;
-//}
+void Utilities::capture_timestamp(const String &p_name) {
+	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
-//int Utilities::get_captured_render_info(RS::RenderInfo p_info) {
-//	switch (p_info) {
-//		case RS::INFO_OBJECTS_IN_FRAME: {
-//			return info.snap.object_count;
-//		} break;
-//		case RS::INFO_VERTICES_IN_FRAME: {
-//			return info.snap.vertices_count;
-//		} break;
-//		case RS::INFO_MATERIAL_CHANGES_IN_FRAME: {
-//			return info.snap.material_switch_count;
-//		} break;
-//		case RS::INFO_SHADER_CHANGES_IN_FRAME: {
-//			return info.snap.shader_rebind_count;
-//		} break;
-//		case RS::INFO_SURFACE_CHANGES_IN_FRAME: {
-//			return info.snap.surface_switch_count;
-//		} break;
-//		case RS::INFO_DRAW_CALLS_IN_FRAME: {
-//			return info.snap.draw_call_count;
-//		} break;
-//			/*
-//		case RS::INFO_2D_ITEMS_IN_FRAME: {
-//			return info.snap._2d_item_count;
-//		} break;
-//		case RS::INFO_2D_DRAW_CALLS_IN_FRAME: {
-//			return info.snap._2d_draw_call_count;
-//		} break;
-//			*/
-//		default: {
-//			return get_render_info(p_info);
-//		}
-//	}
-//}
+#ifdef GLES_OVER_GL
+	glQueryCounter(frames[frame].queries[frames[frame].timestamp_count], GL_TIMESTAMP);
+#endif
 
-//int Utilities::get_render_info(RS::RenderInfo p_info) {
-//	switch (p_info) {
-//		case RS::INFO_OBJECTS_IN_FRAME:
-//			return info.render_final.object_count;
-//		case RS::INFO_VERTICES_IN_FRAME:
-//			return info.render_final.vertices_count;
-//		case RS::INFO_MATERIAL_CHANGES_IN_FRAME:
-//			return info.render_final.material_switch_count;
-//		case RS::INFO_SHADER_CHANGES_IN_FRAME:
-//			return info.render_final.shader_rebind_count;
-//		case RS::INFO_SURFACE_CHANGES_IN_FRAME:
-//			return info.render_final.surface_switch_count;
-//		case RS::INFO_DRAW_CALLS_IN_FRAME:
-//			return info.render_final.draw_call_count;
-//			/*
-//		case RS::INFO_2D_ITEMS_IN_FRAME:
-//			return info.render_final._2d_item_count;
-//		case RS::INFO_2D_DRAW_CALLS_IN_FRAME:
-//			return info.render_final._2d_draw_call_count;
-//*/
-//		case RS::INFO_USAGE_VIDEO_MEM_TOTAL:
-//			return 0; //no idea
-//		case RS::INFO_VIDEO_MEM_USED:
-//			return info.vertex_mem + info.texture_mem;
-//		case RS::INFO_TEXTURE_MEM_USED:
-//			return info.texture_mem;
-//		case RS::INFO_VERTEX_MEM_USED:
-//			return info.vertex_mem;
-//		default:
-//			return 0; //no idea either
-//	}
-//}
+	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
+	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
+	frames[frame].timestamp_count++;
+}
+
+void Utilities::_capture_timestamps_begin() {
+	// frame is incremented at the end of the frame so this gives us the queries for frame - 2. By then they should be ready.
+	if (frames[frame].timestamp_count) {
+#ifdef GLES_OVER_GL
+		for (uint32_t i = 0; i < frames[frame].timestamp_count; i++) {
+			uint64_t temp = 0;
+			glGetQueryObjectui64v(frames[frame].queries[i], GL_QUERY_RESULT, &temp);
+			frames[frame].timestamp_result_values[i] = temp;
+		}
+#endif
+		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
+		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
+	}
+
+	frames[frame].timestamp_result_count = frames[frame].timestamp_count;
+	frames[frame].timestamp_count = 0;
+	frames[frame].index = Engine::get_singleton()->get_frames_drawn();
+	capture_timestamp("Internal Begin");
+}
+
+void Utilities::capture_timestamps_end() {
+	capture_timestamp("Internal End");
+	frame = (frame + 1) % FRAME_COUNT;
+}
+
+uint32_t Utilities::get_captured_timestamps_count() const {
+	return frames[frame].timestamp_result_count;
+}
+
+uint64_t Utilities::get_captured_timestamps_frame() const {
+	return frames[frame].index;
+}
+
+uint64_t Utilities::get_captured_timestamp_gpu_time(uint32_t p_index) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	return frames[frame].timestamp_result_values[p_index];
+}
+
+uint64_t Utilities::get_captured_timestamp_cpu_time(uint32_t p_index) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	return frames[frame].timestamp_cpu_result_values[p_index];
+}
+
+String Utilities::get_captured_timestamp_name(uint32_t p_index) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
+	return frames[frame].timestamp_result_names[p_index];
+}
 
 /* MISC */
 
