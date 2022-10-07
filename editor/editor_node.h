@@ -280,7 +280,7 @@ private:
 
 	Vector<EditorPlugin *> editor_plugins;
 	bool _initializing_plugins = false;
-	HashMap<String, EditorPlugin *> addon_name_to_plugin;
+	HashMap<String, Vector<EditorPlugin *>> addon_name_to_plugins;
 
 	PanelContainer *scene_root_parent = nullptr;
 	Control *theme_base = nullptr;

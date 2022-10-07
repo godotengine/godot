@@ -3460,7 +3460,7 @@ void EditorNode::_update_addon_config() {
 
 	Vector<String> enabled_addons;
 
-	for (const KeyValue<String, EditorPlugin *> &E : addon_name_to_plugin) {
+	for (const KeyValue<String, Vector<EditorPlugin *>> &E : addon_name_to_plugins) {
 		enabled_addons.push_back(E.key);
 	}
 
@@ -3480,82 +3480,169 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		addon_path = "res://addons/" + addon_path + "/plugin.cfg";
 	}
 
-	ERR_FAIL_COND(p_enabled && addon_name_to_plugin.has(addon_path));
-	ERR_FAIL_COND(!p_enabled && !addon_name_to_plugin.has(addon_path));
+	ERR_FAIL_COND(p_enabled && addon_name_to_plugins.has(addon_path));
+	ERR_FAIL_COND(!p_enabled && !addon_name_to_plugins.has(addon_path));
 
 	if (!p_enabled) {
-		EditorPlugin *addon = addon_name_to_plugin[addon_path];
-		remove_editor_plugin(addon, p_config_changed);
-		memdelete(addon);
-		addon_name_to_plugin.erase(addon_path);
+		// Disable
+		Vector<EditorPlugin *> plugins = addon_name_to_plugins[addon_path];
+		addon_name_to_plugins.erase(addon_path);
+		for (EditorPlugin *plugin : plugins) {
+			remove_editor_plugin(plugin, p_config_changed);
+			memdelete(plugin);
+		}
 		_update_addon_config();
 		return;
 	}
 
-	Ref<ConfigFile> cf;
-	cf.instantiate();
+	// Enable
+
 	if (!DirAccess::exists(addon_path.get_base_dir())) {
 		_remove_plugin_from_enabled(addon_path);
 		WARN_PRINT("Addon '" + addon_path + "' failed to load. No directory found. Removing from enabled plugins.");
 		return;
 	}
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
 	Error err = cf->load(addon_path);
 	if (err != OK) {
 		show_warning(vformat(TTR("Unable to enable addon plugin at: '%s' parsing of config failed."), addon_path));
 		return;
 	}
 
-	if (!cf->has_section_key("plugin", "script")) {
-		show_warning(vformat(TTR("Unable to find script field for addon plugin at: '%s'."), addon_path));
+	Vector<String> plugin_classes;
+	if (cf->has_section_key("plugin", "script")) {
+		// Backward compatibility
+		plugin_classes.push_back(cf->get_value("plugin", "script"));
+
+	} else if (cf->has_section_key("plugin", "editor_plugins")) {
+		Array array = cf->get_value("plugin", "script");
+		for (int i = 0; i < array.size(); ++i) {
+			Variant item = array[i];
+			ERR_CONTINUE(item.get_type() != Variant::STRING);
+			plugin_classes.push_back(item);
+		}
+	} else {
+		show_warning(vformat(TTR("Unable to find `script` or `editor_plugin` field for addon plugin at: '%s'."), addon_path));
 		return;
 	}
+	// if (plugin_classes.size() == 0) {
+	// 	show_warning(vformat(TTR("Unable to find editor plugin classes in addon plugin at: '%s'."), addon_path));
+	// 	return;
+	// }
 
-	String script_path = cf->get_value("plugin", "script");
-	Ref<Script> script; // We need to save it for creating "ep" below.
-
-	// Only try to load the script if it has a name. Else, the plugin has no init script.
-	if (script_path.length() > 0) {
-		script_path = addon_path.get_base_dir().path_join(script_path);
-		script = ResourceLoader::load(script_path);
-
-		if (script.is_null()) {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), script_path));
-			return;
+	// Wrapping up in in a container so in case of error we can clean it up properly
+	struct TemporaryPluginList {
+		Vector<EditorPlugin *> objects;
+		~TemporaryPluginList() {
+			for (EditorPlugin *obj : objects) {
+				memdelete(obj);
+			}
 		}
+	};
 
-		// Errors in the script cause the base_type to be an empty StringName.
-		if (script->get_instance_base_type() == StringName()) {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, addon_path));
-			_remove_plugin_from_enabled(addon_path);
-			return;
-		}
+	TemporaryPluginList plugins_in_addon;
 
-		// Plugin init scripts must inherit from EditorPlugin and be tools.
-		if (String(script->get_instance_base_type()) != "EditorPlugin") {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), script_path));
-			return;
-		}
+	// Create plugins
+	for (String plugin_class : plugin_classes) {
+		if (plugin_class.contains(".")) {
+			// Script class
+			String script_path = plugin_class;
 
-		if (!script->is_tool()) {
-			show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), script_path));
-			return;
+			Ref<Script> script; // We need to save it for creating "ep" below.
+
+			// Only try to load the script if it has a name. Else, the plugin has no init script.
+			if (script_path.length() > 0) {
+				script_path = addon_path.get_base_dir().path_join(script_path);
+				script = ResourceLoader::load(script_path);
+
+				if (script.is_null()) {
+					show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), script_path));
+					return;
+				}
+
+				// Errors in the script cause the base_type to be an empty StringName.
+				if (script->get_instance_base_type() == StringName()) {
+					show_warning(vformat(TTR("Unable to load addon script from path: '%s'. "
+											 "This might be due to a code error in that script.\n"
+											 "Disabling the addon at '%s' to prevent further errors."),
+							script_path, addon_path));
+					_remove_plugin_from_enabled(addon_path);
+					return;
+				}
+
+				// Plugin init scripts must inherit from EditorPlugin and be tools.
+				if (String(script->get_instance_base_type()) != "EditorPlugin") {
+					show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), script_path));
+					return;
+				}
+
+				if (!script->is_tool()) {
+					show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), script_path));
+					return;
+				}
+			}
+
+			EditorPlugin *ep = memnew(EditorPlugin);
+			ep->set_script(script);
+			plugins_in_addon.objects.push_back(ep);
+
+		} else {
+			// Class name
+			// For now, look for extensions.
+			// TODO Any way to check if the class is an extension?
+			if (!ClassDB::can_instantiate(plugin_class)) {
+				show_warning(vformat(TTR("Unable to instantiate plugin class '%s' from config file: '%s'"), plugin_class, addon_path));
+				return;
+			}
+			if (!ClassDB::is_parent_class(plugin_class, EditorPlugin::get_class_static())) {
+				show_warning(vformat(TTR("Unable to instantiate plugin class '%s' from config file: '%s', "
+										 "the class does not inherit EditorPlugin."),
+						plugin_class, addon_path));
+				return;
+			}
+			// This should succeed, but check just in case
+			Object *obj = ClassDB::instantiate(plugin_class);
+			if (obj == nullptr) {
+				show_warning(vformat(TTR("Failed to instantiate plugin class '%s' from config file: '%s'"), plugin_class, addon_path));
+				return;
+			}
+			EditorPlugin *plugin = Object::cast_to<EditorPlugin>(obj);
+			if (plugin == nullptr) {
+				show_warning(vformat(TTR("Failed to instantiate plugin class '%s' from config file: '%s', "
+										 "the class does not inherit EditorPlugin."),
+						plugin_class, addon_path));
+				memdelete(obj);
+				return;
+			}
+			plugins_in_addon.objects.push_back(plugin);
 		}
 	}
 
-	EditorPlugin *ep = memnew(EditorPlugin);
-	ep->set_script(script);
-	addon_name_to_plugin[addon_path] = ep;
-	add_editor_plugin(ep, p_config_changed);
+	if (plugins_in_addon.objects.size() == 0) {
+		// An addon with no plugin was actually supported. Keeping support.
+		plugins_in_addon.objects.push_back(memnew(EditorPlugin));
+	}
+
+	// All succeeded, add plugins to the editor
+	addon_name_to_plugins[addon_path] = plugins_in_addon.objects.duplicate();
+	for (EditorPlugin *ep : plugins_in_addon.objects) {
+		add_editor_plugin(ep, p_config_changed);
+	}
+
+	// We are done with this list (if we dont do that it would destroy the objects)
+	plugins_in_addon.objects.clear();
 
 	_update_addon_config();
 }
 
 bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 	if (p_addon.begins_with("res://")) {
-		return addon_name_to_plugin.has(p_addon);
+		return addon_name_to_plugins.has(p_addon);
 	}
 
-	return addon_name_to_plugin.has("res://addons/" + p_addon + "/plugin.cfg");
+	return addon_name_to_plugins.has("res://addons/" + p_addon + "/plugin.cfg");
 }
 
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
