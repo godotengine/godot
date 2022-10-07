@@ -15,8 +15,10 @@
 			<param index="1" name="params" type="Variant" />
 			<description>
 				Returns a dictionary in the form of a JSON-RPC notification. Notifications are one-shot messages which do not expect a response.
-				- [param method]: Name of the method being called.
-				- [param params]: An array or dictionary of parameters being passed to the method.
+				[ul]
+				[param method]: Name of the method being called.
+				[param params]: An array or dictionary of parameters being passed to the method.
+				[/ul]
 			</description>
 		</method>
 		<method name="make_request">
@@ -26,9 +28,11 @@
 			<param index="2" name="id" type="Variant" />
 			<description>
 				Returns a dictionary in the form of a JSON-RPC request. Requests are sent to a server with the expectation of a response. The ID field is used for the server to specify which exact request it is responding to.
-				- [param method]: Name of the method being called.
-				- [param params]: An array or dictionary of parameters being passed to the method.
-				- [param id]: Uniquely identifies this request. The server is expected to send a response with the same ID.
+				[ul]
+				[param method]: Name of the method being called.
+				[param params]: An array or dictionary of parameters being passed to the method.
+				[param id]: Uniquely identifies this request. The server is expected to send a response with the same ID.
+				[/ul]
 			</description>
 		</method>
 		<method name="make_response">
@@ -37,8 +41,10 @@
 			<param index="1" name="id" type="Variant" />
 			<description>
 				When a server has received and processed a request, it is expected to send a response. If you did not want a response then you need to have sent a Notification instead.
-				- [param result]: The return value of the function which was called.
-				- [param id]: The ID of the request this response is targeted to.
+				[ul]
+				[param result]: The return value of the function which was called.
+				[param id]: The ID of the request this response is targeted to.
+				[/ul]
 			</description>
 		</method>
 		<method name="make_response_error" qualifiers="const">
@@ -48,9 +54,11 @@
 			<param index="2" name="id" type="Variant" default="null" />
 			<description>
 				Creates a response which indicates a previous reply has failed in some way.
-				- [param code]: The error code corresponding to what kind of error this is. See the [enum ErrorCode] constants.
-				- [param message]: A custom message about this error.
-				- [param id]: The request this error is a response to.
+				[ul]
+				[param code]: The error code corresponding to what kind of error this is. See the [enum ErrorCode] constants.
+				[param message]: A custom message about this error.
+				[param id]: The request this error is a response to.
+				[/ul]
 			</description>
 		</method>
 		<method name="process_action">
@@ -60,7 +68,9 @@
 			<description>
 				Given a Dictionary which takes the form of a JSON-RPC request: unpack the request and run it. Methods are resolved by looking at the field called "method" and looking for an equivalently named function in the JSONRPC object. If one is found that method is called.
 				To add new supported methods extend the JSONRPC class and call [method process_action] on your subclass.
+				[ul]
 				[param action]: The action to be run, as a Dictionary in the form of a JSON-RPC request or notification.
+				[/ul]
 			</description>
 		</method>
 		<method name="process_string">

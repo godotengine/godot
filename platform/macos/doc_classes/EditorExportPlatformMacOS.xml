@@ -252,10 +252,12 @@
 		<member name="ssh_remote_deploy/cleanup_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when app is finished.
 			The following variables can be used in the script:
-			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
-			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
-			- [code]{exe_name}[/code] - Name of application executable.
-			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+			[ul]
+			[code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			[code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			[code]{exe_name}[/code] - Name of application executable.
+			[code]{cmd_args}[/code] - Array of the command line argument for the application.
+			[/ul]
 		</member>
 		<member name="ssh_remote_deploy/enabled" type="bool" setter="" getter="">
 			Enables remote deploy using SSH/SCP.
@@ -275,10 +277,12 @@
 		<member name="ssh_remote_deploy/run_script" type="String" setter="" getter="">
 			Script code to execute on the remote host when running the app.
 			The following variables can be used in the script:
-			- [code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
-			- [code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
-			- [code]{exe_name}[/code] - Name of application executable.
-			- [code]{cmd_args}[/code] - Array of the command line argument for the application.
+			[ul]
+			[code]{temp_dir}[/code] - Path of temporary folder on the remote, used to upload app and scripts to.
+			[code]{archive_name}[/code] - Name of the ZIP containing uploaded application.
+			[code]{exe_name}[/code] - Name of application executable.
+			[code]{cmd_args}[/code] - Array of the command line argument for the application.
+			[/ul]
 		</member>
 		<member name="xcode/platform_build" type="String" setter="" getter="">
 			macOS build number used to build application executable.

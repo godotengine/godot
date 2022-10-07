@@ -226,12 +226,14 @@
 			<description>
 				Notifies when a navigation link has been reached.
 				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
-				- [code]position[/code]: The start position of the link that was reached.
-				- [code]type[/code]: Always [constant NavigationPathQueryResult3D.PATH_SEGMENT_TYPE_LINK].
-				- [code]rid[/code]: The [RID] of the link.
-				- [code]owner[/code]: The object which manages the link (usually [NavigationLink3D]).
-				- [code]link_entry_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point the agent is entering.
-				- [code]link_exit_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point which the agent is exiting.
+				[ul]
+				[code]position[/code]: The start position of the link that was reached.
+				[code]type[/code]: Always [constant NavigationPathQueryResult3D.PATH_SEGMENT_TYPE_LINK].
+				[code]rid[/code]: The [RID] of the link.
+				[code]owner[/code]: The object which manages the link (usually [NavigationLink3D]).
+				[code]link_entry_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point the agent is entering.
+				[code]link_exit_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point which the agent is exiting.
+				[/ul]
 			</description>
 		</signal>
 		<signal name="navigation_finished">
@@ -260,10 +262,12 @@
 			<description>
 				Notifies when a waypoint along the path has been reached.
 				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
-				- [code]position[/code]: The position of the waypoint that was reached.
-				- [code]type[/code]: The type of navigation primitive (region or link) that contains this waypoint.
-				- [code]rid[/code]: The [RID] of the containing navigation primitive (region or link).
-				- [code]owner[/code]: The object which manages the containing navigation primitive (region or link).
+				[ul]
+				[code]position[/code]: The position of the waypoint that was reached.
+				[code]type[/code]: The type of navigation primitive (region or link) that contains this waypoint.
+				[code]rid[/code]: The [RID] of the containing navigation primitive (region or link).
+				[code]owner[/code]: The object which manages the containing navigation primitive (region or link).
+				[/ul]
 			</description>
 		</signal>
 	</signals>

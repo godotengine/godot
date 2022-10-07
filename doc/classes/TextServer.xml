@@ -1025,13 +1025,17 @@
 			<description>
 				Returns [code]true[/code] if [param string] is a valid identifier.
 				If the text server supports the [constant FEATURE_UNICODE_IDENTIFIERS] feature, a valid identifier must:
-				- Conform to normalization form C.
-				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
-				- May contain Unicode characters of class XID_Continue in the other positions.
-				- Use UAX #31 recommended scripts only (mixed scripts are allowed).
+				[ul]
+				Conform to normalization form C.
+				Begin with a Unicode character of class XID_Start or [code]"_"[/code].
+				May contain Unicode characters of class XID_Continue in the other positions.
+				Use UAX #31 recommended scripts only (mixed scripts are allowed).
+				[/ul]
 				If the [constant FEATURE_UNICODE_IDENTIFIERS] feature is not supported, a valid identifier must:
-				- Begin with a Unicode character of class XID_Start or [code]"_"[/code].
-				- May contain Unicode characters of class XID_Continue in the other positions.
+				[ul]
+				Begin with a Unicode character of class XID_Start or [code]"_"[/code].
+				May contain Unicode characters of class XID_Continue in the other positions.
+				[/ul]
 			</description>
 		</method>
 		<method name="load_support_data">
@@ -1825,9 +1829,11 @@
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_AUTO" value="1" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded based on font size.
-			- To one quarter of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE].
-			- To one half of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE].
-			- To the whole pixel size for larger fonts.
+			[ul]
+			To one quarter of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE].
+			To one half of the pixel size if font size is smaller or equal to [constant SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE].
+			To the whole pixel size for larger fonts.
+			[/ul]
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_HALF" value="2" enum="SubpixelPositioning">
 			Glyph horizontal position is rounded to one half of the pixel size, each glyph is rasterized up to two times.

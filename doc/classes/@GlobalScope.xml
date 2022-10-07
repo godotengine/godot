@@ -332,15 +332,15 @@
 			<param index="1" name="curve" type="float" />
 			<description>
 				Returns an "eased" value of [param x] based on an easing function defined with [param curve]. This easing function is based on an exponent. The [param curve] can be any floating-point number, with specific values leading to the following behaviors:
-				[codeblock]
-				- Lower than -1.0 (exclusive): Ease in-out
-				- 1.0: Linear
-				- Between -1.0 and 0.0 (exclusive): Ease out-in
-				- 0.0: Constant
-				- Between 0.0 to 1.0 (exclusive): Ease out
-				- 1.0: Linear
-				- Greater than 1.0 (exclusive): Ease in
-				[/codeblock]
+				[ul]
+				Lower than -1.0 (exclusive): Ease in-out
+				1.0: Linear
+				Between -1.0 and 0.0 (exclusive): Ease out-in
+				0.0: Constant
+				Between 0.0 to 1.0 (exclusive): Ease out
+				1.0: Linear
+				Greater than 1.0 (exclusive): Ease in
+				[/ul]
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/ease_cheatsheet.png]ease() curve values cheatsheet[/url]
 				See also [method smoothstep]. If you need to perform more advanced transitions, use [method Tween.interpolate_value].
 			</description>
@@ -2403,9 +2403,11 @@
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
 			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
-			- [b]Android:[/b] Up to 36 buttons.
-			- [b]Linux:[/b] Up to 80 buttons.
-			- [b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
+			[ul]
+			[b]Android:[/b] Up to 36 buttons.
+			[b]Linux:[/b] Up to 80 buttons.
+			[b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
+			[/ul]
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.

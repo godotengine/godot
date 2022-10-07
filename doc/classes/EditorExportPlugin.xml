@@ -173,9 +173,11 @@
 			<description>
 				Return a list of export options that can be configured for this export plugin.
 				Each element in the return value is a [Dictionary] with the following keys:
-				- [code]option[/code]: A dictionary with the structure documented by [method Object.get_property_list], but all keys are optional.
-				- [code]default_value[/code]: The default value for this option.
-				- [code]update_visibility[/code]: An optional boolean value. If set to [code]true[/code], the preset will emit [signal Object.property_list_changed] when the option is changed.
+				[ul]
+				[code]option[/code]: A dictionary with the structure documented by [method Object.get_property_list], but all keys are optional.
+				[code]default_value[/code]: The default value for this option.
+				[code]update_visibility[/code]: An optional boolean value. If set to [code]true[/code], the preset will emit [signal Object.property_list_changed] when the option is changed.
+				[/ul]
 			</description>
 		</method>
 		<method name="_get_name" qualifiers="virtual const">

@@ -128,9 +128,11 @@
 			<param index="1" name="type" type="Variant" />
 			<description>
 				Returns [code]true[/code] if [param value] is an instance of [param type]. The [param type] value must be one of the following:
-				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
-				- An [Object]-derived class which exists in [ClassDB], for example [Node].
-				- A [Script] (you can use any class, including inner one).
+				[ul]
+				A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
+				An [Object]-derived class which exists in [ClassDB], for example [Node].
+				A [Script] (you can use any class, including inner one).
+				[/ul]
 				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays) and is more performant. Use the operator instead of this method if you do not need dynamic type checking.
 				Examples:
 				[codeblock]

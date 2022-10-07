@@ -570,9 +570,11 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of signal connections received by this object. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to the [Signal];
-				- [code]callable[/code] is a reference to the [Callable];
-				- [code]flags[/code] is a combination of [enum ConnectFlags].
+				[ul]
+				[code]signal[/code] is a reference to the [Signal];
+				[code]callable[/code] is a reference to the [Callable];
+				[code]flags[/code] is a combination of [enum ConnectFlags].
+				[/ul]
 			</description>
 		</method>
 		<method name="get_indexed" qualifiers="const">
@@ -625,12 +627,14 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns this object's methods and their signatures as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
-				- [code]name[/code] is the name of the method, as a [String];
-				- [code]args[/code] is an [Array] of dictionaries representing the arguments;
-				- [code]default_args[/code] is the default arguments as an [Array] of variants;
-				- [code]flags[/code] is a combination of [enum MethodFlags];
-				- [code]id[/code] is the method's internal identifier [int];
-				- [code]return[/code] is the returned value, as a [Dictionary];
+				[ul]
+				[code]name[/code] is the name of the method, as a [String];
+				[code]args[/code] is an [Array] of dictionaries representing the arguments;
+				[code]default_args[/code] is the default arguments as an [Array] of variants;
+				[code]flags[/code] is a combination of [enum MethodFlags];
+				[code]id[/code] is the method's internal identifier [int];
+				[code]return[/code] is the returned value, as a [Dictionary];
+				[/ul]
 				[b]Note:[/b] The dictionaries of [code]args[/code] and [code]return[/code] are formatted identically to the results of [method get_property_list], although not all entries are used.
 			</description>
 		</method>
@@ -638,12 +642,14 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the object's property list as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
-				- [code]name[/code] is the property's name, as a [String];
-				- [code]class_name[/code] is an empty [StringName], unless the property is [constant TYPE_OBJECT] and it inherits from a class;
-				- [code]type[/code] is the property's type, as an [int] (see [enum Variant.Type]);
-				- [code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
-				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
-				- [code]usage[/code] is a combination of [enum PropertyUsageFlags].
+				[ul]
+				[code]name[/code] is the property's name, as a [String];
+				[code]class_name[/code] is an empty [StringName], unless the property is [constant TYPE_OBJECT] and it inherits from a class;
+				[code]type[/code] is the property's type, as an [int] (see [enum Variant.Type]);
+				[code]hint[/code] is [i]how[/i] the property is meant to be edited (see [enum PropertyHint]);
+				[code]hint_string[/code] depends on the hint (see [enum PropertyHint]);
+				[code]usage[/code] is a combination of [enum PropertyUsageFlags].
+				[/ul]
 			</description>
 		</method>
 		<method name="get_script" qualifiers="const">
@@ -657,9 +663,11 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to the [Signal];
-				- [code]callable[/code] is a reference to the connected [Callable];
-				- [code]flags[/code] is a combination of [enum ConnectFlags].
+				[ul]
+				[code]signal[/code] is a reference to the [Signal];
+				[code]callable[/code] is a reference to the connected [Callable];
+				[code]flags[/code] is a combination of [enum ConnectFlags].
+				[/ul]
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const">

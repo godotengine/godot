@@ -6,9 +6,11 @@
 	<description>
 		[EditorUndoRedoManager] is a manager for [UndoRedo] objects associated with edited scenes. Each scene has its own undo history and [EditorUndoRedoManager] ensures that each action performed in the editor gets associated with a proper scene. For actions not related to scenes ([ProjectSettings] edits, external resources, etc.), a separate global history is used.
 		The usage is mostly the same as [UndoRedo]. You create and commit actions and the manager automatically decides under-the-hood what scenes it belongs to. The scene is deduced based on the first operation in an action, using the object from the operation. The rules are as follows:
-		- If the object is a [Node], use the currently edited scene;
-		- If the object is a built-in resource, use the scene from its path;
-		- If the object is external resource or anything else, use global history.
+		[ul]
+		If the object is a [Node], use the currently edited scene;
+		If the object is a built-in resource, use the scene from its path;
+		If the object is external resource or anything else, use global history.
+		[/ul]
 		This guessing can sometimes yield false results, so you can provide a custom context object when creating an action.
 		[EditorUndoRedoManager] is intended to be used by Godot editor plugins. You can obtain it using [method EditorPlugin.get_undo_redo]. For non-editor uses or plugins that don't need to integrate with the editor's undo history, use [UndoRedo] instead.
 		The manager's API is mostly the same as in [UndoRedo], so you can refer to its documentation for more examples. The main difference is that [EditorUndoRedoManager] uses object + method name for actions, instead of [Callable].

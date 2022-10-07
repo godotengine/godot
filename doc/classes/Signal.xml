@@ -86,9 +86,11 @@
 			<return type="Array" />
 			<description>
 				Returns an [Array] of connections for this signal. Each connection is represented as a [Dictionary] that contains three entries:
-				- [code]signal[/code] is a reference to this signal;
-				- [code]callable[/code] is a reference to the connected [Callable];
-				- [code]flags[/code] is a combination of [enum Object.ConnectFlags].
+				[ul]
+				[code]signal[/code] is a reference to this signal;
+				[code]callable[/code] is a reference to the connected [Callable];
+				[code]flags[/code] is a combination of [enum Object.ConnectFlags].
+				[/ul]
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
