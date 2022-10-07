@@ -3697,7 +3697,8 @@ bool EditorPropertyNodePath::is_drop_valid(const Dictionary &p_drag_data) const 
 	}
 
 	for (const StringName &E : valid_types) {
-		if (dropped_node->is_class(E)) {
+		if (dropped_node->is_class(E) ||
+				EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, E)) {
 			return true;
 		}
 	}
