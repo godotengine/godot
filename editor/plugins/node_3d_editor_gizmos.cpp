@@ -1016,8 +1016,9 @@ Ref<StandardMaterial3D> EditorNode3DGizmoPlugin::get_material(const String &p_na
 }
 
 String EditorNode3DGizmoPlugin::get_gizmo_name() const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_gizmo_name")) {
-		return get_script_instance()->call("_get_gizmo_name");
+	String ret;
+	if (GDVIRTUAL_CALL(_get_gizmo_name, ret)) {
+		return ret;
 	}
 
 	WARN_PRINT_ONCE("A 3D editor gizmo has no name defined (it will appear as \"Unnamed Gizmo\" in the \"View > Gizmos\" menu). To resolve this, override the `_get_gizmo_name()` function to return a String in the script that extends EditorNode3DGizmoPlugin.");
@@ -1025,8 +1026,9 @@ String EditorNode3DGizmoPlugin::get_gizmo_name() const {
 }
 
 int EditorNode3DGizmoPlugin::get_priority() const {
-	if (get_script_instance() && get_script_instance()->has_method("_get_priority")) {
-		return get_script_instance()->call("_get_priority");
+	int ret;
+	if (GDVIRTUAL_CALL(_get_priority, ret)) {
+		return ret;
 	}
 	return 0;
 }
