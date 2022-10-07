@@ -173,7 +173,7 @@ const GodotDisplayCursor = {
 	$GodotDisplayCursor__deps: ['$GodotOS', '$GodotConfig'],
 	$GodotDisplayCursor__postset: 'GodotOS.atexit(function(resolve, reject) { GodotDisplayCursor.clear(); resolve(); });',
 	$GodotDisplayCursor: {
-		shape: 'auto',
+		shape: 'default',
 		visible: true,
 		cursors: {},
 		set_style: function (style) {
@@ -184,7 +184,7 @@ const GodotDisplayCursor = {
 			let css = shape;
 			if (shape in GodotDisplayCursor.cursors) {
 				const c = GodotDisplayCursor.cursors[shape];
-				css = `url("${c.url}") ${c.x} ${c.y}, auto`;
+				css = `url("${c.url}") ${c.x} ${c.y}, default`;
 			}
 			if (GodotDisplayCursor.visible) {
 				GodotDisplayCursor.set_style(css);
@@ -192,7 +192,7 @@ const GodotDisplayCursor = {
 		},
 		clear: function () {
 			GodotDisplayCursor.set_style('');
-			GodotDisplayCursor.shape = 'auto';
+			GodotDisplayCursor.shape = 'default';
 			GodotDisplayCursor.visible = true;
 			Object.keys(GodotDisplayCursor.cursors).forEach(function (key) {
 				URL.revokeObjectURL(GodotDisplayCursor.cursors[key]);
