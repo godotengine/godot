@@ -190,14 +190,6 @@ MainLoop *OS_MacOS::get_main_loop() const {
 }
 
 String OS_MacOS::get_config_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_CONFIG_HOME")) {
-		if (get_environment("XDG_CONFIG_HOME").is_absolute_path()) {
-			return get_environment("XDG_CONFIG_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CONFIG_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Application Support` or `.` per the XDG Base Directory specification.");
-		}
-	}
 	if (has_environment("HOME")) {
 		return get_environment("HOME").path_join("Library/Application Support");
 	}
@@ -205,26 +197,10 @@ String OS_MacOS::get_config_path() const {
 }
 
 String OS_MacOS::get_data_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_DATA_HOME")) {
-		if (get_environment("XDG_DATA_HOME").is_absolute_path()) {
-			return get_environment("XDG_DATA_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_DATA_HOME` is a relative path. Ignoring its value and falling back to `get_config_path()` per the XDG Base Directory specification.");
-		}
-	}
 	return get_config_path();
 }
 
 String OS_MacOS::get_cache_path() const {
-	// The XDG Base Directory specification technically only applies on Linux/*BSD, but it doesn't hurt to support it on macOS as well.
-	if (has_environment("XDG_CACHE_HOME")) {
-		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {
-			return get_environment("XDG_CACHE_HOME");
-		} else {
-			WARN_PRINT_ONCE("`XDG_CACHE_HOME` is a relative path. Ignoring its value and falling back to `$HOME/Library/Caches` or `get_config_path()` per the XDG Base Directory specification.");
-		}
-	}
 	if (has_environment("HOME")) {
 		return get_environment("HOME").path_join("Library/Caches");
 	}
