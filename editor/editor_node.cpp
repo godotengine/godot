@@ -4678,8 +4678,7 @@ void EditorNode::_dock_move_left() {
 	if (!current_ctl || !prev_ctl) {
 		return;
 	}
-	dock_slot[dock_popup_selected_idx]->move_child(current_ctl, prev_ctl->get_index());
-	dock_slot[dock_popup_selected_idx]->set_current_tab(dock_slot[dock_popup_selected_idx]->get_current_tab() - 1);
+	dock_slot[dock_popup_selected_idx]->move_child(current_ctl, prev_ctl->get_index(false));
 	dock_select->queue_redraw();
 	_edit_current();
 	_save_docks();
@@ -4691,8 +4690,7 @@ void EditorNode::_dock_move_right() {
 	if (!current_ctl || !next_ctl) {
 		return;
 	}
-	dock_slot[dock_popup_selected_idx]->move_child(next_ctl, current_ctl->get_index());
-	dock_slot[dock_popup_selected_idx]->set_current_tab(dock_slot[dock_popup_selected_idx]->get_current_tab() + 1);
+	dock_slot[dock_popup_selected_idx]->move_child(next_ctl, current_ctl->get_index(false));
 	dock_select->queue_redraw();
 	_edit_current();
 	_save_docks();
