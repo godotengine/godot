@@ -179,13 +179,13 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 			"export_format='GLTF_SEPARATE',"
 			"export_yup=True," +
 			parameters_arg;
-	String script =
+	String export_script =
 			String("import bpy, sys;") +
 			"print('Blender 3.0 or higher is required.', file=sys.stderr) if bpy.app.version < (3, 0, 0) else None;" +
 			vformat("bpy.ops.wm.open_mainfile(filepath='%s');", source_global) +
 			unpack_all +
 			vformat("bpy.ops.export_scene.gltf(export_keep_originals=True,%s);", common_args);
-	print_verbose(script);
+	print_verbose(export_script);
 
 	// Run script with configured Blender binary.
 
@@ -200,7 +200,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	List<String> args;
 	args.push_back("--background");
 	args.push_back("--python-expr");
-	args.push_back(script);
+	args.push_back(export_script);
 
 	String standard_out;
 	int ret;
@@ -349,9 +349,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
 	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
 
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-	if (blend_enabled && !_test_blender_path(blender_path)) {
+	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender3_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
 		return true;
 	}

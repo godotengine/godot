@@ -450,9 +450,9 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 		for (const KeyValue<StringName, Variant> &E : sc.value) {
 			String script_path = sc.key == p_script ? "" : sc.key->get_path().get_file() + "/";
 			if (E.value.get_type() == Variant::OBJECT) {
-				Variant id = ((Object *)E.value)->get_instance_id();
-				PropertyInfo pi(id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
-				properties.push_back(SceneDebuggerProperty(pi, id));
+				Variant inst_id = ((Object *)E.value)->get_instance_id();
+				PropertyInfo pi(inst_id.get_type(), "Constants/" + E.key, PROPERTY_HINT_OBJECT_ID, "Object");
+				properties.push_back(SceneDebuggerProperty(pi, inst_id));
 			} else {
 				PropertyInfo pi(E.value.get_type(), "Constants/" + script_path + E.key);
 				properties.push_back(SceneDebuggerProperty(pi, E.value));

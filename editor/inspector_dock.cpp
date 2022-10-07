@@ -255,8 +255,8 @@ void InspectorDock::_resource_file_selected(String p_file) {
 }
 
 void InspectorDock::_save_resource(bool save_as) {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -270,8 +270,8 @@ void InspectorDock::_save_resource(bool save_as) {
 }
 
 void InspectorDock::_unref_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -281,8 +281,8 @@ void InspectorDock::_unref_resource() {
 }
 
 void InspectorDock::_copy_resource() {
-	ObjectID current = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current.is_valid() ? ObjectDB::get_instance(current) : nullptr;
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
 
 	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
@@ -610,8 +610,8 @@ void InspectorDock::apply_script_properties(Object *p_object) {
 	}
 
 	for (const Pair<StringName, Variant> &E : stored_properties) {
-		Variant current;
-		if (si->get(E.first, current) && current.get_type() == E.second.get_type()) {
+		Variant current_prop;
+		if (si->get(E.first, current_prop) && current_prop.get_type() == E.second.get_type()) {
 			si->set(E.first, E.second);
 		}
 	}

@@ -33,10 +33,10 @@
 #include "box_shape_3d.h"
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.begins_with("item/")) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	String prop_name = p_name;
+	if (prop_name.begins_with("item/")) {
+		int idx = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		if (!item_map.has(idx)) {
 			create_item(idx);
 		}
@@ -72,10 +72,10 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	int idx = name.get_slicec('/', 1).to_int();
+	String prop_name = p_name;
+	int idx = prop_name.get_slicec('/', 1).to_int();
 	ERR_FAIL_COND_V(!item_map.has(idx), false);
-	String what = name.get_slicec('/', 2);
+	String what = prop_name.get_slicec('/', 2);
 
 	if (what == "name") {
 		r_ret = get_item_name(idx);
@@ -100,14 +100,14 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 
 void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<int, Item> &E : item_map) {
-		String name = vformat("%s/%d/", PNAME("item"), E.key);
-		p_list->push_back(PropertyInfo(Variant::STRING, name + PNAME("name")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::ARRAY, name + PNAME("shapes")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("navmesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, name + PNAME("navmesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
+		String prop_name = vformat("%s/%d/", PNAME("item"), E.key);
+		p_list->push_back(PropertyInfo(Variant::STRING, prop_name + PNAME("name")));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navmesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navmesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
 	}
 }
 

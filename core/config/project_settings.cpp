@@ -785,7 +785,7 @@ Error ProjectSettings::save() {
 	return error;
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<String, List<String>> &p_props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
@@ -795,7 +795,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 	int count = 0;
 
-	for (const KeyValue<String, List<String>> &E : props) {
+	for (const KeyValue<String, List<String>> &E : p_props) {
 		count += E.value.size();
 	}
 
@@ -821,7 +821,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (const KeyValue<String, List<String>> &E : props) {
+	for (const KeyValue<String, List<String>> &E : p_props) {
 		for (const String &key : E.value) {
 			String k = key;
 			if (!E.key.is_empty()) {
@@ -853,7 +853,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<String, List<String>> &p_props, const CustomMap &p_custom, const String &p_custom_features) {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
@@ -874,8 +874,8 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 	}
 	file->store_string("\n");
 
-	for (const KeyValue<String, List<String>> &E : props) {
-		if (E.key != props.begin()->key) {
+	for (const KeyValue<String, List<String>> &E : p_props) {
+		if (E.key != p_props.begin()->key) {
 			file->store_string("\n");
 		}
 
@@ -980,7 +980,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		vclist.insert(vc);
 	}
 
-	RBMap<String, List<String>> props;
+	RBMap<String, List<String>> save_props;
 
 	for (const _VCSort &E : vclist) {
 		String category = E.name;
@@ -994,24 +994,24 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			category = category.substr(0, div);
 			name = name.substr(div + 1, name.size());
 		}
-		props[category].push_back(name);
+		save_props[category].push_back(name);
 	}
 
-	String custom_features;
+	String save_features;
 
 	for (int i = 0; i < p_custom_features.size(); i++) {
 		if (i > 0) {
-			custom_features += ",";
+			save_features += ",";
 		}
 
 		String f = p_custom_features[i].strip_edges().replace("\"", "");
-		custom_features += f;
+		save_features += f;
 	}
 
 	if (p_path.ends_with(".godot") || p_path.ends_with("override.cfg")) {
-		return _save_settings_text(p_path, props, p_custom, custom_features);
+		return _save_settings_text(p_path, save_props, p_custom, save_features);
 	} else if (p_path.ends_with(".binary")) {
-		return _save_settings_binary(p_path, props, p_custom, custom_features);
+		return _save_settings_binary(p_path, save_props, p_custom, save_features);
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
 	}

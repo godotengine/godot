@@ -330,9 +330,9 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 		Ref<SceneState> ss = p->get_scene_inherited_state();
 		if (ss.is_valid()) {
 			String path = ss->get_path();
-			Ref<PackedScene> data = ResourceLoader::load(path);
-			if (data.is_valid()) {
-				p = data->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
+			Ref<PackedScene> pack_data = ResourceLoader::load(path);
+			if (pack_data.is_valid()) {
+				p = pack_data->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE);
 				if (!p) {
 					continue;
 				}
@@ -1147,9 +1147,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				String name = selected_favorite_root.get_slicec(' ', 0);
 				if (ScriptServer::is_global_class(name)) {
 					new_node = Object::cast_to<Node>(ClassDB::instantiate(ScriptServer::get_global_class_native_base(name)));
-					Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(name), "Script");
-					if (new_node && script.is_valid()) {
-						new_node->set_script(script);
+					Ref<Script> scr = ResourceLoader::load(ScriptServer::get_global_class_path(name), "Script");
+					if (new_node && scr.is_valid()) {
+						new_node->set_script(scr);
 						new_node->set_name(name);
 					}
 				} else {

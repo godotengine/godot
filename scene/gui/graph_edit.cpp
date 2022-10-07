@@ -92,8 +92,8 @@ void GraphEditMinimap::update_minimap() {
 Rect2 GraphEditMinimap::get_camera_rect() {
 	Vector2 camera_center = _convert_from_graph_position(camera_position + camera_size / 2) + minimap_offset;
 	Vector2 camera_viewport = _convert_from_graph_position(camera_size);
-	Vector2 camera_position = (camera_center - camera_viewport / 2);
-	return Rect2(camera_position, camera_viewport);
+	Vector2 camera_pos = (camera_center - camera_viewport / 2);
+	return Rect2(camera_pos, camera_viewport);
 }
 
 Vector2 GraphEditMinimap::_get_render_size() {
@@ -1475,7 +1475,7 @@ void GraphEdit::force_connection_drag_end() {
 }
 
 bool GraphEdit::is_node_hover_valid(const StringName &p_from, const int p_from_port, const StringName &p_to, const int p_to_port) {
-	bool valid;
+	bool valid = false;
 	if (GDVIRTUAL_CALL(_is_node_hover_valid, p_from, p_from_port, p_to, p_to_port, valid)) {
 		return valid;
 	}

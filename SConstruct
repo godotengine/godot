@@ -651,16 +651,32 @@ if selected_platform in platform_list:
 
     # Configure compiler warnings
     if env.msvc:  # MSVC
-        # Truncations, narrowing conversions, signed/unsigned comparisons...
-        disable_nonessential_warnings = ["/wd4267", "/wd4244", "/wd4305", "/wd4018", "/wd4800"]
-        if env["warnings"] == "extra":
-            env.Append(CCFLAGS=["/Wall"])  # Implies /W4
-        elif env["warnings"] == "all":
-            env.Append(CCFLAGS=["/W3"] + disable_nonessential_warnings)
-        elif env["warnings"] == "moderate":
-            env.Append(CCFLAGS=["/W2"] + disable_nonessential_warnings)
-        else:  # 'no'
+        if env["warnings"] == "no":
             env.Append(CCFLAGS=["/w"])
+        else:
+            if env["warnings"] == "extra":
+                env.Append(CCFLAGS=["/W4"])
+            elif env["warnings"] == "all":
+                env.Append(CCFLAGS=["/W3"])
+            elif env["warnings"] == "moderate":
+                env.Append(CCFLAGS=["/W2"])
+            # Disable warnings which we don't plan to fix.
+
+            env.Append(
+                CCFLAGS=[
+                    "/wd4100",  # C4100 (unreferenced formal parameter): Doesn't play nice with polymorphism.
+                    "/wd4127",  # C4127 (conditional expression is constant)
+                    "/wd4201",  # C4201 (non-standard nameless struct/union): Only relevant for C89.
+                    "/wd4244",  # C4244 C4245 C4267 (narrowing conversions): Unavoidable at this scale.
+                    "/wd4245",
+                    "/wd4267",
+                    "/wd4305",  # C4305 (truncation): double to float or real_t, too hard to avoid.
+                    "/wd4514",  # C4514 (unreferenced inline function has been removed)
+                    "/wd4714",  # C4714 (function marked as __forceinline not inlined)
+                    "/wd4820",  # C4820 (padding added after construct)
+                ]
+            )
+
         # Set exception handling model to avoid warnings caused by Windows system headers.
         env.Append(CCFLAGS=["/EHsc"])
 

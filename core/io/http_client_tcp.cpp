@@ -358,38 +358,38 @@ Error HTTPClientTCP::poll() {
 							} break;
 						}
 					} else if (tls) {
-						Ref<StreamPeerTLS> tls;
+						Ref<StreamPeerTLS> tls_conn;
 						if (!handshaking) {
 							// Connect the StreamPeerTLS and start handshaking.
-							tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-							tls->set_blocking_handshake_enabled(false);
-							Error err = tls->connect_to_stream(tcp_connection, tls_verify_host, conn_host);
+							tls_conn = Ref<StreamPeerTLS>(StreamPeerTLS::create());
+							tls_conn->set_blocking_handshake_enabled(false);
+							Error err = tls_conn->connect_to_stream(tcp_connection, tls_verify_host, conn_host);
 							if (err != OK) {
 								close();
 								status = STATUS_TLS_HANDSHAKE_ERROR;
 								return ERR_CANT_CONNECT;
 							}
-							connection = tls;
+							connection = tls_conn;
 							handshaking = true;
 						} else {
 							// We are already handshaking, which means we can use your already active TLS connection.
-							tls = static_cast<Ref<StreamPeerTLS>>(connection);
-							if (tls.is_null()) {
+							tls_conn = static_cast<Ref<StreamPeerTLS>>(connection);
+							if (tls_conn.is_null()) {
 								close();
 								status = STATUS_TLS_HANDSHAKE_ERROR;
 								return ERR_CANT_CONNECT;
 							}
 
-							tls->poll(); // Try to finish the handshake.
+							tls_conn->poll(); // Try to finish the handshake.
 						}
 
-						if (tls->get_status() == StreamPeerTLS::STATUS_CONNECTED) {
+						if (tls_conn->get_status() == StreamPeerTLS::STATUS_CONNECTED) {
 							// Handshake has been successful.
 							handshaking = false;
 							ip_candidates.clear();
 							status = STATUS_CONNECTED;
 							return OK;
-						} else if (tls->get_status() != StreamPeerTLS::STATUS_HANDSHAKING) {
+						} else if (tls_conn->get_status() != StreamPeerTLS::STATUS_HANDSHAKING) {
 							// Handshake has failed.
 							close();
 							status = STATUS_TLS_HANDSHAKE_ERROR;

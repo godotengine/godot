@@ -143,10 +143,10 @@ Array SpriteFrames::_get_animations() const {
 	get_animation_list(&sorted_names);
 	sorted_names.sort_custom<StringName::AlphCompare>();
 
-	for (const StringName &name : sorted_names) {
-		const Anim &anim = animations[name];
+	for (const StringName &anim_name : sorted_names) {
+		const Anim &anim = animations[anim_name];
 		Dictionary d;
-		d["name"] = name;
+		d["name"] = anim_name;
 		d["speed"] = anim.speed;
 		d["loop"] = anim.loop;
 		Array frames;

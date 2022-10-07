@@ -2429,11 +2429,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			bool visible = is_visible_in_tree();
+			bool vp_visible = is_visible_in_tree();
 
-			set_process(visible);
+			set_process(vp_visible);
 
-			if (visible) {
+			if (vp_visible) {
 				orthogonal = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
 				_update_name();
 				_update_camera(0);
@@ -3880,8 +3880,8 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 		Vector3 xform_ray = ai.basis.xform(world_ray).normalized();
 		Vector3 xform_pos = ai.xform(world_pos);
 
-		for (int surface = 0; surface < surface_count; surface++) {
-			Ref<TriangleMesh> surface_mesh = mesh->generate_surface_triangle_mesh(surface);
+		for (int surface_idx = 0; surface_idx < surface_count; surface_idx++) {
+			Ref<TriangleMesh> surface_mesh = mesh->generate_surface_triangle_mesh(surface_idx);
 
 			Vector3 rpos, rnorm;
 			if (surface_mesh->intersect_ray(xform_pos, xform_ray, rpos, rnorm)) {
@@ -3894,7 +3894,7 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 				}
 
 				if (dist < closest_dist) {
-					closest_surface = surface;
+					closest_surface = surface_idx;
 					closest_dist = dist;
 				}
 			}
@@ -4020,16 +4020,16 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
-		Transform3D global_transform;
+		Transform3D gl_transform;
 		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
 		if (parent_node3d) {
-			global_transform = parent_node3d->get_global_gizmo_transform();
+			gl_transform = parent_node3d->get_global_gizmo_transform();
 		}
 
-		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
-		global_transform.basis *= node3d->get_transform().basis;
+		gl_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		gl_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", global_transform);
+		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
 	}
 
 	return true;
@@ -4163,8 +4163,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	if (can_instantiate) {
-		Transform3D global_transform = Transform3D(Basis(), _get_instance_position(p_point));
-		preview_node->set_global_transform(global_transform);
+		Transform3D gl_transform = Transform3D(Basis(), _get_instance_position(p_point));
+		preview_node->set_global_transform(gl_transform);
 		return true;
 	}
 

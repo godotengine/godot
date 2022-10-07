@@ -357,59 +357,59 @@ void ColorPicker::add_mode(ColorMode *p_mode) {
 }
 
 void ColorPicker::create_slider(GridContainer *gc, int idx) {
-	Label *l = memnew(Label());
-	l->set_v_size_flags(SIZE_SHRINK_CENTER);
-	gc->add_child(l);
+	Label *lbl = memnew(Label());
+	lbl->set_v_size_flags(SIZE_SHRINK_CENTER);
+	gc->add_child(lbl);
 
-	HSlider *s = memnew(HSlider);
-	s->set_v_size_flags(SIZE_SHRINK_CENTER);
-	s->set_focus_mode(FOCUS_NONE);
-	gc->add_child(s);
+	HSlider *slider = memnew(HSlider);
+	slider->set_v_size_flags(SIZE_SHRINK_CENTER);
+	slider->set_focus_mode(FOCUS_NONE);
+	gc->add_child(slider);
 
-	SpinBox *v = memnew(SpinBox);
-	s->share(v);
-	gc->add_child(v);
+	SpinBox *val = memnew(SpinBox);
+	slider->share(val);
+	gc->add_child(val);
 
-	LineEdit *vle = v->get_line_edit();
+	LineEdit *vle = val->get_line_edit();
 	vle->connect("focus_entered", callable_mp(this, &ColorPicker::_focus_enter), CONNECT_DEFERRED);
 	vle->connect("focus_exited", callable_mp(this, &ColorPicker::_focus_exit));
 	vle->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
 	vle->connect("gui_input", callable_mp(this, &ColorPicker::_line_edit_input));
 	vle->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 
-	v->connect("gui_input", callable_mp(this, &ColorPicker::_slider_or_spin_input));
+	val->connect("gui_input", callable_mp(this, &ColorPicker::_slider_or_spin_input));
 
-	s->set_h_size_flags(SIZE_EXPAND_FILL);
+	slider->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	s->connect("value_changed", callable_mp(this, &ColorPicker::_value_changed));
-	s->connect("draw", callable_mp(this, &ColorPicker::_slider_draw).bind(idx));
-	s->connect("gui_input", callable_mp(this, &ColorPicker::_slider_or_spin_input));
+	slider->connect("value_changed", callable_mp(this, &ColorPicker::_value_changed));
+	slider->connect("draw", callable_mp(this, &ColorPicker::_slider_draw).bind(idx));
+	slider->connect("gui_input", callable_mp(this, &ColorPicker::_slider_or_spin_input));
 
 	if (idx < SLIDER_COUNT) {
-		sliders[idx] = s;
-		values[idx] = v;
-		labels[idx] = l;
+		sliders[idx] = slider;
+		values[idx] = val;
+		labels[idx] = lbl;
 	} else {
-		alpha_slider = s;
-		alpha_value = v;
-		alpha_label = l;
+		alpha_slider = slider;
+		alpha_value = val;
+		alpha_label = lbl;
 	}
 }
 
-HSlider *ColorPicker::get_slider(int idx) {
-	if (idx < SLIDER_COUNT) {
-		return sliders[idx];
+HSlider *ColorPicker::get_slider(int p_idx) {
+	if (p_idx < SLIDER_COUNT) {
+		return sliders[p_idx];
 	}
 	return alpha_slider;
 }
 
 Vector<float> ColorPicker::get_active_slider_values() {
-	Vector<float> values;
+	Vector<float> cur_values;
 	for (int i = 0; i < current_slider_count; i++) {
-		values.push_back(sliders[i]->get_value());
+		cur_values.push_back(sliders[i]->get_value());
 	}
-	values.push_back(alpha_slider->get_value());
-	return values;
+	cur_values.push_back(alpha_slider->get_value());
+	return cur_values;
 }
 
 void ColorPicker::_copy_color_to_hsv() {
@@ -629,23 +629,23 @@ inline int ColorPicker::_get_preset_size() {
 }
 
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
-	ColorPresetButton *btn_preset = memnew(ColorPresetButton(p_color, p_size));
-	btn_preset->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
-	btn_preset->set_drag_forwarding(this);
-	btn_preset->set_button_group(preset_group);
-	preset_container->add_child(btn_preset);
-	btn_preset->set_pressed(true);
-	btn_preset->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input).bind(p_color));
+	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
+	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
+	btn_preset_new->set_drag_forwarding(this);
+	btn_preset_new->set_button_group(preset_group);
+	preset_container->add_child(btn_preset_new);
+	btn_preset_new->set_pressed(true);
+	btn_preset_new->connect("gui_input", callable_mp(this, &ColorPicker::_preset_input).bind(p_color));
 }
 
 void ColorPicker::_add_recent_preset_button(int p_size, const Color &p_color) {
-	ColorPresetButton *btn_preset = memnew(ColorPresetButton(p_color, p_size));
-	btn_preset->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color"), p_color.to_html(p_color.a < 1)));
-	btn_preset->set_button_group(recent_preset_group);
-	recent_preset_hbc->add_child(btn_preset);
-	recent_preset_hbc->move_child(btn_preset, 0);
-	btn_preset->set_pressed(true);
-	btn_preset->connect("toggled", callable_mp(this, &ColorPicker::_recent_preset_pressed).bind(btn_preset));
+	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
+	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color"), p_color.to_html(p_color.a < 1)));
+	btn_preset_new->set_button_group(recent_preset_group);
+	recent_preset_hbc->add_child(btn_preset_new);
+	recent_preset_hbc->move_child(btn_preset_new, 0);
+	btn_preset_new->set_pressed(true);
+	btn_preset_new->connect("toggled", callable_mp(this, &ColorPicker::_recent_preset_pressed).bind(btn_preset_new));
 }
 
 void ColorPicker::_show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_preset, Container *p_preset_container) {
@@ -904,7 +904,7 @@ bool ColorPicker::is_deferred_mode() const {
 }
 
 void ColorPicker::_update_text_value() {
-	bool visible = true;
+	bool text_visible = true;
 	if (text_is_constructor) {
 		String t = "Color(" + String::num(color.r) + ", " + String::num(color.g) + ", " + String::num(color.b);
 		if (edit_alpha && color.a < 1) {
@@ -916,13 +916,13 @@ void ColorPicker::_update_text_value() {
 	}
 
 	if (color.r > 1 || color.g > 1 || color.b > 1 || color.r < 0 || color.g < 0 || color.b < 0) {
-		visible = false;
+		text_visible = false;
 	} else if (!text_is_constructor) {
 		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
 	}
 
-	text_type->set_visible(visible);
-	c_text->set_visible(visible);
+	text_type->set_visible(text_visible);
+	c_text->set_visible(text_visible);
 }
 
 void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {

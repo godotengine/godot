@@ -3869,15 +3869,15 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	double image_metric_max, image_metric_mean, image_metric_mean_squared, image_metric_root_mean_squared, image_metric_peak_snr = 0.0;
 	const bool average_component_error = true;
 
-	const uint32_t width = MIN(compared_image->get_width(), source_image->get_width());
-	const uint32_t height = MIN(compared_image->get_height(), source_image->get_height());
+	const uint32_t w = MIN(compared_image->get_width(), source_image->get_width());
+	const uint32_t h = MIN(compared_image->get_height(), source_image->get_height());
 
 	// Histogram approach originally due to Charles Bloom.
 	double hist[256];
 	memset(hist, 0, sizeof(hist));
 
-	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++) {
+	for (uint32_t y = 0; y < h; y++) {
+		for (uint32_t x = 0; x < w; x++) {
 			const Color color_a = compared_image->get_pixel(x, y);
 
 			const Color color_b = source_image->get_pixel(x, y);
@@ -3922,7 +3922,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	}
 
 	// See http://richg42.blogspot.com/2016/09/how-to-compute-psnr-from-old-berkeley.html
-	double total_values = width * height;
+	double total_values = w * h;
 
 	if (average_component_error) {
 		total_values *= 4;

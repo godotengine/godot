@@ -102,12 +102,12 @@ void Label::_shape() {
 		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 		ERR_FAIL_COND(font.is_null());
-		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			text = text.substr(0, visible_chars);
+			txt = txt.substr(0, visible_chars);
 		}
 		if (dirty) {
-			TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+			TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
 		} else {
 			int spans = TS->shaped_get_span_count(text_rid);
 			for (int i = 0; i < spans; i++) {

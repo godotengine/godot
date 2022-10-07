@@ -86,13 +86,13 @@ void Skin::reset_state() {
 }
 
 bool Skin::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name == "bind_count") {
+	String prop_name = p_name;
+	if (prop_name == "bind_count") {
 		set_bind_count(p_value);
 		return true;
-	} else if (name.begins_with("bind/")) {
-		int index = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (prop_name.begins_with("bind/")) {
+		int index = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		if (what == "bone") {
 			set_bind_bone(index, p_value);
 			return true;
@@ -108,13 +108,13 @@ bool Skin::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Skin::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name == "bind_count") {
+	String prop_name = p_name;
+	if (prop_name == "bind_count") {
 		r_ret = get_bind_count();
 		return true;
-	} else if (name.begins_with("bind/")) {
-		int index = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (prop_name.begins_with("bind/")) {
+		int index = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		if (what == "bone") {
 			r_ret = get_bind_bone(index);
 			return true;

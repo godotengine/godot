@@ -106,23 +106,23 @@ Dictionary Script::_get_script_constant_map() {
 
 PropertyInfo Script::get_class_category() const {
 	String path = get_path();
-	String name;
+	String scr_name;
 
 	if (is_built_in()) {
 		if (get_name().is_empty()) {
-			name = TTR("Built-in script");
+			scr_name = TTR("Built-in script");
 		} else {
-			name = vformat("%s (%s)", get_name(), TTR("Built-in"));
+			scr_name = vformat("%s (%s)", get_name(), TTR("Built-in"));
 		}
 	} else {
 		if (get_name().is_empty()) {
-			name = path.get_file();
+			scr_name = path.get_file();
 		} else {
-			name = get_name();
+			scr_name = get_name();
 		}
 	}
 
-	return PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
+	return PropertyInfo(Variant::NIL, scr_name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY);
 }
 
 #endif // TOOLS_ENABLED

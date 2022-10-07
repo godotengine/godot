@@ -86,9 +86,9 @@ void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
-	Ref<Script> script = ResourceLoader::load(path);
-	if (script.is_valid()) {
-		ScriptEditor::get_singleton()->clear_docs_from_script(script);
+	Ref<Script> scr = ResourceLoader::load(path);
+	if (scr.is_valid()) {
+		ScriptEditor::get_singleton()->clear_docs_from_script(scr);
 	}
 }
 
@@ -100,14 +100,14 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 	sync_script_content(doc.uri, text);
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
-	Ref<GDScript> script = ResourceLoader::load(path);
-	if (script.is_valid() && (script->load_source_code(path) == OK)) {
-		if (script->is_tool()) {
-			script->get_language()->reload_tool_script(script, true);
+	Ref<GDScript> scr = ResourceLoader::load(path);
+	if (scr.is_valid() && (scr->load_source_code(path) == OK)) {
+		if (scr->is_tool()) {
+			scr->get_language()->reload_tool_script(scr, true);
 		} else {
-			script->reload(true);
+			scr->reload(true);
 		}
-		ScriptEditor::get_singleton()->update_docs_from_script(script);
+		ScriptEditor::get_singleton()->update_docs_from_script(scr);
 	}
 }
 
@@ -229,8 +229,8 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 		arr = native_member_completions.duplicate();
 
 		for (KeyValue<String, ExtendGDScriptParser *> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts) {
-			ExtendGDScriptParser *script = E.value;
-			const Array &items = script->get_member_completions();
+			ExtendGDScriptParser *scr = E.value;
+			const Array &items = scr->get_member_completions();
 
 			const int start_size = arr.size();
 			arr.resize(start_size + items.size());

@@ -450,7 +450,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 		return false;
 	}
 
-	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
+	TreeItem *parent_item = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
 	for (int i = 0; i < match.methods.size(); i++) {
 		String text = match.methods[i]->name;
@@ -464,23 +464,23 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 				continue;
 			}
 		}
-		_create_method_item(parent, match.doc, text, match.methods[i]);
+		_create_method_item(parent_item, match.doc, text, match.methods[i]);
 	}
 	for (int i = 0; i < match.signals.size(); i++) {
-		_create_signal_item(parent, match.doc, match.signals[i]);
+		_create_signal_item(parent_item, match.doc, match.signals[i]);
 	}
 	for (int i = 0; i < match.constants.size(); i++) {
-		_create_constant_item(parent, match.doc, match.constants[i]);
+		_create_constant_item(parent_item, match.doc, match.constants[i]);
 	}
 	for (int i = 0; i < match.properties.size(); i++) {
-		_create_property_item(parent, match.doc, match.properties[i]);
+		_create_property_item(parent_item, match.doc, match.properties[i]);
 	}
 	for (int i = 0; i < match.theme_properties.size(); i++) {
-		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
+		_create_theme_property_item(parent_item, match.doc, match.theme_properties[i]);
 	}
 	for (int i = 0; i < match.annotations.size(); i++) {
 		// Hide the redundant leading @ symbol.
-		_create_annotation_item(parent, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
+		_create_annotation_item(parent_item, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
 	}
 
 	++iterator_match;
@@ -567,19 +567,19 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 	}
 
 	// Ensure parent nodes are created first.
-	TreeItem *parent = root_item;
+	TreeItem *parent_item = root_item;
 	if (!p_match.doc->inherits.is_empty()) {
 		if (class_items.has(p_match.doc->inherits)) {
-			parent = class_items[p_match.doc->inherits];
+			parent_item = class_items[p_match.doc->inherits];
 		} else {
 			ClassMatch &base_match = matches[p_match.doc->inherits];
 			if (base_match.doc) {
-				parent = _create_class_hierarchy(base_match);
+				parent_item = _create_class_hierarchy(base_match);
 			}
 		}
 	}
 
-	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
+	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
 }

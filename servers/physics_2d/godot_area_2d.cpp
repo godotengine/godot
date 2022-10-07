@@ -304,12 +304,12 @@ void GodotArea2D::call_queries() {
 
 void GodotArea2D::compute_gravity(const Vector2 &p_position, Vector2 &r_gravity) const {
 	if (is_gravity_point()) {
-		const real_t gravity_distance_scale = get_gravity_distance_scale();
+		const real_t gr_distance_scale = get_gravity_distance_scale();
 		Vector2 v = get_transform().xform(get_gravity_vector()) - p_position;
-		if (gravity_distance_scale > 0) {
+		if (gr_distance_scale > 0) {
 			const real_t v_length = v.length();
 			if (v_length > 0) {
-				const real_t v_scaled = v_length * gravity_distance_scale;
+				const real_t v_scaled = v_length * gr_distance_scale;
 				r_gravity = (v.normalized() * (get_gravity() / (v_scaled * v_scaled)));
 			} else {
 				r_gravity = Vector2();

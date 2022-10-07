@@ -1504,9 +1504,9 @@ bool AnimationPlayer::has_animation(const StringName &p_name) const {
 Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
 	ERR_FAIL_COND_V_MSG(!animation_set.has(p_name), Ref<Animation>(), vformat("Animation not found: \"%s\".", p_name));
 
-	const AnimationData &data = animation_set[p_name];
+	const AnimationData &anim_data = animation_set[p_name];
 
-	return data.animation;
+	return anim_data.animation;
 }
 
 void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
@@ -2037,8 +2037,7 @@ Ref<AnimatedValuesBackup> AnimationPlayer::apply_reset(bool p_user_initiated) {
 	aux_player->add_animation_library("", al);
 	aux_player->set_assigned_animation(SceneStringNames::get_singleton()->RESET);
 	// Forcing the use of the original root because the scene where original player belongs may be not the active one
-	Node *root = get_node(get_root());
-	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(root);
+	Ref<AnimatedValuesBackup> old_values = aux_player->backup_animated_values(get_node(get_root()));
 	aux_player->seek(0.0f, true);
 	aux_player->queue_delete();
 

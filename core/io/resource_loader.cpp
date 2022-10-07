@@ -68,7 +68,7 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 }
 
 bool ResourceFormatLoader::handles_type(const String &p_type) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_handles_type, p_type, success)) {
 		return success;
 	}
@@ -102,7 +102,7 @@ String ResourceFormatLoader::get_resource_type(const String &p_path) const {
 }
 
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
-	int64_t uid;
+	int64_t uid = ResourceUID::INVALID_ID;
 	if (GDVIRTUAL_CALL(_get_resource_uid, p_path, uid)) {
 		return uid;
 	}
@@ -123,7 +123,7 @@ void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, Li
 }
 
 bool ResourceFormatLoader::exists(const String &p_path) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_exists, p_path, success)) {
 		return success;
 	}
@@ -175,7 +175,7 @@ Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Hash
 		deps_dict[E.key] = E.value;
 	}
 
-	int64_t err;
+	int64_t err = OK;
 	if (GDVIRTUAL_CALL(_rename_dependencies, p_path, deps_dict, err)) {
 		return (Error)err;
 	}

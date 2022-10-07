@@ -1369,11 +1369,11 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 		HashMap<String, Vector<String>> includes;
 		includes[""] = Vector<String>();
 		Vector<String> include_stack;
-		Vector<String> shader = p_code.split("\n");
+		Vector<String> shader_lines = p_code.split("\n");
 
 		// Reconstruct the files.
-		for (int i = 0; i < shader.size(); i++) {
-			String l = shader[i];
+		for (int i = 0; i < shader_lines.size(); i++) {
+			String l = shader_lines[i];
 			if (l.begins_with("@@>")) {
 				String inc_path = l.replace_first("@@>", "");
 

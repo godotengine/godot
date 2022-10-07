@@ -200,9 +200,9 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 		return current_dir;
 	} else {
 		if (_get_root_string().is_empty()) {
-			int p = current_dir.find(":");
-			if (p != -1) {
-				return current_dir.substr(p + 1);
+			int pos = current_dir.find(":");
+			if (pos != -1) {
+				return current_dir.substr(pos + 1);
 			}
 		}
 		return current_dir;

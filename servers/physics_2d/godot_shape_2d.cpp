@@ -225,16 +225,16 @@ void GodotSegmentShape2D::set_data(const Variant &p_data) {
 	b = r.size;
 	n = (b - a).orthogonal();
 
-	Rect2 aabb;
-	aabb.position = a;
-	aabb.expand_to(b);
-	if (aabb.size.x == 0) {
-		aabb.size.x = 0.001;
+	Rect2 aabb_new;
+	aabb_new.position = a;
+	aabb_new.expand_to(b);
+	if (aabb_new.size.x == 0) {
+		aabb_new.size.x = 0.001;
 	}
-	if (aabb.size.y == 0) {
-		aabb.size.y = 0.001;
+	if (aabb_new.size.y == 0) {
+		aabb_new.size.y = 0.001;
 	}
-	configure(aabb);
+	configure(aabb_new);
 }
 
 Variant GodotSegmentShape2D::get_data() const {
@@ -564,13 +564,13 @@ bool GodotConvexPolygonShape2D::intersect_segment(const Vector2 &p_begin, const 
 
 real_t GodotConvexPolygonShape2D::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 	ERR_FAIL_COND_V_MSG(point_count == 0, 0, "Convex polygon shape has no points.");
-	Rect2 aabb;
-	aabb.position = points[0].pos * p_scale;
+	Rect2 aabb_new;
+	aabb_new.position = points[0].pos * p_scale;
 	for (int i = 0; i < point_count; i++) {
-		aabb.expand_to(points[i].pos * p_scale);
+		aabb_new.expand_to(points[i].pos * p_scale);
 	}
 
-	return p_mass * aabb.size.dot(aabb.size) / 12.0;
+	return p_mass * aabb_new.size.dot(aabb_new.size) / 12.0;
 }
 
 void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
@@ -620,13 +620,13 @@ void GodotConvexPolygonShape2D::set_data(const Variant &p_data) {
 	}
 
 	ERR_FAIL_COND(point_count == 0);
-	Rect2 aabb;
-	aabb.position = points[0].pos;
+	Rect2 aabb_new;
+	aabb_new.position = points[0].pos;
 	for (int i = 1; i < point_count; i++) {
-		aabb.expand_to(points[i].pos);
+		aabb_new.expand_to(points[i].pos);
 	}
 
-	configure(aabb);
+	configure(aabb_new);
 }
 
 Variant GodotConvexPolygonShape2D::get_data() const {
@@ -705,18 +705,18 @@ bool GodotConcavePolygonShape2D::intersect_segment(const Vector2 &p_begin, const
 	stack[0] = 0;
 	while (true) {
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &bvh = bvhptr[node];
+		const BVH &bvh2 = bvhptr[node];
 		bool done = false;
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				bool valid = bvh.aabb.intersects_segment(p_begin, p_end);
+				bool valid = bvh2.aabb.intersects_segment(p_begin, p_end);
 				if (!valid) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 				} else {
-					if (bvh.left < 0) {
-						const Segment &s = segmentptr[bvh.right];
+					if (bvh2.left < 0) {
+						const Segment &s = segmentptr[bvh2.right];
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
@@ -742,13 +742,13 @@ bool GodotConcavePolygonShape2D::intersect_segment(const Vector2 &p_begin, const
 				continue;
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = bvh.left | TEST_AABB_BIT;
+				stack[level + 1] = bvh2.left | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = bvh.right | TEST_AABB_BIT;
+				stack[level + 1] = bvh2.right | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
@@ -822,7 +822,7 @@ void GodotConcavePolygonShape2D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::PACKED_VECTOR2_ARRAY && p_data.get_type() != Variant::PACKED_FLOAT32_ARRAY);
 #endif
 
-	Rect2 aabb;
+	Rect2 aabb_new;
 
 	if (p_data.get_type() == Variant::PACKED_VECTOR2_ARRAY) {
 		Vector<Vector2> p2arr = p_data;
@@ -835,7 +835,7 @@ void GodotConcavePolygonShape2D::set_data(const Variant &p_data) {
 		bvh_depth = 1;
 
 		if (len == 0) {
-			configure(aabb);
+			configure(aabb_new);
 			return;
 		}
 
@@ -868,9 +868,9 @@ void GodotConcavePolygonShape2D::set_data(const Variant &p_data) {
 		}
 
 		points.resize(pointmap.size());
-		aabb.position = pointmap.begin()->key;
+		aabb_new.position = pointmap.begin()->key;
 		for (const KeyValue<Point2, int> &E : pointmap) {
-			aabb.expand_to(E.key);
+			aabb_new.expand_to(E.key);
 			points.write[E.value] = E.key;
 		}
 
@@ -889,7 +889,7 @@ void GodotConcavePolygonShape2D::set_data(const Variant &p_data) {
 		//dictionary with arrays
 	}
 
-	configure(aabb);
+	configure(aabb_new);
 }
 
 Variant GodotConcavePolygonShape2D::get_data() const {
@@ -937,17 +937,17 @@ void GodotConcavePolygonShape2D::cull(const Rect2 &p_local_aabb, QueryCallback p
 	stack[0] = 0;
 	while (true) {
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &bvh = bvhptr[node];
+		const BVH &bvh2 = bvhptr[node];
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				bool valid = p_local_aabb.intersects(bvh.aabb);
+				bool valid = p_local_aabb.intersects(bvh2.aabb);
 				if (!valid) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 				} else {
-					if (bvh.left < 0) {
-						const Segment &s = segmentptr[bvh.right];
+					if (bvh2.left < 0) {
+						const Segment &s = segmentptr[bvh2.right];
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
@@ -966,13 +966,13 @@ void GodotConcavePolygonShape2D::cull(const Rect2 &p_local_aabb, QueryCallback p
 				continue;
 			case VISIT_LEFT_BIT: {
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = bvh.left | TEST_AABB_BIT;
+				stack[level + 1] = bvh2.left | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
 			case VISIT_RIGHT_BIT: {
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = bvh.right | TEST_AABB_BIT;
+				stack[level + 1] = bvh2.right | TEST_AABB_BIT;
 				level++;
 			}
 				continue;

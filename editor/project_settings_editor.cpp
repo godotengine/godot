@@ -357,12 +357,12 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 
 	} else {
 		// Events changed
-		int event_count = ((Array)p_action["events"]).size();
+		int act_event_count = ((Array)p_action["events"]).size();
 		int old_event_count = ((Array)old_val["events"]).size();
 
-		if (event_count == old_event_count) {
+		if (act_event_count == old_event_count) {
 			undo_redo->create_action(TTR("Edit Input Action Event"));
-		} else if (event_count > old_event_count) {
+		} else if (act_event_count > old_event_count) {
 			undo_redo->create_action(TTR("Add Input Action Event"));
 		} else {
 			undo_redo->create_action(TTR("Remove Input Action Event"));

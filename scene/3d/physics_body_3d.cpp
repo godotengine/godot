@@ -522,28 +522,28 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		//put the ones to add
 
 		for (int i = 0; i < p_state->get_contact_count(); i++) {
-			RID rid = p_state->get_contact_collider(i);
-			ObjectID obj = p_state->get_contact_collider_id(i);
+			RID col_rid = p_state->get_contact_collider(i);
+			ObjectID col_obj = p_state->get_contact_collider_id(i);
 			int local_shape = p_state->get_contact_local_shape(i);
-			int shape = p_state->get_contact_collider_shape(i);
+			int col_shape = p_state->get_contact_collider_shape(i);
 
-			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(obj);
+			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
 			if (!E) {
-				toadd[toadd_count].rid = rid;
+				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = obj;
-				toadd[toadd_count].shape = shape;
+				toadd[toadd_count].id = col_obj;
+				toadd[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
 
-			ShapePair sp(shape, local_shape);
+			ShapePair sp(col_shape, local_shape);
 			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
-				toadd[toadd_count].rid = rid;
+				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = obj;
-				toadd[toadd_count].shape = shape;
+				toadd[toadd_count].id = col_obj;
+				toadd[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}

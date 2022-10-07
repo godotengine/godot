@@ -1058,8 +1058,8 @@ void LineEdit::_notification(int p_what) {
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				Point2 caret_column = Point2(get_caret_column(), 1) * get_minimum_size().height;
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + caret_column, get_viewport()->get_window_id());
+				Point2 column = Point2(get_caret_column(), 1) * get_minimum_size().height;
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + column, get_viewport()->get_window_id());
 			}
 
 			show_virtual_keyboard();

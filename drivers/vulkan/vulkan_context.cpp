@@ -48,7 +48,7 @@
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
-VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
+VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass) {
 	if (fpCreateRenderPass2KHR == nullptr) {
 		fpCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR");
 	}
@@ -56,7 +56,7 @@ VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice device, const VkRenderPa
 	if (fpCreateRenderPass2KHR == nullptr) {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	} else {
-		return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
+		return (fpCreateRenderPass2KHR)(p_device, p_create_info, p_allocator, p_render_pass);
 	}
 }
 

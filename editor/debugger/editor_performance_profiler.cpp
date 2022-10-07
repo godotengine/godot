@@ -349,12 +349,12 @@ void EditorPerformanceProfiler::update_monitors(const Vector<StringName> &p_name
 
 void EditorPerformanceProfiler::add_profile_frame(const Vector<float> &p_values) {
 	for (KeyValue<StringName, Monitor> &E : monitors) {
-		float data = 0.0f;
+		float value = 0.0f;
 		if (E.value.frame_index >= 0 && E.value.frame_index < p_values.size()) {
-			data = p_values[E.value.frame_index];
+			value = p_values[E.value.frame_index];
 		}
-		E.value.history.push_front(data);
-		E.value.update_value(data);
+		E.value.history.push_front(value);
+		E.value.update_value(value);
 	}
 	marker_frame++;
 	monitor_draw->queue_redraw();

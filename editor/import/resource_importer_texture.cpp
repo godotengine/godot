@@ -669,23 +669,23 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	}
 
 	if (r_metadata) {
-		Dictionary metadata;
-		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
+		Dictionary meta;
+		meta["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
 		if (formats_imported.size()) {
-			metadata["imported_formats"] = formats_imported;
+			meta["imported_formats"] = formats_imported;
 		}
 
 		if (editor_image.is_valid()) {
-			metadata["has_editor_variant"] = true;
+			meta["has_editor_variant"] = true;
 			if (use_editor_scale) {
-				metadata["editor_scale"] = EDSCALE;
+				meta["editor_scale"] = EDSCALE;
 			}
 			if (convert_editor_colors) {
-				metadata["editor_dark_theme"] = EditorSettings::get_singleton()->is_dark_theme();
+				meta["editor_dark_theme"] = EditorSettings::get_singleton()->is_dark_theme();
 			}
 		}
 
-		*r_metadata = metadata;
+		*r_metadata = meta;
 	}
 	return OK;
 }
@@ -715,29 +715,29 @@ String ResourceImporterTexture::get_import_settings_string() const {
 
 bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) const {
 	//will become invalid if formats are missing to import
-	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
+	Dictionary meta = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
-	if (metadata.has("has_editor_variant")) {
-		if (metadata.has("editor_scale") && (float)metadata["editor_scale"] != EDSCALE) {
+	if (meta.has("has_editor_variant")) {
+		if (meta.has("editor_scale") && (float)meta["editor_scale"] != EDSCALE) {
 			return false;
 		}
-		if (metadata.has("editor_dark_theme") && (bool)metadata["editor_dark_theme"] != EditorSettings::get_singleton()->is_dark_theme()) {
+		if (meta.has("editor_dark_theme") && (bool)meta["editor_dark_theme"] != EditorSettings::get_singleton()->is_dark_theme()) {
 			return false;
 		}
 	}
 
-	if (!metadata.has("vram_texture")) {
+	if (!meta.has("vram_texture")) {
 		return false;
 	}
 
-	bool vram = metadata["vram_texture"];
+	bool vram = meta["vram_texture"];
 	if (!vram) {
 		return true; // Do not care about non-VRAM.
 	}
 
 	Vector<String> formats_imported;
-	if (metadata.has("imported_formats")) {
-		formats_imported = metadata["imported_formats"];
+	if (meta.has("imported_formats")) {
+		formats_imported = meta["imported_formats"];
 	}
 
 	int index = 0;
