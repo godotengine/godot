@@ -1929,8 +1929,6 @@ String Variant::stringify(int recursion_count) const {
 			return "<" + get_type_name(type) + ">";
 		}
 	}
-
-	return "";
 }
 
 String Variant::to_json_string() const {
