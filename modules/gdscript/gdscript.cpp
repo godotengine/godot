@@ -909,14 +909,14 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
-	// String owner_path = _owner == nullptr ? "" : _owner->get_path();
-	// Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(get_path(), GDScriptParserData::Status::EMPTY, err, owner_path);
-	// if (parser_data_wref.is_valid() && parser_data_wref->get_ref().is_valid()) {
-	// 	if (parser_data_wref->get_ref()->get_status() >= GDScriptParserData::Status::PARSED) {
-	// 		parser_data_wref->get_ref()->get_parser()->parse(get_source_code(), get_path(), false);
-	// 		parser_data_wref->get_ref()->get_analyzer()->analyze();
-	// 	}
-	// }
+	String owner_path = _owner == nullptr ? "" : _owner->get_path();
+	Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(get_path(), GDScriptParserData::Status::EMPTY, err, owner_path);
+	if (parser_data_wref.is_valid() && parser_data_wref->get_ref().is_valid()) {
+		if (parser_data_wref->get_ref()->get_status() >= GDScriptParserData::Status::PARSED) {
+			parser_data_wref->get_ref()->get_parser()->parse(get_source_code(), get_path(), false);
+			parser_data_wref->get_ref()->get_analyzer()->analyze();
+		}
+	}
 
 	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
