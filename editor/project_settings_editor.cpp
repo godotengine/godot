@@ -73,6 +73,11 @@ void ProjectSettingsEditor::set_plugins_page() {
 	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
 }
 
+void ProjectSettingsEditor::set_general_page(const String &p_category) {
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(general_editor));
+	general_settings_inspector->set_current_section(p_category);
+}
+
 void ProjectSettingsEditor::update_plugins() {
 	plugin_settings->update_plugins();
 }
@@ -576,7 +581,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
-	VBoxContainer *general_editor = memnew(VBoxContainer);
+	general_editor = memnew(VBoxContainer);
 	general_editor->set_name(TTR("General"));
 	general_editor->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);

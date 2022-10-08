@@ -37,6 +37,7 @@
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/filesystem_dock.h"
+#include "editor/project_settings_editor.h"
 #include "scene/2d/gpu_particles_2d.h"
 #include "scene/3d/fog_volume.h"
 #include "scene/3d/gpu_particles_3d.h"
@@ -1252,25 +1253,40 @@ void EditorPropertyLayers::setup(LayerType p_layer_type) {
 }
 
 void EditorPropertyLayers::set_layer_name(int p_index, const String &p_name) {
-	if (ProjectSettings::get_singleton()->has_setting(basename + vformat("/layer_%d", p_index + 1))) {
-		ProjectSettings::get_singleton()->set(basename + vformat("/layer_%d", p_index + 1), p_name);
+	const String property_name = basename + vformat("/layer_%d", p_index + 1);
+	if (ProjectSettings::get_singleton()->has_setting(property_name)) {
+		ProjectSettings::get_singleton()->set(property_name, p_name);
 		ProjectSettings::get_singleton()->save();
 	}
 }
 
+String EditorPropertyLayers::get_layer_name(int p_index) const {
+	const String property_name = basename + vformat("/layer_%d", p_index + 1);
+	if (ProjectSettings::get_singleton()->has_setting(property_name)) {
+		return ProjectSettings::get_singleton()->get(property_name);
+	}
+	return String();
+}
+
 void EditorPropertyLayers::_button_pressed() {
 	int layer_count = grid->layer_count;
-	int layer_group_size = grid->layer_group_size;
-
 	layers->clear();
 	for (int i = 0; i < layer_count; i++) {
-		if ((i != 0) && ((i % layer_group_size) == 0)) {
-			layers->add_separator();
+		const String name = get_layer_name(i);
+		if (name.is_empty()) {
+			continue;
 		}
-		layers->add_check_item(grid->names[i], i);
+		layers->add_check_item(name, i);
 		int idx = layers->get_item_index(i);
 		layers->set_item_checked(idx, grid->value & (1 << i));
 	}
+
+	if (layers->get_item_count() == 0) {
+		layers->add_item(TTR("No Named Layers"));
+		layers->set_item_disabled(0, true);
+	}
+	layers->add_separator();
+	layers->add_icon_item(get_theme_icon("Edit", "EditorIcons"), TTR("Edit Layer Names"), grid->layer_count);
 
 	Rect2 gp = button->get_screen_rect();
 	layers->reset_size();
@@ -1280,14 +1296,19 @@ void EditorPropertyLayers::_button_pressed() {
 }
 
 void EditorPropertyLayers::_menu_pressed(int p_menu) {
-	if (grid->value & (1 << p_menu)) {
-		grid->value &= ~(1 << p_menu);
+	if (p_menu == grid->layer_count) {
+		ProjectSettingsEditor::get_singleton()->popup_project_settings();
+		ProjectSettingsEditor::get_singleton()->set_general_page(basename);
 	} else {
-		grid->value |= (1 << p_menu);
+		if (grid->value & (1 << p_menu)) {
+			grid->value &= ~(1 << p_menu);
+		} else {
+			grid->value |= (1 << p_menu);
+		}
+		grid->queue_redraw();
+		layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
+		_grid_changed(grid->value);
 	}
-	grid->queue_redraw();
-	layers->set_item_checked(layers->get_item_index(p_menu), grid->value & (1 << p_menu));
-	_grid_changed(grid->value);
 }
 
 void EditorPropertyLayers::_refresh_names() {
