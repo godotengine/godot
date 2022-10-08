@@ -2832,8 +2832,19 @@ void _Thread::_start_func(void *ud) {
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
 	ERR_FAIL_COND_V_MSG(is_active(), ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(p_method == StringName() || !p_instance->has_method(p_method), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_INDEX_V(p_priority, PRIORITY_MAX, ERR_INVALID_PARAMETER);
+
+	Ref<Script> script = p_instance->get_script();
+	while (script.is_valid()) {
+		if (script->has_method(p_method)) {
+			break;
+		}
+		script = script->get_base_script();
+	}
+	if (script.is_null()) {
+		ERR_FAIL_COND_V(!p_instance->has_method(p_method), ERR_INVALID_PARAMETER);
+	}
 
 	ret = Variant();
 	target_method = p_method;
