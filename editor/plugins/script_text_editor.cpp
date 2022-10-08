@@ -819,7 +819,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 
 		switch (result.type) {
 			case ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION: {
-				if (result.script.is_valid() && result.script->get_ref() != nullptr && result.script->get_ref().is_valid()) {
+				if (result.script.is_valid() && result.script->get_ref().is_valid()) {
 					emit_signal(SNAME("request_open_script_at_line"), result.script->get_ref(), result.location - 1);
 				} else {
 					emit_signal(SNAME("request_save_history"));
