@@ -117,7 +117,7 @@ void Label::_shape() {
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
-		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
+		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
