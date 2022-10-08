@@ -178,22 +178,11 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	}
 
 	int get_constant_pos(const Variant &p_constant) {
-		Variant constant = p_constant;
-		Ref<WeakRef> wref = p_constant;
-		if (wref.is_valid()) {
-			Ref<RefCounted> ref = wref->get_ref();
-			if (ref.is_valid()) {
-				constant = ref.ptr();
-			} else {
-				constant = wref->get_ref();
-			}
-		}
-
-		if (constant_map.has(constant)) {
-			return constant_map[constant];
+		if (constant_map.has(p_constant)) {
+			return constant_map[p_constant];
 		}
 		int pos = constant_map.size();
-		constant_map[constant] = pos;
+		constant_map[p_constant] = pos;
 		return pos;
 	}
 

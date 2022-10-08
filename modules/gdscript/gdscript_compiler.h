@@ -96,7 +96,7 @@ class GDScriptCompiler {
 				}
 			}
 
-			uint32_t addr = generator->add_or_get_constant(p_constant);
+			uint32_t addr = generator->add_or_get_constant(GDScriptResource::get(p_constant));
 			return GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::CONSTANT, addr, type);
 		}
 
