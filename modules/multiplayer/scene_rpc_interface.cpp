@@ -412,8 +412,7 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 
 	if (has_all_peers) {
 		// They all have verified paths, so send fast.
-		peer->set_target_peer(p_to); // To all of you.
-		peer->put_packet(packet_cache.ptr(), ofs); // A message with love.
+		multiplayer->send_command(p_to, packet_cache.ptr(), ofs);
 	} else {
 		// Unreachable because the node ID is never compressed if the peers doesn't know it.
 		CRASH_COND(node_id_compression != NETWORK_NODE_ID_COMPRESSION_32);
@@ -438,16 +437,14 @@ void SceneRPCInterface::_send_rpc(Node *p_from, int p_to, uint16_t p_rpc_id, con
 
 			bool confirmed = multiplayer->get_path_cache()->is_cache_confirmed(from_path, P);
 
-			peer->set_target_peer(P); // To this one specifically.
-
 			if (confirmed) {
 				// This one confirmed path, so use id.
 				encode_uint32(psc_id, &(packet_cache.write[1]));
-				peer->put_packet(packet_cache.ptr(), ofs);
+				multiplayer->send_command(P, packet_cache.ptr(), ofs);
 			} else {
 				// This one did not confirm path yet, so use entire path (sorry!).
 				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); // Offset to path and flag.
-				peer->put_packet(packet_cache.ptr(), ofs + path_len);
+				multiplayer->send_command(P, packet_cache.ptr(), ofs + path_len);
 			}
 		}
 	}

@@ -78,6 +78,10 @@ bool MultiplayerPeer::is_refusing_new_connections() const {
 	return refuse_connections;
 }
 
+bool MultiplayerPeer::is_server_relay_supported() const {
+	return false;
+}
+
 void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transfer_channel", "channel"), &MultiplayerPeer::set_transfer_channel);
 	ClassDB::bind_method(D_METHOD("get_transfer_channel"), &MultiplayerPeer::get_transfer_channel);
@@ -86,6 +90,8 @@ void MultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_target_peer", "id"), &MultiplayerPeer::set_target_peer);
 
 	ClassDB::bind_method(D_METHOD("get_packet_peer"), &MultiplayerPeer::get_packet_peer);
+	ClassDB::bind_method(D_METHOD("get_packet_channel"), &MultiplayerPeer::get_packet_channel);
+	ClassDB::bind_method(D_METHOD("get_packet_mode"), &MultiplayerPeer::get_packet_mode);
 
 	ClassDB::bind_method(D_METHOD("poll"), &MultiplayerPeer::poll);
 
@@ -95,6 +101,8 @@ void MultiplayerPeer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "enable"), &MultiplayerPeer::set_refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &MultiplayerPeer::is_refusing_new_connections);
+
+	ClassDB::bind_method(D_METHOD("is_server_relay_supported"), &MultiplayerPeer::is_server_relay_supported);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_mode", PROPERTY_HINT_ENUM, "Unreliable,Unreliable Ordered,Reliable"), "set_transfer_mode", "get_transfer_mode");
@@ -175,6 +183,14 @@ bool MultiplayerPeerExtension::is_refusing_new_connections() const {
 		return refusing;
 	}
 	return MultiplayerPeer::is_refusing_new_connections();
+}
+
+bool MultiplayerPeerExtension::is_server_relay_supported() const {
+	bool can_relay;
+	if (GDVIRTUAL_CALL(_is_server_relay_supported, can_relay)) {
+		return can_relay;
+	}
+	return MultiplayerPeer::is_server_relay_supported();
 }
 
 void MultiplayerPeerExtension::_bind_methods() {
