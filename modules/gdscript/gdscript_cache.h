@@ -130,6 +130,20 @@ class GDScriptCache {
 
 	static void remove_dependencies(const String &p_path);
 
+	void clear_gdscript_caches() {
+		clear_gdscript_cache(shallow_gdscript_cache);
+		clear_gdscript_cache(full_gdscript_cache);
+	}
+
+	void clear_gdscript_cache(HashMap<String, Ref<GDScript>> &cache) {
+		for (KeyValue<String, Ref<GDScript>> &E : cache) {
+			while (E.value->get_reference_count() > 1) {
+				E.value->unreference();
+			}
+		}
+		cache.clear();
+	}
+
 public:
 	static Ref<GDScriptParserDataRef> get_parser(const String &p_path, GDScriptParserData::Status status, Error &r_error, const String &p_owner = String());
 	static String get_source_code(const String &p_path);

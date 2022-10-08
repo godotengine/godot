@@ -395,22 +395,9 @@ GDScriptCache::~GDScriptCache() {
 	singleton->destructing = true;
 
 	packed_scene_cache.clear();
-
 	parser_map.clear();
 
-	for (KeyValue<String, Ref<GDScript>> &E : shallow_gdscript_cache) {
-		while (E.value->get_reference_count() > 1) {
-			E.value->unreference();
-		}
-	}
-	shallow_gdscript_cache.clear();
-
-	for (KeyValue<String, Ref<GDScript>> &E : full_gdscript_cache) {
-		while (E.value->get_reference_count() > 1) {
-			E.value->unreference();
-		}
-	}
-	full_gdscript_cache.clear();
+	clear_gdscript_caches();
 
 	singleton = nullptr;
 }
