@@ -155,7 +155,7 @@ void register_core_types() {
 	GDREGISTER_VIRTUAL_CLASS(ScriptExtension);
 	GDREGISTER_VIRTUAL_CLASS(ScriptLanguageExtension);
 
-	GDREGISTER_CLASS(RefCounted);
+	GDREGISTER_ABSTRACT_CLASS(RefCounted);
 	GDREGISTER_CLASS(WeakRef);
 	GDREGISTER_CLASS(Resource);
 	GDREGISTER_VIRTUAL_CLASS(MissingResource);
