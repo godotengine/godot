@@ -315,7 +315,7 @@ void GDScriptParser::set_last_completion_call_arg(int p_argument) {
 }
 
 Error GDScriptParser::parse(const String &p_source_code, const String &p_script_path, bool p_for_completion) {
-	// clear();
+	clear();
 
 	String source = p_source_code;
 	int cursor_line = -1;
