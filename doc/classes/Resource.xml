@@ -55,23 +55,11 @@
 				Returns the [RID] of this resource (or an empty RID). Many resources (such as [Texture2D], [Mesh], and so on) are high-level abstractions of resources stored in a specialized server ([DisplayServer], [RenderingServer], etc.), so this function will return the original [RID].
 			</description>
 		</method>
-		<method name="setup_local_to_scene">
+		<method name="setup_local_to_scene" is_deprecated="true">
 			<return type="void" />
 			<description>
 				Emits the [signal setup_local_to_scene_requested] signal. If [member resource_local_to_scene] is set to [code]true[/code], this method is called from [method PackedScene.instantiate] by the newly duplicated resource within the scene instance.
 				For most resources, this method performs no logic of its own. Custom behavior can be defined by connecting [signal setup_local_to_scene_requested] from a script, [b]not[/b] by overriding this method.
-				[b]Example:[/b] Assign a random value to [code]health[/code] for every duplicated Resource from an instantiated scene, excluding the original.
-				[codeblock]
-				extends Resource
-
-				var health = 0
-
-				func _init():
-				    setup_local_to_scene_requested.connect(randomize_health)
-
-				func randomize_health():
-				    health = randi_range(10, 40)
-				[/codeblock]
 			</description>
 		</method>
 		<method name="take_over_path">
@@ -104,7 +92,7 @@
 		</signal>
 		<signal name="setup_local_to_scene_requested">
 			<description>
-				Emitted when [method setup_local_to_scene] is called, usually by a newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code]. Custom behavior can be defined by connecting this signal.
+				Emitted by the newly duplicated resource with [member resource_local_to_scene] set to [code]true[/code], when the scene is instantiated. Custom behavior can be defined by connecting this signal.
 			</description>
 		</signal>
 	</signals>
