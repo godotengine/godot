@@ -172,10 +172,6 @@ Ref<GDScriptParserDataRef> GDScriptCache::get_parser(const String &p_path, GDScr
 			return wref;
 		}
 	} else {
-		if (!FileAccess::exists(p_path)) {
-			r_error = ERR_FILE_NOT_FOUND;
-			return ref;
-		}
 		GDScriptParser *parser = memnew(GDScriptParser);
 		ref.instantiate();
 		ref->parser = parser;
