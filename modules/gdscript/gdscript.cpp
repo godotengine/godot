@@ -909,14 +909,14 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
-	String owner_path = _owner == nullptr ? "" : _owner->get_path();
-	Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(get_path(), GDScriptParserData::Status::EMPTY, err, owner_path);
-	if (parser_data_wref.is_valid() && parser_data_wref->get_ref().is_valid()) {
-		if (parser_data_wref->get_ref()->get_status() >= GDScriptParserData::Status::PARSED) {
-			parser_data_wref->get_ref()->get_parser()->parse(get_source_code(), get_path(), false);
-			parser_data_wref->get_ref()->get_analyzer()->analyze();
-		}
-	}
+	// String owner_path = _owner == nullptr ? "" : _owner->get_path();
+	// Ref<GDScriptParserDataRef> parser_data_wref = GDScriptCache::get_parser(get_path(), GDScriptParserData::Status::EMPTY, err, owner_path);
+	// if (parser_data_wref.is_valid() && parser_data_wref->get_ref().is_valid()) {
+	// 	if (parser_data_wref->get_ref()->get_status() >= GDScriptParserData::Status::PARSED) {
+	// 		parser_data_wref->get_ref()->get_parser()->parse(get_source_code(), get_path(), false);
+	// 		parser_data_wref->get_ref()->get_analyzer()->analyze();
+	// 	}
+	// }
 
 	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool();
 
@@ -2036,7 +2036,6 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 
 	for (KeyValue<Ref<GDScript>, HashMap<ObjectID, List<Pair<StringName, Variant>>>> &E : to_reload) {
 		Ref<GDScript> scr = E.key;
-
 		scr->reload(p_soft_reload);
 
 		//restore state if saved
