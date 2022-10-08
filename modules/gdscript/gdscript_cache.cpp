@@ -394,8 +394,14 @@ GDScriptCache::GDScriptCache() {
 GDScriptCache::~GDScriptCache() {
 	singleton->destructing = true;
 
-	packed_scene_cache.clear();
 	parser_map.clear();
+
+	for (KeyValue<String, Ref<PackedScene>> &E : packed_scene_cache) {
+		while (E.value->get_reference_count() > 1) {
+			E.value->unreference();
+		}
+	}
+	packed_scene_cache.clear();
 
 	clear_gdscript_caches();
 
