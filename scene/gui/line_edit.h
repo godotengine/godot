@@ -172,7 +172,7 @@ private:
 	bool draw_caret = true;
 	float caret_blink_interval = 0.65;
 	double caret_blink_timer = 0.0;
-	bool caret_blinking = false;
+	bool caret_can_draw = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal;
@@ -222,6 +222,7 @@ private:
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
+	void _validate_caret_can_draw();
 
 	void clear_internal();
 

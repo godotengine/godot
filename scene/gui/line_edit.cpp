@@ -763,18 +763,18 @@ void LineEdit::_notification(int p_what) {
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			window_has_focus = true;
-			draw_caret = true;
+			_validate_caret_can_draw();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_OUT: {
 			window_has_focus = false;
-			draw_caret = false;
+			_validate_caret_can_draw();
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (caret_blinking) {
+			if (caret_blink_enabled && caret_can_draw) {
 				caret_blink_timer += get_process_delta_time();
 
 				if (caret_blink_timer >= caret_blink_interval) {
@@ -785,10 +785,6 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if ((!has_focus() && !(menu && menu->has_focus()) && !caret_force_displayed) || !window_has_focus) {
-				draw_caret = false;
-			}
-
 			int width, height;
 			bool rtl = is_layout_rtl();
 
@@ -801,7 +797,6 @@ void LineEdit::_notification(int p_what) {
 			Ref<StyleBox> style = theme_cache.normal;
 			if (!is_editable()) {
 				style = theme_cache.read_only;
-				draw_caret = false;
 			}
 			Ref<Font> font = theme_cache.font;
 
@@ -948,7 +943,7 @@ void LineEdit::_notification(int p_what) {
 
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;
-			if (draw_caret || drag_caret_force_displayed) {
+			if ((caret_can_draw && draw_caret) || drag_caret_force_displayed) {
 				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
 				const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
@@ -1045,16 +1040,7 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			if (!caret_force_displayed) {
-				if (caret_blink_enabled) {
-					if (!caret_blinking) {
-						caret_blinking = true;
-						caret_blink_timer = 0.0;
-					}
-				} else {
-					draw_caret = true;
-				}
-			}
+			_validate_caret_can_draw();
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
@@ -1066,9 +1052,7 @@ void LineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_EXIT: {
-			if (caret_blink_enabled && !caret_force_displayed) {
-				caret_blinking = false;
-			}
+			_validate_caret_can_draw();
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
@@ -1374,21 +1358,18 @@ bool LineEdit::is_caret_blink_enabled() const {
 }
 
 void LineEdit::set_caret_blink_enabled(const bool p_enabled) {
+	if (caret_blink_enabled == p_enabled) {
+		return;
+	}
+
 	caret_blink_enabled = p_enabled;
 	set_process_internal(p_enabled);
 
-	if (has_focus() || caret_force_displayed) {
-		if (p_enabled) {
-			if (!caret_blinking) {
-				caret_blinking = true;
-				caret_blink_timer = 0.0;
-			}
-		} else {
-			caret_blinking = false;
-		}
+	draw_caret = !caret_blink_enabled;
+	if (caret_blink_enabled) {
+		caret_blink_timer = 0.0;
 	}
-
-	draw_caret = true;
+	queue_redraw();
 
 	notify_property_list_changed();
 }
@@ -1398,8 +1379,13 @@ bool LineEdit::is_caret_force_displayed() const {
 }
 
 void LineEdit::set_caret_force_displayed(const bool p_enabled) {
+	if (caret_force_displayed == p_enabled) {
+		return;
+	}
+
 	caret_force_displayed = p_enabled;
-	set_caret_blink_enabled(caret_blink_enabled);
+	_validate_caret_can_draw();
+
 	queue_redraw();
 }
 
@@ -1415,7 +1401,7 @@ void LineEdit::set_caret_blink_interval(const float p_interval) {
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
 		draw_caret = true;
-		if (has_focus()) {
+		if (caret_can_draw) {
 			caret_blink_timer = 0.0;
 			queue_redraw();
 		}
@@ -1424,9 +1410,17 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible_in_tree() && ((has_focus() && window_has_focus) || caret_force_displayed)) {
+	if (is_visible_in_tree() && caret_can_draw) {
 		queue_redraw();
 	}
+}
+
+void LineEdit::_validate_caret_can_draw() {
+	if (caret_blink_enabled) {
+		draw_caret = true;
+		caret_blink_timer = 0.0;
+	}
+	caret_can_draw = editable && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
 }
 
 void LineEdit::delete_char() {
@@ -1819,6 +1813,7 @@ void LineEdit::set_editable(bool p_editable) {
 	}
 
 	editable = p_editable;
+	_validate_caret_can_draw();
 
 	update_minimum_size();
 	queue_redraw();
@@ -2478,6 +2473,8 @@ void LineEdit::_ensure_menu() {
 		menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
 
 		menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+		menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+		menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
 		menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 		menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
 	}
