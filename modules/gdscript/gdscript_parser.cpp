@@ -648,7 +648,13 @@ GDScriptParser::ClassNode *GDScriptParser::parse_class() {
 	if (consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected identifier for the class name after "class".)")) {
 		n_class->identifier = parse_identifier();
 		if (n_class->outer) {
-			n_class->fqcn = n_class->outer->fqcn + "::" + n_class->identifier->name;
+			String fqcn = n_class->outer->fqcn;
+			if (fqcn.is_empty()) {
+				fqcn = script_path;
+			}
+			n_class->fqcn = fqcn + "::" + n_class->identifier->name;
+		} else {
+			n_class->fqcn = n_class->identifier->name;
 		}
 	}
 
