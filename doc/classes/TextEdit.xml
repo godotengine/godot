@@ -63,6 +63,13 @@
 				Adds a new caret at the given location. Returns the index of the new caret, or [code]-1[/code] if the location is invalid.
 			</description>
 		</method>
+		<method name="add_caret_at_carets">
+			<return type="void" />
+			<param index="0" name="below" type="bool" />
+			<description>
+				Adds an additional caret above or below every caret. If [param below] is true the new caret will be added below and above otherwise.
+			</description>
+		</method>
 		<method name="add_gutter">
 			<return type="void" />
 			<param index="0" name="at" type="int" default="-1" />
