@@ -808,6 +808,11 @@ String GDScript::_get_debug_path() const {
 }
 
 Error GDScript::reload(bool p_keep_state) {
+	if (reloading) {
+		return OK;
+	}
+	reloading = true;
+
 	bool has_instances;
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);
@@ -830,6 +835,7 @@ Error GDScript::reload(bool p_keep_state) {
 	// Loading a template, don't parse.
 #ifdef TOOLS_ENABLED
 	if (EditorPaths::get_singleton() && basedir.begins_with(EditorPaths::get_singleton()->get_project_script_templates_dir())) {
+		reloading = false;
 		return OK;
 	}
 #endif
@@ -839,11 +845,10 @@ Error GDScript::reload(bool p_keep_state) {
 		if (source_path.is_empty()) {
 			source_path = get_path();
 		}
-		if (!source_path.is_empty()) {
-			MutexLock lock(GDScriptCache::singleton->lock);
-			if (!GDScriptCache::singleton->shallow_gdscript_cache.has(source_path)) {
-				GDScriptCache::singleton->shallow_gdscript_cache[source_path] = this;
-			}
+		Ref<GDScript> cached_script = GDScriptCache::get_cached_script(source_path);
+		if (!source_path.is_empty() && cached_script.is_null()) {
+			MutexLock lock(GDScriptCache::singleton->mutex);
+			GDScriptCache::singleton->shallow_gdscript_cache[source_path] = Ref<GDScript>(this);
 		}
 	}
 
@@ -856,6 +861,7 @@ Error GDScript::reload(bool p_keep_state) {
 		}
 		// TODO: Show all error messages.
 		_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), parser.get_errors().front()->get().line, ("Parse Error: " + parser.get_errors().front()->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		reloading = false;
 		return ERR_PARSE_ERROR;
 	}
 
@@ -872,6 +878,7 @@ Error GDScript::reload(bool p_keep_state) {
 			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), e->get().line, ("Parse Error: " + e->get().message).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
 			e = e->next();
 		}
+		reloading = false;
 		return ERR_PARSE_ERROR;
 	}
 
@@ -886,8 +893,10 @@ Error GDScript::reload(bool p_keep_state) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			_err_print_error("GDScript::reload", path.is_empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+			reloading = false;
 			return ERR_COMPILATION_FAILED;
 		} else {
+			reloading = false;
 			return err;
 		}
 	}
@@ -900,6 +909,7 @@ Error GDScript::reload(bool p_keep_state) {
 	}
 #endif
 
+	reloading = false;
 	return OK;
 }
 
@@ -1006,16 +1016,22 @@ Error GDScript::load_byte_code(const String &p_path) {
 }
 
 void GDScript::set_path(const String &p_path, bool p_take_over) {
+	String old_path = path;
 	if (is_root_script()) {
 		Script::set_path(p_path, p_take_over);
 	}
 	this->path = p_path;
+	GDScriptCache::move_script(old_path, p_path);
 	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
 		kv.value->set_path(p_path, p_take_over);
 	}
 }
 
 Error GDScript::load_source_code(const String &p_path) {
+	if (p_path.is_empty() || ResourceLoader::get_resource_type(p_path.get_slice("::", 0)) == "PackedScene") {
+		return OK;
+	}
+
 	Vector<uint8_t> sourcef;
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -1133,6 +1149,78 @@ GDScript *GDScript::get_root_script() {
 	return result;
 }
 
+RBSet<GDScript *> GDScript::get_dependencies() {
+	RBSet<GDScript *> dependencies;
+
+	_get_dependencies(dependencies, this);
+	dependencies.erase(this);
+
+	return dependencies;
+}
+
+RBSet<GDScript *> GDScript::get_inverted_dependencies() {
+	RBSet<GDScript *> inverted_dependencies;
+
+	List<GDScript *> scripts;
+	{
+		MutexLock lock(GDScriptLanguage::singleton->mutex);
+
+		SelfList<GDScript> *elem = GDScriptLanguage::singleton->script_list.first();
+		while (elem) {
+			scripts.push_back(elem->self());
+			elem = elem->next();
+		}
+	}
+
+	for (GDScript *scr : scripts) {
+		if (scr == nullptr || scr == this || scr->destructing) {
+			continue;
+		}
+
+		RBSet<GDScript *> scr_dependencies = scr->get_dependencies();
+		if (scr_dependencies.has(this)) {
+			inverted_dependencies.insert(scr);
+		}
+	}
+
+	return inverted_dependencies;
+}
+
+RBSet<GDScript *> GDScript::get_must_clear_dependencies() {
+	RBSet<GDScript *> dependencies = get_dependencies();
+	RBSet<GDScript *> must_clear_dependencies;
+	HashMap<GDScript *, RBSet<GDScript *>> inverted_dependencies;
+
+	for (GDScript *E : dependencies) {
+		inverted_dependencies.insert(E, E->get_inverted_dependencies());
+	}
+
+	RBSet<GDScript *> cant_clear;
+	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : inverted_dependencies) {
+		for (GDScript *F : E.value) {
+			if (!dependencies.has(F)) {
+				cant_clear.insert(E.key);
+				for (GDScript *G : E.key->get_dependencies()) {
+					cant_clear.insert(G);
+				}
+				break;
+			}
+		}
+	}
+
+	for (KeyValue<GDScript *, RBSet<GDScript *>> &E : inverted_dependencies) {
+		if (cant_clear.has(E.key) || ScriptServer::is_global_class(E.key->get_fully_qualified_name())) {
+			continue;
+		}
+		must_clear_dependencies.insert(E.key);
+	}
+
+	cant_clear.clear();
+	dependencies.clear();
+	inverted_dependencies.clear();
+	return must_clear_dependencies;
+}
+
 bool GDScript::has_script_signal(const StringName &p_signal) const {
 	if (_signals.has(p_signal)) {
 		return true;
@@ -1194,6 +1282,69 @@ String GDScript::_get_gdscript_reference_class_name(const GDScript *p_gdscript) 
 	return class_name;
 }
 
+GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
+	Variant::Type type = p_variant.get_type();
+	if (type != Variant::Type::OBJECT)
+		return nullptr;
+
+	Object *obj = p_variant;
+	if (obj == nullptr) {
+		return nullptr;
+	}
+
+	return Object::cast_to<GDScript>(obj);
+}
+
+void GDScript::_get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
+	if (skip_dependencies || p_dependencies.has(this)) {
+		return;
+	}
+	p_dependencies.insert(this);
+
+	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
+		if (E.value == nullptr) {
+			continue;
+		}
+		for (const Variant &V : E.value->constants) {
+			GDScript *scr = _get_gdscript_from_variant(V);
+			if (scr != nullptr && scr != p_except) {
+				scr->_get_dependencies(p_dependencies, p_except);
+			}
+		}
+	}
+
+	if (implicit_initializer) {
+		for (const Variant &V : implicit_initializer->constants) {
+			GDScript *scr = _get_gdscript_from_variant(V);
+			if (scr != nullptr && scr != p_except) {
+				scr->_get_dependencies(p_dependencies, p_except);
+			}
+		}
+	}
+
+	if (implicit_ready) {
+		for (const Variant &V : implicit_ready->constants) {
+			GDScript *scr = _get_gdscript_from_variant(V);
+			if (scr != nullptr && scr != p_except) {
+				scr->_get_dependencies(p_dependencies, p_except);
+			}
+		}
+	}
+
+	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
+		if (E.value != p_except) {
+			E.value->_get_dependencies(p_dependencies, p_except);
+		}
+	}
+
+	for (const KeyValue<StringName, Variant> &E : constants) {
+		GDScript *scr = _get_gdscript_from_variant(E.value);
+		if (scr != nullptr && scr != p_except) {
+			scr->_get_dependencies(p_dependencies, p_except);
+		}
+	}
+}
+
 GDScript::GDScript() :
 		script_list(this) {
 #ifdef DEBUG_ENABLED
@@ -1253,33 +1404,58 @@ void GDScript::_init_rpc_methods_properties() {
 	}
 }
 
-GDScript::~GDScript() {
-	{
-		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+void GDScript::clear() {
+	if (clearing) {
+		return;
+	}
+	clearing = true;
 
-		while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
-			// Order matters since clearing the stack may already cause
-			// the GDSCriptFunctionState to be destroyed and thus removed from the list.
-			pending_func_states.remove(E);
-			E->self()->_clear_stack();
-		}
+	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
+	HashMap<GDScript *, ObjectID> must_clear_dependencies_objectids;
+
+	// Log the objectids before clearing, as a cascade of clear could
+	// remove instances that are still in the clear loop
+	for (GDScript *E : must_clear_dependencies) {
+		must_clear_dependencies_objectids.insert(E, E->get_instance_id());
 	}
 
+	for (GDScript *E : must_clear_dependencies) {
+		Object *obj = ObjectDB::get_instance(must_clear_dependencies_objectids[E]);
+		if (obj == nullptr) {
+			continue;
+		}
+
+		E->skip_dependencies = true;
+		E->clear();
+		E->skip_dependencies = false;
+		GDScriptCache::remove_script(E->get_path());
+	}
+
+	RBSet<StringName> member_function_names;
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
-		memdelete(E.value);
+		member_function_names.insert(E.key);
+	}
+	for (const StringName &E : member_function_names) {
+		if (member_functions.has(E)) {
+			memdelete(member_functions[E]);
+		}
+	}
+	member_function_names.clear();
+	member_functions.clear();
+
+	for (KeyValue<StringName, GDScript::MemberInfo> &E : member_indices) {
+		E.value.data_type.script_type_ref = Ref<Script>();
 	}
 
 	if (implicit_initializer) {
 		memdelete(implicit_initializer);
 	}
+	implicit_initializer = nullptr;
 
 	if (implicit_ready) {
 		memdelete(implicit_ready);
 	}
-
-	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
-		GDScriptCache::remove_script(get_path());
-	}
+	implicit_ready = nullptr;
 
 	_save_orphaned_subclasses();
 
@@ -1289,6 +1465,27 @@ GDScript::~GDScript() {
 		_clear_doc();
 	}
 #endif
+	clearing = false;
+}
+
+GDScript::~GDScript() {
+	if (destructing) {
+		return;
+	}
+	destructing = true;
+
+	clear();
+
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
+
+		while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+			// Order matters since clearing the stack may already cause
+			// the GDScriptFunctionState to be destroyed and thus removed from the list.
+			pending_func_states.remove(E);
+			E->self()->_clear_stack();
+		}
+	}
 
 #ifdef DEBUG_ENABLED
 	{
@@ -1297,6 +1494,10 @@ GDScript::~GDScript() {
 		GDScriptLanguage::get_singleton()->script_list.remove(&script_list);
 	}
 #endif
+
+	if (GDScriptCache::singleton) { // Cache may have been already destroyed at engine shutdown.
+		GDScriptCache::remove_script(get_path());
+	}
 }
 
 //////////////////////////////
@@ -2336,26 +2537,27 @@ GDScriptLanguage::~GDScriptLanguage() {
 	// Clear dependencies between scripts, to ensure cyclic references are broken (to avoid leaks at exit).
 	SelfList<GDScript> *s = script_list.first();
 	while (s) {
-		GDScript *scr = s->self();
 		// This ensures the current script is not released before we can check what's the next one
 		// in the list (we can't get the next upfront because we don't know if the reference breaking
 		// will cause it -or any other after it, for that matter- to be released so the next one
 		// is not the same as before).
-		scr->reference();
-
-		for (KeyValue<StringName, GDScriptFunction *> &E : scr->member_functions) {
-			GDScriptFunction *func = E.value;
-			for (int i = 0; i < func->argument_types.size(); i++) {
-				func->argument_types.write[i].script_type_ref = Ref<Script>();
+		Ref<GDScript> scr = s->self();
+		if (scr.is_valid()) {
+			for (KeyValue<StringName, GDScriptFunction *> &E : scr->member_functions) {
+				GDScriptFunction *func = E.value;
+				for (int i = 0; i < func->argument_types.size(); i++) {
+					func->argument_types.write[i].script_type_ref = Ref<Script>();
+				}
+				func->return_type.script_type_ref = Ref<Script>();
 			}
-			func->return_type.script_type_ref = Ref<Script>();
-		}
-		for (KeyValue<StringName, GDScript::MemberInfo> &E : scr->member_indices) {
-			E.value.data_type.script_type_ref = Ref<Script>();
-		}
+			for (KeyValue<StringName, GDScript::MemberInfo> &E : scr->member_indices) {
+				E.value.data_type.script_type_ref = Ref<Script>();
+			}
 
+			// Clear backup for scripts that could slip out of the cyclic reference check
+			scr->clear();
+		}
 		s = s->next();
-		scr->unreference();
 	}
 
 	singleton = nullptr;
@@ -2377,6 +2579,27 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 		return Ref<GDScript>();
 	}
 	return Ref<GDScript>(Object::cast_to<GDScript>(obj));
+}
+
+Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String &p_name) {
+	{
+		MutexLock lock(mutex);
+
+		SelfList<GDScript> *elem = script_list.first();
+		while (elem) {
+			GDScript *scr = elem->self();
+			scr = scr->find_class(p_name);
+			if (scr != nullptr) {
+				return scr;
+			}
+			elem = elem->next();
+		}
+	}
+
+	Ref<GDScript> scr;
+	scr.instantiate();
+	scr->fully_qualified_name = p_name;
+	return scr;
 }
 
 /*************** RESOURCE ***************/
