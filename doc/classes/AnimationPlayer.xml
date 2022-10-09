@@ -257,8 +257,8 @@
 			<param index="0" name="old_name" type="StringName" />
 			<param index="1" name="new_name" type="StringName" />
 			<description>
-				Emitted when a queued animation plays after the previous animation finished. See [method queue].
-				[b]Note:[/b] The signal is not emitted when the animation is changed via [method play] or by an [AnimationTree].
+				Emitted when an assigned animation changed.
+				[b]Note:[/b] The signal is not emitted when the animation is changed by an [AnimationTree].
 			</description>
 		</signal>
 		<signal name="animation_finished">

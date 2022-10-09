@@ -1193,9 +1193,6 @@ void AnimationPlayer::_animation_process(double p_delta) {
 				play(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
-				if (end_notify) {
-					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
-				}
 			} else {
 				playing = false;
 				_set_process(false);
@@ -1640,10 +1637,15 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 		}
 	}
 
+	String old_name = c.assigned;
+	String new_name = name;
 	c.current.speed_scale = p_custom_scale;
 	c.assigned = name;
 	c.seeked = false;
 	c.started = true;
+	if (old_name != new_name) {
+		emit_signal(SceneStringNames::get_singleton()->animation_changed, old_name, new_name);
+	}
 
 	if (!end_reached) {
 		queued.clear();
@@ -1686,9 +1688,14 @@ void AnimationPlayer::set_assigned_animation(const String &p_anim) {
 		play(p_anim);
 	} else {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_anim), vformat("Animation not found: %s.", p_anim));
+		String old_name = playback.assigned;
+		String new_name = p_anim;
 		playback.current.pos = 0;
 		playback.current.from = &animation_set[p_anim];
 		playback.assigned = p_anim;
+		if (old_name != new_name) {
+			emit_signal(SceneStringNames::get_singleton()->animation_changed, old_name, new_name);
+		}
 	}
 }
 
