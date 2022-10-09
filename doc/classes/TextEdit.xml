@@ -240,6 +240,12 @@
 				Returns the width of the gutter at the given index.
 			</description>
 		</method>
+		<method name="get_h_scroll_bar" qualifiers="const">
+			<return type="HScrollBar" />
+			<description>
+				Returns the [HScrollBar] used by [TextEdit].
+			</description>
+		</method>
 		<method name="get_indent_level" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="line" type="int" />
@@ -507,6 +513,12 @@
 			<return type="int" />
 			<description>
 				Returns the number of lines that may be drawn.
+			</description>
+		</method>
+		<method name="get_v_scroll_bar" qualifiers="const">
+			<return type="VScrollBar" />
+			<description>
+				Returns the [VScrollBar] of the [TextEdit].
 			</description>
 		</method>
 		<method name="get_version" qualifiers="const">
