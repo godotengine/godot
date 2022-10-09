@@ -2089,6 +2089,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				accept_event();
 				return;
 			}
+
+			if (k->is_action("ui_text_caret_add_below", true)) {
+				add_caret_at_carets(true);
+				accept_event();
+				return;
+			}
+			if (k->is_action("ui_text_caret_add_above", true)) {
+				add_caret_at_carets(false);
+				accept_event();
+				return;
+			}
 		}
 
 		// MISC.
@@ -2800,6 +2811,51 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 
 	if (p_select) {
 		_post_shift_selection(0);
+	}
+}
+
+void TextEdit::_get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x) const {
+	if (p_last_fit_x == -1) {
+		p_last_fit_x = _get_column_x_offset_for_line(p_old_column, p_old_line, p_old_column);
+	}
+
+	// Calculate the new line and wrap index
+	p_new_line = p_old_line;
+	int caret_wrap_index = p_old_wrap_index;
+	if (p_below) {
+		if (caret_wrap_index < get_line_wrap_count(p_new_line)) {
+			caret_wrap_index++;
+		} else {
+			p_new_line++;
+			caret_wrap_index = 0;
+		}
+	} else {
+		if (caret_wrap_index == 0) {
+			p_new_line--;
+			caret_wrap_index = get_line_wrap_count(p_new_line);
+		} else {
+			caret_wrap_index--;
+		}
+	}
+
+	// Boundary checks
+	if (p_new_line < 0) {
+		p_new_line = 0;
+	}
+	if (p_new_line >= text.size()) {
+		p_new_line = text.size() - 1;
+	}
+
+	p_new_column = _get_char_pos_for_line(p_last_fit_x, p_new_line, caret_wrap_index);
+	if (p_new_column != 0 && get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE && caret_wrap_index < get_line_wrap_count(p_new_line)) {
+		Vector<String> rows = get_line_wrapped_text(p_new_line);
+		int row_end_col = 0;
+		for (int i = 0; i < caret_wrap_index + 1; i++) {
+			row_end_col += rows[i].length();
+		}
+		if (p_new_column >= row_end_col) {
+			p_new_column -= 1;
+		}
 	}
 }
 
@@ -4504,6 +4560,68 @@ int TextEdit::get_caret_count() const {
 	return carets.size();
 }
 
+void TextEdit::add_caret_at_carets(bool p_below) {
+	Vector<int> caret_edit_order = get_caret_index_edit_order();
+	for (const int &caret_index : caret_edit_order) {
+		const int caret_line = get_caret_line(caret_index);
+		const int caret_column = get_caret_column(caret_index);
+
+		// The last fit x will be cleared if the caret has a selection,
+		// but if it does not have a selection the last fit x will be
+		// transferred to the new caret
+		int caret_from_column = 0, caret_to_column = 0, caret_last_fit_x = carets[caret_index].last_fit_x;
+		if (has_selection(caret_index)) {
+			// If the selection goes over multiple lines, deselect it.
+			if (get_selection_from_line(caret_index) != get_selection_to_line(caret_index)) {
+				deselect(caret_index);
+			} else {
+				caret_from_column = get_selection_from_column(caret_index);
+				caret_to_column = get_selection_to_column(caret_index);
+				caret_last_fit_x = -1;
+				carets.write[caret_index].last_fit_x = _get_column_x_offset_for_line(caret_column, caret_line, caret_column);
+			}
+		}
+
+		// Get the line and column of the new caret as if you would move the caret by pressing the arrow keys
+		int new_caret_line, new_caret_column, new_caret_from_column = 0, new_caret_to_column = 0;
+		_get_above_below_caret_line_column(caret_line, get_caret_wrap_index(caret_index), caret_column, p_below, new_caret_line, new_caret_column, caret_last_fit_x);
+
+		// If the caret does have a selection calculate the new from and to columns
+		if (caret_from_column != caret_to_column) {
+			// We only need to calculate the selection columns if the column of the caret changed
+			if (caret_column != new_caret_column) {
+				int _; // unused placeholder for p_new_line
+				_get_above_below_caret_line_column(caret_line, get_caret_wrap_index(caret_index), caret_from_column, p_below, _, new_caret_from_column);
+				_get_above_below_caret_line_column(caret_line, get_caret_wrap_index(caret_index), caret_to_column, p_below, _, new_caret_to_column);
+			} else {
+				new_caret_from_column = caret_from_column;
+				new_caret_to_column = caret_to_column;
+			}
+		}
+
+		// Add the new caret
+		const int new_caret_index = add_caret(new_caret_line, new_caret_column);
+
+		if (new_caret_index == -1) {
+			continue;
+		}
+		// Also add the selection if there should be one
+		if (new_caret_from_column != new_caret_to_column) {
+			select(new_caret_line, new_caret_from_column, new_caret_line, new_caret_to_column, new_caret_index);
+			// Necessary to properly modify the selection after adding the new caret
+			carets.write[new_caret_index].selection.selecting_line = new_caret_line;
+			carets.write[new_caret_index].selection.selecting_column = new_caret_column == new_caret_from_column ? new_caret_to_column : new_caret_from_column;
+			continue;
+		}
+
+		// Copy the last fit x over
+		carets.write[new_caret_index].last_fit_x = carets[caret_index].last_fit_x;
+	}
+
+	merge_overlapping_carets();
+	queue_redraw();
+}
+
 Vector<int> TextEdit::get_caret_index_edit_order() {
 	if (!caret_index_edit_dirty) {
 		return caret_index_edit_order;
@@ -5959,6 +6077,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_secondary_carets"), &TextEdit::remove_secondary_carets);
 	ClassDB::bind_method(D_METHOD("merge_overlapping_carets"), &TextEdit::merge_overlapping_carets);
 	ClassDB::bind_method(D_METHOD("get_caret_count"), &TextEdit::get_caret_count);
+	ClassDB::bind_method(D_METHOD("add_caret_at_carets", "below"), &TextEdit::add_caret_at_carets);
 
 	ClassDB::bind_method(D_METHOD("get_caret_index_edit_order"), &TextEdit::get_caret_index_edit_order);
 	ClassDB::bind_method(D_METHOD("adjust_carets_after_edit", "caret", "from_line", "from_col", "to_line", "to_col"), &TextEdit::adjust_carets_after_edit);

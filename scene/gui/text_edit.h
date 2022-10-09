@@ -598,6 +598,9 @@ private:
 	void _move_caret_document_start(bool p_select);
 	void _move_caret_document_end(bool p_select);
 
+	// Used in add_caret_at_carets
+	void _get_above_below_caret_line_column(int p_old_line, int p_old_wrap_index, int p_old_column, bool p_below, int &p_new_line, int &p_new_column, int p_last_fit_x = -1) const;
+
 protected:
 	void _notification(int p_what);
 
@@ -816,6 +819,7 @@ public:
 	void remove_secondary_carets();
 	void merge_overlapping_carets();
 	int get_caret_count() const;
+	void add_caret_at_carets(bool p_below);
 
 	Vector<int> get_caret_index_edit_order();
 	void adjust_carets_after_edit(int p_caret, int p_from_line, int p_from_col, int p_to_line, int p_to_col);

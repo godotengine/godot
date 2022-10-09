@@ -3313,7 +3313,7 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 	memdelete(text_edit);
 }
 
-TEST_CASE("[SceneTree][TextEdit] muiticaret") {
+TEST_CASE("[SceneTree][TextEdit] multicaret") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->set_multiple_carets_enabled(true);
@@ -3401,6 +3401,43 @@ TEST_CASE("[SceneTree][TextEdit] muiticaret") {
 		caret_index_get_order.write[0] = 0;
 		caret_index_get_order.write[1] = 1;
 		CHECK(text_edit->get_caret_index_edit_order() == caret_index_get_order);
+	}
+
+	SUBCASE("[TextEdit] add caret at carets") {
+		text_edit->remove_secondary_carets();
+		text_edit->set_caret_line(1);
+		text_edit->set_caret_column(9);
+
+		text_edit->add_caret_at_carets(true);
+		CHECK(text_edit->get_caret_count() == 2);
+		CHECK(text_edit->get_caret_line(1) == 2);
+		CHECK(text_edit->get_caret_column(1) == 4);
+
+		text_edit->add_caret_at_carets(true);
+		CHECK(text_edit->get_caret_count() == 2);
+
+		text_edit->add_caret_at_carets(false);
+		CHECK(text_edit->get_caret_count() == 3);
+		CHECK(text_edit->get_caret_line(2) == 0);
+		CHECK(text_edit->get_caret_column(2) == 7);
+
+		text_edit->remove_secondary_carets();
+		text_edit->set_caret_line(0);
+		text_edit->set_caret_column(4);
+		text_edit->select(0, 0, 0, 4);
+		text_edit->add_caret_at_carets(true);
+		CHECK(text_edit->get_caret_count() == 2);
+		CHECK(text_edit->get_selection_from_line(1) == 1);
+		CHECK(text_edit->get_selection_to_line(1) == 1);
+		CHECK(text_edit->get_selection_from_column(1) == 0);
+		CHECK(text_edit->get_selection_to_column(1) == 3);
+
+		text_edit->add_caret_at_carets(true);
+		CHECK(text_edit->get_caret_count() == 3);
+		CHECK(text_edit->get_selection_from_line(2) == 2);
+		CHECK(text_edit->get_selection_to_line(2) == 2);
+		CHECK(text_edit->get_selection_from_column(2) == 0);
+		CHECK(text_edit->get_selection_to_column(2) == 4);
 	}
 
 	memdelete(text_edit);
