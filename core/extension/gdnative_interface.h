@@ -564,14 +564,14 @@ typedef struct {
 	/* CLASSDB EXTENSION */
 
 	/* Provided parameters for `classdb_register_extension_*` can be safely freed once the function returns. */
-	void (*classdb_register_extension_class)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
-	void (*classdb_register_extension_class_method)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
-	void (*classdb_register_extension_class_integer_constant)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_enum_name, GDNativeConstStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
-	void (*classdb_register_extension_class_property)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, GDNativeConstStringNamePtr p_setter, GDNativeConstStringNamePtr p_getter);
-	void (*classdb_register_extension_class_property_group)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringPtr p_group_name, GDNativeConstStringPtr p_prefix);
-	void (*classdb_register_extension_class_property_subgroup)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringPtr p_subgroup_name, GDNativeConstStringPtr p_prefix);
-	void (*classdb_register_extension_class_signal)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
-	void (*classdb_unregister_extension_class)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
+	GDNativeBool (*classdb_register_extension_class)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_parent_class_name, const GDNativeExtensionClassCreationInfo *p_extension_funcs);
+	GDNativeBool (*classdb_register_extension_class_method)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativeExtensionClassMethodInfo *p_method_info);
+	GDNativeBool (*classdb_register_extension_class_integer_constant)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_enum_name, GDNativeConstStringNamePtr p_constant_name, GDNativeInt p_constant_value, GDNativeBool p_is_bitfield);
+	GDNativeBool (*classdb_register_extension_class_property)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, const GDNativePropertyInfo *p_info, GDNativeConstStringNamePtr p_setter, GDNativeConstStringNamePtr p_getter);
+	GDNativeBool (*classdb_register_extension_class_property_group)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringPtr p_group_name, GDNativeConstStringPtr p_prefix);
+	GDNativeBool (*classdb_register_extension_class_property_subgroup)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringPtr p_subgroup_name, GDNativeConstStringPtr p_prefix);
+	GDNativeBool (*classdb_register_extension_class_signal)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name, GDNativeConstStringNamePtr p_signal_name, const GDNativePropertyInfo *p_argument_info, GDNativeInt p_argument_count);
+	GDNativeBool (*classdb_unregister_extension_class)(GDNativeExtensionClassLibraryPtr p_library, GDNativeConstStringNamePtr p_class_name); /* Unregistering a parent class before a class that inherits it will result in failure. Inheritors must be unregistered first. */
 
 	void (*get_library_path)(GDNativeExtensionClassLibraryPtr p_library, GDNativeStringPtr r_path);
 
