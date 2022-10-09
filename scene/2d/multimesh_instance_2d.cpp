@@ -63,12 +63,12 @@ void MultiMeshInstance2D::_bind_methods() {
 void MultiMeshInstance2D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
 	// Cleanup previous connection if any.
 	if (multimesh.is_valid()) {
-		multimesh->disconnect(CoreStringNames::get_singleton()->changed, this, "update");
+		multimesh->disconnect("update", callable_mp(this, &CoreStringNames::get_singleton()->changed));
 	}
 	multimesh = p_multimesh;
 	// Connect to the multimesh so the AABB can update when instance transforms are changed.
 	if (multimesh.is_valid()) {
-		multimesh->connect(CoreStringNames::get_singleton()->changed, this, "update");
+		multimesh->connect("update", callable_mp(this, &CoreStringNames::get_singleton()->changed));
 	}
 	queue_redraw();
 }
