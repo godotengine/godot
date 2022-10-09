@@ -561,10 +561,12 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 				NavigationServer::get_singleton()->region_set_navigation_layers(region, navigation_layers);
 				NavigationServer::get_singleton()->region_set_navmesh(region, navmesh);
 				NavigationServer::get_singleton()->region_set_transform(region, get_global_transform() * nm.xform);
-				if (navigation) {
-					NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
-				} else {
-					NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
+				if (is_inside_tree()) {
+					if (navigation) {
+						NavigationServer::get_singleton()->region_set_map(region, navigation->get_rid());
+					} else {
+						NavigationServer::get_singleton()->region_set_map(region, get_world()->get_navigation_map());
+					}
 				}
 				nm.region = region;
 
