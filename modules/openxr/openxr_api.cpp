@@ -131,11 +131,9 @@ bool OpenXRAPI::load_layer_properties() {
 	result = xrEnumerateApiLayerProperties(num_layer_properties, &num_layer_properties, layer_properties);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate api layer properties");
 
-#ifdef DEBUG
 	for (uint32_t i = 0; i < num_layer_properties; i++) {
-		print_line("OpenXR: Found OpenXR layer ", layer_properties[i].layerName);
+		print_verbose(String("OpenXR: Found OpenXR layer ") + layer_properties[i].layerName);
 	}
-#endif
 
 	return true;
 }
@@ -163,11 +161,9 @@ bool OpenXRAPI::load_supported_extensions() {
 	result = xrEnumerateInstanceExtensionProperties(nullptr, num_supported_extensions, &num_supported_extensions, supported_extensions);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate extension properties");
 
-#ifdef DEBUG
 	for (uint32_t i = 0; i < num_supported_extensions; i++) {
-		print_line("OpenXR: Found OpenXR extension ", supported_extensions[i].extensionName);
+		print_verbose(String("OpenXR: Found OpenXR extension ") + supported_extensions[i].extensionName);
 	}
-#endif
 
 	return true;
 }
@@ -175,16 +171,9 @@ bool OpenXRAPI::load_supported_extensions() {
 bool OpenXRAPI::is_extension_supported(const String &p_extension) const {
 	for (uint32_t i = 0; i < num_supported_extensions; i++) {
 		if (supported_extensions[i].extensionName == p_extension) {
-#ifdef DEBUG
-			print_line("OpenXR: requested extension", p_extension, "is supported");
-#endif
 			return true;
 		}
 	}
-
-#ifdef DEBUG
-	print_line("OpenXR: requested extension", p_extension, "is not supported");
-#endif
 
 	return false;
 }
@@ -401,11 +390,9 @@ bool OpenXRAPI::load_supported_view_configuration_types() {
 	result = xrEnumerateViewConfigurations(instance, system_id, num_view_configuration_types, &num_view_configuration_types, supported_view_configuration_types);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerateview configurations");
 
-#ifdef DEBUG
 	for (uint32_t i = 0; i < num_view_configuration_types; i++) {
-		print_line("OpenXR: Found supported view configuration ", OpenXRUtil::get_view_configuration_name(supported_view_configuration_types[i]));
+		print_verbose(String("OpenXR: Found supported view configuration ") + OpenXRUtil::get_view_configuration_name(supported_view_configuration_types[i]));
 	}
-#endif
 
 	return true;
 }
@@ -454,17 +441,15 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 	result = xrEnumerateViewConfigurationViews(instance, system_id, p_configuration_type, view_count, &view_count, view_configuration_views);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate view configurations");
 
-#ifdef DEBUG
 	for (uint32_t i = 0; i < view_count; i++) {
-		print_line("OpenXR: Found supported view configuration view");
-		print_line(" - width: ", view_configuration_views[i].maxImageRectWidth);
-		print_line(" - height: ", view_configuration_views[i].maxImageRectHeight);
-		print_line(" - sample count: ", view_configuration_views[i].maxSwapchainSampleCount);
-		print_line(" - recommended render width: ", view_configuration_views[i].recommendedImageRectWidth);
-		print_line(" - recommended render height: ", view_configuration_views[i].recommendedImageRectHeight);
-		print_line(" - recommended render sample count: ", view_configuration_views[i].recommendedSwapchainSampleCount);
+		print_verbose("OpenXR: Found supported view configuration view");
+		print_verbose(String(" - width: ") + view_configuration_views[i].maxImageRectWidth);
+		print_verbose(String(" - height: ") + view_configuration_views[i].maxImageRectHeight);
+		print_verbose(String(" - sample count: ") + view_configuration_views[i].maxSwapchainSampleCount);
+		print_verbose(String(" - recommended render width: ") + view_configuration_views[i].recommendedImageRectWidth);
+		print_verbose(String(" - recommended render height: ") + view_configuration_views[i].recommendedImageRectHeight);
+		print_verbose(String(" - recommended render sample count: ") + view_configuration_views[i].recommendedSwapchainSampleCount);
 	}
-#endif
 
 	return true;
 }
@@ -546,11 +531,9 @@ bool OpenXRAPI::load_supported_reference_spaces() {
 	result = xrEnumerateReferenceSpaces(session, num_reference_spaces, &num_reference_spaces, supported_reference_spaces);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate reference spaces");
 
-	// #ifdef DEBUG
 	for (uint32_t i = 0; i < num_reference_spaces; i++) {
-		print_line("OpenXR: Found supported reference space ", OpenXRUtil::get_reference_space_name(supported_reference_spaces[i]));
+		print_verbose(String("OpenXR: Found supported reference space ") + OpenXRUtil::get_reference_space_name(supported_reference_spaces[i]));
 	}
-	// #endif
 
 	return true;
 }
@@ -643,11 +626,9 @@ bool OpenXRAPI::load_supported_swapchain_formats() {
 	result = xrEnumerateSwapchainFormats(session, num_swapchain_formats, &num_swapchain_formats, supported_swapchain_formats);
 	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate swapchain formats");
 
-	// #ifdef DEBUG
 	for (uint32_t i = 0; i < num_swapchain_formats; i++) {
-		print_line("OpenXR: Found supported swapchain format ", get_swapchain_format_name(supported_swapchain_formats[i]));
+		print_verbose(String("OpenXR: Found supported swapchain format ") + get_swapchain_format_name(supported_swapchain_formats[i]));
 	}
-	// #endif
 
 	return true;
 }
@@ -706,7 +687,7 @@ bool OpenXRAPI::create_swapchains() {
 			swapchain_format_to_use = usable_swapchain_formats[0]; // just use the first one and hope for the best...
 			print_line("Couldn't find usable color swap chain format, using", get_swapchain_format_name(swapchain_format_to_use), "instead.");
 		} else {
-			print_line("Using color swap chain format:", get_swapchain_format_name(swapchain_format_to_use));
+			print_verbose(String("Using color swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
 		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain, &swapchains[OPENXR_SWAPCHAIN_COLOR].swapchain_graphics_data)) {
@@ -741,7 +722,7 @@ bool OpenXRAPI::create_swapchains() {
 			swapchain_format_to_use = usable_swapchain_formats[0]; // just use the first one and hope for the best...
 			print_line("Couldn't find usable depth swap chain format, using", get_swapchain_format_name(swapchain_format_to_use), "instead.");
 		} else {
-			print_line("Using depth swap chain format:", get_swapchain_format_name(swapchain_format_to_use));
+			print_verbose(String("Using depth swap chain format:") + get_swapchain_format_name(swapchain_format_to_use));
 		}
 
 		if (!create_swapchain(XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, swapchain_format_to_use, recommended_size.width, recommended_size.height, view_configuration_views[0].recommendedSwapchainSampleCount, view_count, swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain, &swapchains[OPENXR_SWAPCHAIN_DEPTH].swapchain_graphics_data)) {
@@ -900,9 +881,7 @@ bool OpenXRAPI::create_swapchain(XrSwapchainUsageFlags p_usage_flags, int64_t p_
 }
 
 bool OpenXRAPI::on_state_idle() {
-#ifdef DEBUG
-	print_line("On state idle");
-#endif
+	print_verbose("On state idle");
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_idle();
@@ -912,9 +891,7 @@ bool OpenXRAPI::on_state_idle() {
 }
 
 bool OpenXRAPI::on_state_ready() {
-#ifdef DEBUG
-	print_line("On state ready");
-#endif
+	print_verbose("On state ready");
 
 	// begin session
 	XrSessionBeginInfo session_begin_info = {
@@ -957,9 +934,7 @@ bool OpenXRAPI::on_state_ready() {
 }
 
 bool OpenXRAPI::on_state_synchronized() {
-#ifdef DEBUG
-	print_line("On state synchronized");
-#endif
+	print_verbose("On state synchronized");
 
 	// Just in case, see if we already have active trackers...
 	List<RID> trackers;
@@ -976,9 +951,7 @@ bool OpenXRAPI::on_state_synchronized() {
 }
 
 bool OpenXRAPI::on_state_visible() {
-#ifdef DEBUG
-	print_line("On state visible");
-#endif
+	print_verbose("On state visible");
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_visible();
@@ -992,9 +965,7 @@ bool OpenXRAPI::on_state_visible() {
 }
 
 bool OpenXRAPI::on_state_focused() {
-#ifdef DEBUG
-	print_line("On state focused");
-#endif
+	print_verbose("On state focused");
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_focused();
@@ -1008,9 +979,7 @@ bool OpenXRAPI::on_state_focused() {
 }
 
 bool OpenXRAPI::on_state_stopping() {
-#ifdef DEBUG
-	print_line("On state stopping");
-#endif
+	print_verbose("On state stopping");
 
 	if (xr_interface) {
 		xr_interface->on_state_stopping();
@@ -1036,9 +1005,7 @@ bool OpenXRAPI::on_state_stopping() {
 }
 
 bool OpenXRAPI::on_state_loss_pending() {
-#ifdef DEBUG
-	print_line("On state loss pending");
-#endif
+	print_verbose("On state loss pending");
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_loss_pending();
@@ -1050,9 +1017,7 @@ bool OpenXRAPI::on_state_loss_pending() {
 }
 
 bool OpenXRAPI::on_state_exiting() {
-#ifdef DEBUG
-	print_line("On state existing");
-#endif
+	print_verbose("On state existing");
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_exiting();
@@ -1324,12 +1289,10 @@ XRPose::TrackingConfidence OpenXRAPI::get_head_center(Transform3D &r_transform, 
 		head_pose_confidence = confidence;
 		if (head_pose_confidence == XRPose::XR_TRACKING_CONFIDENCE_NONE) {
 			print_line("OpenXR head space location not valid (check tracking?)");
-#ifdef DEBUG
 		} else if (head_pose_confidence == XRPose::XR_TRACKING_CONFIDENCE_LOW) {
-			print_line("OpenVR Head pose now tracking with low confidence");
+			print_verbose("OpenVR Head pose now tracking with low confidence");
 		} else {
-			print_line("OpenVR Head pose now tracking with high confidence");
-#endif
+			print_verbose("OpenVR Head pose now tracking with high confidence");
 		}
 	}
 
@@ -1417,7 +1380,7 @@ bool OpenXRAPI::poll_events() {
 				// TODO We get this event if we're about to loose our OpenXR instance.
 				// We should queue exiting Godot at this point.
 
-				print_verbose("OpenXR EVENT: instance loss pending at " + itos(event->lossTime));
+				print_verbose(String("OpenXR EVENT: instance loss pending at ") + itos(event->lossTime));
 				return false;
 			} break;
 			case XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
@@ -1425,9 +1388,9 @@ bool OpenXRAPI::poll_events() {
 
 				session_state = event->state;
 				if (session_state >= XR_SESSION_STATE_MAX_ENUM) {
-					print_verbose("OpenXR EVENT: session state changed to UNKNOWN - " + itos(session_state));
+					print_verbose(String("OpenXR EVENT: session state changed to UNKNOWN - ") + itos(session_state));
 				} else {
-					print_verbose("OpenXR EVENT: session state changed to " + OpenXRUtil::get_session_state_name(session_state));
+					print_verbose(String("OpenXR EVENT: session state changed to ") + OpenXRUtil::get_session_state_name(session_state));
 
 					switch (session_state) {
 						case XR_SESSION_STATE_IDLE:
@@ -1462,7 +1425,7 @@ bool OpenXRAPI::poll_events() {
 			case XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING: {
 				XrEventDataReferenceSpaceChangePending *event = (XrEventDataReferenceSpaceChangePending *)&runtimeEvent;
 
-				print_verbose("OpenXR EVENT: reference space type " + OpenXRUtil::get_reference_space_name(event->referenceSpaceType) + " change pending!");
+				print_verbose(String("OpenXR EVENT: reference space type ") + OpenXRUtil::get_reference_space_name(event->referenceSpaceType) + " change pending!");
 				if (event->poseValid && xr_interface) {
 					xr_interface->on_pose_recentered();
 				}
@@ -1481,7 +1444,7 @@ bool OpenXRAPI::poll_events() {
 			} break;
 			default:
 				if (!handled) {
-					print_verbose("OpenXR Unhandled event type " + OpenXRUtil::get_structure_type_name(runtimeEvent.type));
+					print_verbose(String("OpenXR Unhandled event type ") + OpenXRUtil::get_structure_type_name(runtimeEvent.type));
 				}
 				break;
 		}
@@ -1589,7 +1552,7 @@ void OpenXRAPI::pre_render() {
 
 	if (frame_state.predictedDisplayPeriod > 500000000) {
 		// display period more then 0.5 seconds? must be wrong data
-		print_verbose("OpenXR resetting invalid display period " + rtos(frame_state.predictedDisplayPeriod));
+		print_verbose(String("OpenXR resetting invalid display period ") + rtos(frame_state.predictedDisplayPeriod));
 		frame_state.predictedDisplayPeriod = 0;
 	}
 
@@ -1636,13 +1599,11 @@ void OpenXRAPI::pre_render() {
 	}
 	if (view_pose_valid != pose_valid) {
 		view_pose_valid = pose_valid;
-#ifdef DEBUG
 		if (!view_pose_valid) {
-			print_line("OpenXR View pose became invalid");
+			print_verbose("OpenXR View pose became invalid");
 		} else {
-			print_line("OpenXR View pose became valid");
+			print_verbose("OpenXR View pose became valid");
 		}
-#endif
 	}
 
 	// let's start our frame..
@@ -2081,8 +2042,6 @@ RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_n
 	copy_string_to_char_buffer(p_name, action_set_info.actionSetName, XR_MAX_ACTION_SET_NAME_SIZE);
 	copy_string_to_char_buffer(p_localized_name, action_set_info.localizedActionSetName, XR_MAX_LOCALIZED_ACTION_SET_NAME_SIZE);
 
-	// print_line("Creating action set ", action_set_info.actionSetName, " - ", action_set_info.localizedActionSetName, " (", itos(action_set_info.priority), ")");
-
 	XrResult result = xrCreateActionSet(instance, &action_set_info, &action_set.handle);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: failed to create action set ", p_name, "! [", get_error_string(result), "]");
@@ -2235,8 +2194,6 @@ RID OpenXRAPI::action_create(RID p_action_set, const String p_name, const String
 
 	copy_string_to_char_buffer(p_name, action_info.actionName, XR_MAX_ACTION_NAME_SIZE);
 	copy_string_to_char_buffer(p_localized_name, action_info.localizedActionName, XR_MAX_LOCALIZED_ACTION_NAME_SIZE);
-
-	// print_line("Creating action ", action_info.actionName, action_info.localizedActionName, action_info.countSubactionPaths);
 
 	XrResult result = xrCreateAction(action_set->handle, &action_info, &action.handle);
 	if (XR_FAILED(result)) {
