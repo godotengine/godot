@@ -1024,11 +1024,9 @@ String increase_numeric_string(const String &s) {
 
 void Node::_generate_serial_child_name(const Node *p_child, StringName &name) const {
 	if (name == StringName()) {
-		//no name and a new name is needed, create one.
+		// No name and a new name is needed, create one.
 
 		name = p_child->get_class();
-		// Adjust casing according to project setting.
-		name = adjust_name_casing(name);
 	}
 
 	//quickly test if proposed name exists
