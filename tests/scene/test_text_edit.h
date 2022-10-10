@@ -2944,6 +2944,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 			text_edit->set_overtype_mode_enabled(false);
 			CHECK_FALSE(text_edit->is_overtype_mode_enabled());
+
+			lines_edited_args.remove_at(0);
+			lines_edited_args.remove_at(1);
+
+			SEND_GUI_KEY_EVENT(text_edit, Key::TAB);
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_text() == "A\tB\nA\tB");
+			CHECK(text_edit->get_caret_column() == 2);
+			CHECK(text_edit->get_caret_column(1) == 2);
+			SIGNAL_CHECK("caret_changed", empty_signal_args);
+			SIGNAL_CHECK("text_changed", empty_signal_args);
+			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 		}
 
 		SIGNAL_UNWATCH(text_edit, "text_set");

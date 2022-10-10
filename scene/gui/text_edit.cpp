@@ -2192,8 +2192,17 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 			return;
 		}
 
-		// Handle Unicode (if no modifiers active). Tab	has a value of 0x09.
-		if (allow_unicode_handling && editable && (k->get_unicode() >= 32 || k->get_keycode() == Key::TAB)) {
+		// Handle tab as it has no set unicode value.
+		if (k->is_action("ui_text_indent", true)) {
+			if (editable) {
+				insert_text_at_caret("\t");
+			}
+			accept_event();
+			return;
+		}
+
+		// Handle Unicode (if no modifiers active).
+		if (allow_unicode_handling && editable && k->get_unicode() >= 32) {
 			handle_unicode_input(k->get_unicode());
 			accept_event();
 			return;
