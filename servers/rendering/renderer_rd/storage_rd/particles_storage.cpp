@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "particles_storage.h"
+
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "texture_storage.h"
@@ -1334,10 +1335,7 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-#ifndef _MSC_VER
-#warning Should use display refresh rate for all this
-#endif
-
+		// TODO: Should use display refresh rate for all this.
 		float screen_hz = 60;
 
 		int fixed_fps = 0;

@@ -4773,9 +4773,8 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
-#ifndef _MSC_VER
-#warning this needs to be fixed
-#endif
+
+	// TODO: Re-evaluate with new OpenGL3 renderer, and implement.
 	//if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
 	if (false) {
 		// Alternate display modes only work when using the Vulkan renderer; make this explicit.

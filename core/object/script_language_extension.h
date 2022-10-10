@@ -82,9 +82,7 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_get_documentation, doc);
 
 		Vector<DocData::ClassDoc> class_doc;
-#ifndef _MSC_VER
-#warning missing conversion from documentation to ClassDoc
-#endif
+		// TODO: Missing conversion from documentation to ClassDoc.
 		return class_doc;
 	}
 #endif // TOOLS_ENABLED

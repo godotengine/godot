@@ -752,9 +752,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
-#ifndef _MSC_VER
-#warning cannot forward drag data to a non control, must be fixed
-#endif
+	// Cannot forward drag data to a non control, must be fixed.
 	//favorites->set_drag_forwarding(this);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 

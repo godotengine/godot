@@ -102,10 +102,8 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 }
 
 void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-#ifndef _MSC_VER
-#warning TODO: likely pass a bool to swap buffers to avoid display?
-#endif
-	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
+	// TODO: Likely pass a bool to swap buffers to avoid display?
+	RD::get_singleton()->swap_buffers();
 }
 
 void RendererCompositorRD::initialize() {

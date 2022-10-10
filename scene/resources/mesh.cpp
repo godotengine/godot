@@ -1576,9 +1576,8 @@ void ArrayMesh::_recompute_aabb() {
 		}
 	}
 }
-#ifndef _MSC_VER
-#warning need to add binding to add_surface using future MeshSurfaceData object
-#endif
+
+// TODO: Need to add binding to add_surface using future MeshSurfaceData object.
 void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
 	_create_if_empty();
 

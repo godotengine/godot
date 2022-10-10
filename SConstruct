@@ -687,6 +687,14 @@ if selected_platform in platform_list:
 
         if methods.using_gcc(env):
             common_warnings += ["-Wshadow-local", "-Wno-misleading-indentation"]
+            if cc_version_major == 7:  # Bogus warning fixed in 8+.
+                common_warnings += ["-Wno-strict-overflow"]
+            if cc_version_major < 11:
+                # Regression in GCC 9/10, spams so much in our variadic templates
+                # that we need to outright disable it.
+                common_warnings += ["-Wno-type-limits"]
+            if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
+                common_warnings += ["-Wno-return-type"]
         elif methods.using_clang(env) or methods.using_emcc(env):
             # We often implement `operator<` for structs of pointers as a requirement
             # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
@@ -702,13 +710,16 @@ if selected_platform in platform_list:
                         "-Wduplicated-branches",
                         "-Wduplicated-cond",
                         "-Wstringop-overflow=4",
-                        "-Wlogical-op",
                     ]
                 )
-                # -Wnoexcept was removed temporarily due to GH-36325.
                 env.Append(CXXFLAGS=["-Wplacement-new=1"])
+                # Need to fix a warning with AudioServer lambdas before enabling.
+                # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
+                #    env.Append(CXXFLAGS=["-Wnoexcept"])
                 if cc_version_major >= 9:
                     env.Append(CCFLAGS=["-Wattribute-alias=2"])
+                if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
+                    env.Append(CCFLAGS=["-Wlogical-op"])
             elif methods.using_clang(env) or methods.using_emcc(env):
                 env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
         elif env["warnings"] == "all":
@@ -720,15 +731,6 @@ if selected_platform in platform_list:
 
         if env["werror"]:
             env.Append(CCFLAGS=["-Werror"])
-            # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
-            if methods.using_gcc(env):
-                env.Append(CXXFLAGS=["-Wno-error=cpp"])
-                if cc_version_major == 7:  # Bogus warning fixed in 8+.
-                    env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
-                if cc_version_major >= 12:  # False positives in our error macros, see GH-58747.
-                    env.Append(CCFLAGS=["-Wno-error=return-type"])
-            elif methods.using_clang(env) or methods.using_emcc(env):
-                env.Append(CXXFLAGS=["-Wno-error=#warnings"])
 
     if hasattr(detect, "get_program_suffix"):
         suffix = "." + detect.get_program_suffix()
