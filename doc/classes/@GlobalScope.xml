@@ -1898,34 +1898,34 @@
 			/ key.
 		</constant>
 		<constant name="KEY_0" value="48" enum="Key">
-			Number 0.
+			Number 0 key.
 		</constant>
 		<constant name="KEY_1" value="49" enum="Key">
-			Number 1.
+			Number 1 key.
 		</constant>
 		<constant name="KEY_2" value="50" enum="Key">
-			Number 2.
+			Number 2 key.
 		</constant>
 		<constant name="KEY_3" value="51" enum="Key">
-			Number 3.
+			Number 3 key.
 		</constant>
 		<constant name="KEY_4" value="52" enum="Key">
-			Number 4.
+			Number 4 key.
 		</constant>
 		<constant name="KEY_5" value="53" enum="Key">
-			Number 5.
+			Number 5 key.
 		</constant>
 		<constant name="KEY_6" value="54" enum="Key">
-			Number 6.
+			Number 6 key.
 		</constant>
 		<constant name="KEY_7" value="55" enum="Key">
-			Number 7.
+			Number 7 key.
 		</constant>
 		<constant name="KEY_8" value="56" enum="Key">
-			Number 8.
+			Number 8 key.
 		</constant>
 		<constant name="KEY_9" value="57" enum="Key">
-			Number 9.
+			Number 9 key.
 		</constant>
 		<constant name="KEY_COLON" value="58" enum="Key">
 			: key.
@@ -2285,10 +2285,10 @@
 			Enum value which doesn't correspond to any mouse button. This is used to initialize [enum MouseButton] properties with a generic state.
 		</constant>
 		<constant name="MOUSE_BUTTON_LEFT" value="1" enum="MouseButton">
-			Primary mouse button, usually the left button.
+			Primary mouse button, usually assigned to the left button.
 		</constant>
 		<constant name="MOUSE_BUTTON_RIGHT" value="2" enum="MouseButton">
-			Secondary mouse button, usually the right button.
+			Secondary mouse button, usually assigned to the right button.
 		</constant>
 		<constant name="MOUSE_BUTTON_MIDDLE" value="3" enum="MouseButton">
 			Middle mouse button.
@@ -2306,10 +2306,10 @@
 			Mouse wheel right button (only present on some mice).
 		</constant>
 		<constant name="MOUSE_BUTTON_XBUTTON1" value="8" enum="MouseButton">
-			Extra mouse button 1 (only present on some mice).
+			Extra mouse button 1. This is sometimes present, usually to the sides of the mouse.
 		</constant>
 		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
-			Extra mouse button 2 (only present on some mice).
+			Extra mouse button 2. This is sometimes present, usually to the sides of the mouse.
 		</constant>
 		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
 			Primary mouse button mask, usually for the left button.
@@ -2375,7 +2375,7 @@
 			Game controller D-pad right button.
 		</constant>
 		<constant name="JOY_BUTTON_MISC1" value="15" enum="JoyButton">
-			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo capture button.
+			Game controller SDL miscellaneous button. Corresponds to Xbox share button, PS5 microphone button, Nintendo Switch capture button.
 		</constant>
 		<constant name="JOY_BUTTON_PADDLE1" value="16" enum="JoyButton">
 			Game controller SDL paddle 1 button.
@@ -2397,9 +2397,9 @@
 		</constant>
 		<constant name="JOY_BUTTON_MAX" value="128" enum="JoyButton">
 			The maximum number of game controller buttons supported by the engine. The actual limit may be lower on specific platforms:
-			- Android: Up to 36 buttons.
-			- Linux: Up to 80 buttons.
-			- Windows and macOS: Up to 128 buttons.
+			- [b]Android:[/b] Up to 36 buttons.
+			- [b]Linux:[/b] Up to 80 buttons.
+			- [b]Windows[/b] and [b]macOS:[/b] Up to 128 buttons.
 		</constant>
 		<constant name="JOY_AXIS_INVALID" value="-1" enum="JoyAxis">
 			An invalid game controller axis.
@@ -2486,16 +2486,18 @@
 			MIDI system reset message. Reset all receivers in the system to power-up status. It should not be sent on power-up itself.
 		</constant>
 		<constant name="OK" value="0" enum="Error">
-			Methods that return [enum Error] return [constant OK] when no error occurred. Note that many functions don't return an error code but will print error messages to standard output.
-			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
+			Methods that return [enum Error] return [constant OK] when no error occurred.
+			Since [constant OK] has value 0, and all other error constants are positive integers, it can also be used in boolean checks. For example:
 			[codeblock]
-			var err = method_that_returns_error()
-			if err != OK:
-			    print("Failure!")
-			# Or, equivalent:
-			if err:
-			    print("Still failing!")
+			var error = method_that_returns_error()
+			if error != OK:
+			    printerr("Failure!")
+
+			# Or, alternatively:
+			if error:
+			    printerr("Still failing!")
 			[/codeblock]
+			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
 			Generic error.
@@ -2633,100 +2635,101 @@
 			Skip error.
 		</constant>
 		<constant name="ERR_HELP" value="46" enum="Error">
-			Help error.
+			Help error. Used internally when passing [code]--version[/code] or [code]--help[/code] as executable options.
 		</constant>
 		<constant name="ERR_BUG" value="47" enum="Error">
-			Bug error.
+			Bug error, caused by an implementation issue in the method.
+			[b]Note:[/b] If a built-in method returns this code, please open an issue on [url=https://github.com/godotengine/godot/issues]the GitHub Issue Tracker[/url].
 		</constant>
 		<constant name="ERR_PRINTER_ON_FIRE" value="48" enum="Error">
-			Printer on fire error. (This is an easter egg, no engine methods return this error code.)
+			Printer on fire error (This is an easter egg, no built-in methods return this error code).
 		</constant>
 		<constant name="PROPERTY_HINT_NONE" value="0" enum="PropertyHint">
-			No hint for the edited property.
+			The property has no hint for the editor.
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_less"[/code].
+			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_less"[/code].
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string.
+			Hints that an [int], [float], or [String] property is an enumerated value to pick in a list specified via a hint string.
 			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">
-			Hints that a string property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
-			Unlike [constant PROPERTY_HINT_ENUM] a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
+			Hints that a [String] property can be an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].
+			Unlike [constant PROPERTY_HINT_ENUM], a property with this hint still accepts arbitrary values and can be empty. The list of values serves to suggest possible values.
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_EASING" value="4" enum="PropertyHint">
-			Hints that a float property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
+			Hints that a [float] property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
 		</constant>
 		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
-			Hints that a vector property should allow linking values (e.g. to edit both [code]x[/code] and [code]y[/code] together).
+			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together.
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
-			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
+			Hints that an [int] property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="7" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D render layers.
+			Hints that an [int] property is a bitmask using the optionally named 2D render layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="8" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
+			Hints that an [int] property is a bitmask using the optionally named 2D physics layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_2D_NAVIGATION" value="9" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 2D navigation layers.
+			Hints that an [int] property is a bitmask using the optionally named 2D navigation layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 3D render layers.
+			Hints that an [int] property is a bitmask using the optionally named 3D render layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
+			Hints that an [int] property is a bitmask using the optionally named 3D physics layers.
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_3D_NAVIGATION" value="12" enum="PropertyHint">
-			Hints that an integer property is a bitmask using the optionally named 3D navigation layers.
+			Hints that an [int] property is a bitmask using the optionally named 3D navigation layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
-			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
+			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
-			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like [code]"*.png,*.jpg"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
-			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
+			Hints that a [String] property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
-			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
+			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
 		<constant name="PROPERTY_HINT_EXPRESSION" value="19" enum="PropertyHint">
-			Hints that a string property is an [Expression].
+			Hints that a [String] property is an [Expression].
 		</constant>
 		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="20" enum="PropertyHint">
-			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
+			Hints that a [String] property should show a placeholder text on its input field, if empty. The hint string is the placeholder text to use.
 		</constant>
 		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="21" enum="PropertyHint">
-			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
+			Hints that a [Color] property should be edited without affecting its transparency ([member Color.a] is not editable).
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="22" enum="PropertyHint">
-			Hints that an image is compressed using lossy compression.
+			Hints that an image is compressed using lossy compression. The editor does not internally use this property hint.
 		</constant>
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="23" enum="PropertyHint">
-			Hints that an image is compressed using lossless compression.
+			Hints that an image is compressed using lossless compression. The editor does not internally use this property hint.
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_ID" value="24" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_TYPE_STRING" value="25" enum="PropertyHint">
-			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For example:
+			Hints that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For example:
 			[codeblock]
-			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
+			hint_string = "%s:" % [TYPE_INT] # Array of integers.
 			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
 			hint_string = "%s/%s:Resource" % [TYPE_OBJECT, TYPE_OBJECT] # Array of resources.
 			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
 			[/codeblock]
-			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
+			[b]Note:[/b] The final colon is required for properly detecting built-in types.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="26" enum="PropertyHint">
 		</constant>
@@ -2747,6 +2750,7 @@
 		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="34" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="35" enum="PropertyHint">
+			Hints that a property's size (in bytes) is too big to be displayed, when debugging a running project. The debugger uses this hint internally.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="36" enum="PropertyHint">
 		</constant>
@@ -2761,28 +2765,31 @@
 		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="40" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="42" enum="PropertyHint">
-			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
+			Hints that a [String] property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="43" enum="PropertyHint">
-			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
+			Hints that a [Dictionary] property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_TYPE" value="44" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="45" enum="PropertyHint">
-			Hints that a quaternion property should disable the temporary euler editor.
+			Hints that a [Quaternion] property should disable the temporary euler editor.
 		</constant>
 		<constant name="PROPERTY_HINT_PASSWORD" value="46" enum="PropertyHint">
-			Hints that a string property is a password, and every character is replaced with the secret character.
+			Hints that a [String] property is a password. Every character of the string is displayed as the secret character (typically [code]*[/code]).
+			An optional placeholder text can be shown on its input field, similarly to [constant PROPERTY_HINT_PLACEHOLDER_TEXT].
 		</constant>
 		<constant name="PROPERTY_HINT_MAX" value="47" enum="PropertyHint">
+			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
+			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
-			The property is shown in the editor inspector (default).
+			The property is shown in the editor Inspector (default).
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
 			The property can be checked in the editor inspector.
@@ -2831,6 +2838,7 @@
 			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
 		</constant>
 		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="2097152" enum="PropertyUsageFlags">
+			The property is only shown in the editor if modern renderers are supported (GLES3 is excluded).
 		</constant>
 		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="4194304" enum="PropertyUsageFlags">
 		</constant>
@@ -2845,9 +2853,10 @@
 		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="134217728" enum="PropertyUsageFlags">
 		</constant>
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="268435456" enum="PropertyUsageFlags">
-			The property is read-only in the editor inspector.
+			The property is read-only in the editor Inspector.
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="536870912" enum="PropertyUsageFlags">
+			The property is an array.
 		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
 			Default usage (storage, editor and network).
@@ -2871,14 +2880,16 @@
 			Flag for a virtual method.
 		</constant>
 		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags">
+			Flag for a method with a variable number of arguments.
 		</constant>
 		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags">
+			Flag for a static method.
 		</constant>
 		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags">
-			Used internally. Allows to not dump core virtuals such as [code]_notification[/code] to the JSON API.
+			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
-			Default method flags.
+			Default method flags (normal).
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
 			Variable is [code]null[/code].
@@ -2917,8 +2928,10 @@
 			Variable is of type [Transform2D].
 		</constant>
 		<constant name="TYPE_VECTOR4" value="12" enum="Variant.Type">
+			Variable is of type [Vector4].
 		</constant>
 		<constant name="TYPE_VECTOR4I" value="13" enum="Variant.Type">
+			Variable is of type [Vector4i].
 		</constant>
 		<constant name="TYPE_PLANE" value="14" enum="Variant.Type">
 			Variable is of type [Plane].
@@ -2936,6 +2949,7 @@
 			Variable is of type [Transform3D].
 		</constant>
 		<constant name="TYPE_PROJECTION" value="19" enum="Variant.Type">
+			Variable is of type [Projection].
 		</constant>
 		<constant name="TYPE_COLOR" value="20" enum="Variant.Type">
 			Variable is of type [Color].
