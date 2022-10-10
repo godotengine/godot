@@ -85,6 +85,8 @@ private:
 			last_pad = -1;
 			attached = false;
 			confirmed = false;
+			di_joy = nullptr;
+			guid = {};
 
 			for (int i = 0; i < MAX_JOY_BUTTONS; i++) {
 				last_buttons[i] = false;
