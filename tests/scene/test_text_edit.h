@@ -3321,6 +3321,11 @@ TEST_CASE("[SceneTree][TextEdit] muiticaret") {
 		CHECK(text_edit->get_caret_count() == 1);
 		CHECK(text_edit->get_caret_line(0) == 0);
 		CHECK(text_edit->get_caret_column(0) == 1);
+
+		ERR_PRINT_OFF;
+		text_edit->remove_caret(0);
+		CHECK(text_edit->get_caret_count() == 1);
+		ERR_PRINT_ON;
 	}
 
 	SUBCASE("[TextEdit] caret index edit order") {

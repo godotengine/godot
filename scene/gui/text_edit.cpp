@@ -4380,7 +4380,7 @@ int TextEdit::add_caret(int p_line, int p_col) {
 }
 
 void TextEdit::remove_caret(int p_caret) {
-	ERR_FAIL_COND(carets.size() <= 0);
+	ERR_FAIL_COND_MSG(carets.size() <= 1, "The main caret should not be removed.");
 	ERR_FAIL_INDEX(p_caret, carets.size());
 	carets.remove_at(p_caret);
 	caret_index_edit_dirty = true;
