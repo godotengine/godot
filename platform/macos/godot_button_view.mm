@@ -40,6 +40,9 @@
 	spacing = 20;
 	mouse_in_group = false;
 	rtl = false;
+	close_button = nullptr;
+	miniaturize_button = nullptr;
+	zoom_button = nullptr;
 
 	return self;
 }
@@ -48,15 +51,15 @@
 	spacing = button_spacing;
 	rtl = is_rtl;
 
-	NSButton *close_button = [NSWindow standardWindowButton:NSWindowCloseButton forStyleMask:NSWindowStyleMaskTitled];
+	close_button = [NSWindow standardWindowButton:NSWindowCloseButton forStyleMask:NSWindowStyleMaskTitled];
 	[close_button setFrameOrigin:NSMakePoint(rtl ? spacing * 2 : 0, 0)];
 	[self addSubview:close_button];
 
-	NSButton *miniaturize_button = [NSWindow standardWindowButton:NSWindowMiniaturizeButton forStyleMask:NSWindowStyleMaskTitled];
+	miniaturize_button = [NSWindow standardWindowButton:NSWindowMiniaturizeButton forStyleMask:NSWindowStyleMaskTitled];
 	[miniaturize_button setFrameOrigin:NSMakePoint(spacing, 0)];
 	[self addSubview:miniaturize_button];
 
-	NSButton *zoom_button = [NSWindow standardWindowButton:NSWindowZoomButton forStyleMask:NSWindowStyleMaskTitled];
+	zoom_button = [NSWindow standardWindowButton:NSWindowZoomButton forStyleMask:NSWindowStyleMaskTitled];
 	[zoom_button setFrameOrigin:NSMakePoint(rtl ? 0 : spacing * 2, 0)];
 	[self addSubview:zoom_button];
 
@@ -69,6 +72,19 @@
 		[self setFrameSize:NSMakeSize(zoom_button.frame.origin.x + zoom_button.frame.size.width, zoom_button.frame.size.height)];
 	}
 	[self displayButtons];
+}
+
+- (void)setOffset:(NSPoint)button_offset {
+	if (zoom_button) {
+		offset.y = button_offset.y - zoom_button.frame.size.height / 2;
+		offset.x = button_offset.x - zoom_button.frame.size.width / 2;
+
+		[self viewDidMoveToWindow];
+	}
+}
+
+- (NSPoint)getOffset {
+	return offset;
 }
 
 - (void)viewDidMoveToWindow {
