@@ -1692,7 +1692,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						continue;
 					}
 
-					if (mpos.x > left_margin && mpos.x <= (left_margin + gutters[i].width) - 3) {
+					if (mpos.x >= left_margin && mpos.x <= left_margin + gutters[i].width) {
 						emit_signal(SNAME("gutter_clicked"), row, i);
 						return;
 					}
@@ -1933,7 +1933,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					continue;
 				}
 
-				if (mpos.x > left_margin && mpos.x <= (left_margin + gutters[i].width) - 3) {
+				if (mpos.x >= left_margin && mpos.x < left_margin + gutters[i].width) {
 					// We are in this gutter i's horizontal area.
 					current_hovered_gutter = Vector2i(i, hovered_row);
 					break;
@@ -2997,7 +2997,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 				continue;
 			}
 
-			if (p_pos.x > left_margin && p_pos.x <= (left_margin + gutters[i].width) - 3) {
+			if (p_pos.x >= left_margin && p_pos.x < left_margin + gutters[i].width) {
 				if (gutters[i].clickable || is_line_gutter_clickable(row, i)) {
 					return CURSOR_POINTING_HAND;
 				}
