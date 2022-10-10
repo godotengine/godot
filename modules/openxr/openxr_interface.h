@@ -120,6 +120,10 @@ public:
 	virtual XRInterface::PlayAreaMode get_play_area_mode() const override;
 	virtual bool set_play_area_mode(XRInterface::PlayAreaMode p_mode) override;
 
+	float get_display_refresh_rate() const;
+	void set_display_refresh_rate(float p_refresh_rate);
+	Array get_available_display_refresh_rates() const;
+
 	virtual Size2 get_render_target_size() override;
 	virtual uint32_t get_view_count() override;
 	virtual Transform3D get_camera_transform() override;

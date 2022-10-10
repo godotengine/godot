@@ -336,6 +336,11 @@ public:
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
 
+	// Display refresh rate
+	float get_display_refresh_rate() const;
+	void set_display_refresh_rate(float p_refresh_rate);
+	Array get_available_display_refresh_rates() const;
+
 	// action map
 	String get_default_action_map_resource_name();
 
