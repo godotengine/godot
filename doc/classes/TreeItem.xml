@@ -425,6 +425,15 @@
 				Sets the given column's button [Texture2D] at index [param button_idx] to [param button].
 			</description>
 		</method>
+		<method name="set_button_color">
+			<return type="void" />
+			<param index="0" name="column" type="int" />
+			<param index="1" name="button_idx" type="int" />
+			<param index="2" name="color" type="Color" />
+			<description>
+				Sets the given column's button color at index [param button_idx] to [param color].
+			</description>
+		</method>
 		<method name="set_button_disabled">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
