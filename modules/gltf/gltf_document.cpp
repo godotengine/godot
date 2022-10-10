@@ -471,23 +471,23 @@ Error GLTFDocument::_serialize_nodes(Ref<GLTFState> state) {
 String GLTFDocument::_gen_unique_name(Ref<GLTFState> state, const String &p_name) {
 	const String s_name = p_name.validate_node_name();
 
-	String name;
+	String u_name;
 	int index = 1;
 	while (true) {
-		name = s_name;
+		u_name = s_name;
 
 		if (index > 1) {
-			name += itos(index);
+			u_name += itos(index);
 		}
-		if (!state->unique_names.has(name)) {
+		if (!state->unique_names.has(u_name)) {
 			break;
 		}
 		index++;
 	}
 
-	state->unique_names.insert(name);
+	state->unique_names.insert(u_name);
 
-	return name;
+	return u_name;
 }
 
 String GLTFDocument::_sanitize_animation_name(const String &p_name) {
@@ -495,39 +495,39 @@ String GLTFDocument::_sanitize_animation_name(const String &p_name) {
 	// (See animation/animation_player.cpp::add_animation)
 
 	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
-	String name = p_name.validate_node_name();
-	name = name.replace(",", "");
-	name = name.replace("[", "");
-	return name;
+	String anim_name = p_name.validate_node_name();
+	anim_name = anim_name.replace(",", "");
+	anim_name = anim_name.replace("[", "");
+	return anim_name;
 }
 
 String GLTFDocument::_gen_unique_animation_name(Ref<GLTFState> state, const String &p_name) {
 	const String s_name = _sanitize_animation_name(p_name);
 
-	String name;
+	String u_name;
 	int index = 1;
 	while (true) {
-		name = s_name;
+		u_name = s_name;
 
 		if (index > 1) {
-			name += itos(index);
+			u_name += itos(index);
 		}
-		if (!state->unique_animation_names.has(name)) {
+		if (!state->unique_animation_names.has(u_name)) {
 			break;
 		}
 		index++;
 	}
 
-	state->unique_animation_names.insert(name);
+	state->unique_animation_names.insert(u_name);
 
-	return name;
+	return u_name;
 }
 
 String GLTFDocument::_sanitize_bone_name(const String &p_name) {
-	String name = p_name;
-	name = name.replace(":", "_");
-	name = name.replace("/", "_");
-	return name;
+	String bone_name = p_name;
+	bone_name = bone_name.replace(":", "_");
+	bone_name = bone_name.replace("/", "_");
+	return bone_name;
 }
 
 String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkeletonIndex skel_i, const String &p_name) {
@@ -535,23 +535,23 @@ String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> state, const GLTFSkele
 	if (s_name.is_empty()) {
 		s_name = "bone";
 	}
-	String name;
+	String u_name;
 	int index = 1;
 	while (true) {
-		name = s_name;
+		u_name = s_name;
 
 		if (index > 1) {
-			name += "_" + itos(index);
+			u_name += "_" + itos(index);
 		}
-		if (!state->skeletons[skel_i]->unique_names.has(name)) {
+		if (!state->skeletons[skel_i]->unique_names.has(u_name)) {
 			break;
 		}
 		index++;
 	}
 
-	state->skeletons.write[skel_i]->unique_names.insert(name);
+	state->skeletons.write[skel_i]->unique_names.insert(u_name);
 
-	return name;
+	return u_name;
 }
 
 Error GLTFDocument::_parse_scenes(Ref<GLTFState> state) {
@@ -2824,8 +2824,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 				if (j == 0) {
 					const Array &target_names = extras.has("targetNames") ? (Array)extras["targetNames"] : Array();
 					for (int k = 0; k < targets.size(); k++) {
-						const String name = k < target_names.size() ? (String)target_names[k] : String("morph_") + itos(k);
-						import_mesh->add_blend_shape(name);
+						import_mesh->add_blend_shape(k < target_names.size() ? (String)target_names[k] : String("morph_") + itos(k));
 					}
 				}
 
@@ -3034,12 +3033,12 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			d["mimeType"] = "image/png";
 		} else {
 			ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
-			String name = state->images[i]->get_name();
-			if (name.is_empty()) {
-				name = itos(i);
+			String img_name = state->images[i]->get_name();
+			if (img_name.is_empty()) {
+				img_name = itos(i);
 			}
-			name = _gen_unique_name(state, name);
-			name = name.pad_zeros(3) + ".png";
+			img_name = _gen_unique_name(state, img_name);
+			img_name = img_name.pad_zeros(3) + ".png";
 			String texture_dir = "textures";
 			String path = p_path.get_base_dir();
 			String new_texture_dir = path + "/" + texture_dir;
@@ -3047,8 +3046,8 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> state, const String &p_path
 			if (!da->dir_exists(new_texture_dir)) {
 				da->make_dir(new_texture_dir);
 			}
-			image->save_png(new_texture_dir.path_join(name));
-			d["uri"] = texture_dir.path_join(name).uri_encode();
+			image->save_png(new_texture_dir.path_join(img_name));
+			d["uri"] = texture_dir.path_join(img_name).uri_encode();
 		}
 		images.push_back(d);
 	}
@@ -4422,14 +4421,14 @@ Error GLTFDocument::_determine_skeleton_roots(Ref<GLTFState> state, const GLTFSk
 
 	Ref<GLTFSkeleton> skeleton = state->skeletons.write[skel_i];
 
-	Vector<GLTFNodeIndex> owners;
-	disjoint_set.get_representatives(owners);
+	Vector<GLTFNodeIndex> representatives;
+	disjoint_set.get_representatives(representatives);
 
 	Vector<GLTFNodeIndex> roots;
 
-	for (int i = 0; i < owners.size(); ++i) {
+	for (int i = 0; i < representatives.size(); ++i) {
 		Vector<GLTFNodeIndex> set;
-		disjoint_set.get_members(set, owners[i]);
+		disjoint_set.get_members(set, representatives[i]);
 		const GLTFNodeIndex root = _find_highest_node(state, set);
 		ERR_FAIL_COND_V(root < 0, FAILED);
 		roots.push_back(root);
@@ -4960,12 +4959,12 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> state) {
 		Array samplers = d["samplers"];
 
 		if (d.has("name")) {
-			const String name = d["name"];
-			const String name_lower = name.to_lower();
-			if (name_lower.begins_with("loop") || name_lower.ends_with("loop") || name_lower.begins_with("cycle") || name_lower.ends_with("cycle")) {
+			const String anim_name = d["name"];
+			const String anim_name_lower = anim_name.to_lower();
+			if (anim_name_lower.begins_with("loop") || anim_name_lower.ends_with("loop") || anim_name_lower.begins_with("cycle") || anim_name_lower.ends_with("cycle")) {
 				animation->set_loop(true);
 			}
-			animation->set_name(_gen_unique_animation_name(state, name));
+			animation->set_name(_gen_unique_animation_name(state, anim_name));
 		}
 
 		for (int j = 0; j < channels.size(); j++) {
@@ -5828,15 +5827,15 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, const GLTFAnimationIndex index, const int bake_fps) {
 	Ref<GLTFAnimation> anim = state->animations[index];
 
-	String name = anim->get_name();
-	if (name.is_empty()) {
+	String anim_name = anim->get_name();
+	if (anim_name.is_empty()) {
 		// No node represent these, and they are not in the hierarchy, so just make a unique name
-		name = _gen_unique_name(state, "Animation");
+		anim_name = _gen_unique_name(state, "Animation");
 	}
 
 	Ref<Animation> animation;
 	animation.instantiate();
-	animation->set_name(name);
+	animation->set_name(anim_name);
 
 	if (anim->get_loop()) {
 		animation->set_loop_mode(Animation::LOOP_LINEAR);
@@ -6059,7 +6058,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> state, AnimationPlayer *ap, 
 	} else {
 		library = ap->get_animation_library("");
 	}
-	library->add_animation(name, animation);
+	library->add_animation(anim_name, animation);
 }
 
 void GLTFDocument::_convert_mesh_instances(Ref<GLTFState> state) {

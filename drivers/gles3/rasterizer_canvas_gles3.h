@@ -125,6 +125,23 @@ public:
 		uint32_t pad2;
 	};
 
+	struct PolygonBuffers {
+		GLuint vertex_buffer;
+		GLuint vertex_array;
+		GLuint index_buffer;
+		int count = 0;
+		bool color_disabled = false;
+		Color color;
+	};
+
+	struct {
+		HashMap<PolygonID, PolygonBuffers> polygons;
+		PolygonID last_id = 0;
+	} polygon_buffers;
+
+	RendererCanvasRender::PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
+	void free_polygon(PolygonID p_polygon) override;
+
 	struct InstanceData {
 		float world[6];
 		float color_texture_pixel_size[2];
@@ -156,41 +173,70 @@ public:
 		GLuint canvas_quad_vertices;
 		GLuint canvas_quad_array;
 
+		GLuint indexed_quad_buffer;
+		GLuint indexed_quad_array;
+
 		GLuint particle_quad_vertices;
 		GLuint particle_quad_array;
 
 		GLuint ninepatch_vertices;
 		GLuint ninepatch_elements;
+
+		RID canvas_shader_default_version;
+
+		uint32_t max_lights_per_render;
+		uint32_t max_lights_per_item;
+		uint32_t max_instances_per_batch = 512;
+		uint32_t max_instances_per_ubo = 16384;
+		uint32_t max_instance_buffer_size = 16384 * 128;
 	} data;
+
+	struct Batch {
+		// Position in the UBO measured in bytes
+		uint32_t start = 0;
+		uint32_t instance_count = 0;
+
+		RID tex = RID();
+		RS::CanvasItemTextureFilter filter = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
+		RS::CanvasItemTextureRepeat repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
+
+		GLES3::CanvasShaderData::BlendMode blend_mode = GLES3::CanvasShaderData::BLEND_MODE_MIX;
+		Color blend_color = Color(1.0, 1.0, 1.0, 1.0);
+
+		Item *clip = nullptr;
+
+		RID material = RID();
+		GLES3::CanvasMaterialData *material_data = nullptr;
+		CanvasShaderGLES3::ShaderVariant shader_variant = CanvasShaderGLES3::MODE_QUAD;
+
+		const Item::Command *command = nullptr;
+		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
+		uint32_t primitive_points = 0;
+	};
+
+	struct DataBuffer {
+		GLuint ubo = 0;
+		uint64_t last_frame_used = -3;
+		GLsync fence = GLsync();
+	};
 
 	struct State {
 		GLuint canvas_state_buffer;
-		LocalVector<GLuint> canvas_instance_data_buffers;
-		LocalVector<GLsync> fences;
+		LocalVector<DataBuffer> canvas_instance_data_buffers;
+		LocalVector<Batch> canvas_instance_batches;
 		uint32_t current_buffer = 0;
+		uint32_t current_buffer_index = 0;
+		uint32_t current_batch_index = 0;
 
 		InstanceData *instance_data_array = nullptr;
-		bool canvas_texscreen_used;
-		RID canvas_shader_current_version;
-		RID canvas_shader_default_version;
 
 		RID current_tex = RID();
-		Size2 current_pixel_size = Size2();
-		RID current_normal = RID();
-		RID current_specular = RID();
-		GLES3::Texture *current_tex_ptr;
-		RID current_shader_version = RID();
-		RS::PrimitiveType current_primitive = RS::PRIMITIVE_MAX;
-		uint32_t current_primitive_points = 0;
-		Item::Command::Type current_command = Item::Command::TYPE_RECT;
+		RS::CanvasItemTextureFilter current_filter_mode = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
+		RS::CanvasItemTextureRepeat current_repeat_mode = RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX;
 
 		bool transparent_render_target = false;
 
 		double time = 0.0;
-
-		uint32_t max_lights_per_render;
-		uint32_t max_lights_per_item;
-		uint32_t max_instances_per_batch;
 
 		RS::CanvasItemTextureFilter default_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 		RS::CanvasItemTextureRepeat default_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
@@ -229,31 +275,18 @@ public:
 	bool free(RID p_rid) override;
 	void update() override;
 
-	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index);
-
-	struct PolygonBuffers {
-		GLuint vertex_buffer;
-		GLuint vertex_array;
-		GLuint index_buffer;
-		int count = 0;
-		bool color_disabled = false;
-		Color color;
-	};
-
-	struct {
-		HashMap<PolygonID, PolygonBuffers> polygons;
-		PolygonID last_id = 0;
-	} polygon_buffers;
-
-	RendererCanvasRender::PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
-	void free_polygon(PolygonID p_polygon) override;
+	void _bind_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat);
+	void _prepare_canvas_texture(RID p_texture, RS::CanvasItemTextureFilter p_base_filter, RS::CanvasItemTextureRepeat p_base_repeat, uint32_t &r_index, Size2 &r_texpixel_size);
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used) override;
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, bool p_to_backbuffer = false);
-	void _render_item(RID p_render_target, const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, uint32_t &r_index, GLES3::CanvasShaderData::BlendMode p_blend_mode, GLES3::CanvasShaderData::BlendMode &r_last_blend_mode, Color &r_last_blend_color);
-	void _render_batch(uint32_t &p_max_index);
-	void _bind_instance_data_buffer(uint32_t p_max_index);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, uint32_t &r_last_index, bool p_to_backbuffer = false);
+	void _record_item_commands(const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_break_batch);
+	void _render_batch(Light *p_lights, uint32_t p_index);
+	void _bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant);
+	void _new_batch(bool &r_batch_broken, uint32_t &r_index);
+	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken);
 	void _allocate_instance_data_buffer();
+	void _align_instance_data_buffer(uint32_t &r_index);
 
 	void set_time(double p_time);
 

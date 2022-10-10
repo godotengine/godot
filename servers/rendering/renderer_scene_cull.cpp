@@ -3862,7 +3862,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) {
 			}
 
 			if (p_instance->material_overlay.is_valid()) {
-				can_cast_shadows = can_cast_shadows || RSG::material_storage->material_casts_shadows(p_instance->material_overlay);
+				can_cast_shadows = can_cast_shadows && RSG::material_storage->material_casts_shadows(p_instance->material_overlay);
 				is_animated = is_animated || RSG::material_storage->material_is_animated(p_instance->material_overlay);
 				_update_instance_shader_uniforms_from_material(isparams, p_instance->instance_shader_uniforms, p_instance->material_overlay);
 			}

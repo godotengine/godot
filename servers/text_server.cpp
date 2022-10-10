@@ -956,6 +956,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 		if (glyphs[i].count > 0) {
 			// Caret before grapheme (top / left).
 			if (p_position == glyphs[i].start && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				}
+				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					if (glyphs[i].start == range.x) {
@@ -967,15 +972,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.x = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						caret.t_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.x -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.x += advance;
+						cr.size.x = -char_adv;
 					} else {
 						caret.t_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.size.x = char_adv;
 					}
 				} else {
 					if (glyphs[i].start == range.x) {
@@ -987,21 +988,22 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.y = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						caret.t_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.y -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.y += advance;
+						cr.size.y = -char_adv;
 					} else {
 						caret.t_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.size.y = char_adv;
 					}
 				}
 				caret.t_caret = cr;
 			}
 			// Caret after grapheme (bottom / right).
 			if (p_position == glyphs[i].end && ((glyphs[i].flags & GRAPHEME_IS_VIRTUAL) != GRAPHEME_IS_VIRTUAL)) {
+				real_t advance = 0.f;
+				for (int j = 0; j < glyphs[i].count; j++) {
+					advance += glyphs[i + j].advance * glyphs[i + j].repeat;
+				}
+				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
 					if (glyphs[i].end == range.y) {
@@ -1014,15 +1016,11 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.x = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
 						caret.l_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.x -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.x += advance;
+						cr.size.x = -char_adv;
 					} else {
 						caret.l_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.x += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.size.x = char_adv;
 					}
 				} else {
 					cr.size.y = 1.0f;
@@ -1036,15 +1034,12 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 					cr.position.y = off;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) != GRAPHEME_IS_RTL) {
 						caret.l_dir = DIRECTION_LTR;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.position.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-							cr.size.y -= glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.y += advance;
+						cr.size.y = -char_adv;
 					} else {
 						caret.l_dir = DIRECTION_RTL;
-						for (int j = 0; j < glyphs[i].count; j++) {
-							cr.size.y += glyphs[i + j].advance * glyphs[i + j].repeat;
-						}
+						cr.position.x += advance;
+						cr.size.y = char_adv;
 					}
 				}
 				caret.l_caret = cr;
@@ -1058,22 +1053,24 @@ CaretInfo TextServer::shaped_text_get_carets(const RID &p_shaped, int64_t p_posi
 				real_t char_adv = advance / (real_t)(glyphs[i].end - glyphs[i].start);
 				Rect2 cr;
 				if (orientation == ORIENTATION_HORIZONTAL) {
-					cr.size.x = 1.0f;
 					cr.size.y = height * 2;
 					cr.position.y = -ascent;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						cr.position.x = off + char_adv * (glyphs[i].end - p_position);
+						cr.size.x = -char_adv;
 					} else {
 						cr.position.x = off + char_adv * (p_position - glyphs[i].start);
+						cr.size.x = char_adv;
 					}
 				} else {
-					cr.size.y = 1.0f;
 					cr.size.x = height * 2;
 					cr.position.x = -ascent;
 					if ((glyphs[i].flags & GRAPHEME_IS_RTL) == GRAPHEME_IS_RTL) {
 						cr.position.y = off + char_adv * (glyphs[i].end - p_position);
+						cr.size.y = -char_adv;
 					} else {
 						cr.position.y = off + char_adv * (p_position - glyphs[i].start);
+						cr.size.y = char_adv;
 					}
 				}
 				caret.t_caret = cr;

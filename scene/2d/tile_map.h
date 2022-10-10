@@ -68,7 +68,7 @@ struct TileMapQuadrant {
 
 	// Rendering.
 	List<RID> canvas_items;
-	List<RID> occluders;
+	HashMap<Vector2i, RID> occluders;
 
 	// Physics.
 	List<RID> bodies;

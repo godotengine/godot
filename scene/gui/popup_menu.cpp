@@ -58,20 +58,20 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 	bool has_check = false;
 
 	for (int i = 0; i < items.size(); i++) {
-		Size2 size;
+		Size2 item_size;
 
 		Size2 icon_size = items[i].get_icon_size();
-		size.height = _get_item_height(i);
+		item_size.height = _get_item_height(i);
 		icon_w = MAX(icon_size.width, icon_w);
 
-		size.width += items[i].indent * theme_cache.indent;
+		item_size.width += items[i].indent * theme_cache.indent;
 
 		if (items[i].checkable_type && !items[i].separator) {
 			has_check = true;
 		}
 
-		size.width += items[i].text_buf->get_size().x;
-		size.height += theme_cache.v_separation;
+		item_size.width += items[i].text_buf->get_size().x;
+		item_size.height += theme_cache.v_separation;
 
 		if (items[i].accel != Key::NONE || (items[i].shortcut.is_valid() && items[i].shortcut->has_valid_event())) {
 			int accel_w = theme_cache.h_separation * 2;
@@ -80,12 +80,12 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 		}
 
 		if (!items[i].submenu.is_empty()) {
-			size.width += theme_cache.submenu->get_width();
+			item_size.width += theme_cache.submenu->get_width();
 		}
 
-		max_w = MAX(max_w, size.width);
+		max_w = MAX(max_w, item_size.width);
 
-		minsize.height += size.height;
+		minsize.height += item_size.height;
 	}
 
 	int item_side_padding = theme_cache.item_start_padding + theme_cache.item_end_padding;

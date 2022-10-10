@@ -90,8 +90,8 @@ void GradientEditor::_gradient_changed() {
 	}
 
 	editing = true;
-	Vector<Gradient::Point> points = gradient->get_points();
-	set_points(points);
+	Vector<Gradient::Point> grad_points = gradient->get_points();
+	set_points(grad_points);
 	set_interpolation_mode(gradient->get_interpolation_mode());
 	queue_redraw();
 	editing = false;

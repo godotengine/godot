@@ -441,9 +441,9 @@ Dictionary PolygonPathFinder::_get_data() const {
 	Dictionary d;
 	Vector<Vector2> p;
 	Vector<int> ind;
-	Array connections;
+	Array path_connections;
 	p.resize(MAX(0, points.size() - 2));
-	connections.resize(MAX(0, points.size() - 2));
+	path_connections.resize(MAX(0, points.size() - 2));
 	ind.resize(edges.size() * 2);
 	Vector<real_t> penalties;
 	penalties.resize(MAX(0, points.size() - 2));
@@ -463,7 +463,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 					cw[idx++] = E;
 				}
 			}
-			connections[i] = c;
+			path_connections[i] = c;
 		}
 	}
 	{
@@ -478,7 +478,7 @@ Dictionary PolygonPathFinder::_get_data() const {
 	d["bounds"] = bounds;
 	d["points"] = p;
 	d["penalties"] = penalties;
-	d["connections"] = connections;
+	d["connections"] = path_connections;
 	d["segments"] = ind;
 
 	return d;

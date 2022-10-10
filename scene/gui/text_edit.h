@@ -886,6 +886,9 @@ public:
 	void set_scroll_past_end_of_file_enabled(const bool p_enabled);
 	bool is_scroll_past_end_of_file_enabled() const;
 
+	VScrollBar *get_v_scroll_bar() const;
+	HScrollBar *get_h_scroll_bar() const;
+
 	void set_v_scroll(double p_scroll);
 	double get_v_scroll() const;
 

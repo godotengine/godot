@@ -138,8 +138,6 @@ bool AudioListener3D::is_current() const {
 	} else {
 		return current;
 	}
-
-	return false;
 }
 
 void AudioListener3D::_bind_methods() {

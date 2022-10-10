@@ -2216,7 +2216,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					gdfs->state.line = line;
 					gdfs->state.script = _script;
 					{
-						MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+						MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 						_script->pending_func_states.add(&gdfs->scripts_list);
 						if (p_instance) {
 							gdfs->state.instance = p_instance;

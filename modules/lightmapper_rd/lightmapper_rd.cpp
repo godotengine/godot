@@ -278,7 +278,7 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	return BAKE_OK;
 }
 
-void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
+void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &p_probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
@@ -403,8 +403,8 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	}
 
 	//also consider probe positions for bounds
-	for (int i = 0; i < probe_positions.size(); i++) {
-		Vector3 pp(probe_positions[i].position[0], probe_positions[i].position[1], probe_positions[i].position[2]);
+	for (int i = 0; i < p_probe_positions.size(); i++) {
+		Vector3 pp(p_probe_positions[i].position[0], p_probe_positions[i].position[1], p_probe_positions[i].position[2]);
 		bounds.expand_to(pp);
 	}
 	bounds.grow_by(0.1); //grow a bit to avoid numerical error
@@ -520,7 +520,7 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		}
 		seams_buffer = rd->storage_buffer_create(sb.size(), sb);
 
-		Vector<uint8_t> pb = probe_positions.to_byte_array();
+		Vector<uint8_t> pb = p_probe_positions.to_byte_array();
 		if (pb.size() == 0) {
 			pb.resize(sizeof(Probe));
 		}

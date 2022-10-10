@@ -43,10 +43,10 @@ HashMap<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlap
 
 	ERR_FAIL_COND_V(is_center_bit(), output);
 
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	ERR_FAIL_COND_V(!tile_set.is_valid(), output);
+	Ref<TileSet> ts = tile_map->get_tileset();
+	ERR_FAIL_COND_V(!ts.is_valid(), output);
 
-	TileSet::TileShape shape = tile_set->get_tile_shape();
+	TileSet::TileShape shape = ts->get_tile_shape();
 	if (shape == TileSet::TILE_SHAPE_SQUARE) {
 		switch (bit) {
 			case 1:
@@ -87,7 +87,7 @@ HashMap<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlap
 		}
 	} else {
 		// Half offset shapes.
-		TileSet::TileOffsetAxis offset_axis = tile_set->get_tile_offset_axis();
+		TileSet::TileOffsetAxis offset_axis = ts->get_tile_offset_axis();
 		if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
 			switch (bit) {
 				case 1:
@@ -150,8 +150,8 @@ HashMap<Vector2i, TileSet::CellNeighbor> TileMap::TerrainConstraint::get_overlap
 TileMap::TerrainConstraint::TerrainConstraint(const TileMap *p_tile_map, const Vector2i &p_position, int p_terrain) {
 	tile_map = p_tile_map;
 
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	ERR_FAIL_COND(!tile_set.is_valid());
+	Ref<TileSet> ts = tile_map->get_tileset();
+	ERR_FAIL_COND(!ts.is_valid());
 
 	bit = 0;
 	base_cell_coords = p_position;
@@ -162,10 +162,10 @@ TileMap::TerrainConstraint::TerrainConstraint(const TileMap *p_tile_map, const V
 	// The way we build the constraint make it easy to detect conflicting constraints.
 	tile_map = p_tile_map;
 
-	Ref<TileSet> tile_set = tile_map->get_tileset();
-	ERR_FAIL_COND(!tile_set.is_valid());
+	Ref<TileSet> ts = tile_map->get_tileset();
+	ERR_FAIL_COND(!ts.is_valid());
 
-	TileSet::TileShape shape = tile_set->get_tile_shape();
+	TileSet::TileShape shape = ts->get_tile_shape();
 	if (shape == TileSet::TILE_SHAPE_SQUARE) {
 		switch (p_bit) {
 			case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
@@ -244,7 +244,7 @@ TileMap::TerrainConstraint::TerrainConstraint(const TileMap *p_tile_map, const V
 		}
 	} else {
 		// Half-offset shapes
-		TileSet::TileOffsetAxis offset_axis = tile_set->get_tile_offset_axis();
+		TileSet::TileOffsetAxis offset_axis = ts->get_tile_offset_axis();
 		if (offset_axis == TileSet::TILE_OFFSET_AXIS_HORIZONTAL) {
 			switch (p_bit) {
 				case TileSet::CELL_NEIGHBOR_RIGHT_SIDE:
@@ -758,12 +758,12 @@ void TileMap::set_y_sort_enabled(bool p_enable) {
 }
 
 Vector2i TileMap::_coords_to_quadrant_coords(int p_layer, const Vector2i &p_coords) const {
-	int quadrant_size = get_effective_quadrant_size(p_layer);
+	int quad_size = get_effective_quadrant_size(p_layer);
 
 	// Rounding down, instead of simply rounding towards zero (truncating)
 	return Vector2i(
-			p_coords.x > 0 ? p_coords.x / quadrant_size : (p_coords.x - (quadrant_size - 1)) / quadrant_size,
-			p_coords.y > 0 ? p_coords.y / quadrant_size : (p_coords.y - (quadrant_size - 1)) / quadrant_size);
+			p_coords.x > 0 ? p_coords.x / quad_size : (p_coords.x - (quad_size - 1)) / quad_size,
+			p_coords.y > 0 ? p_coords.y / quad_size : (p_coords.y - (quad_size - 1)) / quad_size);
 }
 
 HashMap<Vector2i, TileMapQuadrant>::Iterator TileMap::_create_quadrant(int p_layer, const Vector2i &p_qk) {
@@ -1007,8 +1007,24 @@ void TileMap::_recompute_rect_cache() {
 
 void TileMap::_rendering_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_CANVAS: {
+			bool node_visible = is_visible_in_tree();
+			for (int layer = 0; layer < (int)layers.size(); layer++) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+					TileMapQuadrant &q = E_quadrant.value;
+					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+						Transform2D xform;
+						xform.set_origin(map_to_local(kv.key));
+						RS::get_singleton()->canvas_light_occluder_attach_to_canvas(kv.value, get_canvas());
+						RS::get_singleton()->canvas_light_occluder_set_transform(kv.value, get_global_transform() * xform);
+						RS::get_singleton()->canvas_light_occluder_set_enabled(kv.value, node_visible);
+					}
+				}
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			bool visible = is_visible_in_tree();
+			bool node_visible = is_visible_in_tree();
 			for (int layer = 0; layer < (int)layers.size(); layer++) {
 				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
 					TileMapQuadrant &q = E_quadrant.value;
@@ -1017,8 +1033,8 @@ void TileMap::_rendering_notification(int p_what) {
 					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
 						Transform2D xform;
 						xform.set_origin(E_cell.key);
-						for (const RID &occluder : q.occluders) {
-							RS::get_singleton()->canvas_light_occluder_set_enabled(occluder, visible);
+						for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+							RS::get_singleton()->canvas_light_occluder_set_enabled(kv.value, node_visible);
 						}
 					}
 				}
@@ -1034,12 +1050,10 @@ void TileMap::_rendering_notification(int p_what) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
-					for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
+					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
 						Transform2D xform;
-						xform.set_origin(E_cell.key);
-						for (const RID &occluder : q.occluders) {
-							RS::get_singleton()->canvas_light_occluder_set_transform(occluder, get_global_transform() * xform);
-						}
+						xform.set_origin(map_to_local(kv.key));
+						RenderingServer::get_singleton()->canvas_light_occluder_set_transform(kv.value, get_global_transform() * xform);
 					}
 				}
 			}
@@ -1048,6 +1062,17 @@ void TileMap::_rendering_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (tile_set.is_valid()) {
 				RenderingServer::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), is_y_sort_enabled());
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_CANVAS: {
+			for (int layer = 0; layer < (int)layers.size(); layer++) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+					TileMapQuadrant &q = E_quadrant.value;
+					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+						RS::get_singleton()->canvas_light_occluder_attach_to_canvas(kv.value, RID());
+					}
+				}
 			}
 		} break;
 	}
@@ -1091,7 +1116,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	bool visible = is_visible_in_tree();
+	bool node_visible = is_visible_in_tree();
 
 	SelfList<TileMapQuadrant> *q_list_element = r_dirty_quadrant_list.first();
 	while (q_list_element) {
@@ -1106,26 +1131,26 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		q.canvas_items.clear();
 
 		// Free the occluders.
-		for (const RID &occluder : q.occluders) {
-			rs->free(occluder);
+		for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
+			rs->free(kv.value);
 		}
 		q.occluders.clear();
 
 		// Those allow to group cell per material or z-index.
 		Ref<Material> prev_material;
 		int prev_z_index = 0;
-		RID prev_canvas_item;
+		RID prev_ci;
 
-		Color modulate = get_self_modulate();
-		modulate *= get_layer_modulate(q.layer);
+		Color tile_modulate = get_self_modulate();
+		tile_modulate *= get_layer_modulate(q.layer);
 		if (selected_layer >= 0) {
 			int z1 = get_layer_z_index(q.layer);
 			int z2 = get_layer_z_index(selected_layer);
 			if (z1 < z2 || (z1 == z2 && q.layer < selected_layer)) {
-				modulate = modulate.darkened(0.5);
+				tile_modulate = tile_modulate.darkened(0.5);
 			} else if (z1 > z2 || (z1 == z2 && q.layer > selected_layer)) {
-				modulate = modulate.darkened(0.5);
-				modulate.a *= 0.3;
+				tile_modulate = tile_modulate.darkened(0.5);
+				tile_modulate.a *= 0.3;
 			}
 		}
 
@@ -1152,53 +1177,53 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					}
 
 					Ref<Material> mat = tile_data->get_material();
-					int z_index = tile_data->get_z_index();
+					int tile_z_index = tile_data->get_z_index();
 
 					// Quandrant pos.
-					Vector2 position = map_to_local(q.coords * get_effective_quadrant_size(q.layer));
+					Vector2 tile_position = map_to_local(q.coords * get_effective_quadrant_size(q.layer));
 					if (is_y_sort_enabled() && layers[q.layer].y_sort_enabled) {
 						// When Y-sorting, the quandrant size is sure to be 1, we can thus offset the CanvasItem.
-						position.y += layers[q.layer].y_sort_origin + tile_data->get_y_sort_origin();
+						tile_position.y += layers[q.layer].y_sort_origin + tile_data->get_y_sort_origin();
 					}
 
 					// --- CanvasItems ---
 					// Create two canvas items, for rendering and debug.
-					RID canvas_item;
+					RID ci;
 
 					// Check if the material or the z_index changed.
-					if (prev_canvas_item == RID() || prev_material != mat || prev_z_index != z_index) {
+					if (prev_ci == RID() || prev_material != mat || prev_z_index != tile_z_index) {
 						// If so, create a new CanvasItem.
-						canvas_item = rs->canvas_item_create();
+						ci = rs->canvas_item_create();
 						if (mat.is_valid()) {
-							rs->canvas_item_set_material(canvas_item, mat->get_rid());
+							rs->canvas_item_set_material(ci, mat->get_rid());
 						}
-						rs->canvas_item_set_parent(canvas_item, layers[q.layer].canvas_item);
-						rs->canvas_item_set_use_parent_material(canvas_item, get_use_parent_material() || get_material().is_valid());
+						rs->canvas_item_set_parent(ci, layers[q.layer].canvas_item);
+						rs->canvas_item_set_use_parent_material(ci, get_use_parent_material() || get_material().is_valid());
 
 						Transform2D xform;
-						xform.set_origin(position);
-						rs->canvas_item_set_transform(canvas_item, xform);
+						xform.set_origin(tile_position);
+						rs->canvas_item_set_transform(ci, xform);
 
-						rs->canvas_item_set_light_mask(canvas_item, get_light_mask());
-						rs->canvas_item_set_z_as_relative_to_parent(canvas_item, true);
-						rs->canvas_item_set_z_index(canvas_item, z_index);
+						rs->canvas_item_set_light_mask(ci, get_light_mask());
+						rs->canvas_item_set_z_as_relative_to_parent(ci, true);
+						rs->canvas_item_set_z_index(ci, tile_z_index);
 
-						rs->canvas_item_set_default_texture_filter(canvas_item, RS::CanvasItemTextureFilter(get_texture_filter()));
-						rs->canvas_item_set_default_texture_repeat(canvas_item, RS::CanvasItemTextureRepeat(get_texture_repeat()));
+						rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter()));
+						rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat()));
 
-						q.canvas_items.push_back(canvas_item);
+						q.canvas_items.push_back(ci);
 
-						prev_canvas_item = canvas_item;
+						prev_ci = ci;
 						prev_material = mat;
-						prev_z_index = z_index;
+						prev_z_index = tile_z_index;
 
 					} else {
 						// Keep the same canvas_item to draw on.
-						canvas_item = prev_canvas_item;
+						ci = prev_ci;
 					}
 
 					// Drawing the tile in the canvas item.
-					draw_tile(canvas_item, E_cell.key - position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, modulate, tile_data);
+					draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, tile_modulate, tile_data);
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -1206,12 +1231,12 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 						xform.set_origin(E_cell.key);
 						if (tile_data->get_occluder(i).is_valid()) {
 							RID occluder_id = rs->canvas_light_occluder_create();
-							rs->canvas_light_occluder_set_enabled(occluder_id, visible);
+							rs->canvas_light_occluder_set_enabled(occluder_id, node_visible);
 							rs->canvas_light_occluder_set_transform(occluder_id, get_global_transform() * xform);
 							rs->canvas_light_occluder_set_polygon(occluder_id, tile_data->get_occluder(i)->get_rid());
 							rs->canvas_light_occluder_attach_to_canvas(occluder_id, get_canvas());
 							rs->canvas_light_occluder_set_light_mask(occluder_id, tile_set->get_occlusion_layer_light_mask(i));
-							q.occluders.push_back(occluder_id);
+							q.occluders[E_cell.value] = occluder_id;
 						}
 					}
 				}
@@ -1259,8 +1284,8 @@ void TileMap::_rendering_cleanup_quadrant(TileMapQuadrant *p_quadrant) {
 	p_quadrant->canvas_items.clear();
 
 	// Free the occluders.
-	for (const RID &occluder : p_quadrant->occluders) {
-		RenderingServer::get_singleton()->free(occluder);
+	for (const KeyValue<Vector2i, RID> &kv : p_quadrant->occluders) {
+		RenderingServer::get_singleton()->free(kv.value);
 	}
 	p_quadrant->occluders.clear();
 }
@@ -1420,7 +1445,7 @@ void TileMap::_physics_notification(int p_what) {
 #endif
 			if (is_inside_tree() && (!collision_animatable || in_editor)) {
 				// Update the new transform directly if we are not in animatable mode.
-				Transform2D global_transform = get_global_transform();
+				Transform2D gl_transform = get_global_transform();
 				for (int layer = 0; layer < (int)layers.size(); layer++) {
 					for (KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
 						TileMapQuadrant &q = E.value;
@@ -1428,7 +1453,7 @@ void TileMap::_physics_notification(int p_what) {
 						for (RID body : q.bodies) {
 							Transform2D xform;
 							xform.set_origin(map_to_local(bodies_coords[body]));
-							xform = global_transform * xform;
+							xform = gl_transform * xform;
 							PhysicsServer2D::get_singleton()->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 						}
 					}
@@ -1471,9 +1496,9 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!tile_set.is_valid());
 
-	Transform2D global_transform = get_global_transform();
-	last_valid_transform = global_transform;
-	new_transform = global_transform;
+	Transform2D gl_transform = get_global_transform();
+	last_valid_transform = gl_transform;
+	new_transform = gl_transform;
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 	RID space = get_world_2d()->get_space();
 
@@ -1521,7 +1546,7 @@ void TileMap::_physics_update_dirty_quadrants(SelfList<TileMapQuadrant>::List &r
 
 						Transform2D xform;
 						xform.set_origin(map_to_local(E_cell));
-						xform = global_transform * xform;
+						xform = gl_transform * xform;
 						ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, xform);
 
 						ps->body_attach_object_instance_id(body, get_instance_id());
@@ -2794,9 +2819,9 @@ Vector<int> TileMap::_get_tile_data(int p_layer) const {
 
 	// Export tile data to raw format
 	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
-	Vector<int> data;
-	data.resize(tile_map.size() * 3);
-	int *w = data.ptrw();
+	Vector<int> tile_data;
+	tile_data.resize(tile_map.size() * 3);
+	int *w = tile_data.ptrw();
 
 	// Save in highest format
 
@@ -2812,7 +2837,7 @@ Vector<int> TileMap::_get_tile_data(int p_layer) const {
 		idx += 3;
 	}
 
-	return data;
+	return tile_data;
 }
 
 void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r_dirty_quadrant_list) {

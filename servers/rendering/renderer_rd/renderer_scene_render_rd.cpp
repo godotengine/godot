@@ -1279,8 +1279,8 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 
 	//RID sampled_light;
 
-	RenderGeometryInstance *gi = geometry_instance_create(p_base);
-	ERR_FAIL_NULL_V(gi, TypedArray<Image>());
+	RenderGeometryInstance *gi_inst = geometry_instance_create(p_base);
+	ERR_FAIL_NULL_V(gi_inst, TypedArray<Image>());
 
 	uint32_t sc = RSG::mesh_storage->mesh_get_surface_count(p_base);
 	Vector<RID> materials;
@@ -1292,15 +1292,15 @@ TypedArray<Image> RendererSceneRenderRD::bake_render_uv2(RID p_base, const Typed
 		}
 	}
 
-	gi->set_surface_materials(materials);
+	gi_inst->set_surface_materials(materials);
 
 	if (cull_argument.size() == 0) {
 		cull_argument.push_back(nullptr);
 	}
-	cull_argument[0] = gi;
+	cull_argument[0] = gi_inst;
 	_render_uv2(cull_argument, fb, Rect2i(0, 0, p_image_size.width, p_image_size.height));
 
-	geometry_instance_free(gi);
+	geometry_instance_free(gi_inst);
 
 	TypedArray<Image> ret;
 

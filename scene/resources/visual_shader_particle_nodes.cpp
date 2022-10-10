@@ -1291,12 +1291,12 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 
 bool VisualShaderNodeParticleOutput::is_port_separator(int p_index) const {
 	if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
-		String name = get_input_port_name(p_index);
-		return bool(name == "Scale");
+		String port_name = get_input_port_name(p_index);
+		return bool(port_name == "Scale");
 	}
 	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		String name = get_input_port_name(p_index);
-		return bool(name == "Velocity");
+		String port_name = get_input_port_name(p_index);
+		return bool(port_name == "Velocity");
 	}
 	return false;
 }
@@ -1604,24 +1604,24 @@ String VisualShaderNodeParticleEmit::generate_code(Shader::Mode p_mode, VisualSh
 		flags_arr.push_back("FLAG_EMIT_CUSTOM");
 	}
 
-	String flags;
+	String flags_str;
 
 	for (int i = 0; i < flags_arr.size(); i++) {
 		if (i > 0) {
-			flags += "|";
+			flags_str += "|";
 		}
-		flags += flags_arr[i];
+		flags_str += flags_arr[i];
 	}
 
-	if (flags.is_empty()) {
-		flags = "uint(0)";
+	if (flags_str.is_empty()) {
+		flags_str = "uint(0)";
 	}
 
 	if (!default_condition) {
 		code += "	if (" + p_input_vars[0] + ") {\n";
 	}
 
-	code += tab + "emit_subparticle(" + transform + ", " + velocity + ", vec4(" + color + ", " + alpha + "), vec4(" + custom + ", " + custom_alpha + "), " + flags + ");\n";
+	code += tab + "emit_subparticle(" + transform + ", " + velocity + ", vec4(" + color + ", " + alpha + "), vec4(" + custom + ", " + custom_alpha + "), " + flags_str + ");\n";
 
 	if (!default_condition) {
 		code += "	}\n";

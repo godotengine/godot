@@ -169,10 +169,10 @@ StringName ResourceLoaderBinary::_get_string() {
 }
 
 Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
-	uint32_t type = f->get_32();
-	print_bl("find property of type: " + itos(type));
+	uint32_t prop_type = f->get_32();
+	print_bl("find property of type: " + itos(prop_type));
 
-	switch (type) {
+	switch (prop_type) {
 		case VARIANT_NIL: {
 			r_v = Variant();
 		} break;
@@ -1100,16 +1100,14 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 
 	uint32_t ver_major = f->get_32();
 	f->get_32(); // ver_minor
-	uint32_t ver_format = f->get_32();
+	uint32_t ver_fmt = f->get_32();
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
 		f.unref();
 		return "";
 	}
 
-	String type = get_unicode_string();
-
-	return type;
+	return get_unicode_string();
 }
 
 Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
@@ -2118,9 +2116,9 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	for (int i = 0; i < save_order.size(); i++) {
 		save_unicode_string(f, save_order[i]->get_save_class());
-		String path = save_order[i]->get_path();
-		path = relative_paths ? local_path.path_to_file(path) : path;
-		save_unicode_string(f, path);
+		String res_path = save_order[i]->get_path();
+		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
+		save_unicode_string(f, res_path);
 		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
 		f->store_64(ruid);
 	}

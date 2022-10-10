@@ -36,12 +36,12 @@
 void CollisionObject2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			Transform2D global_transform = get_global_transform();
+			Transform2D gl_transform = get_global_transform();
 
 			if (area) {
-				PhysicsServer2D::get_singleton()->area_set_transform(rid, global_transform);
+				PhysicsServer2D::get_singleton()->area_set_transform(rid, gl_transform);
 			} else {
-				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, global_transform);
+				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, gl_transform);
 			}
 
 			bool disabled = !is_enabled();
@@ -81,12 +81,12 @@ void CollisionObject2D::_notification(int p_what) {
 				return;
 			}
 
-			Transform2D global_transform = get_global_transform();
+			Transform2D gl_transform = get_global_transform();
 
 			if (area) {
-				PhysicsServer2D::get_singleton()->area_set_transform(rid, global_transform);
+				PhysicsServer2D::get_singleton()->area_set_transform(rid, gl_transform);
 			} else {
-				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, global_transform);
+				PhysicsServer2D::get_singleton()->body_set_state(rid, PhysicsServer2D::BODY_STATE_TRANSFORM, gl_transform);
 			}
 		} break;
 
@@ -153,13 +153,13 @@ uint32_t CollisionObject2D::get_collision_mask() const {
 void CollisionObject2D::set_collision_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
-	uint32_t collision_layer = get_collision_layer();
+	uint32_t collision_layer_new = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << (p_layer_number - 1);
+		collision_layer_new |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << (p_layer_number - 1));
+		collision_layer_new &= ~(1 << (p_layer_number - 1));
 	}
-	set_collision_layer(collision_layer);
+	set_collision_layer(collision_layer_new);
 }
 
 bool CollisionObject2D::get_collision_layer_value(int p_layer_number) const {

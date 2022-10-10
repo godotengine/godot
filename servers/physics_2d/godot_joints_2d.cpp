@@ -436,13 +436,13 @@ void GodotDampedSpringJoint2D::solve(real_t p_step) {
 	// not 100% certain this is derived correctly, though it makes sense
 	real_t v_damp = -vrn * v_coef;
 	target_vrn = vrn + v_damp;
-	Vector2 j = n * v_damp * n_mass;
+	Vector2 j_new = n * v_damp * n_mass;
 
 	if (dynamic_A) {
-		A->apply_impulse(-j, rA);
+		A->apply_impulse(-j_new, rA);
 	}
 	if (dynamic_B) {
-		B->apply_impulse(j, rB);
+		B->apply_impulse(j_new, rB);
 	}
 }
 

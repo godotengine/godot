@@ -64,10 +64,10 @@ void DebugAdapterServer::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			protocol._request_timeout = EditorSettings::get_singleton()->get("network/debug_adapter/request_timeout");
 			protocol._sync_breakpoints = EditorSettings::get_singleton()->get("network/debug_adapter/sync_breakpoints");
-			int remote_port = (int)_EDITOR_GET("network/debug_adapter/remote_port");
-			if (remote_port != this->remote_port) {
-				this->stop();
-				this->start();
+			int port = (int)_EDITOR_GET("network/debug_adapter/remote_port");
+			if (port != remote_port) {
+				stop();
+				start();
 			}
 		} break;
 	}

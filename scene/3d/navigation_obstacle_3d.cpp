@@ -159,7 +159,7 @@ void NavigationObstacle3D::reevaluate_agent_radius() {
 real_t NavigationObstacle3D::estimate_agent_radius() const {
 	if (parent_node3d && parent_node3d->is_inside_tree()) {
 		// Estimate the radius of this physics body
-		real_t radius = 0.0;
+		real_t max_radius = 0.0;
 		for (int i(0); i < parent_node3d->get_child_count(); i++) {
 			// For each collision shape
 			CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(parent_node3d->get_child(i));
@@ -173,7 +173,7 @@ real_t NavigationObstacle3D::estimate_agent_radius() const {
 				Vector3 s = cs->get_global_transform().basis.get_scale();
 				r *= MAX(s.x, MAX(s.y, s.z));
 				// Takes the biggest radius
-				radius = MAX(radius, r);
+				max_radius = MAX(max_radius, r);
 			} else if (cs && !cs->is_inside_tree()) {
 				WARN_PRINT("A CollisionShape3D of the NavigationObstacle3D parent node was not inside the SceneTree when estimating the obstacle radius."
 						   "\nMove the NavigationObstacle3D to a child position below any CollisionShape3D node of the parent node so the CollisionShape3D is already inside the SceneTree.");
@@ -181,10 +181,10 @@ real_t NavigationObstacle3D::estimate_agent_radius() const {
 		}
 
 		Vector3 s = parent_node3d->get_global_transform().basis.get_scale();
-		radius *= MAX(s.x, MAX(s.y, s.z));
+		max_radius *= MAX(s.x, MAX(s.y, s.z));
 
-		if (radius > 0.0) {
-			return radius;
+		if (max_radius > 0.0) {
+			return max_radius;
 		}
 	}
 	return 1.0; // Never a 0 radius

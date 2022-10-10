@@ -1101,8 +1101,6 @@ bool Variant::is_one() const {
 			return !is_zero();
 		}
 	}
-
-	return false;
 }
 
 bool Variant::is_null() const {
@@ -1931,8 +1929,6 @@ String Variant::stringify(int recursion_count) const {
 			return "<" + get_type_name(type) + ">";
 		}
 	}
-
-	return "";
 }
 
 String Variant::to_json_string() const {
@@ -3573,8 +3569,6 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			evaluate(OP_EQUAL, *this, p_variant, r, v);
 			return r;
 	}
-
-	return false;
 }
 
 bool Variant::is_ref_counted() const {

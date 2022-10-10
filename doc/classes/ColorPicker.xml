@@ -19,6 +19,14 @@
 				[b]Note:[/b] The presets list is only for [i]this[/i] color picker.
 			</description>
 		</method>
+		<method name="add_recent_preset">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Adds the given color to a list of color recent presets so that it can be picked later. Recent presets are the colors that were picked recently, a new preset is automatically created and added to recent presets when you pick a new color.
+				[b]Note:[/b] The recent presets list is only for [i]this[/i] color picker.
+			</description>
+		</method>
 		<method name="erase_preset">
 			<return type="void" />
 			<param index="0" name="color" type="Color" />
@@ -26,10 +34,23 @@
 				Removes the given color from the list of color presets of this color picker.
 			</description>
 		</method>
+		<method name="erase_recent_preset">
+			<return type="void" />
+			<param index="0" name="color" type="Color" />
+			<description>
+				Removes the given color from the list of color recent presets of this color picker.
+			</description>
+		</method>
 		<method name="get_presets" qualifiers="const">
 			<return type="PackedColorArray" />
 			<description>
 				Returns the list of colors in the presets of the color picker.
+			</description>
+		</method>
+		<method name="get_recent_presets" qualifiers="const">
+			<return type="PackedColorArray" />
+			<description>
+				Returns the list of colors in the recent presets of the color picker.
 			</description>
 		</method>
 	</methods>
@@ -129,6 +150,12 @@
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
 		</theme_item>
+		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
+			The icon for color preset drop down menu when expanded.
+		</theme_item>
+		<theme_item name="folded_arrow" data_type="icon" type="Texture2D">
+			The icon for color preset drop down menu when folded.
+		</theme_item>
 		<theme_item name="overbright_indicator" data_type="icon" type="Texture2D">
 			The indicator used to signalize that the color value is outside the 0-1 range.
 		</theme_item>
@@ -138,6 +165,15 @@
 		</theme_item>
 		<theme_item name="screen_picker" data_type="icon" type="Texture2D">
 			The icon for the screen color picker button.
+		</theme_item>
+		<theme_item name="shape_circle" data_type="icon" type="Texture2D">
+			The icon for circular picker shapes.
+		</theme_item>
+		<theme_item name="shape_rect" data_type="icon" type="Texture2D">
+			The icon for rectangular picker shapes.
+		</theme_item>
+		<theme_item name="shape_rect_wheel" data_type="icon" type="Texture2D">
+			The icon for rectangular wheel picker shapes.
 		</theme_item>
 	</theme_items>
 </class>

@@ -264,33 +264,33 @@ void Path3DGizmo::redraw() {
 
 	if (Path3DEditorPlugin::singleton->get_edited_path() == path) {
 		v3p.clear();
-		Vector<Vector3> handles;
-		Vector<Vector3> sec_handles;
+		Vector<Vector3> handle_points;
+		Vector<Vector3> sec_handle_points;
 
 		for (int i = 0; i < c->get_point_count(); i++) {
 			Vector3 p = c->get_point_position(i);
-			handles.push_back(p);
+			handle_points.push_back(p);
 			// push Out points first so they get selected if the In and Out points are on top of each other.
 			if (i < c->get_point_count() - 1) {
 				v3p.push_back(p);
 				v3p.push_back(p + c->get_point_out(i));
-				sec_handles.push_back(p + c->get_point_out(i));
+				sec_handle_points.push_back(p + c->get_point_out(i));
 			}
 			if (i > 0) {
 				v3p.push_back(p);
 				v3p.push_back(p + c->get_point_in(i));
-				sec_handles.push_back(p + c->get_point_in(i));
+				sec_handle_points.push_back(p + c->get_point_in(i));
 			}
 		}
 
 		if (v3p.size() > 1) {
 			add_lines(v3p, path_thin_material);
 		}
-		if (handles.size()) {
-			add_handles(handles, handles_material);
+		if (handle_points.size()) {
+			add_handles(handle_points, handles_material);
 		}
-		if (sec_handles.size()) {
-			add_handles(sec_handles, sec_handles_material, Vector<int>(), false, true);
+		if (sec_handle_points.size()) {
+			add_handles(sec_handle_points, sec_handles_material, Vector<int>(), false, true);
 		}
 	}
 }

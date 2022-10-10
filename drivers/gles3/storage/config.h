@@ -64,6 +64,8 @@ public:
 	int max_renderable_lights = 0;
 	int max_lights_per_object = 0;
 
+	int uniform_buffer_offset_alignment = 0;
+
 	// TODO implement wireframe in OpenGL
 	// bool generate_wireframes;
 

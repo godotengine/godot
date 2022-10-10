@@ -31,7 +31,7 @@
 #include "transform_3d.h"
 
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 void Transform3D::affine_invert() {
 	basis.invert();

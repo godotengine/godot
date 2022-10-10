@@ -213,18 +213,18 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 		inherited_type = TypeCategory::CPP_TYPE;
 	} else if (p_type_category == TypeCategory::PATH_TYPE) {
 		ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
-		Ref<Script> script = ResourceLoader::load(p_type, "Script");
-		ERR_FAIL_COND(script.is_null());
+		Ref<Script> scr = ResourceLoader::load(p_type, "Script");
+		ERR_FAIL_COND(scr.is_null());
 
-		Ref<Script> base = script->get_base_script();
+		Ref<Script> base = scr->get_base_script();
 		if (base.is_null()) {
 			String extends;
-			script->get_language()->get_global_class_name(script->get_path(), &extends);
+			scr->get_language()->get_global_class_name(scr->get_path(), &extends);
 
 			inherits = extends;
 			inherited_type = TypeCategory::CPP_TYPE;
 		} else {
-			inherits = script->get_language()->get_global_class_name(base->get_path());
+			inherits = scr->get_language()->get_global_class_name(base->get_path());
 			if (inherits.is_empty()) {
 				inherits = base->get_path();
 				inherited_type = TypeCategory::PATH_TYPE;
@@ -232,18 +232,18 @@ void CreateDialog::_add_type(const String &p_type, const TypeCategory p_type_cat
 		}
 	} else {
 		if (ScriptServer::is_global_class(p_type)) {
-			Ref<Script> script = EditorNode::get_editor_data().script_class_load_script(p_type);
-			ERR_FAIL_COND(script.is_null());
+			Ref<Script> scr = EditorNode::get_editor_data().script_class_load_script(p_type);
+			ERR_FAIL_COND(scr.is_null());
 
-			Ref<Script> base = script->get_base_script();
+			Ref<Script> base = scr->get_base_script();
 			if (base.is_null()) {
 				String extends;
-				script->get_language()->get_global_class_name(script->get_path(), &extends);
+				scr->get_language()->get_global_class_name(scr->get_path(), &extends);
 
 				inherits = extends;
 				inherited_type = TypeCategory::CPP_TYPE;
 			} else {
-				inherits = script->get_language()->get_global_class_name(base->get_path());
+				inherits = scr->get_language()->get_global_class_name(base->get_path());
 				if (inherits.is_empty()) {
 					inherits = base->get_path();
 					inherited_type = TypeCategory::PATH_TYPE;

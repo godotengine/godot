@@ -151,7 +151,7 @@ void TextEdit::Text::_calculate_line_height() {
 }
 
 void TextEdit::Text::_calculate_max_line_width() {
-	int width = 0;
+	int line_width = 0;
 	for (const Line &l : text) {
 		if (l.hidden) {
 			continue;
@@ -159,12 +159,12 @@ void TextEdit::Text::_calculate_max_line_width() {
 
 		// Found another line with the same width...nothing to update.
 		if (l.width == max_width) {
-			width = max_width;
+			line_width = max_width;
 			break;
 		}
-		width = MAX(width, l.width);
+		line_width = MAX(line_width, l.width);
 	}
-	max_width = width;
+	max_width = line_width;
 }
 
 void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_changed, const String &p_ime_text, const Array &p_bidi_override) {
@@ -233,14 +233,14 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 
 	// Update width.
 	const int old_width = text.write[p_line].width;
-	int width = get_line_width(p_line);
-	text.write[p_line].width = width;
+	int line_width = get_line_width(p_line);
+	text.write[p_line].width = line_width;
 
 	// If this line has shrunk, this may no longer the the longest line.
-	if (old_width == max_width && width < max_width) {
+	if (old_width == max_width && line_width < max_width) {
 		_calculate_max_line_width();
 	} else if (!is_hidden(p_line)) {
-		max_width = MAX(width, max_width);
+		max_width = MAX(line_width, max_width);
 	}
 }
 
@@ -698,9 +698,9 @@ void TextEdit::_notification(int p_what) {
 				carets_wrap_index.write[i] = wrap_index;
 			}
 
-			int first_visible_line = get_first_visible_line() - 1;
+			int first_vis_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-			draw_amount += draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(first_visible_line + 1);
+			draw_amount += draw_placeholder ? placeholder_wraped_rows.size() - 1 : get_line_wrap_count(first_vis_line + 1);
 
 			// Draw minimap.
 			if (draw_minimap) {
@@ -711,13 +711,13 @@ void TextEdit::_notification(int p_what) {
 				// calculate viewport size and y offset
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
 				int control_height = _get_control_height() - viewport_height;
-				int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+				int viewport_offset_y = round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 				// calculate the first line.
 				int num_lines_before = round((viewport_offset_y) / minimap_line_height);
-				int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
+				int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
 				if (minimap_line >= 0) {
-					minimap_line -= get_next_visible_line_index_offset_from(first_visible_line, 0, -num_lines_before).x;
+					minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
 					minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
 				}
 				int minimap_draw_amount = minimap_visible_lines + get_line_wrap_count(minimap_line + 1);
@@ -885,7 +885,7 @@ void TextEdit::_notification(int p_what) {
 			// Draw main text.
 			line_drawing_cache.clear();
 			int row_height = draw_placeholder ? placeholder_line_height + line_spacing : get_line_height();
-			int line = first_visible_line;
+			int line = first_vis_line;
 			for (int i = 0; i < draw_amount; i++) {
 				line++;
 
@@ -1012,14 +1012,14 @@ void TextEdit::_notification(int p_what) {
 
 							switch (gutter.type) {
 								case GUTTER_TYPE_STRING: {
-									const String &text = get_line_gutter_text(line, g);
-									if (text.is_empty()) {
+									const String &txt = get_line_gutter_text(line, g);
+									if (txt.is_empty()) {
 										break;
 									}
 
 									Ref<TextLine> tl;
 									tl.instantiate();
-									tl->add_string(text, font, font_size);
+									tl->add_string(txt, font, font_size);
 
 									int yofs = ofs_y + (row_height - tl->get_size().y) / 2;
 									if (outline_size > 0 && outline_color.a > 0) {
@@ -1350,9 +1350,14 @@ void TextEdit::_notification(int p_what) {
 												draw_rect(ts_caret.t_caret, caret_color, overtype_mode);
 
 												if (ts_caret.l_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
+													// Draw split caret (leading part).
 													ts_caret.l_caret.position += Vector2(char_margin + ofs_x, ofs_y);
 													ts_caret.l_caret.size.x = caret_width;
-													draw_rect(ts_caret.l_caret, caret_color * Color(1, 1, 1, 0.5));
+													draw_rect(ts_caret.l_caret, caret_color);
+													// Draw extra direction marker on top of split caret.
+													float d = (ts_caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+													Rect2 trect = Rect2(ts_caret.l_caret.position.x + d * caret_width, ts_caret.l_caret.position.y + ts_caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+													RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 												}
 											} else { // End of the line.
 												if (gl_size > 0) {
@@ -1383,7 +1388,18 @@ void TextEdit::_notification(int p_what) {
 											// Normal caret.
 											if (ts_caret.l_caret != Rect2() && ts_caret.l_dir == TextServer::DIRECTION_AUTO) {
 												// Draw extra marker on top of mid caret.
-												Rect2 trect = Rect2(ts_caret.l_caret.position.x - 3 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
+												Rect2 trect = Rect2(ts_caret.l_caret.position.x - 2.5 * caret_width, ts_caret.l_caret.position.y, 6 * caret_width, caret_width);
+												trect.position += Vector2(char_margin + ofs_x, ofs_y);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+											} else if (ts_caret.l_caret != Rect2() && ts_caret.t_caret != Rect2() && ts_caret.l_dir != ts_caret.t_dir) {
+												// Draw extra direction marker on top of split caret.
+												float d = (ts_caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+												Rect2 trect = Rect2(ts_caret.l_caret.position.x + d * caret_width, ts_caret.l_caret.position.y + ts_caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+												trect.position += Vector2(char_margin + ofs_x, ofs_y);
+												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+
+												d = (ts_caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+												trect = Rect2(ts_caret.t_caret.position.x + d * caret_width, ts_caret.t_caret.position.y, 3 * caret_width, caret_width);
 												trect.position += Vector2(char_margin + ofs_x, ofs_y);
 												RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 											}
@@ -4193,21 +4209,21 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	// calculate visible lines
 	int minimap_visible_lines = get_minimap_visible_lines();
 	int visible_rows = get_visible_line_count() + 1;
-	int first_visible_line = get_first_visible_line() - 1;
+	int first_vis_line = get_first_visible_line() - 1;
 	int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-	draw_amount += get_line_wrap_count(first_visible_line + 1);
+	draw_amount += get_line_wrap_count(first_vis_line + 1);
 	int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 
 	// calculate viewport size and y offset
 	int viewport_height = (draw_amount - 1) * minimap_line_height;
 	int control_height = _get_control_height() - viewport_height;
-	int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+	int viewport_offset_y = round(get_scroll_pos_for_line(first_vis_line + 1) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 	// calculate the first line.
 	int num_lines_before = round((viewport_offset_y) / minimap_line_height);
-	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
-	if (first_visible_line > 0 && minimap_line >= 0) {
-		minimap_line -= get_next_visible_line_index_offset_from(first_visible_line, 0, -num_lines_before).x;
+	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_vis_line;
+	if (first_vis_line > 0 && minimap_line >= 0) {
+		minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
 		minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
 	} else {
 		minimap_line = 0;
@@ -5070,6 +5086,14 @@ void TextEdit::set_scroll_past_end_of_file_enabled(const bool p_enabled) {
 
 bool TextEdit::is_scroll_past_end_of_file_enabled() const {
 	return scroll_past_end_of_file_enabled;
+}
+
+VScrollBar *TextEdit::get_v_scroll_bar() const {
+	return v_scroll;
+}
+
+HScrollBar *TextEdit::get_h_scroll_bar() const {
+	return h_scroll;
 }
 
 void TextEdit::set_v_scroll(double p_scroll) {
@@ -6003,6 +6027,9 @@ void TextEdit::_bind_methods() {
 	// Scrolling.
 	ClassDB::bind_method(D_METHOD("set_smooth_scroll_enabled", "enable"), &TextEdit::set_smooth_scroll_enabled);
 	ClassDB::bind_method(D_METHOD("is_smooth_scroll_enabled"), &TextEdit::is_smooth_scroll_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_v_scroll_bar"), &TextEdit::get_v_scroll_bar);
+	ClassDB::bind_method(D_METHOD("get_h_scroll_bar"), &TextEdit::get_h_scroll_bar);
 
 	ClassDB::bind_method(D_METHOD("set_v_scroll", "value"), &TextEdit::set_v_scroll);
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &TextEdit::get_v_scroll);
@@ -7324,10 +7351,10 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 		idle_detect->start();
 	}
 
-	String text;
+	String txt;
 	if (undo_enabled) {
 		_clear_redo();
-		text = _base_get_text(p_from_line, p_from_column, p_to_line, p_to_column);
+		txt = _base_get_text(p_from_line, p_from_column, p_to_line, p_to_column);
 	}
 
 	_base_remove_text(p_from_line, p_from_column, p_to_line, p_to_column);
@@ -7343,7 +7370,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	op.from_column = p_from_column;
 	op.to_line = p_to_line;
 	op.to_column = p_to_column;
-	op.text = text;
+	op.text = txt;
 	op.version = ++version;
 	op.chain_forward = false;
 	op.chain_backward = false;
@@ -7360,7 +7387,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column, int p_to_line, i
 	// See if it can be merged.
 	if (current_op.from_line == p_to_line && current_op.from_column == p_to_column) {
 		// Backspace or similar.
-		current_op.text = text + current_op.text;
+		current_op.text = txt + current_op.text;
 		current_op.from_line = p_from_line;
 		current_op.from_column = p_from_column;
 		current_op.end_carets = carets;

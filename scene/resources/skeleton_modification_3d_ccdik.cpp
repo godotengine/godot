@@ -98,7 +98,7 @@ void SkeletonModification3DCCDIK::_get_property_list(List<PropertyInfo> *p_list)
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "bone_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 
 		p_list->push_back(PropertyInfo(Variant::INT, base_string + "ccdik_axis",
-				PROPERTY_HINT_ENUM, "X Axis, Y Axis, Z Axis", PROPERTY_USAGE_DEFAULT));
+				PROPERTY_HINT_ENUM, "X Axis,Y Axis,Z Axis", PROPERTY_USAGE_DEFAULT));
 
 		p_list->push_back(PropertyInfo(Variant::BOOL, base_string + "enable_joint_constraint", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
 		if (ccdik_data_chain[i].enable_constraint) {

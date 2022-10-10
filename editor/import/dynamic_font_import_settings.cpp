@@ -949,11 +949,11 @@ void DynamicFontImportSettings::_re_import() {
 
 void DynamicFontImportSettings::open_settings(const String &p_path) {
 	// Load base font data.
-	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
+	Vector<uint8_t> font_data = FileAccess::get_file_as_array(p_path);
 
 	// Load font for preview.
 	font_preview.instantiate();
-	font_preview->set_data(data);
+	font_preview->set_data(font_data);
 
 	String font_name = vformat("%s (%s)", font_preview->get_font_name(), font_preview->get_font_style_name());
 	String sample;
@@ -976,7 +976,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 
 	// Load second copy of font with MSDF disabled for the glyph table and metadata extraction.
 	font_main.instantiate();
-	font_main->set_data(data);
+	font_main->set_data(font_data);
 	font_main->set_multichannel_signed_distance_field(false);
 
 	text_edit->add_theme_font_override("font", font_main);
@@ -1036,7 +1036,7 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					double embolden = preload_config.has("variation_embolden") ? preload_config["variation_embolden"].operator double() : 0;
 					int face_index = preload_config.has("variation_face_index") ? preload_config["variation_face_index"].operator int() : 0;
 					Transform2D transform = preload_config.has("variation_transform") ? preload_config["variation_transform"].operator Transform2D() : Transform2D();
-					Vector2i size = preload_config.has("size") ? preload_config["size"].operator Vector2i() : Vector2i(16, 0);
+					Vector2i font_size = preload_config.has("size") ? preload_config["size"].operator Vector2i() : Vector2i(16, 0);
 					String cfg_name = preload_config.has("name") ? preload_config["name"].operator String() : vformat("Configuration %d", i);
 
 					TreeItem *vars_item = vars_list->create_item(vars_list_root);
@@ -1061,8 +1061,8 @@ void DynamicFontImportSettings::open_settings(const String &p_path) {
 					import_variation_data_custom->options = options_variations;
 					vars_item->set_metadata(0, import_variation_data_custom);
 
-					import_variation_data_custom->set("size", size.x);
-					import_variation_data_custom->set("outline_size", size.y);
+					import_variation_data_custom->set("size", font_size.x);
+					import_variation_data_custom->set("outline_size", font_size.y);
 					import_variation_data_custom->set("variation_opentype", variation);
 					import_variation_data_custom->set("variation_embolden", embolden);
 					import_variation_data_custom->set("variation_face_index", face_index);

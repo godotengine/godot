@@ -396,12 +396,12 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->used_channels = used_channels;
 	_check_compress_ctex(p_source_file, texture_import);
 	if (r_metadata) {
-		Dictionary metadata;
-		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
+		Dictionary meta;
+		meta["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
 		if (formats_imported.size()) {
-			metadata["imported_formats"] = formats_imported;
+			meta["imported_formats"] = formats_imported;
 		}
-		*r_metadata = metadata;
+		*r_metadata = meta;
 	}
 
 	return OK;
@@ -432,20 +432,20 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 
 bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
 	//will become invalid if formats are missing to import
-	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
+	Dictionary meta = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
-	if (!metadata.has("vram_texture")) {
+	if (!meta.has("vram_texture")) {
 		return false;
 	}
 
-	bool vram = metadata["vram_texture"];
+	bool vram = meta["vram_texture"];
 	if (!vram) {
 		return true; //do not care about non vram
 	}
 
 	Vector<String> formats_imported;
-	if (metadata.has("imported_formats")) {
-		formats_imported = metadata["imported_formats"];
+	if (meta.has("imported_formats")) {
+		formats_imported = meta["imported_formats"];
 	}
 
 	int index = 0;

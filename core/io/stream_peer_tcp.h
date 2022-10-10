@@ -79,7 +79,7 @@ public:
 	Error poll();
 
 	// Wait or check for writable, readable.
-	Error wait(NetSocket::PollType p_type, int timeout = 0);
+	Error wait(NetSocket::PollType p_type, int p_timeout = 0);
 
 	// Read/Write from StreamPeer
 	Error put_data(const uint8_t *p_data, int p_bytes) override;

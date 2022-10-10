@@ -968,8 +968,8 @@ void FindInFilesPanel::update_replace_buttons() {
 	_replace_all_button->set_disabled(disabled);
 }
 
-void FindInFilesPanel::set_progress_visible(bool visible) {
-	_progress_bar->set_self_modulate(Color(1, 1, 1, visible ? 1 : 0));
+void FindInFilesPanel::set_progress_visible(bool p_visible) {
+	_progress_bar->set_self_modulate(Color(1, 1, 1, p_visible ? 1 : 0));
 }
 
 void FindInFilesPanel::_bind_methods() {

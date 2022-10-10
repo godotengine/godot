@@ -553,6 +553,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_disabled", "HSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "HSlider", icons["hslider_tick"]);
 
+	theme->set_constant("grabber_offset", "HSlider", 0);
+
 	// VSlider
 
 	theme->set_stylebox("slider", "VSlider", style_slider);
@@ -563,6 +565,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("grabber_highlight", "VSlider", icons["slider_grabber_hl"]);
 	theme->set_icon("grabber_disabled", "VSlider", icons["slider_grabber_disabled"]);
 	theme->set_icon("tick", "VSlider", icons["vslider_tick"]);
+
+	theme->set_constant("grabber_offset", "VSlider", 0);
 
 	// SpinBox
 
@@ -876,7 +880,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_width", "ColorPicker", 30 * scale);
 	theme->set_constant("label_width", "ColorPicker", 10 * scale);
 
+	theme->set_icon("folded_arrow", "ColorPicker", icons["arrow_right"]);
+	theme->set_icon("expanded_arrow", "ColorPicker", icons["arrow_down"]);
 	theme->set_icon("screen_picker", "ColorPicker", icons["color_picker_pipette"]);
+	theme->set_icon("shape_circle", "ColorPicker", icons["picker_shape_circle"]);
+	theme->set_icon("shape_rect", "ColorPicker", icons["picker_shape_rectangle"]);
+	theme->set_icon("shape_rect_wheel", "ColorPicker", icons["picker_shape_rectangle_wheel"]);
 	theme->set_icon("add_preset", "ColorPicker", icons["add"]);
 	theme->set_icon("color_hue", "ColorPicker", icons["color_picker_hue"]);
 	theme->set_icon("sample_bg", "ColorPicker", icons["mini_checkerboard"]);

@@ -132,10 +132,10 @@ void OpenXRInterface::_load_action_map() {
 	if (action_map.is_valid()) {
 		HashMap<Ref<OpenXRAction>, Action *> xr_actions;
 
-		Array action_sets = action_map->get_action_sets();
-		for (int i = 0; i < action_sets.size(); i++) {
+		Array action_set_array = action_map->get_action_sets();
+		for (int i = 0; i < action_set_array.size(); i++) {
 			// Create our action set
-			Ref<OpenXRActionSet> xr_action_set = action_sets[i];
+			Ref<OpenXRActionSet> xr_action_set = action_set_array[i];
 			ActionSet *action_set = create_action_set(xr_action_set->get_name(), xr_action_set->get_localized_name(), xr_action_set->get_priority());
 			if (!action_set) {
 				continue;
@@ -147,20 +147,20 @@ void OpenXRInterface::_load_action_map() {
 				Ref<OpenXRAction> xr_action = actions[j];
 
 				PackedStringArray toplevel_paths = xr_action->get_toplevel_paths();
-				Vector<Tracker *> trackers;
+				Vector<Tracker *> trackers_new;
 
 				for (int k = 0; k < toplevel_paths.size(); k++) {
 					Tracker *tracker = find_tracker(toplevel_paths[k], true);
 					if (tracker) {
-						trackers.push_back(tracker);
+						trackers_new.push_back(tracker);
 					}
 				}
 
 				Action *action = create_action(action_set, xr_action->get_name(), xr_action->get_localized_name(), xr_action->get_action_type(), trackers);
 				if (action) {
 					// we link our actions back to our trackers so we know which actions to check when we're processing our trackers
-					for (int t = 0; t < trackers.size(); t++) {
-						link_action_to_tracker(trackers[t], action);
+					for (int t = 0; t < trackers_new.size(); t++) {
+						link_action_to_tracker(trackers_new[t], action);
 					}
 
 					// add this to our map for creating our interaction profiles
@@ -170,9 +170,9 @@ void OpenXRInterface::_load_action_map() {
 		}
 
 		// now do our suggestions
-		Array interaction_profiles = action_map->get_interaction_profiles();
-		for (int i = 0; i < interaction_profiles.size(); i++) {
-			Ref<OpenXRInteractionProfile> xr_interaction_profile = interaction_profiles[i];
+		Array interaction_profile_array = action_map->get_interaction_profiles();
+		for (int i = 0; i < interaction_profile_array.size(); i++) {
+			Ref<OpenXRInteractionProfile> xr_interaction_profile = interaction_profile_array[i];
 
 			// Note, we can only have one entry per interaction profile so if it already exists we clear it out
 			RID ip = openxr_api->interaction_profile_create(xr_interaction_profile->get_interaction_profile_path());
@@ -202,8 +202,8 @@ void OpenXRInterface::_load_action_map() {
 				openxr_api->interaction_profile_suggest_bindings(ip);
 
 				// And record it in our array so we can clean it up later on
-				if (interaction_profiles.has(ip)) {
-					interaction_profiles.push_back(ip);
+				if (interaction_profile_array.has(ip)) {
+					interaction_profile_array.push_back(ip);
 				}
 			}
 		}

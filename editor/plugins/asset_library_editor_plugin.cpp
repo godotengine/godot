@@ -243,19 +243,19 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 }
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url) {
-	Preview preview;
-	preview.id = p_id;
-	preview.video_link = p_url;
-	preview.is_video = p_video;
-	preview.button = memnew(Button);
-	preview.button->set_icon(previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons")));
-	preview.button->set_toggle_mode(true);
-	preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click).bind(p_id));
-	preview_hb->add_child(preview.button);
+	Preview new_preview;
+	new_preview.id = p_id;
+	new_preview.video_link = p_url;
+	new_preview.is_video = p_video;
+	new_preview.button = memnew(Button);
+	new_preview.button->set_icon(previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons")));
+	new_preview.button->set_toggle_mode(true);
+	new_preview.button->connect("pressed", callable_mp(this, &EditorAssetLibraryItemDescription::_preview_click).bind(p_id));
+	preview_hb->add_child(new_preview.button);
 	if (!p_video) {
-		preview.image = previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons"));
+		new_preview.image = previews->get_theme_icon(SNAME("ThumbnailWait"), SNAME("EditorIcons"));
 	}
-	preview_images.push_back(preview);
+	preview_images.push_back(new_preview);
 	if (preview_images.size() == 1 && !p_video) {
 		_preview_click(p_id);
 	}

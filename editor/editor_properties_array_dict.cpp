@@ -260,9 +260,9 @@ void EditorPropertyArray::update_property() {
 			HBoxContainer *hbox = memnew(HBoxContainer);
 			vbox->add_child(hbox);
 
-			Label *label = memnew(Label(TTR("Size:")));
-			label->set_h_size_flags(SIZE_EXPAND_FILL);
-			hbox->add_child(label);
+			Label *size_label = memnew(Label(TTR("Size:")));
+			size_label->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->add_child(size_label);
 
 			size_slider = memnew(EditorSpinSlider);
 			size_slider->set_step(1);
@@ -367,17 +367,17 @@ void EditorPropertyArray::update_property() {
 			bool is_untyped_array = array.get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
 			if (is_untyped_array) {
-				Button *edit = memnew(Button);
-				edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-				hbox->add_child(edit);
-				edit->set_disabled(is_read_only());
-				edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit, i + offset));
+				Button *edit_btn = memnew(Button);
+				edit_btn->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+				hbox->add_child(edit_btn);
+				edit_btn->set_disabled(is_read_only());
+				edit_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, i + offset));
 			} else {
-				Button *remove = memnew(Button);
-				remove->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-				remove->set_disabled(is_read_only());
-				remove->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(i + offset));
-				hbox->add_child(remove);
+				Button *remove_btn = memnew(Button);
+				remove_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+				remove_btn->set_disabled(is_read_only());
+				remove_btn->connect("pressed", callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(i + offset));
+				hbox->add_child(remove_btn);
 			}
 
 			prop->update_property();
@@ -1155,11 +1155,11 @@ void EditorPropertyDictionary::update_property() {
 			}
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit = memnew(Button);
-			edit->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-			edit->set_disabled(is_read_only());
-			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit, change_index));
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			edit_btn->set_disabled(is_read_only());
+			hbox->add_child(edit_btn);
+			edit_btn->connect("pressed", callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, change_index));
 
 			prop->update_property();
 
@@ -1396,10 +1396,10 @@ void EditorPropertyLocalizableString::update_property() {
 			property_vbox->add_child(hbox);
 			hbox->add_child(prop);
 			prop->set_h_size_flags(SIZE_EXPAND_FILL);
-			Button *edit = memnew(Button);
-			edit->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
-			hbox->add_child(edit);
-			edit->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit, remove_index));
+			Button *edit_btn = memnew(Button);
+			edit_btn->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			hbox->add_child(edit_btn);
+			edit_btn->connect("pressed", callable_mp(this, &EditorPropertyLocalizableString::_remove_item).bind(edit_btn, remove_index));
 
 			prop->update_property();
 		}

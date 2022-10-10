@@ -536,6 +536,7 @@
 	</methods>
 	<members>
 		<member name="clip_children" type="bool" setter="set_clip_children" getter="is_clipping_children" default="false">
+			Allows the current node to clip children nodes, essentially acting as a mask.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.

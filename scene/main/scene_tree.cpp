@@ -105,10 +105,10 @@ bool SceneTreeTimer::is_ignore_time_scale() {
 }
 
 void SceneTreeTimer::release_connections() {
-	List<Connection> connections;
-	get_all_signal_connections(&connections);
+	List<Connection> signal_connections;
+	get_all_signal_connections(&signal_connections);
 
-	for (const Connection &connection : connections) {
+	for (const Connection &connection : signal_connections) {
 		disconnect(connection.signal.get_name(), connection.callable);
 	}
 }
@@ -207,15 +207,15 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 		return;
 	}
 
-	Node **nodes = g.nodes.ptrw();
-	int node_count = g.nodes.size();
+	Node **gr_nodes = g.nodes.ptrw();
+	int gr_node_count = g.nodes.size();
 
 	if (p_use_priority) {
 		SortArray<Node *, Node::ComparatorWithPriority> node_sort;
-		node_sort.sort(nodes, node_count);
+		node_sort.sort(gr_nodes, gr_node_count);
 	} else {
 		SortArray<Node *, Node::Comparator> node_sort;
-		node_sort.sort(nodes, node_count);
+		node_sort.sort(gr_nodes, gr_node_count);
 	}
 	g.changed = false;
 }
@@ -253,36 +253,36 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = nodes_copy.ptrw();
-	int node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
 
 	call_lock++;
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
-		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = gr_node_count - 1; i >= 0; i--) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
-				nodes[i]->callp(p_function, p_args, p_argcount, ce);
+				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
+				MessageQueue::get_singleton()->push_callp(gr_nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 
 	} else {
-		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = 0; i < gr_node_count; i++) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
-				nodes[i]->callp(p_function, p_args, p_argcount, ce);
+				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
-				MessageQueue::get_singleton()->push_callp(nodes[i], p_function, p_args, p_argcount);
+				MessageQueue::get_singleton()->push_callp(gr_nodes[i], p_function, p_args, p_argcount);
 			}
 		}
 	}
@@ -306,34 +306,34 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = nodes_copy.ptrw();
-	int node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
 
 	call_lock++;
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
-		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = gr_node_count - 1; i >= 0; i--) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->notification(p_notification);
+				gr_nodes[i]->notification(p_notification);
 			} else {
-				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
+				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
 		}
 
 	} else {
-		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = 0; i < gr_node_count; i++) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->notification(p_notification);
+				gr_nodes[i]->notification(p_notification);
 			} else {
-				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
+				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
 			}
 		}
 	}
@@ -357,34 +357,34 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 	_update_group_order(g);
 
 	Vector<Node *> nodes_copy = g.nodes;
-	Node **nodes = nodes_copy.ptrw();
-	int node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
 
 	call_lock++;
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
-		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = gr_node_count - 1; i >= 0; i--) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->set(p_name, p_value);
+				gr_nodes[i]->set(p_name, p_value);
 			} else {
-				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
+				MessageQueue::get_singleton()->push_set(gr_nodes[i], p_name, p_value);
 			}
 		}
 
 	} else {
-		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i])) {
+		for (int i = 0; i < gr_node_count; i++) {
+			if (call_lock && call_skip.has(gr_nodes[i])) {
 				continue;
 			}
 
 			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
-				nodes[i]->set(p_name, p_value);
+				gr_nodes[i]->set(p_name, p_value);
 			} else {
-				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
+				MessageQueue::get_singleton()->push_set(gr_nodes[i], p_name, p_value);
 			}
 		}
 	}
@@ -846,13 +846,13 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 	//performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
-	int node_count = nodes_copy.size();
-	Node **nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
 
 	call_lock++;
 
-	for (int i = 0; i < node_count; i++) {
-		Node *n = nodes[i];
+	for (int i = 0; i < gr_node_count; i++) {
+		Node *n = gr_nodes[i];
 		if (call_lock && call_skip.has(n)) {
 			continue;
 		}
@@ -865,7 +865,7 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 		}
 
 		n->notification(p_notification);
-		//ERR_FAIL_COND(node_count != g.nodes.size());
+		//ERR_FAIL_COND(gr_node_count != g.nodes.size());
 	}
 
 	call_lock--;
@@ -890,17 +890,17 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	//performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
-	int node_count = nodes_copy.size();
-	Node **nodes = nodes_copy.ptrw();
+	int gr_node_count = nodes_copy.size();
+	Node **gr_nodes = nodes_copy.ptrw();
 
 	call_lock++;
 
-	for (int i = node_count - 1; i >= 0; i--) {
+	for (int i = gr_node_count - 1; i >= 0; i--) {
 		if (p_viewport->is_input_handled()) {
 			break;
 		}
 
-		Node *n = nodes[i];
+		Node *n = gr_nodes[i];
 		if (call_lock && call_skip.has(n)) {
 			continue;
 		}

@@ -34,11 +34,11 @@
 #include "scene/main/node.h"
 
 bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+	String prop_name = p_name;
 
-	if (name.begins_with("properties/")) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	if (prop_name.begins_with("properties/")) {
+		int idx = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 
 		if (properties.size() == idx && what == "path") {
 			ERR_FAIL_COND_V(p_value.get_type() != Variant::NODE_PATH, false);
@@ -72,11 +72,11 @@ bool SceneReplicationConfig::_set(const StringName &p_name, const Variant &p_val
 }
 
 bool SceneReplicationConfig::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	String prop_name = p_name;
 
-	if (name.begins_with("properties/")) {
-		int idx = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	if (prop_name.begins_with("properties/")) {
+		int idx = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(idx, properties.size(), false);
 		const ReplicationProperty &prop = properties[idx];
 		if (what == "path") {

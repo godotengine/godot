@@ -198,7 +198,7 @@ private:
 
 	void draw_result_text(Object *item_obj, Rect2 rect);
 
-	void set_progress_visible(bool visible);
+	void set_progress_visible(bool p_visible);
 	void clear();
 
 	FindInFiles *_finder = nullptr;
