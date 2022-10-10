@@ -445,7 +445,14 @@ Error ResourceLoaderText::load() {
 				// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 				path = ResourceUID::get_singleton()->get_id_path(uid);
 			} else {
+#ifdef TOOLS_ENABLED
+				// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
+				if (ResourceLoader::get_resource_uid(path) != uid) {
+					WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+				}
+#else
 				WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+#endif
 			}
 		}
 
