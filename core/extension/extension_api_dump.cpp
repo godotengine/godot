@@ -38,7 +38,15 @@
 
 #ifdef TOOLS_ENABLED
 
-static String get_type_name(const PropertyInfo &p_info) {
+static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
+	if (p_type == Variant::NIL) {
+		return "Variant";
+	} else {
+		return Variant::get_type_name(p_type);
+	}
+}
+
+static String get_property_info_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::INT && (p_info.hint == PROPERTY_HINT_INT_IS_POINTER)) {
 		if (p_info.hint_string.is_empty()) {
 			return "void*";
@@ -70,7 +78,7 @@ static String get_type_name(const PropertyInfo &p_info) {
 	if (p_info.type == Variant::NIL) {
 		return "void";
 	}
-	return Variant::get_type_name(p_info.type);
+	return get_builtin_or_variant_type_name(p_info.type);
 }
 
 Dictionary NativeExtensionAPIDump::generate_extension_api() {
@@ -430,8 +438,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				Dictionary arg;
 				String argname = vararg ? "arg" + itos(i + 1) : Variant::get_utility_function_argument_name(name, i);
 				arg["name"] = argname;
-				Variant::Type argtype = Variant::get_utility_function_argument_type(name, i);
-				arg["type"] = argtype == Variant::NIL ? String("Variant") : Variant::get_type_name(argtype);
+				arg["type"] = get_builtin_or_variant_type_name(Variant::get_utility_function_argument_type(name, i));
 				//no default value support in utility functions
 				arguments.push_back(arg);
 			}
@@ -461,8 +468,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			Dictionary d;
 			d["name"] = Variant::get_type_name(type);
 			if (Variant::has_indexing(type)) {
-				Variant::Type index_type = Variant::get_indexed_element_type(type);
-				d["indexing_return_type"] = index_type == Variant::NIL ? String("Variant") : Variant::get_type_name(index_type);
+				d["indexing_return_type"] = get_builtin_or_variant_type_name(Variant::get_indexed_element_type(type));
 			}
 
 			d["is_keyed"] = Variant::is_keyed(type);
@@ -476,7 +482,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 				for (const StringName &member_name : member_names) {
 					Dictionary d2;
 					d2["name"] = String(member_name);
-					d2["type"] = Variant::get_type_name(Variant::get_member_type(type, member_name));
+					d2["type"] = get_builtin_or_variant_type_name(Variant::get_member_type(type, member_name));
 					members.push_back(d2);
 				}
 				if (members.size()) {
@@ -493,7 +499,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					Dictionary d2;
 					d2["name"] = String(constant_name);
 					Variant constant = Variant::get_constant_value(type, constant_name);
-					d2["type"] = Variant::get_type_name(constant.get_type());
+					d2["type"] = get_builtin_or_variant_type_name(constant.get_type());
 					d2["value"] = constant.get_construct_string();
 					constants.push_back(d2);
 				}
@@ -544,9 +550,9 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							Dictionary d2;
 							d2["name"] = Variant::get_operator_name(Variant::Operator(k));
 							if (k != Variant::OP_NEGATE && k != Variant::OP_POSITIVE && k != Variant::OP_NOT && k != Variant::OP_BIT_NEGATE) {
-								d2["right_type"] = Variant::get_type_name(Variant::Type(j));
+								d2["right_type"] = get_builtin_or_variant_type_name(Variant::Type(j));
 							}
-							d2["return_type"] = Variant::get_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
+							d2["return_type"] = get_builtin_or_variant_type_name(Variant::get_operator_return_type(Variant::Operator(k), type, Variant::Type(j)));
 							operators.push_back(d2);
 						}
 					}
@@ -580,8 +586,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					for (int j = 0; j < argcount; j++) {
 						Dictionary d3;
 						d3["name"] = Variant::get_builtin_method_argument_name(type, method_name, j);
-						Variant::Type argtype = Variant::get_builtin_method_argument_type(type, method_name, j);
-						d3["type"] = argtype == Variant::NIL ? String("Variant") : Variant::get_type_name(argtype);
+						d3["type"] = get_builtin_or_variant_type_name(Variant::get_builtin_method_argument_type(type, method_name, j));
 
 						if (j >= (argcount - default_args.size())) {
 							int dargidx = j - (argcount - default_args.size());
@@ -613,7 +618,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					for (int k = 0; k < argcount; k++) {
 						Dictionary d3;
 						d3["name"] = Variant::get_constructor_argument_name(type, j, k);
-						d3["type"] = Variant::get_type_name(Variant::get_constructor_argument_type(type, j, k));
+						d3["type"] = get_builtin_or_variant_type_name(Variant::get_constructor_argument_type(type, j, k));
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
@@ -741,7 +746,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 								d3["name"] = pinfo.name;
 							}
 
-							d3["type"] = get_type_name(pinfo);
+							d3["type"] = get_property_info_type_name(pinfo);
 
 							if (i == -1) {
 								d2["return_value"] = d3;
@@ -784,7 +789,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 							if (i >= 0) {
 								d3["name"] = pinfo.name;
 							}
-							d3["type"] = get_type_name(pinfo);
+							d3["type"] = get_property_info_type_name(pinfo);
 
 							if (method->get_argument_meta(i) > 0) {
 								static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
@@ -831,7 +836,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					for (int i = 0; i < F.arguments.size(); i++) {
 						Dictionary d3;
 						d3["name"] = F.arguments[i].name;
-						d3["type"] = get_type_name(F.arguments[i]);
+						d3["type"] = get_property_info_type_name(F.arguments[i]);
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
@@ -863,7 +868,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					}
 					StringName property_name = F.name;
 					Dictionary d2;
-					d2["type"] = get_type_name(F);
+					d2["type"] = get_property_info_type_name(F);
 					d2["name"] = String(property_name);
 					d2["setter"] = ClassDB::get_property_setter(class_name, F.name);
 					d2["getter"] = ClassDB::get_property_getter(class_name, F.name);
