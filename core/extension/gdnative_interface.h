@@ -231,7 +231,6 @@ typedef void (*GDNativeExtensionClassUnreference)(GDExtensionClassInstancePtr p_
 typedef void (*GDNativeExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 typedef GDNativeObjectPtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
 typedef void (*GDNativeExtensionClassFreeInstance)(void *p_userdata, GDExtensionClassInstancePtr p_instance);
-typedef void (*GDNativeExtensionClassObjectInstance)(GDExtensionClassInstancePtr p_instance, GDNativeObjectPtr p_object_instance);
 typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const char *p_name);
 
 typedef struct {
