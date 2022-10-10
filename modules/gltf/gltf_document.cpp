@@ -2590,10 +2590,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> state) {
 					Mesh::PRIMITIVE_TRIANGLES, // 4 TRIANGLES
 					Mesh::PRIMITIVE_TRIANGLE_STRIP, // 5 TRIANGLE_STRIP
 					Mesh::PRIMITIVE_TRIANGLES, // 6 TRIANGLE_FAN fan not supported, should be converted
-#ifndef _MSC_VER
-#warning line loop and triangle fan are not supported and need to be converted to lines and triangles
-#endif
-
+					// TODO: Line loop and triangle fan are not supported and need to be converted to lines and triangles.
 				};
 
 				primitive = primitives2[mode];

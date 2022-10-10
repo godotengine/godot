@@ -732,12 +732,6 @@ if selected_platform in platform_list:
         if env["werror"]:
             env.Append(CCFLAGS=["-Werror"])
 
-            # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
-            if methods.using_gcc(env):
-                env.Append(CXXFLAGS=["-Wno-error=cpp"])
-            elif methods.using_clang(env) or methods.using_emcc(env):
-                env.Append(CXXFLAGS=["-Wno-error=#warnings"])
-
     if hasattr(detect, "get_program_suffix"):
         suffix = "." + detect.get_program_suffix()
     else:

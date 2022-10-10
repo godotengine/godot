@@ -309,9 +309,7 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 		q.y = 1.0f - q.y;
 	}
 	q = q * src_rect.size + src_rect.position;
-#ifndef _MSC_VER
-#warning this need to be obtained from CanvasItem new repeat mode (but it needs to guess it from hierarchy, need to add a function for that)
-#endif
+	// TODO: This need to be obtained from CanvasItem new repeat mode (but it needs to guess it from hierarchy, need to add a function for that).
 	bool is_repeat = false;
 	bool is_mirrored_repeat = false;
 	if (is_repeat) {

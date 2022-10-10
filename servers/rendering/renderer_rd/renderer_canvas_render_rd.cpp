@@ -1075,10 +1075,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			clear_colors.push_back(texture_storage->render_target_get_clear_request_color(p_to_render_target));
 			texture_storage->render_target_disable_clear_request(p_to_render_target);
 		}
-#ifndef _MSC_VER
-#warning TODO obtain from framebuffer format eventually when this is implemented
-#endif
-
+		// TODO: Obtain from framebuffer format eventually when this is implemented.
 		fb_uniform_set = texture_storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
 	}
 

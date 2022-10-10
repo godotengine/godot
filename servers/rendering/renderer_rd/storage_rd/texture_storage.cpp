@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "texture_storage.h"
+
 #include "../effects/copy_effects.h"
 #include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
@@ -1496,9 +1497,7 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 		} break;
 		case Image::FORMAT_RGBE9995: {
 			r_format.format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-#ifndef _MSC_VER
-#warning TODO need to make a function in Image to swap bits for this
-#endif
+			// TODO: Need to make a function in Image to swap bits for this.
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_IDENTITY;

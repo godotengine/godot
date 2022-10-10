@@ -1202,16 +1202,6 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
-bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-#ifndef _MSC_VER
-#warning Need to get from proper window
-#endif
-
-	return DisplayServer::screen_is_touchscreen(p_screen);
-}
-
 #ifdef DBUS_ENABLED
 void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 	if (screen_is_kept_on() == p_enable) {
