@@ -302,6 +302,8 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
+
+	emit_signal("animation_selected", current);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -1552,6 +1554,8 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_2"), &AnimationPlayerEditor::_prepare_onion_layers_2);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
+
+	ADD_SIGNAL(MethodInfo("animation_selected", PropertyInfo(Variant::STRING, "name")));
 }
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
