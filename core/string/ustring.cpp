@@ -3669,13 +3669,16 @@ String String::simplify_path() const {
 	String drive;
 	if (s.begins_with("local://")) {
 		drive = "local://";
-		s = s.substr(8, s.length());
+		s = s.substr(8);
 	} else if (s.begins_with("res://")) {
 		drive = "res://";
-		s = s.substr(6, s.length());
+		s = s.substr(6);
 	} else if (s.begins_with("user://")) {
 		drive = "user://";
-		s = s.substr(7, s.length());
+		s = s.substr(7);
+	} else if (s.begins_with("uid://")) {
+		drive = "uid://";
+		s = s.substr(6);
 	} else if (is_network_share_path()) {
 		drive = s.substr(0, 2);
 		s = s.substr(2, s.length() - 2);
@@ -3689,7 +3692,7 @@ String String::simplify_path() const {
 		}
 		if (p != -1 && p < s.find("/")) {
 			drive = s.substr(0, p + 2);
-			s = s.substr(p + 2, s.length());
+			s = s.substr(p + 2);
 		}
 	}
 
