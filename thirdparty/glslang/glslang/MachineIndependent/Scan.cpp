@@ -739,6 +739,7 @@ void TScanContext::fillInKeywordMap()
     (*KeywordMap)["f16subpassInputMS"] =            F16SUBPASSINPUTMS;
     (*KeywordMap)["__explicitInterpAMD"] =     EXPLICITINTERPAMD;
     (*KeywordMap)["pervertexNV"] =             PERVERTEXNV;
+    (*KeywordMap)["pervertexEXT"] =            PERVERTEXEXT;
     (*KeywordMap)["precise"] =                 PRECISE;
 
     (*KeywordMap)["rayPayloadNV"] =            PAYLOADNV;
@@ -1716,6 +1717,12 @@ int TScanContext::tokenizeIdentifier()
     case PERVERTEXNV:
         if ((!parseContext.isEsProfile() && parseContext.version >= 450) ||
             parseContext.extensionTurnedOn(E_GL_NV_fragment_shader_barycentric))
+            return keyword;
+        return identifierOrType();
+
+    case PERVERTEXEXT:
+        if ((!parseContext.isEsProfile() && parseContext.version >= 450) ||
+            parseContext.extensionTurnedOn(E_GL_EXT_fragment_shader_barycentric))
             return keyword;
         return identifierOrType();
 

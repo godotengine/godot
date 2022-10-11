@@ -357,6 +357,14 @@ public:
     Decoration getReturnPrecision() const
         { return reducedPrecisionReturn ? DecorationRelaxedPrecision : NoPrecision; }
 
+    void setDebugLineInfo(Id fileName, int line, int column) {
+        lineInstruction = std::unique_ptr<Instruction>{new Instruction(OpLine)};
+        lineInstruction->addIdOperand(fileName);
+        lineInstruction->addImmediateOperand(line);
+        lineInstruction->addImmediateOperand(column);
+    }
+    bool hasDebugLineInfo() const { return lineInstruction != nullptr; }
+
     void setImplicitThis() { implicitThis = true; }
     bool hasImplicitThis() const { return implicitThis; }
 
@@ -373,6 +381,11 @@ public:
 
     void dump(std::vector<unsigned int>& out) const
     {
+        // OpLine
+        if (lineInstruction != nullptr) {
+            lineInstruction->dump(out);
+        }
+        
         // OpFunction
         functionInstruction.dump(out);
 
@@ -391,6 +404,7 @@ protected:
     Function& operator=(Function&);
 
     Module& parent;
+    std::unique_ptr<Instruction> lineInstruction;
     Instruction functionInstruction;
     std::vector<Instruction*> parameterInstructions;
     std::vector<Block*> blocks;
@@ -457,7 +471,8 @@ protected:
 // - the OpFunction instruction
 // - all the OpFunctionParameter instructions
 __inline Function::Function(Id id, Id resultType, Id functionType, Id firstParamId, Module& parent)
-    : parent(parent), functionInstruction(id, resultType, OpFunction), implicitThis(false),
+    : parent(parent), lineInstruction(nullptr),
+      functionInstruction(id, resultType, OpFunction), implicitThis(false),
       reducedPrecisionReturn(false)
 {
     // OpFunction

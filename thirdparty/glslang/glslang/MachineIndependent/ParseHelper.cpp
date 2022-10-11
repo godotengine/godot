@@ -716,7 +716,7 @@ bool TParseContext::isIoResizeArray(const TType& type) const
             (language == EShLangTessControl && type.getQualifier().storage == EvqVaryingOut &&
                 ! type.getQualifier().patch) ||
             (language == EShLangFragment && type.getQualifier().storage == EvqVaryingIn &&
-                type.getQualifier().pervertexNV) ||
+                (type.getQualifier().pervertexNV || type.getQualifier().pervertexEXT)) ||
             (language == EShLangMeshNV && type.getQualifier().storage == EvqVaryingOut &&
                 !type.getQualifier().perTaskNV));
 }
@@ -856,7 +856,7 @@ void TParseContext::checkIoArrayConsistency(const TSourceLoc& loc, int requiredS
             error(loc, "inconsistent output number of vertices for array size of", feature, name.c_str());
         else if (language == EShLangFragment) {
             if (type.getOuterArraySize() > requiredSize)
-                error(loc, " cannot be greater than 3 for pervertexNV", feature, name.c_str());
+                error(loc, " cannot be greater than 3 for pervertexEXT", feature, name.c_str());
         }
         else if (language == EShLangMeshNV)
             error(loc, "inconsistent output array size of", feature, name.c_str());
@@ -902,8 +902,10 @@ TIntermTyped* TParseContext::handleBinaryMath(const TSourceLoc& loc, const char*
         result = intermediate.addBinaryMath(op, left, right, loc);
     }
 
-    if (result == nullptr)
-        binaryOpError(loc, str, left->getCompleteString(), right->getCompleteString());
+    if (result == nullptr) {
+        bool enhanced = intermediate.getEnhancedMsgs();
+        binaryOpError(loc, str, left->getCompleteString(enhanced), right->getCompleteString(enhanced));
+    }
 
     return result;
 }
@@ -926,8 +928,10 @@ TIntermTyped* TParseContext::handleUnaryMath(const TSourceLoc& loc, const char* 
 
     if (result)
         return result;
-    else
-        unaryOpError(loc, str, childNode->getCompleteString());
+    else {
+        bool enhanced = intermediate.getEnhancedMsgs();
+        unaryOpError(loc, str, childNode->getCompleteString(enhanced));
+    }
 
     return childNode;
 }
@@ -953,8 +957,8 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
             requireProfile(loc, ~EEsProfile, feature);
             profileRequires(loc, ~EEsProfile, 420, E_GL_ARB_shading_language_420pack, feature);
         } else if (!base->getType().isCoopMat()) {
-            error(loc, "does not operate on this type:", field.c_str(), base->getType().getCompleteString().c_str());
-
+            bool enhanced = intermediate.getEnhancedMsgs();
+            error(loc, "does not operate on this type:", field.c_str(), base->getType().getCompleteString(enhanced).c_str());
             return base;
         }
 
@@ -1005,10 +1009,16 @@ TIntermTyped* TParseContext::handleDotDereference(const TSourceLoc& loc, TInterm
                     intermediate.addIoAccessed(field);
             }
             inheritMemoryQualifiers(base->getQualifier(), result->getWritableType().getQualifier());
-        } else
-            error(loc, "no such field in structure", field.c_str(), "");
+        } else {
+            auto baseSymbol = base;
+            while (baseSymbol->getAsSymbolNode() == nullptr)
+                baseSymbol = baseSymbol->getAsBinaryNode()->getLeft();
+            TString structName;
+            structName.append("\'").append(baseSymbol->getAsSymbolNode()->getName().c_str()).append( "\'");
+            error(loc, "no such field in structure", field.c_str(), structName.c_str());
+        }
     } else
-        error(loc, "does not apply to this type:", field.c_str(), base->getType().getCompleteString().c_str());
+        error(loc, "does not apply to this type:", field.c_str(), base->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
 
     // Propagate noContraction up the dereference chain
     if (base->getQualifier().isNoContraction())
@@ -1314,7 +1324,7 @@ TIntermTyped* TParseContext::handleFunctionCall(const TSourceLoc& loc, TFunction
             //
             result = addConstructor(loc, arguments, type);
             if (result == nullptr)
-                error(loc, "cannot construct with these arguments", type.getCompleteString().c_str(), "");
+                error(loc, "cannot construct with these arguments", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str(), "");
         }
     } else {
         //
@@ -1494,7 +1504,7 @@ TIntermTyped* TParseContext::handleBuiltInFunctionCall(TSourceLoc loc, TIntermNo
         else
             error(arguments->getLoc(), " wrong operand type", "Internal Error",
                                       "built in unary operator function.  Type: %s",
-                                      static_cast<TIntermTyped*>(arguments)->getCompleteString().c_str());
+                                      static_cast<TIntermTyped*>(arguments)->getCompleteString(intermediate.getEnhancedMsgs()).c_str());
     } else if (result->getAsOperator())
         builtInOpCheck(loc, function, *result->getAsOperator());
 
@@ -2317,7 +2327,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             error(loc, "argument must be compile-time constant", "payload number", "a");
         else {
             unsigned int location = (*argp)[10]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
-            if (intermediate.checkLocationRT(0, location) < 0)
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(0, location) < 0)
                 error(loc, "with layout(location =", "no rayPayloadEXT/rayPayloadInEXT declared", "%d)", location);
         }
         break;
@@ -2330,7 +2340,7 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
             error(loc, "argument must be compile-time constant", "callable data number", "");
         else {
             unsigned int location = (*argp)[1]->getAsConstantUnion()->getAsConstantUnion()->getConstArray()[0].getUConst();
-            if (intermediate.checkLocationRT(1, location) < 0)
+            if (!extensionTurnedOn(E_GL_EXT_spirv_intrinsics) && intermediate.checkLocationRT(1, location) < 0)
                 error(loc, "with layout(location =", "no callableDataEXT/callableDataInEXT declared", "%d)", location);
         }
         break;
@@ -2599,23 +2609,24 @@ void TParseContext::builtInOpCheck(const TSourceLoc& loc, const TFunction& fnCan
         // Check that if extended types are being used that the correct extensions are enabled.
         if (arg0 != nullptr) {
             const TType& type = arg0->getType();
+            bool enhanced = intermediate.getEnhancedMsgs();
             switch (type.getBasicType()) {
             default:
                 break;
             case EbtInt8:
             case EbtUint8:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int8, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int8, type.getCompleteString(enhanced).c_str());
                 break;
             case EbtInt16:
             case EbtUint16:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int16, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int16, type.getCompleteString(enhanced).c_str());
                 break;
             case EbtInt64:
             case EbtUint64:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int64, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_int64, type.getCompleteString(enhanced).c_str());
                 break;
             case EbtFloat16:
-                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_float16, type.getCompleteString().c_str());
+                requireExtensions(loc, 1, &E_GL_EXT_shader_subgroup_extended_types_float16, type.getCompleteString(enhanced).c_str());
                 break;
             }
         }
@@ -2788,7 +2799,10 @@ TFunction* TParseContext::handleConstructorCall(const TSourceLoc& loc, const TPu
     TOperator op = intermediate.mapTypeToConstructorOp(type);
 
     if (op == EOpNull) {
-        error(loc, "cannot construct this type", type.getBasicString(), "");
+      if (intermediate.getEnhancedMsgs() && type.getBasicType() == EbtSampler)
+            error(loc, "function not supported in this version; use texture() instead", "texture*D*", "");
+        else
+            error(loc, "cannot construct this type", type.getBasicString(), "");
         op = EOpConstructFloat;
         TType errorType(EbtFloat);
         type.shallowCopy(errorType);
@@ -2973,6 +2987,12 @@ bool TParseContext::lValueErrorCheck(const TSourceLoc& loc, const char* op, TInt
         // "In addition, it is an error to statically write to gl_FragDepth in the fragment shader."
         if (isEsProfile() && intermediate.getEarlyFragmentTests())
             message = "can't modify gl_FragDepth if using early_fragment_tests";
+        break;
+    case EvqFragStencil:
+        intermediate.setStencilReplacing();
+        // "In addition, it is an error to statically write to gl_FragDepth in the fragment shader."
+        if (isEsProfile() && intermediate.getEarlyFragmentTests())
+            message = "can't modify EvqFragStencil if using early_fragment_tests";
         break;
 
     default:
@@ -3198,6 +3218,12 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
         break;
     }
 
+    TString constructorString;
+    if (intermediate.getEnhancedMsgs())
+        constructorString.append(type.getCompleteString(true, false, false, true)).append(" constructor");
+    else
+        constructorString.append("constructor");
+
     // See if it's a matrix
     bool constructingMatrix = false;
     switch (op) {
@@ -3255,7 +3281,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
         if (function[arg].type->isArray()) {
             if (function[arg].type->isUnsizedArray()) {
                 // Can't construct from an unsized array.
-                error(loc, "array argument must be sized", "constructor", "");
+                error(loc, "array argument must be sized", constructorString.c_str(), "");
                 return true;
             }
             arrayArg = true;
@@ -3285,13 +3311,13 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             intArgument = true;
         if (type.isStruct()) {
             if (function[arg].type->contains16BitFloat()) {
-                requireFloat16Arithmetic(loc, "constructor", "can't construct structure containing 16-bit type");
+                requireFloat16Arithmetic(loc, constructorString.c_str(), "can't construct structure containing 16-bit type");
             }
             if (function[arg].type->contains16BitInt()) {
-                requireInt16Arithmetic(loc, "constructor", "can't construct structure containing 16-bit type");
+                requireInt16Arithmetic(loc, constructorString.c_str(), "can't construct structure containing 16-bit type");
             }
             if (function[arg].type->contains8BitInt()) {
-                requireInt8Arithmetic(loc, "constructor", "can't construct structure containing 8-bit type");
+                requireInt8Arithmetic(loc, constructorString.c_str(), "can't construct structure containing 8-bit type");
             }
         }
     }
@@ -3305,9 +3331,9 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructF16Vec3:
     case EOpConstructF16Vec4:
         if (type.isArray())
-            requireFloat16Arithmetic(loc, "constructor", "16-bit arrays not supported");
+            requireFloat16Arithmetic(loc, constructorString.c_str(), "16-bit arrays not supported");
         if (type.isVector() && function.getParamCount() != 1)
-            requireFloat16Arithmetic(loc, "constructor", "16-bit vectors only take vector types");
+            requireFloat16Arithmetic(loc, constructorString.c_str(), "16-bit vectors only take vector types");
         break;
     case EOpConstructUint16:
     case EOpConstructU16Vec2:
@@ -3318,9 +3344,9 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructI16Vec3:
     case EOpConstructI16Vec4:
         if (type.isArray())
-            requireInt16Arithmetic(loc, "constructor", "16-bit arrays not supported");
+            requireInt16Arithmetic(loc, constructorString.c_str(), "16-bit arrays not supported");
         if (type.isVector() && function.getParamCount() != 1)
-            requireInt16Arithmetic(loc, "constructor", "16-bit vectors only take vector types");
+            requireInt16Arithmetic(loc, constructorString.c_str(), "16-bit vectors only take vector types");
         break;
     case EOpConstructUint8:
     case EOpConstructU8Vec2:
@@ -3331,9 +3357,9 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     case EOpConstructI8Vec3:
     case EOpConstructI8Vec4:
         if (type.isArray())
-            requireInt8Arithmetic(loc, "constructor", "8-bit arrays not supported");
+            requireInt8Arithmetic(loc, constructorString.c_str(), "8-bit arrays not supported");
         if (type.isVector() && function.getParamCount() != 1)
-            requireInt8Arithmetic(loc, "constructor", "8-bit vectors only take vector types");
+            requireInt8Arithmetic(loc, constructorString.c_str(), "8-bit vectors only take vector types");
         break;
     default:
         break;
@@ -3415,7 +3441,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
 
     if (type.isArray()) {
         if (function.getParamCount() == 0) {
-            error(loc, "array constructor must have at least one argument", "constructor", "");
+            error(loc, "array constructor must have at least one argument", constructorString.c_str(), "");
             return true;
         }
 
@@ -3423,7 +3449,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             // auto adapt the constructor type to the number of arguments
             type.changeOuterArraySize(function.getParamCount());
         } else if (type.getOuterArraySize() != function.getParamCount()) {
-            error(loc, "array constructor needs one argument per array element", "constructor", "");
+            error(loc, "array constructor needs one argument per array element", constructorString.c_str(), "");
             return true;
         }
 
@@ -3436,7 +3462,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
             // At least the dimensionalities have to match.
             if (! function[0].type->isArray() ||
                     arraySizes.getNumDims() != function[0].type->getArraySizes()->getNumDims() + 1) {
-                error(loc, "array constructor argument not correct type to construct array element", "constructor", "");
+                error(loc, "array constructor argument not correct type to construct array element", constructorString.c_str(), "");
                 return true;
             }
 
@@ -3453,7 +3479,7 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
     }
 
     if (arrayArg && op != EOpConstructStruct && ! type.isArrayOfArrays()) {
-        error(loc, "constructing non-array constituent from array argument", "constructor", "");
+        error(loc, "constructing non-array constituent from array argument", constructorString.c_str(), "");
         return true;
     }
 
@@ -3463,51 +3489,51 @@ bool TParseContext::constructorError(const TSourceLoc& loc, TIntermNode* node, T
         // "If a matrix argument is given to a matrix constructor,
         // it is a compile-time error to have any other arguments."
         if (function.getParamCount() != 1)
-            error(loc, "matrix constructed from matrix can only have one argument", "constructor", "");
+            error(loc, "matrix constructed from matrix can only have one argument", constructorString.c_str(), "");
         return false;
     }
 
     if (overFull) {
-        error(loc, "too many arguments", "constructor", "");
+        error(loc, "too many arguments", constructorString.c_str(), "");
         return true;
     }
 
     if (op == EOpConstructStruct && ! type.isArray() && (int)type.getStruct()->size() != function.getParamCount()) {
-        error(loc, "Number of constructor parameters does not match the number of structure fields", "constructor", "");
+        error(loc, "Number of constructor parameters does not match the number of structure fields", constructorString.c_str(), "");
         return true;
     }
 
     if ((op != EOpConstructStruct && size != 1 && size < type.computeNumComponents()) ||
         (op == EOpConstructStruct && size < type.computeNumComponents())) {
-        error(loc, "not enough data provided for construction", "constructor", "");
+        error(loc, "not enough data provided for construction", constructorString.c_str(), "");
         return true;
     }
 
     if (type.isCoopMat() && function.getParamCount() != 1) {
-        error(loc, "wrong number of arguments", "constructor", "");
+        error(loc, "wrong number of arguments", constructorString.c_str(), "");
         return true;
     }
     if (type.isCoopMat() &&
         !(function[0].type->isScalar() || function[0].type->isCoopMat())) {
-        error(loc, "Cooperative matrix constructor argument must be scalar or cooperative matrix", "constructor", "");
+        error(loc, "Cooperative matrix constructor argument must be scalar or cooperative matrix", constructorString.c_str(), "");
         return true;
     }
 
     TIntermTyped* typed = node->getAsTyped();
     if (typed == nullptr) {
-        error(loc, "constructor argument does not have a type", "constructor", "");
+        error(loc, "constructor argument does not have a type", constructorString.c_str(), "");
         return true;
     }
     if (op != EOpConstructStruct && op != EOpConstructNonuniform && typed->getBasicType() == EbtSampler) {
-        error(loc, "cannot convert a sampler", "constructor", "");
+        error(loc, "cannot convert a sampler", constructorString.c_str(), "");
         return true;
     }
     if (op != EOpConstructStruct && typed->isAtomic()) {
-        error(loc, "cannot convert an atomic_uint", "constructor", "");
+        error(loc, "cannot convert an atomic_uint", constructorString.c_str(), "");
         return true;
     }
     if (typed->getBasicType() == EbtVoid) {
-        error(loc, "cannot convert a void", "constructor", "");
+        error(loc, "cannot convert a void", constructorString.c_str(), "");
         return true;
     }
 
@@ -3786,7 +3812,7 @@ void TParseContext::globalQualifierTypeCheck(const TSourceLoc& loc, const TQuali
     if (isTypeInt(publicType.basicType) || publicType.basicType == EbtDouble)
         profileRequires(loc, EEsProfile, 300, nullptr, "shader input/output");
 
-    if (!qualifier.flat && !qualifier.isExplicitInterpolation() && !qualifier.isPervertexNV()) {
+    if (!qualifier.flat && !qualifier.isExplicitInterpolation() && !qualifier.isPervertexNV() && !qualifier.isPervertexEXT()) {
         if (isTypeInt(publicType.basicType) ||
             publicType.basicType == EbtDouble ||
             (publicType.userDef && (   publicType.userDef->containsBasicType(EbtInt)
@@ -4591,7 +4617,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
 
     if (ssoPre150 ||
         (identifier == "gl_FragDepth"           && ((nonEsRedecls && version >= 420) || esRedecls)) ||
-        (identifier == "gl_FragCoord"           && ((nonEsRedecls && version >= 150) || esRedecls)) ||
+        (identifier == "gl_FragCoord"           && ((nonEsRedecls && version >= 140) || esRedecls)) ||
          identifier == "gl_ClipDistance"                                                            ||
          identifier == "gl_CullDistance"                                                            ||
          identifier == "gl_ShadingRateEXT"                                                          ||
@@ -4660,7 +4686,7 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
                 symbolQualifier.storage != qualifier.storage)
                 error(loc, "cannot change qualification of", "redeclaration", symbol->getName().c_str());
         } else if (identifier == "gl_FragCoord") {
-            if (intermediate.inIoAccessed("gl_FragCoord"))
+            if (!intermediate.getTexCoordRedeclared() && intermediate.inIoAccessed("gl_FragCoord"))
                 error(loc, "cannot redeclare after use", "gl_FragCoord", "");
             if (qualifier.nopersp != symbolQualifier.nopersp || qualifier.flat != symbolQualifier.flat ||
                 qualifier.isMemory() || qualifier.isAuxiliary())
@@ -4670,6 +4696,9 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
             if (! builtIn && (publicType.pixelCenterInteger != intermediate.getPixelCenterInteger() ||
                               publicType.originUpperLeft != intermediate.getOriginUpperLeft()))
                 error(loc, "cannot redeclare with different qualification:", "redeclaration", symbol->getName().c_str());
+
+
+            intermediate.setTexCoordRedeclared();
             if (publicType.pixelCenterInteger)
                 intermediate.setPixelCenterInteger();
             if (publicType.originUpperLeft)
@@ -4686,10 +4715,22 @@ TSymbol* TParseContext::redeclareBuiltinVariable(const TSourceLoc& loc, const TS
                 if (! intermediate.setDepth(publicType.layoutDepth))
                     error(loc, "all redeclarations must use the same depth layout on", "redeclaration", symbol->getName().c_str());
             }
+        } else if (identifier == "gl_FragStencilRefARB") {
+            if (qualifier.nopersp != symbolQualifier.nopersp || qualifier.flat != symbolQualifier.flat ||
+                qualifier.isMemory() || qualifier.isAuxiliary())
+                error(loc, "can only change layout qualification of", "redeclaration", symbol->getName().c_str());
+            if (qualifier.storage != EvqVaryingOut)
+                error(loc, "cannot change output storage qualification of", "redeclaration", symbol->getName().c_str());
+            if (publicType.layoutStencil != ElsNone) {
+                if (intermediate.inIoAccessed("gl_FragStencilRefARB"))
+                    error(loc, "cannot redeclare after use", "gl_FragStencilRefARB", "");
+                if (!intermediate.setStencil(publicType.layoutStencil))
+                    error(loc, "all redeclarations must use the same stencil layout on", "redeclaration",
+                          symbol->getName().c_str());
+            }
         }
         else if (
-            identifier == "gl_PrimitiveIndicesNV" ||
-            identifier == "gl_FragStencilRefARB") {
+            identifier == "gl_PrimitiveIndicesNV") {
             if (qualifier.hasLayout())
                 error(loc, "cannot apply layout qualifier to", "redeclaration", symbol->getName().c_str());
             if (qualifier.storage != EvqVaryingOut)
@@ -5501,12 +5542,19 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
     }
     if (language == EShLangFragment) {
         if (id == "origin_upper_left") {
-            requireProfile(loc, ECoreProfile | ECompatibilityProfile, "origin_upper_left");
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile | ENoProfile, "origin_upper_left");
+            if (profile == ENoProfile) {
+                profileRequires(loc,ECoreProfile | ECompatibilityProfile, 140, E_GL_ARB_fragment_coord_conventions, "origin_upper_left");
+            }
+
             publicType.shaderQualifiers.originUpperLeft = true;
             return;
         }
         if (id == "pixel_center_integer") {
-            requireProfile(loc, ECoreProfile | ECompatibilityProfile, "pixel_center_integer");
+            requireProfile(loc, ECoreProfile | ECompatibilityProfile | ENoProfile, "pixel_center_integer");
+            if (profile == ENoProfile) {
+                profileRequires(loc,ECoreProfile | ECompatibilityProfile, 140, E_GL_ARB_fragment_coord_conventions, "pixel_center_integer");
+            }
             publicType.shaderQualifiers.pixelCenterInteger = true;
             return;
         }
@@ -5514,6 +5562,12 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
             profileRequires(loc, ENoProfile | ECoreProfile | ECompatibilityProfile, 420, E_GL_ARB_shader_image_load_store, "early_fragment_tests");
             profileRequires(loc, EEsProfile, 310, nullptr, "early_fragment_tests");
             publicType.shaderQualifiers.earlyFragmentTests = true;
+            return;
+        }
+        if (id == "early_and_late_fragment_tests_amd") {
+            profileRequires(loc, ENoProfile | ECoreProfile | ECompatibilityProfile, 420, E_GL_AMD_shader_early_and_late_fragment_tests, "early_and_late_fragment_tests_amd");
+            profileRequires(loc, EEsProfile, 310, nullptr, "early_and_late_fragment_tests_amd");
+            publicType.shaderQualifiers.earlyAndLateFragmentTestsAMD = true;
             return;
         }
         if (id == "post_depth_coverage") {
@@ -5529,6 +5583,14 @@ void TParseContext::setLayoutQualifier(const TSourceLoc& loc, TPublicType& publi
                 requireProfile(loc, ECoreProfile | ECompatibilityProfile, "depth layout qualifier");
                 profileRequires(loc, ECoreProfile | ECompatibilityProfile, 420, nullptr, "depth layout qualifier");
                 publicType.shaderQualifiers.layoutDepth = depth;
+                return;
+            }
+        }
+        for (TLayoutStencil stencil = (TLayoutStencil)(ElsNone + 1); stencil < ElsCount; stencil = (TLayoutStencil)(stencil+1)) {
+            if (id == TQualifier::getLayoutStencilString(stencil)) {
+                requireProfile(loc, ECoreProfile | ECompatibilityProfile, "stencil layout qualifier");
+                profileRequires(loc, ECoreProfile | ECompatibilityProfile, 420, nullptr, "stencil layout qualifier");
+                publicType.shaderQualifiers.layoutStencil = stencil;
                 return;
             }
         }
@@ -6039,6 +6101,8 @@ void TParseContext::mergeObjectLayoutQualifiers(TQualifier& dst, const TQualifie
             dst.layoutShaderRecord = true;
         if (src.pervertexNV)
             dst.pervertexNV = true;
+        if (src.pervertexEXT)
+            dst.pervertexEXT = true;
 #endif
     }
 }
@@ -6338,8 +6402,12 @@ void TParseContext::layoutTypeCheck(const TSourceLoc& loc, const TType& type)
         profileRequires(loc, ECoreProfile | ECompatibilityProfile, 0, E_GL_EXT_shader_image_load_formatted, explanation);
     }
 
-    if (qualifier.isPushConstant() && type.getBasicType() != EbtBlock)
-        error(loc, "can only be used with a block", "push_constant", "");
+    if (qualifier.isPushConstant()) {
+        if (type.getBasicType() != EbtBlock)
+            error(loc, "can only be used with a block", "push_constant", "");
+        if (type.isArray())
+            error(loc, "Push constants blocks can't be an array", "push_constant", "");
+    }
 
     if (qualifier.hasBufferReference() && type.getBasicType() != EbtBlock)
         error(loc, "can only be used with a block", "buffer_reference", "");
@@ -6967,12 +7035,14 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
 
         TFunction realFunc(&name, function->getType());
 
+        // Use copyParam to avoid shared ownership of the 'type' field
+        // of the parameter.
         for (int i = 0; i < function->getParamCount(); ++i) {
-            realFunc.addParameter((*function)[i]);
+            realFunc.addParameter(TParameter().copyParam((*function)[i]));
         }
 
         TParameter tmpP = { 0, &uintType };
-        realFunc.addParameter(tmpP);
+        realFunc.addParameter(TParameter().copyParam(tmpP));
         arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(1, loc, true));
 
         result = handleFunctionCall(loc, &realFunc, arguments);
@@ -6985,11 +7055,11 @@ TIntermTyped* TParseContext::vkRelaxedRemapFunctionCall(const TSourceLoc& loc, T
         TFunction realFunc(&name, function->getType());
 
         for (int i = 0; i < function->getParamCount(); ++i) {
-            realFunc.addParameter((*function)[i]);
+            realFunc.addParameter(TParameter().copyParam((*function)[i]));
         }
 
         TParameter tmpP = { 0, &uintType };
-        realFunc.addParameter(tmpP);
+        realFunc.addParameter(TParameter().copyParam(tmpP));
         arguments = intermediate.growAggregate(arguments, intermediate.addConstantUnion(-1, loc, true));
 
         result = handleFunctionCall(loc, &realFunc, arguments);
@@ -7223,6 +7293,8 @@ TIntermNode* TParseContext::declareVariable(const TSourceLoc& loc, TString& iden
         error(loc, "can only apply origin_upper_left and pixel_center_origin to gl_FragCoord", "layout qualifier", "");
     if (identifier != "gl_FragDepth" && publicType.shaderQualifiers.getDepth() != EldNone)
         error(loc, "can only apply depth layout to gl_FragDepth", "layout qualifier", "");
+    if (identifier != "gl_FragStencilRefARB" && publicType.shaderQualifiers.getStencil() != ElsNone)
+        error(loc, "can only apply depth layout to gl_FragStencilRefARB", "layout qualifier", "");
 
     // Check for redeclaration of built-ins and/or attempting to declare a reserved name
     TSymbol* symbol = redeclareBuiltinVariable(loc, identifier, type.getQualifier(), publicType.shaderQualifiers);
@@ -7430,14 +7502,14 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
     // Uniforms require a compile-time constant initializer
     if (qualifier == EvqUniform && ! initializer->getType().getQualifier().isFrontEndConstant()) {
         error(loc, "uniform initializers must be constant", "=", "'%s'",
-              variable->getType().getCompleteString().c_str());
+              variable->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
         variable->getWritableType().getQualifier().makeTemporary();
         return nullptr;
     }
     // Global consts require a constant initializer (specialization constant is okay)
     if (qualifier == EvqConst && symbolTable.atGlobalLevel() && ! initializer->getType().getQualifier().isConstant()) {
         error(loc, "global const initializers must be constant", "=", "'%s'",
-              variable->getType().getCompleteString().c_str());
+              variable->getType().getCompleteString(intermediate.getEnhancedMsgs()).c_str());
         variable->getWritableType().getQualifier().makeTemporary();
         return nullptr;
     }
@@ -7500,7 +7572,7 @@ TIntermNode* TParseContext::executeInitializer(const TSourceLoc& loc, TIntermTyp
         TIntermSymbol* intermSymbol = intermediate.addSymbol(*variable, loc);
         TIntermTyped* initNode = intermediate.addAssign(EOpAssign, intermSymbol, initializer, loc);
         if (! initNode)
-            assignError(loc, "=", intermSymbol->getCompleteString(), initializer->getCompleteString());
+            assignError(loc, "=", intermSymbol->getCompleteString(intermediate.getEnhancedMsgs()), initializer->getCompleteString(intermediate.getEnhancedMsgs()));
 
         return initNode;
     }
@@ -7571,7 +7643,7 @@ TIntermTyped* TParseContext::convertInitializerList(const TSourceLoc& loc, const
         }
     } else if (type.isMatrix()) {
         if (type.getMatrixCols() != (int)initList->getSequence().size()) {
-            error(loc, "wrong number of matrix columns:", "initializer list", type.getCompleteString().c_str());
+            error(loc, "wrong number of matrix columns:", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
             return nullptr;
         }
         TType vectorType(type, 0); // dereferenced type
@@ -7582,20 +7654,20 @@ TIntermTyped* TParseContext::convertInitializerList(const TSourceLoc& loc, const
         }
     } else if (type.isVector()) {
         if (type.getVectorSize() != (int)initList->getSequence().size()) {
-            error(loc, "wrong vector size (or rows in a matrix column):", "initializer list", type.getCompleteString().c_str());
+            error(loc, "wrong vector size (or rows in a matrix column):", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
             return nullptr;
         }
         TBasicType destType = type.getBasicType();
         for (int i = 0; i < type.getVectorSize(); ++i) {
             TBasicType initType = initList->getSequence()[i]->getAsTyped()->getBasicType();
             if (destType != initType && !intermediate.canImplicitlyPromote(initType, destType)) {
-                error(loc, "type mismatch in initializer list", "initializer list", type.getCompleteString().c_str());
+                error(loc, "type mismatch in initializer list", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
                 return nullptr;
             }
 
         }
     } else {
-        error(loc, "unexpected initializer-list type:", "initializer list", type.getCompleteString().c_str());
+        error(loc, "unexpected initializer-list type:", "initializer list", type.getCompleteString(intermediate.getEnhancedMsgs()).c_str());
         return nullptr;
     }
 
@@ -8059,12 +8131,12 @@ TIntermTyped* TParseContext::constructBuiltIn(const TType& type, TOperator op, T
     case EOpConstructAccStruct:
         if ((node->getType().isScalar() && node->getType().getBasicType() == EbtUint64)) {
             // construct acceleration structure from uint64
-            requireExtensions(loc, 1, &E_GL_EXT_ray_tracing, "uint64_t conversion to acclerationStructureEXT");
+            requireExtensions(loc, Num_ray_tracing_EXTs, ray_tracing_EXTs, "uint64_t conversion to acclerationStructureEXT");
             return intermediate.addBuiltInFunctionCall(node->getLoc(), EOpConvUint64ToAccStruct, true, node,
                 type);
         } else if (node->getType().isVector() && node->getType().getBasicType() == EbtUint && node->getVectorSize() == 2) {
             // construct acceleration structure from uint64
-            requireExtensions(loc, 1, &E_GL_EXT_ray_tracing, "uvec2 conversion to accelerationStructureEXT");
+            requireExtensions(loc, Num_ray_tracing_EXTs, ray_tracing_EXTs, "uvec2 conversion to accelerationStructureEXT");
             return intermediate.addBuiltInFunctionCall(node->getLoc(), EOpConvUvec2ToAccStruct, true, node,
                 type);
         } else
@@ -8103,8 +8175,9 @@ TIntermTyped* TParseContext::constructAggregate(TIntermNode* node, const TType& 
 {
     TIntermTyped* converted = intermediate.addConversion(EOpConstructStruct, type, node->getAsTyped());
     if (! converted || converted->getType() != type) {
+        bool enhanced = intermediate.getEnhancedMsgs();
         error(loc, "", "constructor", "cannot convert parameter %d from '%s' to '%s'", paramCount,
-              node->getAsTyped()->getType().getCompleteString().c_str(), type.getCompleteString().c_str());
+              node->getAsTyped()->getType().getCompleteString(enhanced).c_str(), type.getCompleteString(enhanced).c_str());
 
         return nullptr;
     }
@@ -9053,6 +9126,12 @@ void TParseContext::updateStandaloneQualifierDefaults(const TSourceLoc& loc, con
             intermediate.setEarlyFragmentTests();
         else
             error(loc, "can only apply to 'in'", "early_fragment_tests", "");
+    }
+    if (publicType.shaderQualifiers.earlyAndLateFragmentTestsAMD) {
+        if (publicType.qualifier.storage == EvqVaryingIn)
+            intermediate.setEarlyAndLateFragmentTestsAMD();
+        else
+            error(loc, "can only apply to 'in'", "early_and_late_fragment_tests_amd", "");
     }
     if (publicType.shaderQualifiers.postDepthCoverage) {
         if (publicType.qualifier.storage == EvqVaryingIn)

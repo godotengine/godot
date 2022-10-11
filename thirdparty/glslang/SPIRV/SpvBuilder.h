@@ -99,6 +99,10 @@ public:
         stringIds[file_c_str] = strId;
         return strId;
     }
+    spv::Id getSourceFile() const 
+    {
+        return sourceFileStringId;
+    }
     void setSourceFile(const std::string& file)
     {
         sourceFileStringId = getStringId(file);

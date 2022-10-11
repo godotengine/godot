@@ -176,7 +176,7 @@ commits.
 ## glslang
 
 - Upstream: https://github.com/KhronosGroup/glslang
-- Version: 11.8.0 (c34bb3b6c55f6ab084124ad964be95a699700d34, 2022)
+- Version: 11.11.0 (73c9630da979017b2f7e19c6549e2bdb93d9b238, 2022)
 - License: glslang
 
 Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
@@ -685,7 +685,7 @@ folder.
 ## volk
 
 - Upstream: https://github.com/zeux/volk
-- Version: 1.3.204 (92ba7c9f112a82cecf452ebf4b7c46f149a5799e, 2022)
+- Version: 1.3.230 (d0e41bf57439420253d9a9b5c3101226e68e64dd, 2022)
 - License: MIT
 
 Unless there is a specific reason to package a more recent version, please stick
@@ -705,7 +705,7 @@ Files extracted from upstream source:
 ## vulkan
 
 - Upstream: https://github.com/KhronosGroup/Vulkan-Headers
-- Version: 1.3.204 (1dace16d8044758d32736eb59802d171970e9448, 2022)
+- Version: 1.3.230 (0df9899602351e03357d3f1895cdfb73acb5d294, 2022)
 - License: Apache 2.0
 
 The vendored version should be kept in sync with volk, see above.

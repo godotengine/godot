@@ -315,7 +315,7 @@ extern int yylex(YYSTYPE*, TParseContext&);
 %token <lex> PATCH SAMPLE NONUNIFORM
 %token <lex> COHERENT VOLATILE RESTRICT READONLY WRITEONLY DEVICECOHERENT QUEUEFAMILYCOHERENT WORKGROUPCOHERENT
 %token <lex> SUBGROUPCOHERENT NONPRIVATE SHADERCALLCOHERENT
-%token <lex> NOPERSPECTIVE EXPLICITINTERPAMD PERVERTEXNV PERPRIMITIVENV PERVIEWNV PERTASKNV
+%token <lex> NOPERSPECTIVE EXPLICITINTERPAMD PERVERTEXEXT PERVERTEXNV PERPRIMITIVENV PERVIEWNV PERTASKNV
 %token <lex> PRECISE
 
 
@@ -798,7 +798,7 @@ conditional_expression
         parseContext.rValueErrorCheck($5.loc, ":", $6);
         $$ = parseContext.intermediate.addSelection($1, $4, $6, $2.loc);
         if ($$ == 0) {
-            parseContext.binaryOpError($2.loc, ":", $4->getCompleteString(), $6->getCompleteString());
+            parseContext.binaryOpError($2.loc, ":", $4->getCompleteString(parseContext.intermediate.getEnhancedMsgs()), $6->getCompleteString(parseContext.intermediate.getEnhancedMsgs()));
             $$ = $6;
         }
     }
@@ -815,7 +815,7 @@ assignment_expression
         parseContext.rValueErrorCheck($2.loc, "assign", $3);
         $$ = parseContext.addAssign($2.loc, $2.op, $1, $3);
         if ($$ == 0) {
-            parseContext.assignError($2.loc, "assign", $1->getCompleteString(), $3->getCompleteString());
+            parseContext.assignError($2.loc, "assign", $1->getCompleteString(parseContext.intermediate.getEnhancedMsgs()), $3->getCompleteString(parseContext.intermediate.getEnhancedMsgs()));
             $$ = $1;
         }
     }
@@ -877,7 +877,7 @@ expression
         parseContext.samplerConstructorLocationCheck($2.loc, ",", $3);
         $$ = parseContext.intermediate.addComma($1, $3, $2.loc);
         if ($$ == 0) {
-            parseContext.binaryOpError($2.loc, ",", $1->getCompleteString(), $3->getCompleteString());
+            parseContext.binaryOpError($2.loc, ",", $1->getCompleteString(parseContext.intermediate.getEnhancedMsgs()), $3->getCompleteString(parseContext.intermediate.getEnhancedMsgs()));
             $$ = $3;
         }
     }
@@ -1289,6 +1289,14 @@ interpolation_qualifier
         parseContext.profileRequires($1.loc, EEsProfile, 0, E_GL_NV_fragment_shader_barycentric, "fragment shader barycentric");
         $$.init($1.loc);
         $$.qualifier.pervertexNV = true;
+    }
+    | PERVERTEXEXT {
+        parseContext.globalCheck($1.loc, "pervertexEXT");
+        parseContext.profileRequires($1.loc, ECoreProfile, 0, E_GL_EXT_fragment_shader_barycentric, "fragment shader barycentric");
+        parseContext.profileRequires($1.loc, ECompatibilityProfile, 0, E_GL_EXT_fragment_shader_barycentric, "fragment shader barycentric");
+        parseContext.profileRequires($1.loc, EEsProfile, 0, E_GL_EXT_fragment_shader_barycentric, "fragment shader barycentric");
+        $$.init($1.loc);
+        $$.qualifier.pervertexEXT = true;
     }
     | PERPRIMITIVENV {
         // No need for profile version or extension check. Shader stage already checks both.

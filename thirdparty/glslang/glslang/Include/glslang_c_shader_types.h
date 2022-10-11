@@ -121,7 +121,9 @@ typedef enum {
 /* EShExecutable counterpart */
 typedef enum { GLSLANG_EX_VERTEX_FRAGMENT, GLSLANG_EX_FRAGMENT } glslang_executable_t;
 
-/* EShOptimizationLevel counterpart  */
+// EShOptimizationLevel counterpart
+// This enum is not used in the current C interface, but could be added at a later date.
+// GLSLANG_OPT_NONE is the current default.
 typedef enum {
     GLSLANG_OPT_NO_GENERATION,
     GLSLANG_OPT_NONE,
@@ -155,6 +157,7 @@ typedef enum {
     GLSLANG_MSG_HLSL_LEGALIZATION_BIT = (1 << 12),
     GLSLANG_MSG_HLSL_DX9_COMPATIBLE_BIT = (1 << 13),
     GLSLANG_MSG_BUILTIN_SYMBOL_TABLE_BIT = (1 << 14),
+    GLSLANG_MSG_ENHANCED = (1 << 15),
     LAST_ELEMENT_MARKER(GLSLANG_MSG_COUNT),
 } glslang_messages_t;
 

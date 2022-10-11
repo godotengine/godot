@@ -224,7 +224,7 @@ struct TParameter {
     TString *name;
     TType* type;
     TIntermTyped* defaultValue;
-    void copyParam(const TParameter& param)
+    TParameter& copyParam(const TParameter& param)
     {
         if (param.name)
             name = NewPoolTString(param.name->c_str());
@@ -232,6 +232,7 @@ struct TParameter {
             name = 0;
         type = param.type->clone();
         defaultValue = param.defaultValue;
+        return *this;
     }
     TBuiltInVariable getDeclaredBuiltIn() const { return type->getQualifier().declaredBuiltIn; }
 };
