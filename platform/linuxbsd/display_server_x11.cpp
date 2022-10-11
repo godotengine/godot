@@ -1729,6 +1729,18 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 
 		usleep(10000);
 	}
+
+	// Keep rendering context window size in sync
+#if defined(VULKAN_ENABLED)
+	if (context_vulkan) {
+		context_vulkan->window_resize(p_window, xwa.width, xwa.height);
+	}
+#endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(p_window, xwa.width, xwa.height);
+	}
+#endif
 }
 
 Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
