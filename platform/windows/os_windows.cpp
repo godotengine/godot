@@ -4003,11 +4003,8 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	//
 	// NOTE: The engine does not use ANSI escape codes to color error/warning messages; it uses Windows API calls instead.
 	// Therefore, error/warning messages are still colored on Windows versions older than 10.
-	HANDLE stdoutHandle;
-	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	DWORD outMode = 0;
-	outMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-
+	HANDLE stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD outMode = ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	if (!SetConsoleMode(stdoutHandle, outMode)) {
 		// Windows 8.1 or below, or Windows 10 prior to Anniversary Update.
 		print_verbose("Can't set the ENABLE_VIRTUAL_TERMINAL_PROCESSING Windows console mode.");
