@@ -53,6 +53,7 @@
 #include <process.h>
 #include <regstr.h>
 #include <shlobj.h>
+#include <wbemcli.h>
 
 extern "C" {
 __declspec(dllexport) DWORD NvOptimusEnablement = 1;
@@ -307,6 +308,97 @@ String OS_Windows::get_version() const {
 		}
 	}
 	return "";
+}
+
+Vector<String> OS_Windows::get_video_adapter_driver_info() const {
+	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
+	REFIID uuid = IID_IWbemLocator; // Interface UUID
+	IWbemLocator *wbemLocator = NULL; // to get the services
+	IWbemServices *wbemServices = NULL; // to get the class
+	IEnumWbemClassObject *iter = NULL;
+	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
+	static String driver_name;
+	static String driver_version;
+
+	const String device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name();
+	if (device_name.is_empty()) {
+		return Vector<String>();
+	}
+
+	CoInitialize(nullptr);
+
+	HRESULT hr = CoCreateInstance(clsid, NULL, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
+	if (hr != S_OK) {
+		return Vector<String>();
+	}
+
+	hr = wbemLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, 0, NULL, 0, 0, &wbemServices);
+	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
+	if (hr != S_OK) {
+		SAFE_RELEASE(wbemServices)
+		return Vector<String>();
+	}
+
+	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", device_name);
+	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
+	BSTR query_lang = SysAllocString(L"WQL");
+	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, NULL, &iter);
+	SysFreeString(query_lang);
+	SysFreeString(query);
+	if (hr == S_OK) {
+		ULONG resultCount;
+		hr = iter->Next(5000, 1, pnpSDriverObject, &resultCount); // Get exactly 1. Wait max 5 seconds.
+
+		if (hr == S_OK && resultCount > 0) {
+			VARIANT dn;
+			VariantInit(&dn);
+
+			BSTR object_name = SysAllocString(L"DriverName");
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+			SysFreeString(object_name);
+			if (hr == S_OK) {
+				String d_name = String(V_BSTR(&dn));
+				if (d_name.is_empty()) {
+					object_name = SysAllocString(L"DriverProviderName");
+					hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+					SysFreeString(object_name);
+					if (hr == S_OK) {
+						driver_name = String(V_BSTR(&dn));
+					}
+				} else {
+					driver_name = d_name;
+				}
+			} else {
+				object_name = SysAllocString(L"DriverProviderName");
+				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, NULL, NULL);
+				SysFreeString(object_name);
+				if (hr == S_OK) {
+					driver_name = String(V_BSTR(&dn));
+				}
+			}
+
+			VARIANT dv;
+			VariantInit(&dv);
+			object_name = SysAllocString(L"DriverVersion");
+			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, NULL, NULL);
+			SysFreeString(object_name);
+			if (hr == S_OK) {
+				driver_version = String(V_BSTR(&dv));
+			}
+			for (ULONG i = 0; i < resultCount; i++) {
+				SAFE_RELEASE(pnpSDriverObject[i])
+			}
+		}
+	}
+
+	SAFE_RELEASE(wbemServices)
+	SAFE_RELEASE(iter)
+
+	Vector<String> info;
+	info.push_back(driver_name);
+	info.push_back(driver_version);
+
+	return info;
 }
 
 OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
