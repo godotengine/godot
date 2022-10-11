@@ -33,14 +33,9 @@
 
 #include "core/debugger/remote_debugger_peer.h"
 
-#ifdef WEB_ENABLED
-#include "emws_client.h"
-#else
-#include "wsl_client.h"
-#endif
+#include "websocket_peer.h"
 
 class RemoteDebuggerPeerWebSocket : public RemoteDebuggerPeer {
-	Ref<WebSocketClient> ws_client;
 	Ref<WebSocketPeer> ws_peer;
 	List<Array> in_queue;
 	List<Array> out_queue;

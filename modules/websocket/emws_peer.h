@@ -54,33 +54,53 @@ extern void godot_js_websocket_destroy(int p_id);
 }
 
 class EMWSPeer : public WebSocketPeer {
-	GDCIIMPL(EMWSPeer, WebSocketPeer);
-
 private:
 	int peer_sock = -1;
-	WriteMode write_mode = WRITE_MODE_BINARY;
 
-	Vector<uint8_t> _packet_buffer;
-	PacketBuffer<uint8_t> _in_buffer;
-	uint8_t _is_string = 0;
-	int _out_buf_size = 0;
+	State ready_state = STATE_CLOSED;
+	Vector<uint8_t> packet_buffer;
+	PacketBuffer<uint8_t> in_buffer;
+	uint8_t was_string = 0;
+	int close_code = -1;
+	String close_reason;
+	String selected_protocol;
+	String requested_url;
+
+	static WebSocketPeer *_create() { return memnew(EMWSPeer); }
+	static void _esws_on_connect(void *obj, char *proto);
+	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
+	static void _esws_on_error(void *obj);
+	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
+
+	void _clear();
+	Error _send(const uint8_t *p_buffer, int p_buffer_size, bool p_binary);
 
 public:
-	Error read_msg(const uint8_t *p_data, uint32_t p_size, bool p_is_string);
-	void set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size);
+	static void initialize() { WebSocketPeer::_create = EMWSPeer::_create; }
+
+	// PacketPeer
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override { return _packet_buffer.size(); };
+	virtual int get_max_packet_size() const override { return packet_buffer.size(); };
+
+	// WebSocketPeer
+	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;
+	virtual Error connect_to_url(const String &p_url, bool p_verify_tls = true, Ref<X509Certificate> p_cert = Ref<X509Certificate>()) override;
+	virtual Error accept_stream(Ref<StreamPeer> p_stream) override;
+	virtual void close(int p_code = 1000, String p_reason = "") override;
+	virtual void poll() override;
+
+	virtual State get_ready_state() const override;
+	virtual int get_close_code() const override;
+	virtual String get_close_reason() const override;
 	virtual int get_current_outbound_buffered_amount() const override;
 
-	virtual void close(int p_code = 1000, String p_reason = "") override;
-	virtual bool is_connected_to_host() const override;
 	virtual IPAddress get_connected_host() const override;
 	virtual uint16_t get_connected_port() const override;
+	virtual String get_selected_protocol() const override;
+	virtual String get_requested_url() const override;
 
-	virtual WriteMode get_write_mode() const override;
-	virtual void set_write_mode(WriteMode p_mode) override;
 	virtual bool was_string_packet() const override;
 	virtual void set_no_delay(bool p_enabled) override;
 
