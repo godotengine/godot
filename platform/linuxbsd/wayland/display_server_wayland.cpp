@@ -2253,9 +2253,8 @@ Rect2i DisplayServerWayland::window_get_popup_safe_rect(WindowID p_window) const
 }
 
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub get_window_at_screen_position position %s", p_position));
-	return WindowID(0);
+	// Standard Wayland APIs don't support this.
+	return MAIN_WINDOW_ID;
 }
 
 void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, DisplayServer::WindowID p_window) {
