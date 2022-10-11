@@ -1853,8 +1853,7 @@ String Variant::stringify(int recursion_count) const {
 }
 
 String Variant::to_json_string() const {
-	JSON json;
-	return json.stringify(*this);
+	return JSON::stringify(*this);
 }
 
 Variant::operator Vector2() const {
