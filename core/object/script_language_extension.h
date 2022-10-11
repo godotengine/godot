@@ -82,7 +82,10 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_get_documentation, doc);
 
 		Vector<DocData::ClassDoc> class_doc;
-		// TODO: Missing conversion from documentation to ClassDoc.
+		for (int i = 0; i < doc.size(); i++) {
+			class_doc.append(DocData::ClassDoc::from_dict(doc[i]));
+		}
+
 		return class_doc;
 	}
 #endif // TOOLS_ENABLED
