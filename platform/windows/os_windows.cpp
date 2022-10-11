@@ -1123,15 +1123,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
-	ticks_per_second = 0;
-	ticks_start = 0;
-	main_loop = nullptr;
-	process_map = nullptr;
-
 	hInstance = _hInstance;
-#ifdef STDOUT_FILE
-	stdo = fopen("stdout.txt", "wb");
-#endif
 
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
@@ -1163,7 +1155,4 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
-#ifdef STDOUT_FILE
-	fclose(stdo);
-#endif
 }
