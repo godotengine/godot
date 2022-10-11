@@ -809,7 +809,7 @@ public:
 
 	void set_current_scene(int p_idx);
 
-	void setup_color_picker(ColorPicker *picker);
+	void setup_color_picker(ColorPicker *p_picker);
 
 	void request_instance_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
