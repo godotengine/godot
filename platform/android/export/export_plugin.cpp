@@ -2639,7 +2639,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 			if (user_data.libs.size() > 0) {
 				Ref<FileAccess> fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
-				fa->store_string(JSON::stringify(user_data.libs, "\t"));
+				JSON json;
+				fa->store_string(json.stringify(user_data.libs, "\t"));
 			}
 		} else {
 			print_verbose("Saving apk expansion file..");
@@ -2901,20 +2902,22 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			_load_image_data(splash_bg_color_image, data);
 		}
 
-		for (int i = 0; i < icon_densities_count; ++i) {
-			if (main_image.is_valid() && !main_image->is_empty()) {
-				if (file == launcher_icons[i].export_path) {
-					_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
+		if (file.ends_with(".png") && file.contains("mipmap")) {
+			for (int i = 0; i < icon_densities_count; ++i) {
+				if (main_image.is_valid() && !main_image->is_empty()) {
+					if (file == launcher_icons[i].export_path) {
+						_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
+					}
 				}
-			}
-			if (foreground.is_valid() && !foreground->is_empty()) {
-				if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
-					_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
+				if (foreground.is_valid() && !foreground->is_empty()) {
+					if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
+						_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
+					}
 				}
-			}
-			if (background.is_valid() && !background->is_empty()) {
-				if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
-					_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+				if (background.is_valid() && !background->is_empty()) {
+					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
+						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+					}
 				}
 			}
 		}
