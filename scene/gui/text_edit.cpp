@@ -4825,10 +4825,11 @@ void TextEdit::select_word_under_caret(int p_caret) {
 			continue;
 		}
 
-		select(get_caret_line(c), begin, get_caret_column(c), end, c);
+		select(get_caret_line(c), begin, get_caret_line(c), end, c);
 		// Move the caret to the end of the word for easier editing.
 		set_caret_column(end, false, c);
 	}
+	merge_overlapping_carets();
 }
 
 void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_to_column, int p_caret) {
