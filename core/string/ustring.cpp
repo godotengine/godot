@@ -1460,15 +1460,25 @@ String String::num(double p_num, int p_decimals) {
 		fmt[5] = 'f';
 		fmt[6] = 0;
 	}
-	char buf[256];
+	// if we want to convert a double with as much decimal places as as
+	// DBL_MAX or DBL_MIN then we would theoretically need a buffer of at least
+	// DBL_MAX_10_EXP + 2 for DBL_MAX and DBL_MAX_10_EXP + 4 for DBL_MIN.
+	// BUT those values where still giving me exceptions, so I tested from
+	// DBL_MAX_10_EXP + 10 incrementing one by one and DBL_MAX_10_EXP + 17 (325)
+	// was the first buffer size not to throw an exception
+	char buf[325];
 
 #if defined(__GNUC__) || defined(_MSC_VER)
-	snprintf(buf, 256, fmt, p_num);
+	// PLEASE NOTE that, albeit vcrt online reference states that snprintf
+	// should safely truncate the output to the given buffer size, we have
+	// found a case where this is not true, so we should create a buffer
+	// as big as needed
+	snprintf(buf, 325, fmt, p_num);
 #else
 	sprintf(buf, fmt, p_num);
 #endif
 
-	buf[255] = 0;
+	buf[324] = 0;
 	//destroy trailing zeroes
 	{
 		bool period = false;
