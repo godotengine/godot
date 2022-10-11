@@ -719,7 +719,7 @@ public:
 
 	void set_on_top_of_alpha();
 
-	void set_proximity_fade(bool p_enable);
+	void set_proximity_fade_enabled(bool p_enable);
 	bool is_proximity_fade_enabled() const;
 
 	void set_proximity_fade_distance(float p_distance);
