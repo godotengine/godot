@@ -39,6 +39,24 @@
 #include "scene/gui/label.h"
 #include "scene/resources/packed_scene.h"
 
+static bool can_edit(Node *p_node, String p_group) {
+	Node *n = p_node;
+	bool can_edit = true;
+	while (n) {
+		Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
+		if (ss.is_valid()) {
+			int path = ss->find_node_by_path(n->get_path_to(p_node));
+			if (path != -1) {
+				if (ss->is_node_in_group(path, p_group)) {
+					can_edit = false;
+				}
+			}
+		}
+		n = n->get_owner();
+	}
+	return can_edit;
+}
+
 void GroupDialog::_group_selected() {
 	nodes_to_add->clear();
 	add_node_root = nodes_to_add->create_item();
@@ -94,7 +112,7 @@ void GroupDialog::_load_nodes(Node *p_current) {
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_current, "Node");
 		node->set_icon(0, icon);
 
-		if (!_can_edit(p_current, selected_group)) {
+		if (!can_edit(p_current, selected_group)) {
 			node->set_selectable(0, false);
 			node->set_custom_color(0, groups->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 		}
@@ -103,24 +121,6 @@ void GroupDialog::_load_nodes(Node *p_current) {
 	for (int i = 0; i < p_current->get_child_count(); i++) {
 		_load_nodes(p_current->get_child(i));
 	}
-}
-
-bool GroupDialog::_can_edit(Node *p_node, String p_group) {
-	Node *n = p_node;
-	bool can_edit = true;
-	while (n) {
-		Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
-		if (ss.is_valid()) {
-			int path = ss->find_node_by_path(n->get_path_to(p_node));
-			if (path != -1) {
-				if (ss->is_node_in_group(path, p_group)) {
-					can_edit = false;
-				}
-			}
-		}
-		n = n->get_owner();
-	}
-	return can_edit;
 }
 
 void GroupDialog::_add_pressed() {
@@ -218,19 +218,14 @@ void GroupDialog::_add_group_text_changed(const String &p_new_text) {
 }
 
 void GroupDialog::_group_renamed() {
-	TreeItem *renamed_group = groups->get_edited();
+	TreeItem *renamed_group = groups->get_selected();
 	if (!renamed_group) {
 		return;
 	}
 
 	const String name = renamed_group->get_text(0).strip_edges();
-	for (TreeItem *E = groups_root->get_first_child(); E; E = E->get_next()) {
-		if (E != renamed_group && E->get_text(0) == name) {
-			renamed_group->set_text(0, selected_group);
-			error->set_text(TTR("Group name already exists."));
-			error->popup_centered();
-			return;
-		}
+	if (name == selected_group) {
+		return;
 	}
 
 	if (name.is_empty()) {
@@ -238,6 +233,15 @@ void GroupDialog::_group_renamed() {
 		error->set_text(TTR("Invalid group name."));
 		error->popup_centered();
 		return;
+	}
+
+	for (TreeItem *E = groups_root->get_first_child(); E; E = E->get_next()) {
+		if (E != renamed_group && E->get_text(0) == name) {
+			renamed_group->set_text(0, selected_group);
+			error->set_text(TTR("Group name already exists."));
+			error->popup_centered();
+			return;
+		}
 	}
 
 	renamed_group->set_text(0, name); // Spaces trimmed.
@@ -248,7 +252,7 @@ void GroupDialog::_group_renamed() {
 	scene_tree->get_nodes_in_group(selected_group, &nodes);
 	bool removed_all = true;
 	for (Node *node : nodes) {
-		if (_can_edit(node, selected_group)) {
+		if (can_edit(node, selected_group)) {
 			undo_redo->add_do_method(node, "remove_from_group", selected_group);
 			undo_redo->add_undo_method(node, "remove_from_group", name);
 			undo_redo->add_do_method(node, "add_to_group", name, true);
@@ -324,7 +328,7 @@ void GroupDialog::_modify_group_pressed(Object *p_item, int p_column, int p_id, 
 			scene_tree->get_nodes_in_group(name, &nodes);
 			bool removed_all = true;
 			for (Node *E : nodes) {
-				if (_can_edit(E, name)) {
+				if (can_edit(E, name)) {
 					undo_redo->add_do_method(E, "remove_from_group", name);
 					undo_redo->add_undo_method(E, "add_to_group", name, true);
 				} else {
@@ -571,7 +575,7 @@ GroupDialog::GroupDialog() {
 
 	set_title(TTR("Group Editor"));
 
-	error = memnew(ConfirmationDialog);
+	error = memnew(AcceptDialog);
 	add_child(error);
 	error->set_ok_button_text(TTR("Close"));
 
@@ -584,14 +588,12 @@ void GroupsEditor::_add_group(const String &p_group) {
 	if (!node) {
 		return;
 	}
-
 	const String name = group_name->get_text().strip_edges();
-	if (name.is_empty()) {
-		return;
-	}
 
 	group_name->clear();
 	if (node->is_in_group(name)) {
+		error->set_text(TTR("Group name already exists."));
+		error->popup_centered();
 		return;
 	}
 
@@ -599,6 +601,65 @@ void GroupsEditor::_add_group(const String &p_group) {
 
 	undo_redo->add_do_method(node, "add_to_group", name, true);
 	undo_redo->add_undo_method(node, "remove_from_group", name);
+	undo_redo->add_do_method(this, "update_tree");
+	undo_redo->add_undo_method(this, "update_tree");
+
+	// To force redraw of scene tree.
+	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+	undo_redo->add_undo_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree");
+
+	undo_redo->commit_action();
+}
+
+void GroupsEditor::_group_selected() {
+	if (!tree->is_anything_selected()) {
+		return;
+	}
+	selected_group = tree->get_selected()->get_text(0);
+}
+
+void GroupsEditor::_group_renamed() {
+	if (!node || !can_edit(node, selected_group)) {
+		return;
+	}
+
+	TreeItem *ti = tree->get_selected();
+	if (!ti) {
+		return;
+	}
+
+	const String name = ti->get_text(0).strip_edges();
+	if (name == selected_group) {
+		return;
+	}
+
+	if (name.is_empty()) {
+		ti->set_text(0, selected_group);
+		error->set_text(TTR("Invalid group name."));
+		error->popup_centered();
+		return;
+	}
+
+	for (TreeItem *E = groups_root->get_first_child(); E; E = E->get_next()) {
+		if (E != ti && E->get_text(0) == name) {
+			ti->set_text(0, selected_group);
+			error->set_text(TTR("Group name already exists."));
+			error->popup_centered();
+			return;
+		}
+	}
+
+	ti->set_text(0, name); // Spaces trimmed.
+
+	undo_redo->create_action(TTR("Rename Group"));
+
+	undo_redo->add_do_method(node, "remove_from_group", selected_group);
+	undo_redo->add_undo_method(node, "remove_from_group", name);
+	undo_redo->add_do_method(node, "add_to_group", name, true);
+	undo_redo->add_undo_method(node, "add_to_group", selected_group, true);
+
+	undo_redo->add_do_method(this, "_group_selected");
+	undo_redo->add_undo_method(this, "_group_selected");
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
 
@@ -624,7 +685,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 	}
 	switch (p_id) {
 		case DELETE_GROUP: {
-			String name = ti->get_text(0);
+			const String name = ti->get_text(0);
 			undo_redo->create_action(TTR("Remove from Group"));
 
 			undo_redo->add_do_method(node, "remove_from_group", name);
@@ -666,6 +727,7 @@ void GroupsEditor::update_tree() {
 	groups.sort_custom<_GroupInfoComparator>();
 
 	TreeItem *root = tree->create_item();
+	groups_root = root;
 
 	for (const GroupInfo &gi : groups) {
 		if (!gi.persistent) {
@@ -692,6 +754,7 @@ void GroupsEditor::update_tree() {
 
 		TreeItem *item = tree->create_item(root);
 		item->set_text(0, gi.name);
+		item->set_editable(0, true);
 		if (can_be_deleted) {
 			item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
 			item->add_button(0, get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
@@ -717,6 +780,7 @@ void GroupsEditor::_show_group_dialog() {
 
 void GroupsEditor::_bind_methods() {
 	ClassDB::bind_method("update_tree", &GroupsEditor::update_tree);
+	ClassDB::bind_method("_group_selected", &GroupsEditor::_group_selected);
 }
 
 GroupsEditor::GroupsEditor() {
@@ -749,12 +813,20 @@ GroupsEditor::GroupsEditor() {
 	add->connect("pressed", callable_mp(this, &GroupsEditor::_add_group).bind(String()));
 
 	tree = memnew(Tree);
-	tree->set_hide_root(true);
-	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
+	tree->set_hide_root(true);
+	tree->set_allow_reselect(true);
+	tree->set_allow_rmb_select(true);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	tree->connect("item_selected", callable_mp(this, &GroupsEditor::_group_selected));
 	tree->connect("button_clicked", callable_mp(this, &GroupsEditor::_modify_group));
+	tree->connect("item_edited", callable_mp(this, &GroupsEditor::_group_renamed));
 	tree->add_theme_constant_override("draw_guides", 1);
 	add_theme_constant_override("separation", 3 * EDSCALE);
+
+	error = memnew(AcceptDialog);
+	add_child(error);
+	error->get_ok_button()->set_text(TTR("Close"));
 
 	_group_name_changed("");
 }
