@@ -1744,6 +1744,18 @@ void *Object::get_instance_binding(void *p_token, const GDExtensionInstanceBindi
 	return binding;
 }
 
+void Object::clear_instance_binding(void *p_token) {
+	ERR_FAIL_COND(_instance_bindings == nullptr);
+	for (uint32_t i = 0; i < _instance_binding_count; i++) {
+		InstanceBinding &instance_binding = _instance_bindings[i];
+		if (instance_binding.token == p_token) {
+			instance_binding.free_callback(p_token, this, instance_binding.binding);
+			instance_binding = InstanceBinding();
+			break;
+		}
+	}
+}
+
 bool Object::has_instance_binding(void *p_token) {
 	bool found = false;
 	_instance_binding_mutex.lock();

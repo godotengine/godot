@@ -920,6 +920,8 @@ public:
 	void *get_instance_binding(void *p_token, const GDExtensionInstanceBindingCallbacks *p_callbacks);
 	// Used on creation by binding only.
 	void set_instance_binding(void *p_token, void *p_binding, const GDExtensionInstanceBindingCallbacks *p_callbacks);
+	// Used on unloading by binding only.
+	void clear_instance_binding(void *p_token);
 	bool has_instance_binding(void *p_token);
 
 	void clear_internal_resource_paths();
