@@ -2257,15 +2257,17 @@ DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(cons
 	return MAIN_WINDOW_ID;
 }
 
-void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_attach_instance_id instance %s window %d", p_instance, p_window));
+void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+	WindowData &wd = wls.windows[p_window];
+
+	wd.instance_id = p_instance;
 }
 
-ObjectID DisplayServerWayland::window_get_attached_instance_id(DisplayServer::WindowID p_window) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_get_attached_instance_id window %d, returning ObjectID()", p_window));
-	return ObjectID();
+ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window) const {
+	ERR_FAIL_COND_V(!wls.windows.has(p_window), ObjectID());
+	const WindowData &wd = wls.windows[p_window];
+	return wd.instance_id;
 }
 
 void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer::WindowID p_window) {

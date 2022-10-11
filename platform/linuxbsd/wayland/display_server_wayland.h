@@ -191,6 +191,8 @@ class DisplayServerWayland : public DisplayServer {
 
 		// Metadata.
 		String title;
+
+		ObjectID instance_id;
 	};
 
 	struct ScreenData {
