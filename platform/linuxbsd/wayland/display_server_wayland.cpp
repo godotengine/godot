@@ -2330,17 +2330,12 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	// TODO: Implement this somehow.
-	// I've tried to do it before, but since we can only register window
-	// entering/leaving from a screen, it would be too complex for the little
-	// accuracy and usefulness we would get from it, as such, I've purposely left
-	// this method as a stub, for now.
+	// Standard Wayland APIs don't support getting the screen of a window.
 	return 0;
 }
 
 void DisplayServerWayland::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_current_screen screen %d window %d", p_screen, p_window));
+	// Standard Wayland APIs don't support setting the screen of a window.
 }
 
 Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_window) const {
