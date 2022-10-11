@@ -1399,7 +1399,7 @@ Error AnimationPlayer::add_animation_library(const StringName &p_name, const Ref
 	animation_libraries.insert(insert_pos, ald);
 
 	ald.library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
-	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_name));
+	ald.library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed).bind(p_name));
 	ald.library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_name));
 
 	for (const KeyValue<StringName, Ref<Animation>> &K : ald.library->animations) {
@@ -1465,11 +1465,11 @@ void AnimationPlayer::rename_animation_library(const StringName &p_name, const S
 			animation_libraries[i].name = p_new_name;
 			// rename connections
 			animation_libraries[i].library->disconnect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added));
-			animation_libraries[i].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added));
+			animation_libraries[i].library->disconnect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed));
 			animation_libraries[i].library->disconnect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed));
 
 			animation_libraries[i].library->connect(SNAME("animation_added"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_new_name));
-			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_added).bind(p_new_name));
+			animation_libraries[i].library->connect(SNAME("animation_removed"), callable_mp(this, &AnimationPlayer::_animation_removed).bind(p_new_name));
 			animation_libraries[i].library->connect(SNAME("animation_renamed"), callable_mp(this, &AnimationPlayer::_animation_renamed).bind(p_new_name));
 
 			for (const KeyValue<StringName, Ref<Animation>> &K : animation_libraries[i].library->animations) {
