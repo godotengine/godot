@@ -451,6 +451,15 @@
 				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_video_adapter_driver_info" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the video adapter driver name and version for the user's currently active graphics card.
+				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
+				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
+				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows. It returns an empty array on other platforms.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="variable" type="String" />

@@ -146,6 +146,8 @@ public:
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
 
+	virtual Vector<String> get_video_adapter_driver_info() const override;
+
 	virtual void initialize_joypads() override {}
 
 	virtual DateTime get_datetime(bool p_utc) const override;

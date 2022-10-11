@@ -198,6 +198,8 @@ public:
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 
+	Vector<String> get_video_adapter_driver_info() const;
+
 	String get_locale() const;
 	String get_locale_language() const;
 
