@@ -414,6 +414,7 @@ private:
 	bool fit_content_height;
 
 protected:
+	virtual void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 
 public:
