@@ -2983,16 +2983,6 @@ void DisplayServerWayland::set_context(Context p_context) {
 	DEBUG_LOG_WAYLAND(vformat("wayland stub set_context context %s", p_context));
 }
 
-void DisplayServerWayland::set_native_icon(const String &p_filename) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub set_native_icon filename %s", p_filename));
-}
-
-void DisplayServerWayland::set_icon(const Ref<Image> &p_icon) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub set_icon %s", p_icon));
-}
-
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
