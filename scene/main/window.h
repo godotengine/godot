@@ -234,6 +234,8 @@ public:
 	void set_clamp_to_embedder(bool p_enable);
 	bool is_clamped_to_embedder() const;
 
+	bool is_in_edited_scene_root() const;
+
 	bool can_draw() const;
 
 	void set_ime_active(bool p_active);
