@@ -151,7 +151,7 @@ public:
 #endif
 	}
 
-	static _ALWAYS_INLINE_ bool is_inf(double p_val) {
+	static _ALWAYS_INLINE_ bool is_infinite(double p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
 // use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
@@ -168,7 +168,7 @@ public:
 #endif
 	}
 
-	static _ALWAYS_INLINE_ bool is_inf(float p_val) {
+	static _ALWAYS_INLINE_ bool is_infinite(float p_val) {
 #ifdef _MSC_VER
 		return !_finite(p_val);
 // use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era

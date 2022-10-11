@@ -306,7 +306,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 		count = 0;
 		for (int u = 0; u < N; u++) {
 			for (int v = 0; v < N; v++) {
-				if (!Math::is_inf(d[u][v])) {
+				if (!Math::is_infinite(d[u][v])) {
 					count++;
 				}
 			}
@@ -319,7 +319,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 			for (int v = 0; v < N; v++) {
 				if (u != v) {
 					Vector<int64_t> route = a.get_id_path(u, v);
-					if (!Math::is_inf(d[u][v])) {
+					if (!Math::is_infinite(d[u][v])) {
 						// Reachable.
 						if (route.size() == 0) {
 							print_verbose(vformat("From %d to %d: A* did not find a path\n", u, v));

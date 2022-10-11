@@ -298,8 +298,8 @@ struct VariantUtilityFunctions {
 		return Math::is_nan(x);
 	}
 
-	static inline bool is_inf(double x) {
-		return Math::is_inf(x);
+	static inline bool is_infinite(double x) {
+		return Math::is_infinite(x);
 	}
 
 	static inline bool is_equal_approx(double x, double y) {
@@ -1420,7 +1420,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(exp, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(is_nan, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(is_inf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(is_infinite, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);

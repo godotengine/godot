@@ -1406,7 +1406,7 @@ String String::num(double p_num, int p_decimals) {
 		return "nan";
 	}
 
-	if (Math::is_inf(p_num)) {
+	if (Math::is_infinite(p_num)) {
 		if (signbit(p_num)) {
 			return "-inf";
 		} else {
@@ -1580,7 +1580,7 @@ String String::num_scientific(double p_num) {
 		return "nan";
 	}
 
-	if (Math::is_inf(p_num)) {
+	if (Math::is_infinite(p_num)) {
 		if (signbit(p_num)) {
 			return "-inf";
 		} else {

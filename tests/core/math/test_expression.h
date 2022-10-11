@@ -410,7 +410,7 @@ TEST_CASE("[Expression] Unusual expressions") {
 			"The expression should parse successfully.");
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
-			Math::is_inf(double(expression.execute())),
+			Math::is_infinite(double(expression.execute())),
 			"`-25.4 / 0` should return inf.");
 	ERR_PRINT_ON;
 
