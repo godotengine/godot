@@ -54,7 +54,6 @@ private:
 	bool disabled = false;
 	int priority = 1;
 	String advance_expression;
-	NodePath advance_expression_base_node;
 
 	friend class AnimationNodeStateMachinePlayback;
 	Ref<Expression> expression;
@@ -76,9 +75,6 @@ public:
 
 	void set_advance_expression(const String &p_expression);
 	String get_advance_expression() const;
-
-	void set_advance_expression_base_node(const NodePath &p_expression_base_node);
-	NodePath get_advance_expression_base_node() const;
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;

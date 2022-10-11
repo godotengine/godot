@@ -48,6 +48,8 @@ void MultiplayerSynchronizer::_stop() {
 		return;
 	}
 #endif
+	root_node_cache = ObjectID();
+	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
 		get_multiplayer()->object_configuration_remove(node, this);
@@ -60,8 +62,11 @@ void MultiplayerSynchronizer::_start() {
 		return;
 	}
 #endif
+	root_node_cache = ObjectID();
+	reset();
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
 	if (node) {
+		root_node_cache = node->get_instance_id();
 		get_multiplayer()->object_configuration_add(node, this);
 		_update_process();
 	}
@@ -92,6 +97,40 @@ void MultiplayerSynchronizer::_update_process() {
 		case VISIBILITY_PROCESS_NONE:
 			break;
 	}
+}
+
+Node *MultiplayerSynchronizer::get_root_node() {
+	return root_node_cache.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(root_node_cache)) : nullptr;
+}
+
+void MultiplayerSynchronizer::reset() {
+	net_id = 0;
+	last_sync_msec = 0;
+	last_inbound_sync = 0;
+}
+
+uint32_t MultiplayerSynchronizer::get_net_id() const {
+	return net_id;
+}
+
+void MultiplayerSynchronizer::set_net_id(uint32_t p_net_id) {
+	net_id = p_net_id;
+}
+
+bool MultiplayerSynchronizer::update_outbound_sync_time(uint64_t p_msec) {
+	if (p_msec >= last_sync_msec + interval_msec) {
+		last_sync_msec = p_msec;
+		return true;
+	}
+	return false;
+}
+
+bool MultiplayerSynchronizer::update_inbound_sync_time(uint16_t p_network_time) {
+	if (p_network_time <= last_inbound_sync && last_inbound_sync - p_network_time < 32767) {
+		return false;
+	}
+	last_inbound_sync = p_network_time;
+	return true;
 }
 
 PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
@@ -263,10 +302,6 @@ double MultiplayerSynchronizer::get_replication_interval() const {
 	return double(interval_msec) / 1000.0;
 }
 
-uint64_t MultiplayerSynchronizer::get_replication_interval_msec() const {
-	return interval_msec;
-}
-
 void MultiplayerSynchronizer::set_replication_config(Ref<SceneReplicationConfig> p_config) {
 	replication_config = p_config;
 }
@@ -299,10 +334,11 @@ NodePath MultiplayerSynchronizer::get_root_path() const {
 
 void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_recursive) {
 	Node *node = is_inside_tree() ? get_node_or_null(root_path) : nullptr;
-	if (!node) {
+	if (!node || get_multiplayer_authority() == p_peer_id) {
 		Node::set_multiplayer_authority(p_peer_id, p_recursive);
 		return;
 	}
+
 	get_multiplayer()->object_configuration_remove(node, this);
 	Node::set_multiplayer_authority(p_peer_id, p_recursive);
 	get_multiplayer()->object_configuration_add(node, this);

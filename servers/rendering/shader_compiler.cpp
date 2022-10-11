@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
+#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_types.h"
-#include "servers/rendering_server.h"
 
 #define SL ShaderLanguage
 
@@ -1348,8 +1348,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 	return code;
 }
 
-ShaderLanguage::DataType ShaderCompiler::_get_variable_type(const StringName &p_type) {
-	RS::GlobalShaderParameterType gvt = RS::get_singleton()->global_shader_parameter_get_type(p_type);
+ShaderLanguage::DataType ShaderCompiler::_get_global_shader_uniform_type(const StringName &p_name) {
+	RS::GlobalShaderParameterType gvt = RSG::material_storage->global_shader_parameter_get_type(p_name);
 	return (ShaderLanguage::DataType)RS::global_shader_uniform_type_get_shader_datatype(gvt);
 }
 
@@ -1358,7 +1358,7 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	info.functions = ShaderTypes::get_singleton()->get_functions(p_mode);
 	info.render_modes = ShaderTypes::get_singleton()->get_modes(p_mode);
 	info.shader_types = ShaderTypes::get_singleton()->get_types();
-	info.global_shader_uniform_type_func = _get_variable_type;
+	info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
 	Error err = parser.compile(p_code, info);
 
@@ -1369,11 +1369,11 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 		HashMap<String, Vector<String>> includes;
 		includes[""] = Vector<String>();
 		Vector<String> include_stack;
-		Vector<String> shader = p_code.split("\n");
+		Vector<String> shader_lines = p_code.split("\n");
 
 		// Reconstruct the files.
-		for (int i = 0; i < shader.size(); i++) {
-			String l = shader[i];
+		for (int i = 0; i < shader_lines.size(); i++) {
+			String l = shader_lines[i];
 			if (l.begins_with("@@>")) {
 				String inc_path = l.replace_first("@@>", "");
 

@@ -33,8 +33,6 @@
 
 #include "core/error/error_list.h"
 
-#if !defined(NO_THREADS)
-
 #include <shared_mutex>
 
 class RWLock {
@@ -71,21 +69,6 @@ public:
 		return mutex.try_lock() ? OK : ERR_BUSY;
 	}
 };
-
-#else
-
-class RWLock {
-public:
-	void read_lock() const {}
-	void read_unlock() const {}
-	Error read_try_lock() const { return OK; }
-
-	void write_lock() {}
-	void write_unlock() {}
-	Error write_try_lock() { return OK; }
-};
-
-#endif
 
 class RWLockRead {
 	const RWLock &lock;

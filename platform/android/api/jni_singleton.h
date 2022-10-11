@@ -150,9 +150,8 @@ public:
 				env->DeleteLocalRef(arr);
 			} break;
 
-#ifndef _MSC_VER
-#warning This is missing 64 bits arrays, I have no idea how to do it in JNI
-#endif
+				// TODO: This is missing 64 bits arrays, I have no idea how to do it in JNI.
+
 			case Variant::DICTIONARY: {
 				jobject obj = env->CallObjectMethodA(instance, E->get().method, v);
 				ret = _jobject_to_variant(env, obj);

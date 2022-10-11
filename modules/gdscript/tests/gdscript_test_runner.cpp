@@ -479,9 +479,9 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const GDScriptParser::ParserError &E : errors) {
-			result.output += E.message + "\n"; // TODO: line, column?
-			break; // Only the first error since the following might be cascading.
+		if (!errors.is_empty()) {
+			// Only the first error since the following might be cascading.
+			result.output += errors[0].message + "\n"; // TODO: line, column?
 		}
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);
@@ -498,9 +498,9 @@ GDScriptTest::TestResult GDScriptTest::execute_test_code(bool p_is_generating) {
 		result.output = get_text_for_status(result.status) + "\n";
 
 		const List<GDScriptParser::ParserError> &errors = parser.get_errors();
-		for (const GDScriptParser::ParserError &E : errors) {
-			result.output += E.message + "\n"; // TODO: line, column?
-			break; // Only the first error since the following might be cascading.
+		if (!errors.is_empty()) {
+			// Only the first error since the following might be cascading.
+			result.output += errors[0].message + "\n"; // TODO: line, column?
 		}
 		if (!p_is_generating) {
 			result.passed = check_output(result.output);

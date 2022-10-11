@@ -45,9 +45,9 @@ class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 
 public:
 	enum {
+		BLEND_VISIBLE_ALL,
 		BLEND_VISIBLE_VISIBLE_ONLY,
-		BLEND_VISIBLE_RENDERABLE,
-		BLEND_VISIBLE_ALL
+		BLEND_VISIBLE_RENDERABLE
 	};
 	enum {
 		BLEND_BONE_INFLUENCES_NONE,

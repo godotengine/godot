@@ -664,9 +664,9 @@ void RendererViewport::draw_viewports() {
 
 		RSG::texture_storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
-			// check for an external texture destination (disabled for now, not yet supported)
-			// RSG::texture_storage->render_target_set_external_texture(vp->render_target, xr_interface->get_external_texture_for_eye(leftOrMono));
-			RSG::texture_storage->render_target_set_external_texture(vp->render_target, 0);
+			RSG::texture_storage->render_target_set_override_color(vp->render_target, xr_interface->get_color_texture());
+			RSG::texture_storage->render_target_set_override_depth(vp->render_target, xr_interface->get_depth_texture());
+			RSG::texture_storage->render_target_set_override_velocity(vp->render_target, xr_interface->get_velocity_texture());
 
 			// render...
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
@@ -678,11 +678,13 @@ void RendererViewport::draw_viewports() {
 
 			// commit our eyes
 			Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
-			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && blits.size() > 0) {
+			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
 				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
-					RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+					if (blits.size() > 0) {
+						RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+					}
 					RSG::rasterizer->end_frame(true);
-				} else {
+				} else if (blits.size() > 0) {
 					if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
 						blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
 					}
@@ -693,7 +695,9 @@ void RendererViewport::draw_viewports() {
 				}
 			}
 		} else {
-			RSG::texture_storage->render_target_set_external_texture(vp->render_target, 0);
+			RSG::texture_storage->render_target_set_override_color(vp->render_target, RID()); // TODO if fullscreen output, we can set this to our texture chain
+			RSG::texture_storage->render_target_set_override_depth(vp->render_target, RID());
+			RSG::texture_storage->render_target_set_override_velocity(vp->render_target, RID());
 
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
@@ -760,7 +764,7 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	Viewport *viewport = viewport_owner.get_or_null(p_rid);
 	viewport->self = p_rid;
 	viewport->render_target = RSG::texture_storage->render_target_create();
-	viewport->shadow_atlas = RSG::scene->shadow_atlas_create();
+	viewport->shadow_atlas = RSG::light_storage->shadow_atlas_create();
 	viewport->viewport_render_direct_to_screen = false;
 
 	viewport->fsr_enabled = !RSG::rasterizer->is_low_end() && !viewport->disable_3d;
@@ -1076,14 +1080,14 @@ void RendererViewport::viewport_set_positional_shadow_atlas_size(RID p_viewport,
 	viewport->shadow_atlas_size = p_size;
 	viewport->shadow_atlas_16_bits = p_16_bits;
 
-	RSG::scene->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size, viewport->shadow_atlas_16_bits);
+	RSG::light_storage->shadow_atlas_set_size(viewport->shadow_atlas, viewport->shadow_atlas_size, viewport->shadow_atlas_16_bits);
 }
 
 void RendererViewport::viewport_set_positional_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	RSG::scene->shadow_atlas_set_quadrant_subdivision(viewport->shadow_atlas, p_quadrant, p_subdiv);
+	RSG::light_storage->shadow_atlas_set_quadrant_subdivision(viewport->shadow_atlas, p_quadrant, p_subdiv);
 }
 
 void RendererViewport::viewport_set_msaa_2d(RID p_viewport, RS::ViewportMSAA p_msaa) {
@@ -1294,7 +1298,7 @@ bool RendererViewport::free(RID p_rid) {
 		Viewport *viewport = viewport_owner.get_or_null(p_rid);
 
 		RSG::texture_storage->render_target_free(viewport->render_target);
-		RSG::scene->free(viewport->shadow_atlas);
+		RSG::light_storage->shadow_atlas_free(viewport->shadow_atlas);
 		if (viewport->render_buffers.is_valid()) {
 			viewport->render_buffers.unref();
 		}

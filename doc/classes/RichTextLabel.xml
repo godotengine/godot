@@ -23,9 +23,11 @@
 			<param index="2" name="height" type="int" default="0" />
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="5" name="region" type="Rect2" default="Rect2(0, 0, 0, 0)" />
 			<description>
-				Adds an image's opening and closing tags to the tag stack, optionally providing a [param width] and [param height] to resize the image and a [param color] to tint the image.
+				Adds an image's opening and closing tags to the tag stack, optionally providing a [param width] and [param height] to resize the image, a [param color] to tint the image and a [param region] to only use parts of the image.
 				If [param width] or [param height] is set to 0, the image size will be adjusted in order to keep the original aspect ratio.
+				If [param width] and [param height] are not set, but [param region] is, the region's rect will be used.
 			</description>
 		</method>
 		<method name="add_text">

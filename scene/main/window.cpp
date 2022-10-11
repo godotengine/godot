@@ -666,7 +666,7 @@ void Window::_update_viewport_size() {
 	Size2i final_size;
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
-	Transform2D stretch_transform;
+	Transform2D stretch_transform_new;
 	float font_oversampling = 1.0;
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
@@ -674,8 +674,8 @@ void Window::_update_viewport_size() {
 		final_size = size;
 		final_size_override = Size2(size) / content_scale_factor;
 
-		stretch_transform = Transform2D();
-		stretch_transform.scale(Size2(content_scale_factor, content_scale_factor));
+		stretch_transform_new = Transform2D();
+		stretch_transform_new.scale(Size2(content_scale_factor, content_scale_factor));
 	} else {
 		//actual screen video mode
 		Size2 video_mode = size;
@@ -752,7 +752,7 @@ void Window::_update_viewport_size() {
 				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 
 				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
-				stretch_transform.scale(scale);
+				stretch_transform_new.scale(scale);
 
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
@@ -764,7 +764,7 @@ void Window::_update_viewport_size() {
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-	_set_size(final_size, final_size_override, attach_to_screen_rect, stretch_transform, allocate);
+	_set_size(final_size, final_size_override, attach_to_screen_rect, stretch_transform_new, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
@@ -1264,12 +1264,16 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	set_transient(true);
 	set_visible(true);
 
-	int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
-	Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
-	if (screen_rect != Rect2i() && !screen_rect.intersects(Rect2i(position, size))) {
+	Rect2i parent_rect;
+	if (is_embedded()) {
+		parent_rect = _get_embedder()->get_visible_rect();
+	} else {
+		int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
+		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
+	}
+	if (parent_rect != Rect2i() && !parent_rect.intersects(Rect2i(position, size))) {
 		ERR_PRINT(vformat("Window %d spawned at invalid position: %s.", get_window_id(), position));
-		// Window appeared on unavailable screen area, so force it to the center.
-		set_position(screen_rect.size / 2 - size / 2);
+		set_position((parent_rect.size - size) / 2);
 	}
 
 	_post_popup();
@@ -1294,17 +1298,17 @@ bool Window::has_focus() const {
 
 Rect2i Window::get_usable_parent_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
-	Rect2i parent;
+	Rect2i parent_rect;
 	if (is_embedded()) {
-		parent = _get_embedder()->get_visible_rect();
+		parent_rect = _get_embedder()->get_visible_rect();
 	} else {
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us
 		ERR_FAIL_COND_V(!w, Rect2());
 
-		parent = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
+		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
 	}
-	return parent;
+	return parent_rect;
 }
 
 void Window::add_child_notify(Node *p_child) {
@@ -1572,9 +1576,9 @@ Window::LayoutDirection Window::get_layout_direction() const {
 
 bool Window::is_layout_rtl() const {
 	if (layout_dir == LAYOUT_DIRECTION_INHERITED) {
-		Window *parent = Object::cast_to<Window>(get_parent());
-		if (parent) {
-			return parent->is_layout_rtl();
+		Window *parent_w = Object::cast_to<Window>(get_parent());
+		if (parent_w) {
+			return parent_w->is_layout_rtl();
 		} else {
 			if (GLOBAL_GET(SNAME("internationalization/rendering/force_right_to_left_layout_direction"))) {
 				return true;

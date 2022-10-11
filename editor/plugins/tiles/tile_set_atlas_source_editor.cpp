@@ -561,9 +561,9 @@ void TileSetAtlasSourceEditor::_update_fix_selected_and_hovered_tiles() {
 
 void TileSetAtlasSourceEditor::_update_atlas_source_inspector() {
 	// Update visibility.
-	bool visible = tools_button_group->get_pressed_button() == tool_setup_atlas_source_button;
-	atlas_source_inspector_label->set_visible(visible);
-	atlas_source_inspector->set_visible(visible);
+	bool inspector_visible = tools_button_group->get_pressed_button() == tool_setup_atlas_source_button;
+	atlas_source_inspector_label->set_visible(inspector_visible);
+	atlas_source_inspector->set_visible(inspector_visible);
 }
 
 void TileSetAtlasSourceEditor::_update_tile_inspector() {
@@ -2043,6 +2043,13 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 }
 
 void TileSetAtlasSourceEditor::_tile_set_changed() {
+	if (tile_set->get_source_count() == 0) {
+		// No sources, so nothing to do here anymore.
+		tile_set->disconnect("changed", callable_mp(this, &TileSetAtlasSourceEditor::_tile_set_changed));
+		tile_set = Ref<TileSet>();
+		return;
+	}
+
 	tile_set_changed_needs_update = true;
 }
 
@@ -2060,14 +2067,14 @@ void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what)
 }
 
 void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(!undo_redo.is_valid());
+	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(!undo_redo_man.is_valid());
 
-#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
 
 	AtlasTileProxyObject *tile_data_proxy = Object::cast_to<AtlasTileProxyObject>(p_edited);
 	if (tile_data_proxy) {
-		UndoRedo *internal_undo_redo = undo_redo->get_history_for_object(tile_data_proxy).undo_redo;
+		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(tile_data_proxy).undo_redo;
 		internal_undo_redo->start_force_keep_in_merge_ends();
 
 		Vector<String> components = String(p_property).split("/", true, 2);
@@ -2100,7 +2107,7 @@ void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo
 		TileSetAtlasSource *atlas_source = atlas_source_proxy->get_edited();
 		ERR_FAIL_COND(!atlas_source);
 
-		UndoRedo *internal_undo_redo = undo_redo->get_history_for_object(atlas_source).undo_redo;
+		UndoRedo *internal_undo_redo = undo_redo_man->get_history_for_object(atlas_source).undo_redo;
 		internal_undo_redo->start_force_keep_in_merge_ends();
 
 		PackedVector2Array arr;

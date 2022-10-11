@@ -634,7 +634,7 @@ public:
 			axis = Vector3(0.0, 1.0, 0.0);
 		}
 
-		real_t min_A, max_A, min_B, max_B;
+		real_t min_A = 0.0, max_A = 0.0, min_B = 0.0, max_B = 0.0;
 
 		shape_A->project_range(axis, *transform_A, min_A, max_A);
 		shape_B->project_range(axis, *transform_B, min_B, max_B);

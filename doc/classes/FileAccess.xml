@@ -20,13 +20,13 @@
 		[csharp]
 		public void Save(string content)
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", File.ModeFlags.Write);
+		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Write);
 		    file.StoreString(content);
 		}
 
 		public string Load()
 		{
-		    using var file = FileAccess.Open("user://save_game.dat", File.ModeFlags.Read);
+		    using var file = FileAccess.Open("user://save_game.dat", FileAccess.ModeFlags.Read);
 		    string content = file.GetAsText();
 		    return content;
 		}
@@ -250,7 +250,7 @@
 			<param index="1" name="flags" type="int" enum="FileAccess.ModeFlags" />
 			<description>
 				Creates a new [FileAccess] object and opens the file for writing or reading, depending on the flags.
-				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that ocurred.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="open_compressed" qualifiers="static">
@@ -261,7 +261,7 @@
 			<description>
 				Creates a new [FileAccess] object and opens a compressed file for reading or writing.
 				[b]Note:[/b] [method open_compressed] can only read files that were saved by Godot, not third-party compression formats. See [url=https://github.com/godotengine/godot/issues/28999]GitHub issue #28999[/url] for a workaround.
-				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that ocurred.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="open_encrypted" qualifiers="static">
@@ -272,7 +272,7 @@
 			<description>
 				Creates a new [FileAccess] object and opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
 				[b]Note:[/b] The provided key must be 32 bytes long.
-				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that ocurred.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="open_encrypted_with_pass" qualifiers="static">
@@ -282,7 +282,7 @@
 			<param index="2" name="pass" type="String" />
 			<description>
 				Creates a new [FileAccess] object and opens an encrypted file in write or read mode. You need to pass a password to encrypt/decrypt it.
-				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that ocurred.
+				Returns [code]null[/code] if opening the file failed. You can use [method get_open_error] to check the error that occurred.
 			</description>
 		</method>
 		<method name="seek">
@@ -316,8 +316,7 @@
 				    return (unsigned + MAX_15B) % MAX_16B - MAX_15B
 
 				func _ready():
-				    var f = File.new()
-				    f.open("user://file.dat", File.WRITE_READ)
+				    var f = FileAccess.open("user://file.dat", FileAccess.WRITE_READ)
 				    f.store_16(-42) # This wraps around and stores 65494 (2^16 - 42).
 				    f.store_16(121) # In bounds, will store 121.
 				    f.seek(0) # Go back to start to read the stored value.
@@ -329,8 +328,7 @@
 				[csharp]
 				public override void _Ready()
 				{
-				    var f = new File();
-				    f.Open("user://file.dat", File.ModeFlags.WriteRead);
+				    using var f = FileAccess.Open("user://file.dat", FileAccess.ModeFlags.WriteRead);
 				    f.Store16(unchecked((ushort)-42)); // This wraps around and stores 65494 (2^16 - 42).
 				    f.Store16(121); // In bounds, will store 121.
 				    f.Seek(0); // Go back to start to read the stored value.

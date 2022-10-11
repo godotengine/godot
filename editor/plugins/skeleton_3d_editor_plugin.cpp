@@ -587,25 +587,25 @@ void Skeleton3DEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_selected_boneidx, int32_t p_target_boneidx) {
 	Node *node = get_node_or_null(p_skeleton_path);
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
-	ERR_FAIL_NULL(skeleton);
+	Skeleton3D *skeleton_node = Object::cast_to<Skeleton3D>(node);
+	ERR_FAIL_NULL(skeleton_node);
 	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Set Bone Parentage"));
 	// If the target is a child of ourselves, we move only *us* and not our children.
-	if (skeleton->is_bone_parent_of(p_target_boneidx, p_selected_boneidx)) {
-		const BoneId parent_idx = skeleton->get_bone_parent(p_selected_boneidx);
-		const int bone_count = skeleton->get_bone_count();
+	if (skeleton_node->is_bone_parent_of(p_target_boneidx, p_selected_boneidx)) {
+		const BoneId parent_idx = skeleton_node->get_bone_parent(p_selected_boneidx);
+		const int bone_count = skeleton_node->get_bone_count();
 		for (BoneId i = 0; i < bone_count; ++i) {
-			if (skeleton->get_bone_parent(i) == p_selected_boneidx) {
-				ur->add_undo_method(skeleton, "set_bone_parent", i, skeleton->get_bone_parent(i));
-				ur->add_do_method(skeleton, "set_bone_parent", i, parent_idx);
-				skeleton->set_bone_parent(i, parent_idx);
+			if (skeleton_node->get_bone_parent(i) == p_selected_boneidx) {
+				ur->add_undo_method(skeleton_node, "set_bone_parent", i, skeleton_node->get_bone_parent(i));
+				ur->add_do_method(skeleton_node, "set_bone_parent", i, parent_idx);
+				skeleton_node->set_bone_parent(i, parent_idx);
 			}
 		}
 	}
-	ur->add_undo_method(skeleton, "set_bone_parent", p_selected_boneidx, skeleton->get_bone_parent(p_selected_boneidx));
-	ur->add_do_method(skeleton, "set_bone_parent", p_selected_boneidx, p_target_boneidx);
-	skeleton->set_bone_parent(p_selected_boneidx, p_target_boneidx);
+	ur->add_undo_method(skeleton_node, "set_bone_parent", p_selected_boneidx, skeleton_node->get_bone_parent(p_selected_boneidx));
+	ur->add_do_method(skeleton_node, "set_bone_parent", p_selected_boneidx, p_target_boneidx);
+	skeleton_node->set_bone_parent(p_selected_boneidx, p_target_boneidx);
 
 	update_joint_tree();
 	ur->commit_action();
@@ -1128,7 +1128,7 @@ Skeleton3DEditorPlugin::Skeleton3DEditorPlugin() {
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 }
 
-EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 	if (se && se->is_edit_mode()) {
@@ -1234,7 +1234,7 @@ int Skeleton3DGizmoPlugin::get_priority() const {
 }
 
 int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gizmo, Camera3D *p_camera, const Vector2 &p_point) const {
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_spatial_node());
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
 	ERR_FAIL_COND_V(!skeleton, -1);
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
@@ -1277,14 +1277,14 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 }
 
 Transform3D Skeleton3DGizmoPlugin::get_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id) const {
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_spatial_node());
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
 	ERR_FAIL_COND_V(!skeleton, Transform3D());
 
 	return skeleton->get_bone_global_pose(p_id);
 }
 
 void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gizmo, int p_id, Transform3D p_transform) {
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_spatial_node());
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
 	ERR_FAIL_COND(!skeleton);
 
 	// Prepare for global to local.
@@ -1313,7 +1313,7 @@ void Skeleton3DGizmoPlugin::set_subgizmo_transform(const EditorNode3DGizmo *p_gi
 }
 
 void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const Vector<int> &p_ids, const Vector<Transform3D> &p_restore, bool p_cancel) {
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_spatial_node());
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
 	ERR_FAIL_COND(!skeleton);
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
@@ -1346,7 +1346,7 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 }
 
 void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
-	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_spatial_node());
+	Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(p_gizmo->get_node_3d());
 	p_gizmo->clear();
 
 	int selected = -1;

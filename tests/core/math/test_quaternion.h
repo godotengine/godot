@@ -160,7 +160,7 @@ TEST_CASE("[Quaternion] Construct Euler YXZ dynamic axes") {
 	double pitch = Math::deg_to_rad(30.0);
 	double roll = Math::deg_to_rad(10.0);
 
-	// Generate YXZ comparision data (Z-then-X-then-Y) using single-axis Euler
+	// Generate YXZ comparison data (Z-then-X-then-Y) using single-axis Euler
 	// constructor and quaternion product, both tested separately.
 	Vector3 euler_y(0.0, yaw, 0.0);
 	Quaternion q_y(euler_y);
@@ -382,6 +382,63 @@ TEST_CASE("[Stress][Quaternion] Many vector xforms") {
 			}
 		}
 	}
+}
+
+TEST_CASE("[Quaternion] Finite number checks") {
+	const real_t x = NAN;
+
+	CHECK_MESSAGE(
+			Quaternion(0, 1, 2, 3).is_finite(),
+			"Quaternion with all components finite should be finite");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, 2, 3).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, 2, 3).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, 1, x, 3).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, 1, 2, x).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, 2, 3).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, x, 3).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, 2, x).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, x, 3).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, 2, x).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, 1, x, x).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, x, x).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, x, x).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, 2, x).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, x, 3).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, x, x).is_finite(),
+			"Quaternion with four components infinite should not be finite.");
 }
 
 } // namespace TestQuaternion

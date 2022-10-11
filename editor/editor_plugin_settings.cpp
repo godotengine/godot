@@ -98,14 +98,14 @@ void EditorPluginSettings::update_plugins() {
 				String author = cf->get_value("plugin", "author");
 				String version = cf->get_value("plugin", "version");
 				String description = cf->get_value("plugin", "description");
-				String script = cf->get_value("plugin", "script");
+				String scr = cf->get_value("plugin", "script");
 
 				TreeItem *item = plugin_list->create_item(root);
 				item->set_text(0, name);
-				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
+				item->set_tooltip_text(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + scr + "\n" + TTR("Description:") + " " + description);
 				item->set_metadata(0, path);
 				item->set_text(1, version);
-				item->set_metadata(1, script);
+				item->set_metadata(1, scr);
 				item->set_text(2, author);
 				item->set_metadata(2, description);
 				item->set_cell_mode(3, TreeItem::CELL_MODE_CHECK);

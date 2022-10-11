@@ -958,7 +958,7 @@ public:
 		bool wireframe;
 		PolygonCullMode cull_mode;
 		PolygonFrontFace front_face;
-		bool depth_bias_enable;
+		bool depth_bias_enabled;
 		float depth_bias_constant_factor;
 		float depth_bias_clamp;
 		float depth_bias_slope_factor;
@@ -970,7 +970,7 @@ public:
 			wireframe = false;
 			cull_mode = POLYGON_CULL_DISABLED;
 			front_face = POLYGON_FRONT_FACE_CLOCKWISE;
-			depth_bias_enable = false;
+			depth_bias_enabled = false;
 			depth_bias_constant_factor = 0;
 			depth_bias_clamp = 0;
 			depth_bias_slope_factor = 0;

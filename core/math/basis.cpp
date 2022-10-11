@@ -31,7 +31,7 @@
 #include "basis.h"
 
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 #define cofac(row1, col1, row2, col2) \
 	(rows[row1][col1] * rows[row2][col2] - rows[row1][col2] * rows[row2][col1])
@@ -142,8 +142,8 @@ bool Basis::is_symmetric() const {
 #endif
 
 Basis Basis::diagonalize() {
-//NOTE: only implemented for symmetric matrices
-//with the Jacobi iterative method
+// NOTE: only implemented for symmetric matrices
+// with the Jacobi iterative method
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif
@@ -689,6 +689,10 @@ void Basis::set_euler(const Vector3 &p_euler, EulerOrder p_order) {
 
 bool Basis::is_equal_approx(const Basis &p_basis) const {
 	return rows[0].is_equal_approx(p_basis.rows[0]) && rows[1].is_equal_approx(p_basis.rows[1]) && rows[2].is_equal_approx(p_basis.rows[2]);
+}
+
+bool Basis::is_finite() const {
+	return rows[0].is_finite() && rows[1].is_finite() && rows[2].is_finite();
 }
 
 bool Basis::operator==(const Basis &p_matrix) const {

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
+#if defined(UNIX_ENABLED)
 
 #include "thread_posix.h"
 
@@ -70,7 +70,7 @@ static Error set_name(const String &p_name) {
 }
 
 void init_thread_posix() {
-	Thread::_set_platform_funcs(&set_name, nullptr);
+	Thread::_set_platform_functions({ .set_name = set_name });
 }
 
-#endif
+#endif // UNIX_ENABLED

@@ -41,6 +41,8 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/event_listener_line_edit.h"
+#include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/margin_container.h"
 
 void EditorSettingsDialog::ok_pressed() {
@@ -106,9 +108,14 @@ void EditorSettingsDialog::popup_edit_settings() {
 	_focus_current_search_box();
 }
 
-void EditorSettingsDialog::_filter_shortcuts(const String &p_filter) {
-	shortcut_filter = p_filter;
+void EditorSettingsDialog::_filter_shortcuts(const String &) {
 	_update_shortcuts();
+}
+
+void EditorSettingsDialog::_filter_shortcuts_by_event(const Ref<InputEvent> &p_event) {
+	if (p_event.is_null() || (p_event->is_pressed() && !p_event->is_echo())) {
+		_update_shortcuts();
+	}
 }
 
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
@@ -326,6 +333,22 @@ void EditorSettingsDialog::_create_shortcut_treeitem(TreeItem *p_parent, const S
 	}
 }
 
+bool EditorSettingsDialog::_should_display_shortcut(const String &p_name, const Array &p_events) const {
+	const Ref<InputEvent> search_ev = shortcut_search_by_event->get_event();
+	bool event_match = true;
+	if (search_ev.is_valid()) {
+		event_match = false;
+		for (int i = 0; i < p_events.size(); ++i) {
+			const Ref<InputEvent> ev = p_events[i];
+			if (ev.is_valid() && ev->is_match(search_ev, true)) {
+				event_match = true;
+			}
+		}
+	}
+
+	return event_match && shortcut_search_box->get_text().is_subsequence_ofn(p_name);
+}
+
 void EditorSettingsDialog::_update_shortcuts() {
 	// Before clearing the tree, take note of which categories are collapsed so that this state can be maintained when the tree is repopulated.
 	HashMap<String, bool> collapsed;
@@ -379,32 +402,17 @@ void EditorSettingsDialog::_update_shortcuts() {
 		const String &action_name = E.key;
 		const InputMap::Action &action = E.value;
 
-		Array events; // Need to get the list of events into an array so it can be set as metadata on the item.
-		Vector<String> event_strings;
-
 		// Skip non-builtin actions.
 		if (!InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().has(action_name)) {
 			continue;
 		}
 
 		const List<Ref<InputEvent>> &all_default_events = InputMap::get_singleton()->get_builtins_with_feature_overrides_applied().find(action_name)->value;
-		List<Ref<InputEventKey>> key_default_events;
-		// Remove all non-key events from the defaults. Only check keys, since we are in the editor.
-		for (const List<Ref<InputEvent>>::Element *I = all_default_events.front(); I; I = I->next()) {
-			Ref<InputEventKey> k = I->get();
-			if (k.is_valid()) {
-				key_default_events.push_back(k);
-			}
-		}
-
-		// Join the text of the events with a delimiter so they can all be displayed in one cell.
-		String events_display_string = event_strings.is_empty() ? "None" : String("; ").join(event_strings);
-
-		if (!shortcut_filter.is_subsequence_ofn(action_name) && (events_display_string == "None" || !shortcut_filter.is_subsequence_ofn(events_display_string))) {
+		Array action_events = _event_list_to_array_helper(action.inputs);
+		if (!_should_display_shortcut(action_name, action_events)) {
 			continue;
 		}
 
-		Array action_events = _event_list_to_array_helper(action.inputs);
 		Array default_events = _event_list_to_array_helper(all_default_events);
 		bool same_as_defaults = Shortcut::is_event_array_equal(default_events, action_events);
 		bool collapse = !collapsed.has(action_name) || (collapsed.has(action_name) && collapsed[action_name]);
@@ -459,8 +467,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		String section_name = E.get_slice("/", 0);
 		TreeItem *section = sections[section_name];
 
-		// Shortcut Item
-		if (!shortcut_filter.is_subsequence_ofn(sc->get_name())) {
+		if (!_should_display_shortcut(sc->get_name(), sc->get_events())) {
 			continue;
 		}
 
@@ -749,11 +756,28 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	tabs->add_child(tab_shortcuts);
 	tab_shortcuts->set_name(TTR("Shortcuts"));
 
+	HBoxContainer *top_hbox = memnew(HBoxContainer);
+	top_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	tab_shortcuts->add_child(top_hbox);
+
 	shortcut_search_box = memnew(LineEdit);
-	shortcut_search_box->set_placeholder(TTR("Filter Shortcuts"));
+	shortcut_search_box->set_placeholder(TTR("Filter by name..."));
 	shortcut_search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	tab_shortcuts->add_child(shortcut_search_box);
+	top_hbox->add_child(shortcut_search_box);
 	shortcut_search_box->connect("text_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts));
+
+	shortcut_search_by_event = memnew(EventListenerLineEdit);
+	shortcut_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	shortcut_search_by_event->set_stretch_ratio(0.75);
+	shortcut_search_by_event->set_allowed_input_types(INPUT_KEY);
+	shortcut_search_by_event->connect("event_changed", callable_mp(this, &EditorSettingsDialog::_filter_shortcuts_by_event));
+	top_hbox->add_child(shortcut_search_by_event);
+
+	Button *clear_all_search = memnew(Button);
+	clear_all_search->set_text(TTR("Clear All"));
+	clear_all_search->connect("pressed", callable_mp(shortcut_search_box, &LineEdit::clear));
+	clear_all_search->connect("pressed", callable_mp(shortcut_search_by_event, &EventListenerLineEdit::clear_event));
+	top_hbox->add_child(clear_all_search);
 
 	shortcuts = memnew(Tree);
 	shortcuts->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -771,8 +795,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);
 	shortcut_editor->connect("confirmed", callable_mp(this, &EditorSettingsDialog::_event_config_confirmed));
-	shortcut_editor->set_allowed_input_types(InputEventConfigurationDialog::InputType::INPUT_KEY);
-	shortcut_editor->set_close_on_escape(false);
+	shortcut_editor->set_allowed_input_types(INPUT_KEY);
 	add_child(shortcut_editor);
 
 	set_hide_on_ok(true);

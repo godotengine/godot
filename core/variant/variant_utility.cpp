@@ -310,6 +310,10 @@ struct VariantUtilityFunctions {
 		return Math::is_zero_approx(x);
 	}
 
+	static inline bool is_finite(double x) {
+		return Math::is_finite(x);
+	}
+
 	static inline double ease(float x, float curve) {
 		return Math::ease(x, curve);
 	}
@@ -1420,6 +1424,7 @@ void Variant::_register_variant_utility_functions() {
 
 	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(is_finite, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(step_decimals, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);

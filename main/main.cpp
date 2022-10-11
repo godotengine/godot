@@ -710,6 +710,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool force_res = false;
 
 	String default_renderer = "";
+	String default_renderer_mobile = "";
 	String renderer_hints = "";
 
 	packed_data = PackedData::get_singleton();
@@ -1517,6 +1518,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// Start with RenderingDevice-based backends. Should be included if any RD driver present.
 #ifdef VULKAN_ENABLED
 	renderer_hints = "forward_plus,mobile";
+	default_renderer_mobile = "mobile";
 #endif
 
 	// And Compatibility next, or first if Vulkan is disabled.
@@ -1525,6 +1527,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		renderer_hints += ",";
 	}
 	renderer_hints += "gl_compatibility";
+	if (default_renderer_mobile.is_empty()) {
+		default_renderer_mobile = "gl_compatibility";
+	}
 #endif
 	if (renderer_hints.is_empty()) {
 		ERR_PRINT("No renderers available.");
@@ -1616,7 +1621,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	default_renderer = renderer_hints.get_slice(",", 0);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method", default_renderer);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer);
+	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/renderer/rendering_method",
@@ -1701,13 +1706,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rtm >= 0 && rtm < 3) {
-#ifdef NO_THREADS
-		rtm = OS::RENDER_THREAD_UNSAFE; // No threads available on this platform.
-#else
 		if (editor) {
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
-#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
@@ -1774,10 +1775,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second",
 					PROPERTY_HINT_RANGE, "1,1000,1"));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
-	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps",
+	Engine::get_singleton()->set_max_fps(GLOBAL_DEF("application/run/max_fps", 0));
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/max_fps",
 			PropertyInfo(Variant::INT,
-					"debug/settings/fps/force_fps",
+					"application/run/max_fps",
 					PROPERTY_HINT_RANGE, "0,1000,1"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
@@ -1927,11 +1928,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
-#if !defined(NO_THREADS)
 	if (p_main_tid_override) {
 		Thread::main_thread_id = p_main_tid_override;
 	}
-#endif
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {

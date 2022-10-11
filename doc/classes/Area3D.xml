@@ -110,11 +110,11 @@
 		<member name="reverb_bus_amount" type="float" setter="set_reverb_amount" getter="get_reverb_amount" default="0.0">
 			The degree to which this area applies reverb to its associated audio. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.
 		</member>
-		<member name="reverb_bus_enable" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" default="false">
+		<member name="reverb_bus_enabled" type="bool" setter="set_use_reverb_bus" getter="is_using_reverb_bus" default="false">
 			If [code]true[/code], the area applies reverb to its associated audio.
 		</member>
-		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus" getter="get_reverb_bus" default="&amp;&quot;Master&quot;">
-			The reverb bus name to use for this area's associated audio.
+		<member name="reverb_bus_name" type="StringName" setter="set_reverb_bus_name" getter="get_reverb_bus_name" default="&amp;&quot;Master&quot;">
+			The name of the reverb bus to use for this area's associated audio.
 		</member>
 		<member name="reverb_bus_uniformity" type="float" setter="set_reverb_uniformity" getter="get_reverb_uniformity" default="0.0">
 			The degree to which this area's reverb is a uniform effect. Ranges from [code]0[/code] to [code]1[/code] with [code]0.1[/code] precision.

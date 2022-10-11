@@ -147,6 +147,7 @@ Variant Plane::intersect_3_bind(const Plane &p_plane1, const Plane &p_plane2) co
 		return Variant();
 	}
 }
+
 Variant Plane::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) const {
 	Vector3 inters;
 	if (intersects_ray(p_from, p_dir, &inters)) {
@@ -155,6 +156,7 @@ Variant Plane::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) 
 		return Variant();
 	}
 }
+
 Variant Plane::intersects_segment_bind(const Vector3 &p_begin, const Vector3 &p_end) const {
 	Vector3 inters;
 	if (intersects_segment(p_begin, p_end, &inters)) {
@@ -172,6 +174,10 @@ bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
 
 bool Plane::is_equal_approx(const Plane &p_plane) const {
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
+}
+
+bool Plane::is_finite() const {
+	return normal.is_finite() && Math::is_finite(d);
 }
 
 Plane::operator String() const {

@@ -218,11 +218,11 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	TreeItem *root = tree->create_item();
 
 	// Handles the favorites.
-	TreeItem *favorites = tree->create_item(root);
-	favorites->set_icon(0, get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
-	favorites->set_text(0, TTR("Favorites:"));
-	favorites->set_metadata(0, "Favorites");
-	favorites->set_collapsed(p_uncollapsed_paths.find("Favorites") < 0);
+	TreeItem *favorites_item = tree->create_item(root);
+	favorites_item->set_icon(0, get_theme_icon(SNAME("Favorites"), SNAME("EditorIcons")));
+	favorites_item->set_text(0, TTR("Favorites:"));
+	favorites_item->set_metadata(0, "Favorites");
+	favorites_item->set_collapsed(p_uncollapsed_paths.find("Favorites") < 0);
 
 	Vector<String> favorite_paths = EditorSettings::get_singleton()->get_favorites();
 
@@ -272,7 +272,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		}
 
 		if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
-			TreeItem *ti = tree->create_item(favorites);
+			TreeItem *ti = tree->create_item(favorites_item);
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
 			ti->set_icon_modulate(0, color);
@@ -784,9 +784,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	List<FileInfo> file_list;
 	if (path == "Favorites") {
 		// Display the favorites.
-		Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
-		for (int i = 0; i < favorites.size(); i++) {
-			String favorite = favorites[i];
+		Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
+		for (const String &favorite : favorites_list) {
 			String text;
 			Ref<Texture2D> icon;
 			if (favorite == "res://") {
@@ -1056,15 +1055,15 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 void FileSystemDock::_tree_activate_file() {
 	TreeItem *selected = tree->get_selected();
 	if (selected) {
-		String path = selected->get_metadata(0);
+		String file_path = selected->get_metadata(0);
 		TreeItem *parent = selected->get_parent();
 		bool is_favorite = parent != nullptr && parent->get_metadata(0) == "Favorites";
 
-		if ((!is_favorite && path.ends_with("/")) || path == "Favorites") {
+		if ((!is_favorite && file_path.ends_with("/")) || file_path == "Favorites") {
 			bool collapsed = selected->is_collapsed();
 			selected->set_collapsed(!collapsed);
 		} else {
-			_select_file(path, is_favorite && !path.ends_with("/"));
+			_select_file(file_path, is_favorite && !file_path.ends_with("/"));
 		}
 	}
 }
@@ -1169,29 +1168,29 @@ void FileSystemDock::_push_to_history() {
 	button_hist_next->set_disabled(history_pos == history.size() - 1);
 }
 
-void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const {
-	if (efsd == nullptr) {
+void FileSystemDock::_get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const {
+	if (p_efsd == nullptr) {
 		return;
 	}
 
-	for (int i = 0; i < efsd->get_subdir_count(); i++) {
-		folders.push_back(efsd->get_subdir(i)->get_path());
-		_get_all_items_in_dir(efsd->get_subdir(i), files, folders);
+	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
+		r_folders.push_back(p_efsd->get_subdir(i)->get_path());
+		_get_all_items_in_dir(p_efsd->get_subdir(i), r_files, r_folders);
 	}
-	for (int i = 0; i < efsd->get_file_count(); i++) {
-		files.push_back(efsd->get_file_path(i));
+	for (int i = 0; i < p_efsd->get_file_count(); i++) {
+		r_files.push_back(p_efsd->get_file_path(i));
 	}
 }
 
-void FileSystemDock::_find_remaps(EditorFileSystemDirectory *efsd, const HashMap<String, String> &renames, Vector<String> &to_remaps) const {
-	for (int i = 0; i < efsd->get_subdir_count(); i++) {
-		_find_remaps(efsd->get_subdir(i), renames, to_remaps);
+void FileSystemDock::_find_remaps(EditorFileSystemDirectory *p_efsd, const HashMap<String, String> &r_renames, Vector<String> &r_to_remaps) const {
+	for (int i = 0; i < p_efsd->get_subdir_count(); i++) {
+		_find_remaps(p_efsd->get_subdir(i), r_renames, r_to_remaps);
 	}
-	for (int i = 0; i < efsd->get_file_count(); i++) {
-		Vector<String> deps = efsd->get_file_deps(i);
+	for (int i = 0; i < p_efsd->get_file_count(); i++) {
+		Vector<String> deps = p_efsd->get_file_deps(i);
 		for (int j = 0; j < deps.size(); j++) {
-			if (renames.has(deps[j])) {
-				to_remaps.push_back(efsd->get_file_path(i));
+			if (r_renames.has(deps[j])) {
+				r_to_remaps.push_back(p_efsd->get_file_path(i));
 				break;
 			}
 		}
@@ -1345,25 +1344,25 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 	}
 
 	for (int i = 0; i < EditorNode::get_editor_data().get_edited_scene_count(); i++) {
-		String path;
+		String file_path;
 		if (i == EditorNode::get_editor_data().get_edited_scene()) {
 			if (!get_tree()->get_edited_scene_root()) {
 				continue;
 			}
 
-			path = get_tree()->get_edited_scene_root()->get_scene_file_path();
+			file_path = get_tree()->get_edited_scene_root()->get_scene_file_path();
 		} else {
-			path = EditorNode::get_editor_data().get_scene_path(i);
+			file_path = EditorNode::get_editor_data().get_scene_path(i);
 		}
 
-		if (p_renames.has(path)) {
-			path = p_renames[path];
+		if (p_renames.has(file_path)) {
+			file_path = p_renames[file_path];
 		}
 
 		if (i == EditorNode::get_editor_data().get_edited_scene()) {
-			get_tree()->get_edited_scene_root()->set_scene_file_path(path);
+			get_tree()->get_edited_scene_root()->set_scene_file_path(file_path);
 		} else {
-			EditorNode::get_editor_data().set_scene_path(i, path);
+			EditorNode::get_editor_data().set_scene_path(i, file_path);
 		}
 	}
 }
@@ -1421,11 +1420,10 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 }
 
 void FileSystemDock::_update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const {
-	Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 	Vector<String> new_favorites;
 
-	for (int i = 0; i < favorites.size(); i++) {
-		String old_path = favorites[i];
+	for (const String &old_path : favorites_list) {
 		if (p_folders_renames.has(old_path)) {
 			new_favorites.push_back(p_folders_renames[old_path]);
 		} else if (p_files_renames.has(old_path)) {
@@ -1836,23 +1834,23 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 
 		case FILE_ADD_FAVORITE: {
 			// Add the files from favorites.
-			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
+			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < p_selected.size(); i++) {
-				if (!favorites.has(p_selected[i])) {
-					favorites.push_back(p_selected[i]);
+				if (!favorites_list.has(p_selected[i])) {
+					favorites_list.push_back(p_selected[i]);
 				}
 			}
-			EditorSettings::get_singleton()->set_favorites(favorites);
+			EditorSettings::get_singleton()->set_favorites(favorites_list);
 			_update_tree(_compute_uncollapsed_paths());
 		} break;
 
 		case FILE_REMOVE_FAVORITE: {
 			// Remove the files from favorites.
-			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
+			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < p_selected.size(); i++) {
-				favorites.erase(p_selected[i]);
+				favorites_list.erase(p_selected[i]);
 			}
-			EditorSettings::get_singleton()->set_favorites(favorites);
+			EditorSettings::get_singleton()->set_favorites(favorites_list);
 			_update_tree(_compute_uncollapsed_paths());
 			if (path == "Favorites") {
 				_update_file_list(true);
@@ -2274,7 +2272,7 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		int drop_section = tree->get_drop_section_at_position(p_point);
 
 		int drop_position;
-		Vector<String> files = drag_data["files"];
+		Vector<String> drag_files = drag_data["files"];
 		TreeItem *favorites_item = tree->get_root()->get_first_child();
 		TreeItem *resources_item = favorites_item->get_next();
 
@@ -2295,8 +2293,8 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		// Remove dragged favorites.
 		Vector<int> to_remove;
 		int offset = 0;
-		for (int i = 0; i < files.size(); i++) {
-			int to_remove_pos = dirs.find(files[i]);
+		for (int i = 0; i < drag_files.size(); i++) {
+			int to_remove_pos = dirs.find(drag_files[i]);
 			to_remove.push_back(to_remove_pos);
 			if (to_remove_pos < drop_position) {
 				offset++;
@@ -2309,8 +2307,8 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		}
 
 		// Re-add them at the right position.
-		for (int i = 0; i < files.size(); i++) {
-			dirs.insert(drop_position, files[i]);
+		for (int i = 0; i < drag_files.size(); i++) {
+			dirs.insert(drop_position, drag_files[i]);
 			drop_position++;
 		}
 
@@ -2379,13 +2377,13 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 		} else if (favorite) {
 			// Add the files from favorites.
 			Vector<String> fnames = drag_data["files"];
-			Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
+			Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 			for (int i = 0; i < fnames.size(); i++) {
-				if (!favorites.has(fnames[i])) {
-					favorites.push_back(fnames[i]);
+				if (!favorites_list.has(fnames[i])) {
+					favorites_list.push_back(fnames[i]);
 				}
 			}
-			EditorSettings::get_singleton()->set_favorites(favorites);
+			EditorSettings::get_singleton()->set_favorites(favorites_list);
 			_update_tree(_compute_uncollapsed_paths());
 		}
 	}
@@ -2463,7 +2461,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	Vector<String> filenames;
 	Vector<String> foldernames;
 
-	Vector<String> favorites = EditorSettings::get_singleton()->get_favorites();
+	Vector<String> favorites_list = EditorSettings::get_singleton()->get_favorites();
 
 	bool all_files = true;
 	bool all_files_scenes = true;
@@ -2484,8 +2482,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		// Check if in favorites.
 		bool found = false;
-		for (int j = 0; j < favorites.size(); j++) {
-			if (favorites[j] == fpath) {
+		for (int j = 0; j < favorites_list.size(); j++) {
+			if (favorites_list[j] == fpath) {
 				found = true;
 				break;
 			}
@@ -2852,10 +2850,10 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 	}
 }
 
-void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &files) const {
+void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &r_files) const {
 	if (!p_path.ends_with("/")) {
 		if (FileAccess::exists(p_path + ".import")) {
-			files.push_back(p_path);
+			r_files.push_back(p_path);
 		}
 		return;
 	}
@@ -2866,7 +2864,7 @@ void FileSystemDock::_get_imported_files(const String &p_path, Vector<String> &f
 	while (!n.is_empty()) {
 		if (n != "." && n != ".." && !n.ends_with(".import")) {
 			String npath = p_path + n + (da->current_is_dir() ? "/" : "");
-			_get_imported_files(npath, files);
+			_get_imported_files(npath, r_files);
 		}
 		n = da->get_next();
 	}
@@ -2996,7 +2994,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
-	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_file")));
+	ADD_SIGNAL(MethodInfo("folder_moved", PropertyInfo(Variant::STRING, "old_folder"), PropertyInfo(Variant::STRING, "new_folder")));
 
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }

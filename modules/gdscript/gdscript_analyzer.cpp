@@ -262,19 +262,19 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 			if (p_class->extends_path.is_relative_path()) {
 				p_class->extends_path = class_type.script_path.get_base_dir().path_join(p_class->extends_path).simplify_path();
 			}
-			Ref<GDScriptParserRef> parser = get_parser_for(p_class->extends_path);
-			if (parser.is_null()) {
+			Ref<GDScriptParserRef> ext_parser = get_parser_for(p_class->extends_path);
+			if (ext_parser.is_null()) {
 				push_error(vformat(R"(Could not resolve super class path "%s".)", p_class->extends_path), p_class);
 				return ERR_PARSE_ERROR;
 			}
 
-			Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+			Error err = ext_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 			if (err != OK) {
 				push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", p_class->extends_path), p_class);
 				return err;
 			}
 
-			base = parser->get_parser()->head->get_datatype();
+			base = ext_parser->get_parser()->head->get_datatype();
 		} else {
 			if (p_class->extends.is_empty()) {
 				push_error("Could not resolve an empty super class path.", p_class);
@@ -289,18 +289,18 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 				if (base_path == parser->script_path) {
 					base = parser->head->get_datatype();
 				} else {
-					Ref<GDScriptParserRef> parser = get_parser_for(base_path);
-					if (parser.is_null()) {
+					Ref<GDScriptParserRef> base_parser = get_parser_for(base_path);
+					if (base_parser.is_null()) {
 						push_error(vformat(R"(Could not resolve super class "%s".)", name), p_class);
 						return ERR_PARSE_ERROR;
 					}
 
-					Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+					Error err = base_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 					if (err != OK) {
 						push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 						return err;
 					}
-					base = parser->get_parser()->head->get_datatype();
+					base = base_parser->get_parser()->head->get_datatype();
 				}
 			} else if (ProjectSettings::get_singleton()->has_autoload(name) && ProjectSettings::get_singleton()->get_autoload(name).is_singleton) {
 				const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(name);
@@ -309,13 +309,13 @@ Error GDScriptAnalyzer::resolve_inheritance(GDScriptParser::ClassNode *p_class, 
 					return ERR_PARSE_ERROR;
 				}
 
-				Ref<GDScriptParserRef> parser = get_parser_for(info.path);
-				if (parser.is_null()) {
+				Ref<GDScriptParserRef> info_parser = get_parser_for(info.path);
+				if (info_parser.is_null()) {
 					push_error(vformat(R"(Could not parse singleton from "%s".)", info.path), p_class);
 					return ERR_PARSE_ERROR;
 				}
 
-				Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+				Error err = info_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 				if (err != OK) {
 					push_error(vformat(R"(Could not resolve super class inheritance from "%s".)", name), p_class);
 					return err;
@@ -3093,11 +3093,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			result.kind = GDScriptParser::DataType::NATIVE;
 			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 			if (autoload.path.to_lower().ends_with(GDScriptLanguage::get_singleton()->get_extension())) {
-				Ref<GDScriptParserRef> parser = get_parser_for(autoload.path);
-				if (parser.is_valid()) {
-					Error err = parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
+				Ref<GDScriptParserRef> singl_parser = get_parser_for(autoload.path);
+				if (singl_parser.is_valid()) {
+					Error err = singl_parser->raise_status(GDScriptParserRef::INTERFACE_SOLVED);
 					if (err == OK) {
-						result = type_from_metatype(parser->get_parser()->head->get_datatype());
+						result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
 					}
 				}
 			}

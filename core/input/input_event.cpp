@@ -449,11 +449,11 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 		match &= action_mask == key_mask;
 	}
 	if (match) {
-		bool pressed = key->is_pressed();
+		bool key_pressed = key->is_pressed();
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = key_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float strength = key_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
 			*r_strength = strength;
 		}
@@ -610,20 +610,20 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_
 	}
 
 	bool match = button_index == mb->button_index;
-	Key action_mask = get_modifiers_mask();
-	Key button_mask = mb->get_modifiers_mask();
+	Key action_modifiers_mask = get_modifiers_mask();
+	Key button_modifiers_mask = mb->get_modifiers_mask();
 	if (mb->is_pressed()) {
-		match &= (action_mask & button_mask) == action_mask;
+		match &= (action_modifiers_mask & button_modifiers_mask) == action_modifiers_mask;
 	}
 	if (p_exact_match) {
-		match &= action_mask == button_mask;
+		match &= action_modifiers_mask == button_modifiers_mask;
 	}
 	if (match) {
-		bool pressed = mb->is_pressed();
+		bool mb_pressed = mb->is_pressed();
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = mb_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float strength = mb_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
 			*r_strength = strength;
 		}
@@ -808,9 +808,9 @@ String InputEventMouseMotion::as_text() const {
 }
 
 String InputEventMouseMotion::to_string() {
-	MouseButton button_mask = get_button_mask();
-	String button_mask_string = itos((int64_t)button_mask);
-	switch (button_mask) {
+	MouseButton mouse_button_mask = get_button_mask();
+	String button_mask_string = itos((int64_t)mouse_button_mask);
+	switch (mouse_button_mask) {
 		case MouseButton::MASK_LEFT:
 			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
 			break;
@@ -1045,11 +1045,11 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool p
 
 	bool match = button_index == jb->button_index;
 	if (match) {
-		bool pressed = jb->is_pressed();
+		bool jb_pressed = jb->is_pressed();
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = jb_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float strength = jb_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
 			*r_strength = strength;
 		}
@@ -1340,16 +1340,16 @@ bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool p_exact
 
 	bool match = action == act->action;
 	if (match) {
-		bool pressed = act->pressed;
+		bool act_pressed = act->pressed;
 		if (r_pressed != nullptr) {
-			*r_pressed = pressed;
+			*r_pressed = act_pressed;
 		}
-		float strength = pressed ? 1.0f : 0.0f;
+		float act_strength = act_pressed ? 1.0f : 0.0f;
 		if (r_strength != nullptr) {
-			*r_strength = strength;
+			*r_strength = act_strength;
 		}
 		if (r_raw_strength != nullptr) {
-			*r_raw_strength = strength;
+			*r_raw_strength = act_strength;
 		}
 	}
 	return match;

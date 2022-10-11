@@ -516,15 +516,15 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 		_advance();
 	}
 
-	int length = _current - _start;
+	int len = _current - _start;
 
-	if (length == 1 && _peek(-1) == '_') {
+	if (len == 1 && _peek(-1) == '_') {
 		// Lone underscore.
 		return make_token(Token::UNDERSCORE);
 	}
 
-	String name(_start, length);
-	if (length < MIN_KEYWORD_LENGTH || length > MAX_KEYWORD_LENGTH) {
+	String name(_start, len);
+	if (len < MIN_KEYWORD_LENGTH || len > MAX_KEYWORD_LENGTH) {
 		// Cannot be a keyword, as the length doesn't match any.
 		return make_identifier(name);
 	}
@@ -538,7 +538,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 		const int keyword_length = sizeof(keyword) - 1;                                                                   \
 		static_assert(keyword_length <= MAX_KEYWORD_LENGTH, "There's a keyword longer than the defined maximum length");  \
 		static_assert(keyword_length >= MIN_KEYWORD_LENGTH, "There's a keyword shorter than the defined minimum length"); \
-		if (keyword_length == length && name == keyword) {                                                                \
+		if (keyword_length == len && name == keyword) {                                                                   \
 			return make_token(token_type);                                                                                \
 		}                                                                                                                 \
 	}
@@ -551,13 +551,13 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 	}
 
 	// Check if it's a special literal
-	if (length == 4) {
+	if (len == 4) {
 		if (name == "true") {
 			return make_literal(true);
 		} else if (name == "null") {
 			return make_literal(Variant());
 		}
-	} else if (length == 5) {
+	} else if (len == 5) {
 		if (name == "false") {
 			return make_literal(false);
 		}
@@ -725,8 +725,8 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 	}
 
 	// Create a string with the whole number.
-	int length = _current - _start;
-	String number = String(_start, length).replace("_", "");
+	int len = _current - _start;
+	String number = String(_start, len).replace("_", "");
 
 	// Convert to the appropriate literal type.
 	if (base == 16) {

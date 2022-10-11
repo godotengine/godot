@@ -74,7 +74,7 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 		if (beat_length_frames >= 0) {
 			/**
 			 * Length determined by beat length
-			 * This code is commented out because, in practice, it is prefered that the fade
+			 * This code is commented out because, in practice, it is preferred that the fade
 			 * is done by the transitioner and this stream just goes on until it ends while fading out.
 			 *
 			 * End fade implementation is left here for reference in case at some point this feature

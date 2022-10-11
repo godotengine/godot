@@ -76,7 +76,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	th_info ti;
 	th_comment tc;
 	th_dec_ctx *td = nullptr;
-	vorbis_info vi;
+	vorbis_info vi = {};
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_comment vc;

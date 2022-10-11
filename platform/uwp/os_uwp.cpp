@@ -826,10 +826,6 @@ OS_UWP::OS_UWP() {
 	pressrc = 0;
 	old_invalid = true;
 	mouse_mode = MOUSE_MODE_VISIBLE;
-#ifdef STDOUT_FILE
-	stdo = fopen("stdout.txt", "wb");
-#endif
-
 	gl_context = nullptr;
 
 	display_request = ref new Windows::System::Display::DisplayRequest();
@@ -847,7 +843,4 @@ OS_UWP::OS_UWP() {
 }
 
 OS_UWP::~OS_UWP() {
-#ifdef STDOUT_FILE
-	fclose(stdo);
-#endif
 }

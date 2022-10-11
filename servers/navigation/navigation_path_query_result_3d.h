@@ -45,6 +45,8 @@ protected:
 public:
 	void set_path(const Vector<Vector3> &p_path);
 	const Vector<Vector3> &get_path() const;
+
+	void reset();
 };
 
 #endif // NAVIGATION_PATH_QUERY_RESULT_3D_H

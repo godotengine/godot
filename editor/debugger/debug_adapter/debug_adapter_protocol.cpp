@@ -656,7 +656,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 
 bool DebugAdapterProtocol::process_message(const String &p_text) {
 	JSON json;
-	ERR_FAIL_COND_V_MSG(json.parse(p_text) != OK, true, "Mal-formed message!");
+	ERR_FAIL_COND_V_MSG(json.parse(p_text) != OK, true, "Malformed message!");
 	Dictionary params = json.get_data();
 	bool completed = true;
 
@@ -921,11 +921,11 @@ void DebugAdapterProtocol::on_debug_stack_frame_vars(const int &p_size) {
 	ERR_FAIL_COND(!stackframe_list.has(frame));
 	List<int> scope_ids = stackframe_list.find(frame)->value;
 	for (List<int>::Element *E = scope_ids.front(); E; E = E->next()) {
-		int variable_id = E->get();
-		if (variable_list.has(variable_id)) {
-			variable_list.find(variable_id)->value.clear();
+		int var_id = E->get();
+		if (variable_list.has(var_id)) {
+			variable_list.find(var_id)->value.clear();
 		} else {
-			variable_list.insert(variable_id, Array());
+			variable_list.insert(var_id, Array());
 		}
 	}
 }
@@ -941,7 +941,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	List<int> scope_ids = stackframe_list.find(frame)->value;
 	ERR_FAIL_COND(scope_ids.size() != 3);
 	ERR_FAIL_INDEX(stack_var.type, 3);
-	int variable_id = scope_ids[stack_var.type];
+	int var_id = scope_ids[stack_var.type];
 
 	DAP::Variable variable;
 
@@ -950,7 +950,7 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	variable.type = Variant::get_type_name(stack_var.value.get_type());
 	variable.variablesReference = parse_variant(stack_var.value);
 
-	variable_list.find(variable_id)->value.push_back(variable.to_json());
+	variable_list.find(var_id)->value.push_back(variable.to_json());
 	_remaining_vars--;
 }
 

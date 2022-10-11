@@ -1209,6 +1209,8 @@ Error ImageTexture3D::create(Image::Format p_format, int p_width, int p_height, 
 
 	if (texture.is_valid()) {
 		RenderingServer::get_singleton()->texture_replace(texture, tex);
+	} else {
+		texture = tex;
 	}
 
 	return OK;
@@ -1286,15 +1288,15 @@ Error CompressedTexture3D::_load_data(const String &p_path, Vector<Ref<Image>> &
 	f->get_32(); // ignored (data format)
 
 	f->get_32(); //ignored
-	int mipmaps = f->get_32();
+	int mipmap_count = f->get_32();
 	f->get_32(); //ignored
 	f->get_32(); //ignored
 
-	r_mipmaps = mipmaps != 0;
+	r_mipmaps = mipmap_count != 0;
 
 	r_data.clear();
 
-	for (int i = 0; i < (r_depth + mipmaps); i++) {
+	for (int i = 0; i < (r_depth + mipmap_count); i++) {
 		Ref<Image> image = CompressedTexture2D::load_image_from_file(f, 0);
 		ERR_FAIL_COND_V(image.is_null() || image->is_empty(), ERR_CANT_OPEN);
 		if (i == 0) {
@@ -1489,7 +1491,15 @@ void AtlasTexture::set_atlas(const Ref<Texture2D> &p_atlas) {
 	if (atlas == p_atlas) {
 		return;
 	}
+	// Support recursive AtlasTextures.
+	if (Ref<AtlasTexture>(atlas).is_valid()) {
+		atlas->disconnect(CoreStringNames::get_singleton()->changed, callable_mp((Resource *)this, &AtlasTexture::emit_changed));
+	}
 	atlas = p_atlas;
+	if (Ref<AtlasTexture>(atlas).is_valid()) {
+		atlas->connect(CoreStringNames::get_singleton()->changed, callable_mp((Resource *)this, &AtlasTexture::emit_changed));
+	}
+
 	emit_changed();
 }
 

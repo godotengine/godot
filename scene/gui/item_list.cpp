@@ -1296,9 +1296,9 @@ void ItemList::_notification(int p_what) {
 						draw_rect.size = adj.size;
 					}
 
-					Color modulate = items[i].icon_modulate;
+					Color icon_modulate = items[i].icon_modulate;
 					if (items[i].disabled) {
-						modulate.a *= 0.5;
+						icon_modulate.a *= 0.5;
 					}
 
 					// If the icon is transposed, we have to switch the size so that it is drawn correctly
@@ -1313,7 +1313,7 @@ void ItemList::_notification(int p_what) {
 					if (rtl) {
 						draw_rect.position.x = size.width - draw_rect.position.x - draw_rect.size.x;
 					}
-					draw_texture_rect_region(items[i].icon, draw_rect, region, modulate, items[i].icon_transposed);
+					draw_texture_rect_region(items[i].icon, draw_rect, region, icon_modulate, items[i].icon_transposed);
 				}
 
 				if (items[i].tag_icon.is_valid()) {
@@ -1336,9 +1336,9 @@ void ItemList::_notification(int p_what) {
 						max_len = size2.x;
 					}
 
-					Color modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
+					Color txt_modulate = items[i].selected ? theme_cache.font_selected_color : (items[i].custom_fg != Color() ? items[i].custom_fg : theme_cache.font_color);
 					if (items[i].disabled) {
-						modulate.a *= 0.5;
+						txt_modulate.a *= 0.5;
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
@@ -1355,7 +1355,7 @@ void ItemList::_notification(int p_what) {
 							items[i].text_buf->draw_outline(get_canvas_item(), text_ofs, theme_cache.font_outline_size, theme_cache.font_outline_color);
 						}
 
-						items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
+						items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 					} else {
 						if (fixed_column_width > 0) {
 							size2.x = MIN(size2.x, fixed_column_width);
@@ -1387,7 +1387,7 @@ void ItemList::_notification(int p_what) {
 						}
 
 						if (width - text_ofs.x > 0) {
-							items[i].text_buf->draw(get_canvas_item(), text_ofs, modulate);
+							items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 						}
 					}
 				}

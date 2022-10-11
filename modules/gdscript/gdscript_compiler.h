@@ -81,10 +81,10 @@ class GDScriptCompiler {
 					type.kind = GDScriptDataType::NATIVE;
 					type.native_type = obj->get_class_name();
 
-					Ref<Script> script = obj->get_script();
-					if (script.is_valid()) {
-						type.script_type = script.ptr();
-						Ref<GDScript> gdscript = script;
+					Ref<Script> scr = obj->get_script();
+					if (scr.is_valid()) {
+						type.script_type = scr.ptr();
+						Ref<GDScript> gdscript = scr;
 						if (gdscript.is_valid()) {
 							type.kind = GDScriptDataType::GDSCRIPT;
 						} else {

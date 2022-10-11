@@ -215,6 +215,9 @@ if env["builtin_graphite"] and freetype_enabled and env["graphite"]:
         ]
     )
 
+    if env.msvc:  # Not our business to fix.
+        env_graphite.Append(CCFLAGS=["-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS"])
+
     lib = env_graphite.add_library("graphite_builtin", thirdparty_sources)
     thirdparty_obj += lib
 
@@ -445,7 +448,7 @@ if env["builtin_icu"]:
 
     icu_data_name = "icudt71l.dat"
 
-    if env_icu["tools"]:
+    if env.editor_build:
         env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
         env_icu.Command("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name, make_icu_data)
         env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
@@ -479,7 +482,7 @@ if env["builtin_icu"]:
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
-    if env_text_server_adv["tools"]:
+    if env.editor_build:
         env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
 
     env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/common/", "#thirdparty/icu4c/i18n/"])

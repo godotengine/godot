@@ -302,6 +302,8 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::get_singleton()->get_track_editor()->update_keying();
 	_animation_key_editor_seek(timeline_position, false);
+
+	emit_signal("animation_selected", current);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -720,7 +722,18 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 	if (p_state.has("player")) {
 		Node *n = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["player"]);
 		if (Object::cast_to<AnimationPlayer>(n) && EditorNode::get_singleton()->get_editor_selection()->is_selected(n)) {
+			if (player) {
+				if (player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+					player->disconnect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				}
+			}
 			player = Object::cast_to<AnimationPlayer>(n);
+			if (player) {
+				if (!player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+					player->connect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+				}
+			}
+
 			_update_player();
 			EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 			set_process(true);
@@ -826,13 +839,13 @@ void AnimationPlayerEditor::_update_player() {
 		}
 
 		// Check if the global library is foreign since we want to disable options for adding/remove/renaming animations if it is.
-		Ref<AnimationLibrary> library = player->get_animation_library(K);
+		Ref<AnimationLibrary> anim_library = player->get_animation_library(K);
 		if (K == "") {
-			foreign_global_anim_lib = EditorNode::get_singleton()->is_resource_read_only(library);
+			foreign_global_anim_lib = EditorNode::get_singleton()->is_resource_read_only(anim_library);
 		}
 
 		List<StringName> animlist;
-		library->get_animation_list(&animlist);
+		anim_library->get_animation_list(&animlist);
 
 		for (const StringName &E : animlist) {
 			String path = K;
@@ -874,6 +887,11 @@ void AnimationPlayerEditor::_update_player() {
 	onion_toggle->set_disabled(no_anims_found);
 	onion_skinning->set_disabled(no_anims_found);
 
+	if (hack_disable_onion_skinning) {
+		onion_toggle->set_disabled(true);
+		onion_skinning->set_disabled(true);
+	}
+
 	_update_animation_list_icons();
 
 	updating = false;
@@ -908,19 +926,19 @@ void AnimationPlayerEditor::_update_player() {
 
 void AnimationPlayerEditor::_update_animation_list_icons() {
 	for (int i = 0; i < animation->get_item_count(); i++) {
-		String name = animation->get_item_text(i);
+		String anim_name = animation->get_item_text(i);
 		if (animation->is_item_disabled(i) || animation->is_item_separator(i)) {
 			continue;
 		}
 
 		Ref<Texture2D> icon;
-		if (name == player->get_autoplay()) {
-			if (name == SceneStringNames::get_singleton()->RESET) {
+		if (anim_name == player->get_autoplay()) {
+			if (anim_name == SceneStringNames::get_singleton()->RESET) {
 				icon = autoplay_reset_icon;
 			} else {
 				icon = autoplay_icon;
 			}
-		} else if (name == SceneStringNames::get_singleton()->RESET) {
+		} else if (anim_name == SceneStringNames::get_singleton()->RESET) {
 			icon = reset_icon;
 		}
 
@@ -977,9 +995,18 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	if (player && pin->is_pressed()) {
 		return; // Ignore, pinned.
 	}
+
+	if (player) {
+		if (player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+			player->disconnect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		}
+	}
 	player = p_player;
 
 	if (player) {
+		if (!player->is_connected("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated))) {
+			player->connect("animation_libraries_updated", callable_mp(this, &AnimationPlayerEditor::_animation_libraries_updated));
+		}
 		_update_player();
 
 		if (onion.enabled) {
@@ -1144,6 +1171,10 @@ void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 			library_editor->update_tree();
 		}
 	}
+}
+
+void AnimationPlayerEditor::_animation_libraries_updated() {
+	_animation_player_changed(player);
 }
 
 void AnimationPlayerEditor::_list_changed() {
@@ -1351,8 +1382,8 @@ void AnimationPlayerEditor::_free_onion_layers() {
 
 void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	// This would be called per viewport and we want to act once only.
-	int64_t frame = get_tree()->get_frame();
-	if (frame == onion.last_frame) {
+	int64_t cur_frame = get_tree()->get_frame();
+	if (cur_frame == onion.last_frame) {
 		return;
 	}
 
@@ -1361,7 +1392,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 		return;
 	}
 
-	onion.last_frame = frame;
+	onion.last_frame = cur_frame;
 
 	// Refresh viewports with no onion layers overlaid.
 	onion.can_overlay = false;
@@ -1540,6 +1571,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
 	ClassDB::bind_method(D_METHOD("_animation_resource_edit"), &AnimationPlayerEditor::_animation_resource_edit);
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
+	ClassDB::bind_method(D_METHOD("_animation_libraries_updated"), &AnimationPlayerEditor::_animation_libraries_updated);
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
 
@@ -1547,6 +1579,8 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_prepare_onion_layers_2"), &AnimationPlayerEditor::_prepare_onion_layers_2);
 	ClassDB::bind_method(D_METHOD("_start_onion_skinning"), &AnimationPlayerEditor::_start_onion_skinning);
 	ClassDB::bind_method(D_METHOD("_stop_onion_skinning"), &AnimationPlayerEditor::_stop_onion_skinning);
+
+	ADD_SIGNAL(MethodInfo("animation_selected", PropertyInfo(Variant::STRING, "name")));
 }
 
 AnimationPlayerEditor *AnimationPlayerEditor::singleton = nullptr;
@@ -1677,6 +1711,16 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	onion_skinning->get_popup()->add_check_item(TTR("Force White Modulate"), ONION_SKINNING_FORCE_WHITE_MODULATE);
 	onion_skinning->get_popup()->add_check_item(TTR("Include Gizmos (3D)"), ONION_SKINNING_INCLUDE_GIZMOS);
 	hb->add_child(onion_skinning);
+
+	// FIXME: Onion skinning disabled for now as it's broken and triggers fast
+	// flickering red/blue modulation (GH-53870).
+	if (hack_disable_onion_skinning) {
+		onion_toggle->set_disabled(true);
+		onion_toggle->set_tooltip_text(TTR("Onion Skinning temporarily disabled due to rendering bug."));
+
+		onion_skinning->set_disabled(true);
+		onion_skinning->set_tooltip_text(TTR("Onion Skinning temporarily disabled due to rendering bug."));
+	}
 
 	hb->add_child(memnew(VSeparator));
 

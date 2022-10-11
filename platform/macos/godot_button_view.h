@@ -42,10 +42,15 @@
 	CGFloat spacing;
 	bool mouse_in_group;
 	bool rtl;
+	NSButton *close_button;
+	NSButton *miniaturize_button;
+	NSButton *zoom_button;
 }
 
 - (void)initButtons:(CGFloat)button_spacing offset:(NSPoint)button_offset rtl:(bool)is_rtl;
 - (void)displayButtons;
+- (void)setOffset:(NSPoint)button_offset;
+- (NSPoint)getOffset;
 
 @end
 

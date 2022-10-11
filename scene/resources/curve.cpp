@@ -1667,6 +1667,10 @@ Vector3 Curve3D::sample_baked_up_vector(real_t p_offset, bool p_apply_tilt) cons
 		idx = (end + start) / 2;
 	}
 
+	if (idx == count - 1) {
+		return p_apply_tilt ? r[idx].rotated((rp[idx] - rp[idx - 1]).normalized(), rt[idx]) : r[idx];
+	}
+
 	real_t offset_begin = baked_dist_cache[idx];
 	real_t offset_end = baked_dist_cache[idx + 1];
 
@@ -1674,10 +1678,6 @@ Vector3 Curve3D::sample_baked_up_vector(real_t p_offset, bool p_apply_tilt) cons
 	ERR_FAIL_COND_V_MSG(p_offset < offset_begin || p_offset > offset_end, Vector3(0, 1, 0), "Couldn't find baked segment.");
 
 	real_t frac = (p_offset - offset_begin) / idx_interval;
-
-	if (idx == count - 1) {
-		return p_apply_tilt ? r[idx].rotated((rp[idx] - rp[idx - 1]).normalized(), rt[idx]) : r[idx];
-	}
 
 	Vector3 forward = (rp[idx + 1] - rp[idx]).normalized();
 	Vector3 up = r[idx];

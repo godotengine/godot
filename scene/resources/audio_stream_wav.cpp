@@ -180,7 +180,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				final_r = p_src[pos + 1];
 			}
 
-			if (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
+			if constexpr (sizeof(Depth) == 1) { /* conditions will not exist anymore when compiled! */
 				final <<= 8;
 				if (is_stereo) {
 					final_r <<= 8;
@@ -194,7 +194,7 @@ void AudioStreamPlaybackWAV::do_resample(const Depth *p_src, AudioFrame *p_dst, 
 				next = p_src[pos + 1];
 			}
 
-			if (sizeof(Depth) == 1) {
+			if constexpr (sizeof(Depth) == 1) {
 				next <<= 8;
 				if (is_stereo) {
 					next_r <<= 8;
@@ -580,8 +580,8 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	Vector<uint8_t> data = get_data();
-	const uint8_t *read_data = data.ptr();
+	Vector<uint8_t> stream_data = get_data();
+	const uint8_t *read_data = stream_data.ptr();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {

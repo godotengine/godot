@@ -60,20 +60,18 @@ out vec2 pixel_size_interp;
 
 void main() {
 	vec4 instance_custom = vec4(0.0);
-	draw_data_instance = gl_InstanceID;
-#ifdef USE_PRIMITIVE
 
-	//weird bug,
-	//this works
+#ifdef USE_PRIMITIVE
+	draw_data_instance = gl_InstanceID;
 	vec2 vertex;
 	vec2 uv;
 	vec4 color;
 
-	if (gl_VertexID == 0) {
+	if (gl_VertexID % 3 == 0) {
 		vertex = draw_data[draw_data_instance].point_a;
 		uv = draw_data[draw_data_instance].uv_a;
 		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_a_rg), unpackHalf2x16(draw_data[draw_data_instance].color_a_ba));
-	} else if (gl_VertexID == 1) {
+	} else if (gl_VertexID % 3 == 1) {
 		vertex = draw_data[draw_data_instance].point_b;
 		uv = draw_data[draw_data_instance].uv_b;
 		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_b_rg), unpackHalf2x16(draw_data[draw_data_instance].color_b_ba));
@@ -86,6 +84,7 @@ void main() {
 	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
+	draw_data_instance = gl_InstanceID;
 #ifdef USE_INSTANCING
 	draw_data_instance = 0;
 #endif
@@ -103,9 +102,9 @@ void main() {
 #endif
 
 #else
-
-	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	vec2 vertex_base = vertex_base_arr[gl_VertexID];
+	draw_data_instance = gl_VertexID / 6;
+	vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
+	vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
 
 	vec2 uv = draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw) * ((draw_data[draw_data_instance].flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = draw_data[draw_data_instance].modulation;
@@ -126,6 +125,8 @@ void main() {
 		vertex /= draw_data[draw_data_instance].color_texture_pixel_size;
 	}
 #endif
+
+	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
 
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
@@ -392,6 +393,8 @@ void main() {
 #else
 	vec2 screen_uv = vec2(0.0);
 #endif
+
+	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
 
 	vec3 light_vertex = vec3(vertex, 0.0);
 	vec2 shadow_vertex = vertex;

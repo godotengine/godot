@@ -215,10 +215,8 @@ Vector3 TriangleMesh::get_area_normal(const AABB &p_aabb) const {
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				bool valid = b.aabb.intersects(p_aabb);
-				if (!valid) {
+				if (!b.aabb.intersects(p_aabb)) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
 				} else {
 					if (b.face_index >= 0) {
 						const Triangle &s = triangleptr[b.face_index];
@@ -302,12 +300,8 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				bool valid = b.aabb.intersects_segment(p_begin, p_end);
-				//bool valid = b.aabb.intersects(ray_aabb);
-
-				if (!valid) {
+				if (!b.aabb.intersects_segment(p_begin, p_end)) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
 				} else {
 					if (b.face_index >= 0) {
 						const Triangle &s = triangleptr[b.face_index];
@@ -407,10 +401,8 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				bool valid = b.aabb.intersects_ray(p_begin, p_dir);
-				if (!valid) {
+				if (!b.aabb.intersects_ray(p_begin, p_dir)) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
 				} else {
 					if (b.face_index >= 0) {
 						const Triangle &s = triangleptr[b.face_index];
@@ -508,10 +500,8 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				bool valid = b.aabb.intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count);
-				if (!valid) {
+				if (!b.aabb.intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count)) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
 				} else {
 					if (b.face_index >= 0) {
 						const Triangle &s = triangleptr[b.face_index];

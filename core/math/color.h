@@ -32,7 +32,8 @@
 #define COLOR_H
 
 #include "core/math/math_funcs.h"
-#include "core/string/ustring.h"
+
+class String;
 
 struct _NO_DISCARD_ Color {
 	union {
@@ -55,11 +56,11 @@ struct _NO_DISCARD_ Color {
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
-	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
+	void set_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	float get_ok_hsl_h() const;
 	float get_ok_hsl_s() const;
 	float get_ok_hsl_l() const;
-	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0);
+	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -175,9 +176,9 @@ struct _NO_DISCARD_ Color {
 
 	_FORCE_INLINE_ Color srgb_to_linear() const {
 		return Color(
-				r < 0.04045f ? r * (1.0 / 12.92) : Math::pow((r + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
-				g < 0.04045f ? g * (1.0 / 12.92) : Math::pow((g + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
-				b < 0.04045f ? b * (1.0 / 12.92) : Math::pow((b + 0.055f) * (float)(1.0 / (1 + 0.055)), 2.4f),
+				r < 0.04045f ? r * (1.0f / 12.92f) : Math::pow((r + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
+				g < 0.04045f ? g * (1.0f / 12.92f) : Math::pow((g + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
+				b < 0.04045f ? b * (1.0f / 12.92f) : Math::pow((b + 0.055f) * (float)(1.0 / (1.0 + 0.055)), 2.4f),
 				a);
 	}
 	_FORCE_INLINE_ Color linear_to_srgb() const {
@@ -198,11 +199,11 @@ struct _NO_DISCARD_ Color {
 	static String get_named_color_name(int p_idx);
 	static Color get_named_color(int p_idx);
 	static Color from_string(const String &p_string, const Color &p_default);
-	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0);
-	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0);
+	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
+	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 
-	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
+	_FORCE_INLINE_ bool operator<(const Color &p_color) const; // Used in set keys.
 	operator String() const;
 
 	// For the binder.

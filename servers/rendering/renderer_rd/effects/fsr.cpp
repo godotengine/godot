@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "fsr.h"
-#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
+#include "../storage_rd/material_storage.h"
+#include "../uniform_set_cache_rd.h"
 
 using namespace RendererRD;
 

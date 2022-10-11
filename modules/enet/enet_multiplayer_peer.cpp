@@ -436,9 +436,9 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 	int packet_flags = 0;
 	int channel = SYSCH_RELIABLE;
-	int transfer_channel = get_transfer_channel();
-	if (transfer_channel > 0) {
-		channel = SYSCH_MAX + transfer_channel - 1;
+	int tr_channel = get_transfer_channel();
+	if (tr_channel > 0) {
+		channel = SYSCH_MAX + tr_channel - 1;
 	} else {
 		switch (get_transfer_mode()) {
 			case TRANSFER_MODE_UNRELIABLE: {

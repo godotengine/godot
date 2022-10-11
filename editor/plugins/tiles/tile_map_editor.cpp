@@ -2428,20 +2428,16 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_line(Vector2i 
 		return HashMap<Vector2i, TileMapCell>();
 	}
 
-	if (selected_type == SELECTED_TYPE_CONNECT) {
-		return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, true);
-	} else if (selected_type == SELECTED_TYPE_PATH) {
-		return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, false);
-	} else { // SELECTED_TYPE_PATTERN
-		TileSet::TerrainsPattern terrains_pattern;
-		if (p_erase) {
-			terrains_pattern = TileSet::TerrainsPattern(*tile_set, selected_terrain_set);
-		} else {
-			terrains_pattern = selected_terrains_pattern;
+	if (p_erase) {
+		return _draw_terrain_pattern(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, TileSet::TerrainsPattern(*tile_set, selected_terrain_set));
+	} else {
+		if (selected_type == SELECTED_TYPE_CONNECT) {
+			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, true);
+		} else if (selected_type == SELECTED_TYPE_PATH) {
+			return _draw_terrain_path_or_connect(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrain, false);
+		} else { // SELECTED_TYPE_PATTERN
+			return _draw_terrain_pattern(TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell), selected_terrain_set, selected_terrains_pattern);
 		}
-
-		Vector<Vector2i> line = TileMapEditor::get_line(tile_map, p_start_cell, p_end_cell);
-		return _draw_terrain_pattern(line, selected_terrain_set, terrains_pattern);
 	}
 }
 
@@ -2468,16 +2464,14 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_rect(Vector2i 
 		}
 	}
 
-	if (selected_type == SELECTED_TYPE_CONNECT || selected_type == SELECTED_TYPE_PATH) {
-		return _draw_terrain_path_or_connect(to_draw, selected_terrain_set, selected_terrain, true);
-	} else { // SELECTED_TYPE_PATTERN
-		TileSet::TerrainsPattern terrains_pattern;
-		if (p_erase) {
-			terrains_pattern = TileSet::TerrainsPattern(*tile_set, selected_terrain_set);
-		} else {
-			terrains_pattern = selected_terrains_pattern;
+	if (p_erase) {
+		return _draw_terrain_pattern(to_draw, selected_terrain_set, TileSet::TerrainsPattern(*tile_set, selected_terrain_set));
+	} else {
+		if (selected_type == SELECTED_TYPE_CONNECT || selected_type == SELECTED_TYPE_PATH) {
+			return _draw_terrain_path_or_connect(to_draw, selected_terrain_set, selected_terrain, true);
+		} else { // SELECTED_TYPE_PATTERN
+			return _draw_terrain_pattern(to_draw, selected_terrain_set, selected_terrains_pattern);
 		}
-		return _draw_terrain_pattern(to_draw, selected_terrain_set, terrains_pattern);
 	}
 }
 
@@ -2609,16 +2603,14 @@ HashMap<Vector2i, TileMapCell> TileMapEditorTerrainsPlugin::_draw_bucket_fill(Ve
 		cells_to_draw_as_vector.append(cell);
 	}
 
-	if (selected_type == SELECTED_TYPE_CONNECT || selected_type == SELECTED_TYPE_PATH) {
-		return _draw_terrain_path_or_connect(cells_to_draw_as_vector, selected_terrain_set, selected_terrain, true);
-	} else { // SELECTED_TYPE_PATTERN
-		TileSet::TerrainsPattern terrains_pattern;
-		if (p_erase) {
-			terrains_pattern = TileSet::TerrainsPattern(*tile_set, selected_terrain_set);
-		} else {
-			terrains_pattern = selected_terrains_pattern;
+	if (p_erase) {
+		return _draw_terrain_pattern(cells_to_draw_as_vector, selected_terrain_set, TileSet::TerrainsPattern(*tile_set, selected_terrain_set));
+	} else {
+		if (selected_type == SELECTED_TYPE_CONNECT || selected_type == SELECTED_TYPE_PATH) {
+			return _draw_terrain_path_or_connect(cells_to_draw_as_vector, selected_terrain_set, selected_terrain, true);
+		} else { // SELECTED_TYPE_PATTERN
+			return _draw_terrain_pattern(cells_to_draw_as_vector, selected_terrain_set, selected_terrains_pattern);
 		}
-		return _draw_terrain_pattern(cells_to_draw_as_vector, selected_terrain_set, terrains_pattern);
 	}
 }
 
@@ -3198,10 +3190,10 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 	TreeItem *selected_tree_item = terrains_tree->get_selected();
 	if (selected_tree_item && selected_tree_item->get_metadata(0)) {
 		Dictionary metadata_dict = selected_tree_item->get_metadata(0);
-		int selected_terrain_set = metadata_dict["terrain_set"];
-		int selected_terrain_id = metadata_dict["terrain_id"];
-		ERR_FAIL_INDEX(selected_terrain_set, tile_set->get_terrain_sets_count());
-		ERR_FAIL_INDEX(selected_terrain_id, tile_set->get_terrains_count(selected_terrain_set));
+		int sel_terrain_set = metadata_dict["terrain_set"];
+		int sel_terrain_id = metadata_dict["terrain_id"];
+		ERR_FAIL_INDEX(sel_terrain_set, tile_set->get_terrain_sets_count());
+		ERR_FAIL_INDEX(sel_terrain_id, tile_set->get_terrains_count(sel_terrain_set));
 
 		// Add the two first generic modes
 		int item_index = terrains_tile_list->add_icon_item(main_vbox_container->get_theme_icon(SNAME("TerrainConnect"), SNAME("EditorIcons")));
@@ -3219,13 +3211,13 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 		// Sort the items in a map by the number of corresponding terrains.
 		RBMap<int, RBSet<TileSet::TerrainsPattern>> sorted;
 
-		for (const TileSet::TerrainsPattern &E : per_terrain_terrains_patterns[selected_terrain_set][selected_terrain_id]) {
+		for (const TileSet::TerrainsPattern &E : per_terrain_terrains_patterns[sel_terrain_set][sel_terrain_id]) {
 			// Count the number of matching sides/terrains.
 			int count = 0;
 
 			for (int i = 0; i < TileSet::CELL_NEIGHBOR_MAX; i++) {
 				TileSet::CellNeighbor bit = TileSet::CellNeighbor(i);
-				if (tile_set->is_valid_terrain_peering_bit(selected_terrain_set, bit) && E.get_terrain_peering_bit(bit) == selected_terrain_id) {
+				if (tile_set->is_valid_terrain_peering_bit(sel_terrain_set, bit) && E.get_terrain_peering_bit(bit) == sel_terrain_id) {
 					count++;
 				}
 			}
@@ -3242,7 +3234,7 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 				bool transpose = false;
 
 				double max_probability = -1.0;
-				for (const TileMapCell &cell : tile_set->get_tiles_for_terrains_pattern(selected_terrain_set, terrains_pattern)) {
+				for (const TileMapCell &cell : tile_set->get_tiles_for_terrains_pattern(sel_terrain_set, terrains_pattern)) {
 					Ref<TileSetSource> source = tile_set->get_source(cell.source_id);
 
 					Ref<TileSetAtlasSource> atlas_source = source;
@@ -3697,8 +3689,8 @@ void TileMapEditor::_update_layers_selection() {
 }
 
 void TileMapEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo.is_null());
+	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(undo_redo_man.is_null());
 
 	TileMap *tile_map = Object::cast_to<TileMap>(p_edited);
 	if (!tile_map) {
@@ -3729,12 +3721,12 @@ void TileMapEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_
 		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
 	}
 
-#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
 	// Save layers' properties.
 	if (p_from_index < 0) {
-		undo_redo->add_undo_method(tile_map, "remove_layer", p_to_pos < 0 ? tile_map->get_layers_count() : p_to_pos);
+		undo_redo_man->add_undo_method(tile_map, "remove_layer", p_to_pos < 0 ? tile_map->get_layers_count() : p_to_pos);
 	} else if (p_to_pos < 0) {
-		undo_redo->add_undo_method(tile_map, "add_layer", p_from_index);
+		undo_redo_man->add_undo_method(tile_map, "add_layer", p_from_index);
 	}
 
 	List<PropertyInfo> properties;
@@ -3760,11 +3752,11 @@ void TileMapEditor::_move_tile_map_array_element(Object *p_undo_redo, Object *p_
 #undef ADD_UNDO
 
 	if (p_from_index < 0) {
-		undo_redo->add_do_method(tile_map, "add_layer", p_to_pos);
+		undo_redo_man->add_do_method(tile_map, "add_layer", p_to_pos);
 	} else if (p_to_pos < 0) {
-		undo_redo->add_do_method(tile_map, "remove_layer", p_from_index);
+		undo_redo_man->add_do_method(tile_map, "remove_layer", p_from_index);
 	} else {
-		undo_redo->add_do_method(tile_map, "move_layer", p_from_index, p_to_pos);
+		undo_redo_man->add_do_method(tile_map, "move_layer", p_from_index, p_to_pos);
 	}
 }
 

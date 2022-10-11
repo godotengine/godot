@@ -411,7 +411,7 @@
 			}
 		}
 	//]]></script>
-	<script src="godot.tools.js"></script>
+	<script src="godot.editor.js"></script>
 	<script>//<![CDATA[
 
 		var editor = null;
@@ -706,7 +706,7 @@
 				displayFailureNotice('WebGL not available');
 			} else {
 				setStatusMode('indeterminate');
-				editor.init('godot.tools').then(function() {
+				editor.init('godot.editor').then(function() {
 					if (zip) {
 						editor.copyToFS("/tmp/preload.zip", zip);
 					}

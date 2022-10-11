@@ -197,6 +197,24 @@ MeshStorage::~MeshStorage() {
 	singleton = nullptr;
 }
 
+bool MeshStorage::free(RID p_rid) {
+	if (owns_mesh(p_rid)) {
+		mesh_free(p_rid);
+		return true;
+	} else if (owns_mesh_instance(p_rid)) {
+		mesh_instance_free(p_rid);
+		return true;
+	} else if (owns_multimesh(p_rid)) {
+		multimesh_free(p_rid);
+		return true;
+	} else if (owns_skeleton(p_rid)) {
+		skeleton_free(p_rid);
+		return true;
+	}
+
+	return false;
+}
+
 /* MESH API */
 
 RID MeshStorage::mesh_allocate() {
@@ -2021,6 +2039,7 @@ Transform2D MeshStorage::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bo
 void MeshStorage::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
 	Skeleton *skeleton = skeleton_owner.get_or_null(p_skeleton);
 
+	ERR_FAIL_NULL(skeleton);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
 	skeleton->base_transform_2d = p_base_transform;

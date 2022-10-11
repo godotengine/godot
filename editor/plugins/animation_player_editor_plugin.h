@@ -131,6 +131,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
 
+	bool hack_disable_onion_skinning = true; // Temporary hack for GH-53870.
+
 	// Onion skinning.
 	struct {
 		// Settings.
@@ -193,6 +195,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
+	void _animation_libraries_updated();
 
 	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);
@@ -264,7 +267,7 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
-	virtual void forward_spatial_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+	virtual void forward_3d_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
 
 	AnimationPlayerEditorPlugin();
 	~AnimationPlayerEditorPlugin();

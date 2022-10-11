@@ -264,12 +264,12 @@ void TilesEditorPlugin::set_sorting_option(int p_option) {
 	source_sort = p_option;
 }
 
-List<int> TilesEditorPlugin::get_sorted_sources(const Ref<TileSet> tile_set) const {
-	SourceNameComparator::tile_set = tile_set;
+List<int> TilesEditorPlugin::get_sorted_sources(const Ref<TileSet> p_tile_set) const {
+	SourceNameComparator::tile_set = p_tile_set;
 	List<int> source_ids;
 
-	for (int i = 0; i < tile_set->get_source_count(); i++) {
-		source_ids.push_back(tile_set->get_source_id(i));
+	for (int i = 0; i < p_tile_set->get_source_count(); i++) {
+		source_ids.push_back(p_tile_set->get_source_id(i));
 	}
 
 	switch (source_sort) {

@@ -46,7 +46,7 @@ String EditorResourceConversionPlugin::converts_to() const {
 }
 
 bool EditorResourceConversionPlugin::handles(const Ref<Resource> &p_resource) const {
-	bool ret;
+	bool ret = false;
 	if (GDVIRTUAL_CALL(_handles, p_resource, ret)) {
 		return ret;
 	}

@@ -578,11 +578,11 @@ bool Area3D::is_using_reverb_bus() const {
 	return use_reverb_bus;
 }
 
-void Area3D::set_reverb_bus(const StringName &p_audio_bus) {
+void Area3D::set_reverb_bus_name(const StringName &p_audio_bus) {
 	reverb_bus = p_audio_bus;
 }
 
-StringName Area3D::get_reverb_bus() const {
+StringName Area3D::get_reverb_bus_name() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == reverb_bus) {
 			return reverb_bus;
@@ -711,8 +711,8 @@ void Area3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_reverb_bus", "enable"), &Area3D::set_use_reverb_bus);
 	ClassDB::bind_method(D_METHOD("is_using_reverb_bus"), &Area3D::is_using_reverb_bus);
 
-	ClassDB::bind_method(D_METHOD("set_reverb_bus", "name"), &Area3D::set_reverb_bus);
-	ClassDB::bind_method(D_METHOD("get_reverb_bus"), &Area3D::get_reverb_bus);
+	ClassDB::bind_method(D_METHOD("set_reverb_bus_name", "name"), &Area3D::set_reverb_bus_name);
+	ClassDB::bind_method(D_METHOD("get_reverb_bus_name"), &Area3D::get_reverb_bus_name);
 
 	ClassDB::bind_method(D_METHOD("set_reverb_amount", "amount"), &Area3D::set_reverb_amount);
 	ClassDB::bind_method(D_METHOD("get_reverb_amount"), &Area3D::get_reverb_amount);
@@ -760,8 +760,8 @@ void Area3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "audio_bus_name", PROPERTY_HINT_ENUM, ""), "set_audio_bus_name", "get_audio_bus_name");
 
 	ADD_GROUP("Reverb Bus", "reverb_bus_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enable"), "set_use_reverb_bus", "is_using_reverb_bus");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus", "get_reverb_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reverb_bus_enabled"), "set_use_reverb_bus", "is_using_reverb_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "reverb_bus_name", PROPERTY_HINT_ENUM, ""), "set_reverb_bus_name", "get_reverb_bus_name");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_amount", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_amount", "get_reverb_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "reverb_bus_uniformity", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_reverb_uniformity", "get_reverb_uniformity");
 

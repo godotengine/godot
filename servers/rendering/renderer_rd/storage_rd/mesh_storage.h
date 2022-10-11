@@ -308,6 +308,8 @@ public:
 	MeshStorage();
 	virtual ~MeshStorage();
 
+	bool free(RID p_rid);
+
 	RID get_default_rd_storage_buffer() const { return default_rd_storage_buffer; }
 
 	/* MESH API */

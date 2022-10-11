@@ -2,6 +2,11 @@ import os
 import sys
 from methods import detect_darwin_sdk_path
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from SCons import Environment
+
 
 def is_active():
     return True
@@ -37,12 +42,12 @@ def get_opts():
 def get_flags():
     return [
         ("arch", "arm64"),  # Default for convenience.
-        ("tools", False),
+        ("target", "template_debug"),
         ("use_volk", False),
     ]
 
 
-def configure(env):
+def configure(env: "Environment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
     if env["arch"] not in supported_arches:
@@ -51,23 +56,6 @@ def configure(env):
             % (env["arch"], ", ".join(supported_arches))
         )
         sys.exit()
-
-    ## Build type
-
-    if env["target"].startswith("release"):
-        env.Append(CPPDEFINES=[("NS_BLOCK_ASSERTIONS", 1)])
-        if env["optimize"] == "speed":  # optimize for speed (default)
-            # `-O2` is more friendly to debuggers than `-O3`, leading to better crash backtraces
-            # when using `target=release_debug`.
-            opt = "-O3" if env["target"] == "release" else "-O2"
-            env.Append(CCFLAGS=[opt])
-            env.Append(LINKFLAGS=[opt])
-        elif env["optimize"] == "size":  # optimize for size
-            env.Append(CCFLAGS=["-Os"])
-            env.Append(LINKFLAGS=["-Os"])
-
-    elif env["target"] == "debug":
-        env.Append(CCFLAGS=["-g", "-O0"])
 
     ## LTO
 
@@ -145,12 +133,10 @@ def configure(env):
         env.Append(ASFLAGS=["-arch", "arm64"])
         env.Append(CPPDEFINES=["NEED_LONG_INT"])
 
-    # Disable exceptions on non-tools (template) builds
-    if not env["tools"]:
-        if env["ios_exceptions"]:
-            env.Append(CCFLAGS=["-fexceptions"])
-        else:
-            env.Append(CCFLAGS=["-fno-exceptions"])
+    if env["ios_exceptions"]:
+        env.Append(CCFLAGS=["-fexceptions"])
+    else:
+        env.Append(CCFLAGS=["-fno-exceptions"])
 
     # Temp fix for ABS/MAX/MIN macros in iOS SDK blocking compilation
     env.Append(CCFLAGS=["-Wno-ambiguous-macro"])

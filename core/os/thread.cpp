@@ -34,15 +34,9 @@
 #include "thread.h"
 
 #include "core/object/script_language.h"
-
-#if !defined(NO_THREADS)
-
 #include "core/templates/safe_refcount.h"
 
-Error (*Thread::set_name_func)(const String &) = nullptr;
-void (*Thread::set_priority_func)(Thread::Priority) = nullptr;
-void (*Thread::init_func)() = nullptr;
-void (*Thread::term_func)() = nullptr;
+Thread::PlatformFunctions Thread::platform_functions;
 
 uint64_t Thread::_thread_id_hash(const std::thread::id &p_t) {
 	static std::hash<std::thread::id> hasher;
@@ -52,30 +46,27 @@ uint64_t Thread::_thread_id_hash(const std::thread::id &p_t) {
 Thread::ID Thread::main_thread_id = _thread_id_hash(std::this_thread::get_id());
 thread_local Thread::ID Thread::caller_id = 0;
 
-void Thread::_set_platform_funcs(
-		Error (*p_set_name_func)(const String &),
-		void (*p_set_priority_func)(Thread::Priority),
-		void (*p_init_func)(),
-		void (*p_term_func)()) {
-	Thread::set_name_func = p_set_name_func;
-	Thread::set_priority_func = p_set_priority_func;
-	Thread::init_func = p_init_func;
-	Thread::term_func = p_term_func;
+void Thread::_set_platform_functions(const PlatformFunctions &p_functions) {
+	platform_functions = p_functions;
 }
 
 void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_callback, void *p_userdata) {
 	Thread::caller_id = _thread_id_hash(p_self->thread.get_id());
-	if (set_priority_func) {
-		set_priority_func(p_settings.priority);
+	if (platform_functions.set_priority) {
+		platform_functions.set_priority(p_settings.priority);
 	}
-	if (init_func) {
-		init_func();
+	if (platform_functions.init) {
+		platform_functions.init();
 	}
-	ScriptServer::thread_enter(); //scripts may need to attach a stack
-	p_callback(p_userdata);
+	ScriptServer::thread_enter(); // Scripts may need to attach a stack.
+	if (platform_functions.wrapper) {
+		platform_functions.wrapper(p_callback, p_userdata);
+	} else {
+		p_callback(p_userdata);
+	}
 	ScriptServer::thread_exit();
-	if (term_func) {
-		term_func();
+	if (platform_functions.term) {
+		platform_functions.term();
 	}
 }
 
@@ -108,8 +99,8 @@ void Thread::wait_to_finish() {
 }
 
 Error Thread::set_name(const String &p_name) {
-	if (set_name_func) {
-		return set_name_func(p_name);
+	if (platform_functions.set_name) {
+		return platform_functions.set_name(p_name);
 	}
 
 	return ERR_UNAVAILABLE;
@@ -128,5 +119,4 @@ Thread::~Thread() {
 	}
 }
 
-#endif
 #endif // PLATFORM_THREAD_OVERRIDE

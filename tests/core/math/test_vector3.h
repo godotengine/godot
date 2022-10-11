@@ -84,16 +84,12 @@ TEST_CASE("[Vector3] Axis methods") {
 			vector.min_axis_index() == Vector3::Axis::AXIS_X,
 			"Vector3 min_axis_index should work as expected.");
 	CHECK_MESSAGE(
-			vector.get_axis(vector.max_axis_index()) == (real_t)5.6,
-			"Vector3 get_axis should work as expected.");
+			vector[vector.max_axis_index()] == (real_t)5.6,
+			"Vector3 array operator should work as expected.");
 	CHECK_MESSAGE(
 			vector[vector.min_axis_index()] == (real_t)1.2,
 			"Vector3 array operator should work as expected.");
 
-	vector.set_axis(Vector3::Axis::AXIS_Y, 4.7);
-	CHECK_MESSAGE(
-			vector.get_axis(Vector3::Axis::AXIS_Y) == (real_t)4.7,
-			"Vector3 set_axis should work as expected.");
 	vector[Vector3::Axis::AXIS_Y] = 3.7;
 	CHECK_MESSAGE(
 			vector[Vector3::Axis::AXIS_Y] == (real_t)3.7,
@@ -483,6 +479,51 @@ TEST_CASE("[Vector3] Linear algebra methods") {
 			Math::is_equal_approx(Vector3(-a.x, a.y, -a.z).dot(Vector3(b.x, -b.y, b.z)), (real_t)-75.24),
 			"Vector3 dot should return expected value.");
 }
+
+TEST_CASE("[Vector3] Finite number checks") {
+	const double infinite[] = { NAN, INFINITY, -INFINITY };
+
+	CHECK_MESSAGE(
+			Vector3(0, 1, 2).is_finite(),
+			"Vector3(0, 1, 2) should be finite");
+
+	for (double x : infinite) {
+		CHECK_FALSE_MESSAGE(
+				Vector3(x, 1, 2).is_finite(),
+				"Vector3 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector3(0, x, 2).is_finite(),
+				"Vector3 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector3(0, 1, x).is_finite(),
+				"Vector3 with one component infinite should not be finite.");
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			CHECK_FALSE_MESSAGE(
+					Vector3(x, y, 2).is_finite(),
+					"Vector3 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector3(x, 1, y).is_finite(),
+					"Vector3 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector3(0, x, y).is_finite(),
+					"Vector3 with two components infinite should not be finite.");
+		}
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			for (double z : infinite) {
+				CHECK_FALSE_MESSAGE(
+						Vector3(x, y, z).is_finite(),
+						"Vector3 with three components infinite should not be finite.");
+			}
+		}
+	}
+}
+
 } // namespace TestVector3
 
 #endif // TEST_VECTOR3_H

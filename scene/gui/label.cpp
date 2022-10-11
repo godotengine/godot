@@ -102,12 +102,12 @@ void Label::_shape() {
 		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 		ERR_FAIL_COND(font.is_null());
-		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
-			text = text.substr(0, visible_chars);
+			txt = txt.substr(0, visible_chars);
 		}
 		if (dirty) {
-			TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+			TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
 		} else {
 			int spans = TS->shaped_get_span_count(text_rid);
 			for (int i = 0; i < spans; i++) {
@@ -117,7 +117,7 @@ void Label::_shape() {
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
-		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, text));
+		TS->shaped_text_set_bidi_override(text_rid, structured_text_parser(st_parser, st_args, txt));
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
@@ -288,6 +288,36 @@ void Label::_update_theme_item_cache() {
 	theme_cache.font_shadow_outline_size = get_theme_constant(SNAME("shadow_outline_size"));
 }
 
+PackedStringArray Label::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	// Ensure that the font can render all of the required glyphs.
+	Ref<Font> font;
+	if (settings.is_valid()) {
+		font = settings->get_font();
+	}
+	if (font.is_null()) {
+		font = theme_cache.font;
+	}
+
+	if (font.is_valid()) {
+		if (dirty || font_dirty || lines_dirty) {
+			const_cast<Label *>(this)->_shape();
+		}
+
+		const Glyph *glyph = TS->shaped_text_get_glyphs(text_rid);
+		int64_t glyph_count = TS->shaped_text_get_glyph_count(text_rid);
+		for (int64_t i = 0; i < glyph_count; i++) {
+			if (glyph[i].font_rid == RID()) {
+				warnings.push_back(RTR("The current font does not support rendering one or more characters used in this Label's text."));
+				break;
+			}
+		}
+	}
+
+	return warnings;
+}
+
 void Label::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -302,6 +332,7 @@ void Label::_notification(int p_what) {
 			dirty = true;
 
 			queue_redraw();
+			update_configuration_warnings();
 		} break;
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
@@ -674,6 +705,7 @@ void Label::set_text(const String &p_string) {
 	}
 	queue_redraw();
 	update_minimum_size();
+	update_configuration_warnings();
 }
 
 void Label::_invalidate() {

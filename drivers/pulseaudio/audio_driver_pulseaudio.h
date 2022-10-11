@@ -48,8 +48,8 @@ class AudioDriverPulseAudio : public AudioDriver {
 	pa_context *pa_ctx = nullptr;
 	pa_stream *pa_str = nullptr;
 	pa_stream *pa_rec_str = nullptr;
-	pa_channel_map pa_map;
-	pa_channel_map pa_rec_map;
+	pa_channel_map pa_map = {};
+	pa_channel_map pa_rec_map = {};
 
 	String device_name = "Default";
 	String new_device = "Default";

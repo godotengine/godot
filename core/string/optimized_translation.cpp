@@ -179,14 +179,14 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 }
 
 bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name.operator String();
-	if (name == "hash_table") {
+	String prop_name = p_name.operator String();
+	if (prop_name == "hash_table") {
 		hash_table = p_value;
-	} else if (name == "bucket_table") {
+	} else if (prop_name == "bucket_table") {
 		bucket_table = p_value;
-	} else if (name == "strings") {
+	} else if (prop_name == "strings") {
 		strings = p_value;
-	} else if (name == "load_from") {
+	} else if (prop_name == "load_from") {
 		generate(p_value);
 	} else {
 		return false;
@@ -196,12 +196,12 @@ bool OptimizedTranslation::_set(const StringName &p_name, const Variant &p_value
 }
 
 bool OptimizedTranslation::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name.operator String();
-	if (name == "hash_table") {
+	String prop_name = p_name.operator String();
+	if (prop_name == "hash_table") {
 		r_ret = hash_table;
-	} else if (name == "bucket_table") {
+	} else if (prop_name == "bucket_table") {
 		r_ret = bucket_table;
-	} else if (name == "strings") {
+	} else if (prop_name == "strings") {
 		r_ret = strings;
 	} else {
 		return false;

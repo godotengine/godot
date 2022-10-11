@@ -53,58 +53,58 @@
 #define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(openxr_api, name)
 #define OPENXR_API_INIT_XR_FUNC(name) INIT_XR_FUNC(this, name)
 
-#define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                \
-	PFN_##func_name func_name##_ptr = nullptr;                              \
-	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type arg1) const { \
-		if (!func_name##_ptr) {                                             \
-			return XR_ERROR_HANDLE_INVALID;                                 \
-		}                                                                   \
-		return (*func_name##_ptr)(arg1);                                    \
+#define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \
+	PFN_##func_name func_name##_ptr = nullptr;                                  \
+	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1) const { \
+		if (!func_name##_ptr) {                                                 \
+			return XR_ERROR_HANDLE_INVALID;                                     \
+		}                                                                       \
+		return (*func_name##_ptr)(p_##arg1);                                    \
 	}
 
-#define EXT_PROTO_XRRESULT_FUNC2(func_name, arg1_type, arg1, arg2_type, arg2)                      \
-	PFN_##func_name func_name##_ptr = nullptr;                                                     \
-	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type arg1, UNPACK arg2_type arg2) const { \
-		if (!func_name##_ptr) {                                                                    \
-			return XR_ERROR_HANDLE_INVALID;                                                        \
-		}                                                                                          \
-		return (*func_name##_ptr)(arg1, arg2);                                                     \
+#define EXT_PROTO_XRRESULT_FUNC2(func_name, arg1_type, arg1, arg2_type, arg2)                              \
+	PFN_##func_name func_name##_ptr = nullptr;                                                             \
+	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1, UNPACK arg2_type p_##arg2) const { \
+		if (!func_name##_ptr) {                                                                            \
+			return XR_ERROR_HANDLE_INVALID;                                                                \
+		}                                                                                                  \
+		return (*func_name##_ptr)(p_##arg1, p_##arg2);                                                     \
 	}
 
-#define EXT_PROTO_XRRESULT_FUNC3(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3)                            \
-	PFN_##func_name func_name##_ptr = nullptr;                                                                            \
-	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type arg1, UNPACK arg2_type arg2, UNPACK arg3_type arg3) const { \
-		if (!func_name##_ptr) {                                                                                           \
-			return XR_ERROR_HANDLE_INVALID;                                                                               \
-		}                                                                                                                 \
-		return (*func_name##_ptr)(arg1, arg2, arg3);                                                                      \
+#define EXT_PROTO_XRRESULT_FUNC3(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3)                                        \
+	PFN_##func_name func_name##_ptr = nullptr;                                                                                        \
+	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1, UNPACK arg2_type p_##arg2, UNPACK arg3_type p_##arg3) const { \
+		if (!func_name##_ptr) {                                                                                                       \
+			return XR_ERROR_HANDLE_INVALID;                                                                                           \
+		}                                                                                                                             \
+		return (*func_name##_ptr)(p_##arg1, p_##arg2, p_##arg3);                                                                      \
 	}
 
-#define EXT_PROTO_XRRESULT_FUNC4(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3, arg4_type, arg4)                                  \
-	PFN_##func_name func_name##_ptr = nullptr;                                                                                                   \
-	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type arg1, UNPACK arg2_type arg2, UNPACK arg3_type arg3, UNPACK arg4_type arg4) const { \
-		if (!func_name##_ptr) {                                                                                                                  \
-			return XR_ERROR_HANDLE_INVALID;                                                                                                      \
-		}                                                                                                                                        \
-		return (*func_name##_ptr)(arg1, arg2, arg3, arg4);                                                                                       \
+#define EXT_PROTO_XRRESULT_FUNC4(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3, arg4_type, arg4)                                                  \
+	PFN_##func_name func_name##_ptr = nullptr;                                                                                                                   \
+	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1, UNPACK arg2_type p_##arg2, UNPACK arg3_type p_##arg3, UNPACK arg4_type p_##arg4) const { \
+		if (!func_name##_ptr) {                                                                                                                                  \
+			return XR_ERROR_HANDLE_INVALID;                                                                                                                      \
+		}                                                                                                                                                        \
+		return (*func_name##_ptr)(p_##arg1, p_##arg2, p_##arg3, p_##arg4);                                                                                       \
 	}
 
-#define EXT_PROTO_XRRESULT_FUNC5(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3, arg4_type, arg4, arg5_type, arg5)                                        \
-	PFN_##func_name func_name##_ptr = nullptr;                                                                                                                          \
-	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type arg1, UNPACK arg2_type arg2, UNPACK arg3_type arg3, UNPACK arg4_type arg4, UNPACK arg5_type arg5) const { \
-		if (!func_name##_ptr) {                                                                                                                                         \
-			return XR_ERROR_HANDLE_INVALID;                                                                                                                             \
-		}                                                                                                                                                               \
-		return (*func_name##_ptr)(arg1, arg2, arg3, arg4, arg5);                                                                                                        \
+#define EXT_PROTO_XRRESULT_FUNC5(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3, arg4_type, arg4, arg5_type, arg5)                                                            \
+	PFN_##func_name func_name##_ptr = nullptr;                                                                                                                                              \
+	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1, UNPACK arg2_type p_##arg2, UNPACK arg3_type p_##arg3, UNPACK arg4_type p_##arg4, UNPACK arg5_type p_##arg5) const { \
+		if (!func_name##_ptr) {                                                                                                                                                             \
+			return XR_ERROR_HANDLE_INVALID;                                                                                                                                                 \
+		}                                                                                                                                                                                   \
+		return (*func_name##_ptr)(p_##arg1, p_##arg2, p_##arg3, p_##arg4, p_##arg5);                                                                                                        \
 	}
 
-#define EXT_PROTO_XRRESULT_FUNC6(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3, arg4_type, arg4, arg5_type, arg5, arg6_type, arg6)                                              \
-	PFN_##func_name func_name##_ptr = nullptr;                                                                                                                                                 \
-	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type arg1, UNPACK arg2_type arg2, UNPACK arg3_type arg3, UNPACK arg4_type arg4, UNPACK arg5_type arg5, UNPACK arg6_type arg6) const { \
-		if (!func_name##_ptr) {                                                                                                                                                                \
-			return XR_ERROR_HANDLE_INVALID;                                                                                                                                                    \
-		}                                                                                                                                                                                      \
-		return (*func_name##_ptr)(arg1, arg2, arg3, arg4, arg5, arg6);                                                                                                                         \
+#define EXT_PROTO_XRRESULT_FUNC6(func_name, arg1_type, arg1, arg2_type, arg2, arg3_type, arg3, arg4_type, arg4, arg5_type, arg5, arg6_type, arg6)                                                                      \
+	PFN_##func_name func_name##_ptr = nullptr;                                                                                                                                                                         \
+	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1, UNPACK arg2_type p_##arg2, UNPACK arg3_type p_##arg3, UNPACK arg4_type p_##arg4, UNPACK arg5_type p_##arg5, UNPACK arg6_type p_##arg6) const { \
+		if (!func_name##_ptr) {                                                                                                                                                                                        \
+			return XR_ERROR_HANDLE_INVALID;                                                                                                                                                                            \
+		}                                                                                                                                                                                                              \
+		return (*func_name##_ptr)(p_##arg1, p_##arg2, p_##arg3, p_##arg4, p_##arg5, p_##arg6);                                                                                                                         \
 	}
 
 #endif // UTIL_H
