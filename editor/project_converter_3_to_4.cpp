@@ -1931,6 +1931,7 @@ struct ProjectConverter3To4::ConfigSection {
 	struct Element {
 		int line_number;
 
+		virtual ~Element() = default;
 		virtual Vector<String> dump() const = 0;
 		virtual Type get_type() const = 0;
 	};
@@ -2455,9 +2456,9 @@ private:
 		}
 
 		if (found) {
-			ConfigSection *section = settings.get(i);
-			section->clear();
-			memdelete(section);
+			ConfigSection *E = settings.get(i);
+			E->clear();
+			memdelete(E);
 			settings.remove_at(i);
 		}
 	}
