@@ -124,9 +124,9 @@ protected:
 	static OS *singleton;
 
 public:
-	enum VideoDriver {
-		VIDEO_DRIVER_VULKAN,
-		VIDEO_DRIVER_OPENGL_3,
+	enum RenderingDriver {
+		RENDERING_DRIVER_VULKAN,
+		RENDERING_DRIVER_OPENGL3,
 	};
 
 	enum Weekday {
@@ -578,7 +578,7 @@ VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
-VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
+VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::Weekday);
 VARIANT_ENUM_CAST(core_bind::OS::Month);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
