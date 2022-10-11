@@ -238,7 +238,7 @@ private:
 	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	mutable Ref<BitMap> alpha_cache;
@@ -415,7 +415,7 @@ class ImageTextureLayered : public TextureLayered {
 	LayeredType layered_type;
 
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 
 	int width = 0;
 	int height = 0;
@@ -495,7 +495,7 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	int layers = 0;
@@ -587,7 +587,7 @@ class ImageTexture3D : public Texture3D {
 
 	mutable RID texture;
 
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int width = 1;
 	int height = 1;
 	int depth = 1;
@@ -641,7 +641,7 @@ private:
 	Error _load_data(const String &p_path, Vector<Ref<Image>> &r_data, Image::Format &r_format, int &r_width, int &r_height, int &r_depth, bool &r_mipmaps);
 	String path_to_file;
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_MAX;
+	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
 	int d = 0;
