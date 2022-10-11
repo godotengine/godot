@@ -76,6 +76,10 @@ bool AABB::is_equal_approx(const AABB &p_aabb) const {
 	return position.is_equal_approx(p_aabb.position) && size.is_equal_approx(p_aabb.size);
 }
 
+bool AABB::is_finite() const {
+	return position.is_finite() && size.is_finite();
+}
+
 AABB AABB::intersection(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {

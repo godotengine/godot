@@ -384,6 +384,63 @@ TEST_CASE("[Stress][Quaternion] Many vector xforms") {
 	}
 }
 
+TEST_CASE("[Quaternion] Finite number checks") {
+	const real_t x = NAN;
+
+	CHECK_MESSAGE(
+			Quaternion(0, 1, 2, 3).is_finite(),
+			"Quaternion with all components finite should be finite");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, 2, 3).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, 2, 3).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, 1, x, 3).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, 1, 2, x).is_finite(),
+			"Quaternion with one component infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, 2, 3).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, x, 3).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, 2, x).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, x, 3).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, 2, x).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, 1, x, x).is_finite(),
+			"Quaternion with two components infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(0, x, x, x).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, 1, x, x).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, 2, x).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, x, 3).is_finite(),
+			"Quaternion with three components infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			Quaternion(x, x, x, x).is_finite(),
+			"Quaternion with four components infinite should not be finite.");
+}
+
 } // namespace TestQuaternion
 
 #endif // TEST_QUATERNION_H

@@ -465,6 +465,32 @@ TEST_CASE("[Vector2] Linear algebra methods") {
 			Math::is_equal_approx(Vector2(-a.x, a.y).dot(Vector2(b.x, -b.y)), (real_t)-57.3),
 			"Vector2 dot should return expected value.");
 }
+
+TEST_CASE("[Vector2] Finite number checks") {
+	const double infinite[] = { NAN, INFINITY, -INFINITY };
+
+	CHECK_MESSAGE(
+			Vector2(0, 1).is_finite(),
+			"Vector2(0, 1) should be finite");
+
+	for (double x : infinite) {
+		CHECK_FALSE_MESSAGE(
+				Vector2(x, 1).is_finite(),
+				"Vector2 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector2(0, x).is_finite(),
+				"Vector2 with one component infinite should not be finite.");
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			CHECK_FALSE_MESSAGE(
+					Vector2(x, y).is_finite(),
+					"Vector2 with two components infinite should not be finite.");
+		}
+	}
+}
+
 } // namespace TestVector2
 
 #endif // TEST_VECTOR2_H

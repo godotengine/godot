@@ -4654,10 +4654,10 @@ String String::sprintf(const Array &values, bool *error) const {
 					double value = values[value_index];
 					bool is_negative = (value < 0);
 					String str = String::num(ABS(value), min_decimals);
-					bool not_numeric = isinf(value) || isnan(value);
+					const bool is_finite = Math::is_finite(value);
 
 					// Pad decimals out.
-					if (!not_numeric) {
+					if (is_finite) {
 						str = str.pad_decimals(min_decimals);
 					}
 
@@ -4665,7 +4665,7 @@ String String::sprintf(const Array &values, bool *error) const {
 
 					// Padding. Leave room for sign later if required.
 					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = (pad_with_zeros && !not_numeric) ? String("0") : String(" "); // Never pad NaN or inf with zeros
+					String pad_char = (pad_with_zeros && is_finite) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
 					} else {
@@ -4716,10 +4716,10 @@ String String::sprintf(const Array &values, bool *error) const {
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
 						String number_str = String::num(ABS(val), min_decimals);
-						bool not_numeric = isinf(val) || isnan(val);
+						const bool is_finite = Math::is_finite(val);
 
 						// Pad decimals out.
-						if (!not_numeric) {
+						if (is_finite) {
 							number_str = number_str.pad_decimals(min_decimals);
 						}
 
@@ -4727,7 +4727,7 @@ String String::sprintf(const Array &values, bool *error) const {
 
 						// Padding. Leave room for sign later if required.
 						int pad_chars_count = val < 0 ? min_chars - 1 : min_chars;
-						String pad_char = (pad_with_zeros && !not_numeric) ? String("0") : String(" "); // Never pad NaN or inf with zeros
+						String pad_char = (pad_with_zeros && is_finite) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 						if (left_justified) {
 							number_str = number_str.rpad(pad_chars_count, pad_char);
 						} else {
