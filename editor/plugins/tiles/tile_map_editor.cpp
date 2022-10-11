@@ -2002,6 +2002,7 @@ void TileMapEditorTilesPlugin::_set_source_sort(int p_sort) {
 	}
 	TilesEditorPlugin::get_singleton()->set_sorting_option(p_sort);
 	_update_tile_set_sources_list();
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
 }
 
 void TileMapEditorTilesPlugin::_bind_methods() {
