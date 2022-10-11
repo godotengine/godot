@@ -564,9 +564,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("readonly_color", "Editor", readonly_color);
 
 	if (!dark_theme) {
-		theme->set_color("vulkan_color", "Editor", Color::hex(0xad1128ff));
+		theme->set_color("highend_color", "Editor", Color::hex(0xad1128ff));
 	} else {
-		theme->set_color("vulkan_color", "Editor", Color(1.0, 0.0, 0.0));
+		theme->set_color("highend_color", "Editor", Color(1.0, 0.0, 0.0));
 	}
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
