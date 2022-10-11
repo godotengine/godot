@@ -2461,6 +2461,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			RD::TEXTURE_SAMPLES_8,
 		};
 		rd_color_multisample_format.samples = texture_samples[rt->msaa];
+		rd_color_multisample_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);
