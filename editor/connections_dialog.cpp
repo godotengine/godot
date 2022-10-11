@@ -160,6 +160,9 @@ void ConnectDialog::_tree_node_selected() {
 	}
 
 	dst_path = source->get_path_to(current);
+	if (!edit_mode) {
+		set_dst_method(generate_method_callback_name(source, signal, current));
+	}
 	_update_ok_enabled();
 }
 
@@ -204,6 +207,45 @@ void ConnectDialog::_remove_bind() {
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
 	cdbinds->params.remove_at(idx);
 	cdbinds->notify_changed();
+}
+/*
+ * Automatically generates a name for the callback method.
+ */
+StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target) {
+	String node_name = p_source->get_name();
+	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
+		char32_t c = node_name[i];
+		if (!is_ascii_identifier_char(c)) {
+			if (c == ' ') {
+				// Replace spaces with underlines.
+				c = '_';
+			} else {
+				// Remove any other characters.
+				node_name.remove_at(i);
+				i--;
+				continue;
+			}
+		}
+		node_name[i] = c;
+	}
+
+	Dictionary subst;
+	subst["NodeName"] = node_name.to_pascal_case();
+	subst["nodeName"] = node_name.to_camel_case();
+	subst["node_name"] = node_name.to_snake_case();
+
+	subst["SignalName"] = p_signal_name.to_pascal_case();
+	subst["signalName"] = p_signal_name.to_camel_case();
+	subst["signal_name"] = p_signal_name.to_snake_case();
+
+	String dst_method;
+	if (p_source == p_target) {
+		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_to_self_name")).format(subst);
+	} else {
+		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
+	}
+
+	return dst_method;
 }
 
 /*
@@ -371,6 +413,7 @@ void ConnectDialog::popup_dialog(const String &p_for_signal) {
 		first_popup = false;
 		_advanced_pressed();
 	}
+
 	popup_centered();
 }
 
@@ -743,43 +786,17 @@ bool ConnectionsDock::_is_item_signal(TreeItem &p_item) {
 void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	String signal_name = p_item.get_metadata(0).operator Dictionary()["name"];
 	const String &signal_name_ref = signal_name;
-	String node_name = selected_node->get_name();
-	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
-		char32_t c = node_name[i];
-		if (!is_ascii_identifier_char(c)) {
-			if (c == ' ') {
-				// Replace spaces with underlines.
-				c = '_';
-			} else {
-				// Remove any other characters.
-				node_name.remove_at(i);
-				i--;
-				continue;
-			}
-		}
-		node_name[i] = c;
-	}
 
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
 	}
 
-	Dictionary subst;
-	subst["NodeName"] = node_name.to_pascal_case();
-	subst["nodeName"] = node_name.to_camel_case();
-	subst["node_name"] = node_name.to_snake_case();
-	subst["SignalName"] = signal_name.to_pascal_case();
-	subst["signalName"] = signal_name.to_camel_case();
-	subst["signal_name"] = signal_name.to_snake_case();
-
-	String dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
-
 	ConnectDialog::ConnectionData cd;
 	cd.source = selected_node;
 	cd.signal = StringName(signal_name_ref);
 	cd.target = dst_node;
-	cd.method = StringName(dst_method);
+	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
 	connect_dialog->popup_dialog(signal_name_ref);
 	connect_dialog->init(cd);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
@@ -1187,6 +1204,7 @@ ConnectionsDock::ConnectionsDock() {
 	add_theme_constant_override("separation", 3 * EDSCALE);
 
 	EDITOR_DEF("interface/editors/default_signal_callback_name", "_on_{node_name}_{signal_name}");
+	EDITOR_DEF("interface/editors/default_signal_callback_to_self_name", "_on_{signal_name}");
 }
 
 ConnectionsDock::~ConnectionsDock() {
