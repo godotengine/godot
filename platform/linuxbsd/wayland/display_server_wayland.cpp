@@ -356,6 +356,7 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	}
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
+
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
 		// Send to a single window.
 		if (wls.windows.has(event_from_window->get_window_id())) {
@@ -2898,8 +2899,6 @@ void DisplayServerWayland::process_events() {
 		Ref<WaylandInputEventMessage> inputev_msg = msg;
 
 		if (inputev_msg.is_valid()) {
-			Ref<InputEvent> ev = inputev_msg->event;
-
 			Input::get_singleton()->parse_input_event(inputev_msg->event);
 		}
 
