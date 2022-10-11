@@ -2639,8 +2639,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 			if (user_data.libs.size() > 0) {
 				Ref<FileAccess> fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
-				JSON json;
-				fa->store_string(json.stringify(user_data.libs, "\t"));
+				fa->store_string(JSON::stringify(user_data.libs, "\t"));
 			}
 		} else {
 			print_verbose("Saving apk expansion file..");
