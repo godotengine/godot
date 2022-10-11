@@ -2868,12 +2868,13 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF("rendering/2d/shadow_atlas/size", 2048);
 
-	// Already defined in RenderingDeviceVulkan::initialize which runs before this code.
+	// Already defined in some RenderingDevice*::initialize, which run before this code.
 	// We re-define them here just for doctool's sake. Make sure to keep default values in sync.
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
-	GLOBAL_DEF("rendering/rendering_device/descriptor_pools/max_descriptors_per_pool", 64);
+	// Vulkan-specific.
+	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	// Number of commands that can be drawn per frame.
 	GLOBAL_DEF_RST("rendering/gl_compatibility/item_buffer_size", 16384);
