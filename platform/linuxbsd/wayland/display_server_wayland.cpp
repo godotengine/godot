@@ -343,8 +343,8 @@ void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event)
 	// Close the topmost popup menu if the user clicks outside of it or its safe
 	// rect.
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->is_pressed() && wls.popup_menu_stack.size() > 0) {
-		WindowID &front_id = wls.popup_menu_stack.front()->get();
+	if (mb.is_valid() && mb->is_pressed() && wls.popup_list.size() > 0) {
+		WindowID &front_id = wls.popup_list.front()->get();
 
 		ERR_FAIL_COND(!wls.windows.has(front_id));
 		WindowData &wd = wls.windows[front_id];
@@ -520,16 +520,6 @@ void DisplayServerWayland::_send_window_event(WindowID p_window, WindowEvent p_e
 
 	WindowData &wd = wls.windows[p_window];
 
-	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && p_event == WINDOW_EVENT_CLOSE_REQUEST) {
-		for (const WindowID &child : wd.children) {
-			// If the window is a borderless window (Wayland popup) and it's getting
-			// asked to close, make absolutely sure to request it first to all of its
-			// children recursively and from top to bottom. The Wayland spec mandates
-			// this and otherwise the compositor might complain.
-			_send_window_event(child, WINDOW_EVENT_CLOSE_REQUEST);
-		}
-	}
-
 	if (wd.window_event_callback.is_valid()) {
 		Variant var_event = Variant(p_event);
 		Variant *arg = &var_event;
@@ -594,6 +584,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		globals.wl_compositor = (struct wl_compositor *)wl_registry_bind(wl_registry, name, &wl_compositor_interface, 4);
 		globals.wl_compositor_name = name;
+		return;
+	}
+
+	if (strcmp(interface, wl_subcompositor_interface.name) == 0) {
+		globals.wl_subcompositor = (struct wl_subcompositor *)wl_registry_bind(wl_registry, name, &wl_subcompositor_interface, 1);
+		globals.wl_subcompositor_name = name;
 		return;
 	}
 
@@ -713,6 +709,14 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		return;
 	}
 
+	if (name == globals.wl_subcompositor_name) {
+		if (globals.wl_subcompositor) {
+			wl_subcompositor_destroy(globals.wl_subcompositor);
+		}
+		globals.wl_subcompositor = nullptr;
+		globals.wl_subcompositor_name = 0;
+		return;
+	}
 	if (name == globals.wl_data_device_manager_name) {
 		if (globals.wl_data_device_manager) {
 			wl_data_device_manager_destroy(globals.wl_data_device_manager);
@@ -2079,30 +2083,24 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 
-		wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
-		xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
-
 		if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
 			ERR_FAIL_COND_MSG(!wls.windows.has(wd.parent), "Popups must have a valid parent.");
 
 			WindowData &parent_wd = wls.windows[wd.parent];
+			ERR_FAIL_COND_MSG(!parent_wd.wl_surface, "Popup parents must have a valid surface.");
 
-			wd.xdg_positioner = xdg_wm_base_create_positioner(wls.globals.xdg_wm_base);
-			xdg_positioner_set_size(wd.xdg_positioner, wd.rect.size.width, wd.rect.size.height);
-			xdg_positioner_set_gravity(wd.xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
-			xdg_positioner_set_anchor(wd.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
-			xdg_positioner_set_anchor_rect(wd.xdg_positioner, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
+			wd.wl_subsurface = wl_subcompositor_get_subsurface(wls.globals.wl_subcompositor, wd.wl_surface, parent_wd.wl_surface);
+			wl_subsurface_set_desync(wd.wl_subsurface);
+			Point2i offset = wd.rect.position - parent_wd.rect.position;
+			DEBUG_LOG_WAYLAND(vformat("Parent offset: %s", offset));
 
-			xdg_positioner_set_offset(wd.xdg_positioner, wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y);
-			DEBUG_LOG_WAYLAND(vformat("Parent offset: (%d, %d)", wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y));
+			wl_subsurface_set_position(wd.wl_subsurface, offset.x, offset.y);
 
-			xdg_surface_set_window_geometry(parent_wd.xdg_surface, 0, 0, parent_wd.rect.size.width, parent_wd.rect.size.height);
-
-			wd.xdg_popup = xdg_surface_get_popup(wd.xdg_surface, parent_wd.xdg_surface, wd.xdg_positioner);
-			xdg_popup_add_listener(wd.xdg_popup, &xdg_popup_listener, &wd);
-
-			DEBUG_LOG_WAYLAND(vformat("Created popup at %s", wd.rect.position));
+			DEBUG_LOG_WAYLAND(vformat("Created subsurface at %s", wd.rect.position));
 		} else {
+			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
+			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
+
 			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 
 			if (wls.globals.xdg_decoration_manager) {
@@ -2130,13 +2128,13 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		}
 
 		if (window_get_flag(WINDOW_FLAG_POPUP, p_id)) {
-			if (wls.popup_menu_stack.size() > 0 && wls.popup_menu_stack.front()->get() != wd.parent) {
-				// Delete the whole stack, we're creating a new one with a different root.
-				_send_window_event(wls.popup_menu_stack.back()->get(), WINDOW_EVENT_CLOSE_REQUEST);
-				wls.popup_menu_stack.clear();
+			if (wls.popup_list.size() > 0 && wls.popup_list.front()->get() != wd.parent) {
+				// Delete the whole popup tree, we're creating a new one with a different root.
+				_send_window_event(wls.popup_list.front()->get(), WINDOW_EVENT_CLOSE_REQUEST);
+				wls.popup_list.clear();
 			}
 
-			wls.popup_menu_stack.push_front(p_id);
+			wls.popup_list.push_back(p_id);
 		}
 
 		wl_surface_commit(wd.wl_surface);
@@ -2180,17 +2178,9 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 
 	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
 		DEBUG_LOG_WAYLAND(vformat("Destroying popup %d.", p_id));
+		wls.popup_list.erase(p_id);
 	} else {
 		DEBUG_LOG_WAYLAND(vformat("Destroying window %d.", p_id));
-	}
-
-	if (window_get_flag(WINDOW_FLAG_POPUP, p_id) && wls.popup_menu_stack.size() > 0) {
-		WindowID &top_id = wls.popup_menu_stack.front()->get();
-		if (top_id != p_id) {
-			print_error(vformat("Destroying popup menu %d which is not the topmost in the stack.", top_id));
-		}
-
-		wls.popup_menu_stack.pop_front();
 	}
 
 	while (wd.children.size()) {
@@ -2214,10 +2204,6 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 	}
 #endif
 
-	if (wd.xdg_popup) {
-		xdg_popup_destroy(wd.xdg_popup);
-	}
-
 	if (wd.xdg_toplevel_decoration) {
 		zxdg_toplevel_decoration_v1_destroy(wd.xdg_toplevel_decoration);
 	}
@@ -2230,6 +2216,10 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 		xdg_surface_destroy(wd.xdg_surface);
 	}
 
+	if (wd.wl_subsurface) {
+		wl_subsurface_destroy(wd.wl_subsurface);
+	}
+
 	if (wd.wl_surface) {
 		wl_surface_destroy(wd.wl_surface);
 	}
@@ -2240,8 +2230,8 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
 	MutexLock mutex_lock(wls.mutex);
 
-	if (wls.popup_menu_stack.size() > 0) {
-		return wls.popup_menu_stack.front()->get();
+	if (wls.popup_list.size() > 0) {
+		return wls.popup_list.front()->get();
 	}
 
 	return INVALID_WINDOW_ID;
@@ -2371,15 +2361,13 @@ void DisplayServerWayland::window_set_position(const Point2i &p_position, Displa
 	ERR_FAIL_COND(!wls.windows.has(p_window));
 	WindowData &wd = wls.windows[p_window];
 
-	// NOTE: Setting the position of a non borderless windows (windows without an
-	// xdg_popup) is not supported.
+	// NOTE: Setting the position of a non borderless window is not supported.
+	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
+		// TODO: check for parent existence?
+		WindowData &parent_wd = wls.windows[wd.parent];
 
-	if (wd.xdg_popup) {
-		ERR_FAIL_COND(!wd.xdg_positioner || !wls.windows.has(wd.parent));
-		WindowData &parent_wd = wls.windows[p_window];
-
-		xdg_positioner_set_offset(wd.xdg_positioner, wd.rect.position.x - parent_wd.rect.position.x, wd.rect.position.y - parent_wd.rect.position.y);
-		xdg_popup_reposition(wd.xdg_popup, wd.xdg_positioner, 0);
+		Point2i offset = wd.rect.position - parent_wd.rect.position;
+		wl_subsurface_set_position(wd.wl_subsurface, offset.x, offset.y);
 
 		// Wait configure.
 		wl_display_roundtrip(wls.wl_display);
@@ -3057,6 +3045,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	// TODO: Perhaps gracefully handle missing protocols when possible?
 	ERR_FAIL_COND_MSG(!wls.globals.wl_shm, "Can't obtain the Wayland shared memory global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wl_compositor, "Can't obtain the Wayland compositor global.");
+	ERR_FAIL_COND_MSG(!wls.globals.wl_subcompositor, "Can't obtain the Wayland subcompositor global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wl_data_device_manager, "Can't obtain the Wayland data device manager global.");
 	ERR_FAIL_COND_MSG(!wls.globals.wp_pointer_constraints, "Can't obtain the Wayland pointer constraints global.");
 	ERR_FAIL_COND_MSG(!wls.globals.xdg_wm_base, "Can't obtain the Wayland XDG shell global.");
@@ -3228,16 +3217,16 @@ DisplayServerWayland::~DisplayServerWayland() {
 			wls.gl_manager->window_destroy(id);
 		}
 #endif
-		if (wd.xdg_popup) {
-			xdg_popup_destroy(wd.xdg_popup);
-		}
-
 		if (wd.xdg_toplevel) {
 			xdg_toplevel_destroy(wd.xdg_toplevel);
 		}
 
 		if (wd.xdg_surface) {
 			xdg_surface_destroy(wd.xdg_surface);
+		}
+
+		if (wd.wl_subsurface) {
+			wl_subsurface_destroy(wd.wl_subsurface);
 		}
 
 		if (wd.wl_surface) {
@@ -3317,6 +3306,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.globals.wl_shm) {
 		wl_shm_destroy(wls.globals.wl_shm);
+	}
+
+	if (wls.globals.wl_subcompositor) {
+		wl_subcompositor_destroy(wls.globals.wl_subcompositor);
 	}
 
 	if (wls.globals.wl_compositor) {

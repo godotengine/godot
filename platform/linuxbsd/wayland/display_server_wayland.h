@@ -129,6 +129,9 @@ class DisplayServerWayland : public DisplayServer {
 		struct wl_compositor *wl_compositor = nullptr;
 		uint32_t wl_compositor_name = 0;
 
+		struct wl_subcompositor *wl_subcompositor = nullptr;
+		uint32_t wl_subcompositor_name = 0;
+
 		struct wl_data_device_manager *wl_data_device_manager = nullptr;
 		uint32_t wl_data_device_manager_name = 0;
 
@@ -166,8 +169,7 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
-		struct xdg_popup *xdg_popup = nullptr;
-		struct xdg_positioner *xdg_positioner = nullptr;
+		struct wl_subsurface *wl_subsurface = nullptr;
 
 		HashSet<WindowID> children;
 		WindowID parent = INVALID_WINDOW_ID;
@@ -335,7 +337,7 @@ class DisplayServerWayland : public DisplayServer {
 		List<ScreenData> screens;
 		List<SeatState> seats;
 
-		List<WindowID> popup_menu_stack;
+		List<WindowID> popup_list;
 
 		SafeFlag events_thread_done;
 
