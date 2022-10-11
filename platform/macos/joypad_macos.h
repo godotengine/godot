@@ -31,14 +31,10 @@
 #ifndef JOYPAD_MACOS_H
 #define JOYPAD_MACOS_H
 
-#ifdef MACOS_10_0_4
-#import <IOKit/hidsystem/IOHIDUsageTables.h>
-#else
-#import <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
-#endif
 #import <ForceFeedback/ForceFeedback.h>
 #import <ForceFeedback/ForceFeedbackConstants.h>
 #import <IOKit/hid/IOHIDLib.h>
+#import <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
 
 #include "core/input/input.h"
 
