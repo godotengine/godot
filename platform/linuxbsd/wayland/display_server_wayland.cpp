@@ -2595,8 +2595,7 @@ void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_wi
 }
 
 void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_move_to_foreground window %d", p_window));
+	// Standard Wayland APIs don't support this.
 }
 
 bool DisplayServerWayland::window_can_draw(DisplayServer::WindowID p_window) const {
