@@ -2176,10 +2176,14 @@ void SceneTreeDock::_selection_changed() {
 
 void SceneTreeDock::_do_create(Node *p_parent) {
 	Variant c = create_dialog->instance_selected();
-
-	ERR_FAIL_COND(!c);
 	Node *child = Object::cast_to<Node>(c);
 	ERR_FAIL_COND(!child);
+
+	String new_name = p_parent->validate_child_name(child);
+	if (GLOBAL_GET("editor/node_naming/name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+		new_name = adjust_name_casing(new_name);
+	}
+	child->set_name(new_name);
 
 	editor_data->get_undo_redo()->create_action_for_history(TTR("Create Node"), editor_data->get_current_edited_scene_history_id());
 
@@ -2191,7 +2195,6 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 		editor_data->get_undo_redo()->add_do_reference(child);
 		editor_data->get_undo_redo()->add_undo_method(p_parent, "remove_child", child);
 
-		String new_name = p_parent->validate_child_name(child);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 		editor_data->get_undo_redo()->add_do_method(ed, "live_debug_create_node", edited_scene->get_path_to(p_parent), child->get_class(), new_name);
 		editor_data->get_undo_redo()->add_undo_method(ed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(p_parent)).path_join(new_name)));
