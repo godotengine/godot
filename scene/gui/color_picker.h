@@ -100,6 +100,10 @@ private:
 	static List<Color> preset_cache;
 	static List<Color> recent_preset_cache;
 
+#ifdef TOOLS_ENABLED
+	Object *editor_settings = nullptr;
+#endif
+
 	int current_slider_count = SLIDER_COUNT;
 	static const int MODE_BUTTON_COUNT = 3;
 
@@ -231,6 +235,10 @@ protected:
 	static void _bind_methods();
 
 public:
+#ifdef TOOLS_ENABLED
+	void set_editor_settings(Object *p_editor_settings);
+#endif
+
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
 
