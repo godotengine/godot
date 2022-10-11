@@ -188,6 +188,7 @@ private:
 	uint32_t enabled_extension_count = 0;
 	const char *extension_names[MAX_EXTENSIONS];
 	bool enabled_debug_utils = false;
+	bool has_renderpass2_ext = false;
 
 	/**
 	 * True if VK_EXT_debug_report extension is used. VK_EXT_debug_report is deprecated but it is
@@ -256,6 +257,8 @@ private:
 
 	Error _create_swap_chain();
 	Error _create_semaphores();
+
+	Vector<VkAttachmentReference> _convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs);
 
 protected:
 	virtual const char *_get_platform_surface_extension() const = 0;
