@@ -437,7 +437,7 @@ void SceneImportSettings::_update_view_gizmos() {
 
 		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
 		collider_view->set_visible(generate_collider);
-		if (generate_collider) {
+		if (generate_collider && collider_view->get_mesh().is_null()) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 
 			// Generate the mesh collider.
