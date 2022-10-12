@@ -774,6 +774,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 	thisrow = 0;
 	prevrow = 0;
+	const real_t side_normal_y = (bottom_radius - top_radius) / height;
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
 		v /= (rings + 1);
@@ -792,7 +793,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
-			normals.push_back(Vector3(x, 0.0, z));
+			normals.push_back(Vector3(x, side_normal_y, z).normalized());
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * 0.5));
 			point++;
