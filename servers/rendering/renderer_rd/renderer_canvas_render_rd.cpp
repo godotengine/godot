@@ -1112,13 +1112,17 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 		RID material = ci->material_owner == nullptr ? ci->material : ci->material_owner->material;
 
 		if (ci->canvas_group != nullptr) {
-			if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
+			if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
 				if (!p_to_backbuffer) {
 					material = default_clip_children_material;
 				}
 			} else {
 				if (material.is_null()) {
-					material = default_canvas_group_material;
+					if (ci->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_ONLY) {
+						material = default_clip_children_material;
+					} else {
+						material = default_canvas_group_material;
+					}
 				}
 			}
 		}
@@ -1445,10 +1449,12 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 				_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 				item_count = 0;
 
-				if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_OPAQUE) {
+				if (ci->canvas_group_owner->canvas_group->mode != RS::CANVAS_GROUP_MODE_TRANSPARENT) {
 					Rect2i group_rect = ci->canvas_group_owner->global_rect_cache;
 					texture_storage->render_target_copy_to_back_buffer(p_to_render_target, group_rect, false);
-					items[item_count++] = ci->canvas_group_owner;
+					if (ci->canvas_group_owner->canvas_group->mode == RS::CANVAS_GROUP_MODE_CLIP_AND_DRAW) {
+						items[item_count++] = ci->canvas_group_owner;
+					}
 				} else if (!backbuffer_cleared) {
 					texture_storage->render_target_clear_back_buffer(p_to_render_target, Rect2i(), Color(0, 0, 0, 0));
 					backbuffer_cleared = true;
@@ -2752,7 +2758,9 @@ void fragment() {
 
 		material_storage->shader_set_code(default_clip_children_shader, R"(
 // Default clip children shader.
+
 shader_type canvas_item;
+
 void fragment() {
 	vec4 c = textureLod(SCREEN_TEXTURE, SCREEN_UV, 0.0);
 	COLOR.rgb = c.rgb;

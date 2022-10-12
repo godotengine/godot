@@ -66,8 +66,16 @@ public:
 		TEXTURE_REPEAT_MAX,
 	};
 
+	enum ClipChildrenMode {
+		CLIP_CHILDREN_DISABLED,
+		CLIP_CHILDREN_ONLY,
+		CLIP_CHILDREN_AND_DRAW,
+		CLIP_CHILDREN_MAX,
+	};
+
 private:
-	mutable SelfList<Node> xform_change;
+	mutable SelfList<Node>
+			xform_change;
 
 	RID canvas_item;
 	StringName canvas_group;
@@ -85,7 +93,6 @@ private:
 	Window *window = nullptr;
 	bool visible = true;
 	bool parent_visible_in_tree = false;
-	bool clip_children = false;
 	bool pending_update = false;
 	bool top_level = false;
 	bool drawing = false;
@@ -94,6 +101,8 @@ private:
 	bool use_parent_material = false;
 	bool notify_local_transform = false;
 	bool notify_transform = false;
+
+	ClipChildrenMode clip_children_mode = CLIP_CHILDREN_DISABLED;
 
 	RS::CanvasItemTextureFilter texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 	RS::CanvasItemTextureRepeat texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
@@ -200,8 +209,8 @@ public:
 	void queue_redraw();
 	void move_to_front();
 
-	void set_clip_children(bool p_enabled);
-	bool is_clipping_children() const;
+	void set_clip_children_mode(ClipChildrenMode p_clip_mode);
+	ClipChildrenMode get_clip_children_mode() const;
 
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
@@ -321,6 +330,7 @@ public:
 
 VARIANT_ENUM_CAST(CanvasItem::TextureFilter)
 VARIANT_ENUM_CAST(CanvasItem::TextureRepeat)
+VARIANT_ENUM_CAST(CanvasItem::ClipChildrenMode)
 
 class CanvasTexture : public Texture2D {
 	GDCLASS(CanvasTexture, Texture2D);

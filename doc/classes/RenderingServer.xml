@@ -4576,9 +4576,11 @@
 		</constant>
 		<constant name="CANVAS_GROUP_MODE_DISABLED" value="0" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_GROUP_MODE_OPAQUE" value="1" enum="CanvasGroupMode">
+		<constant name="CANVAS_GROUP_MODE_CLIP_ONLY" value="1" enum="CanvasGroupMode">
 		</constant>
-		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="2" enum="CanvasGroupMode">
+		<constant name="CANVAS_GROUP_MODE_CLIP_AND_DRAW" value="2" enum="CanvasGroupMode">
+		</constant>
+		<constant name="CANVAS_GROUP_MODE_TRANSPARENT" value="3" enum="CanvasGroupMode">
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_POINT" value="0" enum="CanvasLightMode">
 		</constant>
