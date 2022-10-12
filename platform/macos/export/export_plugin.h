@@ -97,6 +97,7 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 
 		return true;
 	}
+	bool is_shbang(const String &p_path) const;
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
@@ -108,6 +109,7 @@ public:
 	virtual String get_os_name() const override { return "macOS"; }
 	virtual Ref<Texture2D> get_logo() const override { return logo; }
 
+	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
 		if (use_dmg()) {
