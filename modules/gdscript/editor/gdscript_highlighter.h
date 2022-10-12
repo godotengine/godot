@@ -47,7 +47,8 @@ private:
 	Vector<ColorRegion> color_regions;
 	HashMap<int, int> color_region_cache;
 
-	HashMap<StringName, Color> keywords;
+	HashMap<StringName, Color> class_names;
+	HashMap<StringName, Color> reserved_keywords;
 	HashMap<StringName, Color> member_keywords;
 	HashSet<StringName> global_functions;
 
