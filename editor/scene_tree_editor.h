@@ -61,6 +61,7 @@ class SceneTreeEditor : public Control {
 	ObjectID instance_node;
 
 	String filter;
+	String filter_term_warning;
 
 	AcceptDialog *error;
 	AcceptDialog *warning;
@@ -72,9 +73,11 @@ class SceneTreeEditor : public Control {
 
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
-	bool _add_nodes(Node *p_node, TreeItem *p_parent, bool p_scroll_to_selected = false);
+	void _add_nodes(Node *p_node, TreeItem *p_parent);
 	void _test_update_tree();
 	void _update_tree(bool p_scroll_to_selected = false);
+	bool _update_filter(TreeItem *p_parent = nullptr, bool p_scroll_to_selected = false);
+	bool _item_matches_all_terms(TreeItem *p_item, Vector<String> p_terms);
 	void _tree_changed();
 	void _node_removed(Node *p_node);
 	void _node_renamed(Node *p_node);
@@ -134,6 +137,7 @@ class SceneTreeEditor : public Control {
 public:
 	void set_filter(const String &p_filter);
 	String get_filter() const;
+	String get_filter_term_warning() const;
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; };
 	void set_display_foreign_nodes(bool p_display);
