@@ -548,10 +548,10 @@ public:
 class GDScriptRef : public ScriptRef {
 public:
 	Ref<GDScript> get_ref() const {
-		return WeakRef::get_ref();
+		return ScriptRef::get_ref();
 	}
 	void set_ref(const Ref<GDScript> &p_ref) {
-		WeakRef::set_ref(p_ref);
+		ScriptRef::set_ref(p_ref);
 	}
 };
 

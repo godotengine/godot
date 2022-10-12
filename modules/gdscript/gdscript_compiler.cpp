@@ -125,18 +125,18 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 						class_type = class_type->outer;
 					}
 
-					GDScript *script = Ref<GDScript>(main_script).ptr();
+					Ref<GDScript> scr = Ref<GDScript>(main_script);
 					while (names.back()) {
-						if (!script->subclasses.has(names.back()->get())) {
+						if (!scr->subclasses.has(names.back()->get())) {
 							ERR_PRINT("Parser bug: Cannot locate datatype class.");
 							result.has_type = false;
 							return GDScriptDataType();
 						}
-						script = script->subclasses[names.back()->get()].ptr();
+						scr = scr->subclasses[names.back()->get()];
 						names.pop_back();
 					}
-					result.script_type = script;
-					result.native_type = script->get_instance_base_type();
+					result.script_type = scr.ptr();
+					result.native_type = scr->get_instance_base_type();
 				} else {
 					// Inner class.
 					PackedStringArray classes = class_type->fqcn.split("::");
@@ -162,7 +162,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 
 								Ref<GDScriptRef> wref;
 								wref.instantiate();
-								wref->set_ref(script);
+								wref->set_ref(Ref<GDScript>(script));
 
 								result.script_type_ref = wref;
 								break;
@@ -2314,7 +2314,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 					if (err) {
 						return err;
 					}
-					if (base.is_null() || !base->is_valid()) {
+					if (base.is_null()) {
 						return ERR_COMPILATION_FAILED;
 					}
 				}

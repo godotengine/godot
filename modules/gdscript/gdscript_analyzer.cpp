@@ -551,11 +551,9 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 						} else if (Ref<Script>(GDScriptResource::get(member.constant->initializer->reduced_value)).is_valid()) {
 							Ref<GDScript> gdscript = GDScriptResource::get(member.constant->initializer->reduced_value);
 							if (gdscript.is_valid()) {
-								GDScript *gdscript_ptr = gdscript.ptr();
-								gdscript = Ref<GDScript>();
-								Ref<GDScriptParserDataRef> parser_data_wref = get_parser_for(gdscript_ptr->get_path());
+								Ref<GDScriptParserDataRef> parser_data_wref = get_parser_for(gdscript->get_path());
 								if (parser_data_wref.is_null() || parser_data_wref->get_ref().is_null()) {
-									push_error(vformat(R"(Could not parse script from "%s".)", gdscript_ptr->get_path()), p_type);
+									push_error(vformat(R"(Could not parse script from "%s".)", gdscript->get_path()), p_type);
 									return GDScriptParser::DataType();
 								}
 								result = parser_data_wref->get_ref()->get_parser()->head->get_datatype();
@@ -3296,7 +3294,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 
 			if (!valid && gdscript_wref.is_valid()) {
 				// Maybe the script isn't compiled yet. Let's try to reload it.
-				GDScript *script = gdscript_wref->get_ref().ptr();
+				Ref<GDScript> script = gdscript_wref->get_ref();
 				Error err = OK;
 				GDScriptCache::get_full_script(script->get_path(), err);
 				if (err == OK) {
@@ -4301,16 +4299,14 @@ bool GDScriptAnalyzer::class_exists(const StringName &p_class) const {
 
 Ref<GDScriptParserDataRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 	Ref<GDScriptParserDataRef> parser_data_wref;
-	parser_data_wref.instantiate();
 
 	if (depended_parsers.has(p_path)) {
-		parser_data_wref->set_ref(depended_parsers[p_path]);
+		parser_data_wref = depended_parsers[p_path];
 	} else {
 		Error err = OK;
-		Ref<GDScriptParserDataRef> ref = GDScriptCache::get_parser(p_path, GDScriptParserData::FULLY_SOLVED, err, parser->script_path);
+		parser_data_wref = GDScriptCache::get_parser(p_path, GDScriptParserData::FULLY_SOLVED, err, parser->script_path);
 		if (parser_data_wref.is_valid()) {
-			parser_data_wref->set_ref(ref->get_ref());
-			depended_parsers[p_path] = parser_data_wref->get_ref().ptr();
+			depended_parsers[p_path] = parser_data_wref;
 		}
 	}
 
@@ -4335,13 +4331,11 @@ Error GDScriptAnalyzer::resolve_program() {
 	resolve_class_interface(parser->head);
 	resolve_class_body(parser->head);
 
-	for (KeyValue<String, GDScriptParserData *> &K : depended_parsers) {
-		Ref<GDScriptParserData> parser_data = K.value;
-		if (parser_data.is_null()) {
+	for (KeyValue<String, Ref<GDScriptParserDataRef>> &K : depended_parsers) {
+		if (K.value.is_null()) {
 			return ERR_PARSE_ERROR;
 		}
-		parser_data = Ref<GDScriptParserData>();
-		K.value->raise_status(GDScriptParserData::FULLY_SOLVED);
+		K.value->get_ref()->raise_status(GDScriptParserData::FULLY_SOLVED);
 	}
 	return parser->errors.is_empty() ? OK : ERR_PARSE_ERROR;
 }

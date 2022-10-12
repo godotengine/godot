@@ -274,20 +274,17 @@ Ref<GDScriptRef> GDScriptCache::get_full_script(const String &p_path, Error &r_e
 	singleton->full_gdscript_cache[p_path] = script;
 	singleton->shallow_gdscript_cache.erase(p_path);
 
-	GDScript *script_ptr = script_wref->get_ref().ptr();
-	script = Ref<GDScript>();
-
-	r_error = script_ptr->load_source_code(p_path);
+	r_error = script->load_source_code(p_path);
 
 	if (r_error) {
-		singleton->shallow_gdscript_cache[p_path] = singleton->full_gdscript_cache[p_path];
+		singleton->shallow_gdscript_cache[p_path] = script;
 		singleton->full_gdscript_cache.erase(p_path);
 		return script_wref;
 	}
 
-	r_error = script_ptr->reload();
+	r_error = script->reload();
 	if (r_error) {
-		singleton->shallow_gdscript_cache[p_path] = singleton->full_gdscript_cache[p_path];
+		singleton->shallow_gdscript_cache[p_path] = script;
 		singleton->full_gdscript_cache.erase(p_path);
 		return script_wref;
 	}
@@ -389,6 +386,8 @@ GDScriptCache::GDScriptCache() {
 
 GDScriptCache::~GDScriptCache() {
 	singleton->destructing = true;
+
+	packed_scene_cache.clear();
 
 	parser_map.clear();
 

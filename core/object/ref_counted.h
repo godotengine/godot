@@ -78,6 +78,7 @@ class Ref {
 		}
 	}
 
+protected:
 	//virtual RefCounted * get_reference() const { return reference; }
 public:
 	_FORCE_INLINE_ bool operator==(const T *p_ptr) const {
