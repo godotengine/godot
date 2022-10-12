@@ -65,6 +65,7 @@ class EditorSpinSlider : public Range {
 
 	Popup *value_input_popup = nullptr;
 	LineEdit *value_input = nullptr;
+	bool value_input_focused = false;
 	bool value_input_just_closed = false;
 	bool value_input_dirty = false;
 

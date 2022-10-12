@@ -54,7 +54,7 @@ String EditorSpinSlider::get_text_value() const {
 void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (read_only) {
+	if (read_only || value_input_focused) {
 		return;
 	}
 
@@ -560,6 +560,7 @@ void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 void EditorSpinSlider::_value_input_closed() {
 	_evaluate_input_text();
 	value_input_just_closed = true;
+	value_input_focused = false;
 }
 
 //focus_exited signal
@@ -618,6 +619,8 @@ bool EditorSpinSlider::is_grabbing() const {
 }
 
 void EditorSpinSlider::_focus_entered() {
+	value_input_focused = true;
+
 	_ensure_input_popup();
 	Rect2 gr = get_screen_rect();
 	value_input->set_text(get_text_value());
