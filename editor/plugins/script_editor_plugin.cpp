@@ -2185,6 +2185,9 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	Ref<Script> scr = p_resource;
+	if (scr->get_language() == nullptr) {
+		return false;
+	}
 
 	// Don't open dominant script if using an external editor.
 	bool use_external_editor =
