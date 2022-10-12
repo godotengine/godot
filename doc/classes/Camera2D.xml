@@ -52,14 +52,14 @@
 			<return type="Vector2" />
 			<description>
 				Returns this camera's target position, in global coordinates.
-				[b]Note:[/b] The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member smoothing_enabled] is [code]true[/code] (see [method get_screen_center_position]).
+				[b]Note:[/b] The returned value is not the same as [member Node2D.global_position], as it is affected by the drag properties. It is also not the same as the current position if [member position_smoothing_enabled] is [code]true[/code] (see [method get_screen_center_position]).
 			</description>
 		</method>
 		<method name="reset_smoothing">
 			<return type="void" />
 			<description>
 				Sets the camera's position immediately to its current smoothing destination.
-				This method has no effect if [member smoothing_enabled] is [code]false[/code].
+				This method has no effect if [member position_smoothing_enabled] is [code]false[/code].
 			</description>
 		</method>
 		<method name="set_drag_margin">
@@ -138,7 +138,7 @@
 		</member>
 		<member name="limit_smoothed" type="bool" setter="set_limit_smoothing_enabled" getter="is_limit_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly stops when reaches its limits.
-			This property has no effect if [member smoothing_enabled] is [code]false[/code].
+			This property has no effect if [member position_smoothing_enabled] is [code]false[/code].
 			[b]Note:[/b] To immediately update the camera's position to be within limits without smoothing, even with this setting enabled, invoke [method reset_smoothing].
 		</member>
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
@@ -146,6 +146,12 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The camera's relative offset. Useful for looking around or camera shake animations. The offsetted camera can go past the limits defined in [member limit_top], [member limit_bottom], [member limit_left] and [member limit_right].
+		</member>
+		<member name="position_smoothing_enabled" type="bool" setter="set_position_smoothing_enabled" getter="is_position_smoothing_enabled" default="false">
+			If [code]true[/code], the camera's view smoothly moves towards its target position at [member position_smoothing_speed].
+		</member>
+		<member name="position_smoothing_speed" type="float" setter="set_position_smoothing_speed" getter="get_position_smoothing_speed" default="5.0">
+			Speed in pixels per second of the camera's smoothing effect when [member position_smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="Camera2D.Camera2DProcessCallback" default="1">
 			The camera's process callback. See [enum Camera2DProcessCallback].
@@ -156,12 +162,6 @@
 		</member>
 		<member name="rotation_smoothing_speed" type="float" setter="set_rotation_smoothing_speed" getter="get_rotation_smoothing_speed" default="5.0">
 			The angular, asymptotic speed of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is [code]true[/code].
-		</member>
-		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled" default="false">
-			If [code]true[/code], the camera smoothly moves towards the target at [member smoothing_speed].
-		</member>
-		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing" default="5.0">
-			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code].
 		</member>
 		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2(1, 1)">
 			The camera's zoom. A zoom of [code]Vector(2, 2)[/code] doubles the size seen in the viewport. A zoom of [code]Vector(0.5, 0.5)[/code] halves the size seen in the viewport.
