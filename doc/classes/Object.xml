@@ -199,9 +199,9 @@
 		</method>
 		<method name="get_indexed" qualifiers="const">
 			<return type="Variant" />
-			<argument index="0" name="property" type="NodePath" />
+			<argument index="0" name="property_path" type="NodePath" />
 			<description>
-				Gets the object's property indexed by the given [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
+				Gets the object's property indexed by the given [code]property_path[/code]. The path should be a [NodePath] relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Examples: [code]"position:x"[/code] or [code]"material:next_pass:blend_mode"[/code].
 				[b]Note:[/b] Even though the method takes [NodePath] argument, it doesn't support actual paths to [Node]s in the scene tree, only colon-separated sub-property paths. For the purpose of nodes, use [method Node.get_node_and_resource] instead.
 			</description>
 		</method>
@@ -365,10 +365,10 @@
 		</method>
 		<method name="set_indexed">
 			<return type="void" />
-			<argument index="0" name="property" type="NodePath" />
+			<argument index="0" name="property_path" type="NodePath" />
 			<argument index="1" name="value" type="Variant" />
 			<description>
-				Assigns a new value to the property identified by the [NodePath]. The node path should be relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Example:
+				Assigns a new value to the property identified by the [code]property_path[/code]. The path should be a [NodePath] relative to the current object and can use the colon character ([code]:[/code]) to access nested properties. Example:
 				[codeblock]
 				set_indexed("position", Vector2(42, 0))
 				set_indexed("position:y", -10)

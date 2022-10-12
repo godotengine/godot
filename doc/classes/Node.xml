@@ -108,10 +108,10 @@
 		<method name="add_child">
 			<return type="void" />
 			<argument index="0" name="node" type="Node" />
-			<argument index="1" name="legible_unique_name" type="bool" default="false" />
+			<argument index="1" name="force_readable_name" type="bool" default="false" />
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instanced instead of its type.
+				If [code]force_readable_name[/code] is [code]true[/code], improves the readability of the added node. If not named, the node is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblock]
 				if child_node.get_parent():
@@ -125,10 +125,10 @@
 			<return type="void" />
 			<argument index="0" name="node" type="Node" />
 			<argument index="1" name="child_node" type="Node" />
-			<argument index="2" name="legible_unique_name" type="bool" default="false" />
+			<argument index="2" name="force_readable_name" type="bool" default="false" />
 			<description>
 				Adds [code]child_node[/code] as a child. The child is placed below the given [code]node[/code] in the list of children.
-				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have a human-readable name based on the name of the node being instanced instead of its type.
+				If [code]force_readable_name[/code] is [code]true[/code], improves the readability of the added node. If not named, the node is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
 			</description>
 		</method>
 		<method name="add_to_group">
