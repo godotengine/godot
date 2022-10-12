@@ -3739,14 +3739,15 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos) const 
 	Vector3 point = world_pos + world_ray * MAX_DISTANCE;
 
 	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
+	if (ss != nullptr) {
+		PhysicsDirectSpaceState3D::RayParameters ray_params;
+		ray_params.from = world_pos;
+		ray_params.to = point;
 
-	PhysicsDirectSpaceState3D::RayParameters ray_params;
-	ray_params.from = world_pos;
-	ray_params.to = world_pos + world_ray * MAX_DISTANCE;
-
-	PhysicsDirectSpaceState3D::RayResult result;
-	if (ss->intersect_ray(ray_params, result)) {
-		point = result.position;
+		PhysicsDirectSpaceState3D::RayResult result;
+		if (ss->intersect_ray(ray_params, result)) {
+			point = result.position;
+		}
 	}
 
 	return point;
