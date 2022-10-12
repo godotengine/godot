@@ -331,8 +331,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	if (hr != S_OK) {
 		return Vector<String>();
 	}
+	BSTR resource_name = SysAllocString(L"root\\CIMV2");
+	hr = wbemLocator->ConnectServer(resource_name, NULL, NULL, NULL, 0, NULL, NULL, &wbemServices);
+	SysFreeString(resource_name);
 
-	hr = wbemLocator->ConnectServer(L"root\\CIMV2", NULL, NULL, 0, NULL, 0, 0, &wbemServices);
 	SAFE_RELEASE(wbemLocator) // from now on, use `wbemServices`
 	if (hr != S_OK) {
 		SAFE_RELEASE(wbemServices)
