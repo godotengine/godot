@@ -86,6 +86,7 @@ _complete_godot_options() {
 --doctool
 --no-docbase
 --build-solutions
+--dump-gdextension-interface
 --dump-extension-api
 --test
 " -- "$1"))
