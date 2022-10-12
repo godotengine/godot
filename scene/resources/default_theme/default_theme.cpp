@@ -238,8 +238,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color", "Button", control_font_color);
 	theme->set_color("font_color_pressed", "Button", control_font_color_pressed);
 	theme->set_color("font_color_hover", "Button", control_font_color_hover);
+	theme->set_color("font_color_hover_pressed", "Button", control_font_color_pressed);
 	theme->set_color("font_color_focus", "Button", control_font_color_focus);
 	theme->set_color("font_color_disabled", "Button", control_font_color_disabled);
+
+	theme->set_color("icon_color_normal", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_color_pressed", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_color_hover", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_color_hover_pressed", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_color_focus", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_color_disabled", "Button", Color(1, 1, 1, 0.4));
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
 
