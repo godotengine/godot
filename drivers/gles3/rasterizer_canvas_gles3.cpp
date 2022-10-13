@@ -1006,12 +1006,14 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, const Tran
 
 				if (primitive->point_count != state.canvas_instance_batches[state.current_batch_index].primitive_points || state.canvas_instance_batches[state.current_batch_index].command_type != Item::Command::TYPE_PRIMITIVE) {
 					_new_batch(r_batch_broken, r_index);
-					state.canvas_instance_batches[state.current_batch_index].tex = RID();
+					state.canvas_instance_batches[state.current_batch_index].tex = primitive->texture;
 					state.canvas_instance_batches[state.current_batch_index].primitive_points = primitive->point_count;
 					state.canvas_instance_batches[state.current_batch_index].command_type = Item::Command::TYPE_PRIMITIVE;
 					state.canvas_instance_batches[state.current_batch_index].command = c;
 					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_PRIMITIVE;
 				}
+
+				_prepare_canvas_texture(state.canvas_instance_batches[state.current_batch_index].tex, state.canvas_instance_batches[state.current_batch_index].filter, state.canvas_instance_batches[state.current_batch_index].repeat, r_index, texpixel_size);
 
 				for (uint32_t j = 0; j < MIN(3u, primitive->point_count); j++) {
 					state.instance_data_array[r_index].points[j * 2 + 0] = primitive->points[j].x;
