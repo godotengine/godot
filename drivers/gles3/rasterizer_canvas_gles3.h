@@ -96,6 +96,33 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 		DEFAULT_MAX_LIGHTS_PER_RENDER = 256,
 	};
 
+	/******************/
+	/**** LIGHTING ****/
+	/******************/
+
+	struct CanvasLight {
+		RID texture;
+	};
+
+	RID_Owner<CanvasLight> canvas_light_owner;
+
+	struct LightUniform {
+		float matrix[8]; //light to texture coordinate matrix
+		float shadow_matrix[8]; //light to shadow coordinate matrix
+		float color[4];
+
+		uint8_t shadow_color[4];
+		uint32_t flags; //index to light texture
+		float shadow_pixel_size;
+		float height;
+
+		float position[2];
+		float shadow_z_far_inv;
+		float shadow_y_ofs;
+
+		float atlas_rect[4];
+	};
+
 public:
 	enum {
 		BASE_UNIFORM_LOCATION = 0,
@@ -184,8 +211,8 @@ public:
 
 		RID canvas_shader_default_version;
 
-		uint32_t max_lights_per_render;
-		uint32_t max_lights_per_item;
+		uint32_t max_lights_per_render = 256;
+		uint32_t max_lights_per_item = 16;
 		uint32_t max_instances_per_batch = 512;
 		uint32_t max_instances_per_ubo = 16384;
 		uint32_t max_instance_buffer_size = 16384 * 128;
@@ -212,16 +239,22 @@ public:
 		const Item::Command *command = nullptr;
 		Item::Command::Type command_type = Item::Command::TYPE_ANIMATION_SLICE; // Can default to any type that doesn't form a batch.
 		uint32_t primitive_points = 0;
+
+		bool lights_disabled = false;
 	};
 
+	// DataBuffer contains our per-frame data. I.e. the resources that are updated each frame.
+	// We track them and ensure that they don't get reused until at least 2 frames have passed
+	// to avoid the GPU stalling to wait for a resource to become available.
 	struct DataBuffer {
 		GLuint ubo = 0;
+		GLuint light_ubo = 0;
+		GLuint state_ubo = 0;
 		uint64_t last_frame_used = -3;
 		GLsync fence = GLsync();
 	};
 
 	struct State {
-		GLuint canvas_state_buffer;
 		LocalVector<DataBuffer> canvas_instance_data_buffers;
 		LocalVector<Batch> canvas_instance_batches;
 		uint32_t current_buffer = 0;
@@ -229,6 +262,10 @@ public:
 		uint32_t current_batch_index = 0;
 
 		InstanceData *instance_data_array = nullptr;
+
+		LightUniform *light_uniforms = nullptr;
+
+		bool using_directional_lights = false;
 
 		RID current_tex = RID();
 		RS::CanvasItemTextureFilter current_filter_mode = RS::CANVAS_ITEM_TEXTURE_FILTER_MAX;
@@ -282,7 +319,7 @@ public:
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, uint32_t &r_last_index, bool p_to_backbuffer = false);
 	void _record_item_commands(const Item *p_item, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, GLES3::CanvasShaderData::BlendMode p_blend_mode, Light *p_lights, uint32_t &r_index, bool &r_break_batch);
 	void _render_batch(Light *p_lights, uint32_t p_index);
-	void _bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant);
+	void _bind_material(GLES3::CanvasMaterialData *p_material_data, CanvasShaderGLES3::ShaderVariant p_variant, uint64_t p_specialization);
 	void _new_batch(bool &r_batch_broken, uint32_t &r_index);
 	void _add_to_batch(uint32_t &r_index, bool &r_batch_broken);
 	void _allocate_instance_data_buffer();

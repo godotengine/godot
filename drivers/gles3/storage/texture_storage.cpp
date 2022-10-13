@@ -197,6 +197,22 @@ TextureStorage::TextureStorage() {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	{ // Atlas Texture initialize.
+		uint8_t pixel_data[4 * 4 * 4];
+		for (int i = 0; i < 16; i++) {
+			pixel_data[i * 4 + 0] = 0;
+			pixel_data[i * 4 + 1] = 0;
+			pixel_data[i * 4 + 2] = 0;
+			pixel_data[i * 4 + 3] = 255;
+		}
+
+		glGenTextures(1, &texture_atlas.texture);
+		glBindTexture(GL_TEXTURE_2D, texture_atlas.texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_data);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 #ifdef GLES_OVER_GL
 	glEnable(GL_PROGRAM_POINT_SIZE);
 #endif
@@ -207,6 +223,11 @@ TextureStorage::~TextureStorage() {
 	for (int i = 0; i < DEFAULT_GL_TEXTURE_MAX; i++) {
 		texture_free(default_gl_textures[i]);
 	}
+
+	glDeleteTextures(1, &texture_atlas.texture);
+	texture_atlas.texture = 0;
+	glDeleteFramebuffers(1, &texture_atlas.framebuffer);
+	texture_atlas.framebuffer = 0;
 }
 
 //TODO, move back to storage
@@ -653,7 +674,7 @@ void TextureStorage::texture_free(RID p_texture) {
 		}
 	}
 
-	//decal_atlas_remove_texture(p_texture);
+	texture_atlas_remove_texture(p_texture);
 
 	for (int i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
@@ -875,7 +896,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	//delete last, so proxies can be updated
 	texture_owner.free(p_by_texture);
 
-	//decal_atlas_mark_dirty_on_texture(p_texture);
+	texture_atlas_mark_dirty_on_texture(p_texture);
 }
 
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
@@ -1141,6 +1162,217 @@ void TextureStorage::texture_bind(RID p_texture, uint32_t p_texture_no) {
 
 RID TextureStorage::texture_create_radiance_cubemap(RID p_source, int p_resolution) const {
 	return RID();
+}
+
+/* TEXTURE ATLAS API */
+
+void TextureStorage::texture_add_to_texture_atlas(RID p_texture) {
+	if (!texture_atlas.textures.has(p_texture)) {
+		TextureAtlas::Texture t;
+		t.users = 1;
+		texture_atlas.textures[p_texture] = t;
+		texture_atlas.dirty = true;
+	} else {
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+		t->users++;
+	}
+}
+
+void TextureStorage::texture_remove_from_texture_atlas(RID p_texture) {
+	TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+	ERR_FAIL_COND(!t);
+	t->users--;
+	if (t->users == 0) {
+		texture_atlas.textures.erase(p_texture);
+		// Do not mark it dirty, there is no need to since it remains working.
+	}
+}
+
+void TextureStorage::texture_atlas_mark_dirty_on_texture(RID p_texture) {
+	if (texture_atlas.textures.has(p_texture)) {
+		texture_atlas.dirty = true; // Mark it dirty since it was most likely modified.
+	}
+}
+
+void TextureStorage::texture_atlas_remove_texture(RID p_texture) {
+	if (texture_atlas.textures.has(p_texture)) {
+		texture_atlas.textures.erase(p_texture);
+		// There is not much a point of making it dirty, texture can be removed next time the atlas is updated.
+	}
+}
+
+GLuint TextureStorage::texture_atlas_get_texture() const {
+	return texture_atlas.texture;
+}
+
+void TextureStorage::update_texture_atlas() {
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+
+	if (!texture_atlas.dirty) {
+		return; //nothing to do
+	}
+
+	texture_atlas.dirty = false;
+
+	if (texture_atlas.texture != 0) {
+		glDeleteTextures(1, &texture_atlas.texture);
+		texture_atlas.texture = 0;
+		glDeleteFramebuffers(1, &texture_atlas.framebuffer);
+		texture_atlas.framebuffer = 0;
+	}
+
+	const int border = 2;
+
+	if (texture_atlas.textures.size()) {
+		//generate atlas
+		Vector<TextureAtlas::SortItem> itemsv;
+		itemsv.resize(texture_atlas.textures.size());
+		int base_size = 8;
+
+		int idx = 0;
+
+		for (const KeyValue<RID, TextureAtlas::Texture> &E : texture_atlas.textures) {
+			TextureAtlas::SortItem &si = itemsv.write[idx];
+
+			Texture *src_tex = get_texture(E.key);
+
+			si.size.width = (src_tex->width / border) + 1;
+			si.size.height = (src_tex->height / border) + 1;
+			si.pixel_size = Size2i(src_tex->width, src_tex->height);
+
+			if (base_size < si.size.width) {
+				base_size = nearest_power_of_2_templated(si.size.width);
+			}
+
+			si.texture = E.key;
+			idx++;
+		}
+
+		//sort items by size
+		itemsv.sort();
+
+		//attempt to create atlas
+		int item_count = itemsv.size();
+		TextureAtlas::SortItem *items = itemsv.ptrw();
+
+		int atlas_height = 0;
+
+		while (true) {
+			Vector<int> v_offsetsv;
+			v_offsetsv.resize(base_size);
+
+			int *v_offsets = v_offsetsv.ptrw();
+			memset(v_offsets, 0, sizeof(int) * base_size);
+
+			int max_height = 0;
+
+			for (int i = 0; i < item_count; i++) {
+				//best fit
+				TextureAtlas::SortItem &si = items[i];
+				int best_idx = -1;
+				int best_height = 0x7FFFFFFF;
+				for (int j = 0; j <= base_size - si.size.width; j++) {
+					int height = 0;
+					for (int k = 0; k < si.size.width; k++) {
+						int h = v_offsets[k + j];
+						if (h > height) {
+							height = h;
+							if (height > best_height) {
+								break; //already bad
+							}
+						}
+					}
+
+					if (height < best_height) {
+						best_height = height;
+						best_idx = j;
+					}
+				}
+
+				//update
+				for (int k = 0; k < si.size.width; k++) {
+					v_offsets[k + best_idx] = best_height + si.size.height;
+				}
+
+				si.pos.x = best_idx;
+				si.pos.y = best_height;
+
+				if (si.pos.y + si.size.height > max_height) {
+					max_height = si.pos.y + si.size.height;
+				}
+			}
+
+			if (max_height <= base_size * 2) {
+				atlas_height = max_height;
+				break; //good ratio, break;
+			}
+
+			base_size *= 2;
+		}
+
+		texture_atlas.size.width = base_size * border;
+		texture_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+
+		for (int i = 0; i < item_count; i++) {
+			TextureAtlas::Texture *t = texture_atlas.textures.getptr(items[i].texture);
+			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.size = items[i].pixel_size;
+
+			t->uv_rect.position /= Size2(texture_atlas.size);
+			t->uv_rect.size /= Size2(texture_atlas.size);
+		}
+	} else {
+		texture_atlas.size.width = 4;
+		texture_atlas.size.height = 4;
+	}
+
+	{ // Atlas Texture initialize.
+		// TODO validate texture atlas size with maximum texture size
+		glGenTextures(1, &texture_atlas.texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_atlas.texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texture_atlas.size.width, texture_atlas.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+
+		glGenFramebuffers(1, &texture_atlas.framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, texture_atlas.framebuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_atlas.texture, 0);
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			glDeleteFramebuffers(1, &texture_atlas.framebuffer);
+			texture_atlas.framebuffer = 0;
+			glDeleteTextures(1, &texture_atlas.texture);
+			texture_atlas.texture = 0;
+			WARN_PRINT("Could not create texture atlas, status: " + get_framebuffer_error(status));
+			return;
+		}
+		glViewport(0, 0, texture_atlas.size.width, texture_atlas.size.height);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	glDisable(GL_BLEND);
+
+	if (texture_atlas.textures.size()) {
+		for (const KeyValue<RID, TextureAtlas::Texture> &E : texture_atlas.textures) {
+			TextureAtlas::Texture *t = texture_atlas.textures.getptr(E.key);
+			Texture *src_tex = get_texture(E.key);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, src_tex->tex_id);
+			copy_effects->copy_to_rect(t->uv_rect);
+		}
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 /* DECAL API */
