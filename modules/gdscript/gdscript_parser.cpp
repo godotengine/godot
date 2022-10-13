@@ -119,6 +119,9 @@ GDScriptParser::GDScriptParser() {
 	register_annotation(MethodInfo("@tool"), AnnotationInfo::SCRIPT, &GDScriptParser::tool_annotation);
 	register_annotation(MethodInfo("@icon", PropertyInfo(Variant::STRING, "icon_path")), AnnotationInfo::SCRIPT, &GDScriptParser::icon_annotation);
 	register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
+	// Description annotations
+	register_annotation(MethodInfo("@class_description", PropertyInfo(Variant::STRING, "doc_description")), AnnotationInfo::SCRIPT, &GDScriptParser::description_annotation_class);
+	register_annotation(MethodInfo("@description", PropertyInfo(Variant::STRING, "doc_description")), AnnotationInfo::VARIABLE | AnnotationInfo::FUNCTION, &GDScriptParser::description_annotation);
 	// Export annotations.
 	register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
 	register_annotation(MethodInfo("@export_enum", PropertyInfo(Variant::STRING, "names")), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_ENUM, Variant::INT>, varray(), true);
@@ -3672,6 +3675,28 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
 	p_class->icon_path = p_annotation->resolved_arguments[0];
+	return true;
+}
+
+bool GDScriptParser::description_annotation_class(const AnnotationNode* p_annotation, Node* p_node) {
+	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@description" annotation can only be applied to classes.)");
+	ClassNode* p_class = static_cast<ClassNode*>(p_node);
+	p_class->doc_description = p_annotation->resolved_arguments[0];
+	return true;
+}
+
+bool GDScriptParser::description_annotation(const AnnotationNode* p_annotation, Node* p_node) {
+	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE && p_node->type != Node::FUNCTION, false, R"("@description" annotation can only be applied to variables and functions.)");
+	if (p_node->type == Node::VARIABLE)
+	{
+		VariableNode* p_variable = static_cast<VariableNode*>(p_node);
+		p_variable->doc_description = p_annotation->resolved_arguments[0];
+	}
+	if (p_node->type == Node::FUNCTION)
+	{
+		FunctionNode* p_function = static_cast<FunctionNode*>(p_node);
+		p_function->doc_description = p_annotation->resolved_arguments[0];
+	}
 	return true;
 }
 
