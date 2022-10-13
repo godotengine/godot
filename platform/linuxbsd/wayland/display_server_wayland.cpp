@@ -1973,9 +1973,8 @@ Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub screen_get_usable_rect screen %d, returning Rect2i(0, 0, 1920, 1080)", p_screen));
-	return Rect2i(0, 0, 1920, 1080);
+	// Unsupported on wayland.
+	return screen_get_size(p_screen);
 }
 
 int DisplayServerWayland::screen_get_dpi(int p_screen) const {
