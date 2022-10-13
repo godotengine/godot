@@ -45,6 +45,7 @@ public:
 	Transform3D cam_transform;
 	Projection cam_projection;
 	Vector2 taa_jitter;
+	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
 
 	// For stereo rendering
@@ -142,7 +143,7 @@ private:
 		float IBL_exposure_normalization; // Adjusts for baked exposure.
 
 		uint32_t pancake_shadows;
-		uint32_t pad1;
+		uint32_t camera_visible_layers;
 		uint32_t pad2;
 		uint32_t pad3;
 	};

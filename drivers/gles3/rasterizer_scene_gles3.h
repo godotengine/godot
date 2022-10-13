@@ -93,6 +93,7 @@ struct RenderDataGLES3 {
 	Transform3D inv_cam_transform;
 	Projection cam_projection;
 	bool cam_orthogonal = false;
+	uint32_t camera_visible_layers = 0xFFFFFFFF;
 
 	// For stereo rendering
 	uint32_t view_count = 1;
@@ -333,6 +334,10 @@ private:
 
 			float fog_light_color[3];
 			float fog_sun_scatter;
+			uint32_t camera_visible_layers;
+			uint32_t pad1;
+			uint32_t pad2;
+			uint32_t pad3;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");
 

@@ -33,7 +33,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, const uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;
@@ -41,6 +41,7 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	main_transform = p_transform;
 	main_projection = p_projection;
 
+	visible_layers = p_visible_layers;
 	view_offset[0] = Transform3D();
 	view_projection[0] = p_projection;
 	taa_jitter = p_taa_jitter;
@@ -49,6 +50,7 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
+	visible_layers = 0xFFFFFFFF;
 	view_count = p_view_count;
 	is_orthogonal = p_is_orthogonal;
 	vaspect = p_vaspect;

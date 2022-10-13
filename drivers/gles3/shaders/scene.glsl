@@ -129,7 +129,7 @@ layout(std140) uniform SceneData { // ubo:2
 
 	mediump float ambient_color_sky_mix;
 	bool material_uv2_mode;
-	float pad2;
+	float emissive_exposure_normalization;
 	bool use_ambient_light;
 	bool use_ambient_cubemap;
 	bool use_reflection_cubemap;
@@ -142,7 +142,7 @@ layout(std140) uniform SceneData { // ubo:2
 	uint directional_light_count;
 	float z_far;
 	float z_near;
-	float pad;
+	float IBL_exposure_normalization;
 
 	bool fog_enabled;
 	float fog_density;
@@ -151,6 +151,10 @@ layout(std140) uniform SceneData { // ubo:2
 
 	vec3 fog_light_color;
 	float fog_sun_scatter;
+	uint camera_visible_layers;
+	uint pad3;
+	uint pad4;
+	uint pad5;
 }
 scene_data;
 
@@ -455,7 +459,7 @@ layout(std140) uniform SceneData { // ubo:2
 
 	mediump float ambient_color_sky_mix;
 	bool material_uv2_mode;
-	float pad2;
+	float emissive_exposure_normalization;
 	bool use_ambient_light;
 	bool use_ambient_cubemap;
 	bool use_reflection_cubemap;
@@ -468,7 +472,7 @@ layout(std140) uniform SceneData { // ubo:2
 	uint directional_light_count;
 	float z_far;
 	float z_near;
-	float pad;
+	float IBL_exposure_normalization;
 
 	bool fog_enabled;
 	float fog_density;
@@ -477,6 +481,10 @@ layout(std140) uniform SceneData { // ubo:2
 
 	vec3 fog_light_color;
 	float fog_sun_scatter;
+	uint camera_visible_layers;
+	uint pad3;
+	uint pad4;
+	uint pad5;
 }
 scene_data;
 
