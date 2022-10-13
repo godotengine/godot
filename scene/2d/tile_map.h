@@ -236,6 +236,8 @@ private:
 	void _clear_layer_internals(int p_layer);
 	void _clear_internals();
 
+	HashSet<Vector3i> instantiated_scenes;
+
 	// Rect caching.
 	void _recompute_rect_cache();
 
