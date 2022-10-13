@@ -5060,6 +5060,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	controls_vb->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
+	zoom_widget->set_shortcut_context(this);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	panner.instantiate();
