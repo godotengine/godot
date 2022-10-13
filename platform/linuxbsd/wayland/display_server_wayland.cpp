@@ -1594,6 +1594,12 @@ void DisplayServerWayland::_xdg_toplevel_on_close(void *data, struct xdg_topleve
 	wls->message_queue.push_back(msg);
 }
 
+void DisplayServerWayland::_xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height) {
+}
+
+void DisplayServerWayland::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities) {
+}
+
 void DisplayServerWayland::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_popup, int32_t x, int32_t y, int32_t width, int32_t height) {
 	WindowData *wd = (WindowData *)data;
 	ERR_FAIL_NULL(wd);
