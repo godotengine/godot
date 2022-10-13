@@ -833,6 +833,72 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						// `is` with builtin type)
 						Variant::Type type = GDScriptParser::get_builtin_type(static_cast<const GDScriptParser::IdentifierNode *>(binary->right_operand)->name);
 						gen->write_type_test_builtin(result, operand, type);
+					} else if (binary->right_operand->type == GDScriptParser::Node::SUBSCRIPT) {
+						const GDScriptParser::SubscriptNode *array_subscript_node =
+								static_cast<const GDScriptParser::SubscriptNode *>(binary->right_operand);
+
+						const GDScriptParser::IdentifierNode *index_subscript_identifier_node =
+								static_cast<const GDScriptParser::IdentifierNode *>(array_subscript_node->index);
+
+						Variant::Type array_type = GDScriptParser::get_builtin_type("Array");
+						Variant::Type index_type = GDScriptParser::get_builtin_type(index_subscript_identifier_node->name);
+
+						GDScriptCodeGenerator::Address iterator = codegen.add_temporary();
+						GDScriptCodeGenerator::Address is_type = codegen.add_temporary();
+						GDScriptCodeGenerator::Address is_left_array_type = codegen.add_temporary();
+
+						if (index_type == Variant::VARIANT_MAX) {
+							GDScriptCodeGenerator::Address index = _parse_expression(codegen, r_error, index_subscript_identifier_node);
+
+							gen->write_type_test_builtin(is_left_array_type, operand, array_type);
+							//if left operand is an array
+							gen->write_if(is_left_array_type);
+							gen->write_assign_true(result);
+							//iterate for each element in the array
+							gen->start_for(iterator.type, GDScriptDataType());
+							gen->write_for_assignment(iterator, operand);
+							gen->write_for();
+							//type test
+							gen->write_type_test(is_type, iterator, index); //for object types
+							//if not type then break "for" and set result to false
+							gen->write_unary_operator(is_type, Variant::OP_NOT, is_type);
+							gen->write_if(is_type); //if is not
+							gen->write_assign_false(result);
+							gen->write_break();
+							gen->write_endif();
+							gen->write_endfor();
+							//if not an array result is false
+							gen->write_else();
+							gen->write_assign_false(result);
+							gen->write_endif();
+						} else {
+							gen->write_type_test_builtin(is_left_array_type, operand, array_type);
+							//if left operand is an array
+							gen->write_if(is_left_array_type);
+							gen->write_assign_true(result);
+							//iterate for each element in the array
+							gen->start_for(iterator.type, GDScriptDataType());
+							gen->write_for_assignment(iterator, operand);
+							gen->write_for();
+							//type test
+							gen->write_type_test_builtin(is_type, iterator, index_type); //for builtin types
+							//if not type then break "for" and set result to false
+							gen->write_unary_operator(is_type, Variant::OP_NOT, is_type);
+							gen->write_if(is_type); //if is not
+							gen->write_assign_false(result);
+							gen->write_break();
+							gen->write_endif();
+							gen->write_endfor();
+							gen->write_else();
+							//if not an array result is false
+							gen->write_assign_false(result);
+							gen->write_endif();
+						}
+
+						codegen.generator->pop_temporary();
+						codegen.generator->pop_temporary();
+						codegen.generator->pop_temporary();
+
 					} else {
 						GDScriptCodeGenerator::Address type = _parse_expression(codegen, r_error, binary->right_operand);
 						if (r_error) {

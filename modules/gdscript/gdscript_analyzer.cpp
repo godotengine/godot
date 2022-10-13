@@ -2102,6 +2102,8 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST && p_binary_op->right_operand && p_binary_op->right_operand->type == GDScriptParser::Node::IDENTIFIER) {
 		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_binary_op->right_operand), true);
+	} else if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST && p_binary_op->right_operand && p_binary_op->right_operand->type == GDScriptParser::Node::SUBSCRIPT) {
+		reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_binary_op->right_operand));
 	} else {
 		reduce_expression(p_binary_op->right_operand);
 	}
@@ -3300,7 +3302,11 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		if (p_subscript->index == nullptr) {
 			return;
 		}
-		reduce_expression(p_subscript->index);
+		if (p_subscript->index->type == GDScriptParser::Node::IDENTIFIER) {
+			reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->index), true);
+		} else {
+			reduce_expression(p_subscript->index);
+		}
 
 		if (p_subscript->base->is_constant && p_subscript->index->is_constant) {
 			// Just try to get it.
