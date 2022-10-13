@@ -33,16 +33,13 @@
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
 
-#include "websocket_client.h"
-#include "websocket_server.h"
+#include "websocket_multiplayer_peer.h"
+#include "websocket_peer.h"
 
 #ifdef WEB_ENABLED
-#include "emscripten.h"
-#include "emws_client.h"
 #include "emws_peer.h"
 #else
-#include "wsl_client.h"
-#include "wsl_server.h"
+#include "wsl_peer.h"
 #endif
 
 #ifdef TOOLS_ENABLED
@@ -60,17 +57,12 @@ static void _editor_init_callback() {
 void initialize_websocket_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 #ifdef WEB_ENABLED
-		EMWSPeer::make_default();
-		EMWSClient::make_default();
+		EMWSPeer::initialize();
 #else
-		WSLPeer::make_default();
-		WSLClient::make_default();
-		WSLServer::make_default();
+		WSLPeer::initialize();
 #endif
 
-		GDREGISTER_ABSTRACT_CLASS(WebSocketMultiplayerPeer);
-		ClassDB::register_custom_instance_class<WebSocketServer>();
-		ClassDB::register_custom_instance_class<WebSocketClient>();
+		GDREGISTER_CLASS(WebSocketMultiplayerPeer);
 		ClassDB::register_custom_instance_class<WebSocketPeer>();
 	}
 
@@ -85,4 +77,7 @@ void uninitialize_websocket_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+#ifndef WEB_ENABLED
+	WSLPeer::deinitialize();
+#endif
 }

@@ -5909,7 +5909,7 @@ void EditorNode::_update_renderer_color() {
 	if (renderer->get_text() == "gl_compatibility") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (renderer->get_text() == "forward_plus" || renderer->get_text() == "mobile") {
-		renderer->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
+		renderer->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("highend_color"), SNAME("Editor")));
 	}
 }
 

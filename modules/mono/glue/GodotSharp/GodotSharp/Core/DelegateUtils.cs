@@ -76,6 +76,11 @@ namespace Godot
 
         internal static bool TrySerializeDelegate(Delegate @delegate, Collections.Array serializedData)
         {
+            if (@delegate is null)
+            {
+                return false;
+            }
+
             if (@delegate is MulticastDelegate multicastDelegate)
             {
                 bool someDelegatesSerialized = false;

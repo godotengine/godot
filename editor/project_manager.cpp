@@ -143,7 +143,11 @@ private:
 			install_status_rect->set_texture(new_icon);
 		}
 
-		set_size(Size2(500, 0) * EDSCALE);
+		Size2i window_size = get_size();
+		Size2 contents_min_size = get_contents_minimum_size();
+		if (window_size.x < contents_min_size.x || window_size.y < contents_min_size.y) {
+			set_size(window_size.max(contents_min_size));
+		}
 	}
 
 	String _test_path() {

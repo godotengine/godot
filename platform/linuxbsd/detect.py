@@ -387,6 +387,7 @@ def configure(env: "Environment"):
         # The default crash handler depends on glibc, so if the host uses
         # a different libc (BSD libc, musl), fall back to libexecinfo.
         print("Note: Using `execinfo=yes` for the crash handler as required on platforms where glibc is missing.")
+        env["execinfo"] = True
 
     if env["execinfo"]:
         env.Append(LIBS=["execinfo"])
