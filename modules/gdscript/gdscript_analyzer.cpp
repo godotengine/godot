@@ -2552,6 +2552,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		if (p_is_root && return_type.kind != GDScriptParser::DataType::UNRESOLVED && return_type.builtin_type != Variant::NIL) {
 			parser->push_warning(p_call, GDScriptWarning::RETURN_VALUE_DISCARDED, p_call->function_name);
 		}
+
+		if (is_static && !base_type.is_meta_type && !(callee_type != GDScriptParser::Node::SUBSCRIPT && parser->current_function != nullptr && parser->current_function->is_static)) {
+			parser->push_warning(p_call, GDScriptWarning::STATIC_CALLED_ON_INSTANCE, p_call->function_name, base_type.to_string());
+		}
 #endif // DEBUG_ENABLED
 
 		call_type = return_type;
