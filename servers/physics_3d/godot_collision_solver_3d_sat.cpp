@@ -603,10 +603,10 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 	contacts_func(points_A, pointcount_A, points_B, pointcount_B, p_callback);
 }
 
-template <class ShapeA, class ShapeB, bool withMargin = false>
+template <bool withMargin = false>
 class SeparatorAxisTest {
-	const ShapeA *shape_A = nullptr;
-	const ShapeB *shape_B = nullptr;
+	const GodotShape3D *shape_A = nullptr;
+	const GodotShape3D *shape_B = nullptr;
 	const Transform3D *transform_A = nullptr;
 	const Transform3D *transform_B = nullptr;
 	real_t best_depth = 1e15;
@@ -679,7 +679,7 @@ public:
 	}
 
 	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
-		SeparatorAxisTest<ShapeA, ShapeB, withMargin> *separator = (SeparatorAxisTest<ShapeA, ShapeB, withMargin> *)p_userdata;
+		SeparatorAxisTest<withMargin> *separator = (SeparatorAxisTest<withMargin> *)p_userdata;
 		Vector3 axis = (p_point_B - p_point_A);
 		real_t depth = axis.length();
 
@@ -743,7 +743,7 @@ public:
 		callback->collided = true;
 	}
 
-	_FORCE_INLINE_ SeparatorAxisTest(const ShapeA *p_shape_A, const Transform3D &p_transform_A, const ShapeB *p_shape_B, const Transform3D &p_transform_B, _CollectorCallback *p_callback, real_t p_margin_A = 0, real_t p_margin_B = 0) {
+	_FORCE_INLINE_ SeparatorAxisTest(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, _CollectorCallback *p_callback, real_t p_margin_A = 0, real_t p_margin_B = 0) {
 		shape_A = p_shape_A;
 		shape_B = p_shape_B;
 		transform_A = &p_transform_A;
@@ -763,7 +763,7 @@ static void _collision_sphere_sphere(const GodotShape3D *p_a, const Transform3D 
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotSphereShape3D *sphere_B = static_cast<const GodotSphereShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotSphereShape3D, withMargin> separator(sphere_A, p_transform_a, sphere_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(sphere_A, p_transform_a, sphere_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	// previous axis
 
@@ -783,7 +783,7 @@ static void _collision_sphere_box(const GodotShape3D *p_a, const Transform3D &p_
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotBoxShape3D *box_B = static_cast<const GodotBoxShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotBoxShape3D, withMargin> separator(sphere_A, p_transform_a, box_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(sphere_A, p_transform_a, box_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -834,7 +834,7 @@ static void _collision_sphere_capsule(const GodotShape3D *p_a, const Transform3D
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotCapsuleShape3D, withMargin> separator(sphere_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(sphere_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -876,7 +876,7 @@ static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotCylinderShape3D, withMargin> separator(sphere_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(sphere_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -931,74 +931,11 @@ static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3
 }
 
 template <bool withMargin>
-static void _collision_sphere_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
-	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
-
-	SeparatorAxisTest<GodotSphereShape3D, GodotConvexPolygonShape3D, withMargin> separator(sphere_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	const Geometry3D::MeshData &mesh = convex_polygon_B->get_mesh();
-
-	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
-	int face_count = mesh.faces.size();
-	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
-	int edge_count = mesh.edges.size();
-	const Vector3 *vertices = mesh.vertices.ptr();
-	int vertex_count = mesh.vertices.size();
-
-	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
-
-	// faces of B
-	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// edges of B
-	for (int i = 0; i < edge_count; i++) {
-		Vector3 v1 = p_transform_b.xform(vertices[edges[i].a]);
-		Vector3 v2 = p_transform_b.xform(vertices[edges[i].b]);
-		Vector3 v3 = p_transform_a.origin;
-
-		Vector3 n1 = v2 - v1;
-		Vector3 n2 = v2 - v3;
-
-		Vector3 axis = n1.cross(n2).cross(n1).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// vertices of B
-	for (int i = 0; i < vertex_count; i++) {
-		Vector3 v1 = p_transform_b.xform(vertices[i]);
-		Vector3 v2 = p_transform_a.origin;
-
-		Vector3 axis = (v2 - v1).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	separator.generate_contacts();
-}
-
-template <bool withMargin>
 static void _collision_sphere_face(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotFaceShape3D, withMargin> separator(sphere_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(sphere_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	Vector3 vertex[3] = {
 		p_transform_b.xform(face_B->vertex[0]),
@@ -1054,7 +991,7 @@ static void _collision_box_box(const GodotShape3D *p_a, const Transform3D &p_tra
 	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
 	const GodotBoxShape3D *box_B = static_cast<const GodotBoxShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotBoxShape3D, GodotBoxShape3D, withMargin> separator(box_A, p_transform_a, box_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(box_A, p_transform_a, box_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -1152,7 +1089,7 @@ static void _collision_box_capsule(const GodotShape3D *p_a, const Transform3D &p
 	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotBoxShape3D, GodotCapsuleShape3D, withMargin> separator(box_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(box_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -1250,7 +1187,7 @@ static void _collision_box_cylinder(const GodotShape3D *p_a, const Transform3D &
 	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotBoxShape3D, GodotCylinderShape3D, withMargin> separator(box_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(box_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -1359,129 +1296,11 @@ static void _collision_box_cylinder(const GodotShape3D *p_a, const Transform3D &
 }
 
 template <bool withMargin>
-static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
-	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
-
-	SeparatorAxisTest<GodotBoxShape3D, GodotConvexPolygonShape3D, withMargin> separator(box_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	const Geometry3D::MeshData &mesh = convex_polygon_B->get_mesh();
-
-	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
-	int face_count = mesh.faces.size();
-	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
-	int edge_count = mesh.edges.size();
-	const Vector3 *vertices = mesh.vertices.ptr();
-	int vertex_count = mesh.vertices.size();
-
-	// faces of A
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_a.basis.get_column(i).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
-
-	// faces of B
-	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// A<->B edges
-	for (int i = 0; i < 3; i++) {
-		Vector3 e1 = p_transform_a.basis.get_column(i);
-
-		for (int j = 0; j < edge_count; j++) {
-			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
-
-			Vector3 axis = e1.cross(e2).normalized();
-
-			if (!separator.test_axis(axis)) {
-				return;
-			}
-		}
-	}
-
-	if (withMargin) {
-		// calculate closest points between vertices and box edges
-		for (int v = 0; v < vertex_count; v++) {
-			Vector3 vtxb = p_transform_b.xform(vertices[v]);
-			Vector3 ab_vec = vtxb - p_transform_a.origin;
-
-			Vector3 cnormal_a = p_transform_a.basis.xform_inv(ab_vec);
-
-			Vector3 support_a = p_transform_a.xform(Vector3(
-
-					(cnormal_a.x < 0) ? -box_A->get_half_extents().x : box_A->get_half_extents().x,
-					(cnormal_a.y < 0) ? -box_A->get_half_extents().y : box_A->get_half_extents().y,
-					(cnormal_a.z < 0) ? -box_A->get_half_extents().z : box_A->get_half_extents().z));
-
-			Vector3 axis_ab = support_a - vtxb;
-
-			if (!separator.test_axis(axis_ab.normalized())) {
-				return;
-			}
-
-			//now try edges, which become cylinders!
-
-			for (int i = 0; i < 3; i++) {
-				//a ->b
-				Vector3 axis_a = p_transform_a.basis.get_column(i);
-
-				if (!separator.test_axis(axis_ab.cross(axis_a).cross(axis_a).normalized())) {
-					return;
-				}
-			}
-		}
-
-		//convex edges and box points
-		for (int i = 0; i < 2; i++) {
-			for (int j = 0; j < 2; j++) {
-				for (int k = 0; k < 2; k++) {
-					Vector3 he = box_A->get_half_extents();
-					he.x *= (i * 2 - 1);
-					he.y *= (j * 2 - 1);
-					he.z *= (k * 2 - 1);
-					Vector3 point = p_transform_a.origin;
-					for (int l = 0; l < 3; l++) {
-						point += p_transform_a.basis.get_column(l) * he[l];
-					}
-
-					for (int e = 0; e < edge_count; e++) {
-						Vector3 p1 = p_transform_b.xform(vertices[edges[e].a]);
-						Vector3 p2 = p_transform_b.xform(vertices[edges[e].b]);
-						Vector3 n = (p2 - p1);
-
-						if (!separator.test_axis((point - p2).cross(n).cross(n).normalized())) {
-							return;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	separator.generate_contacts();
-}
-
-template <bool withMargin>
 static void _collision_box_face(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotBoxShape3D *box_A = static_cast<const GodotBoxShape3D *>(p_a);
 	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotBoxShape3D, GodotFaceShape3D, withMargin> separator(box_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(box_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	Vector3 vertex[3] = {
 		p_transform_b.xform(face_B->vertex[0]),
@@ -1615,7 +1434,7 @@ static void _collision_capsule_capsule(const GodotShape3D *p_a, const Transform3
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotCapsuleShape3D, withMargin> separator(capsule_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(capsule_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -1679,7 +1498,7 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin> separator(capsule_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(capsule_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -1726,7 +1545,7 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 		return;
 	}
 
-	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
+	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
 	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
@@ -1737,78 +1556,11 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 }
 
 template <bool withMargin>
-static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
-	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
-
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotConvexPolygonShape3D, withMargin> separator(capsule_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	const Geometry3D::MeshData &mesh = convex_polygon_B->get_mesh();
-
-	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
-	int face_count = mesh.faces.size();
-	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
-	int edge_count = mesh.edges.size();
-	const Vector3 *vertices = mesh.vertices.ptr();
-
-	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
-
-	// faces of B
-	for (int i = 0; i < face_count; i++) {
-		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// edges of B, capsule cylinder
-
-	for (int i = 0; i < edge_count; i++) {
-		// cylinder
-		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].a]) - p_transform_b.basis.xform(vertices[edges[i].b]);
-		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_column(1)).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// capsule balls, edges of B
-
-	for (int i = 0; i < 2; i++) {
-		// edges of B, capsule cylinder
-
-		Vector3 capsule_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-
-		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
-
-		for (int j = 0; j < edge_count; j++) {
-			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].a]);
-			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
-
-			Vector3 axis = n1.cross(n2).cross(n2).normalized();
-
-			if (!separator.test_axis(axis)) {
-				return;
-			}
-		}
-	}
-
-	separator.generate_contacts();
-}
-
-template <bool withMargin>
 static void _collision_capsule_face(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotFaceShape3D, withMargin> separator(capsule_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(capsule_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	Vector3 vertex[3] = {
 		p_transform_b.xform(face_B->vertex[0]),
@@ -1893,7 +1645,7 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 	const GodotCylinderShape3D *cylinder_A = static_cast<const GodotCylinderShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCylinderShape3D, GodotCylinderShape3D, withMargin> separator(cylinder_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(cylinder_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	Vector3 cylinder_A_axis = p_transform_a.basis.get_column(1);
 	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1);
@@ -1932,24 +1684,7 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 		return;
 	}
 
-	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCylinderShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
-
-	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
-		return;
-	}
-
-	separator.generate_contacts();
-}
-
-template <bool withMargin>
-static void _collision_cylinder_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	const GodotCylinderShape3D *cylinder_A = static_cast<const GodotCylinderShape3D *>(p_a);
-	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
-
-	SeparatorAxisTest<GodotCylinderShape3D, GodotConvexPolygonShape3D, withMargin> separator(cylinder_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCylinderShape3D, GodotConvexPolygonShape3D, withMargin>::test_contact_points;
+	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<withMargin>::test_contact_points;
 
 	// Fallback to generic algorithm to find the best separating axis.
 	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
@@ -1964,7 +1699,7 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	const GodotCylinderShape3D *cylinder_A = static_cast<const GodotCylinderShape3D *>(p_a);
 	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCylinderShape3D, GodotFaceShape3D, withMargin> separator(cylinder_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	SeparatorAxisTest<withMargin> separator(cylinder_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
 
 	if (!separator.test_previous_axis()) {
 		return;
@@ -2075,247 +1810,167 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	separator.generate_contacts();
 }
 
-template <bool withMargin>
-static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	const GodotConvexPolygonShape3D *convex_polygon_A = static_cast<const GodotConvexPolygonShape3D *>(p_a);
-	const GodotConvexPolygonShape3D *convex_polygon_B = static_cast<const GodotConvexPolygonShape3D *>(p_b);
-
-	SeparatorAxisTest<GodotConvexPolygonShape3D, GodotConvexPolygonShape3D, withMargin> separator(convex_polygon_A, p_transform_a, convex_polygon_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	const Geometry3D::MeshData &mesh_A = convex_polygon_A->get_mesh();
-
-	const Geometry3D::MeshData::Face *faces_A = mesh_A.faces.ptr();
-	int face_count_A = mesh_A.faces.size();
-	const Geometry3D::MeshData::Edge *edges_A = mesh_A.edges.ptr();
-	int edge_count_A = mesh_A.edges.size();
-	const Vector3 *vertices_A = mesh_A.vertices.ptr();
-	int vertex_count_A = mesh_A.vertices.size();
-
-	const Geometry3D::MeshData &mesh_B = convex_polygon_B->get_mesh();
-
-	const Geometry3D::MeshData::Face *faces_B = mesh_B.faces.ptr();
-	int face_count_B = mesh_B.faces.size();
-	const Geometry3D::MeshData::Edge *edges_B = mesh_B.edges.ptr();
-	int edge_count_B = mesh_B.edges.size();
-	const Vector3 *vertices_B = mesh_B.vertices.ptr();
-	int vertex_count_B = mesh_B.vertices.size();
-
-	// Precalculating this makes the transforms faster.
-	Basis a_xform_normal = p_transform_b.basis.inverse().transposed();
-
-	// faces of A
-	for (int i = 0; i < face_count_A; i++) {
-		Vector3 axis = a_xform_normal.xform(faces_A[i].plane.normal).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// Precalculating this makes the transforms faster.
-	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
-
-	// faces of B
-	for (int i = 0; i < face_count_B; i++) {
-		Vector3 axis = b_xform_normal.xform(faces_B[i].plane.normal).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// A<->B edges
-	for (int i = 0; i < edge_count_A; i++) {
-		Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]) - p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
-
-		for (int j = 0; j < edge_count_B; j++) {
-			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[j].a]) - p_transform_b.basis.xform(vertices_B[edges_B[j].b]);
-
-			Vector3 axis = e1.cross(e2).normalized();
-
-			if (!separator.test_axis(axis)) {
-				return;
-			}
-		}
-	}
-
-	if (withMargin) {
-		//vertex-vertex
-		for (int i = 0; i < vertex_count_A; i++) {
-			Vector3 va = p_transform_a.xform(vertices_A[i]);
-
-			for (int j = 0; j < vertex_count_B; j++) {
-				if (!separator.test_axis((va - p_transform_b.xform(vertices_B[j])).normalized())) {
-					return;
-				}
-			}
-		}
-		//edge-vertex (shell)
-
-		for (int i = 0; i < edge_count_A; i++) {
-			Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]);
-			Vector3 e2 = p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
-			Vector3 n = (e2 - e1);
-
-			for (int j = 0; j < vertex_count_B; j++) {
-				Vector3 e3 = p_transform_b.xform(vertices_B[j]);
-
-				if (!separator.test_axis((e1 - e3).cross(n).cross(n).normalized())) {
-					return;
-				}
-			}
-		}
-
-		for (int i = 0; i < edge_count_B; i++) {
-			Vector3 e1 = p_transform_b.basis.xform(vertices_B[edges_B[i].a]);
-			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[i].b]);
-			Vector3 n = (e2 - e1);
-
-			for (int j = 0; j < vertex_count_A; j++) {
-				Vector3 e3 = p_transform_a.xform(vertices_A[j]);
-
-				if (!separator.test_axis((e1 - e3).cross(n).cross(n).normalized())) {
-					return;
-				}
-			}
-		}
-	}
-
-	separator.generate_contacts();
+static Vector3 _compute_support(const GodotShape3D *obj1, const GodotShape3D *obj2, const Transform3D &transform, const Vector3 &direction, real_t total_margin) {
+	return obj1->get_support(direction) - transform.xform(obj2->get_support(transform.basis.xform_inv(-direction))) + total_margin * direction;
 }
 
 template <bool withMargin>
-static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
-	const GodotConvexPolygonShape3D *convex_polygon_A = static_cast<const GodotConvexPolygonShape3D *>(p_a);
-	const GodotFaceShape3D *face_B = static_cast<const GodotFaceShape3D *>(p_b);
+static void _add_contact(const Vector3 axis, SeparatorAxisTest<withMargin> &separator) {
+	separator.best_axis = axis;
+	separator.generate_contacts();
+}
 
-	SeparatorAxisTest<GodotConvexPolygonShape3D, GodotFaceShape3D, withMargin> separator(convex_polygon_A, p_transform_a, face_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+/*
+ * The following routine implements Minkowski Portal Refinement as described in
+ *
+ * G. Snethen, Xenocollide: Complex collision made simple, Game Programming Gems 7, 2008
+ *
+ * It is adapted from an implementation in Simbody (https://github.com/simbody/simbody),
+ * which is released under the following license.
+ */
 
-	const Geometry3D::MeshData &mesh = convex_polygon_A->get_mesh();
+/* -------------------------------------------------------------------------- *
+ *                        SimTK Simbody: SimTKmath                            *
+ * -------------------------------------------------------------------------- *
+ * This is part of the SimTK biosimulation toolkit originating from           *
+ * Simbios, the NIH National Center for Physics-Based Simulation of           *
+ * Biological Structures at Stanford, funded under the NIH Roadmap for        *
+ * Medical Research, grant U54 GM072970. See https://simtk.org.               *
+ *                                                                            *
+ * Portions copyright (c) 2008 Stanford University and the Authors.           *
+ * Authors: Peter Eastman                                                     *
+ * Contributors:                                                              *
+ *                                                                            *
+ * Permission is hereby granted, free of charge, to any person obtaining a    *
+ * copy of this software and associated documentation files (the "Software"), *
+ * to deal in the Software without restriction, including without limitation  *
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,   *
+ * and/or sell copies of the Software, and to permit persons to whom the      *
+ * Software is furnished to do so, subject to the following conditions:       *
+ *                                                                            *
+ * The above copyright notice and this permission notice shall be included in *
+ * all copies or substantial portions of the Software.                        *
+ *                                                                            *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   *
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    *
+ * THE AUTHORS, CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,    *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR      *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE  *
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
+ * -------------------------------------------------------------------------- */
 
-	const Geometry3D::MeshData::Face *faces = mesh.faces.ptr();
-	int face_count = mesh.faces.size();
-	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
-	int edge_count = mesh.edges.size();
-	const Vector3 *vertices = mesh.vertices.ptr();
-	int vertex_count = mesh.vertices.size();
+template <bool withMargin>
+static void _collision_generic(const GodotShape3D *obj1, const Transform3D &p_transform_a, const GodotShape3D *obj2, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	SeparatorAxisTest<withMargin> separator(obj1, p_transform_a, obj2, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	if (!separator.test_previous_axis()) {
+		return;
+	}
+	Transform3D transform = p_transform_a.inverse() * p_transform_b;
+	real_t total_margin = (withMargin ? p_margin_a + p_margin_b : 0);
 
-	Vector3 vertex[3] = {
-		p_transform_b.xform(face_B->vertex[0]),
-		p_transform_b.xform(face_B->vertex[1]),
-		p_transform_b.xform(face_B->vertex[2]),
-	};
+	// Compute a point that is known to be inside the Minkowski difference, and
+	// a ray directed from that point to the origin.
 
-	Vector3 normal = (vertex[0] - vertex[2]).cross(vertex[0] - vertex[1]).normalized();
+	Vector3 v0 = _compute_support(obj1, obj2, transform, Vector3(1, 0, 0), total_margin) + _compute_support(obj1, obj2, transform, Vector3(-1, 0, 0), total_margin);
+	if (v0 == Vector3(0, 0, 0)) {
+		// This is a pathological case: the two objects are directly on top of
+		// each other with their centers at exactly the same place. Just
+		// return *some* vaguely plausible contact.
 
-	if (!separator.test_axis(normal)) {
+		_add_contact<withMargin>(Vector3(0, 1, 0), separator);
 		return;
 	}
 
-	// faces of A
-	for (int i = 0; i < face_count; i++) {
-		//Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
-		Vector3 axis = p_transform_a.basis.xform(faces[i].plane.normal).normalized();
-		if (axis.dot(normal) < 0.0) {
-			axis *= -1.0;
-		}
+	// Select three points that define the initial portal.
 
-		if (!separator.test_axis(axis)) {
+	Vector3 dir1 = -v0.normalized();
+	Vector3 v1 = _compute_support(obj1, obj2, transform, dir1, total_margin);
+	if (v1.dot(dir1) <= 0.0) {
+		return;
+	}
+	if (v1.cross(v0) == Vector3(0, 0, 0)) {
+		_add_contact<withMargin>(p_transform_a.basis.xform(dir1), separator);
+		return;
+	}
+	Vector3 dir2 = v1.cross(v0).normalized();
+	Vector3 v2 = _compute_support(obj1, obj2, transform, dir2, total_margin);
+	if (v2.dot(dir2) <= 0.0) {
+		return;
+	}
+	Vector3 dir3 = (v1 - v0).cross(v2 - v0).normalized();
+	if (dir3.dot(v0) > 0) {
+		Vector3 swap1 = dir1;
+		Vector3 swap2 = v1;
+		dir1 = dir2;
+		v1 = v2;
+		dir2 = swap1;
+		v2 = swap2;
+		dir3 = -dir3;
+	}
+	Vector3 v3 = _compute_support(obj1, obj2, transform, dir3, total_margin);
+	if (v3.dot(dir3) <= 0.0) {
+		return;
+	}
+	while (true) {
+		if (v0.dot(v1.cross(v3)) < -1e-14) {
+			dir2 = dir3;
+			v2 = v3;
+		} else if (v0.dot(v3.cross(v2)) < -1e-14) {
+			dir1 = dir3;
+			v1 = v3;
+		} else
+			break;
+		dir3 = (v1 - v0).cross(v2 - v0).normalized();
+		v3 = _compute_support(obj1, obj2, transform, dir3, total_margin);
+	}
+
+	// We have a portal that the origin ray passes through. Now we need to
+	// refine it.
+
+	int extra_iterations = 0;
+	while (true) {
+		Vector3 portal_dir = (v2 - v1).cross(v3 - v1).normalized();
+		if (portal_dir.dot(v0) > 0) {
+			portal_dir = -portal_dir;
+		}
+		real_t dist1 = portal_dir.dot(v1);
+		if (dist1 >= 0.0) {
+			// The origin is inside the portal, so we have an intersection.
+			// If the portal is sufficiently small to give a precise collision
+			// axis, record the contact.  Otherwise, try iterating a little
+			// longer to define it more precisely.
+
+			if (extra_iterations == 10 || fmin(fmin(dir1.dot(dir2), dir2.dot(dir3)), dir3.dot(dir1)) > 0.9999) {
+				_add_contact<withMargin>(p_transform_a.basis.xform(-portal_dir), separator);
+				return;
+			}
+			extra_iterations++;
+		}
+		Vector3 v4 = _compute_support(obj1, obj2, transform, portal_dir, total_margin);
+		real_t dist4 = portal_dir.dot(v4);
+		if (dist4 <= 0.0) {
 			return;
 		}
-	}
-
-	// A<->B edges
-	for (int i = 0; i < edge_count; i++) {
-		Vector3 e1 = p_transform_a.xform(vertices[edges[i].a]) - p_transform_a.xform(vertices[edges[i].b]);
-
-		for (int j = 0; j < 3; j++) {
-			Vector3 e2 = vertex[j] - vertex[(j + 1) % 3];
-
-			Vector3 axis = e1.cross(e2).normalized();
-			if (axis.dot(normal) < 0.0) {
-				axis *= -1.0;
-			}
-
-			if (!separator.test_axis(axis)) {
-				return;
-			}
-		}
-	}
-
-	if (withMargin) {
-		//vertex-vertex
-		for (int i = 0; i < vertex_count; i++) {
-			Vector3 va = p_transform_a.xform(vertices[i]);
-
-			for (int j = 0; j < 3; j++) {
-				Vector3 axis = (va - vertex[j]).normalized();
-				if (axis.dot(normal) < 0.0) {
-					axis *= -1.0;
-				}
-
-				if (!separator.test_axis(axis)) {
-					return;
-				}
-			}
-		}
-		//edge-vertex (shell)
-
-		for (int i = 0; i < edge_count; i++) {
-			Vector3 e1 = p_transform_a.basis.xform(vertices[edges[i].a]);
-			Vector3 e2 = p_transform_a.basis.xform(vertices[edges[i].b]);
-			Vector3 n = (e2 - e1);
-
-			for (int j = 0; j < 3; j++) {
-				Vector3 e3 = vertex[j];
-
-				Vector3 axis = (e1 - e3).cross(n).cross(n).normalized();
-				if (axis.dot(normal) < 0.0) {
-					axis *= -1.0;
-				}
-
-				if (!separator.test_axis(axis)) {
-					return;
-				}
-			}
-		}
-
-		for (int i = 0; i < 3; i++) {
-			Vector3 e1 = vertex[i];
-			Vector3 e2 = vertex[(i + 1) % 3];
-			Vector3 n = (e2 - e1);
-
-			for (int j = 0; j < vertex_count; j++) {
-				Vector3 e3 = p_transform_a.xform(vertices[j]);
-
-				Vector3 axis = (e1 - e3).cross(n).cross(n).normalized();
-				if (axis.dot(normal) < 0.0) {
-					axis *= -1.0;
-				}
-
-				if (!separator.test_axis(axis)) {
-					return;
-				}
-			}
-		}
-	}
-
-	if (!face_B->backface_collision) {
-		if (separator.best_axis.dot(normal) < _BACKFACE_NORMAL_THRESHOLD) {
-			if (face_B->invert_backface_collision) {
-				separator.best_axis = separator.best_axis.bounce(normal);
+		Vector3 cross = v4.cross(v0);
+		if (v1.dot(cross) > 0.0) {
+			if (v2.dot(cross) > 0.0) {
+				dir1 = portal_dir;
+				v1 = v4;
 			} else {
-				// Just ignore backface collision.
-				return;
+				dir3 = portal_dir;
+				v3 = v4;
+			}
+		} else {
+			if (v3.dot(cross) > 0.0) {
+				dir2 = portal_dir;
+				v2 = v4;
+			} else {
+				dir1 = portal_dir;
+				v1 = v4;
 			}
 		}
 	}
-
-	separator.generate_contacts();
 }
 
 bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector3 *r_prev_axis, real_t p_margin_a, real_t p_margin_b) {
@@ -2336,32 +1991,32 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 				_collision_sphere_box<false>,
 				_collision_sphere_capsule<false>,
 				_collision_sphere_cylinder<false>,
-				_collision_sphere_convex_polygon<false>,
+				_collision_generic<false>,
 				_collision_sphere_face<false> },
 		{ nullptr,
 				_collision_box_box<false>,
 				_collision_box_capsule<false>,
 				_collision_box_cylinder<false>,
-				_collision_box_convex_polygon<false>,
+				_collision_generic<false>,
 				_collision_box_face<false> },
 		{ nullptr,
 				nullptr,
 				_collision_capsule_capsule<false>,
 				_collision_capsule_cylinder<false>,
-				_collision_capsule_convex_polygon<false>,
+				_collision_generic<false>,
 				_collision_capsule_face<false> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				_collision_cylinder_cylinder<false>,
-				_collision_cylinder_convex_polygon<false>,
+				_collision_generic<false>,
 				_collision_cylinder_face<false> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
-				_collision_convex_polygon_convex_polygon<false>,
-				_collision_convex_polygon_face<false> },
+				_collision_generic<false>,
+				_collision_generic<false> },
 		{ nullptr,
 				nullptr,
 				nullptr,
@@ -2375,32 +2030,32 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 				_collision_sphere_box<true>,
 				_collision_sphere_capsule<true>,
 				_collision_sphere_cylinder<true>,
-				_collision_sphere_convex_polygon<true>,
+				_collision_generic<true>,
 				_collision_sphere_face<true> },
 		{ nullptr,
 				_collision_box_box<true>,
 				_collision_box_capsule<true>,
 				_collision_box_cylinder<true>,
-				_collision_box_convex_polygon<true>,
+				_collision_generic<true>,
 				_collision_box_face<true> },
 		{ nullptr,
 				nullptr,
 				_collision_capsule_capsule<true>,
 				_collision_capsule_cylinder<true>,
-				_collision_capsule_convex_polygon<true>,
+				_collision_generic<true>,
 				_collision_capsule_face<true> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				_collision_cylinder_cylinder<true>,
-				_collision_cylinder_convex_polygon<true>,
+				_collision_generic<true>,
 				_collision_cylinder_face<true> },
 		{ nullptr,
 				nullptr,
 				nullptr,
 				nullptr,
-				_collision_convex_polygon_convex_polygon<true>,
-				_collision_convex_polygon_face<true> },
+				_collision_generic<true>,
+				_collision_generic<true> },
 		{ nullptr,
 				nullptr,
 				nullptr,
@@ -2434,7 +2089,6 @@ bool sat_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D 
 	CollisionFunc collision_func;
 	if (margin_A != 0.0 || margin_B != 0.0) {
 		collision_func = collision_table_margin[type_A - 2][type_B - 2];
-
 	} else {
 		collision_func = collision_table[type_A - 2][type_B - 2];
 	}
