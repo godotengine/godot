@@ -2979,11 +2979,6 @@ void DisplayServerWayland::swap_buffers() {
 #endif
 }
 
-void DisplayServerWayland::set_context(Context p_context) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub set_context context %s", p_context));
-}
-
 Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	Vector<String> drivers;
 
