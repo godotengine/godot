@@ -81,7 +81,6 @@ protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
 
-	bool _is_focus_owner_in_shortcut_context() const;
 	bool _was_pressed_by_mouse() const;
 
 	GDVIRTUAL0(_pressed)
@@ -131,9 +130,6 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
-
-	void set_shortcut_context(Node *p_node);
-	Node *get_shortcut_context() const;
 
 	BaseButton();
 	~BaseButton();
