@@ -96,6 +96,7 @@ private:
 
 	mutable SelfList<Node> xform_change;
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;

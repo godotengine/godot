@@ -159,6 +159,7 @@ private:
 		}
 	};
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		// Global relations.
 

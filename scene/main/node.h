@@ -91,6 +91,7 @@ private:
 		SceneTree::Group *group = nullptr;
 	};
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		String scene_file_path;
 		Ref<SceneState> instance_state;
