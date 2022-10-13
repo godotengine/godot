@@ -2616,9 +2616,8 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 }
 
 void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, DisplayServer::WindowID p_window) {
-	// TODO: Figure out whether it is possible to disable VSync with Wayland
-	// (doubt it) or handle any other mode.
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_vsync_mode mode %d window %d", p_vsync_mode, p_window));
+	// Right now Wayland doesn't support anything more than full VSync.
+	// See: https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/65
 }
 
 DisplayServer::VSyncMode DisplayServerWayland::window_get_vsync_mode(DisplayServer::WindowID p_vsync_mode) const {
