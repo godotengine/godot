@@ -1485,8 +1485,46 @@
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="24" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
+		<constant name="PROPERTY_HINT_OBJECT_ID" value="25" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_TYPE_STRING" value="26" enum="PropertyHint">
+			Hint that a property represents a particular type. If a property is [constant TYPE_STRING], allows to set a type from the create dialog. If you need to create an [Array] to contain elements of a specific type, the [code]hint_string[/code] must encode nested types using [code]":"[/code] and [code]"/"[/code] for specifying [Resource] types. For instance:
+			[codeblock]
+			hint_string = "%s:" % [TYPE_INT] # Array of inteters.
+			hint_string = "%s:%s:" % [TYPE_ARRAY, TYPE_REAL] # Two-dimensional array of floats.
+			hint_string = "%s/%s:Resource" % [TYPE_OBJECT, TYPE_OBJECT] # Array of resources.
+			hint_string = "%s:%s/%s:Resource" % [TYPE_ARRAY, TYPE_OBJECT, TYPE_OBJECT] # Two-dimensional array of resources.
+			[/codeblock]
+			[b]Note:[/b] The final colon is required to specify for properly detecting built-in types.
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="27" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="28" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="29" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="30" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="31" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="32" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="33" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="34" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="35" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="36" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="37" enum="PropertyHint">
+		</constant>
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="38" enum="PropertyHint">
+		</constant>
 		<constant name="PROPERTY_HINT_LOCALE_ID" value="40" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="41" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
