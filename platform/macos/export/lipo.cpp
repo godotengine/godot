@@ -28,11 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #include "lipo.h"
-
-#ifdef MODULE_REGEX_ENABLED
 
 bool LipO::is_lipo(const String &p_path) {
 	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
@@ -232,5 +228,3 @@ void LipO::close() {
 LipO::~LipO() {
 	close();
 }
-
-#endif // MODULE_REGEX_ENABLED
