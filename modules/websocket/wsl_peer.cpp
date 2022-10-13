@@ -104,6 +104,8 @@ void WSLPeer::Resolver::try_next_candidate(Ref<StreamPeerTCP> &p_tcp) {
 			p_tcp->set_no_delay(true);
 			ip_candidates.clear();
 			return;
+		} else if (status == StreamPeerTCP::STATUS_CONNECTING) {
+			return; // Keep connecting.
 		} else {
 			p_tcp->disconnect_from_host();
 		}
