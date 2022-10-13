@@ -964,8 +964,8 @@ static void _collision_sphere_convex_polygon(const GodotShape3D *p_a, const Tran
 
 	// edges of B
 	for (int i = 0; i < edge_count; i++) {
-		Vector3 v1 = p_transform_b.xform(vertices[edges[i].a]);
-		Vector3 v2 = p_transform_b.xform(vertices[edges[i].b]);
+		Vector3 v1 = p_transform_b.xform(vertices[edges[i].vertex_a]);
+		Vector3 v2 = p_transform_b.xform(vertices[edges[i].vertex_b]);
 		Vector3 v3 = p_transform_a.origin;
 
 		Vector3 n1 = v2 - v1;
@@ -1404,7 +1404,7 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 		Vector3 e1 = p_transform_a.basis.get_column(i);
 
 		for (int j = 0; j < edge_count; j++) {
-			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
+			Vector3 e2 = p_transform_b.basis.xform(vertices[edges[j].vertex_a]) - p_transform_b.basis.xform(vertices[edges[j].vertex_b]);
 
 			Vector3 axis = e1.cross(e2).normalized();
 
@@ -1460,8 +1460,8 @@ static void _collision_box_convex_polygon(const GodotShape3D *p_a, const Transfo
 					}
 
 					for (int e = 0; e < edge_count; e++) {
-						Vector3 p1 = p_transform_b.xform(vertices[edges[e].a]);
-						Vector3 p2 = p_transform_b.xform(vertices[edges[e].b]);
+						Vector3 p1 = p_transform_b.xform(vertices[edges[e].vertex_a]);
+						Vector3 p2 = p_transform_b.xform(vertices[edges[e].vertex_b]);
 						Vector3 n = (p2 - p1);
 
 						if (!separator.test_axis((point - p2).cross(n).cross(n).normalized())) {
@@ -1771,7 +1771,7 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 
 	for (int i = 0; i < edge_count; i++) {
 		// cylinder
-		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].a]) - p_transform_b.basis.xform(vertices[edges[i].b]);
+		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].vertex_a]) - p_transform_b.basis.xform(vertices[edges[i].vertex_b]);
 		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_column(1)).normalized();
 
 		if (!separator.test_axis(axis)) {
@@ -1789,8 +1789,8 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
 
 		for (int j = 0; j < edge_count; j++) {
-			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].a]);
-			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].a]) - p_transform_b.basis.xform(vertices[edges[j].b]);
+			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].vertex_a]);
+			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].vertex_a]) - p_transform_b.basis.xform(vertices[edges[j].vertex_b]);
 
 			Vector3 axis = n1.cross(n2).cross(n2).normalized();
 
@@ -2075,6 +2075,16 @@ static void _collision_cylinder_face(const GodotShape3D *p_a, const Transform3D 
 	separator.generate_contacts();
 }
 
+static _FORCE_INLINE_ bool is_minkowski_face(const Vector3 &A, const Vector3 &B, const Vector3 &B_x_A, const Vector3 &C, const Vector3 &D, const Vector3 &D_x_C) {
+	// Test if arcs AB and CD intersect on the unit sphere
+	real_t CBA = C.dot(B_x_A);
+	real_t DBA = D.dot(B_x_A);
+	real_t ADC = A.dot(D_x_C);
+	real_t BDC = B.dot(D_x_C);
+
+	return (CBA * DBA < 0.0f) && (ADC * BDC < 0.0f) && (CBA * BDC > 0.0f);
+}
+
 template <bool withMargin>
 static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotConvexPolygonShape3D *convex_polygon_A = static_cast<const GodotConvexPolygonShape3D *>(p_a);
@@ -2129,16 +2139,27 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 	}
 
 	// A<->B edges
+
 	for (int i = 0; i < edge_count_A; i++) {
-		Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]) - p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
+		Vector3 p1 = p_transform_a.xform(vertices_A[edges_A[i].vertex_a]);
+		Vector3 q1 = p_transform_a.xform(vertices_A[edges_A[i].vertex_b]);
+		Vector3 e1 = q1 - p1;
+		Vector3 u1 = p_transform_a.basis.xform(faces_A[edges_A[i].face_a].plane.normal).normalized();
+		Vector3 v1 = p_transform_a.basis.xform(faces_A[edges_A[i].face_b].plane.normal).normalized();
 
 		for (int j = 0; j < edge_count_B; j++) {
-			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[j].a]) - p_transform_b.basis.xform(vertices_B[edges_B[j].b]);
+			Vector3 p2 = p_transform_b.xform(vertices_B[edges_B[j].vertex_a]);
+			Vector3 q2 = p_transform_b.xform(vertices_B[edges_B[j].vertex_b]);
+			Vector3 e2 = q2 - p2;
+			Vector3 u2 = p_transform_b.basis.xform(faces_B[edges_B[j].face_a].plane.normal).normalized();
+			Vector3 v2 = p_transform_b.basis.xform(faces_B[edges_B[j].face_b].plane.normal).normalized();
 
-			Vector3 axis = e1.cross(e2).normalized();
+			if (is_minkowski_face(u1, v1, -e1, -u2, -v2, -e2)) {
+				Vector3 axis = e1.cross(e2).normalized();
 
-			if (!separator.test_axis(axis)) {
-				return;
+				if (!separator.test_axis(axis)) {
+					return;
+				}
 			}
 		}
 	}
@@ -2157,8 +2178,8 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count_A; i++) {
-			Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].a]);
-			Vector3 e2 = p_transform_a.basis.xform(vertices_A[edges_A[i].b]);
+			Vector3 e1 = p_transform_a.basis.xform(vertices_A[edges_A[i].vertex_a]);
+			Vector3 e2 = p_transform_a.basis.xform(vertices_A[edges_A[i].vertex_b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count_B; j++) {
@@ -2171,8 +2192,8 @@ static void _collision_convex_polygon_convex_polygon(const GodotShape3D *p_a, co
 		}
 
 		for (int i = 0; i < edge_count_B; i++) {
-			Vector3 e1 = p_transform_b.basis.xform(vertices_B[edges_B[i].a]);
-			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[i].b]);
+			Vector3 e1 = p_transform_b.basis.xform(vertices_B[edges_B[i].vertex_a]);
+			Vector3 e2 = p_transform_b.basis.xform(vertices_B[edges_B[i].vertex_b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < vertex_count_A; j++) {
@@ -2231,7 +2252,7 @@ static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transf
 
 	// A<->B edges
 	for (int i = 0; i < edge_count; i++) {
-		Vector3 e1 = p_transform_a.xform(vertices[edges[i].a]) - p_transform_a.xform(vertices[edges[i].b]);
+		Vector3 e1 = p_transform_a.xform(vertices[edges[i].vertex_a]) - p_transform_a.xform(vertices[edges[i].vertex_b]);
 
 		for (int j = 0; j < 3; j++) {
 			Vector3 e2 = vertex[j] - vertex[(j + 1) % 3];
@@ -2266,8 +2287,8 @@ static void _collision_convex_polygon_face(const GodotShape3D *p_a, const Transf
 		//edge-vertex (shell)
 
 		for (int i = 0; i < edge_count; i++) {
-			Vector3 e1 = p_transform_a.basis.xform(vertices[edges[i].a]);
-			Vector3 e2 = p_transform_a.basis.xform(vertices[edges[i].b]);
+			Vector3 e1 = p_transform_a.basis.xform(vertices[edges[i].vertex_a]);
+			Vector3 e2 = p_transform_a.basis.xform(vertices[edges[i].vertex_b]);
 			Vector3 n = (e2 - e1);
 
 			for (int j = 0; j < 3; j++) {

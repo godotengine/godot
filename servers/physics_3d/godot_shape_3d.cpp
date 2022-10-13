@@ -915,13 +915,13 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	}
 
 	for (int i = 0; i < ec; i++) {
-		real_t dot = (vertices[edges[i].a] - vertices[edges[i].b]).normalized().dot(p_normal);
+		real_t dot = (vertices[edges[i].vertex_a] - vertices[edges[i].vertex_b]).normalized().dot(p_normal);
 		dot = ABS(dot);
-		if (dot < edge_support_threshold && (edges[i].a == vtx || edges[i].b == vtx)) {
+		if (dot < edge_support_threshold && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
-			r_supports[0] = vertices[edges[i].a];
-			r_supports[1] = vertices[edges[i].b];
+			r_supports[0] = vertices[edges[i].vertex_a];
+			r_supports[1] = vertices[edges[i].vertex_b];
 			return;
 		}
 	}
@@ -1025,8 +1025,8 @@ Vector3 GodotConvexPolygonShape3D::get_closest_point_to(const Vector3 &p_point) 
 	int ec = mesh.edges.size();
 	for (int i = 0; i < ec; i++) {
 		Vector3 s[2] = {
-			vertices[edges[i].a],
-			vertices[edges[i].b]
+			vertices[edges[i].vertex_a],
+			vertices[edges[i].vertex_b]
 		};
 
 		Vector3 closest = Geometry3D::get_closest_point_to_segment(p_point, s);
@@ -1058,7 +1058,7 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 
 	AABB _aabb;
 
-	for (int i = 0; i < mesh.vertices.size(); i++) {
+	for (uint32_t i = 0; i < mesh.vertices.size(); i++) {
 		if (i == 0) {
 			_aabb.position = mesh.vertices[i];
 		} else {
@@ -1074,7 +1074,12 @@ void GodotConvexPolygonShape3D::set_data(const Variant &p_data) {
 }
 
 Variant GodotConvexPolygonShape3D::get_data() const {
-	return mesh.vertices;
+	Vector<Vector3> vertices;
+	vertices.resize(mesh.vertices.size());
+	for (uint32_t i = 0; i < mesh.vertices.size(); i++) {
+		vertices.write[i] = mesh.vertices[i];
+	}
+	return vertices;
 }
 
 GodotConvexPolygonShape3D::GodotConvexPolygonShape3D() {

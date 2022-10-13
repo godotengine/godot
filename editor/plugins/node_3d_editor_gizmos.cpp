@@ -4751,9 +4751,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			if (err == OK) {
 				Vector<Vector3> points2;
 				points2.resize(md.edges.size() * 2);
-				for (int i = 0; i < md.edges.size(); i++) {
-					points2.write[i * 2 + 0] = md.vertices[md.edges[i].a];
-					points2.write[i * 2 + 1] = md.vertices[md.edges[i].b];
+				for (uint32_t i = 0; i < md.edges.size(); i++) {
+					points2.write[i * 2 + 0] = md.vertices[md.edges[i].vertex_a];
+					points2.write[i * 2 + 1] = md.vertices[md.edges[i].vertex_b];
 				}
 
 				p_gizmo->add_lines(points2, material);
