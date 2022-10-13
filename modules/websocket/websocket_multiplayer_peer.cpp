@@ -61,6 +61,7 @@ void WebSocketMultiplayerPeer::_clear() {
 	tls_key.unref();
 	if (current_packet.data != nullptr) {
 		memfree(current_packet.data);
+		current_packet.data = nullptr;
 	}
 
 	for (Packet &E : incoming_packets) {
