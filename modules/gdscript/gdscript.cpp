@@ -728,7 +728,21 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 						if (member.variable->initializer && member.variable->initializer->is_constant) {
 							default_value = member.variable->initializer->reduced_value;
 						}
-						member_default_values_cache[member.variable->identifier->name] = default_value;
+
+						Variant::Type default_value_type = default_value.get_type();
+						Variant::Type export_type = member.variable->export_info.type;
+
+						// Convert the default value to the export type to avoid issues with the property editor and scene serialization.
+						// This is done only in the export side, the script itself will use the default value with no type change.
+						if (default_value_type != Variant::NIL && default_value_type != export_type) {
+							Callable::CallError ce;
+							Variant converted_default_value;
+							const Variant *args = &default_value;
+							Variant::construct(export_type, converted_default_value, &args, 1, ce);
+							member_default_values_cache[member.variable->identifier->name] = converted_default_value;
+						} else {
+							member_default_values_cache[member.variable->identifier->name] = default_value;
+						}
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
 						// TODO: Cache this in parser to avoid loops like this.
