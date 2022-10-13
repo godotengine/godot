@@ -760,8 +760,13 @@ void EditorPropertyEnum::_option_selected(int p_which) {
 }
 
 void EditorPropertyEnum::update_property() {
-	int64_t which = get_edited_object()->get(get_edited_property());
+	Variant current = get_edited_object()->get(get_edited_property());
+	if (current.get_type() == Variant::NIL) {
+		options->select(-1);
+		return;
+	}
 
+	int64_t which = current;
 	for (int i = 0; i < options->get_item_count(); i++) {
 		if (which == (int64_t)options->get_item_metadata(i)) {
 			options->select(i);
