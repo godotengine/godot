@@ -147,7 +147,7 @@
 	   summary="the pointer that should be locked"/>
       <arg name="region" type="object" interface="wl_region" allow-null="true"
 	   summary="region of surface"/>
-      <arg name="lifetime" type="uint" summary="lock lifetime"/>
+      <arg name="lifetime" type="uint" enum="lifetime" summary="lock lifetime"/>
     </request>
 
     <request name="confine_pointer">
@@ -177,7 +177,7 @@
 	   summary="the pointer that should be confined"/>
       <arg name="region" type="object" interface="wl_region" allow-null="true"
 	   summary="region of surface"/>
-      <arg name="lifetime" type="uint" summary="confinement lifetime"/>
+      <arg name="lifetime" type="uint" enum="lifetime" summary="confinement lifetime"/>
     </request>
   </interface>
 

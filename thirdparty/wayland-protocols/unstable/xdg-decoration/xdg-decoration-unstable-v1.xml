@@ -113,7 +113,7 @@
         that the client prefers the provided decoration mode.
 
         After requesting a decoration mode, the compositor will respond by
-        emitting a xdg_surface.configure event. The client should then update
+        emitting an xdg_surface.configure event. The client should then update
         its content, drawing it without decorations if the received mode is
         server-side decorations. The client must also acknowledge the configure
         when committing the new content (see xdg_surface.ack_configure).
@@ -122,7 +122,7 @@
         different mode instead.
 
         Clients whose decoration mode depend on the xdg_toplevel state may send
-        a set_mode request in response to a xdg_surface.configure event and wait
+        a set_mode request in response to an xdg_surface.configure event and wait
         for the next xdg_surface.configure event to prevent unwanted state.
         Such clients are responsible for preventing configure loops and must
         make sure not to send multiple successive set_mode requests with the

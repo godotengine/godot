@@ -740,7 +740,7 @@ Files extracted from upstream source:
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
-- Version: 1.20 (b0a25f26d3e8b5ad24773881a9a895dd9cc75466, 2020)
+- Version: 1.27 (e631010ab7b96988e7c64c24b7d90f64717eaeee, 2022)
 - License: MIT
 
 Files extracted from upstream source:
