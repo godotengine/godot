@@ -188,6 +188,7 @@ class DisplayServerWayland : public DisplayServer {
 		Callable window_event_callback;
 		Callable input_event_callback;
 		Callable drop_files_callback;
+		Callable input_text_callback;
 
 		// Metadata.
 		String title;

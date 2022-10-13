@@ -2310,9 +2310,12 @@ void DisplayServerWayland::window_set_input_event_callback(const Callable &p_cal
 	wd.input_event_callback = p_callable;
 }
 
-void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_input_text_callback, callable %s window %d", p_callable, p_window));
+void DisplayServerWayland::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+	WindowData &wd = wls.windows[p_window];
+	wd.input_text_callback = p_callable;
 }
 
 void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_callable, DisplayServer::WindowID p_window) {
