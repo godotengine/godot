@@ -2010,12 +2010,6 @@ float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 	return wls.screens[p_screen].refresh_rate;
 }
 
-bool DisplayServerWayland::screen_is_touchscreen(int p_screen) const {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub screen_is_touchscreen screen %d, returning false", p_screen));
-	return false;
-}
-
 void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	MutexLock mutex_lock(wls.mutex);
 
