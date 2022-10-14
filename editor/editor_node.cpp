@@ -584,12 +584,6 @@ void EditorNode::_update_from_settings() {
 }
 
 void EditorNode::_select_default_main_screen_plugin() {
-	if (EDITOR_3D < main_editor_buttons.size() && main_editor_buttons[EDITOR_3D]->is_visible()) {
-		// If the 3D editor is enabled, use this as the default.
-		editor_select(EDITOR_3D);
-		return;
-	}
-
 	// Switch to the first main screen plugin that is enabled. Usually this is
 	// 2D, but may be subsequent ones if 2D is disabled in the feature profile.
 	for (int i = 0; i < main_editor_buttons.size(); i++) {
@@ -600,6 +594,7 @@ void EditorNode::_select_default_main_screen_plugin() {
 		}
 	}
 
+	// If no main screen plugins are available, switch to an empty view.
 	editor_select(-1);
 }
 
@@ -1604,34 +1599,36 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	if (editor_data.get_edited_scene_root() != nullptr) {
 		save.step(TTR("Analyzing"), 0);
 
-		int c2d = 0;
-		int c3d = 0;
+		int count_2d = 0;
+		int count_3d = 0;
 
-		_find_node_types(editor_data.get_edited_scene_root(), c2d, c3d);
+		_find_node_types(editor_data.get_edited_scene_root(), count_2d, count_3d);
 
 		save.step(TTR("Creating Thumbnail"), 1);
 		// Current view?
 
+		Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
+
 		Ref<Image> img;
-		// If neither 3D or 2D nodes are present, make a 1x1 black texture.
-		// We cannot fallback on the 2D editor, because it may not have been used yet,
-		// which would result in an invalid texture.
-		if (c3d == 0 && c2d == 0) {
-			img.instantiate();
-			img->create(1, 1, false, Image::FORMAT_RGB8);
-		} else if (c3d < c2d) {
-			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
-			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
-				img = viewport_texture->get_image();
+		if (count_2d > count_3d) {
+			// The 2D editor may be disabled as a feature, but scenes can still be opened.
+			// This check prevents the preview from regenerating in case those scenes are then saved.
+			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_2D)) {
+				img = scene_root->get_texture()->get_image();
 			}
-		} else {
+		}
+		if (count_3d > count_2d) {
 			// The 3D editor may be disabled as a feature, but scenes can still be opened.
 			// This check prevents the preview from regenerating in case those scenes are then saved.
-			// The preview will be generated if no feature profile is set (as the 3D editor is enabled by default).
-			Ref<EditorFeatureProfile> profile = feature_profile_manager->get_current_profile();
-			if (!profile.is_valid() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
+			if (profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D)) {
 				img = Node3DEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_texture()->get_image();
 			}
+		}
+
+		// If an image was never created, make a 1x1 black texture.
+		if (img.is_null()) {
+			img.instantiate();
+			img->create(1, 1, false, Image::FORMAT_RGB8);
 		}
 
 		if (img.is_valid() && img->get_width() > 0 && img->get_height() > 0) {
@@ -1643,24 +1640,14 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 			preview_size *= EDSCALE;
 
-			// Consider a square region.
-			int vp_size = MIN(img->get_width(), img->get_height());
-			int x = (img->get_width() - vp_size) / 2;
-			int y = (img->get_height() - vp_size) / 2;
+			// Turn the image into a square.
+			int square_size = MIN(img->get_width(), img->get_height());
+			int x = (img->get_width() - square_size) / 2;
+			int y = (img->get_height() - square_size) / 2;
+			img->crop_from_point(x, y, square_size, square_size);
 
-			if (vp_size < preview_size) {
-				// Just square it.
-				img->crop_from_point(x, y, vp_size, vp_size);
-			} else {
-				int ratio = vp_size / preview_size;
-				int size = preview_size * MAX(1, ratio / 2);
+			img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
 
-				x = (img->get_width() - size) / 2;
-				y = (img->get_height() - size) / 2;
-
-				img->crop_from_point(x, y, size, size);
-				img->resize(preview_size, preview_size, Image::INTERPOLATE_LANCZOS);
-			}
 			img->convert(Image::FORMAT_RGB8);
 
 			// Save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5.
@@ -3331,43 +3318,43 @@ VBoxContainer *EditorNode::get_main_screen_control() {
 }
 
 void EditorNode::editor_select(int p_which) {
-	static bool selecting = false;
-	if (selecting || changing_scene) {
+	if (changing_scene) {
 		return;
 	}
 
-	ERR_FAIL_INDEX(p_which, editor_table.size());
+	// Parameter must be a valid index or -1 for empty view.
+	ERR_FAIL_COND(p_which < -1 || p_which >= editor_table.size());
 
-	if (!main_editor_buttons[p_which]->is_visible()) { // Button hidden, no editor.
+	if (p_which >= 0 && !main_editor_buttons[p_which]->is_visible()) { // Button hidden, can't switch.
 		return;
 	}
-
-	selecting = true;
 
 	for (int i = 0; i < main_editor_buttons.size(); i++) {
-		main_editor_buttons[i]->set_pressed(i == p_which);
-	}
-
-	selecting = false;
-
-	EditorPlugin *new_editor = editor_table[p_which];
-	ERR_FAIL_COND(!new_editor);
-
-	if (editor_plugin_screen == new_editor) {
-		return;
+		main_editor_buttons[i]->set_pressed_no_signal(i == p_which);
 	}
 
 	if (editor_plugin_screen) {
 		editor_plugin_screen->make_visible(false);
 	}
 
+	EditorPlugin *new_editor = nullptr;
+	String screen_name;
+	if (p_which >= 0) {
+		new_editor = editor_table[p_which];
+		new_editor->make_visible(true);
+		new_editor->selected_notify();
+		screen_name = new_editor->get_name();
+	}
+
 	editor_plugin_screen = new_editor;
-	editor_plugin_screen->make_visible(true);
-	editor_plugin_screen->selected_notify();
+	if (editor_plugin_screen) {
+		editor_plugin_screen->make_visible(true);
+		editor_plugin_screen->selected_notify();
+	}
 
 	int plugin_count = editor_data.get_editor_plugin_count();
 	for (int i = 0; i < plugin_count; i++) {
-		editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
+		editor_data.get_editor_plugin(i)->notify_main_screen_changed(screen_name);
 	}
 
 	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
@@ -3418,6 +3405,10 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed
 		singleton->editor_table.push_back(p_editor);
 
 		singleton->distraction_free->move_to_front();
+
+		if (!singleton->editor_plugin_screen) {
+			singleton->_select_default_main_screen_plugin();
+		}
 	}
 	singleton->editor_data.add_editor_plugin(p_editor);
 	singleton->add_child(p_editor);
@@ -3431,7 +3422,8 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor, bool p_config_chan
 		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
 			if (p_editor->get_name() == singleton->main_editor_buttons[i]->get_text()) {
 				if (singleton->main_editor_buttons[i]->is_pressed()) {
-					singleton->editor_select(EDITOR_SCRIPT);
+					singleton->main_editor_buttons[i]->set_visible(false);
+					singleton->_select_default_main_screen_plugin();
 				}
 
 				memdelete(singleton->main_editor_buttons[i]);
@@ -5952,15 +5944,18 @@ void EditorNode::_feature_profile_changed() {
 		fs_tabs->set_tab_hidden(fs_tabs->get_tab_idx_from_control(FileSystemDock::get_singleton()), fs_dock_disabled);
 		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), fs_dock_disabled || profile->is_feature_disabled(EditorFeatureProfile::FEATURE_IMPORT_DOCK));
 
+		main_editor_buttons[EDITOR_2D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_2D));
 		main_editor_buttons[EDITOR_3D]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
 		main_editor_buttons[EDITOR_SCRIPT]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT));
 		if (AssetLibraryEditorPlugin::is_available()) {
 			main_editor_buttons[EDITOR_ASSETLIB]->set_visible(!profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB));
 		}
-		if ((profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
+		if (!editor_plugin_screen ||
+				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_2D) && singleton->main_editor_buttons[EDITOR_2D]->is_pressed()) ||
+				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D) && singleton->main_editor_buttons[EDITOR_3D]->is_pressed()) ||
 				(profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT) && singleton->main_editor_buttons[EDITOR_SCRIPT]->is_pressed()) ||
 				(AssetLibraryEditorPlugin::is_available() && profile->is_feature_disabled(EditorFeatureProfile::FEATURE_ASSET_LIB) && singleton->main_editor_buttons[EDITOR_ASSETLIB]->is_pressed())) {
-			editor_select(EDITOR_2D);
+			_select_default_main_screen_plugin();
 		}
 	} else {
 		import_tabs->set_tab_hidden(import_tabs->get_tab_idx_from_control(ImportDock::get_singleton()), false);

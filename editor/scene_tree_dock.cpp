@@ -3311,13 +3311,17 @@ void SceneTreeDock::_feature_profile_changed() {
 	if (profile.is_valid()) {
 		profile_allow_editing = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCENE_TREE);
 		profile_allow_script_editing = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_SCRIPT);
-		bool profile_allow_3d = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D);
 
+		bool profile_allow_2d = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_2D);
+		button_2d->set_visible(profile_allow_2d);
+		button_ui->set_visible(profile_allow_2d);
+
+		bool profile_allow_3d = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D);
 		button_3d->set_visible(profile_allow_3d);
+
 		button_add->set_visible(profile_allow_editing);
 		button_instance->set_visible(profile_allow_editing);
 		scene_tree->set_can_rename(profile_allow_editing);
-
 	} else {
 		button_3d->set_visible(true);
 		button_add->set_visible(true);

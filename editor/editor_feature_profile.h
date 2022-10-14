@@ -45,6 +45,7 @@ class EditorFeatureProfile : public RefCounted {
 
 public:
 	enum Feature {
+		FEATURE_2D,
 		FEATURE_3D,
 		FEATURE_SCRIPT,
 		FEATURE_ASSET_LIB,
@@ -62,7 +63,7 @@ private:
 
 	HashSet<StringName> collapsed_classes;
 
-	bool features_disabled[FEATURE_MAX];
+	bool features_disabled[FEATURE_MAX] = { false };
 	static const char *feature_names[FEATURE_MAX];
 	static const char *feature_descriptions[FEATURE_MAX];
 	static const char *feature_identifiers[FEATURE_MAX];
