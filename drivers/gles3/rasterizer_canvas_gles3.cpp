@@ -130,7 +130,10 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 		if (syncStatus == GL_UNSIGNALED) {
 			// If older than 2 frames, wait for sync OpenGL can have up to 3 frames in flight, any more and we need to sync anyway.
 			if (state.canvas_instance_data_buffers[state.current_buffer].last_frame_used < RSG::rasterizer->get_frame_number() - 2) {
+#ifndef WEB_ENABLED
+				// On web, we do nothing as the glSubBufferData will force a sync anyway and WebGL does not like waiting.
 				glClientWaitSync(state.canvas_instance_data_buffers[state.current_buffer].fence, 0, 100000000); // wait for up to 100ms
+#endif
 			} else {
 				// Used in last frame or frame before that. OpenGL can get up to two frames behind, so these buffers may still be in use
 				// Allocate a new buffer and use that.

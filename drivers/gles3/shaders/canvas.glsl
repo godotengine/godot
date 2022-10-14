@@ -211,7 +211,9 @@ void main() {
 #include "canvas_uniforms_inc.glsl"
 #include "stdlib_inc.glsl"
 
+#ifndef DISABLE_LIGHTING
 uniform sampler2D atlas_texture; //texunit:-2
+#endif // DISABLE_LIGHTING
 //uniform sampler2D shadow_atlas_texture; //texunit:-3
 uniform sampler2D screen_texture; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
