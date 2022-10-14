@@ -96,7 +96,7 @@ class GodotHingeJoint3D : public GodotJoint3D {
 	real_t m_appliedImpulse = 0.0;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_HINGE; }
+	virtual PhysicsServer3D::JointType get_type() const override;
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;

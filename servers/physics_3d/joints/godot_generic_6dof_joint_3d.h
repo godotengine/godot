@@ -202,7 +202,7 @@ protected:
 public:
 	GodotGeneric6DOFJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const Transform3D &frameInA, const Transform3D &frameInB, bool useLinearReferenceFrameA);
 
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+	virtual PhysicsServer3D::JointType get_type() const override;
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;

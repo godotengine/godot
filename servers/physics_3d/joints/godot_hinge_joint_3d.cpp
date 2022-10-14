@@ -124,6 +124,8 @@ GodotHingeJoint3D::GodotHingeJoint3D(GodotBody3D *rbA, GodotBody3D *rbB, const V
 	B->add_constraint(this, 1);
 }
 
+PhysicsServer3D::JointType GodotHingeJoint3D::get_type() const { return PhysicsServer3D::JOINT_TYPE_HINGE; }
+
 bool GodotHingeJoint3D::setup(real_t p_step) {
 	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);

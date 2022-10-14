@@ -102,7 +102,7 @@ public:
 	bool m_solveSwingLimit = false;
 
 public:
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_CONE_TWIST; }
+	virtual PhysicsServer3D::JointType get_type() const override;
 
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;

@@ -237,10 +237,10 @@ public:
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;
 
+	virtual PhysicsServer3D::JointType get_type() const override;
+
 	virtual bool setup(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
-
-	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
 };
 
 #endif // GODOT_SLIDER_JOINT_3D_H

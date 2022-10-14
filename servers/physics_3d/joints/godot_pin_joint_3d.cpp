@@ -49,6 +49,8 @@ subject to the following restrictions:
 
 #include "godot_pin_joint_3d.h"
 
+PhysicsServer3D::JointType GodotPinJoint3D::get_type() const { return PhysicsServer3D::JOINT_TYPE_PIN; }
+
 bool GodotPinJoint3D::setup(real_t p_step) {
 	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);

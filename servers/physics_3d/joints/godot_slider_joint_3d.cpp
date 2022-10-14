@@ -151,6 +151,7 @@ bool GodotSliderJoint3D::setup(real_t p_step) {
 }
 
 //-----------------------------------------------------------------------------
+PhysicsServer3D::JointType GodotSliderJoint3D::get_type() const { return PhysicsServer3D::JOINT_TYPE_SLIDER; }
 
 void GodotSliderJoint3D::solve(real_t p_step) {
 	int i;

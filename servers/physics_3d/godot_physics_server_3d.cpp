@@ -1247,7 +1247,7 @@ void GodotPhysicsServer3D::joint_make_pin(RID p_joint, RID p_body_A, const Vecto
 void GodotPhysicsServer3D::pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_PIN && joint->get_type() != JOINT_TYPE_MAX);
 	GodotPinJoint3D *pin_joint = static_cast<GodotPinJoint3D *>(joint);
 	pin_joint->set_param(p_param, p_value);
 }
@@ -1343,7 +1343,7 @@ void GodotPhysicsServer3D::joint_make_hinge_simple(RID p_joint, RID p_body_A, co
 void GodotPhysicsServer3D::hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_HINGE);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_HINGE && joint->get_type() != JOINT_TYPE_MAX);
 	GodotHingeJoint3D *hinge_joint = static_cast<GodotHingeJoint3D *>(joint);
 	hinge_joint->set_param(p_param, p_value);
 }
@@ -1444,7 +1444,7 @@ void GodotPhysicsServer3D::joint_make_slider(RID p_joint, RID p_body_A, const Tr
 void GodotPhysicsServer3D::slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_SLIDER);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_SLIDER && joint->get_type() != JOINT_TYPE_MAX);
 	GodotSliderJoint3D *slider_joint = static_cast<GodotSliderJoint3D *>(joint);
 	slider_joint->set_param(p_param, p_value);
 }
@@ -1484,7 +1484,7 @@ void GodotPhysicsServer3D::joint_make_cone_twist(RID p_joint, RID p_body_A, cons
 void GodotPhysicsServer3D::cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_CONE_TWIST);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_CONE_TWIST && joint->get_type() != JOINT_TYPE_MAX);
 	GodotConeTwistJoint3D *cone_twist_joint = static_cast<GodotConeTwistJoint3D *>(joint);
 	cone_twist_joint->set_param(p_param, p_value);
 }
@@ -1524,7 +1524,7 @@ void GodotPhysicsServer3D::joint_make_generic_6dof(RID p_joint, RID p_body_A, co
 void GodotPhysicsServer3D::generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) {
 	GodotJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_COND(!joint);
-	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF);
+	ERR_FAIL_COND(joint->get_type() != JOINT_TYPE_6DOF && joint->get_type() != JOINT_TYPE_MAX);
 	GodotGeneric6DOFJoint3D *generic_6dof_joint = static_cast<GodotGeneric6DOFJoint3D *>(joint);
 	generic_6dof_joint->set_param(p_axis, p_param, p_value);
 }

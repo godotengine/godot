@@ -313,6 +313,8 @@ bool GodotGeneric6DOFJoint3D::testAngularLimitMotor(int axis_index) {
 	return m_angularLimits[axis_index].needApplyTorques();
 }
 
+PhysicsServer3D::JointType GodotGeneric6DOFJoint3D::get_type() const { return PhysicsServer3D::JOINT_TYPE_6DOF; }
+
 bool GodotGeneric6DOFJoint3D::setup(real_t p_timestep) {
 	dynamic_A = (A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);
 	dynamic_B = (B->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC);

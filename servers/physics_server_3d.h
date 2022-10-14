@@ -630,7 +630,6 @@ public:
 		JOINT_TYPE_CONE_TWIST,
 		JOINT_TYPE_6DOF,
 		JOINT_TYPE_MAX,
-
 	};
 
 	virtual RID joint_create() = 0;
