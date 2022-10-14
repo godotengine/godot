@@ -166,6 +166,7 @@ class VisualShaderEditor : public VBoxContainer {
 	GraphEdit *graph = nullptr;
 	Button *add_node = nullptr;
 	MenuButton *varying_button = nullptr;
+	Button *update_shader = nullptr;
 	Button *preview_shader = nullptr;
 
 	OptionButton *edit_type = nullptr;
@@ -342,6 +343,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _update_options_menu();
 	void _set_mode(int p_which);
 
+	void _update_shader();
 	void _show_preview_text();
 	void _preview_close_requested();
 	void _preview_size_changed();

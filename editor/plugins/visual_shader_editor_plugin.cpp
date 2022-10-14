@@ -1113,6 +1113,8 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		}
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 		_set_mode(visual_shader->get_mode());
+
+		_update_nodes();
 	} else {
 		if (visual_shader.is_valid()) {
 			Callable ce = callable_mp(this, &VisualShaderEditor::_update_preview);
@@ -3704,6 +3706,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			node_filter->set_right_icon(Control::get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
 			preview_shader->set_icon(Control::get_theme_icon(SNAME("Shader"), SNAME("EditorIcons")));
+			update_shader->set_icon(Control::get_theme_icon(SNAME("Reload"), SNAME("EditorIcons")));
 
 			{
 				Color background_color = EDITOR_GET("text_editor/theme/highlighting/background_color");
@@ -4558,6 +4561,11 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
+void VisualShaderEditor::_update_shader() {
+	update_nodes();
+	_update_graph();
+}
+
 void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
 	if (preview_showed) {
@@ -4812,6 +4820,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	varying_menu->add_item(TTR("Add Varying"), int(VaryingMenuOptions::ADD));
 	varying_menu->add_item(TTR("Remove Varying"), int(VaryingMenuOptions::REMOVE));
 	varying_menu->connect("id_pressed", callable_mp(this, &VisualShaderEditor::_varying_menu_id_pressed));
+
+	update_shader = memnew(Button);
+	update_shader->set_flat(true);
+	update_shader->set_tooltip_text(TTR("Update shader graph and custom nodes."));
+	graph->get_zoom_hbox()->add_child(update_shader);
+	update_shader->connect("pressed", callable_mp(this, &VisualShaderEditor::_update_shader));
 
 	preview_shader = memnew(Button);
 	preview_shader->set_flat(true);
