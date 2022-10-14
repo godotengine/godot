@@ -533,6 +533,10 @@ String InputEventConfigurationDialog::_get_device_string(int p_device) const {
 
 void InputEventConfigurationDialog::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			event_listener->grab_focus();
+		} break;
+
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			input_list_search->set_right_icon(input_list_search->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
