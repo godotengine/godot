@@ -90,7 +90,9 @@ void EditorPropertyText::update_property() {
 	String s = get_edited_object()->get(get_edited_property());
 	updating = true;
 	if (text->get_text() != s) {
+		int caret = text->get_caret_column();
 		text->set_text(s);
+		text->set_caret_column(caret);
 	}
 	text->set_editable(!is_read_only());
 	updating = false;
