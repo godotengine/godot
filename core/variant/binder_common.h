@@ -258,6 +258,8 @@ template <class T, class... P, size_t... Is>
 void call_with_variant_args_helper(T *p_instance, void (T::*p_method)(P...), const Variant **p_args, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
+	ERR_FAIL_COND_MSG(p_instance == nullptr, "Invalid instance - attempted to call pointer for invalid object");
+
 #ifdef DEBUG_METHODS_ENABLED
 	(p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else
@@ -727,6 +729,10 @@ template <class T, class R, class... P, size_t... Is>
 void call_with_variant_args_retc_helper(T *p_instance, R (T::*p_method)(P...) const, const Variant **p_args, Variant &r_ret, Callable::CallError &r_error, IndexSequence<Is...>) {
 	r_error.error = Callable::CallError::CALL_OK;
 
+	if( p_instance == nullptr )
+	{
+		return;
+	}
 #ifdef DEBUG_METHODS_ENABLED
 	r_ret = (p_instance->*p_method)(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...);
 #else

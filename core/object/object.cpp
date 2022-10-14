@@ -50,7 +50,9 @@ struct _ObjectDebugLock {
 		obj->_lock_index.ref();
 	}
 	~_ObjectDebugLock() {
-		obj->_lock_index.unref();
+		if(obj) {
+			obj->_lock_index.unref();
+		}
 	}
 };
 
