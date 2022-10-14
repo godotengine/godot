@@ -312,7 +312,8 @@ if webm_cpu_arm:
         or env["platform"] == "x11"
         or env["platform"] == "server"
     ):
-        env_libvpx["ASFLAGS"] += "-mfpu=neon"
+        # Append to preserve base ASFLAGS on Android.
+        env_libvpx.Append(ASFLAGS=["-mfpu=neon"])
     elif env["platform"] == "uwp":
         env_libvpx["AS"] = "armasm"
         env_libvpx["ASFLAGS"] = ""
