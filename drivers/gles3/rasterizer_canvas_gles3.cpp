@@ -1017,13 +1017,23 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, const Tran
 
 					state.instance_data_array[r_index].flags = base_flags | (state.instance_data_array[r_index - 1].flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); //reset on each command for sanity, keep canvastexture binding config
 
-					for (uint32_t j = 0; j < 3; j++) {
+
+					// re-use first vertex of primitive for second half
+					state.instance_data_array[r_index].points[0] = primitive->points[0].x;
+					state.instance_data_array[r_index].points[1] = primitive->points[0].y;
+					state.instance_data_array[r_index].uvs[0] = primitive->uvs[0].x;
+					state.instance_data_array[r_index].uvs[1] = primitive->uvs[0].y;
+					Color col = primitive->colors[0] * base_color;
+					state.instance_data_array[r_index].colors[0] = (uint32_t(Math::make_half_float(col.g)) << 16) | Math::make_half_float(col.r);
+					state.instance_data_array[r_index].colors[1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
+
+					for (uint32_t j = 1; j < 3; j++) {
 						//second half of triangle
 						state.instance_data_array[r_index].points[j * 2 + 0] = primitive->points[j + 1].x;
 						state.instance_data_array[r_index].points[j * 2 + 1] = primitive->points[j + 1].y;
 						state.instance_data_array[r_index].uvs[j * 2 + 0] = primitive->uvs[j + 1].x;
 						state.instance_data_array[r_index].uvs[j * 2 + 1] = primitive->uvs[j + 1].y;
-						Color col = primitive->colors[j + 1] * base_color;
+						col = primitive->colors[j + 1] * base_color;
 						state.instance_data_array[r_index].colors[j * 2 + 0] = (uint32_t(Math::make_half_float(col.g)) << 16) | Math::make_half_float(col.r);
 						state.instance_data_array[r_index].colors[j * 2 + 1] = (uint32_t(Math::make_half_float(col.a)) << 16) | Math::make_half_float(col.b);
 					}
