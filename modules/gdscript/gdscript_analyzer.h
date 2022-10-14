@@ -63,6 +63,7 @@ class GDScriptAnalyzer {
 	void resolve_class_body(GDScriptParser::ClassNode *p_class);
 	void resolve_function_signature(GDScriptParser::FunctionNode *p_function);
 	void resolve_function_body(GDScriptParser::FunctionNode *p_function);
+	void resolve_variable_setter(GDScriptParser::VariableNode *p_variable);
 	void resolve_node(GDScriptParser::Node *p_node);
 	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
 	void resolve_if(GDScriptParser::IfNode *p_if);

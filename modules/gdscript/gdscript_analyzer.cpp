@@ -939,7 +939,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class) {
 						member.variable->setter->parameters[0]->set_datatype(member.get_datatype());
 					}
 
-					resolve_function_body(member.variable->setter);
+					resolve_variable_setter(member.variable);
 				}
 			}
 		}
@@ -1261,6 +1261,83 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init) {
 			push_error(R"(Not all code paths return a value.)", p_function);
+		}
+	}
+
+	parser->current_function = previous_function;
+}
+
+void GDScriptAnalyzer::resolve_variable_setter(GDScriptParser::VariableNode *p_variable) {
+	GDScriptParser::FunctionNode *p_setter_function = p_variable->setter;
+	if (p_setter_function->resolved_body) {
+		return;
+	}
+	p_setter_function->resolved_body = true;
+
+	GDScriptParser::FunctionNode *previous_function = parser->current_function;
+	parser->current_function = p_setter_function;
+
+	resolve_suite(p_setter_function->body);
+
+	bool variable_assigned = false;
+	Vector<GDScriptParser::Node *> body_nodes = p_setter_function->body->statements.duplicate();
+	for (int i = 0; i < body_nodes.size() && !variable_assigned; i++) {
+		if (!body_nodes[i]) {
+			continue;
+		}
+		switch (body_nodes[i]->type) {
+			case GDScriptParser::Node::Type::ASSIGNMENT: {
+				auto const *assignment_node = static_cast<GDScriptParser::AssignmentNode *>(body_nodes[i]);
+				if (assignment_node->assignee && assignment_node->assignee->type == GDScriptParser::Node::Type::IDENTIFIER) {
+					auto const *identifier_node = static_cast<GDScriptParser::IdentifierNode *>(assignment_node->assignee);
+					if (identifier_node->source == GDScriptParser::IdentifierNode::Source::MEMBER_VARIABLE && identifier_node->name == p_variable->identifier->name) {
+						variable_assigned = true;
+					}
+				}
+			} break;
+			case GDScriptParser::Node::Type::IF: {
+				auto const *if_node = static_cast<GDScriptParser::IfNode *>(body_nodes[i]);
+				body_nodes.push_back(if_node->true_block);
+				body_nodes.push_back(if_node->false_block);
+			} break;
+			case GDScriptParser::Node::Type::MATCH: {
+				auto const *match_node = static_cast<GDScriptParser::MatchNode *>(body_nodes[i]);
+				for (int b = 0; b < match_node->branches.size(); b++) {
+					body_nodes.push_back(match_node->branches[b]->block);
+				}
+			} break;
+			case GDScriptParser::Node::Type::WHILE: {
+				auto const *while_node = static_cast<GDScriptParser::WhileNode *>(body_nodes[i]);
+				body_nodes.push_back(while_node->loop);
+			} break;
+			case GDScriptParser::Node::Type::FOR: {
+				auto const *for_node = static_cast<GDScriptParser::ForNode *>(body_nodes[i]);
+				body_nodes.push_back(for_node->loop);
+			} break;
+			case GDScriptParser::Node::Type::SUITE: {
+				auto const *suite_node = static_cast<GDScriptParser::SuiteNode *>(body_nodes[i]);
+				for (int s = 0; s < suite_node->statements.size(); s++) {
+					body_nodes.push_back(suite_node->statements[s]);
+				}
+			} break;
+			default:
+				break;
+		}
+	}
+#ifdef DEBUG_ENABLED
+	if (!variable_assigned) {
+		parser->push_warning(p_variable->setter, GDScriptWarning::SETTER_MISSING_ASSIGNMENT, p_variable->identifier->name);
+	}
+#endif // DEBUG_ENABLED
+
+	GDScriptParser::DataType return_type = p_setter_function->body->get_datatype();
+	if (!p_setter_function->get_datatype().is_hard_type() && return_type.is_set()) {
+		// Use the suite inferred type if return isn't explicitly set.
+		return_type.type_source = GDScriptParser::DataType::INFERRED;
+		p_setter_function->set_datatype(p_setter_function->body->get_datatype());
+	} else if (p_setter_function->get_datatype().is_hard_type() && (p_setter_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_setter_function->get_datatype().builtin_type != Variant::NIL)) {
+		if (!p_setter_function->body->has_return && p_setter_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init) {
+			push_error(R"(Not all code paths return a value.)", p_setter_function);
 		}
 	}
 
