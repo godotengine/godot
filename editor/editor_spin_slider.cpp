@@ -619,11 +619,9 @@ bool EditorSpinSlider::is_grabbing() const {
 
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
-	Rect2 gr = get_screen_rect();
 	value_input->set_text(get_text_value());
-	value_input_popup->set_position(gr.position);
-	value_input_popup->set_size(gr.size);
-	value_input_popup->call_deferred(SNAME("popup"));
+	value_input_popup->set_size(get_size());
+	value_input_popup->call_deferred(SNAME("show"));
 	value_input->call_deferred(SNAME("grab_focus"));
 	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
@@ -658,14 +656,13 @@ void EditorSpinSlider::_ensure_input_popup() {
 		return;
 	}
 
-	value_input_popup = memnew(Popup);
+	value_input_popup = memnew(Control);
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
-	value_input_popup->set_wrap_controls(true);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input_popup->connect("hidden", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
