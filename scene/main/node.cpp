@@ -322,62 +322,62 @@ void Node::_propagate_exit_tree() {
 	data.depth = -1;
 }
 
-void Node::move_child(Node *p_child, int p_pos) {
+void Node::move_child(Node *p_child, int p_index) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
 
 	// We need to check whether node is internal and move it only in the relevant node range.
 	if (p_child->_is_internal_front()) {
-		if (p_pos < 0) {
-			p_pos += data.internal_children_front;
+		if (p_index < 0) {
+			p_index += data.internal_children_front;
 		}
-		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_front, vformat("Invalid new child position: %d. Child is internal.", p_pos));
-		_move_child(p_child, p_pos);
+		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_front, vformat("Invalid new child index: %d. Child is internal.", p_index));
+		_move_child(p_child, p_index);
 	} else if (p_child->_is_internal_back()) {
-		if (p_pos < 0) {
-			p_pos += data.internal_children_back;
+		if (p_index < 0) {
+			p_index += data.internal_children_back;
 		}
-		ERR_FAIL_INDEX_MSG(p_pos, data.internal_children_back, vformat("Invalid new child position: %d. Child is internal.", p_pos));
-		_move_child(p_child, data.children.size() - data.internal_children_back + p_pos);
+		ERR_FAIL_INDEX_MSG(p_index, data.internal_children_back, vformat("Invalid new child index: %d. Child is internal.", p_index));
+		_move_child(p_child, data.children.size() - data.internal_children_back + p_index);
 	} else {
-		if (p_pos < 0) {
-			p_pos += get_child_count(false);
+		if (p_index < 0) {
+			p_index += get_child_count(false);
 		}
-		ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child position: %d.", p_pos));
-		_move_child(p_child, p_pos + data.internal_children_front);
+		ERR_FAIL_INDEX_MSG(p_index, data.children.size() + 1 - data.internal_children_front - data.internal_children_back, vformat("Invalid new child index: %d.", p_index));
+		_move_child(p_child, p_index + data.internal_children_front);
 	}
 }
 
-void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
+void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
 
 	// Specifying one place beyond the end
-	// means the same as moving to the last position
+	// means the same as moving to the last index
 	if (!p_ignore_end) { // p_ignore_end is a little hack to make back internal children work properly.
 		if (p_child->_is_internal_front()) {
-			if (p_pos == data.internal_children_front) {
-				p_pos--;
+			if (p_index == data.internal_children_front) {
+				p_index--;
 			}
 		} else if (p_child->_is_internal_back()) {
-			if (p_pos == data.children.size()) {
-				p_pos--;
+			if (p_index == data.children.size()) {
+				p_index--;
 			}
 		} else {
-			if (p_pos == data.children.size() - data.internal_children_back) {
-				p_pos--;
+			if (p_index == data.children.size() - data.internal_children_back) {
+				p_index--;
 			}
 		}
 	}
 
-	if (p_child->data.pos == p_pos) {
+	if (p_child->data.index == p_index) {
 		return; //do nothing
 	}
 
-	int motion_from = MIN(p_pos, p_child->data.pos);
-	int motion_to = MAX(p_pos, p_child->data.pos);
+	int motion_from = MIN(p_index, p_child->data.index);
+	int motion_to = MAX(p_index, p_child->data.index);
 
-	data.children.remove_at(p_child->data.pos);
-	data.children.insert(p_pos, p_child);
+	data.children.remove_at(p_child->data.index);
+	data.children.insert(p_index, p_child);
 
 	if (data.tree) {
 		data.tree->tree_changed();
@@ -386,7 +386,7 @@ void Node::_move_child(Node *p_child, int p_pos, bool p_ignore_end) {
 	data.blocked++;
 	//new pos first
 	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->data.pos = i;
+		data.children[i]->data.index = i;
 	}
 	// notification second
 	move_child_notify(p_child);
@@ -1104,7 +1104,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	//add a child node quickly, without name validation
 
 	p_child->data.name = p_name;
-	p_child->data.pos = data.children.size();
+	p_child->data.index = data.children.size();
 	data.children.push_back(p_child);
 	p_child->data.parent = this;
 
@@ -1171,9 +1171,9 @@ void Node::remove_child(Node *p_child) {
 	Node **children = data.children.ptrw();
 	int idx = -1;
 
-	if (p_child->data.pos >= 0 && p_child->data.pos < child_count) {
-		if (children[p_child->data.pos] == p_child) {
-			idx = p_child->data.pos;
+	if (p_child->data.index >= 0 && p_child->data.index < child_count) {
+		if (children[p_child->data.index] == p_child) {
+			idx = p_child->data.index;
 		}
 	}
 
@@ -1209,12 +1209,12 @@ void Node::remove_child(Node *p_child) {
 	children = data.children.ptrw();
 
 	for (int i = idx; i < child_count; i++) {
-		children[i]->data.pos = i;
+		children[i]->data.index = i;
 		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = nullptr;
-	p_child->data.pos = -1;
+	p_child->data.index = -1;
 
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
@@ -1473,7 +1473,7 @@ bool Node::is_greater_than(const Node *p_node) const {
 	int idx = data.depth - 1;
 	while (n) {
 		ERR_FAIL_INDEX_V(idx, data.depth, false);
-		this_stack[idx--] = n->data.pos;
+		this_stack[idx--] = n->data.index;
 		n = n->data.parent;
 	}
 	ERR_FAIL_COND_V(idx != -1, false);
@@ -1481,7 +1481,7 @@ bool Node::is_greater_than(const Node *p_node) const {
 	idx = p_node->data.depth - 1;
 	while (n) {
 		ERR_FAIL_INDEX_V(idx, p_node->data.depth, false);
-		that_stack[idx--] = n->data.pos;
+		that_stack[idx--] = n->data.index;
 
 		n = n->data.parent;
 	}
@@ -1892,9 +1892,9 @@ int Node::get_index(bool p_include_internal) const {
 	ERR_FAIL_COND_V_MSG(!p_include_internal && (_is_internal_front() || _is_internal_back()), -1, "Node is internal. Can't get index with 'include_internal' being false.");
 
 	if (data.parent && !p_include_internal) {
-		return data.pos - data.parent->data.internal_children_front;
+		return data.index - data.parent->data.internal_children_front;
 	}
-	return data.pos;
+	return data.index;
 }
 
 Ref<Tween> Node::create_tween() {
@@ -2389,12 +2389,12 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	}
 
 	Node *parent = data.parent;
-	int pos_in_parent = data.pos;
+	int index_in_parent = data.index;
 
 	if (data.parent) {
 		parent->remove_child(this);
 		parent->add_child(p_node);
-		parent->move_child(p_node, pos_in_parent);
+		parent->move_child(p_node, index_in_parent);
 	}
 
 	while (get_child_count()) {
@@ -2757,7 +2757,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
-	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
+	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_index"), &Node::move_child);
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
