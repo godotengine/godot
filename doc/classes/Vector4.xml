@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		4-element structure that can be used to represent any quadruplet of numeric values.
-		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]float=64[/code].
+		It uses floating-point coordinates. By default, these floating-point values use 32-bit precision, unlike [float] which is always 64-bit. If double precision is needed, compile the engine with the option [code]precision=double[/code].
 		See [Vector4i] for its integer counterpart.
 		[b]Note:[/b] In a boolean context, a Vector4 will evaluate to [code]false[/code] if it's equal to [code]Vector4(0, 0, 0, 0)[/code]. Otherwise, a Vector4 will always evaluate to [code]true[/code].
 	</description>

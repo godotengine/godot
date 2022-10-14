@@ -179,7 +179,7 @@ opts.Add(BoolVariable("production", "Set defaults to build Godot for use in prod
 
 # Components
 opts.Add(BoolVariable("deprecated", "Enable compatibility code for deprecated and removed features", True))
-opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
+opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
 opts.Add(BoolVariable("minizip", "Enable ZIP archive support using minizip", True))
 opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
@@ -442,7 +442,7 @@ if env_base["no_editor_splash"]:
 if not env_base["deprecated"]:
     env_base.Append(CPPDEFINES=["DISABLE_DEPRECATED"])
 
-if env_base["float"] == "64":
+if env_base["precision"] == "double":
     env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
 if selected_platform in platform_list:
@@ -747,7 +747,7 @@ if selected_platform in platform_list:
     if env.dev_build:
         suffix += ".dev"
 
-    if env_base["float"] == "64":
+    if env_base["precision"] == "double":
         suffix += ".double"
 
     suffix += "." + env["arch"]
