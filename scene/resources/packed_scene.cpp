@@ -1546,7 +1546,7 @@ Array SceneState::get_connection_binds(int p_idx) const {
 	return binds;
 }
 
-bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method) {
+bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method, bool p_no_inheritance) {
 	// this method cannot be const because of this
 	Ref<SceneState> ss = this;
 
@@ -1576,6 +1576,10 @@ bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p
 			if (np_from == p_node_from && sn_signal == p_signal && np_to == p_node_to && sn_method == p_method) {
 				return true;
 			}
+		}
+
+		if (p_no_inheritance) {
+			break;
 		}
 
 		ss = ss->get_base_scene_state();
