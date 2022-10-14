@@ -1490,7 +1490,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		gui.key_event_accepted = false;
 
 		Point2 mpos = mb->get_position();
-		gui.last_mouse_pos = mpos;
 		if (mb->is_pressed()) {
 			Size2 pos = mpos;
 			if (gui.mouse_focus_mask != MouseButton::NONE) {
@@ -1643,8 +1642,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mm.is_valid()) {
 		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
-
-		gui.last_mouse_pos = mpos;
 
 		// Drag & drop.
 		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -2757,6 +2754,11 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = _make_input_local(p_event);
 	} else {
 		ev = p_event;
+	}
+
+	Ref<InputEventMouse> me = ev;
+	if (me.is_valid()) {
+		gui.last_mouse_pos = me->get_position();
 	}
 
 	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
