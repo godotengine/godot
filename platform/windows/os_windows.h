@@ -63,6 +63,10 @@
 #define WINDOWS_DEBUG_OUTPUT_ENABLED
 #endif
 
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x4
+#endif
+
 template <class T>
 class ComAutoreleaseRef {
 public:
