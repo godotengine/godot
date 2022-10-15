@@ -72,6 +72,7 @@ public:
 	void fill(const Variant &p_value);
 
 	Variant front() const;
+	Variant pick_random() const;
 	Variant back() const;
 
 	Array &sort();
