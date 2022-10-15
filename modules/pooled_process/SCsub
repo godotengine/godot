@@ -1,0 +1,3 @@
+Import('env')
+
+env.add_source_files(env.modules_sources, "*.cpp")

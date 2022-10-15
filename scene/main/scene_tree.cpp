@@ -533,6 +533,13 @@ void SceneTree::iteration_end() {
 	}
 }
 
+#define POOLEDPROCESS_IDLE_NOTIFIER
+#define POOLEDPROCESS_ITERATION_NOTIFIER
+
+#ifdef POOLEDPROCESS_IDLE_NOTIFIER
+#include "modules/pooled_process/pooled_process.h"
+#endif
+
 bool SceneTree::iteration(float p_time) {
 	root_lock++;
 
@@ -561,6 +568,10 @@ bool SceneTree::iteration(float p_time) {
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
 	MessageQueue::get_singleton()->flush(); //small little hack
+
+#ifdef POOLEDPROCESS_ITERATION_NOTIFIER
+	PooledProcess::get_singleton()->notify_iteration(p_time);
+#endif
 
 	process_tweens(p_time, true);
 
@@ -606,6 +617,10 @@ bool SceneTree::idle(float p_time) {
 
 	_notify_group_pause("idle_process_internal", Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
+
+#ifdef POOLEDPROCESS_IDLE_NOTIFIER
+	PooledProcess::get_singleton()->notify_idle(p_time, current_frame);
+#endif
 
 	Size2 win_size = OS::get_singleton()->get_window_size();
 

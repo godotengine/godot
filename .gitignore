@@ -363,3 +363,5 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+build.cmd
