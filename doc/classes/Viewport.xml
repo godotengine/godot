@@ -71,6 +71,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_screen_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform from the Viewport's coordinates to the screen coordinates of the containing window manager window.
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture" />
 			<description>
