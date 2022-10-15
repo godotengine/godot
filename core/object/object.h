@@ -295,6 +295,8 @@ struct ObjectNativeExtension {
 	StringName parent_class_name;
 	StringName class_name;
 	bool editor_class = false;
+	bool is_virtual = false;
+	bool is_abstract = false;
 	GDNativeExtensionClassSet set;
 	GDNativeExtensionClassGet get;
 	GDNativeExtensionClassGetPropertyList get_property_list;
