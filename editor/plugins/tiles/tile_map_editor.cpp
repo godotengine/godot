@@ -460,7 +460,7 @@ void TileMapEditorTilesPlugin::_update_theme() {
 	source_sort_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 	select_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
 	paint_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-	line_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")));
+	line_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Line"), SNAME("EditorIcons")));
 	rect_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Rectangle"), SNAME("EditorIcons")));
 	bucket_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Bucket"), SNAME("EditorIcons")));
 
@@ -3277,7 +3277,7 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 
 void TileMapEditorTerrainsPlugin::_update_theme() {
 	paint_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-	line_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")));
+	line_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Line"), SNAME("EditorIcons")));
 	rect_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Rectangle"), SNAME("EditorIcons")));
 	bucket_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Bucket"), SNAME("EditorIcons")));
 
