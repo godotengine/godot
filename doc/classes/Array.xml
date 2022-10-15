@@ -205,6 +205,16 @@
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
+		<method name="pick_random" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a random value from the target array.
+				[codeblock]
+				var array: Array[int] = [1, 2, 3, 4]
+				print(array.pick_random())  # Prints either of the four numbers.
+				[/codeblock]
+			</description>
+		</method>
 		<method name="bsearch">
 			<return type="int" />
 			<param index="0" name="value" type="Variant" />
