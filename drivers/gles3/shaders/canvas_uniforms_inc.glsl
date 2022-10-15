@@ -82,6 +82,7 @@ layout(std140) uniform CanvasData { //ubo:0
 	uint pad2;
 };
 
+#ifndef DISABLE_LIGHTING
 #define LIGHT_FLAGS_BLEND_MASK uint(3 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD uint(0 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_SUB uint(1 << 16)
@@ -114,7 +115,7 @@ struct Light {
 layout(std140) uniform LightData { //ubo:2
 	Light light_array[MAX_LIGHTS];
 };
-
+#endif // DISABLE_LIGHTING
 layout(std140) uniform DrawDataInstances { //ubo:3
 
 	DrawData draw_data[MAX_DRAW_DATA_INSTANCES];
