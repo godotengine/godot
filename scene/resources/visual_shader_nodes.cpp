@@ -1642,17 +1642,20 @@ bool VisualShaderNodeLinearSceneDepth::has_output_port_preview(int p_port) const
 
 String VisualShaderNodeLinearSceneDepth::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
+	code += "	{\n";
 
-	code += "	float _log_depth = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).x;\n";
-	code += "	vec3 _depth_ndc = vec3(SCREEN_UV * 2.0 - 1.0, _log_depth);\n";
-	code += "	vec4 _depth_view = INV_PROJECTION_MATRIX * vec4(_depth_ndc, 1.0);\n";
-	code += "	_depth_view.xyz /= _depth_view.w;";
-	code += vformat("	%s = -_depth_view.z;", p_output_vars[0]);
+	code += "		float __log_depth = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).x;\n";
+	code += "		vec3 __depth_ndc = vec3(SCREEN_UV * 2.0 - 1.0, __log_depth);\n";
+	code += "		vec4 __depth_view = INV_PROJECTION_MATRIX * vec4(__depth_ndc, 1.0);\n";
+	code += "		__depth_view.xyz /= __depth_view.w;\n";
+	code += vformat("		%s = -__depth_view.z;\n", p_output_vars[0]);
 
+	code += "	}\n";
 	return code;
 }
 
 VisualShaderNodeLinearSceneDepth::VisualShaderNodeLinearSceneDepth() {
+	simple_decl = false;
 }
 
 ////////////// Float Op
@@ -3204,6 +3207,7 @@ String VisualShaderNodeUVPolarCoord::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeUVPolarCoord::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
+	code += "	{\n";
 
 	String uv;
 	if (p_input_vars[0].is_empty()) {
@@ -3220,17 +3224,18 @@ String VisualShaderNodeUVPolarCoord::generate_code(Shader::Mode p_mode, VisualSh
 	String repeat = vformat("%s", p_input_vars[3]);
 
 	if (p_mode == Shader::MODE_CANVAS_ITEM) {
-		code += vformat("	vec2 __dir = %s - %s;\n", uv, center);
-		code += "	float __radius = length(__dir) * 2.0;\n";
-		code += "	float __angle = atan(__dir.y, __dir.x) * 1.0/(PI * 2.0);\n";
-		code += vformat("	%s = mod(vec2(__radius * %s, __angle * %s), 1.0);\n", p_output_vars[0], zoom, repeat);
+		code += vformat("		vec2 __dir = %s - %s;\n", uv, center);
+		code += "		float __radius = length(__dir) * 2.0;\n";
+		code += "		float __angle = atan(__dir.y, __dir.x) * 1.0 / (PI * 2.0);\n";
+		code += vformat("		%s = mod(vec2(__radius * %s, __angle * %s), 1.0);\n", p_output_vars[0], zoom, repeat);
 	} else {
-		code += vformat("	vec2 __dir = %s - %s;\n", uv, center);
-		code += "	float __radius = length(__dir) * 2.0;\n";
-		code += "	float __angle = atan(__dir.y, __dir.x) * 1.0/(PI * 2.0);\n";
-		code += vformat("	%s = vec2(__radius * %s, __angle * %s);\n", p_output_vars[0], zoom, repeat);
+		code += vformat("		vec2 __dir = %s - %s;\n", uv, center);
+		code += "		float __radius = length(__dir) * 2.0;\n";
+		code += "		float __angle = atan(__dir.y, __dir.x) * 1.0 / (PI * 2.0);\n";
+		code += vformat("		%s = vec2(__radius * %s, __angle * %s);\n", p_output_vars[0], zoom, repeat);
 	}
 
+	code += "	}\n";
 	return code;
 }
 
@@ -3238,6 +3243,8 @@ VisualShaderNodeUVPolarCoord::VisualShaderNodeUVPolarCoord() {
 	set_input_port_default_value(1, Vector2(0.5, 0.5)); // center
 	set_input_port_default_value(2, 1.0); // zoom
 	set_input_port_default_value(3, 1.0); // repeat
+
+	simple_decl = false;
 }
 
 ////////////// Dot Product
@@ -7256,22 +7263,26 @@ bool VisualShaderNodeProximityFade::has_output_port_preview(int p_port) const {
 
 String VisualShaderNodeProximityFade::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
+	code += "	{\n";
 
 	String proximity_fade_distance = vformat("%s", p_input_vars[0]);
-	code += "	float __depth_tex = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).r;\n";
+	code += "		float __depth_tex = textureLod(DEPTH_TEXTURE, SCREEN_UV, 0.0).r;\n";
 	if (!RenderingServer::get_singleton()->is_low_end()) {
-		code += "	vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, __depth_tex, 1.0);\n";
+		code += "		vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, __depth_tex, 1.0);\n";
 	} else {
-		code += "	vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, __depth_tex) * 2.0 - 1.0, 1.0);\n";
+		code += "		vec4 __depth_world_pos = INV_PROJECTION_MATRIX * vec4(vec3(SCREEN_UV, __depth_tex) * 2.0 - 1.0, 1.0);\n";
 	}
-	code += "	__depth_world_pos.xyz /= __depth_world_pos.w;\n";
-	code += vformat("	%s = clamp(1.0 - smoothstep(__depth_world_pos.z + %s, __depth_world_pos.z, VERTEX.z), 0.0, 1.0);\n", p_output_vars[0], p_input_vars[0]);
+	code += "		__depth_world_pos.xyz /= __depth_world_pos.w;\n";
+	code += vformat("		%s = clamp(1.0 - smoothstep(__depth_world_pos.z + %s, __depth_world_pos.z, VERTEX.z), 0.0, 1.0);\n", p_output_vars[0], p_input_vars[0]);
 
+	code += "	}\n";
 	return code;
 }
 
 VisualShaderNodeProximityFade::VisualShaderNodeProximityFade() {
 	set_input_port_default_value(0, 1.0);
+
+	simple_decl = false;
 }
 
 ////////////// Random Range
@@ -7416,11 +7427,11 @@ String VisualShaderNodeRemap::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeRemap::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-
-	code += vformat("	float _input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
-	code += vformat("	float _output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
-	code += vformat("	%s = %s + _output_range * ((%s - %s) / _input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
-
+	code += "	{\n";
+	code += vformat("		float __input_range = %s - %s;\n", p_input_vars[2], p_input_vars[1]);
+	code += vformat("		float __output_range = %s - %s;\n", p_input_vars[4], p_input_vars[3]);
+	code += vformat("		%s = %s + __output_range * ((%s - %s) / __input_range);\n", p_output_vars[0], p_input_vars[3], p_input_vars[0], p_input_vars[1]);
+	code += "	}\n";
 	return code;
 }
 
@@ -7429,4 +7440,6 @@ VisualShaderNodeRemap::VisualShaderNodeRemap() {
 	set_input_port_default_value(2, 1.0);
 	set_input_port_default_value(3, 0.0);
 	set_input_port_default_value(4, 1.0);
+
+	simple_decl = false;
 }
