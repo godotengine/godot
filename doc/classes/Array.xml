@@ -263,6 +263,16 @@
 				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
+		<method name="pick_random">
+			<return type="Variant" />
+			<description>
+				Returns a random value from the target array.
+				[codeblock]
+				var array: Array[int] = [1, 2, 3, 4]
+				print(array.pick_random())  # Prints either of the four numbers.
+				[/codeblock]
+			</description>
+		</method>
 		<method name="pop_at">
 			<return type="Variant" />
 			<argument index="0" name="position" type="int" />

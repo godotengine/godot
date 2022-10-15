@@ -31,6 +31,7 @@
 #include "array.h"
 
 #include "core/hashfuncs.h"
+#include "core/math/math_funcs.h"
 #include "core/object.h"
 #include "core/variant.h"
 #include "core/vector.h"
@@ -406,6 +407,10 @@ Variant Array::pop_front() {
 		return ret;
 	}
 	return Variant();
+}
+Variant Array::pick_random() const {
+	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
+	return operator[](Math::rand() % _p->array.size());
 }
 
 Variant Array::pop_at(int p_pos) {
