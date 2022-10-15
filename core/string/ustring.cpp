@@ -1567,10 +1567,11 @@ String String::num_real(double p_num, bool p_trailing) {
 #else
 	int decimals = 6;
 #endif
-	// We want to align the digits to the above sane default, so we only
-	// need to subtract log10 for numbers with a positive power of ten.
-	if (p_num > 10) {
-		decimals -= (int)floor(log10(p_num));
+	// We want to align the digits to the above sane default, so we only need
+	// to subtract log10 for numbers with a positive power of ten magnitude.
+	double abs_num = Math::abs(p_num);
+	if (abs_num > 10) {
+		decimals -= (int)floor(log10(abs_num));
 	}
 	return num(p_num, decimals);
 }
