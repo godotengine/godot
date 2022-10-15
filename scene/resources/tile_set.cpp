@@ -1801,11 +1801,11 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 				// Get the best tile.
 				Ref<Texture2D> texture = counts[terrain_set][terrain].texture;
 				Rect2i region = counts[terrain_set][terrain].region;
-				image->create(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
+				image->initialize_data(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
 				image->blit_rect(texture->get_image(), region, Point2i());
 				image->resize(p_size.x, p_size.y, Image::INTERPOLATE_NEAREST);
 			} else {
-				image->create(1, 1, false, Image::FORMAT_RGBA8);
+				image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
 				image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
 			}
 			Ref<ImageTexture> icon = ImageTexture::create_from_image(image);
@@ -4602,9 +4602,7 @@ void TileSetAtlasSource::_update_padded_texture() {
 		return;
 	}
 
-	Ref<Image> image;
-	image.instantiate();
-	image->create(size.x, size.y, false, src->get_format());
+	Ref<Image> image = Image::create_empty(size.x, size.y, false, src->get_format());
 
 	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
 		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {

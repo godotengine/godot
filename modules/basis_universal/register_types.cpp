@@ -253,7 +253,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 	};
 
 	image.instantiate();
-	image->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
+	image->set_data(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	return image;
 }

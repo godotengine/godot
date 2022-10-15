@@ -222,12 +222,7 @@ RID XRInterface::get_vrs_texture() {
 					data_ptr[d++] = density;
 				}
 			}
-
-			Ref<Image> image;
-			image.instantiate();
-			image->create_from_data(vrs_sizei.x, vrs_sizei.y, false, Image::FORMAT_R8, data);
-
-			images.push_back(image);
+			images.push_back(Image::create_from_data(vrs_sizei.x, vrs_sizei.y, false, Image::FORMAT_R8, data));
 		}
 
 		if (images.size() == 1) {

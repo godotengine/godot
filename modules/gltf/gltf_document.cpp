@@ -3484,7 +3484,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> state) {
 					height = albedo_texture->get_height();
 					width = albedo_texture->get_width();
 				}
-				orm_image->create(width, height, false, Image::FORMAT_RGBA8);
+				orm_image->initialize_data(width, height, false, Image::FORMAT_RGBA8);
 				if (ao_image.is_valid() && ao_image->get_size() != Vector2(width, height)) {
 					ao_image->resize(width, height, Image::INTERPOLATE_LANCZOS);
 				}
@@ -3860,13 +3860,11 @@ void GLTFDocument::spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss, Re
 	if (r_spec_gloss->diffuse_img.is_null()) {
 		return;
 	}
-	Ref<Image> rm_img;
-	rm_img.instantiate();
 	bool has_roughness = false;
 	bool has_metal = false;
 	p_material->set_roughness(1.0f);
 	p_material->set_metallic(1.0f);
-	rm_img->create(r_spec_gloss->spec_gloss_img->get_width(), r_spec_gloss->spec_gloss_img->get_height(), false, Image::FORMAT_RGBA8);
+	Ref<Image> rm_img = Image::create_empty(r_spec_gloss->spec_gloss_img->get_width(), r_spec_gloss->spec_gloss_img->get_height(), false, Image::FORMAT_RGBA8);
 	r_spec_gloss->spec_gloss_img->decompress();
 	if (r_spec_gloss->diffuse_img.is_valid()) {
 		r_spec_gloss->diffuse_img->decompress();

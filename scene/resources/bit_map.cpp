@@ -639,9 +639,7 @@ void BitMap::resize(const Size2i &p_new_size) {
 }
 
 Ref<Image> BitMap::convert_to_image() const {
-	Ref<Image> image;
-	image.instantiate();
-	image->create(width, height, false, Image::FORMAT_L8);
+	Ref<Image> image = Image::create_empty(width, height, false, Image::FORMAT_L8);
 
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
