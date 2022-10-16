@@ -2435,6 +2435,18 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	return true;
 }
 
+PackedStringArray ScriptEditor::get_unsaved_scripts() const {
+	PackedStringArray unsaved_list;
+
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se->is_unsaved()) {
+			unsaved_list.append(se->get_name());
+		}
+	}
+	return unsaved_list;
+}
+
 void ScriptEditor::save_current_script() {
 	ScriptEditorBase *current = _get_current_editor();
 	if (!current || _test_script_times_on_disk()) {
@@ -4205,6 +4217,24 @@ void ScriptEditorPlugin::make_visible(bool p_visible) {
 void ScriptEditorPlugin::selected_notify() {
 	script_editor->ensure_select_current();
 	_focus_another_editor();
+}
+
+String ScriptEditorPlugin::get_unsaved_status() const {
+	const PackedStringArray unsaved_scripts = script_editor->get_unsaved_scripts();
+	if (unsaved_scripts.is_empty()) {
+		return String();
+	}
+
+	PackedStringArray message;
+	message.resize(unsaved_scripts.size() + 1);
+	message.write[0] = "Save changes to the following script(s) before quitting?";
+
+	int i = 1;
+	for (const String &E : unsaved_scripts) {
+		message.write[i] = E.trim_suffix("(*)");
+		i++;
+	}
+	return String("\n").join(message);
 }
 
 void ScriptEditorPlugin::save_external_data() {
