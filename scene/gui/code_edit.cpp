@@ -2859,7 +2859,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				offset = line_height;
 			}
 
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 			code_completion_options.push_back(option);
 		}
 
@@ -2970,7 +2972,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 
 		if (string_to_complete.length() == 0) {
 			code_completion_options.push_back(option);
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 			continue;
 		}
 
@@ -3076,7 +3080,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_matches);
 				completion_options_subseq.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 		} else if (!*ssq_lower) { // Matched the whole subsequence in s_lower.
 			option.matches.clear();
 
@@ -3093,7 +3099,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 				option.matches.append_array(ssq_lower_matches);
 				completion_options_subseq_casei.push_back(option);
 			}
-			max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			if (font.is_valid()) {
+				max_width = MAX(max_width, font->get_string_size(option.display, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width + offset);
+			}
 		}
 	}
 
