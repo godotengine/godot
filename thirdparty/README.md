@@ -728,7 +728,7 @@ Patches in the `patches` directory should be re-applied after updates.
 ## wayland
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland
-- Version: 1.18.0 (eb1339edd398b9f5328816931e585db4229aa132, 2020)
+- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
 - License: MIT
 
 Files extracted from upstream source:

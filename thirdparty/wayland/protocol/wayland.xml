@@ -179,7 +179,7 @@
       the related request is done.
     </description>
 
-    <event name="done">
+    <event name="done" type="destructor">
       <description summary="done event">
 	Notify the client when the related request is done.
       </description>
@@ -187,7 +187,7 @@
     </event>
   </interface>
 
-  <interface name="wl_compositor" version="4">
+  <interface name="wl_compositor" version="5">
     <description summary="the compositor singleton">
       A compositor.  This object is a singleton global.  The
       compositor is in charge of combining the contents of multiple
@@ -258,6 +258,12 @@
 	for the pool from the file descriptor passed when the pool was
 	created, but using the new size.  This request can only be
 	used to make the pool bigger.
+
+        This request only changes the amount of bytes that are mmapped
+        by the server and does not touch the file corresponding to the
+        file descriptor passed at creation time. It is the client's
+        responsibility to ensure that the file is at least as big as
+        the new pool size.
       </description>
       <arg name="size" type="int" summary="new size of the pool, in bytes"/>
     </request>
@@ -271,8 +277,8 @@
       Clients can create wl_shm_pool objects using the create_pool
       request.
 
-      At connection setup time, the wl_shm object emits one or more
-      format events to inform clients about the valid pixel formats
+      On binding the wl_shm object one or more format events
+      are emitted to inform clients about the valid pixel formats
       that can be used for buffers.
     </description>
 
@@ -296,9 +302,12 @@
 	The drm format codes match the macros defined in drm_fourcc.h, except
 	argb8888 and xrgb8888. The formats actually supported by the compositor
 	will be reported by the format event.
+
+	For all wl_shm formats and unless specified in another protocol
+	extension, pre-multiplied alpha is used for pixel values.
       </description>
       <!-- Note to protocol writers: don't update this list manually, instead
-           run the automated script that keeps it in sync with drm_fourcc.h. -->
+	   run the automated script that keeps it in sync with drm_fourcc.h. -->
       <entry name="argb8888" value="0" summary="32-bit ARGB format, [31:0] A:R:G:B 8:8:8:8 little endian"/>
       <entry name="xrgb8888" value="1" summary="32-bit RGB format, [31:0] x:R:G:B 8:8:8:8 little endian"/>
       <entry name="c8" value="0x20203843" summary="8-bit color index format, [7:0] C"/>
@@ -399,6 +408,14 @@
       <entry name="p010" value="0x30313050" summary="2x2 subsampled Cr:Cb plane 10 bits per channel"/>
       <entry name="p012" value="0x32313050" summary="2x2 subsampled Cr:Cb plane 12 bits per channel"/>
       <entry name="p016" value="0x36313050" summary="2x2 subsampled Cr:Cb plane 16 bits per channel"/>
+      <entry name="axbxgxrx106106106106" value="0x30314241" summary="[63:0] A:x:B:x:G:x:R:x 10:6:10:6:10:6:10:6 little endian"/>
+      <entry name="nv15" value="0x3531564e" summary="2x2 subsampled Cr:Cb plane"/>
+      <entry name="q410" value="0x30313451"/>
+      <entry name="q401" value="0x31303451"/>
+      <entry name="xrgb16161616" value="0x38345258" summary="[63:0] x:R:G:B 16:16:16:16 little endian"/>
+      <entry name="xbgr16161616" value="0x38344258" summary="[63:0] x:B:G:R 16:16:16:16 little endian"/>
+      <entry name="argb16161616" value="0x38345241" summary="[63:0] A:R:G:B 16:16:16:16 little endian"/>
+      <entry name="abgr16161616" value="0x38344241" summary="[63:0] A:B:G:R 16:16:16:16 little endian"/>
     </enum>
 
     <request name="create_pool">
@@ -427,10 +444,15 @@
   <interface name="wl_buffer" version="1">
     <description summary="content for a wl_surface">
       A buffer provides the content for a wl_surface. Buffers are
-      created through factory interfaces such as wl_drm, wl_shm or
-      similar. It has a width and a height and can be attached to a
-      wl_surface, but the mechanism by which a client provides and
-      updates the contents is defined by the buffer factory interface.
+      created through factory interfaces such as wl_shm, wp_linux_buffer_params
+      (from the linux-dmabuf protocol extension) or similar. It has a width and
+      a height and can be attached to a wl_surface, but the mechanism by which a
+      client provides and updates the contents is defined by the buffer factory
+      interface.
+
+      If the buffer uses a format that has an alpha channel, the alpha channel
+      is assumed to be premultiplied in the color channels unless otherwise
+      specified.
     </description>
 
     <request name="destroy" type="destructor">
@@ -594,9 +616,9 @@
 	will be raised otherwise.
       </description>
       <arg name="dnd_actions" type="uint" summary="actions supported by the destination client"
-           enum="wl_data_device_manager.dnd_action"/>
+	   enum="wl_data_device_manager.dnd_action"/>
       <arg name="preferred_action" type="uint" summary="action preferred by the destination client"
-           enum="wl_data_device_manager.dnd_action"/>
+	   enum="wl_data_device_manager.dnd_action"/>
     </request>
 
     <event name="source_actions" since="3">
@@ -606,7 +628,7 @@
 	side changes its offered actions through wl_data_source.set_actions.
       </description>
       <arg name="source_actions" type="uint" summary="actions offered by the data source"
-           enum="wl_data_device_manager.dnd_action"/>
+	   enum="wl_data_device_manager.dnd_action"/>
     </event>
 
     <event name="action" since="3">
@@ -648,7 +670,7 @@
 	must happen before the call to wl_data_offer.finish.
       </description>
       <arg name="dnd_action" type="uint" summary="action selected by the compositor"
-           enum="wl_data_device_manager.dnd_action"/>
+	   enum="wl_data_device_manager.dnd_action"/>
     </event>
   </interface>
 
@@ -746,7 +768,7 @@
 	for drag-and-drop will raise a protocol error.
       </description>
       <arg name="dnd_actions" type="uint" summary="actions supported by the data source"
-           enum="wl_data_device_manager.dnd_action"/>
+	   enum="wl_data_device_manager.dnd_action"/>
     </request>
 
     <event name="dnd_drop_performed" since="3">
@@ -803,7 +825,7 @@
 	they reflect the current action.
       </description>
       <arg name="dnd_action" type="uint" summary="action selected by the compositor"
-           enum="wl_data_device_manager.dnd_action"/>
+	   enum="wl_data_device_manager.dnd_action"/>
     </event>
   </interface>
 
@@ -829,7 +851,8 @@
 	for the eventual data transfer. If source is NULL, enter, leave
 	and motion events are sent only to the client that initiated the
 	drag and the client is expected to handle the data passing
-	internally.
+	internally. If source is destroyed, the drag-and-drop session will be
+	cancelled.
 
 	The origin surface is the surface where the drag originates and
 	the client must have an active implicit grab that matches the
@@ -873,7 +896,7 @@
 	which will subsequently be used in either the
 	data_device.enter event (for drag-and-drop) or the
 	data_device.selection event (for selections).  Immediately
-	following the data_device_data_offer event, the new data_offer
+	following the data_device.data_offer event, the new data_offer
 	object will send out data_offer.offer events to describe the
 	mime types it offers.
       </description>
@@ -943,9 +966,10 @@
 	immediately before receiving keyboard focus and when a new
 	selection is set while the client has keyboard focus.  The
 	data_offer is valid until a new data_offer or NULL is received
-	or until the client loses keyboard focus.  The client must
-	destroy the previous selection data_offer, if any, upon receiving
-	this event.
+	or until the client loses keyboard focus.  Switching surface with
+	keyboard focus within the same client doesn't mean a new selection
+	will be sent.  The client must destroy the previous selection
+	data_offer, if any, upon receiving this event.
       </description>
       <arg name="id" type="object" interface="wl_data_offer" allow-null="true"
 	   summary="selection data_offer object"/>
@@ -1033,7 +1057,8 @@
       a basic surface.
 
       Note! This protocol is deprecated and not intended for production use.
-      For desktop-style user interfaces, use xdg_shell.
+      For desktop-style user interfaces, use xdg_shell. Compositors and clients
+      should not implement this interface.
     </description>
 
     <enum name="error">
@@ -1327,7 +1352,7 @@
     </event>
   </interface>
 
-  <interface name="wl_surface" version="4">
+  <interface name="wl_surface" version="5">
     <description summary="an onscreen surface">
       A surface is a rectangular area that may be displayed on zero
       or more outputs, and shown any number of times at the compositor's
@@ -1378,6 +1403,8 @@
       </description>
       <entry name="invalid_scale" value="0" summary="buffer scale value is invalid"/>
       <entry name="invalid_transform" value="1" summary="buffer transform value is invalid"/>
+      <entry name="invalid_size" value="2" summary="buffer size is invalid"/>
+      <entry name="invalid_offset" value="3" summary="buffer offset is invalid"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -1392,14 +1419,22 @@
 
 	The new size of the surface is calculated based on the buffer
 	size transformed by the inverse buffer_transform and the
-	inverse buffer_scale. This means that the supplied buffer
-	must be an integer multiple of the buffer_scale.
+	inverse buffer_scale. This means that at commit time the supplied
+	buffer size must be an integer multiple of the buffer_scale. If
+	that's not the case, an invalid_size error is sent.
 
 	The x and y arguments specify the location of the new pending
 	buffer's upper left corner, relative to the current buffer's upper
 	left corner, in surface-local coordinates. In other words, the
 	x and y, combined with the new surface size define in which
-	directions the surface's size changes.
+	directions the surface's size changes. Setting anything other than 0
+	as x and y arguments is discouraged, and should instead be replaced
+	with using the separate wl_surface.offset request.
+
+	When the bound wl_surface version is 5 or higher, passing any
+	non-zero x or y is a protocol violation, and will result in an
+	'invalid_offset' error being raised. To achieve equivalent semantics,
+	use wl_surface.offset.
 
 	Surface contents are double-buffered state, see wl_surface.commit.
 
@@ -1427,9 +1462,12 @@
 	from the same backing storage or use wp_linux_buffer_release.
 
 	Destroying the wl_buffer after wl_buffer.release does not change
-	the surface contents. However, if the client destroys the
-	wl_buffer before receiving the wl_buffer.release event, the surface
-	contents become undefined immediately.
+	the surface contents. Destroying the wl_buffer before wl_buffer.release
+	is allowed as long as the underlying buffer storage isn't re-used (this
+	can happen e.g. on client process termination). However, if the client
+	destroys the wl_buffer before receiving the wl_buffer.release event and
+	mutates the underlying buffer storage, the surface contents become
+	undefined immediately.
 
 	If wl_surface.attach is sent with a NULL wl_buffer, the
 	following wl_surface.commit will remove the surface content.
@@ -1606,6 +1644,12 @@
 	This is emitted whenever a surface's creation, movement, or resizing
 	results in it no longer having any part of it within the scanout region
 	of an output.
+
+	Clients should not use the number of outputs the surface is on for frame
+	throttling purposes. The surface might be hidden even if no leave event
+	has been sent, and the compositor might expect new surface content
+	updates even if no enter event has been sent. The frame event should be
+	used instead.
       </description>
       <arg name="output" type="object" interface="wl_output" summary="output left by the surface"/>
     </event>
@@ -1721,9 +1765,30 @@
       <arg name="width" type="int" summary="width of damage rectangle"/>
       <arg name="height" type="int" summary="height of damage rectangle"/>
     </request>
+
+    <!-- Version 5 additions -->
+
+    <request name="offset" since="5">
+      <description summary="set the surface contents offset">
+	The x and y arguments specify the location of the new pending
+	buffer's upper left corner, relative to the current buffer's upper
+	left corner, in surface-local coordinates. In other words, the
+	x and y, combined with the new surface size define in which
+	directions the surface's size changes.
+
+	Surface location offset is double-buffered state, see
+	wl_surface.commit.
+
+	This request is semantically equivalent to and the replaces the x and y
+	arguments in the wl_surface.attach request in wl_surface versions prior
+	to 5. See wl_surface.attach for details.
+      </description>
+      <arg name="x" type="int" summary="surface-local x coordinate"/>
+      <arg name="y" type="int" summary="surface-local y coordinate"/>
+    </request>
    </interface>
 
-  <interface name="wl_seat" version="7">
+  <interface name="wl_seat" version="8">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1739,6 +1804,14 @@
       <entry name="pointer" value="1" summary="the seat has pointer devices"/>
       <entry name="keyboard" value="2" summary="the seat has one or more keyboards"/>
       <entry name="touch" value="4" summary="the seat has touch devices"/>
+    </enum>
+
+    <enum name="error">
+      <description summary="wl_seat error values">
+	These errors can be emitted in response to wl_seat requests.
+      </description>
+      <entry name="missing_capability" value="0"
+	     summary="get_pointer, get_keyboard or get_touch called on seat without the matching capability"/>
     </enum>
 
     <event name="capabilities">
@@ -1779,7 +1852,8 @@
 	This request only takes effect if the seat has the pointer
 	capability, or has had the pointer capability in the past.
 	It is a protocol violation to issue this request on a seat that has
-	never had the pointer capability.
+	never had the pointer capability. The missing_capability error will
+	be sent in this case.
       </description>
       <arg name="id" type="new_id" interface="wl_pointer" summary="seat pointer"/>
     </request>
@@ -1792,7 +1866,8 @@
 	This request only takes effect if the seat has the keyboard
 	capability, or has had the keyboard capability in the past.
 	It is a protocol violation to issue this request on a seat that has
-	never had the keyboard capability.
+	never had the keyboard capability. The missing_capability error will
+	be sent in this case.
       </description>
       <arg name="id" type="new_id" interface="wl_keyboard" summary="seat keyboard"/>
     </request>
@@ -1805,7 +1880,8 @@
 	This request only takes effect if the seat has the touch
 	capability, or has had the touch capability in the past.
 	It is a protocol violation to issue this request on a seat that has
-	never had the touch capability.
+	never had the touch capability. The missing_capability error will
+	be sent in this case.
       </description>
       <arg name="id" type="new_id" interface="wl_touch" summary="seat touch interface"/>
     </request>
@@ -1814,9 +1890,22 @@
 
     <event name="name" since="2">
       <description summary="unique identifier for this seat">
-	In a multiseat configuration this can be used by the client to help
-	identify which physical devices the seat represents. Based on
-	the seat configuration used by the compositor.
+	In a multi-seat configuration the seat name can be used by clients to
+	help identify which physical devices the seat represents.
+
+	The seat name is a UTF-8 string with no convention defined for its
+	contents. Each name is unique among all wl_seat globals. The name is
+	only guaranteed to be unique for the current compositor instance.
+
+	The same seat names are used for all clients. Thus, the name can be
+	shared across processes to refer to a specific wl_seat global.
+
+	The name event is sent after binding to the seat global. This event is
+	only sent once per seat object, and the name does not change over the
+	lifetime of the wl_seat global.
+
+	Compositors may re-use the same seat name if the wl_seat global is
+	destroyed and re-created later.
       </description>
       <arg name="name" type="string" summary="seat identifier"/>
     </event>
@@ -1832,7 +1921,7 @@
 
   </interface>
 
-  <interface name="wl_pointer" version="7">
+  <interface name="wl_pointer" version="8">
     <description summary="pointer input device">
       The wl_pointer interface represents one or more input devices,
       such as mice, which control the pointer location and pointer_focus
@@ -1881,6 +1970,10 @@
 	wl_surface is no longer used as the cursor. When the use as a
 	cursor ends, the current and pending input regions become
 	undefined, and the wl_surface is unmapped.
+
+	The serial parameter must match the latest wl_pointer.enter
+	serial number sent to the client. Otherwise the request will be
+	ignored.
       </description>
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"
@@ -2128,6 +2221,9 @@
 	This event carries the axis value of the wl_pointer.axis event in
 	discrete steps (e.g. mouse wheel clicks).
 
+	This event is deprecated with wl_pointer version 8 - this event is not
+	sent to clients supporting version 8 or later.
+
 	This event does not occur on its own, it is coupled with a
 	wl_pointer.axis event that represents this axis value on a
 	continuous scale. The protocol guarantees that each axis_discrete
@@ -2135,7 +2231,8 @@
 	axis number within the same wl_pointer.frame. Note that the protocol
 	allows for other events to occur between the axis_discrete and
 	its coupled axis event, including other axis_discrete or axis
-	events.
+	events. A wl_pointer.frame must not contain more than one axis_discrete
+	event per axis type.
 
 	This event is optional; continuous scrolling devices
 	like two-finger scrolling on touchpads do not have discrete
@@ -2153,9 +2250,37 @@
       <arg name="axis" type="uint" enum="axis" summary="axis type"/>
       <arg name="discrete" type="int" summary="number of steps"/>
     </event>
+
+    <event name="axis_value120" since="8">
+      <description summary="axis high-resolution scroll event">
+	Discrete high-resolution scroll information.
+
+	This event carries high-resolution wheel scroll information,
+	with each multiple of 120 representing one logical scroll step
+	(a wheel detent). For example, an axis_value120 of 30 is one quarter of
+	a logical scroll step in the positive direction, a value120 of
+	-240 are two logical scroll steps in the negative direction within the
+	same hardware event.
+	Clients that rely on discrete scrolling should accumulate the
+	value120 to multiples of 120 before processing the event.
+
+	The value120 must not be zero.
+
+	This event replaces the wl_pointer.axis_discrete event in clients
+	supporting wl_pointer version 8 or later.
+
+	Where a wl_pointer.axis_source event occurs in the same
+	wl_pointer.frame, the axis source applies to this event.
+
+	The order of wl_pointer.axis_value120 and wl_pointer.axis_source is
+	not guaranteed.
+      </description>
+      <arg name="axis" type="uint" enum="axis" summary="axis type"/>
+      <arg name="value120" type="int" summary="scroll distance as fraction of 120"/>
+    </event>
   </interface>
 
-  <interface name="wl_keyboard" version="7">
+  <interface name="wl_keyboard" version="8">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
@@ -2169,13 +2294,14 @@
       <entry name="no_keymap" value="0"
 	     summary="no keymap; client must understand how to interpret the raw keycode"/>
       <entry name="xkb_v1" value="1"
-	     summary="libxkbcommon compatible; to determine the xkb keycode, clients must add 8 to the key event keycode"/>
+	     summary="libxkbcommon compatible, null-terminated string; to determine the xkb keycode, clients must add 8 to the key event keycode"/>
     </enum>
 
     <event name="keymap">
       <description summary="keyboard mapping">
 	This event provides a file descriptor to the client which can be
-	memory-mapped to provide a keyboard mapping description.
+	memory-mapped in read-only mode to provide a keyboard mapping
+	description.
 
 	From version 7 onwards, the fd must be mapped with MAP_PRIVATE by
 	the recipient, as MAP_SHARED may fail.
@@ -2189,6 +2315,9 @@
       <description summary="enter event">
 	Notification that this seat's keyboard focus is on a certain
 	surface.
+
+	The compositor must send the wl_keyboard.modifiers event after this
+	event.
       </description>
       <arg name="serial" type="uint" summary="serial number of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface gaining keyboard focus"/>
@@ -2202,6 +2331,9 @@
 
 	The leave notification is sent before the enter notification
 	for the new focus.
+
+	After this event client must assume that all keys, including modifiers,
+	are lifted and also it must stop key repeating if there's some going on.
       </description>
       <arg name="serial" type="uint" summary="serial number of the leave event"/>
       <arg name="surface" type="object" interface="wl_surface" summary="surface that lost keyboard focus"/>
@@ -2220,6 +2352,12 @@
 	A key was pressed or released.
 	The time argument is a timestamp with millisecond
 	granularity, with an undefined base.
+
+	The key is a platform-specific key code that can be interpreted
+	by feeding it to the keyboard mapping (see the keymap event).
+
+	If this event produces a change in modifiers, then the resulting
+	wl_keyboard.modifiers event must be sent after this event.
       </description>
       <arg name="serial" type="uint" summary="serial number of the key event"/>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
@@ -2269,7 +2407,7 @@
     </event>
   </interface>
 
-  <interface name="wl_touch" version="7">
+  <interface name="wl_touch" version="8">
     <description summary="touchscreen input device">
       The wl_touch interface represents a touchscreen
       associated with a seat.
@@ -2413,7 +2551,7 @@
     </event>
   </interface>
 
-  <interface name="wl_output" version="3">
+  <interface name="wl_output" version="4">
     <description summary="compositor output region">
       An output describes part of the compositor geometry.  The
       compositor works in the 'compositor coordinate system' and an
@@ -2469,12 +2607,15 @@
 	The physical size can be set to zero if it doesn't make sense for this
 	output (e.g. for projectors or virtual outputs).
 
+	The geometry event will be followed by a done event (starting from
+	version 2).
+
 	Note: wl_output only advertises partial information about the output
 	position and identification. Some compositors, for instance those not
 	implementing a desktop-style output layout or those exposing virtual
 	outputs, might fake this information. Instead of using x and y, clients
 	should use xdg_output.logical_position. Instead of using make and model,
-	clients should use xdg_output.name and xdg_output.description.
+	clients should use name and description.
       </description>
       <arg name="x" type="int"
 	   summary="x position within the global compositor space"/>
@@ -2515,6 +2656,10 @@
 	current.  In other words, the current mode is always the last
 	mode that was received with the current flag set.
 
+	Non-current modes are deprecated. A compositor can decide to only
+	advertise the current mode and never send other modes. Clients
+	should not rely on non-current modes.
+
 	The size of a mode is given in physical hardware units of
 	the output device. This is not necessarily the same as
 	the output size in the global compositor space. For instance,
@@ -2525,6 +2670,9 @@
 
 	The vertical refresh rate can be set to zero if it doesn't make
 	sense for this output (e.g. for virtual outputs).
+
+	The mode event will be followed by a done event (starting from
+	version 2).
 
 	Clients should not use the refresh rate to schedule frames. Instead,
 	they should use the wl_surface.frame event or the presentation-time
@@ -2572,6 +2720,8 @@
 	the scale of the output. That way the compositor can
 	avoid scaling the surface, and the client can supply
 	a higher detail image.
+
+	The scale event will be followed by a done event.
       </description>
       <arg name="factor" type="int" summary="scaling factor of output"/>
     </event>
@@ -2584,6 +2734,62 @@
 	use the output object anymore.
       </description>
     </request>
+
+    <!-- Version 4 additions -->
+
+    <event name="name" since="4">
+      <description summary="name of this output">
+	Many compositors will assign user-friendly names to their outputs, show
+	them to the user, allow the user to refer to an output, etc. The client
+	may wish to know this name as well to offer the user similar behaviors.
+
+	The name is a UTF-8 string with no convention defined for its contents.
+	Each name is unique among all wl_output globals. The name is only
+	guaranteed to be unique for the compositor instance.
+
+	The same output name is used for all clients for a given wl_output
+	global. Thus, the name can be shared across processes to refer to a
+	specific wl_output global.
+
+	The name is not guaranteed to be persistent across sessions, thus cannot
+	be used to reliably identify an output in e.g. configuration files.
+
+	Examples of names include 'HDMI-A-1', 'WL-1', 'X11-1', etc. However, do
+	not assume that the name is a reflection of an underlying DRM connector,
+	X11 connection, etc.
+
+	The name event is sent after binding the output object. This event is
+	only sent once per output object, and the name does not change over the
+	lifetime of the wl_output global.
+
+	Compositors may re-use the same output name if the wl_output global is
+	destroyed and re-created later. Compositors should avoid re-using the
+	same name if possible.
+
+	The name event will be followed by a done event.
+      </description>
+      <arg name="name" type="string" summary="output name"/>
+    </event>
+
+    <event name="description" since="4">
+      <description summary="human-readable description of this output">
+	Many compositors can produce human-readable descriptions of their
+	outputs. The client may wish to know this description as well, e.g. for
+	output selection purposes.
+
+	The description is a UTF-8 string with no convention defined for its
+	contents. The description is not guaranteed to be unique among all
+	wl_output globals. Examples might include 'Foocorp 11" Display' or
+	'Virtual X11 output via :1'.
+
+	The description event is sent after binding the output object and
+	whenever the description changes. The description is optional, and may
+	not be sent at all.
+
+	The description event will be followed by a done event.
+      </description>
+      <arg name="description" type="string" summary="output description"/>
+    </event>
   </interface>
 
   <interface name="wl_region" version="1">
@@ -2707,7 +2913,7 @@
       wl_surface state directly. A sub-surface is initially in the
       synchronized mode.
 
-      Sub-surfaces have also other kind of state, which is managed by
+      Sub-surfaces also have another kind of state, which is managed by
       wl_subsurface requests, as opposed to wl_surface requests. This
       state includes the sub-surface position relative to the parent
       surface (wl_subsurface.set_position), and the stacking order of
