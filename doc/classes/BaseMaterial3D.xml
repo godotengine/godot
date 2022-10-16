@@ -305,7 +305,7 @@
 		<member name="proximity_fade_distance" type="float" setter="set_proximity_fade_distance" getter="get_proximity_fade_distance" default="1.0">
 			Distance over which the fade effect takes place. The larger the distance the longer it takes for an object to fade.
 		</member>
-		<member name="proximity_fade_enable" type="bool" setter="set_proximity_fade" getter="is_proximity_fade_enabled" default="false">
+		<member name="proximity_fade_enabled" type="bool" setter="set_proximity_fade_enabled" getter="is_proximity_fade_enabled" default="false">
 			If [code]true[/code], the proximity fade effect is enabled. The proximity fade effect fades out each pixel based on its distance to another object.
 		</member>
 		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">

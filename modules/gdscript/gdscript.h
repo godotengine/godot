@@ -342,7 +342,7 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	friend class GDScriptInstance;
 
-	Mutex lock;
+	Mutex mutex;
 
 	friend class GDScript;
 

@@ -48,15 +48,119 @@
 
 VulkanHooks *VulkanContext::vulkan_hooks = nullptr;
 
-VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateInfo2 *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkRenderPass *pRenderPass) {
-	if (fpCreateRenderPass2KHR == nullptr) {
-		fpCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)vkGetInstanceProcAddr(inst, "vkCreateRenderPass2KHR");
+Vector<VkAttachmentReference> VulkanContext::_convert_VkAttachmentReference2(uint32_t p_count, const VkAttachmentReference2 *p_refs) {
+	Vector<VkAttachmentReference> att_refs;
+
+	if (p_refs != nullptr) {
+		for (uint32_t i = 0; i < p_count; i++) {
+			// We lose aspectMask in this conversion but we don't use it currently.
+
+			VkAttachmentReference ref = {
+				p_refs[i].attachment, /* attachment */
+				p_refs[i].layout /* layout */
+			};
+
+			att_refs.push_back(ref);
+		}
 	}
 
-	if (fpCreateRenderPass2KHR == nullptr) {
-		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	return att_refs;
+}
+
+VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRenderPassCreateInfo2 *p_create_info, const VkAllocationCallbacks *p_allocator, VkRenderPass *p_render_pass) {
+	if (has_renderpass2_ext) {
+		if (fpCreateRenderPass2KHR == nullptr) {
+			fpCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)vkGetDeviceProcAddr(p_device, "vkCreateRenderPass2KHR");
+		}
+
+		if (fpCreateRenderPass2KHR == nullptr) {
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		} else {
+			return (fpCreateRenderPass2KHR)(p_device, p_create_info, p_allocator, p_render_pass);
+		}
 	} else {
-		return (fpCreateRenderPass2KHR)(device, pCreateInfo, pAllocator, pRenderPass);
+		// need to fall back on vkCreateRenderPass
+
+		const void *next = p_create_info->pNext; // ATM we only support multiview which should work if supported.
+
+		Vector<VkAttachmentDescription> attachments;
+		for (uint32_t i = 0; i < p_create_info->attachmentCount; i++) {
+			// Basically the old layout just misses type and next.
+			VkAttachmentDescription att = {
+				p_create_info->pAttachments[i].flags, /* flags */
+				p_create_info->pAttachments[i].format, /* format */
+				p_create_info->pAttachments[i].samples, /* samples */
+				p_create_info->pAttachments[i].loadOp, /* loadOp */
+				p_create_info->pAttachments[i].storeOp, /* storeOp */
+				p_create_info->pAttachments[i].stencilLoadOp, /* stencilLoadOp */
+				p_create_info->pAttachments[i].stencilStoreOp, /* stencilStoreOp */
+				p_create_info->pAttachments[i].initialLayout, /* initialLayout */
+				p_create_info->pAttachments[i].finalLayout /* finalLayout */
+			};
+
+			attachments.push_back(att);
+		}
+
+		Vector<VkSubpassDescription> subpasses;
+		for (uint32_t i = 0; i < p_create_info->subpassCount; i++) {
+			// Here we need to do more, again it's just stripping out type and next
+			// but we have VkAttachmentReference2 to convert to VkAttachmentReference.
+			// Also viewmask is not supported but we don't use it outside of multiview.
+
+			Vector<VkAttachmentReference> input_attachments = _convert_VkAttachmentReference2(p_create_info->pSubpasses[i].inputAttachmentCount, p_create_info->pSubpasses[i].pInputAttachments);
+			Vector<VkAttachmentReference> color_attachments = _convert_VkAttachmentReference2(p_create_info->pSubpasses[i].colorAttachmentCount, p_create_info->pSubpasses[i].pColorAttachments);
+			Vector<VkAttachmentReference> resolve_attachments = _convert_VkAttachmentReference2(p_create_info->pSubpasses[i].colorAttachmentCount, p_create_info->pSubpasses[i].pResolveAttachments);
+			Vector<VkAttachmentReference> depth_attachments = _convert_VkAttachmentReference2(p_create_info->pSubpasses[i].colorAttachmentCount, p_create_info->pSubpasses[i].pDepthStencilAttachment);
+
+			VkSubpassDescription subpass = {
+				p_create_info->pSubpasses[i].flags, /* flags */
+				p_create_info->pSubpasses[i].pipelineBindPoint, /* pipelineBindPoint */
+				p_create_info->pSubpasses[i].inputAttachmentCount, /* inputAttachmentCount */
+				input_attachments.size() == 0 ? nullptr : input_attachments.ptr(), /* pInputAttachments */
+				p_create_info->pSubpasses[i].colorAttachmentCount, /* colorAttachmentCount */
+				color_attachments.size() == 0 ? nullptr : color_attachments.ptr(), /* pColorAttachments */
+				resolve_attachments.size() == 0 ? nullptr : resolve_attachments.ptr(), /* pResolveAttachments */
+				depth_attachments.size() == 0 ? nullptr : depth_attachments.ptr(), /* pDepthStencilAttachment */
+				p_create_info->pSubpasses[i].preserveAttachmentCount, /* preserveAttachmentCount */
+				p_create_info->pSubpasses[i].pPreserveAttachments /* pPreserveAttachments */
+			};
+
+			subpasses.push_back(subpass);
+		}
+
+		Vector<VkSubpassDependency> dependencies;
+		for (uint32_t i = 0; i < p_create_info->dependencyCount; i++) {
+			// We lose viewOffset here but again I don't believe we use this anywhere.
+			VkSubpassDependency dep = {
+				p_create_info->pDependencies[i].srcSubpass, /* srcSubpass */
+				p_create_info->pDependencies[i].dstSubpass, /* dstSubpass */
+				p_create_info->pDependencies[i].srcStageMask, /* srcStageMask */
+				p_create_info->pDependencies[i].dstStageMask, /* dstStageMask */
+				p_create_info->pDependencies[i].srcAccessMask, /* srcAccessMask */
+				p_create_info->pDependencies[i].dstAccessMask, /* dstAccessMask */
+				p_create_info->pDependencies[i].dependencyFlags, /* dependencyFlags */
+			};
+
+			dependencies.push_back(dep);
+		}
+
+		// CorrelatedViewMask is not supported in vkCreateRenderPass but we
+		// currently only use this for multiview.
+		// We'll need to look into this.
+
+		VkRenderPassCreateInfo create_info = {
+			VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, /* sType */
+			next, /* pNext*/
+			p_create_info->flags, /* flags */
+			(uint32_t)attachments.size(), /* attachmentCount */
+			attachments.ptr(), /* pAttachments */
+			(uint32_t)subpasses.size(), /* subpassCount */
+			subpasses.ptr(), /* pSubpasses */
+			(uint32_t)dependencies.size(), /* */
+			dependencies.ptr(), /* */
+		};
+
+		return vkCreateRenderPass(device, &create_info, p_allocator, p_render_pass);
 	}
 }
 
@@ -84,19 +188,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(
 			strstr(pCallbackData->pMessage, "must be a memory object") != nullptr) {
 		return VK_FALSE;
 	}
-
-	// Workaround for Vulkan-Loader usability bug: https://github.com/KhronosGroup/Vulkan-Loader/issues/262.
-	if (strstr(pCallbackData->pMessage, "wrong ELF class: ELFCLASS32") != nullptr) {
-		return VK_FALSE;
-	}
-
-#ifdef WINDOWS_ENABLED
-	// Some software installs Vulkan overlays in Windows registry and never cleans them up on uninstall.
-	// So we get spammy error level messages from the loader about those - make them verbose instead.
-	if (strstr(pCallbackData->pMessage, "loader_get_json: Failed to open JSON file") != nullptr) {
-		messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
-	}
-#endif
 
 	if (pCallbackData->pMessageIdName && strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != nullptr) {
 		return VK_FALSE;
@@ -320,6 +411,16 @@ Error VulkanContext::_initialize_extensions() {
 	VkBool32 platformSurfaceExtFound = 0;
 	memset(extension_names, 0, sizeof(extension_names));
 
+	// Only enable debug utils in verbose mode or DEV_ENABLED.
+	// End users would get spammed with messages of varying verbosity due to the
+	// mess that thirdparty layers/extensions and drivers seem to leave in their
+	// wake, making the Windows registry a bottomless pit of broken layer JSON.
+#ifdef DEV_ENABLED
+	bool want_debug_utils = true;
+#else
+	bool want_debug_utils = OS::get_singleton()->is_stdout_verbose();
+#endif
+
 	VkResult err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
 	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, ERR_CANT_CREATE);
 
@@ -347,8 +448,10 @@ Error VulkanContext::_initialize_extensions() {
 				}
 			}
 			if (!strcmp(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instance_extensions[i].extensionName)) {
-				extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-				enabled_debug_utils = true;
+				if (want_debug_utils) {
+					extension_names[enabled_extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+					enabled_debug_utils = true;
+				}
 			}
 			if (!strcmp(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instance_extensions[i].extensionName)) {
 				extension_names[enabled_extension_count++] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
@@ -1061,6 +1164,7 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 				extension_names[enabled_extension_count++] = VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME;
 			}
 			if (!strcmp(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, device_extensions[i].extensionName)) {
+				has_renderpass2_ext = true;
 				extension_names[enabled_extension_count++] = VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME;
 			}
 			if (enabled_extension_count >= MAX_EXTENSIONS) {
@@ -2261,8 +2365,6 @@ Error VulkanContext::swap_buffers() {
 		}
 	}
 #endif
-	static int total_frames = 0;
-	total_frames++;
 	//	print_line("current buffer:  " + itos(current_buffer));
 	err = fpQueuePresentKHR(present_queue, &present);
 

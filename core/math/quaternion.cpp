@@ -31,7 +31,7 @@
 #include "quaternion.h"
 
 #include "core/math/basis.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 real_t Quaternion::angle_to(const Quaternion &p_to) const {
 	real_t d = dot(p_to);
@@ -77,6 +77,10 @@ Quaternion Quaternion::operator*(const Quaternion &p_q) const {
 
 bool Quaternion::is_equal_approx(const Quaternion &p_quaternion) const {
 	return Math::is_equal_approx(x, p_quaternion.x) && Math::is_equal_approx(y, p_quaternion.y) && Math::is_equal_approx(z, p_quaternion.z) && Math::is_equal_approx(w, p_quaternion.w);
+}
+
+bool Quaternion::is_finite() const {
+	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z) && Math::is_finite(w);
 }
 
 real_t Quaternion::length() const {

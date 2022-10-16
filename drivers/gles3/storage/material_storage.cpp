@@ -714,7 +714,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				Projection v = value;
 				for (int i = 0; i < 4; i++) {
 					for (int j = 0; j < 4; j++) {
-						gui[i * 4 + j] = v.matrix[i][j];
+						gui[i * 4 + j] = v.columns[i][j];
 					}
 				}
 			}
@@ -897,7 +897,9 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 		case ShaderLanguage::TYPE_BVEC3:
 		case ShaderLanguage::TYPE_IVEC3:
 		case ShaderLanguage::TYPE_UVEC3:
-		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_VEC3: {
+			memset(data, 0, 12 * p_array_size);
+		} break;
 		case ShaderLanguage::TYPE_BVEC4:
 		case ShaderLanguage::TYPE_IVEC4:
 		case ShaderLanguage::TYPE_UVEC4:
@@ -1393,7 +1395,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["TEXTURE"] = "color_texture";
-		actions.renames["TEXTURE_PIXEL_SIZE"] = "draw_data.color_texture_pixel_size";
+		actions.renames["TEXTURE_PIXEL_SIZE"] = "color_texture_pixel_size";
 		actions.renames["NORMAL_TEXTURE"] = "normal_texture";
 		actions.renames["SPECULAR_SHININESS_TEXTURE"] = "specular_texture";
 		actions.renames["SPECULAR_SHININESS"] = "specular_shininess";

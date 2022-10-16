@@ -44,7 +44,7 @@ class EditorUndoRedoManager;
 class GroupDialog : public AcceptDialog {
 	GDCLASS(GroupDialog, AcceptDialog);
 
-	ConfirmationDialog *error = nullptr;
+	AcceptDialog *error = nullptr;
 
 	SceneTree *scene_tree = nullptr;
 	TreeItem *groups_root = nullptr;
@@ -88,8 +88,6 @@ class GroupDialog : public AcceptDialog {
 	void _modify_group_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _delete_group_item(const String &p_name);
 
-	bool _can_edit(Node *p_node, String p_group);
-
 	void _load_groups(Node *p_current);
 	void _load_nodes(Node *p_current);
 
@@ -113,8 +111,10 @@ class GroupsEditor : public VBoxContainer {
 	GDCLASS(GroupsEditor, VBoxContainer);
 
 	Node *node = nullptr;
+	TreeItem *groups_root = nullptr;
 
 	GroupDialog *group_dialog = nullptr;
+	AcceptDialog *error = nullptr;
 
 	LineEdit *group_name = nullptr;
 	Button *add = nullptr;
@@ -122,10 +122,15 @@ class GroupsEditor : public VBoxContainer {
 
 	Ref<EditorUndoRedoManager> undo_redo;
 
+	String selected_group;
+
 	void update_tree();
 	void _add_group(const String &p_group = "");
 	void _modify_group(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _group_name_changed(const String &p_new_text);
+
+	void _group_selected();
+	void _group_renamed();
 
 	void _show_group_dialog();
 

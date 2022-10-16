@@ -159,6 +159,7 @@ private:
 		}
 	};
 
+	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
 		// Global relations.
 
@@ -217,6 +218,8 @@ private:
 		NodePath focus_neighbor[4];
 		NodePath focus_next;
 		NodePath focus_prev;
+
+		ObjectID shortcut_context;
 
 		// Theming.
 
@@ -486,6 +489,10 @@ public:
 	bool is_force_pass_scroll_events() const;
 
 	void warp_mouse(const Point2 &p_position);
+
+	bool is_focus_owner_in_shortcut_context() const;
+	void set_shortcut_context(const Node *p_node);
+	Node *get_shortcut_context() const;
 
 	// Drag and drop handling.
 

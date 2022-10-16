@@ -79,10 +79,8 @@ RemoteDebuggerPeerTCP::RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_tcp) {
 	tcp_client = p_tcp;
 	if (tcp_client.is_valid()) { // Attaching to an already connected stream.
 		connected = true;
-#ifndef NO_THREADS
 		running = true;
 		thread.start(_thread_func, this);
-#endif
 	} else {
 		tcp_client.instantiate();
 	}
@@ -183,10 +181,8 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 		return FAILED;
 	}
 	connected = true;
-#ifndef NO_THREADS
 	running = true;
 	thread.start(_thread_func, this);
-#endif
 	return OK;
 }
 
@@ -208,9 +204,7 @@ void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 }
 
 void RemoteDebuggerPeerTCP::poll() {
-#ifdef NO_THREADS
-	_poll();
-#endif
+	// Nothing to do, polling is done in thread.
 }
 
 void RemoteDebuggerPeerTCP::_poll() {

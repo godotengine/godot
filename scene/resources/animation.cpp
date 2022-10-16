@@ -35,7 +35,7 @@
 #include "scene/scene_string_names.h"
 
 bool Animation::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
+	String prop_name = p_name;
 
 	if (p_name == SNAME("_compression")) {
 		ERR_FAIL_COND_V(tracks.size() > 0, false); //can only set compression if no tracks exist
@@ -63,9 +63,9 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		compression.enabled = true;
 		return true;
-	} else if (name.begins_with("tracks/")) {
-		int track = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (prop_name.begins_with("tracks/")) {
+		int track = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 
 		if (tracks.size() == track && what == "type") {
 			String type = p_value;
@@ -431,7 +431,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
+	String prop_name = p_name;
 
 	if (p_name == SNAME("_compression")) {
 		ERR_FAIL_COND_V(!compression.enabled, false);
@@ -456,15 +456,15 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 
 		r_ret = comp;
 		return true;
-	} else if (name == "length") {
+	} else if (prop_name == "length") {
 		r_ret = length;
-	} else if (name == "loop_mode") {
+	} else if (prop_name == "loop_mode") {
 		r_ret = loop_mode;
-	} else if (name == "step") {
+	} else if (prop_name == "step") {
 		r_ret = step;
-	} else if (name.begins_with("tracks/")) {
-		int track = name.get_slicec('/', 1).to_int();
-		String what = name.get_slicec('/', 2);
+	} else if (prop_name.begins_with("tracks/")) {
+		int track = prop_name.get_slicec('/', 1).to_int();
+		String what = prop_name.get_slicec('/', 2);
 		ERR_FAIL_INDEX_V(track, tracks.size(), false);
 		if (what == "type") {
 			switch (track_get_type(track)) {
@@ -5239,9 +5239,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 
 	double page_base_time = compression.pages[page_index].time_offset;
 	const uint8_t *page_data = compression.pages[page_index].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+	// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 	const uint32_t *indices = (const uint32_t *)page_data;
 	const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 	uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5384,9 +5382,7 @@ void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track
 
 		double page_base_time = compression.pages[page_index].time_offset;
 		const uint8_t *page_data = compression.pages[page_index].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5456,9 +5452,7 @@ int Animation::_get_compressed_key_count(uint32_t p_compressed_track) const {
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5492,9 +5486,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];

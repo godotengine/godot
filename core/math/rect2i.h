@@ -121,7 +121,7 @@ struct _NO_DISCARD_ Rect2i {
 		new_rect.size.x = MAX(p_rect.position.x + p_rect.size.x, position.x + size.x);
 		new_rect.size.y = MAX(p_rect.position.y + p_rect.size.y, position.y + size.y);
 
-		new_rect.size = new_rect.size - new_rect.position; //make relative again
+		new_rect.size = new_rect.size - new_rect.position; // Make relative again.
 
 		return new_rect;
 	}

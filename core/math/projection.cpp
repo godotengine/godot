@@ -35,27 +35,27 @@
 #include "core/math/plane.h"
 #include "core/math/rect2.h"
 #include "core/math/transform_3d.h"
-#include "core/string/print_string.h"
+#include "core/string/ustring.h"
 
 float Projection::determinant() const {
-	return matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0] - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0] -
-			matrix[0][3] * matrix[1][1] * matrix[2][2] * matrix[3][0] + matrix[0][1] * matrix[1][3] * matrix[2][2] * matrix[3][0] +
-			matrix[0][2] * matrix[1][1] * matrix[2][3] * matrix[3][0] - matrix[0][1] * matrix[1][2] * matrix[2][3] * matrix[3][0] -
-			matrix[0][3] * matrix[1][2] * matrix[2][0] * matrix[3][1] + matrix[0][2] * matrix[1][3] * matrix[2][0] * matrix[3][1] +
-			matrix[0][3] * matrix[1][0] * matrix[2][2] * matrix[3][1] - matrix[0][0] * matrix[1][3] * matrix[2][2] * matrix[3][1] -
-			matrix[0][2] * matrix[1][0] * matrix[2][3] * matrix[3][1] + matrix[0][0] * matrix[1][2] * matrix[2][3] * matrix[3][1] +
-			matrix[0][3] * matrix[1][1] * matrix[2][0] * matrix[3][2] - matrix[0][1] * matrix[1][3] * matrix[2][0] * matrix[3][2] -
-			matrix[0][3] * matrix[1][0] * matrix[2][1] * matrix[3][2] + matrix[0][0] * matrix[1][3] * matrix[2][1] * matrix[3][2] +
-			matrix[0][1] * matrix[1][0] * matrix[2][3] * matrix[3][2] - matrix[0][0] * matrix[1][1] * matrix[2][3] * matrix[3][2] -
-			matrix[0][2] * matrix[1][1] * matrix[2][0] * matrix[3][3] + matrix[0][1] * matrix[1][2] * matrix[2][0] * matrix[3][3] +
-			matrix[0][2] * matrix[1][0] * matrix[2][1] * matrix[3][3] - matrix[0][0] * matrix[1][2] * matrix[2][1] * matrix[3][3] -
-			matrix[0][1] * matrix[1][0] * matrix[2][2] * matrix[3][3] + matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3];
+	return columns[0][3] * columns[1][2] * columns[2][1] * columns[3][0] - columns[0][2] * columns[1][3] * columns[2][1] * columns[3][0] -
+			columns[0][3] * columns[1][1] * columns[2][2] * columns[3][0] + columns[0][1] * columns[1][3] * columns[2][2] * columns[3][0] +
+			columns[0][2] * columns[1][1] * columns[2][3] * columns[3][0] - columns[0][1] * columns[1][2] * columns[2][3] * columns[3][0] -
+			columns[0][3] * columns[1][2] * columns[2][0] * columns[3][1] + columns[0][2] * columns[1][3] * columns[2][0] * columns[3][1] +
+			columns[0][3] * columns[1][0] * columns[2][2] * columns[3][1] - columns[0][0] * columns[1][3] * columns[2][2] * columns[3][1] -
+			columns[0][2] * columns[1][0] * columns[2][3] * columns[3][1] + columns[0][0] * columns[1][2] * columns[2][3] * columns[3][1] +
+			columns[0][3] * columns[1][1] * columns[2][0] * columns[3][2] - columns[0][1] * columns[1][3] * columns[2][0] * columns[3][2] -
+			columns[0][3] * columns[1][0] * columns[2][1] * columns[3][2] + columns[0][0] * columns[1][3] * columns[2][1] * columns[3][2] +
+			columns[0][1] * columns[1][0] * columns[2][3] * columns[3][2] - columns[0][0] * columns[1][1] * columns[2][3] * columns[3][2] -
+			columns[0][2] * columns[1][1] * columns[2][0] * columns[3][3] + columns[0][1] * columns[1][2] * columns[2][0] * columns[3][3] +
+			columns[0][2] * columns[1][0] * columns[2][1] * columns[3][3] - columns[0][0] * columns[1][2] * columns[2][1] * columns[3][3] -
+			columns[0][1] * columns[1][0] * columns[2][2] * columns[3][3] + columns[0][0] * columns[1][1] * columns[2][2] * columns[3][3];
 }
 
 void Projection::set_identity() {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			matrix[i][j] = (i == j) ? 1 : 0;
+			columns[i][j] = (i == j) ? 1 : 0;
 		}
 	}
 }
@@ -63,7 +63,7 @@ void Projection::set_identity() {
 void Projection::set_zero() {
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			matrix[i][j] = 0;
+			columns[i][j] = 0;
 		}
 	}
 }
@@ -71,26 +71,26 @@ void Projection::set_zero() {
 Plane Projection::xform4(const Plane &p_vec4) const {
 	Plane ret;
 
-	ret.normal.x = matrix[0][0] * p_vec4.normal.x + matrix[1][0] * p_vec4.normal.y + matrix[2][0] * p_vec4.normal.z + matrix[3][0] * p_vec4.d;
-	ret.normal.y = matrix[0][1] * p_vec4.normal.x + matrix[1][1] * p_vec4.normal.y + matrix[2][1] * p_vec4.normal.z + matrix[3][1] * p_vec4.d;
-	ret.normal.z = matrix[0][2] * p_vec4.normal.x + matrix[1][2] * p_vec4.normal.y + matrix[2][2] * p_vec4.normal.z + matrix[3][2] * p_vec4.d;
-	ret.d = matrix[0][3] * p_vec4.normal.x + matrix[1][3] * p_vec4.normal.y + matrix[2][3] * p_vec4.normal.z + matrix[3][3] * p_vec4.d;
+	ret.normal.x = columns[0][0] * p_vec4.normal.x + columns[1][0] * p_vec4.normal.y + columns[2][0] * p_vec4.normal.z + columns[3][0] * p_vec4.d;
+	ret.normal.y = columns[0][1] * p_vec4.normal.x + columns[1][1] * p_vec4.normal.y + columns[2][1] * p_vec4.normal.z + columns[3][1] * p_vec4.d;
+	ret.normal.z = columns[0][2] * p_vec4.normal.x + columns[1][2] * p_vec4.normal.y + columns[2][2] * p_vec4.normal.z + columns[3][2] * p_vec4.d;
+	ret.d = columns[0][3] * p_vec4.normal.x + columns[1][3] * p_vec4.normal.y + columns[2][3] * p_vec4.normal.z + columns[3][3] * p_vec4.d;
 	return ret;
 }
 
 Vector4 Projection::xform(const Vector4 &p_vec4) const {
 	return Vector4(
-			matrix[0][0] * p_vec4.x + matrix[1][0] * p_vec4.y + matrix[2][0] * p_vec4.z + matrix[3][0] * p_vec4.w,
-			matrix[0][1] * p_vec4.x + matrix[1][1] * p_vec4.y + matrix[2][1] * p_vec4.z + matrix[3][1] * p_vec4.w,
-			matrix[0][2] * p_vec4.x + matrix[1][2] * p_vec4.y + matrix[2][2] * p_vec4.z + matrix[3][2] * p_vec4.w,
-			matrix[0][3] * p_vec4.x + matrix[1][3] * p_vec4.y + matrix[2][3] * p_vec4.z + matrix[3][3] * p_vec4.w);
+			columns[0][0] * p_vec4.x + columns[1][0] * p_vec4.y + columns[2][0] * p_vec4.z + columns[3][0] * p_vec4.w,
+			columns[0][1] * p_vec4.x + columns[1][1] * p_vec4.y + columns[2][1] * p_vec4.z + columns[3][1] * p_vec4.w,
+			columns[0][2] * p_vec4.x + columns[1][2] * p_vec4.y + columns[2][2] * p_vec4.z + columns[3][2] * p_vec4.w,
+			columns[0][3] * p_vec4.x + columns[1][3] * p_vec4.y + columns[2][3] * p_vec4.z + columns[3][3] * p_vec4.w);
 }
 Vector4 Projection::xform_inv(const Vector4 &p_vec4) const {
 	return Vector4(
-			matrix[0][0] * p_vec4.x + matrix[0][1] * p_vec4.y + matrix[0][2] * p_vec4.z + matrix[0][3] * p_vec4.w,
-			matrix[1][0] * p_vec4.x + matrix[1][1] * p_vec4.y + matrix[1][2] * p_vec4.z + matrix[1][3] * p_vec4.w,
-			matrix[2][0] * p_vec4.x + matrix[2][1] * p_vec4.y + matrix[2][2] * p_vec4.z + matrix[2][3] * p_vec4.w,
-			matrix[3][0] * p_vec4.x + matrix[3][1] * p_vec4.y + matrix[3][2] * p_vec4.z + matrix[3][3] * p_vec4.w);
+			columns[0][0] * p_vec4.x + columns[0][1] * p_vec4.y + columns[0][2] * p_vec4.z + columns[0][3] * p_vec4.w,
+			columns[1][0] * p_vec4.x + columns[1][1] * p_vec4.y + columns[1][2] * p_vec4.z + columns[1][3] * p_vec4.w,
+			columns[2][0] * p_vec4.x + columns[2][1] * p_vec4.y + columns[2][2] * p_vec4.z + columns[2][3] * p_vec4.w,
+			columns[3][0] * p_vec4.x + columns[3][1] * p_vec4.y + columns[3][2] * p_vec4.z + columns[3][3] * p_vec4.w);
 }
 
 void Projection::adjust_perspective_znear(real_t p_new_znear) {
@@ -98,8 +98,8 @@ void Projection::adjust_perspective_znear(real_t p_new_znear) {
 	real_t znear = p_new_znear;
 
 	real_t deltaZ = zfar - znear;
-	matrix[2][2] = -(zfar + znear) / deltaZ;
-	matrix[3][2] = -2 * znear * zfar / deltaZ;
+	columns[2][2] = -(zfar + znear) / deltaZ;
+	columns[3][2] = -2 * znear * zfar / deltaZ;
 }
 
 Projection Projection::create_depth_correction(bool p_flip_y) {
@@ -169,7 +169,7 @@ Projection Projection::perspective_znear_adjusted(real_t p_new_znear) const {
 }
 
 Plane Projection::get_projection_plane(Planes p_plane) const {
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 
 	switch (p_plane) {
 		case PLANE_NEAR: {
@@ -267,12 +267,12 @@ void Projection::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t 
 
 	set_identity();
 
-	matrix[0][0] = cotangent / p_aspect;
-	matrix[1][1] = cotangent;
-	matrix[2][2] = -(p_z_far + p_z_near) / deltaZ;
-	matrix[2][3] = -1;
-	matrix[3][2] = -2 * p_z_near * p_z_far / deltaZ;
-	matrix[3][3] = 0;
+	columns[0][0] = cotangent / p_aspect;
+	columns[1][1] = cotangent;
+	columns[2][2] = -(p_z_far + p_z_near) / deltaZ;
+	columns[2][3] = -1;
+	columns[3][2] = -2 * p_z_near * p_z_far / deltaZ;
+	columns[3][3] = 0;
 }
 
 void Projection::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist) {
@@ -309,7 +309,7 @@ void Projection::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t 
 	// translate matrix by (modeltranslation, 0.0, 0.0)
 	Projection cm;
 	cm.set_identity();
-	cm.matrix[3][0] = modeltranslation;
+	cm.columns[3][0] = modeltranslation;
 	*this = *this * cm;
 }
 
@@ -344,13 +344,13 @@ void Projection::set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_di
 void Projection::set_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar) {
 	set_identity();
 
-	matrix[0][0] = 2.0 / (p_right - p_left);
-	matrix[3][0] = -((p_right + p_left) / (p_right - p_left));
-	matrix[1][1] = 2.0 / (p_top - p_bottom);
-	matrix[3][1] = -((p_top + p_bottom) / (p_top - p_bottom));
-	matrix[2][2] = -2.0 / (p_zfar - p_znear);
-	matrix[3][2] = -((p_zfar + p_znear) / (p_zfar - p_znear));
-	matrix[3][3] = 1.0;
+	columns[0][0] = 2.0 / (p_right - p_left);
+	columns[3][0] = -((p_right + p_left) / (p_right - p_left));
+	columns[1][1] = 2.0 / (p_top - p_bottom);
+	columns[3][1] = -((p_top + p_bottom) / (p_top - p_bottom));
+	columns[2][2] = -2.0 / (p_zfar - p_znear);
+	columns[3][2] = -((p_zfar + p_znear) / (p_zfar - p_znear));
+	columns[3][3] = 1.0;
 }
 
 void Projection::set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear, real_t p_zfar, bool p_flip_fov) {
@@ -366,7 +366,7 @@ void Projection::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, rea
 	ERR_FAIL_COND(p_top <= p_bottom);
 	ERR_FAIL_COND(p_far <= p_near);
 
-	real_t *te = &matrix[0][0];
+	real_t *te = &columns[0][0];
 	real_t x = 2 * p_near / (p_right - p_left);
 	real_t y = 2 * p_near / (p_top - p_bottom);
 
@@ -402,7 +402,7 @@ void Projection::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, r
 }
 
 real_t Projection::get_z_far() const {
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 	Plane new_plane = Plane(matrix[3] - matrix[2],
 			matrix[7] - matrix[6],
 			matrix[11] - matrix[10],
@@ -415,7 +415,7 @@ real_t Projection::get_z_far() const {
 }
 
 real_t Projection::get_z_near() const {
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 	Plane new_plane = Plane(matrix[3] + matrix[2],
 			matrix[7] + matrix[6],
 			matrix[11] + matrix[10],
@@ -426,7 +426,7 @@ real_t Projection::get_z_near() const {
 }
 
 Vector2 Projection::get_viewport_half_extents() const {
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 	///////--- Near Plane ---///////
 	Plane near_plane = Plane(matrix[3] + matrix[2],
 			matrix[7] + matrix[6],
@@ -454,7 +454,7 @@ Vector2 Projection::get_viewport_half_extents() const {
 }
 
 Vector2 Projection::get_far_plane_half_extents() const {
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 	///////--- Far Plane ---///////
 	Plane far_plane = Plane(matrix[3] - matrix[2],
 			matrix[7] - matrix[6],
@@ -496,7 +496,10 @@ bool Projection::get_endpoints(const Transform3D &p_transform, Vector3 *p_8point
 
 	for (int i = 0; i < 8; i++) {
 		Vector3 point;
-		bool res = planes[intersections[i][0]].intersect_3(planes[intersections[i][1]], planes[intersections[i][2]], &point);
+		Plane a = planes[intersections[i][0]];
+		Plane b = planes[intersections[i][1]];
+		Plane c = planes[intersections[i][2]];
+		bool res = a.intersect_3(b, c, &point);
 		ERR_FAIL_COND_V(!res, false);
 		p_8points[i] = p_transform.xform(point);
 	}
@@ -514,7 +517,7 @@ Vector<Plane> Projection::get_projection_planes(const Transform3D &p_transform) 
 	Vector<Plane> planes;
 	planes.resize(6);
 
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 
 	Plane new_plane;
 
@@ -601,15 +604,15 @@ void Projection::invert() {
 	real_t determinant = 1.0f;
 	for (k = 0; k < 4; k++) {
 		/** Locate k'th pivot element **/
-		pvt_val = matrix[k][k]; /** Initialize for search **/
+		pvt_val = columns[k][k]; /** Initialize for search **/
 		pvt_i[k] = k;
 		pvt_j[k] = k;
 		for (i = k; i < 4; i++) {
 			for (j = k; j < 4; j++) {
-				if (Math::abs(matrix[i][j]) > Math::abs(pvt_val)) {
+				if (Math::abs(columns[i][j]) > Math::abs(pvt_val)) {
 					pvt_i[k] = i;
 					pvt_j[k] = j;
-					pvt_val = matrix[i][j];
+					pvt_val = columns[i][j];
 				}
 			}
 		}
@@ -624,9 +627,9 @@ void Projection::invert() {
 		i = pvt_i[k];
 		if (i != k) { /** If rows are different **/
 			for (j = 0; j < 4; j++) {
-				hold = -matrix[k][j];
-				matrix[k][j] = matrix[i][j];
-				matrix[i][j] = hold;
+				hold = -columns[k][j];
+				columns[k][j] = columns[i][j];
+				columns[i][j] = hold;
 			}
 		}
 
@@ -634,25 +637,25 @@ void Projection::invert() {
 		j = pvt_j[k];
 		if (j != k) { /** If columns are different **/
 			for (i = 0; i < 4; i++) {
-				hold = -matrix[i][k];
-				matrix[i][k] = matrix[i][j];
-				matrix[i][j] = hold;
+				hold = -columns[i][k];
+				columns[i][k] = columns[i][j];
+				columns[i][j] = hold;
 			}
 		}
 
 		/** Divide column by minus pivot value **/
 		for (i = 0; i < 4; i++) {
 			if (i != k) {
-				matrix[i][k] /= (-pvt_val);
+				columns[i][k] /= (-pvt_val);
 			}
 		}
 
 		/** Reduce the matrix **/
 		for (i = 0; i < 4; i++) {
-			hold = matrix[i][k];
+			hold = columns[i][k];
 			for (j = 0; j < 4; j++) {
 				if (i != k && j != k) {
-					matrix[i][j] += hold * matrix[k][j];
+					columns[i][j] += hold * columns[k][j];
 				}
 			}
 		}
@@ -660,12 +663,12 @@ void Projection::invert() {
 		/** Divide row by pivot **/
 		for (j = 0; j < 4; j++) {
 			if (j != k) {
-				matrix[k][j] /= pvt_val;
+				columns[k][j] /= pvt_val;
 			}
 		}
 
 		/** Replace pivot by reciprocal (at last we can touch it). **/
-		matrix[k][k] = 1.0 / pvt_val;
+		columns[k][k] = 1.0 / pvt_val;
 	}
 
 	/* That was most of the work, one final pass of row/column interchange */
@@ -674,18 +677,18 @@ void Projection::invert() {
 		i = pvt_j[k]; /* Rows to swap correspond to pivot COLUMN */
 		if (i != k) { /* If rows are different */
 			for (j = 0; j < 4; j++) {
-				hold = matrix[k][j];
-				matrix[k][j] = -matrix[i][j];
-				matrix[i][j] = hold;
+				hold = columns[k][j];
+				columns[k][j] = -columns[i][j];
+				columns[i][j] = hold;
 			}
 		}
 
 		j = pvt_i[k]; /* Columns to swap correspond to pivot ROW */
 		if (j != k) { /* If columns are different */
 			for (i = 0; i < 4; i++) {
-				hold = matrix[i][k];
-				matrix[i][k] = -matrix[i][j];
-				matrix[i][j] = hold;
+				hold = columns[i][k];
+				columns[i][k] = -columns[i][j];
+				columns[i][j] = hold;
 			}
 		}
 	}
@@ -693,7 +696,7 @@ void Projection::invert() {
 
 void Projection::flip_y() {
 	for (int i = 0; i < 4; i++) {
-		matrix[1][i] = -matrix[1][i];
+		columns[1][i] = -columns[1][i];
 	}
 }
 
@@ -708,9 +711,9 @@ Projection Projection::operator*(const Projection &p_matrix) const {
 		for (int i = 0; i < 4; i++) {
 			real_t ab = 0;
 			for (int k = 0; k < 4; k++) {
-				ab += matrix[k][i] * p_matrix.matrix[j][k];
+				ab += columns[k][i] * p_matrix.columns[j][k];
 			}
-			new_matrix.matrix[j][i] = ab;
+			new_matrix.columns[j][i] = ab;
 		}
 	}
 
@@ -718,7 +721,7 @@ Projection Projection::operator*(const Projection &p_matrix) const {
 }
 
 void Projection::set_depth_correction(bool p_flip_y) {
-	real_t *m = &matrix[0][0];
+	real_t *m = &columns[0][0];
 
 	m[0] = 1;
 	m[1] = 0.0;
@@ -739,7 +742,7 @@ void Projection::set_depth_correction(bool p_flip_y) {
 }
 
 void Projection::set_light_bias() {
-	real_t *m = &matrix[0][0];
+	real_t *m = &columns[0][0];
 
 	m[0] = 0.5;
 	m[1] = 0.0;
@@ -760,7 +763,7 @@ void Projection::set_light_bias() {
 }
 
 void Projection::set_light_atlas_rect(const Rect2 &p_rect) {
-	real_t *m = &matrix[0][0];
+	real_t *m = &columns[0][0];
 
 	m[0] = p_rect.size.width;
 	m[1] = 0.0;
@@ -784,7 +787,7 @@ Projection::operator String() const {
 	String str;
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			str += String((j > 0) ? ", " : "\n") + rtos(matrix[i][j]);
+			str += String((j > 0) ? ", " : "\n") + rtos(columns[i][j]);
 		}
 	}
 
@@ -803,11 +806,11 @@ int Projection::get_pixels_per_meter(int p_for_pixel_width) const {
 }
 
 bool Projection::is_orthogonal() const {
-	return matrix[3][3] == 1.0;
+	return columns[3][3] == 1.0;
 }
 
 real_t Projection::get_fov() const {
-	const real_t *matrix = (const real_t *)this->matrix;
+	const real_t *matrix = (const real_t *)columns;
 
 	Plane right_plane = Plane(matrix[3] - matrix[0],
 			matrix[7] - matrix[4],
@@ -838,48 +841,49 @@ float Projection::get_lod_multiplier() const {
 		return 1.0 / (zn / width);
 	}
 
-	//usage is lod_size / (lod_distance * multiplier) < threshold
+	// Usage is lod_size / (lod_distance * multiplier) < threshold
 }
+
 void Projection::make_scale(const Vector3 &p_scale) {
 	set_identity();
-	matrix[0][0] = p_scale.x;
-	matrix[1][1] = p_scale.y;
-	matrix[2][2] = p_scale.z;
+	columns[0][0] = p_scale.x;
+	columns[1][1] = p_scale.y;
+	columns[2][2] = p_scale.z;
 }
 
 void Projection::scale_translate_to_fit(const AABB &p_aabb) {
 	Vector3 min = p_aabb.position;
 	Vector3 max = p_aabb.position + p_aabb.size;
 
-	matrix[0][0] = 2 / (max.x - min.x);
-	matrix[1][0] = 0;
-	matrix[2][0] = 0;
-	matrix[3][0] = -(max.x + min.x) / (max.x - min.x);
+	columns[0][0] = 2 / (max.x - min.x);
+	columns[1][0] = 0;
+	columns[2][0] = 0;
+	columns[3][0] = -(max.x + min.x) / (max.x - min.x);
 
-	matrix[0][1] = 0;
-	matrix[1][1] = 2 / (max.y - min.y);
-	matrix[2][1] = 0;
-	matrix[3][1] = -(max.y + min.y) / (max.y - min.y);
+	columns[0][1] = 0;
+	columns[1][1] = 2 / (max.y - min.y);
+	columns[2][1] = 0;
+	columns[3][1] = -(max.y + min.y) / (max.y - min.y);
 
-	matrix[0][2] = 0;
-	matrix[1][2] = 0;
-	matrix[2][2] = 2 / (max.z - min.z);
-	matrix[3][2] = -(max.z + min.z) / (max.z - min.z);
+	columns[0][2] = 0;
+	columns[1][2] = 0;
+	columns[2][2] = 2 / (max.z - min.z);
+	columns[3][2] = -(max.z + min.z) / (max.z - min.z);
 
-	matrix[0][3] = 0;
-	matrix[1][3] = 0;
-	matrix[2][3] = 0;
-	matrix[3][3] = 1;
+	columns[0][3] = 0;
+	columns[1][3] = 0;
+	columns[2][3] = 0;
+	columns[3][3] = 1;
 }
 
 void Projection::add_jitter_offset(const Vector2 &p_offset) {
-	matrix[3][0] += p_offset.x;
-	matrix[3][1] += p_offset.y;
+	columns[3][0] += p_offset.x;
+	columns[3][1] += p_offset.y;
 }
 
 Projection::operator Transform3D() const {
 	Transform3D tr;
-	const real_t *m = &matrix[0][0];
+	const real_t *m = &columns[0][0];
 
 	tr.basis.rows[0][0] = m[0];
 	tr.basis.rows[1][0] = m[1];
@@ -899,15 +903,17 @@ Projection::operator Transform3D() const {
 
 	return tr;
 }
+
 Projection::Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w) {
-	matrix[0] = p_x;
-	matrix[1] = p_y;
-	matrix[2] = p_z;
-	matrix[3] = p_w;
+	columns[0] = p_x;
+	columns[1] = p_y;
+	columns[2] = p_z;
+	columns[3] = p_w;
 }
+
 Projection::Projection(const Transform3D &p_transform) {
 	const Transform3D &tr = p_transform;
-	real_t *m = &matrix[0][0];
+	real_t *m = &columns[0][0];
 
 	m[0] = tr.basis.rows[0][0];
 	m[1] = tr.basis.rows[1][0];

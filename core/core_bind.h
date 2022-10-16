@@ -124,9 +124,9 @@ protected:
 	static OS *singleton;
 
 public:
-	enum VideoDriver {
-		VIDEO_DRIVER_VULKAN,
-		VIDEO_DRIVER_OPENGL_3,
+	enum RenderingDriver {
+		RENDERING_DRIVER_VULKAN,
+		RENDERING_DRIVER_OPENGL3,
 	};
 
 	enum Weekday {
@@ -172,6 +172,7 @@ public:
 	Vector<String> get_system_fonts() const;
 	String get_system_font_path(const String &p_font_name, bool p_bold = false, bool p_italic = false) const;
 	String get_executable_path() const;
+	String read_string_from_stdin(bool p_block = true);
 	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = Array(), bool p_read_stderr = false, bool p_open_console = false);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
@@ -195,6 +196,8 @@ public:
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 
+	Vector<String> get_video_adapter_driver_info() const;
+
 	String get_locale() const;
 	String get_locale_language() const;
 
@@ -217,8 +220,6 @@ public:
 	void delay_msec(int p_msec) const;
 	uint64_t get_ticks_msec() const;
 	uint64_t get_ticks_usec() const;
-
-	bool can_use_threads() const;
 
 	bool is_userfs_persistent() const;
 
@@ -489,8 +490,8 @@ public:
 	double get_physics_jitter_fix() const;
 	double get_physics_interpolation_fraction() const;
 
-	void set_target_fps(int p_fps);
-	int get_target_fps() const;
+	void set_max_fps(int p_fps);
+	int get_max_fps() const;
 
 	double get_frames_per_second() const;
 	uint64_t get_physics_frames() const;
@@ -577,7 +578,7 @@ VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
 
 VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
 
-VARIANT_ENUM_CAST(core_bind::OS::VideoDriver);
+VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
 VARIANT_ENUM_CAST(core_bind::OS::Weekday);
 VARIANT_ENUM_CAST(core_bind::OS::Month);
 VARIANT_ENUM_CAST(core_bind::OS::SystemDir);

@@ -40,11 +40,22 @@ GodotJavaViewWrapper::GodotJavaViewWrapper(jobject godot_view) {
 
 	_cls = (jclass)env->NewGlobalRef(env->GetObjectClass(godot_view));
 
-	if (android_get_device_api_level() >= __ANDROID_API_O__) {
-		_request_pointer_capture = env->GetMethodID(_cls, "requestPointerCapture", "()V");
-		_release_pointer_capture = env->GetMethodID(_cls, "releasePointerCapture", "()V");
+	int android_device_api_level = android_get_device_api_level();
+	if (android_device_api_level >= __ANDROID_API_N__) {
 		_set_pointer_icon = env->GetMethodID(_cls, "setPointerIcon", "(I)V");
 	}
+	if (android_device_api_level >= __ANDROID_API_O__) {
+		_request_pointer_capture = env->GetMethodID(_cls, "requestPointerCapture", "()V");
+		_release_pointer_capture = env->GetMethodID(_cls, "releasePointerCapture", "()V");
+	}
+}
+
+bool GodotJavaViewWrapper::can_update_pointer_icon() const {
+	return _set_pointer_icon != nullptr;
+}
+
+bool GodotJavaViewWrapper::can_capture_pointer() const {
+	return _request_pointer_capture != nullptr && _release_pointer_capture != nullptr;
 }
 
 void GodotJavaViewWrapper::request_pointer_capture() {

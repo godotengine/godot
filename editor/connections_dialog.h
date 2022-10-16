@@ -144,6 +144,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
 	Node *get_source() const;
 	StringName get_signal_name() const;
 	NodePath get_dst_path() const;
@@ -211,13 +212,16 @@ class ConnectionsDock : public VBoxContainer {
 	void _tree_item_selected();
 	void _tree_item_activated();
 	bool _is_item_signal(TreeItem &p_item);
+	bool _is_connection_inherited(Connection &p_connection);
 
 	void _open_connection_dialog(TreeItem &p_item);
 	void _open_connection_dialog(ConnectDialog::ConnectionData p_cd);
 	void _go_to_script(TreeItem &p_item);
 
 	void _handle_signal_menu_option(int p_option);
+	void _signal_menu_about_to_popup();
 	void _handle_slot_menu_option(int p_option);
+	void _slot_menu_about_to_popup();
 	void _rmb_pressed(Vector2 p_position, MouseButton p_button);
 	void _close();
 

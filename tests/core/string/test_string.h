@@ -740,6 +740,14 @@ TEST_CASE("[String] sprintf") {
 	REQUIRE(error == false);
 	CHECK(output == String("fish   99.990000 frog"));
 
+	// Real (infinity) left-padded
+	format = "fish %11f frog";
+	args.clear();
+	args.push_back(INFINITY);
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish         inf frog"));
+
 	// Real right-padded.
 	format = "fish %-11f frog";
 	args.clear();
@@ -839,6 +847,14 @@ TEST_CASE("[String] sprintf") {
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (  19.990000,    1.000000,   -2.050000) frog"));
+
+	// Vector left-padded with inf/nan
+	format = "fish %11v frog";
+	args.clear();
+	args.push_back(Variant(Vector2(INFINITY, NAN)));
+	output = format.sprintf(args, &error);
+	REQUIRE(error == false);
+	CHECK(output == String("fish (        inf,         nan) frog"));
 
 	// Vector right-padded.
 	format = "fish %-11v frog";
@@ -1408,20 +1424,22 @@ TEST_CASE("[String] dedent") {
 }
 
 TEST_CASE("[String] Path functions") {
-	static const char *path[7] = { "C:\\Godot\\project\\test.tscn", "/Godot/project/test.xscn", "../Godot/project/test.scn", "Godot\\test.doc", "C:\\test.", "res://test", "/.test" };
-	static const char *base_dir[7] = { "C:\\Godot\\project", "/Godot/project", "../Godot/project", "Godot", "C:\\", "res://", "/" };
-	static const char *base_name[7] = { "C:\\Godot\\project\\test", "/Godot/project/test", "../Godot/project/test", "Godot\\test", "C:\\test", "res://test", "/" };
-	static const char *ext[7] = { "tscn", "xscn", "scn", "doc", "", "", "test" };
-	static const char *file[7] = { "test.tscn", "test.xscn", "test.scn", "test.doc", "test.", "test", ".test" };
-	static const bool abs[7] = { true, true, false, false, true, true, true };
+	static const char *path[8] = { "C:\\Godot\\project\\test.tscn", "/Godot/project/test.xscn", "../Godot/project/test.scn", "Godot\\test.doc", "C:\\test.", "res://test", "user://test", "/.test" };
+	static const char *base_dir[8] = { "C:\\Godot\\project", "/Godot/project", "../Godot/project", "Godot", "C:\\", "res://", "user://", "/" };
+	static const char *base_name[8] = { "C:\\Godot\\project\\test", "/Godot/project/test", "../Godot/project/test", "Godot\\test", "C:\\test", "res://test", "user://test", "/" };
+	static const char *ext[8] = { "tscn", "xscn", "scn", "doc", "", "", "", "test" };
+	static const char *file[8] = { "test.tscn", "test.xscn", "test.scn", "test.doc", "test.", "test", "test", ".test" };
+	static const char *simplified[8] = { "C:/Godot/project/test.tscn", "/Godot/project/test.xscn", "Godot/project/test.scn", "Godot/test.doc", "C:/test.", "res://test", "user://test", "/.test" };
+	static const bool abs[8] = { true, true, false, false, true, true, true, true };
 
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		CHECK(String(path[i]).get_base_dir() == base_dir[i]);
 		CHECK(String(path[i]).get_basename() == base_name[i]);
 		CHECK(String(path[i]).get_extension() == ext[i]);
 		CHECK(String(path[i]).get_file() == file[i]);
 		CHECK(String(path[i]).is_absolute_path() == abs[i]);
 		CHECK(String(path[i]).is_relative_path() != abs[i]);
+		CHECK(String(path[i]).simplify_path() == String(simplified[i]));
 		CHECK(String(path[i]).simplify_path().get_base_dir().path_join(file[i]) == String(path[i]).simplify_path());
 	}
 

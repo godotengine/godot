@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  emws_client.h                                                        */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,44 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EMWS_CLIENT_H
-#define EMWS_CLIENT_H
+#include "register_types.h"
 
-#ifdef WEB_ENABLED
+#include "core/object/class_db.h"
+#include "zip_packer.h"
+#include "zip_reader.h"
 
-#include "core/error/error_list.h"
-#include "emws_peer.h"
-#include "websocket_client.h"
+void initialize_zip_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-class EMWSClient : public WebSocketClient {
-	GDCIIMPL(EMWSClient, WebSocketClient);
+	GDREGISTER_CLASS(ZIPPacker);
+	GDREGISTER_CLASS(ZIPReader);
+}
 
-private:
-	int _js_id = 0;
-	bool _is_connecting = false;
-	int _in_buf_size = DEF_BUF_SHIFT;
-	int _in_pkt_size = DEF_PKT_SHIFT;
-	int _out_buf_size = DEF_BUF_SHIFT;
-
-	static void _esws_on_connect(void *obj, char *proto);
-	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
-	static void _esws_on_error(void *obj);
-	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
-
-public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
-	Ref<WebSocketPeer> get_peer(int p_peer_id) const override;
-	void disconnect_from_host(int p_code = 1000, String p_reason = "") override;
-	IPAddress get_connected_host() const override;
-	uint16_t get_connected_port() const override;
-	virtual ConnectionStatus get_connection_status() const override;
-	int get_max_packet_size() const override;
-	virtual void poll() override;
-	EMWSClient();
-	~EMWSClient();
-};
-
-#endif // WEB_ENABLED
-
-#endif // EMWS_CLIENT_H
+void uninitialize_zip_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

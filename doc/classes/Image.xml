@@ -111,8 +111,8 @@
 				Copies [param src] image to this image.
 			</description>
 		</method>
-		<method name="create">
-			<return type="void" />
+		<method name="create" qualifiers="static">
+			<return type="Image" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
 			<param index="2" name="use_mipmaps" type="bool" />
@@ -121,8 +121,8 @@
 				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
-		<method name="create_from_data">
-			<return type="void" />
+		<method name="create_from_data" qualifiers="static">
+			<return type="Image" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
 			<param index="2" name="use_mipmaps" type="bool" />
@@ -197,7 +197,6 @@
 			<param index="0" name="renormalize" type="bool" default="false" />
 			<description>
 				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code].
-				[b]Note:[/b] Mipmap generation is done on the CPU, is single-threaded and is [i]always[/i] done on the main thread. This means generating mipmaps will result in noticeable stuttering during gameplay, even if [method generate_mipmaps] is called from a [Thread].
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">
@@ -453,6 +452,17 @@
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
 				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
+			</description>
+		</method>
+		<method name="set_data">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<param index="4" name="data" type="PackedByteArray" />
+			<description>
+				Overwrites data of an existing [Image]. Non-static equivalent of [method create_from_data].
 			</description>
 		</method>
 		<method name="set_pixel">

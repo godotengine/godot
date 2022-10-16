@@ -44,12 +44,8 @@ void RendererCompositorRD::blit_render_targets_to_screen(DisplayServer::WindowID
 	}
 
 	for (int i = 0; i < p_amount; i++) {
-		RID texture = texture_storage->render_target_get_texture(p_render_targets[i].render_target);
-		ERR_CONTINUE(texture.is_null());
-		RID rd_texture = texture_storage->texture_get_rd_texture(texture);
+		RID rd_texture = texture_storage->render_target_get_rd_texture(p_render_targets[i].render_target);
 		ERR_CONTINUE(rd_texture.is_null());
-
-		// TODO if keep_3d_linear was set when rendering to this render target we need to add a linear->sRGB conversion in.
 
 		if (!render_target_descriptors.has(rd_texture) || !RD::get_singleton()->uniform_set_is_valid(render_target_descriptors[rd_texture])) {
 			Vector<RD::Uniform> uniforms;
@@ -106,10 +102,8 @@ void RendererCompositorRD::begin_frame(double frame_step) {
 }
 
 void RendererCompositorRD::end_frame(bool p_swap_buffers) {
-#ifndef _MSC_VER
-#warning TODO: likely pass a bool to swap buffers to avoid display?
-#endif
-	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
+	// TODO: Likely pass a bool to swap buffers to avoid display?
+	RD::get_singleton()->swap_buffers();
 }
 
 void RendererCompositorRD::initialize() {

@@ -33,15 +33,18 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "../websocket_server.h"
+#include "../websocket_peer.h"
+
+#include "core/io/tcp_server.h"
 #include "editor/debugger/editor_debugger_server.h"
 
 class EditorDebuggerServerWebSocket : public EditorDebuggerServer {
 	GDCLASS(EditorDebuggerServerWebSocket, EditorDebuggerServer);
 
 private:
-	Ref<WebSocketServer> server;
-	List<int> pending_peers;
+	Ref<TCPServer> tcp_server;
+	Ref<WebSocketPeer> pending_peer;
+	uint64_t pending_timer = 0;
 	String endpoint;
 
 public:

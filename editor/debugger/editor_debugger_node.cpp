@@ -477,13 +477,10 @@ void EditorDebuggerNode::_menu_option(int p_id) {
 }
 
 void EditorDebuggerNode::_update_debug_options() {
-	bool keep_debugger_open = EditorSettings::get_singleton()->get_project_metadata("debug_options", "keep_debugger_open", false);
-	bool debug_with_external_editor = EditorSettings::get_singleton()->get_project_metadata("debug_options", "debug_with_external_editor", false);
-
-	if (keep_debugger_open) {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "keep_debugger_open", false).operator bool()) {
 		_menu_option(DEBUG_KEEP_DEBUGGER_OPEN);
 	}
-	if (debug_with_external_editor) {
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "debug_with_external_editor", false).operator bool()) {
 		_menu_option(DEBUG_WITH_EXTERNAL_EDITOR);
 	}
 }

@@ -61,8 +61,8 @@ bool GDScriptLanguage::is_using_templates() {
 }
 
 Ref<Script> GDScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
-	Ref<GDScript> script;
-	script.instantiate();
+	Ref<GDScript> scr;
+	scr.instantiate();
 	String processed_template = p_template;
 	bool type_hints = false;
 #ifdef TOOLS_ENABLED
@@ -82,8 +82,8 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	processed_template = processed_template.replace("_BASE_", p_base_class_name)
 								 .replace("_CLASS_", p_class_name)
 								 .replace("_TS_", _get_indentation());
-	script->set_source_code(processed_template);
-	return script;
+	scr->set_source_code(processed_template);
+	return scr;
 }
 
 Vector<ScriptLanguage::ScriptTemplate> GDScriptLanguage::get_built_in_templates(StringName p_object) {
@@ -318,10 +318,10 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 		return;
 	}
 
-	Ref<GDScript> script = instance->get_script();
-	ERR_FAIL_COND(script.is_null());
+	Ref<GDScript> scr = instance->get_script();
+	ERR_FAIL_COND(scr.is_null());
 
-	const HashMap<StringName, GDScript::MemberInfo> &mi = script->debug_get_member_indices();
+	const HashMap<StringName, GDScript::MemberInfo> &mi = scr->debug_get_member_indices();
 
 	for (const KeyValue<StringName, GDScript::MemberInfo> &E : mi) {
 		p_members->push_back(E.key);
@@ -344,7 +344,7 @@ ScriptInstance *GDScriptLanguage::debug_get_stack_level_instance(int p_level) {
 
 void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	const HashMap<StringName, int> &name_idx = GDScriptLanguage::get_singleton()->get_global_map();
-	const Variant *globals = GDScriptLanguage::get_singleton()->get_global_array();
+	const Variant *gl_array = GDScriptLanguage::get_singleton()->get_global_array();
 
 	List<Pair<String, Variant>> cinfo;
 	get_public_constants(&cinfo);
@@ -365,7 +365,7 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 			continue;
 		}
 
-		const Variant &var = globals[E.value];
+		const Variant &var = gl_array[E.value];
 		if (Object *obj = var) {
 			if (Object::cast_to<GDScriptNativeClass>(obj)) {
 				continue;
@@ -766,7 +766,7 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			ScriptLanguage::CodeCompletionOption slider2("or_less", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider2.insert_text = slider2.display.quote(p_quote_style);
 			r_result.insert(slider2.display, slider2);
-			ScriptLanguage::CodeCompletionOption slider3("no_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+			ScriptLanguage::CodeCompletionOption slider3("hide_slider", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 			slider3.insert_text = slider3.display.quote(p_quote_style);
 			r_result.insert(slider3.display, slider3);
 		}
@@ -1205,8 +1205,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	_find_built_in_variants(r_result);
 
 	static const char *_keywords[] = {
-		"false", "PI", "TAU", "INF", "NAN", "self", "true", "breakpoint", "tool", "super",
-		"break", "continue", "pass", "return",
+		"true", "false", "PI", "TAU", "INF", "NAN", "null", "self", "super",
+		"break", "breakpoint", "continue", "pass", "return",
 		nullptr
 	};
 
@@ -1218,7 +1218,7 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	}
 
 	static const char *_keywords_with_space[] = {
-		"and", "in", "not", "or", "as", "class", "extends", "is", "func", "signal", "await",
+		"and", "not", "or", "in", "as", "class", "class_name", "extends", "is", "func", "signal", "await",
 		"const", "enum", "static", "var", "if", "elif", "else", "for", "match", "while",
 		nullptr
 	};
@@ -3302,17 +3302,17 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
 					const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(p_symbol);
 					if (autoload.is_singleton) {
-						String script = autoload.path;
-						if (!script.ends_with(".gd")) {
+						String scr_path = autoload.path;
+						if (!scr_path.ends_with(".gd")) {
 							// Not a script, try find the script anyway,
 							// may have some success.
-							script = script.get_basename() + ".gd";
+							scr_path = scr_path.get_basename() + ".gd";
 						}
 
-						if (FileAccess::exists(script)) {
+						if (FileAccess::exists(scr_path)) {
 							r_result.type = ScriptLanguage::LOOKUP_RESULT_SCRIPT_LOCATION;
 							r_result.location = 0;
-							r_result.script = ResourceLoader::load(script);
+							r_result.script = ResourceLoader::load(scr_path);
 							return OK;
 						}
 					}

@@ -65,10 +65,10 @@ void GodotBody2D::update_mass_properties() {
 
 						real_t area = get_shape_aabb(i).get_area();
 
-						real_t mass = area * this->mass / total_area;
+						real_t mass_new = area * mass / total_area;
 
 						// NOTE: we assume that the shape origin is also its center of mass.
-						center_of_mass_local += mass * get_shape_transform(i).get_origin();
+						center_of_mass_local += mass_new * get_shape_transform(i).get_origin();
 					}
 
 					center_of_mass_local /= mass;
@@ -90,12 +90,12 @@ void GodotBody2D::update_mass_properties() {
 						continue;
 					}
 
-					real_t mass = area * this->mass / total_area;
+					real_t mass_new = area * mass / total_area;
 
 					Transform2D mtx = get_shape_transform(i);
 					Vector2 scale = mtx.get_scale();
 					Vector2 shape_origin = mtx.get_origin() - center_of_mass_local;
-					inertia += shape->get_moment_of_inertia(mass, scale) + mass * shape_origin.length_squared();
+					inertia += shape->get_moment_of_inertia(mass_new, scale) + mass_new * shape_origin.length_squared();
 				}
 			}
 
@@ -578,14 +578,14 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 				damp = 0;
 			}
 
-			real_t angular_damp = 1.0 - p_step * total_angular_damp;
+			real_t angular_damp_new = 1.0 - p_step * total_angular_damp;
 
-			if (angular_damp < 0) { // reached zero in the given time
-				angular_damp = 0;
+			if (angular_damp_new < 0) { // reached zero in the given time
+				angular_damp_new = 0;
 			}
 
 			linear_velocity *= damp;
-			angular_velocity *= angular_damp;
+			angular_velocity *= angular_damp_new;
 
 			linear_velocity += _inv_mass * force * p_step;
 			angular_velocity += _inv_inertia * torque * p_step;

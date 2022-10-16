@@ -982,7 +982,7 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 }
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
-	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use create() or create_from_data() first.");
+	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use set_data() first.");
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
@@ -1017,7 +1017,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	}
 	bool interpolate_mipmaps = mipmap_aware && mip1 != mip2;
 	if (interpolate_mipmaps) {
-		dst2.create(p_width, p_height, false, format);
+		dst2.initialize_data(p_width, p_height, false, format);
 	}
 
 	bool had_mipmaps = mipmaps;
@@ -2016,9 +2016,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 			uint8_t* wr = imgdata.ptrw();
 			memcpy(wr.ptr(), ptr, size);
 			wr = uint8_t*();
-			Ref<Image> im;
-			im.instantiate();
-			im->create(w, h, false, format, imgdata);
+			Ref<Image> im = Image::create_from_data(w, h, false, format, imgdata);
 			im->save_png("res://mipmap_" + itos(i) + ".png");
 		}
 #endif
@@ -2051,7 +2049,25 @@ Vector<uint8_t> Image::get_data() const {
 	return data;
 }
 
-void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+Ref<Image> Image::create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+	Ref<Image> image;
+	image.instantiate();
+	image->initialize_data(p_width, p_height, p_use_mipmaps, p_format);
+	return image;
+}
+
+Ref<Image> Image::create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	Ref<Image> image;
+	image.instantiate();
+	image->initialize_data(p_width, p_height, p_use_mipmaps, p_format, p_data);
+	return image;
+}
+
+void Image::set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	initialize_data(p_width, p_height, p_use_mipmaps, p_format, p_data);
+}
+
+void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
@@ -2077,7 +2093,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	format = p_format;
 }
 
-void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_MSG(p_width <= 0, "The Image width specified (" + itos(p_width) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_height <= 0, "The Image height specified (" + itos(p_height) + " pixels) must be greater than 0 pixels.");
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
@@ -2115,7 +2131,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	mipmaps = p_use_mipmaps;
 }
 
-void Image::create(const char **p_xpm) {
+void Image::initialize_data(const char **p_xpm) {
 	int size_width = 0;
 	int size_height = 0;
 	int pixelchars = 0;
@@ -2230,7 +2246,7 @@ void Image::create(const char **p_xpm) {
 				}
 				if (line == colormap_size) {
 					status = READING_PIXELS;
-					create(size_width, size_height, false, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
+					initialize_data(size_width, size_height, false, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
 					data_write = data.ptrw();
 					pixel_size = has_alpha ? 4 : 3;
 				}
@@ -2559,7 +2575,7 @@ Image::Image(const char **p_xpm) {
 	mipmaps = false;
 	format = FORMAT_L8;
 
-	create(p_xpm);
+	initialize_data(p_xpm);
 }
 
 Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
@@ -2568,7 +2584,7 @@ Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 	mipmaps = p_use_mipmaps;
 	format = FORMAT_L8;
 
-	create(p_width, p_height, p_use_mipmaps, p_format);
+	initialize_data(p_width, p_height, p_use_mipmaps, p_format);
 }
 
 Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
@@ -2577,7 +2593,7 @@ Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const V
 	mipmaps = p_mipmaps;
 	format = FORMAT_L8;
 
-	create(p_width, p_height, p_mipmaps, p_format, p_data);
+	initialize_data(p_width, p_height, p_mipmaps, p_format, p_data);
 }
 
 Rect2i Image::get_used_rect() const {
@@ -2931,7 +2947,7 @@ void Image::_set_data(const Dictionary &p_data) {
 
 	ERR_FAIL_COND(ddformat == FORMAT_MAX);
 
-	create(dwidth, dheight, dmipmaps, ddformat, ddata);
+	initialize_data(dwidth, dheight, dmipmaps, ddformat, ddata);
 }
 
 Dictionary Image::_get_data() const {
@@ -3294,8 +3310,9 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
-	ClassDB::bind_method(D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::create_empty);
-	ClassDB::bind_method(D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::create_from_data);
+	ClassDB::bind_static_method("Image", D_METHOD("create", "width", "height", "use_mipmaps", "format"), &Image::create_empty);
+	ClassDB::bind_static_method("Image", D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::create_from_data);
+	ClassDB::bind_method(D_METHOD("set_data", "width", "height", "use_mipmaps", "format", "data"), &Image::set_data);
 
 	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
@@ -3460,9 +3477,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 
 	ERR_FAIL_COND_V(format != FORMAT_RGBE9995, Ref<Image>());
 
-	Ref<Image> new_image;
-	new_image.instantiate();
-	new_image->create(width, height, false, Image::FORMAT_RGB8);
+	Ref<Image> new_image = create_empty(width, height, false, Image::FORMAT_RGB8);
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
@@ -3869,15 +3884,15 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	double image_metric_max, image_metric_mean, image_metric_mean_squared, image_metric_root_mean_squared, image_metric_peak_snr = 0.0;
 	const bool average_component_error = true;
 
-	const uint32_t width = MIN(compared_image->get_width(), source_image->get_width());
-	const uint32_t height = MIN(compared_image->get_height(), source_image->get_height());
+	const uint32_t w = MIN(compared_image->get_width(), source_image->get_width());
+	const uint32_t h = MIN(compared_image->get_height(), source_image->get_height());
 
 	// Histogram approach originally due to Charles Bloom.
 	double hist[256];
 	memset(hist, 0, sizeof(hist));
 
-	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++) {
+	for (uint32_t y = 0; y < h; y++) {
+		for (uint32_t x = 0; x < w; x++) {
 			const Color color_a = compared_image->get_pixel(x, y);
 
 			const Color color_b = source_image->get_pixel(x, y);
@@ -3922,7 +3937,7 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	}
 
 	// See http://richg42.blogspot.com/2016/09/how-to-compute-psnr-from-old-berkeley.html
-	double total_values = width * height;
+	double total_values = w * h;
 
 	if (average_component_error) {
 		total_values *= 4;

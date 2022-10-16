@@ -184,6 +184,9 @@ public:
 #endif
 	}
 
+	static _ALWAYS_INLINE_ bool is_finite(double p_val) { return isfinite(p_val); }
+	static _ALWAYS_INLINE_ bool is_finite(float p_val) { return isfinite(p_val); }
+
 	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
 	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
 	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }

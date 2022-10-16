@@ -471,28 +471,28 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 		//put the ones to add
 
 		for (int i = 0; i < p_state->get_contact_count(); i++) {
-			RID rid = p_state->get_contact_collider(i);
-			ObjectID obj = p_state->get_contact_collider_id(i);
+			RID col_rid = p_state->get_contact_collider(i);
+			ObjectID col_obj = p_state->get_contact_collider_id(i);
 			int local_shape = p_state->get_contact_local_shape(i);
-			int shape = p_state->get_contact_collider_shape(i);
+			int col_shape = p_state->get_contact_collider_shape(i);
 
-			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(obj);
+			HashMap<ObjectID, BodyState>::Iterator E = contact_monitor->body_map.find(col_obj);
 			if (!E) {
-				toadd[toadd_count].rid = rid;
+				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = obj;
-				toadd[toadd_count].shape = shape;
+				toadd[toadd_count].id = col_obj;
+				toadd[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
 
-			ShapePair sp(shape, local_shape);
+			ShapePair sp(col_shape, local_shape);
 			int idx = E->value.shapes.find(sp);
 			if (idx == -1) {
-				toadd[toadd_count].rid = rid;
+				toadd[toadd_count].rid = col_rid;
 				toadd[toadd_count].local_shape = local_shape;
-				toadd[toadd_count].id = obj;
-				toadd[toadd_count].shape = shape;
+				toadd[toadd_count].id = col_obj;
+				toadd[toadd_count].shape = col_shape;
 				toadd_count++;
 				continue;
 			}
@@ -1134,6 +1134,7 @@ bool CharacterBody2D::move_and_slide() {
 
 	if (!current_platform_velocity.is_zero_approx()) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), current_platform_velocity * delta, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 		parameters.exclude_bodies.insert(platform_rid);
 		if (platform_object_id.is_valid()) {
 			parameters.exclude_objects.insert(platform_object_id);
@@ -1192,6 +1193,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		Vector2 prev_position = parameters.from.columns[2];
 
@@ -1348,6 +1350,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 	bool first_slide = true;
 	for (int iteration = 0; iteration < max_slides; ++iteration) {
 		PhysicsServer2D::MotionParameters parameters(get_global_transform(), motion, margin);
+		parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 
 		PhysicsServer2D::MotionResult result;
 		bool collided = move_and_collide(parameters, result, false, false);
@@ -1394,7 +1397,7 @@ void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
-	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;
@@ -1430,7 +1433,7 @@ bool CharacterBody2D::_on_floor_if_snapped(bool p_was_on_floor, bool p_vel_dir_f
 	real_t length = MAX(floor_snap_length, margin);
 
 	PhysicsServer2D::MotionParameters parameters(get_global_transform(), -up_direction * length, margin);
-	parameters.recovery_as_collision = true; // Report margin recovery as collision to improve floor detection.
+	parameters.recovery_as_collision = true; // Also report collisions generated only from recovery.
 	parameters.collide_separation_ray = true;
 
 	PhysicsServer2D::MotionResult result;

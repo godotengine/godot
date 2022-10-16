@@ -59,9 +59,7 @@ TextureStorage::TextureStorage() {
 	{ //create default textures
 		{ // White Textures
 
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1, 1, 1, 1));
 			image->generate_mipmaps();
 
@@ -90,9 +88,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{ // black
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0, 0, 0, 1));
 			image->generate_mipmaps();
 
@@ -116,9 +112,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{ // transparent black
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0, 0, 0, 0));
 			image->generate_mipmaps();
 
@@ -127,9 +121,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(0.5, 0.5, 1, 1));
 			image->generate_mipmaps();
 
@@ -138,9 +130,7 @@ TextureStorage::TextureStorage() {
 		}
 
 		{
-			Ref<Image> image;
-			image.instantiate();
-			image->create(4, 4, true, Image::FORMAT_RGBA8);
+			Ref<Image> image = Image::create_empty(4, 4, true, Image::FORMAT_RGBA8);
 			image->fill(Color(1.0, 0.5, 1, 1));
 			image->generate_mipmaps();
 
@@ -197,6 +187,22 @@ TextureStorage::TextureStorage() {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	{ // Atlas Texture initialize.
+		uint8_t pixel_data[4 * 4 * 4];
+		for (int i = 0; i < 16; i++) {
+			pixel_data[i * 4 + 0] = 0;
+			pixel_data[i * 4 + 1] = 0;
+			pixel_data[i * 4 + 2] = 0;
+			pixel_data[i * 4 + 3] = 255;
+		}
+
+		glGenTextures(1, &texture_atlas.texture);
+		glBindTexture(GL_TEXTURE_2D, texture_atlas.texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_data);
+	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 #ifdef GLES_OVER_GL
 	glEnable(GL_PROGRAM_POINT_SIZE);
 #endif
@@ -207,6 +213,11 @@ TextureStorage::~TextureStorage() {
 	for (int i = 0; i < DEFAULT_GL_TEXTURE_MAX; i++) {
 		texture_free(default_gl_textures[i]);
 	}
+
+	glDeleteTextures(1, &texture_atlas.texture);
+	texture_atlas.texture = 0;
+	glDeleteFramebuffers(1, &texture_atlas.framebuffer);
+	texture_atlas.framebuffer = 0;
 }
 
 //TODO, move back to storage
@@ -653,7 +664,7 @@ void TextureStorage::texture_free(RID p_texture) {
 		}
 	}
 
-	//decal_atlas_remove_texture(p_texture);
+	texture_atlas_remove_texture(p_texture);
 
 	for (int i = 0; i < t->proxies.size(); i++) {
 		Texture *p = texture_owner.get_or_null(t->proxies[i]);
@@ -724,9 +735,7 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	texture_2d_initialize(p_texture, image);
@@ -735,9 +744,7 @@ void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RenderingServer::TextureLayeredType p_layered_type) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -756,9 +763,7 @@ void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, Re
 void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -812,9 +817,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 	data.resize(data_size);
 
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
+	Ref<Image> image = Image::create_from_data(texture->width, texture->height, texture->mipmaps > 1, texture->real_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (texture->format != texture->real_format) {
 		image->convert(texture->format);
@@ -875,7 +878,7 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 	//delete last, so proxies can be updated
 	texture_owner.free(p_by_texture);
 
-	//decal_atlas_mark_dirty_on_texture(p_texture);
+	texture_atlas_mark_dirty_on_texture(p_texture);
 }
 
 void TextureStorage::texture_set_size_override(RID p_texture, int p_width, int p_height) {
@@ -1143,6 +1146,217 @@ RID TextureStorage::texture_create_radiance_cubemap(RID p_source, int p_resoluti
 	return RID();
 }
 
+/* TEXTURE ATLAS API */
+
+void TextureStorage::texture_add_to_texture_atlas(RID p_texture) {
+	if (!texture_atlas.textures.has(p_texture)) {
+		TextureAtlas::Texture t;
+		t.users = 1;
+		texture_atlas.textures[p_texture] = t;
+		texture_atlas.dirty = true;
+	} else {
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+		t->users++;
+	}
+}
+
+void TextureStorage::texture_remove_from_texture_atlas(RID p_texture) {
+	TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+	ERR_FAIL_COND(!t);
+	t->users--;
+	if (t->users == 0) {
+		texture_atlas.textures.erase(p_texture);
+		// Do not mark it dirty, there is no need to since it remains working.
+	}
+}
+
+void TextureStorage::texture_atlas_mark_dirty_on_texture(RID p_texture) {
+	if (texture_atlas.textures.has(p_texture)) {
+		texture_atlas.dirty = true; // Mark it dirty since it was most likely modified.
+	}
+}
+
+void TextureStorage::texture_atlas_remove_texture(RID p_texture) {
+	if (texture_atlas.textures.has(p_texture)) {
+		texture_atlas.textures.erase(p_texture);
+		// There is not much a point of making it dirty, texture can be removed next time the atlas is updated.
+	}
+}
+
+GLuint TextureStorage::texture_atlas_get_texture() const {
+	return texture_atlas.texture;
+}
+
+void TextureStorage::update_texture_atlas() {
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+
+	if (!texture_atlas.dirty) {
+		return; //nothing to do
+	}
+
+	texture_atlas.dirty = false;
+
+	if (texture_atlas.texture != 0) {
+		glDeleteTextures(1, &texture_atlas.texture);
+		texture_atlas.texture = 0;
+		glDeleteFramebuffers(1, &texture_atlas.framebuffer);
+		texture_atlas.framebuffer = 0;
+	}
+
+	const int border = 2;
+
+	if (texture_atlas.textures.size()) {
+		//generate atlas
+		Vector<TextureAtlas::SortItem> itemsv;
+		itemsv.resize(texture_atlas.textures.size());
+		int base_size = 8;
+
+		int idx = 0;
+
+		for (const KeyValue<RID, TextureAtlas::Texture> &E : texture_atlas.textures) {
+			TextureAtlas::SortItem &si = itemsv.write[idx];
+
+			Texture *src_tex = get_texture(E.key);
+
+			si.size.width = (src_tex->width / border) + 1;
+			si.size.height = (src_tex->height / border) + 1;
+			si.pixel_size = Size2i(src_tex->width, src_tex->height);
+
+			if (base_size < si.size.width) {
+				base_size = nearest_power_of_2_templated(si.size.width);
+			}
+
+			si.texture = E.key;
+			idx++;
+		}
+
+		//sort items by size
+		itemsv.sort();
+
+		//attempt to create atlas
+		int item_count = itemsv.size();
+		TextureAtlas::SortItem *items = itemsv.ptrw();
+
+		int atlas_height = 0;
+
+		while (true) {
+			Vector<int> v_offsetsv;
+			v_offsetsv.resize(base_size);
+
+			int *v_offsets = v_offsetsv.ptrw();
+			memset(v_offsets, 0, sizeof(int) * base_size);
+
+			int max_height = 0;
+
+			for (int i = 0; i < item_count; i++) {
+				//best fit
+				TextureAtlas::SortItem &si = items[i];
+				int best_idx = -1;
+				int best_height = 0x7FFFFFFF;
+				for (int j = 0; j <= base_size - si.size.width; j++) {
+					int height = 0;
+					for (int k = 0; k < si.size.width; k++) {
+						int h = v_offsets[k + j];
+						if (h > height) {
+							height = h;
+							if (height > best_height) {
+								break; //already bad
+							}
+						}
+					}
+
+					if (height < best_height) {
+						best_height = height;
+						best_idx = j;
+					}
+				}
+
+				//update
+				for (int k = 0; k < si.size.width; k++) {
+					v_offsets[k + best_idx] = best_height + si.size.height;
+				}
+
+				si.pos.x = best_idx;
+				si.pos.y = best_height;
+
+				if (si.pos.y + si.size.height > max_height) {
+					max_height = si.pos.y + si.size.height;
+				}
+			}
+
+			if (max_height <= base_size * 2) {
+				atlas_height = max_height;
+				break; //good ratio, break;
+			}
+
+			base_size *= 2;
+		}
+
+		texture_atlas.size.width = base_size * border;
+		texture_atlas.size.height = nearest_power_of_2_templated(atlas_height * border);
+
+		for (int i = 0; i < item_count; i++) {
+			TextureAtlas::Texture *t = texture_atlas.textures.getptr(items[i].texture);
+			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.size = items[i].pixel_size;
+
+			t->uv_rect.position /= Size2(texture_atlas.size);
+			t->uv_rect.size /= Size2(texture_atlas.size);
+		}
+	} else {
+		texture_atlas.size.width = 4;
+		texture_atlas.size.height = 4;
+	}
+
+	{ // Atlas Texture initialize.
+		// TODO validate texture atlas size with maximum texture size
+		glGenTextures(1, &texture_atlas.texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture_atlas.texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texture_atlas.size.width, texture_atlas.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 1);
+
+		glGenFramebuffers(1, &texture_atlas.framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, texture_atlas.framebuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_atlas.texture, 0);
+
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			glDeleteFramebuffers(1, &texture_atlas.framebuffer);
+			texture_atlas.framebuffer = 0;
+			glDeleteTextures(1, &texture_atlas.texture);
+			texture_atlas.texture = 0;
+			WARN_PRINT("Could not create texture atlas, status: " + get_framebuffer_error(status));
+			return;
+		}
+		glViewport(0, 0, texture_atlas.size.width, texture_atlas.size.height);
+		glClearColor(0.0, 0.0, 0.0, 0.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	glDisable(GL_BLEND);
+
+	if (texture_atlas.textures.size()) {
+		for (const KeyValue<RID, TextureAtlas::Texture> &E : texture_atlas.textures) {
+			TextureAtlas::Texture *t = texture_atlas.textures.getptr(E.key);
+			Texture *src_tex = get_texture(E.key);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, src_tex->tex_id);
+			copy_effects->copy_to_rect(t->uv_rect);
+		}
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 /* DECAL API */
 
 RID TextureStorage::decal_allocate() {
@@ -1181,6 +1395,18 @@ void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
 
 AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
+}
+
+/* DECAL INSTANCE API */
+
+RID TextureStorage::decal_instance_create(RID p_decal) {
+	return RID();
+}
+
+void TextureStorage::decal_instance_free(RID p_decal_instance) {
+}
+
+void TextureStorage::decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) {
 }
 
 /* RENDER TARGET API */
@@ -1331,24 +1557,6 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->fbo = 0;
 		rt->color = 0;
 	}
-	/*
-	if (rt->external.fbo != 0) {
-		// free this
-		glDeleteFramebuffers(1, &rt->external.fbo);
-
-		// clean up our texture
-		Texture *t = get_texture(rt->external.texture);
-		t->alloc_height = 0;
-		t->alloc_width = 0;
-		t->width = 0;
-		t->height = 0;
-		t->active = false;
-		texture_free(rt->external.texture);
-		memdelete(t);
-
-		rt->external.fbo = 0;
-	}
-	*/
 
 	Texture *tex = get_texture(rt->texture);
 	tex->alloc_height = 0;
@@ -1400,6 +1608,13 @@ void TextureStorage::render_target_set_position(RID p_render_target, int p_x, in
 	rt->position = Point2i(p_x, p_y);
 }
 
+Point2i TextureStorage::render_target_get_position(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, Point2i());
+
+	return rt->position;
+};
+
 void TextureStorage::render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -1416,9 +1631,9 @@ void TextureStorage::render_target_set_size(RID p_render_target, int p_width, in
 }
 
 // TODO: convert to Size2i internally
-Size2i TextureStorage::render_target_get_size(RID p_render_target) {
+Size2i TextureStorage::render_target_get_size(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND_V(!rt, Size2());
+	ERR_FAIL_COND_V(!rt, Size2i());
 
 	return rt->size;
 }
@@ -1427,105 +1642,7 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	if (rt->external.fbo == 0) {
-		return rt->texture;
-	} else {
-		return rt->external.texture;
-	}
-}
-
-void TextureStorage::render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {
-	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
-	ERR_FAIL_COND(!rt);
-
-	if (p_texture_id == 0) {
-		if (rt->external.fbo != 0) {
-			// free this
-			glDeleteFramebuffers(1, &rt->external.fbo);
-
-			// and this
-			if (rt->external.depth != 0) {
-				glDeleteRenderbuffers(1, &rt->external.depth);
-			}
-
-			// clean up our texture
-			Texture *t = get_texture(rt->external.texture);
-			t->alloc_height = 0;
-			t->alloc_width = 0;
-			t->width = 0;
-			t->height = 0;
-			t->active = false;
-			texture_free(rt->external.texture);
-			//memdelete(t);
-
-			rt->external.fbo = 0;
-			rt->external.color = 0;
-			rt->external.depth = 0;
-		}
-	} else {
-		Texture *t;
-
-		if (rt->external.fbo == 0) {
-			// create our fbo
-			glGenFramebuffers(1, &rt->external.fbo);
-			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
-
-			// allocate a texture
-			t = memnew(Texture);
-
-			t->type = Texture::TYPE_2D;
-			t->width = 0;
-			t->height = 0;
-			t->alloc_height = 0;
-			t->alloc_width = 0;
-			t->format = Image::FORMAT_RGBA8;
-			t->target = GL_TEXTURE_2D;
-			t->gl_format_cache = 0;
-			t->gl_internal_format_cache = 0;
-			t->gl_type_cache = 0;
-			t->total_data_size = 0;
-			t->mipmaps = 1;
-			t->active = true;
-			t->tex_id = 0;
-			t->render_target = rt;
-			t->is_render_target = true;
-
-			//rt->external.texture = make_rid(t);
-
-		} else {
-			// bind our frame buffer
-			glBindFramebuffer(GL_FRAMEBUFFER, rt->external.fbo);
-
-			// find our texture
-			t = get_texture(rt->external.texture);
-		}
-
-		// set our texture
-		t->tex_id = p_texture_id;
-		rt->external.color = p_texture_id;
-
-		// size shouldn't be different
-		t->width = rt->size.x;
-		t->height = rt->size.y;
-		t->alloc_height = rt->size.x;
-		t->alloc_width = rt->size.y;
-
-		// Switch our texture on our frame buffer
-		{
-			// set our texture as the destination for our framebuffer
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_texture_id, 0);
-		}
-
-		// check status and unbind
-		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
-
-		if (status != GL_FRAMEBUFFER_COMPLETE) {
-			WARN_PRINT("framebuffer fail, status: " + get_framebuffer_error(status));
-		}
-
-		ERR_FAIL_COND(status != GL_FRAMEBUFFER_COMPLETE);
-	}
+	return rt->texture;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_transparent) {
@@ -1536,6 +1653,13 @@ void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_t
 
 	_clear_render_target(rt);
 	_update_render_target(rt);
+}
+
+bool TextureStorage::render_target_get_transparent(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->is_transparent;
 }
 
 void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) {
@@ -1552,7 +1676,14 @@ void TextureStorage::render_target_set_direct_to_screen(RID p_render_target, boo
 	_update_render_target(rt);
 }
 
-bool TextureStorage::render_target_was_used(RID p_render_target) {
+bool TextureStorage::render_target_get_direct_to_screen(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, false);
+
+	return rt->direct_to_screen;
+}
+
+bool TextureStorage::render_target_was_used(RID p_render_target) const {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, false);
 
@@ -1577,6 +1708,13 @@ void TextureStorage::render_target_set_msaa(RID p_render_target, RS::ViewportMSA
 	_clear_render_target(rt);
 	rt->msaa = p_msaa;
 	_update_render_target(rt);
+}
+
+RS::ViewportMSAA TextureStorage::render_target_get_msaa(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_MSAA_DISABLED);
+
+	return rt->msaa;
 }
 
 void TextureStorage::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
@@ -1609,9 +1747,11 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	if (!rt->clear_requested) {
 		return;
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 
 	glClearBufferfv(GL_COLOR, 0, rt->clear_color.components);
 	rt->clear_requested = false;
+	glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 }
 
 void TextureStorage::render_target_set_sdf_size_and_scale(RID p_render_target, RS::ViewportSDFOversize p_size, RS::ViewportSDFScale p_scale) {

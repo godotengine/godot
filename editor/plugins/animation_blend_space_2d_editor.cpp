@@ -406,11 +406,11 @@ void AnimationNodeBlendSpace2DEditor::_tool_switch(int p_tool) {
 	making_triangle.clear();
 
 	if (p_tool == 2) {
-		Vector<Vector2> points;
+		Vector<Vector2> bl_points;
 		for (int i = 0; i < blend_space->get_blend_point_count(); i++) {
-			points.push_back(blend_space->get_blend_point_position(i));
+			bl_points.push_back(blend_space->get_blend_point_position(i));
 		}
-		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(points);
+		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(bl_points);
 		for (int i = 0; i < tr.size(); i++) {
 			blend_space->add_triangle(tr[i].points[0], tr[i].points[1], tr[i].points[2]);
 		}
@@ -494,8 +494,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 
 	//triangles first
 	for (int i = 0; i < blend_space->get_triangle_count(); i++) {
-		Vector<Vector2> points;
-		points.resize(3);
+		Vector<Vector2> bl_points;
+		bl_points.resize(3);
 
 		for (int j = 0; j < 3; j++) {
 			int point_idx = blend_space->get_triangle_point(i, j);
@@ -509,11 +509,11 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 			point *= s;
 			point.y = s.height - point.y;
-			points.write[j] = point;
+			bl_points.write[j] = point;
 		}
 
 		for (int j = 0; j < 3; j++) {
-			blend_space_draw->draw_line(points[j], points[(j + 1) % 3], linecolor, Math::round(EDSCALE), true);
+			blend_space_draw->draw_line(bl_points[j], bl_points[(j + 1) % 3], linecolor, Math::round(EDSCALE), true);
 		}
 
 		Color color;
@@ -530,7 +530,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 			color,
 			color
 		};
-		blend_space_draw->draw_primitive(points, colors, Vector<Vector2>());
+		blend_space_draw->draw_primitive(bl_points, colors, Vector<Vector2>());
 	}
 
 	points.clear();
@@ -560,19 +560,19 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_draw() {
 	}
 
 	if (making_triangle.size()) {
-		Vector<Vector2> points;
+		Vector<Vector2> bl_points;
 		for (int i = 0; i < making_triangle.size(); i++) {
 			Vector2 point = blend_space->get_blend_point_position(making_triangle[i]);
 			point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 			point *= s;
 			point.y = s.height - point.y;
-			points.push_back(point);
+			bl_points.push_back(point);
 		}
 
-		for (int i = 0; i < points.size() - 1; i++) {
-			blend_space_draw->draw_line(points[i], points[i + 1], linecolor, Math::round(2 * EDSCALE), true);
+		for (int i = 0; i < bl_points.size() - 1; i++) {
+			blend_space_draw->draw_line(bl_points[i], bl_points[i + 1], linecolor, Math::round(2 * EDSCALE), true);
 		}
-		blend_space_draw->draw_line(points[points.size() - 1], blend_space_draw->get_local_mouse_position(), linecolor, Math::round(2 * EDSCALE), true);
+		blend_space_draw->draw_line(bl_points[bl_points.size() - 1], blend_space_draw->get_local_mouse_position(), linecolor, Math::round(2 * EDSCALE), true);
 	}
 
 	///draw cursor position

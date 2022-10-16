@@ -329,6 +329,7 @@ void TileSetEditor::_set_source_sort(int p_sort) {
 		}
 	}
 	_update_sources_list(old_selected);
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
 }
 
 void TileSetEditor::_notification(int p_what) {
@@ -406,11 +407,11 @@ void TileSetEditor::_tab_changed(int p_tab_changed) {
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, String p_array_prefix, int p_from_index, int p_to_pos) {
-	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo.is_null());
+	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(undo_redo_man.is_null());
 
-	TileSet *tile_set = Object::cast_to<TileSet>(p_edited);
-	if (!tile_set) {
+	TileSet *ed_tile_set = Object::cast_to<TileSet>(p_edited);
+	if (!ed_tile_set) {
 		return;
 	}
 
@@ -420,18 +421,18 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	int begin = 0;
 	int end;
 	if (p_array_prefix == "occlusion_layer_") {
-		end = tile_set->get_occlusion_layers_count();
+		end = ed_tile_set->get_occlusion_layers_count();
 	} else if (p_array_prefix == "physics_layer_") {
-		end = tile_set->get_physics_layers_count();
+		end = ed_tile_set->get_physics_layers_count();
 	} else if (p_array_prefix == "terrain_set_") {
-		end = tile_set->get_terrain_sets_count();
+		end = ed_tile_set->get_terrain_sets_count();
 	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrain_") {
 		int terrain_set = components[0].trim_prefix("terrain_set_").to_int();
-		end = tile_set->get_terrains_count(terrain_set);
+		end = ed_tile_set->get_terrains_count(terrain_set);
 	} else if (p_array_prefix == "navigation_layer_") {
-		end = tile_set->get_navigation_layers_count();
+		end = ed_tile_set->get_navigation_layers_count();
 	} else if (p_array_prefix == "custom_data_layer_") {
-		end = tile_set->get_custom_data_layers_count();
+		end = ed_tile_set->get_custom_data_layers_count();
 	} else {
 		ERR_FAIL_MSG("Invalid array prefix for TileSet.");
 	}
@@ -451,10 +452,10 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 		end = MIN(MAX(p_from_index, p_to_pos) + 1, end);
 	}
 
-#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
 	// Save layers' properties.
 	List<PropertyInfo> properties;
-	tile_set->get_property_list(&properties);
+	ed_tile_set->get_property_list(&properties);
 	for (PropertyInfo pi : properties) {
 		if (pi.name.begins_with(p_array_prefix)) {
 			String str = pi.name.trim_prefix(p_array_prefix);
@@ -468,17 +469,17 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 			if (to_char_index > 0) {
 				int array_index = str.left(to_char_index).to_int();
 				if (array_index >= begin && array_index < end) {
-					ADD_UNDO(tile_set, pi.name);
+					ADD_UNDO(ed_tile_set, pi.name);
 				}
 			}
 		}
 	}
 
 	// Save properties for TileSetAtlasSources tile data
-	for (int i = 0; i < tile_set->get_source_count(); i++) {
-		int source_id = tile_set->get_source_id(i);
+	for (int i = 0; i < ed_tile_set->get_source_count(); i++) {
+		int source_id = ed_tile_set->get_source_id(i);
 
-		Ref<TileSetAtlasSource> tas = tile_set->get_source(source_id);
+		Ref<TileSetAtlasSource> tas = ed_tile_set->get_source(source_id);
 		if (tas.is_valid()) {
 			for (int j = 0; j < tas->get_tiles_count(); j++) {
 				Vector2i tile_id = tas->get_tile_id(j);
@@ -536,68 +537,68 @@ void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_
 	// Add do method.
 	if (p_array_prefix == "occlusion_layer_") {
 		if (p_from_index < 0) {
-			undo_redo->add_do_method(tile_set, "add_occlusion_layer", p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "add_occlusion_layer", p_to_pos);
 		} else if (p_to_pos < 0) {
-			undo_redo->add_do_method(tile_set, "remove_occlusion_layer", p_from_index);
+			undo_redo_man->add_do_method(ed_tile_set, "remove_occlusion_layer", p_from_index);
 		} else {
-			undo_redo->add_do_method(tile_set, "move_occlusion_layer", p_from_index, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "move_occlusion_layer", p_from_index, p_to_pos);
 		}
 	} else if (p_array_prefix == "physics_layer_") {
 		if (p_from_index < 0) {
-			undo_redo->add_do_method(tile_set, "add_physics_layer", p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "add_physics_layer", p_to_pos);
 		} else if (p_to_pos < 0) {
-			undo_redo->add_do_method(tile_set, "remove_physics_layer", p_from_index);
+			undo_redo_man->add_do_method(ed_tile_set, "remove_physics_layer", p_from_index);
 		} else {
-			undo_redo->add_do_method(tile_set, "move_physics_layer", p_from_index, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "move_physics_layer", p_from_index, p_to_pos);
 		}
 	} else if (p_array_prefix == "terrain_set_") {
 		if (p_from_index < 0) {
-			undo_redo->add_do_method(tile_set, "add_terrain_set", p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "add_terrain_set", p_to_pos);
 		} else if (p_to_pos < 0) {
-			undo_redo->add_do_method(tile_set, "remove_terrain_set", p_from_index);
+			undo_redo_man->add_do_method(ed_tile_set, "remove_terrain_set", p_from_index);
 		} else {
-			undo_redo->add_do_method(tile_set, "move_terrain_set", p_from_index, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "move_terrain_set", p_from_index, p_to_pos);
 		}
 	} else if (components.size() >= 2 && components[0].begins_with("terrain_set_") && components[0].trim_prefix("terrain_set_").is_valid_int() && components[1] == "terrain_") {
 		int terrain_set = components[0].trim_prefix("terrain_set_").to_int();
 		if (p_from_index < 0) {
-			undo_redo->add_do_method(tile_set, "add_terrain", terrain_set, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "add_terrain", terrain_set, p_to_pos);
 		} else if (p_to_pos < 0) {
-			undo_redo->add_do_method(tile_set, "remove_terrain", terrain_set, p_from_index);
+			undo_redo_man->add_do_method(ed_tile_set, "remove_terrain", terrain_set, p_from_index);
 		} else {
-			undo_redo->add_do_method(tile_set, "move_terrain", terrain_set, p_from_index, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "move_terrain", terrain_set, p_from_index, p_to_pos);
 		}
 	} else if (p_array_prefix == "navigation_layer_") {
 		if (p_from_index < 0) {
-			undo_redo->add_do_method(tile_set, "add_navigation_layer", p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "add_navigation_layer", p_to_pos);
 		} else if (p_to_pos < 0) {
-			undo_redo->add_do_method(tile_set, "remove_navigation_layer", p_from_index);
+			undo_redo_man->add_do_method(ed_tile_set, "remove_navigation_layer", p_from_index);
 		} else {
-			undo_redo->add_do_method(tile_set, "move_navigation_layer", p_from_index, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "move_navigation_layer", p_from_index, p_to_pos);
 		}
 	} else if (p_array_prefix == "custom_data_layer_") {
 		if (p_from_index < 0) {
-			undo_redo->add_do_method(tile_set, "add_custom_data_layer", p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "add_custom_data_layer", p_to_pos);
 		} else if (p_to_pos < 0) {
-			undo_redo->add_do_method(tile_set, "remove_custom_data_layer", p_from_index);
+			undo_redo_man->add_do_method(ed_tile_set, "remove_custom_data_layer", p_from_index);
 		} else {
-			undo_redo->add_do_method(tile_set, "move_custom_data_layer", p_from_index, p_to_pos);
+			undo_redo_man->add_do_method(ed_tile_set, "move_custom_data_layer", p_from_index, p_to_pos);
 		}
 	}
 }
 
 void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	Ref<EditorUndoRedoManager> undo_redo = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(undo_redo.is_null());
+	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_COND(undo_redo_man.is_null());
 
-#define ADD_UNDO(obj, property) undo_redo->add_undo_property(obj, property, obj->get(property));
-	TileSet *tile_set = Object::cast_to<TileSet>(p_edited);
-	if (tile_set) {
+#define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
+	TileSet *ed_tile_set = Object::cast_to<TileSet>(p_edited);
+	if (ed_tile_set) {
 		Vector<String> components = p_property.split("/", true, 3);
-		for (int i = 0; i < tile_set->get_source_count(); i++) {
-			int source_id = tile_set->get_source_id(i);
+		for (int i = 0; i < ed_tile_set->get_source_count(); i++) {
+			int source_id = ed_tile_set->get_source_id(i);
 
-			Ref<TileSetAtlasSource> tas = tile_set->get_source(source_id);
+			Ref<TileSetAtlasSource> tas = ed_tile_set->get_source(source_id);
 			if (tas.is_valid()) {
 				for (int j = 0; j < tas->get_tiles_count(); j++) {
 					Vector2i tile_id = tas->get_tile_id(j);
@@ -648,7 +649,12 @@ void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	// Add the listener again.
 	if (tile_set.is_valid()) {
 		tile_set->connect("changed", callable_mp(this, &TileSetEditor::_tile_set_changed));
-		_update_sources_list();
+		if (first_edit) {
+			first_edit = false;
+			_set_source_sort(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "tile_source_sort", 0));
+		} else {
+			_update_sources_list();
+		}
 		_update_patterns_list();
 	}
 

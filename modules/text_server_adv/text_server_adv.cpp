@@ -2494,9 +2494,7 @@ void TextServerAdvanced::_font_set_texture_image(const RID &p_font_rid, const Ve
 	tex.texture_h = p_image->get_height();
 	tex.format = p_image->get_format();
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+	Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 	if (fd->mipmaps) {
 		img->generate_mipmaps();
 	}
@@ -2515,11 +2513,7 @@ Ref<Image> TextServerAdvanced::_font_get_texture_image(const RID &p_font_rid, co
 	ERR_FAIL_INDEX_V(p_texture_index, fd->cache[size]->textures.size(), Ref<Image>());
 
 	const FontTexture &tex = fd->cache[size]->textures[p_texture_index];
-	Ref<Image> img;
-	img.instantiate();
-	img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
-
-	return img;
+	return Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 }
 
 void TextServerAdvanced::_font_set_texture_offsets(const RID &p_font_rid, const Vector2i &p_size, int64_t p_texture_index, const PackedInt32Array &p_offset) {
@@ -2853,9 +2847,7 @@ RID TextServerAdvanced::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img;
-				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 				if (fd->mipmaps) {
 					img->generate_mipmaps();
 				}
@@ -2901,9 +2893,7 @@ Size2 TextServerAdvanced::_font_get_glyph_texture_size(const RID &p_font_rid, co
 		if (gl[p_glyph | mod].texture_idx != -1) {
 			if (fd->cache[size]->textures[gl[p_glyph | mod].texture_idx].dirty) {
 				FontTexture &tex = fd->cache[size]->textures.write[gl[p_glyph | mod].texture_idx];
-				Ref<Image> img;
-				img.instantiate();
-				img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+				Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 				if (fd->mipmaps) {
 					img->generate_mipmaps();
 				}
@@ -3248,9 +3238,7 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img;
-					img.instantiate();
-					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 					if (fd->mipmaps) {
 						img->generate_mipmaps();
 					}
@@ -3340,9 +3328,7 @@ void TextServerAdvanced::_font_draw_glyph_outline(const RID &p_font_rid, const R
 			if (RenderingServer::get_singleton() != nullptr) {
 				if (fd->cache[size]->textures[gl.texture_idx].dirty) {
 					FontTexture &tex = fd->cache[size]->textures.write[gl.texture_idx];
-					Ref<Image> img;
-					img.instantiate();
-					img->create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
+					Ref<Image> img = Image::create_from_data(tex.texture_w, tex.texture_h, false, tex.format, tex.imgdata);
 					if (fd->mipmaps) {
 						img->generate_mipmaps();
 					}
@@ -5401,7 +5387,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 					int32_t script_run_end = MIN(sd->script_iter->script_ranges[j].end, bidi_run_end);
 					char scr_buffer[5] = { 0, 0, 0, 0, 0 };
 					hb_tag_to_string(hb_script_to_iso15924_tag(sd->script_iter->script_ranges[j].script), scr_buffer);
-					String script = String(scr_buffer);
+					String script_code = String(scr_buffer);
 
 					int spn_from = (is_rtl) ? 0 : sd->spans.size() - 1;
 					int spn_to = (is_rtl) ? sd->spans.size() : -1;
@@ -5441,7 +5427,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 								fonts.push_back(sd->spans[k].fonts[0]);
 							}
 							for (int l = 1; l < font_count; l++) {
-								if (_font_is_script_supported(span.fonts[l], script)) {
+								if (_font_is_script_supported(span.fonts[l], script_code)) {
 									if (_font_is_language_supported(span.fonts[l], span.language)) {
 										fonts.push_back(sd->spans[k].fonts[l]);
 									} else {

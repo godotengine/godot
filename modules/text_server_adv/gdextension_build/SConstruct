@@ -68,7 +68,7 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
-        f'msdfgen_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+        f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_msdfgen_sources,
     )
     env.Append(LIBS=[lib])
@@ -199,7 +199,7 @@ if env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
 
     lib = env_freetype.Library(
-        f'freetype_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+        f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_freetype_sources,
     )
     env.Append(LIBS=[lib])
@@ -321,7 +321,7 @@ if env["freetype_enabled"]:
 env.Append(CPPPATH=["../../../thirdparty/harfbuzz/src"])
 
 lib = env_harfbuzz.Library(
-    f'harfbuzz_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+    f'harfbuzz_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
     thirdparty_harfbuzz_sources,
 )
 env.Prepend(LIBS=[lib])
@@ -381,7 +381,7 @@ if env["graphite_enabled"] and env["freetype_enabled"]:
     )
 
     lib = env_graphite.Library(
-        f'graphite_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}',
+        f'graphite_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
         thirdparty_graphite_sources,
     )
     env.Append(LIBS=[lib])
@@ -640,9 +640,7 @@ env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/ic
 if env["platform"] == "windows":
     env.Append(LIBS=["advapi32"])
 
-lib = env_icu.Library(
-    f'icu_builtin.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["LIBSUFFIX"]}', thirdparty_icu_sources
-)
+lib = env_icu.Library(f'icu_builtin{env["suffix"]}{env["LIBSUFFIX"]}', thirdparty_icu_sources)
 env.Append(LIBS=[lib])
 
 env.Append(CPPDEFINES=["GDEXTENSION"])
@@ -662,7 +660,7 @@ if env["platform"] == "macos":
     )
 else:
     library = env.SharedLibrary(
-        f'./bin/libtextserver_advanced.{env["platform"]}.{env["target"]}.{env["arch_suffix"]}{env["SHLIBSUFFIX"]}',
+        f'./bin/libtextserver_advanced{env["suffix"]}{env["SHLIBSUFFIX"]}',
         source=sources,
     )
 

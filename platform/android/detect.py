@@ -156,22 +156,16 @@ def configure(env: "Environment"):
     env["RANLIB"] = compiler_path + "/llvm-ranlib"
     env["AS"] = compiler_path + "/clang"
 
-    # Disable exceptions and rtti on non-tools (template) builds
-    if env.editor_build:
-        env.Append(CXXFLAGS=["-frtti"])
-    elif env["builtin_icu"]:
-        env.Append(CXXFLAGS=["-frtti", "-fno-exceptions"])
-    else:
-        env.Append(CXXFLAGS=["-fno-rtti", "-fno-exceptions"])
-        # Don't use dynamic_cast, necessary with no-rtti.
-        env.Append(CPPDEFINES=["NO_SAFE_CAST"])
+    # Disable exceptions on template builds
+    if not env.editor_build:
+        env.Append(CXXFLAGS=["-fno-exceptions"])
 
     env.Append(
         CCFLAGS=(
             "-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
         )
     )
-    env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
+    env.Append(CPPDEFINES=["GLES_ENABLED"])
 
     if get_min_sdk_version(env["ndk_platform"]) >= 24:
         env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
@@ -193,7 +187,7 @@ def configure(env: "Environment"):
     env.Append(LINKFLAGS="-Wl,-soname,libgodot_android.so")
 
     env.Prepend(CPPPATH=["#platform/android"])
-    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "NO_FCNTL"])
+    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED"])
     env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "android", "log", "z", "dl"])
 
     if env["vulkan"]:

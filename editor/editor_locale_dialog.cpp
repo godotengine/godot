@@ -149,7 +149,7 @@ void EditorLocaleDialog::_filter_lang_option_changed() {
 
 void EditorLocaleDialog::_filter_script_option_changed() {
 	TreeItem *t = script_list->get_edited();
-	String script = t->get_metadata(0);
+	String scr_code = t->get_metadata(0);
 	bool checked = t->is_checked(0);
 
 	Variant prev;
@@ -160,11 +160,11 @@ void EditorLocaleDialog::_filter_script_option_changed() {
 		prev = f_script_all;
 	}
 
-	int l_idx = f_script_all.find(script);
+	int l_idx = f_script_all.find(scr_code);
 
 	if (checked) {
 		if (l_idx == -1) {
-			f_script_all.append(script);
+			f_script_all.append(scr_code);
 		}
 	} else {
 		if (l_idx != -1) {
@@ -298,7 +298,7 @@ void EditorLocaleDialog::_update_tree() {
 	Vector<String> scripts = TranslationServer::get_singleton()->get_all_scripts();
 	for (const String &E : scripts) {
 		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_script_all.has(E) || f_script_all.is_empty()) {
-			const String &script = TranslationServer::get_singleton()->get_script_name(E);
+			const String &scr_code = TranslationServer::get_singleton()->get_script_name(E);
 			TreeItem *t = script_list->create_item(s_root);
 			if (is_edit_mode) {
 				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
@@ -307,7 +307,7 @@ void EditorLocaleDialog::_update_tree() {
 			} else if (script_code->get_text() == E) {
 				t->select(0);
 			}
-			t->set_text(0, vformat("%s [%s]", script, E));
+			t->set_text(0, vformat("%s [%s]", scr_code, E));
 			t->set_metadata(0, E);
 		}
 	}

@@ -109,7 +109,7 @@ void Polygon3DEditor::_wip_close() {
 	undo_redo->commit_action();
 }
 
-EditorPlugin::AfterGUIInput Polygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
+EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
 		return EditorPlugin::AFTER_GUI_INPUT_PASS;
 	}

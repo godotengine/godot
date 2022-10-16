@@ -64,13 +64,13 @@ Ref<OpenXRAction> OpenXRAction::new_action(const char *p_name, const char *p_loc
 }
 
 String OpenXRAction::get_name_with_set() const {
-	String name = get_name();
+	String action_name = get_name();
 
 	if (action_set != nullptr) {
-		name = action_set->get_name() + "/" + name;
+		action_name = action_set->get_name() + "/" + action_name;
 	}
 
-	return name;
+	return action_name;
 }
 
 void OpenXRAction::set_localized_name(const String p_localized_name) {

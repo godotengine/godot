@@ -2932,13 +2932,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			// Allow for trailing comma.
 			break;
 		}
+		bool use_identifier_completion = current.cursor_place == GDScriptTokenizer::CURSOR_END || current.cursor_place == GDScriptTokenizer::CURSOR_MIDDLE;
 		ExpressionNode *argument = parse_expression(false);
 		if (argument == nullptr) {
 			push_error(R"(Expected expression as the function argument.)");
 		} else {
 			call->arguments.push_back(argument);
 
-			if (argument->type == Node::IDENTIFIER && current.cursor_place == GDScriptTokenizer::CURSOR_BEGINNING) {
+			if (argument->type == Node::IDENTIFIER && use_identifier_completion) {
 				completion_context.type = COMPLETION_IDENTIFIER;
 			}
 		}
@@ -3952,28 +3953,22 @@ GDScriptParser::DataType GDScriptParser::SuiteNode::Local::get_datatype() const 
 }
 
 String GDScriptParser::SuiteNode::Local::get_name() const {
-	String name;
 	switch (type) {
 		case SuiteNode::Local::PARAMETER:
-			name = "parameter";
-			break;
+			return "parameter";
 		case SuiteNode::Local::CONSTANT:
-			name = "constant";
-			break;
+			return "constant";
 		case SuiteNode::Local::VARIABLE:
-			name = "variable";
-			break;
+			return "variable";
 		case SuiteNode::Local::FOR_VARIABLE:
-			name = "for loop iterator";
-			break;
+			return "for loop iterator";
 		case SuiteNode::Local::PATTERN_BIND:
-			name = "pattern_bind";
-			break;
+			return "pattern_bind";
 		case SuiteNode::Local::UNDEFINED:
-			name = "<undefined>";
-			break;
+			return "<undefined>";
+		default:
+			return String();
 	}
-	return name;
 }
 
 String GDScriptParser::DataType::to_string() const {

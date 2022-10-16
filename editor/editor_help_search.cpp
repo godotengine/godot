@@ -320,6 +320,11 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 	matched_item = nullptr;
 	match_highest_score = 0;
 
+	terms = term.split_spaces();
+	if (terms.is_empty()) {
+		terms.append(term);
+	}
+
 	return true;
 }
 
@@ -350,62 +355,38 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 		// Make an exception for annotations, since there are not that many of them.
 		if (term.length() > 1 || term == "@") {
 			if (search_flags & SEARCH_CONSTRUCTORS) {
-				for (int i = 0; i < class_doc.constructors.size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
-					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
-							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.constructors.push_back(const_cast<DocData::MethodDoc *>(&class_doc.constructors[i]));
-					}
-				}
+				_match_method_name_and_push_back(class_doc.constructors, &match.constructors);
 			}
 			if (search_flags & SEARCH_METHODS) {
-				for (int i = 0; i < class_doc.methods.size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
-					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
-							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
-					}
-				}
+				_match_method_name_and_push_back(class_doc.methods, &match.methods);
 			}
 			if (search_flags & SEARCH_OPERATORS) {
-				for (int i = 0; i < class_doc.operators.size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.operators[i].name : class_doc.operators[i].name.to_lower();
-					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
-							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.operators.push_back(const_cast<DocData::MethodDoc *>(&class_doc.operators[i]));
-					}
-				}
+				_match_method_name_and_push_back(class_doc.operators, &match.operators);
 			}
 			if (search_flags & SEARCH_SIGNALS) {
 				for (int i = 0; i < class_doc.signals.size(); i++) {
-					if (_match_string(term, class_doc.signals[i].name)) {
+					if (_all_terms_in_name(class_doc.signals[i].name)) {
 						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_CONSTANTS) {
 				for (int i = 0; i < class_doc.constants.size(); i++) {
-					if (_match_string(term, class_doc.constants[i].name)) {
+					if (_all_terms_in_name(class_doc.constants[i].name)) {
 						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_PROPERTIES) {
 				for (int i = 0; i < class_doc.properties.size(); i++) {
-					if (_match_string(term, class_doc.properties[i].name) || _match_string(term, class_doc.properties[i].getter) || _match_string(term, class_doc.properties[i].setter)) {
+					if (_all_terms_in_name(class_doc.properties[i].name)) {
 						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
-					if (_match_string(term, class_doc.theme_properties[i].name)) {
+					if (_all_terms_in_name(class_doc.theme_properties[i].name)) {
 						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
@@ -417,7 +398,6 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 					}
 				}
 			}
-			matches[class_doc.name] = match;
 		}
 		matches[class_doc.name] = match;
 	}
@@ -470,7 +450,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 		return false;
 	}
 
-	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
+	TreeItem *parent_item = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	bool constructor_created = false;
 	for (int i = 0; i < match.methods.size(); i++) {
 		String text = match.methods[i]->name;
@@ -484,23 +464,23 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 				continue;
 			}
 		}
-		_create_method_item(parent, match.doc, text, match.methods[i]);
+		_create_method_item(parent_item, match.doc, text, match.methods[i]);
 	}
 	for (int i = 0; i < match.signals.size(); i++) {
-		_create_signal_item(parent, match.doc, match.signals[i]);
+		_create_signal_item(parent_item, match.doc, match.signals[i]);
 	}
 	for (int i = 0; i < match.constants.size(); i++) {
-		_create_constant_item(parent, match.doc, match.constants[i]);
+		_create_constant_item(parent_item, match.doc, match.constants[i]);
 	}
 	for (int i = 0; i < match.properties.size(); i++) {
-		_create_property_item(parent, match.doc, match.properties[i]);
+		_create_property_item(parent_item, match.doc, match.properties[i]);
 	}
 	for (int i = 0; i < match.theme_properties.size(); i++) {
-		_create_theme_property_item(parent, match.doc, match.theme_properties[i]);
+		_create_theme_property_item(parent_item, match.doc, match.theme_properties[i]);
 	}
 	for (int i = 0; i < match.annotations.size(); i++) {
 		// Hide the redundant leading @ symbol.
-		_create_annotation_item(parent, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
+		_create_annotation_item(parent_item, match.doc, match.annotations[i]->name.substr(1), match.annotations[i]);
 	}
 
 	++iterator_match;
@@ -510,6 +490,28 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 bool EditorHelpSearch::Runner::_phase_select_match() {
 	if (matched_item) {
 		matched_item->select(0);
+	}
+	return true;
+}
+
+void EditorHelpSearch::Runner::_match_method_name_and_push_back(Vector<DocData::MethodDoc> &p_methods, Vector<DocData::MethodDoc *> *r_match_methods) {
+	// Constructors, Methods, Operators...
+	for (int i = 0; i < p_methods.size(); i++) {
+		String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? p_methods[i].name : p_methods[i].name.to_lower();
+		if (_all_terms_in_name(method_name) ||
+				(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+				(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+				(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+			r_match_methods->push_back(const_cast<DocData::MethodDoc *>(&p_methods[i]));
+		}
+	}
+}
+
+bool EditorHelpSearch::Runner::_all_terms_in_name(String name) {
+	for (int i = 0; i < terms.size(); i++) {
+		if (!_match_string(terms[i], name)) {
+			return false;
+		}
 	}
 	return true;
 }
@@ -565,19 +567,19 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 	}
 
 	// Ensure parent nodes are created first.
-	TreeItem *parent = root_item;
+	TreeItem *parent_item = root_item;
 	if (!p_match.doc->inherits.is_empty()) {
 		if (class_items.has(p_match.doc->inherits)) {
-			parent = class_items[p_match.doc->inherits];
+			parent_item = class_items[p_match.doc->inherits];
 		} else {
 			ClassMatch &base_match = matches[p_match.doc->inherits];
 			if (base_match.doc) {
-				parent = _create_class_hierarchy(base_match);
+				parent_item = _create_class_hierarchy(base_match);
 			}
 		}
 	}
 
-	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
+	TreeItem *class_item = _create_class_item(parent_item, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
 }

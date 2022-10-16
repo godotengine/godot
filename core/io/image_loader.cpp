@@ -51,7 +51,7 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 }
 
 Error ImageFormatLoaderExtension::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
-	Error err;
+	Error err = ERR_UNAVAILABLE;
 	if (GDVIRTUAL_CALL(_load_image, p_image, p_fileaccess, p_flags, p_scale, err)) {
 		return err;
 	}

@@ -463,7 +463,7 @@ void DisplayServerAndroid::reset_window() {
 		context_vulkan->window_destroy(MAIN_WINDOW_ID);
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		if (context_vulkan->window_create(native_window, last_vsync_mode, display_size.width, display_size.height) == -1) {
+		if (context_vulkan->window_create(native_window, last_vsync_mode, display_size.width, display_size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to reset Vulkan window.");
@@ -529,7 +529,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		}
 
 		Size2i display_size = OS_Android::get_singleton()->get_display_size();
-		if (context_vulkan->window_create(native_window, p_vsync_mode, display_size.width, display_size.height) == -1) {
+		if (context_vulkan->window_create(native_window, p_vsync_mode, display_size.width, display_size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");
@@ -580,6 +580,9 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 }
 
 void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon() || !OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_capture_pointer()) {
+		return;
+	}
 	if (mouse_mode == p_mode) {
 		return;
 	}
@@ -612,6 +615,9 @@ MouseButton DisplayServerAndroid::mouse_get_button_state() const {
 }
 
 void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon()) {
+		return;
+	}
 	if (cursor_shape == p_shape) {
 		return;
 	}

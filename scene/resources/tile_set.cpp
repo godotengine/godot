@@ -1801,11 +1801,11 @@ Vector<Vector<Ref<Texture2D>>> TileSet::generate_terrains_icons(Size2i p_size) {
 				// Get the best tile.
 				Ref<Texture2D> texture = counts[terrain_set][terrain].texture;
 				Rect2i region = counts[terrain_set][terrain].region;
-				image->create(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
+				image->initialize_data(region.size.x, region.size.y, false, Image::FORMAT_RGBA8);
 				image->blit_rect(texture->get_image(), region, Point2i());
 				image->resize(p_size.x, p_size.y, Image::INTERPOLATE_NEAREST);
 			} else {
-				image->create(1, 1, false, Image::FORMAT_RGBA8);
+				image->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
 				image->set_pixel(0, 0, get_terrain_color(terrain_set, terrain));
 			}
 			Ref<ImageTexture> icon = ImageTexture::create_from_image(image);
@@ -3779,14 +3779,14 @@ bool TileSetAtlasSource::get_use_texture_padding() const {
 }
 
 Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
-	Ref<Texture2D> texture = get_texture();
-	if (!texture.is_valid()) {
+	Ref<Texture2D> txt = get_texture();
+	if (!txt.is_valid()) {
 		return Vector2i();
 	}
 
 	ERR_FAIL_COND_V(texture_region_size.x <= 0 || texture_region_size.y <= 0, Vector2i());
 
-	Size2i valid_area = texture->get_size() - margins;
+	Size2i valid_area = txt->get_size() - margins;
 
 	// Compute the number of valid tiles in the tiles atlas
 	Size2i grid_size = Size2i();
@@ -4602,9 +4602,7 @@ void TileSetAtlasSource::_update_padded_texture() {
 		return;
 	}
 
-	Ref<Image> image;
-	image.instantiate();
-	image->create(size.x, size.y, false, src->get_format());
+	Ref<Image> image = Image::create_empty(size.x, size.y, false, src->get_format());
 
 	for (KeyValue<Vector2i, TileAlternativesData> kv : tiles) {
 		for (int frame = 0; frame < (int)kv.value.animation_frames_durations.size(); frame++) {
@@ -5017,7 +5015,7 @@ void TileData::add_custom_data_layer(int p_to_pos) {
 void TileData::move_custom_data_layer(int p_from_index, int p_to_pos) {
 	ERR_FAIL_INDEX(p_from_index, custom_data.size());
 	ERR_FAIL_INDEX(p_to_pos, custom_data.size() + 1);
-	custom_data.insert(p_to_pos, navigation[p_from_index]);
+	custom_data.insert(p_to_pos, custom_data[p_from_index]);
 	custom_data.remove_at(p_to_pos < p_from_index ? p_from_index + 1 : p_from_index);
 }
 

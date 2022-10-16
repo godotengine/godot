@@ -564,9 +564,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("readonly_color", "Editor", readonly_color);
 
 	if (!dark_theme) {
-		theme->set_color("vulkan_color", "Editor", Color::hex(0xad1128ff));
+		theme->set_color("highend_color", "Editor", Color::hex(0xad1128ff));
 	} else {
-		theme->set_color("vulkan_color", "Editor", Color(1.0, 0.0, 0.0));
+		theme->set_color("highend_color", "Editor", Color(1.0, 0.0, 0.0));
 	}
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
@@ -1471,6 +1471,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("slider", "HSlider", make_flat_stylebox(dark_color_3, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
 	theme->set_stylebox("grabber_area", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2, corner_width));
 	theme->set_stylebox("grabber_area_highlight", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2));
+	theme->set_constant("grabber_offset", "HSlider", 0);
 
 	// VSlider
 	theme->set_icon("grabber", "VSlider", theme->get_icon(SNAME("GuiSliderGrabber"), SNAME("EditorIcons")));
@@ -1478,6 +1479,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("slider", "VSlider", make_flat_stylebox(dark_color_3, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
 	theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0, corner_width));
 	theme->set_stylebox("grabber_area_highlight", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
+	theme->set_constant("grabber_offset", "VSlider", 0);
 
 	// RichTextLabel
 	theme->set_color("default_color", "RichTextLabel", font_color);
@@ -1714,6 +1716,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("h_width", "ColorPicker", 30 * EDSCALE);
 	theme->set_constant("label_width", "ColorPicker", 10 * EDSCALE);
 	theme->set_icon("screen_picker", "ColorPicker", theme->get_icon(SNAME("ColorPick"), SNAME("EditorIcons")));
+	theme->set_icon("shape_circle", "ColorPicker", theme->get_icon(SNAME("PickerShapeCircle"), SNAME("EditorIcons")));
+	theme->set_icon("shape_rect", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangle"), SNAME("EditorIcons")));
+	theme->set_icon("shape_rect_wheel", "ColorPicker", theme->get_icon(SNAME("PickerShapeRectangleWheel"), SNAME("EditorIcons")));
 	theme->set_icon("add_preset", "ColorPicker", theme->get_icon(SNAME("Add"), SNAME("EditorIcons")));
 	theme->set_icon("sample_bg", "ColorPicker", theme->get_icon(SNAME("GuiMiniCheckerboard"), SNAME("EditorIcons")));
 	theme->set_icon("overbright_indicator", "ColorPicker", theme->get_icon(SNAME("OverbrightIndicator"), SNAME("EditorIcons")));

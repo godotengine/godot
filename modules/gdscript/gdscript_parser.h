@@ -578,19 +578,19 @@ public:
 						return m_enum->get_datatype();
 					case ENUM_VALUE: {
 						// Always integer.
-						DataType type;
-						type.type_source = DataType::ANNOTATED_EXPLICIT;
-						type.kind = DataType::BUILTIN;
-						type.builtin_type = Variant::INT;
-						return type;
+						DataType out_type;
+						out_type.type_source = DataType::ANNOTATED_EXPLICIT;
+						out_type.kind = DataType::BUILTIN;
+						out_type.builtin_type = Variant::INT;
+						return out_type;
 					}
 					case SIGNAL: {
-						DataType type;
-						type.type_source = DataType::ANNOTATED_EXPLICIT;
-						type.kind = DataType::BUILTIN;
-						type.builtin_type = Variant::SIGNAL;
+						DataType out_type;
+						out_type.type_source = DataType::ANNOTATED_EXPLICIT;
+						out_type.kind = DataType::BUILTIN;
+						out_type.builtin_type = Variant::SIGNAL;
 						// TODO: Add parameter info.
-						return type;
+						return out_type;
 					}
 					case GROUP: {
 						return DataType();

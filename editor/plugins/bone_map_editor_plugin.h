@@ -206,7 +206,6 @@ class BoneMapEditor : public VBoxContainer {
 	BoneMapper *bone_mapper = nullptr;
 
 	void fetch_objects();
-	void clear_editors();
 	void create_editors();
 
 protected:

@@ -95,8 +95,13 @@ private:
 	String _gen_unique_bone_name(Ref<GLTFState> state,
 			const GLTFSkeletonIndex skel_i,
 			const String &p_name);
-	GLTFTextureIndex _set_texture(Ref<GLTFState> state, Ref<Texture2D> p_texture);
+	GLTFTextureIndex _set_texture(Ref<GLTFState> state, Ref<Texture2D> p_texture,
+			StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats);
 	Ref<Texture2D> _get_texture(Ref<GLTFState> state,
+			const GLTFTextureIndex p_texture);
+	GLTFTextureSamplerIndex _set_sampler_for_mode(Ref<GLTFState> state,
+			StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats);
+	Ref<GLTFTextureSampler> _get_sampler_for_texture(Ref<GLTFState> state,
 			const GLTFTextureIndex p_texture);
 	Error _parse_json(const String &p_path, Ref<GLTFState> state);
 	Error _parse_glb(Ref<FileAccess> f, Ref<GLTFState> state);
@@ -145,10 +150,12 @@ private:
 			const bool p_for_vertex);
 	Error _parse_meshes(Ref<GLTFState> state);
 	Error _serialize_textures(Ref<GLTFState> state);
+	Error _serialize_texture_samplers(Ref<GLTFState> state);
 	Error _serialize_images(Ref<GLTFState> state, const String &p_path);
 	Error _serialize_lights(Ref<GLTFState> state);
 	Error _parse_images(Ref<GLTFState> state, const String &p_base_path);
 	Error _parse_textures(Ref<GLTFState> state);
+	Error _parse_texture_samplers(Ref<GLTFState> state);
 	Error _parse_materials(Ref<GLTFState> state);
 	void _set_texture_transform_uv1(const Dictionary &d, Ref<BaseMaterial3D> material);
 	void spec_gloss_to_rough_metal(Ref<GLTFSpecGloss> r_spec_gloss,

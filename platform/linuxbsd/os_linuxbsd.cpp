@@ -34,6 +34,11 @@
 #include "main/main.h"
 #include "servers/display_server.h"
 
+#include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 #ifdef X11_ENABLED
 #include "display_server_x11.h"
 #endif
@@ -42,12 +47,10 @@
 #include <mntent.h>
 #endif
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <dlfcn.h>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/utsname.h>
@@ -240,6 +243,200 @@ String OS_LinuxBSD::get_version() const {
 	struct utsname uts; // returns a decent value for BSD family.
 	uname(&uts);
 	return uts.version;
+}
+
+Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
+	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
+	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
+	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
+
+	String vendor_device_id_mappings;
+	List<String> lspci_args;
+	lspci_args.push_back("-n");
+	Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", lspci_args, &vendor_device_id_mappings);
+	if (err != OK || vendor_device_id_mappings.is_empty()) {
+		return Vector<String>();
+	}
+
+	// Usually found under "VGA", but for example NVIDIA mobile/laptop adapters are often listed under "3D" and some AMD adapters are under "Display".
+	const String dc_vga = "0300"; // VGA compatible controller
+	const String dc_display = "0302"; // Display controller
+	const String dc_3d = "0380"; // 3D controller
+
+	// splitting results by device class allows prioritizing, if multiple devices are found.
+	Vector<String> class_vga_device_candidates;
+	Vector<String> class_display_device_candidates;
+	Vector<String> class_3d_device_candidates;
+
+#ifdef MODULE_REGEX_ENABLED
+	RegEx regex_id_format = RegEx();
+	regex_id_format.compile("^[a-f0-9]{4}:[a-f0-9]{4}$"); // e.g. `10de:13c2`; IDs are always in hexadecimal
+#endif
+
+	Vector<String> value_lines = vendor_device_id_mappings.split("\n", false); // example: `02:00.0 0300: 10de:13c2 (rev a1)`
+	for (const String &line : value_lines) {
+		Vector<String> columns = line.split(" ", false);
+		if (columns.size() < 3) {
+			continue;
+		}
+		String device_class = columns[1].trim_suffix(":");
+		String vendor_device_id_mapping = columns[2];
+
+#ifdef MODULE_REGEX_ENABLED
+		if (regex_id_format.search(vendor_device_id_mapping).is_null()) {
+			continue;
+		}
+#endif
+
+		if (device_class == dc_vga) {
+			class_vga_device_candidates.push_back(vendor_device_id_mapping);
+		} else if (device_class == dc_display) {
+			class_display_device_candidates.push_back(vendor_device_id_mapping);
+		} else if (device_class == dc_3d) {
+			class_3d_device_candidates.push_back(vendor_device_id_mapping);
+		}
+	}
+
+	// Check results against currently used device (`card_name`), in case the user has multiple graphics cards.
+	const String device_lit = "Device"; // line of interest
+	class_vga_device_candidates = OS_LinuxBSD::lspci_device_filter(class_vga_device_candidates, dc_vga, device_lit, card_name);
+	class_display_device_candidates = OS_LinuxBSD::lspci_device_filter(class_display_device_candidates, dc_display, device_lit, card_name);
+	class_3d_device_candidates = OS_LinuxBSD::lspci_device_filter(class_3d_device_candidates, dc_3d, device_lit, card_name);
+
+	// Get driver names and filter out invalid ones, because some adapters are dummys used only for passthrough.
+	// And they have no indicator besides certain driver names.
+	const String kernel_lit = "Kernel driver in use"; // line of interest
+	const String dummys = "vfio"; // for e.g. pci passthrough dummy kernel driver `vfio-pci`
+	Vector<String> class_vga_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_vga_device_candidates, kernel_lit, dummys);
+	Vector<String> class_display_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_display_device_candidates, kernel_lit, dummys);
+	Vector<String> class_3d_device_drivers = OS_LinuxBSD::lspci_get_device_value(class_3d_device_candidates, kernel_lit, dummys);
+
+	static String driver_name;
+	static String driver_version;
+
+	// Use first valid value:
+	for (const String &driver : class_3d_device_drivers) {
+		driver_name = driver;
+		break;
+	}
+	if (driver_name.is_empty()) {
+		for (const String &driver : class_display_device_drivers) {
+			driver_name = driver;
+			break;
+		}
+	}
+	if (driver_name.is_empty()) {
+		for (const String &driver : class_vga_device_drivers) {
+			driver_name = driver;
+			break;
+		}
+	}
+
+	Vector<String> info;
+	info.push_back(driver_name);
+
+	String modinfo;
+	List<String> modinfo_args;
+	modinfo_args.push_back(driver_name);
+	err = const_cast<OS_LinuxBSD *>(this)->execute("modinfo", modinfo_args, &modinfo);
+	if (err != OK || modinfo.is_empty()) {
+		info.push_back(""); // So that this method always either returns an empty array, or an array of length 2.
+		return info;
+	}
+	Vector<String> lines = modinfo.split("\n", false);
+	for (const String &line : lines) {
+		Vector<String> columns = line.split(":", false, 1);
+		if (columns.size() < 2) {
+			continue;
+		}
+		if (columns[0].strip_edges() == "version") {
+			driver_version = columns[1].strip_edges(); // example value: `510.85.02` on Linux/BSD
+			break;
+		}
+	}
+
+	info.push_back(driver_version);
+
+	return info;
+}
+
+Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
+	// NOTE: whitelist can be changed to `Vector<String>`, if the need arises.
+	const String sep = ":";
+	Vector<String> devices;
+	for (const String &mapping : vendor_device_id_mapping) {
+		String device;
+		List<String> d_args;
+		d_args.push_back("-d");
+		d_args.push_back(mapping + sep + class_suffix);
+		d_args.push_back("-vmm");
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2:0300 -vmm`
+		if (err != OK) {
+			return Vector<String>();
+		} else if (device.is_empty()) {
+			continue;
+		}
+
+		Vector<String> device_lines = device.split("\n", false);
+		for (const String &line : device_lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == check_column) {
+				// for `column[0] == "Device"` this may contain `GM204 [GeForce GTX 970]`
+				bool is_valid = true;
+				if (!whitelist.is_empty()) {
+					is_valid = columns[1].strip_edges().contains(whitelist);
+				}
+				if (is_valid) {
+					devices.push_back(mapping);
+				}
+				break;
+			}
+		}
+	}
+	return devices;
+}
+
+Vector<String> OS_LinuxBSD::lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const {
+	// NOTE: blacklist can be changed to `Vector<String>`, if the need arises.
+	const String sep = ":";
+	Vector<String> values;
+	for (const String &mapping : vendor_device_id_mapping) {
+		String device;
+		List<String> d_args;
+		d_args.push_back("-d");
+		d_args.push_back(mapping);
+		d_args.push_back("-k");
+		Error err = const_cast<OS_LinuxBSD *>(this)->execute("lspci", d_args, &device); // e.g. `lspci -d 10de:13c2 -k`
+		if (err != OK) {
+			return Vector<String>();
+		} else if (device.is_empty()) {
+			continue;
+		}
+
+		Vector<String> device_lines = device.split("\n", false);
+		for (const String &line : device_lines) {
+			Vector<String> columns = line.split(":", false, 1);
+			if (columns.size() < 2) {
+				continue;
+			}
+			if (columns[0].strip_edges() == check_column) {
+				// for `column[0] == "Kernel driver in use"` this may contain `nvidia`
+				bool is_valid = true;
+				const String value = columns[1].strip_edges();
+				if (!blacklist.is_empty()) {
+					is_valid = !value.contains(blacklist);
+				}
+				if (is_valid) {
+					values.push_back(value);
+				}
+				break;
+			}
+		}
+	}
+	return values;
 }
 
 Error OS_LinuxBSD::shell_open(String p_uri) {

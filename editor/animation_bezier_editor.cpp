@@ -338,14 +338,14 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				Ref<Texture2D> unlock = get_theme_icon(SNAME("Unlock"), SNAME("EditorIcons"));
 				float lock_hpos = remove_hpos - hsep - lock->get_width();
 
-				Ref<Texture2D> visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
-				Ref<Texture2D> hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
-				float visibility_hpos = lock_hpos - hsep - visible->get_width();
+				Ref<Texture2D> visibility_visible = get_theme_icon(SNAME("GuiVisibilityVisible"), SNAME("EditorIcons"));
+				Ref<Texture2D> visibility_hidden = get_theme_icon(SNAME("GuiVisibilityHidden"), SNAME("EditorIcons"));
+				float visibility_hpos = lock_hpos - hsep - visibility_visible->get_width();
 
 				Ref<Texture2D> solo = get_theme_icon(SNAME("AudioBusSolo"), SNAME("EditorIcons"));
 				float solo_hpos = visibility_hpos - hsep - solo->get_width();
 
-				float buttons_width = remove->get_width() + lock->get_width() + visible->get_width() + solo->get_width() + hsep * 3;
+				float buttons_width = remove->get_width() + lock->get_width() + visibility_visible->get_width() + solo->get_width() + hsep * 3;
 
 				for (int i = 0; i < tracks.size(); ++i) {
 					// RELATED TRACKS TITLES
@@ -418,11 +418,11 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 						draw_texture(unlock, lock_rect.position);
 					}
 
-					Rect2 visible_rect = Rect2(visibility_hpos, icon_start_height - visible->get_height() / 2.0, visible->get_width(), visible->get_height());
+					Rect2 visible_rect = Rect2(visibility_hpos, icon_start_height - visibility_visible->get_height() / 2.0, visibility_visible->get_width(), visibility_visible->get_height());
 					if (hidden_tracks.has(current_track)) {
-						draw_texture(hidden, visible_rect.position);
+						draw_texture(visibility_hidden, visible_rect.position);
 					} else {
-						draw_texture(visible, visible_rect.position);
+						draw_texture(visibility_visible, visible_rect.position);
 					}
 
 					Rect2 solo_rect = Rect2(solo_hpos, icon_start_height - solo->get_height() / 2.0, solo->get_width(), solo->get_height());

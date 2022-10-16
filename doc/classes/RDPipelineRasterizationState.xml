@@ -13,7 +13,7 @@
 		</member>
 		<member name="depth_bias_constant_factor" type="float" setter="set_depth_bias_constant_factor" getter="get_depth_bias_constant_factor" default="0.0">
 		</member>
-		<member name="depth_bias_enable" type="bool" setter="set_depth_bias_enable" getter="get_depth_bias_enable" default="false">
+		<member name="depth_bias_enabled" type="bool" setter="set_depth_bias_enabled" getter="get_depth_bias_enabled" default="false">
 		</member>
 		<member name="depth_bias_slope_factor" type="float" setter="set_depth_bias_slope_factor" getter="get_depth_bias_slope_factor" default="0.0">
 		</member>

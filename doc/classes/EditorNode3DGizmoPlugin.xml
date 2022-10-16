@@ -5,10 +5,10 @@
 	</brief_description>
 	<description>
 		[EditorNode3DGizmoPlugin] allows you to define a new type of Gizmo. There are two main ways to do so: extending [EditorNode3DGizmoPlugin] for the simpler gizmos, or creating a new [EditorNode3DGizmo] type. See the tutorial in the documentation for more info.
-		To use [EditorNode3DGizmoPlugin], register it using the [method EditorPlugin.add_spatial_gizmo_plugin] method first.
+		To use [EditorNode3DGizmoPlugin], register it using the [method EditorPlugin.add_node_3d_gizmo_plugin] method first.
 	</description>
 	<tutorials>
-		<link title="Spatial gizmo plugins">$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html</link>
+		<link title="Node3D gizmo plugins">$DOCS_URL/tutorials/plugins/editor/spatial_gizmos.html</link>
 	</tutorials>
 	<methods>
 		<method name="_can_be_hidden" qualifiers="virtual const">

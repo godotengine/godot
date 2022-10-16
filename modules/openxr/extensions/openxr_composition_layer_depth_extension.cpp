@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  websocket_macros.h                                                   */
+/*  openxr_composition_layer_depth_extension.cpp                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,39 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_MACROS_H
-#define WEBSOCKET_MACROS_H
+#include "openxr_composition_layer_depth_extension.h"
 
-// Defaults per peer buffers, 1024 packets with a shared 65536 bytes payload.
-#define DEF_PKT_SHIFT 10
-#define DEF_BUF_SHIFT 16
+OpenXRCompositionLayerDepthExtension *OpenXRCompositionLayerDepthExtension::singleton = nullptr;
 
-#define GDCICLASS(CNAME)              \
-public:                               \
-	static CNAME *(*_create)();       \
-                                      \
-	static Ref<CNAME> create_ref() {  \
-		if (!_create)                 \
-			return Ref<CNAME>();      \
-		return Ref<CNAME>(_create()); \
-	}                                 \
-                                      \
-	static CNAME *create() {          \
-		if (!_create)                 \
-			return nullptr;           \
-		return _create();             \
-	}                                 \
-                                      \
-protected:
+OpenXRCompositionLayerDepthExtension *OpenXRCompositionLayerDepthExtension::get_singleton() {
+	return singleton;
+}
 
-#define GDCINULL(CNAME) \
-	CNAME *(*CNAME::_create)() = nullptr;
+OpenXRCompositionLayerDepthExtension::OpenXRCompositionLayerDepthExtension(OpenXRAPI *p_openxr_api) :
+		OpenXRExtensionWrapper(p_openxr_api) {
+	singleton = this;
 
-#define GDCIIMPL(IMPNAME, CNAME)                                      \
-public:                                                               \
-	static CNAME *_create() { return memnew(IMPNAME); }               \
-	static void make_default() { CNAME::_create = IMPNAME::_create; } \
-                                                                      \
-protected:
+	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;
+}
 
-#endif // WEBSOCKET_MACROS_H
+OpenXRCompositionLayerDepthExtension::~OpenXRCompositionLayerDepthExtension() {
+	singleton = nullptr;
+}
+
+bool OpenXRCompositionLayerDepthExtension::is_available() {
+	return available;
+}
+
+XrCompositionLayerBaseHeader *OpenXRCompositionLayerDepthExtension::get_composition_layer() {
+	// Seems this is all done in our base layer... Just in case this changes...
+
+	return nullptr;
+}

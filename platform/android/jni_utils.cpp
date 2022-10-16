@@ -167,9 +167,8 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.obj = arr;
 
 		} break;
-#ifndef _MSC_VER
-#warning This is missing 64 bits arrays, I have no idea how to do it in JNI
-#endif
+
+			// TODO: This is missing 64 bits arrays, I have no idea how to do it in JNI.
 
 		default: {
 			v.val.i = 0;

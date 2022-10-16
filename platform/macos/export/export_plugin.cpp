@@ -31,6 +31,8 @@
 #include "export_plugin.h"
 
 #include "codesign.h"
+#include "lipo.h"
+#include "macho.h"
 
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
@@ -754,6 +756,7 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 	if (extensions_to_sign.is_empty()) {
 		extensions_to_sign.push_back("dylib");
 		extensions_to_sign.push_back("framework");
+		extensions_to_sign.push_back("");
 	}
 
 	Error dir_access_error;
@@ -778,6 +781,10 @@ Error EditorExportPlatformMacOS::_code_sign_directory(const Ref<EditorExportPres
 			if (code_sign_error != OK) {
 				return code_sign_error;
 			}
+			if (is_executable(current_file_path)) {
+				// chmod with 0755 if the file is executable.
+				FileAccess::set_unix_permissions(current_file_path, 0755);
+			}
 		} else if (dir_access->current_is_dir()) {
 			Error code_sign_error{ _code_sign_directory(p_preset, current_file_path, p_ent_path, p_should_error_on_non_code) };
 			if (code_sign_error != OK) {
@@ -799,6 +806,14 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 		const String &p_in_app_path, bool p_sign_enabled,
 		const Ref<EditorExportPreset> &p_preset, const String &p_ent_path,
 		bool p_should_error_on_non_code_sign) {
+	static Vector<String> extensions_to_sign;
+
+	if (extensions_to_sign.is_empty()) {
+		extensions_to_sign.push_back("dylib");
+		extensions_to_sign.push_back("framework");
+		extensions_to_sign.push_back("");
+	}
+
 	Error err{ OK };
 	if (dir_access->dir_exists(p_src_path)) {
 #ifndef UNIX_ENABLED
@@ -818,7 +833,13 @@ Error EditorExportPlatformMacOS::_copy_and_sign_files(Ref<DirAccess> &dir_access
 			// If it is a directory, find and sign all dynamic libraries.
 			err = _code_sign_directory(p_preset, p_in_app_path, p_ent_path, p_should_error_on_non_code_sign);
 		} else {
-			err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
+			if (extensions_to_sign.find(p_in_app_path.get_extension()) > -1) {
+				err = _code_sign(p_preset, p_in_app_path, p_ent_path, false);
+			}
+			if (is_executable(p_in_app_path)) {
+				// chmod with 0755 if the file is executable.
+				FileAccess::set_unix_permissions(p_in_app_path, 0755);
+			}
 		}
 	}
 	return err;
@@ -875,6 +896,17 @@ Error EditorExportPlatformMacOS::_create_dmg(const String &p_dmg_path, const Str
 	}
 
 	return OK;
+}
+
+bool EditorExportPlatformMacOS::is_shbang(const String &p_path) const {
+	Ref<FileAccess> fb = FileAccess::open(p_path, FileAccess::READ);
+	ERR_FAIL_COND_V_MSG(fb.is_null(), false, vformat("Can't open file: \"%s\".", p_path));
+	uint16_t magic = fb->get_16();
+	return (magic == 0x2123);
+}
+
+bool EditorExportPlatformMacOS::is_executable(const String &p_path) const {
+	return MachO::is_macho(p_path) || LipO::is_lipo(p_path) || is_shbang(p_path);
 }
 
 Error EditorExportPlatformMacOS::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
@@ -1158,11 +1190,8 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 	// Now process our template.
 	bool found_binary = false;
-	Vector<String> dylibs_found;
 
 	while (ret == UNZ_OK && err == OK) {
-		bool is_execute = false;
-
 		// Get filename.
 		unz_file_info info;
 		char fname[16384];
@@ -1219,7 +1248,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				continue; // skip
 			}
 			found_binary = true;
-			is_execute = true;
 			file = "Contents/MacOS/" + pkg_name;
 		}
 
@@ -1251,25 +1279,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (data.size() > 0) {
-			if (file.find("/data.mono.macos.release_debug." + architecture + "/") != -1) {
-				if (!p_debug) {
-					ret = unzGoToNextFile(src_pkg_zip);
-					continue; // skip
-				}
-				file = file.replace("/data.mono.macos.release_debug." + architecture + "/", "/GodotSharp/");
-			}
-			if (file.find("/data.mono.macos.release." + architecture + "/") != -1) {
-				if (p_debug) {
-					ret = unzGoToNextFile(src_pkg_zip);
-					continue; // skip
-				}
-				file = file.replace("/data.mono.macos.release." + architecture + "/", "/GodotSharp/");
-			}
-
-			if (file.ends_with(".dylib")) {
-				dylibs_found.push_back(file);
-			}
-
 			print_verbose("ADDING: " + file + " size: " + itos(data.size()));
 
 			// Write it into our application bundle.
@@ -1285,7 +1294,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				if (f.is_valid()) {
 					f->store_buffer(data.ptr(), data.size());
 					f.unref();
-					if (is_execute) {
+					if (is_executable(file)) {
 						// chmod with 0755 if the file is executable.
 						FileAccess::set_unix_permissions(file, 0755);
 					}
@@ -1324,12 +1333,35 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			return ERR_SKIP;
 		}
 
+		// See if we can code sign our new package.
+		bool sign_enabled = (p_preset->get("codesign/codesign").operator int() > 0);
+		bool ad_hoc = false;
+		int codesign_tool = p_preset->get("codesign/codesign");
+		switch (codesign_tool) {
+			case 1: { // built-in ad-hoc
+				ad_hoc = true;
+			} break;
+			case 2: { // "rcodesign"
+				ad_hoc = p_preset->get("codesign/certificate_file").operator String().is_empty() || p_preset->get("codesign/certificate_password").operator String().is_empty();
+			} break;
+#ifdef MACOS_ENABLED
+			case 3: { // "codesign"
+				ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
+			} break;
+#endif
+			default: {
+			};
+		}
+
 		String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
 		Vector<SharedObject> shared_objects;
 		err = save_pack(p_preset, p_debug, pack_path, &shared_objects);
 
-		// See if we can code sign our new package.
-		bool sign_enabled = (p_preset->get("codesign/codesign").operator int() > 0);
+		bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
+		if (!shared_objects.is_empty() && sign_enabled && ad_hoc && !lib_validation) {
+			add_message(EXPORT_MESSAGE_INFO, TTR("Entitlements Modified"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
+			lib_validation = true;
+		}
 
 		String ent_path = p_preset->get("codesign/entitlements/custom_file");
 		String hlp_ent_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name + "_helper.entitlements");
@@ -1365,7 +1397,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					}
 				}
 
-				if ((bool)p_preset->get("codesign/entitlements/disable_library_validation")) {
+				if (lib_validation) {
 					ent_f->store_line("<key>com.apple.security.cs.disable-library-validation</key>");
 					ent_f->store_line("<true/>");
 				}
@@ -1495,32 +1527,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 			}
 		}
 
-		bool ad_hoc = false;
-		int codesign_tool = p_preset->get("codesign/codesign");
-		switch (codesign_tool) {
-			case 1: { // built-in ad-hoc
-				ad_hoc = true;
-			} break;
-			case 2: { // "rcodesign"
-				ad_hoc = p_preset->get("codesign/certificate_file").operator String().is_empty() || p_preset->get("codesign/certificate_password").operator String().is_empty();
-			} break;
-#ifdef MACOS_ENABLED
-			case 3: { // "codesign"
-				ad_hoc = (p_preset->get("codesign/identity") == "" || p_preset->get("codesign/identity") == "-");
-			} break;
-#endif
-			default: {
-			};
-		}
-
-		if (err == OK) {
-			bool lib_validation = p_preset->get("codesign/entitlements/disable_library_validation");
-			if ((!dylibs_found.is_empty() || !shared_objects.is_empty()) && sign_enabled && ad_hoc && !lib_validation) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Ad-hoc signed applications require the 'Disable Library Validation' entitlement to load dynamic libraries."));
-				err = ERR_CANT_CREATE;
-			}
-		}
-
 		if (err == OK) {
 			Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 			for (int i = 0; i < shared_objects.size(); i++) {
@@ -1529,8 +1535,9 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					String path_in_app = tmp_app_path_name + "/Contents/Frameworks/" + src_path.get_file();
 					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, true);
 				} else {
-					String path_in_app = tmp_app_path_name.path_join(shared_objects[i].target).path_join(src_path.get_file());
-					err = _copy_and_sign_files(da, src_path, path_in_app, sign_enabled, p_preset, ent_path, false);
+					String path_in_app = tmp_app_path_name.path_join(shared_objects[i].target);
+					tmp_app_dir->make_dir_recursive(path_in_app);
+					err = _copy_and_sign_files(da, src_path, path_in_app.path_join(src_path.get_file()), sign_enabled, p_preset, ent_path, false);
 				}
 				if (err != OK) {
 					break;
@@ -1542,14 +1549,6 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 				err = _export_macos_plugins_for(export_plugins[i], tmp_app_path_name, da, sign_enabled, p_preset, ent_path);
 				if (err != OK) {
 					break;
-				}
-			}
-		}
-
-		if (sign_enabled) {
-			for (int i = 0; i < dylibs_found.size(); i++) {
-				if (err == OK) {
-					err = _code_sign(p_preset, tmp_app_path_name + "/" + dylibs_found[i], ent_path, false);
 				}
 			}
 		}
@@ -1683,8 +1682,6 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 		} else if (da->current_is_dir()) {
 			_zip_folder_recursive(p_zip, p_root_path, p_folder.path_join(f), p_pkg_name);
 		} else {
-			bool is_executable = (p_folder.ends_with("MacOS") && (f == p_pkg_name)) || p_folder.ends_with("Helpers") || f.ends_with(".command");
-
 			OS::DateTime dt = OS::get_singleton()->get_datetime();
 
 			zip_fileinfo zipfi;
@@ -1698,7 +1695,7 @@ void EditorExportPlatformMacOS::_zip_folder_recursive(zipFile &p_zip, const Stri
 			// 0100000: regular file type
 			// 0000755: permissions rwxr-xr-x
 			// 0000644: permissions rw-r--r--
-			uint32_t _mode = (is_executable ? 0100755 : 0100644);
+			uint32_t _mode = (is_executable(dir.path_join(f)) ? 0100755 : 0100644);
 			zipfi.external_fa = (_mode << 16L) | !(_mode & 0200);
 			zipfi.internal_fa = 0;
 

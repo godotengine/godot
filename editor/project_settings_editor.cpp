@@ -36,6 +36,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/check_button.h"
 #include "servers/movie_writer/movie_writer.h"
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
@@ -70,6 +71,11 @@ void ProjectSettingsEditor::queue_save() {
 
 void ProjectSettingsEditor::set_plugins_page() {
 	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(plugin_settings));
+}
+
+void ProjectSettingsEditor::set_general_page(const String &p_category) {
+	tab_container->set_current_tab(tab_container->get_tab_idx_from_control(general_editor));
+	general_settings_inspector->set_current_section(p_category);
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -356,12 +362,12 @@ void ProjectSettingsEditor::_action_edited(const String &p_name, const Dictionar
 
 	} else {
 		// Events changed
-		int event_count = ((Array)p_action["events"]).size();
+		int act_event_count = ((Array)p_action["events"]).size();
 		int old_event_count = ((Array)old_val["events"]).size();
 
-		if (event_count == old_event_count) {
+		if (act_event_count == old_event_count) {
 			undo_redo->create_action(TTR("Edit Input Action Event"));
-		} else if (event_count > old_event_count) {
+		} else if (act_event_count > old_event_count) {
 			undo_redo->create_action(TTR("Add Input Action Event"));
 		} else {
 			undo_redo->create_action(TTR("Remove Input Action Event"));
@@ -575,7 +581,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->set_theme_type_variation("TabContainerOdd");
 	add_child(tab_container);
 
-	VBoxContainer *general_editor = memnew(VBoxContainer);
+	general_editor = memnew(VBoxContainer);
 	general_editor->set_name(TTR("General"));
 	general_editor->set_alignment(BoxContainer::ALIGNMENT_BEGIN);
 	general_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);

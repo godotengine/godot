@@ -268,7 +268,7 @@ bool SkyRD::SkyMaterialData::update_parameters(const HashMap<StringName, Variant
 
 	uniform_set_updated = true;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, scene_singleton->sky.sky_shader.shader.version_get_shader(shader_data->version, 0), SKY_SET_MATERIAL);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, scene_singleton->sky.sky_shader.shader.version_get_shader(shader_data->version, 0), SKY_SET_MATERIAL, true);
 }
 
 SkyRD::SkyMaterialData::~SkyMaterialData() {
@@ -300,10 +300,10 @@ void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineC
 
 	for (uint32_t v = 0; v < p_view_count; v++) {
 		// We only need key components of our projection matrix
-		sky_push_constant.projections[v][0] = p_projections[v].matrix[2][0];
-		sky_push_constant.projections[v][1] = p_projections[v].matrix[0][0];
-		sky_push_constant.projections[v][2] = p_projections[v].matrix[2][1];
-		sky_push_constant.projections[v][3] = p_projections[v].matrix[1][1];
+		sky_push_constant.projections[v][0] = p_projections[v].columns[2][0];
+		sky_push_constant.projections[v][1] = p_projections[v].columns[0][0];
+		sky_push_constant.projections[v][2] = p_projections[v].columns[2][1];
+		sky_push_constant.projections[v][3] = p_projections[v].columns[1][1];
 	}
 	sky_push_constant.position[0] = p_position.x;
 	sky_push_constant.position[1] = p_position.y;
@@ -772,9 +772,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
 		RD::get_singleton()->free(rad_tex);
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
+		Ref<Image> img = Image::create_from_data(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
 		for (int i = 0; i < p_size.width; i++) {
 			for (int j = 0; j < p_size.height; j++) {
 				Color c = img->get_pixel(i, j);
@@ -1200,18 +1198,17 @@ void SkyRD::setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const P
 			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
 			// after the depth prepass, but this runs before the depth prepass
 			for (int i = 0; i < (int)p_lights.size(); i++) {
-				RendererSceneRenderRD::LightInstance *li = p_scene_render->light_instance_owner.get_or_null(p_lights[i]);
-				if (!li) {
+				if (!light_storage->owns_light_instance(p_lights[i])) {
 					continue;
 				}
-				RID base = li->light;
+				RID base = light_storage->light_instance_get_base_light(p_lights[i]);
 
 				ERR_CONTINUE(base.is_null());
 
 				RS::LightType type = light_storage->light_get_type(base);
 				if (type == RS::LIGHT_DIRECTIONAL && light_storage->light_directional_get_sky_mode(base) != RS::LIGHT_DIRECTIONAL_SKY_MODE_LIGHT_ONLY) {
 					SkyDirectionalLightData &sky_light_data = sky_scene_state.directional_lights[sky_scene_state.ubo.directional_light_count];
-					Transform3D light_transform = li->transform;
+					Transform3D light_transform = light_storage->light_instance_get_base_transform(p_lights[i]);
 					Vector3 world_direction = light_transform.basis.xform(Vector3(0, 0, 1)).normalized();
 
 					sky_light_data.direction[0] = world_direction.x;

@@ -48,20 +48,10 @@ class CSharpScript;
 class CSharpInstance;
 class CSharpLanguage;
 
-#ifdef NO_SAFE_CAST
-template <typename TScriptInstance, typename TScriptLanguage>
-TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
-	if (!p_inst) {
-		return nullptr;
-	}
-	return p_inst->get_language() == TScriptLanguage::get_singleton() ? static_cast<TScriptInstance *>(p_inst) : nullptr;
-}
-#else
 template <typename TScriptInstance, typename TScriptLanguage>
 TScriptInstance *cast_script_instance(ScriptInstance *p_inst) {
 	return dynamic_cast<TScriptInstance *>(p_inst);
 }
-#endif
 
 #define CAST_CSHARP_INSTANCE(m_inst) (cast_script_instance<CSharpInstance, CSharpLanguage>(m_inst))
 

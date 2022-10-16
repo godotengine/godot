@@ -147,6 +147,7 @@ public:
 	Color get_correlated_color() const;
 
 	virtual AABB get_aabb() const override;
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 	Light3D();
 	~Light3D();

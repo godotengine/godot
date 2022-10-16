@@ -389,6 +389,27 @@ TEST_CASE("[AABB] Expanding") {
 			aabb.expand(Vector3(-20, 0, 0)).is_equal_approx(AABB(Vector3(-20, 0, -2.5), Vector3(22.5, 7, 6))),
 			"expand() with non-contained point should return the expected AABB.");
 }
+
+TEST_CASE("[AABB] Finite number checks") {
+	const Vector3 x(0, 1, 2);
+	const Vector3 infinite(NAN, NAN, NAN);
+
+	CHECK_MESSAGE(
+			AABB(x, x).is_finite(),
+			"AABB with all components finite should be finite");
+
+	CHECK_FALSE_MESSAGE(
+			AABB(infinite, x).is_finite(),
+			"AABB with one component infinite should not be finite.");
+	CHECK_FALSE_MESSAGE(
+			AABB(x, infinite).is_finite(),
+			"AABB with one component infinite should not be finite.");
+
+	CHECK_FALSE_MESSAGE(
+			AABB(infinite, infinite).is_finite(),
+			"AABB with two components infinite should not be finite.");
+}
+
 } // namespace TestAABB
 
 #endif // TEST_AABB_H

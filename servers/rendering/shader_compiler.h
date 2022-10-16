@@ -122,7 +122,7 @@ private:
 
 	DefaultIdentifierActions actions;
 
-	static ShaderLanguage::DataType _get_variable_type(const StringName &p_type);
+	static ShaderLanguage::DataType _get_global_shader_uniform_type(const StringName &p_name);
 
 public:
 	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);

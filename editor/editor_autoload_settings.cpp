@@ -222,15 +222,15 @@ void EditorAutoloadSettings::_autoload_edited() {
 		name = "autoload/" + name;
 
 		int order = ProjectSettings::get_singleton()->get_order(selected_autoload);
-		String path = ProjectSettings::get_singleton()->get(selected_autoload);
+		String scr_path = ProjectSettings::get_singleton()->get(selected_autoload);
 
 		undo_redo->create_action(TTR("Rename Autoload"));
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, path);
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, scr_path);
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", name, order);
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", selected_autoload);
 
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), selected_autoload, path);
+		undo_redo->add_undo_property(ProjectSettings::get_singleton(), selected_autoload, scr_path);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_autoload, order);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "clear", name);
 
@@ -250,20 +250,20 @@ void EditorAutoloadSettings::_autoload_edited() {
 		String base = "autoload/" + ti->get_text(0);
 
 		int order = ProjectSettings::get_singleton()->get_order(base);
-		String path = ProjectSettings::get_singleton()->get(base);
+		String scr_path = ProjectSettings::get_singleton()->get(base);
 
-		if (path.begins_with("*")) {
-			path = path.substr(1, path.length());
+		if (scr_path.begins_with("*")) {
+			scr_path = scr_path.substr(1, scr_path.length());
 		}
 
 		// Singleton autoloads are represented with a leading "*" in their path.
 		if (checked) {
-			path = "*" + path;
+			scr_path = "*" + scr_path;
 		}
 
 		undo_redo->create_action(TTR("Toggle Autoload Globals"));
 
-		undo_redo->add_do_property(ProjectSettings::get_singleton(), base, path);
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), base, scr_path);
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), base, ProjectSettings::get_singleton()->get(base));
 
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", base, order);
@@ -404,11 +404,11 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
 	Node *n = nullptr;
 	Ref<PackedScene> scn = res;
-	Ref<Script> script = res;
+	Ref<Script> scr = res;
 	if (scn.is_valid()) {
 		n = scn->instantiate();
-	} else if (script.is_valid()) {
-		StringName ibt = script->get_instance_base_type();
+	} else if (scr.is_valid()) {
+		StringName ibt = scr->get_instance_base_type();
 		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
 		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit from Node: " + p_path + ".");
 
@@ -417,7 +417,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		ERR_FAIL_COND_V_MSG(!obj, nullptr, "Cannot instance script for Autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
 
 		n = Object::cast_to<Node>(obj);
-		n->set_script(script);
+		n->set_script(scr);
 	}
 
 	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in Autoload not a node or script: " + p_path + ".");
@@ -453,21 +453,21 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 
 		String name = pi.name.get_slice("/", 1);
-		String path = ProjectSettings::get_singleton()->get(pi.name);
+		String scr_path = ProjectSettings::get_singleton()->get(pi.name);
 
 		if (name.is_empty()) {
 			continue;
 		}
 
 		AutoloadInfo info;
-		info.is_singleton = path.begins_with("*");
+		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			path = path.substr(1, path.length());
+			scr_path = scr_path.substr(1, scr_path.length());
 		}
 
 		info.name = name;
-		info.path = path;
+		info.path = scr_path;
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		bool need_to_add = true;
@@ -499,7 +499,7 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_text(0, name);
 		item->set_editable(0, true);
 
-		item->set_text(1, path);
+		item->set_text(1, scr_path);
 		item->set_selectable(1, true);
 
 		item->set_cell_mode(2, TreeItem::CELL_MODE_CHECK);
@@ -745,13 +745,12 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 		return false;
 	}
 
-	const String &path = p_path;
-	if (!FileAccess::exists(path)) {
+	if (!FileAccess::exists(p_path)) {
 		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + vformat(TTR("%s is an invalid path. File does not exist."), path));
 		return false;
 	}
 
-	if (!path.begins_with("res://")) {
+	if (!p_path.begins_with("res://")) {
 		EditorNode::get_singleton()->show_warning(TTR("Can't add Autoload:") + "\n" + vformat(TTR("%s is an invalid path. Not in resource path (res://)."), path));
 		return false;
 	}
@@ -762,7 +761,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	undo_redo->create_action(TTR("Add Autoload"));
 	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + path);
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + p_path);
 
 	if (ProjectSettings::get_singleton()->has_setting(name)) {
 		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, ProjectSettings::get_singleton()->get(name));
@@ -829,21 +828,21 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		}
 
 		String name = pi.name.get_slice("/", 1);
-		String path = ProjectSettings::get_singleton()->get(pi.name);
+		String scr_path = ProjectSettings::get_singleton()->get(pi.name);
 
 		if (name.is_empty()) {
 			continue;
 		}
 
 		AutoloadInfo info;
-		info.is_singleton = path.begins_with("*");
+		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			path = path.substr(1, path.length());
+			scr_path = scr_path.substr(1, scr_path.length());
 		}
 
 		info.name = name;
-		info.path = path;
+		info.path = scr_path;
 		info.order = ProjectSettings::get_singleton()->get_order(pi.name);
 
 		if (info.is_singleton) {

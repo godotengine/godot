@@ -372,7 +372,7 @@ Error MultiplayerAPIExtension::rpcp(Object *p_obj, int p_peer_id, const StringNa
 	for (int i = 0; i < p_argcount; i++) {
 		args.push_back(*p_arg[i]);
 	}
-	int ret;
+	int ret = FAILED;
 	if (GDVIRTUAL_CALL(_rpc, p_peer_id, p_obj, p_method, args, ret)) {
 		return (Error)ret;
 	}
@@ -380,7 +380,7 @@ Error MultiplayerAPIExtension::rpcp(Object *p_obj, int p_peer_id, const StringNa
 }
 
 int MultiplayerAPIExtension::get_remote_sender_id() {
-	int id;
+	int id = 0;
 	if (GDVIRTUAL_CALL(_get_remote_sender_id, id)) {
 		return id;
 	}
@@ -388,7 +388,7 @@ int MultiplayerAPIExtension::get_remote_sender_id() {
 }
 
 Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
-	int err;
+	int err = ERR_UNAVAILABLE;
 	if (GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err)) {
 		return (Error)err;
 	}
@@ -396,7 +396,7 @@ Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Varian
 }
 
 Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
-	int err;
+	int err = ERR_UNAVAILABLE;
 	if (GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err)) {
 		return (Error)err;
 	}

@@ -302,6 +302,7 @@ void Utilities::update_dirty_resources() {
 	MaterialStorage::get_singleton()->_update_queued_materials();
 	//MeshStorage::get_singleton()->_update_dirty_skeletons();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
+	TextureStorage::get_singleton()->update_texture_atlas();
 }
 
 void Utilities::set_debug_generate_wireframes(bool p_generate) {

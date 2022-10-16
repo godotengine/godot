@@ -919,10 +919,10 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effect_options = memnew(PopupMenu);
 	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
-	List<StringName> effects;
-	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
-	effects.sort_custom<StringName::AlphCompare>();
-	for (const StringName &E : effects) {
+	List<StringName> effect_list;
+	ClassDB::get_inheriters_from_class("AudioEffect", &effect_list);
+	effect_list.sort_custom<StringName::AlphCompare>();
+	for (const StringName &E : effect_list) {
 		if (!ClassDB::can_instantiate(E) || ClassDB::is_virtual(E)) {
 			continue;
 		}

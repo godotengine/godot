@@ -3667,29 +3667,43 @@ bool String::is_network_share_path() const {
 String String::simplify_path() const {
 	String s = *this;
 	String drive;
-	if (s.begins_with("local://")) {
-		drive = "local://";
-		s = s.substr(8, s.length());
-	} else if (s.begins_with("res://")) {
-		drive = "res://";
-		s = s.substr(6, s.length());
-	} else if (s.begins_with("user://")) {
-		drive = "user://";
-		s = s.substr(7, s.length());
-	} else if (is_network_share_path()) {
-		drive = s.substr(0, 2);
-		s = s.substr(2, s.length() - 2);
-	} else if (s.begins_with("/") || s.begins_with("\\")) {
-		drive = s.substr(0, 1);
-		s = s.substr(1, s.length() - 1);
-	} else {
-		int p = s.find(":/");
-		if (p == -1) {
-			p = s.find(":\\");
+
+	// Check if we have a special path (like res://) or a protocol identifier.
+	int p = s.find("://");
+	bool found = false;
+	if (p > 0) {
+		bool only_chars = true;
+		for (int i = 0; i < p; i++) {
+			if (!is_ascii_char(s[i])) {
+				only_chars = false;
+				break;
+			}
 		}
-		if (p != -1 && p < s.find("/")) {
-			drive = s.substr(0, p + 2);
-			s = s.substr(p + 2, s.length());
+		if (only_chars) {
+			found = true;
+			drive = s.substr(0, p + 3);
+			s = s.substr(p + 3);
+		}
+	}
+	if (!found) {
+		if (is_network_share_path()) {
+			// Network path, beginning with // or \\.
+			drive = s.substr(0, 2);
+			s = s.substr(2);
+		} else if (s.begins_with("/") || s.begins_with("\\")) {
+			// Absolute path.
+			drive = s.substr(0, 1);
+			s = s.substr(1);
+		} else {
+			// Windows-style drive path, like C:/ or C:\.
+			p = s.find(":/");
+			if (p == -1) {
+				p = s.find(":\\");
+			}
+			if (p != -1 && p < s.find("/")) {
+				drive = s.substr(0, p + 2);
+				s = s.substr(p + 2);
+			}
 		}
 	}
 
@@ -4651,15 +4665,18 @@ String String::sprintf(const Array &values, bool *error) const {
 					double value = values[value_index];
 					bool is_negative = (value < 0);
 					String str = String::num(ABS(value), min_decimals);
+					const bool is_finite = Math::is_finite(value);
 
 					// Pad decimals out.
-					str = str.pad_decimals(min_decimals);
+					if (is_finite) {
+						str = str.pad_decimals(min_decimals);
+					}
 
 					int initial_len = str.length();
 
 					// Padding. Leave room for sign later if required.
 					int pad_chars_count = (is_negative || show_sign) ? min_chars - 1 : min_chars;
-					String pad_char = pad_with_zeros ? String("0") : String(" ");
+					String pad_char = (pad_with_zeros && is_finite) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 					if (left_justified) {
 						str = str.rpad(pad_chars_count, pad_char);
 					} else {
@@ -4709,14 +4726,19 @@ String String::sprintf(const Array &values, bool *error) const {
 					String str = "(";
 					for (int i = 0; i < count; i++) {
 						double val = vec[i];
+						String number_str = String::num(ABS(val), min_decimals);
+						const bool is_finite = Math::is_finite(val);
+
 						// Pad decimals out.
-						String number_str = String::num(ABS(val), min_decimals).pad_decimals(min_decimals);
+						if (is_finite) {
+							number_str = number_str.pad_decimals(min_decimals);
+						}
 
 						int initial_len = number_str.length();
 
 						// Padding. Leave room for sign later if required.
 						int pad_chars_count = val < 0 ? min_chars - 1 : min_chars;
-						String pad_char = pad_with_zeros ? String("0") : String(" ");
+						String pad_char = (pad_with_zeros && is_finite) ? String("0") : String(" "); // Never pad NaN or inf with zeros
 						if (left_justified) {
 							number_str = number_str.rpad(pad_chars_count, pad_char);
 						} else {

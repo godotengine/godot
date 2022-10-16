@@ -135,7 +135,7 @@ void ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_strin
 	res = sw_canvas->clear(true);
 	memfree(buffer);
 
-	p_image->create(width, height, false, Image::FORMAT_RGBA8, image);
+	p_image->set_data(width, height, false, Image::FORMAT_RGBA8, image);
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {

@@ -100,25 +100,34 @@ android {
             throw new GradleException("Invalid product flavor: $flavorName")
         }
 
-        boolean toolsFlag = flavorName == "editor"
-
         def buildType = variant.buildType.name
-        if (buildType == null || buildType == "" || !supportedTargetsMap.containsKey(buildType)) {
+        if (buildType == null || buildType == "" || !supportedFlavorsBuildTypes[flavorName].contains(buildType)) {
             throw new GradleException("Invalid build type: $buildType")
         }
 
-        def sconsTarget = supportedTargetsMap[buildType]
-        if (sconsTarget == null || sconsTarget == "") {
-            throw new GradleException("Invalid scons target: $sconsTarget")
+        boolean devBuild = buildType == "dev"
+
+        def sconsTarget = flavorName
+        if (sconsTarget == "template") {
+            switch (buildType) {
+                case "release":
+                    sconsTarget += "_release"
+                    break
+                case "debug":
+                case "dev":
+                default:
+                    sconsTarget += "_debug"
+                    break;
+            }
         }
 
         // Update the name of the generated library
-        def outputSuffix = "${buildType}.aar"
-        if (toolsFlag) {
-            outputSuffix = "tools.$outputSuffix"
+        def outputSuffix = "${sconsTarget}"
+        if (devBuild) {
+            outputSuffix = "${outputSuffix}.dev"
         }
         variant.outputs.all { output ->
-            output.outputFileName = "godot-lib.${outputSuffix}"
+            output.outputFileName = "godot-lib.${outputSuffix}.aar"
         }
 
         // Find scons' executable path
@@ -159,7 +168,7 @@ android {
             def taskName = getSconsTaskName(flavorName, buildType, selectedAbi)
             tasks.create(name: taskName, type: Exec) {
                 executable sconsExecutableFile.absolutePath
-                args "--directory=${pathToRootDir}", "platform=android", "tools=${toolsFlag}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
+                args "--directory=${pathToRootDir}", "platform=android", "dev_mode=${devBuild}", "dev_build=${devBuild}", "target=${sconsTarget}", "arch=${selectedAbi}", "-j" + Runtime.runtime.availableProcessors()
             }
 
             // Schedule the tasks so the generated libs are present before the aar file is packaged.

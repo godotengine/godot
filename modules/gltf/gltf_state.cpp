@@ -64,6 +64,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_nodes", "root_nodes"), &GLTFState::set_root_nodes);
 	ClassDB::bind_method(D_METHOD("get_textures"), &GLTFState::get_textures);
 	ClassDB::bind_method(D_METHOD("set_textures", "textures"), &GLTFState::set_textures);
+	ClassDB::bind_method(D_METHOD("get_texture_samplers"), &GLTFState::get_texture_samplers);
+	ClassDB::bind_method(D_METHOD("set_texture_samplers", "texture_samplers"), &GLTFState::set_texture_samplers);
 	ClassDB::bind_method(D_METHOD("get_images"), &GLTFState::get_images);
 	ClassDB::bind_method(D_METHOD("set_images", "images"), &GLTFState::set_images);
 	ClassDB::bind_method(D_METHOD("get_skins"), &GLTFState::get_skins);
@@ -101,6 +103,7 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "base_path"), "set_base_path", "get_base_path"); // String
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "root_nodes"), "set_root_nodes", "get_root_nodes"); // Vector<int>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "textures", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_textures", "get_textures"); // Vector<Ref<GLTFTexture>>
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "texture_samplers", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_texture_samplers", "get_texture_samplers"); //Vector<Ref<GLTFTextureSampler>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "images", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_images", "get_images"); // Vector<Ref<Texture>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skins", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skins", "get_skins"); // Vector<Ref<GLTFSkin>>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "cameras", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_cameras", "get_cameras"); // Vector<Ref<GLTFCamera>>
@@ -234,6 +237,14 @@ TypedArray<GLTFTexture> GLTFState::get_textures() {
 
 void GLTFState::set_textures(TypedArray<GLTFTexture> p_textures) {
 	GLTFTemplateConvert::set_from_array(textures, p_textures);
+}
+
+TypedArray<GLTFTextureSampler> GLTFState::get_texture_samplers() {
+	return GLTFTemplateConvert::to_array(texture_samplers);
+}
+
+void GLTFState::set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers) {
+	GLTFTemplateConvert::set_from_array(texture_samplers, p_texture_samplers);
 }
 
 TypedArray<Texture2D> GLTFState::get_images() {

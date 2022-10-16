@@ -716,11 +716,11 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid() && k->is_pressed()) {
-		if (ED_IS_SHORTCUT("property_editor/copy_property", p_event)) {
-			menu_option(MENU_COPY_PROPERTY);
+		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
+			menu_option(MENU_COPY_VALUE);
 			accept_event();
-		} else if (ED_IS_SHORTCUT("property_editor/paste_property", p_event) && !is_read_only()) {
-			menu_option(MENU_PASTE_PROPERTY);
+		} else if (ED_IS_SHORTCUT("property_editor/paste_value", p_event) && !is_read_only()) {
+			menu_option(MENU_PASTE_VALUE);
 			accept_event();
 		} else if (ED_IS_SHORTCUT("property_editor/copy_property_path", p_event)) {
 			menu_option(MENU_COPY_PROPERTY_PATH);
@@ -783,9 +783,9 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	dp["property"] = property;
 	dp["value"] = object->get(property);
 
-	Label *label = memnew(Label);
-	label->set_text(property);
-	set_drag_preview(label);
+	Label *drag_label = memnew(Label);
+	drag_label->set_text(property);
+	set_drag_preview(drag_label);
 	return dp;
 }
 
@@ -915,10 +915,10 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 
 void EditorProperty::menu_option(int p_option) {
 	switch (p_option) {
-		case MENU_COPY_PROPERTY: {
+		case MENU_COPY_VALUE: {
 			InspectorDock::get_inspector_singleton()->set_property_clipboard(object->get(property));
 		} break;
-		case MENU_PASTE_PROPERTY: {
+		case MENU_PASTE_VALUE: {
 			emit_changed(property, InspectorDock::get_inspector_singleton()->get_property_clipboard());
 		} break;
 		case MENU_COPY_PROPERTY_PATH: {
@@ -1013,10 +1013,10 @@ void EditorProperty::_update_popup() {
 		add_child(menu);
 		menu->connect("id_pressed", callable_mp(this, &EditorProperty::menu_option));
 	}
-	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_property"), MENU_COPY_PROPERTY);
-	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/paste_property"), MENU_PASTE_PROPERTY);
+	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_value"), MENU_COPY_VALUE);
+	menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/paste_value"), MENU_PASTE_VALUE);
 	menu->add_icon_shortcut(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), ED_GET_SHORTCUT("property_editor/copy_property_path"), MENU_COPY_PROPERTY_PATH);
-	menu->set_item_disabled(MENU_PASTE_PROPERTY, is_read_only());
+	menu->set_item_disabled(MENU_PASTE_VALUE, is_read_only());
 	if (!pin_hidden) {
 		menu->add_separator();
 		if (can_pin) {
@@ -1061,7 +1061,7 @@ void EditorInspectorPlugin::add_property_editor_for_multiple_properties(const St
 }
 
 bool EditorInspectorPlugin::can_handle(Object *p_object) {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_can_handle, p_object, success)) {
 		return success;
 	}
@@ -1081,7 +1081,7 @@ void EditorInspectorPlugin::parse_group(Object *p_object, const String &p_group)
 }
 
 bool EditorInspectorPlugin::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
-	bool ret;
+	bool ret = false;
 	if (GDVIRTUAL_CALL(_parse_property, p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide, ret)) {
 		return ret;
 	}
@@ -1575,9 +1575,9 @@ int EditorInspectorArray::_get_array_count() {
 		return _extract_properties_as_array(object_property_list).size();
 	} else if (mode == MODE_USE_COUNT_PROPERTY) {
 		bool valid;
-		int count = object->get(count_property, &valid);
+		int count_val = object->get(count_property, &valid);
 		ERR_FAIL_COND_V_MSG(!valid, 0, vformat("%s is not a valid property to be used as array count.", count_property));
-		return count;
+		return count_val;
 	}
 	return 0;
 }
@@ -2768,13 +2768,13 @@ void EditorInspector::update_tree() {
 			// Set the category icon.
 			if (!EditorNode::get_editor_data().is_type_recognized(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
 				// If we have a category inside a script, search for the first script with a valid icon.
-				Ref<Script> script = ResourceLoader::load(p.hint_string, "Script");
+				Ref<Script> scr = ResourceLoader::load(p.hint_string, "Script");
 				StringName base_type;
 				StringName name;
-				if (script.is_valid()) {
-					base_type = script->get_instance_base_type();
-					name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
-					Vector<DocData::ClassDoc> docs = script->get_documentation();
+				if (scr.is_valid()) {
+					base_type = scr->get_instance_base_type();
+					name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
+					Vector<DocData::ClassDoc> docs = scr->get_documentation();
 					if (!docs.is_empty()) {
 						doc_name = docs[0].name;
 					}
@@ -2782,20 +2782,20 @@ void EditorInspector::update_tree() {
 						label = name;
 					}
 				}
-				while (script.is_valid()) {
-					name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+				while (scr.is_valid()) {
+					name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
 					String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
 					if (name != StringName() && !icon_path.is_empty()) {
 						category->icon = ResourceLoader::load(icon_path, "Texture");
 						break;
 					}
 
-					const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_path(script->get_path());
+					const EditorData::CustomType *ctype = EditorNode::get_editor_data().get_custom_type_by_path(scr->get_path());
 					if (ctype) {
 						category->icon = ctype->icon;
 						break;
 					}
-					script = script->get_base_script();
+					scr = scr->get_base_script();
 				}
 				if (category->icon.is_null() && has_theme_icon(base_type, SNAME("EditorIcons"))) {
 					category->icon = get_theme_icon(base_type, SNAME("EditorIcons"));
@@ -4101,7 +4101,7 @@ EditorInspector::EditorInspector() {
 		refresh_countdown = 0.33;
 	}
 
-	ED_SHORTCUT("property_editor/copy_property", TTR("Copy Property"), KeyModifierMask::CMD_OR_CTRL | Key::C);
-	ED_SHORTCUT("property_editor/paste_property", TTR("Paste Property"), KeyModifierMask::CMD_OR_CTRL | Key::V);
+	ED_SHORTCUT("property_editor/copy_value", TTR("Copy Value"), KeyModifierMask::CMD_OR_CTRL | Key::C);
+	ED_SHORTCUT("property_editor/paste_value", TTR("Paste Value"), KeyModifierMask::CMD_OR_CTRL | Key::V);
 	ED_SHORTCUT("property_editor/copy_property_path", TTR("Copy Property Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 }

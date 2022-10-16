@@ -231,7 +231,7 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		}
 	}
 
-	att += unit_db;
+	att += volume_db;
 	if (att > max_db) {
 		att = max_db;
 	}
@@ -485,7 +485,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 
 			if (area->is_using_reverb_bus()) {
-				StringName reverb_bus_name = area->get_reverb_bus();
+				StringName reverb_bus_name = area->get_reverb_bus_name();
 				Vector<AudioFrame> reverb_vol;
 				_calc_reverb_vol(area, listener_area_pos, output_volume_vector, reverb_vol);
 				bus_volumes[reverb_bus_name] = reverb_vol;
@@ -538,12 +538,12 @@ Ref<AudioStream> AudioStreamPlayer3D::get_stream() const {
 	return stream;
 }
 
-void AudioStreamPlayer3D::set_unit_db(float p_volume) {
-	unit_db = p_volume;
+void AudioStreamPlayer3D::set_volume_db(float p_volume) {
+	volume_db = p_volume;
 }
 
-float AudioStreamPlayer3D::get_unit_db() const {
-	return unit_db;
+float AudioStreamPlayer3D::get_volume_db() const {
+	return volume_db;
 }
 
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
@@ -810,8 +810,8 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream", "stream"), &AudioStreamPlayer3D::set_stream);
 	ClassDB::bind_method(D_METHOD("get_stream"), &AudioStreamPlayer3D::get_stream);
 
-	ClassDB::bind_method(D_METHOD("set_unit_db", "unit_db"), &AudioStreamPlayer3D::set_unit_db);
-	ClassDB::bind_method(D_METHOD("get_unit_db"), &AudioStreamPlayer3D::get_unit_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer3D::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer3D::get_volume_db);
 
 	ClassDB::bind_method(D_METHOD("set_unit_size", "unit_size"), &AudioStreamPlayer3D::set_unit_size);
 	ClassDB::bind_method(D_METHOD("get_unit_size"), &AudioStreamPlayer3D::get_unit_size);
@@ -878,7 +878,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_unit_db", "get_unit_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6,suffix:dB"), "set_max_db", "get_max_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");

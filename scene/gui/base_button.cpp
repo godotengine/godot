@@ -60,7 +60,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mouse_button = p_event;
-	bool ui_accept = p_event->is_action("ui_accept") && !p_event->is_echo();
+	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
 
 	bool button_masked = mouse_button.is_valid() && (mouse_button_to_mask(mouse_button->get_button_index()) & button_mask) != MouseButton::NONE;
 	if (button_masked || ui_accept) {
@@ -349,10 +349,6 @@ Ref<Shortcut> BaseButton::get_shortcut() const {
 void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shortcut_context()) {
-		return;
-	}
-
 	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
 		on_action_event(p_event);
 		accept_event();
@@ -389,34 +385,6 @@ Ref<ButtonGroup> BaseButton::get_button_group() const {
 	return button_group;
 }
 
-void BaseButton::set_shortcut_context(Node *p_node) {
-	if (p_node != nullptr) {
-		shortcut_context = p_node->get_instance_id();
-	} else {
-		shortcut_context = ObjectID();
-	}
-}
-
-Node *BaseButton::get_shortcut_context() const {
-	Object *ctx_obj = ObjectDB::get_instance(shortcut_context);
-	Node *ctx_node = Object::cast_to<Node>(ctx_obj);
-
-	return ctx_node;
-}
-
-bool BaseButton::_is_focus_owner_in_shortcut_context() const {
-	if (shortcut_context == ObjectID()) {
-		// No context, therefore global - always "in" context.
-		return true;
-	}
-
-	Node *ctx_node = get_shortcut_context();
-	Control *vp_focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
-
-	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
-	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
-}
-
 bool BaseButton::_was_pressed_by_mouse() const {
 	return was_mouse_pressed;
 }
@@ -446,9 +414,6 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
 
-	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &BaseButton::set_shortcut_context);
-	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &BaseButton::get_shortcut_context);
-
 	GDVIRTUAL_BIND(_pressed);
 	GDVIRTUAL_BIND(_toggled, "button_pressed");
 
@@ -466,7 +431,6 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "button_group", PROPERTY_HINT_RESOURCE_TYPE, "ButtonGroup"), "set_button_group", "get_button_group");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_NODE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");
 
 	BIND_ENUM_CONSTANT(DRAW_NORMAL);
 	BIND_ENUM_CONSTANT(DRAW_PRESSED);

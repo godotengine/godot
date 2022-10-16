@@ -523,13 +523,13 @@ uint32_t SoftBody3D::get_collision_layer() const {
 void SoftBody3D::set_collision_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
-	uint32_t collision_layer = get_collision_layer();
+	uint32_t collision_layer_new = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << (p_layer_number - 1);
+		collision_layer_new |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << (p_layer_number - 1));
+		collision_layer_new &= ~(1 << (p_layer_number - 1));
 	}
-	set_collision_layer(collision_layer);
+	set_collision_layer(collision_layer_new);
 }
 
 bool SoftBody3D::get_collision_layer_value(int p_layer_number) const {

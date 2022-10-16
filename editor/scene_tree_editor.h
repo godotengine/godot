@@ -62,6 +62,7 @@ class SceneTreeEditor : public Control {
 	ObjectID instance_node;
 
 	String filter;
+	String filter_term_warning;
 
 	AcceptDialog *error = nullptr;
 	AcceptDialog *warning = nullptr;
@@ -142,6 +143,7 @@ public:
 
 	void set_filter(const String &p_filter);
 	String get_filter() const;
+	String get_filter_term_warning();
 
 	void set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo);
 	void set_display_foreign_nodes(bool p_display);

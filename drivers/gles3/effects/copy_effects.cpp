@@ -114,7 +114,7 @@ CopyEffects::~CopyEffects() {
 	copy.shader.version_free(copy.shader_version);
 }
 
-void CopyEffects::copy_to_rect(const Rect2i &p_rect) {
+void CopyEffects::copy_to_rect(const Rect2 &p_rect) {
 	copy.shader.version_bind_shader(copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
 	copy.shader.version_set_uniform(CopyShaderGLES3::COPY_SECTION, p_rect.position.x, p_rect.position.y, p_rect.size.x, p_rect.size.y, copy.shader_version, CopyShaderGLES3::MODE_COPY_SECTION);
 	glBindVertexArray(quad_array);

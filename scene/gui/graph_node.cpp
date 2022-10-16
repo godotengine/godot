@@ -294,14 +294,14 @@ void GraphNode::_resort() {
 
 bool GraphNode::has_point(const Point2 &p_point) const {
 	if (comment) {
-		Ref<StyleBox> comment = get_theme_stylebox(SNAME("comment"));
+		Ref<StyleBox> comment_sb = get_theme_stylebox(SNAME("comment"));
 		Ref<Texture2D> resizer = get_theme_icon(SNAME("resizer"));
 
 		if (Rect2(get_size() - resizer->get_size(), resizer->get_size()).has_point(p_point)) {
 			return true;
 		}
 
-		if (Rect2(0, 0, get_size().width, comment->get_margin(SIDE_TOP)).has_point(p_point)) {
+		if (Rect2(0, 0, get_size().width, comment_sb->get_margin(SIDE_TOP)).has_point(p_point)) {
 			return true;
 		}
 

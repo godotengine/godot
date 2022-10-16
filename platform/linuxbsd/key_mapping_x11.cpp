@@ -108,17 +108,21 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 	{ XK_KP_7, Key::KP_7 },
 	{ XK_KP_8, Key::KP_8 },
 	{ XK_KP_9, Key::KP_9 },
-	// same but with numlock
-	{ XK_KP_Insert, Key::KP_0 },
-	{ XK_KP_End, Key::KP_1 },
-	{ XK_KP_Down, Key::KP_2 },
-	{ XK_KP_Page_Down, Key::KP_3 },
-	{ XK_KP_Left, Key::KP_4 },
-	{ XK_KP_Begin, Key::KP_5 },
-	{ XK_KP_Right, Key::KP_6 },
-	{ XK_KP_Home, Key::KP_7 },
-	{ XK_KP_Up, Key::KP_8 },
-	{ XK_KP_Page_Up, Key::KP_9 },
+	// same keys but with numlock off
+	{ XK_KP_Insert, Key::INSERT },
+	{ XK_KP_End, Key::END },
+	{ XK_KP_Down, Key::DOWN },
+	{ XK_KP_Page_Down, Key::PAGEDOWN },
+	{ XK_KP_Left, Key::LEFT },
+	// X11 documents this (numpad 5) as "begin of line" but no toolkit
+	// seems to interpret it this way.
+	// On Windows this is emitting Key::Clear so for consistency it
+	// will be mapped to Key::Clear
+	{ XK_KP_Begin, Key::CLEAR },
+	{ XK_KP_Right, Key::RIGHT },
+	{ XK_KP_Home, Key::HOME },
+	{ XK_KP_Up, Key::UP },
+	{ XK_KP_Page_Up, Key::PAGEUP },
 	{ XK_F1, Key::F1 },
 	{ XK_F2, Key::F2 },
 	{ XK_F3, Key::F3 },

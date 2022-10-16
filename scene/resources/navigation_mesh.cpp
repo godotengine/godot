@@ -527,7 +527,7 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY_DEFAULT("geometry_collision_mask", 0xFFFFFFFF);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "NavMesh Children, Group With Children, Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "NavMesh Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
 	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navmesh"));
 	ADD_GROUP("Cells", "cell_");
@@ -590,16 +590,16 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 
 #ifndef DISABLE_DEPRECATED
 bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
-	String name = p_name;
-	if (name.find("/") != -1) {
+	String prop_name = p_name;
+	if (prop_name.find("/") != -1) {
 		// Compatibility with pre-3.5 "category/path" property names.
-		name = name.replace("/", "_");
-		if (name == "sample_partition_type_sample_partition_type") {
+		prop_name = prop_name.replace("/", "_");
+		if (prop_name == "sample_partition_type_sample_partition_type") {
 			set("sample_partition_type", p_value);
-		} else if (name == "filter_filter_walkable_low_height_spans") {
+		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
 			set("filter_walkable_low_height_spans", p_value);
 		} else {
-			set(name, p_value);
+			set(prop_name, p_value);
 		}
 
 		return true;
@@ -608,16 +608,16 @@ bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
-	String name = p_name;
-	if (name.find("/") != -1) {
+	String prop_name = p_name;
+	if (prop_name.find("/") != -1) {
 		// Compatibility with pre-3.5 "category/path" property names.
-		name = name.replace("/", "_");
-		if (name == "sample_partition_type_sample_partition_type") {
+		prop_name = prop_name.replace("/", "_");
+		if (prop_name == "sample_partition_type_sample_partition_type") {
 			r_ret = get("sample_partition_type");
-		} else if (name == "filter_filter_walkable_low_height_spans") {
+		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
 			r_ret = get("filter_walkable_low_height_spans");
 		} else {
-			r_ret = get(name);
+			r_ret = get(prop_name);
 		}
 		return true;
 	}

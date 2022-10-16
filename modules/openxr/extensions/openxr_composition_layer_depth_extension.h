@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  websocket_client.h                                                   */
+/*  openxr_composition_layer_depth_extension.h                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,48 +28,26 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_CLIENT_H
-#define WEBSOCKET_CLIENT_H
+#ifndef OPENXR_COMPOSITION_LAYER_DEPTH_EXTENSION_H
+#define OPENXR_COMPOSITION_LAYER_DEPTH_EXTENSION_H
 
-#include "core/crypto/crypto.h"
-#include "core/error/error_list.h"
-#include "websocket_multiplayer_peer.h"
-#include "websocket_peer.h"
+#include "openxr_composition_layer_provider.h"
+#include "openxr_extension_wrapper.h"
 
-class WebSocketClient : public WebSocketMultiplayerPeer {
-	GDCLASS(WebSocketClient, WebSocketMultiplayerPeer);
-	GDCICLASS(WebSocketClient);
-
-protected:
-	Ref<WebSocketPeer> _peer;
-	bool verify_tls = true;
-	Ref<X509Certificate> tls_cert;
-
-	static void _bind_methods();
-
+class OpenXRCompositionLayerDepthExtension : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
 public:
-	Error connect_to_url(String p_url, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false, const Vector<String> p_custom_headers = Vector<String>());
+	static OpenXRCompositionLayerDepthExtension *get_singleton();
 
-	void set_verify_tls_enabled(bool p_verify_tls);
-	bool is_verify_tls_enabled() const;
-	Ref<X509Certificate> get_trusted_tls_certificate() const;
-	void set_trusted_tls_certificate(Ref<X509Certificate> p_cert);
+	OpenXRCompositionLayerDepthExtension(OpenXRAPI *p_openxr_api);
+	virtual ~OpenXRCompositionLayerDepthExtension() override;
 
-	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) = 0;
-	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") = 0;
-	virtual IPAddress get_connected_host() const = 0;
-	virtual uint16_t get_connected_port() const = 0;
+	bool is_available();
+	virtual XrCompositionLayerBaseHeader *get_composition_layer() override;
 
-	virtual bool is_server() const override;
+private:
+	static OpenXRCompositionLayerDepthExtension *singleton;
 
-	void _on_peer_packet();
-	void _on_connect(String p_protocol);
-	void _on_close_request(int p_code, String p_reason);
-	void _on_disconnect(bool p_was_clean);
-	void _on_error();
-
-	WebSocketClient();
-	~WebSocketClient();
+	bool available = false;
 };
 
-#endif // WEBSOCKET_CLIENT_H
+#endif // OPENXR_COMPOSITION_LAYER_DEPTH_EXTENSION_H

@@ -4,7 +4,7 @@
 		Operating System functions.
 	</brief_description>
 	<description>
-		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, date and time, timers, environment variables, execution of binaries, command line, etc.
+		Operating System functions. OS wraps the most common functionality to communicate with the host operating system, such as the clipboard, video driver, delays, environment variables, execution of binaries, command line, etc.
 	</description>
 	<tutorials>
 		<link title="OS Test Demo">https://godotengine.org/asset-library/asset/677</link>
@@ -16,12 +16,6 @@
 			<param index="1" name="title" type="String" default="&quot;Alert!&quot;" />
 			<description>
 				Displays a modal dialog box using the host OS' facilities. Execution is blocked until the dialog is closed.
-			</description>
-		</method>
-		<method name="can_use_threads" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns [code]true[/code] if the current host platform is using multiple threads.
 			</description>
 		</method>
 		<method name="close_midi_inputs">
@@ -451,6 +445,15 @@
 				[b]Note:[/b] This method is not supported on the web platform. It returns an empty string.
 			</description>
 		</method>
+		<method name="get_video_adapter_driver_info" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns the video adapter driver name and version for the user's currently active graphics card.
+				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
+				The second element holds the driver version. For e.g. the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
+				[b]Note:[/b] This method is only supported on the platforms Linux/BSD and Windows. It returns an empty array on other platforms.
+			</description>
+		</method>
 		<method name="has_environment" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="variable" type="String" />
@@ -544,6 +547,14 @@
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="read_string_from_stdin">
+			<return type="String" />
+			<param index="0" name="block" type="bool" default="true" />
+			<description>
+				Reads a user input string from the standard input (usually the terminal).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Non-blocking reads are not currently supported on any platform.
+			</description>
+		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -614,11 +625,11 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="VIDEO_DRIVER_VULKAN" value="0" enum="VideoDriver">
-			The Vulkan rendering backend. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
+		<constant name="RENDERING_DRIVER_VULKAN" value="0" enum="RenderingDriver">
+			The Vulkan rendering driver. It requires Vulkan 1.0 support and automatically uses features from Vulkan 1.1 and 1.2 if available.
 		</constant>
-		<constant name="VIDEO_DRIVER_OPENGL_3" value="1" enum="VideoDriver">
-			The OpenGL 3 rendering backend. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
+		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
+			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
 		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
 			Sunday.

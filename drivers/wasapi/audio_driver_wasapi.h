@@ -79,6 +79,8 @@ class AudioDriverWASAPI : public AudioDriver {
 
 	SafeFlag exit_thread;
 
+	static bool is_running_on_wine();
+
 	static _FORCE_INLINE_ void write_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i, int32_t sample);
 	static _FORCE_INLINE_ int32_t read_sample(WORD format_tag, int bits_per_sample, BYTE *buffer, int i);
 	static void thread_func(void *p_udata);

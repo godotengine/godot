@@ -208,6 +208,7 @@ private:
 	friend class ViewportTexture;
 
 	Viewport *parent = nullptr;
+	Viewport *gui_parent = nullptr; // Whose gui.tooltip_popup it is.
 
 	AudioListener2D *audio_listener_2d = nullptr;
 	Camera2D *camera_2d = nullptr;

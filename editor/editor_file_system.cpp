@@ -919,11 +919,11 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && fi->type == lang->get_type()) {
-				Ref<Script> script = ResourceLoader::load(path);
-				if (script == nullptr) {
+				Ref<Script> scr = ResourceLoader::load(path);
+				if (scr == nullptr) {
 					continue;
 				}
-				Vector<DocData::ClassDoc> docs = script->get_documentation();
+				Vector<DocData::ClassDoc> docs = scr->get_documentation();
 				for (int j = 0; j < docs.size(); j++) {
 					EditorHelp::get_doc_data()->add_doc(docs[j]);
 				}
@@ -1902,8 +1902,8 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 
 	List<String> import_variants;
 	List<String> gen_files;
-	Variant metadata;
-	Error err = importer->import(p_file, base_path, params, &import_variants, &gen_files, &metadata);
+	Variant meta;
+	Error err = importer->import(p_file, base_path, params, &import_variants, &gen_files, &meta);
 
 	if (err != OK) {
 		ERR_PRINT("Error importing '" + p_file + "'.");
@@ -1955,8 +1955,8 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 			f->store_line("valid=false");
 		}
 
-		if (metadata != Variant()) {
-			f->store_line("metadata=" + metadata.get_construct_string());
+		if (meta != Variant()) {
+			f->store_line("metadata=" + meta.get_construct_string());
 		}
 
 		f->store_line("");
@@ -2108,11 +2108,11 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 	reimport_files.sort();
 
-	bool use_threads = GLOBAL_GET("editor/import/use_multiple_threads");
+	bool use_multiple_threads = GLOBAL_GET("editor/import/use_multiple_threads");
 
 	int from = 0;
 	for (int i = 0; i < reimport_files.size(); i++) {
-		if (use_threads && reimport_files[i].threaded) {
+		if (use_multiple_threads && reimport_files[i].threaded) {
 			if (i + 1 == reimport_files.size() || reimport_files[i + 1].importer != reimport_files[from].importer) {
 				if (from - i == 0) {
 					//single file, do not use threads
@@ -2124,16 +2124,16 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 
 					importer->import_threaded_begin();
 
-					ImportThreadData data;
-					data.max_index = from;
-					data.reimport_from = from;
-					data.reimport_files = reimport_files.ptr();
+					ImportThreadData tdata;
+					tdata.max_index = from;
+					tdata.reimport_from = from;
+					tdata.reimport_files = reimport_files.ptr();
 
-					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &data, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
+					WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &EditorFileSystem::_reimport_thread, &tdata, i - from + 1, -1, false, vformat(TTR("Import resources of type: %s"), reimport_files[from].importer));
 					int current_index = from - 1;
 					do {
-						if (current_index < data.max_index) {
-							current_index = data.max_index;
+						if (current_index < tdata.max_index) {
+							current_index = tdata.max_index;
 							pr.step(reimport_files[current_index].path.get_file(), current_index);
 						}
 						OS::get_singleton()->delay_usec(1);
@@ -2259,7 +2259,7 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
 	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
-		//saved externally (configuration file) or internal file, do not assign an ID.
+		// Saved externally (configuration file) or internal file, do not assign an ID.
 		return ResourceUID::INVALID_ID;
 	}
 
@@ -2267,15 +2267,21 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 	int cpos = -1;
 
 	if (!singleton->_find_file(p_path, &fs, cpos)) {
+		// Fallback to ResourceLoader if filesystem cache fails (can happen during scanning etc.).
+		ResourceUID::ID fallback = ResourceLoader::get_resource_uid(p_path);
+		if (fallback != ResourceUID::INVALID_ID) {
+			return fallback;
+		}
+
 		if (p_generate) {
-			return ResourceUID::get_singleton()->create_id(); //just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
+			return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
 		} else {
 			return ResourceUID::INVALID_ID;
 		}
 	} else if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
 		return fs->files[cpos]->uid;
 	} else if (p_generate) {
-		return ResourceUID::get_singleton()->create_id(); //just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
+		return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
 	} else {
 		return ResourceUID::INVALID_ID;
 	}
@@ -2422,7 +2428,7 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	update_script_classes_queued.clear();
-	ResourceUID::get_singleton()->clear(); //will be updated on scan
+	MessageQueue::get_singleton()->push_callable(callable_mp(ResourceUID::get_singleton(), &ResourceUID::clear)); // Will be updated on scan.
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 

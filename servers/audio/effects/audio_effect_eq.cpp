@@ -128,8 +128,8 @@ AudioEffectEQ::AudioEffectEQ(EQ::Preset p_preset) {
 	gain.resize(eq.get_band_count());
 	for (int i = 0; i < gain.size(); i++) {
 		gain.write[i] = 0.0;
-		String name = "band_db/" + itos(eq.get_band_frequency(i)) + "_hz";
-		prop_band_map[name] = i;
-		band_names.push_back(name);
+		String band_name = "band_db/" + itos(eq.get_band_frequency(i)) + "_hz";
+		prop_band_map[band_name] = i;
+		band_names.push_back(band_name);
 	}
 }

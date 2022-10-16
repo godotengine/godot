@@ -126,9 +126,7 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 }
 
 void OS_Unix::initialize_core() {
-#if !defined(NO_THREADS)
 	init_thread_posix();
-#endif
 
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -137,16 +135,18 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-#ifndef NO_NETWORK
 	NetSocketPosix::make_default();
 	IPUnix::make_default();
-#endif
 
 	_setup_clock();
 }
 
 void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
+}
+
+Vector<String> OS_Unix::get_video_adapter_driver_info() const {
+	return Vector<String>();
 }
 
 String OS_Unix::get_stdin_string(bool p_block) {
@@ -170,6 +170,7 @@ Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
 		left -= chunk;
 		ofs += chunk;
 	} while (left > 0);
+// Define this yourself if you don't want to fall back to /dev/urandom.
 #elif !defined(NO_URANDOM)
 	int r = open("/dev/urandom", O_RDONLY);
 	ERR_FAIL_COND_V(r < 0, FAILED);
@@ -501,10 +502,6 @@ String OS_Unix::get_environment(const String &p_var) const {
 
 bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
 	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
-}
-
-int OS_Unix::get_processor_count() const {
-	return sysconf(_SC_NPROCESSORS_CONF);
 }
 
 String OS_Unix::get_user_data_dir() const {

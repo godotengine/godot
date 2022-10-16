@@ -93,17 +93,6 @@ public:
 
 	uint32_t geometry_instance_get_pair_mask() override { return 0; }
 
-	/* SHADOW ATLAS API */
-
-	RID shadow_atlas_create() override { return RID(); }
-	void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override {}
-	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
-	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
-
-	void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
-	int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
-	void set_directional_shadow_count(int p_count) override {}
-
 	/* SDFGI UPDATE */
 
 	void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override {}
@@ -143,35 +132,11 @@ public:
 	void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override {}
 	void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) override {}
 
-	RID light_instance_create(RID p_light) override { return RID(); }
-	void light_instance_set_transform(RID p_light_instance, const Transform3D &p_transform) override {}
-	void light_instance_set_aabb(RID p_light_instance, const AABB &p_aabb) override {}
-	void light_instance_set_shadow_transform(RID p_light_instance, const Projection &p_projection, const Transform3D &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) override {}
-	void light_instance_mark_visible(RID p_light_instance) override {}
-
 	RID fog_volume_instance_create(RID p_fog_volume) override { return RID(); }
 	void fog_volume_instance_set_transform(RID p_fog_volume_instance, const Transform3D &p_transform) override {}
 	void fog_volume_instance_set_active(RID p_fog_volume_instance, bool p_active) override {}
 	RID fog_volume_instance_get_volume(RID p_fog_volume_instance) const override { return RID(); }
 	Vector3 fog_volume_instance_get_position(RID p_fog_volume_instance) const override { return Vector3(); }
-
-	RID reflection_atlas_create() override { return RID(); }
-	int reflection_atlas_get_size(RID p_ref_atlas) const override { return 0; }
-	void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) override {}
-
-	RID reflection_probe_instance_create(RID p_probe) override { return RID(); }
-	void reflection_probe_instance_set_transform(RID p_instance, const Transform3D &p_transform) override {}
-	void reflection_probe_release_atlas_index(RID p_instance) override {}
-	bool reflection_probe_instance_needs_redraw(RID p_instance) override { return false; }
-	bool reflection_probe_instance_has_reflection(RID p_instance) override { return false; }
-	bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) override { return false; }
-	bool reflection_probe_instance_postprocess_step(RID p_instance) override { return true; }
-
-	RID decal_instance_create(RID p_decal) override { return RID(); }
-	void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override {}
-
-	RID lightmap_instance_create(RID p_lightmap) override { return RID(); }
-	void lightmap_instance_set_transform(RID p_lightmap, const Transform3D &p_transform) override {}
 
 	RID voxel_gi_instance_create(RID p_voxel_gi) override { return RID(); }
 	void voxel_gi_instance_set_transform_to_data(RID p_probe, const Transform3D &p_xform) override {}

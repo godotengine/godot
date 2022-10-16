@@ -411,9 +411,9 @@ void GodotBoxShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 *
 }
 
 bool GodotBoxShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, bool p_hit_back_faces) const {
-	AABB aabb(-half_extents, half_extents * 2.0);
+	AABB aabb_ext(-half_extents, half_extents * 2.0);
 
-	return aabb.intersects_segment(p_begin, p_end, &r_result, &r_normal);
+	return aabb_ext.intersects_segment(p_begin, p_end, &r_result, &r_normal);
 }
 
 bool GodotBoxShape3D::intersect_point(const Vector3 &p_point) const {
@@ -915,13 +915,13 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 	}
 
 	for (int i = 0; i < ec; i++) {
-		real_t dot = (vertices[edges[i].a] - vertices[edges[i].b]).normalized().dot(p_normal);
+		real_t dot = (vertices[edges[i].vertex_a] - vertices[edges[i].vertex_b]).normalized().dot(p_normal);
 		dot = ABS(dot);
-		if (dot < edge_support_threshold && (edges[i].a == vtx || edges[i].b == vtx)) {
+		if (dot < edge_support_threshold && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
-			r_supports[0] = vertices[edges[i].a];
-			r_supports[1] = vertices[edges[i].b];
+			r_supports[0] = vertices[edges[i].vertex_a];
+			r_supports[1] = vertices[edges[i].vertex_b];
 			return;
 		}
 	}
@@ -1025,8 +1025,8 @@ Vector3 GodotConvexPolygonShape3D::get_closest_point_to(const Vector3 &p_point) 
 	int ec = mesh.edges.size();
 	for (int i = 0; i < ec; i++) {
 		Vector3 s[2] = {
-			vertices[edges[i].a],
-			vertices[edges[i].b]
+			vertices[edges[i].vertex_a],
+			vertices[edges[i].vertex_b]
 		};
 
 		Vector3 closest = Geometry3D::get_closest_point_to_segment(p_point, s);
@@ -1058,7 +1058,7 @@ void GodotConvexPolygonShape3D::_setup(const Vector<Vector3> &p_vertices) {
 
 	AABB _aabb;
 
-	for (int i = 0; i < mesh.vertices.size(); i++) {
+	for (uint32_t i = 0; i < mesh.vertices.size(); i++) {
 		if (i == 0) {
 			_aabb.position = mesh.vertices[i];
 		} else {
@@ -1074,7 +1074,12 @@ void GodotConvexPolygonShape3D::set_data(const Variant &p_data) {
 }
 
 Variant GodotConvexPolygonShape3D::get_data() const {
-	return mesh.vertices;
+	Vector<Vector3> vertices;
+	vertices.resize(mesh.vertices.size());
+	for (uint32_t i = 0; i < mesh.vertices.size(); i++) {
+		vertices.write[i] = mesh.vertices[i];
+	}
+	return vertices;
 }
 
 GodotConvexPolygonShape3D::GodotConvexPolygonShape3D() {
@@ -1259,14 +1264,14 @@ Vector3 GodotConcavePolygonShape3D::get_support(const Vector3 &p_normal) const {
 }
 
 void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_params) const {
-	const BVH *bvh = &p_params->bvh[p_idx];
+	const BVH *params_bvh = &p_params->bvh[p_idx];
 
-	if (!bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
+	if (!params_bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
 		return;
 	}
 
-	if (bvh->face_index >= 0) {
-		const Face *f = &p_params->faces[bvh->face_index];
+	if (params_bvh->face_index >= 0) {
+		const Face *f = &p_params->faces[params_bvh->face_index];
 		GodotFaceShape3D *face = p_params->face;
 		face->normal = f->normal;
 		face->vertex[0] = p_params->vertices[f->indices[0]];
@@ -1285,11 +1290,11 @@ void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_
 			}
 		}
 	} else {
-		if (bvh->left >= 0) {
-			_cull_segment(bvh->left, p_params);
+		if (params_bvh->left >= 0) {
+			_cull_segment(params_bvh->left, p_params);
 		}
-		if (bvh->right >= 0) {
-			_cull_segment(bvh->right, p_params);
+		if (params_bvh->right >= 0) {
+			_cull_segment(params_bvh->right, p_params);
 		}
 	}
 }
@@ -1339,14 +1344,14 @@ Vector3 GodotConcavePolygonShape3D::get_closest_point_to(const Vector3 &p_point)
 }
 
 bool GodotConcavePolygonShape3D::_cull(int p_idx, _CullParams *p_params) const {
-	const BVH *bvh = &p_params->bvh[p_idx];
+	const BVH *params_bvh = &p_params->bvh[p_idx];
 
-	if (!p_params->aabb.intersects(bvh->aabb)) {
+	if (!p_params->aabb.intersects(params_bvh->aabb)) {
 		return false;
 	}
 
-	if (bvh->face_index >= 0) {
-		const Face *f = &p_params->faces[bvh->face_index];
+	if (params_bvh->face_index >= 0) {
+		const Face *f = &p_params->faces[params_bvh->face_index];
 		GodotFaceShape3D *face = p_params->face;
 		face->normal = f->normal;
 		face->vertex[0] = p_params->vertices[f->indices[0]];
@@ -1356,14 +1361,14 @@ bool GodotConcavePolygonShape3D::_cull(int p_idx, _CullParams *p_params) const {
 			return true;
 		}
 	} else {
-		if (bvh->left >= 0) {
-			if (_cull(bvh->left, p_params)) {
+		if (params_bvh->left >= 0) {
+			if (_cull(params_bvh->left, p_params)) {
 				return true;
 			}
 		}
 
-		if (bvh->right >= 0) {
-			if (_cull(bvh->right, p_params)) {
+		if (params_bvh->right >= 0) {
+			if (_cull(params_bvh->right, p_params)) {
 				return true;
 			}
 		}
@@ -1919,14 +1924,14 @@ Vector3 GodotHeightMapShape3D::get_closest_point_to(const Vector3 &p_point) cons
 }
 
 void GodotHeightMapShape3D::_get_cell(const Vector3 &p_point, int &r_x, int &r_y, int &r_z) const {
-	const AABB &aabb = get_aabb();
+	const AABB &shape_aabb = get_aabb();
 
-	Vector3 pos_local = aabb.position + local_origin;
+	Vector3 pos_local = shape_aabb.position + local_origin;
 
 	Vector3 clamped_point(p_point);
-	clamped_point.x = CLAMP(p_point.x, pos_local.x, pos_local.x + aabb.size.x);
-	clamped_point.y = CLAMP(p_point.y, pos_local.y, pos_local.y + aabb.size.y);
-	clamped_point.z = CLAMP(p_point.z, pos_local.z, pos_local.x + aabb.size.z);
+	clamped_point.x = CLAMP(p_point.x, pos_local.x, pos_local.x + shape_aabb.size.x);
+	clamped_point.y = CLAMP(p_point.y, pos_local.y, pos_local.y + shape_aabb.size.y);
+	clamped_point.z = CLAMP(p_point.z, pos_local.z, pos_local.x + shape_aabb.size.z);
 
 	r_x = (clamped_point.x < 0.0) ? (clamped_point.x - 0.5) : (clamped_point.x + 0.5);
 	r_y = (clamped_point.y < 0.0) ? (clamped_point.y - 0.5) : (clamped_point.y + 0.5);
@@ -2070,19 +2075,19 @@ void GodotHeightMapShape3D::_setup(const Vector<real_t> &p_heights, int p_width,
 	depth = p_depth;
 
 	// Initialize aabb.
-	AABB aabb;
-	aabb.position = Vector3(0.0, p_min_height, 0.0);
-	aabb.size = Vector3(p_width - 1, p_max_height - p_min_height, p_depth - 1);
+	AABB aabb_new;
+	aabb_new.position = Vector3(0.0, p_min_height, 0.0);
+	aabb_new.size = Vector3(p_width - 1, p_max_height - p_min_height, p_depth - 1);
 
 	// Initialize origin as the aabb center.
-	local_origin = aabb.position + 0.5 * aabb.size;
+	local_origin = aabb_new.position + 0.5 * aabb_new.size;
 	local_origin.y = 0.0;
 
-	aabb.position -= local_origin;
+	aabb_new.position -= local_origin;
 
 	_build_accelerator();
 
-	configure(aabb);
+	configure(aabb_new);
 }
 
 void GodotHeightMapShape3D::set_data(const Variant &p_data) {
@@ -2093,11 +2098,11 @@ void GodotHeightMapShape3D::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(!d.has("depth"));
 	ERR_FAIL_COND(!d.has("heights"));
 
-	int width = d["width"];
-	int depth = d["depth"];
+	int width_new = d["width"];
+	int depth_new = d["depth"];
 
-	ERR_FAIL_COND(width <= 0.0);
-	ERR_FAIL_COND(depth <= 0.0);
+	ERR_FAIL_COND(width_new <= 0.0);
+	ERR_FAIL_COND(depth_new <= 0.0);
 
 	Variant heights_variant = d["heights"];
 	Vector<real_t> heights_buffer;
@@ -2151,10 +2156,10 @@ void GodotHeightMapShape3D::set_data(const Variant &p_data) {
 
 	ERR_FAIL_COND(min_height > max_height);
 
-	ERR_FAIL_COND(heights_buffer.size() != (width * depth));
+	ERR_FAIL_COND(heights_buffer.size() != (width_new * depth_new));
 
 	// If specified, min and max height will be used as precomputed values.
-	_setup(heights_buffer, width, depth, min_height, max_height);
+	_setup(heights_buffer, width_new, depth_new, min_height, max_height);
 }
 
 Variant GodotHeightMapShape3D::get_data() const {
@@ -2162,9 +2167,9 @@ Variant GodotHeightMapShape3D::get_data() const {
 	d["width"] = width;
 	d["depth"] = depth;
 
-	const AABB &aabb = get_aabb();
-	d["min_height"] = aabb.position.y;
-	d["max_height"] = aabb.position.y + aabb.size.y;
+	const AABB &shape_aabb = get_aabb();
+	d["min_height"] = shape_aabb.position.y;
+	d["max_height"] = shape_aabb.position.y + shape_aabb.size.y;
 
 	d["heights"] = heights;
 

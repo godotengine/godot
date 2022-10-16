@@ -100,11 +100,12 @@ public:
 class OpenXRGraphicsExtensionWrapper : public OpenXRExtensionWrapper {
 public:
 	virtual void get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) = 0;
+	virtual void get_usable_depth_formats(Vector<int64_t> &p_usable_swap_chains) = 0;
 	virtual String get_swapchain_format_name(int64_t p_swapchain_format) const = 0;
 	virtual bool get_swapchain_image_data(XrSwapchain p_swapchain, int64_t p_swapchain_format, uint32_t p_width, uint32_t p_height, uint32_t p_sample_count, uint32_t p_array_size, void **r_swapchain_graphics_data) = 0;
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) = 0;
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) = 0;
-	virtual bool copy_render_target_to_image(RID p_from_render_target, void *p_swapchain_graphics_data, int p_image_index) = 0;
+	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) = 0;
 
 	OpenXRGraphicsExtensionWrapper(OpenXRAPI *p_openxr_api) :
 			OpenXRExtensionWrapper(p_openxr_api){};

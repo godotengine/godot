@@ -213,11 +213,11 @@ private:
 	void _file_multi_selected(int p_index, bool p_selected);
 	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
-	void _get_imported_files(const String &p_path, Vector<String> &files) const;
+	void _get_imported_files(const String &p_path, Vector<String> &r_files) const;
 	void _update_import_dock();
 
-	void _get_all_items_in_dir(EditorFileSystemDirectory *efsd, Vector<String> &files, Vector<String> &folders) const;
-	void _find_remaps(EditorFileSystemDirectory *efsd, const HashMap<String, String> &renames, Vector<String> &to_remaps) const;
+	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
+	void _find_remaps(EditorFileSystemDirectory *p_efsd, const HashMap<String, String> &r_renames, Vector<String> &r_to_remaps) const;
 	void _try_move_item(const FileOrFolder &p_item, const String &p_new_path, HashMap<String, String> &p_file_renames, HashMap<String, String> &p_folder_renames);
 	void _try_duplicate_item(const FileOrFolder &p_item, const String &p_new_path) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames) const;

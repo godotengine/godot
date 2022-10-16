@@ -1116,10 +1116,10 @@
 			</description>
 		</method>
 		<method name="window_get_safe_title_margins" qualifiers="const">
-			<return type="Vector2i" />
+			<return type="Vector3i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns left and right margins of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) adn height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">
@@ -1244,7 +1244,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets window mode for the given window to [param mode]. See [enum WindowMode] for possible values and how each mode behaves.
-				[b]Note:[/b] Setting the window to fullscreen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
+				[b]Note:[/b] Setting the window to full screen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
 		<method name="window_set_mouse_passthrough">
@@ -1324,7 +1324,8 @@
 			<param index="0" name="window_id" type="int" />
 			<param index="1" name="parent_window_id" type="int" />
 			<description>
-				Sets window transient parent. Transient window is will be destroyed with its transient parent and displayed on top of non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+				Sets window transient parent. Transient window is will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
+				Note that behavior might be different depending on the platform.
 			</description>
 		</method>
 		<method name="window_set_vsync_mode">
@@ -1495,60 +1496,78 @@
 		<constant name="CURSOR_MAX" value="17" enum="CursorShape">
 		</constant>
 		<constant name="WINDOW_MODE_WINDOWED" value="0" enum="WindowMode">
+			Windowed mode, i.e. [Window] doesn't occupy the whole screen (unless set to the size of the screen).
 		</constant>
 		<constant name="WINDOW_MODE_MINIMIZED" value="1" enum="WindowMode">
+			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_MAXIMIZED" value="2" enum="WindowMode">
+			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the minimize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
-			Fullscreen window mode. Note that this is not [i]exclusive[/i] fullscreen. On Windows and Linux, a borderless window is used to emulate fullscreen. On macOS, a new desktop is used to display the running project.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			Full screen window mode. Note that this is not [i]exclusive[/i] full screen. On Windows and Linux, a borderless window is used to emulate full screen. On macOS, a new desktop is used to display the running project.
+			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
-			Exclusive fullscreen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant WINDOW_MODE_FULLSCREEN].
-			Only one window in exclusive fullscreen mode can be visible on a given screen at a time. If multiple windows are in exclusive fullscreen mode for the same screen, the last one being set to this mode takes precedence.
-			Regardless of the platform, enabling fullscreen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling fullscreen mode.
+			Exclusive full screen window mode. This mode is implemented on Windows only. On other platforms, it is equivalent to [constant WINDOW_MODE_FULLSCREEN].
+			Only one window in exclusive full screen mode can be visible on a given screen at a time. If multiple windows are in exclusive full screen mode for the same screen, the last one being set to this mode takes precedence.
+			Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
-			Window can't be resizing by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
+			The window can't be resizing by dragging its resize grip. It's still possible to resize the window using [method window_set_size]. This flag is ignored for full screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
-			Window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
+			The window do not have native title bar and other decorations. This flag is ignored for full-screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2" enum="WindowFlags">
-			Window is floating above other regular windows. This flag is ignored for full-screen windows.
+			The window is floating on top of all other windows. This flag is ignored for full-screen windows.
 		</constant>
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
-			Window background can be transparent.
+			The window background can be transparent.
 			[b]Note:[/b] This flag has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] Transparency support is implemented on Linux, macOS and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
-			Window can't be focused. No-focus window will ignore all input, except mouse clicks.
+			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP" value="5" enum="WindowFlags">
-			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [constant WINDOW_FLAG_TRANSPARENT] set.
+			Window is part of menu or [OptionButton] dropdown. This flag can't be changed when the window is visible. An active popup window will exclusively receive all input, without stealing focus from its parent. Popup windows are automatically closed when uses click outside it, or when an application is switched. Popup window must have [code]transient parent[/code] set (see [method window_set_transient]).
 		</constant>
 		<constant name="WINDOW_FLAG_EXTEND_TO_TITLE" value="6" enum="WindowFlags">
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
+			Use [method window_set_window_buttons_offset] to adjust minimize/maximize/close buttons offset.
+			Use [method window_get_safe_title_margins] to determine area under the title bar that is not covered by decorations.
 			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="7" enum="WindowFlags">
+			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
+			Sent when the mouse pointer enters the window, see [method window_set_window_event_callback].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1" enum="WindowEvent">
+			Sent when the mouse pointer exits the window, see [method window_set_window_event_callback].
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_IN" value="2" enum="WindowEvent">
+			Sent when the window grabs focus, see [method window_set_window_event_callback].
 		</constant>
 		<constant name="WINDOW_EVENT_FOCUS_OUT" value="3" enum="WindowEvent">
+			Sent when the window loses focus, see [method window_set_window_event_callback].
 		</constant>
 		<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4" enum="WindowEvent">
+			Sent when the user has attempted to close the window (e.g. close button is pressed), see [method window_set_window_event_callback].
 		</constant>
 		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
+			Sent when the device "Back" button is pressed, see [method window_set_window_event_callback].
+			[b]Note:[/b] This event is implemented on Android.
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
+			Sent when the window is moved to the display with different DPI, or display DPI is changed, see [method window_set_window_event_callback].
+			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
+			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode), see [method window_set_window_event_callback].
+			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible).

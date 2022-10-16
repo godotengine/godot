@@ -53,7 +53,7 @@
 			</description>
 		</method>
 		<method name="get_id_path">
-			<return type="PackedVector2Array" />
+			<return type="Vector2i[]" />
 			<param index="0" name="from_id" type="Vector2i" />
 			<param index="1" name="to_id" type="Vector2i" />
 			<description>

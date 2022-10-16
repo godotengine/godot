@@ -597,7 +597,7 @@ namespace Godot
         /// <exception name="ArgumentOutOfRangeException">
         /// <paramref name="rgba"/> color code is invalid.
         /// </exception>
-        private static Color FromHTML(string rgba)
+        private static Color FromHTML(ReadOnlySpan<char> rgba)
         {
             Color c;
             if (rgba.Length == 0)
@@ -611,7 +611,7 @@ namespace Godot
 
             if (rgba[0] == '#')
             {
-                rgba = rgba.Substring(1);
+                rgba = rgba.Slice(1);
             }
 
             // If enabled, use 1 hex digit per channel instead of 2.
@@ -665,22 +665,22 @@ namespace Godot
 
             if (c.r < 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid color code. Red part is not valid hexadecimal: " + rgba);
+                throw new ArgumentOutOfRangeException($"Invalid color code. Red part is not valid hexadecimal: {rgba}");
             }
 
             if (c.g < 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid color code. Green part is not valid hexadecimal: " + rgba);
+                throw new ArgumentOutOfRangeException($"Invalid color code. Green part is not valid hexadecimal: {rgba}");
             }
 
             if (c.b < 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid color code. Blue part is not valid hexadecimal: " + rgba);
+                throw new ArgumentOutOfRangeException($"Invalid color code. Blue part is not valid hexadecimal: {rgba}");
             }
 
             if (c.a < 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid color code. Alpha part is not valid hexadecimal: " + rgba);
+                throw new ArgumentOutOfRangeException($"Invalid color code. Alpha part is not valid hexadecimal: {rgba}");
             }
             return c;
         }
@@ -817,9 +817,9 @@ namespace Godot
             value = max;
         }
 
-        private static int ParseCol4(string str, int ofs)
+        private static int ParseCol4(ReadOnlySpan<char> str, int index)
         {
-            char character = str[ofs];
+            char character = str[index];
 
             if (character >= '0' && character <= '9')
             {
@@ -836,9 +836,9 @@ namespace Godot
             return -1;
         }
 
-        private static int ParseCol8(string str, int ofs)
+        private static int ParseCol8(ReadOnlySpan<char> str, int index)
         {
-            return ParseCol4(str, ofs) * 16 + ParseCol4(str, ofs + 1);
+            return ParseCol4(str, index) * 16 + ParseCol4(str, index + 1);
         }
 
         private static string ToHex32(float val)
@@ -847,16 +847,16 @@ namespace Godot
             return b.HexEncode();
         }
 
-        internal static bool HtmlIsValid(string color)
+        internal static bool HtmlIsValid(ReadOnlySpan<char> color)
         {
-            if (string.IsNullOrEmpty(color))
+            if (color.IsEmpty)
             {
                 return false;
             }
 
             if (color[0] == '#')
             {
-                color = color.Substring(1);
+                color = color.Slice(1);
             }
 
             // Check if the amount of hex digits is valid.

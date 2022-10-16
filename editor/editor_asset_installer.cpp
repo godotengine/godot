@@ -183,16 +183,16 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 		int pp = path.rfind("/");
 
-		TreeItem *parent;
+		TreeItem *parent_item;
 		if (pp == -1) {
-			parent = root;
+			parent_item = root;
 		} else {
 			String ppath = path.substr(0, pp);
 			ERR_CONTINUE(!dir_map.has(ppath));
-			parent = dir_map[ppath];
+			parent_item = dir_map[ppath];
 		}
 
-		TreeItem *ti = tree->create_item(parent);
+		TreeItem *ti = tree->create_item(parent_item);
 		ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		ti->set_checked(0, true);
 		ti->set_editable(0, true);
@@ -284,17 +284,17 @@ void EditorAssetInstaller::ok_pressed() {
 				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 				da->make_dir(dirpath);
 			} else {
-				Vector<uint8_t> data;
-				data.resize(info.uncompressed_size);
+				Vector<uint8_t> uncomp_data;
+				uncomp_data.resize(info.uncompressed_size);
 
 				//read
 				unzOpenCurrentFile(pkg);
-				unzReadCurrentFile(pkg, data.ptrw(), data.size());
+				unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 				unzCloseCurrentFile(pkg);
 
 				Ref<FileAccess> f = FileAccess::open(path, FileAccess::WRITE);
 				if (f.is_valid()) {
-					f->store_buffer(data.ptr(), data.size());
+					f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 				} else {
 					failed_files.push_back(path);
 				}

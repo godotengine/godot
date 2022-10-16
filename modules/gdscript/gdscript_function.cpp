@@ -142,7 +142,7 @@ GDScriptFunction::GDScriptFunction() {
 	name = "<anonymous>";
 #ifdef DEBUG_ENABLED
 	{
-		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 		GDScriptLanguage::get_singleton()->function_list.add(&function_list);
 	}
 #endif
@@ -155,7 +155,7 @@ GDScriptFunction::~GDScriptFunction() {
 
 #ifdef DEBUG_ENABLED
 
-	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+	MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 	GDScriptLanguage::get_singleton()->function_list.remove(&function_list);
 #endif
@@ -201,7 +201,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 	}
 
 	if (p_extended_check) {
-		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+		MutexLock lock(GDScriptLanguage::get_singleton()->mutex);
 
 		// Script gone?
 		if (!scripts_list.in_list()) {
@@ -219,7 +219,7 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	{
-		MutexLock lock(GDScriptLanguage::singleton->lock);
+		MutexLock lock(GDScriptLanguage::singleton->mutex);
 
 		if (!scripts_list.in_list()) {
 #ifdef DEBUG_ENABLED
@@ -304,7 +304,7 @@ GDScriptFunctionState::GDScriptFunctionState() :
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 	{
-		MutexLock lock(GDScriptLanguage::singleton->lock);
+		MutexLock lock(GDScriptLanguage::singleton->mutex);
 		scripts_list.remove_from_list();
 		instances_list.remove_from_list();
 	}

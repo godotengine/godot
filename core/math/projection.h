@@ -31,10 +31,11 @@
 #ifndef PROJECTION_H
 #define PROJECTION_H
 
-#include "core/math/math_defs.h"
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
-#include "core/templates/vector.h"
+
+template <class T>
+class Vector;
 
 struct AABB;
 struct Plane;
@@ -42,7 +43,7 @@ struct Rect2;
 struct Transform3D;
 struct Vector2;
 
-struct Projection {
+struct _NO_DISCARD_ Projection {
 	enum Planes {
 		PLANE_NEAR,
 		PLANE_FAR,
@@ -52,16 +53,16 @@ struct Projection {
 		PLANE_BOTTOM
 	};
 
-	Vector4 matrix[4];
+	Vector4 columns[4];
 
 	_FORCE_INLINE_ const Vector4 &operator[](const int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return matrix[p_axis];
+		return columns[p_axis];
 	}
 
 	_FORCE_INLINE_ Vector4 &operator[](const int p_axis) {
 		DEV_ASSERT((unsigned int)p_axis < 4);
-		return matrix[p_axis];
+		return columns[p_axis];
 	}
 
 	float determinant() const;
@@ -135,7 +136,7 @@ struct Projection {
 	bool operator==(const Projection &p_cam) const {
 		for (uint32_t i = 0; i < 4; i++) {
 			for (uint32_t j = 0; j < 4; j++) {
-				if (matrix[i][j] != p_cam.matrix[i][j]) {
+				if (columns[i][j] != p_cam.columns[i][j]) {
 					return false;
 				}
 			}
@@ -157,10 +158,10 @@ struct Projection {
 
 Vector3 Projection::xform(const Vector3 &p_vec3) const {
 	Vector3 ret;
-	ret.x = matrix[0][0] * p_vec3.x + matrix[1][0] * p_vec3.y + matrix[2][0] * p_vec3.z + matrix[3][0];
-	ret.y = matrix[0][1] * p_vec3.x + matrix[1][1] * p_vec3.y + matrix[2][1] * p_vec3.z + matrix[3][1];
-	ret.z = matrix[0][2] * p_vec3.x + matrix[1][2] * p_vec3.y + matrix[2][2] * p_vec3.z + matrix[3][2];
-	real_t w = matrix[0][3] * p_vec3.x + matrix[1][3] * p_vec3.y + matrix[2][3] * p_vec3.z + matrix[3][3];
+	ret.x = columns[0][0] * p_vec3.x + columns[1][0] * p_vec3.y + columns[2][0] * p_vec3.z + columns[3][0];
+	ret.y = columns[0][1] * p_vec3.x + columns[1][1] * p_vec3.y + columns[2][1] * p_vec3.z + columns[3][1];
+	ret.z = columns[0][2] * p_vec3.x + columns[1][2] * p_vec3.y + columns[2][2] * p_vec3.z + columns[3][2];
+	real_t w = columns[0][3] * p_vec3.x + columns[1][3] * p_vec3.y + columns[2][3] * p_vec3.z + columns[3][3];
 	return ret / w;
 }
 

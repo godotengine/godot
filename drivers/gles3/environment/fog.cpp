@@ -43,7 +43,7 @@ RID Fog::fog_volume_allocate() {
 void Fog::fog_volume_initialize(RID p_rid) {
 }
 
-void Fog::fog_free(RID p_rid) {
+void Fog::fog_volume_free(RID p_rid) {
 }
 
 void Fog::fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) {

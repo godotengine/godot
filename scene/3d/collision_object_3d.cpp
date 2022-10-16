@@ -150,13 +150,13 @@ uint32_t CollisionObject3D::get_collision_mask() const {
 void CollisionObject3D::set_collision_layer_value(int p_layer_number, bool p_value) {
 	ERR_FAIL_COND_MSG(p_layer_number < 1, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_MSG(p_layer_number > 32, "Collision layer number must be between 1 and 32 inclusive.");
-	uint32_t collision_layer = get_collision_layer();
+	uint32_t collision_layer_new = get_collision_layer();
 	if (p_value) {
-		collision_layer |= 1 << (p_layer_number - 1);
+		collision_layer_new |= 1 << (p_layer_number - 1);
 	} else {
-		collision_layer &= ~(1 << (p_layer_number - 1));
+		collision_layer_new &= ~(1 << (p_layer_number - 1));
 	}
-	set_collision_layer(collision_layer);
+	set_collision_layer(collision_layer_new);
 }
 
 bool CollisionObject3D::get_collision_layer_value(int p_layer_number) const {
@@ -339,9 +339,9 @@ void CollisionObject3D::_update_shape_data(uint32_t p_owner) {
 void CollisionObject3D::_shape_changed(const Ref<Shape3D> &p_shape) {
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
-		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
-			ShapeData::ShapeBase &s = shapes[i];
+			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.shape == p_shape && s.debug_shape.is_valid()) {
 				Ref<Mesh> mesh = s.shape->get_debug_mesh();
 				RS::get_singleton()->instance_set_base(s.debug_shape, mesh->get_rid());
@@ -359,9 +359,9 @@ void CollisionObject3D::_update_debug_shapes() {
 	for (const uint32_t &shapedata_idx : debug_shapes_to_update) {
 		if (shapes.has(shapedata_idx)) {
 			ShapeData &shapedata = shapes[shapedata_idx];
-			ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+			ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
-				ShapeData::ShapeBase &s = shapes[i];
+				ShapeData::ShapeBase &s = shape_bases[i];
 				if (s.shape.is_null() || shapedata.disabled) {
 					if (s.debug_shape.is_valid()) {
 						RS::get_singleton()->free(s.debug_shape);
@@ -394,9 +394,9 @@ void CollisionObject3D::_update_debug_shapes() {
 void CollisionObject3D::_clear_debug_shapes() {
 	for (KeyValue<uint32_t, ShapeData> &E : shapes) {
 		ShapeData &shapedata = E.value;
-		ShapeData::ShapeBase *shapes = shapedata.shapes.ptrw();
+		ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptrw();
 		for (int i = 0; i < shapedata.shapes.size(); i++) {
-			ShapeData::ShapeBase &s = shapes[i];
+			ShapeData::ShapeBase &s = shape_bases[i];
 			if (s.debug_shape.is_valid()) {
 				RS::get_singleton()->free(s.debug_shape);
 				s.debug_shape = RID();
@@ -417,9 +417,9 @@ void CollisionObject3D::_on_transform_changed() {
 			if (shapedata.disabled) {
 				continue; // If disabled then there are no debug shapes to update.
 			}
-			const ShapeData::ShapeBase *shapes = shapedata.shapes.ptr();
+			const ShapeData::ShapeBase *shape_bases = shapedata.shapes.ptr();
 			for (int i = 0; i < shapedata.shapes.size(); i++) {
-				RS::get_singleton()->instance_set_transform(shapes[i].debug_shape, debug_shape_old_transform * shapedata.xform);
+				RS::get_singleton()->instance_set_transform(shape_bases[i].debug_shape, debug_shape_old_transform * shapedata.xform);
 			}
 		}
 	}

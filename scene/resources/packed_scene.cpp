@@ -150,15 +150,15 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		} else if (n.instance >= 0) {
 			//instance a scene into this node
 			if (n.instance & FLAG_INSTANCE_IS_PLACEHOLDER) {
-				String path = props[n.instance & FLAG_MASK];
+				String scene_path = props[n.instance & FLAG_MASK];
 				if (disable_placeholders) {
-					Ref<PackedScene> sdata = ResourceLoader::load(path, "PackedScene");
+					Ref<PackedScene> sdata = ResourceLoader::load(scene_path, "PackedScene");
 					ERR_FAIL_COND_V(!sdata.is_valid(), nullptr);
 					node = sdata->instantiate(p_edit_state == GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 					ERR_FAIL_COND_V(!node, nullptr);
 				} else {
 					InstancePlaceholder *ip = memnew(InstancePlaceholder);
-					ip->set_instance_path(path);
+					ip->set_instance_path(scene_path);
 					node = ip;
 				}
 				node->set_scene_instance_load_placeholder(true);
@@ -938,8 +938,8 @@ Error SceneState::pack(Node *p_scene) {
 
 	// If using scene inheritance, pack the scene it inherits from.
 	if (scene->get_scene_inherited_state().is_valid()) {
-		String path = scene->get_scene_inherited_state()->get_path();
-		Ref<PackedScene> instance = ResourceLoader::load(path);
+		String scene_path = scene->get_scene_inherited_state()->get_path();
+		Ref<PackedScene> instance = ResourceLoader::load(scene_path);
 		if (instance.is_valid()) {
 			base_scene_idx = _vm_get_variant(instance, variant_map);
 		}
@@ -1546,7 +1546,7 @@ Array SceneState::get_connection_binds(int p_idx) const {
 	return binds;
 }
 
-bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method) {
+bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method, bool p_no_inheritance) {
 	// this method cannot be const because of this
 	Ref<SceneState> ss = this;
 
@@ -1576,6 +1576,10 @@ bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p
 			if (np_from == p_node_from && sn_signal == p_signal && np_to == p_node_to && sn_method == p_method) {
 				return true;
 			}
+		}
+
+		if (p_no_inheritance) {
+			break;
 		}
 
 		ss = ss->get_base_scene_state();

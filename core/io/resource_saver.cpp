@@ -42,7 +42,7 @@ ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	int64_t res;
+	int64_t res = ERR_METHOD_NOT_FOUND;
 	if (GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res)) {
 		return (Error)res;
 	}
@@ -51,7 +51,7 @@ Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p
 }
 
 bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
-	bool success;
+	bool success = false;
 	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
 		return success;
 	}

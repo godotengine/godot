@@ -447,9 +447,10 @@ void godotsharp_packed_string_array_add(PackedStringArray *r_dest, const String 
 	r_dest->append(*p_element);
 }
 
-void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, Callable *r_callable) {
+void godotsharp_callable_new_with_delegate(GCHandleIntPtr p_delegate_handle, const Object *p_object, Callable *r_callable) {
 	// TODO: Use pooling for ManagedCallable instances.
-	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle));
+	ObjectID objid = p_object ? p_object->get_instance_id() : ObjectID();
+	CallableCustom *managed_callable = memnew(ManagedCallable(p_delegate_handle, objid));
 	memnew_placement(r_callable, Callable(managed_callable));
 }
 

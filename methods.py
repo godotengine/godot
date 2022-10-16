@@ -1,19 +1,11 @@
 import os
+import sys
 import re
 import glob
 import subprocess
 from collections import OrderedDict
 from collections.abc import Mapping
 from typing import Iterator
-
-# We need to define our own `Action` method to control the verbosity of output
-# and whenever we need to run those commands in a subprocess on some platforms.
-from SCons import Node
-from SCons.Script import Action
-from SCons.Script import ARGUMENTS
-from SCons.Script import Glob
-from SCons.Variables.BoolVariable import _text2bool
-from platform_methods import run_in_subprocess
 
 
 def add_source_files(self, sources, files):
@@ -219,6 +211,9 @@ def get_cmdline_bool(option, default):
     """We use `ARGUMENTS.get()` to check if options were manually overridden on the command line,
     and SCons' _text2bool helper to convert them to booleans, otherwise they're handled as strings.
     """
+    from SCons.Script import ARGUMENTS
+    from SCons.Variables.BoolVariable import _text2bool
+
     cmdline_val = ARGUMENTS.get(option)
     if cmdline_val is not None:
         return _text2bool(cmdline_val)
@@ -702,6 +697,9 @@ def generate_cpp_hint_file(filename):
 
 
 def glob_recursive(pattern, node="."):
+    from SCons import Node
+    from SCons.Script import Glob
+
     results = []
     for f in Glob(str(node) + "/*", source=True):
         if type(f) is Node.FS.Dir:
@@ -741,7 +739,7 @@ def generate_vs_project(env, num_jobs):
             PLATFORMS = ["Win32", "x64"]
             PLATFORM_IDS = ["x86_32", "x86_64"]
             CONFIGURATIONS = ["editor", "template_release", "template_debug"]
-            DEV_SUFFIX = ["", ".dev"]
+            DEV_SUFFIX = ".dev" if env["dev_build"] else ""
 
             @staticmethod
             def for_every_variant(value):
@@ -776,10 +774,9 @@ def generate_vs_project(env, num_jobs):
                     for platform in ModuleConfigs.PLATFORMS
                 ]
                 self.arg_dict["runfile"] += [
-                    f'bin\\godot.windows.{config}{dev}.{plat_id}{f".{name}" if name else ""}.exe'
+                    f'bin\\godot.windows.{config}{ModuleConfigs.DEV_SUFFIX}{".double" if env["float"] == "64" else ""}.{plat_id}{f".{name}" if name else ""}.exe'
                     for config in ModuleConfigs.CONFIGURATIONS
                     for plat_id in ModuleConfigs.PLATFORM_IDS
-                    for dev in ModuleConfigs.DEV_SUFFIX
                 ]
                 self.arg_dict["cpppaths"] += ModuleConfigs.for_every_variant(env["CPPPATH"] + [includes])
                 self.arg_dict["cppdefines"] += ModuleConfigs.for_every_variant(env["CPPDEFINES"] + defines)
@@ -814,11 +811,17 @@ def generate_vs_project(env, num_jobs):
                 if env["dev_build"]:
                     common_build_postfix.append("dev_build=yes")
 
-                if env["tests"]:
+                if env["dev_mode"]:
+                    common_build_postfix.append("dev_mode=yes")
+
+                elif env["tests"]:
                     common_build_postfix.append("tests=yes")
 
                 if env["custom_modules"]:
                     common_build_postfix.append("custom_modules=%s" % env["custom_modules"])
+
+                if env["float"] == "64":
+                    common_build_postfix.append("float=64")
 
                 result = " ^& ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
                 return result
@@ -907,6 +910,9 @@ def CommandNoCache(env, target, sources, command, **args):
 
 
 def Run(env, function, short_message, subprocess=True):
+    from SCons.Script import Action
+    from platform_methods import run_in_subprocess
+
     output_print = short_message if not env["verbose"] else ""
     if not subprocess:
         return Action(function, output_print)

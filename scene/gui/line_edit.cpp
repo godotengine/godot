@@ -971,7 +971,18 @@ void LineEdit::_notification(int p_what) {
 					} else {
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
 							// Draw extra marker on top of mid caret.
-							Rect2 trect = Rect2(caret.l_caret.position.x - 3 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							Rect2 trect = Rect2(caret.l_caret.position.x - 2.5 * caret_width, caret.l_caret.position.y, 6 * caret_width, caret_width);
+							trect.position += ofs;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+						} else if (caret.l_caret != Rect2() && caret.t_caret != Rect2() && caret.l_dir != caret.t_dir) {
+							// Draw extra direction marker on top of split caret.
+							float d = (caret.l_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+							Rect2 trect = Rect2(caret.l_caret.position.x + d * caret_width, caret.l_caret.position.y + caret.l_caret.size.y - caret_width, 3 * caret_width, caret_width);
+							trect.position += ofs;
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
+
+							d = (caret.t_dir == TextServer::DIRECTION_LTR) ? 0.5 : -3;
+							trect = Rect2(caret.t_caret.position.x + d * caret_width, caret.t_caret.position.y, 3 * caret_width, caret_width);
 							trect.position += ofs;
 							RenderingServer::get_singleton()->canvas_item_add_rect(ci, trect, caret_color);
 						}
@@ -1047,8 +1058,8 @@ void LineEdit::_notification(int p_what) {
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				Point2 caret_column = Point2(get_caret_column(), 1) * get_minimum_size().height;
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + caret_column, get_viewport()->get_window_id());
+				Point2 column = Point2(get_caret_column(), 1) * get_minimum_size().height;
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + column, get_viewport()->get_window_id());
 			}
 
 			show_virtual_keyboard();
@@ -2164,6 +2175,12 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::_shape() {
+	const Ref<Font> &font = theme_cache.font;
+	int font_size = theme_cache.font_size;
+	if (font.is_null()) {
+		return;
+	}
+
 	Size2 old_size = TS->shaped_text_get_size(text_rid);
 	TS->shaped_text_clear(text_rid);
 
@@ -2186,9 +2203,6 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = theme_cache.font;
-	int font_size = theme_cache.font_size;
-	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));

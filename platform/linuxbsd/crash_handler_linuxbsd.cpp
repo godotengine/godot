@@ -89,7 +89,7 @@ static void handle_crash(int sig) {
 			// Try to demangle the function name to provide a more readable one
 			if (dladdr(bt_buffer[i], &info) && info.dli_sname) {
 				if (info.dli_sname[0] == '_') {
-					int status;
+					int status = 0;
 					char *demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
 
 					if (status == 0 && demangled) {

@@ -721,8 +721,9 @@ namespace Godot.NativeInterop
             if (p_managed_callable.Delegate != null)
             {
                 var gcHandle = CustomGCHandle.AllocStrong(p_managed_callable.Delegate);
+                IntPtr objectPtr = p_managed_callable.Target != null ? Object.GetPtr(p_managed_callable.Target) : IntPtr.Zero;
                 NativeFuncs.godotsharp_callable_new_with_delegate(
-                    GCHandle.ToIntPtr(gcHandle), out godot_callable callable);
+                    GCHandle.ToIntPtr(gcHandle), objectPtr, out godot_callable callable);
                 return callable;
             }
             else

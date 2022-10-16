@@ -55,6 +55,7 @@ void GotoLineDialog::ok_pressed() {
 	if (get_line() < 1 || get_line() > text_editor->get_line_count()) {
 		return;
 	}
+	text_editor->remove_secondary_carets();
 	text_editor->unfold_line(get_line() - 1);
 	text_editor->set_caret_line(get_line() - 1);
 	hide();
@@ -149,7 +150,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 			text_editor->unfold_line(pos.y);
 			text_editor->set_caret_line(pos.y, false);
 			text_editor->set_caret_column(pos.x + text.length(), false);
-			text_editor->center_viewport_to_caret();
+			text_editor->center_viewport_to_caret(0);
 			text_editor->select(pos.y, pos.x, pos.y, pos.x + text.length());
 
 			line_col_changed_for_result = true;
@@ -176,37 +177,37 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 }
 
 void FindReplaceBar::_replace() {
-	bool selection_enabled = text_editor->has_selection();
+	bool selection_enabled = text_editor->has_selection(0);
 	Point2i selection_begin, selection_end;
 	if (selection_enabled) {
-		selection_begin = Point2i(text_editor->get_selection_from_line(), text_editor->get_selection_from_column());
-		selection_end = Point2i(text_editor->get_selection_to_line(), text_editor->get_selection_to_column());
+		selection_begin = Point2i(text_editor->get_selection_from_line(0), text_editor->get_selection_from_column(0));
+		selection_end = Point2i(text_editor->get_selection_to_line(0), text_editor->get_selection_to_column(0));
 	}
 
-	String replace_text = get_replace_text();
+	String repl_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
 	text_editor->begin_complex_operation();
 	if (selection_enabled && is_selection_only()) { // To restrict search_current() to selected region
-		text_editor->set_caret_line(selection_begin.width);
-		text_editor->set_caret_column(selection_begin.height);
+		text_editor->set_caret_line(selection_begin.width, false, true, 0, 0);
+		text_editor->set_caret_column(selection_begin.height, true, 0);
 	}
 
 	if (search_current()) {
 		text_editor->unfold_line(result_line);
-		text_editor->select(result_line, result_col, result_line, result_col + search_text_len);
+		text_editor->select(result_line, result_col, result_line, result_col + search_text_len, 0);
 
 		if (selection_enabled && is_selection_only()) {
 			Point2i match_from(result_line, result_col);
 			Point2i match_to(result_line, result_col + search_text_len);
 			if (!(match_from < selection_begin || match_to > selection_end)) {
-				text_editor->insert_text_at_caret(replace_text);
+				text_editor->insert_text_at_caret(repl_text, 0);
 				if (match_to.x == selection_end.x) { // Adjust selection bounds if necessary
-					selection_end.y += replace_text.length() - search_text_len;
+					selection_end.y += repl_text.length() - search_text_len;
 				}
 			}
 		} else {
-			text_editor->insert_text_at_caret(replace_text);
+			text_editor->insert_text_at_caret(repl_text, 0);
 		}
 	}
 	text_editor->end_complex_operation();
@@ -216,31 +217,36 @@ void FindReplaceBar::_replace() {
 
 	if (selection_enabled && is_selection_only()) {
 		// Reselect in order to keep 'Replace' restricted to selection
-		text_editor->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
+		text_editor->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y, 0);
 	} else {
-		text_editor->deselect();
+		text_editor->deselect(0);
 	}
 }
 
 void FindReplaceBar::_replace_all() {
 	text_editor->disconnect("text_changed", callable_mp(this, &FindReplaceBar::_editor_text_changed));
 	// Line as x so it gets priority in comparison, column as y.
-	Point2i orig_cursor(text_editor->get_caret_line(), text_editor->get_caret_column());
+	Point2i orig_cursor(text_editor->get_caret_line(0), text_editor->get_caret_column(0));
 	Point2i prev_match = Point2(-1, -1);
 
-	bool selection_enabled = text_editor->has_selection();
+	bool selection_enabled = text_editor->has_selection(0);
+	if (!is_selection_only()) {
+		text_editor->deselect();
+		selection_enabled = false;
+	} else {
+		result_line = -1;
+		result_col = -1;
+	}
+
 	Point2i selection_begin, selection_end;
 	if (selection_enabled) {
-		selection_begin = Point2i(text_editor->get_selection_from_line(), text_editor->get_selection_from_column());
-		selection_end = Point2i(text_editor->get_selection_to_line(), text_editor->get_selection_to_column());
+		selection_begin = Point2i(text_editor->get_selection_from_line(0), text_editor->get_selection_from_column(0));
+		selection_end = Point2i(text_editor->get_selection_to_line(0), text_editor->get_selection_to_column(0));
 	}
 
 	int vsval = text_editor->get_v_scroll();
 
-	text_editor->set_caret_line(0);
-	text_editor->set_caret_column(0);
-
-	String replace_text = get_replace_text();
+	String repl_text = get_replace_text();
 	int search_text_len = get_search_text().length();
 
 	int rc = 0;
@@ -250,9 +256,13 @@ void FindReplaceBar::_replace_all() {
 	text_editor->begin_complex_operation();
 
 	if (selection_enabled && is_selection_only()) {
-		text_editor->set_caret_line(selection_begin.width);
-		text_editor->set_caret_column(selection_begin.height);
+		text_editor->set_caret_line(selection_begin.width, false, true, 0, 0);
+		text_editor->set_caret_column(selection_begin.height, true, 0);
+	} else {
+		text_editor->set_caret_line(0, false, true, 0, 0);
+		text_editor->set_caret_column(0, true, 0);
 	}
+
 	if (search_current()) {
 		do {
 			// replace area
@@ -263,25 +273,25 @@ void FindReplaceBar::_replace_all() {
 				break; // Done.
 			}
 
-			prev_match = Point2i(result_line, result_col + replace_text.length());
+			prev_match = Point2i(result_line, result_col + repl_text.length());
 
 			text_editor->unfold_line(result_line);
-			text_editor->select(result_line, result_col, result_line, match_to.y);
+			text_editor->select(result_line, result_col, result_line, match_to.y, 0);
 
-			if (selection_enabled && is_selection_only()) {
+			if (selection_enabled) {
 				if (match_from < selection_begin || match_to > selection_end) {
 					break; // Done.
 				}
 
 				// Replace but adjust selection bounds.
-				text_editor->insert_text_at_caret(replace_text);
+				text_editor->insert_text_at_caret(repl_text, 0);
 				if (match_to.x == selection_end.x) {
-					selection_end.y += replace_text.length() - search_text_len;
+					selection_end.y += repl_text.length() - search_text_len;
 				}
 
 			} else {
 				// Just replace.
-				text_editor->insert_text_at_caret(replace_text);
+				text_editor->insert_text_at_caret(repl_text, 0);
 			}
 
 			rc++;
@@ -293,14 +303,12 @@ void FindReplaceBar::_replace_all() {
 	replace_all_mode = false;
 
 	// Restore editor state (selection, cursor, scroll).
-	text_editor->set_caret_line(orig_cursor.x);
-	text_editor->set_caret_column(orig_cursor.y);
+	text_editor->set_caret_line(orig_cursor.x, false, true, 0, 0);
+	text_editor->set_caret_column(orig_cursor.y, true, 0);
 
-	if (selection_enabled && is_selection_only()) {
+	if (selection_enabled) {
 		// Reselect.
-		text_editor->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y);
-	} else {
-		text_editor->deselect();
+		text_editor->select(selection_begin.x, selection_begin.y, selection_end.x, selection_end.y, 0);
 	}
 
 	text_editor->set_v_scroll(vsval);
@@ -313,21 +321,28 @@ void FindReplaceBar::_replace_all() {
 	needs_to_count_results = true;
 }
 
-void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
-	r_line = text_editor->get_caret_line();
-	r_col = text_editor->get_caret_column();
+void FindReplaceBar::_get_search_from(int &r_line, int &r_col, bool p_is_searching_next) {
+	if (!text_editor->has_selection(0) || is_selection_only()) {
+		r_line = text_editor->get_caret_line(0);
+		r_col = text_editor->get_caret_column(0);
 
-	if (text_editor->has_selection() && is_selection_only()) {
+		if (!p_is_searching_next && r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
+			r_col = result_col;
+		}
 		return;
 	}
 
-	if (r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
-		r_col = result_col;
+	if (p_is_searching_next) {
+		r_line = text_editor->get_selection_to_line();
+		r_col = text_editor->get_selection_to_column();
+	} else {
+		r_line = text_editor->get_selection_from_line();
+		r_col = text_editor->get_selection_from_column();
 	}
 }
 
 void FindReplaceBar::_update_results_count() {
-	if (!needs_to_count_results && (result_line != -1)) {
+	if (!needs_to_count_results && (result_line != -1) && results_count_to_current > 0) {
 		results_count_to_current += (flags & TextEdit::SEARCH_BACKWARDS) ? -1 : 1;
 
 		if (results_count_to_current > results_count) {
@@ -339,15 +354,14 @@ void FindReplaceBar::_update_results_count() {
 		return;
 	}
 
-	results_count = 0;
-	results_count_to_current = 0;
-
 	String searched = get_search_text();
 	if (searched.is_empty()) {
 		return;
 	}
 
 	needs_to_count_results = false;
+
+	results_count = 0;
 
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
 		String line_text = text_editor->get_line(i);
@@ -372,8 +386,13 @@ void FindReplaceBar::_update_results_count() {
 
 			results_count++;
 
-			if (i == result_line && col_pos == result_col) {
-				results_count_to_current = results_count;
+			if (i == result_line) {
+				if (col_pos == result_col) {
+					results_count_to_current = results_count;
+				} else if (col_pos < result_col && col_pos + searched.length() > result_col) {
+					col_pos = result_col;
+					results_count_to_current = results_count;
+				}
 			}
 
 			col_pos += searched.length();
@@ -391,10 +410,10 @@ void FindReplaceBar::_update_matches_label() {
 
 		if (results_count == 0) {
 			matches_label->set_text("No match");
-		} else if (results_count == 1) {
-			matches_label->set_text(vformat(TTR("%d match"), results_count));
+		} else if (results_count_to_current == -1) {
+			matches_label->set_text(vformat(TTRN("%d match", "%d matches", results_count), results_count));
 		} else {
-			matches_label->set_text(vformat(TTR("%d of %d matches"), results_count_to_current, results_count));
+			matches_label->set_text(vformat(TTRN("%d of %d match", "%d of %d matches", results_count), results_count_to_current, results_count));
 		}
 	}
 }
@@ -416,6 +435,10 @@ bool FindReplaceBar::search_current() {
 }
 
 bool FindReplaceBar::search_prev() {
+	if (is_selection_only() && !replace_all_mode) {
+		return false;
+	}
+
 	if (!is_visible()) {
 		popup_search(true);
 	}
@@ -434,9 +457,6 @@ bool FindReplaceBar::search_prev() {
 
 	int line, col;
 	_get_search_from(line, col);
-	if (text_editor->has_selection()) {
-		col--; // Skip currently selected word.
-	}
 
 	col -= text.length();
 	if (col < 0) {
@@ -451,17 +471,15 @@ bool FindReplaceBar::search_prev() {
 }
 
 bool FindReplaceBar::search_next() {
+	if (is_selection_only() && !replace_all_mode) {
+		return false;
+	}
+
 	if (!is_visible()) {
 		popup_search(true);
 	}
 
 	flags = 0;
-	String text;
-	if (replace_all_mode) {
-		text = get_replace_text();
-	} else {
-		text = get_search_text();
-	}
 
 	if (is_whole_words()) {
 		flags |= TextEdit::SEARCH_WHOLE_WORDS;
@@ -471,18 +489,7 @@ bool FindReplaceBar::search_next() {
 	}
 
 	int line, col;
-	_get_search_from(line, col);
-
-	if (line == result_line && col == result_col) {
-		col += text.length();
-		if (col > text_editor->get_line(line).length()) {
-			line += 1;
-			if (line >= text_editor->get_line_count()) {
-				line = 0;
-			}
-			col = 0;
-		}
-	}
+	_get_search_from(line, col, true);
 
 	return _search(flags, line, col);
 }
@@ -512,8 +519,10 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 		search_text->call_deferred(SNAME("grab_focus"));
 	}
 
-	if (text_editor->has_selection() && !selection_only->is_pressed()) {
-		search_text->set_text(text_editor->get_selected_text());
+	if (text_editor->has_selection(0) && !is_selection_only()) {
+		search_text->set_text(text_editor->get_selected_text(0));
+		result_line = text_editor->get_selection_from_line();
+		result_col = text_editor->get_selection_from_column();
 	}
 
 	if (!get_search_text().is_empty()) {
@@ -537,6 +546,7 @@ void FindReplaceBar::popup_search(bool p_show_only) {
 	replace_text->hide();
 	hbc_button_replace->hide();
 	hbc_option_replace->hide();
+	selection_only->set_pressed(false);
 
 	_show_search(false, p_show_only);
 }
@@ -548,9 +558,9 @@ void FindReplaceBar::popup_replace() {
 		hbc_option_replace->show();
 	}
 
-	selection_only->set_pressed((text_editor->has_selection() && text_editor->get_selection_from_line() < text_editor->get_selection_to_line()));
+	selection_only->set_pressed((text_editor->has_selection(0) && text_editor->get_selection_from_line(0) < text_editor->get_selection_to_line(0)));
 
-	_show_search(is_visible() || text_editor->has_selection());
+	_show_search(is_visible() || text_editor->has_selection(0));
 }
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
@@ -587,7 +597,7 @@ void FindReplaceBar::_search_text_submitted(const String &p_text) {
 }
 
 void FindReplaceBar::_replace_text_submitted(const String &p_text) {
-	if (selection_only->is_pressed() && text_editor->has_selection()) {
+	if (selection_only->is_pressed() && text_editor->has_selection(0)) {
 		_replace_all();
 		_hide_bar();
 	} else if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
@@ -1091,6 +1101,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 	}
 
 	if (trimed_whitespace) {
+		text_editor->merge_overlapping_carets();
 		text_editor->end_complex_operation();
 		text_editor->queue_redraw();
 	}
@@ -1122,8 +1133,11 @@ void CodeTextEditor::convert_indent_to_spaces() {
 		indent += " ";
 	}
 
-	int cursor_line = text_editor->get_caret_line();
-	int cursor_column = text_editor->get_caret_column();
+	Vector<int> cursor_columns;
+	cursor_columns.resize(text_editor->get_caret_count());
+	for (int c = 0; c < text_editor->get_caret_count(); c++) {
+		cursor_columns.write[c] = text_editor->get_caret_column(c);
+	}
 
 	bool changed_indentation = false;
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
@@ -1140,8 +1154,10 @@ void CodeTextEditor::convert_indent_to_spaces() {
 					text_editor->begin_complex_operation();
 					changed_indentation = true;
 				}
-				if (cursor_line == i && cursor_column > j) {
-					cursor_column += indent_size - 1;
+				for (int c = 0; c < text_editor->get_caret_count(); c++) {
+					if (text_editor->get_caret_line(c) == i && text_editor->get_caret_column(c) > j) {
+						cursor_columns.write[c] += indent_size - 1;
+					}
 				}
 				line = line.left(j) + indent + line.substr(j + 1);
 			}
@@ -1152,7 +1168,10 @@ void CodeTextEditor::convert_indent_to_spaces() {
 		}
 	}
 	if (changed_indentation) {
-		text_editor->set_caret_column(cursor_column);
+		for (int c = 0; c < text_editor->get_caret_count(); c++) {
+			text_editor->set_caret_column(cursor_columns[c], c == 0, c);
+		}
+		text_editor->merge_overlapping_carets();
 		text_editor->end_complex_operation();
 		text_editor->queue_redraw();
 	}
@@ -1162,8 +1181,11 @@ void CodeTextEditor::convert_indent_to_tabs() {
 	int indent_size = EditorSettings::get_singleton()->get("text_editor/behavior/indent/size");
 	indent_size -= 1;
 
-	int cursor_line = text_editor->get_caret_line();
-	int cursor_column = text_editor->get_caret_column();
+	Vector<int> cursor_columns;
+	cursor_columns.resize(text_editor->get_caret_count());
+	for (int c = 0; c < text_editor->get_caret_count(); c++) {
+		cursor_columns.write[c] = text_editor->get_caret_column(c);
+	}
 
 	bool changed_indentation = false;
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
@@ -1184,8 +1206,10 @@ void CodeTextEditor::convert_indent_to_tabs() {
 						text_editor->begin_complex_operation();
 						changed_indentation = true;
 					}
-					if (cursor_line == i && cursor_column > j) {
-						cursor_column -= indent_size;
+					for (int c = 0; c < text_editor->get_caret_count(); c++) {
+						if (text_editor->get_caret_line(c) == i && text_editor->get_caret_column(c) > j) {
+							cursor_columns.write[c] -= indent_size;
+						}
 					}
 					line = line.left(j - indent_size) + "\t" + line.substr(j + 1);
 					j = 0;
@@ -1201,7 +1225,10 @@ void CodeTextEditor::convert_indent_to_tabs() {
 		}
 	}
 	if (changed_indentation) {
-		text_editor->set_caret_column(cursor_column);
+		for (int c = 0; c < text_editor->get_caret_count(); c++) {
+			text_editor->set_caret_column(cursor_columns[c], c == 0, c);
+		}
+		text_editor->merge_overlapping_carets();
 		text_editor->end_complex_operation();
 		text_editor->queue_redraw();
 	}
@@ -1211,59 +1238,128 @@ void CodeTextEditor::convert_case(CaseStyle p_case) {
 	if (!text_editor->has_selection()) {
 		return;
 	}
-
 	text_editor->begin_complex_operation();
 
-	int begin = text_editor->get_selection_from_line();
-	int end = text_editor->get_selection_to_line();
-	int begin_col = text_editor->get_selection_from_column();
-	int end_col = text_editor->get_selection_to_column();
-
-	for (int i = begin; i <= end; i++) {
-		int len = text_editor->get_line(i).length();
-		if (i == end) {
-			len = end_col;
-		}
-		if (i == begin) {
-			len -= begin_col;
-		}
-		String new_line = text_editor->get_line(i).substr(i == begin ? begin_col : 0, len);
-
-		switch (p_case) {
-			case UPPER: {
-				new_line = new_line.to_upper();
-			} break;
-			case LOWER: {
-				new_line = new_line.to_lower();
-			} break;
-			case CAPITALIZE: {
-				new_line = new_line.capitalize();
-			} break;
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (const int &c : caret_edit_order) {
+		if (!text_editor->has_selection(c)) {
+			continue;
 		}
 
-		if (i == begin) {
-			new_line = text_editor->get_line(i).left(begin_col) + new_line;
+		int begin = text_editor->get_selection_from_line(c);
+		int end = text_editor->get_selection_to_line(c);
+		int begin_col = text_editor->get_selection_from_column(c);
+		int end_col = text_editor->get_selection_to_column(c);
+
+		for (int i = begin; i <= end; i++) {
+			int len = text_editor->get_line(i).length();
+			if (i == end) {
+				len = end_col;
+			}
+			if (i == begin) {
+				len -= begin_col;
+			}
+			String new_line = text_editor->get_line(i).substr(i == begin ? begin_col : 0, len);
+
+			switch (p_case) {
+				case UPPER: {
+					new_line = new_line.to_upper();
+				} break;
+				case LOWER: {
+					new_line = new_line.to_lower();
+				} break;
+				case CAPITALIZE: {
+					new_line = new_line.capitalize();
+				} break;
+			}
+
+			if (i == begin) {
+				new_line = text_editor->get_line(i).left(begin_col) + new_line;
+			}
+			if (i == end) {
+				new_line = new_line + text_editor->get_line(i).substr(end_col);
+			}
+			text_editor->set_line(i, new_line);
 		}
-		if (i == end) {
-			new_line = new_line + text_editor->get_line(i).substr(end_col);
-		}
-		text_editor->set_line(i, new_line);
 	}
 	text_editor->end_complex_operation();
 }
 
 void CodeTextEditor::move_lines_up() {
 	text_editor->begin_complex_operation();
-	if (text_editor->has_selection()) {
-		int from_line = text_editor->get_selection_from_line();
-		int from_col = text_editor->get_selection_from_column();
-		int to_line = text_editor->get_selection_to_line();
-		int to_column = text_editor->get_selection_to_column();
-		int cursor_line = text_editor->get_caret_line();
 
-		for (int i = from_line; i <= to_line; i++) {
-			int line_id = i;
-			int next_id = i - 1;
+	Vector<int> carets_to_remove;
+
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (int i = 0; i < caret_edit_order.size(); i++) {
+		int c = caret_edit_order[i];
+		int cl = text_editor->get_caret_line(c);
+
+		bool swaped_caret = false;
+		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+			if (text_editor->has_selection(caret_edit_order[j])) {
+				if (text_editor->get_selection_from_line() == cl) {
+					carets_to_remove.push_back(caret_edit_order[j]);
+					continue;
+				}
+
+				if (text_editor->get_selection_to_line() == cl) {
+					if (text_editor->has_selection(c)) {
+						if (text_editor->get_selection_to_line(c) != cl) {
+							text_editor->select(cl + 1, 0, text_editor->get_selection_to_line(c), text_editor->get_selection_to_column(c), c);
+							break;
+						}
+					}
+
+					carets_to_remove.push_back(c);
+					i = j - 1;
+					swaped_caret = true;
+					break;
+				}
+				break;
+			}
+
+			if (text_editor->get_caret_line(caret_edit_order[j]) == cl) {
+				carets_to_remove.push_back(caret_edit_order[j]);
+				i = j;
+				continue;
+			}
+			break;
+		}
+
+		if (swaped_caret) {
+			continue;
+		}
+
+		if (text_editor->has_selection(c)) {
+			int from_line = text_editor->get_selection_from_line(c);
+			int from_col = text_editor->get_selection_from_column(c);
+			int to_line = text_editor->get_selection_to_line(c);
+			int to_column = text_editor->get_selection_to_column(c);
+			int cursor_line = text_editor->get_caret_line(c);
+
+			for (int j = from_line; j <= to_line; j++) {
+				int line_id = j;
+				int next_id = j - 1;
+
+				if (line_id == 0 || next_id < 0) {
+					return;
+				}
+
+				text_editor->unfold_line(line_id);
+				text_editor->unfold_line(next_id);
+
+				text_editor->swap_lines(line_id, next_id);
+				text_editor->set_caret_line(next_id, c == 0, true, 0, c);
+			}
+			int from_line_up = from_line > 0 ? from_line - 1 : from_line;
+			int to_line_up = to_line > 0 ? to_line - 1 : to_line;
+			int cursor_line_up = cursor_line > 0 ? cursor_line - 1 : cursor_line;
+			text_editor->select(from_line_up, from_col, to_line_up, to_column, c);
+			text_editor->set_caret_line(cursor_line_up, c == 0, true, 0, c);
+		} else {
+			int line_id = text_editor->get_caret_line(c);
+			int next_id = line_id - 1;
 
 			if (line_id == 0 || next_id < 0) {
 				return;
@@ -1273,238 +1369,336 @@ void CodeTextEditor::move_lines_up() {
 			text_editor->unfold_line(next_id);
 
 			text_editor->swap_lines(line_id, next_id);
-			text_editor->set_caret_line(next_id);
+			text_editor->set_caret_line(next_id, c == 0, true, 0, c);
 		}
-		int from_line_up = from_line > 0 ? from_line - 1 : from_line;
-		int to_line_up = to_line > 0 ? to_line - 1 : to_line;
-		int cursor_line_up = cursor_line > 0 ? cursor_line - 1 : cursor_line;
-		text_editor->select(from_line_up, from_col, to_line_up, to_column);
-		text_editor->set_caret_line(cursor_line_up);
-	} else {
-		int line_id = text_editor->get_caret_line();
-		int next_id = line_id - 1;
-
-		if (line_id == 0 || next_id < 0) {
-			return;
-		}
-
-		text_editor->unfold_line(line_id);
-		text_editor->unfold_line(next_id);
-
-		text_editor->swap_lines(line_id, next_id);
-		text_editor->set_caret_line(next_id);
 	}
 	text_editor->end_complex_operation();
+	text_editor->merge_overlapping_carets();
 	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::move_lines_down() {
 	text_editor->begin_complex_operation();
-	if (text_editor->has_selection()) {
-		int from_line = text_editor->get_selection_from_line();
-		int from_col = text_editor->get_selection_from_column();
-		int to_line = text_editor->get_selection_to_line();
-		int to_column = text_editor->get_selection_to_column();
-		int cursor_line = text_editor->get_caret_line();
 
-		for (int i = to_line; i >= from_line; i--) {
-			int line_id = i;
-			int next_id = i + 1;
+	Vector<int> carets_to_remove;
+
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (int i = 0; i < caret_edit_order.size(); i++) {
+		int c = caret_edit_order[i];
+		int cl = text_editor->get_caret_line(c);
+
+		bool swaped_caret = false;
+		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+			if (text_editor->has_selection(caret_edit_order[j])) {
+				if (text_editor->get_selection_from_line() == cl) {
+					carets_to_remove.push_back(caret_edit_order[j]);
+					continue;
+				}
+
+				if (text_editor->get_selection_to_line() == cl) {
+					if (text_editor->has_selection(c)) {
+						if (text_editor->get_selection_to_line(c) != cl) {
+							text_editor->select(cl + 1, 0, text_editor->get_selection_to_line(c), text_editor->get_selection_to_column(c), c);
+							break;
+						}
+					}
+
+					carets_to_remove.push_back(c);
+					i = j - 1;
+					swaped_caret = true;
+					break;
+				}
+				break;
+			}
+
+			if (text_editor->get_caret_line(caret_edit_order[j]) == cl) {
+				carets_to_remove.push_back(caret_edit_order[j]);
+				i = j;
+				continue;
+			}
+			break;
+		}
+
+		if (swaped_caret) {
+			continue;
+		}
+
+		if (text_editor->has_selection(c)) {
+			int from_line = text_editor->get_selection_from_line(c);
+			int from_col = text_editor->get_selection_from_column(c);
+			int to_line = text_editor->get_selection_to_line(c);
+			int to_column = text_editor->get_selection_to_column(c);
+			int cursor_line = text_editor->get_caret_line(c);
+
+			for (int l = to_line; l >= from_line; l--) {
+				int line_id = l;
+				int next_id = l + 1;
+
+				if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
+					continue;
+				}
+
+				text_editor->unfold_line(line_id);
+				text_editor->unfold_line(next_id);
+
+				text_editor->swap_lines(line_id, next_id);
+				text_editor->set_caret_line(next_id, c == 0, true, 0, c);
+			}
+			int from_line_down = from_line < text_editor->get_line_count() ? from_line + 1 : from_line;
+			int to_line_down = to_line < text_editor->get_line_count() ? to_line + 1 : to_line;
+			int cursor_line_down = cursor_line < text_editor->get_line_count() ? cursor_line + 1 : cursor_line;
+			text_editor->select(from_line_down, from_col, to_line_down, to_column, c);
+			text_editor->set_caret_line(cursor_line_down, c == 0, true, 0, c);
+		} else {
+			int line_id = text_editor->get_caret_line(c);
+			int next_id = line_id + 1;
 
 			if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
-				return;
+				continue;
 			}
 
 			text_editor->unfold_line(line_id);
 			text_editor->unfold_line(next_id);
 
 			text_editor->swap_lines(line_id, next_id);
-			text_editor->set_caret_line(next_id);
+			text_editor->set_caret_line(next_id, c == 0, true, 0, c);
 		}
-		int from_line_down = from_line < text_editor->get_line_count() ? from_line + 1 : from_line;
-		int to_line_down = to_line < text_editor->get_line_count() ? to_line + 1 : to_line;
-		int cursor_line_down = cursor_line < text_editor->get_line_count() ? cursor_line + 1 : cursor_line;
-		text_editor->select(from_line_down, from_col, to_line_down, to_column);
-		text_editor->set_caret_line(cursor_line_down);
-	} else {
-		int line_id = text_editor->get_caret_line();
-		int next_id = line_id + 1;
-
-		if (line_id == text_editor->get_line_count() - 1 || next_id > text_editor->get_line_count()) {
-			return;
-		}
-
-		text_editor->unfold_line(line_id);
-		text_editor->unfold_line(next_id);
-
-		text_editor->swap_lines(line_id, next_id);
-		text_editor->set_caret_line(next_id);
 	}
+
+	// Sort and remove backwards to preserve indexes.
+	carets_to_remove.sort();
+	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
+		text_editor->remove_caret(carets_to_remove[i]);
+	}
+
+	text_editor->merge_overlapping_carets();
 	text_editor->end_complex_operation();
 	text_editor->queue_redraw();
 }
 
-void CodeTextEditor::_delete_line(int p_line) {
+void CodeTextEditor::_delete_line(int p_line, int p_caret) {
 	// this is currently intended to be called within delete_lines()
 	// so `begin_complex_operation` is omitted here
 	text_editor->set_line(p_line, "");
 	if (p_line == 0 && text_editor->get_line_count() > 1) {
-		text_editor->set_caret_line(1);
-		text_editor->set_caret_column(0);
+		text_editor->set_caret_line(1, p_caret == 0, true, 0, p_caret);
+		text_editor->set_caret_column(0, p_caret == 0, p_caret);
 	}
-	text_editor->backspace();
+	text_editor->backspace(p_caret);
 	if (p_line < text_editor->get_line_count()) {
 		text_editor->unfold_line(p_line);
 	}
-	text_editor->set_caret_line(p_line);
+	text_editor->set_caret_line(p_line, p_caret == 0, true, 0, p_caret);
 }
 
 void CodeTextEditor::delete_lines() {
 	text_editor->begin_complex_operation();
-	if (text_editor->has_selection()) {
-		int to_line = text_editor->get_selection_to_line();
-		int from_line = text_editor->get_selection_from_line();
-		int count = Math::abs(to_line - from_line) + 1;
 
-		text_editor->set_caret_line(from_line, false);
-		text_editor->deselect();
-		for (int i = 0; i < count; i++) {
-			_delete_line(from_line);
+	Vector<int> carets_to_remove;
+
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (int i = 0; i < caret_edit_order.size(); i++) {
+		int c = caret_edit_order[i];
+		int cl = text_editor->get_caret_line(c);
+
+		bool swaped_caret = false;
+		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+			if (text_editor->has_selection(caret_edit_order[j])) {
+				if (text_editor->get_selection_from_line() == cl) {
+					carets_to_remove.push_back(caret_edit_order[j]);
+					continue;
+				}
+
+				if (text_editor->get_selection_to_line() == cl) {
+					if (text_editor->has_selection(c)) {
+						if (text_editor->get_selection_to_line(c) != cl) {
+							text_editor->select(cl + 1, 0, text_editor->get_selection_to_line(c), text_editor->get_selection_to_column(c), c);
+							break;
+						}
+					}
+
+					carets_to_remove.push_back(c);
+					i = j - 1;
+					swaped_caret = true;
+					break;
+				}
+				break;
+			}
+
+			if (text_editor->get_caret_line(caret_edit_order[j]) == cl) {
+				carets_to_remove.push_back(caret_edit_order[j]);
+				i = j;
+				continue;
+			}
+			break;
 		}
-	} else {
-		_delete_line(text_editor->get_caret_line());
+
+		if (swaped_caret) {
+			continue;
+		}
+
+		if (text_editor->has_selection(c)) {
+			int to_line = text_editor->get_selection_to_line(c);
+			int from_line = text_editor->get_selection_from_line(c);
+			int count = Math::abs(to_line - from_line) + 1;
+
+			text_editor->set_caret_line(from_line, false, true, 0, c);
+			text_editor->deselect(c);
+			for (int j = 0; j < count; j++) {
+				_delete_line(from_line, c);
+			}
+		} else {
+			_delete_line(text_editor->get_caret_line(c), c);
+		}
 	}
+
+	// Sort and remove backwards to preserve indexes.
+	carets_to_remove.sort();
+	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
+		text_editor->remove_caret(carets_to_remove[i]);
+	}
+	text_editor->merge_overlapping_carets();
 	text_editor->end_complex_operation();
 }
 
 void CodeTextEditor::duplicate_selection() {
-	const int cursor_column = text_editor->get_caret_column();
-	int from_line = text_editor->get_caret_line();
-	int to_line = text_editor->get_caret_line();
-	int from_column = 0;
-	int to_column = 0;
-	int cursor_new_line = to_line + 1;
-	int cursor_new_column = text_editor->get_caret_column();
-	String new_text = "\n" + text_editor->get_line(from_line);
-	bool selection_active = false;
-
-	text_editor->set_caret_column(text_editor->get_line(from_line).length());
-	if (text_editor->has_selection()) {
-		from_column = text_editor->get_selection_from_column();
-		to_column = text_editor->get_selection_to_column();
-
-		from_line = text_editor->get_selection_from_line();
-		to_line = text_editor->get_selection_to_line();
-		cursor_new_line = to_line + text_editor->get_caret_line() - from_line;
-		cursor_new_column = to_column == cursor_column ? 2 * to_column - from_column : to_column;
-		new_text = text_editor->get_selected_text();
-		selection_active = true;
-
-		text_editor->set_caret_line(to_line);
-		text_editor->set_caret_column(to_column);
-	}
-
 	text_editor->begin_complex_operation();
 
-	for (int i = from_line; i <= to_line; i++) {
-		text_editor->unfold_line(i);
-	}
-	text_editor->deselect();
-	text_editor->insert_text_at_caret(new_text);
-	text_editor->set_caret_line(cursor_new_line);
-	text_editor->set_caret_column(cursor_new_column);
-	if (selection_active) {
-		text_editor->select(to_line, to_column, 2 * to_line - from_line, to_line == from_line ? 2 * to_column - from_column : to_column);
-	}
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (const int &c : caret_edit_order) {
+		const int cursor_column = text_editor->get_caret_column(c);
+		int from_line = text_editor->get_caret_line(c);
+		int to_line = text_editor->get_caret_line(c);
+		int from_column = 0;
+		int to_column = 0;
+		int cursor_new_line = to_line + 1;
+		int cursor_new_column = text_editor->get_caret_column(c);
+		String new_text = "\n" + text_editor->get_line(from_line);
+		bool selection_active = false;
 
+		text_editor->set_caret_column(text_editor->get_line(from_line).length(), c == 0, c);
+		if (text_editor->has_selection(c)) {
+			from_column = text_editor->get_selection_from_column(c);
+			to_column = text_editor->get_selection_to_column(c);
+
+			from_line = text_editor->get_selection_from_line(c);
+			to_line = text_editor->get_selection_to_line(c);
+			cursor_new_line = to_line + text_editor->get_caret_line(c) - from_line;
+			cursor_new_column = to_column == cursor_column ? 2 * to_column - from_column : to_column;
+			new_text = text_editor->get_selected_text(c);
+			selection_active = true;
+
+			text_editor->set_caret_line(to_line, c == 0, true, 0, c);
+			text_editor->set_caret_column(to_column, c == 0, c);
+		}
+
+		for (int i = from_line; i <= to_line; i++) {
+			text_editor->unfold_line(i);
+		}
+		text_editor->deselect(c);
+		text_editor->insert_text_at_caret(new_text, c);
+		text_editor->set_caret_line(cursor_new_line, c == 0, true, 0, c);
+		text_editor->set_caret_column(cursor_new_column, c == 0, c);
+		if (selection_active) {
+			text_editor->select(to_line, to_column, 2 * to_line - from_line, to_line == from_line ? 2 * to_column - from_column : to_column, c);
+		}
+	}
+	text_editor->merge_overlapping_carets();
 	text_editor->end_complex_operation();
 	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->begin_complex_operation();
-	if (text_editor->has_selection()) {
-		int begin = text_editor->get_selection_from_line();
-		int end = text_editor->get_selection_to_line();
 
-		// End of selection ends on the first column of the last line, ignore it.
-		if (text_editor->get_selection_to_column() == 0) {
-			end -= 1;
-		}
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (const int &c : caret_edit_order) {
+		if (text_editor->has_selection(c)) {
+			int begin = text_editor->get_selection_from_line(c);
+			int end = text_editor->get_selection_to_line(c);
 
-		int col_to = text_editor->get_selection_to_column();
-		int cursor_pos = text_editor->get_caret_column();
-
-		// Check if all lines in the selected block are commented.
-		bool is_commented = true;
-		for (int i = begin; i <= end; i++) {
-			if (!text_editor->get_line(i).begins_with(delimiter)) {
-				is_commented = false;
-				break;
+			// End of selection ends on the first column of the last line, ignore it.
+			if (text_editor->get_selection_to_column(c) == 0) {
+				end -= 1;
 			}
-		}
-		for (int i = begin; i <= end; i++) {
-			String line_text = text_editor->get_line(i);
 
-			if (line_text.strip_edges().is_empty()) {
-				line_text = delimiter;
-			} else {
-				if (is_commented) {
-					line_text = line_text.substr(delimiter.length(), line_text.length());
-				} else {
-					line_text = delimiter + line_text;
+			int col_to = text_editor->get_selection_to_column(c);
+			int cursor_pos = text_editor->get_caret_column(c);
+
+			// Check if all lines in the selected block are commented.
+			bool is_commented = true;
+			for (int i = begin; i <= end; i++) {
+				if (!text_editor->get_line(i).begins_with(delimiter)) {
+					is_commented = false;
+					break;
 				}
 			}
-			text_editor->set_line(i, line_text);
-		}
+			for (int i = begin; i <= end; i++) {
+				String line_text = text_editor->get_line(i);
 
-		// Adjust selection & cursor position.
-		int offset = (is_commented ? -1 : 1) * delimiter.length();
-		int col_from = text_editor->get_selection_from_column() > 0 ? text_editor->get_selection_from_column() + offset : 0;
+				if (line_text.strip_edges().is_empty()) {
+					line_text = delimiter;
+				} else {
+					if (is_commented) {
+						line_text = line_text.substr(delimiter.length(), line_text.length());
+					} else {
+						line_text = delimiter + line_text;
+					}
+				}
+				text_editor->set_line(i, line_text);
+			}
 
-		if (is_commented && text_editor->get_caret_column() == text_editor->get_line(text_editor->get_caret_line()).length() + 1) {
-			cursor_pos += 1;
-		}
+			// Adjust selection & cursor position.
+			int offset = (is_commented ? -1 : 1) * delimiter.length();
+			int col_from = text_editor->get_selection_from_column(c) > 0 ? text_editor->get_selection_from_column(c) + offset : 0;
 
-		if (text_editor->get_selection_to_column() != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line()).length() + 1) {
-			col_to += offset;
-		}
+			if (is_commented && text_editor->get_caret_column(c) == text_editor->get_line(text_editor->get_caret_line(c)).length() + 1) {
+				cursor_pos += 1;
+			}
 
-		if (text_editor->get_caret_column() != 0) {
-			cursor_pos += offset;
-		}
+			if (text_editor->get_selection_to_column(c) != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line(c)).length() + 1) {
+				col_to += offset;
+			}
 
-		text_editor->select(begin, col_from, text_editor->get_selection_to_line(), col_to);
-		text_editor->set_caret_column(cursor_pos);
+			if (text_editor->get_caret_column(c) != 0) {
+				cursor_pos += offset;
+			}
 
-	} else {
-		int begin = text_editor->get_caret_line();
-		String line_text = text_editor->get_line(begin);
-		int delimiter_length = delimiter.length();
+			text_editor->select(begin, col_from, text_editor->get_selection_to_line(c), col_to, c);
+			text_editor->set_caret_column(cursor_pos, c == 0, c);
 
-		int col = text_editor->get_caret_column();
-		if (line_text.begins_with(delimiter)) {
-			line_text = line_text.substr(delimiter_length, line_text.length());
-			col -= delimiter_length;
 		} else {
-			line_text = delimiter + line_text;
-			col += delimiter_length;
-		}
+			int begin = text_editor->get_caret_line(c);
+			String line_text = text_editor->get_line(begin);
+			int delimiter_length = delimiter.length();
 
-		text_editor->set_line(begin, line_text);
-		text_editor->set_caret_column(col);
+			int col = text_editor->get_caret_column(c);
+			if (line_text.begins_with(delimiter)) {
+				line_text = line_text.substr(delimiter_length, line_text.length());
+				col -= delimiter_length;
+			} else {
+				line_text = delimiter + line_text;
+				col += delimiter_length;
+			}
+
+			text_editor->set_line(begin, line_text);
+			text_editor->set_caret_column(col, c == 0, c);
+		}
 	}
+	text_editor->merge_overlapping_carets();
 	text_editor->end_complex_operation();
 	text_editor->queue_redraw();
 }
 
 void CodeTextEditor::goto_line(int p_line) {
+	text_editor->remove_secondary_carets();
 	text_editor->deselect();
 	text_editor->unfold_line(p_line);
 	text_editor->call_deferred(SNAME("set_caret_line"), p_line);
 }
 
 void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+	text_editor->remove_secondary_carets();
 	text_editor->unfold_line(p_line);
 	text_editor->call_deferred(SNAME("set_caret_line"), p_line);
 	text_editor->call_deferred(SNAME("set_caret_column"), p_begin);
@@ -1526,19 +1720,7 @@ void CodeTextEditor::clear_executing_line() {
 
 Variant CodeTextEditor::get_edit_state() {
 	Dictionary state;
-
-	state["scroll_position"] = text_editor->get_v_scroll();
-	state["h_scroll_position"] = text_editor->get_h_scroll();
-	state["column"] = text_editor->get_caret_column();
-	state["row"] = text_editor->get_caret_line();
-
-	state["selection"] = get_text_editor()->has_selection();
-	if (get_text_editor()->has_selection()) {
-		state["selection_from_line"] = text_editor->get_selection_from_line();
-		state["selection_from_column"] = text_editor->get_selection_from_column();
-		state["selection_to_line"] = text_editor->get_selection_to_line();
-		state["selection_to_column"] = text_editor->get_selection_to_column();
-	}
+	state.merge(get_navigation_state());
 
 	state["folded_lines"] = text_editor->get_folded_lines();
 	state["breakpoints"] = text_editor->get_breakpointed_lines();
@@ -1559,8 +1741,10 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 	text_editor->set_v_scroll(state["scroll_position"]);
 	text_editor->set_h_scroll(state["h_scroll_position"]);
 
-	if (state.has("selection")) {
+	if (state.get("selection", false)) {
 		text_editor->select(state["selection_from_line"], state["selection_from_column"], state["selection_to_line"], state["selection_to_column"]);
+	} else {
+		text_editor->deselect();
 	}
 
 	if (state.has("folded_lines")) {
@@ -1583,6 +1767,25 @@ void CodeTextEditor::set_edit_state(const Variant &p_state) {
 			text_editor->set_line_as_bookmarked(bookmarks[i], true);
 		}
 	}
+}
+
+Variant CodeTextEditor::get_navigation_state() {
+	Dictionary state;
+
+	state["scroll_position"] = text_editor->get_v_scroll();
+	state["h_scroll_position"] = text_editor->get_h_scroll();
+	state["column"] = text_editor->get_caret_column();
+	state["row"] = text_editor->get_caret_line();
+
+	state["selection"] = get_text_editor()->has_selection();
+	if (get_text_editor()->has_selection()) {
+		state["selection_from_line"] = text_editor->get_selection_from_line();
+		state["selection_from_column"] = text_editor->get_selection_from_column();
+		state["selection_to_line"] = text_editor->get_selection_to_line();
+		state["selection_to_column"] = text_editor->get_selection_to_column();
+	}
+
+	return state;
 }
 
 void CodeTextEditor::set_error(const String &p_error) {
@@ -1608,6 +1811,7 @@ void CodeTextEditor::goto_error() {
 		if (text_editor->get_line_count() != error_line) {
 			text_editor->unfold_line(error_line);
 		}
+		text_editor->remove_secondary_carets();
 		text_editor->set_caret_line(error_line);
 		text_editor->set_caret_column(error_column);
 		text_editor->center_viewport_to_caret();
@@ -1784,8 +1988,10 @@ void CodeTextEditor::set_warning_count(int p_warning_count) {
 }
 
 void CodeTextEditor::toggle_bookmark() {
-	int line = text_editor->get_caret_line();
-	text_editor->set_line_as_bookmarked(line, !text_editor->is_line_bookmarked(line));
+	for (int i = 0; i < text_editor->get_caret_count(); i++) {
+		int line = text_editor->get_caret_line(i);
+		text_editor->set_line_as_bookmarked(line, !text_editor->is_line_bookmarked(line));
+	}
 }
 
 void CodeTextEditor::goto_next_bookmark() {
@@ -1794,6 +2000,7 @@ void CodeTextEditor::goto_next_bookmark() {
 		return;
 	}
 
+	text_editor->remove_secondary_carets();
 	int line = text_editor->get_caret_line();
 	if (line >= (int)bmarks[bmarks.size() - 1]) {
 		text_editor->unfold_line(bmarks[0]);
@@ -1818,6 +2025,7 @@ void CodeTextEditor::goto_prev_bookmark() {
 		return;
 	}
 
+	text_editor->remove_secondary_carets();
 	int line = text_editor->get_caret_line();
 	if (line <= (int)bmarks[0]) {
 		text_editor->unfold_line(bmarks[bmarks.size() - 1]);

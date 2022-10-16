@@ -1076,7 +1076,6 @@ public:
 
 #define PASSBASE scene_render
 
-	PASS2(directional_shadow_atlas_set_size, int, bool)
 	PASS1(voxel_gi_set_quality, RS::VoxelGIQuality)
 
 	/* SKY API */
@@ -1258,11 +1257,7 @@ public:
 	PASS0R(Ref<RenderSceneBuffers>, render_buffers_create)
 	PASS1(gi_set_use_half_resolution, bool)
 
-	/* Shadow Atlas */
-	PASS0R(RID, shadow_atlas_create)
-	PASS3(shadow_atlas_set_size, RID, int, bool)
-	PASS3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
-
+	/* Misc */
 	PASS1(set_debug_draw_mode, RS::ViewportDebugDraw)
 
 	PASS1(decals_set_filter, RS::DecalFilter)

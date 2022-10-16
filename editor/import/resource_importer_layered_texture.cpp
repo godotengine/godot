@@ -186,9 +186,7 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 				int mm_d = MAX(1, d >> 1);
 
 				for (int i = 0; i < mm_d; i++) {
-					Ref<Image> mm;
-					mm.instantiate();
-					mm->create(mm_w, mm_h, false, p_images[0]->get_format());
+					Ref<Image> mm = Image::create_empty(mm_w, mm_h, false, p_images[0]->get_format());
 					Vector3 pos;
 					pos.z = float(i) * float(d) / float(mm_d) + 0.5;
 					for (int x = 0; x < mm_w; x++) {
@@ -396,12 +394,12 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	texture_import->used_channels = used_channels;
 	_check_compress_ctex(p_source_file, texture_import);
 	if (r_metadata) {
-		Dictionary metadata;
-		metadata["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
+		Dictionary meta;
+		meta["vram_texture"] = compress_mode == COMPRESS_VRAM_COMPRESSED;
 		if (formats_imported.size()) {
-			metadata["imported_formats"] = formats_imported;
+			meta["imported_formats"] = formats_imported;
 		}
-		*r_metadata = metadata;
+		*r_metadata = meta;
 	}
 
 	return OK;
@@ -432,20 +430,20 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 
 bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
 	//will become invalid if formats are missing to import
-	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
+	Dictionary meta = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
-	if (!metadata.has("vram_texture")) {
+	if (!meta.has("vram_texture")) {
 		return false;
 	}
 
-	bool vram = metadata["vram_texture"];
+	bool vram = meta["vram_texture"];
 	if (!vram) {
 		return true; //do not care about non vram
 	}
 
 	Vector<String> formats_imported;
-	if (metadata.has("imported_formats")) {
-		formats_imported = metadata["imported_formats"];
+	if (meta.has("imported_formats")) {
+		formats_imported = meta["imported_formats"];
 	}
 
 	int index = 0;
