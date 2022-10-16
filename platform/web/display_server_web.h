@@ -143,7 +143,7 @@ public:
 	virtual Point2i mouse_get_position() const override;
 
 	// touch
-	virtual bool screen_is_touchscreen(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual bool is_touchscreen_available() const override;
 
 	// clipboard
 	virtual void clipboard_set(const String &p_text) override;

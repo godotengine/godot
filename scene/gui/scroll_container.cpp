@@ -164,8 +164,8 @@ void ScrollContainer::gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
-		bool screen_is_touchscreen = DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
-		if (!screen_is_touchscreen) {
+		bool is_touchscreen_available = DisplayServer::get_singleton()->is_touchscreen_available();
+		if (!is_touchscreen_available) {
 			return;
 		}
 

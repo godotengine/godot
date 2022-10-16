@@ -719,6 +719,12 @@
 				[b]Note:[/b] This method is implemented on macOS, Windows and Linux (X11).
 			</description>
 		</method>
+		<method name="is_touchscreen_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if touch events are available (Android or iOS), the capability is detected on the Webplatform or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
+			</description>
+		</method>
 		<method name="keyboard_get_current_layout" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -887,13 +893,6 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the screen should never be turned off by the operating system's power-saving measures. See also [method screen_set_keep_on].
-			</description>
-		</method>
-		<method name="screen_is_touchscreen" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="screen" type="int" default="-1" />
-			<description>
-				Returns [code]true[/code] if the screen can send touch events or if [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is [code]true[/code].
 			</description>
 		</method>
 		<method name="screen_set_keep_on">
