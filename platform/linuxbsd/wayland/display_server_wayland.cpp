@@ -2172,6 +2172,11 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 			}
 
 			wls.popup_list.push_back(p_id);
+
+			// Focus the popup.
+			if (wls.current_seat) {
+				wls.current_seat->keyboard_focused_window_id = p_id;
+			}
 		}
 
 		wl_surface_commit(wd.wl_surface);
