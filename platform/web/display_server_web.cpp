@@ -579,8 +579,8 @@ void DisplayServerWeb::touch_callback(int p_type, int p_count) {
 	}
 }
 
-bool DisplayServerWeb::screen_is_touchscreen(int p_screen) const {
-	return godot_js_display_touchscreen_is_available();
+bool DisplayServerWeb::is_touchscreen_available() const {
+	return godot_js_display_touchscreen_is_available() || (Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse());
 }
 
 // Virtual Keyboard

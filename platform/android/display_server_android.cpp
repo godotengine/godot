@@ -221,7 +221,7 @@ float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
 	return godot_io_java->get_screen_refresh_rate(SCREEN_REFRESH_RATE_FALLBACK);
 }
 
-bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
+bool DisplayServerAndroid::is_touchscreen_available() const {
 	return true;
 }
 
