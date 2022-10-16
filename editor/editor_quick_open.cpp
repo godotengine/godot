@@ -37,7 +37,7 @@ void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi
 	base_type = p_base;
 	allow_multi_select = p_enable_multi;
 	search_options->set_select_mode(allow_multi_select ? Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
-	popup_centered_clamped(Size2i(600, 440), 0.8f);
+	popup_centered_clamped(Size2i(1200, 880), 0.8f);
 
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
 	_build_search_cache(efsd);
