@@ -168,6 +168,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 		range_click_timer->stop();
 		_release_mouse();
 		drag.allowed = false;
+		line_edit->clear_pending_select_all_on_focus();
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -190,6 +191,11 @@ void SpinBox::_line_edit_focus_enter() {
 	int col = line_edit->get_caret_column();
 	_value_changed(0); // Update the LineEdit's text.
 	line_edit->set_caret_column(col);
+
+	// LineEdit text might change and it clears any selection. Have to re-select here.
+	if (line_edit->is_select_all_on_focus() && !Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+		line_edit->select_all();
+	}
 }
 
 void SpinBox::_line_edit_focus_exit() {
@@ -308,6 +314,14 @@ bool SpinBox::get_update_on_text_changed() const {
 	return update_on_text_changed;
 }
 
+void SpinBox::set_select_all_on_focus(bool p_enabled) {
+	line_edit->set_select_all_on_focus(p_enabled);
+}
+
+bool SpinBox::is_select_all_on_focus() const {
+	return line_edit->is_select_all_on_focus();
+}
+
 void SpinBox::set_editable(bool p_enabled) {
 	line_edit->set_editable(p_enabled);
 }
@@ -341,6 +355,8 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
+	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &SpinBox::set_select_all_on_focus);
+	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &SpinBox::is_select_all_on_focus);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
 
@@ -350,6 +366,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step"), "set_custom_arrow_step", "get_custom_arrow_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 }
 
 SpinBox::SpinBox() {

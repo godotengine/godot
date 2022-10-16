@@ -202,8 +202,6 @@ private:
 	void _text_changed(const String &p_new_text);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
-	void _focus_enter();
-	void _focus_exit();
 	void _html_focus_exit();
 
 	inline int _get_preset_size();
