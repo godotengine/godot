@@ -409,6 +409,8 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_output_on_mode(void *data, struct wl_output *wl_output, uint32_t flags, int32_t width, int32_t height, int32_t refresh);
 	static void _wl_output_on_done(void *data, struct wl_output *wl_output);
 	static void _wl_output_on_scale(void *data, struct wl_output *wl_output, int32_t factor);
+	static void _wl_output_on_name(void *data, struct wl_output *wl_output, const char *name);
+	static void _wl_output_on_description(void *data, struct wl_output *wl_output, const char *description);
 
 	static void _wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities);
 	static void _wl_seat_on_name(void *data, struct wl_seat *wl_seat, const char *name);
@@ -422,6 +424,7 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wl_pointer_on_axis_source(void *data, struct wl_pointer *wl_pointer, uint32_t axis_source);
 	static void _wl_pointer_on_axis_stop(void *data, struct wl_pointer *wl_pointer, uint32_t time, uint32_t axis);
 	static void _wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete);
+	static void _wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120);
 
 	static void _wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size);
 	static void _wl_keyboard_on_enter(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface, struct wl_array *keys);
@@ -488,6 +491,8 @@ class DisplayServerWayland : public DisplayServer {
 		.mode = _wl_output_on_mode,
 		.done = _wl_output_on_done,
 		.scale = _wl_output_on_scale,
+		.name = _wl_output_on_name,
+		.description = _wl_output_on_description,
 	};
 
 	static constexpr struct wl_seat_listener wl_seat_listener = {
@@ -505,6 +510,7 @@ class DisplayServerWayland : public DisplayServer {
 		.axis_source = _wl_pointer_on_axis_source,
 		.axis_stop = _wl_pointer_on_axis_stop,
 		.axis_discrete = _wl_pointer_on_axis_discrete,
+		.axis_value120 = _wl_pointer_on_axis_value120,
 	};
 
 	static constexpr struct wl_keyboard_listener wl_keyboard_listener = {

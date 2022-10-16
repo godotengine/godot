@@ -864,6 +864,12 @@ void DisplayServerWayland::_wl_output_on_scale(void *data, struct wl_output *wl_
 	sd->scale = factor;
 }
 
+void DisplayServerWayland::_wl_output_on_name(void *data, struct wl_output *wl_output, const char *name) {
+}
+
+void DisplayServerWayland::_wl_output_on_description(void *data, struct wl_output *wl_output, const char *description) {
+}
+
 void DisplayServerWayland::_wl_seat_on_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
@@ -1215,6 +1221,9 @@ void DisplayServerWayland::_wl_pointer_on_axis_stop(void *data, struct wl_pointe
 }
 
 void DisplayServerWayland::_wl_pointer_on_axis_discrete(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t discrete) {
+}
+
+void DisplayServerWayland::_wl_pointer_on_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120) {
 }
 
 void DisplayServerWayland::_wl_keyboard_on_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size) {
