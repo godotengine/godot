@@ -382,6 +382,7 @@ private:
 	AcceptDialog *save_accept = nullptr;
 	EditorAbout *about = nullptr;
 	AcceptDialog *warning = nullptr;
+	EditorPlugin *plugin_to_save = nullptr;
 
 	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;

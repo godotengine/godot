@@ -280,6 +280,22 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="_get_unsaved_status" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Override this method to provide a custom message that lists unsaved changes. The editor will call this method on exit and display it in a confirmation dialog. Return empty string if the plugin has no unsaved changes.
+				If the user confirms saving, [method _save_external_data] will be called, before closing the editor.
+				[codeblock]
+				func _get_unsaved_status():
+				    if unsaved:
+				        return "Save changes in MyCustomPlugin before closing?"
+				    return ""
+				
+				func _save_external_data():
+				    unsaved = false
+				[/codeblock]
+			</description>
+		</method>
 		<method name="_get_window_layout" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="configuration" type="ConfigFile" />

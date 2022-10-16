@@ -2777,6 +2777,11 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case FILE_QUIT:
 		case RUN_PROJECT_MANAGER:
 		case RELOAD_CURRENT_PROJECT: {
+			if (p_confirmed && plugin_to_save) {
+				plugin_to_save->save_external_data();
+				p_confirmed = false;
+			}
+
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
 				if (_next_unsaved_scene(!save_each) == -1) {
@@ -2790,6 +2795,27 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 						}
 						save_confirmation->reset_size();
 						save_confirmation->popup_centered();
+						break;
+					}
+					
+					plugin_to_save = nullptr;
+					for (int i = 0; i < editor_data.get_editor_plugin_count(); i++) {
+						const String unsaved_status = editor_data.get_editor_plugin(i)->get_unsaved_status();
+						if (!unsaved_status.is_empty()) {
+							if (p_option == RELOAD_CURRENT_PROJECT) {
+								save_confirmation->set_ok_button_text(TTR("Save & Reload"));
+								save_confirmation->set_text(RTR(unsaved_status));
+							} else {
+								save_confirmation->set_ok_button_text(TTR("Save & Quit"));
+								save_confirmation->set_text(RTR(unsaved_status));
+							}
+							save_confirmation->popup_centered();
+							plugin_to_save = editor_data.get_editor_plugin(i);
+							break;
+						}
+					}
+					
+					if (plugin_to_save) {
 						break;
 					}
 
