@@ -22,6 +22,12 @@
 				Corresponds to the [constant NOTIFICATION_DRAW] notification in [method Object._notification].
 			</description>
 		</method>
+		<method name="_get_transform" qualifiers="virtual const">
+			<return type="Transform2D" />
+			<description>
+				Callback used to implement custom [CanvasItem] nodes in GDExtension. This method is called by [method get_transform]. This callback method is not used with [Control] and [Node2D], which implement their own [method get_transform].
+			</description>
+		</method>
 		<method name="draw_animation_slice">
 			<return type="void" />
 			<param index="0" name="animation_length" type="float" />

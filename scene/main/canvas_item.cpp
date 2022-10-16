@@ -1205,6 +1205,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
 	GDVIRTUAL_BIND(_draw);
+	GDVIRTUAL_BIND(_get_transform);
 
 	ADD_GROUP("Visibility", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
@@ -1262,6 +1263,12 @@ void CanvasItem::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_ONLY);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_AND_DRAW);
 	BIND_ENUM_CONSTANT(CLIP_CHILDREN_MAX);
+}
+
+Transform2D CanvasItem::get_transform() const {
+	Transform2D ret = Transform2D();
+	GDVIRTUAL_CALL(_get_transform, ret);
+	return ret;
 }
 
 Transform2D CanvasItem::get_canvas_transform() const {
