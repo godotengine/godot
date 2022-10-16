@@ -372,6 +372,11 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				selection.drag_attempt = false;
 			}
 
+			if (pending_select_all_on_focus) {
+				select_all();
+				pending_select_all_on_focus = false;
+			}
+
 			show_virtual_keyboard();
 		}
 
@@ -1053,6 +1058,15 @@ void LineEdit::_notification(int p_what) {
 					}
 				} else {
 					draw_caret = true;
+				}
+			}
+
+			if (select_all_on_focus) {
+				if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
+					// Select all when the mouse button is up.
+					pending_select_all_on_focus = true;
+				} else {
+					select_all();
 				}
 			}
 
@@ -2164,6 +2178,18 @@ bool LineEdit::is_flat() const {
 	return flat;
 }
 
+void LineEdit::set_select_all_on_focus(bool p_enabled) {
+	select_all_on_focus = p_enabled;
+}
+
+bool LineEdit::is_select_all_on_focus() const {
+	return select_all_on_focus;
+}
+
+void LineEdit::clear_pending_select_all_on_focus() {
+	pending_select_all_on_focus = false;
+}
+
 void LineEdit::_text_changed() {
 	_emit_text_change();
 	_clear_redo();
@@ -2367,6 +2393,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 	ClassDB::bind_method(D_METHOD("set_flat", "enabled"), &LineEdit::set_flat);
 	ClassDB::bind_method(D_METHOD("is_flat"), &LineEdit::is_flat);
+	ClassDB::bind_method(D_METHOD("set_select_all_on_focus", "enabled"), &LineEdit::set_select_all_on_focus);
+	ClassDB::bind_method(D_METHOD("is_select_all_on_focus"), &LineEdit::is_select_all_on_focus);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_change_rejected", PropertyInfo(Variant::STRING, "rejected_substring")));
@@ -2430,6 +2458,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_control_chars"), "set_draw_control_chars", "get_draw_control_chars");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "set_caret_blink_enabled", "is_caret_blink_enabled");

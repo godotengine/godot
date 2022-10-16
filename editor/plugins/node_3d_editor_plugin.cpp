@@ -8046,12 +8046,15 @@ Node3DEditor::Node3DEditor() {
 	snap_dialog->add_child(snap_dialog_vbc);
 
 	snap_translate = memnew(LineEdit);
+	snap_translate->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
 
 	snap_rotate = memnew(LineEdit);
+	snap_rotate->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
 
 	snap_scale = memnew(LineEdit);
+	snap_scale->set_select_all_on_focus(true);
 	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
 
 	_snap_update();
@@ -8070,6 +8073,7 @@ Node3DEditor::Node3DEditor() {
 	settings_fov->set_min(MIN_FOV);
 	settings_fov->set_step(0.1);
 	settings_fov->set_value(EDITOR_GET("editors/3d/default_fov"));
+	settings_fov->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"), settings_fov);
 
 	settings_znear = memnew(SpinBox);
@@ -8077,6 +8081,7 @@ Node3DEditor::Node3DEditor() {
 	settings_znear->set_min(MIN_Z);
 	settings_znear->set_step(0.01);
 	settings_znear->set_value(EDITOR_GET("editors/3d/default_z_near"));
+	settings_znear->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTR("View Z-Near:"), settings_znear);
 
 	settings_zfar = memnew(SpinBox);
@@ -8084,6 +8089,7 @@ Node3DEditor::Node3DEditor() {
 	settings_zfar->set_min(MIN_Z);
 	settings_zfar->set_step(0.1);
 	settings_zfar->set_value(EDITOR_GET("editors/3d/default_z_far"));
+	settings_zfar->set_select_all_on_focus(true);
 	settings_vbc->add_margin_child(TTR("View Z-Far:"), settings_zfar);
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; ++i) {
@@ -8109,6 +8115,7 @@ Node3DEditor::Node3DEditor() {
 	for (int i = 0; i < 3; i++) {
 		xform_translate[i] = memnew(LineEdit);
 		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_translate[i]->set_select_all_on_focus(true);
 		xform_hbc->add_child(xform_translate[i]);
 	}
 
@@ -8122,6 +8129,7 @@ Node3DEditor::Node3DEditor() {
 	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
 		xform_rotate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_rotate[i]->set_select_all_on_focus(true);
 		xform_hbc->add_child(xform_rotate[i]);
 	}
 
@@ -8135,6 +8143,7 @@ Node3DEditor::Node3DEditor() {
 	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
 		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_scale[i]->set_select_all_on_focus(true);
 		xform_hbc->add_child(xform_scale[i]);
 	}
 
