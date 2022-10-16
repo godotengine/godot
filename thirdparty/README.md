@@ -746,6 +746,7 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - `stable/xdg-shell/xdg-shell.xml`
+- `staging/xdg-activation/xdg-activation-v1.xml`
 - `unstable/pointer-constraints/pointer-constraints-unstable-v1.xml`
 - `unstable/primary-selection/primary-selection-unstable-v1.xml`
 - `unstable/relative-pointer/relative-pointer-unstable-v1.xml`

@@ -667,6 +667,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 		return;
 	}
 
+	if (strcmp(interface, xdg_activation_v1_interface.name) == 0) {
+		globals.xdg_activation = (struct xdg_activation_v1 *)wl_registry_bind(wl_registry, name, &xdg_activation_v1_interface, 1);
+		globals.xdg_activation_name = name;
+		return;
+	}
+
 	if (strcmp(interface, zwp_pointer_constraints_v1_interface.name) == 0) {
 		globals.wp_pointer_constraints = (struct zwp_pointer_constraints_v1 *)wl_registry_bind(wl_registry, name, &zwp_pointer_constraints_v1_interface, 1);
 		globals.wp_pointer_constraints_name = name;
@@ -749,6 +755,15 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		}
 		globals.xdg_decoration_manager = nullptr;
 		globals.xdg_decoration_manager_name = 0;
+		return;
+	}
+
+	if (name == globals.xdg_activation_name) {
+		if (globals.xdg_activation) {
+			xdg_activation_v1_destroy(globals.xdg_activation);
+		}
+		globals.xdg_activation = nullptr;
+		globals.xdg_activation_name = 0;
 		return;
 	}
 
@@ -1655,6 +1670,19 @@ void DisplayServerWayland::_xdg_toplevel_decoration_on_configure(void *data, str
 	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
 		WARN_PRINT_ONCE("Client side decorations are not yet supported!");
 	}
+}
+
+void DisplayServerWayland::_xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token) {
+	WindowData *wd = (WindowData *)data;
+	ERR_FAIL_NULL(wd);
+
+	ERR_FAIL_NULL(wd->wl_surface);
+
+	xdg_activation_v1_activate(wd->wls->globals.xdg_activation, token, wd->wl_surface);
+
+	xdg_activation_token_v1_destroy(xdg_activation_token);
+
+	DEBUG_LOG_WAYLAND(vformat("Received activation token and requested window activation for %d", wd->id));
 }
 
 void DisplayServerWayland::_wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel) {
@@ -2601,8 +2629,18 @@ bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::Wi
 }
 
 void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_request_attention window %d", p_window));
+	MutexLock mutex_lock(wls.mutex);
+
+	ERR_FAIL_COND(!wls.windows.has(p_window));
+
+	if (wls.globals.xdg_activation) {
+		// Window attention requests are done through the XDG activation protocol.
+		xdg_activation_token_v1 *xdg_activation_token = xdg_activation_v1_get_activation_token(wls.globals.xdg_activation);
+		xdg_activation_token_v1_add_listener(xdg_activation_token, &xdg_activation_token_listener, &wls.windows[p_window]);
+		xdg_activation_token_v1_commit(xdg_activation_token);
+
+		DEBUG_LOG_WAYLAND(vformat("Requested activation token for window %d", p_window));
+	}
 }
 
 void DisplayServerWayland::window_move_to_foreground(DisplayServer::WindowID p_window) {
@@ -3043,6 +3081,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't obtain the XDG decoration manager. Probably this compositor handles only CSDs, which aren't supported yet!");
 	}
 
+	if (!wls.globals.xdg_activation) {
+		WARN_PRINT("Can't obtain the XDG activation global. Attention requesting won't work!");
+	}
+
 #ifndef DBUS_ENABLED
 	if (!wls.globals.wp_idle_inhibit_manager) {
 		WARN_PRINT("Can't obtain the idle inhibition manager. The screen might turn off even after calling screen_set_keep_on()!");
@@ -3283,6 +3325,10 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 	if (wls.globals.wp_relative_pointer_manager) {
 		zwp_relative_pointer_manager_v1_destroy(wls.globals.wp_relative_pointer_manager);
+	}
+
+	if (wls.globals.xdg_activation) {
+		xdg_activation_v1_destroy(wls.globals.xdg_activation);
 	}
 
 	if (wls.globals.xdg_decoration_manager) {

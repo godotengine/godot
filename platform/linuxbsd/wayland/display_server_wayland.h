@@ -51,6 +51,7 @@
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/wayland.gen.h"
+#include "protocol/xdg_activation.gen.h"
 #include "protocol/xdg_decoration.gen.h"
 #include "protocol/xdg_shell.gen.h"
 
@@ -140,6 +141,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
+
+		struct xdg_activation_v1 *xdg_activation = nullptr;
+		uint32_t xdg_activation_name = 0;
 
 		struct zwp_primary_selection_device_manager_v1 *wp_primary_selection_device_manager = nullptr;
 		uint32_t wp_primary_selection_device_manager_name = 0;
@@ -467,6 +471,8 @@ class DisplayServerWayland : public DisplayServer {
 	// wayland-protocols event handlers.
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
+	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
+
 	static void _wp_relative_pointer_on_relative_motion(void *data, struct zwp_relative_pointer_v1 *wp_relative_pointer_v1, uint32_t uptime_hi, uint32_t uptime_lo, wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t dx_unaccel, wl_fixed_t dy_unaccel);
 
 	static void _wp_primary_selection_device_on_data_offer(void *data, struct zwp_primary_selection_device_v1 *wp_primary_selection_device_v1, struct zwp_primary_selection_offer_v1 *offer);
@@ -571,6 +577,10 @@ class DisplayServerWayland : public DisplayServer {
 	// wayland-protocols event listeners.
 	static constexpr struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {
 		.configure = _xdg_toplevel_decoration_on_configure,
+	};
+
+	static constexpr struct xdg_activation_token_v1_listener xdg_activation_token_listener = {
+		.done = _xdg_activation_token_on_done,
 	};
 
 	static constexpr struct zwp_relative_pointer_v1_listener wp_relative_pointer_listener = {
