@@ -15,8 +15,8 @@ namespace GodotPlugins
         public string? AssemblyLoadedPath { get; private set; }
 
         public PluginLoadContext(string pluginPath, ICollection<string> sharedAssemblies,
-            AssemblyLoadContext mainLoadContext)
-            : base(isCollectible: true)
+            AssemblyLoadContext mainLoadContext, bool isCollectible)
+            : base(isCollectible)
         {
             _resolver = new AssemblyDependencyResolver(pluginPath);
             _sharedAssemblies = sharedAssemblies;

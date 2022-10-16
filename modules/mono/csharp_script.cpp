@@ -710,6 +710,12 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		return;
 	}
 
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		// We disable collectible assemblies in the game player, because the limitations cause
+		// issues with mocking libraries. As such, we can only reload assemblies in the editor.
+		return;
+	}
+
 	// TODO:
 	//  Currently, this reloads all scripts, including those whose class is not part of the
 	//  assembly load context being unloaded. As such, we unnecessarily reload GodotTools.
