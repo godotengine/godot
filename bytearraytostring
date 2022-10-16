@@ -1,0 +1,16 @@
+#include <bits/stdc++.h>
+using namespace std;
+ 
+int main()
+{
+    unsigned char bytes[] = { 72, 101, 108, 108, 111 };
+    int n = sizeof(bytes);
+ 
+    char chars[n + 1];
+    memcpy(chars, bytes, n);
+    chars[n] = '\0';        // Null-terminate the string
+ 
+    std::cout << chars;
+ 
+    return 0;
+}
