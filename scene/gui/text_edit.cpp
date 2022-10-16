@@ -3871,6 +3871,9 @@ void TextEdit::undo() {
 		return;
 	}
 
+	if (in_action) {
+		pending_action_end = true;
+	}
 	_push_current_op();
 
 	if (undo_stack_pos == nullptr) {
@@ -3932,6 +3935,9 @@ void TextEdit::redo() {
 		return;
 	}
 
+	if (in_action) {
+		pending_action_end = true;
+	}
 	_push_current_op();
 
 	if (undo_stack_pos == nullptr) {
