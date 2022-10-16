@@ -401,9 +401,26 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	_exit_canvas();
 	top_level = p_top_level;
+	_toplevel_changed();
 	_enter_canvas();
 
 	_notify_transform();
+}
+
+void CanvasItem::_toplevel_changed() {
+	// Inform children that toplevel status has changed on a parent.
+	int childs = get_child_count();
+	for (int i = 0; i < childs; i++) {
+		CanvasItem *child = Object::cast_to<CanvasItem>(get_child(i));
+		if (child) {
+			child->_toplevel_changed_on_parent();
+		}
+	}
+}
+
+void CanvasItem::_toplevel_changed_on_parent() {
+	// Inform children that toplevel status has changed on a parent.
+	_toplevel_changed();
 }
 
 bool CanvasItem::is_set_as_top_level() const {

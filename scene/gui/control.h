@@ -288,6 +288,9 @@ private:
 	void _update_minimum_size();
 	void _size_changed();
 
+	void _toplevel_changed() override{}; // Controls don't need to do anything, only other CanvasItems.
+	void _toplevel_changed_on_parent() override;
+
 	void _clear_size_warning();
 
 	// Input events.
