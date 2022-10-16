@@ -581,7 +581,7 @@ bool DisplayServerIOS::can_any_window_draw() const {
 	return true;
 }
 
-bool DisplayServerIOS::screen_is_touchscreen(int p_screen) const {
+bool DisplayServerIOS::is_touchscreen_available() const {
 	return true;
 }
 

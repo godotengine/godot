@@ -6038,14 +6038,7 @@ EditorNode::EditorNode() {
 	Input *id = Input::get_singleton();
 
 	if (id) {
-		bool found_touchscreen = false;
-		for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
-			if (DisplayServer::get_singleton()->screen_is_touchscreen(i)) {
-				found_touchscreen = true;
-			}
-		}
-
-		if (!found_touchscreen && Input::get_singleton()) {
+		if (!DisplayServer::get_singleton()->is_touchscreen_available() && Input::get_singleton()) {
 			// Only if no touchscreen ui hint, disable emulation just in case.
 			id->set_emulate_touch_from_mouse(false);
 		}
