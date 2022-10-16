@@ -47,6 +47,7 @@
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
+#include "structures/gltf_texture_sampler.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
@@ -126,6 +127,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFSpecGloss);
 		GDREGISTER_CLASS(GLTFState);
 		GDREGISTER_CLASS(GLTFTexture);
+		GDREGISTER_CLASS(GLTFTextureSampler);
 	}
 
 #ifdef TOOLS_ENABLED

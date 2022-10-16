@@ -208,24 +208,24 @@ void AcceptDialog::register_text_enter(Control *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-	Size2 size = get_size();
+	Size2 dlg_size = get_size();
 	float h_margins = theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	float v_margins = theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 
 	// Fill the entire size of the window with the background.
 	bg_panel->set_position(Point2());
-	bg_panel->set_size(size);
+	bg_panel->set_size(dlg_size);
 
 	// Place the buttons from the bottom edge to their minimum required size.
 	Size2 buttons_minsize = buttons_hbox->get_combined_minimum_size();
-	Size2 buttons_size = Size2(size.x - h_margins, buttons_minsize.y);
-	Point2 buttons_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), size.y - theme_cache.panel_style->get_margin(SIDE_BOTTOM) - buttons_size.y);
+	Size2 buttons_size = Size2(dlg_size.x - h_margins, buttons_minsize.y);
+	Point2 buttons_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), dlg_size.y - theme_cache.panel_style->get_margin(SIDE_BOTTOM) - buttons_size.y);
 	buttons_hbox->set_position(buttons_position);
 	buttons_hbox->set_size(buttons_size);
 
 	// Place the content from the top to fill the rest of the space (minus the separation).
 	Point2 content_position = Point2(theme_cache.panel_style->get_margin(SIDE_LEFT), theme_cache.panel_style->get_margin(SIDE_TOP));
-	Size2 content_size = Size2(size.x - h_margins, size.y - v_margins - buttons_size.y - theme_cache.buttons_separation);
+	Size2 content_size = Size2(dlg_size.x - h_margins, dlg_size.y - v_margins - buttons_size.y - theme_cache.buttons_separation);
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));

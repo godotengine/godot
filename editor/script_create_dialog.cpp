@@ -828,9 +828,9 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_get_current_template() const
 	return ScriptLanguage::ScriptTemplate();
 }
 
-Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(const ScriptLanguage *language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const {
+Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(const ScriptLanguage *p_language, const StringName &p_object, const String &p_dir, const ScriptLanguage::TemplateLocation &p_origin) const {
 	Vector<ScriptLanguage::ScriptTemplate> user_templates;
-	String extension = language->get_extension();
+	String extension = p_language->get_extension();
 
 	String dir_path = p_dir.path_join(p_object);
 
@@ -840,7 +840,7 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 		String file = d->get_next();
 		while (file != String()) {
 			if (file.get_extension() == extension) {
-				user_templates.append(_parse_template(language, dir_path, file, p_origin, p_object));
+				user_templates.append(_parse_template(p_language, dir_path, file, p_origin, p_object));
 			}
 			file = d->get_next();
 		}
@@ -849,7 +849,7 @@ Vector<ScriptLanguage::ScriptTemplate> ScriptCreateDialog::_get_user_templates(c
 	return user_templates;
 }
 
-ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptLanguage *language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const {
+ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptLanguage *p_language, const String &p_path, const String &p_filename, const ScriptLanguage::TemplateLocation &p_origin, const String &p_inherits) const {
 	ScriptLanguage::ScriptTemplate script_template = ScriptLanguage::ScriptTemplate();
 	script_template.origin = p_origin;
 	script_template.inherit = p_inherits;
@@ -857,7 +857,7 @@ ScriptLanguage::ScriptTemplate ScriptCreateDialog::_parse_template(const ScriptL
 	// Get meta delimiter
 	String meta_delimiter = String();
 	List<String> comment_delimiters;
-	language->get_comment_delimiters(&comment_delimiters);
+	p_language->get_comment_delimiters(&comment_delimiters);
 	for (const String &script_delimiter : comment_delimiters) {
 		if (!script_delimiter.contains(" ")) {
 			meta_delimiter = script_delimiter;

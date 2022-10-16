@@ -41,13 +41,8 @@ static void add_destructor() {
 
 void Variant::_register_variant_destructors() {
 	add_destructor<VariantDestruct<String>>();
-	add_destructor<VariantDestruct<Transform2D>>();
-	add_destructor<VariantDestruct<::AABB>>();
-	add_destructor<VariantDestruct<Basis>>();
-	add_destructor<VariantDestruct<Transform3D>>();
 	add_destructor<VariantDestruct<StringName>>();
 	add_destructor<VariantDestruct<NodePath>>();
-	add_destructor<VariantDestruct<::RID>>();
 	add_destructor<VariantDestruct<Callable>>();
 	add_destructor<VariantDestruct<Signal>>();
 	add_destructor<VariantDestruct<Dictionary>>();

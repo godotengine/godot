@@ -410,6 +410,13 @@ public:
 	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
 	FUNC1(lightmap_set_probe_capture_update_speed, float)
 
+	/* Shadow Atlas */
+	FUNC0R(RID, shadow_atlas_create)
+	FUNC3(shadow_atlas_set_size, RID, int, bool)
+	FUNC3(shadow_atlas_set_quadrant_subdivision, RID, int, int)
+
+	FUNC2(directional_shadow_atlas_set_size, int, bool)
+
 	/* DECAL API */
 
 #undef ServerName
@@ -652,7 +659,6 @@ public:
 #define ServerName RenderingMethod
 #define server_name RSG::scene
 
-	FUNC2(directional_shadow_atlas_set_size, int, bool)
 	FUNC1(voxel_gi_set_quality, VoxelGIQuality)
 
 	/* SKY API */

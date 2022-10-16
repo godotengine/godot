@@ -100,9 +100,9 @@ void RasterizerGLES3::begin_frame(double frame_step) {
 	canvas->set_time(time_total);
 	scene->set_time(time_total, frame_step);
 
-	GLES3::Utilities *utilities = GLES3::Utilities::get_singleton();
-	utilities->info.render_final = utilities->info.render;
-	utilities->info.render.reset();
+	GLES3::Utilities *utils = GLES3::Utilities::get_singleton();
+	utils->info.render_final = utils->info.render;
+	utils->info.render.reset();
 
 	//scene->iteration();
 }
@@ -275,16 +275,10 @@ void RasterizerGLES3::prepare_for_blitting_render_targets() {
 }
 
 void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect) {
-	GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
-
-	GLES3::RenderTarget *rt = texture_storage->get_render_target(p_render_target);
+	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	if (rt->external.fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
-	} else {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
-	}
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	// Flip content upside down to correct for coordinates.

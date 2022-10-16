@@ -169,10 +169,10 @@ StringName ResourceLoaderBinary::_get_string() {
 }
 
 Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
-	uint32_t type = f->get_32();
-	print_bl("find property of type: " + itos(type));
+	uint32_t prop_type = f->get_32();
+	print_bl("find property of type: " + itos(prop_type));
 
-	switch (type) {
+	switch (prop_type) {
 		case VARIANT_NIL: {
 			r_v = Variant();
 		} break;
@@ -327,22 +327,22 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 		case VARIANT_PROJECTION: {
 			Projection v;
-			v.matrix[0].x = f->get_real();
-			v.matrix[0].y = f->get_real();
-			v.matrix[0].z = f->get_real();
-			v.matrix[0].w = f->get_real();
-			v.matrix[1].x = f->get_real();
-			v.matrix[1].y = f->get_real();
-			v.matrix[1].z = f->get_real();
-			v.matrix[1].w = f->get_real();
-			v.matrix[2].x = f->get_real();
-			v.matrix[2].y = f->get_real();
-			v.matrix[2].z = f->get_real();
-			v.matrix[2].w = f->get_real();
-			v.matrix[3].x = f->get_real();
-			v.matrix[3].y = f->get_real();
-			v.matrix[3].z = f->get_real();
-			v.matrix[3].w = f->get_real();
+			v.columns[0].x = f->get_real();
+			v.columns[0].y = f->get_real();
+			v.columns[0].z = f->get_real();
+			v.columns[0].w = f->get_real();
+			v.columns[1].x = f->get_real();
+			v.columns[1].y = f->get_real();
+			v.columns[1].z = f->get_real();
+			v.columns[1].w = f->get_real();
+			v.columns[2].x = f->get_real();
+			v.columns[2].y = f->get_real();
+			v.columns[2].z = f->get_real();
+			v.columns[2].w = f->get_real();
+			v.columns[3].x = f->get_real();
+			v.columns[3].y = f->get_real();
+			v.columns[3].z = f->get_real();
+			v.columns[3].w = f->get_real();
 			r_v = v;
 		} break;
 		case VARIANT_COLOR: {
@@ -1042,7 +1042,14 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 					er.path = ResourceUID::get_singleton()->get_id_path(er.uid);
 				} else {
+#ifdef TOOLS_ENABLED
+					// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
+					if (ResourceLoader::get_resource_uid(res_path) != er.uid) {
+						WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UUID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+					}
+#else
 					WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UUID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+#endif
 				}
 			}
 		}
@@ -1100,16 +1107,14 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 
 	uint32_t ver_major = f->get_32();
 	f->get_32(); // ver_minor
-	uint32_t ver_format = f->get_32();
+	uint32_t ver_fmt = f->get_32();
 
-	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
 		f.unref();
 		return "";
 	}
 
-	String type = get_unicode_string();
-
-	return type;
+	return get_unicode_string();
 }
 
 Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
@@ -1630,22 +1635,22 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 		case Variant::PROJECTION: {
 			f->store_32(VARIANT_PROJECTION);
 			Projection val = p_property;
-			f->store_real(val.matrix[0].x);
-			f->store_real(val.matrix[0].y);
-			f->store_real(val.matrix[0].z);
-			f->store_real(val.matrix[0].w);
-			f->store_real(val.matrix[1].x);
-			f->store_real(val.matrix[1].y);
-			f->store_real(val.matrix[1].z);
-			f->store_real(val.matrix[1].w);
-			f->store_real(val.matrix[2].x);
-			f->store_real(val.matrix[2].y);
-			f->store_real(val.matrix[2].z);
-			f->store_real(val.matrix[2].w);
-			f->store_real(val.matrix[3].x);
-			f->store_real(val.matrix[3].y);
-			f->store_real(val.matrix[3].z);
-			f->store_real(val.matrix[3].w);
+			f->store_real(val.columns[0].x);
+			f->store_real(val.columns[0].y);
+			f->store_real(val.columns[0].z);
+			f->store_real(val.columns[0].w);
+			f->store_real(val.columns[1].x);
+			f->store_real(val.columns[1].y);
+			f->store_real(val.columns[1].z);
+			f->store_real(val.columns[1].w);
+			f->store_real(val.columns[2].x);
+			f->store_real(val.columns[2].y);
+			f->store_real(val.columns[2].z);
+			f->store_real(val.columns[2].w);
+			f->store_real(val.columns[3].x);
+			f->store_real(val.columns[3].y);
+			f->store_real(val.columns[3].z);
+			f->store_real(val.columns[3].w);
 
 		} break;
 		case Variant::COLOR: {
@@ -2118,9 +2123,9 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	for (int i = 0; i < save_order.size(); i++) {
 		save_unicode_string(f, save_order[i]->get_save_class());
-		String path = save_order[i]->get_path();
-		path = relative_paths ? local_path.path_to_file(path) : path;
-		save_unicode_string(f, path);
+		String res_path = save_order[i]->get_path();
+		res_path = relative_paths ? local_path.path_to_file(res_path) : res_path;
+		save_unicode_string(f, res_path);
 		ResourceUID::ID ruid = ResourceSaver::get_resource_id_for_path(save_order[i]->get_path(), false);
 		f->store_64(ruid);
 	}

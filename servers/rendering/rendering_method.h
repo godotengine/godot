@@ -106,8 +106,6 @@ public:
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const = 0;
 
-	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) = 0;
-
 	/* SKY API */
 
 	virtual RID sky_allocate() = 0;
@@ -283,10 +281,6 @@ public:
 
 	virtual void positional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
 	virtual void directional_soft_shadow_filter_set_quality(RS::ShadowQuality p_quality) = 0;
-
-	virtual RID shadow_atlas_create() = 0;
-	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_use_16_bits = true) = 0;
-	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 
 	/* Render Buffers */
 

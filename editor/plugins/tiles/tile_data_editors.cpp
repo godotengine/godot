@@ -212,8 +212,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 		for (int i = 0; i < (int)polygons.size(); i++) {
 			const Vector<Vector2> &polygon = polygons[i];
 			for (int j = 0; j < polygon.size(); j++) {
-				const Color modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
-				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, modulate);
+				const Color poly_modulate = (tinted_polygon_index == i && tinted_point_index == j) ? Color(0.5, 1, 2) : Color(1, 1, 1);
+				base_control->draw_texture(handle, xform.xform(polygon[j]) - handle->get_size() / 2, poly_modulate);
 			}
 		}
 	}
@@ -831,6 +831,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	editor_zoom_widget = memnew(EditorZoomWidget);
 	editor_zoom_widget->set_position(Vector2(5, 5));
 	editor_zoom_widget->connect("zoom_changed", callable_mp(this, &GenericTilePolygonEditor::_zoom_changed).unbind(1));
+	editor_zoom_widget->set_shortcut_context(this);
 	root->add_child(editor_zoom_widget);
 
 	button_center_view = memnew(Button);
@@ -2662,27 +2663,27 @@ TileDataTerrainsEditor::~TileDataTerrainsEditor() {
 }
 
 Variant TileDataNavigationEditor::_get_painted_value() {
-	Ref<NavigationPolygon> navigation_polygon;
-	navigation_polygon.instantiate();
+	Ref<NavigationPolygon> nav_polygon;
+	nav_polygon.instantiate();
 
 	for (int i = 0; i < polygon_editor->get_polygon_count(); i++) {
 		Vector<Vector2> polygon = polygon_editor->get_polygon(i);
-		navigation_polygon->add_outline(polygon);
+		nav_polygon->add_outline(polygon);
 	}
 
-	navigation_polygon->make_polygons_from_outlines();
-	return navigation_polygon;
+	nav_polygon->make_polygons_from_outlines();
+	return nav_polygon;
 }
 
 void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
 
-	Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(navigation_layer);
+	Ref<NavigationPolygon> nav_polygon = tile_data->get_navigation_polygon(navigation_layer);
 	polygon_editor->clear_polygons();
-	if (navigation_polygon.is_valid()) {
-		for (int i = 0; i < navigation_polygon->get_outline_count(); i++) {
-			polygon_editor->add_polygon(navigation_polygon->get_outline(i));
+	if (nav_polygon.is_valid()) {
+		for (int i = 0; i < nav_polygon->get_outline_count(); i++) {
+			polygon_editor->add_polygon(nav_polygon->get_outline(i));
 		}
 	}
 	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), p_tile_set_atlas_source->get_tile_effective_texture_offset(p_coords, p_alternative_tile), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
@@ -2691,8 +2692,8 @@ void TileDataNavigationEditor::_set_painted_value(TileSetAtlasSource *p_tile_set
 void TileDataNavigationEditor::_set_value(TileSetAtlasSource *p_tile_set_atlas_source, Vector2 p_coords, int p_alternative_tile, Variant p_value) {
 	TileData *tile_data = p_tile_set_atlas_source->get_tile_data(p_coords, p_alternative_tile);
 	ERR_FAIL_COND(!tile_data);
-	Ref<NavigationPolygon> navigation_polygon = p_value;
-	tile_data->set_navigation_polygon(navigation_layer, navigation_polygon);
+	Ref<NavigationPolygon> nav_polygon = p_value;
+	tile_data->set_navigation_polygon(navigation_layer, nav_polygon);
 
 	polygon_editor->set_background(p_tile_set_atlas_source->get_texture(), p_tile_set_atlas_source->get_tile_texture_region(p_coords), p_tile_set_atlas_source->get_tile_effective_texture_offset(p_coords, p_alternative_tile), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 }
@@ -2740,9 +2741,9 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 	// Draw all shapes.
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
 
-	Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(navigation_layer);
-	if (navigation_polygon.is_valid()) {
-		Vector<Vector2> verts = navigation_polygon->get_vertices();
+	Ref<NavigationPolygon> nav_polygon = tile_data->get_navigation_polygon(navigation_layer);
+	if (nav_polygon.is_valid()) {
+		Vector<Vector2> verts = nav_polygon->get_vertices();
 		if (verts.size() < 3) {
 			return;
 		}
@@ -2759,9 +2760,9 @@ void TileDataNavigationEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfo
 		}
 
 		RandomPCG rand;
-		for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
+		for (int i = 0; i < nav_polygon->get_polygon_count(); i++) {
 			// An array of vertices for this polygon.
-			Vector<int> polygon = navigation_polygon->get_polygon(i);
+			Vector<int> polygon = nav_polygon->get_polygon(i);
 			Vector<Vector2> vertices;
 			vertices.resize(polygon.size());
 			for (int j = 0; j < polygon.size(); j++) {

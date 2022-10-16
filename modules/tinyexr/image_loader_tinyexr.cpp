@@ -280,7 +280,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, Ref<FileAccess> f, BitF
 		}
 	}
 
-	p_image->create(exr_image.width, exr_image.height, false, format, imgdata);
+	p_image->set_data(exr_image.width, exr_image.height, false, format, imgdata);
 
 	FreeEXRHeader(&exr_header);
 	FreeEXRImage(&exr_image);

@@ -233,7 +233,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	}
 
 	// Replace original image with compressed one.
-	r_img->create(width, height, mipmaps, target_format, dest_data);
+	r_img->set_data(width, height, mipmaps, target_format, dest_data);
 
 	print_verbose(vformat("ETCPAK encode took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
 }

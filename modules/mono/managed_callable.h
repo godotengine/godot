@@ -40,6 +40,7 @@
 class ManagedCallable : public CallableCustom {
 	friend class CSharpLanguage;
 	GCHandleIntPtr delegate_handle;
+	ObjectID object_id;
 
 #ifdef GD_MONO_HOT_RELOAD
 	SelfList<ManagedCallable> self_instance = this;
@@ -66,7 +67,7 @@ public:
 
 	void release_delegate_handle();
 
-	ManagedCallable(GCHandleIntPtr p_delegate_handle);
+	ManagedCallable(GCHandleIntPtr p_delegate_handle, ObjectID p_object_id);
 	~ManagedCallable();
 };
 

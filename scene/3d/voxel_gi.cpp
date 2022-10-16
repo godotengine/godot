@@ -46,8 +46,8 @@ void VoxelGIData::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("level_counts"));
 	ERR_FAIL_COND(!p_data.has("to_cell_xform"));
 
-	AABB bounds = p_data["bounds"];
-	Vector3 octree_size = p_data["octree_size"];
+	AABB bounds_new = p_data["bounds"];
+	Vector3 octree_size_new = p_data["octree_size"];
 	Vector<uint8_t> octree_cells = p_data["octree_cells"];
 	Vector<uint8_t> octree_data = p_data["octree_data"];
 
@@ -64,9 +64,9 @@ void VoxelGIData::_set_data(const Dictionary &p_data) {
 		octree_df = img->get_data();
 	}
 	Vector<int> octree_levels = p_data["level_counts"];
-	Transform3D to_cell_xform = p_data["to_cell_xform"];
+	Transform3D to_cell_xform_new = p_data["to_cell_xform"];
 
-	allocate(to_cell_xform, bounds, octree_size, octree_cells, octree_data, octree_df, octree_levels);
+	allocate(to_cell_xform_new, bounds_new, octree_size_new, octree_cells, octree_data, octree_df, octree_levels);
 }
 
 Dictionary VoxelGIData::_get_data() const {
@@ -77,9 +77,7 @@ Dictionary VoxelGIData::_get_data() const {
 	d["octree_cells"] = get_octree_cells();
 	d["octree_data"] = get_data_cells();
 	if (otsize != Vector3i()) {
-		Ref<Image> img;
-		img.instantiate();
-		img->create(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
+		Ref<Image> img = Image::create_from_data(otsize.x * otsize.y, otsize.z, false, Image::FORMAT_L8, get_distance_field());
 		Vector<uint8_t> df_png = img->save_png_to_buffer();
 		ERR_FAIL_COND_V(df_png.size() == 0, Dictionary());
 		d["octree_df_png"] = df_png;
@@ -435,10 +433,10 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 #endif
 
 	} else {
-		Ref<VoxelGIData> probe_data = get_probe_data();
+		Ref<VoxelGIData> probe_data_new = get_probe_data();
 
-		if (probe_data.is_null()) {
-			probe_data.instantiate();
+		if (probe_data_new.is_null()) {
+			probe_data_new.instantiate();
 		}
 
 		if (bake_step_function) {
@@ -447,13 +445,13 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		Vector<uint8_t> df = baker.get_sdf_3d_image();
 
-		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data->get_rid(), exposure_normalization);
+		RS::get_singleton()->voxel_gi_set_baked_exposure_normalization(probe_data_new->get_rid(), exposure_normalization);
 
-		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
+		probe_data_new->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_voxel_gi_octree_size(), baker.get_voxel_gi_octree_cells(), baker.get_voxel_gi_data_cells(), df, baker.get_voxel_gi_level_cell_count());
 
-		set_probe_data(probe_data);
+		set_probe_data(probe_data_new);
 #ifdef TOOLS_ENABLED
-		probe_data->set_edited(true); //so it gets saved
+		probe_data_new->set_edited(true); //so it gets saved
 #endif
 	}
 

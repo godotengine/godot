@@ -402,6 +402,7 @@ Array Array::recursive_duplicate(bool p_deep, int recursion_count) const {
 
 Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 	Array result;
+	result._p->typed = _p->typed;
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
 
@@ -433,6 +434,7 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
 Array Array::filter(const Callable &p_callable) const {
 	Array new_arr;
 	new_arr.resize(size());
+	new_arr._p->typed = _p->typed;
 	int accepted_count = 0;
 
 	const Variant *argptrs[1];

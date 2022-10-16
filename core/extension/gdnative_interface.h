@@ -201,18 +201,18 @@ typedef GDNativeBool (*GDNativeExtensionClassGet)(GDExtensionClassInstancePtr p_
 typedef uint64_t (*GDNativeExtensionClassGetRID)(GDExtensionClassInstancePtr p_instance);
 
 typedef struct {
-	uint32_t type;
+	GDNativeVariantType type;
 	const char *name;
 	const char *class_name;
-	uint32_t hint;
+	uint32_t hint; // Bitfield of `PropertyHint` (defined in `extension_api.json`)
 	const char *hint_string;
-	uint32_t usage;
+	uint32_t usage; // Bitfield of `PropertyUsageFlags` (defined in `extension_api.json`)
 } GDNativePropertyInfo;
 
 typedef struct {
 	const char *name;
 	GDNativePropertyInfo return_value;
-	uint32_t flags; // From GDNativeExtensionClassMethodFlags
+	uint32_t flags; // Bitfield of `GDNativeExtensionClassMethodFlags`
 	int32_t id;
 	GDNativePropertyInfo *arguments;
 	uint32_t argument_count;
@@ -231,7 +231,6 @@ typedef void (*GDNativeExtensionClassUnreference)(GDExtensionClassInstancePtr p_
 typedef void (*GDNativeExtensionClassCallVirtual)(GDExtensionClassInstancePtr p_instance, const GDNativeTypePtr *p_args, GDNativeTypePtr r_ret);
 typedef GDNativeObjectPtr (*GDNativeExtensionClassCreateInstance)(void *p_userdata);
 typedef void (*GDNativeExtensionClassFreeInstance)(void *p_userdata, GDExtensionClassInstancePtr p_instance);
-typedef void (*GDNativeExtensionClassObjectInstance)(GDExtensionClassInstancePtr p_instance, GDNativeObjectPtr p_object_instance);
 typedef GDNativeExtensionClassCallVirtual (*GDNativeExtensionClassGetVirtual)(void *p_userdata, const char *p_name);
 
 typedef struct {
@@ -293,7 +292,7 @@ typedef struct {
 	void *method_userdata;
 	GDNativeExtensionClassMethodCall call_func;
 	GDNativeExtensionClassMethodPtrCall ptrcall_func;
-	uint32_t method_flags; /* GDNativeExtensionClassMethodFlags */
+	uint32_t method_flags; // Bitfield of `GDNativeExtensionClassMethodFlags`
 	uint32_t argument_count;
 	GDNativeBool has_return_value;
 	GDNativeExtensionClassMethodGetArgumentType get_argument_type_func;

@@ -62,9 +62,9 @@ void CollisionShape3D::make_convex_from_siblings() {
 		}
 	}
 
-	Ref<ConvexPolygonShape3D> shape = memnew(ConvexPolygonShape3D);
-	shape->set_points(vertices);
-	set_shape(shape);
+	Ref<ConvexPolygonShape3D> shape_new = memnew(ConvexPolygonShape3D);
+	shape_new->set_points(vertices);
+	set_shape(shape_new);
 }
 
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {

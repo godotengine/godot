@@ -76,14 +76,14 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 		Array arr = p_value;
 		for (int i = 0; i < arr.size(); i++) {
 			Dictionary dict = arr[i];
-			String name = dict["name"];
+			String shortcut_name = dict["name"];
 
 			Array shortcut_events = dict["shortcuts"];
 
 			Ref<Shortcut> sc;
 			sc.instantiate();
 			sc->set_events(shortcut_events);
-			add_shortcut(name, sc);
+			add_shortcut(shortcut_name, sc);
 		}
 
 		return false;
@@ -92,16 +92,16 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 		for (int i = 0; i < actions_arr.size(); i++) {
 			Dictionary action_dict = actions_arr[i];
 
-			String name = action_dict["name"];
+			String action_name = action_dict["name"];
 			Array events = action_dict["events"];
 
 			InputMap *im = InputMap::get_singleton();
-			im->action_erase_events(name);
+			im->action_erase_events(action_name);
 
-			builtin_action_overrides[name].clear();
+			builtin_action_overrides[action_name].clear();
 			for (int ev_idx = 0; ev_idx < events.size(); ev_idx++) {
-				im->action_add_event(name, events[ev_idx]);
-				builtin_action_overrides[name].push_back(events[ev_idx]);
+				im->action_add_event(action_name, events[ev_idx]);
+				builtin_action_overrides[action_name].push_back(events[ev_idx]);
 			}
 		}
 		return false;
@@ -438,6 +438,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true); // Regression
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/accept_dialog_cancel_ok_buttons", 0,
+			vformat("Auto (%s),Cancel First,OK First", DisplayServer::get_singleton()->get_swap_cancel_ok() ? "OK First" : "Cancel First"),
+			PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
 #ifdef DEV_ENABLED
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/show_internal_errors_in_toast_notifications", 0, "Auto (Enabled),Enabled,Disabled")
 #else
@@ -735,8 +738,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {
 			Vector<String> list = p_extra_config->get_value("init_projects", "list");
 			for (int i = 0; i < list.size(); i++) {
-				String name = list[i].replace("/", "::");
-				set("projects/" + name, list[i]);
+				String proj_name = list[i].replace("/", "::");
+				set("projects/" + proj_name, list[i]);
 			}
 		}
 

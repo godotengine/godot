@@ -935,9 +935,9 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
-	EditorPlugin::AfterGUIInput forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
-	void forward_spatial_draw_over_viewport(Control *p_overlay);
-	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
+	EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
+	void forward_3d_draw_over_viewport(Control *p_overlay);
+	void forward_3d_force_draw_over_viewport(Control *p_overlay);
 	void add_plugin(EditorPlugin *p_plugin);
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();

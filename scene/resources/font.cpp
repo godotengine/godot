@@ -1065,12 +1065,12 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		int chars = len / 9;
 		for (int i = 0; i < chars; i++) {
-			const int32_t *data = &arr[i * 9];
-			char32_t c = data[0];
-			set_glyph_texture_idx(0, Vector2i(16, 0), c, data[1]);
-			set_glyph_uv_rect(0, Vector2i(16, 0), c, Rect2(data[2], data[3], data[4], data[5]));
-			set_glyph_offset(0, Vector2i(16, 0), c, Size2(data[6], data[7]));
-			set_glyph_advance(0, 16, c, Vector2(data[8], 0));
+			const int32_t *char_data = &arr[i * 9];
+			char32_t c = char_data[0];
+			set_glyph_texture_idx(0, Vector2i(16, 0), c, char_data[1]);
+			set_glyph_uv_rect(0, Vector2i(16, 0), c, Rect2(char_data[2], char_data[3], char_data[4], char_data[5]));
+			set_glyph_offset(0, Vector2i(16, 0), c, Size2(char_data[6], char_data[7]));
+			set_glyph_advance(0, 16, c, Vector2(char_data[8], 0));
 		}
 	} else if (tokens.size() == 1 && tokens[0] == "kernings") {
 		// Compatibility, BitmapFont.
@@ -1082,8 +1082,8 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 			return false;
 		}
 		for (int i = 0; i < len / 3; i++) {
-			const int32_t *data = &arr[i * 3];
-			set_kerning(0, 16, Vector2i(data[0], data[1]), Vector2(data[2], 0));
+			const int32_t *kern_data = &arr[i * 3];
+			set_kerning(0, 16, Vector2i(kern_data[0], kern_data[1]), Vector2(kern_data[2], 0));
 		}
 	} else if (tokens.size() == 1 && tokens[0] == "height") {
 		// Compatibility, BitmapFont.
@@ -1108,12 +1108,12 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 #endif // DISABLE_DEPRECATED
 
 	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
-		String lang = tokens[1];
-		set_language_support_override(lang, p_value);
+		String lang_code = tokens[1];
+		set_language_support_override(lang_code, p_value);
 		return true;
 	} else if (tokens.size() == 2 && tokens[0] == "script_support_override") {
-		String script = tokens[1];
-		set_script_support_override(script, p_value);
+		String script_code = tokens[1];
+		set_script_support_override(script_code, p_value);
 		return true;
 	} else if (tokens.size() >= 3 && tokens[0] == "cache") {
 		int cache_index = tokens[1].to_int();
@@ -1187,12 +1187,12 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 bool FontFile::_get(const StringName &p_name, Variant &r_ret) const {
 	Vector<String> tokens = p_name.operator String().split("/");
 	if (tokens.size() == 2 && tokens[0] == "language_support_override") {
-		String lang = tokens[1];
-		r_ret = get_language_support_override(lang);
+		String lang_code = tokens[1];
+		r_ret = get_language_support_override(lang_code);
 		return true;
 	} else if (tokens.size() == 2 && tokens[0] == "script_support_override") {
-		String script = tokens[1];
-		r_ret = get_script_support_override(script);
+		String script_code = tokens[1];
+		r_ret = get_script_support_override(script_code);
 		return true;
 	} else if (tokens.size() >= 3 && tokens[0] == "cache") {
 		int cache_index = tokens[1].to_int();
@@ -1813,8 +1813,8 @@ Error FontFile::load_bitmap_font(const String &p_path) {
 Error FontFile::load_dynamic_font(const String &p_path) {
 	reset_state();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_array(p_path);
-	set_data(data);
+	Vector<uint8_t> font_data = FileAccess::get_file_as_array(p_path);
+	set_data(font_data);
 
 	return OK;
 }

@@ -30,31 +30,29 @@
 
 #include "net_socket_posix.h"
 
+// Some proprietary Unix-derived platforms don't expose Unix sockets
+// so this allows skipping this file to reimplement this API differently.
 #ifndef UNIX_SOCKET_UNAVAILABLE
+
 #if defined(UNIX_ENABLED)
 
 #include <errno.h>
+#include <fcntl.h>
 #include <netdb.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#ifndef NO_FCNTL
-#include <fcntl.h>
-#else
-#include <sys/ioctl.h>
-#endif
-#include <netinet/in.h>
 
-#include <sys/socket.h>
 #ifdef WEB_ENABLED
 #include <arpa/inet.h>
 #endif
-
-#include <netinet/tcp.h>
 
 // BSD calls this flag IPV6_JOIN_GROUP
 #if !defined(IPV6_ADD_MEMBERSHIP) && defined(IPV6_JOIN_GROUP)
@@ -93,7 +91,7 @@
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
 #endif
 
-#endif
+#endif // UNIX_ENABLED
 
 size_t NetSocketPosix::_set_addr_storage(struct sockaddr_storage *p_addr, const IPAddress &p_ip, uint16_t p_port, IP::Type p_ip_type) {
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
@@ -181,8 +179,8 @@ NetSocketPosix::~NetSocketPosix() {
 	close();
 }
 
-// Silent a warning reported in #27594
-
+// Silence a warning reported in GH-27594.
+// EAGAIN and EWOULDBLOCK have the same value on most platforms, but it's not guaranteed.
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlogical-op"
@@ -309,13 +307,8 @@ void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_
 void NetSocketPosix::_set_close_exec_enabled(bool p_enabled) {
 #ifndef WINDOWS_ENABLED
 	// Enable close on exec to avoid sharing with subprocesses. Off by default on Windows.
-#if defined(NO_FCNTL)
-	unsigned long par = p_enabled ? 1 : 0;
-	SOCK_IOCTL(_sock, FIOCLEX, &par);
-#else
 	int opts = fcntl(_sock, F_GETFD);
 	fcntl(_sock, F_SETFD, opts | FD_CLOEXEC);
-#endif
 #endif
 }
 
@@ -658,7 +651,7 @@ void NetSocketPosix::set_blocking_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
 
 	int ret = 0;
-#if defined(WINDOWS_ENABLED) || defined(NO_FCNTL)
+#if defined(WINDOWS_ENABLED)
 	unsigned long par = p_enabled ? 0 : 1;
 	ret = SOCK_IOCTL(_sock, FIONBIO, &par);
 #else
@@ -781,4 +774,5 @@ Error NetSocketPosix::join_multicast_group(const IPAddress &p_multi_address, Str
 Error NetSocketPosix::leave_multicast_group(const IPAddress &p_multi_address, String p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
-#endif
+
+#endif // UNIX_SOCKET_UNAVAILABLE

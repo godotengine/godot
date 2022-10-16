@@ -445,7 +445,14 @@ Error ResourceLoaderText::load() {
 				// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 				path = ResourceUID::get_singleton()->get_id_path(uid);
 			} else {
+#ifdef TOOLS_ENABLED
+				// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
+				if (ResourceLoader::get_resource_uid(path) != uid) {
+					WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+				}
+#else
 				WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+#endif
 			}
 		}
 
@@ -1114,10 +1121,10 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 	//go with external resources
 
 	DummyReadData dummy_read;
-	VariantParser::ResourceParser rp;
-	rp.ext_func = _parse_ext_resource_dummys;
-	rp.sub_func = _parse_sub_resource_dummys;
-	rp.userdata = &dummy_read;
+	VariantParser::ResourceParser rp_new;
+	rp_new.ext_func = _parse_ext_resource_dummys;
+	rp_new.sub_func = _parse_sub_resource_dummys;
+	rp_new.userdata = &dummy_read;
 
 	while (next_tag.name == "ext_resource") {
 		if (!next_tag.fields.has("path")) {
@@ -1161,7 +1168,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 		dummy_read.external_resources[dr] = lindex;
 		dummy_read.rev_external_resources[id] = dr;
 
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new);
 
 		if (error) {
 			_printerr();
@@ -1244,7 +1251,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 				String assign;
 				Variant value;
 
-				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+				error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new);
 
 				if (error) {
 					if (main_res && error == ERR_FILE_EOF) {
@@ -1288,7 +1295,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 				return error;
 			}
 
-			Ref<PackedScene> packed_scene = _parse_node_tag(rp);
+			Ref<PackedScene> packed_scene = _parse_node_tag(rp_new);
 
 			if (!packed_scene.is_valid()) {
 				return error;
@@ -1363,13 +1370,13 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 
 	DummyReadData dummy_read;
 	dummy_read.no_placeholders = true;
-	VariantParser::ResourceParser rp;
-	rp.ext_func = _parse_ext_resource_dummys;
-	rp.sub_func = _parse_sub_resource_dummys;
-	rp.userdata = &dummy_read;
+	VariantParser::ResourceParser rp_new;
+	rp_new.ext_func = _parse_ext_resource_dummys;
+	rp_new.sub_func = _parse_sub_resource_dummys;
+	rp_new.userdata = &dummy_read;
 
 	while (next_tag.name == "ext_resource") {
-		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp);
+		error = VariantParser::parse_tag(&stream, lines, error_text, next_tag, &rp_new);
 
 		if (error) {
 			_printerr();
@@ -1396,7 +1403,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			String assign;
 			Variant value;
 
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new);
 
 			if (error) {
 				if (error == ERR_FILE_EOF) {
@@ -1444,7 +1451,7 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			String assign;
 			Variant value;
 
-			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp);
+			error = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, &rp_new);
 
 			if (error) {
 				if (error == ERR_FILE_MISSING_DEPENDENCIES) {

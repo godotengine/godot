@@ -141,7 +141,7 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_packed_string_array_add(ref godot_packed_string_array r_dest,
             in godot_string p_element);
 
-        public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle,
+        public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle, IntPtr p_object,
             out godot_callable r_callable);
 
         internal static partial godot_bool godotsharp_callable_get_data_for_marshalling(in godot_callable p_callable,

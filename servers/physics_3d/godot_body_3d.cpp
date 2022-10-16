@@ -78,10 +78,10 @@ void GodotBody3D::update_mass_properties() {
 
 						real_t area = get_shape_area(i);
 
-						real_t mass = area * this->mass / total_area;
+						real_t mass_new = area * mass / total_area;
 
 						// NOTE: we assume that the shape origin is also its center of mass.
-						center_of_mass_local += mass * get_shape_transform(i).origin;
+						center_of_mass_local += mass_new * get_shape_transform(i).origin;
 					}
 
 					center_of_mass_local /= mass;
@@ -108,9 +108,9 @@ void GodotBody3D::update_mass_properties() {
 
 					const GodotShape3D *shape = get_shape(i);
 
-					real_t mass = area * this->mass / total_area;
+					real_t mass_new = area * mass / total_area;
 
-					Basis shape_inertia_tensor = Basis::from_scale(shape->get_moment_of_inertia(mass));
+					Basis shape_inertia_tensor = Basis::from_scale(shape->get_moment_of_inertia(mass_new));
 					Transform3D shape_transform = get_shape_transform(i);
 					Basis shape_basis = shape_transform.basis.orthonormalized();
 
@@ -637,14 +637,14 @@ void GodotBody3D::integrate_forces(real_t p_step) {
 				damp = 0;
 			}
 
-			real_t angular_damp = 1.0 - p_step * total_angular_damp;
+			real_t angular_damp_new = 1.0 - p_step * total_angular_damp;
 
-			if (angular_damp < 0) { // reached zero in the given time
-				angular_damp = 0;
+			if (angular_damp_new < 0) { // reached zero in the given time
+				angular_damp_new = 0;
 			}
 
 			linear_velocity *= damp;
-			angular_velocity *= angular_damp;
+			angular_velocity *= angular_damp_new;
 
 			linear_velocity += _inv_mass * force * p_step;
 			angular_velocity += _inv_inertia_tensor.xform(torque) * p_step;
@@ -707,27 +707,27 @@ void GodotBody3D::integrate_velocities(real_t p_step) {
 	Vector3 total_angular_velocity = angular_velocity + biased_angular_velocity;
 
 	real_t ang_vel = total_angular_velocity.length();
-	Transform3D transform = get_transform();
+	Transform3D transform_new = get_transform();
 
 	if (!Math::is_zero_approx(ang_vel)) {
 		Vector3 ang_vel_axis = total_angular_velocity / ang_vel;
 		Basis rot(ang_vel_axis, ang_vel * p_step);
 		Basis identity3(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		transform.origin += ((identity3 - rot) * transform.basis).xform(center_of_mass_local);
-		transform.basis = rot * transform.basis;
-		transform.orthonormalize();
+		transform_new.origin += ((identity3 - rot) * transform_new.basis).xform(center_of_mass_local);
+		transform_new.basis = rot * transform_new.basis;
+		transform_new.orthonormalize();
 	}
 
 	Vector3 total_linear_velocity = linear_velocity + biased_linear_velocity;
 	/*for(int i=0;i<3;i++) {
 		if (axis_lock&(1<<i)) {
-			transform.origin[i]=0.0;
+			transform_new.origin[i]=0.0;
 		}
 	}*/
 
-	transform.origin += total_linear_velocity * p_step;
+	transform_new.origin += total_linear_velocity * p_step;
 
-	_set_transform(transform);
+	_set_transform(transform_new);
 	_set_inv_transform(get_transform().inverse());
 
 	_update_transform_dependent();

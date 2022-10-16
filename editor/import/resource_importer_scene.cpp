@@ -953,43 +953,49 @@ Node *ResourceImporterScene::_pre_fix_animations(Node *p_node, Node *p_root, con
 
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
+		List<StringName> anims;
+		ap->get_animation_list(&anims);
 
-		Array animation_clips;
-		{
-			int clip_count = node_settings["clips/amount"];
+		for (const StringName &name : anims) {
+			Ref<Animation> anim = ap->get_animation(name);
+			Array animation_slices;
 
-			for (int i = 0; i < clip_count; i++) {
-				String name = node_settings["clip_" + itos(i + 1) + "/name"];
-				int from_frame = node_settings["clip_" + itos(i + 1) + "/start_frame"];
-				int end_frame = node_settings["clip_" + itos(i + 1) + "/end_frame"];
-				Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)node_settings["clip_" + itos(i + 1) + "/loop_mode"]);
-				bool save_to_file = node_settings["clip_" + itos(i + 1) + "/save_to_file/enabled"];
-				bool save_to_path = node_settings["clip_" + itos(i + 1) + "/save_to_file/path"];
-				bool save_to_file_keep_custom = node_settings["clip_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
+			if (p_animation_data.has(name)) {
+				Dictionary anim_settings = p_animation_data[name];
+				int slices_count = anim_settings["slices/amount"];
 
-				animation_clips.push_back(name);
-				animation_clips.push_back(from_frame / p_animation_fps);
-				animation_clips.push_back(end_frame / p_animation_fps);
-				animation_clips.push_back(loop_mode);
-				animation_clips.push_back(save_to_file);
-				animation_clips.push_back(save_to_path);
-				animation_clips.push_back(save_to_file_keep_custom);
+				for (int i = 0; i < slices_count; i++) {
+					String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
+					int from_frame = anim_settings["slice_" + itos(i + 1) + "/start_frame"];
+					int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
+					Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)anim_settings["slice_" + itos(i + 1) + "/loop_mode"]);
+					bool save_to_file = anim_settings["slice_" + itos(i + 1) + "/save_to_file/enabled"];
+					bool save_to_path = anim_settings["slice_" + itos(i + 1) + "/save_to_file/path"];
+					bool save_to_file_keep_custom = anim_settings["slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"];
+
+					animation_slices.push_back(slice_name);
+					animation_slices.push_back(from_frame / p_animation_fps);
+					animation_slices.push_back(end_frame / p_animation_fps);
+					animation_slices.push_back(loop_mode);
+					animation_slices.push_back(save_to_file);
+					animation_slices.push_back(save_to_path);
+					animation_slices.push_back(save_to_file_keep_custom);
+				}
+			}
+
+			if (animation_slices.size() > 0) {
+				_create_slices(ap, anim, animation_slices, true);
 			}
 		}
 
-		if (animation_clips.size()) {
-			_create_clips(ap, animation_clips, true);
-		} else {
-			List<StringName> anims;
-			ap->get_animation_list(&anims);
-			AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
-				AnimationImportTracks(int(node_settings["import_tracks/position"])),
-				AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
-				AnimationImportTracks(int(node_settings["import_tracks/scale"]))
-			};
-			if (anims.size() > 1 && (import_tracks_mode[0] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[1] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[2] != ANIMATION_IMPORT_TRACKS_IF_PRESENT)) {
-				_optimize_track_usage(ap, import_tracks_mode);
-			}
+		AnimationImportTracks import_tracks_mode[TRACK_CHANNEL_MAX] = {
+			AnimationImportTracks(int(node_settings["import_tracks/position"])),
+			AnimationImportTracks(int(node_settings["import_tracks/rotation"])),
+			AnimationImportTracks(int(node_settings["import_tracks/scale"]))
+		};
+
+		if (anims.size() > 1 && (import_tracks_mode[0] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[1] != ANIMATION_IMPORT_TRACKS_IF_PRESENT || import_tracks_mode[2] != ANIMATION_IMPORT_TRACKS_IF_PRESENT)) {
+			_optimize_track_usage(ap, import_tracks_mode);
 		}
 	}
 
@@ -1408,144 +1414,138 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 	return anim;
 }
 
-void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_clips, bool p_bake_all) {
-	if (!anim->has_animation("default")) {
-		ERR_FAIL_COND_MSG(p_clips.size() > 0, "To create clips, animations must be named \"default\".");
-		return;
-	}
+void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> anim, const Array &p_slices, bool p_bake_all) {
+	Ref<AnimationLibrary> al = ap->get_animation_library(ap->find_animation_library(anim));
 
-	Ref<Animation> default_anim = anim->get_animation("default");
-	Ref<AnimationLibrary> al = anim->get_animation_library(anim->find_animation(default_anim));
-
-	for (int i = 0; i < p_clips.size(); i += 7) {
-		String name = p_clips[i];
-		float from = p_clips[i + 1];
-		float to = p_clips[i + 2];
-		Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)p_clips[i + 3]);
-		bool save_to_file = p_clips[i + 4];
-		String save_to_path = p_clips[i + 5];
-		bool keep_current = p_clips[i + 6];
+	for (int i = 0; i < p_slices.size(); i += 7) {
+		String name = p_slices[i];
+		float from = p_slices[i + 1];
+		float to = p_slices[i + 2];
+		Animation::LoopMode loop_mode = static_cast<Animation::LoopMode>((int)p_slices[i + 3]);
+		bool save_to_file = p_slices[i + 4];
+		String save_to_path = p_slices[i + 5];
+		bool keep_current = p_slices[i + 6];
 		if (from >= to) {
 			continue;
 		}
 
 		Ref<Animation> new_anim = memnew(Animation);
 
-		for (int j = 0; j < default_anim->get_track_count(); j++) {
+		for (int j = 0; j < anim->get_track_count(); j++) {
 			List<float> keys;
-			int kc = default_anim->track_get_key_count(j);
+			int kc = anim->track_get_key_count(j);
 			int dtrack = -1;
 			for (int k = 0; k < kc; k++) {
-				float kt = default_anim->track_get_key_time(j, k);
+				float kt = anim->track_get_key_time(j, k);
 				if (kt >= from && kt < to) {
 					//found a key within range, so create track
 					if (dtrack == -1) {
-						new_anim->add_track(default_anim->track_get_type(j));
+						new_anim->add_track(anim->track_get_type(j));
 						dtrack = new_anim->get_track_count() - 1;
-						new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
+						new_anim->track_set_path(dtrack, anim->track_get_path(j));
 
 						if (kt > (from + 0.01) && k > 0) {
-							if (default_anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
+							if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 								Vector3 p;
-								default_anim->position_track_interpolate(j, from, &p);
+								anim->position_track_interpolate(j, from, &p);
 								new_anim->position_track_insert_key(dtrack, 0, p);
-							} else if (default_anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
+							} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 								Quaternion r;
-								default_anim->rotation_track_interpolate(j, from, &r);
+								anim->rotation_track_interpolate(j, from, &r);
 								new_anim->rotation_track_insert_key(dtrack, 0, r);
-							} else if (default_anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
+							} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 								Vector3 s;
-								default_anim->scale_track_interpolate(j, from, &s);
+								anim->scale_track_interpolate(j, from, &s);
 								new_anim->scale_track_insert_key(dtrack, 0, s);
-							} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-								Variant var = default_anim->value_track_interpolate(j, from);
+							} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
+								Variant var = anim->value_track_interpolate(j, from);
 								new_anim->track_insert_key(dtrack, 0, var);
-							} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+							} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 								float interp;
-								default_anim->blend_shape_track_interpolate(j, from, &interp);
+								anim->blend_shape_track_interpolate(j, from, &interp);
 								new_anim->blend_shape_track_insert_key(dtrack, 0, interp);
 							}
 						}
 					}
 
-					if (default_anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
+					if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 						Vector3 p;
-						default_anim->position_track_get_key(j, k, &p);
+						anim->position_track_get_key(j, k, &p);
 						new_anim->position_track_insert_key(dtrack, kt - from, p);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
+					} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 						Quaternion r;
-						default_anim->rotation_track_get_key(j, k, &r);
+						anim->rotation_track_get_key(j, k, &r);
 						new_anim->rotation_track_insert_key(dtrack, kt - from, r);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
+					} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 						Vector3 s;
-						default_anim->scale_track_get_key(j, k, &s);
+						anim->scale_track_get_key(j, k, &s);
 						new_anim->scale_track_insert_key(dtrack, kt - from, s);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-						Variant var = default_anim->track_get_key_value(j, k);
+					} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
+						Variant var = anim->track_get_key_value(j, k);
 						new_anim->track_insert_key(dtrack, kt - from, var);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+					} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 						float interp;
-						default_anim->blend_shape_track_get_key(j, k, &interp);
+						anim->blend_shape_track_get_key(j, k, &interp);
 						new_anim->blend_shape_track_insert_key(dtrack, kt - from, interp);
 					}
 				}
 
 				if (dtrack != -1 && kt >= to) {
-					if (default_anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
+					if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 						Vector3 p;
-						default_anim->position_track_interpolate(j, to, &p);
+						anim->position_track_interpolate(j, to, &p);
 						new_anim->position_track_insert_key(dtrack, to - from, p);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
+					} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 						Quaternion r;
-						default_anim->rotation_track_interpolate(j, to, &r);
+						anim->rotation_track_interpolate(j, to, &r);
 						new_anim->rotation_track_insert_key(dtrack, to - from, r);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
+					} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 						Vector3 s;
-						default_anim->scale_track_interpolate(j, to, &s);
+						anim->scale_track_interpolate(j, to, &s);
 						new_anim->scale_track_insert_key(dtrack, to - from, s);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-						Variant var = default_anim->value_track_interpolate(j, to);
+					} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
+						Variant var = anim->value_track_interpolate(j, to);
 						new_anim->track_insert_key(dtrack, to - from, var);
-					} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+					} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 						float interp;
-						default_anim->blend_shape_track_interpolate(j, to, &interp);
+						anim->blend_shape_track_interpolate(j, to, &interp);
 						new_anim->blend_shape_track_insert_key(dtrack, to - from, interp);
 					}
 				}
 			}
 
 			if (dtrack == -1 && p_bake_all) {
-				new_anim->add_track(default_anim->track_get_type(j));
+				new_anim->add_track(anim->track_get_type(j));
 				dtrack = new_anim->get_track_count() - 1;
-				new_anim->track_set_path(dtrack, default_anim->track_get_path(j));
-				if (default_anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
+				new_anim->track_set_path(dtrack, anim->track_get_path(j));
+				if (anim->track_get_type(j) == Animation::TYPE_POSITION_3D) {
 					Vector3 p;
-					default_anim->position_track_interpolate(j, from, &p);
+					anim->position_track_interpolate(j, from, &p);
 					new_anim->position_track_insert_key(dtrack, 0, p);
-					default_anim->position_track_interpolate(j, to, &p);
+					anim->position_track_interpolate(j, to, &p);
 					new_anim->position_track_insert_key(dtrack, to - from, p);
-				} else if (default_anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
+				} else if (anim->track_get_type(j) == Animation::TYPE_ROTATION_3D) {
 					Quaternion r;
-					default_anim->rotation_track_interpolate(j, from, &r);
+					anim->rotation_track_interpolate(j, from, &r);
 					new_anim->rotation_track_insert_key(dtrack, 0, r);
-					default_anim->rotation_track_interpolate(j, to, &r);
+					anim->rotation_track_interpolate(j, to, &r);
 					new_anim->rotation_track_insert_key(dtrack, to - from, r);
-				} else if (default_anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
+				} else if (anim->track_get_type(j) == Animation::TYPE_SCALE_3D) {
 					Vector3 s;
-					default_anim->scale_track_interpolate(j, from, &s);
+					anim->scale_track_interpolate(j, from, &s);
 					new_anim->scale_track_insert_key(dtrack, 0, s);
-					default_anim->scale_track_interpolate(j, to, &s);
+					anim->scale_track_interpolate(j, to, &s);
 					new_anim->scale_track_insert_key(dtrack, to - from, s);
-				} else if (default_anim->track_get_type(j) == Animation::TYPE_VALUE) {
-					Variant var = default_anim->value_track_interpolate(j, from);
+				} else if (anim->track_get_type(j) == Animation::TYPE_VALUE) {
+					Variant var = anim->value_track_interpolate(j, from);
 					new_anim->track_insert_key(dtrack, 0, var);
-					Variant to_var = default_anim->value_track_interpolate(j, to);
+					Variant to_var = anim->value_track_interpolate(j, to);
 					new_anim->track_insert_key(dtrack, to - from, to_var);
-				} else if (default_anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
+				} else if (anim->track_get_type(j) == Animation::TYPE_BLEND_SHAPE) {
 					float interp;
-					default_anim->blend_shape_track_interpolate(j, from, &interp);
+					anim->blend_shape_track_interpolate(j, from, &interp);
 					new_anim->blend_shape_track_insert_key(dtrack, 0, interp);
-					default_anim->blend_shape_track_interpolate(j, to, &interp);
+					anim->blend_shape_track_interpolate(j, to, &interp);
 					new_anim->blend_shape_track_insert_key(dtrack, to - from, interp);
 				}
 			}
@@ -1562,7 +1562,7 @@ void ResourceImporterScene::_create_clips(AnimationPlayer *anim, const Array &p_
 		}
 	}
 
-	al->remove_animation("default"); // Remove default (no longer needed).
+	al->remove_animation(ap->find_animation(anim)); // Remove original animation (no longer needed).
 }
 
 void ResourceImporterScene::_optimize_animations(AnimationPlayer *anim, float p_max_vel_error, float p_max_ang_error, int p_prc_error) {
@@ -1642,6 +1642,17 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
+
+			for (int i = 0; i < 256; i++) {
+				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/name"), ""));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/start_frame"), 0));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/end_frame"), 0));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/path", PROPERTY_HINT_SAVE_FILE, ".res,*.tres"), ""));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"), false));
+			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -1654,17 +1665,6 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/position", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/rotation", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/scale", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
-
-			for (int i = 0; i < 256; i++) {
-				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/name"), ""));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/start_frame"), 0));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/end_frame"), 0));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/path", PROPERTY_HINT_SAVE_FILE, ".res,*.tres"), ""));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"), false));
-			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
@@ -1767,6 +1767,13 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			if (p_option == "save_to_file/path" || p_option == "save_to_file/keep_custom_tracks") {
 				return p_options["save_to_file/enabled"];
 			}
+			if (p_option.begins_with("slice_")) {
+				int max_slice = p_options["slices/amount"];
+				int slice = p_option.get_slice("_", 1).to_int() - 1;
+				if (slice >= max_slice) {
+					return false;
+				}
+			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
 			if (p_option.begins_with("optimizer/") && p_option != "optimizer/enabled" && !bool(p_options["optimizer/enabled"])) {
@@ -1774,14 +1781,6 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			}
 			if (p_option.begins_with("compression/") && p_option != "compression/enabled" && !bool(p_options["compression/enabled"])) {
 				return false;
-			}
-
-			if (p_option.begins_with("slice_")) {
-				int max_slice = p_options["slices/amount"];
-				int slice = p_option.get_slice("_", 1).to_int() - 1;
-				if (slice >= max_slice) {
-					return false;
-				}
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {

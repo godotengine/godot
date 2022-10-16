@@ -121,8 +121,9 @@ public:
 	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
 	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
 	virtual RID get_vrs_texture(); /* obtain VRS texture */
-
-	// note, external color/depth/vrs texture support will be added here soon.
+	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
+	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
+	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
 
 	virtual void process() = 0;
 	virtual void pre_render(){};

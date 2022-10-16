@@ -145,10 +145,7 @@ Array LightmapGIData::_get_light_textures_data() const {
 	for (int i = 0; i < texture_count; i++) {
 		int texture_slice_count = (i == texture_count - 1 && last_count != 0) ? last_count : slices_per_texture;
 
-		Ref<Image> texture_image;
-		texture_image.instantiate();
-
-		texture_image->create(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
+		Ref<Image> texture_image = Image::create_empty(slice_width, slice_height * texture_slice_count, false, images[0]->get_format());
 
 		for (int j = 0; j < texture_slice_count; j++) {
 			texture_image->blit_rect(images[i * slices_per_texture + j], Rect2i(0, 0, slice_width, slice_height), Point2i(0, slice_height * j));
@@ -818,7 +815,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				}
 
 				md.albedo_on_uv2.instantiate();
-				md.albedo_on_uv2->create(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
+				md.albedo_on_uv2->set_data(lightmap_size.width, lightmap_size.height, false, Image::FORMAT_RGBA8, albedom);
 			}
 
 			md.emission_on_uv2 = images[RS::BAKE_CHANNEL_EMISSION];
@@ -1054,7 +1051,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			} break;
 			case ENVIRONMENT_MODE_CUSTOM_COLOR: {
 				environment_image.instantiate();
-				environment_image->create(128, 64, false, Image::FORMAT_RGBAF);
+				environment_image->initialize_data(128, 64, false, Image::FORMAT_RGBAF);
 				Color c = environment_custom_color;
 				c.r *= environment_custom_energy;
 				c.g *= environment_custom_energy;
@@ -1081,13 +1078,13 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	/* POSTBAKE: Save Light Data */
 
-	Ref<LightmapGIData> data;
+	Ref<LightmapGIData> gi_data;
 	if (get_light_data().is_valid()) {
-		data = get_light_data();
+		gi_data = get_light_data();
 		set_light_data(Ref<LightmapGIData>()); //clear
-		data->clear();
+		gi_data->clear();
 	} else {
-		data.instantiate();
+		gi_data.instantiate();
 	}
 
 	Ref<Texture2DArray> texture;
@@ -1101,8 +1098,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		texture->create_from_images(images);
 	}
 
-	data->set_light_texture(texture);
-	data->set_uses_spherical_harmonics(directional);
+	gi_data->set_light_texture(texture);
+	gi_data->set_uses_spherical_harmonics(directional);
 
 	for (int i = 0; i < lightmapper->get_bake_mesh_count(); i++) {
 		Dictionary d = lightmapper->get_bake_mesh_userdata(i);
@@ -1114,7 +1111,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		Rect2 uv_scale = lightmapper->get_bake_mesh_uv_scale(i);
 		int slice_index = lightmapper->get_bake_mesh_texture_slice(i);
-		data->add_user(np, uv_scale, slice_index, subindex);
+		gi_data->add_user(np, uv_scale, slice_index, subindex);
 	}
 
 	{
@@ -1247,18 +1244,18 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 		/* Obtain the colors from the images, they will be re-created as cubemaps on the server, depending on the driver */
 
-		data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
+		gi_data->set_capture_data(bounds, interior, points, sh, tetrahedrons, bsp_array, exposure_normalization);
 		/* Compute a BSP tree of the simplices, so it's easy to find the exact one */
 	}
 
-	data->set_path(p_image_data_path);
-	Error err = ResourceSaver::save(data);
+	gi_data->set_path(p_image_data_path);
+	Error err = ResourceSaver::save(gi_data);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
 	}
 
-	set_light_data(data);
+	set_light_data(gi_data);
 
 	return BAKE_ERROR_OK;
 }
@@ -1286,9 +1283,9 @@ void LightmapGI::_assign_lightmaps() {
 		Node *node = get_node(light_data->get_user_path(i));
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
-			RID instance = node->call("get_bake_mesh_instance", instance_idx);
-			if (instance.is_valid()) {
-				RS::get_singleton()->instance_geometry_set_lightmap(instance, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
+			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
+			if (instance_id.is_valid()) {
+				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);
@@ -1304,9 +1301,9 @@ void LightmapGI::_clear_lightmaps() {
 		Node *node = get_node(light_data->get_user_path(i));
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
-			RID instance = node->call("get_bake_mesh_instance", instance_idx);
-			if (instance.is_valid()) {
-				RS::get_singleton()->instance_geometry_set_lightmap(instance, RID(), Rect2(), 0);
+			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
+			if (instance_id.is_valid()) {
+				RS::get_singleton()->instance_geometry_set_lightmap(instance_id, RID(), Rect2(), 0);
 			}
 		} else {
 			VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(node);

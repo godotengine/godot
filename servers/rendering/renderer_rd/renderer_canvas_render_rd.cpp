@@ -1075,10 +1075,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 			clear_colors.push_back(texture_storage->render_target_get_clear_request_color(p_to_render_target));
 			texture_storage->render_target_disable_clear_request(p_to_render_target);
 		}
-#ifndef _MSC_VER
-#warning TODO obtain from framebuffer format eventually when this is implemented
-#endif
-
+		// TODO: Obtain from framebuffer format eventually when this is implemented.
 		fb_uniform_set = texture_storage->render_target_get_framebuffer_uniform_set(p_to_render_target);
 	}
 
@@ -1475,6 +1472,8 @@ void RendererCanvasRenderRD::canvas_render_items(RID p_to_render_target, Item *p
 			}
 
 			canvas_group_owner = nullptr;
+			// Backbuffer is dirty now and needs to be re-cleared if another CanvasGroup needs it.
+			backbuffer_cleared = false;
 		}
 
 		if (backbuffer_copy) {
@@ -1627,7 +1626,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 		ShadowRenderPushConstant push_constant;
 		for (int y = 0; y < 4; y++) {
 			for (int x = 0; x < 4; x++) {
-				push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+				push_constant.projection[y * 4 + x] = projection.columns[y][x];
 			}
 		}
 		static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
@@ -1702,7 +1701,7 @@ void RendererCanvasRenderRD::light_update_directional_shadow(RID p_rid, int p_sh
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
-			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+			push_constant.projection[y * 4 + x] = projection.columns[y][x];
 		}
 	}
 
@@ -1770,7 +1769,7 @@ void RendererCanvasRenderRD::render_sdf(RID p_render_target, LightOccluderInstan
 	ShadowRenderPushConstant push_constant;
 	for (int y = 0; y < 4; y++) {
 		for (int x = 0; x < 4; x++) {
-			push_constant.projection[y * 4 + x] = projection.matrix[y][x];
+			push_constant.projection[y * 4 + x] = projection.columns[y][x];
 		}
 	}
 
@@ -2324,7 +2323,7 @@ RendererRD::MaterialStorage::ShaderData *RendererCanvasRenderRD::_create_shader_
 bool RendererCanvasRenderRD::CanvasMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RendererCanvasRenderRD *canvas_singleton = static_cast<RendererCanvasRenderRD *>(RendererCanvasRender::singleton);
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false);
 }
 
 RendererCanvasRenderRD::CanvasMaterialData::~CanvasMaterialData() {

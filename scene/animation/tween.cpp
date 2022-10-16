@@ -263,9 +263,9 @@ bool Tween::step(double p_delta) {
 	}
 
 	if (is_bound) {
-		Node *bound_node = get_bound_node();
-		if (bound_node) {
-			if (!bound_node->is_inside_tree()) {
+		Node *node = get_bound_node();
+		if (node) {
+			if (!node->is_inside_tree()) {
 				return true;
 			}
 		} else {
@@ -342,9 +342,9 @@ bool Tween::step(double p_delta) {
 
 bool Tween::can_process(bool p_tree_paused) const {
 	if (is_bound && pause_mode == TWEEN_PAUSE_BOUND) {
-		Node *bound_node = get_bound_node();
-		if (bound_node) {
-			return bound_node->is_inside_tree() && bound_node->can_process();
+		Node *node = get_bound_node();
+		if (node) {
+			return node->is_inside_tree() && node->can_process();
 		}
 	}
 

@@ -1538,7 +1538,11 @@ void ClassDB::register_extension_class(ObjectNativeExtension *p_extension) {
 }
 
 void ClassDB::unregister_extension_class(const StringName &p_class) {
-	ERR_FAIL_COND(!classes.has(p_class));
+	ClassInfo *c = classes.getptr(p_class);
+	ERR_FAIL_COND_MSG(!c, "Class " + p_class + "does not exist");
+	for (KeyValue<StringName, MethodBind *> &F : c->method_map) {
+		memdelete(F.value);
+	}
 	classes.erase(p_class);
 }
 

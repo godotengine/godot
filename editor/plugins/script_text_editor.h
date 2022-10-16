@@ -215,6 +215,7 @@ public:
 	virtual bool is_unsaved() override;
 	virtual Variant get_edit_state() override;
 	virtual void set_edit_state(const Variant &p_state) override;
+	virtual Variant get_navigation_state() override;
 	virtual void ensure_focus() override;
 	virtual void trim_trailing_whitespace() override;
 	virtual void insert_final_newline() override;

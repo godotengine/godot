@@ -1706,13 +1706,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rtm >= 0 && rtm < 3) {
-#ifdef NO_THREADS
-		rtm = OS::RENDER_THREAD_UNSAFE; // No threads available on this platform.
-#else
 		if (editor) {
 			rtm = OS::RENDER_THREAD_SAFE;
 		}
-#endif
 		OS::get_singleton()->_render_thread_mode = OS::RenderThreadMode(rtm);
 	}
 
@@ -1779,10 +1775,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second",
 					PROPERTY_HINT_RANGE, "1,1000,1"));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
-	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/settings/fps/force_fps", 0));
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps",
+	Engine::get_singleton()->set_max_fps(GLOBAL_DEF("application/run/max_fps", 0));
+	ProjectSettings::get_singleton()->set_custom_property_info("application/run/max_fps",
 			PropertyInfo(Variant::INT,
-					"debug/settings/fps/force_fps",
+					"application/run/max_fps",
 					PROPERTY_HINT_RANGE, "0,1000,1"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
@@ -1932,11 +1928,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
 
-#if !defined(NO_THREADS)
 	if (p_main_tid_override) {
 		Thread::main_thread_id = p_main_tid_override;
 	}
-#endif
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager || cmdline_tool) {
@@ -2133,7 +2127,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		} else {
 			// Create a 1×1 transparent image. This will effectively hide the splash image.
 			boot_logo.instantiate();
-			boot_logo->create(1, 1, false, Image::FORMAT_RGBA8);
+			boot_logo->initialize_data(1, 1, false, Image::FORMAT_RGBA8);
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 

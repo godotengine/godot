@@ -62,6 +62,10 @@ public:
 		friend class ConvexHullComputer;
 
 	public:
+		int32_t get_next_relative() const {
+			return next;
+		}
+
 		int32_t get_source_vertex() const {
 			return (this + reverse)->target_vertex;
 		}
@@ -86,7 +90,7 @@ public:
 	};
 
 	// Vertices of the output hull
-	Vector<Vector3> vertices;
+	LocalVector<Vector3> vertices;
 
 	// Edges of the output hull
 	LocalVector<Edge> edges;

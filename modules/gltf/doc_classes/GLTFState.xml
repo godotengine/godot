@@ -93,6 +93,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_texture_samplers">
+			<return type="GLTFTextureSampler[]" />
+			<description>
+				Retrieves the array of texture samplers that are used by the textures contained in the GLTF.
+			</description>
+		</method>
 		<method name="get_textures">
 			<return type="GLTFTexture[]" />
 			<description>
@@ -178,6 +184,13 @@
 			<return type="void" />
 			<param index="0" name="skins" type="GLTFSkin[]" />
 			<description>
+			</description>
+		</method>
+		<method name="set_texture_samplers">
+			<return type="void" />
+			<param index="0" name="texture_samplers" type="GLTFTextureSampler[]" />
+			<description>
+				Sets the array of texture samplers that are used by the textures contained in the GLTF.
 			</description>
 		</method>
 		<method name="set_textures">

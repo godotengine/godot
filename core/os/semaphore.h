@@ -34,8 +34,6 @@
 #include "core/error/error_list.h"
 #include "core/typedefs.h"
 
-#if !defined(NO_THREADS)
-
 #include <condition_variable>
 #include <mutex>
 
@@ -69,16 +67,5 @@ public:
 		return false;
 	}
 };
-
-#else
-
-class Semaphore {
-public:
-	_ALWAYS_INLINE_ void post() const {}
-	_ALWAYS_INLINE_ void wait() const {}
-	_ALWAYS_INLINE_ bool try_wait() const { return true; }
-};
-
-#endif
 
 #endif // SEMAPHORE_H

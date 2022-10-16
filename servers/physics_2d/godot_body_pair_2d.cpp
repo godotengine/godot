@@ -170,7 +170,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 
 	Vector2 mnormal = motion / mlen;
 
-	real_t min, max;
+	real_t min = 0.0, max = 0.0;
 	p_A->get_shape(p_shape_A)->project_rangev(mnormal, p_xform_A, min, max);
 
 	// Did it move enough in this direction to even attempt raycast?

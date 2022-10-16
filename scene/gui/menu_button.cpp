@@ -36,23 +36,16 @@
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shortcut_context()) {
-		return;
-	}
-
 	if (disable_shortcuts) {
 		return;
 	}
 
-	if (p_event->is_pressed() && !p_event->is_echo() && (Object::cast_to<InputEventKey>(p_event.ptr()) || Object::cast_to<InputEventJoypadButton>(p_event.ptr()) || Object::cast_to<InputEventAction>(*p_event) || Object::cast_to<InputEventShortcut>(*p_event))) {
-		if (!get_parent() || !is_visible_in_tree() || is_disabled()) {
-			return;
-		}
-
-		if (popup->activate_item_by_event(p_event, false)) {
-			accept_event();
-		}
+	if (p_event->is_pressed() && !p_event->is_echo() && !is_disabled() && is_visible_in_tree() && popup->activate_item_by_event(p_event, false)) {
+		accept_event();
+		return;
 	}
+
+	Button::shortcut_input(p_event);
 }
 
 void MenuButton::_popup_visibility_changed(bool p_visible) {
@@ -64,19 +57,19 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 	}
 
 	if (switch_on_hover) {
-		Window *window = Object::cast_to<Window>(get_viewport());
-		if (window) {
-			mouse_pos_adjusted = window->get_position();
+		Window *wnd = Object::cast_to<Window>(get_viewport());
+		if (wnd) {
+			mouse_pos_adjusted = wnd->get_position();
 
-			if (window->is_embedded()) {
-				Window *window_parent = Object::cast_to<Window>(window->get_parent()->get_viewport());
-				while (window_parent) {
-					if (!window_parent->is_embedded()) {
-						mouse_pos_adjusted += window_parent->get_position();
+			if (wnd->is_embedded()) {
+				Window *wnd_parent = Object::cast_to<Window>(wnd->get_parent()->get_viewport());
+				while (wnd_parent) {
+					if (!wnd_parent->is_embedded()) {
+						mouse_pos_adjusted += wnd_parent->get_position();
 						break;
 					}
 
-					window_parent = Object::cast_to<Window>(window_parent->get_parent()->get_viewport());
+					wnd_parent = Object::cast_to<Window>(wnd_parent->get_parent()->get_viewport());
 				}
 			}
 
@@ -88,6 +81,18 @@ void MenuButton::_popup_visibility_changed(bool p_visible) {
 void MenuButton::pressed() {
 	if (popup->is_visible()) {
 		popup->hide();
+		return;
+	}
+
+	show_popup();
+}
+
+PopupMenu *MenuButton::get_popup() const {
+	return popup;
+}
+
+void MenuButton::show_popup() {
+	if (!get_viewport()) {
 		return;
 	}
 
@@ -114,14 +119,6 @@ void MenuButton::pressed() {
 	}
 
 	popup->popup();
-}
-
-void MenuButton::gui_input(const Ref<InputEvent> &p_event) {
-	BaseButton::gui_input(p_event);
-}
-
-PopupMenu *MenuButton::get_popup() const {
-	return popup;
 }
 
 void MenuButton::set_switch_on_hover(bool p_enabled) {
@@ -226,6 +223,7 @@ void MenuButton::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void MenuButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_popup"), &MenuButton::get_popup);
+	ClassDB::bind_method(D_METHOD("show_popup"), &MenuButton::show_popup);
 	ClassDB::bind_method(D_METHOD("set_switch_on_hover", "enable"), &MenuButton::set_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("is_switch_on_hover"), &MenuButton::is_switch_on_hover);
 	ClassDB::bind_method(D_METHOD("set_disable_shortcuts", "disabled"), &MenuButton::set_disable_shortcuts);

@@ -598,12 +598,10 @@ void main() {
 		normal = normalize((canvas_data.canvas_normal_transform * vec4(normal, 0.0)).xyz);
 	}
 
-	vec3 base_color = color.rgb;
+	vec4 base_color = color;
 	if (bool(draw_data.flags & FLAGS_USING_LIGHT_MASK)) {
 		color = vec4(0.0); //invisible by default due to using light mask
 	}
-
-	vec4 original_color = color;
 
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
@@ -624,12 +622,14 @@ void main() {
 #ifdef LIGHT_CODE_USED
 
 		vec4 shadow_modulate = vec4(1.0);
-		light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, true);
+		light_color = light_compute(light_vertex, vec3(direction, light_array.data[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, true);
 #else
 
 		if (normal_used) {
 			vec3 light_vec = normalize(mix(vec3(direction, 0.0), vec3(0, 0, 1), light_array.data[light_base].height));
-			light_color.rgb = light_normal_compute(light_vec, normal, base_color, light_color.rgb, specular_shininess, specular_shininess_used);
+			light_color.rgb = light_normal_compute(light_vec, normal, base_color.rgb, light_color.rgb, specular_shininess, specular_shininess_used);
+		} else {
+			light_color.rgb *= base_color.rgb;
 		}
 #endif
 
@@ -645,8 +645,6 @@ void main() {
 #endif
 			);
 		}
-
-		light_color.rgb *= original_color.rgb;
 
 		light_blend_compute(light_base, light_color, color.rgb);
 	}
@@ -685,7 +683,7 @@ void main() {
 		vec3 light_position = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 
 		light_color.rgb *= light_base_color.rgb;
-		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, color, false);
+		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
 #else
 
 		light_color.rgb *= light_base_color.rgb * light_base_color.a;
@@ -695,7 +693,9 @@ void main() {
 			vec3 pos = light_vertex;
 			vec3 light_vec = normalize(light_pos - pos);
 
-			light_color.rgb = light_normal_compute(light_vec, normal, base_color, light_color.rgb, specular_shininess, specular_shininess_used);
+			light_color.rgb = light_normal_compute(light_vec, normal, base_color.rgb, light_color.rgb, specular_shininess, specular_shininess_used);
+		} else {
+			light_color.rgb *= base_color.rgb;
 		}
 #endif
 		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
@@ -742,8 +742,6 @@ void main() {
 #endif
 			);
 		}
-
-		light_color.rgb *= original_color.rgb;
 
 		light_blend_compute(light_base, light_color, color.rgb);
 	}

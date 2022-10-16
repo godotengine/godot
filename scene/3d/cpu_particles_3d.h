@@ -156,7 +156,7 @@ private:
 	real_t spread = 45.0;
 	real_t flatness = 0.0;
 
-	real_t parameters_min[PARAM_MAX];
+	real_t parameters_min[PARAM_MAX] = {};
 	real_t parameters_max[PARAM_MAX] = {};
 
 	Ref<Curve> curve_parameters[PARAM_MAX];

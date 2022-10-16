@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "particles_storage.h"
+
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "texture_storage.h"
@@ -206,6 +207,21 @@ ParticlesStorage::~ParticlesStorage() {
 	material_storage->shader_free(particles_shader.default_shader);
 
 	singleton = nullptr;
+}
+
+bool ParticlesStorage::free(RID p_rid) {
+	if (owns_particles(p_rid)) {
+		particles_free(p_rid);
+		return true;
+	} else if (owns_particles_collision(p_rid)) {
+		particles_collision_free(p_rid);
+		return true;
+	} else if (owns_particles_collision_instance(p_rid)) {
+		particles_collision_instance_free(p_rid);
+		return true;
+	}
+
+	return false;
 }
 
 /* PARTICLES */
@@ -1319,10 +1335,7 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-#ifndef _MSC_VER
-#warning Should use display refresh rate for all this
-#endif
-
+		// TODO: Should use display refresh rate for all this.
 		float screen_hz = 60;
 
 		int fixed_fps = 0;
@@ -1697,7 +1710,7 @@ MaterialStorage::ShaderData *ParticlesStorage::_create_particles_shader_func() {
 }
 
 bool ParticlesStorage::ParticleProcessMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, ParticlesStorage::get_singleton()->particles_shader.shader.version_get_shader(shader_data->version, 0), 3);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, ParticlesStorage::get_singleton()->particles_shader.shader.version_get_shader(shader_data->version, 0), 3, true);
 }
 
 ParticlesStorage::ParticleProcessMaterialData::~ParticleProcessMaterialData() {

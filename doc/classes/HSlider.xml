@@ -10,6 +10,9 @@
 	<tutorials>
 	</tutorials>
 	<theme_items>
+		<theme_item name="grabber_offset" data_type="constant" type="int" default="0">
+			Vertical offset of the grabber.
+		</theme_item>
 		<theme_item name="grabber" data_type="icon" type="Texture2D">
 			The texture for the grabber (the draggable element).
 		</theme_item>

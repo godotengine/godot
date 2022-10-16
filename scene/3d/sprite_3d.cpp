@@ -118,14 +118,14 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 
 	Color color = _get_color_accum();
 
-	real_t pixel_size = get_pixel_size();
+	real_t px_size = get_pixel_size();
 
 	// (2) Order vertices (0123) bottom-top in 2D / top-bottom in 3D.
 	Vector2 vertices[4] = {
-		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
-		(final_rect.position + final_rect.size) * pixel_size,
-		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.position * pixel_size,
+		(final_rect.position + Vector2(0, final_rect.size.y)) * px_size,
+		(final_rect.position + final_rect.size) * px_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * px_size,
+		final_rect.position * px_size,
 	};
 
 	Vector2 src_tsize = p_texture->get_size();
@@ -156,34 +156,34 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 
 	Vector3 normal;
-	int axis = get_axis();
-	normal[axis] = 1.0;
+	int ax = get_axis();
+	normal[ax] = 1.0;
 
 	Plane tangent;
-	if (axis == Vector3::AXIS_X) {
+	if (ax == Vector3::AXIS_X) {
 		tangent = Plane(0, 0, -1, 1);
 	} else {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
-	int x_axis = ((axis + 1) % 3);
-	int y_axis = ((axis + 2) % 3);
+	int x_axis = ((ax + 1) % 3);
+	int y_axis = ((ax + 2) % 3);
 
-	if (axis != Vector3::AXIS_Z) {
+	if (ax != Vector3::AXIS_Z) {
 		SWAP(x_axis, y_axis);
 
 		for (int i = 0; i < 4; i++) {
 			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
 			//SWAP(vertices[i].x,vertices[i].y);
-			if (axis == Vector3::AXIS_Y) {
+			if (ax == Vector3::AXIS_Y) {
 				vertices[i].y = -vertices[i].y;
-			} else if (axis == Vector3::AXIS_X) {
+			} else if (ax == Vector3::AXIS_X) {
 				vertices[i].x = -vertices[i].x;
 			}
 		}
 	}
 
-	AABB aabb;
+	AABB aabb_new;
 
 	// Everything except position and UV is compressed.
 	uint8_t *vertex_write_buffer = vertex_buffer.ptrw();
@@ -223,10 +223,10 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		vtx[x_axis] = vertices[i][0];
 		vtx[y_axis] = vertices[i][1];
 		if (i == 0) {
-			aabb.position = vtx;
-			aabb.size = Vector3();
+			aabb_new.position = vtx;
+			aabb_new.size = Vector3();
 		} else {
-			aabb.expand_to(vtx);
+			aabb_new.expand_to(vtx);
 		}
 
 		float v_uv[2] = { (float)uvs[i].x, (float)uvs[i].y };
@@ -240,12 +240,12 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		memcpy(&attribute_write_buffer[i * attrib_stride + mesh_surface_offsets[RS::ARRAY_COLOR]], v_color, 4);
 	}
 
-	RID mesh = get_mesh();
-	RS::get_singleton()->mesh_surface_update_vertex_region(mesh, 0, 0, vertex_buffer);
-	RS::get_singleton()->mesh_surface_update_attribute_region(mesh, 0, 0, attribute_buffer);
+	RID mesh_new = get_mesh();
+	RS::get_singleton()->mesh_surface_update_vertex_region(mesh_new, 0, 0, vertex_buffer);
+	RS::get_singleton()->mesh_surface_update_attribute_region(mesh_new, 0, 0, attribute_buffer);
 
-	RS::get_singleton()->mesh_set_custom_aabb(mesh, aabb);
-	set_aabb(aabb);
+	RS::get_singleton()->mesh_set_custom_aabb(mesh_new, aabb_new);
+	set_aabb(aabb_new);
 
 	RID shader_rid;
 	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), &shader_rid);
@@ -378,14 +378,14 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 		return Ref<TriangleMesh>();
 	}
 
-	real_t pixel_size = get_pixel_size();
+	real_t px_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
 
-		(final_rect.position + Vector2(0, final_rect.size.y)) * pixel_size,
-		(final_rect.position + final_rect.size) * pixel_size,
-		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.position * pixel_size,
+		(final_rect.position + Vector2(0, final_rect.size.y)) * px_size,
+		(final_rect.position + final_rect.size) * px_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * px_size,
+		final_rect.position * px_size,
 
 	};
 
@@ -810,7 +810,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");

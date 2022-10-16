@@ -169,7 +169,7 @@ public:
 	void clear();
 
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
-	Vector<Vector2> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
 };
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);

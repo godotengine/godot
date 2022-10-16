@@ -27,6 +27,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
     <!-- SdkPackageVersions.props for easy access -->

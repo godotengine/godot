@@ -1655,9 +1655,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_create_info.pNext = nullptr;
 	image_create_info.flags = 0;
 
-#ifndef _MSC_VER
-#warning TODO check for support via RenderingDevice to enable on mobile when possible
-#endif
+	// TODO: Check for support via RenderingDevice to enable on mobile when possible.
 
 #ifndef ANDROID_ENABLED
 
@@ -5172,9 +5170,9 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		uint32_t offset = 0;
 		uint8_t *binptr = ret.ptrw();
 		binptr[0] = 'G';
-		binptr[1] = 'V';
+		binptr[1] = 'S';
 		binptr[2] = 'B';
-		binptr[3] = 'D'; // Godot vulkan binary data.
+		binptr[3] = 'D'; // Godot Shader Binary Data.
 		offset += 4;
 		encode_uint32(SHADER_BINARY_VERSION, binptr + offset);
 		offset += sizeof(uint32_t);
@@ -5235,7 +5233,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	uint32_t read_offset = 0;
 	// Consistency check.
 	ERR_FAIL_COND_V(binsize < sizeof(uint32_t) * 3 + sizeof(RenderingDeviceVulkanShaderBinaryData), RID());
-	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'V' || binptr[2] != 'B' || binptr[3] != 'D', RID());
+	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'S' || binptr[2] != 'B' || binptr[3] != 'D', RID());
 
 	uint32_t bin_version = decode_uint32(binptr + 4);
 	ERR_FAIL_COND_V(bin_version != SHADER_BINARY_VERSION, RID());
@@ -6561,7 +6559,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	ERR_FAIL_INDEX_V(p_rasterization_state.cull_mode, 3, RID());
 	rasterization_state_create_info.cullMode = cull_mode[p_rasterization_state.cull_mode];
 	rasterization_state_create_info.frontFace = (p_rasterization_state.front_face == POLYGON_FRONT_FACE_CLOCKWISE ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE);
-	rasterization_state_create_info.depthBiasEnable = p_rasterization_state.depth_bias_enable;
+	rasterization_state_create_info.depthBiasEnable = p_rasterization_state.depth_bias_enabled;
 	rasterization_state_create_info.depthBiasConstantFactor = p_rasterization_state.depth_bias_constant_factor;
 	rasterization_state_create_info.depthBiasClamp = p_rasterization_state.depth_bias_clamp;
 	rasterization_state_create_info.depthBiasSlopeFactor = p_rasterization_state.depth_bias_slope_factor;
@@ -7262,12 +7260,12 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	return OK;
 }
 
-void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil) {
+void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *p_draw_list, Framebuffer *p_framebuffer, Point2i p_viewport_offset, Point2i p_viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil) {
 	Vector<VkClearAttachment> clear_attachments;
 	int color_index = 0;
 	int texture_index = 0;
-	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
-		Texture *texture = texture_owner.get_or_null(framebuffer->texture_ids[i]);
+	for (int i = 0; i < p_framebuffer->texture_ids.size(); i++) {
+		Texture *texture = texture_owner.get_or_null(p_framebuffer->texture_ids[i]);
 
 		if (!texture) {
 			texture_index++;
@@ -7300,12 +7298,12 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, 
 	VkClearRect cr;
 	cr.baseArrayLayer = 0;
 	cr.layerCount = 1;
-	cr.rect.offset.x = viewport_offset.x;
-	cr.rect.offset.y = viewport_offset.y;
-	cr.rect.extent.width = viewport_size.width;
-	cr.rect.extent.height = viewport_size.height;
+	cr.rect.offset.x = p_viewport_offset.x;
+	cr.rect.offset.y = p_viewport_offset.y;
+	cr.rect.extent.width = p_viewport_size.width;
+	cr.rect.extent.height = p_viewport_size.height;
 
-	vkCmdClearAttachments(draw_list->command_buffer, clear_attachments.size(), clear_attachments.ptr(), 1, &cr);
+	vkCmdClearAttachments(p_draw_list->command_buffer, clear_attachments.size(), clear_attachments.ptr(), 1, &cr);
 }
 
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const Vector<RID> &p_storage_textures) {
@@ -9393,7 +9391,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		ERR_CONTINUE(err != OK);
 	}
 
-	max_descriptors_per_pool = GLOBAL_DEF("rendering/rendering_device/descriptor_pools/max_descriptors_per_pool", 64);
+	max_descriptors_per_pool = GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	// Check to make sure DescriptorPoolKey is good.
 	static_assert(sizeof(uint64_t) * 3 >= UNIFORM_TYPE_MAX * sizeof(uint16_t));

@@ -33,7 +33,16 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4127)
+#endif
+
 #include "thirdparty/misc/yuv2rgb.h"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 int VideoStreamPlaybackTheora::buffer_data() {
 	char *buffer = ogg_sync_buffer(&oy, 4096);
@@ -242,16 +251,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	/* we're expecting more header packets. */
 	while ((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3)) {
-#ifdef _MSC_VER
-		// Make exception for these assignments in conditional expression.
-#pragma warning(push)
-#pragma warning(disable : 4706)
-#endif
-
-		int ret;
-
 		/* look for further theora headers */
-		while (theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&to, &op))) {
+		int ret = ogg_stream_packetout(&to, &op);
+		while (theora_p && theora_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
 				clear();
@@ -262,11 +264,13 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 				clear();
 				return;
 			}
+			ret = ogg_stream_packetout(&to, &op);
 			theora_p++;
 		}
 
 		/* look for more vorbis header packets */
-		while (vorbis_p && (vorbis_p < 3) && (ret = ogg_stream_packetout(&vo, &op))) {
+		ret = ogg_stream_packetout(&vo, &op);
+		while (vorbis_p && vorbis_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
 				clear();
@@ -282,11 +286,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 			if (vorbis_p == 3) {
 				break;
 			}
+			ret = ogg_stream_packetout(&vo, &op);
 		}
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 		/* The header pages/packets will arrive before anything else we
 		care about, or the stream is not obeying spec */
@@ -335,9 +336,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8);
+		Ref<Image> img = Image::create_empty(w, h, false, Image::FORMAT_RGBA8);
 		texture->set_image(img);
 
 	} else {
@@ -464,12 +463,6 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 		while (theora_p && !frame_done) {
 			/* theora is one in, one out... */
 			if (ogg_stream_packetout(&to, &op) > 0) {
-				if (false && pp_inc) {
-					pp_level += pp_inc;
-					th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level,
-							sizeof(pp_level));
-					pp_inc = 0;
-				}
 				/*HACK: This should be set after a seek or a gap, but we might not have
 				a granulepos for the first packet (we only have them for the last
 				packet on a page), so we just set it as often as we get it.

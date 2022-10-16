@@ -771,6 +771,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 	thisrow = 0;
 	prevrow = 0;
+	const real_t side_normal_y = (bottom_radius - top_radius) / height;
 	for (j = 0; j <= (rings + 1); j++) {
 		v = j;
 		v /= (rings + 1);
@@ -789,7 +790,7 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
-			normals.push_back(Vector3(x, 0.0, z));
+			normals.push_back(Vector3(x, side_normal_y, z).normalized());
 			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * 0.5));
 			point++;
@@ -1078,7 +1079,7 @@ void PlaneMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_width", "get_subdivide_width");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subdivide_depth", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_subdivide_depth", "get_subdivide_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "center_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_center_offset", "get_center_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Face X, Face Y, Face Z"), "set_orientation", "get_orientation");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Face X,Face Y,Face Z"), "set_orientation", "get_orientation");
 
 	BIND_ENUM_CONSTANT(FACE_X)
 	BIND_ENUM_CONSTANT(FACE_Y)
@@ -2443,17 +2444,17 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		TS->shaped_text_clear(text_rid);
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
-		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 
 		Array stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
-			GDVIRTUAL_CALL(_structured_text_parser, st_args, text, stt);
+			GDVIRTUAL_CALL(_structured_text_parser, st_args, txt, stt);
 		} else {
-			stt = TS->parse_structured_text(st_parser, st_args, text);
+			stt = TS->parse_structured_text(st_parser, st_args, txt);
 		}
 		TS->shaped_text_set_bidi_override(text_rid, stt);
 

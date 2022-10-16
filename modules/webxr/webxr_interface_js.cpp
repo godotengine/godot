@@ -388,15 +388,15 @@ Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_a
 	int k = 0;
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
-			eye.matrix[i][j] = js_matrix[k++];
+			eye.columns[i][j] = js_matrix[k++];
 		}
 	}
 
 	free(js_matrix);
 
 	// Copied from godot_oculus_mobile's ovr_mobile_session.cpp
-	eye.matrix[2][2] = -(p_z_far + p_z_near) / (p_z_far - p_z_near);
-	eye.matrix[3][2] = -(2.0f * p_z_far * p_z_near) / (p_z_far - p_z_near);
+	eye.columns[2][2] = -(p_z_far + p_z_near) / (p_z_far - p_z_near);
+	eye.columns[3][2] = -(2.0f * p_z_far * p_z_near) / (p_z_far - p_z_near);
 
 	return eye;
 }

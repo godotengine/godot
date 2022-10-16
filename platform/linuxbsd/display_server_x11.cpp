@@ -49,10 +49,14 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
+#include <dlfcn.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -65,17 +69,6 @@
 // EWMH
 #define _NET_WM_STATE_REMOVE 0L // remove/unset property
 #define _NET_WM_STATE_ADD 1L // add/set property
-
-#include <dlfcn.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-//stupid linux.h
-#ifdef KEY_TAB
-#undef KEY_TAB
-#endif
 
 #undef CursorShape
 #include <X11/XKBlib.h>
@@ -1209,16 +1202,6 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	return SCREEN_REFRESH_RATE_FALLBACK;
 }
 
-bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
-	_THREAD_SAFE_METHOD_
-
-#ifndef _MSC_VER
-#warning Need to get from proper window
-#endif
-
-	return DisplayServer::screen_is_touchscreen(p_screen);
-}
-
 #ifdef DBUS_ENABLED
 void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 	if (screen_is_kept_on() == p_enable) {
@@ -1746,6 +1729,18 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 
 		usleep(10000);
 	}
+
+	// Keep rendering context window size in sync
+#if defined(VULKAN_ENABLED)
+	if (context_vulkan) {
+		context_vulkan->window_resize(p_window, xwa.width, xwa.height);
+	}
+#endif
+#if defined(GLES3_ENABLED)
+	if (gl_manager) {
+		gl_manager->window_resize(p_window, xwa.width, xwa.height);
+	}
+#endif
 }
 
 Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
@@ -3142,9 +3137,14 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		return;
 	}
 
+	// Query display server about a possible new window state.
+	wd.fullscreen = _window_fullscreen_check(window_id);
+	wd.minimized = _window_minimize_check(window_id);
+	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE");
+
 	{
 		//the position in xconfigure is not useful here, obtain it manually
-		int x, y;
+		int x = 0, y = 0;
 		Window child;
 		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
 		new_rect.position.x = x;
@@ -3307,7 +3307,7 @@ void DisplayServerX11::_check_pending_events(LocalVector<XEvent> &r_events) {
 	XFlush(x11_display);
 
 	// Non-blocking wait for next event and remove it from the queue.
-	XEvent ev;
+	XEvent ev = {};
 	while (XCheckIfEvent(x11_display, &ev, _predicate_all_events, nullptr)) {
 		// Check if the input manager wants to process the event.
 		if (XFilterEvent(&ev, None)) {

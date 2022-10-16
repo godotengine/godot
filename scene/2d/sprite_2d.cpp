@@ -309,9 +309,7 @@ bool Sprite2D::is_pixel_opaque(const Point2 &p_point) const {
 		q.y = 1.0f - q.y;
 	}
 	q = q * src_rect.size + src_rect.position;
-#ifndef _MSC_VER
-#warning this need to be obtained from CanvasItem new repeat mode (but it needs to guess it from hierarchy, need to add a function for that)
-#endif
+	// TODO: This need to be obtained from CanvasItem new repeat mode (but it needs to guess it from hierarchy, need to add a function for that).
 	bool is_repeat = false;
 	bool is_mirrored_repeat = false;
 	if (is_repeat) {
@@ -446,7 +444,7 @@ void Sprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");

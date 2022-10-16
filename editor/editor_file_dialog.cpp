@@ -1023,10 +1023,10 @@ void EditorFileDialog::set_current_path(const String &p_path) {
 	if (pos == -1) {
 		set_current_file(p_path);
 	} else {
-		String dir = p_path.substr(0, pos);
-		String file = p_path.substr(pos + 1, p_path.length());
-		set_current_dir(dir);
-		set_current_file(file);
+		String path_dir = p_path.substr(0, pos);
+		String path_file = p_path.substr(pos + 1, p_path.length());
+		set_current_dir(path_dir);
+		set_current_file(path_file);
 	}
 }
 
@@ -1614,26 +1614,26 @@ void EditorFileDialog::set_default_display_mode(DisplayMode p_mode) {
 }
 
 void EditorFileDialog::_save_to_recent() {
-	String dir = get_current_dir();
-	Vector<String> recent = EditorSettings::get_singleton()->get_recent_dirs();
+	String cur_dir = get_current_dir();
+	Vector<String> recent_new = EditorSettings::get_singleton()->get_recent_dirs();
 
 	const int max = 20;
 	int count = 0;
-	bool res = dir.begins_with("res://");
+	bool res = cur_dir.begins_with("res://");
 
-	for (int i = 0; i < recent.size(); i++) {
-		bool cres = recent[i].begins_with("res://");
-		if (recent[i] == dir || (res == cres && count > max)) {
-			recent.remove_at(i);
+	for (int i = 0; i < recent_new.size(); i++) {
+		bool cres = recent_new[i].begins_with("res://");
+		if (recent_new[i] == cur_dir || (res == cres && count > max)) {
+			recent_new.remove_at(i);
 			i--;
 		} else {
 			count++;
 		}
 	}
 
-	recent.insert(0, dir);
+	recent_new.insert(0, cur_dir);
 
-	EditorSettings::get_singleton()->set_recent_dirs(recent);
+	EditorSettings::get_singleton()->set_recent_dirs(recent_new);
 }
 
 void EditorFileDialog::set_disable_overwrite_warning(bool p_disable) {

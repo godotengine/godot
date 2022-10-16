@@ -28,24 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "modules/modules_enabled.gen.h" // For regex.
-
 #include "macho.h"
 
-#ifdef MODULE_REGEX_ENABLED
-
 uint32_t MachO::seg_align(uint64_t p_vmaddr, uint32_t p_min, uint32_t p_max) {
-	uint32_t align = p_max;
+	uint32_t salign = p_max;
 	if (p_vmaddr != 0) {
 		uint64_t seg_align = 1;
-		align = 0;
+		salign = 0;
 		while ((seg_align & p_vmaddr) == 0) {
 			seg_align = seg_align << 1;
-			align++;
+			salign++;
 		}
-		align = CLAMP(align, p_min, p_max);
+		salign = CLAMP(salign, p_min, p_max);
 	}
-	return align;
+	return salign;
 }
 
 bool MachO::alloc_signature(uint64_t p_size) {
@@ -544,5 +540,3 @@ bool MachO::set_signature_size(uint64_t p_size) {
 	}
 	return true;
 }
-
-#endif // MODULE_REGEX_ENABLED

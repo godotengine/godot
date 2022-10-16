@@ -69,6 +69,9 @@ class OS_LinuxBSD : public OS_Unix {
 
 	String get_systemd_os_release_info_value(const String &key) const;
 
+	Vector<String> lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const;
+	Vector<String> lspci_get_device_value(Vector<String> vendor_device_id_mapping, String check_column, String blacklist) const;
+
 protected:
 	virtual void initialize() override;
 	virtual void finalize() override;
@@ -81,6 +84,8 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+
+	virtual Vector<String> get_video_adapter_driver_info() const override;
 
 	virtual MainLoop *get_main_loop() const override;
 

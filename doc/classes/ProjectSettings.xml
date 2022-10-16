@@ -276,6 +276,15 @@
 		<member name="application/run/main_scene" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to the main scene file that will be loaded when the project runs.
 		</member>
+		<member name="application/run/max_fps" type="int" setter="" getter="" default="0">
+			Maximum number of frames per second allowed. A value of [code]0[/code] means "no limit". The actual number of frames per second may still be below this value if the CPU or GPU cannot keep up with the project logic and rendering.
+			Limiting the FPS can be useful to reduce system power consumption, which reduces heat and noise emissions (and improves battery life on mobile devices).
+			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate.
+			If [member display/window/vsync/vsync_mode] is [code]Enabled[/code], on monitors with variable refresh rate enabled (G-Sync/FreeSync), using a FPS limit a few frames lower than the monitor's refresh rate will [url=https://blurbusters.com/howto-low-lag-vsync-on/]reduce input lag while avoiding tearing[/url].
+			If [member display/window/vsync/vsync_mode] is [code]Disabled[/code], limiting the FPS to a high value that can be consistently reached on the system can reduce input lag compared to an uncapped framerate. Since this works by ensuring the GPU load is lower than 100%, this latency reduction is only effective in GPU-bottlenecked scenarios, not CPU-bottlenecked scenarios.
+			See also [member physics/common/physics_ticks_per_second].
+			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.max_fps] instead.
+		</member>
 		<member name="audio/buses/channel_disable_threshold_db" type="float" setter="" getter="" default="-60.0">
 			Audio buses will disable automatically when sound goes below a given dB threshold for a given time. This saves CPU as effects assigned to that bus will no longer do any processing.
 		</member>
@@ -339,25 +348,25 @@
 			Desktop override for [member debug/file_logging/enable_file_logging], as log files are not readily accessible on mobile/Web platforms.
 		</member>
 		<member name="debug/file_logging/log_path" type="String" setter="" getter="" default="&quot;user://logs/godot.log&quot;">
-			Path to logs within the project. Using an [code]user://[/code] path is recommended.
+			Path at which to store log files for the project. Using a path under [code]user://[/code] is recommended.
 		</member>
 		<member name="debug/file_logging/max_log_files" type="int" setter="" getter="" default="5">
 			Specifies the maximum number of log files allowed (used for rotation).
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_false" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns false.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to false.
 		</member>
 		<member name="debug/gdscript/warnings/assert_always_true" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an [code]assert[/code] call always returns true.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an [code]assert[/code] call always evaluates to true.
 		</member>
 		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a constant is used as a function.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
 		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when deprecated keywords are used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
 		</member>
 		<member name="debug/gdscript/warnings/empty_file" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an empty file is parsed.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an empty file is parsed.
 		</member>
 		<member name="debug/gdscript/warnings/enable" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables specific GDScript warnings (see [code]debug/gdscript/warnings/*[/code] settings). If [code]false[/code], disables all GDScript warnings.
@@ -366,99 +375,97 @@
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
 		</member>
 		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when using a function as if it was a property.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a ternary operator may emit values with incompatible types.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
 		</member>
 		<member name="debug/gdscript/warnings/int_assigned_to_enum" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when trying to assign an integer to a variable that expects an enum value.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to assign an integer to a variable that expects an enum value.
 		</member>
 		<member name="debug/gdscript/warnings/integer_division" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when dividing an integer by another integer (the decimal part will be discarded).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when dividing an integer by another integer (the decimal part will be discarded).
 		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
 		</member>
 		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when using a property as if it was a function.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a function that is not a coroutine is called with await.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
 		</member>
 		<member name="debug/gdscript/warnings/return_value_discarded" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a function without using its return value (by assigning it to a variable or using it as a function argument). Such return values are sometimes used to denote possible errors using the [enum Error] enum.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_global_identifier" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable, signal, or enum that would have the same name as a built-in function or global class name, which possibly shadow it.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable, signal, or enum that would have the same name as a built-in function or global class name, thus shadowing it.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when defining a local or subclass member variable that would shadow a variable at an upper level (such as a member variable).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or member variable that would shadow a member variable that the class defines.
 		</member>
 		<member name="debug/gdscript/warnings/shadowed_variable_base_class" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when defining a local or subclass member variable that would shadow a variable that is inherited from a parent class.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_expression" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling an expression that has no effect on the surrounding code, such as writing [code]2 + 2[/code] as a statement.
 		</member>
 		<member name="debug/gdscript/warnings/standalone_ternary" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a ternary expression that has no effect on the surrounding code, such as writing [code]42 if active else 0[/code] as a statement.
+		</member>
+		<member name="debug/gdscript/warnings/static_called_on_instance" type="int" setter="" getter="" default="1">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a static method from an instance of a class instead of from the class directly.
 		</member>
 		<member name="debug/gdscript/warnings/treat_warnings_as_errors" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], all warnings will be reported as if they were errors.
+			If [code]true[/code], all warnings will be reported as if they are errors.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when using a variable that wasn't previously assigned.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a variable that wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unassigned_variable_op_assign" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning a variable using an assignment operator like [code]+=[/code] if the variable wasn't previously assigned.
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_code" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when unreachable code is detected (such as after a [code]return[/code] statement that will always be executed).
 		</member>
 		<member name="debug/gdscript/warnings/unreachable_pattern" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when an unreachable [code]match[/code] pattern is detected.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an unreachable [code]match[/code] pattern is detected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_call_argument" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when using an expression whose type may not be compatible with the function parameter expected.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using an expression whose type may not be compatible with the function parameter expected.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_cast" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when performing an unsafe cast.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when performing an unsafe cast.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_method_access" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when calling a method whose presence is not guaranteed at compile-time in the class.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when calling a method whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
-			If [code]enabled[/code], prints a warning or an error when accessing a property whose presence is not guaranteed at compile-time in the class.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a local constant is never used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local constant is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_parameter" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a function parameter is never used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function parameter is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_private_class_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a class variable is never used.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a private member variable is never used.
 		</member>
 		<member name="debug/gdscript/warnings/unused_signal" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a signal is unused.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a signal is declared but never emitted.
 		</member>
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when a local variable is unused.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
 		</member>
 		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
-			If [code]enabled[/code], prints a warning or an error when assigning the result of a function that returns [code]void[/code] to a variable.
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning the result of a function that returns [code]void[/code] to a variable.
 		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
 			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
 		</member>
 		<member name="debug/settings/crash_handler/message.editor" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug on: https://github.com/godotengine/godot/issues&quot;">
 			Editor-only override for [member debug/settings/crash_handler/message]. Does not affect exported projects in debug or release mode.
-		</member>
-		<member name="debug/settings/fps/force_fps" type="int" setter="" getter="" default="0">
-			Maximum number of frames per second allowed. The actual number of frames per second may still be below this value if the game is lagging.
-			If [member display/window/vsync/vsync_mode] is set to [code]Enabled[/code] or [code]Adaptive[/code], it takes precedence and the forced FPS number cannot exceed the monitor's refresh rate. See also [member physics/common/physics_ticks_per_second].
-			This setting is therefore mostly relevant for lowering the maximum FPS below VSync, e.g. to perform non-real-time rendering of static frames, or test the project under lag conditions.
-			[b]Note:[/b] This property is only read when the project starts. To change the rendering FPS cap at runtime, set [member Engine.target_fps] instead.
 		</member>
 		<member name="debug/settings/gdscript/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack allowed for debugging GDScript.
@@ -470,6 +477,7 @@
 			Print frames per second to standard output every second.
 		</member>
 		<member name="debug/settings/stdout/print_gpu_profile" type="bool" setter="" getter="" default="false">
+			Print GPU profile information to standard output every second. This includes how long each frame takes the GPU to render on average, broken down into different steps of the render pipeline, such as CanvasItems, shadows, glow, etc.
 		</member>
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] command line argument, even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
@@ -561,7 +569,7 @@
 			If [code]true[/code], the home indicator is hidden automatically. This only affects iOS devices without a physical home button.
 		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it.
+			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/size/transparent] and [member rendering/transparent_background].
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
 			Forces the main window to be always on top.
@@ -572,8 +580,8 @@
 			[b]Note:[/b] This setting is ignored on iOS, Android, and Web.
 		</member>
 		<member name="display/window/size/extend_to_title" type="bool" setter="" getter="" default="false">
-			Main window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons.
-			[b]Note:[/b] This setting is implemented on macOS.
+			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
+			[b]Note:[/b] This setting is implemented only on macOS.
 		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
@@ -586,8 +594,8 @@
 			[b]Note:[/b] This setting is ignored on iOS.
 		</member>
 		<member name="display/window/size/transparent" type="bool" setter="" getter="" default="false">
-			Main window background can be transparent.
-			[b]Note:[/b] To use transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
+			If [code]true[/code], enables a window manager hint that the main window background [i]can[/i] be transparent. This does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/transparent_background].
+			[b]Note:[/b] To use a transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
 			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
@@ -682,9 +690,10 @@
 			If [code]true[/code], swaps Cancel and OK buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
+			Maximum undo/redo history size for [TextEdit] fields.
 		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
-			Path to a custom [Theme] resource file to use for the project ([code]theme[/code] or generic [code]tres[/code]/[code]res[/code] extension).
+			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
 		</member>
 		<member name="gui/theme/custom_font" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Font] resource to use as default for all GUI elements of the project.
@@ -709,6 +718,8 @@
 			Default font glyph sub-pixel positioning mode. See [member FontFile.subpixel_positioning].
 		</member>
 		<member name="gui/theme/default_theme_scale" type="float" setter="" getter="" default="1.0">
+			The default scale factor for [Control]s, when not overriden by a [Theme].
+			[b]Note:[/b] This property is only read when the project starts. To change the default scale at runtime, set [member ThemeDB.fallback_base_scale] instead.
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD sub-pixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
@@ -731,8 +742,12 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_copy" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to copy a selection to the clipboard.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_cut" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to cut a selection to the clipboard.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move down in the UI.
@@ -743,10 +758,16 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_filedialog_refresh" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to refresh the contents of the current directory of a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_filedialog_show_hidden" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to toggle showing hidden files and directories in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_filedialog_up_one_level" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to go up one directory in a [FileDialog].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to focus the next [Control] in the scene. The focus behavior can be configured via [member Control.focus_next].
@@ -757,8 +778,12 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_graph_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete a [GraphNode] in a [GraphEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_graph_duplicate" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to duplicate a [GraphNode] in a [GraphEdit].
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_home" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go to the start position of a [Control] (e.g. first item in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_HOME] on typical desktop UI systems.
@@ -769,6 +794,8 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_menu" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to open a context menu in a text field.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_page_down" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to go down a page in a [Control] (e.g. in an [ItemList] or a [Tree]), matching the behavior of [constant KEY_PAGEDOWN] on typical desktop UI systems.
@@ -779,8 +806,12 @@
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_paste" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to paste from the clipboard.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_redo" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to redo an undone action.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_right" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move right in the UI.
@@ -793,96 +824,172 @@
 		<member name="input/ui_swap_input_direction" type="Dictionary" setter="" getter="">
 		</member>
 		<member name="input/ui_text_backspace" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the character before the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace_all_to_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete [b]all[/b] text before the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace_all_to_left.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete all text before the text cursor.
 		</member>
 		<member name="input/ui_text_backspace_word" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete all characters before the cursor up until a whitespace or punctuation character.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_backspace_word.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete a word.
 		</member>
 		<member name="input/ui_text_caret_document_end" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor the the end of the text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_document_end.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the end of the text.
 		</member>
 		<member name="input/ui_text_caret_document_start" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor to the start of the text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_document_start.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the start of the text.
 		</member>
 		<member name="input/ui_text_caret_down" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor down.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor left.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_end" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor to the end of the line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_end.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the end of the line.
 		</member>
 		<member name="input/ui_text_caret_line_start" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor to the start of the line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_line_start.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor to the start of the line.
 		</member>
 		<member name="input/ui_text_caret_page_down" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor down one page.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_page_up" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor up one page.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor right.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_up" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor up.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_left" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor left to the next whitespace or punctuation.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_left.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor back one word.
 		</member>
 		<member name="input/ui_text_caret_word_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to move the text cursor right to the next whitespace or punctuation.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_caret_word_right.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to move the text cursor forward one word.
 		</member>
 		<member name="input/ui_text_completion_accept" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to accept an autocompetion hint.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_query" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to request autocompetion.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_completion_replace" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to accept an autocompetion hint, replacing existing text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_dedent" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to unindent text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete the character after the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_all_to_right" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete [b]all[/b] text after the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_all_to_right.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete all text after the text cursor.
 		</member>
 		<member name="input/ui_text_delete_word" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to delete all characters after the cursor up until a whitespace or punctuation character.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_delete_word.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to delete a word after the text cursor.
 		</member>
 		<member name="input/ui_text_indent" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to indent the current line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_newline" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to insert a new line at the position of the text cursor.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_newline_above" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to insert a new line before the current one.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_newline_blank" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to insert a new line after the current one.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_down" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to scroll down one line of text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_down.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to scroll down one line.
 		</member>
 		<member name="input/ui_text_scroll_up" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to scroll up one line of text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_scroll_up.macos" type="Dictionary" setter="" getter="">
+			macOS specific override for the shortcut to scroll up one line.
 		</member>
 		<member name="input/ui_text_select_all" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to select all text.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_select_word_under_caret" type="Dictionary" setter="" getter="">
 			If no selection is currently active, selects the word currently under the caret in text fields. If a selection is currently active, deselects the current selection.
 			[b]Note:[/b] Currently, this is only implemented in [TextEdit], not [LineEdit].
 		</member>
 		<member name="input/ui_text_submit" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to submit a text field.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_text_toggle_insert_mode" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to toggle [i]instert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
+			Default [InputEventAction] to undo the most recent action.
+			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
 		<member name="input/ui_up" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to move up in the UI.
@@ -1672,7 +1779,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_jitter_fix] instead.
 		</member>
 		<member name="physics/common/physics_ticks_per_second" type="int" setter="" getter="" default="60">
-			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member debug/settings/fps/force_fps].
+			The number of fixed iterations per second. This controls how often physics simulation and [method Node._physics_process] methods are run. See also [member application/run/max_fps].
 			[b]Note:[/b] This property is only read when the project starts. To change the physics FPS at runtime, set [member Engine.physics_ticks_per_second] instead.
 			[b]Note:[/b] Only 8 physics ticks may be simulated per rendered frame at most. If more than 8 physics ticks have to be simulated per rendered frame to keep up with rendering, the game will appear to slow down (even if [code]delta[/code] is used consistently in physics calculations). Therefore, it is recommended not to increase [member physics/common/physics_ticks_per_second] above 240. Otherwise, the game will slow down when the rendering framerate goes below 30 FPS.
 		</member>
@@ -1697,6 +1804,7 @@
 			Another way to combat specular aliasing is to enable [member rendering/anti_aliasing/screen_space_roughness_limiter/enabled].
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses a fast post-processing dithering filter on the default screen [Viewport] to make banding significantly less visible. In some cases, the dithering pattern may be slightly noticable. Note that this will make losslessly compressed (PNG etc.) screenshots larger.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_taa" type="bool" setter="" getter="" default="false">
 			Enables Temporal Anti-Aliasing for the default screen [Viewport]. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion. Enabling TAA can make the image blurrier, which is partially counteracted by automatically using a negative mipmap LOD bias (see [member rendering/textures/default_filters/texture_mipmap_bias]).
@@ -1819,6 +1927,9 @@
 		</member>
 		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			Windows override for [member rendering/gl_compatibility/driver].
+		</member>
+		<member name="rendering/gl_compatibility/item_buffer_size" type="int" setter="" getter="" default="16384">
+			Maximum number of canvas items commands that can be drawn in a single viewport update. If more render commands are issued they will be ignored. Decreasing this limit may improve performance on bandwidth limited devices. Increase this limit if you find that not all objects are being drawn in a frame.
 		</member>
 		<member name="rendering/global_illumination/gi/use_half_resolution" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], renders [VoxelGI] and SDFGI ([member Environment.sdfgi_enabled]) buffers at halved resolution (e.g. 960×540 when the viewport size is 1920×1080). This improves performance significantly when VoxelGI or SDFGI is enabled, at the cost of artifacts that may be visible on polygon edges. The loss in quality becomes less noticeable as the viewport resolution increases. [LightmapGI] rendering is not affected by this setting.
@@ -1982,17 +2093,15 @@
 		</member>
 		<member name="rendering/renderer/rendering_method" type="String" setter="" getter="" default="&quot;forward_plus&quot;">
 			Sets the renderer that will be used by the project. Options are:
-			[b]Clustered[/b]: High-end renderer designed for Desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
-			[b]Mobile[/b]: Modern renderer designed for mobile devices. Has a lower base overhead than Clustered, but does not scale as well to large scenes with many elements.
-			[b]Compatibility[/b]: Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3/ OpenGL ES 3.0 / WebGL 2 APIs.
+			[b]Forward Plus[/b]: High-end renderer designed for Desktop devices. Has a higher base overhead, but scales well with complex scenes. Not suitable for older devices or mobile.
+			[b]Mobile[/b]: Modern renderer designed for mobile devices. Has a lower base overhead than Forward Plus, but does not scale as well to large scenes with many elements.
+			[b]GL Compatibility[/b]: Low-end renderer designed for older devices. Based on the limitations of the OpenGL 3.3/ OpenGL ES 3.0 / WebGL 2 APIs.
 		</member>
 		<member name="rendering/renderer/rendering_method.mobile" type="String" setter="" getter="" default="&quot;mobile&quot;">
 			Override for [member rendering/renderer/rendering_method] on mobile devices.
 		</member>
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
-		</member>
-		<member name="rendering/rendering_device/descriptor_pools/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
@@ -2018,6 +2127,8 @@
 		</member>
 		<member name="rendering/rendering_device/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
+		<member name="rendering/rendering_device/vulkan/max_descriptors_per_pool" type="int" setter="" getter="" default="64">
+		</member>
 		<member name="rendering/scaling_3d/fsr_sharpness" type="float" setter="" getter="" default="0.2">
 			Determines how sharp the upscaled image will be when using the FSR upscaling mode. Sharpness halves with every whole number. Values go from 0.0 (sharpest) to 2.0. Values above 2.0 won't make a visible difference.
 		</member>
@@ -2030,6 +2141,7 @@
 		<member name="rendering/shader_compiler/shader_cache/compress" type="bool" setter="" getter="" default="true">
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/enabled" type="bool" setter="" getter="" default="true">
+			Enable the shader cache, which stores compiled shaders to disk to prevent stuttering from shader compilation the next time the shader is needed.
 		</member>
 		<member name="rendering/shader_compiler/shader_cache/strip_debug" type="bool" setter="" getter="" default="false">
 		</member>
@@ -2092,6 +2204,9 @@
 		<member name="rendering/textures/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
+		</member>
+		<member name="rendering/transparent_background" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables [member Viewport.transparent_bg] on the root viewport. This allows per-pixel transparency to be effective after also enabling [member display/window/size/transparent] and [member display/window/per_pixel_transparency/allowed].
 		</member>
 		<member name="rendering/vrs/mode" type="int" setter="" getter="" default="0">
 			Set the default Variable Rate Shading (VRS) mode for the main viewport. See [member Viewport.vrs_mode] to change this at runtime, and [enum Viewport.VRSMode] for possible values.

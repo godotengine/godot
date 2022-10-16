@@ -60,8 +60,8 @@
 #include "servers/rendering/rendering_server_globals.h"
 
 void ViewportTexture::setup_local_to_scene() {
-	Node *local_scene = get_local_scene();
-	if (!local_scene) {
+	Node *loc_scene = get_local_scene();
+	if (!loc_scene) {
 		return;
 	}
 
@@ -71,7 +71,7 @@ void ViewportTexture::setup_local_to_scene() {
 
 	vp = nullptr;
 
-	Node *vpn = local_scene->get_node(path);
+	Node *vpn = loc_scene->get_node(path);
 	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
 
 	vp = Object::cast_to<Viewport>(vpn);
@@ -499,6 +499,13 @@ void Viewport::_notification(int p_what) {
 			// exit event if the change in focus results in the mouse exiting
 			// the window.
 		} break;
+
+		case NOTIFICATION_PREDELETE: {
+			if (gui_parent) {
+				gui_parent->gui.tooltip_popup = nullptr;
+				gui_parent->gui.tooltip_label = nullptr;
+			}
+		} break;
 	}
 }
 
@@ -628,19 +635,19 @@ void Viewport::_process_picking() {
 
 			PhysicsDirectSpaceState2D::ShapeResult res[64];
 			for (const CanvasLayer *E : canvas_layers) {
-				Transform2D canvas_transform;
+				Transform2D canvas_layer_transform;
 				ObjectID canvas_layer_id;
 				if (E) {
 					// A descendant CanvasLayer.
-					canvas_transform = E->get_transform();
+					canvas_layer_transform = E->get_transform();
 					canvas_layer_id = E->get_instance_id();
 				} else {
 					// This Viewport's builtin canvas.
-					canvas_transform = get_canvas_transform();
+					canvas_layer_transform = get_canvas_transform();
 					canvas_layer_id = ObjectID();
 				}
 
-				Vector2 point = canvas_transform.affine_inverse().xform(pos);
+				Vector2 point = canvas_layer_transform.affine_inverse().xform(pos);
 
 				PhysicsDirectSpaceState2D::PointParameters point_params;
 				point_params.position = point;
@@ -1155,8 +1162,6 @@ void Viewport::_gui_cancel_tooltip() {
 	}
 	if (gui.tooltip_popup) {
 		gui.tooltip_popup->queue_delete();
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
 	}
 }
 
@@ -1219,8 +1224,6 @@ void Viewport::_gui_show_tooltip() {
 	// Remove previous popup if we change something.
 	if (gui.tooltip_popup) {
 		memdelete(gui.tooltip_popup);
-		gui.tooltip_popup = nullptr;
-		gui.tooltip_label = nullptr;
 	}
 
 	if (!tooltip_owner) {
@@ -1252,6 +1255,7 @@ void Viewport::_gui_show_tooltip() {
 	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
+	panel->gui_parent = this;
 
 	gui.tooltip_popup = panel;
 
@@ -1486,7 +1490,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		gui.key_event_accepted = false;
 
 		Point2 mpos = mb->get_position();
-		gui.last_mouse_pos = mpos;
 		if (mb->is_pressed()) {
 			Size2 pos = mpos;
 			if (gui.mouse_focus_mask != MouseButton::NONE) {
@@ -1639,8 +1642,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (mm.is_valid()) {
 		gui.key_event_accepted = false;
 		Point2 mpos = mm->get_position();
-
-		gui.last_mouse_pos = mpos;
 
 		// Drag & drop.
 		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
@@ -2755,6 +2756,11 @@ void Viewport::push_input(const Ref<InputEvent> &p_event, bool p_local_coords) {
 		ev = p_event;
 	}
 
+	Ref<InputEventMouse> me = ev;
+	if (me.is_valid()) {
+		gui.last_mouse_pos = me->get_position();
+	}
+
 	if (is_embedding_subwindows() && _sub_windows_forward_input(ev)) {
 		set_input_as_handled();
 		return;
@@ -2799,7 +2805,7 @@ void Viewport::push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local
 	}
 
 	// Shortcut Input.
-	if (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr) {
+	if (Object::cast_to<InputEventKey>(*ev) != nullptr || Object::cast_to<InputEventShortcut>(*ev) != nullptr || Object::cast_to<InputEventJoypadButton>(*ev) != nullptr) {
 		get_tree()->_call_input_pause(shortcut_input_group, SceneTree::CALL_INPUT_TYPE_SHORTCUT_INPUT, ev, this);
 	}
 
@@ -4050,16 +4056,10 @@ Viewport::Viewport() {
 	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/tooltip_delay_sec", PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater")); // No negative numbers
 
 #ifndef _3D_DISABLED
-	Viewport::Scaling3DMode scaling_3d_mode = (Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode");
-	set_scaling_3d_mode(scaling_3d_mode);
-
+	set_scaling_3d_mode((Viewport::Scaling3DMode)(int)GLOBAL_GET("rendering/scaling_3d/mode"));
 	set_scaling_3d_scale(GLOBAL_GET("rendering/scaling_3d/scale"));
-
-	float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
-	set_fsr_sharpness(fsr_sharpness);
-
-	float texture_mipmap_bias = GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias");
-	set_texture_mipmap_bias(texture_mipmap_bias);
+	set_fsr_sharpness((float)GLOBAL_GET("rendering/scaling_3d/fsr_sharpness"));
+	set_texture_mipmap_bias((float)GLOBAL_GET("rendering/textures/default_filters/texture_mipmap_bias"));
 #endif // _3D_DISABLED
 
 	set_sdf_oversize(sdf_oversize); // Set to server.
@@ -4135,7 +4135,7 @@ Transform2D SubViewport::_stretch_transform() {
 	Transform2D transform = Transform2D();
 	Size2i view_size_2d_override = _get_size_2d_override();
 	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
-		Size2 scale = _get_size() / view_size_2d_override;
+		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
 		transform.scale(scale);
 	}
 

@@ -42,6 +42,7 @@
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
+#include "structures/gltf_texture_sampler.h"
 
 #include "core/templates/rb_map.h"
 #include "scene/animation/animation_player.h"
@@ -77,6 +78,8 @@ class GLTFState : public Resource {
 	String scene_name;
 	Vector<int> root_nodes;
 	Vector<Ref<GLTFTexture>> textures;
+	Vector<Ref<GLTFTextureSampler>> texture_samplers;
+	Ref<GLTFTextureSampler> default_texture_sampler;
 	Vector<Ref<Texture2D>> images;
 	Vector<String> extensions_used;
 	Vector<String> extensions_required;
@@ -148,6 +151,9 @@ public:
 
 	TypedArray<GLTFTexture> get_textures();
 	void set_textures(TypedArray<GLTFTexture> p_textures);
+
+	TypedArray<GLTFTextureSampler> get_texture_samplers();
+	void set_texture_samplers(TypedArray<GLTFTextureSampler> p_texture_samplers);
 
 	TypedArray<Texture2D> get_images();
 	void set_images(TypedArray<Texture2D> p_images);

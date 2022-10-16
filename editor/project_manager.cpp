@@ -143,7 +143,11 @@ private:
 			install_status_rect->set_texture(new_icon);
 		}
 
-		set_size(Size2(500, 0) * EDSCALE);
+		Size2i window_size = get_size();
+		Size2 contents_min_size = get_contents_minimum_size();
+		if (window_size.x < contents_min_size.x || window_size.y < contents_min_size.y) {
+			set_size(window_size.max(contents_min_size));
+		}
 	}
 
 	String _test_path() {
@@ -563,19 +567,19 @@ private:
 							Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 							da->make_dir(dir.path_join(rel_path));
 						} else {
-							Vector<uint8_t> data;
-							data.resize(info.uncompressed_size);
+							Vector<uint8_t> uncomp_data;
+							uncomp_data.resize(info.uncompressed_size);
 							String rel_path = path.substr(zip_root.length());
 
 							//read
 							unzOpenCurrentFile(pkg);
-							ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
+							ret = unzReadCurrentFile(pkg, uncomp_data.ptrw(), uncomp_data.size());
 							ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", rel_path));
 							unzCloseCurrentFile(pkg);
 
 							Ref<FileAccess> f = FileAccess::open(dir.path_join(rel_path), FileAccess::WRITE);
 							if (f.is_valid()) {
-								f->store_buffer(data.ptr(), data.size());
+								f->store_buffer(uncomp_data.ptr(), uncomp_data.size());
 							} else {
 								failed_files.push_back(rel_path);
 							}
@@ -1490,7 +1494,7 @@ void ProjectList::sort_projects() {
 	for (int i = 0; i < _projects.size(); ++i) {
 		Item &item = _projects.write[i];
 
-		bool visible = true;
+		bool item_visible = true;
 		if (!_search_term.is_empty()) {
 			String search_path;
 			if (_search_term.contains("/")) {
@@ -1502,10 +1506,10 @@ void ProjectList::sort_projects() {
 			}
 
 			// When searching, display projects whose name or path contain the search term
-			visible = item.project_name.findn(_search_term) != -1 || search_path.findn(_search_term) != -1;
+			item_visible = item.project_name.findn(_search_term) != -1 || search_path.findn(_search_term) != -1;
 		}
 
-		item.control->set_visible(visible);
+		item.control->set_visible(item_visible);
 	}
 
 	for (int i = 0; i < _projects.size(); ++i) {
@@ -2593,6 +2597,12 @@ ProjectManager::ProjectManager() {
 	DisplayServer::get_singleton()->window_set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
+
+	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
+		// Swap on means OK first.
+		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
+	}
 
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	set_theme(create_custom_theme());

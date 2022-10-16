@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  websocket_server.h                                                   */
+/*  zip_packer.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,63 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_SERVER_H
-#define WEBSOCKET_SERVER_H
+#ifndef ZIP_PACKER_H
+#define ZIP_PACKER_H
 
-#include "core/crypto/crypto.h"
+#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "websocket_multiplayer_peer.h"
-#include "websocket_peer.h"
 
-class WebSocketServer : public WebSocketMultiplayerPeer {
-	GDCLASS(WebSocketServer, WebSocketMultiplayerPeer);
-	GDCICLASS(WebSocketServer);
+#include "thirdparty/minizip/zip.h"
 
-	IPAddress bind_ip;
+class ZIPPacker : public RefCounted {
+	GDCLASS(ZIPPacker, RefCounted);
+
+	Ref<FileAccess> fa;
+	zipFile zf;
 
 protected:
 	static void _bind_methods();
 
-	Ref<CryptoKey> private_key;
-	Ref<X509Certificate> tls_cert;
-	Ref<X509Certificate> ca_chain;
-	uint32_t handshake_timeout = 3000;
-
 public:
-	virtual void set_extra_headers(const Vector<String> &p_headers) = 0;
-	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
-	virtual void stop() = 0;
-	virtual bool is_listening() const = 0;
-	virtual bool has_peer(int p_id) const = 0;
-	virtual bool is_server() const override;
-	ConnectionStatus get_connection_status() const override;
+	enum ZipAppend {
+		APPEND_CREATE = 0,
+		APPEND_CREATEAFTER = 1,
+		APPEND_ADDINZIP = 2,
+	};
 
-	virtual IPAddress get_peer_address(int p_peer_id) const = 0;
-	virtual int get_peer_port(int p_peer_id) const = 0;
-	virtual void disconnect_peer(int p_peer_id, int p_code = 1000, String p_reason = "") = 0;
+	Error open(String p_path, ZipAppend p_append);
+	Error close();
 
-	void _on_peer_packet(int32_t p_peer_id);
-	void _on_connect(int32_t p_peer_id, String p_protocol, String p_resource_name);
-	void _on_disconnect(int32_t p_peer_id, bool p_was_clean);
-	void _on_close_request(int32_t p_peer_id, int p_code, String p_reason);
+	Error start_file(String p_path);
+	Error write_file(Vector<uint8_t> p_data);
+	Error close_file();
 
-	IPAddress get_bind_ip() const;
-	void set_bind_ip(const IPAddress &p_bind_ip);
-
-	Ref<CryptoKey> get_private_key() const;
-	void set_private_key(Ref<CryptoKey> p_key);
-
-	Ref<X509Certificate> get_tls_certificate() const;
-	void set_tls_certificate(Ref<X509Certificate> p_cert);
-
-	Ref<X509Certificate> get_ca_chain() const;
-	void set_ca_chain(Ref<X509Certificate> p_ca_chain);
-
-	float get_handshake_timeout() const;
-	void set_handshake_timeout(float p_timeout);
-
-	WebSocketServer();
-	~WebSocketServer();
+	ZIPPacker();
+	~ZIPPacker();
 };
 
-#endif // WEBSOCKET_SERVER_H
+VARIANT_ENUM_CAST(ZIPPacker::ZipAppend)
+
+#endif // ZIP_PACKER_H

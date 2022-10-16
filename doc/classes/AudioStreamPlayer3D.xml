@@ -7,7 +7,7 @@
 		Plays a sound effect with directed sound effects, dampens with distance if needed, generates effect of hearable position in space. For greater realism, a low-pass filter is automatically applied to distant sounds. This can be disabled by setting [member attenuation_filter_cutoff_hz] to [code]20500[/code].
 		By default, audio is heard from the camera position. This can be changed by adding an [AudioListener3D] node to the scene and enabling it by calling [method AudioListener3D.make_current] on it.
 		See also [AudioStreamPlayer] to play a sound non-positionally.
-		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member unit_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
+		[b]Note:[/b] Hiding an [AudioStreamPlayer3D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer3D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
 	</description>
 	<tutorials>
 		<link title="Audio streams">$DOCS_URL/tutorials/audio/audio_streams.html</link>
@@ -102,11 +102,11 @@
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
 			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
 		</member>
-		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" default="0.0">
-			The base sound level unaffected by dampening, in decibels.
-		</member>
 		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="10.0">
 			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
+		</member>
+		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
+			The base sound level unaffected by dampening, in decibels.
 		</member>
 	</members>
 	<signals>

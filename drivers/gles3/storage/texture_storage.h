@@ -126,11 +126,6 @@ struct CanvasTexture {
 
 	RS::CanvasItemTextureFilter texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 	RS::CanvasItemTextureRepeat texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
-
-	Size2i size_cache = Size2i(1, 1);
-	bool use_normal_cache = false;
-	bool use_specular_cache = false;
-	bool cleared_cache = true;
 };
 
 /* CANVAS SHADOW */
@@ -327,16 +322,6 @@ private:
 };
 
 struct RenderTarget {
-	struct External {
-		GLuint fbo = 0;
-		GLuint color = 0;
-		GLuint depth = 0;
-		RID texture;
-
-		External() {
-		}
-	} external;
-
 	Point2i position = Point2i(0, 0);
 	Size2i size = Size2i(0, 0);
 	int mipmap_count = 1;
@@ -385,6 +370,38 @@ private:
 	mutable RID_Owner<Texture> texture_owner;
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
+
+	/* TEXTURE ATLAS API */
+
+	struct TextureAtlas {
+		struct Texture {
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+
+		GLuint texture = 0;
+		GLuint framebuffer = 0;
+		Size2i size;
+	} texture_atlas;
 
 	/* Render Target API */
 
@@ -488,6 +505,25 @@ public:
 	void texture_bind(RID p_texture, uint32_t p_texture_no);
 	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
 
+	/* TEXTURE ATLAS API */
+
+	void update_texture_atlas();
+
+	GLuint texture_atlas_get_texture() const;
+	_FORCE_INLINE_ Rect2 texture_atlas_get_texture_rect(RID p_texture) {
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+		if (!t) {
+			return Rect2();
+		}
+
+		return t->uv_rect;
+	}
+
+	void texture_add_to_texture_atlas(RID p_texture);
+	void texture_remove_from_texture_atlas(RID p_texture);
+	void texture_atlas_mark_dirty_on_texture(RID p_texture);
+	void texture_atlas_remove_texture(RID p_texture);
+
 	/* DECAL API */
 
 	virtual RID decal_allocate() override;
@@ -509,6 +545,12 @@ public:
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) override {}
 
+	/* DECAL INSTANCE */
+
+	virtual RID decal_instance_create(RID p_decal) override;
+	virtual void decal_instance_free(RID p_decal_instance) override;
+	virtual void decal_instance_set_transform(RID p_decal, const Transform3D &p_transform) override;
+
 	/* RENDER TARGET API */
 
 	static GLuint system_fbo;
@@ -518,17 +560,19 @@ public:
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
-	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
-	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
-	Size2i render_target_get_size(RID p_render_target);
-	virtual RID render_target_get_texture(RID p_render_target) override;
-	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) override;
 
+	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
+	virtual Point2i render_target_get_position(RID p_render_target) const override;
+	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
+	virtual Size2i render_target_get_size(RID p_render_target) const override;
 	virtual void render_target_set_transparent(RID p_render_target, bool p_is_transparent) override;
+	virtual bool render_target_get_transparent(RID p_render_target) const override;
 	virtual void render_target_set_direct_to_screen(RID p_render_target, bool p_direct_to_screen) override;
-	virtual bool render_target_was_used(RID p_render_target) override;
+	virtual bool render_target_get_direct_to_screen(RID p_render_target) const override;
+	virtual bool render_target_was_used(RID p_render_target) const override;
 	void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, RS::ViewportMSAA p_msaa) override;
+	virtual RS::ViewportMSAA render_target_get_msaa(RID p_render_target) const override;
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
@@ -548,8 +592,20 @@ public:
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);
 	void render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region);
-	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override{};
-	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override{};
+
+	virtual void render_target_set_vrs_mode(RID p_render_target, RS::ViewportVRSMode p_mode) override {}
+	virtual RS::ViewportVRSMode render_target_get_vrs_mode(RID p_render_target) const override { return RS::VIEWPORT_VRS_DISABLED; }
+	virtual void render_target_set_vrs_texture(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_vrs_texture(RID p_render_target) const override { return RID(); }
+
+	virtual void render_target_set_override_color(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_override_color(RID p_render_target) const override { return RID(); }
+	virtual void render_target_set_override_depth(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_override_depth(RID p_render_target) const override { return RID(); }
+	virtual void render_target_set_override_velocity(RID p_render_target, RID p_texture) override {}
+	virtual RID render_target_get_override_velocity(RID p_render_target) const override { return RID(); }
+
+	virtual RID render_target_get_texture(RID p_render_target) override;
 
 	void bind_framebuffer(GLuint framebuffer) {
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);

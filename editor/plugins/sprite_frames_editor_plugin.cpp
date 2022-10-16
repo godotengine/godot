@@ -414,16 +414,16 @@ void SpriteFramesEditor::_notification(int p_what) {
 			load_sheet->set_icon(get_theme_icon(SNAME("SpriteSheet"), SNAME("EditorIcons")));
 			copy->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			paste->set_icon(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")));
-			empty->set_icon(get_theme_icon(SNAME("InsertBefore"), SNAME("EditorIcons")));
-			empty2->set_icon(get_theme_icon(SNAME("InsertAfter"), SNAME("EditorIcons")));
+			empty_before->set_icon(get_theme_icon(SNAME("InsertBefore"), SNAME("EditorIcons")));
+			empty_after->set_icon(get_theme_icon(SNAME("InsertAfter"), SNAME("EditorIcons")));
 			move_up->set_icon(get_theme_icon(SNAME("MoveLeft"), SNAME("EditorIcons")));
 			move_down->set_icon(get_theme_icon(SNAME("MoveRight"), SNAME("EditorIcons")));
-			_delete->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			delete_frame->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
-			new_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
-			remove_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
+			add_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			delete_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			split_sheet_zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
@@ -1016,19 +1016,19 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 		hide();
 	}
 
-	new_anim->set_disabled(read_only);
-	remove_anim->set_disabled(read_only);
+	add_anim->set_disabled(read_only);
+	delete_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
 	load->set_disabled(read_only);
 	load_sheet->set_disabled(read_only);
 	copy->set_disabled(read_only);
 	paste->set_disabled(read_only);
-	empty->set_disabled(read_only);
-	empty2->set_disabled(read_only);
+	empty_before->set_disabled(read_only);
+	empty_after->set_disabled(read_only);
 	move_up->set_disabled(read_only);
 	move_down->set_disabled(read_only);
-	_delete->set_disabled(read_only);
+	delete_frame->set_disabled(read_only);
 }
 
 void SpriteFramesEditor::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
@@ -1095,8 +1095,8 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 		}
 
 		for (int i = 0; i < files.size(); i++) {
-			String file = files[i];
-			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			String f = files[i];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(f);
 
 			if (!ClassDB::is_parent_class(ftype, "Texture2D")) {
 				return false;
@@ -1187,18 +1187,16 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	HBoxContainer *hbc_animlist = memnew(HBoxContainer);
 	sub_vb->add_child(hbc_animlist);
 
-	new_anim = memnew(Button);
-	new_anim->set_flat(true);
-	new_anim->set_tooltip_text(TTR("New Animation"));
-	hbc_animlist->add_child(new_anim);
-	new_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
+	add_anim = memnew(Button);
+	add_anim->set_flat(true);
+	hbc_animlist->add_child(add_anim);
+	add_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
 
-	remove_anim = memnew(Button);
-	remove_anim->set_flat(true);
-	remove_anim->set_tooltip_text(TTR("Remove Animation"));
-	hbc_animlist->add_child(remove_anim);
-	remove_anim->set_disabled(true);
-	remove_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
+	delete_anim = memnew(Button);
+	delete_anim->set_flat(true);
+	hbc_animlist->add_child(delete_anim);
+	delete_anim->set_disabled(true);
+	delete_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
 	anim_search_box = memnew(LineEdit);
 	hbc_animlist->add_child(anim_search_box);
@@ -1214,6 +1212,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_select));
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
 	animations->set_allow_reselect(true);
+
+	add_anim->set_shortcut_context(animations);
+	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTR("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+	delete_anim->set_shortcut_context(animations);
+	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
 
 	HBoxContainer *hbc_anim_speed = memnew(HBoxContainer);
 	hbc_anim_speed->add_child(memnew(Label(TTR("Speed:"))));
@@ -1244,54 +1247,45 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	load = memnew(Button);
 	load->set_flat(true);
-	load->set_tooltip_text(TTR("Add a Texture from File"));
 	hbc->add_child(load);
 
 	load_sheet = memnew(Button);
 	load_sheet->set_flat(true);
-	load_sheet->set_tooltip_text(TTR("Add Frames from a Sprite Sheet"));
 	hbc->add_child(load_sheet);
 
 	hbc->add_child(memnew(VSeparator));
 
 	copy = memnew(Button);
 	copy->set_flat(true);
-	copy->set_tooltip_text(TTR("Copy"));
 	hbc->add_child(copy);
 
 	paste = memnew(Button);
 	paste->set_flat(true);
-	paste->set_tooltip_text(TTR("Paste"));
 	hbc->add_child(paste);
 
 	hbc->add_child(memnew(VSeparator));
 
-	empty = memnew(Button);
-	empty->set_flat(true);
-	empty->set_tooltip_text(TTR("Insert Empty (Before)"));
-	hbc->add_child(empty);
+	empty_before = memnew(Button);
+	empty_before->set_flat(true);
+	hbc->add_child(empty_before);
 
-	empty2 = memnew(Button);
-	empty2->set_flat(true);
-	empty2->set_tooltip_text(TTR("Insert Empty (After)"));
-	hbc->add_child(empty2);
+	empty_after = memnew(Button);
+	empty_after->set_flat(true);
+	hbc->add_child(empty_after);
 
 	hbc->add_child(memnew(VSeparator));
 
 	move_up = memnew(Button);
 	move_up->set_flat(true);
-	move_up->set_tooltip_text(TTR("Move (Before)"));
 	hbc->add_child(move_up);
 
 	move_down = memnew(Button);
 	move_down->set_flat(true);
-	move_down->set_tooltip_text(TTR("Move (After)"));
 	hbc->add_child(move_down);
 
-	_delete = memnew(Button);
-	_delete->set_flat(true);
-	_delete->set_tooltip_text(TTR("Delete"));
-	hbc->add_child(_delete);
+	delete_frame = memnew(Button);
+	delete_frame->set_flat(true);
+	hbc->add_child(delete_frame);
 
 	hbc->add_spacer();
 
@@ -1333,13 +1327,40 @@ SpriteFramesEditor::SpriteFramesEditor() {
 
 	load->connect("pressed", callable_mp(this, &SpriteFramesEditor::_load_pressed));
 	load_sheet->connect("pressed", callable_mp(this, &SpriteFramesEditor::_open_sprite_sheet));
-	_delete->connect("pressed", callable_mp(this, &SpriteFramesEditor::_delete_pressed));
+	delete_frame->connect("pressed", callable_mp(this, &SpriteFramesEditor::_delete_pressed));
 	copy->connect("pressed", callable_mp(this, &SpriteFramesEditor::_copy_pressed));
 	paste->connect("pressed", callable_mp(this, &SpriteFramesEditor::_paste_pressed));
-	empty->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty_pressed));
-	empty2->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty2_pressed));
+	empty_before->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty_pressed));
+	empty_after->connect("pressed", callable_mp(this, &SpriteFramesEditor::_empty2_pressed));
 	move_up->connect("pressed", callable_mp(this, &SpriteFramesEditor::_up_pressed));
 	move_down->connect("pressed", callable_mp(this, &SpriteFramesEditor::_down_pressed));
+
+	load->set_shortcut_context(tree);
+	load->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_file", TTR("Add frame from file"), KeyModifierMask::CMD_OR_CTRL | Key::O));
+	load_sheet->set_shortcut_context(tree);
+	load_sheet->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_sheet", TTR("Add frames from sprite sheet"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O));
+	delete_frame->set_shortcut_context(tree);
+	delete_frame->set_shortcut(ED_SHORTCUT("sprite_frames/delete", TTR("Delete Frame"), Key::KEY_DELETE));
+	copy->set_shortcut_context(tree);
+	copy->set_shortcut(ED_SHORTCUT("sprite_frames/copy", TTR("Copy Frame"), KeyModifierMask::CMD_OR_CTRL | Key::C));
+	paste->set_shortcut_context(tree);
+	paste->set_shortcut(ED_SHORTCUT("sprite_frames/paste", TTR("Paste Frame"), KeyModifierMask::CMD_OR_CTRL | Key::V));
+	empty_before->set_shortcut_context(tree);
+	empty_before->set_shortcut(ED_SHORTCUT("sprite_frames/empty_before", TTR("Insert Empty (Before Selected)"), KeyModifierMask::ALT | Key::LEFT));
+	empty_after->set_shortcut_context(tree);
+	empty_after->set_shortcut(ED_SHORTCUT("sprite_frames/empty_after", TTR("Insert Empty (After Selected)"), KeyModifierMask::ALT | Key::RIGHT));
+	move_up->set_shortcut_context(tree);
+	move_up->set_shortcut(ED_SHORTCUT("sprite_frames/move_left", TTR("Move Frame Left"), KeyModifierMask::CMD_OR_CTRL | Key::LEFT));
+	move_down->set_shortcut_context(tree);
+	move_down->set_shortcut(ED_SHORTCUT("sprite_frames/move_right", TTR("Move Frame Right"), KeyModifierMask::CMD_OR_CTRL | Key::RIGHT));
+
+	zoom_out->set_shortcut_context(tree);
+	zoom_out->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_out", TTR("Zoom Out"),
+			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
+	zoom_in->set_shortcut_context(tree);
+	zoom_in->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_in", TTR("Zoom In"),
+			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
+
 	file->connect("files_selected", callable_mp(this, &SpriteFramesEditor::_file_load_request).bind(-1));
 	loading_scene = false;
 	sel = -1;

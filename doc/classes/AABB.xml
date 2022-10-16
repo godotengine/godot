@@ -205,6 +205,12 @@
 				Returns [code]true[/code] if this [AABB] and [param aabb] are approximately equal, by calling [method @GlobalScope.is_equal_approx] on each component.
 			</description>
 		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [AABB] is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
 		<method name="merge" qualifiers="const">
 			<return type="AABB" />
 			<param index="0" name="with" type="AABB" />

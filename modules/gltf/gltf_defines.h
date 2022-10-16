@@ -58,6 +58,7 @@ class GLTFSkin;
 class GLTFSpecGloss;
 class GLTFState;
 class GLTFTexture;
+class GLTFTextureSampler;
 
 // GLTF index aliases.
 using GLTFAccessorIndex = int;
@@ -73,6 +74,7 @@ using GLTFNodeIndex = int;
 using GLTFSkeletonIndex = int;
 using GLTFSkinIndex = int;
 using GLTFTextureIndex = int;
+using GLTFTextureSamplerIndex = int;
 
 enum GLTFType {
 	TYPE_SCALAR,

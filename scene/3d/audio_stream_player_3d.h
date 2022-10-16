@@ -71,7 +71,7 @@ private:
 	SafeNumeric<float> setplay{ -1.0 };
 
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
-	float unit_db = 0.0;
+	float volume_db = 0.0;
 	float unit_size = 10.0;
 	float max_db = 3.0;
 	float pitch_scale = 1.0;
@@ -128,8 +128,8 @@ public:
 	void set_stream(Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_stream() const;
 
-	void set_unit_db(float p_volume);
-	float get_unit_db() const;
+	void set_volume_db(float p_volume);
+	float get_volume_db() const;
 
 	void set_unit_size(float p_volume);
 	float get_unit_size() const;

@@ -262,10 +262,10 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		node->add_theme_color_override("resizer_color", c);
 	}
 
-	List<AnimationNodeBlendTree::NodeConnection> connections;
-	blend_tree->get_node_connections(&connections);
+	List<AnimationNodeBlendTree::NodeConnection> node_connections;
+	blend_tree->get_node_connections(&node_connections);
 
-	for (const AnimationNodeBlendTree::NodeConnection &E : connections) {
+	for (const AnimationNodeBlendTree::NodeConnection &E : node_connections) {
 		StringName from = E.output_node;
 		StringName to = E.input_node;
 		int to_idx = E.input_index;
@@ -293,9 +293,9 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 
 	if (p_idx == MENU_LOAD_FILE) {
 		open_file->clear_filters();
-		List<String> filters;
-		ResourceLoader::get_recognized_extensions_for_type("AnimationNode", &filters);
-		for (const String &E : filters) {
+		List<String> ext_filters;
+		ResourceLoader::get_recognized_extensions_for_type("AnimationNode", &ext_filters);
+		for (const String &E : ext_filters) {
 			open_file->add_filter("*." + E);
 		}
 		open_file->popup_file_dialog();
@@ -611,10 +611,10 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 	HashSet<String> paths;
 	HashMap<String, RBSet<String>> types;
 	{
-		List<StringName> animations;
-		player->get_animation_list(&animations);
+		List<StringName> animation_list;
+		player->get_animation_list(&animation_list);
 
-		for (const StringName &E : animations) {
+		for (const StringName &E : animation_list) {
 			Ref<Animation> anim = player->get_animation(E);
 			for (int i = 0; i < anim->get_track_count(); i++) {
 				String track_path = anim->track_get_path(i);
@@ -970,10 +970,10 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	//recreate connections
 	graph->clear_connections();
 
-	List<AnimationNodeBlendTree::NodeConnection> connections;
-	blend_tree->get_node_connections(&connections);
+	List<AnimationNodeBlendTree::NodeConnection> node_connections;
+	blend_tree->get_node_connections(&node_connections);
 
-	for (const AnimationNodeBlendTree::NodeConnection &E : connections) {
+	for (const AnimationNodeBlendTree::NodeConnection &E : node_connections) {
 		StringName from = E.output_node;
 		StringName to = E.input_node;
 		int to_idx = E.input_index;

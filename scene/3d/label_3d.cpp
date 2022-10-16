@@ -283,14 +283,14 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 		return Ref<TriangleMesh>();
 	}
 
-	real_t pixel_size = get_pixel_size();
+	real_t px_size = get_pixel_size();
 
 	Vector2 vertices[4] = {
 
-		(final_rect.position + Vector2(0, -final_rect.size.y)) * pixel_size,
-		(final_rect.position + Vector2(final_rect.size.x, -final_rect.size.y)) * pixel_size,
-		(final_rect.position + Vector2(final_rect.size.x, 0)) * pixel_size,
-		final_rect.position * pixel_size,
+		(final_rect.position + Vector2(0, -final_rect.size.y)) * px_size,
+		(final_rect.position + Vector2(final_rect.size.x, -final_rect.size.y)) * px_size,
+		(final_rect.position + Vector2(final_rect.size.x, 0)) * px_size,
+		final_rect.position * px_size,
 
 	};
 
@@ -436,17 +436,17 @@ void Label3D::_shape() {
 		TS->shaped_text_clear(text_rid);
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
-		String text = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, text, font->get_rids(), font_size, font->get_opentype_features(), language);
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
 		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
 		}
 
 		TypedArray<Vector2i> stt;
 		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
-			GDVIRTUAL_CALL(_structured_text_parser, st_args, text, stt);
+			GDVIRTUAL_CALL(_structured_text_parser, st_args, txt, stt);
 		} else {
-			stt = TS->parse_structured_text(st_parser, st_args, text);
+			stt = TS->parse_structured_text(st_parser, st_args, txt);
 		}
 		TS->shaped_text_set_bidi_override(text_rid, stt);
 

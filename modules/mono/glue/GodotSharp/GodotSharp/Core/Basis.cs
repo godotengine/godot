@@ -4,6 +4,21 @@ using System.Runtime.InteropServices;
 namespace Godot
 {
     /// <summary>
+    /// Specifies which order Euler angle rotations should be in.
+    /// When composing, the order is the same as the letters. When decomposing,
+    /// the order is reversed (ex: YXZ decomposes Z first, then X, and Y last).
+    /// </summary>
+    public enum EulerOrder
+    {
+        XYZ,
+        XZY,
+        YXZ,
+        YZX,
+        ZXY,
+        ZYX
+    };
+
+    /// <summary>
     /// 3×3 matrix used for 3D rotation and scale.
     /// Almost always used as an orthogonal basis for a Transform.
     ///
@@ -244,50 +259,258 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the basis's rotation in the form of Euler angles
-        /// (in the YXZ convention: when *decomposing*, first Z, then X, and Y last).
-        /// The returned vector contains the rotation angles in
-        /// the format (X angle, Y angle, Z angle).
+        /// Returns the basis's rotation in the form of Euler angles.
+        /// The Euler order depends on the [param order] parameter,
+        /// by default it uses the YXZ convention: when decomposing,
+        /// first Z, then X, and Y last. The returned vector contains
+        /// the rotation angles in the format (X angle, Y angle, Z angle).
         ///
         /// Consider using the <see cref="GetRotationQuaternion"/> method instead, which
         /// returns a <see cref="Quaternion"/> quaternion instead of Euler angles.
         /// </summary>
+        /// <param name="order">The Euler order to use. By default, use YXZ order (most common).</param>
         /// <returns>A <see cref="Vector3"/> representing the basis rotation in Euler angles.</returns>
-        public Vector3 GetEuler()
+        public Vector3 GetEuler(EulerOrder order = EulerOrder.YXZ)
         {
-            Basis m = Orthonormalized();
-
-            Vector3 euler;
-            euler.z = 0.0f;
-
-            real_t mzy = m.Row1[2];
-
-            if (mzy < 1.0f)
+            switch (order)
             {
-                if (mzy > -1.0f)
+                case EulerOrder.XYZ:
                 {
-                    euler.x = Mathf.Asin(-mzy);
-                    euler.y = Mathf.Atan2(m.Row0[2], m.Row2[2]);
-                    euler.z = Mathf.Atan2(m.Row1[0], m.Row1[1]);
+                    // Euler angles in XYZ convention.
+                    // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+                    //
+                    // rot =  cy*cz          -cy*sz           sy
+                    //        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+                    //       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
+                    Vector3 euler;
+                    real_t sy = Row0[2];
+                    if (sy < (1.0f - Mathf.Epsilon))
+                    {
+                        if (sy > -(1.0f - Mathf.Epsilon))
+                        {
+                            // is this a pure Y rotation?
+                            if (Row1[0] == 0 && Row0[1] == 0 && Row1[2] == 0 && Row2[1] == 0 && Row1[1] == 1)
+                            {
+                                // return the simplest form (human friendlier in editor and scripts)
+                                euler.x = 0;
+                                euler.y = Mathf.Atan2(Row0[2], Row0[0]);
+                                euler.z = 0;
+                            }
+                            else
+                            {
+                                euler.x = Mathf.Atan2(-Row1[2], Row2[2]);
+                                euler.y = Mathf.Asin(sy);
+                                euler.z = Mathf.Atan2(-Row0[1], Row0[0]);
+                            }
+                        }
+                        else
+                        {
+                            euler.x = Mathf.Atan2(Row2[1], Row1[1]);
+                            euler.y = -Mathf.Tau / 4.0f;
+                            euler.z = 0.0f;
+                        }
+                    }
+                    else
+                    {
+                        euler.x = Mathf.Atan2(Row2[1], Row1[1]);
+                        euler.y = Mathf.Tau / 4.0f;
+                        euler.z = 0.0f;
+                    }
+                    return euler;
                 }
-                else
+                case EulerOrder.XZY:
                 {
-                    euler.x = Mathf.Pi * 0.5f;
-                    euler.y = -Mathf.Atan2(-m.Row0[1], m.Row0[0]);
+                    // Euler angles in XZY convention.
+                    // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+                    //
+                    // rot =  cz*cy             -sz             cz*sy
+                    //        sx*sy+cx*cy*sz    cx*cz           cx*sz*sy-cy*sx
+                    //        cy*sx*sz          cz*sx           cx*cy+sx*sz*sy
+                    Vector3 euler;
+                    real_t sz = Row0[1];
+                    if (sz < (1.0f - Mathf.Epsilon))
+                    {
+                        if (sz > -(1.0f - Mathf.Epsilon))
+                        {
+                            euler.x = Mathf.Atan2(Row2[1], Row1[1]);
+                            euler.y = Mathf.Atan2(Row0[2], Row0[0]);
+                            euler.z = Mathf.Asin(-sz);
+                        }
+                        else
+                        {
+                            // It's -1
+                            euler.x = -Mathf.Atan2(Row1[2], Row2[2]);
+                            euler.y = 0.0f;
+                            euler.z = Mathf.Tau / 4.0f;
+                        }
+                    }
+                    else
+                    {
+                        // It's 1
+                        euler.x = -Mathf.Atan2(Row1[2], Row2[2]);
+                        euler.y = 0.0f;
+                        euler.z = -Mathf.Tau / 4.0f;
+                    }
+                    return euler;
                 }
-            }
-            else
-            {
-                euler.x = -Mathf.Pi * 0.5f;
-                euler.y = -Mathf.Atan2(-m.Row0[1], m.Row0[0]);
-            }
+                case EulerOrder.YXZ:
+                {
+                    // Euler angles in YXZ convention.
+                    // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+                    //
+                    // rot =  cy*cz+sy*sx*sz    cz*sy*sx-cy*sz        cx*sy
+                    //        cx*sz             cx*cz                 -sx
+                    //        cy*sx*sz-cz*sy    cy*cz*sx+sy*sz        cy*cx
+                    Vector3 euler;
+                    real_t m12 = Row1[2];
+                    if (m12 < (1 - Mathf.Epsilon))
+                    {
+                        if (m12 > -(1 - Mathf.Epsilon))
+                        {
+                            // is this a pure X rotation?
+                            if (Row1[0] == 0 && Row0[1] == 0 && Row0[2] == 0 && Row2[0] == 0 && Row0[0] == 1)
+                            {
+                                // return the simplest form (human friendlier in editor and scripts)
+                                euler.x = Mathf.Atan2(-m12, Row1[1]);
+                                euler.y = 0;
+                                euler.z = 0;
+                            }
+                            else
+                            {
+                                euler.x = Mathf.Asin(-m12);
+                                euler.y = Mathf.Atan2(Row0[2], Row2[2]);
+                                euler.z = Mathf.Atan2(Row1[0], Row1[1]);
+                            }
+                        }
+                        else
+                        { // m12 == -1
+                            euler.x = Mathf.Tau / 4.0f;
+                            euler.y = Mathf.Atan2(Row0[1], Row0[0]);
+                            euler.z = 0;
+                        }
+                    }
+                    else
+                    { // m12 == 1
+                        euler.x = -Mathf.Tau / 4.0f;
+                        euler.y = -Mathf.Atan2(Row0[1], Row0[0]);
+                        euler.z = 0;
+                    }
 
-            return euler;
+                    return euler;
+                }
+                case EulerOrder.YZX:
+                {
+                    // Euler angles in YZX convention.
+                    // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+                    //
+                    // rot =  cy*cz             sy*sx-cy*cx*sz     cx*sy+cy*sz*sx
+                    //        sz                cz*cx              -cz*sx
+                    //        -cz*sy            cy*sx+cx*sy*sz     cy*cx-sy*sz*sx
+                    Vector3 euler;
+                    real_t sz = Row1[0];
+                    if (sz < (1.0f - Mathf.Epsilon))
+                    {
+                        if (sz > -(1.0f - Mathf.Epsilon))
+                        {
+                            euler.x = Mathf.Atan2(-Row1[2], Row1[1]);
+                            euler.y = Mathf.Atan2(-Row2[0], Row0[0]);
+                            euler.z = Mathf.Asin(sz);
+                        }
+                        else
+                        {
+                            // It's -1
+                            euler.x = Mathf.Atan2(Row2[1], Row2[2]);
+                            euler.y = 0.0f;
+                            euler.z = -Mathf.Tau / 4.0f;
+                        }
+                    }
+                    else
+                    {
+                        // It's 1
+                        euler.x = Mathf.Atan2(Row2[1], Row2[2]);
+                        euler.y = 0.0f;
+                        euler.z = Mathf.Tau / 4.0f;
+                    }
+                    return euler;
+                }
+                case EulerOrder.ZXY:
+                {
+                    // Euler angles in ZXY convention.
+                    // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+                    //
+                    // rot =  cz*cy-sz*sx*sy    -cx*sz                cz*sy+cy*sz*sx
+                    //        cy*sz+cz*sx*sy    cz*cx                 sz*sy-cz*cy*sx
+                    //        -cx*sy            sx                    cx*cy
+                    Vector3 euler;
+                    real_t sx = Row2[1];
+                    if (sx < (1.0f - Mathf.Epsilon))
+                    {
+                        if (sx > -(1.0f - Mathf.Epsilon))
+                        {
+                            euler.x = Mathf.Asin(sx);
+                            euler.y = Mathf.Atan2(-Row2[0], Row2[2]);
+                            euler.z = Mathf.Atan2(-Row0[1], Row1[1]);
+                        }
+                        else
+                        {
+                            // It's -1
+                            euler.x = -Mathf.Tau / 4.0f;
+                            euler.y = Mathf.Atan2(Row0[2], Row0[0]);
+                            euler.z = 0;
+                        }
+                    }
+                    else
+                    {
+                        // It's 1
+                        euler.x = Mathf.Tau / 4.0f;
+                        euler.y = Mathf.Atan2(Row0[2], Row0[0]);
+                        euler.z = 0;
+                    }
+                    return euler;
+                }
+                case EulerOrder.ZYX:
+                {
+                    // Euler angles in ZYX convention.
+                    // See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
+                    //
+                    // rot =  cz*cy             cz*sy*sx-cx*sz        sz*sx+cz*cx*cy
+                    //        cy*sz             cz*cx+sz*sy*sx        cx*sz*sy-cz*sx
+                    //        -sy               cy*sx                 cy*cx
+                    Vector3 euler;
+                    real_t sy = Row2[0];
+                    if (sy < (1.0f - Mathf.Epsilon))
+                    {
+                        if (sy > -(1.0f - Mathf.Epsilon))
+                        {
+                            euler.x = Mathf.Atan2(Row2[1], Row2[2]);
+                            euler.y = Mathf.Asin(-sy);
+                            euler.z = Mathf.Atan2(Row1[0], Row0[0]);
+                        }
+                        else
+                        {
+                            // It's -1
+                            euler.x = 0;
+                            euler.y = Mathf.Tau / 4.0f;
+                            euler.z = -Mathf.Atan2(Row0[1], Row1[1]);
+                        }
+                    }
+                    else
+                    {
+                        // It's 1
+                        euler.x = 0;
+                        euler.y = -Mathf.Tau / 4.0f;
+                        euler.z = -Mathf.Atan2(Row0[1], Row1[1]);
+                    }
+                    return euler;
+                }
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(order));
+            }
         }
 
         /// <summary>
         /// Returns the basis's rotation in the form of a quaternion.
-        /// See <see cref="GetEuler()"/> if you need Euler angles, but keep in
+        /// See <see cref="GetEuler"/> if you need Euler angles, but keep in
         /// mind that quaternions should generally be preferred to Euler angles.
         /// </summary>
         /// <returns>A <see cref="Quaternion"/> representing the basis's rotation.</returns>
@@ -712,35 +935,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a pure rotation basis matrix from the given Euler angles
-        /// (in the YXZ convention: when *composing*, first Y, then X, and Z last),
-        /// given in the vector format as (X angle, Y angle, Z angle).
-        ///
-        /// Consider using the <see cref="Basis(Quaternion)"/> constructor instead, which
-        /// uses a <see cref="Quaternion"/> quaternion instead of Euler angles.
-        /// </summary>
-        /// <param name="eulerYXZ">The Euler angles to create the basis from.</param>
-        public Basis(Vector3 eulerYXZ)
-        {
-            real_t c;
-            real_t s;
-
-            c = Mathf.Cos(eulerYXZ.x);
-            s = Mathf.Sin(eulerYXZ.x);
-            var xmat = new Basis(1, 0, 0, 0, c, -s, 0, s, c);
-
-            c = Mathf.Cos(eulerYXZ.y);
-            s = Mathf.Sin(eulerYXZ.y);
-            var ymat = new Basis(c, 0, s, 0, 1, 0, -s, 0, c);
-
-            c = Mathf.Cos(eulerYXZ.z);
-            s = Mathf.Sin(eulerYXZ.z);
-            var zmat = new Basis(c, -s, 0, s, c, 0, 0, 0, 1);
-
-            this = ymat * xmat * zmat;
-        }
-
-        /// <summary>
         /// Constructs a pure rotation basis matrix, rotated around the given <paramref name="axis"/>
         /// by <paramref name="angle"/> (in radians). The axis must be a normalized vector.
         /// </summary>
@@ -797,6 +991,46 @@ namespace Godot
             Row0 = new Vector3(xx, yx, zx);
             Row1 = new Vector3(xy, yy, zy);
             Row2 = new Vector3(xz, yz, zz);
+        }
+
+        /// <summary>
+        /// Constructs a Basis matrix from Euler angles in the specified rotation order. By default, use YXZ order (most common).
+        /// </summary>
+        /// <param name="euler">The Euler angles to use.</param>
+        /// <param name="order">The order to compose the Euler angles.</param>
+        public static Basis FromEuler(Vector3 euler, EulerOrder order = EulerOrder.YXZ)
+        {
+            real_t c, s;
+
+            c = Mathf.Cos(euler.x);
+            s = Mathf.Sin(euler.x);
+            Basis xmat = new Basis(new Vector3(1, 0, 0), new Vector3(0, c, s), new Vector3(0, -s, c));
+
+            c = Mathf.Cos(euler.y);
+            s = Mathf.Sin(euler.y);
+            Basis ymat = new Basis(new Vector3(c, 0, -s), new Vector3(0, 1, 0), new Vector3(s, 0, c));
+
+            c = Mathf.Cos(euler.z);
+            s = Mathf.Sin(euler.z);
+            Basis zmat = new Basis(new Vector3(c, s, 0), new Vector3(-s, c, 0), new Vector3(0, 0, 1));
+
+            switch (order)
+            {
+                case EulerOrder.XYZ:
+                    return xmat * ymat * zmat;
+                case EulerOrder.XZY:
+                    return xmat * zmat * ymat;
+                case EulerOrder.YXZ:
+                    return ymat * xmat * zmat;
+                case EulerOrder.YZX:
+                    return ymat * zmat * xmat;
+                case EulerOrder.ZXY:
+                    return zmat * xmat * ymat;
+                case EulerOrder.ZYX:
+                    return zmat * ymat * xmat;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(order));
+            }
         }
 
         /// <summary>

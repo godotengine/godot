@@ -30,8 +30,6 @@
 
 #include "geometry_3d.h"
 
-#include "core/string/print_string.h"
-
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/polypartition.h"
 
@@ -143,21 +141,21 @@ real_t Geometry3D::get_closest_distance_between_segments(const Vector3 &p_p0, co
 void Geometry3D::MeshData::optimize_vertices() {
 	HashMap<int, int> vtx_remap;
 
-	for (int i = 0; i < faces.size(); i++) {
-		for (int j = 0; j < faces[i].indices.size(); j++) {
+	for (uint32_t i = 0; i < faces.size(); i++) {
+		for (uint32_t j = 0; j < faces[i].indices.size(); j++) {
 			int idx = faces[i].indices[j];
 			if (!vtx_remap.has(idx)) {
 				int ni = vtx_remap.size();
 				vtx_remap[idx] = ni;
 			}
 
-			faces.write[i].indices.write[j] = vtx_remap[idx];
+			faces[i].indices[j] = vtx_remap[idx];
 		}
 	}
 
-	for (int i = 0; i < edges.size(); i++) {
-		int a = edges[i].a;
-		int b = edges[i].b;
+	for (uint32_t i = 0; i < edges.size(); i++) {
+		int a = edges[i].vertex_a;
+		int b = edges[i].vertex_b;
 
 		if (!vtx_remap.has(a)) {
 			int ni = vtx_remap.size();
@@ -168,16 +166,16 @@ void Geometry3D::MeshData::optimize_vertices() {
 			vtx_remap[b] = ni;
 		}
 
-		edges.write[i].a = vtx_remap[a];
-		edges.write[i].b = vtx_remap[b];
+		edges[i].vertex_a = vtx_remap[a];
+		edges[i].vertex_b = vtx_remap[b];
 	}
 
-	Vector<Vector3> new_vertices;
+	LocalVector<Vector3> new_vertices;
 	new_vertices.resize(vtx_remap.size());
 
-	for (int i = 0; i < vertices.size(); i++) {
+	for (uint32_t i = 0; i < vertices.size(); i++) {
 		if (vtx_remap.has(i)) {
-			new_vertices.write[vtx_remap[i]] = vertices[i];
+			new_vertices[vtx_remap[i]] = vertices[i];
 		}
 	}
 	vertices = new_vertices;
@@ -753,7 +751,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		Vector3 center = p.center();
 
 		// make a quad clockwise
-		Vector<Vector3> vertices = {
+		LocalVector<Vector3> vertices = {
 			center - up * subplane_size + right * subplane_size,
 			center - up * subplane_size - right * subplane_size,
 			center + up * subplane_size - right * subplane_size,
@@ -765,7 +763,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 				continue;
 			}
 
-			Vector<Vector3> new_vertices;
+			LocalVector<Vector3> new_vertices;
 			Plane clip = p_planes[j];
 
 			if (clip.normal.dot(p.normal) > 0.95f) {
@@ -776,7 +774,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 				break;
 			}
 
-			for (int k = 0; k < vertices.size(); k++) {
+			for (uint32_t k = 0; k < vertices.size(); k++) {
 				int k_n = (k + 1) % vertices.size();
 
 				Vector3 edge0_A = vertices[k];
@@ -818,9 +816,9 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		MeshData::Face face;
 
 		// Add face indices.
-		for (int j = 0; j < vertices.size(); j++) {
+		for (uint32_t j = 0; j < vertices.size(); j++) {
 			int idx = -1;
-			for (int k = 0; k < mesh.vertices.size(); k++) {
+			for (uint32_t k = 0; k < mesh.vertices.size(); k++) {
 				if (mesh.vertices[k].distance_to(vertices[j]) < 0.001f) {
 					idx = k;
 					break;
@@ -839,28 +837,34 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 		// Add edge.
 
-		for (int j = 0; j < face.indices.size(); j++) {
+		for (uint32_t j = 0; j < face.indices.size(); j++) {
 			int a = face.indices[j];
 			int b = face.indices[(j + 1) % face.indices.size()];
 
 			bool found = false;
-			for (int k = 0; k < mesh.edges.size(); k++) {
-				if (mesh.edges[k].a == a && mesh.edges[k].b == b) {
+			int found_idx = -1;
+			for (uint32_t k = 0; k < mesh.edges.size(); k++) {
+				if (mesh.edges[k].vertex_a == a && mesh.edges[k].vertex_b == b) {
 					found = true;
+					found_idx = k;
 					break;
 				}
-				if (mesh.edges[k].b == a && mesh.edges[k].a == b) {
+				if (mesh.edges[k].vertex_b == a && mesh.edges[k].vertex_a == b) {
 					found = true;
+					found_idx = k;
 					break;
 				}
 			}
 
 			if (found) {
+				mesh.edges[found_idx].face_b = j;
 				continue;
 			}
 			MeshData::Edge edge;
-			edge.a = a;
-			edge.b = b;
+			edge.vertex_a = a;
+			edge.vertex_b = b;
+			edge.face_a = j;
+			edge.face_b = -1;
 			mesh.edges.push_back(edge);
 		}
 	}

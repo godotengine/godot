@@ -29,8 +29,13 @@ allprojects {
 
 ext {
     supportedAbis = ["arm32", "arm64", "x86_32", "x86_64"]
-    supportedTargetsMap = [release: "release", dev: "debug", debug: "release_debug"]
     supportedFlavors = ["editor", "template"]
+    supportedFlavorsBuildTypes = [
+        // The editor can't be used with target=release as debugging tools are then not
+        // included, and it would crash on errors instead of reporting them.
+        "editor": ["dev", "debug"],
+        "template": ["dev", "debug", "release"]
+    ]
 
     // Used by gradle to specify which architecture to build for by default when running
     // `./gradlew build` (this command is usually used by Android Studio).
@@ -88,7 +93,7 @@ task copyDebugAARToAppModule(type: Copy) {
     dependsOn ':lib:assembleTemplateDebug'
     from('lib/build/outputs/aar')
     into('app/libs/debug')
-    include('godot-lib.debug.aar')
+    include('godot-lib.template_debug.aar')
 }
 
 /**
@@ -99,7 +104,7 @@ task copyDebugAARToBin(type: Copy) {
     dependsOn ':lib:assembleTemplateDebug'
     from('lib/build/outputs/aar')
     into(binDir)
-    include('godot-lib.debug.aar')
+    include('godot-lib.template_debug.aar')
 }
 
 /**
@@ -110,7 +115,7 @@ task copyDevAARToAppModule(type: Copy) {
     dependsOn ':lib:assembleTemplateDev'
     from('lib/build/outputs/aar')
     into('app/libs/dev')
-    include('godot-lib.dev.aar')
+    include('godot-lib.template_debug.dev.aar')
 }
 
 /**
@@ -121,7 +126,7 @@ task copyDevAARToBin(type: Copy) {
     dependsOn ':lib:assembleTemplateDev'
     from('lib/build/outputs/aar')
     into(binDir)
-    include('godot-lib.dev.aar')
+    include('godot-lib.template_debug.dev.aar')
 }
 
 /**
@@ -132,7 +137,7 @@ task copyReleaseAARToAppModule(type: Copy) {
     dependsOn ':lib:assembleTemplateRelease'
     from('lib/build/outputs/aar')
     into('app/libs/release')
-    include('godot-lib.release.aar')
+    include('godot-lib.template_release.aar')
 }
 
 /**
@@ -143,7 +148,7 @@ task copyReleaseAARToBin(type: Copy) {
     dependsOn ':lib:assembleTemplateRelease'
     from('lib/build/outputs/aar')
     into(binDir)
-    include('godot-lib.release.aar')
+    include('godot-lib.template_release.aar')
 }
 
 /**
@@ -168,13 +173,8 @@ def templateExcludedBuildTask() {
     if (!isAndroidStudio()) {
         logger.lifecycle("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
-            for (String buildType : supportedTargetsMap.keySet()) {
-                if (buildType == "release" && flavor == "editor") {
-                    // The editor can't be used with target=release as debugging tools are then not
-                    // included, and it would crash on errors instead of reporting them.
-                    continue
-                }
-
+            String[] supportedBuildTypes = supportedFlavorsBuildTypes[flavor]
+            for (String buildType : supportedBuildTypes) {
                 for (String abi : selectedAbis) {
                     excludedTasks += ":lib:" + getSconsTaskName(flavor, buildType, abi)
                 }
@@ -188,7 +188,7 @@ def templateBuildTasks() {
     def tasks = []
 
     // Only build the apks and aar files for which we have native shared libraries.
-    for (String target : supportedTargetsMap.keySet()) {
+    for (String target : supportedFlavorsBuildTypes["template"]) {
         File targetLibs = new File("lib/libs/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()
@@ -240,12 +240,7 @@ task generateGodotEditor {
 
     def tasks = []
 
-    for (String target : supportedTargetsMap.keySet()) {
-        if (target == "release") {
-            // The editor can't be used with target=release as debugging tools are then not
-            // included, and it would crash on errors instead of reporting them.
-            continue
-        }
+    for (String target : supportedFlavorsBuildTypes["editor"]) {
         File targetLibs = new File("lib/libs/tools/" + target)
         if (targetLibs != null
             && targetLibs.isDirectory()
@@ -322,9 +317,9 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/android_dev.apk")
     delete("$binDir/android_release.apk")
     delete("$binDir/android_source.zip")
-    delete("$binDir/godot-lib.debug.aar")
-    delete("$binDir/godot-lib.dev.aar")
-    delete("$binDir/godot-lib.release.aar")
+    delete("$binDir/godot-lib.template_debug.aar")
+    delete("$binDir/godot-lib.template_debug.dev.aar")
+    delete("$binDir/godot-lib.template_release.aar")
 
     finalizedBy getTasksByName("clean", true)
 }

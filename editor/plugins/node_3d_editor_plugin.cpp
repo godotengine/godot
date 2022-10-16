@@ -1356,7 +1356,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		EditorNode *en = EditorNode::get_singleton();
 		EditorPluginList *force_input_forwarding_list = en->get_editor_plugins_force_input_forwarding();
 		if (!force_input_forwarding_list->is_empty()) {
-			EditorPlugin::AfterGUIInput discard = force_input_forwarding_list->forward_spatial_gui_input(camera, p_event, true);
+			EditorPlugin::AfterGUIInput discard = force_input_forwarding_list->forward_3d_gui_input(camera, p_event, true);
 			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
 			}
@@ -1369,7 +1369,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		EditorNode *en = EditorNode::get_singleton();
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 		if (!over_plugin_list->is_empty()) {
-			EditorPlugin::AfterGUIInput discard = over_plugin_list->forward_spatial_gui_input(camera, p_event, false);
+			EditorPlugin::AfterGUIInput discard = over_plugin_list->forward_3d_gui_input(camera, p_event, false);
 			if (discard == EditorPlugin::AFTER_GUI_INPUT_STOP) {
 				return;
 			}
@@ -2400,6 +2400,9 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool use_taa = GLOBAL_GET("rendering/anti_aliasing/quality/use_taa");
 	viewport->set_use_taa(use_taa);
 
+	const bool transparent_background = GLOBAL_GET("rendering/transparent_background");
+	viewport->set_transparent_background(transparent_background);
+
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
 	viewport->set_use_debanding(use_debanding);
 
@@ -2429,11 +2432,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			bool visible = is_visible_in_tree();
+			bool vp_visible = is_visible_in_tree();
 
-			set_process(visible);
+			set_process(vp_visible);
 
-			if (visible) {
+			if (vp_visible) {
 				orthogonal = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL));
 				_update_name();
 				_update_camera(0);
@@ -2735,12 +2738,12 @@ static void draw_indicator_bar(Control &p_surface, real_t p_fill, const Ref<Text
 void Node3DEditorViewport::_draw() {
 	EditorPluginList *over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_over();
 	if (!over_plugin_list->is_empty()) {
-		over_plugin_list->forward_spatial_draw_over_viewport(surface);
+		over_plugin_list->forward_3d_draw_over_viewport(surface);
 	}
 
 	EditorPluginList *force_over_plugin_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
 	if (!force_over_plugin_list->is_empty()) {
-		force_over_plugin_list->forward_spatial_force_draw_over_viewport(surface);
+		force_over_plugin_list->forward_3d_force_draw_over_viewport(surface);
 	}
 
 	if (surface->has_focus()) {
@@ -3880,8 +3883,8 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 		Vector3 xform_ray = ai.basis.xform(world_ray).normalized();
 		Vector3 xform_pos = ai.xform(world_pos);
 
-		for (int surface = 0; surface < surface_count; surface++) {
-			Ref<TriangleMesh> surface_mesh = mesh->generate_surface_triangle_mesh(surface);
+		for (int surface_idx = 0; surface_idx < surface_count; surface_idx++) {
+			Ref<TriangleMesh> surface_mesh = mesh->generate_surface_triangle_mesh(surface_idx);
 
 			Vector3 rpos, rnorm;
 			if (surface_mesh->intersect_ray(xform_pos, xform_ray, rpos, rnorm)) {
@@ -3894,7 +3897,7 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 				}
 
 				if (dist < closest_dist) {
-					closest_surface = surface;
+					closest_surface = surface_idx;
 					closest_dist = dist;
 				}
 			}
@@ -4020,16 +4023,16 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 
 	Node3D *node3d = Object::cast_to<Node3D>(instantiated_scene);
 	if (node3d) {
-		Transform3D global_transform;
+		Transform3D gl_transform;
 		Node3D *parent_node3d = Object::cast_to<Node3D>(parent);
 		if (parent_node3d) {
-			global_transform = parent_node3d->get_global_gizmo_transform();
+			gl_transform = parent_node3d->get_global_gizmo_transform();
 		}
 
-		global_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
-		global_transform.basis *= node3d->get_transform().basis;
+		gl_transform.origin = spatial_editor->snap_point(_get_instance_position(p_point));
+		gl_transform.basis *= node3d->get_transform().basis;
 
-		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", global_transform);
+		editor_data->get_undo_redo()->add_do_method(instantiated_scene, "set_global_transform", gl_transform);
 	}
 
 	return true;
@@ -4163,8 +4166,8 @@ bool Node3DEditorViewport::can_drop_data_fw(const Point2 &p_point, const Variant
 	}
 
 	if (can_instantiate) {
-		Transform3D global_transform = Transform3D(Basis(), _get_instance_position(p_point));
-		preview_node->set_global_transform(global_transform);
+		Transform3D gl_transform = Transform3D(Basis(), _get_instance_position(p_point));
+		preview_node->set_global_transform(gl_transform);
 		return true;
 	}
 
@@ -4773,10 +4776,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect("id_pressed", callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_menu->set_disable_shortcuts(true);
-#ifndef _MSC_VER
-#warning this needs to be fixed
-#endif
-	//if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+
+	// TODO: Re-evaluate with new OpenGL3 renderer, and implement.
+	//if (OS::get_singleton()->get_current_video_driver() == OS::RENDERING_DRIVER_OPENGL3) {
 	if (false) {
 		// Alternate display modes only work when using the Vulkan renderer; make this explicit.
 		const int normal_idx = view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL);

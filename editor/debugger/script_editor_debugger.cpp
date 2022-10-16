@@ -747,8 +747,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		if (element) {
 			Callable &c = element->value;
 			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
-			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
-			const Variant *args[2] = { &cmd, &data };
+			Variant cmd = p_msg.substr(colon_index + 1), cmd_data = p_data;
+			const Variant *args[2] = { &cmd, &cmd_data };
 			Variant retval;
 			Callable::CallError err;
 			c.callp(args, 2, retval, err);
@@ -895,9 +895,9 @@ void ScriptEditorDebugger::_clear_execution() {
 }
 
 void ScriptEditorDebugger::_set_breakpoint(const String &p_file, const int &p_line, const bool &p_enabled) {
-	Ref<Script> script = ResourceLoader::load(p_file);
-	emit_signal(SNAME("set_breakpoint"), script, p_line - 1, p_enabled);
-	script.unref();
+	Ref<Script> scr = ResourceLoader::load(p_file);
+	emit_signal(SNAME("set_breakpoint"), scr, p_line - 1, p_enabled);
+	scr.unref();
 }
 
 void ScriptEditorDebugger::_clear_breakpoints() {
@@ -979,15 +979,15 @@ void ScriptEditorDebugger::stop() {
 }
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
-	Array data;
-	data.push_back(p_enable);
+	Array msg_data;
+	msg_data.push_back(p_enable);
 	switch (p_type) {
 		case PROFILER_NETWORK:
-			_put_msg("profiler:multiplayer", data);
-			_put_msg("profiler:rpc", data);
+			_put_msg("profiler:multiplayer", msg_data);
+			_put_msg("profiler:rpc", msg_data);
 			break;
 		case PROFILER_VISUAL:
-			_put_msg("profiler:visual", data);
+			_put_msg("profiler:visual", msg_data);
 			break;
 		case PROFILER_SCRIPTS_SERVERS:
 			if (p_enable) {
@@ -997,9 +997,9 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 				Array opts;
 				int max_funcs = EditorSettings::get_singleton()->get("debugger/profiler_frame_max_functions");
 				opts.push_back(CLAMP(max_funcs, 16, 512));
-				data.push_back(opts);
+				msg_data.push_back(opts);
 			}
-			_put_msg("profiler:servers", data);
+			_put_msg("profiler:servers", msg_data);
 			break;
 		default:
 			ERR_FAIL_MSG("Invalid profiler type");
@@ -1563,8 +1563,22 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				ti = ti->get_parent();
 			}
 
-			// We only need the first child here (C++ source stack trace).
+			// Find the child with the "C++ Source".
+			// It's not at a fixed position as "C++ Error" may come first.
 			TreeItem *ci = ti->get_first_child();
+			const String cpp_source = "<" + TTR("C++ Source") + ">";
+			while (ci) {
+				if (ci->get_text(0) == cpp_source) {
+					break;
+				}
+				ci = ci->get_next();
+			}
+
+			if (!ci) {
+				WARN_PRINT_ED("No C++ source reference is available for this error.");
+				return;
+			}
+
 			// Parse back the `file:line @ method()` string.
 			const Vector<String> file_line_number = ci->get_text(1).split("@")[0].strip_edges().split(":");
 			ERR_FAIL_COND_MSG(file_line_number.size() < 2, "Incorrect C++ source stack trace file:line format (please report).");

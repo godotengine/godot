@@ -1759,6 +1759,34 @@ void Control::warp_mouse(const Point2 &p_position) {
 	get_viewport()->warp_mouse(get_global_transform_with_canvas().xform(p_position));
 }
 
+void Control::set_shortcut_context(const Node *p_node) {
+	if (p_node != nullptr) {
+		data.shortcut_context = p_node->get_instance_id();
+	} else {
+		data.shortcut_context = ObjectID();
+	}
+}
+
+Node *Control::get_shortcut_context() const {
+	Object *ctx_obj = ObjectDB::get_instance(data.shortcut_context);
+	Node *ctx_node = Object::cast_to<Node>(ctx_obj);
+
+	return ctx_node;
+}
+
+bool Control::is_focus_owner_in_shortcut_context() const {
+	if (data.shortcut_context == ObjectID()) {
+		// No context, therefore global - always "in" context.
+		return true;
+	}
+
+	const Node *ctx_node = get_shortcut_context();
+	const Control *vp_focus = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
+
+	// If the context is valid and the viewport focus is valid, check if the context is the focus or is a parent of it.
+	return ctx_node && vp_focus && (ctx_node == vp_focus || ctx_node->is_ancestor_of(vp_focus));
+}
+
 // Drag and drop handling.
 
 void Control::set_drag_forwarding(Object *p_target) {
@@ -1793,7 +1821,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 		}
 	}
 
-	bool ret;
+	bool ret = false;
 	if (GDVIRTUAL_CALL(_can_drop_data, p_point, p_data, ret)) {
 		return ret;
 	}
@@ -2885,8 +2913,8 @@ void Control::_notification(int p_notification) {
 			if (data.parent_canvas_item) {
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
-			} else if (!is_set_as_top_level()) {
-				//disconnect viewport
+			} else {
+				// Disconnect viewport.
 				Viewport *viewport = get_viewport();
 				ERR_FAIL_COND(!viewport);
 				viewport->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
@@ -3133,6 +3161,9 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Control::warp_mouse);
 
+	ClassDB::bind_method(D_METHOD("set_shortcut_context", "node"), &Control::set_shortcut_context);
+	ClassDB::bind_method(D_METHOD("get_shortcut_context"), &Control::get_shortcut_context);
+
 	ClassDB::bind_method(D_METHOD("update_minimum_size"), &Control::update_minimum_size);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Control::set_layout_direction);
@@ -3205,6 +3236,9 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass,Ignore"), "set_mouse_filter", "get_mouse_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
+
+	ADD_GROUP("Input", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut_context", PROPERTY_HINT_NODE_TYPE, "Node"), "set_shortcut_context", "get_shortcut_context");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");

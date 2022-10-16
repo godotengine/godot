@@ -31,10 +31,10 @@
 #ifndef VECTOR4_H
 #define VECTOR4_H
 
-#include "core/math/math_defs.h"
+#include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
-#include "core/math/vector3.h"
-#include "core/string/ustring.h"
+
+class String;
 
 struct _NO_DISCARD_ Vector4 {
 	static const int AXIS_COUNT = 4;
@@ -65,17 +65,13 @@ struct _NO_DISCARD_ Vector4 {
 		return components[p_axis];
 	}
 
-	_FORCE_INLINE_ void set_all(const real_t p_value);
-
-	void set_axis(const int p_axis, const real_t p_value);
-	real_t get_axis(const int p_axis) const;
-
 	Vector4::Axis min_axis_index() const;
 	Vector4::Axis max_axis_index() const;
 
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Vector4 &p_vec4) const;
 	bool is_zero_approx() const;
+	bool is_finite() const;
 	real_t length() const;
 	void normalize();
 	Vector4 normalized() const;
@@ -149,10 +145,6 @@ struct _NO_DISCARD_ Vector4 {
 		w = p_vec4.w;
 	}
 };
-
-void Vector4::set_all(const real_t p_value) {
-	x = y = z = p_value;
-}
 
 real_t Vector4::dot(const Vector4 &p_vec4) const {
 	return x * p_vec4.x + y * p_vec4.y + z * p_vec4.z + w * p_vec4.w;

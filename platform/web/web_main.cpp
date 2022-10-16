@@ -77,14 +77,14 @@ void main_loop_callback() {
 		return; // Skip frame.
 	}
 
-	int target_fps = Engine::get_singleton()->get_target_fps();
-	if (target_fps > 0) {
+	int max_fps = Engine::get_singleton()->get_max_fps();
+	if (max_fps > 0) {
 		if (current_ticks - target_ticks > 1000000) {
 			// When the window loses focus, we stop getting updates and accumulate delay.
 			// For this reason, if the difference is too big, we reset target ticks to the current ticks.
 			target_ticks = current_ticks;
 		}
-		target_ticks += (uint64_t)(1000000 / target_fps);
+		target_ticks += (uint64_t)(1000000 / max_fps);
 	}
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for cleanup_after_sync.

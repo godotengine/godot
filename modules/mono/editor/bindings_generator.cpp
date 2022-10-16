@@ -3326,11 +3326,11 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::PROJECTION: {
-			Projection transform = p_val.operator Projection();
-			if (transform == Projection()) {
+			Projection projection = p_val.operator Projection();
+			if (projection == Projection()) {
 				r_iarg.default_argument = "Projection.Identity";
 			} else {
-				r_iarg.default_argument = "new Projection(new Vector4" + transform.matrix[0].operator String() + ", new Vector4" + transform.matrix[1].operator String() + ", new Vector4" + transform.matrix[2].operator String() + ", new Vector4" + transform.matrix[3].operator String() + ")";
+				r_iarg.default_argument = "new Projection(new Vector4" + projection.columns[0].operator String() + ", new Vector4" + projection.columns[1].operator String() + ", new Vector4" + projection.columns[2].operator String() + ", new Vector4" + projection.columns[3].operator String() + ")";
 			}
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;

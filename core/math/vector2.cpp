@@ -186,6 +186,10 @@ bool Vector2::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y);
 }
 
+bool Vector2::is_finite() const {
+	return Math::is_finite(x) && Math::is_finite(y);
+}
+
 Vector2::operator String() const {
 	return "(" + String::num_real(x, false) + ", " + String::num_real(y, false) + ")";
 }

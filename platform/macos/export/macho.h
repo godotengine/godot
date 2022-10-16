@@ -37,9 +37,6 @@
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
-#include "modules/modules_enabled.gen.h" // For regex.
-
-#ifdef MODULE_REGEX_ENABLED
 
 class MachO : public RefCounted {
 	struct MachHeader {
@@ -209,7 +206,5 @@ public:
 	uint64_t get_signature_size();
 	bool set_signature_size(uint64_t p_size);
 };
-
-#endif // MODULE_REGEX_ENABLED
 
 #endif // MACOS_MACHO_H

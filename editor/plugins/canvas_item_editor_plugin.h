@@ -563,6 +563,9 @@ class CanvasItemEditorPlugin : public EditorPlugin {
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
 
+protected:
+	void _notification(int p_what);
+
 public:
 	virtual String get_name() const override { return "2D"; }
 	bool has_main_screen() const override { return true; }

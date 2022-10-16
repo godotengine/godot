@@ -382,7 +382,7 @@ public:
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;
 
 	virtual void window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window = MAIN_WINDOW_ID) {}
-	virtual Vector2i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector2i(); }
+	virtual Vector3i window_get_safe_title_margins(WindowID p_window = MAIN_WINDOW_ID) const { return Vector3i(); }
 
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 

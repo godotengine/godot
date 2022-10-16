@@ -95,10 +95,11 @@ VisibleOnScreenNotifier3D::VisibleOnScreenNotifier3D() {
 	RS::get_singleton()->visibility_notifier_set_callbacks(notifier, callable_mp(this, &VisibleOnScreenNotifier3D::_visibility_enter), callable_mp(this, &VisibleOnScreenNotifier3D::_visibility_exit));
 	set_base(notifier);
 }
+
 VisibleOnScreenNotifier3D::~VisibleOnScreenNotifier3D() {
-	RID base = get_base();
+	RID base_old = get_base();
 	set_base(RID());
-	RS::get_singleton()->free(base);
+	RS::get_singleton()->free(base_old);
 }
 
 //////////////////////////////////////

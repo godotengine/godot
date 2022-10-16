@@ -88,7 +88,7 @@ const GodotJSWrapper = {
 				return GodotRuntime.getHeapValue(val, 'double');
 			case 4:
 				return GodotRuntime.parseString(GodotRuntime.getHeapValue(val, '*'));
-			case 21: // OBJECT
+			case 24: // OBJECT
 				return GodotJSWrapper.get_proxied_value(GodotRuntime.getHeapValue(val, 'i64'));
 			default:
 				return undefined;
@@ -117,7 +117,7 @@ const GodotJSWrapper = {
 			}
 			const id = GodotJSWrapper.get_proxied(p_val);
 			GodotRuntime.setHeapValue(p_exchange, id, 'i64');
-			return 21;
+			return 24; // OBJECT
 		},
 	},
 

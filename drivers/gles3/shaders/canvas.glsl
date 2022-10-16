@@ -60,20 +60,18 @@ out vec2 pixel_size_interp;
 
 void main() {
 	vec4 instance_custom = vec4(0.0);
-	draw_data_instance = gl_InstanceID;
-#ifdef USE_PRIMITIVE
 
-	//weird bug,
-	//this works
+#ifdef USE_PRIMITIVE
+	draw_data_instance = gl_InstanceID;
 	vec2 vertex;
 	vec2 uv;
 	vec4 color;
 
-	if (gl_VertexID == 0) {
+	if (gl_VertexID % 3 == 0) {
 		vertex = draw_data[draw_data_instance].point_a;
 		uv = draw_data[draw_data_instance].uv_a;
 		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_a_rg), unpackHalf2x16(draw_data[draw_data_instance].color_a_ba));
-	} else if (gl_VertexID == 1) {
+	} else if (gl_VertexID % 3 == 1) {
 		vertex = draw_data[draw_data_instance].point_b;
 		uv = draw_data[draw_data_instance].uv_b;
 		color = vec4(unpackHalf2x16(draw_data[draw_data_instance].color_b_rg), unpackHalf2x16(draw_data[draw_data_instance].color_b_ba));
@@ -86,6 +84,7 @@ void main() {
 	vec4 bone_weights = vec4(0.0);
 
 #elif defined(USE_ATTRIBUTES)
+	draw_data_instance = gl_InstanceID;
 #ifdef USE_INSTANCING
 	draw_data_instance = 0;
 #endif
@@ -103,9 +102,9 @@ void main() {
 #endif
 
 #else
-
-	vec2 vertex_base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
-	vec2 vertex_base = vertex_base_arr[gl_VertexID];
+	draw_data_instance = gl_VertexID / 6;
+	vec2 vertex_base_arr[6] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0), vec2(0.0, 0.0), vec2(1.0, 1.0));
+	vec2 vertex_base = vertex_base_arr[gl_VertexID % 6];
 
 	vec2 uv = draw_data[draw_data_instance].src_rect.xy + abs(draw_data[draw_data_instance].src_rect.zw) * ((draw_data[draw_data_instance].flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = draw_data[draw_data_instance].modulation;
@@ -126,6 +125,8 @@ void main() {
 		vertex /= draw_data[draw_data_instance].color_texture_pixel_size;
 	}
 #endif
+
+	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
 
 #ifdef USE_POINT_SIZE
 	float point_size = 1.0;
@@ -210,7 +211,9 @@ void main() {
 #include "canvas_uniforms_inc.glsl"
 #include "stdlib_inc.glsl"
 
-//uniform sampler2D atlas_texture; //texunit:-2
+#ifndef DISABLE_LIGHTING
+uniform sampler2D atlas_texture; //texunit:-2
+#endif // DISABLE_LIGHTING
 //uniform sampler2D shadow_atlas_texture; //texunit:-3
 uniform sampler2D screen_texture; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
@@ -242,6 +245,77 @@ layout(std140) uniform MaterialUniforms{
 #endif
 
 #GLOBALS
+#ifndef DISABLE_LIGHTING
+#ifdef LIGHT_CODE_USED
+
+vec4 light_compute(
+		vec3 light_vertex,
+		vec3 light_position,
+		vec3 normal,
+		vec4 light_color,
+		float light_energy,
+		vec4 specular_shininess,
+		inout vec4 shadow_modulate,
+		vec2 screen_uv,
+		vec2 uv,
+		vec4 color, bool is_directional) {
+	vec4 light = vec4(0.0);
+	vec3 light_direction = vec3(0.0);
+
+	if (is_directional) {
+		light_direction = normalize(mix(vec3(light_position.xy, 0.0), vec3(0, 0, 1), light_position.z));
+		light_position = vec3(0.0);
+	} else {
+		light_direction = normalize(light_position - light_vertex);
+	}
+
+#CODE : LIGHT
+
+	return light;
+}
+
+#endif
+
+vec3 light_normal_compute(vec3 light_vec, vec3 normal, vec3 base_color, vec3 light_color, vec4 specular_shininess, bool specular_shininess_used) {
+	float cNdotL = max(0.0, dot(normal, light_vec));
+
+	if (specular_shininess_used) {
+		//blinn
+		vec3 view = vec3(0.0, 0.0, 1.0); // not great but good enough
+		vec3 half_vec = normalize(view + light_vec);
+
+		float cNdotV = max(dot(normal, view), 0.0);
+		float cNdotH = max(dot(normal, half_vec), 0.0);
+		float cVdotH = max(dot(view, half_vec), 0.0);
+		float cLdotH = max(dot(light_vec, half_vec), 0.0);
+		float shininess = exp2(15.0 * specular_shininess.a + 1.0) * 0.25;
+		float blinn = pow(cNdotH, shininess);
+		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
+		float s = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
+
+		return specular_shininess.rgb * light_color * s + light_color * base_color * cNdotL;
+	} else {
+		return light_color * base_color * cNdotL;
+	}
+}
+
+void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
+	uint blend_mode = light_array[light_base].flags & LIGHT_FLAGS_BLEND_MASK;
+
+	switch (blend_mode) {
+		case LIGHT_FLAGS_BLEND_MODE_ADD: {
+			color.rgb += light_color.rgb * light_color.a;
+		} break;
+		case LIGHT_FLAGS_BLEND_MODE_SUB: {
+			color.rgb -= light_color.rgb * light_color.a;
+		} break;
+		case LIGHT_FLAGS_BLEND_MODE_MIX: {
+			color.rgb = mix(color.rgb, light_color.rgb, light_color.a);
+		} break;
+	}
+}
+
+#endif
 
 #ifdef USE_NINEPATCH
 
@@ -352,7 +426,8 @@ void main() {
 		color *= texture(color_texture, uv);
 	}
 
-	bool using_light = false;
+	uint light_count = (draw_data[draw_data_instance].flags >> uint(FLAGS_LIGHT_COUNT_SHIFT)) & uint(0xF); //max 16 lights
+	bool using_light = light_count > 0u || directional_light_count > 0u;
 
 	vec3 normal;
 
@@ -393,6 +468,8 @@ void main() {
 	vec2 screen_uv = vec2(0.0);
 #endif
 
+	vec2 color_texture_pixel_size = draw_data[draw_data_instance].color_texture_pixel_size.xy;
+
 	vec3 light_vertex = vec3(vertex, 0.0);
 	vec2 shadow_vertex = vertex;
 
@@ -411,10 +488,104 @@ void main() {
 #endif
 	}
 
+	if (normal_used) {
+		//convert by item transform
+		normal.xy = mat2(normalize(draw_data[draw_data_instance].world_x), normalize(draw_data[draw_data_instance].world_y)) * normal.xy;
+		//convert by canvas transform
+		normal = normalize((canvas_normal_transform * vec4(normal, 0.0)).xyz);
+	}
+
+	vec4 base_color = color;
+
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
 #else
 	color *= canvas_modulation;
+#endif
+
+#if !defined(DISABLE_LIGHTING) && !defined(MODE_UNSHADED)
+
+	// Directional Lights
+
+	for (uint i = 0u; i < directional_light_count; i++) {
+		uint light_base = i;
+
+		vec2 direction = light_array[light_base].position;
+		vec4 light_color = light_array[light_base].color;
+
+#ifdef LIGHT_CODE_USED
+
+		vec4 shadow_modulate = vec4(1.0);
+		light_color = light_compute(light_vertex, vec3(direction, light_array[light_base].height), normal, light_color, light_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, true);
+#else
+
+		if (normal_used) {
+			vec3 light_vec = normalize(mix(vec3(direction, 0.0), vec3(0, 0, 1), light_array[light_base].height));
+			light_color.rgb = light_normal_compute(light_vec, normal, base_color.rgb, light_color.rgb, specular_shininess, specular_shininess_used);
+		} else {
+			light_color.rgb *= base_color.rgb;
+		}
+#endif
+
+		light_blend_compute(light_base, light_color, color.rgb);
+	}
+
+	// Positional Lights
+
+	for (uint i = 0u; i < MAX_LIGHTS_PER_ITEM; i++) {
+		if (i >= light_count) {
+			break;
+		}
+		uint light_base;
+		if (i < 8u) {
+			if (i < 4u) {
+				light_base = draw_data[draw_data_instance].lights[0];
+			} else {
+				light_base = draw_data[draw_data_instance].lights[1];
+			}
+		} else {
+			if (i < 12u) {
+				light_base = draw_data[draw_data_instance].lights[2];
+			} else {
+				light_base = draw_data[draw_data_instance].lights[3];
+			}
+		}
+		light_base >>= (i & 3u) * 8u;
+		light_base &= uint(0xFF);
+
+		vec2 tex_uv = (vec4(vertex, 0.0, 1.0) * mat4(light_array[light_base].texture_matrix[0], light_array[light_base].texture_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+		vec2 tex_uv_atlas = tex_uv * light_array[light_base].atlas_rect.zw + light_array[light_base].atlas_rect.xy;
+		vec4 light_color = textureLod(atlas_texture, tex_uv_atlas, 0.0);
+		vec4 light_base_color = light_array[light_base].color;
+
+#ifdef LIGHT_CODE_USED
+
+		vec4 shadow_modulate = vec4(1.0);
+		vec3 light_position = vec3(light_array[light_base].position, light_array[light_base].height);
+
+		light_color.rgb *= light_base_color.rgb;
+		light_color = light_compute(light_vertex, light_position, normal, light_color, light_base_color.a, specular_shininess, shadow_modulate, screen_uv, uv, base_color, false);
+#else
+
+		light_color.rgb *= light_base_color.rgb * light_base_color.a;
+
+		if (normal_used) {
+			vec3 light_pos = vec3(light_array[light_base].position, light_array[light_base].height);
+			vec3 pos = light_vertex;
+			vec3 light_vec = normalize(light_pos - pos);
+
+			light_color.rgb = light_normal_compute(light_vec, normal, base_color.rgb, light_color.rgb, specular_shininess, specular_shininess_used);
+		} else {
+			light_color.rgb *= base_color.rgb;
+		}
+#endif
+		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
+			//if outside the light texture, light color is zero
+			light_color.a = 0.0;
+		}
+
+		light_blend_compute(light_base, light_color, color.rgb);
+	}
 #endif
 
 	frag_color = color;

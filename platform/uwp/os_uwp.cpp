@@ -159,7 +159,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	outside = true;
 
 	// FIXME: Hardcoded for now, add Vulkan support.
-	p_video_driver = VIDEO_DRIVER_OPENGL;
+	p_video_driver = RENDERING_DRIVER_OPENGL3;
 	ContextEGL_UWP::Driver opengl_api_type = ContextEGL_UWP::GLES_2_0;
 
 	bool gl_initialization_error = false;
@@ -826,10 +826,6 @@ OS_UWP::OS_UWP() {
 	pressrc = 0;
 	old_invalid = true;
 	mouse_mode = MOUSE_MODE_VISIBLE;
-#ifdef STDOUT_FILE
-	stdo = fopen("stdout.txt", "wb");
-#endif
-
 	gl_context = nullptr;
 
 	display_request = ref new Windows::System::Display::DisplayRequest();
@@ -847,7 +843,4 @@ OS_UWP::OS_UWP() {
 }
 
 OS_UWP::~OS_UWP() {
-#ifdef STDOUT_FILE
-	fclose(stdo);
-#endif
 }

@@ -37,9 +37,9 @@ void ParallaxLayer::set_motion_scale(const Size2 &p_scale) {
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb && is_inside_tree()) {
-		Vector2 ofs = pb->get_final_offset();
-		real_t scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale);
+		Vector2 final_ofs = pb->get_final_offset();
+		real_t scroll_scale = pb->get_scroll_scale();
+		set_base_offset_and_scale(final_ofs, scroll_scale);
 	}
 }
 
@@ -52,9 +52,9 @@ void ParallaxLayer::set_motion_offset(const Size2 &p_offset) {
 
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb && is_inside_tree()) {
-		Vector2 ofs = pb->get_final_offset();
-		real_t scale = pb->get_scroll_scale();
-		set_base_offset_and_scale(ofs, scale);
+		Vector2 final_ofs = pb->get_final_offset();
+		real_t scroll_scale = pb->get_scroll_scale();
+		set_base_offset_and_scale(final_ofs, scroll_scale);
 	}
 }
 

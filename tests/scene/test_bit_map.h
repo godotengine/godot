@@ -76,15 +76,11 @@ TEST_CASE("[BitMap] Create bit map from image alpha") {
 	bit_map.create_from_image_alpha(empty_img);
 	CHECK_MESSAGE(bit_map.get_size() == Size2i(256, 256), "Bitmap should have its old values because bitmap creation from an empty image should fail.");
 
-	Ref<Image> wrong_format_img;
-	wrong_format_img.instantiate();
-	wrong_format_img->create(3, 3, false, Image::Format::FORMAT_DXT1);
+	Ref<Image> wrong_format_img = Image::create_empty(3, 3, false, Image::Format::FORMAT_DXT1);
 	bit_map.create_from_image_alpha(wrong_format_img);
 	CHECK_MESSAGE(bit_map.get_size() == Size2i(256, 256), "Bitmap should have its old values because converting from a compressed image should fail.");
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create(3, 3, false, Image::Format::FORMAT_RGBA8);
+	Ref<Image> img = Image::create_empty(3, 3, false, Image::Format::FORMAT_RGBA8);
 	img->set_pixel(0, 0, Color(0, 0, 0, 0));
 	img->set_pixel(0, 1, Color(0, 0, 0, 0.09f));
 	img->set_pixel(0, 2, Color(0, 0, 0, 0.25f));

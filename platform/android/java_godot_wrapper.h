@@ -46,7 +46,7 @@ private:
 	jclass godot_class;
 	jclass activity_class;
 
-	GodotJavaViewWrapper *_godot_view = nullptr;
+	GodotJavaViewWrapper *godot_view = nullptr;
 
 	jmethodID _on_video_init = nullptr;
 	jmethodID _restart = nullptr;
@@ -69,6 +69,7 @@ private:
 	jmethodID _on_godot_main_loop_started = nullptr;
 	jmethodID _get_class_loader = nullptr;
 	jmethodID _create_new_godot_instance = nullptr;
+	jmethodID _get_render_view = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_godot_instance);

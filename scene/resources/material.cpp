@@ -2348,7 +2348,7 @@ void BaseMaterial3D::set_on_top_of_alpha() {
 	set_flag(FLAG_DISABLE_DEPTH_TEST, true);
 }
 
-void BaseMaterial3D::set_proximity_fade(bool p_enable) {
+void BaseMaterial3D::set_proximity_fade_enabled(bool p_enable) {
 	proximity_fade_enabled = p_enable;
 	_queue_shader_change();
 	notify_property_list_changed();
@@ -2624,7 +2624,7 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction_texture_channel", "channel"), &BaseMaterial3D::set_refraction_texture_channel);
 	ClassDB::bind_method(D_METHOD("get_refraction_texture_channel"), &BaseMaterial3D::get_refraction_texture_channel);
 
-	ClassDB::bind_method(D_METHOD("set_proximity_fade", "enabled"), &BaseMaterial3D::set_proximity_fade);
+	ClassDB::bind_method(D_METHOD("set_proximity_fade_enabled", "enabled"), &BaseMaterial3D::set_proximity_fade_enabled);
 	ClassDB::bind_method(D_METHOD("is_proximity_fade_enabled"), &BaseMaterial3D::is_proximity_fade_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_proximity_fade_distance", "distance"), &BaseMaterial3D::set_proximity_fade_distance);
@@ -2808,7 +2808,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1,suffix:px"), "set_point_size", "get_point_size");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_particle_trails"), "set_flag", "get_flag", FLAG_PARTICLE_TRAILS_MODE);
 	ADD_GROUP("Proximity Fade", "proximity_fade_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enable"), "set_proximity_fade", "is_proximity_fade_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "proximity_fade_enabled"), "set_proximity_fade_enabled", "is_proximity_fade_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "proximity_fade_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:m"), "set_proximity_fade_distance", "get_proximity_fade_distance");
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");

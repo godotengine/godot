@@ -215,7 +215,7 @@ jobs:
         if: ${{ matrix.godot-cpp-test }}
         run: |
           cd godot-cpp/test
-          scons target=debug
+          scons target=template_debug dev_build=yes
           cd ../..
 
       - name: Prepare artifact
