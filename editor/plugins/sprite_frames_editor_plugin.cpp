@@ -423,6 +423,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
 			zoom_in->set_icon(get_theme_icon(SNAME("ZoomMore"), SNAME("EditorIcons")));
 			add_anim->set_icon(get_theme_icon(SNAME("New"), SNAME("EditorIcons")));
+			duplicate_anim->set_icon(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")));
 			delete_anim->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			anim_search_box->set_right_icon(get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 			split_sheet_zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
@@ -786,6 +787,44 @@ void SpriteFramesEditor::_animation_add() {
 	animations->grab_focus();
 }
 
+void SpriteFramesEditor::_animation_duplicate() {
+	if (!frames->has_animation(edited_anim)) {
+		return;
+	}
+
+	int counter = 1;
+	String name = String(edited_anim) + " " + itos(counter);
+	while (frames->has_animation(name)) {
+		counter++;
+		name = String(edited_anim) + " " + itos(counter);
+	}
+
+	undo_redo->create_action(TTR("Duplicate Animation"));
+	undo_redo->add_do_method(frames, "add_animation", name);
+	undo_redo->add_do_method(frames, "set_animation_loop", name, frames->get_animation_loop(edited_anim));
+	undo_redo->add_do_method(frames, "set_animation_speed", name, frames->get_animation_speed(edited_anim));
+	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
+		undo_redo->add_do_method(frames, "add_frame", name, frames->get_frame(edited_anim, i));
+	}
+	undo_redo->add_undo_method(frames, "remove_animation", name);
+	undo_redo->add_do_method(this, "_update_library");
+	undo_redo->add_undo_method(this, "_update_library");
+
+	// Not sure whether this part is needed/wanted (`_animation_add` is doing the same thing).
+	List<Node *> nodes;
+	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
+	for (Node *E : nodes) {
+		String current = E->call("get_animation");
+		undo_redo->add_do_method(E, "set_animation", name);
+		undo_redo->add_undo_method(E, "set_animation", current);
+	}
+
+	edited_anim = name;
+
+	undo_redo->commit_action();
+	animations->grab_focus();
+}
+
 void SpriteFramesEditor::_animation_remove() {
 	if (updating) {
 		return;
@@ -1018,6 +1057,7 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 
 	add_anim->set_disabled(read_only);
 	delete_anim->set_disabled(read_only);
+	duplicate_anim->set_disabled(read_only);
 	anim_speed->set_editable(!read_only);
 	anim_loop->set_disabled(read_only);
 	load->set_disabled(read_only);
@@ -1191,6 +1231,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_anim->set_flat(true);
 	hbc_animlist->add_child(add_anim);
 	add_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_add));
+
+	duplicate_anim = memnew(Button);
+	duplicate_anim->set_flat(true);
+	hbc_animlist->add_child(duplicate_anim);
+	duplicate_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
 
 	delete_anim = memnew(Button);
 	delete_anim->set_flat(true);
