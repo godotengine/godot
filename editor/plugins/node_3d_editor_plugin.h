@@ -767,7 +767,7 @@ private:
 	WorldEnvironment *preview_environment = nullptr;
 	bool preview_env_dangling = false;
 	Ref<Environment> environment;
-	Ref<CameraAttributesPhysical> camera_attributes;
+	Ref<CameraAttributesPractical> camera_attributes;
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;
