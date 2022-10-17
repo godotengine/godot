@@ -66,7 +66,9 @@ void TilesEditorPlugin::_thread() {
 		pattern_preview_sem.wait();
 
 		pattern_preview_mutex.lock();
-		if (pattern_preview_queue.size()) {
+		if (pattern_preview_queue.size() == 0) {
+			pattern_preview_mutex.unlock();
+		} else {
 			QueueItem item = pattern_preview_queue.front()->get();
 			pattern_preview_queue.pop_front();
 			pattern_preview_mutex.unlock();
@@ -130,8 +132,6 @@ void TilesEditorPlugin::_thread() {
 				item.callback.callp(args_ptr, 2, r, error);
 
 				viewport->queue_delete();
-			} else {
-				pattern_preview_mutex.unlock();
 			}
 		}
 	}
