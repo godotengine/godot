@@ -3863,7 +3863,7 @@ void TextEdit::undo() {
 		}
 		caret_pos_dirty = true;
 	}
-	queue_redraw();
+	adjust_viewport_to_caret();
 }
 
 void TextEdit::redo() {
@@ -3915,7 +3915,7 @@ void TextEdit::redo() {
 		}
 		caret_pos_dirty = true;
 	}
-	queue_redraw();
+	adjust_viewport_to_caret();
 }
 
 void TextEdit::clear_undo_history() {
