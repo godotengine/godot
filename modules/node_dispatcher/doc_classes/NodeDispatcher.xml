@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NodeDispatcher" inherits="Object" version="3.5">
+	<brief_description>
+		A Singleton used for dispatching nodes' process in separated threads.
+	</brief_description>
+	<description>
+		Godot's built-in SceneTree is kinda sucks, so I made this not-so-invasive singleton built to combat with Godot's single-thread design philosophy. Thread-safe? What's that?
+	</description>
+	<members>
+		<member name="is_active" type="bool" setter="set_active" getter="get_active" default="true">
+			The current execution state of NodeDispatcher. Should only be editted deferredly/on the main thread.
+		</member>
+		<member name="usable_thread_count" type="int" setter="set_usable_thread_count" getter="get_usable_thread_count" default="2">
+			The total amount of thread this can Singleton dispatch. Minimum value is NodeDispatcher.min_thread_count. Should only be editted deferredly/on the main thread.
+		</member>
+	</members>
+	<methods>
+		<method name="add_node">
+			<return type="bool" />
+			<argument index="0" name="node" type="Node"/>
+			<description>
+				Add a node to the execution queue. Should only be called deferredly/on the main thread. Return value apparently does not matter.
+			</description>
+		</method>
+		<method name="remove_node">
+			<return type="bool" />
+			<argument index="0" name="instance_id" type="int"/>
+			<description>
+				Remove a node with id of instance_id from the execution queue. Should only be called deferredly/on the main thread. Return true on success, return false when no node with given id was found.
+			</description>
+		</method>
+		<method name="queue_execution">
+			<return type="void" />
+			<argument index="0" name="function" type="FuncRef"/>
+			<argument index="1" name="parameter" type="Array"/>
+			<description>
+				Delay the execution of given function until the next physics dispatch. All queued funtions are called in a single thread.
+			</description>
+		</method>
+		<!-- <method name="set_active">
+			<return type="void" />
+			<argument index="0" name="trigger" type="bool"/>
+			<description>
+				Set the execution state of NodeDispatcher. Should only be called deferredly/on the main thread.
+			</description>
+		</method>
+		<method name="get_active">
+			<return type="bool" />
+			<description>
+				Return the execution state of NodeDispatcher.
+			</description>
+		</method>
+		<method name="get_usable_thread_count">
+			<return type="int" />
+			<description>
+				Return the total amount of threads NodeDispatcher will dispatch for each frame and iteration.
+			</description>
+		</method> -->
+		<method name="get_min_thread_count">
+			<return type="int" />
+			<description>
+				Return the minimum amount of threads NodeDispatcher can dispatch.
+			</description>
+		</method>
+		<method name="get_max_thread_count">
+			<return type="int" />
+			<description>
+				Return the amount of CPU cores that this device has.
+			</description>
+		</method>
+		<method name="get_node_count">
+			<return type="int" />
+			<description>
+				Return the amount of node(s) currently inside the execution queue.
+			</description>
+		</method>
+		<method name="get_queued_execution_count">
+			<return type="int" />
+			<description>
+				Return the amount of queued function(s) delayed for later execution.
+			</description>
+		</method>
+		<method name="get_all_nodes">
+			<return type="Array" />
+			<description>
+				Return all node(s) currently inside the execution queue.
+			</description>
+		</method>
+		<method name="get_all_nodes_by_handler">
+			<return type="Dictionary" />
+			<description>
+				Return all node(s) currently inside the execution queue sorted by threads order.
+			</description>
+		</method>
+	</methods>
+</class>

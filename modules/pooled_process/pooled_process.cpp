@@ -4,6 +4,10 @@
 #define THREAD_COUNT_DIVISOR 2
 #define MAX_EXPECTED_FPS 1000.0
 #define MIN_FRAME_DELTA (1.0 / MAX_EXPECTED_FPS)
+#define HUB_OUT(HEADER, MSG) \
+	Hub::get_singleton()->print_custom(String(HEADER), String((std::string("(") \
+	+ std::string(__FILE__) + std::string(" line ") + std::to_string(__LINE__) + std::string(") ") + MSG).c_str()))
+
 
 #define GET_TICKS OS::get_singleton()->get_ticks_msec()
 #define GET_TICKS_USEC OS::get_singleton()->get_ticks_usec()
@@ -19,13 +23,28 @@ PooledWorker::PooledWorker(ThreadType thread_type){
 }
 PooledWorker::~PooledWorker(){
 	if (thread) delete thread;
-	for (auto obj : handling){
+	for (int i = 0; i < handling.size(); i++){
+		auto obj = handling[i];
+		auto fref = fref_pool[i];
 		if (obj) memdelete(obj);
+		if (fref) memdelete(fref);
 	}
 	handling.resize(0);
 }
 void PooledWorker::add_object(Object* obj){
 	handling.push_back(obj);
+	auto fref = new FuncRef();
+	fref->set_instance(obj);
+	fref->set_function(type == ThreadType::PHYSICS ? StringName("update_physics") : StringName("update_idle"));
+	fref_pool.push_back(fref);
+}
+void PooledWorker::remove_object_at(const int& index){
+	auto obj = handling[index];
+	if (obj) memdelete(obj);
+	auto fref = fref_pool[index];
+	if (fref) memdelete(fref);
+	handling.erase(handling.begin() + index);
+	fref_pool.erase(fref_pool.begin() + index);
 }
 bool PooledWorker::remove_object(const int& obj_id){
 	int size = handling.size();
@@ -44,6 +63,9 @@ ThreadType PooledWorker::get_thread_type(){
 }
 std::vector<Object*>* PooledWorker::get_handling(){
 	return &handling;
+}
+std::vector<FuncRef*>* PooledWorker::get_funcref_pool(){
+	return &fref_pool;
 }
 size_t PooledWorker::get_handling_count(){
 	return handling.size();
@@ -104,6 +126,9 @@ void PooledProcess::notify_idle(const float& delta, const int64_t& current_frame
 void PooledProcess::notify_iteration(const float& delta){
 	physics_call_count++;
 	physics_delta = delta;
+	// if (delta > 0.0 && physics_call_count < 10){
+	// 	HUB_OUT("Info", std::string("Notified: ") + std::to_string(physics_delta));
+	// }
 }
 void PooledProcess::remove_thread(const int& id){
 	pool_mutex.lock();
@@ -121,9 +146,12 @@ void PooledProcess::remove_thread(const int& id){
 }
 bool PooledProcess::add_worker_internal(Object *obj, ThreadType ttype){
 	if (!obj){
-		Hub::get_singleton()->print_fatal(String("Object is Null"));
+		// Hub::get_singleton()->print_fatal(String("Object is Null"));
+		HUB_OUT("Fatal", std::string("Object is Null"));
 		return false;
 	}
+	auto obj_id = obj->get_instance_id();
+	if (obj_id == 0) return false;
 	int index = -1;
 	long min_pool_worker = MAX_WORKER_PER_POOL;
 	for (int iter = 0; iter < thread_list.size(); iter++){
@@ -141,9 +169,27 @@ bool PooledProcess::add_worker_internal(Object *obj, ThreadType ttype){
 		}
 	}
 	if (index < 0) return false;
-	threads_mutex[index]->lock();
-	thread_list[index]->add_object(obj);
-	threads_mutex[index]->unlock();
+	auto c_worker = thread_list[index];
+	auto c_mutex = threads_mutex[index];
+	c_mutex->lock();
+	c_worker->add_object(obj);
+	c_mutex->unlock();
+	std::string output_msg;
+	auto c_handling = c_worker->get_handling();
+	if (c_handling->operator[](c_handling->size() - 1)->get_instance_id() == 0){
+		output_msg += "Error adding object";
+		// Hub::get_singleton()->print_debug(String(output_msg.c_str()));
+		HUB_OUT("Fatal", output_msg);
+		return false;
+	}
+	output_msg += "Successfully added instance with id ";
+	output_msg += std::to_string(obj_id);
+	output_msg += " to a ";
+	output_msg += (ttype == ThreadType::PHYSICS ? "physics" : "idle");
+	output_msg += " worker with id ";
+	output_msg += std::to_string(index);
+	// Hub::get_singleton()->print_debug(String(output_msg.c_str()));
+	HUB_OUT("Info", output_msg);
 	return true;
 }
 bool PooledProcess::add_worker_idle(Object* obj){
@@ -152,52 +198,18 @@ bool PooledProcess::add_worker_idle(Object* obj){
 bool PooledProcess::add_worker_physics(Object* obj){
 	return add_worker_internal(obj, ThreadType::PHYSICS);
 }
-void PooledProcess::idle_worker(const int& id){
-	int64_t curr_frame = frame_count;
-	while (!finished){
-		while ((curr_frame == frame_count) && !finished){
-			std::this_thread::sleep_for(std::chrono::seconds(int64_t(MIN_FRAME_DELTA)));
-		}
-		if (finished) return;
-		curr_frame = frame_count;
-		threads_mutex[id]->lock();
-		auto worker = thread_list[id];
-		if (!worker) return;
-		auto handling = worker->get_handling();
-		for (int i = 0; i < handling->size() && i >= 0; i++){
-			auto obj = handling->operator[](i);
-			if (!obj){
-				handling->erase(handling->begin() + i);
-				i--;
-				continue;
-			}
-			//------------------------------------------------------
-			// FuncRef fref;
-			// fref.set_instance(obj);
-			// fref.set_function(StringName("update_idle"));
-			// Array args;
-			// args.append(Variant(idle_delta));
-			// args.append(Variant(frame_count));
-			// fref.call_funcv(args);
-			//------------------------------------------------------
-			auto args = new Variant[0]();
-			auto err_ok = Variant::CallError::CALL_OK;
-			obj->call(StringName("update_idle"), args, 0, err_ok);
-		}
-		threads_mutex[id]->unlock();
-	}
-}
-void PooledProcess::physics_worker(const int& id){
-	int64_t curr_frame = physics_call_count;
+void PooledProcess::worker_internal(const int &id, ThreadType type){
+	int64_t *frame_update = type == ThreadType::PHYSICS ? &physics_call_count : &frame_count;
+	float *delta = type == ThreadType::PHYSICS ? &physics_delta : &idle_delta;
+	auto curr_frame = *frame_update;
 	int64_t steps = 0;
-	// Hub::get_singleton()->print_debug(String("Physics worker instantiated"));
+	// StringName func_name(type == ThreadType::PHYSICS ? "update_physics" : "update_idle");
 	while (!finished){
-		while ((curr_frame == physics_call_count) && !finished){
+		while ((curr_frame == *frame_update) && !finished){
 			std::this_thread::sleep_for(std::chrono::seconds(int64_t(MIN_FRAME_DELTA)));
 		}
-		// if (steps < 10) Hub::get_singleton()->print_debug(String("Physics stepped"));
 		if (finished) return;
-		curr_frame = physics_call_count;
+		curr_frame = *frame_update;
 		threads_mutex[id]->lock();
 		auto worker = thread_list[id];
 		if (!worker) return;
@@ -206,27 +218,41 @@ void PooledProcess::physics_worker(const int& id){
 			// if (steps < 10) Hub::get_singleton()->print_debug(String("Iterating physics step"));
 			auto obj = handling->operator[](i);
 			if (!obj){
-				handling->erase(handling->begin() + i);
+				HUB_OUT("Info", std::string("Object is null, removing..."));
+				worker->remove_object_at(id);
 				i--;
 				continue;
 			}
-			// if (steps < 10) Hub::get_singleton()->print_debug(String("Calling obj from physics handler"));
-			//------------------------------------------------------
-			// FuncRef fref;
-			// fref.set_instance(obj);
-			// fref.set_function(StringName("update_physics"));
-			// Array args;
-			// args.append(Variant(physics_delta));
-			// args.append(Variant(physics_call_count));
-			// fref.call_funcv(args);
-			//------------------------------------------------------
-			auto args = new Variant[0]();
-			auto err_ok = Variant::CallError::CALL_OK;
-			obj->call(StringName("update_physics"), args, 0, err_ok);
+			if (obj->get_instance_id() == 0){
+				std::string err_msg;
+				err_msg += "(Worker id: ";
+				err_msg += std::to_string(id).c_str();
+				err_msg += ") ";
+				err_msg += "Can't call function as instance\'s id is 0";
+				// Hub::get_singleton()->print_fatal(String(err_msg.c_str()));
+				HUB_OUT("Fatal", err_msg);
+				worker->remove_object_at(id);
+				i--;
+				continue;
+			}
+			// if (steps < 10) Hub::get_singleton()->print_debug(String("Calling function"));
+			// auto args = new Variant[0]();
+			// auto err_ok = Variant::CallError::CALL_OK;
+			// obj->call((func_name), args, 0, err_ok);
+			Array args;
+			args.append(Variant(*delta));
+			args.append(Variant(*frame_update));
+			worker->get_funcref_pool()->operator[](id)->call_funcv(args);
 		}
 		threads_mutex[id]->unlock();
 		steps++;
 	}
+}
+void PooledProcess::idle_worker(const int& id){
+	worker_internal(id, ThreadType::IDLE);
+}
+void PooledProcess::physics_worker(const int& id){
+	worker_internal(id, ThreadType::PHYSICS);
 }
 bool PooledProcess::remove_object(const int& obj_id, bool is_physics){
 	ThreadType from_pool = is_physics ? ThreadType::PHYSICS : ThreadType::IDLE;
@@ -245,7 +271,7 @@ bool PooledProcess::remove_object(const int& obj_id, bool is_physics){
 	}
 	return false;
 }
-bool PooledProcess::create_new_thread(bool is_physics){
+int PooledProcess::create_new_thread(bool is_physics){
 	ThreadType thread_type = is_physics ? ThreadType::PHYSICS : ThreadType::IDLE;
 	pool_mutex.lock();
 	if (current_thread_count < max_thread_count){
@@ -261,7 +287,7 @@ bool PooledProcess::create_new_thread(bool is_physics){
 			default:
 				pool_mutex.unlock();
 				delete worker;
-				return false;
+				return -1;
 		}
 		worker->thread = thread;
 		thread_list.push_back(worker);
@@ -270,7 +296,7 @@ bool PooledProcess::create_new_thread(bool is_physics){
 		current_thread_count++;
 	}
 	pool_mutex.unlock();
-	return false;
+	return current_thread_count - 1;
 }
 int PooledProcess::get_thread_count(){
 	return current_thread_count;
@@ -278,7 +304,7 @@ int PooledProcess::get_thread_count(){
 int PooledProcess::get_max_thread_count(){
 	return max_thread_count;
 }
-int64_t PooledProcess::get_delta(bool is_physics){
+float PooledProcess::get_delta(bool is_physics){
 	return is_physics ? physics_delta : idle_delta;
 }
 int PooledProcess::get_thread_count_by_type(bool is_physics){

@@ -5,6 +5,7 @@
 #include <mutex>
 #include <vector>
 #include <chrono>
+#include <string>
 #include <cstdint>
 
 #include "core/os/os.h"
@@ -29,15 +30,19 @@ class PooledWorker {
 	private:
 		ThreadType type;
 		std::vector<Object*> handling;
+		std::vector<FuncRef*> fref_pool;
+		
 	public:
 		PooledWorker();
 		PooledWorker(ThreadType thread_type);
 		~PooledWorker();
 
 		void add_object(Object* obj);
+		void remove_object_at(const int& index);
 		bool remove_object(const int& obj_id);
 		ThreadType get_thread_type();
 		std::vector<Object*>* get_handling();
+		std::vector<FuncRef*>* get_funcref_pool();
 		size_t get_handling_count();
 
 		std::thread *thread;
@@ -46,6 +51,7 @@ class PooledWorker {
 class PooledProcess : public Object {
 	GDCLASS(PooledProcess, Object);
 private:
+
 	int max_wait_time_msec = 3000;
 	int max_thread_count = 0;
 	int current_thread_count = 0;
@@ -62,6 +68,7 @@ private:
 
 	int clampi(const int& value, const int& from, const int& to);
 	void consistent_worker(const int& id);
+	void worker_internal(const int &id, ThreadType type);
 	void idle_worker(const int& id);
 	void physics_worker(const int& id);
 	bool add_worker_internal(Object *obj, ThreadType ttype);
@@ -83,11 +90,11 @@ public:
 	bool remove_object(const int& obj_id, bool is_physics);
 	void remove_thread(const int& id);
 
-	bool create_new_thread(bool is_physics);
+	int create_new_thread(bool is_physics);
 	int get_thread_count();
 	int get_max_thread_count();
 	int get_thread_count_by_type(bool is_physics);
-	int64_t get_delta(bool is_physics);
+	float get_delta(bool is_physics);
 	int get_handling_instance(int id);
 	int64_t get_physics_step();
 

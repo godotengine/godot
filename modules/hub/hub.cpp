@@ -40,7 +40,7 @@ void Hub::print_debug(String err, Array stack){
 	print_custom("Debug", err, stack);
 }
 void Hub::print_custom(String flag, String err, Array stack){
-	const String builder("[{flag}]: {message}");
+	const String builder("[{flag}] {message}");
 	Dictionary formatter;
 	formatter["flag"] = flag;
 	formatter["message"] = err;
