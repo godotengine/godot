@@ -1128,6 +1128,12 @@ void AnimationNodeStateMachineEditor::_add_transition(const bool p_nested_action
 }
 
 void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance, bool p_multi_transitions) {
+	// Prevents a crash if the mode is invalid.
+	if (p_mode >= AnimationNodeStateMachineTransition::SWITCH_MODE_COUNT) {
+		p_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
+		p_enabled = false;
+	}
+
 	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
 	Color icon_color(1, 1, 1);
 	Color accent = get_theme_color(SNAME("accent_color"), SNAME("Editor"));
@@ -1138,13 +1144,15 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		accent.a *= 0.6;
 	}
 
-	const Ref<Texture2D> icons[6] = {
+	const Ref<Texture2D> icons[8] = {
 		get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionSyncBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionEndBig"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("TransitionEndBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionImmediateAutoBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionSyncAutoBig"), SNAME("EditorIcons")),
-		get_theme_icon(SNAME("TransitionEndAutoBig"), SNAME("EditorIcons"))
+		get_theme_icon(SNAME("TransitionEndAutoBig"), SNAME("EditorIcons")),
+		get_theme_icon(SNAME("TransitionEndAutoBig"), SNAME("EditorIcons")),
 	};
 
 	if (p_selected) {
@@ -1158,7 +1166,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 
 	state_machine_draw->draw_line(p_from, p_to, linecolor, 2);
 
-	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
+	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 4 : 0)];
 
 	Transform2D xf;
 	xf.columns[0] = (p_to - p_from).normalized();

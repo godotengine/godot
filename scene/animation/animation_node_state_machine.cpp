@@ -41,6 +41,22 @@ AnimationNodeStateMachineTransition::SwitchMode AnimationNodeStateMachineTransit
 	return switch_mode;
 }
 
+void AnimationNodeStateMachineTransition::set_switch_time(float p_time) {
+	switch_time = p_time;
+}
+
+float AnimationNodeStateMachineTransition::get_switch_time() const {
+	return switch_time;
+}
+
+void AnimationNodeStateMachineTransition::set_switch_target_offset(float p_time) {
+	switch_target_offset = p_time;
+}
+
+float AnimationNodeStateMachineTransition::get_switch_target_offset() const {
+	return switch_target_offset;
+}
+
 void AnimationNodeStateMachineTransition::set_advance_mode(AdvanceMode p_mode) {
 	advance_mode = p_mode;
 }
@@ -120,6 +136,12 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_switch_mode", "mode"), &AnimationNodeStateMachineTransition::set_switch_mode);
 	ClassDB::bind_method(D_METHOD("get_switch_mode"), &AnimationNodeStateMachineTransition::get_switch_mode);
 
+	ClassDB::bind_method(D_METHOD("set_switch_time", "time"), &AnimationNodeStateMachineTransition::set_switch_time);
+	ClassDB::bind_method(D_METHOD("get_switch_time"), &AnimationNodeStateMachineTransition::get_switch_time);
+
+	ClassDB::bind_method(D_METHOD("set_switch_target_offset", "time"), &AnimationNodeStateMachineTransition::set_switch_target_offset);
+	ClassDB::bind_method(D_METHOD("get_switch_target_offset"), &AnimationNodeStateMachineTransition::get_switch_target_offset);
+
 	ClassDB::bind_method(D_METHOD("set_advance_mode", "mode"), &AnimationNodeStateMachineTransition::set_advance_mode);
 	ClassDB::bind_method(D_METHOD("get_advance_mode"), &AnimationNodeStateMachineTransition::get_advance_mode);
 
@@ -142,7 +164,9 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_GROUP("Switch", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End,At Time"), "set_switch_mode", "get_switch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "switch_time", PROPERTY_HINT_RANGE, "0,100,0.0001"), "set_switch_time", "get_switch_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "switch_target_offset", PROPERTY_HINT_RANGE, "0,100,0.0001"), "set_switch_target_offset", "get_switch_target_offset");
 	ADD_GROUP("Advance", "advance_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Auto"), "set_advance_mode", "get_advance_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
@@ -151,6 +175,7 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	BIND_ENUM_CONSTANT(SWITCH_MODE_IMMEDIATE);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_SYNC);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_AT_END);
+	BIND_ENUM_CONSTANT(SWITCH_MODE_AT_TIME);
 
 	BIND_ENUM_CONSTANT(ADVANCE_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(ADVANCE_MODE_ENABLED);
@@ -439,13 +464,18 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	{ //advance and loop check
 		double next_pos = len_current - rem;
 		end_loop = next_pos < pos_current;
+		pos_previous = pos_current;
 		pos_current = next_pos; //looped
+		if (end_loop) {
+			cycle_count++;
+		}
 	}
 
 	//find next
 	StringName next;
 	double next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
+	float switch_target_offset = 0.0;
 
 	if (path.size()) {
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
@@ -457,6 +487,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				next_xfade = p_state_machine->transitions[i].transition->get_xfade_time();
 				current_curve = p_state_machine->transitions[i].transition->get_xfade_curve();
 				switch_mode = p_state_machine->transitions[i].transition->get_switch_mode();
+				switch_target_offset = p_state_machine->transitions[i].transition->get_switch_target_offset();
 				next = path[0];
 			}
 		}
@@ -495,7 +526,9 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				}
 			}
 
-			if (p_state_machine->transitions[i].from == current && _check_advance_condition(p_state_machine, p_state_machine->transitions[i].transition)) {
+			if (p_state_machine->transitions[i].from == current &&
+					_check_transition_time_is_valid(p_state_machine, p_state_machine->transitions[i].transition, pos_current, len_current, cycle_count) &&
+					_check_advance_condition(p_state_machine, p_state_machine->transitions[i].transition)) {
 				if (p_state_machine->transitions[i].transition->get_priority() <= priority_best) {
 					priority_best = p_state_machine->transitions[i].transition->get_priority();
 					auto_advance_to = i;
@@ -513,6 +546,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			current_curve = p_state_machine->transitions[auto_advance_to].transition->get_xfade_curve();
 			next_xfade = p_state_machine->transitions[auto_advance_to].transition->get_xfade_time();
 			switch_mode = p_state_machine->transitions[auto_advance_to].transition->get_switch_mode();
+			switch_target_offset = p_state_machine->transitions[auto_advance_to].transition->get_switch_target_offset();
 		}
 	}
 
@@ -537,7 +571,9 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 						continue;
 					}
 
-					if (current_transition.next == prev_state_machine->end_node && _check_advance_condition(prev_state_machine, prev_state_machine->transitions[i].transition)) {
+					if (current_transition.next == prev_state_machine->end_node &&
+							_check_transition_time_is_valid(prev_state_machine, prev_state_machine->transitions[i].transition, pos_current, len_current, cycle_count) &&
+							_check_advance_condition(prev_state_machine, prev_state_machine->transitions[i].transition)) {
 						if (prev_state_machine->transitions[i].transition->get_priority() <= priority_best) {
 							priority_best = prev_state_machine->transitions[i].transition->get_priority();
 							auto_advance_to = i;
@@ -590,13 +626,23 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			}
 
 			current = next;
+			cycle_count = 0; // Reset
 
 			len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, CMP_EPSILON, AnimationNode::FILTER_IGNORE, true); // Process next node's first key in here.
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
 				pos_current = MIN(pos_current, len_current);
 				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 			} else {
-				pos_current = 0;
+				pos_current = 0.0;
+
+				if (switch_target_offset > 0.0) {
+					float offset = len_current * switch_target_offset;
+					while (offset >= len_current) {
+						offset -= len_current;
+						cycle_count++;
+					}
+					pos_current = len_current - p_state_machine->blend_node(current, p_state_machine->states[current].node, offset, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
+				}
 			}
 
 			rem = len_current; //so it does not show 0 on transition
@@ -649,6 +695,37 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 	}
 
 	return true;
+}
+
+bool AnimationNodeStateMachinePlayback::_check_transition_time_is_valid(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> transition, float p_pos_current, float p_len_current, int p_cycle_count) const {
+	if (transition->get_switch_mode() == AnimationNodeStateMachineTransition::SWITCH_MODE_AT_TIME) {
+		float looped_pos_prev = pos_previous;
+
+		float switch_ratio = transition->get_switch_time();
+		int cycles = p_cycle_count;
+
+		if (end_loop) {
+			looped_pos_prev -= len_current;
+		}
+
+		double current_ratio = pos_current / len_current;
+		double previous_ratio = looped_pos_prev / len_current;
+
+		if ((int)switch_ratio > 0) {
+			int cycle_ratio_floor = (int)(switch_ratio) + 1;
+			double cycle_modulo = (double)(cycles % cycle_ratio_floor);
+			current_ratio += cycle_modulo;
+			previous_ratio += cycle_modulo;
+		}
+
+		if (current_ratio >= switch_ratio && previous_ratio <= switch_ratio) {
+			return true;
+		}
+	} else {
+		return true;
+	}
+
+	return false;
 }
 
 void AnimationNodeStateMachinePlayback::_bind_methods() {

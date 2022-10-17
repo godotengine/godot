@@ -31,6 +31,10 @@
 		<member name="switch_mode" type="int" setter="set_switch_mode" getter="get_switch_mode" enum="AnimationNodeStateMachineTransition.SwitchMode" default="0">
 			The transition type.
 		</member>
+		<member name="switch_target_offset" type="float" setter="set_switch_target_offset" getter="get_switch_target_offset" default="0.0">
+		</member>
+		<member name="switch_time" type="float" setter="set_switch_time" getter="get_switch_time" default="0.0">
+		</member>
 		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
 			Ease curve for better control over cross-fade between this state and the next.
 		</member>
@@ -55,7 +59,9 @@
 		<constant name="SWITCH_MODE_AT_END" value="2" enum="SwitchMode">
 			Wait for the current state playback to end, then switch to the beginning of the next state animation.
 		</constant>
-		<constant name="ADVANCE_MODE_DISABLED" value="0" enum="AdvanceMode">
+		<constant name="SWITCH_MODE_AT_TIME" value="3" enum="SwitchMode">
+			Wait for a discreet time window before evaluating, then switch to a time in the next state animation.
+		</constant>		<constant name="ADVANCE_MODE_DISABLED" value="0" enum="AdvanceMode">
 			Don't use this transition.
 		</constant>
 		<constant name="ADVANCE_MODE_ENABLED" value="1" enum="AdvanceMode">
