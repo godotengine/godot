@@ -3087,7 +3087,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					rect_changed = true;
 				}
 #if defined(VULKAN_ENABLED)
-				if (context_vulkan && window_created) {
+				if (context_vulkan && window.context_created) {
 					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
 					context_vulkan->window_resize(window_id, window.width, window.height);
 				}
@@ -3547,6 +3547,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 				windows.erase(id);
 				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create Vulkan Window.");
 			}
+			wd.context_created = true;
 		}
 #endif
 
