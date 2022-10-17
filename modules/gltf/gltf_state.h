@@ -97,6 +97,7 @@ class GLTFState : public Resource {
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
@@ -190,6 +191,9 @@ public:
 	int get_animation_players_count(int idx);
 
 	AnimationPlayer *get_animation_player(int idx);
+
+	Variant get_additional_data(const StringName &p_extension_name);
+	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 
 	//void set_scene_nodes(RBMap<GLTFNodeIndex, Node *> p_scene_nodes) {
 	//	this->scene_nodes = p_scene_nodes;
