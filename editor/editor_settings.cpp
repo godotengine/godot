@@ -695,6 +695,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Run */
 
 	// Window placement
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "run/window_placement/creation_time_interval", 0, "0,10000,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/rect", 1, "Top Left,Centered,Custom Position,Force Maximized,Force Fullscreen")
 	String screen_hints = "Same as Editor,Previous Monitor,Next Monitor";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {

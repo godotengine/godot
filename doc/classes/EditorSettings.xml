@@ -643,6 +643,9 @@
 		<member name="run/output/font_size" type="int" setter="" getter="">
 			The size of the font in the [b]Output[/b] panel at the bottom of the editor. This setting does not impact the font size of the script editor (see [member interface/editor/code_font_size]).
 		</member>
+		<member name="run/window_placement/creation_time_interval" type="int" setter="" getter="">
+			The interval in milliseconds of running multiple debug instances. When you found that actually created debug instances is less than your demands, increase this interval until all debug instances are created properly.
+		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
 		</member>

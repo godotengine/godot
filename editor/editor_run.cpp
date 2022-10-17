@@ -270,7 +270,12 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	printf("\n");
 
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
+	int creation_time_interval = EditorSettings::get_singleton()->get("run/window_placement/creation_time_interval");
 	for (int i = 0; i < instances; i++) {
+		if (i > 0 && creation_time_interval > 0) {
+			// Let previous instance has some time to initialize.
+			OS::get_singleton()->delay_usec(creation_time_interval * 1000);
+		}
 		OS::ProcessID pid = 0;
 		Error err = OS::get_singleton()->create_instance(args, &pid);
 		ERR_FAIL_COND_V(err, err);
