@@ -50,6 +50,7 @@
 #endif
 
 #include "extensions/openxr_composition_layer_depth_extension.h"
+#include "extensions/openxr_fb_display_refresh_rate_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
@@ -1748,6 +1749,31 @@ void OpenXRAPI::end_frame() {
 	}
 }
 
+float OpenXRAPI::get_display_refresh_rate() const {
+	OpenXRDisplayRefreshRateExtension *drrext = OpenXRDisplayRefreshRateExtension::get_singleton();
+	if (drrext) {
+		return drrext->get_refresh_rate();
+	}
+
+	return 0.0;
+}
+
+void OpenXRAPI::set_display_refresh_rate(float p_refresh_rate) {
+	OpenXRDisplayRefreshRateExtension *drrext = OpenXRDisplayRefreshRateExtension::get_singleton();
+	if (drrext != nullptr) {
+		drrext->set_refresh_rate(p_refresh_rate);
+	}
+}
+
+Array OpenXRAPI::get_available_display_refresh_rates() const {
+	OpenXRDisplayRefreshRateExtension *drrext = OpenXRDisplayRefreshRateExtension::get_singleton();
+	if (drrext != nullptr) {
+		return drrext->get_available_refresh_rates();
+	}
+
+	return Array();
+}
+
 OpenXRAPI::OpenXRAPI() {
 	// OpenXRAPI is only constructed if OpenXR is enabled.
 	singleton = this;
@@ -1817,6 +1843,7 @@ OpenXRAPI::OpenXRAPI() {
 	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
 	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
 	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));
+	register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {
