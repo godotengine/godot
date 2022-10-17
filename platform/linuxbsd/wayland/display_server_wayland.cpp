@@ -3128,6 +3128,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	screensaver = memnew(FreeDesktopScreenSaver);
 #endif
 
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
 	r_error = OK;
 }
 

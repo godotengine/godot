@@ -76,6 +76,7 @@
 #include "../freedesktop_screensaver.h"
 #endif
 
+#include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/thread.h"
 
