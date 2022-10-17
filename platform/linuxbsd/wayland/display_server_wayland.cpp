@@ -2077,36 +2077,32 @@ void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 
-		if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
-			ERR_PRINT("Borderless windows aren't supported.");
-		} else {
-			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
-			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
+		wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
+		xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
 
-			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
+		wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 
-			if (wls.globals.xdg_decoration_manager) {
-				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
-				zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
+		if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_id) && wls.globals.xdg_decoration_manager) {
+			wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
+			zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
 
-				zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+			zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+		}
+
+		xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
+
+		if (wd.parent != INVALID_WINDOW_ID) {
+			ERR_FAIL_COND(!wls.windows.has(wd.parent));
+
+			WindowData &parent_wd = wls.windows[wd.parent];
+
+			if (parent_wd.xdg_toplevel) {
+				xdg_toplevel_set_parent(wd.xdg_toplevel, parent_wd.xdg_toplevel);
 			}
+		}
 
-			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
-
-			if (wd.parent != INVALID_WINDOW_ID) {
-				ERR_FAIL_COND(!wls.windows.has(wd.parent));
-
-				WindowData &parent_wd = wls.windows[wd.parent];
-
-				if (parent_wd.xdg_toplevel) {
-					xdg_toplevel_set_parent(wd.xdg_toplevel, parent_wd.xdg_toplevel);
-				}
-			}
-
-			if (wd.title.utf8().ptr()) {
-				xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
-			}
+		if (wd.title.utf8().ptr()) {
+			xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
 		}
 
 		if (window_get_flag(WINDOW_FLAG_POPUP, p_id)) {
@@ -2513,7 +2509,13 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 	switch (p_flag) {
 		case WINDOW_FLAG_BORDERLESS: {
-			ERR_FAIL_COND_MSG(wd.visible, "Popup flag can't changed while window is opened.");
+			if (wls.globals.xdg_decoration_manager && wd.xdg_toplevel_decoration) {
+				if (p_enabled) {
+					zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE);
+				} else {
+					zxdg_toplevel_decoration_v1_set_mode(wd.xdg_toplevel_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+				}
+			}
 		} break;
 
 		default: {
