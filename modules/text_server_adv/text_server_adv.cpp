@@ -1393,7 +1393,10 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 		int error = 0;
 		if (!ft_library) {
 			error = FT_Init_FreeType(&ft_library);
-			ERR_FAIL_COND_V_MSG(error != 0, false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+			if (error != 0) {
+				memdelete(fd);
+				ERR_FAIL_V_MSG(false, "FreeType: Error initializing library: '" + String(FT_Error_String(error)) + "'.");
+			}
 		}
 
 		memset(&fd->stream, 0, sizeof(FT_StreamRec));
@@ -1422,6 +1425,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 		if (error) {
 			FT_Done_Face(fd->face);
 			fd->face = nullptr;
+			memdelete(fd);
 			ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
 		}
 
@@ -1835,6 +1839,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 			FT_Done_MM_Var(ft_library, amaster);
 		}
 #else
+		memdelete(fd);
 		ERR_FAIL_V_MSG(false, "FreeType: Can't load dynamic font, engine is compiled without FreeType support!");
 #endif
 	} else {
