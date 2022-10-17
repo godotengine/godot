@@ -1624,48 +1624,6 @@ void DisplayServerWayland::_xdg_toplevel_on_configure_bounds(void *data, struct 
 void DisplayServerWayland::_xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities) {
 }
 
-void DisplayServerWayland::_xdg_popup_on_configure(void *data, struct xdg_popup *xdg_popup, int32_t x, int32_t y, int32_t width, int32_t height) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = wd->wls;
-	ERR_FAIL_COND(!wls->windows.has(wd->parent));
-
-	// The reported position is an offset from the parent. The engine expects a
-	// screen global position consistent with the main window which, being a
-	// toplevel, is in our case always "at" (0,0) (note: it might be anywhere on
-	// the screen, we just have no way of finding out, so we just lie to the
-	// engine), so we have to convert said offset to this fake "global" value.
-	Point2i global_position = _wayland_state_point_window_to_global(*wls, wd->parent, Point2i(x, y));
-
-	wd->rect.position.x = global_position.x;
-	wd->rect.position.y = global_position.y;
-	wd->rect.size.width = width;
-	wd->rect.size.height = height;
-
-	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on configure x %d y %d width %d height %d", wd->id, x, y, width, height));
-}
-
-void DisplayServerWayland::_xdg_popup_on_popup_done(void *data, struct xdg_popup *xdg_popup) {
-	WindowData *wd = (WindowData *)data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = (WaylandState *)wd->wls;
-	ERR_FAIL_NULL(wls);
-
-	Ref<WaylandWindowEventMessage> msg;
-	msg.instantiate();
-	msg->id = wd->id;
-	msg->event = WINDOW_EVENT_CLOSE_REQUEST;
-	wls->message_queue.push_back(msg);
-
-	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on popup done", wd->id));
-}
-
-void DisplayServerWayland::_xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token) {
-	DEBUG_LOG_WAYLAND(vformat("window %d xdg popup on repositioned", ((WindowData *)data)->id));
-}
-
 void DisplayServerWayland::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
 	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
 		WARN_PRINT_ONCE("Client side decorations are not yet supported!");
@@ -1767,7 +1725,6 @@ void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data,
 
 bool DisplayServerWayland::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		case FEATURE_SUBWINDOWS:
 		case FEATURE_MOUSE:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_CURSOR_SHAPE:
@@ -2108,7 +2065,7 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 	return _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
 }
 
-void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
+void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 	MutexLock mutex_lock(wls.mutex);
 
 	ERR_FAIL_COND(!wls.windows.has(p_id));
@@ -2121,19 +2078,7 @@ void DisplayServerWayland::show_window(DisplayServer::WindowID p_id) {
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 
 		if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
-			ERR_FAIL_COND_MSG(!wls.windows.has(wd.parent), "Popups must have a valid parent.");
-
-			WindowData &parent_wd = wls.windows[wd.parent];
-			ERR_FAIL_COND_MSG(!parent_wd.wl_surface, "Popup parents must have a valid surface.");
-
-			wd.wl_subsurface = wl_subcompositor_get_subsurface(wls.globals.wl_subcompositor, wd.wl_surface, parent_wd.wl_surface);
-			wl_subsurface_set_desync(wd.wl_subsurface);
-			Point2i offset = wd.rect.position - parent_wd.rect.position;
-			DEBUG_LOG_WAYLAND(vformat("Parent offset: %s", offset));
-
-			wl_subsurface_set_position(wd.wl_subsurface, offset.x, offset.y);
-
-			DEBUG_LOG_WAYLAND(vformat("Created subsurface at %s", wd.rect.position));
+			ERR_PRINT("Borderless windows aren't supported.");
 		} else {
 			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
 			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
@@ -2258,39 +2203,11 @@ void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
 		xdg_surface_destroy(wd.xdg_surface);
 	}
 
-	if (wd.wl_subsurface) {
-		wl_subsurface_destroy(wd.wl_subsurface);
-	}
-
 	if (wd.wl_surface) {
 		wl_surface_destroy(wd.wl_surface);
 	}
 
 	wls.windows.erase(p_id);
-}
-
-DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
-	MutexLock mutex_lock(wls.mutex);
-
-	if (wls.popup_list.size() > 0) {
-		return wls.popup_list.front()->get();
-	}
-
-	return INVALID_WINDOW_ID;
-}
-
-void DisplayServerWayland::window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) {
-	MutexLock mutex_lock(wls.mutex);
-
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	wls.windows[p_window].safe_rect = p_rect;
-}
-
-Rect2i DisplayServerWayland::window_get_popup_safe_rect(WindowID p_window) const {
-	MutexLock mutex_lock(wls.mutex);
-
-	ERR_FAIL_COND_V(!wls.windows.has(p_window), Rect2i());
-	return wls.windows[p_window].safe_rect;
 }
 
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
@@ -2397,22 +2314,7 @@ Point2i DisplayServerWayland::window_get_position(DisplayServer::WindowID p_wind
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window) {
-	MutexLock mutex_lock(wls.mutex);
-
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	// NOTE: Setting the position of a non borderless window is not supported.
-	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		// TODO: check for parent existence?
-		WindowData &parent_wd = wls.windows[wd.parent];
-
-		Point2i offset = wd.rect.position - parent_wd.rect.position;
-		wl_subsurface_set_position(wd.wl_subsurface, offset.x, offset.y);
-
-		// Wait configure.
-		wl_display_roundtrip(wls.wl_display);
-	}
+	// Setting the position of a non borderless window is not supported.
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window) {
@@ -3208,7 +3110,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	cursor_set_shape(CURSOR_BUSY);
 
 	WindowID main_window_id = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(Point2i(0, 0), p_resolution));
-	show_window(main_window_id);
+	_show_window(main_window_id);
 
 #ifdef VULKAN_ENABLED
 	if (p_rendering_driver == "vulkan") {
@@ -3259,10 +3161,6 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 		if (wd.xdg_surface) {
 			xdg_surface_destroy(wd.xdg_surface);
-		}
-
-		if (wd.wl_subsurface) {
-			wl_subsurface_destroy(wd.wl_subsurface);
 		}
 
 		if (wd.wl_surface) {

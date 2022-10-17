@@ -173,8 +173,6 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
-		struct wl_subsurface *wl_subsurface = nullptr;
-
 		HashSet<WindowID> children;
 		WindowID parent = INVALID_WINDOW_ID;
 
@@ -464,10 +462,6 @@ class DisplayServerWayland : public DisplayServer {
 	static void _xdg_toplevel_on_configure_bounds(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height);
 	static void _xdg_toplevel_on_wm_capabilities(void *data, struct xdg_toplevel *xdg_toplevel, struct wl_array *capabilities);
 
-	static void _xdg_popup_on_configure(void *data, struct xdg_popup *xdg_popup, int32_t x, int32_t y, int32_t width, int32_t height);
-	static void _xdg_popup_on_popup_done(void *data, struct xdg_popup *xdg_popup);
-	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
-
 	// wayland-protocols event handlers.
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
@@ -568,12 +562,6 @@ class DisplayServerWayland : public DisplayServer {
 		.wm_capabilities = _xdg_toplevel_on_wm_capabilities,
 	};
 
-	static constexpr struct xdg_popup_listener xdg_popup_listener = {
-		.configure = _xdg_popup_on_configure,
-		.popup_done = _xdg_popup_on_popup_done,
-		.repositioned = _xdg_popup_on_repositioned,
-	};
-
 	// wayland-protocols event listeners.
 	static constexpr struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {
 		.configure = _xdg_toplevel_decoration_on_configure,
@@ -643,12 +631,8 @@ public:
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
-	virtual void show_window(WindowID p_id) override;
+	virtual void _show_window(WindowID p_id);
 	virtual void delete_sub_window(WindowID p_id) override;
-
-	virtual WindowID window_get_active_popup() const override;
-	virtual void window_set_popup_safe_rect(WindowID p_window, const Rect2i &p_rect) override;
-	virtual Rect2i window_get_popup_safe_rect(WindowID p_window) const override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 
