@@ -1306,6 +1306,8 @@ void ProjectList::load_projects() {
 		create_project_item_control(i);
 	}
 
+	sort_projects();
+
 	set_v_scroll(0);
 
 	update_icons_async();
