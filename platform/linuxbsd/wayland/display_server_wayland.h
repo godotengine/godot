@@ -33,7 +33,6 @@
 
 #ifdef WAYLAND_ENABLED
 
-// FIXME: Linux only?
 #include <fcntl.h>
 #include <limits.h>
 #include <poll.h>
