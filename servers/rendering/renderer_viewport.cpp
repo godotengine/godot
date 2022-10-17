@@ -614,31 +614,31 @@ void RendererViewport::draw_viewports() {
 
 		if (vp->use_xr) {
 			if (xr_interface.is_valid()) {
+				// Ignore update mode we have to commit frames to our XR interface
+				visible = true;
+
 				// Override our size, make sure it matches our required size and is created as a stereo target
 				Size2 xr_size = xr_interface->get_render_target_size();
 				_viewport_set_size(vp, xr_size.width, xr_size.height, xr_interface->get_view_count());
-
-				// Inform xr interface we're about to render its viewport, if this returns false we don't render
-				visible = xr_interface->pre_draw_viewport(vp->render_target);
 			} else {
 				// don't render anything
 				visible = false;
 				vp->size = Size2();
 			}
-		}
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == RS::VIEWPORT_UPDATE_ONCE) {
-			visible = true;
-		}
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_VISIBLE && RSG::texture_storage->render_target_was_used(vp->render_target)) {
-			visible = true;
-		}
-
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
-			Viewport *parent = viewport_owner.get_or_null(vp->parent);
-			if (parent && parent->last_pass == draw_viewports_pass) {
+		} else {
+			if (vp->update_mode == RS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == RS::VIEWPORT_UPDATE_ONCE) {
 				visible = true;
+			}
+
+			if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_VISIBLE && RSG::texture_storage->render_target_was_used(vp->render_target)) {
+				visible = true;
+			}
+
+			if (vp->update_mode == RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE) {
+				Viewport *parent = viewport_owner.get_or_null(vp->parent);
+				if (parent && parent->last_pass == draw_viewports_pass) {
+					visible = true;
+				}
 			}
 		}
 
@@ -664,33 +664,37 @@ void RendererViewport::draw_viewports() {
 
 		RSG::texture_storage->render_target_set_as_unused(vp->render_target);
 		if (vp->use_xr && xr_interface.is_valid()) {
-			RSG::texture_storage->render_target_set_override_color(vp->render_target, xr_interface->get_color_texture());
-			RSG::texture_storage->render_target_set_override_depth(vp->render_target, xr_interface->get_depth_texture());
-			RSG::texture_storage->render_target_set_override_velocity(vp->render_target, xr_interface->get_velocity_texture());
+			// Inform XR interface we're about to render its viewport,
+			// if this returns false we don't render.
+			// This usually is a result of the player taking off their headset and OpenXR telling us to skip
+			// rendering frames.
+			if (xr_interface->pre_draw_viewport(vp->render_target)) {
+				RSG::texture_storage->render_target_set_override_color(vp->render_target, xr_interface->get_color_texture());
+				RSG::texture_storage->render_target_set_override_depth(vp->render_target, xr_interface->get_depth_texture());
+				RSG::texture_storage->render_target_set_override_velocity(vp->render_target, xr_interface->get_velocity_texture());
 
-			// render...
-			RSG::scene->set_debug_draw_mode(vp->debug_draw);
+				// render...
+				RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
-			// and draw viewport
-			_draw_viewport(vp);
+				// and draw viewport
+				_draw_viewport(vp);
 
-			// measure
+				// commit our eyes
+				Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
+				if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
+					if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
+						if (blits.size() > 0) {
+							RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
+						}
+						RSG::rasterizer->end_frame(true);
+					} else if (blits.size() > 0) {
+						if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
+							blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
+						}
 
-			// commit our eyes
-			Vector<BlitToScreen> blits = xr_interface->post_draw_viewport(vp->render_target, vp->viewport_to_screen_rect);
-			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID) {
-				if (OS::get_singleton()->get_current_rendering_driver_name() == "opengl3") {
-					if (blits.size() > 0) {
-						RSG::rasterizer->blit_render_targets_to_screen(vp->viewport_to_screen, blits.ptr(), blits.size());
-					}
-					RSG::rasterizer->end_frame(true);
-				} else if (blits.size() > 0) {
-					if (!blit_to_screen_list.has(vp->viewport_to_screen)) {
-						blit_to_screen_list[vp->viewport_to_screen] = Vector<BlitToScreen>();
-					}
-
-					for (int b = 0; b < blits.size(); b++) {
-						blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
+						for (int b = 0; b < blits.size(); b++) {
+							blit_to_screen_list[vp->viewport_to_screen].push_back(blits[b]);
+						}
 					}
 				}
 			}
