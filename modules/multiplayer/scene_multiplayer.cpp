@@ -51,14 +51,27 @@ void SceneMultiplayer::profile_bandwidth(const String &p_inout, int p_size) {
 }
 #endif
 
+void SceneMultiplayer::_update_status() {
+	MultiplayerPeer::ConnectionStatus status = multiplayer_peer.is_valid() ? multiplayer_peer->get_connection_status() : MultiplayerPeer::CONNECTION_DISCONNECTED;
+	if (last_connection_status != status) {
+		if (status == MultiplayerPeer::CONNECTION_DISCONNECTED) {
+			clear();
+		}
+		last_connection_status = status;
+	}
+}
+
 Error SceneMultiplayer::poll() {
-	if (!multiplayer_peer.is_valid() || multiplayer_peer->get_connection_status() == MultiplayerPeer::CONNECTION_DISCONNECTED) {
-		return ERR_UNCONFIGURED;
+	_update_status();
+	if (last_connection_status == MultiplayerPeer::CONNECTION_DISCONNECTED) {
+		return OK;
 	}
 
 	multiplayer_peer->poll();
 
-	if (!multiplayer_peer.is_valid()) { // It's possible that polling might have resulted in a disconnection, so check here.
+	_update_status();
+	if (last_connection_status != MultiplayerPeer::CONNECTION_CONNECTED) {
+		// We might be still connecting, or polling might have resulted in a disconnection.
 		return OK;
 	}
 
@@ -73,8 +86,48 @@ Error SceneMultiplayer::poll() {
 		Error err = multiplayer_peer->get_packet(&packet, len);
 		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Error getting packet! %d", err));
 
+		if (pending_peers.has(sender)) {
+			if (pending_peers[sender].local) {
+				// If the auth is over, admit the peer at the first packet.
+				pending_peers.erase(sender);
+				_admit_peer(sender);
+			} else {
+				ERR_CONTINUE(len < 2 || (packet[0] & CMD_MASK) != NETWORK_COMMAND_SYS || packet[1] != SYS_COMMAND_AUTH);
+				// Auth message.
+				PackedByteArray pba;
+				pba.resize(len - 2);
+				if (pba.size()) {
+					memcpy(pba.ptrw(), &packet[2], len - 2);
+					// User callback
+					const Variant sv = sender;
+					const Variant pbav = pba;
+					const Variant *argv[2] = { &sv, &pbav };
+					Variant ret;
+					Callable::CallError ce;
+					auth_callback.callp(argv, 2, ret, ce);
+					ERR_CONTINUE_MSG(ce.error != Callable::CallError::CALL_OK, "Failed to call authentication callback");
+				} else {
+					// Remote complete notification.
+					pending_peers[sender].remote = true;
+					if (pending_peers[sender].local) {
+						pending_peers.erase(sender);
+						_admit_peer(sender);
+					}
+				}
+				continue; // Auth in progress.
+			}
+		}
+
+		ERR_CONTINUE(!connected_peers.has(sender));
+
 		if (len && (packet[0] & CMD_MASK) == NETWORK_COMMAND_SYS) {
 			// Sys messages are processed separately since they might call _process_packet themselves.
+			if (len > 1 && packet[1] == SYS_COMMAND_AUTH) {
+				ERR_CONTINUE(len != 2);
+				// If we are here, we already admitted the peer locally, and this is just a confirmation packet.
+				continue;
+			}
+
 			_process_sys(sender, packet, len, mode, channel);
 		} else {
 			remote_sender_id = sender;
@@ -82,17 +135,42 @@ Error SceneMultiplayer::poll() {
 			remote_sender_id = 0;
 		}
 
-		if (!multiplayer_peer.is_valid()) {
-			return OK; // It's also possible that a packet or RPC caused a disconnection, so also check here.
+		_update_status();
+		if (last_connection_status != MultiplayerPeer::CONNECTION_CONNECTED) { // It's possible that processing a packet might have resulted in a disconnection, so check here.
+			return OK;
 		}
 	}
+	if (pending_peers.size() && auth_timeout) {
+		HashSet<int> to_drop;
+		uint64_t time = OS::get_singleton()->get_ticks_msec();
+		for (const KeyValue<int, PendingPeer> &pending : pending_peers) {
+			if (pending.value.time + auth_timeout <= time) {
+				multiplayer_peer->disconnect_peer(pending.key);
+				to_drop.insert(pending.key);
+			}
+		}
+		for (const int &P : to_drop) {
+			// Each signal might trigger a disconnection.
+			pending_peers.erase(P);
+			emit_signal(SNAME("peer_authentication_failed"), P);
+		}
+	}
+
+	_update_status();
+	if (last_connection_status != MultiplayerPeer::CONNECTION_CONNECTED) { // Signals might have triggered disconnection.
+		return OK;
+	}
+
 	replicator->on_network_process();
 	return OK;
 }
 
 void SceneMultiplayer::clear() {
+	last_connection_status = MultiplayerPeer::CONNECTION_DISCONNECTED;
+	pending_peers.clear();
 	connected_peers.clear();
 	packet_cache.clear();
+	replicator->on_reset();
 	cache->clear();
 	relay_buffer->clear();
 }
@@ -132,7 +210,7 @@ void SceneMultiplayer::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) 
 		multiplayer_peer->connect("connection_failed", callable_mp(this, &SceneMultiplayer::_connection_failed));
 		multiplayer_peer->connect("server_disconnected", callable_mp(this, &SceneMultiplayer::_server_disconnected));
 	}
-	replicator->on_reset();
+	_update_status();
 }
 
 Ref<MultiplayerPeer> SceneMultiplayer::get_multiplayer_peer() {
@@ -193,18 +271,19 @@ Error SceneMultiplayer::send_command(int p_to, const uint8_t *p_packet, int p_pa
 		const Vector<uint8_t> data = relay_buffer->get_data_array();
 		return multiplayer_peer->put_packet(data.ptr(), relay_buffer->get_position());
 	}
-	if (p_to < 0) {
+	if (p_to > 0) {
+		ERR_FAIL_COND_V(!connected_peers.has(p_to), ERR_BUG);
+		multiplayer_peer->set_target_peer(p_to);
+		return multiplayer_peer->put_packet(p_packet, p_packet_len);
+	} else {
 		for (const int &pid : connected_peers) {
-			if (pid == -p_to) {
+			if (p_to && pid == -p_to) {
 				continue;
 			}
 			multiplayer_peer->set_target_peer(pid);
 			multiplayer_peer->put_packet(p_packet, p_packet_len);
 		}
 		return OK;
-	} else {
-		multiplayer_peer->set_target_peer(p_to);
-		return multiplayer_peer->put_packet(p_packet, p_packet_len);
 	}
 }
 
@@ -215,7 +294,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 	switch (sys_cmd_type) {
 		case SYS_COMMAND_ADD_PEER: {
 			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || get_unique_id() == 1 || p_from != 1);
-			_add_peer(peer);
+			_admit_peer(peer); // Relayed peers are automatically accepted.
 		} break;
 		case SYS_COMMAND_DEL_PEER: {
 			ERR_FAIL_COND(!server_relay || !multiplayer_peer->is_server_relay_supported() || get_unique_id() == 1 || p_from != 1);
@@ -273,6 +352,17 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 }
 
 void SceneMultiplayer::_add_peer(int p_id) {
+	if (auth_callback.is_valid()) {
+		pending_peers[p_id] = PendingPeer();
+		pending_peers[p_id].time = OS::get_singleton()->get_ticks_msec();
+		emit_signal(SNAME("peer_authenticating"), p_id);
+		return;
+	} else {
+		_admit_peer(p_id);
+	}
+}
+
+void SceneMultiplayer::_admit_peer(int p_id) {
 	if (server_relay && get_unique_id() == 1 && multiplayer_peer->is_server_relay_supported()) {
 		// Notify others of connection, and send connected peers to newly connected one.
 		uint8_t buf[SYS_CMD_SIZE];
@@ -299,6 +389,14 @@ void SceneMultiplayer::_add_peer(int p_id) {
 }
 
 void SceneMultiplayer::_del_peer(int p_id) {
+	if (pending_peers.has(p_id)) {
+		pending_peers.erase(p_id);
+		emit_signal(SNAME("peer_authentication_failed"), p_id);
+		return;
+	} else if (!connected_peers.has(p_id)) {
+		return;
+	}
+
 	if (server_relay && get_unique_id() == 1 && multiplayer_peer->is_server_relay_supported()) {
 		// Notify others of disconnection.
 		uint8_t buf[SYS_CMD_SIZE];
@@ -320,6 +418,16 @@ void SceneMultiplayer::_del_peer(int p_id) {
 	cache->on_peer_change(p_id, false);
 	connected_peers.erase(p_id);
 	emit_signal(SNAME("peer_disconnected"), p_id);
+}
+
+void SceneMultiplayer::disconnect_peer(int p_id) {
+	ERR_FAIL_COND(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED);
+	if (pending_peers.has(p_id)) {
+		pending_peers.erase(p_id);
+	} else if (connected_peers.has(p_id)) {
+		connected_peers.has(p_id);
+	}
+	multiplayer_peer->disconnect_peer(p_id);
 }
 
 void SceneMultiplayer::_connected_to_server() {
@@ -351,6 +459,61 @@ Error SceneMultiplayer::send_bytes(Vector<uint8_t> p_data, int p_to, Multiplayer
 	multiplayer_peer->set_transfer_channel(p_channel);
 	multiplayer_peer->set_transfer_mode(p_mode);
 	return send_command(p_to, packet_cache.ptr(), p_data.size() + 1);
+}
+
+Error SceneMultiplayer::send_auth(int p_to, Vector<uint8_t> p_data) {
+	ERR_FAIL_COND_V(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!pending_peers.has(p_to), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(pending_peers[p_to].local, ERR_FILE_CANT_WRITE, "The authentication session was previously marked as completed, no more authentication data can be sent.");
+	ERR_FAIL_COND_V_MSG(pending_peers[p_to].remote, ERR_FILE_CANT_WRITE, "The remote peer notified that the authentication session was completed, no more authentication data can be sent.");
+
+	if (packet_cache.size() < p_data.size() + 2) {
+		packet_cache.resize(p_data.size() + 2);
+	}
+
+	packet_cache.write[0] = NETWORK_COMMAND_SYS;
+	packet_cache.write[1] = SYS_COMMAND_AUTH;
+	memcpy(&packet_cache.write[2], p_data.ptr(), p_data.size());
+
+	multiplayer_peer->set_target_peer(p_to);
+	multiplayer_peer->set_transfer_channel(0);
+	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	return multiplayer_peer->put_packet(packet_cache.ptr(), p_data.size() + 2);
+}
+
+Error SceneMultiplayer::complete_auth(int p_peer) {
+	ERR_FAIL_COND_V(multiplayer_peer.is_null() || multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!pending_peers.has(p_peer), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(pending_peers[p_peer].local, ERR_FILE_CANT_WRITE, "The authentication session was already marked as completed.");
+	pending_peers[p_peer].local = true;
+	// Notify the remote peer that the authentication has completed.
+	uint8_t buf[2] = { NETWORK_COMMAND_SYS, SYS_COMMAND_AUTH };
+	Error err = multiplayer_peer->put_packet(buf, 2);
+	// The remote peer already reported the authentication as completed, so admit the peer.
+	// May generate new packets, so it must happen after sending confirmation.
+	if (pending_peers[p_peer].remote) {
+		pending_peers.erase(p_peer);
+		_admit_peer(p_peer);
+	}
+	return err;
+}
+
+void SceneMultiplayer::set_auth_callback(Callable p_callback) {
+	auth_callback = p_callback;
+}
+
+Callable SceneMultiplayer::get_auth_callback() const {
+	return auth_callback;
+}
+
+void SceneMultiplayer::set_auth_timeout(double p_timeout) {
+	ERR_FAIL_COND_MSG(p_timeout < 0, "Timeout must be greater or equal to 0 (where 0 means no timeout)");
+	auth_timeout = uint64_t(p_timeout * 1000);
+}
+
+double SceneMultiplayer::get_auth_timeout() const {
+	return double(auth_timeout) / 1000.0;
 }
 
 void SceneMultiplayer::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len) {
@@ -390,6 +553,16 @@ Vector<int> SceneMultiplayer::get_peer_ids() {
 	}
 
 	return ret;
+}
+
+Vector<int> SceneMultiplayer::get_authenticating_peer_ids() {
+	Vector<int> out;
+	out.resize(pending_peers.size());
+	int idx = 0;
+	for (const KeyValue<int, PendingPeer> &E : pending_peers) {
+		out.write[idx++] = E.key;
+	}
+	return out;
 }
 
 void SceneMultiplayer::set_allow_object_decoding(bool p_enable) {
@@ -453,6 +626,18 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SceneMultiplayer::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneMultiplayer::get_root_path);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneMultiplayer::clear);
+
+	ClassDB::bind_method(D_METHOD("disconnect_peer", "id"), &SceneMultiplayer::disconnect_peer);
+
+	ClassDB::bind_method(D_METHOD("get_authenticating_peers"), &SceneMultiplayer::get_authenticating_peer_ids);
+	ClassDB::bind_method(D_METHOD("send_auth", "id", "data"), &SceneMultiplayer::send_auth);
+	ClassDB::bind_method(D_METHOD("complete_auth", "id"), &SceneMultiplayer::complete_auth);
+
+	ClassDB::bind_method(D_METHOD("set_auth_callback", "callback"), &SceneMultiplayer::set_auth_callback);
+	ClassDB::bind_method(D_METHOD("get_auth_callback"), &SceneMultiplayer::get_auth_callback);
+	ClassDB::bind_method(D_METHOD("set_auth_timeout", "timeout"), &SceneMultiplayer::set_auth_timeout);
+	ClassDB::bind_method(D_METHOD("get_auth_timeout"), &SceneMultiplayer::get_auth_timeout);
+
 	ClassDB::bind_method(D_METHOD("set_refuse_new_connections", "refuse"), &SceneMultiplayer::set_refuse_new_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_connections"), &SceneMultiplayer::is_refusing_new_connections);
 	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &SceneMultiplayer::set_allow_object_decoding);
@@ -462,12 +647,16 @@ void SceneMultiplayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode", "channel"), &SceneMultiplayer::send_bytes, DEFVAL(MultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(MultiplayerPeer::TRANSFER_MODE_RELIABLE), DEFVAL(0));
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_path"), "set_root_path", "get_root_path");
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "auth_callback"), "set_auth_callback", "get_auth_callback");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "auth_timeout", PROPERTY_HINT_RANGE, "0,30,0.1,or_greater,suffix:s"), "set_auth_timeout", "get_auth_timeout");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_connections"), "set_refuse_new_connections", "is_refusing_new_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "server_relay"), "set_server_relay_enabled", "is_server_relay_enabled");
 
 	ADD_PROPERTY_DEFAULT("refuse_new_connections", false);
 
+	ADD_SIGNAL(MethodInfo("peer_authenticating", PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("peer_authentication_failed", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::PACKED_BYTE_ARRAY, "packet")));
 }
 

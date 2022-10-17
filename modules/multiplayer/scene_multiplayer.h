@@ -53,6 +53,7 @@ public:
 	};
 
 	enum SysCommands {
+		SYS_COMMAND_AUTH,
 		SYS_COMMAND_ADD_PEER,
 		SYS_COMMAND_DEL_PEER,
 		SYS_COMMAND_RELAY,
@@ -76,7 +77,17 @@ public:
 	};
 
 private:
+	struct PendingPeer {
+		bool local = false;
+		bool remote = false;
+		uint64_t time = 0;
+	};
+
 	Ref<MultiplayerPeer> multiplayer_peer;
+	MultiplayerPeer::ConnectionStatus last_connection_status = MultiplayerPeer::CONNECTION_DISCONNECTED;
+	HashMap<int, PendingPeer> pending_peers; // true if locally finalized.
+	Callable auth_callback;
+	uint64_t auth_timeout = 3000;
 	HashSet<int> connected_peers;
 	int remote_sender_id = 0;
 	int remote_sender_override = 0;
@@ -100,10 +111,12 @@ protected:
 	void _process_sys(int p_from, const uint8_t *p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel);
 
 	void _add_peer(int p_id);
+	void _admit_peer(int p_id);
 	void _del_peer(int p_id);
 	void _connected_to_server();
 	void _connection_failed();
 	void _server_disconnected();
+	void _update_status();
 
 public:
 	virtual void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) override;
@@ -124,6 +137,16 @@ public:
 	// Usually from object_configuration_add/remove
 	void set_root_path(const NodePath &p_path);
 	NodePath get_root_path() const;
+
+	void disconnect_peer(int p_id);
+
+	Error send_auth(int p_to, Vector<uint8_t> p_bytes);
+	Error complete_auth(int p_peer);
+	void set_auth_callback(Callable p_callback);
+	Callable get_auth_callback() const;
+	void set_auth_timeout(double p_timeout);
+	double get_auth_timeout() const;
+	Vector<int> get_authenticating_peer_ids();
 
 	Error send_command(int p_to, const uint8_t *p_packet, int p_packet_len); // Used internally to relay packets when needed.
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
