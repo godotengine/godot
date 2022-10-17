@@ -630,9 +630,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
 	virtual void _show_window(WindowID p_id);
-	virtual void delete_sub_window(WindowID p_id) override;
 
 	virtual WindowID get_window_at_screen_position(const Point2i &p_position) const override;
 

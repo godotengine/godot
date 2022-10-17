@@ -2061,10 +2061,6 @@ Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
-	return _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
-}
-
 void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 	MutexLock mutex_lock(wls.mutex);
 
@@ -2148,62 +2144,6 @@ void DisplayServerWayland::_show_window(DisplayServer::WindowID p_id) {
 			_window_data_set_mode(wd, wd.mode);
 		}
 	}
-}
-
-void DisplayServerWayland::delete_sub_window(DisplayServer::WindowID p_id) {
-	MutexLock mutex_lock(wls.mutex);
-
-	ERR_FAIL_COND(!wls.windows.has(p_id));
-
-	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted.");
-
-	WindowData &wd = wls.windows[p_id];
-
-	if (window_get_flag(WINDOW_FLAG_BORDERLESS, p_id)) {
-		DEBUG_LOG_WAYLAND(vformat("Destroying popup %d.", p_id));
-		wls.popup_list.erase(p_id);
-	} else {
-		DEBUG_LOG_WAYLAND(vformat("Destroying window %d.", p_id));
-	}
-
-	while (wd.children.size()) {
-		// Unparent all children of the window.
-		window_set_transient(*wd.children.begin(), INVALID_WINDOW_ID);
-	}
-
-	if (wd.parent != INVALID_WINDOW_ID) {
-		window_set_transient(p_id, INVALID_WINDOW_ID);
-	}
-
-#ifdef VULKAN_ENABLED
-	if (wls.context_vulkan && wd.visible) {
-		wls.context_vulkan->window_destroy(p_id);
-	}
-#endif
-
-#ifdef GLES3_ENABLED
-	if (wls.gl_manager && wd.visible) {
-		wls.gl_manager->window_destroy(p_id);
-	}
-#endif
-
-	if (wd.xdg_toplevel_decoration) {
-		zxdg_toplevel_decoration_v1_destroy(wd.xdg_toplevel_decoration);
-	}
-
-	if (wd.xdg_toplevel) {
-		xdg_toplevel_destroy(wd.xdg_toplevel);
-	}
-
-	if (wd.xdg_surface) {
-		xdg_surface_destroy(wd.xdg_surface);
-	}
-
-	if (wd.wl_surface) {
-		wl_surface_destroy(wd.wl_surface);
-	}
-
-	wls.windows.erase(p_id);
 }
 
 DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(const Point2i &p_position) const {
@@ -2354,43 +2294,8 @@ void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_wind
 #endif
 }
 
-// TODO: Make accurate with the X11 implementation.
-void DisplayServerWayland::window_set_transient(DisplayServer::WindowID p_window, DisplayServer::WindowID p_parent) {
-	MutexLock mutex_lock(wls.mutex);
-
-	ERR_FAIL_COND(p_window == p_parent);
-
-	ERR_FAIL_COND(!wls.windows.has(p_window));
-	WindowData &wd = wls.windows[p_window];
-
-	ERR_FAIL_COND(wd.parent == p_parent);
-
-	struct xdg_toplevel *parent_toplevel = nullptr;
-
-	// Unset the window's parent if there's already one.
-	if (wd.parent != INVALID_WINDOW_ID) {
-		ERR_FAIL_COND(!wls.windows.has(wd.parent));
-		WindowData &old_parent_wd = wls.windows[wd.parent];
-
-		ERR_FAIL_COND(!old_parent_wd.children.has(p_window));
-		old_parent_wd.children.erase(p_window);
-
-		wd.parent = INVALID_WINDOW_ID;
-	}
-
-	if (p_parent != INVALID_WINDOW_ID) {
-		ERR_FAIL_COND(!wls.windows.has(p_parent));
-		WindowData &parent_wd = wls.windows[p_parent];
-
-		parent_wd.children.insert(p_window);
-		wd.parent = p_parent;
-
-		ERR_FAIL_COND_MSG(!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window) && window_get_flag(WINDOW_FLAG_BORDERLESS, p_parent), "Toplevels can't be parented to a popup.");
-	}
-
-	if (wd.xdg_toplevel) {
-		xdg_toplevel_set_parent(wd.xdg_toplevel, parent_toplevel);
-	}
+void DisplayServerWayland::window_set_transient(WindowID p_window, WindowID p_parent) {
+	// Currently unsupported.
 }
 
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window) {
