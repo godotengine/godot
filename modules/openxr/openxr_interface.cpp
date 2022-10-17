@@ -154,24 +154,25 @@ void OpenXRInterface::_load_action_map() {
 				Ref<OpenXRAction> xr_action = actions[j];
 
 				PackedStringArray toplevel_paths = xr_action->get_toplevel_paths();
-				Vector<Tracker *> trackers_new;
+				Vector<Tracker *> trackers_for_action;
 
 				for (int k = 0; k < toplevel_paths.size(); k++) {
-					Tracker *tracker = find_tracker(toplevel_paths[k], true);
-					if (tracker) {
-						trackers_new.push_back(tracker);
+					// Only check for our tracker if our path is supported.
+					if (openxr_api->is_path_supported(toplevel_paths[k])) {
+						Tracker *tracker = find_tracker(toplevel_paths[k], true);
+						if (tracker) {
+							trackers_for_action.push_back(tracker);
+						}
 					}
 				}
 
-				Action *action = create_action(action_set, xr_action->get_name(), xr_action->get_localized_name(), xr_action->get_action_type(), trackers);
-				if (action) {
-					// we link our actions back to our trackers so we know which actions to check when we're processing our trackers
-					for (int t = 0; t < trackers_new.size(); t++) {
-						link_action_to_tracker(trackers_new[t], action);
+				// Only add our action if we have atleast one valid toplevel path
+				if (trackers_for_action.size() > 0) {
+					Action *action = create_action(action_set, xr_action->get_name(), xr_action->get_localized_name(), xr_action->get_action_type(), trackers_for_action);
+					if (action) {
+						// add this to our map for creating our interaction profiles
+						xr_actions[xr_action] = action;
 					}
-
-					// add this to our map for creating our interaction profiles
-					xr_actions[xr_action] = action;
 				}
 			}
 		}
@@ -289,6 +290,13 @@ OpenXRInterface::Action *OpenXRInterface::create_action(ActionSet *p_action_set,
 	action->action_rid = openxr_api->action_create(p_action_set->action_set_rid, p_action_name, p_localized_name, p_action_type, tracker_rids);
 	p_action_set->actions.push_back(action);
 
+	// we link our actions back to our trackers so we know which actions to check when we're processing our trackers
+	for (int i = 0; i < p_trackers.size(); i++) {
+		if (p_trackers[i]->actions.find(action) == -1) {
+			p_trackers[i]->actions.push_back(action);
+		}
+	}
+
 	return action;
 }
 
@@ -336,6 +344,8 @@ OpenXRInterface::Tracker *OpenXRInterface::find_tracker(const String &p_tracker_
 	if (!p_create) {
 		return nullptr;
 	}
+
+	ERR_FAIL_COND_V(!openxr_api->is_path_supported(p_tracker_name), nullptr);
 
 	// Create our RID
 	RID tracker_rid = openxr_api->tracker_create(p_tracker_name);
@@ -393,12 +403,6 @@ void OpenXRInterface::tracker_profile_changed(RID p_tracker, RID p_interaction_p
 		String name = openxr_api->interaction_profile_get_name(p_interaction_profile);
 		print_verbose("OpenXR: Interaction profile for " + tracker->tracker_name + " changed to " + name);
 		tracker->positional_tracker->set_tracker_profile(name);
-	}
-}
-
-void OpenXRInterface::link_action_to_tracker(Tracker *p_tracker, Action *p_action) {
-	if (p_tracker->actions.find(p_action) == -1) {
-		p_tracker->actions.push_back(p_action);
 	}
 }
 
