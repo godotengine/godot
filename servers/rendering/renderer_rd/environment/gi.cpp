@@ -2335,7 +2335,7 @@ void GI::SDFGI::render_region(Ref<RenderSceneBuffersRD> p_render_buffers, int p_
 		img.instantiate();
 		for (uint32_t i = 0; i < cascade_size; i++) {
 			Vector<uint8_t> subarr = data.slice(128 * 128 * i, 128 * 128 * (i + 1));
-			img->create(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
+			img->set_data(cascade_size, cascade_size, false, Image::FORMAT_L8, subarr);
 			img->save_png("res://cascade_sdf_" + itos(cascade) + "_" + itos(i) + ".png");
 		}
 

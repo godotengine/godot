@@ -371,6 +371,38 @@ private:
 
 	Ref<Image> _get_gl_image_and_format(const Ref<Image> &p_image, Image::Format p_format, Image::Format &r_real_format, GLenum &r_gl_format, GLenum &r_gl_internal_format, GLenum &r_gl_type, bool &r_compressed, bool p_force_decompress) const;
 
+	/* TEXTURE ATLAS API */
+
+	struct TextureAtlas {
+		struct Texture {
+			int users;
+			Rect2 uv_rect;
+		};
+
+		struct SortItem {
+			RID texture;
+			Size2i pixel_size;
+			Size2i size;
+			Point2i pos;
+
+			bool operator<(const SortItem &p_item) const {
+				//sort larger to smaller
+				if (size.height == p_item.size.height) {
+					return size.width > p_item.size.width;
+				} else {
+					return size.height > p_item.size.height;
+				}
+			}
+		};
+
+		HashMap<RID, Texture> textures;
+		bool dirty = true;
+
+		GLuint texture = 0;
+		GLuint framebuffer = 0;
+		Size2i size;
+	} texture_atlas;
+
 	/* Render Target API */
 
 	mutable RID_Owner<RenderTarget> render_target_owner;
@@ -472,6 +504,25 @@ public:
 	uint32_t texture_get_depth(RID p_texture) const;
 	void texture_bind(RID p_texture, uint32_t p_texture_no);
 	RID texture_create_radiance_cubemap(RID p_source, int p_resolution = -1) const;
+
+	/* TEXTURE ATLAS API */
+
+	void update_texture_atlas();
+
+	GLuint texture_atlas_get_texture() const;
+	_FORCE_INLINE_ Rect2 texture_atlas_get_texture_rect(RID p_texture) {
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+		if (!t) {
+			return Rect2();
+		}
+
+		return t->uv_rect;
+	}
+
+	void texture_add_to_texture_atlas(RID p_texture);
+	void texture_remove_from_texture_atlas(RID p_texture);
+	void texture_atlas_mark_dirty_on_texture(RID p_texture);
+	void texture_atlas_remove_texture(RID p_texture);
 
 	/* DECAL API */
 

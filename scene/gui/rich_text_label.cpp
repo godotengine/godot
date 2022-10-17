@@ -2019,36 +2019,36 @@ void RichTextLabel::gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_pressed()) {
 			bool handled = false;
 
-			if (k->is_action("ui_page_up") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_page_up", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() - vscroll->get_page());
 				handled = true;
 			}
-			if (k->is_action("ui_page_down") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_page_down", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() + vscroll->get_page());
 				handled = true;
 			}
-			if (k->is_action("ui_up") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_up", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() - theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
-			if (k->is_action("ui_down") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_down", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_value() + theme_cache.normal_font->get_height(theme_cache.normal_font_size));
 				handled = true;
 			}
-			if (k->is_action("ui_home") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_home", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(0);
 				handled = true;
 			}
-			if (k->is_action("ui_end") && vscroll->is_visible_in_tree()) {
+			if (k->is_action("ui_end", true) && vscroll->is_visible_in_tree()) {
 				vscroll->set_value(vscroll->get_max());
 				handled = true;
 			}
 			if (is_shortcut_keys_enabled()) {
-				if (k->is_action("ui_text_select_all")) {
+				if (k->is_action("ui_text_select_all", true)) {
 					select_all();
 					handled = true;
 				}
-				if (k->is_action("ui_copy")) {
+				if (k->is_action("ui_copy", true)) {
 					selection_copy();
 					handled = true;
 				}
@@ -2956,7 +2956,7 @@ void RichTextLabel::_remove_item(Item *p_item, const int p_line, const int p_sub
 	memdelete(p_item);
 }
 
-void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment) {
+void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -2969,7 +2969,15 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, 
 	ERR_FAIL_COND(p_image->get_height() == 0);
 	ItemImage *item = memnew(ItemImage);
 
-	item->image = p_image;
+	if (p_region.has_area()) {
+		Ref<AtlasTexture> atlas_tex = memnew(AtlasTexture);
+		atlas_tex->set_atlas(p_image);
+		atlas_tex->set_region(p_region);
+		item->image = atlas_tex;
+	} else {
+		item->image = p_image;
+	}
+
 	item->color = p_color;
 	item->inline_align = p_alignment;
 
@@ -2981,17 +2989,30 @@ void RichTextLabel::add_image(const Ref<Texture2D> &p_image, const int p_width, 
 			item->size.height = p_height;
 		} else {
 			// calculate height to keep aspect ratio
-			item->size.height = p_image->get_height() * p_width / p_image->get_width();
+			if (p_region.has_area()) {
+				item->size.height = p_region.get_size().height * p_width / p_region.get_size().width;
+			} else {
+				item->size.height = p_image->get_height() * p_width / p_image->get_width();
+			}
 		}
 	} else {
 		if (p_height > 0) {
 			// custom height
 			item->size.height = p_height;
 			// calculate width to keep aspect ratio
-			item->size.width = p_image->get_width() * p_height / p_image->get_height();
+			if (p_region.has_area()) {
+				item->size.width = p_region.get_size().width * p_height / p_region.get_size().height;
+			} else {
+				item->size.width = p_image->get_width() * p_height / p_image->get_height();
+			}
 		} else {
-			// keep original width and height
-			item->size = p_image->get_size();
+			if (p_region.has_area()) {
+				// if the image has a region, keep the region size
+				item->size = p_region.get_size();
+			} else {
+				// keep original width and height
+				item->size = p_image->get_size();
+			}
 		}
 	}
 
@@ -4126,6 +4147,18 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			Ref<Texture2D> texture = ResourceLoader::load(image, "Texture2D");
 			if (texture.is_valid()) {
+				Rect2 region;
+				OptionMap::Iterator region_option = bbcode_options.find("region");
+				if (region_option) {
+					Vector<String> region_values = region_option->value.split(",", false);
+					if (region_values.size() == 4) {
+						region.position.x = region_values[0].to_float();
+						region.position.y = region_values[1].to_float();
+						region.size.x = region_values[2].to_float();
+						region.size.y = region_values[3].to_float();
+					}
+				}
+
 				Color color = Color(1.0, 1.0, 1.0);
 				OptionMap::Iterator color_option = bbcode_options.find("color");
 				if (color_option) {
@@ -4154,7 +4187,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					}
 				}
 
-				add_image(texture, width, height, color, (InlineAlignment)alignment);
+				add_image(texture, width, height, color, (InlineAlignment)alignment, region);
 			}
 
 			pos = end;
@@ -5209,7 +5242,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_parsed_text"), &RichTextLabel::get_parsed_text);
 	ClassDB::bind_method(D_METHOD("add_text", "text"), &RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
-	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER));
+	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
 	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);

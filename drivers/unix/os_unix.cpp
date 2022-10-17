@@ -145,6 +145,10 @@ void OS_Unix::finalize_core() {
 	NetSocketPosix::cleanup();
 }
 
+Vector<String> OS_Unix::get_video_adapter_driver_info() const {
+	return Vector<String>();
+}
+
 String OS_Unix::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];

@@ -772,9 +772,7 @@ Ref<Image> SkyRD::Sky::bake_panorama(float p_energy, int p_roughness_layers, con
 		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
 		RD::get_singleton()->free(rad_tex);
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
+		Ref<Image> img = Image::create_from_data(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
 		for (int i = 0; i < p_size.width; i++) {
 			for (int j = 0; j < p_size.height; j++) {
 				Color c = img->get_pixel(i, j);

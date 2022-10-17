@@ -656,7 +656,7 @@ int DebugAdapterProtocol::parse_variant(const Variant &p_var) {
 
 bool DebugAdapterProtocol::process_message(const String &p_text) {
 	JSON json;
-	ERR_FAIL_COND_V_MSG(json.parse(p_text) != OK, true, "Mal-formed message!");
+	ERR_FAIL_COND_V_MSG(json.parse(p_text) != OK, true, "Malformed message!");
 	Dictionary params = json.get_data();
 	bool completed = true;
 

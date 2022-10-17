@@ -485,7 +485,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			}
 
 			if (area->is_using_reverb_bus()) {
-				StringName reverb_bus_name = area->get_reverb_bus();
+				StringName reverb_bus_name = area->get_reverb_bus_name();
 				Vector<AudioFrame> reverb_vol;
 				_calc_reverb_vol(area, listener_area_pos, output_volume_vector, reverb_vol);
 				bus_volumes[reverb_bus_name] = reverb_vol;

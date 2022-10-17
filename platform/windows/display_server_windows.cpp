@@ -561,20 +561,6 @@ float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	return data.rate;
 }
 
-bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
-#ifndef _MSC_VER
-#warning touchscreen not working
-#endif
-	return DisplayServer::screen_is_touchscreen(p_screen);
-}
-
-void DisplayServerWindows::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
-}
-
-DisplayServer::ScreenOrientation DisplayServerWindows::screen_get_orientation(int p_screen) const {
-	return SCREEN_LANDSCAPE;
-}
-
 void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
 	if (keep_screen_on == p_enable) {
 		return;

@@ -155,11 +155,11 @@ Transform2D Camera2D::get_camera_transform() {
 			}
 		}
 
-		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
-			real_t c = smoothing * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+		if (follow_smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
+			real_t c = position_smoothing_speed * (process_callback == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
-			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
+			//camera_pos=camera_pos*(1.0-position_smoothing_speed)+new_camera_pos*position_smoothing_speed;
 		} else {
 			ret_camera_pos = smoothed_camera_pos = camera_pos;
 		}
@@ -183,7 +183,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
-	if (!smoothing_enabled || !limit_smoothing_enabled) {
+	if (!follow_smoothing_enabled || !limit_smoothing_enabled) {
 		if (screen_rect.position.x < limit[SIDE_LEFT]) {
 			screen_rect.position.x = limit[SIDE_LEFT];
 		}
@@ -428,7 +428,7 @@ void Camera2D::set_current(bool p_current) {
 
 void Camera2D::_update_process_internal_for_smoothing() {
 	bool is_not_in_scene_or_editor = !(is_inside_tree() && Engine::get_singleton()->is_editor_hint());
-	bool is_any_smoothing_valid = smoothing > 0 || rotation_smoothing_speed > 0;
+	bool is_any_smoothing_valid = position_smoothing_speed > 0 || rotation_smoothing_speed > 0;
 
 	bool enabled = is_any_smoothing_valid && is_not_in_scene_or_editor;
 	set_process_internal(enabled);
@@ -525,13 +525,13 @@ void Camera2D::align() {
 	_update_scroll();
 }
 
-void Camera2D::set_follow_smoothing(real_t p_speed) {
-	smoothing = p_speed;
+void Camera2D::set_position_smoothing_speed(real_t p_speed) {
+	position_smoothing_speed = p_speed;
 	_update_process_internal_for_smoothing();
 }
 
-real_t Camera2D::get_follow_smoothing() const {
-	return smoothing;
+real_t Camera2D::get_position_smoothing_speed() const {
+	return position_smoothing_speed;
 }
 
 void Camera2D::set_rotation_smoothing_speed(real_t p_speed) {
@@ -607,18 +607,18 @@ real_t Camera2D::get_drag_horizontal_offset() const {
 void Camera2D::_set_old_smoothing(real_t p_enable) {
 	//compatibility
 	if (p_enable > 0) {
-		smoothing_enabled = true;
-		set_follow_smoothing(p_enable);
+		follow_smoothing_enabled = true;
+		set_position_smoothing_speed(p_enable);
 	}
 }
 
-void Camera2D::set_enable_follow_smoothing(bool p_enabled) {
-	smoothing_enabled = p_enabled;
+void Camera2D::set_position_smoothing_enabled(bool p_enabled) {
+	follow_smoothing_enabled = p_enabled;
 	notify_property_list_changed();
 }
 
-bool Camera2D::is_follow_smoothing_enabled() const {
-	return smoothing_enabled;
+bool Camera2D::is_position_smoothing_enabled() const {
+	return follow_smoothing_enabled;
 }
 
 void Camera2D::set_custom_viewport(Node *p_viewport) {
@@ -689,7 +689,7 @@ bool Camera2D::is_margin_drawing_enabled() const {
 }
 
 void Camera2D::_validate_property(PropertyInfo &p_property) const {
-	if (!smoothing_enabled && p_property.name == "smoothing_speed") {
+	if (!follow_smoothing_enabled && p_property.name == "smoothing_speed") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	if (!rotation_smoothing_enabled && p_property.name == "rotation_smoothing_speed") {
@@ -746,11 +746,11 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_viewport", "viewport"), &Camera2D::set_custom_viewport);
 	ClassDB::bind_method(D_METHOD("get_custom_viewport"), &Camera2D::get_custom_viewport);
 
-	ClassDB::bind_method(D_METHOD("set_follow_smoothing", "follow_smoothing"), &Camera2D::set_follow_smoothing);
-	ClassDB::bind_method(D_METHOD("get_follow_smoothing"), &Camera2D::get_follow_smoothing);
+	ClassDB::bind_method(D_METHOD("set_position_smoothing_speed", "position_smoothing_speed"), &Camera2D::set_position_smoothing_speed);
+	ClassDB::bind_method(D_METHOD("get_position_smoothing_speed"), &Camera2D::get_position_smoothing_speed);
 
-	ClassDB::bind_method(D_METHOD("set_enable_follow_smoothing", "follow_smoothing"), &Camera2D::set_enable_follow_smoothing);
-	ClassDB::bind_method(D_METHOD("is_follow_smoothing_enabled"), &Camera2D::is_follow_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("set_position_smoothing_enabled", "position_smoothing_speed"), &Camera2D::set_position_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("is_position_smoothing_enabled"), &Camera2D::is_position_smoothing_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_rotation_smoothing_enabled", "enabled"), &Camera2D::set_rotation_smoothing_enabled);
 	ClassDB::bind_method(D_METHOD("is_rotation_smoothing_enabled"), &Camera2D::is_rotation_smoothing_enabled);
@@ -788,9 +788,9 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::INT, "limit_bottom", PROPERTY_HINT_NONE, "suffix:px"), "set_limit", "get_limit", SIDE_BOTTOM);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "limit_smoothed"), "set_limit_smoothing_enabled", "is_limit_smoothing_enabled");
 
-	ADD_GROUP("Smoothing", "smoothing_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smoothing_enabled"), "set_enable_follow_smoothing", "is_follow_smoothing_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_follow_smoothing", "get_follow_smoothing");
+	ADD_GROUP("Follow Smoothing", "follow_smoothing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "position_smoothing_enabled"), "set_position_smoothing_enabled", "is_position_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "position_smoothing_speed", PROPERTY_HINT_NONE, "suffix:px/s"), "set_position_smoothing_speed", "get_position_smoothing_speed");
 
 	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled"), "set_rotation_smoothing_enabled", "is_rotation_smoothing_enabled");

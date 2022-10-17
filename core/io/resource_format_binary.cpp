@@ -1042,7 +1042,14 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 					// If a UID is found and the path is valid, it will be used, otherwise, it falls back to the path.
 					er.path = ResourceUID::get_singleton()->get_id_path(er.uid);
 				} else {
+#ifdef TOOLS_ENABLED
+					// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
+					if (ResourceLoader::get_resource_uid(res_path) != er.uid) {
+						WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UUID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+					}
+#else
 					WARN_PRINT(String(res_path + ": In external resource #" + itos(i) + ", invalid UUID: " + ResourceUID::get_singleton()->id_to_text(er.uid) + " - using text path instead: " + er.path).utf8().get_data());
+#endif
 				}
 			}
 		}

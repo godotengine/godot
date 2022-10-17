@@ -476,6 +476,13 @@
 				Infinity values of the same sign are considered equal.
 			</description>
 		</method>
+		<method name="is_finite">
+			<return type="bool" />
+			<param index="0" name="x" type="float" />
+			<description>
+				Returns whether [code]x[/code] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+			</description>
+		</method>
 		<method name="is_inf">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />

@@ -1015,9 +1015,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(mc);
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
-#ifndef _MSC_VER
-#warning must reimplement drag forward
-#endif
+	// TODO: Must reimplement drag forwarding.
 	//presets->set_drag_forwarding(this);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));

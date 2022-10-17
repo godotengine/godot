@@ -112,6 +112,12 @@
 				Returns [code]true[/code] if this basis and [param b] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this basis is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
 		<method name="looking_at" qualifiers="static">
 			<return type="Basis" />
 			<param index="0" name="target" type="Vector3" />

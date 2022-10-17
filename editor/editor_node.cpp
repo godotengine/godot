@@ -1181,7 +1181,8 @@ void EditorNode::_vp_resized() {
 }
 
 void EditorNode::_titlebar_resized() {
-	const Size2 &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
+	DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(menu_hb->get_global_position().y + menu_hb->get_size().y / 2, menu_hb->get_global_position().y + menu_hb->get_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
+	const Vector3i &margin = DisplayServer::get_singleton()->window_get_safe_title_margins(DisplayServer::MAIN_WINDOW_ID);
 	if (left_menu_spacer) {
 		int w = (gui_base->is_layout_rtl()) ? margin.y : margin.x;
 		left_menu_spacer->set_custom_minimum_size(Size2(w, 0));
@@ -1189,6 +1190,9 @@ void EditorNode::_titlebar_resized() {
 	if (right_menu_spacer) {
 		int w = (gui_base->is_layout_rtl()) ? margin.x : margin.y;
 		right_menu_spacer->set_custom_minimum_size(Size2(w, 0));
+	}
+	if (menu_hb) {
+		menu_hb->set_custom_minimum_size(Size2(0, margin.z - menu_hb->get_global_position().y));
 	}
 }
 
@@ -1614,7 +1618,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 		// which would result in an invalid texture.
 		if (c3d == 0 && c2d == 0) {
 			img.instantiate();
-			img->create(1, 1, false, Image::FORMAT_RGB8);
+			img->initialize_data(1, 1, false, Image::FORMAT_RGB8);
 		} else if (c3d < c2d) {
 			Ref<ViewportTexture> viewport_texture = scene_root->get_texture();
 			if (viewport_texture->get_width() > 0 && viewport_texture->get_height() > 0) {
@@ -5905,7 +5909,7 @@ void EditorNode::_update_renderer_color() {
 	if (renderer->get_text() == "gl_compatibility") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (renderer->get_text() == "forward_plus" || renderer->get_text() == "mobile") {
-		renderer->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
+		renderer->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("highend_color"), SNAME("Editor")));
 	}
 }
 
@@ -6177,10 +6181,17 @@ EditorNode::EditorNode() {
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	DisplayServer::get_singleton()->window_set_min_size(Size2(1024, 600) * EDSCALE);
 
-	ResourceLoader::set_abort_on_missing_resources(false);
 	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
+
+	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
+	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
+		// Swap on means OK first.
+		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
+	}
+
+	ResourceLoader::set_abort_on_missing_resources(false);
 	ResourceLoader::set_error_notify_func(this, _load_error_notify);
 	ResourceLoader::set_dependency_error_notify_func(this, _dependency_error_report);
 
@@ -7560,7 +7571,6 @@ EditorNode::EditorNode() {
 
 	// Extend menu bar to window title.
 	if (can_expand) {
-		DisplayServer::get_singleton()->window_set_window_buttons_offset(Vector2i(menu_hb->get_minimum_size().y / 2, menu_hb->get_minimum_size().y / 2), DisplayServer::MAIN_WINDOW_ID);
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE, true, DisplayServer::MAIN_WINDOW_ID);
 		menu_hb->set_can_move_window(true);
 	}

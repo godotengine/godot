@@ -165,6 +165,12 @@
 				Returns [code]true[/code] if this [Rect2] and [param rect] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
+		<method name="is_finite" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this [Rect2] is finite, by calling [method @GlobalScope.is_finite] on each component.
+			</description>
+		</method>
 		<method name="merge" qualifiers="const">
 			<return type="Rect2" />
 			<param index="0" name="b" type="Rect2" />

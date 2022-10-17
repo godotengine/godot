@@ -1116,10 +1116,10 @@
 			</description>
 		</method>
 		<method name="window_get_safe_title_margins" qualifiers="const">
-			<return type="Vector2i" />
+			<return type="Vector3i" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns left and right margins of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
+				Returns left margins ([code]x[/code]), right margins ([code]y[/code]) adn height ([code]z[/code]) of the title that are safe to use (contains no buttons or other elements) when [constant WINDOW_FLAG_EXTEND_TO_TITLE] flag is set.
 			</description>
 		</method>
 		<method name="window_get_size" qualifiers="const">

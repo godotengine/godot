@@ -255,8 +255,7 @@ Error EditorBuildProfile::save_to_file(const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
-	JSON json;
-	String text = json.stringify(data, "\t");
+	String text = JSON::stringify(data, "\t");
 	f->store_string(text);
 	return OK;
 }

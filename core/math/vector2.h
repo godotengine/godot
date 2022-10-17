@@ -121,6 +121,7 @@ struct _NO_DISCARD_ Vector2 {
 
 	bool is_equal_approx(const Vector2 &p_v) const;
 	bool is_zero_approx() const;
+	bool is_finite() const;
 
 	Vector2 operator+(const Vector2 &p_v) const;
 	void operator+=(const Vector2 &p_v);

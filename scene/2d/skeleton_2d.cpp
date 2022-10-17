@@ -192,10 +192,8 @@ void Bone2D::_notification(int p_what) {
 			cache_transform = tmp_trans;
 		} break;
 
-		// Bone2D Editor gizmo drawing:
-#ifndef _MSC_VER
-#warning TODO Bone2D gizmo drawing needs to be moved to an editor plugin
-#endif
+		// Bone2D Editor gizmo drawing.
+		// TODO: Bone2D gizmo drawing needs to be moved to an editor plugin.
 		case NOTIFICATION_DRAW: {
 			// Only draw the gizmo in the editor!
 			if (Engine::get_singleton()->is_editor_hint() == false) {

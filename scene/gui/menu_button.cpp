@@ -36,10 +36,6 @@
 void MenuButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!_is_focus_owner_in_shortcut_context()) {
-		return;
-	}
-
 	if (disable_shortcuts) {
 		return;
 	}

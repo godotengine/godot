@@ -195,6 +195,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
+	void _animation_libraries_updated();
 
 	void _animation_key_editor_seek(float p_pos, bool p_drag, bool p_timeline_only = false);
 	void _animation_key_editor_anim_len_changed(float p_len);

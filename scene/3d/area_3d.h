@@ -215,8 +215,8 @@ public:
 	void set_use_reverb_bus(bool p_enable);
 	bool is_using_reverb_bus() const;
 
-	void set_reverb_bus(const StringName &p_audio_bus);
-	StringName get_reverb_bus() const;
+	void set_reverb_bus_name(const StringName &p_audio_bus);
+	StringName get_reverb_bus_name() const;
 
 	void set_reverb_amount(float p_amount);
 	float get_reverb_amount() const;

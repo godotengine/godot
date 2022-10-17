@@ -2655,25 +2655,33 @@ void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offs
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
-	wd.wb_offset = p_offset;
+	float scale = screen_get_max_scale();
+	wd.wb_offset = p_offset / scale;
+	wd.wb_offset.x = MAX(wd.wb_offset.x, 12);
+	wd.wb_offset.y = MAX(wd.wb_offset.y, 12);
+	if (wd.window_button_view) {
+		[wd.window_button_view setOffset:NSMakePoint(wd.wb_offset.x, wd.wb_offset.y)];
+	}
 }
 
-Vector2i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) const {
+Vector3i DisplayServerMacOS::window_get_safe_title_margins(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!windows.has(p_window), Vector2i());
+	ERR_FAIL_COND_V(!windows.has(p_window), Vector3i());
 	const WindowData &wd = windows[p_window];
 
 	if (!wd.window_button_view) {
-		return Vector2i();
+		return Vector3i();
 	}
 
-	float max_x = wd.wb_offset.x + [wd.window_button_view frame].size.width;
+	float scale = screen_get_max_scale();
+	float max_x = [wd.window_button_view getOffset].x + [wd.window_button_view frame].size.width;
+	float max_y = [wd.window_button_view getOffset].y + [wd.window_button_view frame].size.height;
 
 	if ([wd.window_object windowTitlebarLayoutDirection] == NSUserInterfaceLayoutDirectionRightToLeft) {
-		return Vector2i(0, max_x * screen_get_max_scale());
+		return Vector3i(0, max_x * scale, max_y * scale);
 	} else {
-		return Vector2i(max_x * screen_get_max_scale(), 0);
+		return Vector3i(max_x * scale, 0, max_y * scale);
 	}
 }
 

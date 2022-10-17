@@ -1655,9 +1655,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_create_info.pNext = nullptr;
 	image_create_info.flags = 0;
 
-#ifndef _MSC_VER
-#warning TODO check for support via RenderingDevice to enable on mobile when possible
-#endif
+	// TODO: Check for support via RenderingDevice to enable on mobile when possible.
 
 #ifndef ANDROID_ENABLED
 
@@ -5172,9 +5170,9 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 		uint32_t offset = 0;
 		uint8_t *binptr = ret.ptrw();
 		binptr[0] = 'G';
-		binptr[1] = 'V';
+		binptr[1] = 'S';
 		binptr[2] = 'B';
-		binptr[3] = 'D'; // Godot vulkan binary data.
+		binptr[3] = 'D'; // Godot Shader Binary Data.
 		offset += 4;
 		encode_uint32(SHADER_BINARY_VERSION, binptr + offset);
 		offset += sizeof(uint32_t);
@@ -5235,7 +5233,7 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 	uint32_t read_offset = 0;
 	// Consistency check.
 	ERR_FAIL_COND_V(binsize < sizeof(uint32_t) * 3 + sizeof(RenderingDeviceVulkanShaderBinaryData), RID());
-	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'V' || binptr[2] != 'B' || binptr[3] != 'D', RID());
+	ERR_FAIL_COND_V(binptr[0] != 'G' || binptr[1] != 'S' || binptr[2] != 'B' || binptr[3] != 'D', RID());
 
 	uint32_t bin_version = decode_uint32(binptr + 4);
 	ERR_FAIL_COND_V(bin_version != SHADER_BINARY_VERSION, RID());
@@ -6561,7 +6559,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	ERR_FAIL_INDEX_V(p_rasterization_state.cull_mode, 3, RID());
 	rasterization_state_create_info.cullMode = cull_mode[p_rasterization_state.cull_mode];
 	rasterization_state_create_info.frontFace = (p_rasterization_state.front_face == POLYGON_FRONT_FACE_CLOCKWISE ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE);
-	rasterization_state_create_info.depthBiasEnable = p_rasterization_state.depth_bias_enable;
+	rasterization_state_create_info.depthBiasEnable = p_rasterization_state.depth_bias_enabled;
 	rasterization_state_create_info.depthBiasConstantFactor = p_rasterization_state.depth_bias_constant_factor;
 	rasterization_state_create_info.depthBiasClamp = p_rasterization_state.depth_bias_clamp;
 	rasterization_state_create_info.depthBiasSlopeFactor = p_rasterization_state.depth_bias_slope_factor;
@@ -9393,7 +9391,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 		ERR_CONTINUE(err != OK);
 	}
 
-	max_descriptors_per_pool = GLOBAL_DEF("rendering/rendering_device/descriptor_pools/max_descriptors_per_pool", 64);
+	max_descriptors_per_pool = GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	// Check to make sure DescriptorPoolKey is good.
 	static_assert(sizeof(uint64_t) * 3 >= UNIFORM_TYPE_MAX * sizeof(uint16_t));

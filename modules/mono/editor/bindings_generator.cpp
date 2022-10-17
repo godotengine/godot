@@ -3119,9 +3119,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
 			StringName enum_proxy_cname = E.key;
 			String enum_proxy_name = enum_proxy_cname.operator String();
-			if (itype.find_property_by_proxy_name(enum_proxy_cname)) {
-				// We have several conflicts between enums and PascalCase properties,
-				// so we append 'Enum' to the enum name in those cases.
+			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
+				// In case the enum name conflicts with other PascalCase members,
+				// we append 'Enum' to the enum name in those cases.
+				// We have several conflicts between enums and PascalCase properties.
 				enum_proxy_name += "Enum";
 				enum_proxy_cname = StringName(enum_proxy_name);
 			}
@@ -3170,7 +3171,15 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			int64_t *value = class_info->constant_map.getptr(StringName(constant_name));
 			ERR_FAIL_NULL_V(value, false);
 
-			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
+			String constant_proxy_name = snake_to_pascal_case(constant_name, true);
+
+			if (itype.find_property_by_proxy_name(constant_proxy_name) || itype.find_method_by_proxy_name(constant_proxy_name) || itype.find_signal_by_proxy_name(constant_proxy_name)) {
+				// In case the constant name conflicts with other PascalCase members,
+				// we append 'Constant' to the constant name in those cases.
+				constant_proxy_name += "Constant";
+			}
+
+			ConstantInterface iconstant(constant_name, constant_proxy_name, *value);
 
 			iconstant.const_doc = nullptr;
 			for (int i = 0; i < itype.class_doc->constants.size(); i++) {

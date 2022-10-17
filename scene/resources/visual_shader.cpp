@@ -1509,11 +1509,10 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void VisualShader::reset_state() {
-#ifndef _MSC_VER
-#warning everything needs to be cleared here
-#endif
+	// TODO: Everything needs to be cleared here.
 	emit_changed();
 }
+
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	//mode
 	p_list->push_back(PropertyInfo(Variant::INT, PNAME("mode"), PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky,Fog"));

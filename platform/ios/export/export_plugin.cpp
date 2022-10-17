@@ -740,8 +740,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 						img->resize(info.width, info.width / aspect_ratio);
 					}
 				}
-				Ref<Image> new_img = memnew(Image);
-				new_img->create(info.width, info.height, false, Image::FORMAT_RGBA8);
+				Ref<Image> new_img = Image::create_empty(info.width, info.height, false, Image::FORMAT_RGBA8);
 				new_img->fill(boot_bg_color);
 				_blend_and_rotate(new_img, img, false);
 				err = new_img->save_png(p_dest_dir + info.export_name);
@@ -755,8 +754,7 @@ Error EditorExportPlatformIOS::_export_loading_screen_images(const Ref<EditorExp
 			}
 		} else {
 			// Generate loading screen from the splash screen
-			Ref<Image> img = memnew(Image);
-			img->create(info.width, info.height, false, Image::FORMAT_RGBA8);
+			Ref<Image> img = Image::create_empty(info.width, info.height, false, Image::FORMAT_RGBA8);
 			img->fill(boot_bg_color);
 
 			Ref<Image> img_bs;

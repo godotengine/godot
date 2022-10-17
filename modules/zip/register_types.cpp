@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  websocket_macros.h                                                   */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,39 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef WEBSOCKET_MACROS_H
-#define WEBSOCKET_MACROS_H
+#include "register_types.h"
 
-// Defaults per peer buffers, 1024 packets with a shared 65536 bytes payload.
-#define DEF_PKT_SHIFT 10
-#define DEF_BUF_SHIFT 16
+#include "core/object/class_db.h"
+#include "zip_packer.h"
+#include "zip_reader.h"
 
-#define GDCICLASS(CNAME)              \
-public:                               \
-	static CNAME *(*_create)();       \
-                                      \
-	static Ref<CNAME> create_ref() {  \
-		if (!_create)                 \
-			return Ref<CNAME>();      \
-		return Ref<CNAME>(_create()); \
-	}                                 \
-                                      \
-	static CNAME *create() {          \
-		if (!_create)                 \
-			return nullptr;           \
-		return _create();             \
-	}                                 \
-                                      \
-protected:
+void initialize_zip_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-#define GDCINULL(CNAME) \
-	CNAME *(*CNAME::_create)() = nullptr;
+	GDREGISTER_CLASS(ZIPPacker);
+	GDREGISTER_CLASS(ZIPReader);
+}
 
-#define GDCIIMPL(IMPNAME, CNAME)                                      \
-public:                                                               \
-	static CNAME *_create() { return memnew(IMPNAME); }               \
-	static void make_default() { CNAME::_create = IMPNAME::_create; } \
-                                                                      \
-protected:
-
-#endif // WEBSOCKET_MACROS_H
+void uninitialize_zip_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "texture_storage.h"
+
 #include "../effects/copy_effects.h"
 #include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
@@ -1123,9 +1124,7 @@ void TextureStorage::texture_proxy_update(RID p_texture, RID p_proxy_to) {
 void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	texture_2d_initialize(p_texture, image);
@@ -1134,9 +1133,7 @@ void TextureStorage::texture_2d_placeholder_initialize(RID p_texture) {
 void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RS::TextureLayeredType p_layered_type) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -1155,9 +1152,7 @@ void TextureStorage::texture_2d_layered_placeholder_initialize(RID p_texture, RS
 void TextureStorage::texture_3d_placeholder_initialize(RID p_texture) {
 	//this could be better optimized to reuse an existing image , done this way
 	//for now to get it working
-	Ref<Image> image;
-	image.instantiate();
-	image->create(4, 4, false, Image::FORMAT_RGBA8);
+	Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
 	image->fill(Color(1, 0, 1, 1));
 
 	Vector<Ref<Image>> images;
@@ -1180,9 +1175,7 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 #endif
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, 0);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
@@ -1203,9 +1196,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
 	ERR_FAIL_COND_V(data.size() == 0, Ref<Image>());
-	Ref<Image> image;
-	image.instantiate();
-	image->create(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
@@ -1231,9 +1222,7 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 		ERR_FAIL_COND_V(bs.offset + bs.buffer_size > (uint32_t)all_data.size(), Vector<Ref<Image>>());
 		Vector<uint8_t> sub_region = all_data.slice(bs.offset, bs.offset + bs.buffer_size);
 
-		Ref<Image> img;
-		img.instantiate();
-		img->create(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
+		Ref<Image> img = Image::create_from_data(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
 		ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
 		if (tex->format != tex->validated_format) {
 			img->convert(tex->format);
@@ -1496,9 +1485,7 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 		} break;
 		case Image::FORMAT_RGBE9995: {
 			r_format.format = RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32;
-#ifndef _MSC_VER
-#warning TODO need to make a function in Image to swap bits for this
-#endif
+			// TODO: Need to make a function in Image to swap bits for this.
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_IDENTITY;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_IDENTITY;
@@ -2462,6 +2449,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			RD::TEXTURE_SAMPLES_8,
 		};
 		rd_color_multisample_format.samples = texture_samples[rt->msaa];
+		rd_color_multisample_format.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 		RD::TextureView rd_view_multisample;
 		rd_color_multisample_format.is_resolve_buffer = false;
 		rt->color_multisample = RD::get_singleton()->texture_create(rd_color_multisample_format, rd_view_multisample);

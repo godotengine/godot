@@ -127,6 +127,11 @@ static bool default_capture_device_changed = false;
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 
+#if defined(__GNUC__)
+// Workaround GCC warning from -Wcast-function-type.
+#define GetProcAddress (void *)GetProcAddress
+#endif
+
 class CMMNotificationClient : public IMMNotificationClient {
 	LONG _cRef = 1;
 	IMMDeviceEnumerator *_pEnumerator = nullptr;
@@ -200,6 +205,20 @@ public:
 #endif
 
 static CMMNotificationClient notif_client;
+
+typedef const char *(CDECL *PWineGetVersionPtr)(void);
+
+bool AudioDriverWASAPI::is_running_on_wine() {
+	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
+	if (!nt_lib) {
+		return false;
+	}
+
+	PWineGetVersionPtr wine_get_version = (PWineGetVersionPtr)GetProcAddress(nt_lib, "wine_get_version");
+	FreeLibrary(nt_lib);
+
+	return (bool)wine_get_version;
+}
 
 Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_capture, bool reinit) {
 	WAVEFORMATEX *pwfex;
@@ -285,6 +304,10 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_c
 	}
 
 	using_audio_client_3 = !p_capture; // IID_IAudioClient3 is only used for adjustable output latency (not input)
+	if (using_audio_client_3 && is_running_on_wine()) {
+		using_audio_client_3 = false;
+		print_verbose("WASAPI: Wine detected, falling back to IAudioClient interface");
+	}
 	if (using_audio_client_3) {
 		hr = device->Activate(IID_IAudioClient3, CLSCTX_ALL, nullptr, (void **)&p_device->audio_client);
 		if (hr != S_OK) {

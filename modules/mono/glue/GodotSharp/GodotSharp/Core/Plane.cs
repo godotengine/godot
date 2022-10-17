@@ -292,6 +292,18 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector and
+        /// a <paramref name="point"/> on the plane.
+        /// </summary>
+        /// <param name="normal">The normal of the plane, must be normalized.</param>
+        /// <param name="point">The point on the plane.</param>
+        public Plane(Vector3 normal, Vector3 point)
+        {
+            _normal = normal;
+            D = _normal.Dot(point);
+        }
+
+        /// <summary>
         /// Constructs a <see cref="Plane"/> from the three points, given in clockwise order.
         /// </summary>
         /// <param name="v1">The first point.</param>

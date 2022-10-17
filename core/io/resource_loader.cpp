@@ -49,6 +49,11 @@ Ref<ResourceFormatLoader> ResourceLoader::loader[ResourceLoader::MAX_LOADERS];
 int ResourceLoader::loader_count = 0;
 
 bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_for_type) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_recognize_path, p_path, p_for_type, ret)) {
+		return ret;
+	}
+
 	String extension = p_path.get_extension();
 
 	List<String> extensions;
@@ -189,6 +194,7 @@ void ResourceFormatLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(CACHE_MODE_REPLACE);
 
 	GDVIRTUAL_BIND(_get_recognized_extensions);
+	GDVIRTUAL_BIND(_recognize_path, "path", "type");
 	GDVIRTUAL_BIND(_handles_type, "type");
 	GDVIRTUAL_BIND(_get_resource_type, "path");
 	GDVIRTUAL_BIND(_get_resource_uid, "path");

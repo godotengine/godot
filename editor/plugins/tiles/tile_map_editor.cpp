@@ -460,7 +460,7 @@ void TileMapEditorTilesPlugin::_update_theme() {
 	source_sort_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 	select_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("ToolSelect"), SNAME("EditorIcons")));
 	paint_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-	line_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")));
+	line_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Line"), SNAME("EditorIcons")));
 	rect_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Rectangle"), SNAME("EditorIcons")));
 	bucket_tool_button->set_icon(tiles_bottom_panel->get_theme_icon(SNAME("Bucket"), SNAME("EditorIcons")));
 
@@ -2002,6 +2002,7 @@ void TileMapEditorTilesPlugin::_set_source_sort(int p_sort) {
 	}
 	TilesEditorPlugin::get_singleton()->set_sorting_option(p_sort);
 	_update_tile_set_sources_list();
+	EditorSettings::get_singleton()->set_project_metadata("editor_metadata", "tile_source_sort", p_sort);
 }
 
 void TileMapEditorTilesPlugin::_bind_methods() {
@@ -3276,7 +3277,7 @@ void TileMapEditorTerrainsPlugin::_update_tiles_list() {
 
 void TileMapEditorTerrainsPlugin::_update_theme() {
 	paint_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
-	line_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("CurveLinear"), SNAME("EditorIcons")));
+	line_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Line"), SNAME("EditorIcons")));
 	rect_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Rectangle"), SNAME("EditorIcons")));
 	bucket_tool_button->set_icon(main_vbox_container->get_theme_icon(SNAME("Bucket"), SNAME("EditorIcons")));
 

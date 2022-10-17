@@ -5239,9 +5239,7 @@ bool Animation::_fetch_compressed(uint32_t p_compressed_track, double p_time, Ve
 
 	double page_base_time = compression.pages[page_index].time_offset;
 	const uint8_t *page_data = compression.pages[page_index].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+	// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 	const uint32_t *indices = (const uint32_t *)page_data;
 	const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 	uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5384,9 +5382,7 @@ void Animation::_get_compressed_key_indices_in_range(uint32_t p_compressed_track
 
 		double page_base_time = compression.pages[page_index].time_offset;
 		const uint8_t *page_data = compression.pages[page_index].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5456,9 +5452,7 @@ int Animation::_get_compressed_key_count(uint32_t p_compressed_track) const {
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];
@@ -5492,9 +5486,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 
 	for (uint32_t i = 0; i < compression.pages.size(); i++) {
 		const uint8_t *page_data = compression.pages[i].data.ptr();
-#ifndef _MSC_VER
-#warning Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported
-#endif
+		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
 		uint32_t time_key_count = indices[p_compressed_track * 3 + 1];

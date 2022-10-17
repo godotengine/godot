@@ -268,8 +268,8 @@ List<int> TilesEditorPlugin::get_sorted_sources(const Ref<TileSet> p_tile_set) c
 	SourceNameComparator::tile_set = p_tile_set;
 	List<int> source_ids;
 
-	for (int i = 0; i < tile_set->get_source_count(); i++) {
-		source_ids.push_back(tile_set->get_source_id(i));
+	for (int i = 0; i < p_tile_set->get_source_count(); i++) {
+		source_ids.push_back(p_tile_set->get_source_id(i));
 	}
 
 	switch (source_sort) {

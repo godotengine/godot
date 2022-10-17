@@ -1504,6 +1504,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
 	ClassDB::bind_method(D_METHOD("set_button_disabled", "column", "button_idx", "disabled"), &TreeItem::set_button_disabled);
+	ClassDB::bind_method(D_METHOD("set_button_color", "column", "button_idx", "color"), &TreeItem::set_button_color);
 	ClassDB::bind_method(D_METHOD("is_button_disabled", "column", "button_idx"), &TreeItem::is_button_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_tooltip_text", "column", "tooltip"), &TreeItem::set_tooltip_text);
@@ -3190,7 +3191,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
-	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+	if (p_event->is_action("ui_right", true) && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3208,7 +3209,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			_go_right();
 		}
-	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_left", true) && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3228,21 +3229,21 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			_go_left();
 		}
 
-	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action("ui_up", true) && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
 		_go_up();
 
-	} else if (p_event->is_action("ui_down") && p_event->is_pressed() && !is_command) {
+	} else if (p_event->is_action("ui_down", true) && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
 		_go_down();
 
-	} else if (p_event->is_action("ui_page_down") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_page_down", true) && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3280,7 +3281,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_page_up") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_page_up", true) && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3317,7 +3318,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_accept", true) && p_event->is_pressed()) {
 		if (selected_item) {
 			//bring up editor if possible
 			if (!edit_selected()) {
@@ -3326,7 +3327,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		accept_event();
-	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
+	} else if (p_event->is_action("ui_select", true) && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item) {
 				return;

@@ -2259,7 +2259,7 @@ void EditorFileSystem::move_group_file(const String &p_path, const String &p_new
 
 ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const String &p_path, bool p_generate) {
 	if (!p_path.is_resource_file() || p_path.begins_with(ProjectSettings::get_singleton()->get_project_data_path())) {
-		//saved externally (configuration file) or internal file, do not assign an ID.
+		// Saved externally (configuration file) or internal file, do not assign an ID.
 		return ResourceUID::INVALID_ID;
 	}
 
@@ -2267,15 +2267,21 @@ ResourceUID::ID EditorFileSystem::_resource_saver_get_resource_id_for_path(const
 	int cpos = -1;
 
 	if (!singleton->_find_file(p_path, &fs, cpos)) {
+		// Fallback to ResourceLoader if filesystem cache fails (can happen during scanning etc.).
+		ResourceUID::ID fallback = ResourceLoader::get_resource_uid(p_path);
+		if (fallback != ResourceUID::INVALID_ID) {
+			return fallback;
+		}
+
 		if (p_generate) {
-			return ResourceUID::get_singleton()->create_id(); //just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
+			return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
 		} else {
 			return ResourceUID::INVALID_ID;
 		}
 	} else if (fs->files[cpos]->uid != ResourceUID::INVALID_ID) {
 		return fs->files[cpos]->uid;
 	} else if (p_generate) {
-		return ResourceUID::get_singleton()->create_id(); //just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
+		return ResourceUID::get_singleton()->create_id(); // Just create a new one, we will be notified of save anyway and fetch the right UUID at that time, to keep things simple.
 	} else {
 		return ResourceUID::INVALID_ID;
 	}
@@ -2422,7 +2428,7 @@ EditorFileSystem::EditorFileSystem() {
 
 	scan_total = 0;
 	update_script_classes_queued.clear();
-	ResourceUID::get_singleton()->clear(); //will be updated on scan
+	MessageQueue::get_singleton()->push_callable(callable_mp(ResourceUID::get_singleton(), &ResourceUID::clear)); // Will be updated on scan.
 	ResourceSaver::set_get_resource_id_for_path(_resource_saver_get_resource_id_for_path);
 }
 

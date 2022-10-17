@@ -3707,7 +3707,7 @@ void VisualShaderEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
-			highend_label->set_modulate(get_theme_color(SNAME("vulkan_color"), SNAME("Editor")));
+			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), SNAME("Editor")));
 
 			node_filter->set_right_icon(Control::get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 

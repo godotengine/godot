@@ -77,28 +77,36 @@ void Popup::_update_theme_item_cache() {
 void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible()) {
-				_initialize_visible_parents();
-			} else {
-				_deinitialize_visible_parents();
-				emit_signal(SNAME("popup_hide"));
-				popped_up = false;
+			if (!is_in_edited_scene_root()) {
+				if (is_visible()) {
+					_initialize_visible_parents();
+				} else {
+					_deinitialize_visible_parents();
+					emit_signal(SNAME("popup_hide"));
+					popped_up = false;
+				}
 			}
 		} break;
 
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (has_focus()) {
-				popped_up = true;
+			if (!is_in_edited_scene_root()) {
+				if (has_focus()) {
+					popped_up = true;
+				}
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			_deinitialize_visible_parents();
+			if (!is_in_edited_scene_root()) {
+				_deinitialize_visible_parents();
+			}
 		} break;
 
 		case NOTIFICATION_WM_CLOSE_REQUEST:
 		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
-			_close_pressed();
+			if (!is_in_edited_scene_root()) {
+				_close_pressed();
+			}
 		} break;
 	}
 }
@@ -124,6 +132,16 @@ void Popup::_post_popup() {
 
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
+}
+
+void Popup::_validate_property(PropertyInfo &p_property) const {
+	if (
+			p_property.name == "transient" ||
+			p_property.name == "exclusive" ||
+			p_property.name == "popup_window" ||
+			p_property.name == "unfocusable") {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 Rect2i Popup::_popup_adjust_rect() const {

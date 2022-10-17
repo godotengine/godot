@@ -292,11 +292,6 @@ class MethodBindT : public MethodBind {
 	void (MB_T::*method)(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -304,9 +299,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -367,11 +359,6 @@ class MethodBindTC : public MethodBind {
 	void (MB_T::*method)(P...) const;
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -379,9 +366,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -444,11 +428,6 @@ class MethodBindTR : public MethodBind {
 	(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -466,9 +445,6 @@ protected:
 			return GetTypeInfo<R>::get_class_info();
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -531,11 +507,6 @@ class MethodBindTRC : public MethodBind {
 	(P...) const;
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -553,9 +524,6 @@ protected:
 			return GetTypeInfo<R>::get_class_info();
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 public:
 #ifdef DEBUG_METHODS_ENABLED
@@ -615,11 +583,6 @@ class MethodBindTS : public MethodBind {
 	void (*function)(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -627,9 +590,6 @@ protected:
 			return Variant::NIL;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		PropertyInfo pi;
@@ -678,11 +638,6 @@ class MethodBindTRS : public MethodBind {
 	(P...);
 
 protected:
-// GCC raises warnings in the case P = {} as the comparison is always false...
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wlogical-op"
-#endif
 	virtual Variant::Type _gen_argument_type(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {
 			return call_get_argument_type<P...>(p_arg);
@@ -690,9 +645,6 @@ protected:
 			return GetTypeInfo<R>::VARIANT_TYPE;
 		}
 	}
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const override {
 		if (p_arg >= 0 && p_arg < (int)sizeof...(P)) {

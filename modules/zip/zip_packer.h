@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  emws_client.h                                                        */
+/*  zip_packer.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,44 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef EMWS_CLIENT_H
-#define EMWS_CLIENT_H
+#ifndef ZIP_PACKER_H
+#define ZIP_PACKER_H
 
-#ifdef WEB_ENABLED
+#include "core/io/file_access.h"
+#include "core/object/ref_counted.h"
 
-#include "core/error/error_list.h"
-#include "emws_peer.h"
-#include "websocket_client.h"
+#include "thirdparty/minizip/zip.h"
 
-class EMWSClient : public WebSocketClient {
-	GDCIIMPL(EMWSClient, WebSocketClient);
+class ZIPPacker : public RefCounted {
+	GDCLASS(ZIPPacker, RefCounted);
 
-private:
-	int _js_id = 0;
-	bool _is_connecting = false;
-	int _in_buf_size = DEF_BUF_SHIFT;
-	int _in_pkt_size = DEF_PKT_SHIFT;
-	int _out_buf_size = DEF_BUF_SHIFT;
+	Ref<FileAccess> fa;
+	zipFile zf;
 
-	static void _esws_on_connect(void *obj, char *proto);
-	static void _esws_on_message(void *obj, const uint8_t *p_data, int p_data_size, int p_is_string);
-	static void _esws_on_error(void *obj);
-	static void _esws_on_close(void *obj, int code, const char *reason, int was_clean);
+protected:
+	static void _bind_methods();
 
 public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_tls, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
-	Ref<WebSocketPeer> get_peer(int p_peer_id) const override;
-	void disconnect_from_host(int p_code = 1000, String p_reason = "") override;
-	IPAddress get_connected_host() const override;
-	uint16_t get_connected_port() const override;
-	virtual ConnectionStatus get_connection_status() const override;
-	int get_max_packet_size() const override;
-	virtual void poll() override;
-	EMWSClient();
-	~EMWSClient();
+	enum ZipAppend {
+		APPEND_CREATE = 0,
+		APPEND_CREATEAFTER = 1,
+		APPEND_ADDINZIP = 2,
+	};
+
+	Error open(String p_path, ZipAppend p_append);
+	Error close();
+
+	Error start_file(String p_path);
+	Error write_file(Vector<uint8_t> p_data);
+	Error close_file();
+
+	ZIPPacker();
+	~ZIPPacker();
 };
 
-#endif // WEB_ENABLED
+VARIANT_ENUM_CAST(ZIPPacker::ZipAppend)
 
-#endif // EMWS_CLIENT_H
+#endif // ZIP_PACKER_H

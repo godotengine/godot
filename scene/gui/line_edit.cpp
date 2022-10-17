@@ -2175,6 +2175,12 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::_shape() {
+	const Ref<Font> &font = theme_cache.font;
+	int font_size = theme_cache.font_size;
+	if (font.is_null()) {
+		return;
+	}
+
 	Size2 old_size = TS->shaped_text_get_size(text_rid);
 	TS->shaped_text_clear(text_rid);
 
@@ -2197,9 +2203,6 @@ void LineEdit::_shape() {
 	}
 	TS->shaped_text_set_preserve_control(text_rid, draw_control_chars);
 
-	const Ref<Font> &font = theme_cache.font;
-	int font_size = theme_cache.font_size;
-	ERR_FAIL_COND(font.is_null());
 	TS->shaped_text_add_string(text_rid, t, font->get_rids(), font_size, font->get_opentype_features(), language);
 	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
 		TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));

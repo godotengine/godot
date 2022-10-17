@@ -299,7 +299,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	}
 
 	img.instantiate();
-	img->create(w, h, false, Image::FORMAT_RGF, texdata);
+	img->set_data(w, h, false, Image::FORMAT_RGF, texdata);
 	pm->set_emission_point_texture(ImageTexture::create_from_image(img));
 	pm->set_emission_point_count(vpc);
 
@@ -315,7 +315,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 
 		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGBA8, colordata);
+		img->set_data(w, h, false, Image::FORMAT_RGBA8, colordata);
 		pm->set_emission_color_texture(ImageTexture::create_from_image(img));
 	}
 
@@ -335,7 +335,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		}
 
 		img.instantiate();
-		img->create(w, h, false, Image::FORMAT_RGF, normdata);
+		img->set_data(w, h, false, Image::FORMAT_RGF, normdata);
 		pm->set_emission_normal_texture(ImageTexture::create_from_image(img));
 
 	} else {

@@ -5060,6 +5060,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	zoom_widget = memnew(EditorZoomWidget);
 	controls_vb->add_child(zoom_widget);
 	zoom_widget->set_anchors_and_offsets_preset(Control::PRESET_TOP_LEFT, Control::PRESET_MODE_MINSIZE, 2 * EDSCALE);
+	zoom_widget->set_shortcut_context(this);
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	panner.instantiate();
@@ -5316,7 +5317,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KeyModifierMask::SHIFT | Key::F), VIEW_FRAME_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/clear_guides", TTR("Clear Guides")), CLEAR_GUIDES);
 	p->add_separator();
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale"), KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL | Key::P), PREVIEW_CANVAS_SCALE);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5452,6 +5453,15 @@ Dictionary CanvasItemEditorPlugin::get_state() const {
 
 void CanvasItemEditorPlugin::set_state(const Dictionary &p_state) {
 	canvas_item_editor->set_state(p_state);
+}
+
+void CanvasItemEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("scene_changed", callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw).unbind(1));
+			connect("scene_closed", callable_mp((CanvasItem *)canvas_item_editor->get_viewport_control(), &CanvasItem::queue_redraw).unbind(1));
+		} break;
+	}
 }
 
 CanvasItemEditorPlugin::CanvasItemEditorPlugin() {

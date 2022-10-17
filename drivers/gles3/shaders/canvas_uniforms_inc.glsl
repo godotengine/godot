@@ -82,6 +82,7 @@ layout(std140) uniform CanvasData { //ubo:0
 	uint pad2;
 };
 
+#ifndef DISABLE_LIGHTING
 #define LIGHT_FLAGS_BLEND_MASK uint(3 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD uint(0 << 16)
 #define LIGHT_FLAGS_BLEND_MODE_SUB uint(1 << 16)
@@ -94,6 +95,27 @@ layout(std140) uniform CanvasData { //ubo:0
 #define LIGHT_FLAGS_SHADOW_PCF5 uint(1 << 22)
 #define LIGHT_FLAGS_SHADOW_PCF13 uint(2 << 22)
 
+struct Light {
+	mat2x4 texture_matrix; //light to texture coordinate matrix (transposed)
+	mat2x4 shadow_matrix; //light to shadow coordinate matrix (transposed)
+	vec4 color;
+
+	uint shadow_color; // packed
+	uint flags; //index to light texture
+	float shadow_pixel_size;
+	float height;
+
+	vec2 position;
+	float shadow_zfar_inv;
+	float shadow_y_ofs;
+
+	vec4 atlas_rect;
+};
+
+layout(std140) uniform LightData { //ubo:2
+	Light light_array[MAX_LIGHTS];
+};
+#endif // DISABLE_LIGHTING
 layout(std140) uniform DrawDataInstances { //ubo:3
 
 	DrawData draw_data[MAX_DRAW_DATA_INSTANCES];

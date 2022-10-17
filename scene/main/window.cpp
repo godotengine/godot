@@ -157,26 +157,18 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-#ifdef TOOLS_ENABLED
-		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+		if (!is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
 		}
-#else
-		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
-#endif
 	}
 }
 
 bool Window::get_flag(Flags p_flag) const {
 	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-#ifdef TOOLS_ENABLED
-		if ((p_flag != FLAG_POPUP) || !(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+		if (!is_in_edited_scene_root()) {
 			flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
 		}
-#else
-		flags[p_flag] = DisplayServer::get_singleton()->window_get_flag(DisplayServer::WindowFlags(p_flag), window_id);
-#endif
 	}
 	return flags[p_flag];
 }
@@ -232,6 +224,14 @@ bool Window::is_embedded() const {
 	return _get_embedder() != nullptr;
 }
 
+bool Window::is_in_edited_scene_root() const {
+#ifdef TOOLS_ENABLED
+	return (Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this));
+#else
+	return false;
+#endif
+}
+
 void Window::_make_window() {
 	ERR_FAIL_COND(window_id != DisplayServer::INVALID_WINDOW_ID);
 
@@ -259,15 +259,12 @@ void Window::_make_window() {
 #endif
 	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
-#ifdef TOOLS_ENABLED
-	if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
-		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-	} else {
+
+	if (is_in_edited_scene_root()) {
 		DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+	} else {
+		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
 	}
-#else
-	DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-#endif
 
 	_update_window_size();
 
@@ -465,14 +462,10 @@ void Window::set_visible(bool p_visible) {
 	//update transient exclusive
 	if (transient_parent) {
 		if (exclusive && visible) {
-#ifdef TOOLS_ENABLED
-			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			if (!is_in_edited_scene_root()) {
 				ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
 				transient_parent->exclusive_child = this;
 			}
-#else
-			transient_parent->exclusive_child = this;
-#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -519,13 +512,9 @@ void Window::_make_transient() {
 		window->transient_children.insert(this);
 		if (is_inside_tree() && is_visible() && exclusive) {
 			if (transient_parent->exclusive_child == nullptr) {
-#ifdef TOOLS_ENABLED
-				if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+				if (!is_in_edited_scene_root()) {
 					transient_parent->exclusive_child = this;
 				}
-#else
-				transient_parent->exclusive_child = this;
-#endif
 			} else if (transient_parent->exclusive_child != this) {
 				ERR_PRINT("Making child transient exclusive, but parent has another exclusive child");
 			}
@@ -568,27 +557,19 @@ void Window::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
 
 	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
-#ifdef TOOLS_ENABLED
-		if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
-			DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-		} else {
+		if (is_in_edited_scene_root()) {
 			DisplayServer::get_singleton()->window_set_exclusive(window_id, false);
+		} else {
+			DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
 		}
-#else
-		DisplayServer::get_singleton()->window_set_exclusive(window_id, exclusive);
-#endif
 	}
 
 	if (transient_parent) {
 		if (p_exclusive && is_inside_tree() && is_visible()) {
 			ERR_FAIL_COND_MSG(transient_parent->exclusive_child && transient_parent->exclusive_child != this, "Transient parent has another exclusive child.");
-#ifdef TOOLS_ENABLED
-			if (!(Engine::get_singleton()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()->is_ancestor_of(this) || get_tree()->get_edited_scene_root() == this))) {
+			if (!is_in_edited_scene_root()) {
 				transient_parent->exclusive_child = this;
 			}
-#else
-			transient_parent->exclusive_child = this;
-#endif
 		} else {
 			if (transient_parent->exclusive_child == this) {
 				transient_parent->exclusive_child = nullptr;
@@ -651,9 +632,9 @@ void Window::_update_window_size() {
 			DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 		}
 
-		DisplayServer::get_singleton()->window_set_size(size, window_id);
 		DisplayServer::get_singleton()->window_set_max_size(max_size_valid ? max_size : Size2i(), window_id);
 		DisplayServer::get_singleton()->window_set_min_size(size_limit, window_id);
+		DisplayServer::get_singleton()->window_set_size(size, window_id);
 	}
 
 	//update the viewport

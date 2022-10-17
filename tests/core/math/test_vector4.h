@@ -314,6 +314,84 @@ TEST_CASE("[Vector4] Linear algebra methods") {
 			Math::is_equal_approx((vector1 * 2).dot(vector2 * 4), (real_t)-25.9 * 8),
 			"Vector4 dot product should work as expected.");
 }
+
+TEST_CASE("[Vector4] Finite number checks") {
+	const double infinite[] = { NAN, INFINITY, -INFINITY };
+
+	CHECK_MESSAGE(
+			Vector4(0, 1, 2, 3).is_finite(),
+			"Vector4(0, 1, 2, 3) should be finite");
+
+	for (double x : infinite) {
+		CHECK_FALSE_MESSAGE(
+				Vector4(x, 1, 2, 3).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector4(0, x, 2, 3).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector4(0, 1, x, 3).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+		CHECK_FALSE_MESSAGE(
+				Vector4(0, 1, 2, x).is_finite(),
+				"Vector4 with one component infinite should not be finite.");
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			CHECK_FALSE_MESSAGE(
+					Vector4(x, y, 2, 3).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(x, 1, y, 3).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(x, 1, 2, y).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(0, x, y, 3).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(0, x, 2, y).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+			CHECK_FALSE_MESSAGE(
+					Vector4(0, 1, x, y).is_finite(),
+					"Vector4 with two components infinite should not be finite.");
+		}
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			for (double z : infinite) {
+				CHECK_FALSE_MESSAGE(
+						Vector4(0, x, y, z).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+				CHECK_FALSE_MESSAGE(
+						Vector4(x, 1, y, z).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+				CHECK_FALSE_MESSAGE(
+						Vector4(x, y, 2, z).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+				CHECK_FALSE_MESSAGE(
+						Vector4(x, y, z, 3).is_finite(),
+						"Vector4 with three components infinite should not be finite.");
+			}
+		}
+	}
+
+	for (double x : infinite) {
+		for (double y : infinite) {
+			for (double z : infinite) {
+				for (double w : infinite) {
+					CHECK_FALSE_MESSAGE(
+							Vector4(x, y, z, w).is_finite(),
+							"Vector4 with four components infinite should not be finite.");
+				}
+			}
+		}
+	}
+}
+
 } // namespace TestVector4
 
 #endif // TEST_VECTOR4_H

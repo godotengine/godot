@@ -1606,6 +1606,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector2, is_normalized, sarray(), varray());
 	bind_method(Vector2, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector2, is_zero_approx, sarray(), varray());
+	bind_method(Vector2, is_finite, sarray(), varray());
 	bind_method(Vector2, posmod, sarray("mod"), varray());
 	bind_method(Vector2, posmodv, sarray("modv"), varray());
 	bind_method(Vector2, project, sarray("b"), varray());
@@ -1653,6 +1654,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Rect2, has_area, sarray(), varray());
 	bind_method(Rect2, has_point, sarray("point"), varray());
 	bind_method(Rect2, is_equal_approx, sarray("rect"), varray());
+	bind_method(Rect2, is_finite, sarray(), varray());
 	bind_method(Rect2, intersects, sarray("b", "include_borders"), varray(false));
 	bind_method(Rect2, encloses, sarray("b"), varray());
 	bind_method(Rect2, intersection, sarray("b"), varray());
@@ -1695,6 +1697,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector3, is_normalized, sarray(), varray());
 	bind_method(Vector3, is_equal_approx, sarray("to"), varray());
 	bind_method(Vector3, is_zero_approx, sarray(), varray());
+	bind_method(Vector3, is_finite, sarray(), varray());
 	bind_method(Vector3, inverse, sarray(), varray());
 	bind_method(Vector3, clamp, sarray("min", "max"), varray());
 	bind_method(Vector3, snapped, sarray("step"), varray());
@@ -1759,6 +1762,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Vector4, inverse, sarray(), varray());
 	bind_method(Vector4, is_equal_approx, sarray("with"), varray());
 	bind_method(Vector4, is_zero_approx, sarray(), varray());
+	bind_method(Vector4, is_finite, sarray(), varray());
 
 	/* Vector4i */
 
@@ -1775,6 +1779,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Plane, normalized, sarray(), varray());
 	bind_method(Plane, center, sarray(), varray());
 	bind_method(Plane, is_equal_approx, sarray("to_plane"), varray());
+	bind_method(Plane, is_finite, sarray(), varray());
 	bind_method(Plane, is_point_over, sarray("point"), varray());
 	bind_method(Plane, distance_to, sarray("point"), varray());
 	bind_method(Plane, has_point, sarray("point", "tolerance"), varray(CMP_EPSILON));
@@ -1790,6 +1795,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Quaternion, normalized, sarray(), varray());
 	bind_method(Quaternion, is_normalized, sarray(), varray());
 	bind_method(Quaternion, is_equal_approx, sarray("to"), varray());
+	bind_method(Quaternion, is_finite, sarray(), varray());
 	bind_method(Quaternion, inverse, sarray(), varray());
 	bind_method(Quaternion, log, sarray(), varray());
 	bind_method(Quaternion, exp, sarray(), varray());
@@ -1909,6 +1915,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform2D, basis_xform_inv, sarray("v"), varray());
 	bind_method(Transform2D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform2D, is_equal_approx, sarray("xform"), varray());
+	bind_method(Transform2D, is_finite, sarray(), varray());
 	bind_method(Transform2D, set_rotation, sarray("rotation"), varray());
 	bind_method(Transform2D, set_scale, sarray("scale"), varray());
 	bind_method(Transform2D, set_skew, sarray("skew"), varray());
@@ -1929,6 +1936,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, tdotz, sarray("with"), varray());
 	bind_method(Basis, slerp, sarray("to", "weight"), varray());
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
+	bind_method(Basis, is_finite, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
 	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
@@ -1943,6 +1951,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(AABB, has_surface, sarray(), varray());
 	bind_method(AABB, has_point, sarray("point"), varray());
 	bind_method(AABB, is_equal_approx, sarray("aabb"), varray());
+	bind_method(AABB, is_finite, sarray(), varray());
 	bind_method(AABB, intersects, sarray("with"), varray());
 	bind_method(AABB, encloses, sarray("with"), varray());
 	bind_method(AABB, intersects_plane, sarray("plane"), varray());
@@ -1975,6 +1984,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
+	bind_method(Transform3D, is_finite, sarray(), varray());
 
 	/* Projection */
 

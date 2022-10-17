@@ -210,9 +210,7 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const Ref<Resource> &p_from, 
 		}
 	}
 
-	Ref<Image> img;
-	img.instantiate();
-	img->create(bm->get_size().width, bm->get_size().height, false, Image::FORMAT_L8, data);
+	Ref<Image> img = Image::create_from_data(bm->get_size().width, bm->get_size().height, false, Image::FORMAT_L8, data);
 
 	if (img->is_compressed()) {
 		if (img->decompress() != OK) {
@@ -483,10 +481,8 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const Ref<Resource> &p_from, 
 
 	int line = 0;
 	int col = 0;
-	Ref<Image> img;
-	img.instantiate();
 	int thumbnail_size = MAX(p_size.x, p_size.y);
-	img->create(thumbnail_size, thumbnail_size, false, Image::FORMAT_RGBA8);
+	Ref<Image> img = Image::create_empty(thumbnail_size, thumbnail_size, false, Image::FORMAT_RGBA8);
 
 	Color bg_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/background_color");
 	Color keyword_color = EditorSettings::get_singleton()->get("text_editor/theme/highlighting/keyword_color");
@@ -660,9 +656,7 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const Ref<Resource> &p_f
 
 	//post_process_preview(img);
 
-	Ref<Image> image;
-	image.instantiate();
-	image->create(w, h, false, Image::FORMAT_RGB8, img);
+	Ref<Image> image = Image::create_from_data(w, h, false, Image::FORMAT_RGB8, img);
 	return ImageTexture::create_from_image(image);
 }
 

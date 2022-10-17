@@ -256,7 +256,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 			String word = str.substr(from + 1, to - from);
 			// Keywords need to be exceptions, except for keywords that represent a value.
-			if (word == "true" || word == "false" || word == "null" || word == "PI" || word == "TAU" || word == "INF" || word == "NAN" || word == "self" || word == "super" || !keywords.has(word)) {
+			if (word == "true" || word == "false" || word == "null" || word == "PI" || word == "TAU" || word == "INF" || word == "NAN" || word == "self" || word == "super" || !reserved_keywords.has(word)) {
 				if (!is_symbol(str[to]) || str[to] == '"' || str[to] == '\'' || str[to] == ')' || str[to] == ']' || str[to] == '}') {
 					is_binary_op = true;
 				}
@@ -338,8 +338,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						col = global_function_color;
 					}
 				}
-			} else if (keywords.has(word)) {
-				col = keywords[word];
+			} else if (class_names.has(word)) {
+				col = class_names[word];
+			} else if (reserved_keywords.has(word)) {
+				col = reserved_keywords[word];
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
 			}
@@ -563,7 +565,8 @@ PackedStringArray GDScriptSyntaxHighlighter::_get_supported_languages() const {
 }
 
 void GDScriptSyntaxHighlighter::_update_cache() {
-	keywords.clear();
+	class_names.clear();
+	reserved_keywords.clear();
 	member_keywords.clear();
 	global_functions.clear();
 	color_regions.clear();
@@ -580,7 +583,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 	for (const StringName &E : types) {
-		keywords[E] = types_color;
+		class_names[E] = types_color;
 	}
 
 	/* User types. */
@@ -588,14 +591,14 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 	for (const StringName &E : global_classes) {
-		keywords[E] = usertype_color;
+		class_names[E] = usertype_color;
 	}
 
 	/* Autoloads. */
 	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
 		const ProjectSettings::AutoloadInfo &info = E.value;
 		if (info.is_singleton) {
-			keywords[info.name] = usertype_color;
+			class_names[info.name] = usertype_color;
 		}
 	}
 
@@ -606,7 +609,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<String> core_types;
 	gdscript->get_core_type_words(&core_types);
 	for (const String &E : core_types) {
-		keywords[StringName(E)] = basetype_color;
+		class_names[StringName(E)] = basetype_color;
 	}
 
 	/* Reserved words. */
@@ -616,9 +619,9 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	gdscript->get_reserved_words(&keyword_list);
 	for (const String &E : keyword_list) {
 		if (gdscript->is_control_flow_keyword(E)) {
-			keywords[StringName(E)] = control_flow_keyword_color;
+			reserved_keywords[StringName(E)] = control_flow_keyword_color;
 		} else {
-			keywords[StringName(E)] = keyword_color;
+			reserved_keywords[StringName(E)] = keyword_color;
 		}
 	}
 

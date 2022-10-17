@@ -118,8 +118,6 @@ class MenuBar : public Control {
 	void _clear_menu();
 	void _update_menu();
 
-	bool _is_focus_owner_in_shortcut_context() const;
-
 protected:
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -169,9 +167,6 @@ public:
 
 	void set_menu_hidden(int p_menu, bool p_hidden);
 	bool is_menu_hidden(int p_menu) const;
-
-	void set_shortcut_context(Node *p_node);
-	Node *get_shortcut_context() const;
 
 	PopupMenu *get_menu_popup(int p_menu) const;
 

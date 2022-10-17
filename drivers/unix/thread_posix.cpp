@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
+#if defined(UNIX_ENABLED)
 
 #include "thread_posix.h"
 
@@ -73,4 +73,4 @@ void init_thread_posix() {
 	Thread::_set_platform_functions({ .set_name = set_name });
 }
 
-#endif // UNIX_ENABLED || PTHREAD_ENABLED
+#endif // UNIX_ENABLED

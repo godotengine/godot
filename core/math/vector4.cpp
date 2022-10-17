@@ -64,6 +64,10 @@ bool Vector4::is_zero_approx() const {
 	return Math::is_zero_approx(x) && Math::is_zero_approx(y) && Math::is_zero_approx(z) && Math::is_zero_approx(w);
 }
 
+bool Vector4::is_finite() const {
+	return Math::is_finite(x) && Math::is_finite(y) && Math::is_finite(z) && Math::is_finite(w);
+}
+
 real_t Vector4::length() const {
 	return Math::sqrt(length_squared());
 }

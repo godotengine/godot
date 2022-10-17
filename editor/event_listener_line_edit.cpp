@@ -59,8 +59,9 @@ void EventListenerLineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	// First event will be an event which is used to focus this control - i.e. a mouse click, or a tab press.
 	// Ignore the first one so that clicking into the LineEdit does not override the current event.
 	// Ignore is reset to true when the control is unfocused.
-	if (ignore) {
-		ignore = false;
+	// This class also specially handles grab_focus() calls.
+	if (ignore_next_event) {
+		ignore_next_event = false;
 		return;
 	}
 
@@ -85,7 +86,7 @@ void EventListenerLineEdit::_on_focus() {
 }
 
 void EventListenerLineEdit::_on_unfocus() {
-	ignore = true;
+	ignore_next_event = true;
 	set_placeholder(TTR("Filter by event..."));
 }
 
@@ -107,6 +108,12 @@ void EventListenerLineEdit::set_allowed_input_types(int input_types) {
 
 int EventListenerLineEdit::get_allowed_input_types() const {
 	return allowed_input_types;
+}
+
+void EventListenerLineEdit::grab_focus() {
+	// If we grab focus through code, we don't need to ignore the first event!
+	ignore_next_event = false;
+	Control::grab_focus();
 }
 
 void EventListenerLineEdit::_notification(int p_what) {
