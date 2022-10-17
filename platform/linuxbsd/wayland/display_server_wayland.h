@@ -40,10 +40,10 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include <wayland-cursor.h>
+
 #include "key_mapping_xkb.h"
 #include "servers/display_server.h"
-
-#include "wayland-cursor.h"
 
 #include "protocol/idle_inhibit.gen.h"
 #include "protocol/pointer_constraints.gen.h"
