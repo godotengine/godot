@@ -810,12 +810,12 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 
 		ret.y = 0x7fffffff;
 		ret.x = 0;
+		const int *ct_offsets_ptr = ct.offsets.ptr();
 
 		for (int j = 0; j < ct.texture_w - mw; j++) {
 			int max_y = 0;
-
 			for (int k = j; k < j + mw; k++) {
-				int y = ct.offsets[k];
+				int y = ct_offsets_ptr[k];
 				if (y > max_y) {
 					max_y = y;
 				}
