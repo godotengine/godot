@@ -355,9 +355,7 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 		keycode -= 'a' - 'A';
 	}
 
-	if (p_ss.keyboard_focused_window_id != INVALID_WINDOW_ID) {
-		p_event->set_window_id(p_ss.keyboard_focused_window_id);
-	}
+	p_event->set_window_id(MAIN_WINDOW_ID);
 
 	// Set all pressed modifiers.
 	_get_key_modifier_state(p_ss, p_event);
@@ -895,16 +893,6 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	// Restore the cursor with our own cursor surface.
 	_seat_state_override_cursor_shape(*ss, wls->cursor_shape);
 
-	PointerData &pd = ss->pointer_data_buffer;
-
-	pd.pointed_window_id = INVALID_WINDOW_ID;
-
-	if (wls->main_window.wl_surface == surface) {
-		pd.pointed_window_id = MAIN_WINDOW_ID;
-	}
-
-	ERR_FAIL_COND_MSG(pd.pointed_window_id == INVALID_WINDOW_ID, "Cursor focused to an invalid window.");
-
 	DEBUG_LOG_WAYLAND("Pointing window.");
 
 	Ref<WaylandWindowEventMessage> msg;
@@ -921,19 +909,13 @@ void DisplayServerWayland::_wl_pointer_on_leave(void *data, struct wl_pointer *w
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	PointerData &pd = ss->pointer_data_buffer;
+	Ref<WaylandWindowEventMessage> msg;
+	msg.instantiate();
+	msg->event = WINDOW_EVENT_MOUSE_EXIT;
 
-	if (pd.pointed_window_id != INVALID_WINDOW_ID) {
-		Ref<WaylandWindowEventMessage> msg;
-		msg.instantiate();
-		msg->event = WINDOW_EVENT_MOUSE_EXIT;
+	wls->message_queue.push_back(msg);
 
-		wls->message_queue.push_back(msg);
-	}
-
-	pd.pointed_window_id = INVALID_WINDOW_ID;
-
-	DEBUG_LOG_WAYLAND("Left a surface");
+	DEBUG_LOG_WAYLAND("Left window.");
 }
 
 void DisplayServerWayland::_wl_pointer_on_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time, wl_fixed_t surface_x, wl_fixed_t surface_y) {
@@ -1040,110 +1022,108 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 	PointerData &old_pd = ss->pointer_data;
 	PointerData &pd = ss->pointer_data_buffer;
 
-	if (pd.pointed_window_id != INVALID_WINDOW_ID) {
-		if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
-			Ref<InputEventMouseMotion> mm;
-			mm.instantiate();
+	if (old_pd.motion_time != pd.motion_time || old_pd.relative_motion_time != pd.relative_motion_time) {
+		Ref<InputEventMouseMotion> mm;
+		mm.instantiate();
 
-			// Set all pressed modifiers.
-			_get_key_modifier_state(*ss, mm);
+		// Set all pressed modifiers.
+		_get_key_modifier_state(*ss, mm);
 
-			mm->set_window_id(pd.pointed_window_id);
-			mm->set_button_mask(pd.pressed_button_mask);
-			mm->set_position(pd.position);
-			mm->set_global_position(pd.position);
+		mm->set_window_id(MAIN_WINDOW_ID);
+		mm->set_button_mask(pd.pressed_button_mask);
+		mm->set_position(pd.position);
+		mm->set_global_position(pd.position);
 
-			// FIXME: I'm not sure whether accessing the Input singleton like this might
-			// give problems.
-			Input::get_singleton()->set_mouse_position(pd.position);
-			mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+		// FIXME: I'm not sure whether accessing the Input singleton like this might
+		// give problems.
+		Input::get_singleton()->set_mouse_position(pd.position);
+		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
 
-			if (old_pd.relative_motion_time != pd.relative_motion_time) {
-				mm->set_relative(pd.relative_motion);
-			} else {
-				// The spec includes the possibility of having motion events without an
-				// associated relative motion event. If that's the case, fallback to a
-				// simple delta of the position.
-				mm->set_relative(pd.position - old_pd.position);
-			}
-
-			Ref<WaylandInputEventMessage> msg;
-			msg.instantiate();
-
-			msg->event = mm;
-
-			wls->message_queue.push_back(msg);
+		if (old_pd.relative_motion_time != pd.relative_motion_time) {
+			mm->set_relative(pd.relative_motion);
+		} else {
+			// The spec includes the possibility of having motion events without an
+			// associated relative motion event. If that's the case, fallback to a
+			// simple delta of the position.
+			mm->set_relative(pd.position - old_pd.position);
 		}
 
-		if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
-			MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
+		Ref<WaylandInputEventMessage> msg;
+		msg.instantiate();
 
-			// This is the cleanest and simplest approach I could find to avoid writing the same code 7 times.
-			for (MouseButton test_button : { MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
-						 MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
-						 MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 }) {
-				MouseButton test_button_mask = mouse_button_to_mask(test_button);
-				if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
-					Ref<InputEventMouseButton> mb;
-					mb.instantiate();
+		msg->event = mm;
 
-					// Set all pressed modifiers.
-					_get_key_modifier_state(*ss, mb);
+		wls->message_queue.push_back(msg);
+	}
 
-					mb->set_window_id(pd.pointed_window_id);
-					mb->set_position(pd.position);
-					mb->set_global_position(pd.position);
+	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
+		MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
 
-					mb->set_button_mask(pd.pressed_button_mask);
+		// This is the cleanest and simplest approach I could find to avoid writing the same code 7 times.
+		for (MouseButton test_button : { MouseButton::LEFT, MouseButton::MIDDLE, MouseButton::RIGHT,
+					 MouseButton::WHEEL_UP, MouseButton::WHEEL_DOWN, MouseButton::WHEEL_LEFT,
+					 MouseButton::WHEEL_RIGHT, MouseButton::MB_XBUTTON1, MouseButton::MB_XBUTTON2 }) {
+			MouseButton test_button_mask = mouse_button_to_mask(test_button);
+			if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
 
-					mb->set_button_index(test_button);
-					mb->set_pressed((pd.pressed_button_mask & test_button_mask) != MouseButton::NONE);
+				// Set all pressed modifiers.
+				_get_key_modifier_state(*ss, mb);
 
-					if (pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
-						mb->set_double_click(true);
-					}
+				mb->set_window_id(MAIN_WINDOW_ID);
+				mb->set_position(pd.position);
+				mb->set_global_position(pd.position);
 
-					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
-						mb->set_factor(abs(pd.scroll_vector.y));
-					}
+				mb->set_button_mask(pd.pressed_button_mask);
 
-					if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
-						mb->set_factor(abs(pd.scroll_vector.x));
-					}
+				mb->set_button_index(test_button);
+				mb->set_pressed((pd.pressed_button_mask & test_button_mask) != MouseButton::NONE);
 
-					Ref<WaylandInputEventMessage> msg;
-					msg.instantiate();
+				if (pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
+					mb->set_double_click(true);
+				}
 
-					msg->event = mb;
+				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN) {
+					mb->set_factor(abs(pd.scroll_vector.y));
+				}
 
-					wls->message_queue.push_back(msg);
+				if (test_button == MouseButton::WHEEL_RIGHT || test_button == MouseButton::WHEEL_LEFT) {
+					mb->set_factor(abs(pd.scroll_vector.x));
+				}
 
-					// Send an event resetting immediately the wheel key.
-					// Wayland specification defines axis_stop events as optional and says to
-					// treat all axis events as unterminated. As such, we have to manually do
-					// it ourselves.
-					if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN || test_button == MouseButton::WHEEL_LEFT || test_button == MouseButton::WHEEL_RIGHT) {
-						// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
-						// This works for now, despite being horrible.
-						Ref<InputEventMouseButton> wh_up;
-						wh_up.instantiate();
+				Ref<WaylandInputEventMessage> msg;
+				msg.instantiate();
 
-						wh_up->set_window_id(pd.pointed_window_id);
-						wh_up->set_position(pd.position);
-						wh_up->set_global_position(pd.position);
+				msg->event = mb;
 
-						// We have to unset the button to avoid it getting stuck.
-						pd.pressed_button_mask &= ~test_button_mask;
-						wh_up->set_button_mask(pd.pressed_button_mask);
+				wls->message_queue.push_back(msg);
 
-						wh_up->set_button_index(test_button);
-						wh_up->set_pressed(false);
+				// Send an event resetting immediately the wheel key.
+				// Wayland specification defines axis_stop events as optional and says to
+				// treat all axis events as unterminated. As such, we have to manually do
+				// it ourselves.
+				if (test_button == MouseButton::WHEEL_UP || test_button == MouseButton::WHEEL_DOWN || test_button == MouseButton::WHEEL_LEFT || test_button == MouseButton::WHEEL_RIGHT) {
+					// FIXME: This is ugly, I can't find a clean way to clone an InputEvent.
+					// This works for now, despite being horrible.
+					Ref<InputEventMouseButton> wh_up;
+					wh_up.instantiate();
 
-						Ref<WaylandInputEventMessage> msg_up;
-						msg_up.instantiate();
-						msg_up->event = wh_up;
-						wls->message_queue.push_back(msg_up);
-					}
+					wh_up->set_window_id(MAIN_WINDOW_ID);
+					wh_up->set_position(pd.position);
+					wh_up->set_global_position(pd.position);
+
+					// We have to unset the button to avoid it getting stuck.
+					pd.pressed_button_mask &= ~test_button_mask;
+					wh_up->set_button_mask(pd.pressed_button_mask);
+
+					wh_up->set_button_index(test_button);
+					wh_up->set_pressed(false);
+
+					Ref<WaylandInputEventMessage> msg_up;
+					msg_up.instantiate();
+					msg_up->event = wh_up;
+					wls->message_queue.push_back(msg_up);
 				}
 			}
 		}
@@ -1202,10 +1182,6 @@ void DisplayServerWayland::_wl_keyboard_on_enter(void *data, struct wl_keyboard 
 
 	_seat_state_set_current(*ss);
 
-	if (wls->main_window.wl_surface == surface) {
-		ss->keyboard_focused_window_id = MAIN_WINDOW_ID;
-	}
-
 	Ref<WaylandWindowEventMessage> msg;
 	msg.instantiate();
 	msg->event = WINDOW_EVENT_FOCUS_IN;
@@ -1226,7 +1202,6 @@ void DisplayServerWayland::_wl_keyboard_on_leave(void *data, struct wl_keyboard 
 
 	wls->message_queue.push_back(msg);
 
-	ss->keyboard_focused_window_id = INVALID_WINDOW_ID;
 	ss->repeating_keycode = XKB_KEYCODE_INVALID;
 }
 
@@ -1306,10 +1281,6 @@ void DisplayServerWayland::_wl_data_device_on_enter(void *data, struct wl_data_d
 	WaylandState *wls = (WaylandState *)data;
 	ERR_FAIL_NULL(wls);
 
-	if (wls->main_window.wl_surface == surface) {
-		ss->dnd_current_window_id = MAIN_WINDOW_ID;
-	}
-
 	ss->dnd_enter_serial = serial;
 
 	wl_data_offer_set_actions(id, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
@@ -1318,8 +1289,6 @@ void DisplayServerWayland::_wl_data_device_on_enter(void *data, struct wl_data_d
 void DisplayServerWayland::_wl_data_device_on_leave(void *data, struct wl_data_device *wl_data_device) {
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
-
-	ss->dnd_current_window_id = INVALID_WINDOW_ID;
 
 	if (ss->wl_data_offer_dnd) {
 		wl_data_offer_destroy(ss->wl_data_offer_dnd);
@@ -1481,7 +1450,7 @@ void DisplayServerWayland::_xdg_toplevel_on_configure(void *data, struct xdg_top
 		wd->rect.size.height = height;
 	}
 
-	if (wls->current_seat && wls->current_seat->wp_locked_pointer && wd->id == wls->current_seat->pointer_data.pointed_window_id) {
+	if (wls->current_seat && wls->current_seat->wp_locked_pointer) {
 		// Since the cursor's currently locked and the window's rect might have
 		// changed, we have to recenter the position hint to ensure that the cursor
 		// stays centered on unlock.
@@ -2143,7 +2112,7 @@ Size2i DisplayServerWayland::window_get_max_size(DisplayServer::WindowID p_windo
 void DisplayServerWayland::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
 	if (wls.gl_manager) {
-		wls.gl_manager->window_make_current(p_window_id);
+		wls.gl_manager->window_make_current(MAIN_WINDOW_ID);
 	}
 #endif
 }

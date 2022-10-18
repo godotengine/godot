@@ -170,9 +170,6 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
-		HashSet<WindowID> children;
-		WindowID parent = INVALID_WINDOW_ID;
-
 		bool visible = false;
 
 		WindowMode mode;
@@ -220,8 +217,6 @@ class DisplayServerWayland : public DisplayServer {
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		WindowID pointed_window_id = INVALID_WINDOW_ID;
-
 		MouseButton pressed_button_mask = MouseButton::NONE;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
@@ -266,8 +261,6 @@ class DisplayServerWayland : public DisplayServer {
 
 		xkb_layout_index_t current_layout_index = 0;
 
-		WindowID keyboard_focused_window_id = INVALID_WINDOW_ID;
-
 		int32_t repeat_key_delay_msec = 0;
 		int32_t repeat_start_delay_msec = 0;
 
@@ -287,8 +280,6 @@ class DisplayServerWayland : public DisplayServer {
 		// Drag and drop.
 		struct wl_data_offer *wl_data_offer_dnd = nullptr;
 		uint32_t dnd_enter_serial = 0;
-
-		WindowID dnd_current_window_id = INVALID_WINDOW_ID;
 
 		// Clipboard.
 		struct wl_data_source *wl_data_source_selection = nullptr;
