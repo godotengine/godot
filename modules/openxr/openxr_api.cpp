@@ -444,12 +444,12 @@ bool OpenXRAPI::load_supported_view_configuration_views(XrViewConfigurationType 
 
 	for (uint32_t i = 0; i < view_count; i++) {
 		print_verbose("OpenXR: Found supported view configuration view");
-		print_verbose(String(" - width: ") + view_configuration_views[i].maxImageRectWidth);
-		print_verbose(String(" - height: ") + view_configuration_views[i].maxImageRectHeight);
-		print_verbose(String(" - sample count: ") + view_configuration_views[i].maxSwapchainSampleCount);
-		print_verbose(String(" - recommended render width: ") + view_configuration_views[i].recommendedImageRectWidth);
-		print_verbose(String(" - recommended render height: ") + view_configuration_views[i].recommendedImageRectHeight);
-		print_verbose(String(" - recommended render sample count: ") + view_configuration_views[i].recommendedSwapchainSampleCount);
+		print_verbose(String(" - width: ") + itos(view_configuration_views[i].maxImageRectWidth));
+		print_verbose(String(" - height: ") + itos(view_configuration_views[i].maxImageRectHeight));
+		print_verbose(String(" - sample count: ") + itos(view_configuration_views[i].maxSwapchainSampleCount));
+		print_verbose(String(" - recommended render width: ") + itos(view_configuration_views[i].recommendedImageRectWidth));
+		print_verbose(String(" - recommended render height: ") + itos(view_configuration_views[i].recommendedImageRectHeight));
+		print_verbose(String(" - recommended render sample count: ") + itos(view_configuration_views[i].recommendedSwapchainSampleCount));
 	}
 
 	return true;
