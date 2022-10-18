@@ -131,9 +131,14 @@ if env["builtin_harfbuzz"]:
         env_harfbuzz.Append(
             CCFLAGS=[
                 "-DHAVE_FREETYPE",
-                "-DHAVE_GRAPHITE2",
             ]
         )
+        if env["graphite"]:
+            env_harfbuzz.Append(
+                CCFLAGS=[
+                    "-DHAVE_GRAPHITE2",
+                ]
+            )
         if env["builtin_freetype"]:
             env_harfbuzz.Prepend(CPPPATH=["#thirdparty/freetype/include"])
         if env["builtin_graphite"] and env["graphite"]:
