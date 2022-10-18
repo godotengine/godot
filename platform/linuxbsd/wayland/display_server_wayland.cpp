@@ -2945,6 +2945,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		RasterizerGLES3::make_current();
 	}
 #endif
+	const char *cursor_theme = OS::get_singleton()->get_environment("XCURSOR_THEME").utf8().ptr();
 
 	int64_t cursor_size = OS::get_singleton()->get_environment("XCURSOR_SIZE").to_int();
 	if (cursor_size <= 0) {
@@ -2952,8 +2953,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		cursor_size = 24;
 	}
 
-	print_verbose(vformat("Loading default cursor theme size %d.", cursor_size));
-	wls.wl_cursor_theme = wl_cursor_theme_load(nullptr, cursor_size, wls.globals.wl_shm);
+	print_verbose(vformat("Loading cursor theme \"%s\" size %d.", cursor_theme, cursor_size));
+	wls.wl_cursor_theme = wl_cursor_theme_load(cursor_theme, cursor_size, wls.globals.wl_shm);
 
 	ERR_FAIL_NULL_MSG(wls.wl_cursor_theme, "Can't find a cursor theme.");
 
