@@ -512,12 +512,9 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 }
 
 bool EditorResourcePicker::handle_menu_selected(int p_which) {
-	bool success;
-	if (GDVIRTUAL_CALL(_handle_menu_selected, p_which, success)) {
-		return success;
-	}
-
-	return false;
+	bool success = false;
+	GDVIRTUAL_CALL(_handle_menu_selected, p_which, success);
+	return success;
 }
 
 void EditorResourcePicker::_button_draw() {

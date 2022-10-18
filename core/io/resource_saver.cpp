@@ -43,20 +43,14 @@ ResourceSaverGetResourceIDForPath ResourceSaver::save_get_id_for_path = nullptr;
 
 Error ResourceFormatSaver::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	int64_t res = ERR_METHOD_NOT_FOUND;
-	if (GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res)) {
-		return (Error)res;
-	}
-
-	return ERR_METHOD_NOT_FOUND;
+	GDVIRTUAL_CALL(_save, p_resource, p_path, p_flags, res);
+	return (Error)res;
 }
 
 bool ResourceFormatSaver::recognize(const Ref<Resource> &p_resource) const {
 	bool success = false;
-	if (GDVIRTUAL_CALL(_recognize, p_resource, success)) {
-		return success;
-	}
-
-	return false;
+	GDVIRTUAL_CALL(_recognize, p_resource, success);
+	return success;
 }
 
 void ResourceFormatSaver::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
