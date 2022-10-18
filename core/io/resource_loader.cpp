@@ -914,7 +914,7 @@ void ResourceLoader::load_translation_remaps() {
 		return;
 	}
 
-	Dictionary remaps = ProjectSettings::get_singleton()->get("internationalization/locale/translation_remaps");
+	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
 	List<Variant> keys;
 	remaps.get_key_list(&keys);
 	for (const Variant &E : keys) {
@@ -941,7 +941,7 @@ void ResourceLoader::load_path_remaps() {
 		return;
 	}
 
-	Vector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
+	Vector<String> remaps = GLOBAL_GET("path_remap/remapped_paths");
 	int rc = remaps.size();
 	ERR_FAIL_COND(rc & 1); //must be even
 	const String *r = remaps.ptr();

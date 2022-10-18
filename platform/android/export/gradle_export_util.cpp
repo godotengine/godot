@@ -158,7 +158,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		return ERR_CANT_OPEN;
 	}
 	da->list_dir_begin();
-	Dictionary appnames = ProjectSettings::get_singleton()->get("application/config/name_localized");
+	Dictionary appnames = GLOBAL_GET("application/config/name_localized");
 	while (true) {
 		String file = da->get_next();
 		if (file.is_empty()) {

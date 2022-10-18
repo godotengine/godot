@@ -56,8 +56,8 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	}
 
 	String app_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		app_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(GLOBAL_GET("application/config/name")) != "") {
+		app_name = String(GLOBAL_GET("application/config/name"));
 	} else {
 		app_name = "Unnamed";
 	}

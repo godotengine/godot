@@ -277,7 +277,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			// Remote scene tree update
 			remote_scene_tree_timeout -= get_process_delta_time();
 			if (remote_scene_tree_timeout < 0) {
-				remote_scene_tree_timeout = EditorSettings::get_singleton()->get("debugger/remote_scene_tree_refresh_interval");
+				remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
 				if (remote_scene_tree->is_visible_in_tree()) {
 					get_current_debugger()->request_remote_tree();
 				}
@@ -286,7 +286,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 			// Remote inspector update
 			inspect_edited_object_timeout -= get_process_delta_time();
 			if (inspect_edited_object_timeout < 0) {
-				inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
+				inspect_edited_object_timeout = EDITOR_GET("debugger/remote_inspect_refresh_interval");
 				if (EditorDebuggerRemoteObject *obj = get_inspected_remote_object()) {
 					get_current_debugger()->request_remote_object(obj->remote_object_id);
 				}
@@ -313,7 +313,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 
 				EditorNode::get_singleton()->get_pause_button()->set_disabled(false);
 				// Switch to remote tree view if so desired.
-				auto_switch_remote_scene_tree = (bool)EditorSettings::get_singleton()->get("debugger/auto_switch_to_remote_scene_tree");
+				auto_switch_remote_scene_tree = (bool)EDITOR_GET("debugger/auto_switch_to_remote_scene_tree");
 				if (auto_switch_remote_scene_tree) {
 					SceneTreeDock::get_singleton()->show_remote_tree();
 				}

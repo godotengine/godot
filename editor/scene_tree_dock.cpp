@@ -946,7 +946,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
 		} break;
 		case TOOL_AUTO_EXPAND: {
-			scene_tree->set_auto_expand_selected(!EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"), true);
+			scene_tree->set_auto_expand_selected(!EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), true);
 		} break;
 		case TOOL_SCENE_EDITABLE_CHILDREN: {
 			if (!profile_allow_editing) {
@@ -1325,7 +1325,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			clear_inherit_confirm->connect("confirmed", callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM, false));
-			scene_tree->set_auto_expand_selected(EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"), false);
+			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1333,7 +1333,7 @@ void SceneTreeDock::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			scene_tree->set_auto_expand_selected(EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"), false);
+			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 			button_add->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 			button_instance->set_icon(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")));
 			button_create_script->set_icon(get_theme_icon(SNAME("ScriptCreate"), SNAME("EditorIcons")));
@@ -2447,7 +2447,7 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		}
 
 		int flg = 0;
-		if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
+		if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 			flg |= ResourceSaver::FLAG_COMPRESS;
 		}
 
@@ -2894,7 +2894,7 @@ void SceneTreeDock::_update_tree_menu() {
 
 	tree_menu->add_separator();
 	tree_menu->add_check_item(TTR("Auto Expand to Selected"), TOOL_AUTO_EXPAND);
-	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_AUTO_EXPAND), EditorSettings::get_singleton()->get("docks/scene_tree/auto_expand_to_selected"));
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_AUTO_EXPAND), EDITOR_GET("docks/scene_tree/auto_expand_to_selected"));
 }
 
 void SceneTreeDock::_update_filter_menu() {

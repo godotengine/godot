@@ -63,7 +63,7 @@ void POTGenerator::generate_pot(const String &p_file) {
 	// Clear all_translation_strings of the previous round.
 	all_translation_strings.clear();
 
-	Vector<String> files = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
+	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 
 	// Collect all translatable strings according to files order in "POT Generation" setting.
 	for (int i = 0; i < files.size(); i++) {
@@ -99,8 +99,8 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 		return;
 	}
 
-	String project_name = ProjectSettings::get_singleton()->get("application/config/name");
-	Vector<String> files = ProjectSettings::get_singleton()->get("internationalization/locale/translations_pot_files");
+	String project_name = GLOBAL_GET("application/config/name");
+	Vector<String> files = GLOBAL_GET("internationalization/locale/translations_pot_files");
 	String extracted_files = "";
 	for (int i = 0; i < files.size(); i++) {
 		extracted_files += "# " + files[i] + "\n";

@@ -335,7 +335,7 @@ void EditorNode::disambiguate_filenames(const Vector<String> p_full_paths, Vecto
 
 // TODO: This REALLY should be done in a better way than replacing all tabs after almost EVERY action.
 void EditorNode::_update_scene_tabs() {
-	bool show_rb = EditorSettings::get_singleton()->get("interface/scene_tabs/show_script_button");
+	bool show_rb = EDITOR_GET("interface/scene_tabs/show_script_button");
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
 		DisplayServer::get_singleton()->global_menu_clear("_dock");
@@ -428,7 +428,7 @@ void EditorNode::_version_control_menu_option(int p_idx) {
 }
 
 void EditorNode::_update_title() {
-	const String appname = ProjectSettings::get_singleton()->get("application/config/name");
+	const String appname = GLOBAL_GET("application/config/name");
 	String title = (appname.is_empty() ? TTR("Unnamed Project") : appname);
 	const String edited = editor_data.get_edited_scene_root() ? editor_data.get_edited_scene_root()->get_scene_file_path() : String();
 	if (!edited.is_empty()) {
@@ -635,7 +635,7 @@ void EditorNode::_notification(int p_what) {
 				update_spinner_step_frame = frame + 1;
 
 				// Update the icon itself only when the spinner is visible.
-				if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
+				if (EDITOR_GET("interface/editor/show_update_spinner")) {
 					update_spinner->set_icon(gui_base->get_theme_icon("Progress" + itos(update_spinner_step + 1), SNAME("EditorIcons")));
 				}
 			}
@@ -700,7 +700,7 @@ void EditorNode::_notification(int p_what) {
 				_initializing_plugins = true;
 				Vector<String> addons;
 				if (ProjectSettings::get_singleton()->has_setting("editor_plugins/enabled")) {
-					addons = ProjectSettings::get_singleton()->get("editor_plugins/enabled");
+					addons = GLOBAL_GET("editor_plugins/enabled");
 				}
 
 				for (int i = 0; i < addons.size(); i++) {
@@ -847,7 +847,7 @@ void EditorNode::_notification(int p_what) {
 
 			HashSet<String> updated_textfile_extensions;
 			bool extensions_match = true;
-			const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+			const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 			for (const String &E : textfile_ext) {
 				updated_textfile_extensions.insert(E);
 				if (extensions_match && !textfile_extensions.has(E)) {
@@ -866,9 +866,9 @@ void EditorNode::_notification(int p_what) {
 }
 
 void EditorNode::_update_update_spinner() {
-	update_spinner->set_visible(EditorSettings::get_singleton()->get("interface/editor/show_update_spinner"));
+	update_spinner->set_visible(EDITOR_GET("interface/editor/show_update_spinner"));
 
-	const bool update_continuously = EditorSettings::get_singleton()->get("interface/editor/update_continuously");
+	const bool update_continuously = EDITOR_GET("interface/editor/update_continuously");
 	PopupMenu *update_popup = update_spinner->get_popup();
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_CONTINUOUSLY), update_continuously);
 	update_popup->set_item_checked(update_popup->get_item_index(SETTINGS_UPDATE_WHEN_CHANGED), !update_continuously);
@@ -1273,7 +1273,7 @@ void EditorNode::edit_node(Node *p_node) {
 void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 	editor_data.apply_changes_in_editors();
 	int flg = 0;
-	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flg |= ResourceSaver::FLAG_COMPRESS;
 	}
 
@@ -1640,7 +1640,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			save.step(TTR("Creating Thumbnail"), 2);
 			save.step(TTR("Creating Thumbnail"), 3);
 
-			int preview_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
+			int preview_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			preview_size *= EDSCALE;
 
 			// Consider a square region.
@@ -1701,7 +1701,7 @@ int EditorNode::_save_external_resources() {
 	// Save external resources and its subresources if any was modified.
 
 	int flg = 0;
-	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flg |= ResourceSaver::FLAG_COMPRESS;
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
@@ -1807,7 +1807,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	}
 
 	int flg = 0;
-	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flg |= ResourceSaver::FLAG_COMPRESS;
 	}
 	flg |= ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
@@ -2407,7 +2407,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		if (main_plugin && !skip_main_plugin) {
 			// Special case if use of external editor is true.
 			Resource *current_res = Object::cast_to<Resource>(current_obj);
-			if (main_plugin->get_name() == "Script" && !current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
+			if (main_plugin->get_name() == "Script" && !current_obj->is_class("VisualScript") && current_res && !current_res->is_built_in() && (bool(EDITOR_GET("text_editor/external/use_external_editor")) || overrides_external_editor(current_obj))) {
 				if (!changing_scene) {
 					main_plugin->edit(current_obj);
 				}
@@ -3105,7 +3105,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 }
 
 String EditorNode::adjust_scene_name_casing(const String &root_name) {
-	switch (ProjectSettings::get_singleton()->get("editor/scene/scene_naming").operator int()) {
+	switch (GLOBAL_GET("editor/scene/scene_naming").operator int()) {
 		case SCENE_NAME_CASING_AUTO:
 			// Use casing of the root node.
 			break;
@@ -3125,7 +3125,7 @@ void EditorNode::_screenshot(bool p_use_utc) {
 	String name = "editor_screenshot_" + Time::get_singleton()->get_datetime_string_from_system(p_use_utc).replace(":", "") + ".png";
 	NodePath path = String("user://") + name;
 	_save_screenshot(path);
-	if (EditorSettings::get_singleton()->get("interface/editor/automatically_open_screenshots")) {
+	if (EDITOR_GET("interface/editor/automatically_open_screenshots")) {
 		OS::get_singleton()->shell_open(String("file://") + ProjectSettings::get_singleton()->globalize_path(path));
 	}
 }
@@ -3370,7 +3370,7 @@ void EditorNode::editor_select(int p_which) {
 		editor_data.get_editor_plugin(i)->notify_main_screen_changed(editor_plugin_screen->get_name());
 	}
 
-	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
+	if (EDITOR_GET("interface/editor/separate_distraction_mode")) {
 		if (p_which == EDITOR_SCRIPT) {
 			set_distraction_free_mode(script_distraction_free);
 		} else {
@@ -5538,7 +5538,7 @@ bool EditorNode::get_docks_visible() const {
 }
 
 void EditorNode::_toggle_distraction_free_mode() {
-	if (EditorSettings::get_singleton()->get("interface/editor/separate_distraction_mode")) {
+	if (EDITOR_GET("interface/editor/separate_distraction_mode")) {
 		int screen = -1;
 		for (int i = 0; i < editor_table.size(); i++) {
 			if (editor_plugin_screen == editor_table[i]) {
@@ -6147,7 +6147,7 @@ EditorNode::EditorNode() {
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
 	{
-		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");
+		int display_scale = EDITOR_GET("interface/editor/display_scale");
 
 		switch (display_scale) {
 			case 0:
@@ -6173,7 +6173,7 @@ EditorNode::EditorNode() {
 				editor_set_scale(2.0);
 				break;
 			default:
-				editor_set_scale(EditorSettings::get_singleton()->get("interface/editor/custom_display_scale"));
+				editor_set_scale(EDITOR_GET("interface/editor/custom_display_scale"));
 				break;
 		}
 	}
@@ -6181,9 +6181,9 @@ EditorNode::EditorNode() {
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	DisplayServer::get_singleton()->window_set_min_size(Size2(1024, 600) * EDSCALE);
 
-	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
-	EditorFileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
-	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
+	FileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_show_hidden_files(EDITOR_GET("filesystem/file_dialog/show_hidden_files"));
+	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EDITOR_GET("filesystem/file_dialog/display_mode").operator int());
 
 	int swap_cancel_ok = EDITOR_GET("interface/editor/accept_dialog_cancel_ok_buttons");
 	if (swap_cancel_ok != 0) { // 0 is auto, set in register_scene based on DisplayServer.
@@ -6352,7 +6352,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("canvas_item_editor/pan_view", TTR("Pan View"), Key::SPACE);
 
-	const Vector<String> textfile_ext = ((String)(EditorSettings::get_singleton()->get("docks/filesystem/textfile_extensions"))).split(",", false);
+	const Vector<String> textfile_ext = ((String)(EDITOR_GET("docks/filesystem/textfile_extensions"))).split(",", false);
 	for (const String &E : textfile_ext) {
 		textfile_extensions.insert(E);
 	}

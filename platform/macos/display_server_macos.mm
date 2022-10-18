@@ -2179,7 +2179,7 @@ void DisplayServerMacOS::screen_set_keep_on(bool p_enable) {
 	}
 
 	if (p_enable) {
-		String app_name_string = ProjectSettings::get_singleton()->get("application/config/name");
+		String app_name_string = GLOBAL_GET("application/config/name");
 		NSString *name = [NSString stringWithUTF8String:(app_name_string.is_empty() ? "Godot Engine" : app_name_string.utf8().get_data())];
 		NSString *reason = @"Godot Engine running with display/window/energy_saving/keep_screen_on = true";
 		IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep, (__bridge CFStringRef)name, (__bridge CFStringRef)reason, (__bridge CFStringRef)reason, nullptr, 0, nullptr, &screen_keep_on_assertion);

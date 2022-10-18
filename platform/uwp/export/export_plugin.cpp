@@ -442,7 +442,7 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 #ifdef WINDOWS_ENABLED
 	// Sign with signtool
-	String signtool_path = EditorSettings::get_singleton()->get("export/uwp/signtool");
+	String signtool_path = EDITOR_GET("export/uwp/signtool");
 	if (signtool_path.is_empty()) {
 		return OK;
 	}
@@ -454,9 +454,9 @@ Error EditorExportPlatformUWP::export_project(const Ref<EditorExportPreset> &p_p
 
 	static String algs[] = { "MD5", "SHA1", "SHA256" };
 
-	String cert_path = EditorSettings::get_singleton()->get("export/uwp/debug_certificate");
-	String cert_pass = EditorSettings::get_singleton()->get("export/uwp/debug_password");
-	int cert_alg = EditorSettings::get_singleton()->get("export/uwp/debug_algorithm");
+	String cert_path = EDITOR_GET("export/uwp/debug_certificate");
+	String cert_pass = EDITOR_GET("export/uwp/debug_password");
+	int cert_alg = EDITOR_GET("export/uwp/debug_algorithm");
 
 	if (!p_debug) {
 		cert_path = p_preset->get("signing/certificate");

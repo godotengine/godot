@@ -95,7 +95,7 @@ Config::Config() {
 	support_anisotropic_filter = extensions.has("GL_EXT_texture_filter_anisotropic");
 	if (support_anisotropic_filter) {
 		glGetFloatv(_GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisotropic_level);
-		anisotropic_level = MIN(float(1 << int(ProjectSettings::get_singleton()->get("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
+		anisotropic_level = MIN(float(1 << int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"))), anisotropic_level);
 	}
 
 	force_vertex_shading = false; //GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
